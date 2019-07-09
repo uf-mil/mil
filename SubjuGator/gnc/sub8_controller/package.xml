@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>sub8_controller</name>
+  <version>0.0.0</version>
+  <description>The sub8_controller package</description>
+  <maintainer email="kallen@todo.todo">kallen</maintainer>
+  <license>MIT</license>
+  <exec_depend>rospy</exec_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>

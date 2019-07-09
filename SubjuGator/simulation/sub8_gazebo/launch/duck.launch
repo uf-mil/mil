@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <param name="use_sim_time" value="true" />
+  <param name="simulate" value="true" />
+  <arg name="gui" default="false" />
+
+  <!-- start gazebo server-->
+  <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false"
+    args="$(find sub8_gazebo)/worlds/a_whole_new.world --verbose" />
+  <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" if="$(arg gui)" />
+
+  <include file="$(find sub8_gazebo)/launch/spawn.launch" />
+</launch>

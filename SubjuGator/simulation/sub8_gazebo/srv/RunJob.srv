@@ -1,0 +1,4 @@
+# Used to start missions and return the final state of the mission (pass or fail).
+---
+bool success
+string message

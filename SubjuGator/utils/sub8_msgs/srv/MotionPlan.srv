@@ -1,0 +1,5 @@
+Waypoint start_state
+Waypoint goal_state
+---
+bool success
+Trajectory trajectory

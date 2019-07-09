@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <world name="default">
+
+    <!-- Physics configured for 100 iterations / simulated second, 1/10 default for faster speed -->
+    <physics type="ode">
+      <!-- Iterations per real world second, target rtf / max_step_time -->
+      <!-- rtf / step -->
+      <real_time_update_rate>100</real_time_update_rate>
+      <!-- Time to step simulation forward each iteration -->
+      <max_step_size>0.01</max_step_size>
+    </physics>
+
+    <!-- Estimated latitude/longitude of gainesville -->
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>29.6474</latitude_deg>
+      <longitude_deg>277.65027</longitude_deg>
+      <elevation>0.4</elevation>
+      <!-- For legacy gazebo reasons, need to rotate -->
+      <heading_deg>180</heading_deg>
+    </spherical_coordinates>
+
+    <magnetic_field>8.883535E-06 2.214733E-05 -3.157464E-05</magnetic_field>
+
+    <light name="illum" type="directional">
+      <pose>-4 18 9 0 -.75 0</pose>
+      <diffuse>0.1 0.4 1 1</diffuse>
+      <attenuation><constant>1</constant></attenuation>
+    </light>
+    <light name="sky_illum" type="directional">
+      <pose>0 0 5 3.14 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <attenuation><constant>1</constant></attenuation>
+    </light>
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <light name='user_point_light_0' type='point'>
+      <pose frame=''>0.109933 -0.142384 1 0 -0 0</pose>
+      <diffuse>0.5 0.5 0.5 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>100</range>
+        <constant>0.5</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <cast_shadows>0</cast_shadows>
+      <direction>0 0 -1</direction>
+    </light>
+    <light name='user_point_light_1' type='point'>
+      <pose frame=''>-29.7505 -0.454729 1 0 -0 0</pose>
+      <diffuse>0.5 0.5 0.5 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>100</range>
+        <constant>0.5</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <cast_shadows>0</cast_shadows>
+      <direction>0 0 -1</direction>
+    </light>
+    <light name='user_point_light_2' type='point'>
+      <pose frame=''>31.6112 -2.69613 1 0 -0 0</pose>
+      <diffuse>0.5 0.5 0.5 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>100</range>
+        <constant>0.5</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <cast_shadows>0</cast_shadows>
+      <direction>0 0 -1</direction>
+    </light>
+    <model name="water">
+      <static>true</static>
+      <pose>0 0 0 0 3.1415 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <transparency>0.8</transparency>
+          <cast_shadows>false</cast_shadows>
+          <geometry>
+            <box>
+              <size>92 61 .02</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.2 0.2 0.9 1</ambient>
+            <diffuse>0.2 0.2 0.9 1</diffuse>
+            <specular>0.1 0.1 0.3 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Not sure how to get correct scaling here with Blender. Things are pretty much correct though.
+         Best option would be to remake transdec model in Solidworks with proper measurements. -->
+    <model name="transdec">
+      <pose>0 0 .5  0 0 0</pose>
+      <static>true</static>
+      <link name="ground">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>file://transdec/transdec.dae</uri>
+              <scale>0.5 0.5 0.5</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/White</name>
+            </script>
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry>
+              <mesh>
+                <uri>file://transdec/transdec.dae</uri>
+                <scale>0.5 0.5 0.5</scale>
+              </mesh>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <include>
+      <name>transdec_pinger</name>
+      <uri>model://pinger</uri>
+      <pose>15 0 -2 0 0 0 </pose>
+    </include>
+
+    <scene>
+      <sky>
+        <clouds>
+          <speed>12</speed>
+        </clouds>
+      </sky>
+    </scene>
+  </world>
+</sdf>

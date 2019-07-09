@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <model name="torpedo">
+    <static>false</static>
+    <link name="body">
+      <!-- Change this to reflect real values -->
+      <inertial>
+        <mass>.022</mass>
+        <inertia>
+          <ixx>1.18</ixx>
+          <ixy>-0.003</ixy>
+          <ixz>0.04</ixz>
+          <iyy>1.431</iyy>
+          <iyz>-0.034</iyz>
+          <izz>1.262</izz>
+        </inertia>
+      </inertial>
+
+      <velocity_decay>
+        <linear>0.00001</linear>
+        <angular>0.00001</angular>
+      </velocity_decay>
+      <collision name='bodycol'>
+        <pose>0 0 0 0 1.57 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>.01</radius>
+            <length>.125</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="bodyvisual">
+        <pose>0 0 0 0 1.57 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>.01</radius>
+            <length>.125</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>1 0.55 0 1</ambient>
+        </material>
+      </visual>
+
+      <sensor name="contact" type="contact">
+        <contact>
+          <collision>bodycol</collision>
+        </contact>
+        <update_rate>50</update_rate>
+        <plugin name='gazebo_ros_bumper_controller' filename="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <bumperTopicName>contact_bumper</bumperTopicName>
+        </plugin>
+      </sensor>
+    </link>
+
+    <plugin name="torpedo_boyancy" filename="libsub8_buoyancy.so">
+      <fluid_density>1000</fluid_density>
+      <drag_coefficient>100</drag_coefficient>
+      <link name="body">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.0000156</volume>
+      </link>
+    </plugin>
+
+
+  </model>
+</sdf>
+
