@@ -1,0 +1,7 @@
+<launch>
+    <!-- Start rviz using the navigator.rviz -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find rviz_satellite)/launch/satellite.rviz"/>
+
+    <!--Launches the node that converts, publishing to /lla -->
+    <node pkg="navigator_tools" name="lla_conversion" type="coordinate_conversion_server.py"/>
+</launch>

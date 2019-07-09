@@ -1,0 +1,59 @@
+<?xml version="1.0" ?>
+<!-- World containing sandisland model and some course challenges -->
+<sdf version="1.6" xmlns:xacro="http://ros.org/wiki/xacro">
+  <world name="robotx_example_course">
+    <!-- Physics configured for 100 iterations / simulated second, 1/10 default for faster speed -->
+    <physics type="ode">
+      <!-- Iterations per real world second, target rtf / max_step_time -->
+      <!-- rtf / step -->
+      <real_time_update_rate>100</real_time_update_rate>
+      <!-- Time to step simulation forward each iteration -->
+      <max_step_size>0.01</max_step_size>
+    </physics>
+
+    <xacro:include filename="$(find vmrc_gazebo)/worlds/sandisland.xacro" />
+    <xacro:sandisland />
+
+    <include>
+      <uri>model://robotx_navigation_challenge</uri>
+      <pose>15 0 2 0 0 0</pose>
+    </include>
+
+    <include>
+      <uri>model://robotx_2018_entrance_gate</uri>
+      <pose>55 -50 0 0 0 -1.3</pose>
+    </include>
+
+    <include>
+      <uri>model://robotx_pinger</uri>
+      <pose>55 -50 0 0 0 -1.3</pose>
+    </include>
+
+    <!-- The 2018 dock with the two placards -->
+    <include>
+      <uri>model://dock_2018</uri>
+      <pose>120 -2.75 0 0 0 0</pose>
+    </include>
+
+    <!-- Obstacle course challenge -->
+    <include>
+      <uri>model://robotx_2018_qualifying_avoid_obstacles</uri>
+      <pose>-50 -90 0 0 0 0</pose>
+    </include>
+
+    <!-- Ring recovery challenge -->
+    <include>
+      <uri>model://ring_recovery_reference_buoy</uri>
+      <pose>65 20 0 0 0 0 </pose>
+    </include>
+
+    <!-- Find totems challenge -->
+    <include>
+      <uri>model://find_totems_challenge</uri>
+      <pose>35 50 0 0 0 0 </pose>
+    </include>
+
+    <!-- Run simulated PCODAR -->
+    <plugin name="pcodar_gazebo" filename="libpcodar_gazebo.so" />
+  </world>
+</sdf>

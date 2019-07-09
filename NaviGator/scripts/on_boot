@@ -1,0 +1,45 @@
+#!/bin/bash
+# This script is run by the navigator user when the main NaviGator computer starts.
+USER="navigator"
+
+# Location of proprietary repositories
+SDGPS_DIR="/home/$USER/sdgps/sdgps_current"
+SONAR_DIR="/home/$USER/sonar/software"
+
+# Command to connect to sylphase GPS/INS
+SDGPS="$SDGPS_DIR/build/main"
+ANTENNA_POSITION="[0.37465,-0.136525,0.587502]"
+GPS_CMD="(cd $SDGPS_DIR;sudo $SDGPS sylphase-usbgpsimu2 --antenna-position '$ANTENNA_POSITION' --use-imu1 ! tracker ! kf2 --decimation 10 ! listen-solution-tcp 1234)"
+
+# Command to connect to sylphase passive sonar
+SONAR_CMD="$SONAR_DIR/publish 7384"
+SONAR_CMD2="$SONAR_DIR/ros_bridge 127.0.0.1 7384"
+ROSCORE="roscore"
+
+# Name of tmux session
+SESSION="sdgps"
+
+# Tmux command
+TMUX="tmux"
+
+# Exit if script is run for second time
+if $TMUX has-session -t $SESSION 2> /dev/null; then
+    echo "$SESSION already created, aborting"
+    exit 0
+fi
+
+# Start tmux session
+$TMUX new-session -d -s ${SESSION} -n "roscore"
+
+# Start roscore in first window
+$TMUX send-keys -t $SESSION:0 "$ROSCORE" C-m
+
+# Start GPS driver in second window
+$TMUX new-window -t $SESSION:1 -n "sdgps"
+$TMUX send-keys -t $SESSION:1 "$GPS_CMD" C-m
+
+# Start passive sonar driver in third window
+$TMUX new-window -t $SESSION:2 -n "sonar"
+$TMUX send-keys -t $SESSION:2 "$SONAR_CMD" C-m
+$TMUX split-window -t $SESSION:2
+$TMUX send-keys -t $SESSION:2 "$SONAR_CMD2" C-m

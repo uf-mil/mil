@@ -1,0 +1,9 @@
+<launch>
+    <!-- Run Joystick -->
+    <include file="$(find navigator_launch)/launch/shore/xbox_controller.launch" />
+
+    <node name="network_heartbeat" pkg="mil_tools" type="network_broadcaster" output="screen" />
+
+    <!-- Host Monitoring -->
+    <node name="host_monitor" pkg="navigator_gui" type="host_monitor.py"/>
+</launch>

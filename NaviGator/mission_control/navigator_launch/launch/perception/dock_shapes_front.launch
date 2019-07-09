@@ -1,0 +1,13 @@
+<launch>
+  <node pkg="navigator_vision" type="shape_identification" name="shape_identification_front">
+    <rosparam file="$(find navigator_launch)/config/shape_finder_front.yaml" />
+    <param name="symbol_camera" value="/camera/front/right/image_rect_color"/>
+    <param name="image_transport" value="raw" />
+    <param name="get_shapes_topic" value="/vision/get_shapes_front" />
+    <param name="auto_start" value="false" />
+  </node>
+  <node pkg="mil_vision" type="camera_lidar_transformer" name="camera_lidar_transformer_front_right">
+    <param name="camera_to_lidar_transform_topic" value="/camera_to_lidar/front_right_cam" />
+    <param name="camera_info_topic" value="/camera/front/right/camera_info" />
+  </node>
+</launch>

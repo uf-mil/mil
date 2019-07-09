@@ -1,0 +1,22 @@
+# Point cloud builder
+accumulator_number_persistant_clouds : 15
+
+# Filter
+persistant_cloud_filter_min_neighbors : 20
+persistant_cloud_filter_radius : 0.25
+
+# Clusterer
+cluster_tolerance_m : 4.4
+cluster_min_points : 20
+cluster_max_points : 1000
+
+# Associator
+associator_max_distance : 5
+
+# Ogrid
+ogrid_height_meters : 500
+ogrid_width_meters : 500
+ogrid_resolution_meters_per_cell : 0.3
+ogrid_inflation_meters : 0.8
+
+classifications: ["buoy", "dock", "stc_platform", "totem_red", "totem_green", "totem_blue", "totem_yellow", "totem_black", "totem_white", "totem_gator", "UNKNOWN"]

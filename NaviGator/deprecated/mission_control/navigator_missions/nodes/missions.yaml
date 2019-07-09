@@ -1,0 +1,117 @@
+# <Name of mission from nav_missions folder>:
+#   object_dep: [<name_of_object_dependency_1>, <name_of_object_dependency_2>]
+      # ! These must be names the same this as the objects used in Ira's DB !
+#   mission_dep: <name_of_mission_dependency>
+      # ! This must be a mame that is the same as another mission in this file !
+#   is_base : <boolean>
+      # ! Whether or not the mission is the mission that is run whenever nothing else can be run!
+      # If it is a base mission, it cannot have any objects dependencies or mission dependencies
+
+    
+explore:
+  marker_dep: None
+  mission_dep: None
+  is_base: True
+  points: 100
+  min_time: 1
+  weight: 2
+  looking_for: None
+
+identify_dock:
+  marker_dep: "Dock"
+  mission_dep: "scan_the_code"
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  looking_for: None
+
+pinger:
+  marker_dep: None
+  mission_dep: None
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  mission_script: "pinger"
+  looking_for: None
+
+pinger_2:
+  marker_dep: None
+  mission_dep: "detect_deliver"
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  mission_script: "pinger"
+  looking_for: None
+
+coral_survey:
+  marker_dep: "CoralSurvey"
+  mission_dep: "pinger"
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  mission_script: "coral_survey"
+  looking_for: None
+
+detect_deliver:
+  marker_dep: "Shooter"
+  mission_dep: "identify_dock"
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  mission_script: "detect_deliver"
+  looking_for: None
+
+scan_the_code:
+  marker_dep: "Scan_The_Code"
+  mission_dep: "coral_survey"
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  mission_script: "scan_the_code"
+  looking_for: None
+
+# empty_start:
+#   marker_dep: "Dock"
+#   mission_dep: "None"
+#   is_base: False
+#   points: 100
+#   min_time: 1
+#   weight: 2
+#   looking_for: "None"
+
+# circle_tower:
+#   marker_dep: "BuoyField"
+#   mission_dep: "None"
+#   is_base: False
+#   points: 100
+#   min_time: 1
+#   weight: 2
+#   looking_for: "tower"
+
+
+# find_the_break:
+#   marker_dep: "FindBreak"
+#   mission_dep: "None"
+#   is_base: False
+#   points: 100
+#   min_time: 1
+#   weight: 2
+#   looking_for: "buoy"
+
+
+
+
+
+
+
+
+
+
+ 
+

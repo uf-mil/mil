@@ -1,0 +1,6 @@
+sensor_msgs/RegionOfInterest roi
+---
+bool success
+string error
+string OUTSIDE_OF_FRAME=OUTSIDE_OF_FRAME
+

@@ -1,0 +1,39 @@
+test_mission_1:
+  marker_dep: "ScanTheCode"
+  mission_dep: "None"
+  is_base: False
+  points: 100
+  min_time: 100
+  weight: 2
+  mission_script: "test_mission"
+  looking_for: "None"
+
+test_mission_2:
+  marker_dep: "Shooter"
+  mission_dep: "test_mission_1"
+  is_base: False
+  points: 100
+  min_time: 100
+  weight: 2
+  mission_script: "test_mission"
+  looking_for: "None"
+
+test_mission_3:
+  marker_dep: "ScanTheCode"
+  mission_dep: "test_mission_1"
+  is_base: False
+  points: 100
+  min_time: 100
+  weight: 2
+  mission_script: "test_mission"
+  looking_for: "None"
+
+base_mission:
+  marker_dep: "None"
+  mission_dep: "None"
+  is_base: True
+  points: 0
+  min_time: 0
+  weight: 0
+  mission_script: "test_base_mission_success"
+  looking_for: "None"

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>navigator_documentation</name>
+  <version>0.0.0</version>
+  <description>Documentation for the NaviGator AMS</description>
+  <maintainer email="kma1660+37@gmail.com">Kevin Allen</maintainer>
+  <license>TODO</license>
+  <doc_depend>graphviz</doc_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+</package>

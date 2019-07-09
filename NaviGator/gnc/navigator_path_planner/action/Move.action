@@ -1,0 +1,36 @@
+# Goal
+
+# Move types (actual functionality may vary in edge cases like short moves):
+# Ignore goal and set goal to current pose from odometry
+string HOLD=hold
+# rotate towards goal first then move to it, fast for long distance moves (default in move command)
+string DRIVE=drive
+# rotate towards goal WHILE moving to it
+string DRIVE_SMOOTH=drive!
+# try to maintain orientation while moving to goal, good for strafes / moving while looking at something
+string SKID=skid
+# special type for smooth circle and spiral moves
+string SPIRAL=sprial
+# immeditely pass goal to controller, no trajectory or obstacle avoidance
+string BYPASS=bypass
+string move_type
+
+geometry_msgs/Pose goal
+geometry_msgs/Point focus
+float64 initial_plan_time
+bool blind  # If True, ignore ogrid when planning move (no obstacle avoidance). Only use when safe!
+float64[] speed_factor
+
+---
+# Result
+
+string failure_reason
+
+---
+# Feedback
+
+string behavior
+int64 tree_size
+bool tracking
+float64[] distance
+float64 time_till_next_branch
