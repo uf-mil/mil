@@ -1,0 +1,5 @@
+<launch>
+    <node name="pcodar" pkg="point_cloud_object_detection_and_recognition" type="pcodar_node" output="screen">
+        <rosparam file="$(find point_cloud_object_detection_and_recognition)/launch/pcodar.yaml" />
+    </node>
+</launch>

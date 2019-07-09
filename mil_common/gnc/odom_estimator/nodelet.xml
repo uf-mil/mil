@@ -1,0 +1,7 @@
+<library path="lib/libodom_estimator_nodelet">
+  <class name="odom_estimator/nodelet" type="odom_estimator::Nodelet" base_class_type="nodelet::Nodelet">
+    <description> 
+      Odometry estimator
+    </description>
+  </class>
+</library>

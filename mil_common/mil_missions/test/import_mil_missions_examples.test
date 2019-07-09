@@ -1,0 +1,6 @@
+<launch>
+  <test pkg="mil_missions" type="test_import_missions.py" test-name="import_missions"
+        args="mil_missions_examples ExampleBaseMission">
+  </test>
+
+</launch>
