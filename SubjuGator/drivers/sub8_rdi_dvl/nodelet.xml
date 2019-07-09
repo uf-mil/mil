@@ -1,0 +1,7 @@
+<library path="lib/librdi_explorer_dvl_nodelet">
+  <class name="rdi_explorer_dvl/nodelet" type="rdi_explorer_dvl::Nodelet" base_class_type="nodelet::Nodelet">
+    <description> 
+      rdi_explorer_dvl
+    </description>
+  </class>
+</library>

@@ -1,0 +1,14 @@
+std_msgs/Header header
+string name
+uint8 node_id
+float32 effort
+float32 thrust
+float32 power
+float32 rpm
+float32 bus_v
+float32 bus_i
+float32 temp
+uint8 fault
+uint32 command_tx_count
+uint32 status_rx_count
+float32 command_latency_avg

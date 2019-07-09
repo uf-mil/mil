@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <model name="pathmarkers2018">
+    <static>true</static>
+    <link name="pathmarkers2018">
+
+    <!-- Change this to reflect real values -->
+
+    <inertial>
+      <mass>.5</mass>
+      <inertia>
+        <ixx>0</ixx>
+        <ixy>0</ixy>
+        <ixz>0</ixz>
+        <iyy>0</iyy>
+        <iyz>0</iyz>
+        <izz>0</izz>
+      </inertia>
+    </inertial>
+    <velocity_decay>
+      <linear>0.00001</linear>
+      <angular>0.00001</angular>
+    </velocity_decay>
+
+
+      <!--- Stolen again from the Torpedo for now. -->
+      <collision name='pathmarkers2018col'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>file://markers/PathMarkers2018s.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+
+      <sensor name="contact" type="contact">
+        <contact>
+          <collision>pathmarkers2018col</collision>
+        </contact>
+        <update_rate>50</update_rate>
+        <plugin name='gazebo_ros_bumper_controller' filename="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <bumperTopicName>contact_bumper</bumperTopicName>
+        </plugin>
+      </sensor>
+
+      <visual name="pathmarkers2018vis">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>file://markers/PathMarkers2018s.dae</uri>
+          </mesh>
+        </geometry>
+  </model>
+</sdf>

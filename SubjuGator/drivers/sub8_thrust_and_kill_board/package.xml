@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>sub8_thrust_and_kill_board</name>
+  <version>0.0.0</version>
+  <description>The sub8_thrust_and_kill_board package</description>
+  <maintainer email="Allen@todo.todo">Kevin Allen</maintainer>
+  <license>MIT</license>
+  <author >Kevin Allen</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>mil_usb_to_can</build_depend>
+  <build_export_depend>mil_usb_to_can</build_export_depend>
+  <exec_depend>mil_usb_to_can</exec_depend>
+</package>

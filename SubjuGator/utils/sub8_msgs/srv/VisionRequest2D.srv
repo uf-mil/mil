@@ -1,0 +1,12 @@
+string target_name
+---
+# Pose, stamped at the time of image receipt
+std_msgs/Header header
+# Pose angle should be angle in radians w.r.t the image vertical, where 0 is directly up
+geometry_msgs/Pose2D pose
+int16 max_x
+int16 max_y
+
+sensor_msgs/CameraInfo camera_info
+
+bool found
