@@ -11,3 +11,4 @@ from .ball_drop_test import BallDropTest
 from .torpedos_test import TorpedosTest
 from .gripper_test import GripperTest
 from .strip import Strip
+from .ball_drop import BallDrop
