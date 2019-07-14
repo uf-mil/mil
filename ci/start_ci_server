@@ -1,0 +1,20 @@
+#!/bin/bash
+if [ -z "$BUILDKITE_AGENT_TOKEN" ]; then
+  echo "BUILDKITE_AGENT_TOKEN not set"
+  echo "Please get agent token from https://buildkite.com/organizations/uf-mil/agents"
+  echo "Then run command again like:"
+  echo "BUILDKITE_AGENT_TOKEN=<token> ./run_ci"
+  exit 1
+fi
+
+mkdir -p /var/lib/buildkite/builds
+
+docker run \
+  -v "/var/lib/buildkite/builds:/var/lib/buildkite/builds" \
+  -v "/var/run/docker.sock:/var/run/docker.sock" \
+  -e "BUILDKITE_BUILD_PATH=/var/lib/buildkite/builds" \
+  -i \
+  -t \
+  --rm \
+  --name buildkite-agent \
+  uf-mil:ci-server start --token $BUILDKITE_AGENT_TOKEN

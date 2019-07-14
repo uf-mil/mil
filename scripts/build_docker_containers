@@ -1,0 +1,9 @@
+#!/bin/bash
+set -euo pipefail
+DOCKER_BASE_PATH="$(realpath $(dirname $BASH_SOURCE)/../docker)"
+sudo docker build $DOCKER_BASE_PATH/base -t uf-mil:base
+sudo docker build $DOCKER_BASE_PATH/dev -t uf-mil:dev
+sudo docker build $DOCKER_BASE_PATH/ci-build -t uf-mil:ci-build
+sudo docker build $DOCKER_BASE_PATH/ci-server -t uf-mil:ci-server
+
+
