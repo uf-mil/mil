@@ -34,7 +34,7 @@ class BallDrop(SubjuGator):
         fprint('Connecting camera')
 
         cam_info_sub = yield self.nh.subscribe(
-            '/camera/front/left/camera_info',
+            '/camera/down/camera_info',
             CameraInfo)
 
         fprint('Obtaining cam info message')

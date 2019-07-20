@@ -237,6 +237,7 @@ class _ActuatorProxy(object):
     @util.cancellableInlineCallbacks
     def drop_marker(self):
         yield self.pulse(2)
+        yield self.pulse(3)
         return
 
 
