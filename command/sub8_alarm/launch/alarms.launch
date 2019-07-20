@@ -16,7 +16,7 @@
     </rosparam>
 
     <!-- Alarm specific params -->
-    <param name="height_over_bottom" type="double" value="0.4" />    <!-- meters -->
+    <param name="height_over_bottom" type="double" value="0.2" />    <!-- meters -->
     <param name="thruster_loss_limit" type="int" value="2" />        <!-- thrusters -->
     <param name="battery/warn_voltage" type="double" value="44.5" /> <!-- volts -->
     <param name="battery/kill_voltage" type="double" value="44.0" /> <!-- volts -->
