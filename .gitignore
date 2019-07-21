@@ -1,3 +1,10 @@
+# Sphinx output
+docs/_build
+
+# Editor cache files
+*.swo
+*.swp
+
 # Prerequisites
 *.d
 

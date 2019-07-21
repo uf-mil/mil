@@ -1,0 +1,4 @@
+#!/bin/bash
+source /opt/ros/melodic/setup.bash
+catkin_make -C $MIL_WS run_tests
+catkin_test_results $MIL_WS/build/test_results --verbose
