@@ -1,14 +1,16 @@
 #!/bin/bash
-echo "--- :hammer: Setup"
+echo "--- :boot: Setup"
 # Stop script if any command fails
 set -euo pipefail
 # Cache the location of the mil workspace using the location of this script
 MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
 export MIL_WS="$(realpath $MIL_DIR/../..)"
-ls -alhr $MIL_WS
 
 echo "--- :hammer: Build repository"
 $MIL_DIR/ci/build
 
-echo "--- :hammer: Run tests"
+echo "--- :running: Run tests"
 $MIL_DIR/ci/run_tests
+
+echo "--- :book: Build docs"
+$MIL_DIR/ci/build_docs

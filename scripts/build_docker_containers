@@ -1,11 +1,28 @@
 #!/bin/bash
 set -euo pipefail
+
+# Exit if not root, as docker won't work
+# TODO: actually check if user has docker permissions
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be run as root. Please run again with sudo"
+  exit 1
+fi
+
+# Allow the tag name to have prefix, used by CI
+MIL_DOCKER_TAG_ROOT=${MIL_DOCKER_TAG_ROOT:-"uf-mil"}
+
+# Quite mode so will only output if something goes wrong
 DOCKER_ARGS="-q"
+
+# Cache path in repo where dockerfiles are
 DOCKER_BASE_PATH="$(realpath $(dirname $BASH_SOURCE)/../docker)"
+
 build_mil_docker_image()
 {
-  sudo docker build $DOCKER_ARGS $DOCKER_BASE_PATH/$1 -t uf-mil:$1
+  docker build $DOCKER_ARGS $DOCKER_BASE_PATH/$1 -t $MIL_DOCKER_TAG_ROOT:$1
 }
+
+# Build each of the images
 build_mil_docker_image base
 build_mil_docker_image dev
 build_mil_docker_image ci-build

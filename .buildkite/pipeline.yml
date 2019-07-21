@@ -1,8 +1,10 @@
 steps:
+  - name: "BUILDCONTAINERS"
+    command: "MIL_DOCKER_TAG_ROOT=uf-mil-commit-${BUILDKITE_COMMIT} ./scripts/build_docker_containers"
   - name: "BUILD"
     command: "./ci/run_ci"
     plugins:
       - docker#v3.3.0:
-          image: uf-mil:ci-build
+          image: uf-mil-commit-${BUILDKITE_COMMIT}:ci-build
           mount-buildkite-agent: false
           workdir: /home/mil-ci/catkin_ws/src/mil

@@ -5,6 +5,9 @@ RUN useradd --uid 10000 --create-home --shell /bin/bash mil-ci \
   && echo "" >> /etc/sudoers \
   && echo "mil-ci ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
+# For docs generation
+RUN apt install -y python3-pip && pip3 install sphinx recommonmark
+
 # Switch to the new user
 USER mil-ci
 WORKDIR /home/mil-ci
