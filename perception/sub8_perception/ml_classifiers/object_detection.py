@@ -12,8 +12,8 @@ Hence, this script opens a ROS Enable service, that will open up a subprocess
 on enable, and close it on disable.
 '''
 
-# Exec names without the .py
-exec_names = ['dice_detection', 'path_localizer']
+# Exec instructions
+exec_names = ['vamp', 'stake', 'garlic']
 
 # Store subprocesses in global
 alive_processes = {}
@@ -37,7 +37,7 @@ class launcher(object):
             rospy.loginfo('Enabling {}'.format(self.name))
             # Open up a subprocess under PID
             alive_processes[self.name] = subprocess.Popen(
-                'rosrun sub8_perception {}.py'.format(self.name),
+		'rosrun sub8_perception localizer.py --{}'.format(self.name),
                 shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,

@@ -11,7 +11,7 @@ class Guess:
     def __init__(self):
         rospy.sleep(1.0)
         self.items = [
-            'pinger_surface', 'pinger_shooter', 'vampire_slayer'
+            'pinger_surface', 'pinger_shooter', 'vampire_slayer', 'start_gate1', 'start_gate2'
         ]
         self.guess_service = rospy.Service('guess_location', GuessRequest,
                                            self.request_location)
@@ -41,7 +41,7 @@ class Guess:
         spacer = 0
         for i in self.items:
             self.markers.append(InteractiveMarker())
-            self.markers[spacer].header.frame_id = "map"
+            self.markers[spacer].header.frame_id = "/map"
             self.markers[spacer].name = i
             self.markers[spacer].description = i
             self.markers[spacer].controls.append(box_control)

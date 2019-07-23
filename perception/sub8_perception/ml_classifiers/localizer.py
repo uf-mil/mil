@@ -55,12 +55,12 @@ class classifier(object):
             self.target = 'vamp'
             self.classes = 4
             self.see_sub = mil_tools.Image_Subscriber(
-              topic="/camera/front/right/image_raw", callback=self.img_callback)
+              topic="/camera/front/left/image_raw", callback=self.img_callback)
         else:  
             self.target = 'stake'
             self.classes = 1
             self.see_sub = mil_tools.Image_Subscriber(
-              topic="/camera/front/right/image_raw", callback=self.img_callback)
+              topic="/camera/front/left/image_raw", callback=self.img_callback)
         # Number of frames
         self.num_frames = rospy.get_param('~num_frames', 0)
         # Number of objects we detect
@@ -146,12 +146,13 @@ class classifier(object):
         if len(bbox) > 0:
           pointx = (bbox[0][0] + bbox[1][0]) /2 
           pointy = (bbox[0][1] + bbox[1][1]) /2
-          pointxdist = bbox[0][0] - bbox[1][0]
-          pointydist = bbox[0][1] - bbox[1][1]
-          msg = Point(x=pointx, y=pointy, z=-1)
-          print("Point: ", pointx, "Point: ", pointy)
+          pointxdist = abs(bbox[0][0] - bbox[1][0])
+          pointydist = abs(bbox[0][1] - bbox[1][1])
+          print(pointxdist)
+          msg = Point(x=pointx, y=pointy, z=self.see_sub.last_image_time.to_sec())
+          print("X: ", pointx, "Y: ", pointy, "TIMESTAMP: ", msg.z)
           self.bbox_pub.publish(msg)
-          roi = RegionOfInterest(x_offset=bbox[0][0], y_offset=bbox[0][1], height = pointydist, width=pointxdist)
+          roi = RegionOfInterest(x_offset=int(bbox[0][0]), y_offset=int(bbox[0][1]), height = int(pointydist), width=int(pointxdist))
           self.roi_pub.publish(roi)
         
           

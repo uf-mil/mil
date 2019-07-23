@@ -1,7 +1,7 @@
 <launch>
-  <arg name="tensorflow" default="True" />
-  <arg name="torp" default="True" />
-
+  <arg name="tensorflow" default="False" />
+  <arg name="torp" default="False" />
+  <arg name="threed" default="True" />
   <!-- roslaunch sub8_launch perception.launch color_calibration:=gazebo_color_calibration.yaml -->
   <arg name="color_calibration" default="default_color_calibration.yaml" />
 
@@ -11,6 +11,8 @@
   <group ns="vision">
     <node if="$(arg torp)" pkg="sub8_perception" type="torpedo_target_acq.py" name="arm_torpedos" output="screen">
       <rosparam file="$(find sub8_launch)/config/torpedo_target_acq.yaml" command="load"/>
+    </node>
+    <node if="$(arg threed)" pkg="sub8_perception" type="observation_pub.py" name="xyz_points" output="screen">
     </node>
     <node if="$(arg tensorflow)" pkg="sub8_perception" type="object_detection.py" name="object_detection" output="screen">
       <rosparam file="$(find sub8_launch)/config/path_localizer.yaml" command="load" />

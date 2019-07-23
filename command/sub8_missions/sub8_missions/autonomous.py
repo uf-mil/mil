@@ -10,6 +10,8 @@ from .start_gate import StartGate
 from .pinger import Pinger
 from .surface import Surface
 from .vampire_slayer import VampireSlayer
+from .arm_torpedos import FireTorpedos
+from .ball_drop import BallDrop
 
 
 fprint = text_effects.FprintFactory(title="AUTO_MISSION").fprint
@@ -52,8 +54,7 @@ class Autonomous(SubjuGator):
                         yield self.run_mission(Surface(), 30)
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')
-                        yield self.move.yaw_right_deg(179).go(speed=0.4)
-                        yield self.move.yaw_right_deg(179).go(speed=0.4)
+                        yield self.run_mission(FireTorpedos(), 400)
 
             # Go to the other pinger mission and do respective mission
             completed = yield self.run_mission(Pinger(), 400)
@@ -67,12 +68,12 @@ class Autonomous(SubjuGator):
 
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')
-                        yield self.move.yaw_right_deg(179).go(speed=0.4)
-                        yield self.move.yaw_right_deg(179).go(speed=0.4)
+                        yield self.run_mission(FireTorpedos(), 400)
 
             fprint("Vampire Slayer")
             yield self.run_mission(VampireSlayer(), 400)
             fprint("Garlic drop?")
+            yield self.rub_mission(BallDrop(), 400)
 
         except Exception as e:
             fprint("Error in Chain 1 missions!", msg_color="red")

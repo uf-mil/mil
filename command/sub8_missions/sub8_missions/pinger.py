@@ -20,7 +20,7 @@ FREQUENCY_TOL = 3000
 PINGER_HEIGHT = 0.75  # how high to go above pinger after found
 MOVE_AT_DEPTH = 0.5  # how low to swim and move
 
-POSITION_TOL = 0.075  # how close to pinger before quiting
+POSITION_TOL = 0.09  # how close to pinger before quiting
 Z_POSITION_TOL = -0.53
 
 
@@ -132,7 +132,7 @@ class Pinger(SubjuGator):
                                                            pinger_2_req)
                 fprint('Transformed guess: {}'.format(pinger_guess))
                 # Check if the pinger aligns with guess
-                check, vec = self.check_with_guess(vec, pinger_guess)
+                # check, vec = self.check_with_guess(vec, pinger_guess)
 
             fprint('move to {}'.format(vec))
             yield self.fancy_move(self, vec)

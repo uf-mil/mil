@@ -6,8 +6,8 @@ orange_rectangle:
     root: "/vision/orange_rectangle"
 buoy:
     root: "/vision/buoys"
-arm_torpedos:
-    root: "/vision/arm_torpedos"
+xyz_points:
+    root: "/vision/xyz_points"
 the_path:
     root: "/vision/the_path"
 start_gate:

@@ -12,6 +12,7 @@ from std_srvs.srv import SetBool, SetBoolRequest
 from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 
 import mil_ros_tools
+import rospy
 
 fprint = text_effects.FprintFactory(title="BALL_DROP", msg_color="cyan").fprint
 
@@ -19,14 +20,23 @@ SPEED = 0.25
 FAST_SPEED = 1
 
 SEARCH_HEIGHT = 1.5
-HEIGHT_BALL_DROPER = 0.5
-TRAVEL_DEPTH = 0.5  # 2
+HEIGHT_BALL_DROPER = 0.75
+TRAVEL_DEPTH = 0.75  # 2
 
 
 class BallDrop(SubjuGator):
 
     @util.cancellableInlineCallbacks
     def run(self, args):
+        try:
+          ree = rospy.ServiceProxy('/vision/garlic/enable', SetBool)
+          resp = ree(True)
+          if not resp:
+            print("Error, failed to init neural net.")
+            return
+        except rospy.ServiceException, e:
+          print("Service Call Failed")
+
         fprint('Enabling cam_ray publisher')
 
         yield self.nh.sleep(1)
