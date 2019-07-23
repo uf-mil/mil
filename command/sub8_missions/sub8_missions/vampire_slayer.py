@@ -10,6 +10,9 @@ from geometry_msgs.msg import Point, Vector3
 from visualization_msgs.msg import Marker
 from mil_misc_tools import text_effects
 from std_srvs.srv import SetBool, SetBoolRequest
+from visualization_msgs.msg import Marker, MarkerArray
+from mil_misc_tools import FprintFactory
+from mil_ros_tools import rosmsg_to_numpy
 
 from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 
@@ -21,11 +24,15 @@ pub_cam_ray = None
 
 SPEED = 0.25
 
-
+X_OFFSET = 0
+Y_OFFSET = 0
+Z_OFFSET = 0
 class VampireSlayer(SubjuGator):
 
     @util.cancellableInlineCallbacks
     def run(self, args):
+        self.vision_proxies.xyz_points.start()
+
         global SPEED
         global pub_cam_ray
         fprint('Enabling cam_ray publisher')
@@ -47,87 +54,100 @@ class VampireSlayer(SubjuGator):
      #   enable_service = self.nh.get_service_client("/vamp/enable", SetBool)
      #   yield enable_service(SetBoolRequest(data=True))
 
-        try:
-            vamp_txros = yield self.nh.get_service_client('/guess_location',
-                                                          GuessRequest)
-            vamp_req = yield vamp_txros(GuessRequestRequest(item='vampire_slayer'))
-            if vamp_req.found is False:
-                use_prediction = False
-                fprint(
-                    'Forgot to add vampires to guess?',
-                    msg_color='yellow')
-            else:
-                fprint('Found vamires.', msg_color='green')
-                yield self.move.set_position(mil_ros_tools.rosmsg_to_numpy(vamp_req.location.pose.position)).depth(0.5).go(speed=0.4)
-        except Exception as e:
-            fprint(e)
+#        try:
+#            vamp_txros = yield self.nh.get_service_client('/guess_location',
+#                                                          GuessRequest)
+#            vamp_req = yield vamp_txros(GuessRequestRequest(item='vampire_slayer'))
+#            if vamp_req.found is False:
+#                use_prediction = False
+#                fprint(
+#                    'Forgot to add vampires to guess?',
+#                    msg_color='yellow')
+#            else:
+#                fprint('Found vampires.', msg_color='green')
+#                yield self.move.set_position(mil_ros_tools.rosmsg_to_numpy(vamp_req.location.pose.position)).depth(0.5).go(speed=0.4)
+#        except Exception as e:
+#            fprint(e)
 
-        dice_sub = yield self.nh.subscribe('/bbox_pub', Point)
+        markers = MarkerArray()
+        pub_markers = yield self.nh.advertise('/torpedo/rays', MarkerArray)
+        pub_markers.publish(markers)
+        '''
+        Move Pattern
+        '''
+        yield self.move.left(1).go()
+        yield self.nh.sleep(2)
+        yield self.move.right(2).go()
+        yield self.nh.sleep(2)
+        yield self.move.down(.5).go()
+        yield self.nh.sleep(2)
+        yield self.move.up(.5).go()
+        yield self.move.forward(.75).go()
+        yield self.nh.sleep(2)
+        yield self.move.right(.75).go()
+        yield self.nh.sleep(2)
+        yield self.move.backward(.75).go()
+        yield self.move.left(1).go()
+        '''
+        Did we find something?
+        '''
+        res = yield self.vision_proxies.xyz_points.get_pose(
+            target='buoy')
+        MISSION = 'Vampires'
+        print_info = FprintFactory(title=MISSION).fprint
+        
+        if res.found:
+            print_info("CHARGING BUOY")
+            target_pose = rosmsg_to_numpy(res.pose.pose.position)
+            target_normal = rosmsg_to_numpy(res.pose.pose.orientation)[:2]
+            print('Normal: ', target_normal)
+            yield self.move.go(blind=True, speed=0.1)  # Station hold
+            transform = yield self._tf_listener.get_transform('/map', '/base_link')
+            target_position = target_pose
+#            target_position = target_pose / target_normal
+            
+            
 
-        found = {}
-        history_tf = {}
-        while len(found) != 1:
-            fprint('Getting target vampire xy')
-            dice_xy = yield dice_sub.get_next_message()
-            found[dice_xy.z] = mil_ros_tools.rosmsg_to_numpy(dice_xy)[:2]
-            fprint(found)
-            out = yield self.get_transform(model, found[dice_xy.z])
-            history_tf[dice_xy.z] = out
+            sub_pos = yield self.tx_pose()
+            print('Current Sub Position: ', sub_pos)
 
-        # yield enable_service(SetBoolRequest(data=False))
+            print('Map Position: ', target_position)
+            #sub_pos = transform._q_mat.dot(sub_pos[0] - transform._p)
+            #target_position = target_position - sub_pos[0]
+            # yield self.move.look_at_without_pitching(target_position).go(blind=True, speed=.25)
+            #yield self.move.relative(np.array([0, target_position[1], 0])).go(blind=True, speed=.1)
+            # Don't hit buoy yet
+            print("MOVING TO X: ", target_position[0])
+            print("MOVING TO Y: ", target_position[1])
+            yield self.move.set_position(np.array([target_position[0], target_position[1], target_position[2]])).go(
+                blind=True, speed=.1)
+            # Go behind it
+            #print('Going behind target')
+            #yield self.move.right(4).go(speed=1)
+            #yield self.move.forward(4).go(speed=1)
+            #yield self.move.left(4).go(speed=1)
+            # Hit buoy
+            #print('Hitting Target')
+            #yield self.move.strafe_backward(Y_OFFSET).go(speed=1)
+            print_info(
+                "Slaying the Vampire, good job Inquisitor.")
+            sub_pos = yield self.tx_pose()
+            print('Current Sub Position: ', sub_pos)
+            marker = Marker(
+                ns='buoy',
+                action=visualization_msgs.Marker.ADD,
+                type=Marker.ARROW,
+                scale=Vector3(0.2, 0.5, 0),
+                points=np.array([Point(0, 0, 0),
+                                    res.pose.pose.position]))
+            marker.id = 3
+            marker.header.frame_id = '/base_link'
+            marker.color.r = 1
+            marker.color.g = 0
+            marker.color.a = 1
+            markers.markers.append(marker)
+            pub_markers.publish(markers)
 
-        start = self.move.zero_roll_and_pitch()
-        yield start.go()
-
-        for i in range(1):
-            fprint('Hitting Vampire {}'.format(i))
-            # Get one of the dice
-            dice, xy = found.popitem()
-            fprint('Vampire: {}'.format(dice))
-            ray, base = history_tf[dice]
-
-            where = base + 3 * ray
-
-            fprint(where)
-            fprint('Moving!', msg_color='yellow')
-            fprint('Current position: {}'.format(self.pose.position))
-            fprint('zrp')
-            yield self.move.zero_roll_and_pitch().go(blind=True)
-            yield self.nh.sleep(4)
-            fprint('hitting', msg_color='yellow')
-            yield self.move.look_at(where).go(blind=True, speed=SPEED)
-            yield self.nh.sleep(4)
-            yield self.move.set_position(where).go(blind=True, speed=SPEED)
-            yield self.nh.sleep(4)
-            fprint('going back', msg_color='yellow')
-            yield start.go(blind=True, speed=SPEED)
-            yield self.nh.sleep(4)
-
-    @util.cancellableInlineCallbacks
-    def get_transform(self, model, point):
-        fprint('Projecting to 3d ray')
-        ray = np.array(model.projectPixelTo3dRay(point))
-        fprint("ddray {}".format(ray))
-        fprint('Transform')
-        transform = yield self._tf_listener.get_transform('/map', 'front_left_cam_optical')
-        ray = transform._q_mat.dot(ray)
-        # ray = ray / np.linalg.norm(ray)
-        marker = Marker(
-            ns='vamp',
-            action=visualization_msgs.Marker.ADD,
-            type=Marker.ARROW,
-            scale=Vector3(0.2, 0.2, 2),
-            points=np.array([
-                Point(transform._p[0], transform._p[1], transform._p[2]),
-                Point(transform._p[0] + ray[0], transform._p[1] + ray[1],
-                      transform._p[2] + ray[2]),
-            ]))
-        marker.header.frame_id = '/map'
-        marker.color.r = 0
-        marker.color.g = 1
-        marker.color.b = 0
-        marker.color.a = 1
-        global pub_cam_ray
-        pub_cam_ray.publish(marker)
-        fprint('ray: {}, origin: {}'.format(ray, transform._p))
-        defer.returnValue((ray, transform._p))
+            yield self.nh.sleep(0.5)  # Throttle service calls
+            # print_info(info)
+            self.vision_proxies.xyz_points.stop()

@@ -7,6 +7,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -rdynamic -Wall -std=c++11 "
 find_package(catkin
   REQUIRED COMPONENTS
     roscpp
+    dynamic_reconfigure
     rospy
     eigen_conversions
     rostime
@@ -24,6 +25,10 @@ find_package(catkin
 )
 
 catkin_python_setup()
+
+generate_dynamic_reconfigure_options(
+  cfg/VampireIdentifier.cfg
+)
 
 catkin_package(
   INCLUDE_DIRS
