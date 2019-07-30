@@ -61,17 +61,10 @@ class BallDrop(SubjuGator):
      #   yield enable_service(SetBoolRequest(data=True))
 
         try:
-            save_pois = rospy.ServiceProxy(
-                '/poi_server/save_to_param', Trigger)
-            _ = save_pois();
-            if not rospy.has_param('/poi_server/initial_pois/ball_drop'):
-                use_prediction = False
-                fprint(
-                    'Forgot to add ball_drop to guess?',
-                    msg_color='yellow')
-            else:
-                fprint('Found ball_drop.', msg_color='green')
-                yield self.move.set_position(np.array(rospy.get_param('/poi_server/initial_pois/ball_drop'))).depth(TRAVEL_DEPTH).go(speed=FAST_SPEED)
+            position = yield self.poi.get('ball_drop')
+            
+            fprint('Found ball_drop: {}'.format(position), msg_color='green')
+            yield self.move.look_at_without_pitching(position).set_position(position).depth(TRAVEL_DEPTH).go(speed=FAST_SPEED)
         except Exception as e:
             fprint(str(e) + 'Forgot to run guess server?', msg_color='yellow')
 

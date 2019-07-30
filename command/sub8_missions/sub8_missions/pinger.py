@@ -19,6 +19,7 @@ ALPHA = 30000
 BETA = 40000
 CHARLIE = 25000
 DELTA = 35000
+SCHWARTZ = 37000
 
 SPEED = 0.75
 FREQUENCY = ALPHA
@@ -44,23 +45,14 @@ class Pinger(SubjuGator):
         use_prediction = True
 
         try:
-            save_pois = rospy.ServiceProxy(
-                '/poi_server/save_to_param', Trigger)
-            _ = save_pois();
-            if rospy.has_param('/poi_server/initial_pois/pinger_shooter') and\
-               rospy.has_param('/poi_server/initial_pois/pinger_surface'):
-                fprint('Found two pinger guesses', msg_color='green')
-                pinger_1_req = rospy.get_param('/poi_server/initial_pois/pinger_surface')
-                pinger_2_req = rospy.get_param('/poi_server/initial_pois/pinger_shooter')
+            pinger_1_req = yield self.poi.get('pinger_surface')
+            pinger_2_req = yield self.poi.get('pinger_shooter')
+            fprint('Found two pinger guesses {} {}'.format(pinger_1_req, pinger_2_req), msg_color='green')
 
-                # check \/
-                pinger_guess = yield self.transform_to_baselink(
-                    self, pinger_1_req, pinger_2_req)
-                fprint(pinger_guess)
-            else:
-                use_prediction = False
-                fprint('Forgot to add pinger to guess server?',
-                        msg_color='yellow')
+            # check \/
+            pinger_guess = yield self.transform_to_baselink(
+                self, pinger_1_req, pinger_2_req)
+            fprint(pinger_guess)
         except Exception as e:
             fprint(
                 'Failed to /guess_location. Procceding without guess',

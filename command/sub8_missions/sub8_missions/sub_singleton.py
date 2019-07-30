@@ -27,6 +27,8 @@ from twisted.internet import defer
 import os
 import yaml
 
+from mil_poi import TxPOIClient
+
 
 class VisionProxy(object):
     '''General Interface for communicating with perception nodes.
@@ -264,6 +266,7 @@ class SubjuGator(BaseMission):
         cls.actuators = _ActuatorProxy(cls.nh)
         cls.test_mode = False
         cls.pinger_sub = yield cls.nh.subscribe('/hydrophones/processed', ProcessedPing)
+        cls.poi = TxPOIClient(cls.nh)
 
     @property
     def pose(self):

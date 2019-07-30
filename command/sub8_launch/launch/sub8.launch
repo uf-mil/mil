@@ -39,5 +39,9 @@
     <rosparam command="load" file="$(find sub8_launch)/launch/initial_pois.yaml" />
   </node>
 
+  <!-- Launch bluview and pointcloud generation -->
+  <include file="$(find sub8_launch)/launch/subsystems/blueview.launch" />
+  <include file="$(find sub8_pointcloud)/launch/ogrid.launch" />
+
 
 </launch>

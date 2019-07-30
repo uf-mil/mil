@@ -50,17 +50,17 @@ class classifier(object):
             self.target = 'garlic'
             self.classes = 1
             self.see_sub = mil_tools.Image_Subscriber(
-              topic="/camera/down/image_raw", callback=self.img_callback)
+              topic="/camera/down/image_rect_color", callback=self.img_callback)
         elif self.vamp:
             self.target = 'vamp'
             self.classes = 4
             self.see_sub = mil_tools.Image_Subscriber(
-              topic="/camera/front/left/image_raw", callback=self.img_callback)
+              topic="/camera/front/left/image_rect_color", callback=self.img_callback)
         else:  
             self.target = 'stake'
             self.classes = 1
             self.see_sub = mil_tools.Image_Subscriber(
-              topic="/camera/front/left/image_raw", callback=self.img_callback)
+              topic="/camera/front/left/image_rect_color", callback=self.img_callback)
         # Number of frames
         self.num_frames = rospy.get_param('~num_frames', 0)
         # Number of objects we detect

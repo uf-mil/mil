@@ -27,6 +27,8 @@ SPEED = 0.25
 X_OFFSET = 0
 Y_OFFSET = 0
 Z_OFFSET = 0
+
+USE_POI = False
 class VampireSlayer(SubjuGator):
 
     @util.cancellableInlineCallbacks
@@ -54,20 +56,11 @@ class VampireSlayer(SubjuGator):
      #   enable_service = self.nh.get_service_client("/vamp/enable", SetBool)
      #   yield enable_service(SetBoolRequest(data=True))
 
-#        try:
-#            vamp_txros = yield self.nh.get_service_client('/guess_location',
-#                                                          GuessRequest)
-#            vamp_req = yield vamp_txros(GuessRequestRequest(item='vampire_slayer'))
-#            if vamp_req.found is False:
-#                use_prediction = False
-#                fprint(
-#                    'Forgot to add vampires to guess?',
-#                    msg_color='yellow')
-#            else:
-#                fprint('Found vampires.', msg_color='green')
-#                yield self.move.set_position(mil_ros_tools.rosmsg_to_numpy(vamp_req.location.pose.position)).depth(0.5).go(speed=0.4)
-#        except Exception as e:
-#            fprint(e)
+        if USE_POI:
+            vamp_req = yield self.poi.get('vampire_slayer')
+            yield self.move.set_position(vamp_req).depth(2).go(speed=0.4)
+        else:
+            fprint('Not using POI')
 
         markers = MarkerArray()
         pub_markers = yield self.nh.advertise('/torpedo/rays', MarkerArray)

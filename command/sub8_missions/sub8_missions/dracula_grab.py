@@ -51,22 +51,6 @@ class DraculaGrabber(SubjuGator):
      #   enable_service = self.nh.get_service_client("/vamp/enable", SetBool)
      #   yield enable_service(SetBoolRequest(data=True))
 
-        try:
-            save_pois = rospy.ServiceProxy(
-                '/poi_server/save_to_param', Trigger)
-            _ = save_pois();
-            if not rospy.has_param('/poi_server/initial_pois/dracula'):
-                dracula_req = yield vamp_txros(GuessRequestRequest(item='dracula'))
-                use_prediction = False
-                fprint(
-                    'Forgot to add dracula to guess?',
-                    msg_color='yellow')
-            else:
-                fprint('Found dracula.', msg_color='green')
-                yield self.move.set_position(np.array(rospy.get_param('/poi_server/initial_pois/dracula'))).depth(TRAVEL_DEPTH).go(speed=FAST_SPEED)
-        except Exception as e:
-            fprint(str(e) + 'Forgot to run guess server?', msg_color='yellow')
-
         dracula_sub = yield self.nh.subscribe('/bbox_pub', Point)
         yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
 
