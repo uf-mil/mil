@@ -268,15 +268,26 @@ class _SonarPointcloud(object):
         return
 
 
-        #u = 
-
     def distance(ray, point):
-        pass
-        #num = np.abs(ray[1] * points[0] - ray[0] * points[1] + 
-        
+        '''
+        point: np.array of n elements
 
-
-
+        ray: list of 2 np.arrays of n elements
+            [0] == origin
+            [1] == unit vector
+        source: https://stackoverflow.com/questions/5227373/minimal-perpendicular-vector-between-a-point-and-a-line
+        '''
+        closest_point_on_vecotr =\
+            ray[0] + ((P-ray[0]).dot(ray[1]) * ray[1])
+       return np.linalg.norm(point - closest_point_on_vector) 
+        # possible code for cone filter:
+        # v0 = (point - ray[0]) / np.norm(point - ray[0])
+        # v1 = ray[1]
+        # angle = math.acos(np.clip(np.dot(v0,v1),-1.0,1.0))
+        # if angle > max_angle_diff:
+        #     return False
+        # else:
+        #     return True
 
 
 class SubjuGator(BaseMission):
