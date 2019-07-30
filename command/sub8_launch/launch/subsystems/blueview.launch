@@ -12,7 +12,7 @@
             # How often to send output (raw data / images), seconds
             period_seconds: -1.0
             range:
-              stop: 15
+              stop: 40
             range_profile_intensity_threshold: 0
             noise_threshold: 0.2
         </rosparam>

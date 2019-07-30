@@ -15,8 +15,8 @@
             min_intensity: 0
 
             # Statistical Outlier remove
-            statistical_mean_k: 90
-            statistical_stddev_mul_thresh: 1
+            statistical_mean_k: 120
+            statistical_stddev_mul_thresh: 0.8
 
             # Euclidian Clustering
             cluster_tolerance_m: 0.5

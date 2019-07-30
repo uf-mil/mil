@@ -20,9 +20,9 @@ fprint = text_effects.FprintFactory(title="BALL_DROP", msg_color="cyan").fprint
 SPEED = 0.25
 FAST_SPEED = 1
 
-SEARCH_HEIGHT = 1.5
-HEIGHT_BALL_DROPER = 0.75
-TRAVEL_DEPTH = 0.75  # 2
+SEARCH_HEIGHT = 3
+HEIGHT_BALL_DROPER = 2.3
+TRAVEL_DEPTH = 1  # 2
 
 
 class BallDrop(SubjuGator):

@@ -24,6 +24,8 @@ DIST_AFTER_GATE = 1
 
 RIGHT_OR_LEFT = 1
 
+DEPTH=1.5
+
 
 class StartGate(SubjuGator):
 
@@ -34,6 +36,8 @@ class StartGate(SubjuGator):
         fprint('Found odom')
         fprint('Begin search for gates')
         rotate_start = self.move.zero_roll_and_pitch()
+        fprint('Going down')
+        yield self.move.depth(DEPTH).go(speed=CAREFUL_SPEED)
         for i in range(4):
             # Search 4 quadrants seperated by 90 degrees for the gate
             fprint('Searching {} degrees'.format(90 * i))
@@ -128,7 +132,7 @@ class StartGate(SubjuGator):
     def find_gate(self, objects,
                   ray,
                   min_distance_away=2.85,
-                  max_distance_away=3.3,
+                  max_distance_away=10.3,
                   perp_threshold=0.5,
                   depth_threshold=1):
         '''

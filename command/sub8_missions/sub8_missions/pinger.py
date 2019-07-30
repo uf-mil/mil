@@ -15,14 +15,19 @@ from .sub_singleton import SubjuGator
 
 fprint = text_effects.FprintFactory(title="PINGER", msg_color="cyan").fprint
 
+ALPHA = 30000
+BETA = 40000
+CHARLIE = 25000
+DELTA = 35000
+
 SPEED = 0.75
-FREQUENCY = 37000
+FREQUENCY = ALPHA
 FREQUENCY_TOL = 3000
 
-PINGER_HEIGHT = 0.75  # how high to go above pinger after found
-MOVE_AT_DEPTH = 0.5  # how low to swim and move
+PINGER_HEIGHT = 1.6 # how high to go above pinger after found
+MOVE_AT_DEPTH = 1.5  # how low to swim and move
 
-POSITION_TOL = 0.09  # how close to pinger before quiting
+POSITION_TOL = 0.1  # how close to pinger before quiting
 Z_POSITION_TOL = -0.53
 
 

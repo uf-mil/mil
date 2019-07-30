@@ -32,7 +32,7 @@ class CLAHE_generator:
         self.bridge = CvBridge()
 
         # Image Subscriber and Camera Information
-
+        self.image_sub_3 = Image_Subscriber("/camera/down/image_raw", self.image_cb_down)
         self.image_sub = Image_Subscriber(self.camera, self.image_cb)
         self.camera_info = self.image_sub.wait_for_camera_info()
         '''
@@ -50,7 +50,8 @@ class CLAHE_generator:
         self.camera_model.fromCameraInfo(self.camera_info)
         self.frame_id = self.camera_model.tfFrame()
 
-        self.image_pub = Image_Publisher("CLAHE/debug")
+        self.image_pub = Image_Publisher("CLAHE/front/left")
+        self.image_pub_3 = Image_Publisher("CLAHE/down")
 
         # Debug
         self.debug = rospy.get_param('~debug', True)
@@ -70,8 +71,12 @@ class CLAHE_generator:
             self.tf_listener.clear()
 
         self.last_image_time = self.image_sub.last_image_time
-        self.CLAHE(image)
-        print('published')
+        cv_image = self.CLAHE(image)
+        self.image_pub.publish(cv_image)
+
+    def image_cb_down(self, image):
+        cv_image = self.CLAHE(image)
+        self.image_pub_3.publish(cv_image)
 
     def CLAHE(self, cv_image):
         '''
@@ -89,8 +94,7 @@ class CLAHE_generator:
 
         lab = cv2.merge((l2, a, b))  # merge channels
         cv_image = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
-
-        self.image_pub.publish(cv_image)
+        return(cv_image)
 
 
 def main(args):
