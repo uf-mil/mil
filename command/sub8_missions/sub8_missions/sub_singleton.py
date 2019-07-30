@@ -167,7 +167,7 @@ class _PoseProxy(object):
         # End goal can't be above the water
         if self._pose.position[2] > 0:
             print "GOAL TOO HIGH"
-            self._pos.position = -0.6
+            self._pos.position = -0.5
 
     def go(self, *args, **kwargs):
         if self.print_only:
@@ -184,7 +184,6 @@ class _PoseProxy(object):
         traj = self._sub._trajectory_pub.publish(
             self._pose.as_PoseTwistStamped(*args, **kwargs))
         return traj
-
 
 class _ActuatorProxy(object):
     '''
@@ -242,6 +241,43 @@ class _ActuatorProxy(object):
         yield self.pulse(3, time=0.25)
         return
 
+class _SonarPointcloud(object):
+
+    def __init__(self, nh):
+        self._plane_subscriber = nh.subscribe('/ogrid_pointcloud/point_cloud/plane', PointCloud2)
+        self.nh = nh
+
+    @util.cancellableInlineCallbacks
+    def get_group_of_points(self, ray, ray_tolerance=0.1, min_points=1, cluster_radius=0.1):
+        '''
+            Given a ray, find the closest point in the current point plane that intercepts the ray
+
+            ray: a ray - xyz
+            ray_tolerance: how close a point can be to the ray
+            min_points: for clustering, how many points should surrond the hit point
+            cluster_radius: the radius to consider clustering 
+        '''
+
+        last_point_plane = self._plane_subscriber.get_last_message()
+
+        gen = np.asarray(list(pc2.read_points(last_point_plane, skip_nans=True, field_names=('x', 'y', 'z'))))
+
+        for p in gen:
+            print(p)
+
+        return
+
+
+        #u = 
+
+    def distance(ray, point):
+        pass
+        #num = np.abs(ray[1] * points[0] - ray[0] * points[1] + 
+        
+
+
+
+
 
 class SubjuGator(BaseMission):
     def __init__(self, **kwargs):
@@ -264,6 +300,7 @@ class SubjuGator(BaseMission):
 
         cls.vision_proxies = _VisionProxies(cls.nh, 'vision_proxies.yaml')
         cls.actuators = _ActuatorProxy(cls.nh)
+        cls.plane_sonar = _SonarPointcloud(cls.nh)
         cls.test_mode = False
         cls.pinger_sub = yield cls.nh.subscribe('/hydrophones/processed', ProcessedPing)
         cls.poi = TxPOIClient(cls.nh)
