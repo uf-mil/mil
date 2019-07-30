@@ -1,4 +1,6 @@
 from txros import util
+import rospy
+from std_srvs.srv import Trigger
 import numpy as np
 import mil_ros_tools
 from mil_misc_tools import text_effects
@@ -21,14 +23,11 @@ class StartGateGuess(SubjuGator):
 
       sub_start_position, sub_start_orientation = yield self.tx_pose()
 
-      gate_txros = yield self.nh.get_service_client('/guess_location',
-                                                   GuessRequest)
-      gate_1_req = yield gate_txros(GuessRequestRequest(item='start_gate1'))
-      gate_2_req = yield gate_txros(GuessRequestRequest(item='start_gate2'))
-
-      gate_1 = mil_ros_tools.rosmsg_to_numpy(gate_1_req.location.pose.position)
-      gate_2 = mil_ros_tools.rosmsg_to_numpy(gate_2_req.location.pose.position)
-
+      save_pois = rospy.ServiceProxy(
+                '/poi_server/save_to_param', Trigger)
+      _ = save_pois();
+      gate_1 = np.array(rospy.get_param('/poi_server/initial_pois/start_gate1'))
+      gate_2 = np.array(rospy.get_param('/poi_server/initial_pois/start_gate2'))
       #mid = (gate_1 + gate_2) / 2
       #mid = gate_1
       fprint('Found mid {}'.format(gate_1))

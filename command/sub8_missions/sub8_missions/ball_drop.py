@@ -13,6 +13,7 @@ from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 
 import mil_ros_tools
 import rospy
+from std_srvs.srv import Trigger
 
 fprint = text_effects.FprintFactory(title="BALL_DROP", msg_color="cyan").fprint
 
@@ -60,17 +61,17 @@ class BallDrop(SubjuGator):
      #   yield enable_service(SetBoolRequest(data=True))
 
         try:
-            vamp_txros = yield self.nh.get_service_client('/guess_location',
-                                                          GuessRequest)
-            ball_drop_req = yield vamp_txros(GuessRequestRequest(item='ball_drop'))
-            if ball_drop_req.found is False:
+            save_pois = rospy.ServiceProxy(
+                '/poi_server/save_to_param', Trigger)
+            _ = save_pois();
+            if not rospy.has_param('/poi_server/initial_pois/ball_drop'):
                 use_prediction = False
                 fprint(
                     'Forgot to add ball_drop to guess?',
                     msg_color='yellow')
             else:
                 fprint('Found ball_drop.', msg_color='green')
-                yield self.move.set_position(mil_ros_tools.rosmsg_to_numpy(ball_drop_req.location.pose.position)).depth(TRAVEL_DEPTH).go(speed=FAST_SPEED)
+                yield self.move.set_position(np.array(rospy.get_param('/poi_server/initial_pois/ball_drop'))).depth(TRAVEL_DEPTH).go(speed=FAST_SPEED)
         except Exception as e:
             fprint(str(e) + 'Forgot to run guess server?', msg_color='yellow')
 

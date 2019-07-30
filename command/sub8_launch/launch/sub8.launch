@@ -34,4 +34,10 @@
   <include file="$(find sub8_launch)/launch/subsystems/passive_sonar.launch">
     <arg name="environment" value="$(arg environment)" />
   </include>
+
+  <node pkg="mil_poi" type="poi_server" name="poi_server">
+    <rosparam command="load" file="$(find sub8_launch)/launch/initial_pois.yaml" />
+  </node>
+
+
 </launch>
