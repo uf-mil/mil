@@ -277,8 +277,7 @@ class _SonarPointcloud(object):
             [1] == unit vector
         source: https://stackoverflow.com/questions/5227373/minimal-perpendicular-vector-between-a-point-and-a-line
         '''
-        closest_point_on_vecotr =\
-            ray[0] + ((P-ray[0]).dot(ray[1]) * ray[1])
+        closest_point_on_vector = ray[0] + ((P-ray[0]).dot(ray[1]) * ray[1])
        return np.linalg.norm(point - closest_point_on_vector) 
         # possible code for cone filter:
         # v0 = (point - ray[0]) / np.norm(point - ray[0])
