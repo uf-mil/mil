@@ -34,5 +34,5 @@ class StartGateGuess(SubjuGator):
 
       fprint('Going!')
       yield self.move.set_position(mid).depth(DEPTH).go(speed=SPEED)
-      yield self.nh.sleep(2).go()
+      yield self.nh.sleep(2)
       yield self.move.forward(3).go(speed=SPEED)

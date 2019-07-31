@@ -26,7 +26,7 @@ FREQUENCY = ALPHA
 FREQUENCY_TOL = 3000
 
 PINGER_HEIGHT = 3 # how high to go above pinger after found
-MOVE_AT_DEPTH = 1.5  # how low to swim and move
+MOVE_AT_DEPTH = 0.6  # how low to swim and move
 
 POSITION_TOL = 0.1  # how close to pinger before quiting
 Z_POSITION_TOL = -0.53

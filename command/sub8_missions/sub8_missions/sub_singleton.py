@@ -298,16 +298,16 @@ class _SonarPointcloud(object):
         # Solve for normal vector
         p1 = m * cluster_2d[0, 0] + b
         p2 = m * cluster_2d[-1, 0] + b
-        vec = np.array([cluster_2d[0, 0], p2]) - \
-            np.array([cluster_2d[-1, 0], p1])
+        vec = np.array([cluster_2d[0, 0], p1]) - \
+            np.array([cluster_2d[-1, 0], p2])
         vec = vec / np.linalg.norm(vec)
-        vec_perp = np.array([[0, -1], [1, 0]]).dot(vec)
+        vec_perp = np.array([vec[1], -vec[0]])
 
         vec_perp = vec_perp if ray[1][:2].dot(vec_perp) < 0 else -vec_perp
 
         markers = MarkerArray()
         marker = Marker(ns='map', type=Marker.ARROW, action=visualization_msgs.Marker.ADD, scale=Vector3(
-            0.2, 0.5, 0), points=np.array([Point(cluster_2d[0, 0], p1, 0), Point(cluster_2d[-1, 0], p2, 0)]))
+            0.2, 0.5, 0), points=np.array([Point(cluster_2d[0, 0], p1, 0), Point(cluster_2d[0, 0] + vec[0], p1 + vec[1], 0)]))
         marker.id = 1000
         marker.header.frame_id = '/map'
         marker.color.a = 1
@@ -315,7 +315,7 @@ class _SonarPointcloud(object):
         markers.markers.append(marker)
 
         marker = Marker(ns='map', type=Marker.ARROW, action=visualization_msgs.Marker.ADD, scale=Vector3(
-            0.2, 0.5, 0), points=np.array([Point(cluster_2d[0, 0], p1, 0), Point(cluster_2d[-1, 0]+vec_perp[0], p2 + vec_perp[1], 0)]))
+            0.2, 0.5, 0), points=np.array([Point(cluster_2d[0, 0], p1, 0), Point(cluster_2d[0, 0]+vec_perp[0], p2 + vec_perp[1], 0)]))
         marker.id = 1001
         marker.header.frame_id = '/map'
         marker.color.a = 1
@@ -323,7 +323,7 @@ class _SonarPointcloud(object):
         markers.markers.append(marker)
 
         marker = Marker(ns='map', type=Marker.ARROW, action=visualization_msgs.Marker.ADD, scale=Vector3(
-            0.2, 0.5, 0), points=np.array([Point(ray[0][0], ray[0][1], 0), Point(ray[0][0]+ray[1][0], ray[0][1] + ray[1][0], 0)]))
+            0.2, 0.5, 0), points=np.array([Point(ray[0][0], ray[0][1], ray[0][2]), Point(ray[0][0]+ray[1][0], ray[0][1] + ray[1][0], ray[0][2]+ray[1][2])]))
         marker.id = 1002
         marker.header.frame_id = '/map'
         marker.color.a = 1
@@ -345,6 +345,8 @@ class _SonarPointcloud(object):
             marker.color.r = 1
             markers.markers.append(marker)
         self.cls.pub_markers.publish(markers)
+
+        vec_perp = np.array([vec_perp[0], vec_perp[1], 0])
 
         return (pc[0], vec_perp)
 

@@ -11,7 +11,7 @@ from .start_gate_guess import StartGateGuess
 from .pinger import Pinger
 from .surface import Surface
 from .vampire_slayer import VampireSlayer
-from .arm_torpedos import FireTorpedos
+from .arm_torpedos import ArmTorpedos
 from .ball_drop import BallDrop
 
 
