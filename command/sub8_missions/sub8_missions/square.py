@@ -1,5 +1,6 @@
 from .sub_singleton import SubjuGator
 from txros import util
+import numpy as np
 
 SIDE_LENGTH = 1  # meters
 SPEED_LIMIT = .2  # m/s
