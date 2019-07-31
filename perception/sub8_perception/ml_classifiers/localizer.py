@@ -22,6 +22,7 @@ from sensor_msgs.msg import RegionOfInterest
 from utils import detector_utils  # noqa
 from mil_ros_tools import numpy_to_point2d
 import rospkg
+from sub8_perception import CLAHEGenerator
 
 rospack = rospkg.RosPack()
 
@@ -39,6 +40,8 @@ class classifier(object):
         parser.add_argument('-s', '--stake', action='store_true',
                             help='Sets up Network for the Torpedo Board')
         args= parser.parse_args()
+
+        self.generator = CLAHEGenerator()
 
         self.tf_listener = tf.TransformListener()
 
@@ -120,6 +123,7 @@ class classifier(object):
            # return None
         
         cv_image = data
+        cv_image = generator.CLAHE(cv_image)
         cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
         self.im_height, self.im_width, channels  = cv_image.shape
         print("Height ", self.im_height, " Width: ", self.im_width)

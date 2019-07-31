@@ -2,7 +2,7 @@ from txros import util
 import tf
 import rospy
 import numpy as np
-from mil_ros_tools import rosmsg_to_numpy
+import mil_ros_tools
 import visualization_msgs.msg as visualization_msgs
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3
@@ -10,209 +10,106 @@ from mil_misc_tools import FprintFactory
 from .sub_singleton import SubjuGator
 
 MISSION = 'Torpedo Challenge'
-
-
-class Target(object):
-
-    def __init__(self):
-        self.position = None
-        self.destroyed = False
-
-    def set_destroyed(self):
-        self.destroyed = True
-
-    def update_position(self, pos):
-        self.position = pos
-
-
-class FireTorpedos(SubjuGator):
-    '''
-    Mission to solve the torpedo RoboSub challenge.
-
-    This code was based off of the Buoy mission code written by Kevin Allen.
-    Its goal is to search for a target on the torpedo board and fire at it.
-    '''
-    TIMEOUT_SECONDS = 15
-    Z_PATTERN_RADIUS = 1
-    X_PATTERN_RADIUS = 1.0
-    X_OFFSET = .2
-    Z_OFFSET = .2
-    BACKUP_METERS = 3.0
-    BLIND = True
-    def __init__(self):
-        self.print_info = FprintFactory(title=MISSION).fprint
-        self.print_bad = FprintFactory(title=MISSION, msg_color="red").fprint
-        self.print_good = FprintFactory(
-            title=MISSION, msg_color="green").fprint
-
-        # B = bottom; T = Top; L = left; R = right; C = center; O = unblocked;
-        # X = blocked;
-        self.targets = {
-            'TCX': Target(),
-            'TRX': Target(),
-            'TLX': Target(),
-            'BCO': Target()
-        }
-        self.pattern_done = False
-        self.done = False
-        self.ltime = None
-
-    def generate_pattern(self):
-        z = self.Z_PATTERN_RADIUS
-        X = self.X_PATTERN_RADIUS
-        self.moves = [[0, X, -z], [0, -X, 0], [0, X, z], [0, -X, 0]]
-        self.move_index = 0
+SPEED = .75
+class ArmTorpedos(SubjuGator):
 
     @util.cancellableInlineCallbacks
-    def search(self):
-        global markers
-        markers = MarkerArray()
-        pub_markers = yield self.nh.advertise('/torpedo/rays', MarkerArray)
-        while True:
-            info = 'CURRENT TARGETS: '
-
-            target = 'BCO'
-            pub_markers.publish(markers)
-            '''
-            In the event we want to attempt other targets beyond bare minimum
-            for target in self.targets. Eventually we will want to take the
-            best target, which is the TCX target. Priority targetting will
-            come once we confirm we can actually unblock currently blocked
-            targets.
-            '''
-            print("REQUESTING POSE")
-            res = yield self.vision_proxies.xyz_points.get_pose(
-                target='board')
-            if res.found:
-                print("POSE FOUND!")
-                self.ltime = res.pose.header.stamp
-                self.targets[target].update_position(
-                    rosmsg_to_numpy(res.pose.pose.position))
-                self.normal = rosmsg_to_numpy(res.pose.pose.orientation)[:3]
-                marker = Marker(
-                    ns='torp_board',
-                    action=visualization_msgs.Marker.ADD,
-                    type=Marker.ARROW,
-                    scale=Vector3(0.2, 0.5, 0),
-                    points=np.array([Point(0, 0, 0),
-                                     res.pose.pose.position]))
-                marker.id = 3
-                marker.header.frame_id = '/base_link'
-                marker.color.r = 1
-                marker.color.g = 0
-                marker.color.a = 1
-                markers.markers.append(marker)
-            if self.targets[target].position is not None:
-                print("TARGET IS NOT NONE")
-                info += target + ' '
-            yield self.nh.sleep(0.1)  # Throttle service calls
-            self.print_info(info)
-
-    @util.cancellableInlineCallbacks
-    def pattern(self):
-        self.print_info('Descending to Depth...')
-        #yield self.move.depth(1.5).go(blind=self.BLIND, speed=0.1)
-        yield self.move.left(1).go(blind=self.BLIND, speed=0.5)
-        yield self.nh.sleep(2)
-        yield self.move.right(2).go(blind=self.BLIND, speed=0.5)
-        yield self.nh.sleep(2)
-        yield self.move.left(1).go(blind=self.BLIND, speed=0.5)
-        yield self.nh.sleep(2)
-        yield self.move.down(0.5).go(blind=self.BLIND,speed=0.5)
-        yield self.nh.sleep(2)
-        #def err():
-            #self.print_info('Search pattern canceled')
-
-        #self.pattern_done = False
-        #for i, move in enumerate(self.moves[self.move_index:]):
-            #move = self.move.relative(np.array(move)).go(blind=self.BLIND, speed=0.1)
-            #yield self.nh.sleep(2)
-            #move.addErrback(err)
-            #yield move
-            #self.move_index = i + 1
-        #self.print_bad('Pattern finished. Firing at any locked targets.')
-        #self.pattern_done = True
-
-    @util.cancellableInlineCallbacks
-    def fire(self, target):
-        self.print_info("FIRING {}".format(target))
-        target_pose = self.targets[target].position
-        yield self.move.go(blind=self.BLIND, speed=0.1)  # Station hold
-        transform = yield self._tf_listener.get_transform('/map', '/base_link')
-        # target_position = transform._q_mat.dot(
-        #         target_pose - transform._p)
-
-        sub_pos = yield self.tx_pose()
-        print('Current Sub Position: ', sub_pos)
-
-        #sub_pos = transform._q_mat.dot(
-        #        (sub_pos[0]) - transform._p)
-        #target_position = sub_pos[0] - target_pose
-        print('Moving to Target Position: ', target_pose)
-        target_position = target_pose + self.normal
-        # yield self.move.look_at_without_pitching(target_position).go(
-        #     blind=self.BLIND, speed=.25)
-        print('Target normal: ', self.normal)
-        print('Point: ', target_position)
-        yield self.move.set_position(np.array([target_position[0], target_position[1], target_position[2]])).go(blind=True, speed=.5)
-
-        self.print_good(
-            "{} locked. Firing torpedos. Hit confirmed, good job Commander.".
-            format(target))
-        sub_pos = yield self.tx_pose()
-        print('Current Sub Position: ', sub_pos)
-        yield self.actuators.shoot_torpedo1()
-        yield self.actuators.shoot_torpedo2()
-        self.done = True
-
-    def get_target(self):
-        target = 'BCO'
-        '''
-        Returns the target we are going to focus on. Loop through priorities.
-        Highest priority is the TCX target, followed by the TRX and TLX.
-        Lowest priority is the BCO target. Targets are ordered in the list
-        already, so this will take the first target it can actually find.
-        Currently this will always by the BCO target. This is because we don't
-        differentiate between targets currently as we cannot unblock the
-        blocked ones. This means there is only one target for us to lock onto.
-        '''
-        if self.targets[target].destroyed:
-            pass
-            # temp = target
-        elif self.targets[target].position is not None:
-            return target
-        elif self.pattern_done and self.targets[target].position is not None:
-            return target
+    def run(self):
+        global SPEED
+        yaw = tf.transformations.euler_from_quaternion(rot, 'syxz')[0]
+        if abs(yaw) > 180:
+            yield self.move.look_at([0, 0, 0]).go()
+            yield self.sleep(2)
+            yield self.move.forward(1).go()
+            yield self.sleep(2)
+            yield self.move.set_depth(1.8).go()
+            yield self.sleep(2)
+            yield self.move.yaw_right(160).go()
         else:
-            return None
+            yield self.sleep(2)
+            yield self.move.back(1).go()
+            yield self.sleep(2)
+            yield self.move.set_depth(1.8).go()
+    
+        fprint('Beginning Torpedo Mission')
+        yield self.move.forward
+
+        pub_cam_ray = yield self.nh.advertise('/torp/cam_ray', Marker)
+
+        yield self.nh.sleep(1)
+
+        fprint('Connecting camera')
+
+        cam_info_sub = yield self.nh.subscribe('/camera/front/left/camera_info',
+                                            CameraInfo)
+
+        fprint('Obtaining cam info message')
+        cam_info = yield cam_info_sub.get_next_message()
+        model = PinholeCameraModel()
+        model.fromCameraInfo(cam_info)
+
+        enable_service = self.nh.get_service_client("/stake/enable", SetBool)
+        yield enable_service(SetBoolRequest(data=True))
+
+        torp_sub = yield self.nh.subscribe('/roi_pub', RegionOfInterest)
+
+        torp_roi = yield torp_sub.get_next_message()
+        x0 = roi.x_offset
+        y0 = roi.y_offset
+        height = roi.height
+        width = roi.width
+        torp_xy = [x0+(width/2), y0+(height/2)]
+
+        out = yield get_transform(sub, model, torp_xy)
+        point, norm = self.plane_sonar.get_group_of_points((self.pose.position, ray))
+        dest = point + norm
+
+        start = sub.move.zero_roll_and_pitch()
+
+        yield start.go()
+
+        fprint(dest)
+        fprint('Moving!', msg_color='yellow')
+        fprint('Current position: {}'.format(sub.pose.position))
+        fprint('zrp')
+        yield sub.move.zero_roll_and_pitch().go(blind=True)
+        yield self.nh.sleep(4)
+        fprint('hitting', msg_color='yellow')
+        yield sub.move.look_at(dest).go(blind=True, speed=SPEED)
+        yield self.nh.sleep(4)
+        yield sub.move.set_position(dest).go(blind=True, speed=SPEED)
+        yield self.nh.sleep(4)
+        fprint('going back', msg_color='yellow')
+        yield start.go(blind=True, speed=SPEED)
+        yield self.nh.sleep(4)
+
 
     @util.cancellableInlineCallbacks
-    def run(self, args):
-        # start_time = yield self.nh.get_time()  # Store time mission
-        # starts for timeout
+    def get_transform(sub, model, point):
+        fprint('Projecting to 3d ray')
+        ray = np.array(model.projectPixelTo3dRay(point))
+        fprint('Transform')
+        transform = yield sub._tf_listener.get_transform('/map', 'front_left_cam_optical')
+        ray = transform._q_mat.dot(ray)
+        ray = ray / np.linalg.norm(ray)
+        marker = Marker(
+            ns='dice',
+            action=visualization_msgs.Marker.ADD,
+            type=Marker.ARROW,
+            scale=Vector3(0.2, 0.2, 2),
+            points=np.array([
+                Point(transform._p[0], transform._p[1], transform._p[2]),
+                Point(transform._p[0] + ray[0], transform._p[1] + ray[1],
+                    transform._p[2] + ray[2]),
+            ]))
+        marker.header.frame_id = '/map'
+        marker.color.r = 0
+        marker.color.g = 1
+        marker.color.b = 0
+        marker.color.a = 1
+        global pub_cam_ray
+        pub_cam_ray.publish(marker)
+        fprint('ray: {}, origin: {}'.format(ray, transform._p))
+        defer.returnValue(ray)
 
-        self.print_info("Enabling Perception")
-        self.print_info("{}, Ree".format(self.vision_proxies.xyz_points))
-        self.vision_proxies.xyz_points.start()
-        yield self.move.backward(2).go()
-        yield self.move.depth(3.08).go()
-        self.generate_pattern()
-        pattern = self.pattern()
-        self.do_search = True
-        search = self.search()
-        while not self.done:
-            t = self.get_target()
-            if t is not None:
-                pattern.cancel()
-                yield self.fire(t)
-                self.targets[t].set_destroyed()
-                if not self.done:
-                    pattern = self.pattern()
-            elif self.pattern_done:
-                break
-            yield self.nh.sleep(0.1)
-        search.cancel()
-        pattern.cancel()
-        self.vision_proxies.xyz_points.stop()
-        self.print_good('Done!')
 
