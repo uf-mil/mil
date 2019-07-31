@@ -9,6 +9,8 @@ from geometry_msgs.msg import Point
 from mil_misc_tools import text_effects
 from std_srvs.srv import SetBool, SetBoolRequest
 
+
+
 from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 
 import mil_ros_tools
@@ -54,8 +56,8 @@ class DraculaGrabber(SubjuGator):
         yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
 
         self.vision_proxies.vampire_identifier.start()
-        pattern = [np.ndarray([1,1,0])]
-        search = Searcher(self, self.vision_proxies.vampire_identifier.get_pose(target='a'), pattern)
+        pattern = [np.array([1,1,0])]
+        search = Searcher(self, self.vision_proxies.vampire_identifier.get_2d, pattern)
         yield search.start_search()
 
         '''

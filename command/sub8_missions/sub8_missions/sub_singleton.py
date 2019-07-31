@@ -81,6 +81,7 @@ class VisionProxy(object):
                 VisionRequest2DRequest(target_name=target))
         except (serviceclient.ServiceError):
             return None
+        print 'exiting get_2d'
         return pose
 
     def get_pose(self, target='', in_frame=None):
@@ -369,7 +370,9 @@ class Searcher(object):
                 for pose in self.search_pattern:
                     print "SEARCHER - going to next position."
                     if type(pose) == list or type(pose) == np.ndarray:
+                        print 'going to ', pose
                         yield self.sub.move.relative(pose).go(speed=speed)
+                        print 'went to ', pose
                     else:
                         yield pose.go()
 
@@ -394,7 +397,9 @@ class Searcher(object):
         spotings = 0
         print "SEARCHER - Looking for object."
         while True:
+            print 'asking vision'
             resp = yield self.vision_proxy()
+            print 'asked sucessful'
             if resp.found:
                 print "SEARCHER - Object found! {}/{}".format(
                     spotings + 1, spotings_req)

@@ -77,9 +77,9 @@ class VampireIdentifier:
         self.frame_id = self.camera_model.tfFrame()
 
         # Ros Services so mission can be toggled and info requested
-        self.enable_service = rospy.Service('~enable', SetBool, self.toggle_search)
+        self.enable_service = rospy.Service('/vision/vampire_identifier/enable', SetBool, self.toggle_search)
         self.image_pub = Image_Publisher("drac_vision/debug")
-        self.point_service = rospy.Service('~2D', VisionRequest2D, self.request)
+        self.point_service = rospy.Service('/vision/vampire_identifier/2D', VisionRequest2D, self.request)
         self.point_pub = rospy.Publisher(
             "/yellow_vectors", Point, queue_size=1)
         self.mask_image_pub = rospy.Publisher(
