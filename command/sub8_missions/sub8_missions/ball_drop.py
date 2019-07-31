@@ -70,8 +70,8 @@ class BallDrop(SubjuGator):
 
         ball_drop_sub = yield self.nh.subscribe('/bbox_pub', Point)
         yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
-
-        while True:
+        i = 0
+        while i < 20:
             fprint('Getting location of ball drop...')
             ball_drop_msg = yield ball_drop_sub.get_next_message()
             ball_drop_xy = mil_ros_tools.rosmsg_to_numpy(ball_drop_msg)[:2]
@@ -87,6 +87,7 @@ class BallDrop(SubjuGator):
             vec2 = np.append(vec2, 0)
 
             yield self.move.relative_depth(vec2).go(speed=SPEED)
+            i+=1
 
         fprint('Centered, going to depth {}'.format(HEIGHT_BALL_DROPER))
         yield self.move.to_height(HEIGHT_BALL_DROPER).zero_roll_and_pitch().go(speed=SPEED)

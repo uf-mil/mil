@@ -53,8 +53,8 @@ class DraculaGrabber(SubjuGator):
 
         dracula_sub = yield self.nh.subscribe('/yellow_vectors', Point)
         yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
-
-        while True:
+        i = 0
+        while i < 20:
             fprint('Getting location of dracula...')
             dracula_msg = yield dracula_sub.get_next_message()
             dracula_xy = mil_ros_tools.rosmsg_to_numpy(dracula_msg)[:2]
@@ -70,6 +70,7 @@ class DraculaGrabber(SubjuGator):
             vec2 = np.append(vec2, 0)
 
             yield self.move.relative_depth(vec2).go(speed=SPEED)
+            i+=1
 
         fprint('Centered, going to depth {}'.format(HEIGHT_DRACULA_GRABBER))
         yield self.move.to_height(HEIGHT_DRACULA_GRABBER).zero_roll_and_pitch().go(speed=SPEED)
