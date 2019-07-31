@@ -28,6 +28,9 @@ import os
 import yaml
 
 from mil_poi import TxPOIClient
+import visualization_msgs.msg as visualization_msgs
+from visualization_msgs.msg import Marker, MarkerArray
+from geometry_msgs.msg import Point, Vector3
 
 
 class VisionProxy(object):
@@ -185,6 +188,7 @@ class _PoseProxy(object):
             self._pose.as_PoseTwistStamped(*args, **kwargs))
         return traj
 
+
 class _ActuatorProxy(object):
     '''
     Wrapper for making service calls to pneumatic valve board.
@@ -241,34 +245,110 @@ class _ActuatorProxy(object):
         yield self.pulse(3, time=0.25)
         return
 
+
 class _SonarPointcloud(object):
 
-    def __init__(self, nh):
-        self._plane_subscriber = nh.subscribe('/ogrid_pointcloud/point_cloud/plane', PointCloud2)
+    def __init__(self, nh, cls):
+        self._plane_subscriber = nh.subscribe(
+            '/ogrid_pointcloud/point_cloud/plane', PointCloud2)
         self.nh = nh
+        self.cls = cls
 
-    @util.cancellableInlineCallbacks
-    def get_group_of_points(self, ray, ray_tolerance=0.1, min_points=1, cluster_radius=0.1):
+    def get_group_of_points(self, ray, min_points=50, cluster_radius=1):
         '''
-            Given a ray, find the closest point in the current point plane that intercepts the ray
+            Given a ray, find the closest point in the current point plane that intercepts the ray and return a normal in that range
 
-            ray: a ray - xyz
-            ray_tolerance: how close a point can be to the ray
+            ray: a ray - [0] == origin, [1] == unit vector
             min_points: for clustering, how many points should surrond the hit point
             cluster_radius: the radius to consider clustering 
+
+            Example:
+                x = yield self.plane_sonar.get_group_of_points((self.pose.position, np.array([1,0,0])))
         '''
 
+        # Get plane ping
         last_point_plane = self._plane_subscriber.get_last_message()
 
-        gen = np.asarray(list(pc2.read_points(last_point_plane, skip_nans=True, field_names=('x', 'y', 'z'))))
+        pc = np.asarray(list(pc2.read_points(last_point_plane,
+                                             skip_nans=True, field_names=('x', 'y', 'z'))))
 
-        for p in gen:
-            print(p)
+        # Get closests points
+        dist = np.array([self._distance(ray, p) for p in pc])
+        idx = dist.argsort()
+        dist = dist[idx]
+        pc = pc[idx]
 
-        return
+        if len(pc) < min_points:
+            print('Not enough points to cluster. Got {}'.format(pc))
+            return pc[0], None
 
+        cluster = pc[:min_points]
 
-    def distance(ray, point):
+        # Cluster by distance
+        cluster = np.array(
+            [c for c in cluster if np.linalg.norm(c - cluster[0]) < cluster_radius])
+
+        # Project to 2d
+        cluster_2d = cluster[:, :2]
+
+        # Least square line fit
+        A = np.vstack([cluster_2d[:, 0], np.ones(len(cluster_2d[:, 0]))]).T
+        m, b = np.linalg.lstsq(A, cluster_2d[:, 1])[0]
+
+        # Solve for normal vector
+        p1 = m * cluster_2d[0, 0] + b
+        p2 = m * cluster_2d[-1, 0] + b
+        vec = np.array([cluster_2d[0, 0], p2]) - \
+            np.array([cluster_2d[-1, 0], p1])
+        vec = vec / np.linalg.norm(vec)
+        vec_perp = np.array([[0, -1], [1, 0]]).dot(vec)
+
+        vec_perp = vec_perp if ray[1][:2].dot(vec_perp) < 0 else -vec_perp
+
+        markers = MarkerArray()
+        marker = Marker(ns='map', type=Marker.ARROW, action=visualization_msgs.Marker.ADD, scale=Vector3(
+            0.2, 0.5, 0), points=np.array([Point(cluster_2d[0, 0], p1, 0), Point(cluster_2d[-1, 0], p2, 0)]))
+        marker.id = 1000
+        marker.header.frame_id = '/map'
+        marker.color.a = 1
+        marker.color.r = 1
+        markers.markers.append(marker)
+
+        marker = Marker(ns='map', type=Marker.ARROW, action=visualization_msgs.Marker.ADD, scale=Vector3(
+            0.2, 0.5, 0), points=np.array([Point(cluster_2d[0, 0], p1, 0), Point(cluster_2d[-1, 0]+vec_perp[0], p2 + vec_perp[1], 0)]))
+        marker.id = 1001
+        marker.header.frame_id = '/map'
+        marker.color.a = 1
+        marker.color.g = 1
+        markers.markers.append(marker)
+
+        marker = Marker(ns='map', type=Marker.ARROW, action=visualization_msgs.Marker.ADD, scale=Vector3(
+            0.2, 0.5, 0), points=np.array([Point(ray[0][0], ray[0][1], 0), Point(ray[0][0]+ray[1][0], ray[0][1] + ray[1][0], 0)]))
+        marker.id = 1002
+        marker.header.frame_id = '/map'
+        marker.color.a = 1
+        marker.color.b = 1
+        markers.markers.append(marker)
+
+        for i, p in enumerate(cluster_2d):
+            marker = Marker(ns='map', type=Marker.SPHERE,
+                            action=visualization_msgs.Marker.ADD)
+            marker.header.frame_id = '/map'
+            marker.id = i
+            marker.pose.position.x = p[0]
+            marker.pose.position.y = p[1]
+            marker.pose.orientation.w = 1.0
+            marker.scale.x = 0.1
+            marker.scale.y = 0.1
+            marker.scale.z = 0.1 if i != 0 else 1
+            marker.color.a = 1
+            marker.color.r = 1
+            markers.markers.append(marker)
+        self.cls.pub_markers.publish(markers)
+
+        return (pc[0], vec_perp)
+
+    def _distance(self, ray, point):
         '''
         point: np.array of n elements
 
@@ -277,8 +357,10 @@ class _SonarPointcloud(object):
             [1] == unit vector
         source: https://stackoverflow.com/questions/5227373/minimal-perpendicular-vector-between-a-point-and-a-line
         '''
-        closest_point_on_vector = ray[0] + ((P-ray[0]).dot(ray[1]) * ray[1])
-       return np.linalg.norm(point - closest_point_on_vector) 
+
+        return np.linalg.norm((ray[0] - point) - ((ray[0] - point).dot(ray[1])) * ray[1])
+        #closest_point_on_vector = ray[0] + ((point-ray[0]).dot(ray[1]) * ray[1])
+        # return np.linalg.norm(point - closest_point_on_vector)
         # possible code for cone filter:
         # v0 = (point - ray[0]) / np.norm(point - ray[0])
         # v1 = ray[1]
@@ -310,10 +392,12 @@ class SubjuGator(BaseMission):
 
         cls.vision_proxies = _VisionProxies(cls.nh, 'vision_proxies.yaml')
         cls.actuators = _ActuatorProxy(cls.nh)
-        cls.plane_sonar = _SonarPointcloud(cls.nh)
+        cls.plane_sonar = _SonarPointcloud(cls.nh, cls)
         cls.test_mode = False
         cls.pinger_sub = yield cls.nh.subscribe('/hydrophones/processed', ProcessedPing)
         cls.poi = TxPOIClient(cls.nh)
+
+        cls.pub_markers = yield cls.nh.advertise('/a', MarkerArray)
 
     @property
     def pose(self):
