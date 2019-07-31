@@ -62,7 +62,8 @@ class VampireIdentifier:
         self.status = ''
         self.est = None
         self.visual_id = 0
-        self.enabled = True
+        self.enabled = False
+        self.point = None
         self.bridge = CvBridge()
 
         # Image Subscriber and Camera Information
@@ -76,7 +77,9 @@ class VampireIdentifier:
         self.frame_id = self.camera_model.tfFrame()
 
         # Ros Services so mission can be toggled and info requested
+        self.enable_service = rospy.Service('~enable', SetBool, self.toggle_search)
         self.image_pub = Image_Publisher("drac_vision/debug")
+        self.point_service = rospy.Service('~2D', Point, self.request)
         self.point_pub = rospy.Publisher(
             "/yellow_vectors", Point, queue_size=1)
         self.mask_image_pub = rospy.Publisher(
@@ -86,6 +89,18 @@ class VampireIdentifier:
 
         # Debug
         self.debug = rospy.get_param('~debug', True)
+
+    def request(self, srv):
+        if self.point is None or not self.enabled:
+            return VisionRequestResponse(found = False)
+        else:
+            return VisionRequestResponse(
+                pose=PoseStamped(
+                header=Header(stamp=rospy.Time.now(), frame_id='/map'),
+                pose=Pose(position=self.point),
+                orientation=Quaternion(),
+                found=True))
+
 
     @staticmethod
     def parse_string(threshes):
@@ -220,6 +235,7 @@ class VampireIdentifier:
                 M["m00"] = .000001
             cX = int((M["m10"] / M["m00"]))
             cY = int((M["m01"] / M["m00"]))
+            self.point = Point(x=cX, y=cY)
             self.point_pub.publish(Point(x=cX, y=cY))
             shape = self.detect(c)
 
@@ -251,7 +267,7 @@ class VampireIdentifier:
                     self.point_pub.publish(Point(x=cX, y=cY))
 
 def main(args):
-    rospy.init_node('pinger_torp', anonymous=False)
+    rospy.init_node('vampier_identifier', anonymous=False)
     VampireIdentifier()
 
     try:

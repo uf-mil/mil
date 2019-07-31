@@ -1,4 +1,4 @@
-from .sub_singleton import SubjuGator, Searcher
+from .sub_singleton import SubjuGator, Searcher, VisionProxy
 from txros import util
 import numpy as np
 from sensor_msgs.msg import CameraInfo
@@ -48,12 +48,17 @@ class DraculaGrabber(SubjuGator):
         model = PinholeCameraModel()
         model.fromCameraInfo(cam_info)
 
-     #   enable_service = self.nh.get_service_client("/vamp/enable", SetBool)
-     #   yield enable_service(SetBoolRequest(data=True))
+        # enable_service = self.nh.get_service_client("/vamp/enable", SetBool)
+        # yield enable_service(SetBoolRequest(data=True))
 
-        dracula_sub = yield self.nh.subscribe('/yellow_vectors', Point)
         yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
 
+        vision_proxy = VisionProxy('/vision/vampire_identifier', self.nh)
+        pattern = [np.ndarray([1,1,0])]
+        search = Searcher(self, vision_proxy, pattern)
+        yield search.start_search()
+
+        '''
         while True:
             fprint('Getting location of ball drop...')
             dracula_msg = yield dracula_sub.get_next_message()
@@ -68,7 +73,7 @@ class DraculaGrabber(SubjuGator):
             vec = np.append(vec, 0)
 
             yield self.move.relative_depth(vec).go(speed=SPEED)
-
+        '''
         fprint('Centered, going to depth {}'.format(HEIGHT_DRACULA_GRABBER))
         yield self.move.to_height(HEIGHT_DRACULA_GRABBER).zero_roll_and_pitch().go(speed=SPEED)
         fprint('Dropping marker')
