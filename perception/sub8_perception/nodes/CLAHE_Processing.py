@@ -14,7 +14,7 @@ Emphasizes color differences and contrast in an image.
 '''
 
 
-class CLAHE_generator:
+class CLAHEGenerator:
 
     def __init__(self):
 
@@ -70,8 +70,9 @@ class CLAHE_generator:
             self.tf_listener.clear()
 
         self.last_image_time = self.image_sub.last_image_time
-        self.CLAHE(image)
+        cv_image = self.CLAHE(image)
         print('published')
+        self.image_pub.publish(cv_image)
 
     def CLAHE(self, cv_image):
         '''
@@ -90,12 +91,12 @@ class CLAHE_generator:
         lab = cv2.merge((l2, a, b))  # merge channels
         cv_image = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
 
-        self.image_pub.publish(cv_image)
+        return cv_image
 
 
 def main(args):
     rospy.init_node('CLAHE', anonymous=False)
-    CLAHE_generator()
+    CLAHEGenerator()
 
     try:
         rospy.spin()
