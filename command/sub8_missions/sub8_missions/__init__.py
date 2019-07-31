@@ -12,6 +12,6 @@ from .torpedos_test import TorpedosTest
 from .gripper_test import GripperTest
 from .strip import Strip
 from .ball_drop import BallDrop
-from .arm_torpedos import FireTorpedos
+from .arm_torpedos import ArmTorpedos
 from .dracula_grab import DraculaGrabber
 from .start_gate_guess import StartGateGuess
