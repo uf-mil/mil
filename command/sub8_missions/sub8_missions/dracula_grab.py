@@ -1,4 +1,4 @@
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGator, Searcher
 from txros import util
 import numpy as np
 from sensor_msgs.msg import CameraInfo
