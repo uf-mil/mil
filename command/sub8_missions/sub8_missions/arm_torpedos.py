@@ -194,6 +194,8 @@ class FireTorpedos(SubjuGator):
         self.print_info("Enabling Perception")
         self.print_info("{}, Ree".format(self.vision_proxies.xyz_points))
         self.vision_proxies.xyz_points.start()
+        yield self.move.backward(2).go()
+        yield self.move.depth(3.08).go()
         self.generate_pattern()
         pattern = self.pattern()
         self.do_search = True

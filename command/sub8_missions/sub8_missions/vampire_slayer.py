@@ -29,10 +29,12 @@ Y_OFFSET = 0
 Z_OFFSET = 0
 
 USE_POI = False
+
 class VampireSlayer(SubjuGator):
 
     @util.cancellableInlineCallbacks
     def run(self, args):
+        yield self.move.depth(3.0).go()
         self.vision_proxies.xyz_points.start()
 
         global SPEED
@@ -75,11 +77,6 @@ class VampireSlayer(SubjuGator):
         yield self.move.down(.5).go()
         yield self.nh.sleep(2)
         yield self.move.up(.5).go()
-        yield self.move.forward(.75).go()
-        yield self.nh.sleep(2)
-        yield self.move.right(.75).go()
-        yield self.nh.sleep(2)
-        yield self.move.backward(.75).go()
         yield self.move.left(1).go()
         '''
         Did we find something?

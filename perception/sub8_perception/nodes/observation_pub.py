@@ -36,7 +36,7 @@ class MultiObs:
         # Pull constants from config file
         self.min_trans = rospy.get_param('~min_trans', .25)
         self.max_velocity = rospy.get_param('~max_velocity', 1)
-        self.min_observations = rospy.get_param('~min_observations', 30)
+        self.min_observations = rospy.get_param('~min_observations', 10)
         self.camera = rospy.get_param('~camera_topic',
                                       '/camera/front/left/image_rect_color')
         # Instantiate remaining variables and objects

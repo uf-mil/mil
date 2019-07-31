@@ -51,7 +51,7 @@ class DraculaGrabber(SubjuGator):
      #   enable_service = self.nh.get_service_client("/vamp/enable", SetBool)
      #   yield enable_service(SetBoolRequest(data=True))
 
-        dracula_sub = yield self.nh.subscribe('/bbox_pub', Point)
+        dracula_sub = yield self.nh.subscribe('/yellow_vectors', Point)
         yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
 
         while True:

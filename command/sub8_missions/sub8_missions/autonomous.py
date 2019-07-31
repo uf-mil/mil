@@ -7,6 +7,7 @@ from .sub_singleton import SubjuGator
 
 # Import missions here
 from .start_gate import StartGate
+from .start_gate_guess import StartGateGuess
 from .pinger import Pinger
 from .surface import Surface
 from .vampire_slayer import VampireSlayer
@@ -41,7 +42,7 @@ class Autonomous(SubjuGator):
 
         try:
             # Run start gate mission
-            yield self.run_mission(StartGate(), 400)
+            yield self.run_mission(StartGateGuess(), 400)
 
             # Go to pinger and do corresponding mission
             completed = yield self.run_mission(Pinger(), 400)
@@ -57,6 +58,8 @@ class Autonomous(SubjuGator):
                         yield self.run_mission(FireTorpedos(), 400)
 
             # Go to the other pinger mission and do respective mission
+            fprint('Waiting 5 secs')
+            yield self.nh.sleep(5)
             completed = yield self.run_mission(Pinger(), 400)
             if not completed:  # if we timeout
                 pass
@@ -123,6 +126,7 @@ class Autonomous(SubjuGator):
 
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
+        # yield self.do_mission()
         al = yield TxAlarmListener.init(self.nh, "network-loss")
         self._auto_param_watchdog(self.nh)
 
