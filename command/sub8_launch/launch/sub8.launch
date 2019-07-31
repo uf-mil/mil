@@ -40,8 +40,8 @@
   </node>
 
   <!-- Launch bluview and pointcloud generation -->
-  <include file="$(find sub8_launch)/launch/subsystems/blueview.launch" />
-  <include file="$(find sub8_pointcloud)/launch/ogrid.launch" />
+  <include if="$(eval environment == 'real')" file="$(find sub8_launch)/launch/subsystems/blueview.launch" />
+  <include if="$(eval environment == 'real')" file="$(find sub8_pointcloud)/launch/ogrid.launch" />
 
 
 </launch>
