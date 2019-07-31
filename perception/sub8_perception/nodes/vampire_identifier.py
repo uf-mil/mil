@@ -14,8 +14,8 @@ from cv_bridge import CvBridgeError
 from sub8_vision_tools import MultiObservation
 from image_geometry import PinholeCameraModel
 from std_srvs.srv import SetBool, SetBoolResponse
-from geometry_msgs.msg import PoseStamped, Pose, Point
-from sub8_msgs.srv import VisionRequest, VisionRequestResponse
+from geometry_msgs.msg import PoseStamped, Pose, Point, Pose2D
+from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse
 from mil_ros_tools import Image_Subscriber, Image_Publisher
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server as DynamicReconfigureServer
@@ -79,7 +79,7 @@ class VampireIdentifier:
         # Ros Services so mission can be toggled and info requested
         self.enable_service = rospy.Service('~enable', SetBool, self.toggle_search)
         self.image_pub = Image_Publisher("drac_vision/debug")
-        self.point_service = rospy.Service('~2D', Point, self.request)
+        self.point_service = rospy.Service('~2D', VisionRequest2D, self.request)
         self.point_pub = rospy.Publisher(
             "/yellow_vectors", Point, queue_size=1)
         self.mask_image_pub = rospy.Publisher(
@@ -92,14 +92,12 @@ class VampireIdentifier:
 
     def request(self, srv):
         if self.point is None or not self.enabled:
-            return VisionRequestResponse(found = False)
+            return VisionRequest2DResponse(found = False)
         else:
-            return VisionRequestResponse(
-                pose=PoseStamped(
+            return VisionRequest2DResponse(
                 header=Header(stamp=rospy.Time.now(), frame_id='/map'),
-                pose=Pose(position=self.point),
-                orientation=Quaternion(),
-                found=True))
+                pose=self.point,
+                found=True)
 
 
     @staticmethod
@@ -159,7 +157,7 @@ class VampireIdentifier:
         looking at frames for buoys.
         '''
         if srv.data:
-            rospy.loginfo("TARGET ACQUISITION: enabled")
+            rospy.logerr("TARGET ACQUISITION: enabled")
             self.enabled = True
 
         else:
@@ -235,7 +233,7 @@ class VampireIdentifier:
                 M["m00"] = .000001
             cX = int((M["m10"] / M["m00"]))
             cY = int((M["m01"] / M["m00"]))
-            self.point = Point(x=cX, y=cY)
+            self.point = Point2D(x=cX, y=cY)
             self.point_pub.publish(Point(x=cX, y=cY))
             shape = self.detect(c)
 

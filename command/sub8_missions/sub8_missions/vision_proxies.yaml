@@ -13,4 +13,4 @@ the_path:
 start_gate:
     root: "/vision/start_gate"
 vampire_identifier:
-    root: "/vision/vampire_identifier"
+    root: "/vision/vampier_identifier"

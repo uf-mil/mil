@@ -53,9 +53,9 @@ class DraculaGrabber(SubjuGator):
 
         yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
 
-        vision_proxy = VisionProxy('/vision/vampire_identifier', self.nh)
+        self.vision_proxies.vampire_identifier.start()
         pattern = [np.ndarray([1,1,0])]
-        search = Searcher(self, vision_proxy, pattern)
+        search = Searcher(self, self.vision_proxies.vampire_identifier.get_pose(target='a'), pattern)
         yield search.start_search()
 
         '''
