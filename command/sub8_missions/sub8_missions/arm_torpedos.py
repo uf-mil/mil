@@ -51,6 +51,8 @@ class ArmTorpedos(SubjuGator):
         torp_sub = yield self.nh.subscribe('/roi_pub', RegionOfInterest)
 
         torp_roi = yield torp_sub.get_next_message()
+
+        yield enable_service(SetBoolRequest(data=False))
         fprint('Got torp_roi: {}'.format(torp_roi))
         x0 = torp_roi.x_offset
         y0 = torp_roi.y_offset

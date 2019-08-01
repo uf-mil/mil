@@ -45,7 +45,7 @@
                            model="transdec_pinger" freq="37000" amplitude="1000"/>
 
   <!-- Other fixed frames -->
-  <xacro:mil_fixed_link name="blueview" parent="base_link" xyz="0.333 0 0.381" rpy="3.142 0 -0.1745" />
+  <xacro:mil_fixed_link name="blueview" parent="base_link" xyz="0.333 0 0.381" rpy="3.142 0.1745 0" />
 
   <!-- Dynamics simulation -->
   <xacro:mil_drag use_param='True' />
