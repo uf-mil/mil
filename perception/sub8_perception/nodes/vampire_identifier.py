@@ -125,8 +125,8 @@ class VampireIdentifier:
             else:
                 # Hard Set for use in Competition
                 if self.goal == 'drac':                                 # b g  r
-                    self.lower = rospy.get_param('~dracula_low_thresh', [0, 180, 180])
-                    self.upper = rospy.get_param('~dracula_high_thresh', [100, 255, 255])
+                    self.lower = rospy.get_param('~dracula_low_thresh', [100, 200, 150])
+                    self.upper = rospy.get_param('~dracula_high_thresh', [180, 255, 180])
                 else:
                     raise ValueError('Invalid Target Name')
             self.last_config = config
@@ -185,6 +185,7 @@ class VampireIdentifier:
 
     def mask_image(self, cv_image, lower, upper):
         mask = cv2.inRange(cv_image, lower, upper)
+        mask = cv2.blur(mask, (70, 70))
         # Remove anything not within the bounds of our mask
         output = cv2.bitwise_and(cv_image, cv_image, mask=mask)
         print('ree')
@@ -233,9 +234,9 @@ class VampireIdentifier:
                 M["m00"] = .000001
             cX = int((M["m10"] / M["m00"]))
             cY = int((M["m01"] / M["m00"]))
-            self.point = Point2D(x=cX, y=cY)
+            self.point = Pose2D(x=cX, y=cY)
             self.point_pub.publish(Point(x=cX, y=cY))
-            shape = self.detect(c)
+            #shape = self.detect(c)
 
             # multiply the contour (x, y)-coordinates by the resize ratio,
             # then draw the contours and the name of the shape on the image
@@ -243,16 +244,12 @@ class VampireIdentifier:
             c = c.astype("float")
             # c *= ratio
             c = c.astype("int")
-            if shape == "Target Aquisition Successful":
-                if self.debug:
-                    try:
-                        cv2.drawContours(cv_image, [c], -1, (0, 255, 0), 2)
-                        cv2.putText(cv_image, shape, (cX, cY),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-                                    (255, 255, 255), 2)
-                        self.image_pub.publish(cv_image)
-                    except CvBridgeError as e:
-                        print(e)
+            if self.debug:
+                try:
+                    cv2.drawContours(cv_image, [c], -1, (0, 0, 255), 2)
+                    self.image_pub.publish(cv_image)
+                except CvBridgeError as e:
+                    print(e)
 
 
                 # Grab the largest contour. Generally this is a safe bet but... We may need to tweak this for the three different vampires.
@@ -265,7 +262,7 @@ class VampireIdentifier:
                     self.point_pub.publish(Point(x=cX, y=cY))
 
 def main(args):
-    rospy.init_node('vampier_identifier', anonymous=False)
+    rospy.init_node('vampire_identifier', anonymous=False)
     VampireIdentifier()
 
     try:

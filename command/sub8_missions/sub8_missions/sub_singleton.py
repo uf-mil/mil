@@ -8,7 +8,7 @@ import rospkg
 from mil_msgs.msg import MoveToAction, PoseTwistStamped, RangeStamped
 import pose_editor
 import mil_ros_tools
-from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D, VisionRequest2DResponse
+from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
 from mil_msgs.srv import SetGeometry, SetGeometryRequest
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 #from sub8_msgs.srv import SetValve, SetValveRequest
@@ -32,6 +32,7 @@ import visualization_msgs.msg as visualization_msgs
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3
 
+
 class VisionProxy(object):
     '''General Interface for communicating with perception nodes.
     Make sure your perception nodes are structured as follows:
@@ -47,7 +48,6 @@ class VisionProxy(object):
 
     def __init__(self, service_root, nh):
         assert 'vision' in service_root, "expected 'vision' in the name of service_root"
-        self.a = service_root
         self._get_2d_service = nh.get_service_client(service_root + "/2D",
                                                      VisionRequest2D)
         self._get_pose_service = nh.get_service_client(service_root + "/pose",
@@ -56,7 +56,6 @@ class VisionProxy(object):
                                                      SetBool)
         self._set_geometry_service = nh.get_service_client(
             service_root + "/set_geometry", SetGeometry)
-
 
     def start(self):
         '''Allow user to start the vision processing backend
@@ -70,7 +69,6 @@ class VisionProxy(object):
         '''
         return self._enable_service(SetBoolRequest(data=False))
 
-    @util.cancellableInlineCallbacks
     def get_2d(self, target=''):
         '''Get the 2D projection of the thing
         TODO: Do something intelligent with the stamp
@@ -81,13 +79,12 @@ class VisionProxy(object):
         Camera deprojection stuff should be done elsewhere, this function is for when
             we don't know the depth of the thing we're targeting
         '''
-        print('kelp')
-        pose = yield self._get_2d_service(VisionRequest2DRequest(target_name=target))
-        print('kelp2')
-
-        #except (serviceclient.ServiceError):
-        #    defer.returnValue(None)
-        defer.returnValue(pose)
+        try:
+            pose = self._get_2d_service(
+                VisionRequest2DRequest(target_name=target))
+        except (serviceclient.ServiceError):
+            return None
+        return pose
 
     def get_pose(self, target='', in_frame=None):
         '''Get the 3D pose of the object we're after
@@ -96,7 +93,6 @@ class VisionProxy(object):
             - Use the time information in the header
         '''
         try:
-            print(self.service_root)
             pose = self._get_pose_service(
                 VisionRequestRequest(target_name=target))
         except (serviceclient.ServiceError):
@@ -506,9 +502,7 @@ class Searcher(object):
                 for pose in self.search_pattern:
                     print "SEARCHER - going to next position."
                     if type(pose) == list or type(pose) == np.ndarray:
-                        print 'going to ', pose
                         yield self.sub.move.relative(pose).go(speed=speed)
-                        print 'went to ', pose
                     else:
                         yield pose.go()
 
@@ -530,16 +524,10 @@ class Searcher(object):
         Look for the object using the vision proxy.
         Only return true when we spotted the objects `spotings_req` many times (for false positives).
         '''
-        print('a')
-        resp = yield self.vision_proxy()
-        print(resp)
-        print('b')
         spotings = 0
         print "SEARCHER - Looking for object."
         while True:
-            print 'asking vision'
             resp = yield self.vision_proxy()
-            print 'asked sucessful'
             if resp.found:
                 print "SEARCHER - Object found! {}/{}".format(
                     spotings + 1, spotings_req)
