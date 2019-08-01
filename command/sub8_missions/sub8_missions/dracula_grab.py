@@ -48,44 +48,32 @@ class DraculaGrabber(SubjuGator):
         model = PinholeCameraModel()
         model.fromCameraInfo(cam_info)
 
-        # enable_service = self.nh.get_service_client("/vamp/enable", SetBool)
-        # yield enable_service(SetBoolRequest(data=True))
-
         yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
 
         self.vision_proxies.vampire_identifier.start()
         pattern = [np.array([1,0,0]), 
                    np.array([-2,0,0]), 
-                   np.array([1,1,0]), 
+                   np.array([1,1,0]),
                    np.array([0,-2,0])]
-        # rospy.wait_for_service('/vision/vampier_identifier/2D')
-        print('ree')
-#        service_call = yield self.nh.get_service_client('/vision/vampire_identifier/2D', VisionRequest2D)
- #       a = yield service_call(VisionRequest2DRequest(''))
- #       print a
-       
-        #service_call = rospy.ServiceProxy('/vision/vampier_identifier/2D', VisionRequest2D)
-        #a = service_call(target_name = '')
-        #print a
         search = Searcher(self, self.vision_proxies.vampire_identifier.get_2d, pattern)
         yield search.start_search()
 
-        '''
-        while True:
-            fprint('Getting location of ball drop...')
-            dracula_msg = yield dracula_sub.get_next_message()
-            dracula_xy = mil_ros_tools.rosmsg_to_numpy(dracula_msg)[:2]
+        for i in range(20):
+            fprint('Getting location of dracula...')
+            pose = yield self.vision_proxies.vampire_identifier.get_2d()
+            dracula_xy = np.array([pose.pose.x, pose.pose.y])
             vec = dracula_xy - cam_center
-            fprint("Vec: {}".format(vec))
-            vec = vec / cam_norm
-            vec[1] = -vec[1]
-            fprint("Rel move vec {}".format(vec))
-            if np.allclose(vec, np.asarray(0), atol=50):
-                break
-            vec = np.append(vec, 0)
+            vec2 = [-vec[1], -vec[0]]
 
-            yield self.move.relative_depth(vec).go(speed=SPEED)
-        '''
+            if np.linalg.norm(vec) < 50:
+                break
+            fprint("Vec: {}".format(vec2))
+            vec2 = vec2 / cam_norm
+
+            fprint("Rel move vec {}".format(vec2))
+            vec2 = np.append(vec2, 0)
+
+            yield self.move.relative_depth(vec2).go(speed=SPEED)
         fprint('Centered, going to depth {}'.format(HEIGHT_DRACULA_GRABBER))
         yield self.move.to_height(HEIGHT_DRACULA_GRABBER).zero_roll_and_pitch().go(speed=SPEED)
         fprint('Dropping marker')

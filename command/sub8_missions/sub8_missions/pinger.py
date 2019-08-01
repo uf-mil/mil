@@ -22,13 +22,13 @@ DELTA = 35000
 SCHWARTZ = 37000
 
 SPEED = 0.75
-FREQUENCY = ALPHA
+FREQUENCY = DELTA
 FREQUENCY_TOL = 3000
 
 PINGER_HEIGHT = 3 # how high to go above pinger after found
-MOVE_AT_DEPTH = 0.6  # how low to swim and move
+MOVE_AT_DEPTH = 1.6  # how low to swim and move
 
-POSITION_TOL = 0.1  # how close to pinger before quiting
+POSITION_TOL = 0.1 # how close to pinger before quiting
 Z_POSITION_TOL = -0.53
 
 
@@ -116,13 +116,21 @@ class Pinger(SubjuGator):
 
                 sub_position, _ = yield self.tx_pose()
                 dists = [
-                    np.linalg.norm(sub_position - mil_ros_tools.rosmsg_to_numpy(
-                        x.location.pose.position))
+                    np.linalg.norm(sub_position - x)
                     for x in (pinger_1_req, pinger_2_req)
                 ]
                 pinger_id = np.argmin(dists)
                 # pinger_id 0 = pinger_surface
                 # pinger_id 1 = pinger_shooter
+                if pinger_id == 0:
+                    fprint('===DOING SHOOTER SETUP===', msg_color='green')
+                    sub_pos = yield self.pose.position
+                    sub_vec = -sub_pos / np.linalg.norm(sub_pos)
+                    fprint('Moving away'.format(sub_vec))
+                    yield self.move.relative(2 * sub_vec).depth(MOVE_AT_DEPTH).go(speed=SPEED)
+                    yield self.nh.sleep(1)
+                    fprint('Looking at shooter')
+                    yield self.move.look_at_without_pitching(sub_pos).go()
                 yield self.nh.set_param("pinger_where", int(pinger_id))
 
                 break

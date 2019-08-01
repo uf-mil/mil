@@ -194,7 +194,7 @@ class VampireIdentifier:
             try:
                 # print(output)
                 self.mask_image_pub.publish(
-                    self.bridge.cv2_to_imgmsg(np.array(output), 'bgr8'))
+                    self.bridge.cv2_to_imgmsg(np.array(mask), 'passthrough'))
             except CvBridgeError as e:
                 print(e)
 
@@ -210,6 +210,7 @@ class VampireIdentifier:
 
         # Generate a mask based on the constants.
         blurred = self.mask_image(cv_image, lower, upper)
+        blurred = cv2.blur(blurred, (5,5))
         blurred = cv2.cvtColor(blurred, cv2.COLOR_BGR2GRAY)
         # Compute contours
         cnts = cv2.findContours(blurred.copy(), cv2.RETR_EXTERNAL,
