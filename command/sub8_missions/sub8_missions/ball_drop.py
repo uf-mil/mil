@@ -51,6 +51,7 @@ class BallDrop(SubjuGator):
         fprint('Obtaining cam info message')
         cam_info = yield cam_info_sub.get_next_message()
         cam_center = np.array([cam_info.width/2, cam_info.height/2])
+        print cam_center
         cam_norm = np.sqrt(cam_center[0]**2 + cam_center[1]**2)
         fprint('Cam center: {}'.format(cam_center))
 
@@ -62,7 +63,6 @@ class BallDrop(SubjuGator):
 
         try:
             position = yield self.poi.get('ball_drop')
-            
             fprint('Found ball_drop: {}'.format(position), msg_color='green')
             yield self.move.look_at_without_pitching(position).set_position(position).depth(TRAVEL_DEPTH).go(speed=FAST_SPEED)
         except Exception as e:
@@ -70,21 +70,24 @@ class BallDrop(SubjuGator):
 
         ball_drop_sub = yield self.nh.subscribe('/bbox_pub', Point)
         yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
-
-        while True:
+        i = 0
+        while i < 20:
             fprint('Getting location of ball drop...')
             ball_drop_msg = yield ball_drop_sub.get_next_message()
             ball_drop_xy = mil_ros_tools.rosmsg_to_numpy(ball_drop_msg)[:2]
             vec = ball_drop_xy - cam_center
-            fprint("Vec: {}".format(vec))
-            vec = vec / cam_norm
-            vec[1] = -vec[1]
-            fprint("Rel move vec {}".format(vec))
-            if np.allclose(vec, np.asarray(0), atol=50):
-                break
-            vec = np.append(vec, 0)
+            vec2 = [-vec[1], -vec[0]]
 
-            yield self.move.relative_depth(vec).go(speed=SPEED)
+            if np.linalg.norm(vec) < 50:
+                break
+            fprint("Vec: {}".format(vec2))
+            vec2 = vec2 / cam_norm
+
+            fprint("Rel move vec {}".format(vec2))
+            vec2 = np.append(vec2, 0)
+
+            yield self.move.relative_depth(vec2).go(speed=SPEED)
+            i+=1
 
         fprint('Centered, going to depth {}'.format(HEIGHT_BALL_DROPER))
         yield self.move.to_height(HEIGHT_BALL_DROPER).zero_roll_and_pitch().go(speed=SPEED)
