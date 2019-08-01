@@ -69,6 +69,7 @@ class VisionProxy(object):
         '''
         return self._enable_service(SetBoolRequest(data=False))
 
+    @util.cancellableInlineCallbacks
     def get_2d(self, target=''):
         '''Get the 2D projection of the thing
         TODO: Do something intelligent with the stamp
@@ -84,8 +85,9 @@ class VisionProxy(object):
                 VisionRequest2DRequest(target_name=target))
         except (serviceclient.ServiceError):
             return None
-        print 'exiting get_2d'
+        print pose
         return pose
+        # defer.returnValue(pose)
 
     def get_pose(self, target='', in_frame=None):
         '''Get the 3D pose of the object we're after

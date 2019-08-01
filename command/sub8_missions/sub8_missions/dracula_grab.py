@@ -9,9 +9,7 @@ from geometry_msgs.msg import Point
 from mil_misc_tools import text_effects
 from std_srvs.srv import SetBool, SetBoolRequest
 
-
-
-from sub8_msgs.srv import GuessRequest, GuessRequestRequest
+from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
 
 import mil_ros_tools
 import rospy
@@ -57,7 +55,11 @@ class DraculaGrabber(SubjuGator):
 
         self.vision_proxies.vampire_identifier.start()
         pattern = [np.array([1,1,0])]
-        search = Searcher(self, self.vision_proxies.vampire_identifier.get_2d, pattern)
+        service_call = self.nh.get_service_client('/vision/vampier_identifier/2D')
+        print 'a'
+        a = yield service_call(VisionRequest2DRequest(''))
+        print a
+        search = Searcher(self, service_call(VisionRequest2DRequest('')), pattern)
         yield search.start_search()
 
         '''
