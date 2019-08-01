@@ -29,15 +29,9 @@ class BallDrop(SubjuGator):
 
     @util.cancellableInlineCallbacks
     def run(self, args):
-        try:
-          ree = rospy.ServiceProxy('/vision/garlic/enable', SetBool)
-          resp = ree(True)
-          if not resp:
-            print("Error, failed to init neural net.")
-            return
-        except rospy.ServiceException, e:
-          print("Service Call Failed")
-
+        enable_service = self.nh.get_service_client("/vision/garlic/enable", SetBool)
+        yield enable_service(SetBoolRequest(data=True))
+        
         fprint('Enabling cam_ray publisher')
 
         yield self.nh.sleep(1)
@@ -57,10 +51,7 @@ class BallDrop(SubjuGator):
 
         model = PinholeCameraModel()
         model.fromCameraInfo(cam_info)
-
-     #   enable_service = self.nh.get_service_client("/vamp/enable", SetBool)
-     #   yield enable_service(SetBoolRequest(data=True))
-
+    
         try:
             position = yield self.poi.get('ball_drop')
             fprint('Found ball_drop: {}'.format(position), msg_color='green')

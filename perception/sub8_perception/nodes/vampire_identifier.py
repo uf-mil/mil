@@ -112,8 +112,8 @@ class VampireIdentifier:
             else:
                 # Hard Set for use in Competition
                 if self.goal == 'drac':                                 # b g  r
-                    self.lower = rospy.get_param('~dracula_low_thresh', [0, 180, 180])
-                    self.upper = rospy.get_param('~dracula_high_thresh', [100, 255, 255])
+                    self.lower = rospy.get_param('~dracula_low_thresh', [100, 200, 150])
+                    self.upper = rospy.get_param('~dracula_high_thresh', [180, 255, 180])
                 else:
                     raise ValueError('Invalid Target Name')
             self.last_config = config
@@ -180,7 +180,7 @@ class VampireIdentifier:
             try:
                 # print(output)
                 self.mask_image_pub.publish(
-                    self.bridge.cv2_to_imgmsg(np.array(output), 'bgr8'))
+                    self.bridge.cv2_to_imgmsg(np.array(mask), 'passthrough'))
             except CvBridgeError as e:
                 print(e)
 
@@ -196,6 +196,7 @@ class VampireIdentifier:
 
         # Generate a mask based on the constants.
         blurred = self.mask_image(cv_image, lower, upper)
+        blurred = cv2.blur(blurred, (5,5))
         blurred = cv2.cvtColor(blurred, cv2.COLOR_BGR2GRAY)
         # Compute contours
         cnts = cv2.findContours(blurred.copy(), cv2.RETR_EXTERNAL,
@@ -229,16 +230,12 @@ class VampireIdentifier:
             c = c.astype("float")
             # c *= ratio
             c = c.astype("int")
-            if shape == "Target Aquisition Successful":
-                if self.debug:
-                    try:
-                        cv2.drawContours(cv_image, [c], -1, (0, 255, 0), 2)
-                        cv2.putText(cv_image, shape, (cX, cY),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-                                    (255, 255, 255), 2)
-                        self.image_pub.publish(cv_image)
-                    except CvBridgeError as e:
-                        print(e)
+            if self.debug:
+                try:
+                    cv2.drawContours(cv_image, [c], -1, (0, 0, 255), 2)
+                    self.image_pub.publish(cv_image)
+                except CvBridgeError as e:
+                    print(e)
 
 
                 # Grab the largest contour. Generally this is a safe bet but... We may need to tweak this for the three different vampires.
