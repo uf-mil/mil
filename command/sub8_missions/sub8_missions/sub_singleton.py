@@ -69,7 +69,7 @@ class VisionProxy(object):
         '''
         return self._enable_service(SetBoolRequest(data=False))
 
-    @util.cancellableInlineCallbacks
+    # @util.cancellableInlineCallbacks
     def get_2d(self, target=''):
         '''Get the 2D projection of the thing
         TODO: Do something intelligent with the stamp

@@ -55,9 +55,12 @@ class DraculaGrabber(SubjuGator):
 
         self.vision_proxies.vampire_identifier.start()
         pattern = [np.array([1,1,0])]
-        service_call = self.nh.get_service_client('/vision/vampier_identifier/2D')
-        print 'a'
-        a = yield service_call(VisionRequest2DRequest(''))
+        # rospy.wait_for_service('/vision/vampier_identifier/2D')
+        # service_call = yield self.nh.get_service_client('/vision/vampier_identifier/2D', VisionRequest2D)
+        # a = yield service_call(VisionRequest2DRequest(''))
+        # print a
+        service_call = rospy.ServiceProxy('/vision/vampier_identifier/2D', VisionRequest2D)
+        a = service_call(target_name = '')
         print a
         search = Searcher(self, service_call(VisionRequest2DRequest('')), pattern)
         yield search.start_search()
