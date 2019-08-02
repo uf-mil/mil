@@ -56,7 +56,7 @@ class classifier(object):
             self.classes = 2
             self.see_sub = mil_tools.Image_Subscriber(
               topic="/camera/down/image_rect_color", callback=self.img_callback)
-            self.num_objects_detect = rospy.get_param('~objects_detected', 2)
+            self.num_objects_detect = rospy.get_param('~objects_detected', 1)
         elif self.vamp:
             self.target = 'vamp'
             self.classes = 4
@@ -171,7 +171,6 @@ class classifier(object):
             # if count is 0, the class is a heart. If it is a 1 it is a oval.
             print("X: ", pointx, "Y: ", pointy, "CLASS: ", count)
             if pointx != 0 and pointy != 0:
-              self.bbox_pub.publish(msg)
               # if the count is 0, the class is a heart, if it is a 1 then it is an oval
               rect = False
               if count == 1:
@@ -185,7 +184,16 @@ class classifier(object):
               self.roi_pub.publish(roi)
             else:
               print("Zero tuple recieved, likely a torp board return.")
-          count = count + 1
+          else:
+            roi = RegionOfInterest(x_offset=int(bbox[0][0]), y_offset=int(bbox[0][1]), height = int(pointydist), width=int(pointxdist))
+            if self.target == 'garlic':
+              if roi.width > 430 and roi.width < 600 and roi.height > 430 and roi.height < 600:
+                self.roi_pub.publish(roi)
+                self.bbox_pub.publish(msg)
+            else:
+              self.roi_pub.publish(roi)
+              self.bbox_pub.publish(msg) 
+        count = count + 1
           
         # Publish image
         try:

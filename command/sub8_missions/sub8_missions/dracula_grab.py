@@ -22,11 +22,11 @@ fprint = text_effects.FprintFactory(title="DRACULA_GRAB", msg_color="cyan").fpri
 SPEED = 0.25
 FAST_SPEED = 1
 
-SEARCH_HEIGHT = 1.5
-HEIGHT_DRACULA_GRABBER = 0.5
-TRAVEL_DEPTH = 0.5  # 2
-SEARCH_POINTS = 4
-SEARCH_RADII = [1,2]
+SEARCH_DEPTH= 1.5
+DEPTH_DRACULA_GRABBER = 1.75
+TRAVEL_DEPTH = 1.6  # 2
+SEARCH_POINTS = 8
+SEARCH_RADII = [0.75,1.5]
 
 
 
@@ -34,6 +34,8 @@ class DraculaGrabber(SubjuGator):
 
     @util.cancellableInlineCallbacks
     def run(self, args):
+
+        start_position = self.pose.position
         fprint('Enabling cam_ray publisher')
 
         yield self.nh.sleep(1)
@@ -41,6 +43,9 @@ class DraculaGrabber(SubjuGator):
         fprint('Connecting camera')
 
 
+        enable_service = self.nh.get_service_client("/vision/dracula/enable", SetBool)
+
+        yield enable_service(SetBoolRequest(data=True))
         fprint('Obtaining cam info message')
         cam_info = yield self.down_cam_info.get_next_message()
         cam_center = np.array([cam_info.width/2, cam_info.height/2])
@@ -50,7 +55,7 @@ class DraculaGrabber(SubjuGator):
         model = PinholeCameraModel()
         model.fromCameraInfo(cam_info)
 
-        yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
+        yield self.move.depth(SEARCH_DEPTH).zero_roll_and_pitch().go(speed=SPEED)
         '''
         self.vision_proxies.vampire_identifier.start()
         pattern = gen_pattern(SEARCH_POINTS, SEARCH_RADII)
@@ -83,9 +88,9 @@ class DraculaGrabber(SubjuGator):
             break
           i = count % len(pattern)
           print pattern[i]
-          yield self.move.relative(pattern[i]).go(speed=SPEED)
+          yield self.move.relative(pattern[i]).depth(TRAVEL_DEPTH).go(speed=SPEED)
           # Let controller catch up a bit
-          yield self.nh.sleep(1)
+          yield self.nh.sleep(0.5)
           count = count + 1
 
         fprint('FOUND! Trying to center')
@@ -109,15 +114,19 @@ class DraculaGrabber(SubjuGator):
 
             yield self.move.relative_depth(vec2).go(speed=SPEED)
 
+        yield self.actuators.gripper_open()
         # self.vision_proxies.vampire_identifier.stop()
-        fprint('Centered, going to depth {}'.format(HEIGHT_DRACULA_GRABBER))
-        yield self.move.to_height(HEIGHT_DRACULA_GRABBER).zero_roll_and_pitch().go(speed=SPEED)
+        fprint('Centered, going to depth {}'.format(DEPTH_DRACULA_GRABBER))
+        yield self.move.to_depth(DEPTH_DRACULA_GRABBER).zero_roll_and_pitch().go(speed=SPEED)
+        yield self.nh.sleep(3)
         fprint('Dropping marker')
         yield self.actuators.gripper_close()
+        yield self.move.set_position(start_position).go(speed=0.3)
         yield self.move.depth(0.2).go()
-        yield self.nh.sleep(1)
+        yield self.nh.sleep(5)
         yield self.move.depth(1.5).go()
-
+        yield self.actuators.gripper_open()
+        
 
 
 def gen_pattern(steps, radii=[]):

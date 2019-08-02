@@ -25,7 +25,10 @@ class StartGateGuess(SubjuGator):
 
       gate_1 = yield self.poi.get('start_gate1')
       gate_2 = yield self.poi.get('start_gate2')
+
       mid = (gate_1 + gate_2) / 2
+      norm = sub_start_position - mid
+      norm = norm / np.linalg.norm(norm)
       fprint('Found mid {}'.format(mid))
 
       fprint('Looking at gate')
@@ -33,6 +36,10 @@ class StartGateGuess(SubjuGator):
       yield self.move.look_at_without_pitching(mid).go(speed=DOWN_SPEED)
 
       fprint('Going!')
-      yield self.move.set_position(mid).depth(DEPTH).go(speed=SPEED)
+      yield self.move.set_position(mid + 2 * norm).depth(DEPTH).go(speed=SPEED)
+      yield self.nh.sleep(2)
+      yield self.move.set_position(mid).yaw_right_deg(179).depth(DEPTH).go(speed=SPEED)
+      yield self.nh.sleep(2)
+      yield self.move.set_position(mid - 2 * norm).yaw_right_deg(179).depth(DEPTH).go(speed=SPEED)
       yield self.nh.sleep(5)
       yield self.move.forward(3).go(speed=SPEED)

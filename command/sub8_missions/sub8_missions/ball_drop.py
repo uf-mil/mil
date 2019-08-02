@@ -23,19 +23,17 @@ fprint = text_effects.FprintFactory(title="BALL_DROP", msg_color="cyan").fprint
 SPEED = 0.25
 FAST_SPEED = 1
 
-SEARCH_HEIGHT = 3
-HEIGHT_BALL_DROPER = 2.3
-TRAVEL_DEPTH = 1  # 2
-SEARCH_POINTS = 4
-SEARCH_RADII = [i for i in range(1,6)]
+SEARCH_DEPTH = 1.6
+HEIGHT_BALL_DROPER = 2.2
+TRAVEL_DEPTH = 1.6  # 2
+SEARCH_POINTS = 8
+SEARCH_RADII = [1, 2, 3.5]
 
 class BallDrop(SubjuGator):
 
     @util.cancellableInlineCallbacks
     def run(self, args):
-        enable_service = self.nh.get_service_client("/vision/garlic/enable", SetBool)
-        yield enable_service(SetBoolRequest(data=True))
-        
+                
         fprint('Enabling cam_ray publisher')
 
         yield self.nh.sleep(1)
@@ -58,7 +56,10 @@ class BallDrop(SubjuGator):
         except Exception as e:
             fprint(str(e) + 'Forgot to run guess server?', msg_color='yellow')
 
-        yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
+        enable_service = self.nh.get_service_client("/vision/garlic/enable", SetBool)
+        yield enable_service(SetBoolRequest(data=True))
+
+        yield self.move.depth(SEARCH_DEPTH).zero_roll_and_pitch().go(speed=SPEED)
 
         fprint("Starting Pattern")
         flag = True

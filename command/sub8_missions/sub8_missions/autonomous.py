@@ -8,11 +8,18 @@ from .sub_singleton import SubjuGator
 # Import missions here
 from .start_gate import StartGate
 from .start_gate_guess import StartGateGuess
+
 from .pinger import Pinger
-from .surface import Surface
-from .vampire_slayer import VampireSlayer
+
+
+from .dracula_grab import DraculaGrabber
+
+
 from .arm_torpedos import ArmTorpedos
+
+
 from .ball_drop import BallDrop
+from .buoy_mission import BuoyMission
 
 
 fprint = text_effects.FprintFactory(title="AUTO_MISSION").fprint
@@ -52,10 +59,10 @@ class Autonomous(SubjuGator):
                 if (yield self.nh.has_param('pinger_where')):
                     if (yield self.nh.get_param('pinger_where')) == 0:
                         fprint('Surface Mission')
-                        yield self.run_mission(Surface(), 30)
+                        yield self.run_mission(DraculaGrabber(), 100)
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')
-                        yield self.run_mission(FireTorpedos(), 180)
+                        yield self.run_mission(ArmTorpedos(), 180)
 
             # Go to the other pinger mission and do respective mission
             fprint('Waiting 5 secs')
@@ -67,16 +74,18 @@ class Autonomous(SubjuGator):
                 if (yield self.nh.has_param('pinger_where')):
                     if (yield self.nh.get_param('pinger_where')) == 0:
                         fprint('Surface Mission')
-                        yield self.run_mission(Surface(), 30)
+                        yield self.run_mission(DraculaGrabber(), 100)
 
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')
-                        yield self.run_mission(FireTorpedos(), 180)
+                        yield self.run_mission(ArmTorpedos(), 180)
 
-            fprint("Vampire Slayer")
-            yield self.run_mission(VampireSlayer(), 400)
             fprint("Garlic drop?")
             yield self.rub_mission(BallDrop(), 400)
+
+            fprint("Vampire Slayer")
+            yield self.run_mission(BuoyMission(), 400)
+
 
         except Exception as e:
             fprint("Error in Chain 1 missions!", msg_color="red")
@@ -126,7 +135,7 @@ class Autonomous(SubjuGator):
 
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
-        # yield self.do_mission()
+        #yield self.do_mission()
         al = yield TxAlarmListener.init(self.nh, "network-loss")
         self._auto_param_watchdog(self.nh)
 
