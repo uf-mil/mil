@@ -74,6 +74,8 @@ class DraculaGrabber(SubjuGator):
             vec2 = np.append(vec2, 0)
 
             yield self.move.relative_depth(vec2).go(speed=SPEED)
+
+        self.vision_proxies.vampire_identifier.stop()
         fprint('Centered, going to depth {}'.format(HEIGHT_DRACULA_GRABBER))
         yield self.move.to_height(HEIGHT_DRACULA_GRABBER).zero_roll_and_pitch().go(speed=SPEED)
         fprint('Dropping marker')

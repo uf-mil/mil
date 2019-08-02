@@ -20,6 +20,7 @@ alive_processes = {}
 
 
 class launcher(object):
+
     def __init__(self, name):
         '''
         Object to store service threads and name of executable
@@ -34,10 +35,16 @@ class launcher(object):
     def enable_callback(self, srv):
         global alive_processes
         if srv.data:
+            if alive_processes:
+                for key in alive_processes.keys():
+                    rospy.loginfo('Disabled {}'.format(key))
+                    os.killpg(
+                        os.getpgid(alive_processes[key].pid), signal.SIGTERM)
+
             rospy.loginfo('Enabling {}'.format(self.name))
             # Open up a subprocess under PID
             alive_processes[self.name] = subprocess.Popen(
-		'rosrun sub8_perception localizer.py --{}'.format(self.name),
+                'rosrun sub8_perception localizer.py --{}'.format(self.name),
                 shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,

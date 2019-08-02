@@ -15,6 +15,8 @@ import mil_ros_tools
 import rospy
 from std_srvs.srv import Trigger
 
+import genpy
+
 fprint = text_effects.FprintFactory(title="BALL_DROP", msg_color="cyan").fprint
 
 SPEED = 0.25
@@ -61,8 +63,41 @@ class BallDrop(SubjuGator):
 
         ball_drop_sub = yield self.nh.subscribe('/bbox_pub', Point)
         yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
-        i = 0
-        while i < 20:
+
+        fprint("Starting Pattern")
+        flag = True
+        count = 0
+        while(flag and count < 24):
+          fprint(count)
+          ball_drop_msg = ball_drop_sub.get_next_message().addErrback(lambda x: None)
+
+          start_time = yield self.nh.get_time()
+          while self.nh.get_time() - start_time < genpy.Duration(2): 
+            if len(ball_drop_msg.callbacks) == 0:
+              fprint('Time out, move again')
+              ball_drop_msg.cancel()
+              #flag = False
+            yield self.nh.sleep(0.5)
+            ball_drop_msg.cancel()
+          if count == 24:
+             defer.returnValue(False)
+          x = yield ball_drop_sub
+          fprint(x)
+          if x is not None:
+            flag = False
+          if count % 4 == 0: 
+            yield self.move.forward(1)
+          if count % 4 == 1: 
+            yield self.move.right(1)
+          if count % 4 == 2: 
+            yield self.move.backward(1)
+          if count % 4 == 3: 
+            yield self.move.left(1)
+          count = count + 1
+
+        fprint('FOUND! Trying to center')
+
+        for i in range(20):
             fprint('Getting location of ball drop...')
             ball_drop_msg = yield ball_drop_sub.get_next_message()
             ball_drop_xy = mil_ros_tools.rosmsg_to_numpy(ball_drop_msg)[:2]
@@ -78,8 +113,8 @@ class BallDrop(SubjuGator):
             vec2 = np.append(vec2, 0)
 
             yield self.move.relative_depth(vec2).go(speed=SPEED)
-            i+=1
 
+        yield enable_service(SetBoolRequest(data=False))
         fprint('Centered, going to depth {}'.format(HEIGHT_BALL_DROPER))
         yield self.move.to_height(HEIGHT_BALL_DROPER).zero_roll_and_pitch().go(speed=SPEED)
         fprint('Dropping marker')
