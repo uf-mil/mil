@@ -39,6 +39,7 @@ class classifier(object):
         parser.add_argument('-v', '--vamp', action='store_true', help='Sets up Network for the Buoy')
         parser.add_argument('-s', '--stake', action='store_true',
                             help='Sets up Network for the Torpedo Board')
+        parser.add_argument('-d', '--dracula', action='store_true', help='Sets up Network for the Dracula')
         args= parser.parse_args()
 
         self.generator = CLAHEGenerator()
@@ -48,20 +49,30 @@ class classifier(object):
         self.garlic = args.garlic
         self.vamp = args.vamp
         self.stake = args.stake
+        self.dracula = args.dracula
 
         if self.garlic:
             self.target = 'garlic'
-            self.classes = 1
+            self.classes = 2
             self.see_sub = mil_tools.Image_Subscriber(
               topic="/camera/down/image_rect_color", callback=self.img_callback)
+            self.num_objects_detect = rospy.get_param('~objects_detected', 2)
         elif self.vamp:
             self.target = 'vamp'
             self.classes = 4
+            self.num_objects_detect = rospy.get_param('~objects_detected', 1)
             self.see_sub = mil_tools.Image_Subscriber(
               topic="/camera/front/left/image_rect_color", callback=self.img_callback)
+        elif self.dracula:
+            self.target = 'dracula'
+            self.classes = 2 
+            self.num_objects_detect = rospy.get_param('~objects_detected', 1)
+            self.see_sub = mil_tools.Image_Subscriber(
+              topic="/camera/down/image_rect_color", callback=self.img_callback)
         else:  
             self.target = 'stake'
-            self.classes = 1
+            self.num_object_detect = rospy.get_param('~object_detected', 2)
+            self.classes = 2
             self.see_sub = mil_tools.Image_Subscriber(
               topic="/camera/front/left/image_rect_color", callback=self.img_callback)
         # Number of frames
@@ -133,7 +144,7 @@ class classifier(object):
             cv_image, self.inference_graph, self.sess)
 
         # Draw Bounding box
-        labelled_image, bbox = detector_utils.draw_box_on_image(
+        labelled_image, boxez = detector_utils.draw_box_on_image(
             self.num_objects_detect, self.score_thresh, scores, boxes, classes,
             self.im_width, self.im_height, cv_image, self.target)
 
@@ -146,19 +157,35 @@ class classifier(object):
         # Display FPS on frame
         detector_utils.draw_text_on_image(
             "FPS : " + str("{0:.2f}".format(fps)), cv_image)
-        print("bbox:", bbox)  
-        if len(bbox) > 0:
+        print("bbox:", boxez)
+        count = 0  
+        for bbox in boxez:
           pointx = (bbox[0][0] + bbox[1][0]) /2 
           pointy = (bbox[0][1] + bbox[1][1]) /2
           pointxdist = abs(bbox[0][0] - bbox[1][0])
           pointydist = abs(bbox[0][1] - bbox[1][1])
           print(pointxdist)
           msg = Point(x=pointx, y=pointy, z=self.see_sub.last_image_time.to_sec())
-          print("X: ", pointx, "Y: ", pointy, "TIMESTAMP: ", msg.z)
-          self.bbox_pub.publish(msg)
-          roi = RegionOfInterest(x_offset=int(bbox[0][0]), y_offset=int(bbox[0][1]), height = int(pointydist), width=int(pointxdist))
-          self.roi_pub.publish(roi)
-        
+  
+          if self.target == 'stake':
+            # if count is 0, the class is a heart. If it is a 1 it is a oval.
+            print("X: ", pointx, "Y: ", pointy, "CLASS: ", count)
+            if pointx != 0 and pointy != 0:
+              self.bbox_pub.publish(msg)
+              # if the count is 0, the class is a heart, if it is a 1 then it is an oval
+              rect = False
+              if count == 1:
+                rect = True
+              roi = RegionOfInterest(x_offset=int(bbox[0][0]), y_offset=int(bbox[0][1]), height = int(pointydist), width=int(pointxdist), do_rectify=rect)
+              self.roi_pub.publish(roi)
+
+              print("X: ", pointx, "Y: ", pointy, "TIMESTAMP: ", msg.z)
+              self.bbox_pub.publish(msg)
+              roi = RegionOfInterest(x_offset=int(bbox[0][0]), y_offset=int(bbox[0][1]), height = int(pointydist), width=int(pointxdist))
+              self.roi_pub.publish(roi)
+            else:
+              print("Zero tuple recieved, likely a torp board return.")
+          count = count + 1
           
         # Publish image
         try:

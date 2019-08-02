@@ -13,7 +13,7 @@ on enable, and close it on disable.
 '''
 
 # Exec instructions
-exec_names = ['vamp', 'stake', 'garlic']
+exec_names = ['vamp', 'stake', 'garlic', 'dracula']
 
 # Store subprocesses in global
 alive_processes = {}

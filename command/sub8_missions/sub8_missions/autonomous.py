@@ -42,10 +42,10 @@ class Autonomous(SubjuGator):
 
         try:
             # Run start gate mission
-            yield self.run_mission(StartGateGuess(), 400)
+            yield self.run_mission(StartGateGuess(), 60)
 
             # Go to pinger and do corresponding mission
-            completed = yield self.run_mission(Pinger(), 400)
+            completed = yield self.run_mission(Pinger(), 300)
             if not completed:  # if we timeout
                 pass
             else:
@@ -55,12 +55,12 @@ class Autonomous(SubjuGator):
                         yield self.run_mission(Surface(), 30)
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')
-                        yield self.run_mission(FireTorpedos(), 400)
+                        yield self.run_mission(FireTorpedos(), 180)
 
             # Go to the other pinger mission and do respective mission
             fprint('Waiting 5 secs')
             yield self.nh.sleep(5)
-            completed = yield self.run_mission(Pinger(), 400)
+            completed = yield self.run_mission(Pinger(), 300)
             if not completed:  # if we timeout
                 pass
             else:
@@ -71,7 +71,7 @@ class Autonomous(SubjuGator):
 
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')
-                        yield self.run_mission(FireTorpedos(), 400)
+                        yield self.run_mission(FireTorpedos(), 180)
 
             fprint("Vampire Slayer")
             yield self.run_mission(VampireSlayer(), 400)

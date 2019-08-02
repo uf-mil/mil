@@ -19,9 +19,9 @@
             statistical_stddev_mul_thresh: 0.5
 
             # Euclidian Clustering
-            cluster_tolerance_m: 0.5
+            cluster_tolerance_m: 0.25
             cluster_min_num_points: 20
-            cluster_max_num_points: 500
+            cluster_max_num_points: 800
 
             # Remove points below distance threshold in xy
             nearby_threshold: 1.5

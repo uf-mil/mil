@@ -21,8 +21,8 @@ CHARLIE = 25000
 DELTA = 35000
 SCHWARTZ = 37000
 
-SPEED = 0.75
-FREQUENCY = DELTA
+SPEED = 1
+FREQUENCY = ALPHA
 FREQUENCY_TOL = 3000
 
 PINGER_HEIGHT = 3 # how high to go above pinger after found
@@ -42,7 +42,7 @@ class Pinger(SubjuGator):
 
         fprint('Getting Guess Locations')
 
-        use_prediction = True
+        use_prediction = False
 
         try:
             pinger_1_req = yield self.poi.get('pinger_surface')
@@ -110,10 +110,6 @@ class Pinger(SubjuGator):
 
             # Check if we are on top of pinger
             if abs(vec[0]) < POSITION_TOL and abs(vec[1]) < POSITION_TOL and vec[2] < Z_POSITION_TOL:
-                if not use_prediction:
-                    fprint("Arrived to pinger!")
-                    break
-
                 sub_position, _ = yield self.tx_pose()
                 dists = [
                     np.linalg.norm(sub_position - x)
@@ -122,12 +118,12 @@ class Pinger(SubjuGator):
                 pinger_id = np.argmin(dists)
                 # pinger_id 0 = pinger_surface
                 # pinger_id 1 = pinger_shooter
-                if pinger_id == 0:
+                if pinger_id == 1:
                     fprint('===DOING SHOOTER SETUP===', msg_color='green')
                     sub_pos = yield self.pose.position
                     sub_vec = -sub_pos / np.linalg.norm(sub_pos)
                     fprint('Moving away'.format(sub_vec))
-                    yield self.move.relative(2 * sub_vec).depth(MOVE_AT_DEPTH).go(speed=SPEED)
+                    yield self.move.relative(3 * sub_vec).depth(MOVE_AT_DEPTH).go(speed=SPEED)
                     yield self.nh.sleep(1)
                     fprint('Looking at shooter')
                     yield self.move.look_at_without_pitching(sub_pos).go()
