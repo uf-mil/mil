@@ -14,6 +14,7 @@ from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 import mil_ros_tools
 import rospy
 from std_srvs.srv import Trigger
+import math
 
 import genpy
 
@@ -26,7 +27,7 @@ SEARCH_HEIGHT = 3
 HEIGHT_BALL_DROPER = 2.3
 TRAVEL_DEPTH = 1  # 2
 SEARCH_POINTS = 4
-SEARCH_RADII = [i for i in range(1,5)]
+SEARCH_RADII = [i for i in range(1,6)]
 
 class BallDrop(SubjuGator):
 
@@ -68,7 +69,7 @@ class BallDrop(SubjuGator):
         fprint("Starting Pattern")
         flag = True
         count = 0
-        pattern = gen_pattern(SEARCH_POINTS, RADII)
+        pattern = gen_pattern(SEARCH_POINTS, SEARCH_RADII)
         while(flag and count < 24):
           fprint(count)
           ball_drop_msg = ball_drop_sub.get_next_message().addErrback(lambda x: None)
@@ -83,12 +84,16 @@ class BallDrop(SubjuGator):
             ball_drop_msg.cancel()
           if count == 24:
              defer.returnValue(False)
-          x = yield ball_drop_sub
+          x = yield ball_drop_msg
           fprint(x)
           if x is not None:
             flag = False
+            break
           i = count % len(pattern)
+          print pattern[i]
           yield self.move.relative(pattern[i]).go(speed=SPEED)
+          # Let controller catch up a bit
+          yield self.nh.sleep(1)
           count = count + 1
 
         fprint('FOUND! Trying to center')
@@ -128,7 +133,6 @@ def gen_pattern(steps, radii=[]):
             pattern.append(unit_v*r)
     rel_pattern = [np.array([0,0,0])]
     for idx, point in enumerate(pattern):
-        print idx
         if idx > 0:
             rel_pattern.append(point - pattern[idx-1])
     rel_pattern.append(-pattern[-1])

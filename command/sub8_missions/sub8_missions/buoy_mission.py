@@ -70,6 +70,7 @@ class BuoyMission(SubjuGator):
           fprint(x)
           if x is not None:
             flag = False
+            break
           yield self.move.yaw_right_deg(25)
           count = count + 1
         try: 
