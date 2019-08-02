@@ -2,6 +2,7 @@
 <launch>
   <!-- Defines what environment the system is running on, can be 'real', 'gazebo' or 'dynsim' -->
   <arg name="environment" default="real" />
+  <arg name="quad" default="A" />
   <arg name="use_adaptive_controller" default="True" />
   <param name="/environment" value="$(arg environment)" />
   <param name="/is_simulation" value="$(eval environment != 'real')" />
@@ -35,9 +36,9 @@
     <arg name="environment" value="$(arg environment)" />
   </include>
 
-  <node pkg="mil_poi" type="poi_server" name="poi_server">
-    <rosparam command="load" file="$(find sub8_launch)/launch/initial_pois.yaml" />
-  </node>
+  <include file="$(find sub8_launch)/launch/me_and_the_pois.launch" >
+    <arg name="quad" value="$(arg quad)"/>
+  </include>
 
   <!-- Launch bluview and pointcloud generation -->
   <include if="$(eval environment == 'real')" file="$(find sub8_launch)/launch/subsystems/blueview.launch" />

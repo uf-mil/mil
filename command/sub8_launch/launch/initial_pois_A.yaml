@@ -1,0 +1,13 @@
+global_frame: map
+initial_pois:
+  #surface_octogon: [24.2, 21.0, -2.7]
+  pinger_surface: [23.74119377, 25.437702178, 0]
+  pinger_shooter: [15.9621112213, 24.75651931, 0]
+  #pinger_shooter: [10, 9.3, 0]
+  #start_gate1: [13, 12, 0]
+  #start_gate2: [16, 8.25, 0]
+  start_gate1: [8.41026, 9.58137, 0]
+  start_gate2: [11.593485, 6.67422437, 0]
+  #check balldrop
+  ball_drop: [15, 16, 0]
+  vampire_slayer: [16.75, 11.85, 0]

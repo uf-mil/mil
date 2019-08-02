@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="quad" default="A" />
+  <node pkg="mil_poi" type="poi_server" name="poi_server">
+    <rosparam command="load" file="$(find sub8_launch)/launch/initial_pois_$(arg quad).yaml" />
+  </node>
+</launch>
