@@ -25,7 +25,8 @@ FAST_SPEED = 1
 SEARCH_HEIGHT = 3
 HEIGHT_BALL_DROPER = 2.3
 TRAVEL_DEPTH = 1  # 2
-
+SEARCH_POINTS = 4
+SEARCH_RADII = [i for i in range(1,5)]
 
 class BallDrop(SubjuGator):
 
@@ -67,6 +68,7 @@ class BallDrop(SubjuGator):
         fprint("Starting Pattern")
         flag = True
         count = 0
+        pattern = gen_pattern(SEARCH_POINTS, RADII)
         while(flag and count < 24):
           fprint(count)
           ball_drop_msg = ball_drop_sub.get_next_message().addErrback(lambda x: None)
@@ -85,14 +87,8 @@ class BallDrop(SubjuGator):
           fprint(x)
           if x is not None:
             flag = False
-          if count % 4 == 0: 
-            yield self.move.forward(1)
-          if count % 4 == 1: 
-            yield self.move.right(1)
-          if count % 4 == 2: 
-            yield self.move.backward(1)
-          if count % 4 == 3: 
-            yield self.move.left(1)
+          i = count % len(pattern)
+          yield self.move.relative(pattern[i]).go(speed=SPEED)
           count = count + 1
 
         fprint('FOUND! Trying to center')
@@ -119,3 +115,21 @@ class BallDrop(SubjuGator):
         yield self.move.to_height(HEIGHT_BALL_DROPER).zero_roll_and_pitch().go(speed=SPEED)
         fprint('Dropping marker')
         yield self.actuators.drop_marker()
+
+
+def gen_pattern(steps, radii=[]):
+    assert(steps > 0)
+    unit_pattern = [np.array([math.cos(i*(math.pi*2/steps)),
+                         math.sin(i*(math.pi*2/steps)), 0])
+                         for i in range(steps)]
+    pattern = [np.array([0,0,0])]
+    for r in radii:
+        for unit_v in unit_pattern:
+            pattern.append(unit_v*r)
+    rel_pattern = [np.array([0,0,0])]
+    for idx, point in enumerate(pattern):
+        print idx
+        if idx > 0:
+            rel_pattern.append(point - pattern[idx-1])
+    rel_pattern.append(-pattern[-1])
+    return rel_pattern

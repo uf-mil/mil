@@ -12,8 +12,8 @@ from std_srvs.srv import SetBool, SetBoolRequest
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
 
 import mil_ros_tools
-import rospy
 from std_srvs.srv import Trigger
+import math
 
 fprint = text_effects.FprintFactory(title="DRACULA_GRAB", msg_color="cyan").fprint
 
@@ -23,6 +23,9 @@ FAST_SPEED = 1
 SEARCH_HEIGHT = 1.5
 HEIGHT_DRACULA_GRABBER = 0.5
 TRAVEL_DEPTH = 0.5  # 2
+SEARCH_POINTS = 4
+SEARCH_RADII = [1,2]
+
 
 
 class DraculaGrabber(SubjuGator):
@@ -51,12 +54,10 @@ class DraculaGrabber(SubjuGator):
         yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
 
         self.vision_proxies.vampire_identifier.start()
-        pattern = [np.array([1,0,0]), 
-                   np.array([-2,0,0]), 
-                   np.array([1,1,0]),
-                   np.array([0,-2,0])]
+        pattern = gen_pattern(SEARCH_POINTS, SEARCH_RADII)
+        print pattern
         search = Searcher(self, self.vision_proxies.vampire_identifier.get_2d, pattern)
-        yield search.start_search()
+        yield search.start_search(timeout = 240)
 
         for i in range(20):
             fprint('Getting location of dracula...')
@@ -80,4 +81,21 @@ class DraculaGrabber(SubjuGator):
         yield self.move.to_height(HEIGHT_DRACULA_GRABBER).zero_roll_and_pitch().go(speed=SPEED)
         fprint('Dropping marker')
         yield self.actuators.gripper_close()
-        
+
+
+def gen_pattern(steps, radii=[]):
+    assert(steps > 0)
+    unit_pattern = [np.array([math.cos(i*(math.pi*2/steps)),
+                         math.sin(i*(math.pi*2/steps)), 0])
+                         for i in range(steps)]
+    pattern = [np.array([0,0,0])]
+    for r in radii:
+        for unit_v in unit_pattern:
+            pattern.append(unit_v*r)
+    rel_pattern = [np.array([0,0,0])]
+    for idx, point in enumerate(pattern):
+        print idx
+        if idx > 0:
+            rel_pattern.append(point - pattern[idx-1])
+    rel_pattern.append(-pattern[-1])
+    return rel_pattern
