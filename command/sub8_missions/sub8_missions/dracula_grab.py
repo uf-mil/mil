@@ -51,13 +51,47 @@ class DraculaGrabber(SubjuGator):
         model = PinholeCameraModel()
         model.fromCameraInfo(cam_info)
 
+        drcula_sub = yield self.nh.subscribe('/bbox_pub', Point)
         yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
-
+        '''
         self.vision_proxies.vampire_identifier.start()
         pattern = gen_pattern(SEARCH_POINTS, SEARCH_RADII)
-        print pattern
         search = Searcher(self, self.vision_proxies.vampire_identifier.get_2d, pattern)
         yield search.start_search(timeout = 240)
+        '''
+
+        fprint("Starting Pattern")
+        flag = True
+        count = 0
+        pattern = gen_pattern(SEARCH_POINTS, SEARCH_RADII)
+        while(flag and count < 24):
+          fprint(count)
+          dracula_msg = dracula_sub.get_next_message().addErrback(lambda x: None)
+
+          start_time = yield self.nh.get_time()
+          while self.nh.get_time() - start_time < genpy.Duration(2): 
+            if len(dracula_msg.callbacks) == 0:
+              fprint('Time out, move again')
+              dracula_msg.cancel()
+
+            yield self.nh.sleep(0.5)
+            dracula_msg.cancel()
+          if count == 24:
+             defer.returnValue(False)
+          x = yield dracula_msg
+          fprint(x)
+          if x is not None:
+            flag = False
+            break
+          i = count % len(pattern)
+          print pattern[i]
+          yield self.move.relative(pattern[i]).go(speed=SPEED)
+          # Let controller catch up a bit
+          yield self.nh.sleep(1)
+          count = count + 1
+
+        fprint('FOUND! Trying to center')
+
 
         for i in range(20):
             fprint('Getting location of dracula...')
@@ -76,7 +110,7 @@ class DraculaGrabber(SubjuGator):
 
             yield self.move.relative_depth(vec2).go(speed=SPEED)
 
-        self.vision_proxies.vampire_identifier.stop()
+        # self.vision_proxies.vampire_identifier.stop()
         fprint('Centered, going to depth {}'.format(HEIGHT_DRACULA_GRABBER))
         yield self.move.to_height(HEIGHT_DRACULA_GRABBER).zero_roll_and_pitch().go(speed=SPEED)
         fprint('Dropping marker')

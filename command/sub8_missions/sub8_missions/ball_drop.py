@@ -48,14 +48,12 @@ class BallDrop(SubjuGator):
 
         fprint('Obtaining cam info message')
         cam_info = yield cam_info_sub.get_next_message()
-        cam_center = np.array([cam_info.width/2, cam_info.height/2])
-        print cam_center
-        cam_norm = np.sqrt(cam_center[0]**2 + cam_center[1]**2)
+        cam_center = np.array([cam_info.width/2, cam_info.height/2])        cam_norm = np.sqrt(cam_center[0]**2 + cam_center[1]**2)
         fprint('Cam center: {}'.format(cam_center))
 
         model = PinholeCameraModel()
         model.fromCameraInfo(cam_info)
-    
+
         try:
             position = yield self.poi.get('ball_drop')
             fprint('Found ball_drop: {}'.format(position), msg_color='green')
@@ -75,7 +73,7 @@ class BallDrop(SubjuGator):
           ball_drop_msg = ball_drop_sub.get_next_message().addErrback(lambda x: None)
 
           start_time = yield self.nh.get_time()
-          while self.nh.get_time() - start_time < genpy.Duration(2): 
+          while self.nh.get_time() - start_time < genpy.Duration(2):
             if len(ball_drop_msg.callbacks) == 0:
               fprint('Time out, move again')
               ball_drop_msg.cancel()
