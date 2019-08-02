@@ -36,8 +36,7 @@ class BuoyMission(SubjuGator):
 
         fprint('Connecting camera')
 
-        cam_info_sub = yield self.nh.subscribe('/camera/front/left/camera_info',
-                                            CameraInfo)
+        cam_info_sub = yield self.front_left.camera_info
 
         fprint('Obtaining cam info message')
         cam_info = yield cam_info_sub.get_next_message()
@@ -49,7 +48,7 @@ class BuoyMission(SubjuGator):
         enable_service = self.nh.get_service_client("/vision/vamp/enable", SetBool)
         yield enable_service(SetBoolRequest(data=True))
         
-        buoy_sub = yield self.nh.subscribe('/roi_pub', RegionOfInterest)
+        buoy_sub = yield self.roi_sub
         fprint("Starting Pattern")
         flag = True
         count = 0

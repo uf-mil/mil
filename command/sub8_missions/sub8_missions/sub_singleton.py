@@ -16,7 +16,7 @@ from sub8_actuator_board.srv import SetValve, SetValveRequest
 from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
 from nav_msgs.msg import Odometry
 from tf.transformations import quaternion_multiply, quaternion_from_euler
-from sensor_msgs.msg import PointCloud2
+from sensor_msgs.msg import PointCloud2, RegionOfInterest
 import sensor_msgs.point_cloud2 as pc2
 from mil_missions_core import BaseMission
 
@@ -31,6 +31,8 @@ from mil_poi import TxPOIClient
 import visualization_msgs.msg as visualization_msgs
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3
+
+from sensor_msgs.msg import CameraInfo
 
 
 class VisionProxy(object):
@@ -398,6 +400,10 @@ class SubjuGator(BaseMission):
         cls.test_mode = False
         cls.pinger_sub = yield cls.nh.subscribe('/hydrophones/processed', ProcessedPing)
         cls.poi = TxPOIClient(cls.nh)
+        cls.down_cam_info = yield cls.nh.subscribe('/camera/down/camera_info', CameraInfo)
+        cls.front_left_cam_info = yield cls.nh.subscribe('/camera/front/left/camera_info', CameraInfo)
+        cls.bbox_sub = yield cls.nh.subscribe('/bbox_pub', Point)
+        cls.roi_sub = yield cls.nh.subscribe('/roi_pub', RegionOfInterest)
 
         cls.pub_markers = yield cls.nh.advertise('/a', MarkerArray)
 

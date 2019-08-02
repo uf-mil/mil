@@ -19,6 +19,10 @@ fprint = text_effects.FprintFactory(title="ARM_TORPDOS", msg_color="cyan").fprin
 
 MISSION = 'Torpedo Challenge'
 SPEED = .3
+
+SHOOT_DEPTH_OVAL = 2.4
+SHOOT_DEPTH_OVAL = 1.8
+
 class ArmTorpedos(SubjuGator):
 
     @util.cancellableInlineCallbacks
@@ -33,13 +37,8 @@ class ArmTorpedos(SubjuGator):
         self.pub_cam_ray = yield self.nh.advertise('/torp/cam_ray', Marker)
         yield self.nh.sleep(1)
 
-        fprint('Connecting camera')
-
-        cam_info_sub = yield self.nh.subscribe('/camera/front/left/camera_info',
-                                            CameraInfo)
-
         fprint('Obtaining cam info message')
-        cam_info = yield cam_info_sub.get_next_message()
+        cam_info = yield self.front_left_cam_info.get_next_message()
         model = PinholeCameraModel()
         model.fromCameraInfo(cam_info)
 
@@ -48,11 +47,10 @@ class ArmTorpedos(SubjuGator):
         enable_service = self.nh.get_service_client("/vision/stake/enable", SetBool)
         yield enable_service(SetBoolRequest(data=True))
 
-        torp_sub = yield self.nh.subscribe('/roi_pub', RegionOfInterest)
-
-        torp_roi = yield torp_sub.get_next_message()
+        torp_roi = yield self.roi_sub.get_next_message()
 
         yield enable_service(SetBoolRequest(data=False))
+
         fprint('Got torp_roi: {}'.format(torp_roi))
         x0 = torp_roi.x_offset
         y0 = torp_roi.y_offset
@@ -60,10 +58,40 @@ class ArmTorpedos(SubjuGator):
         width = torp_roi.width
         torp_xy = [x0+(width/2), y0+(height/2)]
 
+        if torp_roi.do_rectify:
+            yield self.align_and_shoot(torp_xy, model, SHOOT_DEPTH_OVAL)
+
+
+        yield enable_service(SetBoolRequest(data=True))
+        for i in range(20):
+            fprint('Finding heart')
+            torp_roi = yield self.roi_sub.get_next_message()
+            if not torp_roi:
+                fprint('Got torp_roi: {}'.format(torp_roi))
+                x0 = torp_roi.x_offset
+                y0 = torp_roi.y_offset
+                height = torp_roi.height
+                width = torp_roi.width
+                torp_xy = [x0+(width/2), y0+(height/2)]
+                yield enable_service(SetBoolRequest(data=False))
+                yield self.align_and_shoot(torp_xy, model, SHOOT_DEPTH_HEART)
+                break
+
+
+
+
+
+    @util.cancellableInlineCallbacks
+    def align_and_shoot(self, torp_xy, model, depth):
         ray = yield self.get_transform(model, torp_xy)
-        point, norm = self.plane_sonar.get_group_of_points((self.pose.position, ray), min_points=100)
+        sub_pos = self.pose.position
+        point, norm = self.plane_sonar.get_group_of_points((sub_pos, ray), min_points=100)
+
         fprint('point, norm {} {}'.format(point, norm))
-        dest = point + norm
+        t = (norm.dot(point) - norm.dot(sub_pos)) / norm.dot(ray) 
+        z_point = sub_pos + t * ray
+        fprint('z_point: {}'.format(z_point))
+        dest = z_point + norm
 
         start = self.move.zero_roll_and_pitch()
         yield start.go()
@@ -76,7 +104,7 @@ class ArmTorpedos(SubjuGator):
         yield self.nh.sleep(4)
   
         fprint('Move in front', msg_color='yellow')
-        yield self.move.set_position(dest).go(blind=True, speed=SPEED)
+        yield self.move.set_position(dest).depth(depth).go(blind=True, speed=SPEED)
         yield self.nh.sleep(4)
         yield self.move.look_at_without_pitching(point).go(blind=True, speed=SPEED)
         yield self.nh.sleep(1)

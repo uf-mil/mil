@@ -46,12 +46,8 @@ class VampireSlayer(SubjuGator):
 
         fprint('Connecting camera')
 
-        cam_info_sub = yield self.nh.subscribe(
-            '/camera/front/left/camera_info',
-                                              CameraInfo)
-
         fprint('Obtaining cam info message')
-        cam_info = yield cam_info_sub.get_next_message()
+        cam_info = yield self.front_left_cam_info.get_next_message()
         model = PinholeCameraModel()
         model.fromCameraInfo(cam_info)
 

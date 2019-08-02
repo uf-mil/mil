@@ -42,13 +42,10 @@ class BallDrop(SubjuGator):
 
         fprint('Connecting camera')
 
-        cam_info_sub = yield self.nh.subscribe(
-            '/camera/down/camera_info',
-            CameraInfo)
-
         fprint('Obtaining cam info message')
-        cam_info = yield cam_info_sub.get_next_message()
-        cam_center = np.array([cam_info.width/2, cam_info.height/2])        cam_norm = np.sqrt(cam_center[0]**2 + cam_center[1]**2)
+        cam_info = yield self.down_cam_info.get_next_message()
+        cam_center = np.array([cam_info.width/2, cam_info.height/2])
+        cam_norm = np.sqrt(cam_center[0]**2 + cam_center[1]**2)
         fprint('Cam center: {}'.format(cam_center))
 
         model = PinholeCameraModel()
@@ -61,7 +58,6 @@ class BallDrop(SubjuGator):
         except Exception as e:
             fprint(str(e) + 'Forgot to run guess server?', msg_color='yellow')
 
-        ball_drop_sub = yield self.nh.subscribe('/bbox_pub', Point)
         yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
 
         fprint("Starting Pattern")
@@ -70,7 +66,7 @@ class BallDrop(SubjuGator):
         pattern = gen_pattern(SEARCH_POINTS, SEARCH_RADII)
         while(flag and count < 24):
           fprint(count)
-          ball_drop_msg = ball_drop_sub.get_next_message().addErrback(lambda x: None)
+          ball_drop_msg = self.bbox_sub.get_next_message().addErrback(lambda x: None)
 
           start_time = yield self.nh.get_time()
           while self.nh.get_time() - start_time < genpy.Duration(2):
@@ -98,7 +94,7 @@ class BallDrop(SubjuGator):
 
         for i in range(20):
             fprint('Getting location of ball drop...')
-            ball_drop_msg = yield ball_drop_sub.get_next_message()
+            ball_drop_msg = yield self.bbox_sub.get_next_message()
             ball_drop_xy = mil_ros_tools.rosmsg_to_numpy(ball_drop_msg)[:2]
             vec = ball_drop_xy - cam_center
             vec2 = [-vec[1], -vec[0]]
