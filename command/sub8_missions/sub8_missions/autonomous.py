@@ -81,7 +81,7 @@ class Autonomous(SubjuGator):
                         yield self.run_mission(ArmTorpedos(), 180)
 
             fprint("Garlic drop?")
-            yield self.rub_mission(BallDrop(), 400)
+            yield self.run_mission(BallDrop(), 400)
 
             fprint("Vampire Slayer")
             yield self.run_mission(BuoyMission(), 400)

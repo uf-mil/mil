@@ -6,7 +6,7 @@
   <arg name="use_adaptive_controller" default="True" />
   <param name="/environment" value="$(arg environment)" />
   <param name="/is_simulation" value="$(eval environment != 'real')" />
-  <rosparam param="/autonomous">False</rosparam>
+  <rosparam param="/autonomous">True</rosparam>
 
   <include file="$(find sub8_launch)/launch/tf.launch" />
 

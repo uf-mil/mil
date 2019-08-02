@@ -21,7 +21,7 @@ MISSION = 'Torpedo Challenge'
 SPEED = .3
 
 SHOOT_DEPTH_OVAL = 2.4
-SHOOT_DEPTH_OVAL = 1.8
+SHOOT_DEPTH_HEART = 3
 
 class ArmTorpedos(SubjuGator):
 
@@ -32,7 +32,7 @@ class ArmTorpedos(SubjuGator):
         global SPEED
             
         fprint('Beginning Torpedo Mission')
-        yield self.move.forward
+        yield self.move.depth(3).go(speed=SPEED)
 
         self.pub_cam_ray = yield self.nh.advertise('/torp/cam_ray', Marker)
         yield self.nh.sleep(1)

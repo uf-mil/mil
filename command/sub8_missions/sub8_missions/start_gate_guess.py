@@ -12,7 +12,7 @@ fprint = text_effects.FprintFactory(title="PINGER", msg_color="cyan").fprint
 SPEED = 0.8
 DOWN_SPEED = 0.1
 
-DEPTH = 1.5
+DEPTH = 1.9
 
 
 class StartGateGuess(SubjuGator):
@@ -32,7 +32,7 @@ class StartGateGuess(SubjuGator):
       fprint('Found mid {}'.format(mid))
 
       fprint('Looking at gate')
-      yield self.move.depth(DEPTH).set_orientation(sub_start_orientation).go(speed=DOWN_SPEED)
+      yield self.move.depth(DEPTH).go(speed=DOWN_SPEED)
       yield self.move.look_at_without_pitching(mid).go(speed=DOWN_SPEED)
 
       fprint('Going!')
@@ -42,4 +42,4 @@ class StartGateGuess(SubjuGator):
       yield self.nh.sleep(2)
       yield self.move.set_position(mid - 2 * norm).yaw_right_deg(179).depth(DEPTH).go(speed=SPEED)
       yield self.nh.sleep(5)
-      yield self.move.forward(3).go(speed=SPEED)
+      yield self.move.forward(1).go(speed=SPEED)

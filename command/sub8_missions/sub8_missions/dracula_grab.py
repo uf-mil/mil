@@ -117,7 +117,7 @@ class DraculaGrabber(SubjuGator):
         yield self.actuators.gripper_open()
         # self.vision_proxies.vampire_identifier.stop()
         fprint('Centered, going to depth {}'.format(DEPTH_DRACULA_GRABBER))
-        yield self.move.to_depth(DEPTH_DRACULA_GRABBER).zero_roll_and_pitch().go(speed=SPEED)
+        yield self.move.depth(DEPTH_DRACULA_GRABBER).zero_roll_and_pitch().go(speed=SPEED)
         yield self.nh.sleep(3)
         fprint('Dropping marker')
         yield self.actuators.gripper_close()
