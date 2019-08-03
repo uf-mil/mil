@@ -32,7 +32,7 @@ class ArmTorpedos(SubjuGator):
         global SPEED
             
         fprint('Beginning Torpedo Mission')
-        yield self.move.depth(3).go(speed=SPEED)
+        yield self.move.depth(2.7).go(speed=SPEED)
 
         self.pub_cam_ray = yield self.nh.advertise('/torp/cam_ray', Marker)
         yield self.nh.sleep(1)

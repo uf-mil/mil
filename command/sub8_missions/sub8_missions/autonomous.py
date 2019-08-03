@@ -17,6 +17,7 @@ from .surface import Surface
 
 
 from .arm_torpedos import ArmTorpedos
+from .torpedos_test import TorpedosTest
 
 
 from .ball_drop import BallDrop
@@ -64,7 +65,9 @@ class Autonomous(SubjuGator):
                         yield self.run_mission(Surface(), 30)
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')
-                        yield self.run_mission(ArmTorpedos(), 180)
+                        c = yield self.run_mission(ArmTorpedos(), 180)
+                        if not c:
+                            yield self.run_mission(TorpedosTest(), 10)
 
             # Go to the other pinger mission and do respective mission
             fprint('Waiting 5 secs')
@@ -82,7 +85,9 @@ class Autonomous(SubjuGator):
 
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')
-                        yield self.run_mission(ArmTorpedos(), 180)
+                        c = yield self.run_mission(ArmTorpedos(), 180)
+                        if not c:
+                            yield self.run_mission(TorpedosTest(), 10)
 
             fprint("Garlic drop?")
             yield self.run_mission(BallDrop(), 400)
