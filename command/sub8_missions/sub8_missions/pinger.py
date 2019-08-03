@@ -22,7 +22,7 @@ DELTA = 35000
 SCHWARTZ = 37000
 
 SPEED = 1
-FREQUENCY = ALPHA
+FREQUENCY = CHARLIE
 FREQUENCY_TOL = 3000
 
 PINGER_HEIGHT = 3 # how high to go above pinger after found
@@ -118,6 +118,13 @@ class Pinger(SubjuGator):
                 pinger_id = np.argmin(dists)
                 # pinger_id 0 = pinger_surface
                 # pinger_id 1 = pinger_shooter
+                if pinger_id == 0:
+                    # yikes, my bad guys
+                    yield self.nh.set_param("octagon_position_x", str(self.pose.position[0]))
+                    yield self.nh.set_param("octagon_position_y", str(self.pose.position[1]))
+                    yield self.nh.set_param("octagon_position_z", str(self.pose.position[2]))
+                    fprint('Set {}'.format(self.pose.position))
+          
                 if pinger_id == 1:
                     fprint('===DOING SHOOTER SETUP===', msg_color='green')
                     sub_pos = yield self.pose.position

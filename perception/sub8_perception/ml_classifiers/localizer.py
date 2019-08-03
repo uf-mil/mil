@@ -114,6 +114,7 @@ class classifier(object):
         self.bbox_pub = rospy.Publisher('bbox_pub', Point, queue_size=1)
         self.roi_pub = rospy.Publisher('roi_pub', RegionOfInterest, queue_size=1)
         self.dictionary = {}
+        self.time_thresh = .3
 
     def check_timestamp(self):
         '''
@@ -124,14 +125,15 @@ class classifier(object):
         see = self.see_sub.last_image_header
         if abs(see.stamp.secs - int(rospy.get_time())
                ) > self.time_thresh:
+            print(abs(see.stamp.secs - int(rospy.get_time())))
             return True
         else:
             return False
 
     def img_callback(self, data):
         self.parse_label_map()
-        # if self.check_timestamp():
-           # return None
+        if self.check_timestamp():
+           return None
         
         cv_image = data
         cv_image = self.generator.CLAHE(cv_image)

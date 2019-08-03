@@ -13,6 +13,7 @@ from .pinger import Pinger
 
 
 from .dracula_grab import DraculaGrabber
+from .surface import Surface
 
 
 from .arm_torpedos import ArmTorpedos
@@ -60,6 +61,7 @@ class Autonomous(SubjuGator):
                     if (yield self.nh.get_param('pinger_where')) == 0:
                         fprint('Surface Mission')
                         yield self.run_mission(DraculaGrabber(), 100)
+                        yield self.run_mission(Surface(), 30)
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')
                         yield self.run_mission(ArmTorpedos(), 180)
@@ -75,6 +77,8 @@ class Autonomous(SubjuGator):
                     if (yield self.nh.get_param('pinger_where')) == 0:
                         fprint('Surface Mission')
                         yield self.run_mission(DraculaGrabber(), 100)
+                        yield self.run_mission(Surface(), 30)
+
 
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')

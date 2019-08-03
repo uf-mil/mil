@@ -23,7 +23,7 @@ SPEED = 0.25
 FAST_SPEED = 1
 
 SEARCH_DEPTH= 1.5
-DEPTH_DRACULA_GRABBER = 1.75
+DEPTH_DRACULA_GRABBER = 2.1
 TRAVEL_DEPTH = 1.6  # 2
 SEARCH_POINTS = 8
 SEARCH_RADII = [0.75,1.5]
@@ -117,15 +117,15 @@ class DraculaGrabber(SubjuGator):
         yield self.actuators.gripper_open()
         # self.vision_proxies.vampire_identifier.stop()
         fprint('Centered, going to depth {}'.format(DEPTH_DRACULA_GRABBER))
-        yield self.move.depth(DEPTH_DRACULA_GRABBER).zero_roll_and_pitch().go(speed=SPEED)
+        yield self.move.depth(DEPTH_DRACULA_GRABBER).backward(.2).zero_roll_and_pitch().go(speed=SPEED)
         yield self.nh.sleep(3)
         fprint('Dropping marker')
         yield self.actuators.gripper_close()
-        yield self.move.set_position(start_position).go(speed=0.3)
-        yield self.move.depth(0.2).go()
-        yield self.nh.sleep(5)
-        yield self.move.depth(1.5).go()
-        yield self.actuators.gripper_open()
+        #yield self.move.set_position(start_position).go(speed=0.3)
+        #yield self.move.depth(0.2).go()
+        #yield self.nh.sleep(5)
+        #yield self.move.depth(1.5).go()
+        #yield self.actuators.gripper_open()
         
 
 
