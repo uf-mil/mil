@@ -28,3 +28,19 @@ There was a major schism, in which many people left the lab, as a result of a di
 * Every team in the lab is stacked with skilled people
 * We have alumni all over the country in many of the most prominent robotics groups in the world
 * Graphics card computing!
+* NaviGator wins first place, the lab peaks.
+
+# The Dark Ages (2017 - 2018)
+* Most of the team leaves for Uber, many of them not finishing their degrees. 
+* Much knowledge is lost and the old parts that "just work" become holy objects that are worshiped.
+* SubjuGator fails to go through start gate. NaviGator gathers dust. 
+* Valve box floods.
+
+# Rebuilding (2018 - 2019)
+* After the rapid collapse of the MIL's membership, a slow rebuilding process begins. Some members return from their internships and complete their degrees.
+* Membership stabilizes and recruiting begins. 
+* Machine Learning is endorsed by Dr. Schwartz in the lab for the first time. 
+* NaviGator earns fourth place.
+* Valve box continues to flood. 
+* Sonar is successfully deployed in competition and SubjuGator passes the infamous start gate.  
+* Daniel wept.
