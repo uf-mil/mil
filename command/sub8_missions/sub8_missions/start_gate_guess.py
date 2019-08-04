@@ -12,7 +12,7 @@ fprint = text_effects.FprintFactory(title="PINGER", msg_color="cyan").fprint
 SPEED = 1
 DOWN_SPEED = 0.5
 
-DEPTH = 1.9
+DEPTH = 0.5
 
 
 class StartGateGuess(SubjuGator):
@@ -34,23 +34,16 @@ class StartGateGuess(SubjuGator):
       fprint('Looking at gate')
       yield self.move.depth(DEPTH).go(speed=DOWN_SPEED)
       yield self.move.look_at_without_pitching(mid).go(speed=DOWN_SPEED)
+      yield self.nh.sleep(3)
 
       fprint('Going!')
       yield self.move.set_position(mid + 2 * norm).depth(DEPTH).go(speed=SPEED)
-      yield self.nh.sleep(2)
+      yield self.nh.sleep(5)
       yield self.move.set_position(mid).depth(DEPTH).go(speed=SPEED)
-      yield self.nh.sleep(2)
+      yield self.nh.sleep(5)
       yield self.move.set_position(mid - 2 * norm).depth(DEPTH).go(speed=SPEED)
-      yield self.nh.sleep(2)
-      yield self.move.yaw_right_deg(179).go(speed=SPEED)
-      yield self.nh.sleep(2)
-      yield self.move.yaw_right_deg(179).go(speed=SPEED)
-      yield self.nh.sleep(2)
-      yield self.move.yaw_right_deg(179).go(speed=SPEED)
-      yield self.nh.sleep(2)
-      yield self.move.yaw_right_deg(179).go(speed=SPEED)
-      yield self.nh.sleep(2)
-      yield self.move.yaw_right_deg(17).go(speed=SPEED)
-      yield self.nh.sleep(1)
-
-      yield self.move.forward(1).go(speed=SPEED)
+      yield self.nh.sleep(5)
+      for _ in range(6):
+        yield self.move.yaw_right_deg(120).depth(DEPTH).go(speed=SPEED)
+        yield self.nh.sleep(2)
+#      yield self.move.forward(2).go(speed=SPEED)

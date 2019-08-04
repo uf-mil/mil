@@ -70,7 +70,7 @@ class BallDrop(SubjuGator):
           ball_drop_msg = self.bbox_sub.get_next_message().addErrback(lambda x: None)
 
           start_time = yield self.nh.get_time()
-          while self.nh.get_time() - start_time < genpy.Duration(2):
+          while self.nh.get_time() - start_time < genpy.Duration(3):
             if len(ball_drop_msg.callbacks) == 0:
               fprint('Time out, move again')
               ball_drop_msg.cancel()
@@ -78,7 +78,10 @@ class BallDrop(SubjuGator):
             yield self.nh.sleep(0.5)
             ball_drop_msg.cancel()
           if count == 24:
-             defer.returnValue(False)
+            yield self.actuators.drop_marker()
+            yield self.nh.sleep(0.5)
+            yield self.actuators.drop_marker()
+            defer.returnValue(False)
           x = yield ball_drop_msg
           fprint(x)
           if x is not None:
@@ -114,6 +117,8 @@ class BallDrop(SubjuGator):
         fprint('Centered, going to depth {}'.format(HEIGHT_BALL_DROPER))
         yield self.move.to_height(HEIGHT_BALL_DROPER).zero_roll_and_pitch().go(speed=SPEED)
         fprint('Dropping marker')
+        yield self.actuators.drop_marker()
+        yield self.nh.sleep(0.5)
         yield self.actuators.drop_marker()
 
 

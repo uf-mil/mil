@@ -1,8 +1,23 @@
 global_frame: map
 initial_pois:
-  pinger_surface: [0, 1, 0]
-  pinger_shooter: [10, 5, 0]
-  start_gate1: [11, -3, 0]
-  start_gate2: [11, 3, 0]
-  ball_drop: [1, 3, 0]
-  vampire_slayer: [20, 5, 0]
+  ## depth 
+  pinger_surface: [37.0, -23.0, 0.0]
+  #pinger_surface: [23.74119377, 25.437702178, 0]
+
+  ## 1.6m depth when barley over the vampire we need to shoot
+  pinger_shooter:  [16.0, -23.0, 0.0]
+  #pinger_shooter: [15.9621112213, 24.75651931, 0]
+ 
+
+  #start_gate1: [8.41026, 9.58137, 0]
+  start_gate1:  [10.0, -7.6, 0.0]
+  #start_gate2: [11.593485, 6.67422437, 0]
+  start_gate2:  [11.0, -4.5, 0.0]
+  ##distance from start_gate to wall ~6.5ft / 2.1m
+
+  #check balldrop
+  ball_drop: [30.0, -15.0, 0.0]
+  ## depth which both can be seen -1.6m
+  vampire_slayer: [19.0, -13.7, 0.0]
+#corner_ab: [27.430635452270508, 30.93187713623047, 0.0]
+#corner_cd: 

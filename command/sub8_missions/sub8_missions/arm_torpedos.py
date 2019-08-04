@@ -13,6 +13,7 @@ from sensor_msgs.msg import CameraInfo, RegionOfInterest
 from image_geometry import PinholeCameraModel
 from std_srvs.srv import SetBool, SetBoolRequest
 from twisted.internet import defer
+import genpy
 
 
 fprint = text_effects.FprintFactory(title="ARM_TORPDOS", msg_color="cyan").fprint
@@ -47,7 +48,44 @@ class ArmTorpedos(SubjuGator):
         enable_service = self.nh.get_service_client("/vision/stake/enable", SetBool)
         yield enable_service(SetBoolRequest(data=True))
 
-        torp_roi = yield self.roi_sub.get_next_message()
+        
+        fprint("Starting Pattern")
+        flag = True
+        count = 0
+
+        pattern = [np.array([0, 0.2, 0]) for i in range(1,6)]
+        pattern = pattern + [np.array([0.2, 0, 0]) for i in range(1,4)]
+        pattern = pattern +[np.array([0, 0, 0.2]) for i in range(1,4)]
+        pattern = pattern +[np.array([0, -0.2, 0]) for i in range(1,6)]
+        pattern = pattern +[np.array([0, 0, -0.2]) for i in range(1,4)]
+        while(flag and count < 24):
+          fprint(count)
+          torp_roi_msg = self.roi_sub.get_next_message().addErrback(lambda x: None)
+
+          start_time = yield self.nh.get_time()
+          while self.nh.get_time() - start_time < genpy.Duration(2):
+            if len(torp_roi_msg.callbacks) == 0:
+              fprint('Time out, move again')
+              torp_roi_msg.cancel()
+              #flag = False
+            yield self.nh.sleep(0.05)
+            torp_roi_msg.cancel()
+          if count == 24:
+            count = 0
+            continue
+          x = yield torp_roi_msg
+          fprint(x)
+          if x is not None:
+            flag = False
+            break
+          i = count % len(pattern)
+          print pattern[i]
+          yield self.move.relative(pattern[i]).go(speed=SPEED)
+          # Let controller catch up a bit
+          yield self.nh.sleep(1)
+          count = count + 1
+
+        torp_roi = x
 
         yield enable_service(SetBoolRequest(data=False))
 

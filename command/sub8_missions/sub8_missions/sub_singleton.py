@@ -223,12 +223,13 @@ class _ActuatorProxy(object):
 
     @util.cancellableInlineCallbacks
     def gripper_open(self):
-        self.close(4)
-        yield self.pulse(5)
+        self.close(5) # 5
+        yield self.nh.sleep(0.5)
+        yield self.pulse(7) # 7
         return
 
     def gripper_close(self):
-        self.open(4)
+        self.open(5) # 5
         return
 
     @util.cancellableInlineCallbacks

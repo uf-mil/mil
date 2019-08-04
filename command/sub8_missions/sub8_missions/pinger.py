@@ -48,8 +48,16 @@ class Pinger(SubjuGator):
             pinger_1_req = yield self.poi.get('pinger_surface')
             pinger_2_req = yield self.poi.get('pinger_shooter')
             fprint('Found two pinger guesses {} {}'.format(pinger_1_req, pinger_2_req), msg_color='green')
+            pinger_midpoint = (pinger_1_req + pinger_2_req) / 2
+            half_way = pinger_midpoint / 2
+            fprint('Looking at the poi')
+            yield self.move.look_at_without_pitching(pinger_midpoint).go(speed=0.5)
+            yield self.nh.sleep(3)
+            fprint('Moving to the midpoint of the midpoint poi')
+            yield self.move.set_position(half_way).go(speed=1)
+            yield self.nh.sleep(5)
 
-            # check \/
+
             pinger_guess = yield self.transform_to_baselink(
                 self, pinger_1_req, pinger_2_req)
             fprint(pinger_guess)
@@ -130,7 +138,7 @@ class Pinger(SubjuGator):
                     sub_pos = yield self.pose.position
                     sub_vec = -sub_pos / np.linalg.norm(sub_pos)
                     fprint('Moving away'.format(sub_vec))
-                    yield self.move.relative(3 * sub_vec).depth(MOVE_AT_DEPTH).go(speed=SPEED)
+                    yield self.move.set_position(sub_pos + ((2.5 * sub_vec)).depth(MOVE_AT_DEPTH).go(speed=SPEED)
                     yield self.nh.sleep(1)
                     fprint('Looking at shooter')
                     yield self.move.look_at_without_pitching(sub_pos).go()

@@ -61,7 +61,7 @@ class BuoyMission(SubjuGator):
               fprint('cancel')
               buoy_roi.cancel()
               #flag = False
-            yield self.nh.sleep(0.5)
+            yield self.nh.sleep(0.05)
             buoy_roi.cancel()
           if count == 24:
              defer.returnValue(False)

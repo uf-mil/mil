@@ -50,6 +50,7 @@ class classifier(object):
         self.vamp = args.vamp
         self.stake = args.stake
         self.dracula = args.dracula
+        self.score_thresh = rospy.get_param('~score_thresh', 0.99)
 
         if self.garlic:
             self.target = 'garlic'
@@ -73,14 +74,13 @@ class classifier(object):
             self.target = 'stake'
             self.num_object_detect = rospy.get_param('~object_detected', 2)
             self.classes = 2
+            self.score_thresh = 0.80
             self.see_sub = mil_tools.Image_Subscriber(
               topic="/camera/front/left/image_rect_color", callback=self.img_callback)
         # Number of frames
         self.num_frames = rospy.get_param('~num_frames', 0)
         # Number of objects we detect
         self.num_objects_detect = rospy.get_param('~objects_detected', 1)
-        # Mininum confidence score for the detections
-        self.score_thresh = rospy.get_param('~score_thresh', 0.99)
         # If we want debug images published or not.
         self.debug = rospy.get_param('~debug', True)
         # Camera image width and height

@@ -46,8 +46,8 @@ class launcher(object):
             alive_processes[self.name] = subprocess.Popen(
                 'rosrun sub8_perception localizer.py --{}'.format(self.name),
                 shell=True,
-                #stdout=subprocess.PIPE,
-                #stderr=subprocess.STDOUT,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
                 preexec_fn=os.setsid)
         else:
             rospy.loginfo('Disabled {}'.format(self.name))

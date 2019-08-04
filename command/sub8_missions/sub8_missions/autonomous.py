@@ -51,7 +51,7 @@ class Autonomous(SubjuGator):
 
         try:
             # Run start gate mission
-            yield self.run_mission(StartGateGuess(), 60)
+            yield self.run_mission(StartGateGuess(), 100)
 
             # Go to pinger and do corresponding mission
             completed = yield self.run_mission(Pinger(), 300)
@@ -61,7 +61,7 @@ class Autonomous(SubjuGator):
                 if (yield self.nh.has_param('pinger_where')):
                     if (yield self.nh.get_param('pinger_where')) == 0:
                         fprint('Surface Mission')
-                        yield self.run_mission(DraculaGrabber(), 100)
+                        # yield self.run_mission(DraculaGrabber(), 100)
                         yield self.run_mission(Surface(), 30)
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')
@@ -79,7 +79,7 @@ class Autonomous(SubjuGator):
                 if (yield self.nh.has_param('pinger_where')):
                     if (yield self.nh.get_param('pinger_where')) == 0:
                         fprint('Surface Mission')
-                        yield self.run_mission(DraculaGrabber(), 100)
+                        # yield self.run_mission(DraculaGrabber(), 100)
                         yield self.run_mission(Surface(), 30)
 
 
@@ -90,10 +90,12 @@ class Autonomous(SubjuGator):
                             yield self.run_mission(TorpedosTest(), 10)
 
             fprint("Garlic drop?")
-            yield self.run_mission(BallDrop(), 400)
+            x = yield self.run_mission(BallDrop(), 200)
+            if not x:
+                yield self.actuator.drop_marker()
 
             fprint("Vampire Slayer")
-            yield self.run_mission(BuoyMission(), 400)
+            yield self.run_mission(BuoyMission(), 280)
 
 
         except Exception as e:
@@ -144,12 +146,12 @@ class Autonomous(SubjuGator):
 
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
-        #yield self.do_mission()
-        al = yield TxAlarmListener.init(self.nh, "network-loss")
-        self._auto_param_watchdog(self.nh)
+        yield self.do_mission()
+        #al = yield TxAlarmListener.init(self.nh, "network-loss")
+        #self._auto_param_watchdog(self.nh)
 
-        call_with_sub = lambda *args: self._check_for_run(*args)
-        al.add_callback(call_with_sub, call_when_cleared=False)
+        #call_with_sub = lambda *args: self._check_for_run(*args)
+        #al.add_callback(call_with_sub, call_when_cleared=False)
 
-        fprint("Waiting for network-loss...", msg_color="blue")
-        yield defer.Deferred()
+        #fprint("Waiting for network-loss...", msg_color="blue")
+        #yield defer.Deferred()
