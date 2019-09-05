@@ -3,9 +3,11 @@ To get started in MIL, visit the lab in MAEC 126; the software team will walk yo
 
 # Steps to Start Working in MIL
 
+**NOTE: The MIL autonomy stack is undergoing [significant changes](https://docs.google.com/document/d/18U9Je7EnWjsQSqauGDCuaXYYGR4Ay0JB1_JtdFSdQ8M/edit) which will affect the getting started process. For now, follow along as below by installing 18.04 and playing around with ROS**
+
 Assuming you've already come by the lab and spoken to us:
 
-1. Install Ubuntu 16.04 in a virtual machine or on your bare metal if you're experienced with it
+1. Install Ubuntu 18.04 in a virtual machine or on your bare metal if you're experienced with it
     * Debian 8.7 is also supported if you prefer that
     * Bonus points if you're already running a Linux based OS
 2. See the readme in the [installer repository](https://github.com/uf-mil/installer) for information about how to install our software stack
