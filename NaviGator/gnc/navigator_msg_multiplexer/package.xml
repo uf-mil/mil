@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package>
+  <name>navigator_msg_multiplexer</name>
+  <version>0.0.0</version>
+  <description>The navigator messgage multiplexer package</description>
+  <maintainer email="zachgoins@todo.todo">zachgoins</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>

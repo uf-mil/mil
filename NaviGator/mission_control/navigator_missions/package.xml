@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package>
+  <name>navigator_missions</name>
+  <version>0.5.0</version>
+  <description>The navigator_missions package</description>
+
+  <maintainer email="matthew.langford95@gmail.com">Matthew</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>navigator_scan_the_code</build_depend>
+  <run_depend>navigator_scan_the_code</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>rawgps_common</run_depend>
+  <run_depend>mil_tasks</run_depend>
+  <export>
+  </export>
+
+</package>

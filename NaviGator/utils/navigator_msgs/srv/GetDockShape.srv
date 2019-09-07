@@ -1,0 +1,19 @@
+string Shape
+string CROSS=CROSS
+string TRIANGLE=TRIANGLE
+string CIRCLE =CIRCLE
+
+string ANY=ANY #Set color and or shape to ANY to return any shapes and/or colors
+
+string Color
+string RED=RED
+string BLUE=BLUE
+string GREEN=GREEN
+---
+navigator_msgs/DockShape symbol
+bool found
+string error
+string INVALID_REQUEST=INVALID_REQUEST
+string NODE_DISABLED=NODE_DISABLED
+string TOO_SMALL_SAMPLE=TOO_SMALL_SAMPLE
+string SHAPE_NOT_FOUND=SHAPE_NOT_FOUND

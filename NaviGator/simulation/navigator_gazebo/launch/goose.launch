@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!-- Run gazebo with navigator in a RobotX course -->
+<launch>
+  <arg name="gui" default="true" />
+
+  <!-- URDF Model of Navigator -->
+  <arg name="urdf" default="$(find navigator_gazebo)/urdf/navigator.urdf" />
+  <param name="robot_description" textfile="$(arg urdf)"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find navigator_gazebo)/worlds/course.world" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="verbose" value="true" />
+  </include>
+
+  <!-- Spawn model in Gazebo -->
+  <include file="$(find navigator_gazebo)/launch/spawn_navigator.launch" />
+</launch>

@@ -1,0 +1,16 @@
+<launch>
+    <node pkg="mil_pneumatic_actuator" type="pneumatic_actuator_node" name="actuator_driver" output="screen">
+        <param name="port" value="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A403IMCP-if00-port0"/>
+        <rosparam param="actuators">
+          LAUNCHER_RELOAD_EXTEND: 2
+          LAUNCHER_RELOAD_RETRACT: 1
+          LAUNCHER_FIRE:
+                type: pulse
+                pulse_time: 0.5
+                ports:
+                    open_port:
+                        id: 12
+                        default: False
+        </rosparam>
+    </node>
+</launch>

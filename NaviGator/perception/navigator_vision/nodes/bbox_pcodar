@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+import rospy
+from mil_msgs.msg import ObjectsInImage
+from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+from mil_tools import rosmsg_to_numpy
+import tf2_ros
+from tf2_geometry_msgs import do_transform_point
+from geometry_msgs.msg import PointStamped
+from image_geometry import PinholeCameraModel
+from sensor_msgs.msg import CameraInfo
+import numpy as np
+
+
+class BBOXPCODAR(object):
+    def __init__(self):
+        self.max_distance = 20.
+        self.camera_model = None
+        self.confidence_thresh = 0.
+        self.camera_info_sub = rospy.Subscriber('/camera/front/right/camera_info',
+                                                CameraInfo, self.camera_info_cb, queue_size=1)
+        self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(30))
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
+        self.cached_objects = {}
+        self.pcodar_client = rospy.ServiceProxy('/database/requests', ObjectDBQuery)
+        self.bbox_sub = rospy.Subscriber('/bbox_pub', ObjectsInImage, self.new_objects)
+        self.update_objects_timer = rospy.Timer(rospy.Duration(10.0), self.update_pcodar_objects)
+
+    def camera_info_cb(self, info):
+        if self.camera_model is not None:
+            return
+        self.camera_model = PinholeCameraModel()
+        self.camera_model.fromCameraInfo(info)
+        rospy.loginfo('Got camera info')
+
+    def update_pcodar_objects(self, timer_event):
+        req = ObjectDBQueryRequest(name="all")
+        res = self.pcodar_client(req)
+        for obj in res.objects:
+            self.cached_objects[obj.id] = obj.pose.position
+        rospy.loginfo('Updated objects.')
+
+    @staticmethod
+    def point_in_bbox(point, bbox):
+        return point[0] > bbox[0][0] and point[0] < bbox[1][0] and point[1] > bbox[0][1] and point[1] < bbox[1][1]
+
+    def new_objects(self, msg):
+        if self.camera_model is None:
+            return
+        # Get transform from enu to camera currently
+        try:
+            transform = self.tf_buffer.lookup_transform(msg.header.frame_id, "enu",
+                                                        msg.header.stamp, timeout=rospy.Duration(3, ))
+        except tf2_ros.TransformException as e:
+            rospy.logwarn(e)
+            return
+        for idn, point in self.cached_objects.iteritems():
+            ps = PointStamped()
+            ps.point = point
+            ps.header.frame_id = "enu"
+            ps.header.stamp = msg.header.stamp
+
+            ps_camera = do_transform_point(ps, transform)
+
+            object_pose_camera = rosmsg_to_numpy(ps_camera.point)
+
+            if np.linalg.norm(object_pose_camera) > self.max_distance:
+                continue
+
+            object_pixel = self.camera_model.project3dToPixel(object_pose_camera)
+
+            rospy.loginfo('Object {} at pixel {}'.format(idn, object_pixel))
+
+            for obj in msg.objects:
+                points = rosmsg_to_numpy(obj.points)
+
+                if self.point_in_bbox(object_pixel, points):
+                    rospy.loginfo('{} found for {}'.format(obj.name, idn))
+                    req = ObjectDBQueryRequest()
+                    req.cmd = '{}={}'.format(idn, obj.name)
+                    self.pcodar_client(req)
+
+
+if __name__ == '__main__':
+    rospy.init_node('bbox_pcodar')
+    b = BBOXPCODAR()
+    rospy.spin()

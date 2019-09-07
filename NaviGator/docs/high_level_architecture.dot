@@ -1,0 +1,56 @@
+digraph navigator {
+  label="NaviGator High Level Software";
+
+  subgraph clusterSensors {
+    label="Sensors";
+
+    velodyne[label="Velodyne LIDAR"];
+    fl_camera[label="FL Camera"];
+    fr_camera[label="FR Camera"];
+    starboard_camera[label="Starboard Camera"];
+    state_estimation[label="Sylphase GPS/INS"];
+  }
+
+  subgraph clusterCommand {
+    label="Command";
+
+    missions[label="Missions"];
+    xbox_controller[label="XBOX Gamepad"];
+    emergency_controller[label="RF Emergency Controller"];
+  }
+
+  subgraph clusterPerception {
+    label="Perception";
+
+    oa[label="Mapping / Object Classification"];
+    computer_vision[label="Computer Vision"];
+  }
+
+  subgraph clusterActuators {
+    label="Actuators";
+
+    fl[label="FL Motor"];
+    fr[label="FR Motor"];
+    bl[label="BL Motor"];
+    br[label="BR Motor"];
+  }
+
+  subgraph clusterGNC {
+    label="GNC";
+    path_planner[label="Path Planner (lqrrt)"];
+    controller[label="Controller (MRAC)"];
+    thrust_mapper[label="Thruster Mapper"];
+
+    path_planner -> controller [label="Trajectory"];
+    thrust_mapper -> {fl, fr, bl, br} [label="Effort"];
+  }
+
+  missions -> path_planner [label="Pose goal"];
+  {controller, xbox_controller, emergency_controller} -> thrust_mapper [label="Wrench"];
+  state_estimation -> {path_planner, controller} [label="Current Pose"];
+  {fl_camera, fr_camera, starboard_camera} -> computer_vision [label="Images"];
+  oa -> path_planner [label="Occupancy Grid"];
+  oa -> missions [label="Classified Objects"];
+  velodyne -> oa [label="Pointcloud"];
+  computer_vision -> missions [label="Identified Objects"];
+}
