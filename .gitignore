@@ -1,91 +1,39 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
+# Sphinx output
+docs/_build
 
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*,cover
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# Binaries
-*.npz
-
-# PyCharm
-.idea/
-
-# Other
-*.mtl
-*.obj
-!transdec.obj
-
-*.dic
-pedometry.txt
-.DS_STORE
-# Autosave files from QtCreator
-*.autosave
-*~
-
-# Vim swaps
-*.swp
+# Editor cache files
 *.swo
+*.swp
 
-# Ignore proprietary blueview sdk
-drivers/mil_blueview_driver/bvtsdk
+# Prerequisites
+*.d
 
-# Ignore Tensorflow models and any Images or Annotations left over.
-perception/mil_mlp/docker_tf/transfer_learning/models/
-perception/mil_mlp/ldp/Images/
-perception/mil_mlp/ldp/Annotations/
-perception/mil_mlp/ldp/test/
-perception/mil_mlp/ldp/train/
-perception/mil_mlp/docker_tf/transfer_learning/data/
-perception/mil_mlp/docker_tf/transfer_learning/data/
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app

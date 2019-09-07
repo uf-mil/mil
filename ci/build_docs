@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Get root directory of MIL repo
+MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
+
+# Directory to build docs into
+BUILD_DIR=/tmp/docs
+mkdir -p $BUILD_DIR/doctrees
+mkdir -p $BUILD_DIR/html
+sphinx-build -b html -d $BUILD_DIR/doctrees  "-W" $MIL_DIR $BUILD_DIR/html
