@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>sub8_trajectory_generator</name>
+  <version>1.0.0</version>
+
+  <description>The sub8_trajectory_generator package</description>
+
+  <maintainer email="pemami@ufl.edu">Patrick Emami</maintainer>
+
+  <license>MIT</license>
+  
+  <url>https://github.com/uf-mil/SubjuGator/wiki/Trajectory-Generator</url>
+  <author>Patrick Emami</author>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>geometry_msgs</depend>
+  <depend>OMPL</depend>
+  <depend>roscpp</depend>
+  <depend>sub8_msgs</depend>
+  <depend>sub8_alarm</depend>
+  <depend>cmake_modules</depend>
+
+</package>

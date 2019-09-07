@@ -1,0 +1,105 @@
+# This file has all of the thruster layout information needed by the sub
+# This is used when simulating or running actual thrusters.
+# CONFIDENT_MODE means that the thrusters on this port will never go offline (command packets
+#   will always be sent even if no responses are received)
+
+thruster_ports:
+  - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if00-port0
+    thruster_names: [FLH, FLV]
+    CONFIDENT_MODE: False
+  - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if01-port0
+    thruster_names: [FRH, FRV]
+    CONFIDENT_MODE: False
+  - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if02-port0
+    thruster_names: [BLH, BLV]
+    CONFIDENT_MODE: False
+  - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if03-port0
+    thruster_names: [BRH, BRV]
+    CONFIDENT_MODE: False
+
+# node_id's should be globally unique among all thrusters
+# position and orientation vectors should be specified in body frame
+# calib contains the 4th to 1st order coefficients for a polynomial
+#     mapping from thrust in Newtons to effort (e = t[0]x^4 + t[1]x^3 + t[2]x^2 + t[3]x)
+thrusters:
+  FLH: {
+    node_id:  3,
+    position:  [0.2678, 0.2795, 0.0],
+    direction: [0.866, -0.5, 0.0],
+    thrust_bounds:    [-81.85, 99.7],
+    calib:  {
+        forward:  [5.24818e-10, -1.52077e-07, 1.63132e-05, -0.000803, 0.026558, 0.023288],
+        backward: [1.34799e-09, 3.08795e-07, 2.66502e-05, 0.0010796, 0.0304559, -0.033722]
+    }
+  }
+  FLV: {
+    node_id:  1,
+    position:  [0.1583, 0.169, 0.0142],
+    direction: [0.0, 0.0, 1.0],
+    thrust_bounds:    [-81.85, 99.7],
+    calib:  {
+        forward:  [5.24818e-10, -1.52077e-07, 1.63132e-05, -0.000803, 0.026558, 0.023288],
+        backward: [1.34799e-09, 3.08795e-07, 2.66502e-05, 0.0010796, 0.0304559, -0.033722]
+    }
+  }
+  FRH: {
+    node_id:  2,
+    position:  [0.2678, -0.2795, 0.0],
+    direction: [0.866, 0.5, 0.0],
+    thrust_bounds:    [-81.85, 99.7],
+    calib:  {
+        forward:  [5.24818e-10, -1.52077e-07, 1.63132e-05, -0.000803, 0.026558, 0.023288],
+        backward: [1.34799e-09, 3.08795e-07, 2.66502e-05, 0.0010796, 0.0304559, -0.033722]
+    }
+  }
+  FRV: {
+    node_id:  0,
+    position:  [0.1583, -0.169, 0.0142],
+    direction: [0.0, 0.0, -1.0],
+    thrust_bounds:    [-81.85, 99.7],
+    calib:  {
+        forward:  [5.24818e-10, -1.52077e-07, 1.63132e-05, -0.000803, 0.026558, 0.023288],
+        backward: [1.34799e-09, 3.08795e-07, 2.66502e-05, 0.0010796, 0.0304559, -0.033722]
+    }
+  }
+  BLH: {
+    node_id:  4,
+    position:  [-0.2678, 0.2795, 0.0],
+    direction: [0.866, 0.5, 0.0],
+    thrust_bounds:    [-81.85, 99.7],
+    calib:  {
+        forward:  [5.24818e-10, -1.52077e-07, 1.63132e-05, -0.000803, 0.026558, 0.023288],
+        backward: [1.34799e-09, 3.08795e-07, 2.66502e-05, 0.0010796, 0.0304559, -0.033722]
+    }
+  }
+  BLV: {
+    node_id:  5,
+    position:  [-0.1583, 0.169, 0.0142],
+    direction: [0.0, 0.0, 1.0],
+    thrust_bounds:    [-81.85, 99.7],
+    calib:  {
+        forward:  [5.24818e-10, -1.52077e-07, 1.63132e-05, -0.000803, 0.026558, 0.023288],
+        backward: [1.34799e-09, 3.08795e-07, 2.66502e-05, 0.0010796, 0.0304559, -0.033722]
+    }
+  }
+  BRH: {
+    node_id:  6,
+    position:  [-0.2678, -0.2795, 0.0],
+    direction: [0.866, -0.5, 0.0],
+    thrust_bounds:    [-81.85, 99.7],
+    calib:  {
+        forward:  [5.24818e-10, -1.52077e-07, 1.63132e-05, -0.000803, 0.026558, 0.023288],
+        backward: [1.34799e-09, 3.08795e-07, 2.66502e-05, 0.0010796, 0.0304559, -0.033722]
+    }
+  }
+  BRV: {
+    node_id:  7,
+    position:  [-0.1583, -0.169, 0.0142],
+    direction: [0.0, 0.0, 1.0],
+    thrust_bounds:    [-81.85, 99.7],
+    calib:  {
+        forward:  [5.24818e-10, -1.52077e-07, 1.63132e-05, -0.000803, 0.026558, 0.023288],
+        backward: [1.34799e-09, 3.08795e-07, 2.66502e-05, 0.0010796, 0.0304559, -0.033722]
+    }
+  }
+

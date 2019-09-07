@@ -4,3 +4,23 @@
 [submodule "simulation/vmrc"]
 	path = NaviGator/simulation/vmrc
 	url = https://github.com/uf-mil/vmrc
+[submodule "txros"]
+	path = mil_common/txros
+	url = https://github.com/txros/txros.git
+[submodule "ros_alarms"]
+	path = mil_common/ros_alarms
+	url = https://github.com/uf-mil/ros_alarms.git
+[submodule "drivers/pointgrey_camera_driver"]
+	path = mil_common/drivers/pointgrey_camera_driver
+	url = https://github.com/uf-mil/pointgrey_camera_driver
+[submodule "drivers/velodyne"]
+	path = mil_common/drivers/velodyne
+	url = https://github.com/ros-drivers/velodyne
+	branch = master
+[submodule "drivers/roboteq"]
+	path = mil_common/drivers/roboteq
+	url = https://github.com/uf-mil/roboteq
+	branch = master
+[submodule "drivers/LMS1xx"]
+	path = mil_common/drivers/LMS1xx
+	url = https://github.com/uf-mil/LMS1xx.git

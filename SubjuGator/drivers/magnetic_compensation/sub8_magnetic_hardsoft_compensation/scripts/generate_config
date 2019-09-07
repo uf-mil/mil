@@ -1,0 +1,168 @@
+#!/usr/bin/env python
+
+from __future__ import division
+
+import random
+import sys
+import numpy
+import scipy.linalg
+import yaml
+import roslib
+import rosbag
+from tf import transformations
+import mil_ros_tools
+roslib.load_manifest('magnetic_hardsoft_compensation')
+
+
+def normalized_matrix(m):
+    assert numpy.linalg.det(m) > 0
+    return m / numpy.linalg.det(m)**(1 / m.shape[0])
+
+
+def calculate_error(points):
+    radii = map(numpy.linalg.norm, points)
+    error = numpy.std(radii) / numpy.mean(radii)
+    return error
+
+
+def fit_ellipsoid(points):
+    points = numpy.array(points)
+
+    # fit model
+    #     X[0] x2 + X[1] y2 + X[2] z2 +
+    #     X[3] (2xy) + X[4] (2xz) + X[5] (2yz) +
+    #     X[6] (-2x) + X[7] (-2y) + X[8] (-2z) = 1
+    # to points using linear least squares
+
+    A = numpy.zeros((points.shape[0], 9))
+    A[:, 0] = points[:, 0]**2
+    A[:, 1] = points[:, 1]**2
+    A[:, 2] = points[:, 2]**2
+    A[:, 3] = 2 * points[:, 0] * points[:, 1]
+    A[:, 4] = 2 * points[:, 0] * points[:, 2]
+    A[:, 5] = 2 * points[:, 1] * points[:, 2]
+    A[:, 6] = -2 * points[:, 0]
+    A[:, 7] = -2 * points[:, 1]
+    A[:, 8] = -2 * points[:, 2]
+
+    B = numpy.ones((points.shape[0], 1))
+
+    X = numpy.linalg.lstsq(A, B)[0].flatten()
+    if X[0] < 0:
+        X = -X  # make sure ka turns out positive definite
+
+    # if you expand (p - shift)^T A^-1 (p - shift) = 1, the
+    # general equation for an ellipsoid, you see that ka below is
+    # proportional to A and that shift is computed correctly
+    ka = numpy.linalg.inv(numpy.array([
+        [X[0], X[3], X[4]],
+        [X[3], X[1], X[5]],
+        [X[4], X[5], X[2]],
+    ]))
+    shift = ka.dot(X[6:9])
+
+    # the A matrix has eigenvalues which are squares of the axis scale factors, so
+    # taking the matrix square root yields the transform from a sphere to the ellipsoid
+    scale = scipy.linalg.sqrtm(ka)
+    assert numpy.isreal(scale).all(), scale
+    scale = numpy.real(scale)
+
+    # the matrix is then normalized to get rid of the k factor and to center the
+    # scale factors around one since we don't know what they actually should be
+    scale = normalized_matrix(scale)
+
+    # test the fit by finding all the compensated vectors and checking how spherical
+    # they are by looking at the distribution of distances from the origin
+    scale_inv = numpy.linalg.inv(scale)
+    compensated = [scale_inv.dot(p - shift) for p in points]
+    for axis in xrange(3):
+        assert min(p[axis] for p in compensated) < 0 < max(p[axis] for p in compensated)
+
+    return scale, shift, compensated
+
+
+def test():
+    # generate a set of points passed through a random transform, then make sure
+    # that the fitted transform matches
+
+    rot = transformations.random_rotation_matrix()[:3, :3]
+    s = normalized_matrix(numpy.diag([random.expovariate(1) for i in xrange(3)]))
+
+    scale = rot.dot(s).dot(rot.T)
+    shift = numpy.random.randn(3)
+
+    points = [scale.dot(transformations.unit_vector(numpy.random.randn(3))) + shift for i in xrange(1000)]
+
+    scale2, shift2, compensated = fit_ellipsoid(points)
+    error = calculate_error(compensated)
+
+    assert numpy.allclose(scale2, scale), "Magnetic Hardsoft Compenstion self-test failed"
+    assert numpy.allclose(shift2, shift), \
+        "Magnetic Hardsoft Compenstion self-test failed, shifts: {}".format((shift2, shift))
+    assert error < 1e-5, "Magnetic Hardsoft Compenstion self-test failed, error: {}".format(error)
+
+
+def axisEqual3D(ax):
+    ax.axis('tight')
+    extents = numpy.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
+    r = numpy.max(numpy.abs(extents))
+    for dim in 'xyz':
+        getattr(ax, 'set_{}lim'.format(dim))(-r, r)
+
+
+if __name__ == '__main__':
+
+    for i in xrange(100):
+        test()
+
+    with rosbag.Bag(sys.argv[1]) as bag:
+        points = numpy.array([
+            mil_ros_tools.rosmsg_to_numpy(msg.magnetic_field) if hasattr(msg, 'magnetic_field') else
+            mil_ros_tools.rosmsg_to_numpy(msg.vector)
+            for topic, msg, t in bag.read_messages(topics=['/imu/mag_raw'])])
+
+    if not len(points):
+        print 'no data in bag file'
+        sys.exit()
+
+    points = numpy.array(points)
+
+    print 'original error: %.4f%%' % (100 * calculate_error(points),)
+
+    try:
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.add_subplot('111', projection='3d')
+        ax.scatter([0], [0], [0], s=100, c='r')
+        ax.scatter(*zip(*points[::10, :]))
+        axisEqual3D(ax)
+        plt.show()
+    except:
+        import traceback
+        traceback.print_exc()
+
+    scale, shift, compensated = fit_ellipsoid(points)
+    compensated = numpy.array(compensated)
+    print 'error: %.4f%%' % (100 * calculate_error(compensated),)
+
+    try:
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D  # noqa
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.add_subplot('111', projection='3d')
+        ax.scatter([0], [0], [0], s=100, c='r')
+        ax.scatter(*zip(*points[::10, :]))
+        ax.scatter(*zip(*compensated[::10, :]), c='g')
+        axisEqual3D(ax)
+        plt.show()
+
+    except:
+        import traceback
+        traceback.print_exc()
+
+    print
+    print yaml.dump(dict(
+        scale=map(lambda x: map(float, x), scale),
+        shift=map(float, shift),
+    )),

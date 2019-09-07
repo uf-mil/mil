@@ -1,0 +1,234 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <model name="sub8">
+    <link name="base_link" gravity="0 0 9.8">
+      <velocity_decay>
+        <linear>0.005</linear>
+        <angular>0.01</angular>
+      </velocity_decay>
+      <inertial>
+        <mass>36.75</mass>
+        <inertia>
+          <ixx>1.18</ixx>
+          <ixy>-0.003</ixy>
+          <ixz>0.04</ixz>
+          <iyy>1.431</iyy>
+          <iyz>-0.034</iyz>
+          <izz>1.262</izz>
+        </inertia>
+      </inertial>
+
+      <gravity>1</gravity>
+      <collision name="box_collision">
+        <pose>0 0 0 0 0 1.5707</pose>
+        <geometry>
+          <mesh>
+            <uri>file://sub8/sub8.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+
+      <visual name="visual">
+        <pose>0 0 0 0 0 1.5707</pose>
+        <geometry>
+          <mesh>
+            <uri>file://sub8/sub8.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <sensor name="left_camera" type="camera">
+        <camera>
+          <pose>0.2559 0.0445 0.01707 0 0 0</pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>644</width>
+            <height>482</height>
+          </image>
+          <distortion>
+            <k1>0</k1>
+            <k2>0</k2>
+            <k3>0</k3>
+            <p1>0</p1>
+            <p2>0</p2>
+          </distortion>
+        </camera>
+        <plugin name="left_camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>15</updateRate>
+          <cameraName>front/left</cameraName>
+          <imageTopicName>/camera/front/left/image_raw</imageTopicName>
+          <cameraInfoTopicName>/camera/front/left/camera_info</cameraInfoTopicName>
+          <frameName>front_left_cam</frameName>
+          <hackBaseline>0.089</hackBaseline>
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+        </plugin>
+      </sensor>
+
+      <sensor name="right_camera" type="camera">
+        <camera>
+          <pose>0.2559 -0.0445 0.01707 0 0 0</pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>644</width>
+            <height>482</height>
+          </image>
+          <distortion>
+            <k1>0</k1>
+            <k2>0</k2>
+            <k3>0</k3>
+            <p1>0</p1>
+            <p2>0</p2>
+          </distortion>
+        </camera>
+
+        <plugin name="right_camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>15</updateRate>
+          <cameraName>front/right</cameraName>
+          <imageTopicName>/camera/front/right/image_raw</imageTopicName>
+          <cameraInfoTopicName>/camera/front/right/camera_info</cameraInfoTopicName>
+          <frameName>front_right_cam</frameName>
+          <hackBaseline>0.089</hackBaseline>
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+        </plugin>
+      </sensor>
+
+      <sensor name="down_camera" type="camera">
+        <camera>
+          <pose>0.0537 0.1048 -0.2565 -1.57079632679 1.57079632679 0.0 </pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>644</width>
+            <height>482</height>
+          </image>
+          <distortion>
+            <k1>0</k1>
+            <k2>0</k2>
+            <k3>0</k3>
+            <p1>0</p1>
+            <p2>0</p2>
+          </distortion>
+        </camera>
+        <plugin name="down_camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>15</updateRate>
+          <cameraName>down/left</cameraName>
+          <imageTopicName>/camera/down/left/image_raw</imageTopicName>
+          <cameraInfoTopicName>/camera/down/left/camera_info</cameraInfoTopicName>
+          <frameName>down_left_cam</frameName>
+          <hackBaseline>0.89</hackBaseline>
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+        </plugin>
+      </sensor>
+
+      <!--Uses lidar ray plugin to simulate a laser sweep which is used
+          by gazebo interface to convert to BlueViewPing.-->
+      <sensor name="blueview_sonar" type="ray">
+        <pose>0.333 0 0.381  3.1415 0.044 0</pose>
+        <visualize>false</visualize>
+        <update_rate>25</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>1000</samples>
+              <resolution>10</resolution>
+              <min_angle>-1.134465</min_angle>
+              <max_angle>1.134465</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.5</min>
+            <max>100.0</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <stddev>0.3</stddev>
+          </noise>
+        </ray>
+        <plugin name="_sick_lidar" filename="libgazebo_ros_laser.so">
+          <topicName>/blueview_driver/gazebo</topicName>
+          <frameName>blueview</frameName>
+        </plugin>
+      </sensor>
+
+      <!-- Uses LIDAR plugin to simulate 1 LIDAR ray to get distance to floor.
+           Best solution would be to write custom plugin but fuck it.-->
+      <sensor name="dvl_range" type="ray">
+        <!-- Same place as down cam, not sure where the real dvl is. -->
+        <pose>0.0908 0.0 -0.2459  0 1.57 3.1415</pose>
+        <visualize>false</visualize>
+        <update_rate>25</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>1</samples>
+              <resolution>1</resolution>
+              <min_angle>-.0001</min_angle>
+              <max_angle>.0001</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.01</min>
+            <max>4000.0</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <plugin name="hokuyo_node" filename="libgazebo_ros_range.so">
+          <topicName>/dvl/range_raw</topicName>
+          <frameName>dvl</frameName>
+        </plugin>
+      </sensor>
+      <sensor name="contact" type="contact">
+        <contact>
+          <collision>box_collision</collision>
+        </contact>
+        <update_rate>50</update_rate>
+        <plugin name='gazebo_ros_bumper_controller' filename="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <bumperTopicName>contact_bumper</bumperTopicName>
+        </plugin>
+      </sensor>
+    </link>
+    <!-- Comment out to enable physics simulated controls -->
+<!--     <plugin name="sub8_state_set" filename="libsub8_state_set.so">
+      <staticOffset>0 0 0</staticOffset>
+      <referenceTopic>/c3_trajectory_generator/trajectory_v</referenceTopic>
+      <alwaysOn>true</alwaysOn>
+    </plugin>
+  -->
+
+    <!-- Uncomment to enable physics simulated controls -->
+    <plugin name="sub8_buoyancy" filename="libsub8_buoyancy.so">
+      <!-- density of the fluid surrounding the object in kilograms/cubic meters -->
+      <fluid_density>999.1026</fluid_density>
+
+      <drag_coefficient>0.5</drag_coefficient>
+      <link name="base_link">
+        <center_of_volume>0.02 0.05 0.0508</center_of_volume>
+        <volume>0.037</volume>
+      </link>
+    </plugin>
+
+    <plugin name="sub8_thrusters" filename="libsub8_thrusters.so">
+      <layout_param>thruster_layout</layout_param>
+      <min_abs_thrust>2.2</min_abs_thrust>
+      <link>base_link</link>
+    </plugin>
+    
+
+  </model>
+</sdf>

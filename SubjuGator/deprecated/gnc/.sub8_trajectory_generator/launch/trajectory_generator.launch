@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find sub8_trajectory_generator)/launch/trajectory_generator_params.launch" />
+	<node pkg="sub8_trajectory_generator" type="sub8_trajectory_generator" name="sub8_trajectory_generator"/>
+</launch>

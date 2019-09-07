@@ -1,0 +1,94 @@
+digraph sub8 {
+  label="Sub8 High Level Software Graph";
+
+  subgraph clusterSensors {
+    label="Sensors";
+
+    imaging_sonar[label="Blueview Imaging Sonar"];
+
+    subgraph clusterCameras {
+      label="Cameras";
+      left_camera[label="Left Camera"];
+      right_camera[label="Right Camera"];
+      down_camera[label="Down Camera"];
+    }
+
+    subgraph clusterNavbox {
+      label="Navbox";
+
+      imu[label="Imu"];
+      magnetometer[label="Magnetometer"];
+      dvl[label="DVL"];
+      depth_sensor[label="Depth Sensor"];
+    }
+
+    sonar_board[label="Sylphase Sonar Board"];
+  }
+
+  sonar_board -> multilateration [label="Pinger Heading"];
+
+  multilateration -> missions [label="Pinger Position"];
+
+  state_estimation[label="Extended Kalman Filter"];
+  imu -> state_estimation [label="Orientation\nAngular Velocity\nLinear Acceleration"];
+  magnetometer -> state_estimation [label="Earth Heading"];
+  dvl -> state_estimation [label="Linear Velocity"];
+  depth_sensor -> state_estimation [label="Depth"];
+
+  subgraph clusterCommand {
+    label="Command";
+
+    missions[label="Missions"];
+  }
+
+  missions -> Valves [label="Open/Close"]
+
+  subgraph clusterPerception {
+    label="Perception";
+
+    computer_vision[label="Computer Vision"];
+    pointcloud[label="Pointcloud Processing"];
+    multilateration[label="Sonar Multilateration"];
+  }
+
+  imaging_sonar -> pointcloud [label="Pointclouds"];
+  pointcloud -> missions [label="Identified Objects"];
+
+  subgraph clusterActuators {
+    label="Actuators";
+
+    subgraph clusterThrusters {
+      label="Thrusters";
+
+      flh[label="FLH Motor"];
+      flv[label="FLV motor"];
+
+      frh[label="FRH Motor"];
+      frv[label="FRV Motor"];
+
+      blh[label="BLH Motor"];
+      blv[label="BLV Motor"];
+
+      brh[label="BLH Motor"];
+      brv[label="BLV Motor"];
+    }
+
+    Valves[label="Pneumatic Valves"];
+  }
+
+  subgraph clusterGNC {
+    label="GNC";
+    path_planner[label="Path Planner (C3)"];
+    controller[label="Controller (rise_6dof)"];
+    thrust_mapper[label="Thruster Mapper"];
+
+    path_planner -> controller [label="Trajectory"];
+    thrust_mapper -> {flv, flh, frv, frh, blv, blh, brv, brh} [label="Effort"];
+  }
+
+  missions -> path_planner [label="Pose goal (Waypoint)"];
+  {controller} -> thrust_mapper [label="Wrench"];
+  state_estimation -> {path_planner, controller} [label="Odometry"];
+  {left_camera, right_camera, down_camera} -> computer_vision [label="Images"];
+  computer_vision -> missions [label="Identified Objects"];
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>sub8_system_id</name>
+  <version>0.0.0</version>
+  <description>Tooling/Models for Sub8's dynamics</description>
+  <maintainer email="kma1660+mil@gmail.com">Kevin Allen</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <exec_depend>rospy</exec_depend>
+  <export>
+  </export>
+</package>
