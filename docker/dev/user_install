@@ -1,0 +1,56 @@
+#!/bin/bash
+
+if [[ -z "${CATKIN_DIR}" ]]; then
+    CATKIN_DIR="$HOME/catkin_ws"
+    echo "Using default catkin workspace $CATKIN_DIR"
+else
+    echo "Using custom catkin workspace $CATKIN_DIR"
+fi
+CATKIN_SOURCE_DIR="$CATKIN_DIR/src"
+MIL_REPO_DIR="$CATKIN_SOURCE_DIR/mil"
+
+# Clone repositry
+mil_user_setup_clone_repo()
+{
+  local MIL_REPO_GIT="$MIL_REPO_DIR/.git"
+  mkdir -p $CATKIN_SOURCE_DIR
+  if [[ -d "$MIL_REPO_DIR" ]]; then
+    echo "MIL repository already present, will not clone."
+  else
+    echo "Cloning MIL repository to $MIL_REPO_DIR"
+    sudo apt install -y git
+    git clone --recursive -q https://github.com/uf-mil/mil.git $MIL_REPO_DIR
+    git --git-dir=$MIL_REPO_GIT remote rename origin upstream
+  fi
+  # Update mil repo
+  echo "Updating MIL repo located at $MIL_REPO_DIR"
+  git --git-dir=$MIL_REPO_GIT submodule update --init --recursive
+  git --git-dir=$MIL_REPO_GIT fetch upstream master:master
+}
+
+# Add configuration lines to bashrc
+mil_user_setup_bashrc()
+{
+  # Lines added to ~/.bashrc
+  BASH_RC_LINES=". $MIL_REPO_DIR/scripts/setup.bash"
+  if grep -Fq "$BASH_RC_LINES" ~/.bashrc
+  then
+    echo "milrc is already sourced in ~/.bashrc, skipping"
+  else
+    echo "Adding source of milrc to ~/.bashrc"
+    echo "" >> ~/.bashrc
+    echo "# Setup enviroment for MIL developement" >> ~/.bashrc
+    echo "$BASH_RC_LINES" >> ~/.bashrc
+  fi
+}
+
+# Build repo with catkin
+mil_user_setup_build_repo()
+{
+  catkin_make -C "$CATKIN_DIR"
+}
+
+mil_user_setup_clone_repo
+mil_user_setup_bashrc
+. /opt/ros/melodic/setup.bash
+mil_user_setup_build_repo

@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Make sure user has the agent token set
+if [ -z "$BUILDKITE_AGENT_TOKEN" ]; then
+  echo "BUILDKITE_AGENT_TOKEN not set"
+  echo "Please get agent token from https://buildkite.com/organizations/uf-mil/agents"
+  echo "Then run command again like:"
+  echo "BUILDKITE_AGENT_TOKEN=<token> ./run_ci"
+  exit 1
+fi
+
+# Get directory of the MIL repo for resolution of other files in this repo
+MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
+
+# Build containers used by CI (no-op if they're already build)
+$MIL_DIR/scripts/build_docker_containers
+
+# Make sure the builds directory is there
+mkdir -p /var/lib/buildkite/builds
+
+# Start the container
+docker run \
+  -v "/var/lib/buildkite/builds:/var/lib/buildkite/builds" \
+  -v "/var/run/docker.sock:/var/run/docker.sock" \
+  -e "BUILDKITE_BUILD_PATH=/var/lib/buildkite/builds" \
+  -i \
+  -t \
+  --rm \
+  --name buildkite-agent \
+  uf-mil:ci-server start --token $BUILDKITE_AGENT_TOKEN
