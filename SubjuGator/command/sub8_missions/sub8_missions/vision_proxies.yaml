@@ -1,0 +1,14 @@
+proxy1:
+    root: "/vision/serviceTest"
+proxy2:
+    root: "/vision/serviceTesting2"
+orange_rectangle:
+    root: "/vision/orange_rectangle"
+buoy:
+    root: "/vision/buoys"
+xyz_points:
+    root: "/vision/xyz_points"
+the_path:
+    root: "/vision/the_path"
+start_gate:
+    root: "/vision/start_gate"

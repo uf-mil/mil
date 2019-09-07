@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+import roslib
+import rospy
+from std_msgs.msg import Header
+from mil_msgs.msg import DepthStamped
+roslib.load_manifest('depth_driver')
+
+
+rospy.init_node('fake_depth')
+
+pub = rospy.Publisher('/depth', DepthStamped)
+
+while not rospy.is_shutdown():
+    pub.publish(DepthStamped(
+        header=Header(
+            stamp=rospy.Time.now(),
+            frame_id='/map',
+        ),
+        depth=0,
+    ))
+    rospy.sleep(rospy.Duration(.2))

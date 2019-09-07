@@ -1,0 +1,26 @@
+<launch>
+	<!-- directory of alarm config files relative to the  -->
+	<!-- sub8_trajectory_generator package root directory  -->
+	<param name="alarms_dir" value="cfg" type="string"/>
+
+	<!-- Planner type to use  -->
+	<!-- 1. RRTstar 2. RRTConnect -->
+	<param name="planner_type" value="2" type="int"/>
+
+	<!-- Length of longest motion able to be added to -->
+	<!-- the tree of motions. Keeping this small means -->
+	<!-- that the path will have more waypoints but will --> 
+	<!-- take longer to compute	(units = meters) -->
+	<param name="range" value="0.05" type="double" />
+
+	<param name="state_validity_checking_resolution" value="0.03" type="double"/>
+
+	<!-- initial values for state space bounds -->
+	<!-- position bounds, units = meters -->
+	<param name="xmin" value="-5.0" type="double"/>
+	<param name="xmax" value="5.0" type="double"/>
+	<param name="ymin" value="-5.0" type="double"/>
+	<param name="ymax" value="5.0" type="double"/>
+	<param name="zmin" value="-5.0" type="double"/>
+	<param name="zmax" value="5.0" type="double"/>
+</launch>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+   <node pkg="nodelet" type="nodelet" args="standalone odom_estimator/nodelet" name="odom_estimator" respawn="true">
+      <rosparam>
+        have_gps: false
+        local_frame: /map
+        # Gainesville
+        start_x_ecef:   738543 
+        start_y_ecef: -5498316
+        start_z_ecef:  3136465
+        # Sandiego
+        # start_x_ecef:   -2459847 
+        # start_y_ecef: -4776091
+        # start_z_ecef:  3426313
+      </rosparam>
+      <remap from="odom" to="imu_odom" />
+   </node>
+   <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry" respawn="true">
+      <rosparam>
+        frame_id: /map
+        child_frame_id: /base_link
+      </rosparam>
+      <remap from="orig_odom" to="imu_odom" />
+   </node>
+</launch>
