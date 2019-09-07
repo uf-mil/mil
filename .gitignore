@@ -1,49 +1,39 @@
-# Compiled source
-*.com
-*.class
-*.dll
-*.exe
-*.o
-*.so
+# Sphinx output
+docs/_build
 
-# Packages
-# it's better to unpack these files and commit the raw source
-# git has its own built in compression methods
-*.7z
-*.dmg
-*.gz
-*.iso
-*.jar
-*.rar
-*.tar
-*.zip
-
-# Logs and databases
-*.log
-*.sql
-*.sqlite
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Text Editor Generated
-*.pyc
-*.pyo
-*~
-*.swp
-*.swn
+# Editor cache files
 *.swo
+*.swp
 
-# Eclipse and PyDev project files
-.project
-.pydevproject
-.settings
+# Prerequisites
+*.d
 
-# Kosher Pickles
-*.p
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app

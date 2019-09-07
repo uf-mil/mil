@@ -1,0 +1,30 @@
+#!/bin/bash
+set -euo pipefail
+
+# Update apt
+sudo apt update
+
+mil_system_install()
+{
+  sudo apt install -y $@
+}
+
+# System dependencies
+mil_system_install --no-install-recommends tzdata dirmngr gnupg2 lsb-release python-vcstools
+
+# Install ROS apt source
+sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+
+# Pull ROS apt key
+sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+
+# Update apt again and install ros
+sudo apt update
+mil_system_install ros-melodic-desktop-full
+
+# Initialize rosdep
+sudo rosdep init
+sudo rosdep update
+
+
+
