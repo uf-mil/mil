@@ -1,0 +1,9 @@
+<launch>
+  <node name="bounds_server" pkg="mil_bounds" type="bounds_server" />
+  <node name="bounds_from_rviz" pkg="mil_bounds" type="bounds_from_rviz" output="screen">
+    <param name="frame" value="b" />
+  </node>
+  <node name="static_transform" pkg="tf2_ros" type="static_transform_publisher"
+        args="1 0 0 0 0 0 1 a b" />
+  <test test-name="mil_bounds_test" pkg="mil_bounds" type="test_bounds.py" />
+</launch>

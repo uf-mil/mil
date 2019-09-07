@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>main_window</class>
+ <widget class="QMainWindow" name="LabelTool">
+
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1500</width>
+    <height>620</height>
+   </rect>
+  </property>
+
+  <property name="windowTitle">
+   <string>LabelTool</string>
+  </property>
+
+  <widget class="QWidget" name="centralWidget">
+
+   <widget class="QTableWidget" name="list_widget">
+    <property name="geometry">
+     <rect>
+      <x>980</x>
+      <y>10</y>
+      <width>500</width>
+      <height>600</height>
+     </rect>
+    </property>
+
+    <column>
+     <property name="text">
+      <string>Visible</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>ID</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Label</string>
+     </property>
+    </column>
+
+   </widget>
+
+   <widget class="QLabel" name="image_view">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>960</width>
+      <height>600</height>
+     </rect>
+    </property>
+   </widget>
+
+  </widget>
+
+  <widget class="QMenuBar" name="menuBar">
+
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>0</y>
+     <width>735</width>
+     <height>25</height>
+    </rect>
+   </property>
+
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="save_bag_action"/>
+    <addaction name="restart_action"/>
+
+   </widget>
+   <addaction name="menuFile"/>
+
+  </widget>
+
+  <!-- <widget class="QStatusBar" name="statusBar"/> -->
+
+  <action name="save_bag_action">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+
+  <action name="restart_action">
+   <property name="text">
+    <string>Restart Bag</string>
+   </property>
+  </action>
+
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>

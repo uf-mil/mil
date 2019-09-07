@@ -1,0 +1,299 @@
+#!/usr/bin/env python
+"""
+Extracts images from several bag files according to a YAML configuration.
+
+Designed to create datasets used on labelbox.io for image segmentation / classification
+projects used for perception on mil robots.
+
+Usage:
+rosrun mil_tools extract_bag_images config.yaml --source-dir <location of bag files> --image-dir <directory for extracted images>         # noqa
+
+See example_bag_image_config.yaml or the class documentation for how to form this configuration.
+Essentialy, the yaml file defines a project, which is a single labeling task or project on labelbox.io.
+Each project contains n datasets. Each dataset has a list of bags (sources) to get images from and represents a dataset on labelbox.io.
+"""
+from __future__ import division
+import argparse
+import yaml
+import os
+import rospy
+import rosbag
+import cv2
+from image_geometry import PinholeCameraModel
+from mil_vision_tools.image_proc import ImageProc, ImageSet
+from mil_tools import slugify
+from cv_bridge.boost.cv_bridge_boost import cvtColor2
+
+
+class BagImageExtractorSource(object):
+    '''
+    Provides functionality to extract a set of images from a single bag file according to the configuration.
+    '''
+    MONO = 'mono'
+    COLOR = 'color'
+    RECT = 'rect'
+    RECT_COLOR = 'rect_color'
+    RAW = 'raw'
+
+    def __init__(self, filename, topic, start=None, stop=None, freq=None, encoding=None):
+        '''
+        @param filename: name of bag file. Can be an absolute path, or will be resolved relative
+                         to specified dir when
+        @param topic: topic in the bag file with the images you wish to extract
+        @param start: time relative to start of bag to begin extracting images from.
+                      If None, extraction will start at beginning of bag
+        @param stop: time relative to start of bag to stop extracting images from.
+                     If None, extraction wil end at end of bag.
+        @param freq: Number of images to extract for each second of bag time.
+                     If None, include all images
+        @param encoding: Specifies if color conversion or distortion rectification should be applied.
+                         If None, images will be saved in the same format they are in the specified topic.
+                         If 'mono', image will be converted to grayscale from color or bayer image
+                         If 'color', image will be converted to color from bayer.
+                         If 'rect', image will be converted to grayscale and rectified using camera info
+                         If 'rect_color', image will be converted to color and rectified using camera info
+        '''
+        self.filename = filename
+        self.topic = topic
+        self.start = start
+        self.stop = stop
+        self.freq = freq
+        self.encoding = self.get_image_proc_flags_from_encoding(encoding)
+        self.image_set = ImageSet()
+
+    @classmethod
+    def get_image_proc_flags_from_encoding(cls, encoding):
+        '''
+        Returns the flag to pass to mil image proc based on encoding string
+        '''
+        if encoding is None or encoding == cls.RAW:
+            return ImageProc.RAW
+        elif encoding == cls.MONO:
+            return ImageProc.MONO
+        elif encoding == cls.RECT:
+            return ImageProc.RECT
+        elif encoding == cls.COLOR:
+            return ImageProc.COLOR
+        elif encoding == cls.RECT_COLOR:
+            return ImageProc.RECT_COLOR
+        else:
+            raise Exception('invalid encoding {}'.format(encoding))
+
+    @classmethod
+    def from_dict(cls, d):
+        '''
+        Creates source config from a dictionary, such as from a YAML file
+        Must at a minimum have a file, and topic. Can also have start, stop, encoding, and freq
+        to change the configuration described in the __init__
+        { 'file': 'example.bag', 'topic': '/camera/image_raw', }
+        '''
+        if not isinstance(d, dict):
+            raise Exception('must be dict')
+        if 'file' not in d:
+            raise Exception('dict must contain a file')
+        if 'topic' not in d:
+            raise Exception('dict must contain a topic')
+        return cls(d['file'], d['topic'], start=d.get('start'), stop=d.get('stop'),
+                   freq=d.get('freq'), encoding=d.get('encoding'))
+
+    @staticmethod
+    def get_camera_model(bag, topic):
+        '''
+        Gets the PinholeCameraModel object given a bag and a image topic, by
+        getting the first camera_info message in the same namespace.
+        '''
+        topic_root = topic.rsplit('/', 1)[0]
+        camera_info_topic = topic_root + '/' + 'camera_info'
+        try:
+            _, msg, _ = bag.read_messages(topics=camera_info_topic).next()
+        except StopIteration:
+            raise Exception('no camera info messages found on topic {} in {}'.format(camera_info_topic, bag))
+        if msg._type != 'sensor_msgs/CameraInfo':
+            raise Exception('msg on topic {} are not camera info in bag {}'.format(camera_info_topic, bag))
+        model = PinholeCameraModel()
+        model.fromCameraInfo(msg)
+        return model
+
+    def _save_img(self, msg, time, image_dir, prefix=''):
+        '''
+        Save the image msg to the image directory, named with the time object
+        converted to a string. Uses mil image proc to rectify / convert color as
+        configured (see __init__)
+        '''
+        ImageProc.process(msg, self.camera_model, self.image_set, self.encoding)
+        if self.encoding == 0:
+            img = self.image_set.raw
+        elif self.encoding == ImageProc.MONO:
+            img = self.image_set.mono
+        elif self.encoding == ImageProc.RECT:
+            img = self.image_set.rect
+        elif self.encoding == ImageProc.COLOR:
+            img = self.image_set.color
+        elif self.encoding == ImageProc.RECT_COLOR:
+            img = self.image_set.rect_color
+
+        # If color, convert to bgr
+        if self.encoding == ImageProc.COLOR or self.encoding == ImageProc.RECT_COLOR:
+            img = cvtColor2(img, self.image_set.color_encoding, 'bgr8')
+        filename = os.path.join(image_dir, prefix + str(msg.header.stamp) + '.png')
+        cv2.imwrite(filename, img)
+
+    def extract_images(self, source_dir='.', image_dir='.', verbose=False):
+        '''
+        Extract the images using the configuration from __init__, resolving the bag file
+        relative to source_dir and placing extracted images into image_dir.
+        '''
+        if verbose:
+            print '\tExtracting images from topic {} in {}'.format(self.topic, self.filename)
+        filename = os.path.join(source_dir, self.filename)
+        b = rosbag.Bag(filename)
+        if self.encoding != 0:
+            self.camera_model = self.get_camera_model(b, self.topic)
+        else:
+            self.camera_model = None
+        _, _, first_time = b.read_messages().next()
+        start = first_time + rospy.Duration(self.start) if self.start else first_time
+        stop = first_time + rospy.Duration(self.stop) if self.stop else None
+        interval = rospy.Duration(1.0 / self.freq) if self.freq else rospy.Duration(0)
+        next_time = start
+        prefix = slugify(unicode(self.filename)) + '_' + slugify(unicode(self.topic))
+        for _, msg, time in b.read_messages(topics=self.topic, start_time=start, end_time=stop):
+            if time >= next_time:
+                next_time = time + interval
+                self._save_img(msg, time, image_dir, prefix=prefix)
+
+
+class BagImageExtractorDatasets(object):
+    '''
+    Represents a dataset, or a set of bags from which images will be
+    extracted and put into the same directory. For example, a set of bags
+    containing a particular challenge from the same day.
+    '''
+    def __init__(self, name, sources):
+        '''
+        @param name: the name of this dataset (string), will be used to write extracted images to
+                     a directory with this name.
+        @param sources: a list of BagImageExtractorSource instances making up the dataset.
+                        When extract_images is called, images will be extracted from each of these sources
+                        into the same directory.
+        '''
+        self.name = name
+        self.sources = sources
+
+    @classmethod
+    def from_dict(cls, d):
+        '''
+        Contruct from a dictionary, as in from a yaml file. Must have a name key
+        and a sources which maps to a list of dictionaries in the form described in BagImageExtractorSource.from_dict.
+        ex:
+        { 'name': 'scanthecode_day1',
+          'sources': [
+             {'file': 'a.bag', 'topic':'/camera/image_raw', ...},
+             {'file': 'b.bag', ...}
+          ]
+        }
+        '''
+        if not isinstance(d, dict):
+            raise Exception('must be dict')
+        if 'name' not in d:
+            raise Exception('dict must contain a name')
+        if 'sources' not in d:
+            raise Exception('yaml must contain a list of sources. See example.')
+        sources = []
+        for source in d['sources']:
+            sources.append(BagImageExtractorSource.from_dict(source))
+        return cls(d['name'], sources)
+
+    def extract_images(self, source_dir='.', image_dir='.', verbose=False):
+        '''
+        Extract images from each source bag in this dataset into a single
+        directory.
+        @param source_dir: the directory from which the sources' filenames will be
+                           resolved relative to.
+        @param image_dir: directory in which to create the directory will extracted images will go.
+                          For example, if image_dir='/home/user/images' and this instances
+                          was created with name='scanthecode_day1', images will go into
+                          /home/user/images/scanthecode_day1
+        '''
+        if verbose:
+            print "Producing dataset '{}'".format(self.name)
+        image_dir = os.path.join(image_dir, self.name)
+        if not os.path.isdir(image_dir):
+            if os.path.exists(image_dir):
+                raise Exception('{} exsists but is not a diretory'.format(image_dir))
+            os.makedirs(image_dir)
+        for source in self.sources:
+            source.extract_images(source_dir=source_dir, image_dir=image_dir, verbose=verbose)
+
+
+class BagImageExtractorProject(object):
+    '''
+    Holds the configuration for a list of datasets, forming one logical
+    project for labeling. For example, a user may create a project
+    for the labeling buoys, which contains 3 datasets each with
+    bags from different test days.
+    '''
+    def __init__(self, datasets, source_dir='.', image_dir='.'):
+        '''
+        @param datasets: a list of BagImageExtractorDatasets forming this project
+        @param source_dir: directory from which source bag filenames will be resolved relative to.
+        @param image_dir: directory in which to put extracted images. Each dataset will be given its
+                          own directory within image_dir.
+        '''
+        source_dir = '.' if source_dir is None else source_dir
+        image_dir = '.' if image_dir is None else image_dir
+        self.datasets = datasets
+        self.source_dir = source_dir
+        self.image_dir = image_dir
+
+    @classmethod
+    def from_dict(cls, d):
+        '''
+        Create a project from a dictionary, like when parsed from YAML file.
+
+        '''
+        if not isinstance(d, dict):
+            raise Exception('must be dict')
+        if 'datasets' not in d:
+            raise Exception('dict must contain a list of datasets')
+        datasets = []
+        for dataset in d['datasets']:
+            datasets.append(BagImageExtractorDatasets.from_dict(dataset))
+        return cls(datasets, source_dir=d.get('source_dir'),
+                   image_dir=d.get('image_dir'))
+
+    def extract_images(self, verbose=False):
+        for dataset in self.datasets:
+            dataset.extract_images(source_dir=self.source_dir, image_dir=self.image_dir, verbose=verbose)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description='Extracts images from ROS bags into image files according to a configuration.\n\
+                     Designed to be used to create labelbox.io projects for segmentation/classification.')
+    parser.add_argument('config', type=str,
+                        help='YAML file specifying what bags to read and extract images from.\
+                              See example YAML for details')
+    parser.add_argument('--source-dir', '-s', dest="source_dir", type=str, default=None,
+                        help="directory to resolve relative paths specifed in YAML for input bags. \n\
+                              Defaults to current directory.")
+    parser.add_argument('--image-dir', '-o', dest="image_dir", type=str, default=None,
+                        help="directory to resolve relative paths specified in YAML for output (labeled) bags. \n\
+                              Defaults to current directory.")
+    parser.add_argument('--verbose', '-v', action='store_true', help='Print status info along the way')
+    args = parser.parse_args()
+
+    # Load config from yaml file specified
+    config_file = open(args.config)
+    config = yaml.load(config_file)
+    if not isinstance(config, dict):
+        raise Exception('yaml config should be in dictionary format. See example')
+
+    # Set bag_dir and image_dir from cli args or yaml config or default
+    if args.source_dir is not None:
+        config['source_dir'] = args.source_dir
+    if args.image_dir is not None:
+        config['image_dir'] = args.image_dir
+
+    # Contruct a project from the config and extract images
+    project = BagImageExtractorProject.from_dict(config)
+    project.extract_images(verbose=args.verbose)

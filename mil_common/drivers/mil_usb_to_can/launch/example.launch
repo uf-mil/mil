@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="simulated" default="False" />
+  <param name="/is_simulation" value="$(arg simulated)" />
+
+  <node pkg="mil_usb_to_can" type="driver.py" name="usb_to_can_driver">
+    <rosparam command="delete" />
+    <rosparam>
+    # Path of serial device
+    port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A900KV22-if00-port0
+    # Baudrate of device, should leave as is
+    baudrate: 115200
+    # The CAN device id of the usb-can board
+    can_id: 0
+    # List of python device handle classes
+    device_handles:
+      # Device 9 will be handled with ExampleCANDeviceHandle
+      "3": mil_usb_to_can.ExampleEchoDeviceHandle
+    # List of simulated devices to use when /is_simulation is True
+    simulated_devices:
+      # Device 9 will be simulated with ExampleSimulatedCANDevice
+      "3": mil_usb_to_can.ExampleSimulatedEchoDevice
+    </rosparam>
+  </node>
+</launch>

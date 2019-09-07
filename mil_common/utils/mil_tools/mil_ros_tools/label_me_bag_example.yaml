@@ -1,0 +1,13 @@
+bags:                                   # Required list of bags
+  - file: orange_pipes.bag              # rosbag file to pull images from
+    name: path_marker_1                 # name of this section as it will appear in labelme
+    start: 1.0                          # Duration in seconds from start of bag to get FIRST image
+    stop: 2.0                           # Duration in seconds from start of bag to get LAST image
+    topics: /down/left/image_raw        # Topic to pull images from
+
+  - file: orange_pipes.bag
+    outfile: front_orange_pipes.bag     # Optionaly explicitly set output file, important because another section has same input bag
+    topics: [/front/left/image_rect_color, /front/right/image_rect_color]   # Can have multiple topics
+    freq: 1.0                           # Images per second from bag to put on labelme
+    outfile: pool_low_lighting.bag      # Optional explicit name of bag, defaults to <segment name>.bag
+                                        # Note missing start and stop, will pull from entire bag

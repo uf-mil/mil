@@ -1,0 +1,25 @@
+# Directory / filename of bag_name
+# See examples below for what strings will produce what bags.
+# <bag_package_path> is a ros param set when running online bagger node
+# if param is not set, <bag_package_path> = $HOME/bags/<date> (ex: /home/bob/bags/2017-04-20)
+#  /home/example/2017/    -> /home/example/2017/2017-04-24-20:51:54.bag
+#  camera_tests/test1.bag -> <bag_package_path>/camera_tests/test1.bag
+#  my_lidar_bag           -> <bag_package_path>/my_lidar_bag.bag
+#  sonar_tests/           -> <bag_package_path>/sonar_tests/2017-04-24-20:51:54.bag
+string bag_name
+
+# Space seperated list of topics to bag. If empty string, all buffered topics will be bagged
+string topics
+
+# Time in seconds
+float32 bag_time
+---
+
+bool success
+string status # Contains error information if success is False
+string filename # Full path to file where bag was written
+
+---
+
+# Proportion of messages that will be included in bag that have been written
+float64 progress

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="mil_drag" params="use_param:=False linear_coeffs:='0 0 0' angular_coeffs:='0 0 0'">
+    <gazebo>
+      <plugin filename="libmil_drag_gazebo.so" name="drag_plugin">
+        <xacro:if value="${use_param}">
+          <linear_coeffs_param>/robot_parameters/drag/linear_coeffs</linear_coeffs_param>
+          <angular_coeffs_param>/robot_parameters/drag/angular_coeffs</angular_coeffs_param>
+        </xacro:if>
+        <xacro:unless value="${use_param}">
+          <linear_coeffs>${linear_coeffs}</linear_coeffs>
+          <angular_coeffs>${angular_coeffs}</angular_coeffs>
+        </xacro:unless>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+</robot>
