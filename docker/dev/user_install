@@ -1,6 +1,7 @@
 #!/bin/bash
+set -euo pipefail
 
-if [[ -z "${CATKIN_DIR}" ]]; then
+if [[ -z ${CATKIN_DIR:-} ]]; then
     CATKIN_DIR="$HOME/catkin_ws"
     echo "Using default catkin workspace $CATKIN_DIR"
 else
@@ -16,16 +17,14 @@ mil_user_setup_clone_repo()
   mkdir -p $CATKIN_SOURCE_DIR
   if [[ -d "$MIL_REPO_DIR" ]]; then
     echo "MIL repository already present, will not clone."
+    echo "Note: it is up to you to pull the latest repository"
   else
     echo "Cloning MIL repository to $MIL_REPO_DIR"
     sudo apt install -y git
     git clone --recursive -q https://github.com/uf-mil/mil.git $MIL_REPO_DIR
     git --git-dir=$MIL_REPO_GIT remote rename origin upstream
+    git --git-dir=$MIL_REPO_GIT submodule update --init --recursive
   fi
-  # Update mil repo
-  echo "Updating MIL repo located at $MIL_REPO_DIR"
-  git --git-dir=$MIL_REPO_GIT submodule update --init --recursive
-  git --git-dir=$MIL_REPO_GIT fetch upstream master:master
 }
 
 # Add configuration lines to bashrc
@@ -47,10 +46,15 @@ mil_user_setup_bashrc()
 # Build repo with catkin
 mil_user_setup_build_repo()
 {
-  catkin_make -C "$CATKIN_DIR"
+  if ! catkin_make -C "$CATKIN_DIR"
+  then
+    echo "Failed to build repository. The repo may be broken."
+  fi
 }
 
 mil_user_setup_clone_repo
 mil_user_setup_bashrc
+set +u
 . /opt/ros/melodic/setup.bash
+set -u
 mil_user_setup_build_repo
