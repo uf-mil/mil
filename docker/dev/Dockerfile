@@ -9,6 +9,5 @@ RUN useradd --uid 10000 --create-home --shell /bin/bash mil-dev \
 USER mil-dev
 WORKDIR /home/mil-dev
 
-#ADD https://raw.githubusercontent.com/uf-mil/mil/ci-docker/scripts/system_install /tmp/system_install
 ADD --chown=mil-dev:mil-dev user_install /tmp/user_install
 RUN chmod +x /tmp/user_install && /tmp/user_install

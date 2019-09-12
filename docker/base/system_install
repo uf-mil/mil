@@ -10,7 +10,7 @@ mil_system_install()
 }
 
 # System dependencies
-mil_system_install --no-install-recommends tzdata dirmngr gnupg2 lsb-release python-vcstools
+mil_system_install --no-install-recommends tzdata dirmngr gnupg2 lsb-release python-vcstools mercurial
 
 # Install ROS apt source
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -21,10 +21,10 @@ sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31
 # Update apt again and install ros
 sudo apt update
 mil_system_install ros-melodic-desktop-full
+# Install additional dependencies not bundled by default with ros
+mil_system_install ros-melodic-serial
+mil_system_install ros-melodic-tf2-sensor-msgs
+mil_system_install ros-melodic-geographic-msgs
 
 # Initialize rosdep
 sudo rosdep init
-sudo rosdep update
-
-
-
