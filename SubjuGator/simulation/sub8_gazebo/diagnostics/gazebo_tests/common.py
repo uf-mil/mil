@@ -1,5 +1,5 @@
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Pose, Vector3
+from geometry_msgs.msg import Pose, Vector3d
 from gazebo_msgs.srv import SetModelState, SetModelStateRequest, DeleteModel, SpawnModel
 from gazebo_msgs.msg import ModelState, ModelStates
 from kill_handling.srv import SetKill, SetKillRequest
@@ -44,7 +44,7 @@ class Job(object):
     def set_model_position(self, position, model='sub8'):
         current_pose = yield self.true_pose
         pose = Pose(
-            position=Vector3(*position),
+            position=Vector3d(*position),
             orientation=current_pose.pose.pose.orientation
         )
         yield self.set_model_pose(pose, model=model)

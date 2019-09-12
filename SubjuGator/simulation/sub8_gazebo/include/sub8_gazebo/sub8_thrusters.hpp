@@ -13,7 +13,6 @@
 #include "gazebo/common/Event.hh"
 #include "gazebo/common/Events.hh"
 #include "gazebo/common/Plugin.hh"
-#include "gazebo/math/Vector3.hh"
 #include "gazebo/physics/physics.hh"
 
 namespace gazebo
@@ -27,13 +26,13 @@ struct Thruster
   }
   Thruster(sub8_gazebo::ThrusterDef td)
   {
-    position = math::Vector3(td.position[0], td.position[1], td.position[2]);
-    direction = math::Vector3(td.direction[0], td.direction[1], td.direction[2]);
+    position = ignition::math::Vector3d(td.position[0], td.position[1], td.position[2]);
+    direction = ignition::math::Vector3d(td.direction[0], td.direction[1], td.direction[2]);
     min = td.bounds[0];
     max = td.bounds[1];
   }
-  math::Vector3 position;
-  math::Vector3 direction;
+  ignition::math::Vector3d position;
+  ignition::math::Vector3d direction;
   double min;
   double max;
 };

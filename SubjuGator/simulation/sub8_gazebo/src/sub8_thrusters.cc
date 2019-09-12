@@ -17,7 +17,7 @@ void ThrusterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   physics::WorldPtr world = _model->GetWorld();
   GZ_ASSERT(world != NULL, "Model is in a NULL world");
 
-  this->physicsEngine = world->GetPhysicsEngine();
+  this->physicsEngine = world->Physics();
   GZ_ASSERT(this->physicsEngine != NULL, "Physics engine was NULL");
 
   GZ_ASSERT(_sdf != NULL, "Received NULL SDF pointer");
@@ -76,8 +76,8 @@ void ThrusterPlugin::Init()
 
 void ThrusterPlugin::ThrustCallback(const sub8_msgs::Thrust::ConstPtr& thrust)
 {
-  math::Vector3 netForce = math::Vector3::Zero;
-  math::Vector3 netTorque = math::Vector3::Zero;
+  ignition::math::Vector3d netForce = ignition::math::Vector3d::Zero;
+  ignition::math::Vector3d netTorque = ignition::math::Vector3d::Zero;
 
   mtx.lock();
   this->lastTime = ros::Time::now();
@@ -111,7 +111,7 @@ void ThrusterPlugin::OnUpdate()
 
     // Clip thrust within range
     double clipped_thrust = std::max(thrusterMap[name].min, std::min(thrusterMap[name].max, thrust));
-    math::Vector3 force = thrusterMap[name].direction * clipped_thrust;
+    ignition::math::Vector3d force = thrusterMap[name].direction * clipped_thrust;
 
     targetLink->AddLinkForce(force, thrusterMap[name].position);
   }

@@ -21,8 +21,9 @@
 #include <map>
 #include "gazebo/common/Event.hh"
 #include "gazebo/common/Plugin.hh"
-#include "gazebo/math/Vector3.hh"
 #include "gazebo/physics/physics.hh"
+
+#include <ignition/math/Vector3.hh>
 
 namespace gazebo
 {
@@ -37,7 +38,7 @@ public:
 
   /// \brief Center of volume in the link frame.
 public:
-  math::Vector3 cov;
+  ignition::math::Vector3d cov;
 
   /// \brief Volume of this link.
 public:
@@ -90,7 +91,7 @@ protected:
 
   /// \brief Pointer to the physics engine (for accessing gravity).
 protected:
-  physics::PhysicsEnginePtr physicsEngine;
+  ignition::math::Vector3d gravity_world;
 
   /// \brief Pointer to the plugin SDF.
 protected:

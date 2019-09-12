@@ -127,20 +127,20 @@ protected:
 
   /// \brief center of pressure in link local coordinates
 protected:
-  math::Vector3 cp;
+  ignition::math::Vector3d cp;
 
   /// \brief forward flight direction in link local coordinates
 protected:
-  math::Vector3 forward;
+  ignition::math::Vector3d forward;
 
   /// \brief A vector in the lift/drag plane, anything orthogonal to it
   /// is considered wing sweep.
 protected:
-  math::Vector3 upward;
+  ignition::math::Vector3d upward;
 
   /// \brief Smooth velocity
 protected:
-  math::Vector3 velSmooth;
+  ignition::math::Vector3d velSmooth;
 
   /// \brief Names of allowed target links, specified in sdf parameters.
 protected:
