@@ -1,5 +1,6 @@
 #include <boost/bind.hpp>
 #include <boost/math/constants/constants.hpp>
+#include <boost/utility/in_place_factory.hpp> 
 
 #include <eigen_conversions/eigen_msg.h>
 #include <message_filters/subscriber.h>
