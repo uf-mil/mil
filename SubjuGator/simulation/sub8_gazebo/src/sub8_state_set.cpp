@@ -59,8 +59,8 @@ void StatePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     ROS_WARN("SDF does not have 'referenceTopic' element, using default /trajectory topic");
 
   first_pose_ = model_->WorldPose();  // Init pose
-  last_ref_pose_.pos.z = first_pose_.pos.z;
-  first_pose_.pos.z = 0.0;
+  last_ref_pose_.Pos().Z() = first_pose_.Pos().Z();
+  first_pose_.Pos().Z(0.0);
 
   // Make sure the ROS node for Gazebo has already been initialized
   GZ_ASSERT(ros::isInitialized(), "ROS not initialized");
@@ -70,7 +70,7 @@ void StatePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 void StatePlugin::PoseRefUpdate(const geometry_msgs::PoseStampedConstPtr& ps)
 {
   ignition::math::Vector3d pos(ps->pose.position.x, ps->pose.position.y, ps->pose.position.z);
-  ignition::math::Quaternion rot(ps->pose.orientation.w, ps->pose.orientation.x, ps->pose.orientation.y, ps->pose.orientation.z);
+  ignition::math::Quaterniond rot(ps->pose.orientation.w, ps->pose.orientation.x, ps->pose.orientation.y, ps->pose.orientation.z);
 
   last_ref_pose_ = ignition::math::Pose3d(pos, rot);
   auto fixed_pose = last_ref_pose_ + first_pose_;

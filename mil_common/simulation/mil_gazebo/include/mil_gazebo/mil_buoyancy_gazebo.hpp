@@ -96,7 +96,7 @@ protected:
   double baseLinkVolume;
 
 protected:
-  math::Vector3 gravity;
+  ignition::math::Vector3d gravity;
 };
 }
 

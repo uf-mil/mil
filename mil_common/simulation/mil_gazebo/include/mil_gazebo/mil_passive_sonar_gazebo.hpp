@@ -15,7 +15,7 @@ public:
   ///
   void TimerCb(const ros::TimerEvent&);
   /// Convert a gazebo math vector to a geometry msg
-  static void GazeboVectorToRosMsg(gazebo::math::Vector3 const& in, geometry_msgs::Vector3& out);
+  static void GazeboVectorToRosMsg(ignition::math::Vector3d const& in, geometry_msgs::Vector3& out);
 
 private:
   /// Node handle used for ros interactions
@@ -27,7 +27,7 @@ private:
   /// Frame of point to publish from
   std::string frame_;
   /// Offset from model to where origin is
-  gazebo::math::Pose parent_from_sensor_;
+  ignition::math::Pose3d parent_from_sensor_;
   /// Pointer to the gazebo world were these models are
   gazebo::physics::ModelPtr origin_;
   /// Pointer to model to get heading to

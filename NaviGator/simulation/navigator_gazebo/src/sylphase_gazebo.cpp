@@ -38,7 +38,7 @@ void SylphaseGazebo::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf
   pose_ = _sdf->Get<ignition::math::Pose3d>("pose");
 
   // Get tranformation from gazebo to enu and gazeb oto ecef
-  converter_ = _model->GetWorld()->GetSphericalCoordinates();
+  converter_ = _model->GetWorld()->SphericalCoords();
   if (!converter_)
   {
     ROS_ERROR_NAMED("sylphase", "converter is null");
@@ -114,13 +114,13 @@ void SylphaseGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
   last_update_time_ = info.simTime;
 
   // TODO: throttle
-  auto pose = model_->GetWorldPose().Ign() + pose_;
+  auto pose = model_->WorldPose() + pose_;
   auto rot = pose_.Rot();
-  auto vel_linear = rot * model_->GetRelativeLinearVel().Ign();
-  auto accel_linear = rot * model_->GetRelativeLinearAccel().Ign();
-  auto vel_angular = rot * model_->GetRelativeAngularVel().Ign();
-  auto enu = (local_to_enu_ * pose).Pose();
-  auto ecef = (local_to_ecef_ * pose).Pose();
+  auto vel_linear = rot * model_->RelativeLinearVel();
+  auto accel_linear = rot * model_->RelativeLinearAccel();
+  auto vel_angular = rot * model_->RelativeAngularVel();
+  auto enu = (local_to_enu_.Pose() * pose);
+  auto ecef = (local_to_ecef_.Pose() * pose);
 
   nav_msgs::Odometry odom;
   odom.header.frame_id = "enu";
