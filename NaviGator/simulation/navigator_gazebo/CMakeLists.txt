@@ -61,16 +61,6 @@ add_dependencies(sylphase_gazebo
     ${catkin_EXPORTED_TARGETS}
 )
 
-add_library(gazebo_ros_velodyne_laser src/GazeboRosVelodyneLaser.cpp)
-set_target_properties(gazebo_ros_velodyne_laser PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
-target_link_libraries(gazebo_ros_velodyne_laser
-  ${catkin_LIBRARIES}
-  ${GAZEBO_LIBRARIES}
-  RayPlugin
-)
-
-
-
 catkin_package(
     INCLUDE_DIRS include
     CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs nav_msgs message_runtime tf gazebo_plugins sensor_msgs
