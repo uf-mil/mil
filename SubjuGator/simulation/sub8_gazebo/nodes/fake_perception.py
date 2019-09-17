@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from geometry_msgs.msg import Pose, Point, PoseStamped, Vector3d
+from geometry_msgs.msg import Pose, Point, PoseStamped, Vector3
 from mil_misc_tools import text_effects
 from mil_msgs.srv import SetGeometry
 import numpy as np
@@ -54,7 +54,7 @@ def handle_fake_perception(extra, target_object):
                                                       model.pose.position.y - 24 + offset.y,
                                                       model.pose.position.z + offset.z),
                                        orientation=model.pose.orientation))
-    covariance_diagonal = Vector3d(0, 0, 0)
+    covariance_diagonal = Vector3(0, 0, 0)
     found = True
     resp2 = VisionRequestResponse(pose_stamp, covariance_diagonal, found)
 
