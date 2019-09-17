@@ -4,7 +4,7 @@
 #include <boost/range/adaptor/map.hpp>
 
 #include <nodelet/nodelet.h>
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/MagneticField.h>
 #include <tf/transform_datatypes.h>
@@ -82,6 +82,5 @@ public:
   }
 };
 
-PLUGINLIB_DECLARE_CLASS(magnetic_dynamic_compensation, nodelet, magnetic_dynamic_compensation::Nodelet,
-                        nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(magnetic_dynamic_compensation::Nodelet, nodelet::Nodelet);
 }

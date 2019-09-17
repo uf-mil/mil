@@ -3,7 +3,7 @@
 
 #include <eigen_conversions/eigen_msg.h>
 #include <nodelet/nodelet.h>
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/MagneticField.h>
 
@@ -60,6 +60,5 @@ public:
   }
 };
 
-PLUGINLIB_DECLARE_CLASS(magnetic_hardsoft_compensation, nodelet, magnetic_hardsoft_compensation::Nodelet,
-                        nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(magnetic_hardsoft_compensation::Nodelet, nodelet::Nodelet);
 }

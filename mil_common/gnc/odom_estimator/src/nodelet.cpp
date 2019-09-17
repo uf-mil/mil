@@ -5,7 +5,7 @@
 #include <message_filters/subscriber.h>
 #include <nav_msgs/Odometry.h>
 #include <nodelet/nodelet.h>
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
@@ -387,5 +387,5 @@ public:
 private:
   boost::optional<NodeImpl> nodeimpl;
 };
-PLUGINLIB_DECLARE_CLASS(odom_estimator, nodelet, odom_estimator::Nodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS( odom_estimator::Nodelet, nodelet::Nodelet);
 }
