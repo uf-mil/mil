@@ -3,8 +3,6 @@
 
 #include "gazebo/common/Event.hh"
 #include "gazebo/common/Plugin.hh"
-#include "gazebo/math/Pose.hh"
-#include "gazebo/math/Quaternion.hh"
 #include "gazebo/physics/physics.hh"
 
 #include <geometry_msgs/PoseStamped.h>
