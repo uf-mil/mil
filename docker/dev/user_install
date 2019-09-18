@@ -11,20 +11,11 @@ CATKIN_SOURCE_DIR="$CATKIN_DIR/src"
 MIL_REPO_DIR="$CATKIN_SOURCE_DIR/mil"
 
 # Clone repositry
-mil_user_setup_clone_repo()
+mil_user_setup()
 {
   local MIL_REPO_GIT="$MIL_REPO_DIR/.git"
   mkdir -p $CATKIN_SOURCE_DIR
-  if [[ -d "$MIL_REPO_DIR" ]]; then
-    echo "MIL repository already present, will not clone."
-    echo "Note: it is up to you to pull the latest repository"
-  else
-    echo "Cloning MIL repository to $MIL_REPO_DIR"
-    sudo apt install -y git
-    git clone --recursive -q https://github.com/uf-mil/mil.git $MIL_REPO_DIR
-    git --git-dir=$MIL_REPO_GIT remote rename origin upstream
-    git --git-dir=$MIL_REPO_GIT submodule update --init --recursive
-  fi
+  sudo apt install -y git
 }
 
 # Add configuration lines to bashrc
@@ -52,7 +43,7 @@ mil_user_setup_build_repo()
   fi
 }
 
-mil_user_setup_clone_repo
+mil_user_setup
 mil_user_setup_bashrc
 set +u
 . /opt/ros/melodic/setup.bash
