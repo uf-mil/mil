@@ -12,7 +12,7 @@ fi
 MIL_DOCKER_TAG_ROOT=${MIL_DOCKER_TAG_ROOT:-"uf-mil"}
 
 # Quite mode so will only output if something goes wrong
-DOCKER_ARGS="-q"
+DOCKER_ARGS=""
 
 # Cache path in repo where dockerfiles are
 DOCKER_BASE_PATH="$(realpath $(dirname $BASH_SOURCE)/../docker)"
