@@ -8,7 +8,7 @@
 	path = mil_common/ros_alarms
 	url = https://github.com/uf-mil/ros_alarms.git
 [submodule "drivers/pointgrey_camera_driver"]
-	path = mil_common/deprecated/pointgrey_camera_driver
+	path = mil_common/drivers/pointgrey_camera_driver
 	url = https://github.com/uf-mil/pointgrey_camera_driver
 [submodule "drivers/roboteq"]
 	path = mil_common/drivers/roboteq
