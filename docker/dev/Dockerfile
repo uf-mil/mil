@@ -11,4 +11,4 @@ WORKDIR /home/mil-dev
 
 ADD --chown=mil-dev:mil-dev user_install /tmp/user_install
 RUN chmod +x /tmp/user_install && /tmp/user_install
-RUN mkdir /home/catkin_ws/src/mil
+RUN mkdir -p /home/mil-dev/catkin_ws/src/mil
