@@ -1,9 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-# Update apt
-sudo apt update
-
 mil_system_install()
 {
   sudo apt install -y $@
