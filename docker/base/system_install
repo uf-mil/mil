@@ -40,11 +40,11 @@ install_flycap()
 # Update apt
 sudo apt update
 
+# System dependencies
+mil_system_install --no-install-recommends tzdata dirmngr gnupg2 lsb-release python-vcstools mercurial wget
+
 # Install flycap sdk for pointgrey_camera_driver
 install_flycap
-
-# System dependencies
-mil_system_install --no-install-recommends tzdata dirmngr gnupg2 lsb-release python-vcstools mercurial
 
 # Install ROS apt source
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
