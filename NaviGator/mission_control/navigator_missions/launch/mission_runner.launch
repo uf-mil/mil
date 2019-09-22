@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="mil_missions" type="mission_runner" name="mission_runner">
+    <node pkg="mil_missions" type="mission_server" name="mission_runner">
         <param name="tasks_module" value="navigator_missions" />
         <param name="base_task" value="Navigator" />
         <rosparam>
