@@ -67,7 +67,7 @@ mil_system_install ros-melodic-geographic-msgs
 mil_system_install ros-melodic-velodyne
 mil_system_install python-pip
 pip install tqdm
-mil_system_install python-scipy
+pip install scipy
 
 # Documentation dependencies
 mil_system_install python3-pip
