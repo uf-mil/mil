@@ -17,7 +17,7 @@ from topic_tools.srv import MuxSelect
 from navigator_msgs.srv import ShooterManual
 import rospy
 from std_srvs.srv import Trigger, TriggerRequest
-from mil_tasks_core import TaskClient
+from mil_missions_core import MissionClient
 from actionlib import TerminalState
 
 
@@ -38,7 +38,7 @@ class RemoteControl(object):
         self.station_hold_broadcaster = AlarmBroadcaster('station-hold')
 
         self.wrench_changer = rospy.ServiceProxy("/wrench/select", MuxSelect)
-        self.task_client = TaskClient()
+        self.task_client = MissionClient()
         self.kill_listener = AlarmListener('kill', callback_funct=self._update_kill_status)
 
         if (wrench_pub is None):

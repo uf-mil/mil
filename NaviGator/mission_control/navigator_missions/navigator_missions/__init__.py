@@ -1,9 +1,9 @@
 from navigator import Navigator
 
-import mil_tasks_core
-ChainWithTimeout = mil_tasks_core.MakeChainWithTimeout(Navigator)
-Wait = mil_tasks_core.MakeWait(Navigator)
-del mil_tasks_core
+import mil_missions_core
+ChainWithTimeout = mil_missions_core.MakeChainWithTimeout(Navigator)
+Wait = mil_missions_core.MakeWait(Navigator)
+del mil_missions_core
 
 from teleop import Teleop
 from circle import Circle
