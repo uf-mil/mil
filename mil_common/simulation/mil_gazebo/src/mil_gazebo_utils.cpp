@@ -61,12 +61,12 @@ bool GetFromSDFOrRosParam(sdf::ElementPtr _sdf, std::string const& tag, double& 
     return false;
 }
 
-bool GetFromSDFOrRosParam(sdf::ElementPtr _sdf, std::string const& tag, gazebo::math::Vector3& val)
+bool GetFromSDFOrRosParam(sdf::ElementPtr _sdf, std::string const& tag, ignition::math::Vector3d& val)
 {
   int mode = TagInSDFOrRosParam(_sdf, tag);
   if (mode == 0)
   {
-    val = _sdf->GetElement(tag)->Get<gazebo::math::Vector3>();
+    val = _sdf->GetElement(tag)->Get<ignition::math::Vector3d>();
   }
   else if (mode == 1)
   {
@@ -74,7 +74,7 @@ bool GetFromSDFOrRosParam(sdf::ElementPtr _sdf, std::string const& tag, gazebo::
     std::vector<double> tmp;
     if (!ros::param::get(param_name, tmp) || tmp.size() != 3)
       return false;
-    val = gazebo::math::Vector3(tmp[0], tmp[1], tmp[2]);
+    val = ignition::math::Vector3d(tmp[0], tmp[1], tmp[2]);
     return true;
   }
   else

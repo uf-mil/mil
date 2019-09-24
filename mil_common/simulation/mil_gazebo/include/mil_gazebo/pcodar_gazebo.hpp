@@ -18,10 +18,10 @@ public:
   void Load(gazebo::physics::WorldPtr _parent, sdf::ElementPtr _sdf);
   /// Convert a gazebo math pose to a geometry msgs
   /// TODO: put into a common, non-PCODAR related library
-  static void GazeboPoseToRosMsg(gazebo::math::Pose const& in, geometry_msgs::Pose& out);
+  static void GazeboPoseToRosMsg(ignition::math::Pose3d const& in, geometry_msgs::Pose& out);
   /// Convert a gazebo math vector to a geometry msg
   /// TODO: put into a common, non-PCODAR related library
-  static void GazeboVectorToRosMsg(gazebo::math::Vector3 const& in, geometry_msgs::Vector3& out);
+  static void GazeboVectorToRosMsg(ignition::math::Vector3d const& in, geometry_msgs::Vector3& out);
   /// Add gazebo objects with matching names to PCODAR
   void UpdateEntities();
   /// Add / Update an entity in PCODAR if it matches one of the selected names

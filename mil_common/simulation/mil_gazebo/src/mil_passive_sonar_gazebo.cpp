@@ -12,9 +12,9 @@ void MilPassiveSonarGazebo::Load(gazebo::physics::ModelPtr _model, sdf::ElementP
   if (_sdf->HasElement("frame"))
     frame_ = _sdf->GetElement("frame")->Get<std::string>();
 
-  parent_from_sensor_ = gazebo::math::Pose();
+  parent_from_sensor_ = ignition::math::Pose3d();
   if (_sdf->HasElement("offset"))
-    parent_from_sensor_ = _sdf->GetElement("offset")->Get<gazebo::math::Pose>();
+    parent_from_sensor_ = _sdf->GetElement("offset")->Get<ignition::math::Pose3d>();
 
   if(_sdf->HasElement("freq"))
     freq_ = _sdf->GetElement("freq")->Get<double>();
@@ -29,7 +29,7 @@ void MilPassiveSonarGazebo::Load(gazebo::physics::ModelPtr _model, sdf::ElementP
   }
 
   std::string model_name = _sdf->GetElement("model")->Get<std::string>();
-  model_ = origin_->GetWorld()->GetModel(model_name);
+  model_ = origin_->GetWorld()->ModelByName(model_name);
   if (!model_)
   {
     ROS_ERROR_NAMED("MilPassiveSonarGazebo", "model [%s] does not exist", model_name.c_str());
@@ -49,11 +49,11 @@ void MilPassiveSonarGazebo::Load(gazebo::physics::ModelPtr _model, sdf::ElementP
 void MilPassiveSonarGazebo::TimerCb(const ros::TimerEvent&)
 {
   // Calculate direction to model
-  auto world_from_parent = origin_->GetWorldPose();
-  auto sensor_position_world = world_from_parent.pos + world_from_parent.rot * parent_from_sensor_.pos;
-  auto model_position_world = model_->GetWorldPose().pos;
+  auto world_from_parent = origin_->WorldPose();
+  auto sensor_position_world = world_from_parent.Pos() + world_from_parent.Rot() * parent_from_sensor_.Pos();
+  auto model_position_world = model_->WorldPose().Pos();
   auto heading_world = model_position_world - sensor_position_world;
-  auto sensor_from_world = parent_from_sensor_.rot.GetInverse() * world_from_parent.rot.GetInverse();
+  auto sensor_from_world = parent_from_sensor_.Rot().Inverse() * world_from_parent.Rot().Inverse();
   auto heading_sensor = sensor_from_world * heading_world;
   heading_sensor = heading_sensor.Normalize();
 
@@ -77,11 +77,11 @@ void MilPassiveSonarGazebo::TimerCb(const ros::TimerEvent&)
   processed_ping_pub_.publish(processed_ping_msg);
 }
 
-void MilPassiveSonarGazebo::GazeboVectorToRosMsg(gazebo::math::Vector3 const& in, geometry_msgs::Vector3& out)
+void MilPassiveSonarGazebo::GazeboVectorToRosMsg(ignition::math::Vector3d const& in, geometry_msgs::Vector3& out)
 {
-  out.x = in.x;
-  out.y = in.y;
-  out.z = in.z;
+  out.x = in.X();
+  out.y = in.Y();
+  out.z = in.Z();
 }
 
 GZ_REGISTER_MODEL_PLUGIN(MilPassiveSonarGazebo)

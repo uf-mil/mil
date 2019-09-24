@@ -3,7 +3,7 @@
 #include <boost/thread.hpp>
 
 #include <nodelet/nodelet.h>
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 #include <ros/ros.h>
 
 #include <mil_tools/param_helpers.hpp>
@@ -79,5 +79,5 @@ private:
   boost::thread polling_thread_inst;
 };
 
-PLUGINLIB_DECLARE_CLASS(rdi_explorer_dvl, nodelet, rdi_explorer_dvl::Nodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS( rdi_explorer_dvl::Nodelet, nodelet::Nodelet);
 }

@@ -12,7 +12,7 @@
     <include file="$(find navigator_launch)/launch/alarms.launch"/>
     <include file="$(find navigator_launch)/launch/diagnostics.launch" />
     <include if="$(arg online-bagger)" file="$(find navigator_launch)/launch/online_bagger.launch" />
-    <include file="$(find navigator_missions)/launch/task_runner.launch" />
+    <include file="$(find navigator_missions)/launch/mission_runner.launch" />
     <include file="$(find navigator_launch)/launch/hardware.launch">
        <arg name="simulation" value="$(arg simulation)" />
     </include>

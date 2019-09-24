@@ -63,8 +63,8 @@ void MilDepthGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
   last_pub_time_ = time;
 
   // TODO: limit publish frequency
-  auto pose = model_->GetWorldPose() + offset_;
-  double depth = -pose.pos.z;
+  auto pose = model_->WorldPose() + offset_;
+  double depth = -pose.Pos().Z();
   if (depth < 0.)
     depth = 0.;
 

@@ -38,7 +38,7 @@ void SylphaseGazebo::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf
   pose_ = _sdf->Get<ignition::math::Pose3d>("pose");
 
   // Get tranformation from gazebo to enu and gazeb oto ecef
-  converter_ = _model->GetWorld()->GetSphericalCoordinates();
+  converter_ = _model->GetWorld()->SphericalCoords();
   if (!converter_)
   {
     ROS_ERROR_NAMED("sylphase", "converter is null");
@@ -56,7 +56,7 @@ void SylphaseGazebo::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf
       gazebo::event::Events::ConnectWorldUpdateBegin(std::bind(&SylphaseGazebo::OnUpdate, this, std::placeholders::_1));
 }
 
-ignition::math::Matrix4d SylphaseGazebo::SphericalCoordinatesTransform(
+ignition::math::Pose3d SylphaseGazebo::SphericalCoordinatesTransform(
     const gazebo::common::SphericalCoordinates& _converter, const CoordinateType in, const CoordinateType out)
 {
   ignition::math::Vector3d origin = _converter.PositionTransform(ignition::math::Vector3d::Zero, in, out);
@@ -68,7 +68,7 @@ ignition::math::Matrix4d SylphaseGazebo::SphericalCoordinatesTransform(
   m.Axes(x, y, z);
   ignition::math::Quaterniond quat(m);
 
-  return ignition::math::Matrix4d(ignition::math::Pose3d(origin, quat));
+  return ignition::math::Pose3d(origin, quat);
 }
 
 geometry_msgs::Quaternion SylphaseGazebo::Convert(const ignition::math::Quaterniond& _in)
@@ -114,13 +114,13 @@ void SylphaseGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
   last_update_time_ = info.simTime;
 
   // TODO: throttle
-  auto pose = model_->GetWorldPose().Ign() + pose_;
+  auto pose = model_->WorldPose() + pose_;
   auto rot = pose_.Rot();
-  auto vel_linear = rot * model_->GetRelativeLinearVel().Ign();
-  auto accel_linear = rot * model_->GetRelativeLinearAccel().Ign();
-  auto vel_angular = rot * model_->GetRelativeAngularVel().Ign();
-  auto enu = (local_to_enu_ * pose).Pose();
-  auto ecef = (local_to_ecef_ * pose).Pose();
+  auto vel_linear = rot * model_->RelativeLinearVel();
+  auto accel_linear = rot * model_->RelativeLinearAccel();
+  auto vel_angular = rot * model_->RelativeAngularVel();
+  auto enu = ignition::math::Pose3d(local_to_enu_.CoordPositionAdd(pose.Pos()), local_to_enu_.Rot() * pose.Rot());
+  auto ecef = ignition::math::Pose3d(local_to_ecef_.CoordPositionAdd(pose.Pos()), local_to_ecef_.Rot() * pose.Rot());
 
   nav_msgs::Odometry odom;
   odom.header.frame_id = "enu";

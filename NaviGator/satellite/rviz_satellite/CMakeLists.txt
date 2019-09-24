@@ -4,20 +4,6 @@ project(rviz_satellite)
 set(DISTRO $ENV{ROS_DISTRO})
 message(STATUS "Distribution: " ${DISTRO})
 
-set(DEFAULT_BUILD_QT5 OFF)
-if(${DISTRO} STREQUAL "kinetic")
-    set(DEFAULT_BUILD_QT5 ON)
-endif()
-
-option(UseQt5 "Build w/ QT version 5" ${DEFAULT_BUILD_QT5})
-
-if (UseQt5)
-	find_package(Qt5 COMPONENTS Core Gui Network Concurrent REQUIRED)
-else()
-	find_package(Qt4 COMPONENTS QtCore QtGui QtNetwork REQUIRED)
-	include(${QT_USE_FILE})
-endif()
-
 find_package(OpenCV REQUIRED)
 find_package(PkgConfig REQUIRED)
 
@@ -37,6 +23,13 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
+if (rviz_QT_VERSION VERSION_LESS "5")
+	find_package(Qt4 COMPONENTS QtCore QtGui QtNetwork REQUIRED)
+	include(${QT_USE_FILE})
+else()
+	find_package(Qt5 COMPONENTS Core Gui Network Concurrent REQUIRED)
+endif()
+
 catkin_package(CATKIN_DEPENDS nav_msgs sensor_msgs geometry_msgs)
 
 set(${PROJECT_NAME}_SOURCES
@@ -50,26 +43,26 @@ set(${PROJECT_NAME}_HEADERS
 )
 
 # invoke MOC and UI/ include Qt headers/ link Qt libraries
-if (UseQt5)
+if (rviz_QT_VERSION VERSION_LESS "5")
+qt4_wrap_cpp(${PROJECT_NAME}_MOCSrcs ${${PROJECT_NAME}_HEADERS})
+	include_directories(${Qt4_INCLUDE_DIR})
+	link_libraries(
+    ${QT_LIBRARIES}
+	)
+else()
 	qt5_wrap_cpp(${PROJECT_NAME}_MOCSrcs ${${PROJECT_NAME}_HEADERS})
 	include_directories(
 		${Qt5Core_INCLUDE_DIRS}
 		${Qt5Gui_INCLUDE_DIRS}
 		${Qt5Network_INCLUDE_DIRS}
 		${Qt5Concurrent_INCLUDE_DIRS}
-		)
+	)
 	link_libraries(
 		${Qt5Core_LIBRARIES}
 		${Qt5Gui_LIBRARIES}
 		${Qt5Network_LIBRARIES}
 		${Qt5Concurrent_LIBRARIES}
-		)
-else()
-	qt4_wrap_cpp(${PROJECT_NAME}_MOCSrcs ${${PROJECT_NAME}_HEADERS})
-	include_directories(${Qt4_INCLUDE_DIR})
-	link_libraries(
-  		${QT_LIBRARIES}
-		)
+  )
 endif()
 
 # Other includes

@@ -37,3 +37,6 @@ docs/_build
 *.exe
 *.out
 *.app
+
+# Python compiled files
+*.pyc

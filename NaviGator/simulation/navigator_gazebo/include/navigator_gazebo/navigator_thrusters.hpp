@@ -10,7 +10,6 @@
 #include "gazebo/common/Event.hh"
 #include "gazebo/common/Events.hh"
 #include "gazebo/common/Plugin.hh"
-#include "gazebo/math/Vector3.hh"
 #include "gazebo/physics/physics.hh"
 #include "roboteq_msgs/Command.h"
 #include "sensor_msgs/JointState.h"

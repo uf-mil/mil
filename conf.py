@@ -78,7 +78,8 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+# For now, excluding the core code directories
+exclude_patterns = ['_build', 'NaviGator/**', 'SubjuGator', 'mil_common']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

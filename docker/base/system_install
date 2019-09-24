@@ -1,16 +1,52 @@
 #!/bin/bash
 set -euo pipefail
 
-# Update apt
-sudo apt update
-
 mil_system_install()
 {
   sudo apt install -y $@
 }
 
+# Currently broken
+install_flycap()
+{
+  # Fly cap dependns
+  mil_system_install libusb-1.0-0
+  mil_system_install libgtk2.0-0
+  mil_system_install libgtkmm-2.4-1v5
+  mil_system_install libglademm-2.4-1v5
+  mil_system_install libgtkmm-2.4-dev
+  mil_system_install libglademm-2.4-dev
+  mil_system_install libgtkglextmm-x11-1.2-dev
+
+  wget https://public.boxcloud.com/d/1/b1\!lJb4kYPLmAH3Kb_Dg26OnoyOLJR-URkVZ9t8LADznc40azmd3XTpZRYThe2iN6cg-9biPo4yDxX7fPVe5wu3ENgSf_iynwRz4of9kQet2G15hv2xgMAgjpzWewNT7vYhQVSoH_9fAAH2JMHV0fSWghTHmKJHyN6F3-GsWvB7Nu45uvrqT70t5FCZIpvahxYUiwa9JMnLShw39BTy2D2SW9CCb_fHfb6FWMQ3-C4JO7R28ikTxiqZt0H-qBAh7hWLEwKWvJFu7BL3VIA6jvTEkVUTP0ozcUY4HIdivTmgJ0XBWxJJ-J94hIunjzUIpBLVhuECJZCkYvv2Wzn4ThbapkuBHrjgV1E7mj5Bo104ppyCam-ii0DrTUP9QmRTestvxOjO4vnmM_UXs7MhMSqQ811aTQPVWuWj8YQzMz4L97sVMghUqoZTctuAxJWQSb2_hggfjvRFgoDu8AbgniNVe_y18ePa0siySDMKch4P7ff4Yr_6tM6KhNqt7vPm8JrniD3W6yEnKTuZxe4zVEPKRORDyf9K2ywApD88ZGI0HHy9N6d2o4WSJCrzoA1a09Ghrcj-8_78LCs2EuQJCZJBVzx5bu5bpTY71TeeY0T0blSFt9jJwtd88K-_7kktrRsSeZ7x5GXaBHoXXy0Gl0pS6wgnY2CY450m0Paw7HvZ-7asrImEhKiFoB3xTW108MI7dJ_a2jFxtzYgcTwDqXM7LNogp6SaRJLATTWDctMVfoe-QHa_InJ4t3AociJ1nChIe7akKGc9ttWGyv-B-C4m2w23qDbM9RGdra9nVknoFFpptLlCD2QyGadcYVstZtydzKHAbAP84MpUuY1yzaLB38vgyKeg0HrPzPagY4ToDhz2N-6N5HLuQa15xfjYa6foOzUftX5sMA42syZSlqrlZulEopnVYdGGspVEpsBUhNhdGXny8599_cxgFvaBU4JQUsfdgPFtoJ2WTHIHqvMIemWn5VXK4DkQn62F_l_h-zQ9lj17CM_4byISDUcZ0Kv5Fx3bJQLXHtEtCtyby4n9S6QEf3aGexyO0xOgCecgciC7TUE8m4jPkE5sQnGj0m1yD3rrgGgi83LNyusJKu6pKrUp1f8UkfwdxjDVtivTR4b4LOdNNVxbsbuOAcfpfoT28TQEzxzcfLtOslyeOD0y1Gvsd0rG6hihcxmiRmLP0ZdgDvASq-wQGmF60v-fJ8U3ZfaViXPczzM99Cx3az1fETQhFWSFsnpHWQzDsee5CzQ4DU22xpjzTza1cnbKK8Nf2qYPIOD-uxmeNhA1j1IIRDV9VQMsNhtKIoanwGx8b7rKDCMTgsvq/download -O /tmp/flycap.tar.gz
+
+  (cd /tmp/; tar -xvzf /tmp/flycap.tar.gz)
+
+  # Install the Flycapture SDK based on the install script packaged with it
+  cd /tmp/flycapture2-2.13.3.31-amd64
+  sudo dpkg -i libflycapture-2*
+  sudo dpkg -i libflycapturegui-2*
+  sudo dpkg -i libflycapturevideo-2*
+  sudo dpkg -i libflycapture-c-2*
+  sudo dpkg -i libflycapturegui-c-2*
+  sudo dpkg -i libflycapturevideo-c-2*
+  sudo dpkg -i libmultisync-2*
+  sudo dpkg -i libmultisync-c-2*
+  sudo dpkg -i flycap-2*
+  sudo dpkg -i flycapture-doc-2*
+  sudo dpkg -i updatorgui*
+}
+
+
+# Update apt
+sudo apt update
+
 # System dependencies
-mil_system_install --no-install-recommends tzdata dirmngr gnupg2 lsb-release python-vcstools
+mil_system_install --no-install-recommends ca-certificates tzdata dirmngr gnupg2 lsb-release python-vcstools mercurial wget
+
+# Install flycap sdk for pointgrey_camera_driver
+# TODO: use encrypted file hosted somewhere
+# install_flycap
 
 # Install ROS apt source
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -21,10 +57,19 @@ sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31
 # Update apt again and install ros
 sudo apt update
 mil_system_install ros-melodic-desktop-full
+# Install additional dependencies not bundled by default with ros
+mil_system_install ros-melodic-serial
+mil_system_install ros-melodic-tf2-sensor-msgs
+mil_system_install ros-melodic-geographic-msgs
+mil_system_install ros-melodic-velodyne
+mil_system_install python-pip
+pip install tqdm
+pip install scipy
+
+# Documentation dependencies
+mil_system_install python3-pip
+pip3 install -q sphinx recommonmark sphinx_rtd_theme
+
 
 # Initialize rosdep
 sudo rosdep init
-sudo rosdep update
-
-
-

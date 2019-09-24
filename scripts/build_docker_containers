@@ -1,10 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-# Exit if not root, as docker won't work
-# TODO: actually check if user has docker permissions
-if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root. Please run again with sudo"
+if [[ $EUID -ne 0 ]] && [[ $(id -Gn "$USER" | grep -c "docker") == 0 ]] ; then
+  echo "You need docker access to run this script."
+  echo "Either add yourself to the docker group or run this script as sudo."
   exit 1
 fi
 
@@ -12,14 +11,14 @@ fi
 MIL_DOCKER_TAG_ROOT=${MIL_DOCKER_TAG_ROOT:-"uf-mil"}
 
 # Quite mode so will only output if something goes wrong
-DOCKER_ARGS="-q"
+DOCKER_ARGS=""
 
 # Cache path in repo where dockerfiles are
 DOCKER_BASE_PATH="$(realpath $(dirname $BASH_SOURCE)/../docker)"
 
 build_mil_docker_image()
 {
-  docker build $DOCKER_ARGS $DOCKER_BASE_PATH/$1 -t $MIL_DOCKER_TAG_ROOT:$1
+  docker build $DOCKER_ARGS $DOCKER_BASE_PATH/$1 -t $MIL_DOCKER_TAG_ROOT:$1 --build-arg MIL_DOCKER_TAG_ROOT=${MIL_DOCKER_TAG_ROOT}
 }
 
 # Build each of the images

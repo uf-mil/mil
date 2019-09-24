@@ -27,8 +27,8 @@ private:
   ignition::math::Pose3d offset_;
   gazebo::physics::ModelPtr model_;
   gazebo::physics::LinkPtr link_;
-  gazebo::math::Vector3 linear_coeffs_;
-  gazebo::math::Vector3 angular_coeffs_;
+  ignition::math::Vector3d linear_coeffs_;
+  ignition::math::Vector3d angular_coeffs_;
   gazebo::event::ConnectionPtr update_connection_;
 };
 }

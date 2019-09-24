@@ -1,12 +1,10 @@
-FROM uf-mil:base
+ARG MIL_DOCKER_TAG_ROOT=uf-mil
+FROM ${MIL_DOCKER_TAG_ROOT}:base
 
 # Create a mil-ci user and make them a sudoer
 RUN useradd --uid 10000 --create-home --shell /bin/bash mil-ci \
   && echo "" >> /etc/sudoers \
   && echo "mil-ci ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-
-# For docs generation
-RUN apt install -y python3-pip && pip3 install sphinx recommonmark sphinx_rtd_theme
 
 # Switch to the new user
 USER mil-ci
