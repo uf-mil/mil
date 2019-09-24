@@ -39,11 +39,11 @@ private:
   geometry_msgs::Quaternion Convert(const ignition::math::Quaterniond &);
 
   ignition::math::Pose3d pose_;
-  ignition::math::Matrix4d local_to_enu_;
-  ignition::math::Matrix4d local_to_ecef_;
+  ignition::math::Pose3d local_to_enu_;
+  ignition::math::Pose3d local_to_ecef_;
 
   using CoordinateType = gazebo::common::SphericalCoordinates::CoordinateType;
-  static ignition::math::Matrix4d SphericalCoordinatesTransform(const gazebo::common::SphericalCoordinates &_convert,
+  static ignition::math::Pose3d SphericalCoordinatesTransform(const gazebo::common::SphericalCoordinates &_convert,
                                                                 const CoordinateType in, const CoordinateType out);
 };
 }
