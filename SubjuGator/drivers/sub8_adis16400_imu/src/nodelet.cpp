@@ -2,7 +2,7 @@
 #include <boost/thread.hpp>
 
 #include <nodelet/nodelet.h>
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 #include <ros/ros.h>
 
 #include <mil_tools/param_helpers.hpp>
@@ -66,5 +66,5 @@ private:
   unsigned int drop_every_;
 };
 
-PLUGINLIB_DECLARE_CLASS(adis16400_imu, nodelet, adis16400_imu::Nodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS( adis16400_imu::Nodelet, nodelet::Nodelet);
 }

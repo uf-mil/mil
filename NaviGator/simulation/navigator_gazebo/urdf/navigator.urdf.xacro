@@ -61,9 +61,13 @@
   <xacro:fixed_link name="hydrophones" parent="base_link"
                     xyz="0.102 -.635 -0.324" rpy="0 0 0" />
 
-  <xacro:include filename="$(find wamv_gazebo)/urdf/macros.xacro" />
   <!-- Attach hydrodynamics plugin -->
+  <xacro:include filename="$(find wamv_gazebo)/urdf/macros.xacro" />
   <xacro:usv_dynamics_gazebo name="wamv_dynamics_plugin"/>
+
   <!-- Attach wind plugin -->
-  <xacro:usv_wind_gazebo name="wamv_wind_plugin"/>
+  <!-- Temporarily disabled pending updates for VRX compatibility
+  <xacro:include filename="$(find vrx_gazebo)/worlds/xacros/usv_wind_plugin.xacro" />
+  <xacro:usv_wind_gazebo />
+  -->
 </robot>

@@ -49,11 +49,11 @@ void MilDragGazebo::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sdf
 
 void MilDragGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
 {
-  gazebo::math::Vector3 linear_vel = link_->GetRelativeLinearVel();
-  gazebo::math::Vector3 angular_vel = link_->GetRelativeAngularVel();
+  ignition::math::Vector3d linear_vel = link_->RelativeLinearVel();
+  ignition::math::Vector3d angular_vel = link_->RelativeAngularVel();
 
-  gazebo::math::Vector3 force = -linear_coeffs_ * linear_vel;
-  gazebo::math::Vector3 torque = -angular_coeffs_ * angular_vel;
+  ignition::math::Vector3d force = -linear_coeffs_ * linear_vel;
+  ignition::math::Vector3d torque = -angular_coeffs_ * angular_vel;
 
   /*
     gzerr << "Vel " << linear_vel

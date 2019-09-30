@@ -12,6 +12,7 @@
   <depend>actionlib_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>python-scipy</depend>
   <export>
   </export>
 

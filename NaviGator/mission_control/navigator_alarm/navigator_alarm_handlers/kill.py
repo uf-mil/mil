@@ -4,7 +4,7 @@ from ros_alarms import HandlerBase, Alarm
 from actionlib import SimpleActionClient, TerminalState
 from mil_msgs.msg import BagOnlineAction, BagOnlineGoal
 import os
-from mil_tasks_core import TaskClient
+from mil_missions_core import MissionClient
 
 
 class Kill(HandlerBase):
@@ -16,7 +16,7 @@ class Kill(HandlerBase):
                                    node_name='alarm_server',
                                    problem_description='Initial kill')
         self.bag_client = SimpleActionClient("/online_bagger/bag", BagOnlineAction)
-        self.task_client = TaskClient()
+        self.task_client = MissionClient()
         self.first = True
 
     def _online_bagger_cb(self, status, result):
@@ -42,7 +42,7 @@ class Kill(HandlerBase):
             goal = BagOnlineGoal(bag_name='kill.bag')
             goal.topics = os.environ['BAG_ALWAYS'] + ' ' + os.environ['bag_kill']
             self.bag_client.send_goal(goal, done_cb=self._online_bagger_cb)
-        self.task_client.run_task('Killed', done_cb=self._kill_task_cb)
+        self.task_client.run_mission('Killed', done_cb=self._kill_task_cb)
 
     def cleared(self, alarm):
         self._killed = False

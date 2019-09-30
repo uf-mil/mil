@@ -25,9 +25,9 @@ void Thruster::Update(double& _position, double& _velocity, double& _effort)
     command_ = 0.;
   joint_->SetForce(0, command_);
   _effort = command_;
-  _position = joint_->GetAngle(0).Radian();
+  _position = joint_->Position(0);
   _velocity = joint_->GetVelocity(0);
-  gazebo::math::Vector3 force_vector(command_, 0., 0.);
+  ignition::math::Vector3d force_vector(command_, 0., 0.);
   link_->AddLinkForce(force_vector);
   // SET LINK FORCE
 }

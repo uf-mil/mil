@@ -35,7 +35,7 @@ void StatePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   model_ = _model;
   physics::WorldPtr world = _model->GetWorld();
   GZ_ASSERT(world != NULL, "Model is in a NULL world");
-  physics_engine_ = world->GetPhysicsEngine();
+  physics_engine_ = world->Physics();
   GZ_ASSERT(physics_engine_ != NULL, "Physics engine was NULL");
 
   GZ_ASSERT(_sdf != NULL, "Received NULL SDF pointer");
@@ -44,11 +44,11 @@ void StatePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   // If model is not center frame, store static offset
   if (sdf_->HasElement("staticOffset"))
   {
-    static_offset_ = sdf_->Get<math::Vector3>("staticOffset");
+    static_offset_ = sdf_->Get<ignition::math::Vector3d>("staticOffset");
   }
   else
   {
-    static_offset_ = math::Vector3(0.0, 0.0, 0.0);
+    static_offset_ = ignition::math::Vector3d(0.0, 0.0, 0.0);
   }
 
   // Get PoseStamped trajectory
@@ -58,9 +58,9 @@ void StatePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   else
     ROS_WARN("SDF does not have 'referenceTopic' element, using default /trajectory topic");
 
-  first_pose_ = model_->GetWorldPose();  // Init pose
-  last_ref_pose_.pos.z = first_pose_.pos.z;
-  first_pose_.pos.z = 0.0;
+  first_pose_ = model_->WorldPose();  // Init pose
+  last_ref_pose_.Pos().Z() = first_pose_.Pos().Z();
+  first_pose_.Pos().Z(0.0);
 
   // Make sure the ROS node for Gazebo has already been initialized
   GZ_ASSERT(ros::isInitialized(), "ROS not initialized");
@@ -69,10 +69,10 @@ void StatePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 /////////////////////////////////////////////////
 void StatePlugin::PoseRefUpdate(const geometry_msgs::PoseStampedConstPtr& ps)
 {
-  math::Vector3 pos(ps->pose.position.x, ps->pose.position.y, ps->pose.position.z);
-  math::Quaternion rot(ps->pose.orientation.w, ps->pose.orientation.x, ps->pose.orientation.y, ps->pose.orientation.z);
+  ignition::math::Vector3d pos(ps->pose.position.x, ps->pose.position.y, ps->pose.position.z);
+  ignition::math::Quaterniond rot(ps->pose.orientation.w, ps->pose.orientation.x, ps->pose.orientation.y, ps->pose.orientation.z);
 
-  last_ref_pose_ = math::Pose(pos, rot);
+  last_ref_pose_ = ignition::math::Pose3d(pos, rot);
   auto fixed_pose = last_ref_pose_ + first_pose_;
   model_->SetWorldPose(fixed_pose);
 }

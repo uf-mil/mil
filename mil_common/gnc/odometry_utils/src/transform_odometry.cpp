@@ -1,6 +1,6 @@
 #include <eigen_conversions/eigen_msg.h>
 #include <nodelet/nodelet.h>
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 #include <ros/ros.h>
 #include <tf/LinearMath/Quaternion.h>
 #include <tf/transform_datatypes.h>
@@ -95,5 +95,5 @@ public:
     pub = getNodeHandle().advertise<nav_msgs::Odometry>("odom", 10);
   }
 };
-PLUGINLIB_DECLARE_CLASS(odometry_utils, transform_odometry, odometry_utils::transform_odometry, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS( odometry_utils::transform_odometry, nodelet::Nodelet);
 }

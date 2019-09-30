@@ -1,6 +1,5 @@
 #include "navigator_gazebo/pinger_plugin.hpp"
 #include <gazebo/common/Plugin.hh>
-#include <gazebo/math/Rand.hh>
 
 namespace navigator_gazebo
 {
@@ -30,9 +29,9 @@ bool PingerPlugin::ServiceCallback(std_srvs::Trigger::Request& req, std_srvs::Tr
 
 std::string PingerPlugin::NewRandomGate()
 {
-  gazebo::math::Vector3 gates[3];
+  ignition::math::Vector3d gates[3];
 
-  gazebo::physics::ModelPtr entrance_gate = model_->GetWorld()->GetModel("robotx_2018_entrance_gate");
+  gazebo::physics::ModelPtr entrance_gate = model_->GetWorld()->ModelByName("robotx_2018_entrance_gate");
   if (!entrance_gate)
   {
     ROS_ERROR_NAMED("pinger_plugin", "Entrance gate model not found.");
@@ -55,12 +54,12 @@ std::string PingerPlugin::NewRandomGate()
 
   for (size_t i = 0; i < 3; ++i)
   {
-    gates[i] = (markers[i]->GetWorldPose().pos + markers[i + 1]->GetWorldPose().pos) / 2.0;
-    gates[i].z = -5.0;
+    gates[i] = (markers[i]->WorldPose().Pos() + markers[i + 1]->WorldPose().Pos()) / 2.0;
+    gates[i].Z(-5.0);
   }
 
-  int random_selection = gazebo::math::Rand::GetIntUniform(0, 2);
-  gazebo::math::Pose new_pose(gates[random_selection], gazebo::math::Quaternion());
+  int random_selection = ignition::math::Rand::IntUniform(0, 2);
+  ignition::math::Pose3d new_pose(gates[random_selection], ignition::math::Quaterniond());
 
   model_->SetWorldPose(new_pose);
 

@@ -24,7 +24,7 @@ void MilDVLGazebo::Load(gazebo::sensors::SensorPtr _parent, sdf::ElementPtr _sdf
   }
 
   parent_ = boost::dynamic_pointer_cast<gazebo::physics::Link>(
-      gazebo::physics::get_world(sensor_->WorldName())->GetEntity(sensor_->ParentName()));
+      gazebo::physics::get_world(sensor_->WorldName())->EntityByName(sensor_->ParentName()));
   if (!parent_)
   {
     ROS_ERROR_NAMED("MILDVLGazebo", "Parent is null");
@@ -73,8 +73,8 @@ void MilDVLGazebo::OnUpdate()
     vel_msg.header.frame_id = frame_name_;
     Convert(sensor_->LastMeasurementTime(), vel_msg.header.stamp);
 
-    auto vel_world = parent_->GetWorldLinearVel(pose_.Pos()).Ign();
-    auto world_from_parent = parent_->GetWorldPose().Ign().Rot();
+    auto vel_world = parent_->WorldLinearVel(pose_.Pos());
+    auto world_from_parent = parent_->WorldPose().Rot();
     auto vel_parent = world_from_parent.Inverse().RotateVector(vel_world);
     auto parent_from_local = pose_.Rot();
     auto vel_local = parent_from_local.Inverse().RotateVector(vel_parent);

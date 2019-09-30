@@ -17,7 +17,7 @@ MILBuoyancyGazebo::MILBuoyancyGazebo() : fluidDensity(999.1026), fluidLevel(0.0)
 /////////////////////////////////////////////////
 void MILBuoyancyGazebo::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
-  gravity = _model->GetWorld()->GetPhysicsEngine()->GetGravity();
+  gravity = _model->GetWorld()->Gravity();
 
   GZ_ASSERT(_model != NULL, "Received NULL model pointer");
   GZ_ASSERT(_sdf != NULL, "Received NULL SDF pointer");
@@ -42,9 +42,9 @@ void MILBuoyancyGazebo::Init()
 /////////////////////////////////////////////////
 void MILBuoyancyGazebo::OnUpdate()
 {
-  double height = baseLink->GetBoundingBox().GetSize().z;
-  double bottomRelSurf = this->fluidLevel - (baseLink->GetWorldPose().pos.z - height / 2.0);
-  const math::Vector3 kGravity(0, 0, -9.81);
+  double height = baseLink->BoundingBox().Size().Z();
+  double bottomRelSurf = this->fluidLevel - (baseLink->WorldPose().Pos().Z() - height / 2.0);
+  const ignition::math::Vector3d kGravity(0, 0, -9.81);
 
   double volume = baseLinkVolume;
   // out of water
@@ -57,7 +57,7 @@ void MILBuoyancyGazebo::OnUpdate()
   {
     volume = (bottomRelSurf / height) * volume;
   }
-  math::Vector3 buoyancy = -this->fluidDensity * volume * gravity;
+  ignition::math::Vector3d buoyancy = -this->fluidDensity * volume * gravity;
 
   baseLink->AddForce(buoyancy);
 }

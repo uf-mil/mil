@@ -19,7 +19,7 @@ from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from topic_tools.srv import MuxSelect, MuxSelectRequest
 from mil_misc_tools.text_effects import fprint
 from navigator_tools import MissingPerceptionObject
-from mil_tasks_core import BaseTask
+from mil_missions_core import BaseMission
 from mil_passive_sonar import TxHydrophonesClient
 from mil_pneumatic_actuator.srv import SetValve, SetValveRequest
 from mil_poi import TxPOIClient
@@ -55,7 +55,7 @@ class MissionResult(object):
         return '\n'.join(_pass if self.success else _fail)
 
 
-class Navigator(BaseTask):
+class Navigator(BaseMission):
     circle = "CIRCLE"
     cross = "CROSS"
     triangle = "TRIANGLE"
@@ -71,8 +71,8 @@ class Navigator(BaseTask):
 
     @classmethod
     @util.cancellableInlineCallbacks
-    def _init(cls, task_runner):
-        super(Navigator, cls)._init(task_runner)
+    def _init(cls, mission_runner):
+        super(Navigator, cls)._init(mission_runner)
         cls.vision_proxies = {}
         cls._load_vision_services()
 

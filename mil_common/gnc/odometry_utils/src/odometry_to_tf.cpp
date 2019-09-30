@@ -1,6 +1,6 @@
 #include <nav_msgs/Odometry.h>
 #include <nodelet/nodelet.h>
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_datatypes.h>
@@ -33,5 +33,5 @@ public:
   }
 };
 
-PLUGINLIB_DECLARE_CLASS(odometry_utils, odometry_to_tf, odometry_utils::odometry_to_tf, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS( odometry_utils::odometry_to_tf, nodelet::Nodelet);
 }

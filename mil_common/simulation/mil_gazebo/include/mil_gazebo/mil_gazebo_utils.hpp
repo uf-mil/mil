@@ -32,7 +32,7 @@ bool GetFromSDFOrRosParam(sdf::ElementPtr _sdf, std::string const& tag, double& 
 /**
  *
  */
-bool GetFromSDFOrRosParam(sdf::ElementPtr _sdf, std::string const& tag, gazebo::math::Vector3& val);
+bool GetFromSDFOrRosParam(sdf::ElementPtr _sdf, std::string const& tag, ignition::math::Vector3d& val);
 }
 
 #endif  // MIL_GAZEBO_UTILS_H

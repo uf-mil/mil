@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 from actionlib import TerminalState
-from mil_tasks_core import TaskClient
+from mil_missions_core import MissionClient
 from ros_alarms import HandlerBase, AlarmBroadcaster
 
 
@@ -9,7 +9,7 @@ class StationHold(HandlerBase):
     alarm_name = 'station-hold'
 
     def __init__(self):
-        self.task_client = TaskClient()
+        self.task_client = MissionClient()
         self.broadcaster = AlarmBroadcaster(self.alarm_name)
 
     def _client_cb(self, terminal_state, result):
@@ -22,7 +22,7 @@ class StationHold(HandlerBase):
 
     def raised(self, alarm):
         rospy.loginfo("Attempting to station hold")
-        self.task_client.run_task('StationHold', done_cb=self._client_cb)
+        self.task_client.run_mission('StationHold', done_cb=self._client_cb)
 
     def cleared(self, alarm):
         # When cleared, do nothing and just wait for new goal / custom wrench
