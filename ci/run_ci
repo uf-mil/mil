@@ -5,6 +5,10 @@ set -euo pipefail
 # Cache the location of the mil workspace using the location of this script
 MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
 export MIL_WS="$(realpath $MIL_DIR/../..)"
+# Unfortunate hack to change permissions of source dir so generated files can be produced
+# Needed because buildkite agent clones/mounts repo as root
+USER=$(whoami)
+sudo chown -R $USER:$USER $MIL_DIR
 
 echo "--- :hammer: Build repository"
 $MIL_DIR/ci/build
