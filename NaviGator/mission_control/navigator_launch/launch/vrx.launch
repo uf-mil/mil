@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+    Launches the gazebo simulator and all the same master.launch used on the real platform.
+-->
+<launch>
+    <param name="/is_simulation" type="bool" value="True" />
+    <arg name="gui" default="false"/>
+    <arg name="online-bagger" default="False" />
+
+    <!-- Run core navigator code, minus hardware -->
+    <include file="$(find navigator_launch)/launch/master.launch">
+      <arg name="simulation" value="true" />
+      <arg name="online-bagger" value="$(arg online-bagger)" />
+    </include>
+
+    <include file="$(find vrx_gazebo)/launch/vrx.launch">
+      <arg name="gui" value="false"/>
+    </include>
+
+</launch>

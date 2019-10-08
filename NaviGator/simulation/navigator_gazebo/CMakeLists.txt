@@ -73,6 +73,16 @@ xacro_add_files(
   TARGET xacro_urdf
 )
 
+# Generate Navigator urdf for vrx via yaml files
+
+add_custom_target(navigator_vrx_urdf ALL
+  COMMAND ./urdf/navigator_vrx/generate_navigator_vrx
+  DEPENDS urdf/navigator_vrx/thruster_config.yaml urdf/navigator_vrx/sensor_config.yaml urdf/navigator_vrx/generate_navigator_vrx
+  BYPRODUCTS urdf/navigator_vrx/thruster_config.xacro urdf/navigator_vrx/thruster_config.xacro ${CATKIN_SHARE_DESTINATION}/urdf/navigator_vrx.urdf
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "xacro: generating ${output} from yamls"
+)
+
 # Generate world files from xacro and install
 xacro_add_files(
   worlds/course.world.xacro

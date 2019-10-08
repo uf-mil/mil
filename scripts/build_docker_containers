@@ -21,8 +21,19 @@ build_mil_docker_image()
   docker build $DOCKER_ARGS $DOCKER_BASE_PATH/$1 -t $MIL_DOCKER_TAG_ROOT:$1 --build-arg MIL_DOCKER_TAG_ROOT=${MIL_DOCKER_TAG_ROOT}
 }
 
+build_vrx_images()
+{
+ #build nvidia image
+#  .$(realpath $(dirname $BASH_SOURCE)/../)Navigator/simulation/vrx/docker/build.bash -n $(realpath $(dirname $BASH_SOURCE)/../)Navigator/simulation/vrx/
+ 
+ #build regular image
+  .$(realpath $(dirname $BASH_SOURCE)/../)Navigator/simulation/vrx/docker/build.bash $(realpath $(dirname $BASH_SOURCE)/../)Navigator/simulation/vrx/
+}
+
 # Build each of the images
 build_mil_docker_image base
 build_mil_docker_image dev
 build_mil_docker_image ci-build
 build_mil_docker_image ci-server
+
+build_vrx_images

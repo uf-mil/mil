@@ -1,0 +1,2 @@
+#!/bin/bash
+$(realpath $(dirname $BASH_SOURCE)/../)/NaviGator/simulation/vrx/docker/run.bash vrx $(realpath $(dirname $BASH_SOURCE)/../)NaviGator/simulation/vrx/

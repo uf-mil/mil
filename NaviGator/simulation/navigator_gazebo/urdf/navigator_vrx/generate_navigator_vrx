@@ -1,0 +1,4 @@
+#!/bin/bash
+source $HOME/catkin_ws/devel/setup.sh
+
+roslaunch vrx_gazebo generate_wamv.launch thruster_yaml:=$(realpath $(dirname $BASH_SOURCE))/thruster_config.yaml sensor_config:=$(realpath $(dirname $BASH_SOURCE))/sensor_config.yaml wamv_target:=$(realpath $(dirname $BASH_SOURCE)/../../../../../../../)/devel/navigator_gazebo/urdf/navigator_vrx.urdf
