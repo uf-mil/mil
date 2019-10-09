@@ -27,13 +27,13 @@ build_vrx_images()
 #  .$(realpath $(dirname $BASH_SOURCE)/../)Navigator/simulation/vrx/docker/build.bash -n $(realpath $(dirname $BASH_SOURCE)/../)Navigator/simulation/vrx/
  
  #build regular image
-  .$(realpath $(dirname $BASH_SOURCE)/../)Navigator/simulation/vrx/docker/build.bash $(realpath $(dirname $BASH_SOURCE)/../)Navigator/simulation/vrx/
+  $(realpath $(dirname $BASH_SOURCE)/../)/NaviGator/simulation/vrx/docker/build.bash $(realpath $(dirname $BASH_SOURCE)/../)/NaviGator/simulation/vrx/
 }
 
 # Build each of the images
+build_vrx_images
 build_mil_docker_image base
 build_mil_docker_image dev
 build_mil_docker_image ci-build
 build_mil_docker_image ci-server
 
-build_vrx_images

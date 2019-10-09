@@ -11,4 +11,5 @@ RUN apt update && apt install -y sudo
 
 ADD system_install /tmp/system_install
 RUN chmod +x /tmp/system_install && /tmp/system_install
-
+#expose ros port
+EXPOSE 11311
