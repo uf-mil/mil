@@ -54,4 +54,4 @@ We have a convienent alias for this, run `cm`
 
 ## Run some code
 Now that the repository is built, try running something!
-`roslaunch navigator_launch simulator.launch`
+`roslaunch navigator_launch simulation.launch`
