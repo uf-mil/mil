@@ -76,9 +76,9 @@ xacro_add_files(
 # Generate Navigator urdf for vrx via yaml files
 
 add_custom_target(navigator_vrx_urdf ALL
-  COMMAND ./urdf/navigator_vrx/generate_navigator_vrx
+  COMMAND roslaunch vrx_gazebo generate_wamv.launch thruster_yaml:=$(realpath ${CMAKE_CURRENT_SOURCE_DIR}/../)/share/urdf/navigator_vrx/thruster_config.yaml sensor_config:=${CMAKE_CURRENT_SOURCE_DIR}/urdf/navigator_vrx/sensor_config.yaml wamv_target:=${CATKIN_PACKAGE_SHARE_DESTINATION}/urdf/navigator_vrx.urdf
   DEPENDS urdf/navigator_vrx/thruster_config.yaml urdf/navigator_vrx/sensor_config.yaml urdf/navigator_vrx/generate_navigator_vrx
-  BYPRODUCTS urdf/navigator_vrx/thruster_config.xacro urdf/navigator_vrx/thruster_config.xacro ${CATKIN_SHARE_DESTINATION}/urdf/navigator_vrx.urdf
+  BYPRODUCTS urdf/navigator_vrx/thruster_config.xacro urdf/navigator_vrx/thruster_config.xacro $(realpath ${CMAKE_CURRENT_SOURCE_DIR}/../)/share/urdf/navigator_vrx.urdf
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMENT "xacro: generating ${output} from yamls"
 )

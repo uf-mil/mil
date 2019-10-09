@@ -15,6 +15,7 @@
 
     <include file="$(find vrx_gazebo)/launch/vrx.launch">
       <arg name="gui" value="false"/>
+      <arg name="urdf" value="$(find navigator_gazebo)/urdf/navigator_vrx.urdf"/>
     </include>
 
 </launch>
