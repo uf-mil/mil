@@ -1,7 +1,7 @@
 FROM uf-mil:base
 
 # Create a mil-dev user and make them a sudoer
-RUN useradd --uid 10000 --create-home --shell /bin/bash mil-dev \
+RUN useradd --uid 1000 --create-home --shell /bin/bash mil-dev \
   && echo "" >> /etc/sudoers \
   && echo "mil-dev ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
