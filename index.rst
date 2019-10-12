@@ -15,6 +15,7 @@ Pages:
    :maxdepth: 1
 
    Onboarding <docs/onboarding>
+   Culture <docs/culture>
    Contributing Changes <docs/development/contributing>
    Development Guide <docs/development/development_guide>
    Adding Documentation <docs/development/adding_documentation>

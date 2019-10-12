@@ -1,4 +1,4 @@
-Docuentation Examples
+Documentation Examples
 ===============================
 
 Examples of how to write documentation
