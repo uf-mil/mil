@@ -14,6 +14,9 @@ well documented for Windows, OSX, and several Linux operating systems.
 
 *Note: if you use Docker Desktop (Windows or OSX), be sure to move the RAM/CPU sliders to max*
 
+You also need to give your user access to the docker group
+* Ubuntu: `sudo usermod -a -G docker $USER` then reboot
+
 
 ### Alternative: run the setup scripts on your host operating system
 If you are running Ubuntu 18.04 and prefer to simply run code directly on your "host"

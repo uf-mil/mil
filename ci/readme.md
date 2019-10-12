@@ -9,6 +9,7 @@ is called the "agent". Our agent runs inside of a docker container `uf-mil:ci-se
 
 If the agent needs to be run on a new server or updated, perform the following steps *from the server*:
 
+* Install docker on the host machine (the remainder of the instructions assume the host machine is running a modern Ubuntu distribution)
 * Kill the current instance if it is running ```sudo docker kill buildkite-agent```
 * Change directory to a copy of the latest master branch of this repository. ```cd <repo>```
 * Build/rebuild the docker container ```./scripts/build_docker_containers```. This may take a while.

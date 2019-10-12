@@ -8,7 +8,7 @@ If you are creating a new page, please observe the following convention:
 * For more general documentation put it under `docs/`. For example, a page on "Meeting Schedule" should go in `docs/meeting_schedule.md`
 
 ## Creating the file
-Checkout some examples for how to format the documention under [documentation examples](examples/index)
+Checkout some examples for how to format the documention under [documentation examples](/docs/examples/index)
 
 ## Indexing the file
 For your newly added page to be found, it needs to be added to the table of contents. There is a root table of contents in `index.rst` and smaller table of contents within various subdirectories. Add your page to one or both of these, whichever you deem more appropriate. To do so, add the path to your page (without the extention) under the
@@ -34,4 +34,4 @@ It is important to generate the documentation website locally and view it in a w
 TODO
 
 ## Contributing changes
-Now that you have made and verifed your changes, follow the [contributing guide](development/contributing) to add your changes to the repository.
+Now that you have made and verifed your changes, follow the [contributing guide](contributing) to add your changes to the repository.
