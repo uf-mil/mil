@@ -6,8 +6,7 @@ mil_system_install()
   sudo apt install -y $@
 }
 
-# Currently broken
-install_flycap()
+# Currently broken install_flycap()
 {
   # Fly cap dependns
   mil_system_install libusb-1.0-0
@@ -65,6 +64,14 @@ mil_system_install ros-melodic-velodyne
 mil_system_install ros-melodic-usb-cam
 mil_system_install ros-melodic-joy
 mil_system_install ros-melodic-spacenav-node
+mil_system_install ros-melodic-velodyne-simulator
+mil_system_install ros-melodic-hector-gazebo-plugins
+mil_system_install ros-melodic-joy
+mil_system_install ros-melodic-joy-teleop
+mil_system_install ros-melodic-key-teleop
+mil_system_install ros-melodic-robot-localization
+mil_system_install ros-melodic-teleop-tools
+mil_system_install ros-melodic-teleop-twist-keyboard
 mil_system_install python-pip
 pip install tqdm
 pip install scipy
