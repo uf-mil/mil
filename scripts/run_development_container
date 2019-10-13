@@ -1,4 +1,5 @@
 #!/bin/bash
 sudo docker run -it \
-    --mount src=$(realpath $(dirname $BASH_SOURCE)/../),target=/home/mil-dev/catkin_ws/src/mil/,type=bind \
+    -v $(realpath $(dirname $BASH_SOURCE)/../):/home/mil-dev/catkin_ws/src/mil/ \
     uf-mil:dev
+
