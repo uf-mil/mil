@@ -10,6 +10,7 @@
     <!-- Run core navigator code, minus hardware -->
     <include file="$(find navigator_launch)/launch/master.launch">
       <arg name="simulation" value="true" />
+      <arg name="vrx" value="true" />
       <arg name="online-bagger" value="$(arg online-bagger)" />
     </include>
 

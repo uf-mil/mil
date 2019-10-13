@@ -1,7 +1,10 @@
 <?xml version="1.0"?>
 <!-- Sets robot_description paramater to Navigator's URDF -->
 <launch>
-  <param name="robot_description" textfile="$(find navigator_gazebo)/urdf/navigator.urdf"/>
+  <arg name="vrx" default="False" />
+
+  <param unless="$(arg vrx)" name="robot_description" textfile="$(find navigator_gazebo)/urdf/navigator.urdf"/>
+  <param if="$(arg vrx)" name="robot_description" textfile="$(find navigator_gazebo)/urdf/navigator_vrx.urdf"/>
   <rosparam param="robot_footprint">
     # 16 ft length = 4.8768 meters. /2 = 2.4384
     # 8ft width = 2.4384. /2 = 1.2192
