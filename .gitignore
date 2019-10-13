@@ -40,3 +40,6 @@ docs/_build
 
 # Python compiled files
 *.pyc
+
+# Auto Generated xacros
+NaviGator/simulation/navigator_gazebo/urdf/navigator_vrx/*.xacro
