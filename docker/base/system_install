@@ -51,6 +51,7 @@ mil_system_install --no-install-recommends \
   lsb-release \
   python-vcstools \
   mercurial \
+  ruby \
   wget
 
 # Install flycap sdk for pointgrey_camera_driver
