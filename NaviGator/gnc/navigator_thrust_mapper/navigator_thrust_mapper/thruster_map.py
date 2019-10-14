@@ -20,7 +20,7 @@ class ThrusterMap(object):
                          in order of ThurserMap.THRUSTERS, meters
         param angles: list of angles for each thruster [theta, theta, ...] in order of ThurserMap.THRUSTERS, radians
         param effort_ratio: linear mapping from force to effort units, so thrust = effort_ratio * force
-        param effort_limit: maximum effort in either direction that should be commanded to a thruster
+        param effort_limit: (MAX_FORWARD, MAX_REVERSE) maximum effort in either direction that should be commanded to a thruster, newtons
         param com: offset of boat's true center of mass to the frame thruster positions are given (base_link)
                    defaults to (0, 0, 0) incase we don't know com
 
@@ -39,6 +39,8 @@ class ThrusterMap(object):
         self.joints = joints
         self.effort_ratio = effort_ratio
         self.effort_limit = effort_limit
+        if len(self.effort_limit) != 2 or self.effort_limit[1] > self.effort_limit[0]:
+            raise Exception('self.effort limit {} is invalid'.format(self.effort_limit))
 
         ''' Iterate through thruster positions and create thruster trans matrix'''
         thruster_matrix = []
@@ -57,6 +59,34 @@ class ThrusterMap(object):
         # returns a matrix made of the thruster collumns
         self.thruster_matrix = np.hstack(thruster_matrix)
         self.thruster_matrix_inv = np.linalg.pinv(self.thruster_matrix)  # Magical numpy psuedoinverse
+
+    @classmethod
+    def from_vrx_urdf(cls, urdf_string):
+        urdf = URDF.from_xml_string(urdf_string)
+        buff = tf2_ros.Buffer()
+        listener = tf2_ros.TransformListener(buff)  # noqa
+        names = []
+        positions = []
+        angles = []
+        limit = -1
+        ratio = -1
+        for link in urdf.links:
+            print link
+            find = link.name.find('_propeller_link')
+            if find == -1:
+              continue
+            name = link.name[:find]
+            try:
+                trans = buff.lookup_transform('base_link', link.name, rospy.Time(), rospy.Duration(10))
+            except tf2_ros.TransformException as e:
+                raise Exception(e)
+            translation = rosmsg_to_numpy(trans.transform.translation)
+            rot = rosmsg_to_numpy(trans.transform.rotation)
+            yaw = euler_from_quaternion(rot)[2]
+            names.append(name)
+            positions.append(translation[0:2])
+            angles.append(yaw)
+        return cls(names, positions, angles, [1.] * len(names), (250., -100.))
 
     @classmethod
     def from_urdf(cls, urdf_string, transmission_suffix='_thruster_transmission'):
@@ -104,8 +134,8 @@ class ThrusterMap(object):
                 if limit != -1 and joint.limit.effort != limit:
                     raise Exception('Thruster {} had a different limit, cannot proceed'.format(joint.name))
                 limit = joint.limit.effort
-
-        return cls(names, positions, angles, ratio, limit, joints=joints)
+        limit_tuple = (limit, -limit)
+        return cls(names, positions, angles, ratio, limit_tuple, joints=joints)
 
     def thrusts_to_wrench(self, thrusts):
         '''
@@ -131,7 +161,7 @@ class ThrusterMap(object):
         '''
         Maps a list of thruster forces to their corposponding effort units
         '''
-        return np.clip(force * self.effort_ratio, -self.effort_limit, self.effort_limit)
+        return np.clip(force * self.effort_ratio, self.effort_limit[1], self.effort_limit[0])
 
     def effort_to_force(self, effort):
         '''

@@ -3,6 +3,7 @@ import rospy
 import numpy as np
 from geometry_msgs.msg import WrenchStamped
 from roboteq_msgs.msg import Command
+from std_msgs.msg import Float32
 from ros_alarms import AlarmListener
 from navigator_thrust_mapper import ThrusterMap
 from sensor_msgs.msg import JointState
@@ -14,11 +15,16 @@ class ThrusterMapperNode(object):
     See thruster_map.py for more details on this process as this is simply the ROS wrapper.
     '''
     def __init__(self):
+        self.is_vrx = rospy.get_param('/is_vrx', False)
+
         # Used for mapping wrench to individual thrusts
-        urdf = rospy.get_param('robot_description', default=None)
+        urdf = rospy.get_param('/robot_description', default=None)
         if urdf is None or len(urdf) == 0:
             raise Exception('robot description not set or empty')
-        self.thruster_map = ThrusterMap.from_urdf(urdf)
+        if self.is_vrx:
+            self.thruster_map = ThrusterMap.from_vrx_urdf(urdf)
+        else:
+            self.thruster_map = ThrusterMap.from_urdf(urdf)
 
         # To track kill state so no thrust is sent when killed (kill board hardware also ensures this)
         self.kill = False
@@ -29,17 +35,22 @@ class ThrusterMapperNode(object):
         self.wrench = np.zeros(3)
 
         # Publisher for each thruster
-        self.publishers = [rospy.Publisher("/{}_motor/cmd".format(name), Command, queue_size=1)
-                           for name in self.thruster_map.names]
+        if self.is_vrx:
+            self.publishers = [rospy.Publisher("/wamv/thrusters/{}_thrust_cmd".format(name), Float32, queue_size=1)
+                               for name in self.thruster_map.names]
+        else:
+            self.publishers = [rospy.Publisher("/{}_motor/cmd".format(name), Command, queue_size=1)
+                               for name in self.thruster_map.names]
 
         # Joint state publisher
         # TODO(ironmig):
-        self.joint_state_pub = rospy.Publisher('/thruster_states', JointState, queue_size=1)
-        self.joint_state_msg = JointState()
-        for name in self.thruster_map.joints:
-            self.joint_state_msg.name.append(name)
-            self.joint_state_msg.position.append(0)
-            self.joint_state_msg.effort.append(0)
+        if not self.is_vrx:
+            self.joint_state_pub = rospy.Publisher('/thruster_states', JointState, queue_size=1)
+            self.joint_state_msg = JointState()
+            for name in self.thruster_map.joints:
+                self.joint_state_msg.name.append(name)
+                self.joint_state_msg.position.append(0)
+                self.joint_state_msg.effort.append(0)
 
         rospy.Subscriber("/wrench/cmd", WrenchStamped, self.wrench_cb)
 
@@ -67,10 +78,15 @@ class ThrusterMapperNode(object):
                 return
             for i in range(len(self.publishers)):
                 commands[i].setpoint = thrusts[i]
-        for i in range(len(self.publishers)):
-            self.joint_state_msg.effort[i] = commands[i].setpoint
-            self.publishers[i].publish(commands[i])
-        self.joint_state_pub.publish(self.joint_state_msg)
+        if not self.is_vrx:
+            for i in range(len(self.publishers)):
+                self.joint_state_msg.effort[i] = commands[i].setpoint
+                self.publishers[i].publish(commands[i])
+            self.joint_state_pub.publish(self.joint_state_msg)
+        else:
+            for i in range(len(self.publishers)):
+                self.publishers[i].publish(commands[i].setpoint)
+
 
 if __name__ == "__main__":
     rospy.init_node('thrust_mapper')
