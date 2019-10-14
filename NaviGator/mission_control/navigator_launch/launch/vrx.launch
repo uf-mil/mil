@@ -4,6 +4,7 @@
 -->
 <launch>
     <param name="/is_simulation" type="bool" value="True" />
+    <param name="/is_vrx" type="bool" value="True" />
     <arg name="gui" default="false"/>
     <arg name="online-bagger" default="False" />
 
