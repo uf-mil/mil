@@ -1,5 +1,8 @@
 #!/bin/bash
+set -euo pipefail
 
+# Default set BUILDKITE_AGENT_TOKEN to make bash happy
+BUILDKITE_AGENT_TOKEN=${BUILDKITE_AGENT_TOKEN:-""}
 # Make sure user has the agent token set
 if [ -z "$BUILDKITE_AGENT_TOKEN" ]; then
   echo "BUILDKITE_AGENT_TOKEN not set"
@@ -7,6 +10,13 @@ if [ -z "$BUILDKITE_AGENT_TOKEN" ]; then
   echo "Then run command again like:"
   echo "BUILDKITE_AGENT_TOKEN=<token> ./run_ci"
   exit 1
+fi
+
+# BUILDKITE_PARALLELISM
+BUILDKITE_PARALLELISM=${BUILDKITE_PARALLELISM:-"-1"}
+if [ "$BUILDKITE_PARALLELISM" == "-1" ]; then
+   BUILDKITE_PARALLELISM=1
+   echo "BUILDKITE_PARALLELISM was not set, will run paralleism $BUILDKITE_PARALLELISM"
 fi
 
 # Get directory of the MIL repo for resolution of other files in this repo
@@ -18,13 +28,16 @@ $MIL_DIR/scripts/build_docker_containers
 # Make sure the builds directory is there
 mkdir -p /var/lib/buildkite/builds
 
-# Start the container
-docker run \
-  -v "/var/lib/buildkite/builds:/var/lib/buildkite/builds" \
-  -v "/var/run/docker.sock:/var/run/docker.sock" \
-  -e "BUILDKITE_BUILD_PATH=/var/lib/buildkite/builds" \
-  -i \
-  -t \
-  --rm \
-  --name buildkite-agent \
-  uf-mil:ci-server start --token $BUILDKITE_AGENT_TOKEN
+for IT in $(seq 1 $BUILDKITE_PARALLELISM);
+do
+    # Start the container
+    docker run \
+      -v "/var/lib/buildkite/builds:/var/lib/buildkite/builds" \
+      -v "/var/run/docker.sock:/var/run/docker.sock" \
+      -e "BUILDKITE_BUILD_PATH=/var/lib/buildkite/builds" \
+      -i \
+      -t \
+      --rm \
+      --name buildkite-agent$IT \
+      uf-mil:ci-server start --token $BUILDKITE_AGENT_TOKEN
+done
