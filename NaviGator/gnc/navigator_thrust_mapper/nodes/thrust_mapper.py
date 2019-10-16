@@ -65,6 +65,16 @@ class ThrusterMapperNode(object):
         torque = msg.wrench.torque
         self.wrench = np.array((force.x, force.y, torque.z))
 
+    def vrx_force_to_command(force):
+        # vrx: command->force | command > 0.01
+        #   0.01+(59.82-0.01)/((0.56+exp(-5.0(x-0.28)))^(1/0.38))
+        # vrx inverse: force->command | force > 3.27398
+        #   -0.2 log(-0.246597 (0.56 - 4.73341/(-0.01 + x)^0.38))
+        if force > 3.27398:
+            return -0.2 * math.log(-0.246597 *((0.56 - 4.73341)/((-0.01 + force)**0.38)))
+        #TODO: make negative case
+        else:
+            return 0
     def publish_thrusts(self):
         '''
         Use the mapper to find the individual thrusts needed to acheive the current body wrench.
@@ -85,7 +95,7 @@ class ThrusterMapperNode(object):
             self.joint_state_pub.publish(self.joint_state_msg)
         else:
             for i in range(len(self.publishers)):
-                self.publishers[i].publish(commands[i].setpoint)
+                self.publishers[i].publish(vrx_force_to_command(commands[i].setpoint))
 
 
 if __name__ == "__main__":
