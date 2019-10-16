@@ -16,6 +16,7 @@ Pages:
 
    Onboarding <docs/onboarding>
    Culture <docs/culture>
+   Getting Help <docs/help>
    Contributing Changes <docs/development/contributing>
    Development Guide <docs/development/development_guide>
    Adding Documentation <docs/development/adding_documentation>
