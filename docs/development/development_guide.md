@@ -55,6 +55,8 @@ Now that you are inside the development container, try building the repository.
 
 We have a convienent alias for this, run `cm`
 
+*NOTE: If having issues building the VRX URDF due to permissions error, make sure your copy of the repo is owned by UID 1000
+
 ## Run some code
 Now that the repository is built, try running something!
 `roslaunch navigator_launch simulation.launch`
