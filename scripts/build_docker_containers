@@ -24,7 +24,10 @@ build_mil_docker_image()
 build_vrx_image()
 {
   # see if user is nvidia gpuer
-  local NVIDIA="`grep -s -c \"X Driver\"  /var/log/Xorg.0.log`"
+  local NVIDIA="0"
+  if test -f "/var/log/Xorg.0.log"; then
+    NVIDIA="`grep -c \"X Driver\"  /var/log/Xorg.0.log`"
+  fi
   # if no X Driver found, no nvidia driver installed: make the normal image
   echo $NVIDIA
   if [ "${NVIDIA}" != "1" ]; then
