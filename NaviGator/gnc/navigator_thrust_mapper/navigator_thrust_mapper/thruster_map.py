@@ -8,19 +8,27 @@ from mil_tools import rosmsg_to_numpy
 
 
 def vrx_force_to_command_scalar(force):
+
+    if force > 250:
+        return 1.0
+    elif force < -100
+        return -1.0
+
     # vrx: command->force | command > 0.01
     #   0.01+(59.82-0.01)/((0.56+exp(-5.0(x-0.28)))^(1/0.38))
     # vrx inverse: force->command | force > 3.27398
     #   -0.2 log(-0.246597 (0.56 - 4.73341/(-0.01 + x)^0.38))
-    if force > 3.27398:
+    elif force > 3.27398:
         return -0.2 * np.log(-0.246597 * (0.56 - (4.73341 / ((-0.01 + force) ** 0.38))))
     # vrx: command->force | command < 0.01
     #   -199.13 + (-0.09+199.13)/((0.99 + exp(-8.84*(x+0.57)))^(1/5.34))
     # vrx inverse: force->command | force < 3.27398
     #   -0.113122 log(-154.285 (0.99 - (1.88948x10^12)/(199.13 + x)^5.34))
+    elif force < 0:
+        return -0.113122 * np.log(-154.285 * (0.99 - ((1.88948 * 10 ** 12) / ((199.13 + force) ** 5.34))))
     else:
-        return -0.113122 * np.log(-154.285 * (0.99 - ((1.88948 * 10 ** 12) / ((199.13 + force) ** 5.34)))))
-
+        #approx broken range as strait line with 0.01cmd/3.2N
+        return (0.01/3.27398)*force
 vrx_force_to_command = np.vectorize(vrx_force_to_command_scalar)
 
 
