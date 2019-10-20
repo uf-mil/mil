@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!--
+    Launches the gazebo simulator and all the same master.launch used on the real platform.
+-->
+<launch>
+    <include file="$(find navigator_launch)/launch/vrx/vrx_master.launch" />
+    <include file="$(find vrx_gazebo)/launch/vrx.launch">
+      <arg name="gui" value="false"/>
+      <arg name="urdf" value="$(find navigator_gazebo)/urdf/navigator_vrx.urdf"/>
+    </include>
+
+</launch>
