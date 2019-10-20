@@ -11,7 +11,7 @@ def vrx_force_to_command_scalar(force):
 
     if force > 250:
         return 1.0
-    elif force < -100
+    elif force < -100:
         return -1.0
 
     # vrx: command->force | command > 0.01
@@ -114,7 +114,7 @@ class ThrusterMap(object):
             names.append(name)
             positions.append(translation[0:2])
             angles.append(yaw)
-        return cls(names, positions, angles, vrx_force_to_command, (1., -1.))
+        return cls(names, positions, angles, vrx_force_to_command, (250., -100.))
 
     @classmethod
     def from_urdf(cls, urdf_string, transmission_suffix='_thruster_transmission'):
