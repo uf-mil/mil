@@ -1,12 +1,10 @@
 <launch>
     <arg name="simulation" default="False" />
-    <arg name="vrx" default="False" />
 
     <arg name="online-bagger" default="True" />
 
     <!-- Load model into rviz -->
     <include file="$(find navigator_launch)/launch/upload_urdf.launch">
-      <arg name="vrx" value="$(arg vrx)" />
     </include>
 
     <!-- All nodes that run on NaviGator -->
