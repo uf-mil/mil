@@ -28,8 +28,9 @@ class ThrusterMapperNode(object):
 
         # To track kill state so no thrust is sent when killed (kill board hardware also ensures this)
         self.kill = False
-        self.kill_listener = AlarmListener('kill', self.kill_cb)
-        self.kill_listener.wait_for_server()
+        if not self.is_vrx:
+            self.kill_listener = AlarmListener('kill', self.kill_cb)
+            self.kill_listener.wait_for_server()
 
         # Start off with no wrench
         self.wrench = np.zeros(3)
