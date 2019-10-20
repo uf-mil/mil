@@ -73,6 +73,37 @@ class Navigator(BaseMission):
     @util.cancellableInlineCallbacks
     def _init(cls, mission_runner):
         super(Navigator, cls)._init(mission_runner)
+
+        cls.is_vrx = yield cls.nh.get_param("/is_vrx")
+
+        cls._moveto_client = action.ActionClient(cls.nh, 'move_to', MoveAction)
+
+        # For missions to access clicked points / poses
+        cls.rviz_goal = cls.nh.subscribe("/move_base_simple/goal", PoseStamped)
+        cls.rviz_point = cls.nh.subscribe("/clicked_point", PointStamped)
+
+        cls._change_wrench = cls.nh.get_service_client('/wrench/select', MuxSelect)
+        cls._change_trajectory = cls.nh.get_service_client('/trajectory/select', MuxSelect)
+
+        cls.pose = None
+
+        def odom_set(odom):
+            return setattr(cls, 'pose', mil_tools.odometry_to_numpy(odom)[0])
+        cls._odom_sub = cls.nh.subscribe('odom', Odometry, odom_set)
+
+        if cls.is_vrx:
+            yield cls._init_vrx()
+        else:
+            yield cls._init_not_vrx()
+
+    @classmethod
+    def _init_vrx(cls):
+         cls.killed = False
+         cls.odom_loss = False
+
+    @classmethod
+    @util.cancellableInlineCallbacks
+    def _init_not_vrx(cls):
         cls.vision_proxies = {}
         cls._load_vision_services()
 
@@ -83,7 +114,6 @@ class Navigator(BaseMission):
         cls._load_mission_params()
 
         # If you don't want to use txros
-        cls.pose = None
         cls.ecef_pose = None
 
         cls.killed = '?'
@@ -93,16 +123,6 @@ class Navigator(BaseMission):
             cls.sim = yield cls.nh.get_param('/is_simulation')
         else:
             cls.sim = False
-
-        # For missions to access clicked points / poses
-        cls.rviz_goal = cls.nh.subscribe("/move_base_simple/goal", PoseStamped)
-        cls.rviz_point = cls.nh.subscribe("/clicked_point", PointStamped)
-
-        cls._moveto_client = action.ActionClient(cls.nh, 'move_to', MoveAction)
-
-        def odom_set(odom):
-            return setattr(cls, 'pose', mil_tools.odometry_to_numpy(odom)[0])
-        cls._odom_sub = cls.nh.subscribe('odom', Odometry, odom_set)
 
         def enu_odom_set(odom):
             return setattr(cls, 'ecef_pose', mil_tools.odometry_to_numpy(odom)[0])
