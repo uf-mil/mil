@@ -35,6 +35,7 @@ mil_user_setup_build_repo()
 }
 echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 echo "source ${CATKIN_DIR}/devel/setup.sh" >> ~/.bashrc
+echo "export ROS_MASTER_HOSTNAME=localhost"
 echo "roslaunch navigator_launch vrx_master.launch run_task:=true" >> ~/.bashrc
 
 mil_clone_repo
