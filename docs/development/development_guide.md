@@ -34,6 +34,8 @@ From the root of the cloned repository in your *host operarating system*, run:
 
 `./scripts/build_docker_containers`
 
+*NOTE: if you have a Nvidia gpu, run `./scripts/build_docker_containers --nvidia` or `./scripts/build_docker_containers -n`*
+
 This process requires internet and may take a while (up to an hour is common).
 
 ##  Run the developement container

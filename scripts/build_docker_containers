@@ -1,6 +1,35 @@
 #!/bin/bash
 set -euo pipefail
 
+NVIDIA=""
+
+# Parse args related to NVIDIA
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+
+    case $key in
+        -n|--nvidia)
+        NVIDIA="--nvidia"
+        shift
+        ;;
+        *)    # unknown option
+        POSITIONAL+=("$1")
+        shift
+        ;;
+    esac
+done
+
+set -- "${POSITIONAL[@]}"
+
+# Usage
+if [ $# -gt 0 ]
+then
+    echo "Usage: $0 [-n --nvidia]"
+    exit 1
+fi
+
 if [[ $EUID -ne 0 ]] && [[ $(id -Gn "$USER" | grep -c "docker") == 0 ]] ; then
   echo "You need docker access to run this script."
   echo "Either add yourself to the docker group or run this script as sudo."
@@ -23,23 +52,7 @@ build_mil_docker_image()
 
 build_vrx_image()
 {
-  # see if user is nvidia gpuer
-  local NVIDIA="0"
-  if test -f "/var/log/Xorg.0.log"; then
-    NVIDIA="`grep -c \"X Driver\"  /var/log/Xorg.0.log`"
-  fi
-  # if no X Driver found, no nvidia driver installed: make the normal image
-  echo $NVIDIA
-  if [ "${NVIDIA}" != "1" ]; then
-    # build regular image
-    echo "building non-nvidia vrx server"
-    $(realpath $(dirname $BASH_SOURCE)/../)/NaviGator/simulation/vrx/docker/build.bash $(realpath $(dirname $BASH_SOURCE)/../)/NaviGator/simulation/vrx/
-  # else,X Driver found, nvidia driver installed: make the nvidia image
-  else
-    # build nvidia image
-    echo "building nvidia vrx server"
-    $(realpath $(dirname $BASH_SOURCE)/../)/NaviGator/simulation/vrx/docker/build.bash -n $(realpath $(dirname $BASH_SOURCE)/../)/NaviGator/simulation/vrx/
-  fi
+  $(realpath $(dirname $BASH_SOURCE)/../)/NaviGator/simulation/vrx/docker/build.bash ${NVIDIA} $(realpath $(dirname $BASH_SOURCE)/../)/NaviGator/simulation/vrx/
 }
 
 # Build each of the images
