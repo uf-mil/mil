@@ -10,7 +10,7 @@
     <include file="$(find navigator_launch)/launch/vrx/vrx_tf.launch" />
     <include file="$(find navigator_launch)/launch/vrx/vrx_localization.launch" />
     <include file="$(find navigator_launch)/launch/vrx/vrx_upload_urdf.launch" />
-    <node name="mrac" pkg="navigator_controller" type="mrac_controller.py"/>
+    <include file="$(find navigator_launch)/launch/vrx/vrx_controller.launch" />
     <node name="wrench_arbiter" ns="/wrench" pkg="topic_tools" type="mux"
           args="cmd autonomous autonomous rc emergency keyboard" >
         <remap from="mux" to="/wrench" />
