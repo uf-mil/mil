@@ -23,13 +23,13 @@ class MRAC_Controller:
         '''
         # TUNABLES
         # Proportional gains, body frame
-        self.kp_body = np.diag([1000, 1000, 5600])
+        self.kp_body = np.diag(rospy.get_param('~kp', [1000., 1000., 5600.]))
         # Derivative gains, body frame
-        self.kd_body = np.diag([1200, 1200, 6000])
+        self.kd_body = np.diag(rospy.get_param('~kd', [1200., 1200., 6000.]))
         # Disturbance adaptation rates, world frame
-        self.ki = np.array([0.1, 0.1, 0.1])
+        self.ki = np.array(rospy.get_param('~ki', [0.1, 0.1, 0.1]))
         # Drag adaptation rates, world frame
-        self.kg = 5 * np.array([1, 1, 1, 1, 1])
+        self.kg = np.array(rospy.get_param('~kg',[5.0, 5.0, 5.0, 5.0, 5.0]))
         # Initial disturbance estimate
         self.dist_est = np.array([0, 0, 0])
         # Initial drag estimate
@@ -52,8 +52,8 @@ class MRAC_Controller:
 
         # REFERENCE MODEL (note that this is not the adaptively estimated TRUE model; rather,
         #                     these parameters will govern the trajectory we want to achieve).
-        self.mass_ref = 500  # kg, determined to be larger than boat in practice due to water mass
-        self.inertia_ref = 400  # kg*m^2, determined to be larger than boat in practice due to water mass
+        self.mass_ref = rospy.get_param('~mass', 500)  # kg, determined to be larger than boat in practice due to water mass
+        self.inertia_ref = rospy.get_param('~izz', 400)  # kg*m^2, determined to be larger than boat in practice due to water mass
         self.thrust_max = 220  # N
 
         # back-left, back-right, front-left front-right, thruster positions in meters
