@@ -1,0 +1,44 @@
+#!/bin/bash
+set -euo pipefail
+
+usage()
+{
+  echo "Usage: <branch> <git url>"
+  exit 1
+}
+# Call usage() function if arguments not supplied.
+[[ $# -ne 2 ]] && usage
+BRANCH=$1
+GIT_URL=$2
+
+CATKIN_DIR="$HOME/catkin_ws"
+CATKIN_SOURCE_DIR="$CATKIN_DIR/src"
+MIL_REPO_DIR="$CATKIN_SOURCE_DIR/mil"
+
+# Clone repositry
+mil_clone_repo()
+{
+  sudo apt install -y git
+  git clone -b ${BRANCH} --single-branch ${GIT_URL} ${MIL_REPO_DIR}
+  cd ${MIL_REPO_DIR}
+  git submodule update --init --recursive
+  cd $HOME
+}
+
+# Build repo with catkin
+mil_user_setup_build_repo()
+{
+  if ! catkin_make -C "$CATKIN_DIR"
+  then
+    echo "Failed to build repository. The repo may be broken."
+  fi
+}
+echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
+echo "source ${CATKIN_DIR}/devel/setup.sh" >> ~/.bashrc
+echo "roslaunch navigator_launch vrx_trial.launch" >> ~/.bashrc
+
+mil_clone_repo
+set +u
+. /opt/ros/melodic/setup.bash
+set -u
+mil_user_setup_build_repo

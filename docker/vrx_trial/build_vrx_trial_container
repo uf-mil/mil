@@ -1,0 +1,47 @@
+#!/bin/bash
+set -euo pipefail
+
+usage()
+{
+  echo "Usage: <branch> optional:<git url>"
+  exit 1
+}
+# Call usage() function if arguments not supplied.
+[[ $# -lt 1 ]] && usage
+
+BRANCH=$1
+
+if [$# -gt 1]; then
+    GIT_URL=$2
+else
+    GIT_URL="https://github.com/uf-mil/mil.git"
+fi
+
+if [[ $EUID -ne 0 ]] && [[ $(id -Gn "$USER" | grep -c "docker") == 0 ]] ; then
+  echo "You need docker access to run this script."
+  echo "Either add yourself to the docker group or run this script as sudo."
+  exit 1
+fi
+
+# Allow the tag name to have prefix, used by CI
+MIL_DOCKER_TAG_ROOT=${MIL_DOCKER_TAG_ROOT:-"uf-mil"}
+
+# Quite mode so will only output if something goes wrong
+DOCKER_ARGS=""
+
+# Cache path in repo where dockerfiles are
+DOCKER_BASE_PATH="$(realpath $(dirname $BASH_SOURCE)/../)"
+
+build_mil_docker_image()
+{
+  docker build $DOCKER_ARGS \
+    --no-cache \
+    -t $MIL_DOCKER_TAG_ROOT:vrx-trial-${BRANCH} \
+    --build-arg MIL_DOCKER_TAG_ROOT=${MIL_DOCKER_TAG_ROOT} \
+    --build-arg BRANCH=${BRANCH} \
+    --build-arg GIT_URL=${GIT_URL} \
+    $DOCKER_BASE_PATH/vrx_trial
+}
+
+build_mil_docker_image vrx_trial
+
