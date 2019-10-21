@@ -1,3 +1,6 @@
+# Aspell files
+*.bak
+
 # Sphinx output
 docs/_build
 
