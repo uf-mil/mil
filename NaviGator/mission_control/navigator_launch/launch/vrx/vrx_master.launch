@@ -9,7 +9,7 @@
     <include file="$(find navigator_launch)/launch/vrx/vrx_upload_urdf.launch" />
     <node name="mrac" pkg="navigator_controller" type="mrac_controller.py"/>
     <node name="wrench_arbiter" ns="/wrench" pkg="topic_tools" type="mux"
-          args="cmd cmd autonomous rc emergency keyboard" >
+          args="cmd autonomous autonomous rc emergency keyboard" >
         <remap from="mux" to="/wrench" />
     </node>
     <node name="trajectory_arbiter" ns="/trajectory" pkg="topic_tools" type="mux"
