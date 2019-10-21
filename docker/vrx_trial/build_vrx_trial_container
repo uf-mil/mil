@@ -11,7 +11,7 @@ usage()
 
 BRANCH=$1
 
-if [$# -gt 1]; then
+if [ $# -gt 1 ]; then
     GIT_URL=$2
 else
     GIT_URL="https://github.com/uf-mil/mil.git"
