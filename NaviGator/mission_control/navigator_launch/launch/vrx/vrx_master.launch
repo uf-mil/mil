@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="run_task" default="False" />
+
     <param name="/is_simulation" type="bool" value="True" />
     <param name="/is_vrx" type="bool" value="True" />
 
@@ -19,4 +21,7 @@
     <include file="$(find navigator_launch)/launch/vrx/vrx_missions.launch"/>
     <!-- Run Path Planner -->
     <include file="$(find navigator_launch)/launch/gnc/path_planner.launch" />
+
+    <node if="$(arg run_task)" name="run_vrx_task" pkg="mil_missions" type="mission_client"
+          args="run Vrx" />
 </launch>

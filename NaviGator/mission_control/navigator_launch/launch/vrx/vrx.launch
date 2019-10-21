@@ -3,10 +3,16 @@
     Launches the gazebo simulator and all the same master.launch used on the real platform.
 -->
 <launch>
-    <include file="$(find navigator_launch)/launch/vrx/vrx_master.launch" />
+    <arg name="run_task" default="False" />
+    <arg name="world" default="sandisland" />
+
+    <include file="$(find navigator_launch)/launch/vrx/vrx_master.launch">
+        <arg name="run_task" value="$(arg run_task)"/>
+    </include>
     <include file="$(find vrx_gazebo)/launch/vrx.launch">
       <arg name="gui" value="false"/>
       <arg name="urdf" value="$(find navigator_gazebo)/urdf/navigator_vrx.urdf"/>
+      <arg name="world" value="$(find vrx_gazebo)/worlds/$(arg world).world" />
     </include>
 
 </launch>
