@@ -30,7 +30,7 @@ The recommended development workflow is:
 	
 	Make sure your container actually does what you want when it starts up.
 	
-	run `./docker/vrx_trial/run_vrx_trial_container`	
+	run `./docker/vrx_trial/run_vrx_trial_container my_branch`
 
 6. Now you should have a trial container!
 
