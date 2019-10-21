@@ -2,6 +2,7 @@
 <launch>
     <arg name="run_task" default="False" />
 
+    <param name="/use_sim_time" type="bool" value="true" />
     <param name="/is_simulation" type="bool" value="True" />
     <param name="/is_vrx" type="bool" value="True" />
 
