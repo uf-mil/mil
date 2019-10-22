@@ -10,7 +10,7 @@ usage()
 [[ $# -ne 1 ]] && usage
 BRANCH=$1
 
-sudo docker run -it \
+sudo docker run  \
     --env="DISPLAY" \
     --env="QT_X11_NO_MITSHM=1" \
     --env ROS_MASTER_URI=http://localhost:11311 \

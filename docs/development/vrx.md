@@ -39,11 +39,11 @@ The recommended workflow for submitting our code to vrx is:
 
 	* If you pushed to a fork of the uf-mil github: *
 
-	run `./docker/vrx_trial/build_vrx_trial_container my_branch https://github.com/ME/mil.git`
+	run `./scripts/build_vrx_trial_container my_branch https://github.com/ME/mil.git`
 	
 	* If you pushed to the uf-mil github: *
 	
-	run `./docker/vrx_trial/build_vrx_trial_container my_branch`
+	run `./scripts/build_vrx_trial_container my_branch`
 
 	*NOTE: Make sure when building your trial container, it the code actually compiles.*
 	
@@ -51,7 +51,7 @@ The recommended workflow for submitting our code to vrx is:
 	
 	Make sure your container actually does what you want when it starts up.
 	
-	run `./docker/vrx_trial/run_vrx_trial_container my_branch`
+	run `./scripts/run_vrx_trial_container my_branch`
 
 6. Now you should have a trial container!
 
