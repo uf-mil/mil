@@ -14,3 +14,6 @@ WORKDIR /home/mil-vrx-trial
 ADD --chown=mil-vrx-trial:mil-vrx-trial vrx_trial_install /tmp/vrx_trial_install
 RUN chmod +x /tmp/vrx_trial_install && /tmp/vrx_trial_install ${BRANCH} ${GIT_URL}
 RUN mkdir -p /home/mil-vrx-trial/catkin_ws/src/mil
+
+ADD --chown=mil-vrx-trial:mil-vrx-trial run_vrx /home/mil-vrx-trial/run_vrx
+CMD ["/home/mil-vrx-trial/run_vrx"]
