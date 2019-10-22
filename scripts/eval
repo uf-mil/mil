@@ -1,0 +1,52 @@
+#!/bin/bash
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "Usage: <branch>"
+fi
+
+BRANCH=$1
+
+MIL_REPO=$(realpath $(dirname $BASH_SOURCE)/../)
+VRX_DOCKER_REPO=${MIL_REPO}/NaviGator/simulation/vrx-docker
+
+# build vrx trial container
+#${MIL_REPO}/docker/vrx_trial/build_vrx_trial_container ${BRANCH}
+# tag the container correctly
+#docker tag uf-mil:vrx-trial-${BRANCH} ufmil/vrx:vrx-trial-${BRANCH}
+# push to a docker hub
+#docker push ufmil/vrx:vrx-trial-${BRANCH}
+
+# add files to vrx-docker repo
+if [ -d ${VRX_DOCKER_REPO}/team_config/ufmil ]; then
+  rm -rf ${VRX_DOCKER_REPO}/team_config/ufmil/
+fi
+
+
+mkdir ${VRX_DOCKER_REPO}/team_config/ufmil
+# link yamls
+cp ${MIL_REPO}/NaviGator/simulation/navigator_gazebo/urdf/navigator_vrx/sensor_config.yaml ${VRX_DOCKER_REPO}/team_config/ufmil/sensor_config.yaml
+
+cp ${MIL_REPO}/NaviGator/simulation/navigator_gazebo/urdf/navigator_vrx/thruster_config.yaml ${VRX_DOCKER_REPO}/team_config/ufmil/thruster_config.yaml
+
+# make docker hub link
+echo "docker.io/ufmil/vrx:vrx-trial-${BRANCH}" > ${VRX_DOCKER_REPO}/team_config/ufmil/dockerhub_image.txt
+
+# build vrx-server
+${VRX_DOCKER_REPO}/vrx_server/build_image.bash -n
+
+# build boat
+set +u
+. $(realpath $(dirname $MIL_REPO)/../)/devel/setup.sh
+set -u
+${VRX_DOCKER_REPO}/prepare_team_wamv.bash ufmil
+
+# build worlds
+#   NOTE: add more tasks here as we expand capabilities
+#   ie add ./prepare_task_trials.bash <taskname>
+${VRX_DOCKER_REPO}/prepare_task_trials.bash stationkeeping
+
+# run trials
+${VRX_DOCKER_REPO}/run_trial.bash -n ufmil stationkeeping 0
+
+
