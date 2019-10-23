@@ -61,4 +61,5 @@ We have a convienent alias for this, run `cm`
 
 ## Run some code
 Now that the repository is built, try running something!
-`roslaunch navigator_launch simulation.launch`
+
+For example, [run VRX](/docs/development/vrx_operation)
