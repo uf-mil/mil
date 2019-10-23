@@ -16,9 +16,12 @@ to do and if it makes sense or if the solution is obvious.
 Ask yourself the following questions:
 
 * Are you running the latest code? Have you pulled from git lately (including submodules) and updated your system packages?
+  * Be sure to back up / commit any changes to a branch
+  * To reset to the latest code from github run `git fetch origin` then `git checkout origin/master -B master`
+  * Be sure to initialize and update all submodules as well `git submodule update --init --recursive`
 * If the error says exactly how to fix it, have you tried that?
 * Is your system setup correctly as described in the [Development Guide](/docs/development/development_guide)?
-* Have you blindly copied things from other code? If so, do you need these things?
+* Have you blindly copy-pasted/ran things from the internet? If so, do you know why? Do you know what it's doing?
 * Could you be trying to use something that is outdated / deprecated?
 * Have you tried simply rebooting your system or running it again?
 
