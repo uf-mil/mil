@@ -34,6 +34,8 @@
 
     <param name="odom0_differential" value="false"/>
     <param name="smooth_lagged_data" value="true"/>
+    <param name="history_length" value="0.2" />
+    <param name="predict_to_current_time" value="True" />
   </node>
 
   <!-- Produces local odometry from GPS to be used in Kalman filter -->
