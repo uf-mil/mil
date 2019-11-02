@@ -3,5 +3,5 @@
     <node unless="$(arg simulation)" name="pcodar" pkg="point_cloud_object_detection_and_recognition" type="pcodar_node" output="screen">
         <remap from="/velodyne_points" to="/wamv/sensors/lidars/lidar_wamv/points" />
     </node>
-    <rosparam param="/pcodar" file="$(find navigator_launch)/config/pcodar.yaml" />
+    <rosparam param="/pcodar" file="$(find navigator_launch)/config/pcodar_vrx.yaml" />
 </launch>
