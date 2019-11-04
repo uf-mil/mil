@@ -4,7 +4,7 @@
 -->
 <launch>
     <arg name="run_task" default="False" />
-    <arg name="world" default="sandisland" />
+    <arg name="world" default="example_course" />
 
     <include file="$(find navigator_launch)/launch/vrx/vrx_master.launch">
         <arg name="run_task" value="$(arg run_task)"/>
