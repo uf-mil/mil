@@ -15,6 +15,7 @@ Pages:
    :maxdepth: 1
 
    Onboarding <docs/onboarding>
+   Glossary <docs/glossary>
    Culture <docs/culture>
    Getting Help <docs/help>
    Contributing Changes <docs/development/contributing>
