@@ -49,3 +49,21 @@ This page lists common words / acrynomys uses in MIL and robotics more generally
   Kevbot
     A funny name for the help page in these docs, named so because it was written
     by Kevin (kev-the-dev) to try to automate helping new programmers
+
+  node
+    A program running on a robot. Usually performs a very specific purpose
+
+  alarms
+    Global boolean state shared by many nodes, such as :term:`kill` or autonomous
+
+  kill
+    A global state indicating the the robot cannot move / actuate. This is largely
+    a safety feature. The robot can usually be killed remotely
+
+  bag
+    A file which stores a set of ROS messages received over a certain interval.
+    Used to collect data to later play back for testing / debugging
+
+  Drew Bagnell
+    An external USB harddrive used to store :term:`bag` files.
+    Named after former member and legend Drew Bagnell, now CTO of Aurora Innovation
