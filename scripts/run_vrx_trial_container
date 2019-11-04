@@ -3,12 +3,12 @@ set -euo pipefail
 
 usage()
 {
-  echo "Usage: <branch>"
+  echo "Usage: <git commit hash OR nickname>"
   exit 1
 }
 
 [[ $# -ne 1 ]] && usage
-BRANCH=$1
+COMMIT=$1
 
 sudo docker run  \
     --env="DISPLAY" \
@@ -17,4 +17,4 @@ sudo docker run  \
     --env ROS_HOSTNAME=localhost \
     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
     --network=host \
-    uf-mil:vrx-trial-${BRANCH}
+    uf-mil:vrx-trial-${COMMIT}

@@ -12,6 +12,7 @@ It is recommended that you build and run MIL code within a Docker container.
 This process will differ depending on your host operating system, but it
 well documented for Windows, OSX, and several Linux operating systems.
 
+*NOTE: If you have a nvidia GPU AND are running Ubuntu, install nvidia docker [https://bitbucket.org/osrf/vrx/wiki/tutorials/installNvidiaDocker](https://bitbucket.org/osrf/vrx/wiki/tutorials/installNvidiaDocker).
 * [Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 * [Windows](https://docs.docker.com/docker-for-windows/install/)
 * [OSX](https://docs.docker.com/docker-for-mac/install/)

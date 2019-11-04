@@ -33,17 +33,17 @@ The recommended workflow for submitting our code to vrx is:
 
 4. Make a Trial Container:
 
-	Commit and push your changes to a git hub repository on a branch. ie: `my_branch` at `https://github.com/ME/mil.git`
+	Commit and push your changes to a git hub repository on a branch. ie: `my_branch` at `https://github.com/ME/mil.git` then look at your git history with `git log` and copy the commit hash (It will look something like `9eaf263e5e5a0505992b4d72138fdcca891a0981`). Then pick a nickanme for your container ie `my_nickname`.
 
 	Navigate to the root of the repo.
 
 	* If you pushed to a fork of the uf-mil github: *
 
-	run `./scripts/build_vrx_trial_container my_branch https://github.com/ME/mil.git`
+	run `./scripts/build_vrx_trial_container <git commit> my_nickname https://github.com/ME/mil.git`
 	
 	* If you pushed to the uf-mil github: *
 	
-	run `./scripts/build_vrx_trial_container my_branch`
+	run `./scripts/build_vrx_trial_container <git commit> my_nickname`
 
 	*NOTE: Make sure when building your trial container, it the code actually compiles.*
 	
@@ -51,8 +51,24 @@ The recommended workflow for submitting our code to vrx is:
 	
 	Make sure your container actually does what you want when it starts up.
 	
-	run `./scripts/run_vrx_trial_container my_branch`
+	run `./scripts/run_vrx_trial_container my_nickname`
 
 6. Now you should have a trial container!
 
-	Follow the instructions at `https://bitbucket.org/osrf/vrx-docker/src/default/` to run this container against the vrx server.
+## How to evaluate your trial container against the vrx-server
+
+1. Make sure that you have a dockerhub accout / make a dockerhub account [https://hub.docker.com/signup](https://hub.docker.com/signup). 
+
+2. Login to your Docker hub with `docker login`
+
+3. If not a member of the ufmil docker organization, make sure you have a docker repo ie `me/vrx-repo`
+
+4. Run the vrx evaluation script witch will do every step of the evaluation specified by [the vrx docker repo](https://bitbucket.org/osrf/vrx-docker/src/default/) by running 
+
+	`./scripts/vrx_eval <git commit> my_nickname https://github.com/ME/mil.git me/vrx-repo`
+
+	* If your commit is on the ufmil git repo and you have access to the ufmil/vrx docker repo you can use a shorter version: *
+
+		`./scripts/vrx_eval <git commit> my_nickname`
+
+

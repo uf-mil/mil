@@ -1,5 +1,5 @@
 FROM uf-mil:base
-ARG BRANCH=master
+ARG COMMIT
 ARG GIT_URL=https://github.com/uf-mil/mil.git
 
 # Create a mil-vrx-trial user and make them a sudoer
@@ -12,7 +12,7 @@ USER mil-vrx-trial
 WORKDIR /home/mil-vrx-trial
 
 ADD --chown=mil-vrx-trial:mil-vrx-trial vrx_trial_install /tmp/vrx_trial_install
-RUN chmod +x /tmp/vrx_trial_install && /tmp/vrx_trial_install ${BRANCH} ${GIT_URL}
+RUN chmod +x /tmp/vrx_trial_install && /tmp/vrx_trial_install ${COMMIT} ${GIT_URL}
 RUN mkdir -p /home/mil-vrx-trial/catkin_ws/src/mil
 
 ADD --chown=mil-vrx-trial:mil-vrx-trial run_vrx /home/mil-vrx-trial/run_vrx

@@ -1,0 +1,94 @@
+#!/bin/bash
+set -euo pipefail
+
+usage()
+{
+  echo "usage: vrx_eval <git commit hash> OPTIONAL:<nickname> OPTIONAL:<git url> OPTIONAL:<docker hub repo>"
+  exit 1
+}
+
+if [ $# -lt 1 ] || [ $# -gt 4 ]; then
+  usage
+fi
+
+echo "This script requires sudo"
+sudo echo "Thank You"
+
+COMMIT=$1
+
+if [ $# -gt 1 ]; then
+  NICKNAME=$2
+else
+  NICKNAME=${COMMIT}
+fi
+
+if [ $# -gt 2 ]; then
+  GIT_URL=$3
+else
+  GIT_URL="https://github.com/uf-mil/mil.git"
+fi
+
+if [ $# -gt 3 ]; then
+  DOCKER_HUB_REPO=$4
+else
+  DOCKER_HUB_REPO="ufmil/vrx"
+fi
+
+set +e
+NVIDIA=`which nvidia-smi`
+set -e
+if [ ! -z "$NVIDIA" ]; then
+  NVIDIA="-n"
+fi
+
+MIL_REPO_DIR=$(realpath $(dirname $BASH_SOURCE)/../)
+VRX_DOCKER_REPO_DIR=${MIL_REPO_DIR}/NaviGator/simulation/vrx-docker
+CURRENT_DIR=$(pwd)
+
+# build vrx_trial_container
+${MIL_REPO_DIR}/scripts/build_vrx_trial_container ${COMMIT} ${NICKNAME} ${GIT_URL}
+
+# retag the vrx_trial image
+docker tag uf-mil:vrx-trial-${NICKNAME} ${DOCKER_HUB_REPO}:vrx-trial-${NICKNAME}
+
+# push to dockerhub
+docker push ${DOCKER_HUB_REPO}:vrx-trial-${NICKNAME}
+
+# build vrx-server
+${VRX_DOCKER_REPO_DIR}/vrx_server/build_image.bash ${NVIDIA}
+
+# copy submission yaml files from the correct git commit
+cd ${MIL_REPO_DIR}
+
+git checkout ${COMMIT} \
+  ${MIL_REPO_DIR}/NaviGator/simulation/navigator_gazebo/urdf/navigator_vrx/sensor_config.yaml
+
+git checkout ${COMMIT} \
+  ${MIL_REPO_DIR}/NaviGator/simulation/navigator_gazebo/urdf/navigator_vrx/thruster_config.yaml
+
+cd ${CURRENT_DIR}
+
+if [ -d "${VRX_DOCKER_REPO_DIR}/team_config/ufmil" ]; then
+  rm -r ${VRX_DOCKER_REPO_DIR}/team_config/ufmil
+fi
+
+mkdir ${VRX_DOCKER_REPO_DIR}/team_config/ufmil
+
+cp ${MIL_REPO_DIR}/NaviGator/simulation/navigator_gazebo/urdf/navigator_vrx/sensor_config.yaml \
+  ${VRX_DOCKER_REPO_DIR}/team_config/ufmil/sensor_config.yaml
+
+cp ${MIL_REPO_DIR}/NaviGator/simulation/navigator_gazebo/urdf/navigator_vrx/thruster_config.yaml \
+  ${VRX_DOCKER_REPO_DIR}/team_config/ufmil/thruster_config.yaml
+
+echo "${DOCKER_HUB_REPO}:vrx-trial-${NICKNAME}" > \
+  ${VRX_DOCKER_REPO_DIR}/team_config/ufmil/dockerhub_image.txt
+
+# build boat for vrx-server
+${VRX_DOCKER_REPO_DIR}/prepare_team_wamv.bash ufmil
+
+# build worlds that we want to evaluate
+${VRX_DOCKER_REPO_DIR}/prepare_task_trials.bash stationkeeping
+
+# run trials on each world
+${VRX_DOCKER_REPO_DIR}/run_trial.bash ${NVIDIA} ufmil stationkeeping 0
+

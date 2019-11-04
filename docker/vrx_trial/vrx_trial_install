@@ -3,12 +3,12 @@ set -euo pipefail
 
 usage()
 {
-  echo "Usage: <branch> <git url>"
+  echo "Usage: <git commit hash> <git url>"
   exit 1
 }
 # Call usage() function if arguments not supplied.
 [[ $# -ne 2 ]] && usage
-BRANCH=$1
+COMMIT=$1
 GIT_URL=$2
 
 CATKIN_DIR="$HOME/catkin_ws"
@@ -19,9 +19,10 @@ MIL_REPO_DIR="$CATKIN_SOURCE_DIR/mil"
 mil_clone_repo()
 {
   sudo apt install -y git
-  git clone -b ${BRANCH} --single-branch ${GIT_URL} ${MIL_REPO_DIR}
+  git clone ${GIT_URL} ${MIL_REPO_DIR}
   cd ${MIL_REPO_DIR}
   git submodule update --init --recursive
+  git reset --hard ${COMMIT}
   cd $HOME
 }
 
