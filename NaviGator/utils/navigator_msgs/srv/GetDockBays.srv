@@ -1,0 +1,5 @@
+---
+geometry_msgs/Point[3] bays   #The positions in ENU frame of the center of the three bays 0=left, 1=center, 2=right
+geometry_msgs/Vector3  normal #Vector or normal pointing away from plane of dock back
+bool success                  #False if an error occured getting dock bays
+string error                  #Descripion of error if success=false

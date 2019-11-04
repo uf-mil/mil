@@ -1,0 +1,12 @@
+# Used by coordinate conversion server to transform points to 3 different earth/GPS related frames
+
+string LLA=lla    # Longitude, Latitude, Altitude frame
+string ENU=enu    # East, North, Up frame (relative to NaviGator start)
+string ECEF=ecef  # Earth Centered, Earth Fixed frame
+
+string frame      # frame which input points are coming from
+string to_frame   # frame to convert input points to
+geometry_msgs/Point[] points # points to convert
+---
+geometry_msgs/Point[] converted  # transformed points in to_frame, len(converted) == len(points) if success, else see message
+string message                   # error message if poitns were not transformed succesfully

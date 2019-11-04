@@ -1,0 +1,16 @@
+<library path="nodes">
+  <class name="sub8_alarm_gui" type="sub8_rqt_gui.AlarmPlugin" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      Alarm Management Plugin
+    </description>
+    <qtgui>
+      <group>
+        <icon type="file">resource/mil_logo.png</icon>
+        <label>MIL</label>
+      </group>
+      <icon type="file">resource/mil_logo.png</icon>
+      <label>Sub8 Alarm Plugin</label>
+      <statustip>Mike Seese, you just googled your name.</statustip>
+    </qtgui>
+  </class>
+</library>

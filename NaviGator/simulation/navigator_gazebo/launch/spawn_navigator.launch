@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- Spawn navigator into gazebo -->
+<launch>
+  <!-- Spawn model in Gazebo -->
+  <node name="spawn_model" pkg="gazebo_ros" type="spawn_model"
+    args="-urdf -param robot_description -model navigator" />
+</launch>

@@ -1,0 +1,17 @@
+test_missing_object:
+  object_dep: ["scan_the_code"]
+  mission_dep: "None"
+  is_base: False
+  timeout: 10
+
+test_base_mission:
+  object_dep: []
+  mission_dep: "None"
+  is_base: True
+  timeout: 'inf'
+
+test_missing_perception_object:
+  object_dep: [scan_the_code]
+  mission_dep: "test_missing_object"
+  is_base: False
+  timeout: 'inf'

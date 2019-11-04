@@ -1,0 +1,6 @@
+# Used to send keyboard input to the keyboard control server
+string uuid
+int32 keycode
+---
+string generated_uuid
+bool is_locked

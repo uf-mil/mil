@@ -1,0 +1,3 @@
+geometry_msgs/Vector3 direction
+float64 velocity
+float64 correlation

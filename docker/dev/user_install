@@ -1,0 +1,54 @@
+#!/bin/bash
+set -euo pipefail
+
+if [[ -z ${CATKIN_DIR:-} ]]; then
+    CATKIN_DIR="$HOME/catkin_ws"
+    echo "Using default catkin workspace $CATKIN_DIR"
+else
+    echo "Using custom catkin workspace $CATKIN_DIR"
+fi
+CATKIN_SOURCE_DIR="$CATKIN_DIR/src"
+MIL_REPO_DIR="$CATKIN_SOURCE_DIR/mil"
+
+# Clone repositry
+mil_user_setup()
+{
+  local MIL_REPO_GIT="$MIL_REPO_DIR/.git"
+  mkdir -p $CATKIN_SOURCE_DIR
+  sudo apt install -y git
+  #basic/handy dev tools to have in a container
+  sudo apt install -y tmux
+  sudo apt install -y vim
+}
+
+# Add configuration lines to bashrc
+mil_user_setup_bashrc()
+{
+  # Lines added to ~/.bashrc
+  BASH_RC_LINES=". $MIL_REPO_DIR/scripts/setup.bash"
+  if grep -Fq "$BASH_RC_LINES" ~/.bashrc
+  then
+    echo "milrc is already sourced in ~/.bashrc, skipping"
+  else
+    echo "Adding source of milrc to ~/.bashrc"
+    echo "" >> ~/.bashrc
+    echo "# Setup enviroment for MIL developement" >> ~/.bashrc
+    echo "$BASH_RC_LINES" >> ~/.bashrc
+  fi
+}
+
+# Build repo with catkin
+mil_user_setup_build_repo()
+{
+  if ! catkin_make -C "$CATKIN_DIR"
+  then
+    echo "Failed to build repository. The repo may be broken."
+  fi
+}
+
+mil_user_setup
+mil_user_setup_bashrc
+set +u
+. /opt/ros/melodic/setup.bash
+set -u
+mil_user_setup_build_repo

@@ -1,0 +1,5 @@
+test_mission_fails:
+  object_dep: []
+  mission_dep: "None"
+  is_base: False
+  timeout: 10

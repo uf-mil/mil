@@ -1,0 +1,53 @@
+# <Name of mission from nav_missions folder>:
+#   object_dep: [<name_of_object_dependency_1>, <name_of_object_dependency_2>]
+      # ! These must be names the same this as the objects used in Ira's DB !
+#   mission_dep: <name_of_mission_dependency>
+      # ! This must be a mame that is the same as another mission in this file !
+#   is_base : <boolean>
+      # ! Whether or not the mission is the mission that is run whenever nothing else can be run!
+      # If it is a base mission, it cannot have any objects dependencies or mission dependencies
+
+scan_the_code:
+  object_dep: ["ScanTheCode"]
+  mission_dep: "pinger"
+  is_base: False
+  timeout: 'inf'
+  
+detect_deliver:
+  object_dep: ["Shooter"]
+  mission_dep: "circle_tower"
+  is_base: False
+  timeout: 'inf'
+
+explore:
+  object_dep: []
+  mission_dep: "None"
+  is_base: True
+  timeout: 'inf'
+
+circle_tower:
+  object_dep: ["BuoyField"]
+  mission_dep: "None"
+  is_base: False
+  timeout: 'inf'
+
+pinger:
+  object_dep: ["Gate_1"]
+  mission_dep: "circle_tower"
+  is_base: False
+  timeout: 'inf'
+
+
+# Not implemented yet.
+ 
+# find_the_break:
+#   object_dep: ["FindTheBreak"]
+#   mission_dep: "None"
+#   is_base: False
+#   timeout: 'inf'
+
+# coral_survey:
+#   object_dep: ["CoralSurvey"]
+#   mission_dep: "None"
+#   is_base: False
+#   timeout: 'inf'

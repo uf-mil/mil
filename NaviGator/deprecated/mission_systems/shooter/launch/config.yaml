@@ -1,0 +1,9 @@
+controller:
+  controller_serial: /dev/serial/by-id/usb-FTDI_Roboteq_MDC1460_port-bow-if00-port0
+  load:
+    extend_time_millis:  1500
+    pause_time_millis:   300
+    retract_time_millis: 800
+  fire:
+    retract_time_millis: 2000
+    shoot_time_millis:   3000

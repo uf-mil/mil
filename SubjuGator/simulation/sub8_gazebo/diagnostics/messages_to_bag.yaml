@@ -1,0 +1,27 @@
+#  PARAMS:
+#    time_step: HZ
+#    pre_cache_record: SECONDS
+#    post_cache_record: SECONDS
+#
+# Then for each message,
+#
+#  identifier (can be arbitrary):
+#    topic_name: "topic_name"
+#    messages_type: "messages_type"
+#    messages_name: "messages_name"
+
+
+PARAMS:
+  time_step: 0.1
+  pre_cache_time: 30
+  post_cache_time: 5
+
+MESSAGES:
+  ODOM:
+      message_topic: "/odom"
+      message_type: "nav_msgs"
+      message_name: "Odometry"
+  C3:
+      message_topic: "/c3_trajectory_generator/waypoint"
+      message_type: "geometry_msgs"
+      message_name: "PoseStamped"

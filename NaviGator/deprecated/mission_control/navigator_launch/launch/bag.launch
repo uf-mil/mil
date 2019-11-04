@@ -1,0 +1,36 @@
+<launch>
+    <!-- For lidar stuff -->
+    <arg name="oa" default="true" />
+
+    <!-- Stereo right, stereo left, right right cameras -->
+    <arg name="im_proc_sr" default="false" />
+    <arg name="im_proc_sl" default="false" />
+    <arg name="im_proc_rr" default="false" />
+    
+    <param name="use_sim_time" value="true"/>
+
+    <include file="$(find navigator_launch)/launch/gnc/tf.launch"/>
+
+    <node name="coordinate_converter" pkg="navigator_tools" type="coordinate_conversion_server.py"/>
+    <node name="bounds_server" pkg="navigator_tools" type="bounds.py"/>
+
+    <rosparam param="bounds">
+    <!-- This is for Lake Wauberg -->
+    enforce: True
+    lla: [[29.535011, -82.303323],
+        [29.534647, -82.304280],
+        [29.533440, -82.303577],
+        [29.533803, -82.302639]]
+    </rosparam>
+
+    <node name="front_right_proc" pkg="image_proc" type="image_proc" ns="/camera/front/right" if="$(arg im_proc_sr)"/>
+    <node name="front_left_proc" pkg="image_proc" type="image_proc" ns="/camera/front/left" if="$(arg im_proc_sl)"/>
+    <node name="starboard_proc" pkg="image_proc" type="image_proc" ns="/camera/starboard" if="$(arg im_proc_rr)"/>
+
+    <node name="action_server" pkg="navigator_tools" type="fake_action_server.py" output="screen"/>
+
+    <group if="$(arg oa)">
+        <include file="$(find navigator_launch)/launch/gnc/object_classification.launch" />
+        <node name="ogrid_arbiter" pkg="navigator_msg_multiplexer" type="ogrid_arbiter.py" output="screen" respawn="true"/>
+    </group>
+</launch>

@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+import rospy
+import argparse
+import dynamic_reconfigure.client
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser("Set gazebo real time factor")
+    parser.add_argument('rtf', type=float)
+    parser.add_argument('-s', '--step-time', type=float, default=0.01)
+    args = parser.parse_args()
+    rospy.init_node("dynamic_client", anonymous=True)
+    client = dynamic_reconfigure.client.Client("gazebo", timeout=30)
+    client.update_configuration({'max_update_rate': args.rtf / args.step_time,
+                                 'time_step': args.step_time})

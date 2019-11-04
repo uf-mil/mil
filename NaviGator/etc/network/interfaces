@@ -1,0 +1,28 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+allow-hotplug enp0s31f6
+iface enp0s31f6 inet static
+	address 192.168.37.82
+	netmask 255.255.255.0
+	gateway 192.168.37.1
+
+	# Use the MIL and testing router DNS servers
+	dns-nameservers 192.168.37.31 192.168.37.32 192.168.37.1
+	dns-domain ad.mil.ufl.edu
+
+allow-hotplug eno1
+iface eno1 inet static
+	address 192.168.37.82
+	netmask 255.255.255.0
+	gateway 192.168.37.1
+
+	# Use the MIL and testing router DNS servers
+	dns-nameservers 192.168.37.1 192.168.37.31 192.168.37.32
+	dns-domain ad.mil.ufl.edu

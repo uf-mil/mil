@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="run_task" default="False" />
+
+    <param name="/use_sim_time" type="bool" value="true" />
+    <param name="/is_simulation" type="bool" value="True" />
+    <param name="/is_vrx" type="bool" value="True" />
+
+    <include file="$(find navigator_launch)/launch/gnc/thruster_mapper.launch"/>
+    <include file="$(find navigator_launch)/launch/vrx/vrx_tf.launch" />
+    <include file="$(find navigator_launch)/launch/vrx/vrx_localization.launch" />
+    <include file="$(find navigator_launch)/launch/vrx/vrx_upload_urdf.launch" />
+    <include file="$(find navigator_launch)/launch/vrx/vrx_controller.launch" />
+    <include file="$(find navigator_launch)/launch/vrx/vrx_pcodar.launch" />
+    <include file="$(find navigator_launch)/launch/vrx/vrx_bounds.launch" />
+    <node name="wrench_arbiter" ns="/wrench" pkg="topic_tools" type="mux"
+          args="cmd autonomous autonomous rc emergency keyboard" >
+        <remap from="mux" to="/wrench" />
+    </node>
+    <node name="trajectory_arbiter" ns="/trajectory" pkg="topic_tools" type="mux"
+          args="cmd lqrrt constant" >
+        <remap from="mux" to="/trajectory" />
+    </node>
+    <include file="$(find navigator_launch)/launch/vrx/vrx_missions.launch"/>
+    <!-- Run Path Planner -->
+    <include file="$(find navigator_launch)/launch/gnc/path_planner.launch" />
+
+    <node if="$(arg run_task)" name="run_vrx_task" pkg="mil_missions" type="mission_client"
+          args="run Vrx" />
+</launch>

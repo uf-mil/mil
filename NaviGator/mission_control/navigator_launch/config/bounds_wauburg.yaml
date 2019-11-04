@@ -1,0 +1,41 @@
+!!python/object/new:dynamic_reconfigure.encoding.Config
+dictitems:
+  frame: ecef
+  groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+    dictitems:
+      frame: ecef
+      groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      id: 0
+      name: Default
+      parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      parent: 0
+      state: true
+      type: ''
+      x1: 743721.0625
+      x2: 743796.625
+      x3: 743930.375
+      x4: 743848.25
+      y1: -5503839.0
+      y2: -5503896.5
+      y3: -5503834.5
+      y4: -5503790.0
+      z1: 3125602.0
+      z2: 3125483.75
+      z3: 3125561.0
+      z4: 3125658.25
+    state: []
+  x1: 743721.0625
+  x2: 743796.625
+  x3: 743930.375
+  x4: 743848.25
+  y1: -5503839.0
+  y2: -5503896.5
+  y3: -5503834.5
+  y4: -5503790.0
+  z1: 3125602.0
+  z2: 3125483.75
+  z3: 3125561.0
+  z4: 3125658.25
+state: []

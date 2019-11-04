@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+import argparse
+
+import nav_missions
+import nav_missions_test
+from txros import util, NodeHandle
+from twisted.internet import defer, reactor
+from navigator_singleton.navigator import Navigator
+
+from mil_misc_tools.text_effects import fprint
+
+
+@util.cancellableInlineCallbacks
+def main():
+    nh, args = yield NodeHandle.from_argv_with_remaining("navigator_mission_runner", anonymous=True)
+
+    parser = argparse.ArgumentParser(description='Mission Runner')
+    parser.add_argument('missions', type=str, nargs='+',
+                        help='Misison(s) from the navigator_missions folder to run.')
+    parser.add_argument('-s', '--sim', action='store_true',
+                        help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
+    parser.add_argument('-t', '--test', action='store_true',
+                        help='This allow you to run test missions, rather than real mission.')
+    args = parser.parse_args(args[1:])
+
+    if args.test:
+        mission_source = nav_missions_test
+    else:
+        mission_source = nav_missions
+
+    available_missions = [mission_name for mission_name in dir(mission_source) if mission_name[0] != '_']
+
+    if "list" in args.missions:
+        print "\nAvailable missions:\n   *",
+        print '\n   * '.join(available_missions)
+        print
+        defer.returnValue(reactor.stop())
+
+    n = yield Navigator(nh)._init(args.sim)
+
+    for mission in args.missions:
+        # Make sure all missions exist before we run
+        assert mission in available_missions, "'{}' mission not found".format(mission)
+
+    for mission in args.missions:
+        to_run = getattr(mission_source, mission)
+        fprint("Running Mission!\n", title="MISSION")
+        result = yield to_run.main(n)
+
+        if result is None:
+            fprint("{} finished with no result.".format(mission), title="MISSION")
+        else:
+            fprint("{} finished with:".format(mission), title="MISSION")
+            print result
+
+    defer.returnValue(reactor.stop())
+
+if __name__ == '__main__':
+    reactor.callWhenRunning(main)
+    reactor.run()
+
+    print "\n"
+    fprint("Done!", title="MISSION")

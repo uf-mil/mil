@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="environment" default="real" />
+  <node pkg="rise_6dof" type="rise_6dof" name="rise_6dof" output="screen" >
+    <remap from="/current" to="odom"/>
+    <remap from="/desired" to="trajectory"/>
+    <remap from="/output" to="wrench"/>
+    <rosparam unless="$(eval environment == 'gazebo')" file="$(find sub8_launch)/config/rise_6dof.yaml"/>
+    <rosparam if="$(eval environment == 'gazebo')" file="$(find sub8_launch)/config/rise_6dof_gazebo.yaml"/>
+  </node>
+</launch>

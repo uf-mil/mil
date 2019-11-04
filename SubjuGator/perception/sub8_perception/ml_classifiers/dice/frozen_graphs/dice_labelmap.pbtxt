@@ -1,0 +1,16 @@
+item {
+  id: 1
+  name: 'One Dice'
+}
+item {
+  id: 2
+  name: 'Two Dice'
+}
+item {
+  id: 3
+  name: 'Five Dice'
+}
+item {
+  id: 4
+  name: 'Six Dice'
+}

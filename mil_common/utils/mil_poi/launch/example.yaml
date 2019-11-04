@@ -1,0 +1,4 @@
+global_frame: map
+initial_pois:
+  test1: [0, 1, 2]
+  test2: [10, 5, -2.0]

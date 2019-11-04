@@ -1,0 +1,47 @@
+# Produced by CVXGEN, 2016-05-02 06:53:55 -0400.
+# CVXGEN is Copyright (C) 2006-2012 Jacob Mattingley, jem@cvxgen.com.
+# The code in this file is Copyright (C) 2006-2012 Jacob Mattingley.
+# CVXGEN, or solvers produced by CVXGEN, cannot be used for commercial
+# applications without prior written permission from Jacob Mattingley.
+
+# Filename: description.cvxgen.
+# Description: A description of the CVXGEN problem.
+
+dimensions
+  m = 3  # inputs.
+  n = 6  # states.
+  T = 17  # horizon.
+end
+
+parameters
+  A[t] (n, n), t=0..T # dynamics matrix
+  B[t] (n, m), t=0..T # control input matrix
+  Q_final (n, n) diagonal psd  # final state cost
+  #R (m, m) diagonal psd  # input cost
+  x[0] (n)  # initial state
+  u_max nonnegative  # amplitude limit
+  xdot_max nonnegative
+  #S nonnegative
+end
+
+variables
+  x[t] (n), t=1..T+1  # state
+  u[t] (m), t=0..T # input
+end
+
+minimize
+  # sum[t=0..T](quad(x[t], Q) + quad(u[t], R)) + quad(x[T+1], Q_final)
+  # Consider adding: lambda * quad(x[-1], Q_final)
+  #sum[t=0..T](quad(u[t], R)) + quad(x[T + 1], Q_final)
+  sum[t=0..T + 1](quad(x[T + 1], Q_final))
+
+subject to
+  # dynamics constraints.
+  x[t+1] == (A[t] * x[t]) + (B[t] * u[t]), t=0..T
+  abs(x[t][3]) <= xdot_max, t=1..T+1
+  abs(x[t][4]) <= xdot_max, t=1..T+1
+  abs(x[t][5]) <= xdot_max, t=1..T+1
+  # maximum input box constraint.
+  abs(u[t]) <= u_max, t=0..T
+  #norminf(u[t+1] - u[t]) <= S, t=0..T-1  # slew rate constraint.
+end

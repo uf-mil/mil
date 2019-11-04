@@ -1,0 +1,234 @@
+#!/usr/bin/env python
+import rospy
+# Curses is used for creating a user interface within a terminal
+import curses
+from curses import panel
+import numpy as np
+from std_msgs.msg import Float32, String  # Used for battery voltage and wrench mode, respectively
+from ros_alarms import AlarmListener  # Used for listening for kill alarm
+from geometry_msgs.msg import PointStamped  # Used for LLA gps coordinates
+from roboteq_msgs.msg import Status  # Used for Thruster faults
+
+
+class nav_tui(object):
+    '''
+    Text User Interface for diagnostics
+    '''
+
+    def __init__(self, screen):
+
+        '''
+        Initialization of Tui window and fields that will be assigned by callback functions
+        '''
+
+        self.y, self.x = screen.getmaxyx()
+        self.window = screen.subwin(self.y, self.x, 0, 0)
+        self.window.keypad(1)  # Allows for escape sequences (ctrl-c) to be interpreted by the curses window
+        self.panel = panel.new_panel(self.window)  # Creates a panel of window object, self.window
+        self.panel.hide()
+        panel.update_panels()
+        self.rate = rospy.Rate(2)  # Fixed rate for while loop to update at: 2 hz
+        # The following are default field initalizations for various values that that will be overwritten
+        self.voltage = 0
+        self.wrench = None
+        self.LAT = None
+        self.LON = None
+        self.ALT = None
+        # The fault values are initalized as zero (no faults)
+        self.FL_fault = 0
+        self.FR_fault = 0
+        self.BL_fault = 0
+        self.BR_fault = 0
+        self.motor_topics = ['/FL_motor', '/FR_motor', '/BL_motor', '/BR_motor']
+        # The meaning of different fault codes
+        self.fault_codes = {1: 'OVERHEAT', 2: 'OVERVOLTAGE', 4: 'UNDERVOLTAGE', 8: 'SHORT_CIRCUIT',
+                            16: 'EMERGENCY_STOP', 32: 'SEPEX_EXCITATION_FAULT', 64: 'MOSFET_FAILURE',
+                            128: 'STARTUP_CONFIG_FAULT'}
+
+        # Will try and access low/critical voltage ros parameters, if none are located default values are used
+        self.lowThreshold = rospy.get_param('battery-voltage/low', default=26)
+        self.criticalThreshold = rospy.get_param('battery-voltage/critical', default=20)
+
+    # Cb function for wrench type
+    def wrench_cb(self, string):
+        if string.data[0:8] == '/wrench/':
+            self.wrench = string.data[8:]  # Trims '/wrench/' if present in string message sent over topic
+        else:
+            self.wrench = string.data
+
+    # Cb function for kill alarm
+    def kill_alarm_cb(self, alarm):
+        self.Alarm_name = alarm.alarm_name
+        self.raised = alarm.raised
+
+    # Cb function for the average of the battery voltages
+    def battery_monitor_cb(self, voltage):
+        self.voltage = np.round(voltage.data, 2)
+
+    # Cb function for LLA coordinates
+    def LLA_cb(self, cord):
+        self.LAT = cord.point.x
+        self.LON = cord.point.y
+        self.ALT = cord.point.z
+
+    # Cb function for each of the individual thrusters' status
+    def thruster_fault_cb(self, status, topic):
+        if topic == '/FL_motor':
+            self.FL_fault = status.fault
+        elif topic == '/FR_motor':
+            self.FR_fault = status.fault
+        elif topic == '/BL_motor':
+            self.BL_fault = status.fault
+        elif topic == '/BR_motor':
+            self.BR_fault = status.fault
+
+    # Method for converting the 8-bit int sum fault value into a list of the corresponding faults
+    def decode_fault_status(self, faults):
+        ordered_faults = [128, 64, 32, 16, 8, 4, 2, 1]
+        faults_list = []
+        for fault in ordered_faults:
+            if(faults >= fault):
+                faults_list.append(self.fault_codes[fault])
+                faults -= fault
+        return faults_list
+
+    def display(self):
+        self.panel.top()
+        self.panel.show()
+        self.window.clear()
+        # Initialization of color pairs for text display
+        color = curses.A_NORMAL
+        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+        curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_WHITE)
+        curses.init_pair(5, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+
+        while True:
+            self.window.refresh()  # Updates virtual screen
+            self.window.clear()  # Cause the whole window to be repainted upon next call to refresh()
+            curses.doupdate()  # Updates physical screen to match virtual one
+            # AlarmListener for kill alarm
+            self.kill_listener = AlarmListener('kill', callback_funct=self.kill_alarm_cb)
+            self.kill_listener.wait_for_server()
+            # Subscribers for the different values displayed
+            rospy.Subscriber('/wrench/selected', String, self.wrench_cb)
+            rospy.Subscriber('/battery_monitor', Float32, self.battery_monitor_cb)
+            rospy.Subscriber('lla', PointStamped, self.LLA_cb)
+
+            '''
+            The fault value returned from the subscriber is an 8-bit sum of the formerly identified fault codes;
+            accessed the fault value from all of the thrusters
+            '''
+
+            [rospy.Subscriber(topic + '/status', Status, self.thruster_fault_cb, topic) for topic in self.motor_topics]
+
+            '''
+            Variable value -> string literal formatting statements
+            '''
+
+            wrench_mode = '%s' % self.wrench
+
+            kill_name = 'Alarm name: %s' % self.Alarm_name
+            kill_raised = 'Raised: %s' % self.raised
+
+            battery_voltage = 'Voltage: %s' % self.voltage
+
+            LLA_Lat = 'Latitude: %s' % self.LAT
+            LLA_Lon = 'Longitude: %s' % self.LON
+            LLA_Alt = 'Altitude: %s' % self.ALT
+
+            '''
+            Print Statements for diagnostics
+            '''
+
+            self.window.addstr(0, (self.x - len(" NaviGator Diagnostics TUI ")) / 2,
+                               " NaviGator Diagnostics TUI ", curses.color_pair(4))
+
+            self.window.addstr(2, 0, kill_name, color)
+            # Displays kill status in red if the boat is killed, green otherwise
+            if self.raised:
+                self.window.addstr(3, 0, kill_raised, curses.color_pair(1))
+            elif not self.raised:
+                self.window.addstr(3, 0, kill_raised, curses.color_pair(3))
+
+            # Displays wrench mode
+            self.window.addstr(5, 0, 'Wrench Mode:', color)
+            self.window.addstr(6, 0, wrench_mode, color)
+
+            # Displays voltage in a color corresponding to its state; green = okay, yellow = low, red = critical
+            self.window.addstr(8, 0, 'Battery Voltage:', color)
+            if self.voltage > self.lowThreshold:
+                self.window.addstr(9, 0, battery_voltage, curses.color_pair(3))
+            elif self.voltage > self.criticalThreshold:
+                self.window.addstr(9, 0, battery_voltage, curses.color_pair(2))
+            else:
+                self.window.addstr(9, 0, battery_voltage, curses.color_pair(1))
+
+            # Displays LLA coordinates
+            self.window.addstr(11, 0, 'Currrent LLA Coordinates:', color)
+            self.window.addstr(12, 0, LLA_Lat, curses.color_pair(5))
+            self.window.addstr(13, 0, LLA_Lon, curses.color_pair(5))
+            self.window.addstr(14, 0, LLA_Alt, curses.color_pair(5))
+
+            self.window.addstr(2, self.x / 2 + 5, 'Thrusters', color)
+
+            '''
+            The following code is used to display the faults of each thruster indivdually; the
+            for loop is used so that existing faults are always displayed top - down in consecutive order;
+            if there is no faults being published, it displays "No faults" in green
+            '''
+
+            self.window.addstr(4, self.x / 2 - 7, 'Front Left', color)
+            if (len(self.decode_fault_status(self.FL_fault)) == 0):
+                self.window.addstr(5, self.x / 2 - 7, 'No faults', curses.color_pair(3))
+            else:
+                n = 0
+                for fault in self.decode_fault_status(self.FL_fault):
+                    self.window.addstr(5 + n, self.x / 2 - 7, '%s' % fault, curses.color_pair(1))
+                    n += 1
+
+            self.window.addstr(14, self.x / 2 - 7, 'Back Left', color)
+            if (len(self.decode_fault_status(self.BL_fault)) == 0):
+                self.window.addstr(15, self.x / 2 - 7, 'No faults', curses.color_pair(3))
+            else:
+                n = 0
+                for fault in self.decode_fault_status(self.BL_fault):
+                    self.window.addstr(15 + n, self.x / 2 - 7, '%s' % fault, curses.color_pair(1))
+                    n += 1
+
+            self.window.addstr(4, self.x / 2 + 16, 'Front Right', color)
+            if (len(self.decode_fault_status(self.FR_fault)) == 0):
+                self.window.addstr(5, self.x / 2 + 16, 'No faults', curses.color_pair(3))
+            else:
+                n = 0
+                for fault in self.decode_fault_status(self.FR_fault):
+                    self.window.addstr(5 + n, self.x / 2 + 16, '%s' % fault, curses.color_pair(1))
+                    n += 1
+
+            self.window.addstr(14, self.x / 2 + 16, 'Back Right', color)
+            if (len(self.decode_fault_status(self.BR_fault)) == 0):
+                self.window.addstr(15, self.x / 2 + 16, 'No faults', curses.color_pair(3))
+            else:
+                n = 0
+                for fault in self.decode_fault_status(self.BR_fault):
+                    self.window.addstr(15 + n, self.x / 2 + 16, '%s' % fault, curses.color_pair(1))
+                    n += 1
+            self.rate.sleep()  # Sleep function helps regulate the loop to a rate of 2 hz
+
+        self.window.clear()
+        self.panel.hide()
+        panel.update_panels()
+        curses.doupdate()
+
+
+class Menu(object):
+    def __init__(self, screen):
+        self.screen = screen
+        stat_display = nav_tui(self.screen)
+        stat_display.display()
+
+if __name__ == '__main__':
+    rospy.init_node('nav_tui', anonymous=True)
+    curses.wrapper(Menu)
+    rospy.spin()

@@ -1,0 +1,52 @@
+<launch>
+    <param name="/is_simulation" value="True" />
+    <node pkg="mil_pneumatic_actuator" type="pneumatic_actuator_node" name="actuator_driver" output="screen">
+        <param name="port" value="/dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_5_to_8_DMBP58-if00-port0"/>
+        <rosparam param="actuators">
+          # Stores information about each actuator.
+          # Each actuator can be up to 2 physical valves (such as an extend/retract for a piston)
+          # Actuators can be of type 'set' (open / close atomicly) or 'pulse' (open for a short time, then close)
+
+          # Simpliest configuration, sets up a 'set' actuator where true opens id 7 and false closes id 7
+          my_actuator: 7
+
+          # Example of a pulse actuator, will open 1 for 1 second then close
+          torpedo1:
+            type: 'pulse'
+            ports:
+              open_port:
+                id: 1
+                default: 0
+              close_port:
+                id: -1
+                default: 0
+            pulse_time: 1
+
+          # Example of a pulse actuator with 2 valves. When pulse, 3 opens and 4 closes, then both switch after 1 second
+          dropper:
+            type: 'pulse'
+            ports:
+              open_port:
+                # Drops
+                id: 3
+                default: 0
+              close_port:
+                # Reloads
+                id: 4
+                default: 1
+            pulse_time: 1
+
+          # Example of a 'set 'actuator with 2 valves. When set true, 6 closes and 5 opens. When false, 6 opens and 5 closes.
+          gripper:
+            type: 'set'
+            ports:
+              open_port:
+                id: 6
+                default: 1
+              close_port:
+                id: 5
+                default: 0
+            pulse_time: 1
+        </rosparam>
+    </node>
+</launch>

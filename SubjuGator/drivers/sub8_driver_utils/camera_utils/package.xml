@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <name>camera_utils</name>
+  <version>0.0.0</version>
+  <description>The camera_utils package</description>
+
+  <maintainer email="ralphfleyva@gmail.como">Ralph Leyva</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>dc1394</build_depend>
+  <run_depend>dc1394</run_depend>
+
+  <export>
+  </export>
+</package>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <name>sub8_build_tools</name>
+  <version>1.0.0</version>
+  <description>The sub8_build_tools package</description>
+
+  <maintainer email="jpanikulam@ufl.edu">jacob</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <run_depend>roscpp</run_depend>
+
+  <export>
+  </export>
+</package>

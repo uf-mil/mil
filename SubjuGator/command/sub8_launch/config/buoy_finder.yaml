@@ -1,0 +1,12 @@
+camera_topic      : /camera/front/right/image_rect_color #Image topic to use to find buoys
+min_observations  : 8 # Observations needed to attempt a least squares position estimate
+min_contour_area  : 0.001 # Minimum of image area contour must be to not be rejected
+max_velocity      : 1  # Highest velocity sub can be moving as in m/s before observations are ignored
+max_circle_error  : 0.03  # Maximum error from CircleFinder.verify_contour
+min_trans         : 0.05 # Smallest movement of sub in meters between observations to count towards observation count
+timeout_seconds   : 2.5 # Time in which min_observations must be seen to be considered found
+roi_y             : 0.2 # Proportion of top of frame to crop off, to avoid surface reflection
+roi_height        : 0.1 # Proportion of bottom of frame to crop off, to avoid ground reflection/noise
+debug:
+    ros: True # Publish marker and mask topics for debugging
+    cv: False # Create OpenCV GUI windows with sliders for thresholds, etc

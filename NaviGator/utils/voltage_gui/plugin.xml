@@ -1,0 +1,17 @@
+<library path="src">
+  <class name="voltageGUI" type="voltage_gui.voltageGUI" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      Voltage GUI
+    </description>
+    <qtgui>
+      <group>
+        <label>MIL</label>
+        <icon type="file">resource/mil_logo.png</icon>
+        <statustip>Plugins related to robot tools.</statustip>
+      </group>
+      <icon type="file">resource/lightningGraphic.png</icon>
+      <label>voltage_GUI</label>
+      <statustip>A Python GUI for Voltage.</statustip>
+    </qtgui>
+  </class>
+</library>

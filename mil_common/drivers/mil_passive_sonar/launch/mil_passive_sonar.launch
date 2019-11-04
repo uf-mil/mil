@@ -1,0 +1,5 @@
+<!-- Make sure that the hardware -> ros driver is running -->
+<launch>
+  <rosparam file="$(find mil_passive_sonar)/launch/mil_passive_sonar.yaml" command="load" />
+  <node pkg="mil_passive_sonar" type="hydrophones" name="mil_passive_sonar" output="screen" />
+</launch>

@@ -1,0 +1,6 @@
+pub_rate: 1.0
+analyzers:
+    kill_board:
+        type: diagnostic_aggregator/GenericAnalyzer
+        path: Kill Board
+        startswith: kill_board

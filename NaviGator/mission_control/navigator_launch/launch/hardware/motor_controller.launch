@@ -1,0 +1,25 @@
+<launch>
+    <node pkg="roboteq_driver" type="driver_node" name="BL_motor">
+      <param name="port" value="/dev/serial/by-id/usb-FTDI_USB-RS232_Cable_FT02TT24-if00-port0"/>
+      <param name="value" value="115200" />
+    </node>
+    <node pkg="roboteq_driver" type="driver_node" name="FL_motor">
+      <param name="port" value="/dev/serial/by-id/usb-FTDI_USB-RS232_Cable_FT02TQQT-if00-port0"/>
+      <param name="value" value="115200" />
+    </node>
+    <node pkg="roboteq_driver" type="driver_node" name="FR_motor">
+      <param name="port" value="/dev/serial/by-id/usb-FTDI_USB-RS232_Cable_FT02TOG3-if00-port0"/>
+      <param name="value" value="115200" />
+    </node>
+    <node pkg="roboteq_driver" type="driver_node" name="BR_motor">
+      <param name="port" value="/dev/serial/by-id/usb-FTDI_USB-RS232_Cable_FT02WMAV-if00-port0"/>
+      <param name="value" value="115200" />
+    </node>
+
+    <!-- Launch battery monitor with motor controllers as it requires them -->
+    <node pkg="navigator_battery_monitor" type="navigator_battery_monitor.py" name="battery_monitor" />
+
+</launch>
+
+
+

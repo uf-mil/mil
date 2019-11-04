@@ -1,0 +1,3 @@
+# Tell thruster driver and mapper it can use this thruster if available
+string thruster_name
+---

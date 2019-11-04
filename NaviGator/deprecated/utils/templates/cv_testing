@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+import rospy
+import cv2
+import numpy as np
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge, CvBridgeError
+
+
+class vision_sandbox:
+
+    """
+    A simple script with everything needed to get started with using bag files with
+    OpenCV. It subscribes to the /camera/image_raw topic which calls the image_cb() function
+    for every new frame. Right now the function just converts the frame from a ROS data type to
+    and OpenCV datatype so the self.master_image variable is ready for image processing!
+
+    """
+
+    def __init__(self):
+
+        self.master_hsv = None
+        self.master_image = None
+
+        self.bridge = CvBridge()
+        rospy.Subscriber("/camera/image_raw", Image, self.image_cb)
+
+    def __del__(self):
+        cv2.destroyAllWindows()
+
+    def image_cb(self, msg):
+
+        try:
+            self.master_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        except CvBridgeError, e:
+            print e
+
+        # Show keypoints
+        cv2.imshow("NaviGator Image Testing", self.master_image)
+        cv2.waitKey(1)
+
+if __name__ == '__main__':
+
+    rospy.init_node('vision_sandbox')
+    vs = vision_sandbox()
+    while not rospy.is_shutdown():
+        rospy.spin()

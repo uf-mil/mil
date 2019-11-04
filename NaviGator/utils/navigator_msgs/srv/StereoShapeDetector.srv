@@ -1,0 +1,9 @@
+bool detection_switch
+string shape
+string processing_type
+int32 num_points
+float32[] model_params
+---
+bool success
+
+

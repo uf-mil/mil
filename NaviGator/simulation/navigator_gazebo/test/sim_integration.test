@@ -1,0 +1,6 @@
+<launch>
+    <include file="$(find navigator_launch)/launch/simulation.launch">
+       <arg name="gui" value="false"/> 
+    </include>
+    <test test-name="test_sim_integration" pkg="navigator_gazebo" type="test_sim_integration.py"/>
+</launch>

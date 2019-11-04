@@ -1,0 +1,4 @@
+string shape_color  # R=red, B=blue, G=green
+string shape  # CRUCI=cruciform, TRIAN=triangle, CIRCL=circle
+---
+string message

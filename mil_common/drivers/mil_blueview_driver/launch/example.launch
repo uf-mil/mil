@@ -1,0 +1,65 @@
+<!-- Example launch file providing documentation on the parameters to configure the driver -->
+<launch>
+    <node pkg="mil_blueview_driver" type="blueview_driver" name="test_blue_view" >
+        <rosparam>
+            sonar_frame: my_sonar #Frame of blueview to appear in header of produced messages
+            
+            # Note: device and file parameters should not both be set
+            #device: 192.168.37.42 # Connecting to sonar by IP address
+            #device: my-sonar.example.org # Connecting to sonar by domain
+
+            grayscale:
+              enable: True # Enables output of grayscale ping image
+
+            color:
+              enable: True # Enable output of color ping image using provided colormap
+
+            # Note: may not work on some older .son files
+            raw:
+              enable: False # Enable output of custom ranges message produced from sdk's range profile
+
+            range:
+              start: 1.0 # Range in meters to start ping data
+              stop: 10.0 # Range in meters to stop ping data
+
+            # Three options for sdk fluid type
+            #fluid_type: "saltwater"
+            fluid_type: "freshwater"
+            #fluid_type: "other"
+
+            # Speed of sound in water, used for correction
+            sound_speed: 1484.0
+
+            # Sets image/range profile resolution, see blueview SDK documentation for details
+            #range_resolution: 1.0
+
+            # Set gain adjustment in dB, see blueview SDK documentaiton for details
+            #gain_adjustment: 0.0
+
+            #Set time variable analog gain, dB/meters, see SDK documentaiton for details
+            #tvg_slope: 0.0
+
+            # Enable/Disable blueview dynamic power management, see SDK for details
+            dynamic_power_management: False
+
+            # Lowest intensity accepted to be included in ranges messsages
+            # Tune for desired performance, low values will be slower when raw ranges is enabled
+            range_profile_intensity_threshold: 2000
+
+            # Threshold of dynamic noise to filter out, from 0.0 to 1.0
+            # Tune for desire performance / noise, lower will be more noisey / slow
+            noise_threshold: 0.2
+
+            # How often to send output (raw data / images), seconds
+            # if negative, outputs as quickly as driver does (~5 Hz)
+            period_seconds: -1.0
+        </rosparam>
+
+        <!-- Loads color map for color image from bvtsdk example colormaps -->
+        <param name="color/map_file" value="$(find mil_blueview_driver)/bvtsdk/colormaps/jet.cmap" />
+
+        <!-- Opens example sonar file provided for bvtsdk for playback -->
+        <param name="file" value="$(find mil_blueview_driver)/bvtsdk/data/swimmer.son" />
+    </node>
+</launch>
+

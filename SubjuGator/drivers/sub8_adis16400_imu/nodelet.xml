@@ -1,0 +1,7 @@
+<library path="lib/libadis16400_imu_nodelet">
+  <class name="adis16400_imu/nodelet" type="adis16400_imu::Nodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      adis16400 IMU driver
+    </description>
+  </class>
+</library>

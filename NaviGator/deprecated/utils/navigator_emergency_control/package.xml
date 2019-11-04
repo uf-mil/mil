@@ -1,0 +1,39 @@
+<package>
+  <name>navigator_emergency_control</name>
+  <version>1.0.0</version>
+  <description>navigator_emergency_control</description>
+  <maintainer email="zobeldavid@ufl.edu">David Zobel</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/stm32f3discovery_imu_driver</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>David Zobel</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>libopencm3</build_depend>
+  <build_depend>arm_bootloader</build_depend>
+  <build_depend>uf_subbus_protocol</build_depend>
+  <build_depend>kill_handling</build_depend>
+  <build_depend>message_generation</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>libopencm3</run_depend>
+  <run_depend>arm_bootloader</run_depend>
+  <run_depend>uf_subbus_protocol</run_depend>
+  <run_depend>kill_handling</run_depend>
+  <run_depend>message_runtime</run_depend>
+
+  <!-- Dependencies needed only for running tests. -->
+  <!-- <test_depend>sensor_msgs</test_depend> -->
+  <!-- <test_depend>arm_bootloader</test_depend> -->
+  <!-- <test_depend>libopencm3</test_depend> -->
+  <!-- <test_depend>uf_subbus_protocol</test_depend> -->
+
+</package>

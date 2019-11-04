@@ -1,0 +1,13 @@
+<launch>
+  <arg name="simulation" default="False" />
+  <node unless="$(arg simulation)" pkg="mil_passive_sonar" type="hydrophones" name="hydrophones_heading">
+    <param name="dist_h" value="2.286e-02" />
+    <param name="dist_h4" value="2.286e-02" />
+    <param name="v_sound" value="1482" />
+  </node>
+  <node pkg="mil_passive_sonar" type="multilateration" name="multilateration">
+    <param name="buffer_size" value="10" />
+  </node>
+  <node pkg="mil_tools" type="vector_to_marker" name="hydrophones_visualization"
+        args="/hydrophones/direction /hydrophones/direction_marker --length 8" />
+</launch>

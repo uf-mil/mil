@@ -1,0 +1,135 @@
+#!/usr/bin/python
+
+from __future__ import division
+
+import math
+import struct
+import bisect
+
+import numpy
+import scipy
+
+import roslib
+roslib.load_manifest('rawgps_common')
+
+import rospy
+from std_msgs.msg import String, Header
+from geometry_msgs.msg import Vector3, Point, PointStamped
+from tf import transformations
+
+from uf_common.orientation_helpers import xyz_array
+from rawgps_common import gps, glonass
+from rawgps_common.msg import Measurements, Satellite
+
+
+def mean(xs):
+    xs = list(xs)
+    return sum(xs) / len(xs)
+
+
+def jacobian(f, x):
+    x = numpy.array(x)
+    c = numpy.array(f(x))
+    return numpy.array([(f(x + [1 if j == i else 0 for j in xrange(len(x))]) - c) / 1 for i in xrange(len(x))]).T
+
+
+def find_minimum(x0, residuals):
+    # print 'x0', x0
+    x = x0
+    for i in xrange(10):
+        r = residuals(x)
+        # print 'r', r
+        # print sum(r)
+        print '|r|', numpy.linalg.norm(r) / math.sqrt(len(r))
+        J = jacobian(residuals, x)
+        # print 'J', J
+        x = x - numpy.linalg.inv(J.T.dot(J)).dot(J.T).dot(r)
+        #lat, lon, height = gps.latlongheight_from_ecef(x[:3])
+        # print 'x', x, '=', math.degrees(lat), math.degrees(lon), height
+    return x
+
+
+rospy.init_node('pos2')
+
+pub = rospy.Publisher('offsetoffset', PointStamped)
+
+total = numpy.zeros(3)
+
+
+def handle(hist):
+    common_prns = reduce(set.intersection,
+                         [set(sat.prn for sat in x.satellites if not math.isnan(sat.time)) for x in hist.itervalues()])
+
+    new = [Measurements(satellites=[sat for sat in x.satellites if sat.prn in common_prns], sync=x.sync, position=x.position, position_valid=x.position_valid)
+           for _, x in sorted(hist.iteritems())]
+
+    for x in new:
+        x.satellites.sort(key=lambda sat: sat.prn)
+
+    pos = [gps.estimate_pos(
+        x.satellites, use_corrections=True, quiet=True) for x in new]
+    dpos = pos[0] - pos[1]
+
+    global total
+    total = .99 * total + .01 * dpos
+
+    dpos_filtered = total
+    print new[0].sync - new[1].sync, len(common_prns), gps.enu_from_ecef(dpos_filtered, pos[0])
+
+
+import threading
+lock = threading.Lock()
+
+
+def find_prev(lst, t):  # find last element that is <= t
+    return bisect.bisect(lst, (t, None)) - 1
+
+
+assert find_prev([(1, None), (2, None), (2, None),
+                  (3, None), (4, None)], 3) == 3
+assert find_prev([(1, None), (2, None), (3, None),
+                  (3, None), (4, None)], 3) == 3
+assert find_prev([(1, None), (2, None), (2, None),
+                  (2.5, None), (4, None)], 3) == 3
+
+
+def find_best(lst, t):
+    p = bisect.bisect_left(lst, (t, None))
+    choices = []
+    if p - 1 != -1:
+        choices.append(p - 1)
+    choices.append(p)
+    return min(choices, key=lambda p: abs(lst[p][0] - t))
+
+
+assert find_best([(1, None), (2, None), (3, None),
+                  (4, None), (5, None)], 3.49) == 2
+assert find_best([(1, None), (2, None), (3, None),
+                  (4, None), (5, None)], 3) == 2
+assert find_best([(1, None), (2, None), (3, None),
+                  (4, None), (5, None)], 2.51) == 2
+
+history = {}
+used = set()
+
+
+def match(name, msg):
+    with lock:
+        t = gps.Time(msg.sync_WN, msg.sync)
+        history.setdefault(name, []).append((t, msg))
+
+        if len(history) == 2:
+            othername, = set(history) - {name}
+            other_prev_pos = find_prev(history[othername], t)
+            best_pos = find_best(
+                history[name], history[othername][other_prev_pos][0])
+            if find_best(history[othername], history[name][best_pos][0]) == other_prev_pos:
+                handle({name: history[name][best_pos][1],
+                        othername: history[othername][other_prev_pos][1]})
+
+
+rospy.Subscriber('/front_gps/gps', Measurements,
+                 lambda msg: match('front', msg))
+rospy.Subscriber('/back_gps/gps', Measurements, lambda msg: match('back', msg))
+
+rospy.spin()

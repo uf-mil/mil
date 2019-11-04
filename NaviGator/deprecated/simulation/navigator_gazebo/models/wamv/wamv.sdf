@@ -1,0 +1,245 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <model name="wamv">
+    <link name="base_link">
+      <gravity>0</gravity>
+      <!-- 
+      <velocity_decay>
+        <linear>0.0035</linear>
+        <angular>0.001</angular>
+      </velocity_decay>
+      <inertial>
+        <mass>270.94</mass>
+        <inertia>
+          <ixx>387.488</ixx>
+          <ixy>0.53111</ixy>
+          <ixz>165.005</ixz>
+          <iyy>585.109</iyy>
+          <iyz>0.11637</iyz>
+          <izz>657.620</izz>
+        </inertia>
+      </inertial>
+      -->
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>file://wamv/wamv.dae</uri>
+            <scale>.0254 .0254 .0254</scale> <!-- inches to meters -->
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>file://wamv/wamv.dae</uri>
+            <scale>.0254 .0254 .0254</scale> <!-- inches to meters -->
+          </mesh>
+        </geometry>
+      </collision>
+
+      <sensor name="front_left_camera" type="camera">
+        <camera>
+          <pose> 0.016378 0.1 0.198208 8.83556166648e-07 0.257608854236 0.0230515819239 </pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>960</width>
+            <height>600</height>
+          </image>
+          <distortion>
+            <k1>0</k1>
+            <k2>0</k2>
+            <k3>0</k3>
+            <p1>0</p1>
+            <p2>0</p2>
+          </distortion>
+        </camera>
+        <plugin name="stereo_left_camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>30</updateRate>
+          <cameraName>camera/front/left</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>front_left_cam</frameName>
+          <hackBaseline>0</hackBaseline>
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+        </plugin>
+      </sensor>
+
+      <sensor name="front_right_camera" type="camera">
+        <camera>
+          <pose> 0.016378 0.08 0.198208 -6.01198519164e-06 0.242958281975 0.0188484790053 </pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>960</width>
+            <height>600</height>
+          </image>
+          <distortion>
+            <k1>0</k1>
+            <k2>0</k2>
+            <k3>0</k3>
+            <p1>0</p1>
+            <p2>0</p2>
+          </distortion>
+        </camera>
+        <plugin name="stereo_right_camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>30</updateRate>
+          <cameraName>camera/front/right</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>front_right_cam</frameName>
+          <hackBaseline>0</hackBaseline>
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+        </plugin>
+      </sensor>
+
+      <sensor name="right_camera" type="camera">
+        <camera>
+          <pose> -0.142622 -0.516 0.195208 -5.92339209527e-06 -0.0816781931371 -1.64410186098 </pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>960</width>
+            <height>600</height>
+          </image>
+          <distortion>
+            <k1>0</k1>
+            <k2>0</k2>
+            <k3>0</k3>
+            <p1>0</p1>
+            <p2>0</p2>
+          </distortion>
+        </camera>
+        <plugin name="right_camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>30</updateRate>
+          <cameraName>camera/starboard</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>starboard_cam</frameName>
+          <hackBaseline>0</hackBaseline>
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+        </plugin>
+      </sensor>
+
+      <sensor name="down_camera" type="camera">
+        <camera>
+          <pose>0.4834 -0.0254 -0.7158 0 1.57079 0</pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>960</width>
+            <height>600</height>
+          </image>
+          <distortion>
+            <k1>0</k1>
+            <k2>0</k2>
+            <k3>0</k3>
+            <p1>0</p1>
+            <p2>0</p2>
+          </distortion>
+        </camera>
+        <plugin name="down_camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>30</updateRate>
+          <cameraName>camera/down</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>down_cam</frameName>
+          <hackBaseline>0</hackBaseline>
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+        </plugin>
+      </sensor>
+
+      <sensor name="sick_lidar" type="ray">
+        <pose>0.5334 -0.0254 -0.6858 0 0 0</pose>
+        <visualize>false</visualize>
+        <update_rate>25</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>1080</samples>
+              <resolution>1</resolution>
+              <min_angle>-2.356194</min_angle>
+              <max_angle>2.356194</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.5</min>
+            <max>30.0</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <plugin name="_sick_lidar" filename="libgazebo_ros_laser.so">
+          <topicName>scan</topicName>
+          <frameName>sick</frameName>
+        </plugin>
+      </sensor>
+
+      <sensor name="velodyne_lidar" type="ray">
+        <visualize>false</visualize>
+        <pose> -0.277622 0.0 0.648208 0.0 -0.0 0.0 </pose>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>500</samples>
+              <min_angle>0</min_angle>
+              <max_angle>6.24</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>16</samples>
+              <min_angle>-0.2617993878</min_angle>
+              <max_angle>0.2617993878</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.05</min>
+            <max>50.0</max>
+          </range>
+        </ray>
+        <plugin name="_velodyne_lidar" filename="libgazebo_ros_velodyne_laser.so">
+          <topicName>velodyne_points</topicName>
+          <frameName>velodyne</frameName>
+          <min_range>0.9</min_range>
+          <max_range>130.0</max_range>
+          <gaussianNoise>0.008</gaussianNoise>
+        </plugin>
+      </sensor>
+    </link>
+
+    <plugin name="navigator_state_set" filename="libnavigator_state_set.so">
+      <model_offset>1.2319 0 1.2</mode_offset>
+    </plugin>
+
+    <!--
+    <plugin name="navigator_buoyancy" filename="libnavigator_buoyancy.so">
+      <fluid_density>1000</fluid_density>
+      <drag_coefficient>1</drag_coefficient>
+      <model_z_offset>-1.2</model_z_offset>
+      <link name="base_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>2</volume>
+      </link>
+    </plugin>
+
+    <plugin name="navigator_thurster" filename="libnavigator_thrusters.so">
+      <link>base_link</link>
+    </plugin>
+    -->
+
+  </model>
+</sdf>

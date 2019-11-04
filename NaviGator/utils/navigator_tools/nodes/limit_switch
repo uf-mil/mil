@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+import rospy
+from std_msgs.msg import Bool
+import serial
+
+rospy.init_node('limit_switch')
+pub = rospy.Publisher('/limit_switch', Bool)
+
+ser = serial.Serial(port='/dev/serial/by-id/2', baudrate=9600)
+
+
+while not rospy.is_shutdown():
+    byte = ser.read(1)
+    print 'Byte', byte
+    if byte == 0:
+        pub.publish(Bool(False))
+    else:
+        pub.publish(Bool(True))
+    rospy.sleep(0.1)

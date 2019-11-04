@@ -1,0 +1,190 @@
+#!/usr/bin/env python
+import numpy as np
+import rospy
+from nav_msgs.msg import Odometry
+from sub8_controller.cfg import AdaptiveControllerConfig
+from mil_tools import twist_to_numpy, odometry_to_numpy, numpy_to_wrench, pose_to_numpy
+from tf.transformations import quaternion_inverse, quaternion_multiply
+from mil_tools import quaternion_matrix, quat_to_rotvec
+from mil_msgs.msg import PoseTwistStamped
+from geometry_msgs.msg import WrenchStamped
+from dynamic_reconfigure.server import Server as DynamicReconfigureServer
+from ros_alarms import AlarmListener
+from threading import Lock
+
+
+class Sub8AdapativeController(object):
+    def __init__(self):
+        self.lock = Lock()
+        np.set_printoptions(precision=2)
+
+        # Initialize gains and setup dynamic reconfigure
+        self.kp = np.zeros(6).T
+        self.kd = np.zeros(6).T
+        self.ki = np.zeros(6).T
+        self.kg = np.zeros(6).T
+        self.learning_distance = 1.
+        self.use_learned = False
+        self.last_config = None
+        self.reconfigure_server = DynamicReconfigureServer(AdaptiveControllerConfig, self.reconfigure)
+
+        # Initialize state variables
+        self.dist_est_world = np.array([0., 0., 0., 0., 0., 0.]).T
+        self.drag_est_body = np.array([0., 0., 0., 0., 0., 0.]).T
+        self.body_frame = None
+        self.global_frame = None
+        self.last_update = None
+        self.desired_position = None
+        self.desired_orientation = None
+        self.desired_twist_world = None
+        self.body_to_world = None
+        self.world_to_body = None
+        self.position = None
+        self.orientation = None
+        self.twist_world = None
+        self.pose = None
+        self.twist_world = None
+        self.twist_body = None
+        self.debug = rospy.get_param('~debug', False)
+
+        self.kill_listener = AlarmListener('kill')
+        self.wrench_pub = rospy.Publisher('/wrench', WrenchStamped, queue_size=3)
+        if self.debug:
+            self.adaptation_wrench_pub = rospy.Publisher('~adaptation', WrenchStamped, queue_size=1)
+            self.dist_wrench_pub = rospy.Publisher('~dist', WrenchStamped, queue_size=1)
+            self.drag_wrench_pub = rospy.Publisher('~drag', WrenchStamped, queue_size=1)
+            self.pose_error_pub = rospy.Publisher('~pose_error', WrenchStamped, queue_size=1)
+            self.twist_error_pub = rospy.Publisher('~twist_error', WrenchStamped, queue_size=1)
+        self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_cb, queue_size=3)
+        self.ref = rospy.Subscriber('/trajectory', PoseTwistStamped, self.trajectory_cb, queue_size=3)
+
+    @staticmethod
+    def parse_gains(gains):
+        ret = [float(gain.strip()) for gain in gains.split(',')]
+        if len(ret) != 6:
+            raise ValueError('not 6')
+        return ret
+
+    def reconfigure(self, config, level):
+        try:
+            kp = self.parse_gains(config['kp'])
+            kd = self.parse_gains(config['kd'])
+            ki = self.parse_gains(config['ki'])
+            kg = self.parse_gains(config['kg'])
+        except ValueError as e:
+            rospy.logwarn('Invalid dynamic reconfigure: {}'.format(e))
+            return self.last_config
+        self.kp = np.array(kp)
+        self.kd = np.array(kd)
+        self.ki = np.array(ki)
+        self.kg = np.array(kg)
+        self.use_learned = config['use_learned']
+        self.last_config = config
+        rospy.loginfo('Gains succesfully updated via dynamic reconfigure')
+        return config
+
+    def update(self):
+        now = rospy.Time.now()
+        kill_alarm = self.kill_listener.get_alarm(fetch=False)
+
+        # Send a zeroed wrench if killed, missing odometry, or missing goal
+        if self.desired_position is None or self.position is None or kill_alarm is None or kill_alarm.raised:
+            zero_wrench = np.zeros(6, dtype=float)
+            self.wrench_pub.publish(self.make_wrench_msg(zero_wrench, frame_id=self.body_frame, stamp=now))
+            return
+
+        # Calculate error in position, orientation, and twist
+        position_error_world = self.desired_position - self.position
+        orientation_error_world = quat_to_rotvec(quaternion_multiply(
+            self.desired_orientation, quaternion_inverse(self.orientation)))
+        pose_error_world = np.concatenate((position_error_world, orientation_error_world))
+        twist_error_world = self.desired_twist_world - self.twist_world
+        twist_error_body = self.world_to_body.dot(twist_error_world)
+
+        # Rotate gains into world frame
+        kp = self.body_to_world.dot(np.diag(self.kp)).dot(self.world_to_body)
+        kd = self.body_to_world.dot(np.diag(self.kd)).dot(self.world_to_body)
+
+        # Calculate part of wrench from feedback
+        feedback_proportional_world = kp.dot(pose_error_world)
+        feedback_dirivitive_world = kd.dot(twist_error_world)
+        feedback_world = feedback_proportional_world + feedback_dirivitive_world
+
+        # Calculate part of wrench from learned parameters
+        drag_effort_body = np.multiply(self.drag_est_body, self.twist_body)
+        drag_effort_world = self.body_to_world.dot(drag_effort_body)
+        wrench_adaptation_world = drag_effort_world + self.dist_est_world
+
+        if self.use_learned:
+            # If learning is on, total wrench is feedback + learned integrator
+            wrench_world = wrench_adaptation_world + feedback_world
+        else:
+            # if learning is off, wrench is just from feedback
+            wrench_world = feedback_world
+
+        # Convert wrench to body frame as per ROS convention
+        wrench_body = self.world_to_body.dot(wrench_world)
+
+        # Publish wrench
+        self.wrench_pub.publish(self.make_wrench_msg(wrench_body, frame_id=self.body_frame, stamp=now))
+
+        # Update regressors
+        dist = np.linalg.norm(pose_error_world)
+        if self.last_update is not None and dist < self.learning_distance and self.use_learned:
+            dt = (now - self.last_update).to_sec()
+            self.drag_est_body = self.drag_est_body + np.multiply(self.ki, twist_error_body) * dt
+            self.dist_est_world = self.dist_est_world + np.multiply(self.kg, pose_error_world) * dt
+            # print 'Drag est', self.drag_est_body
+            # print 'Dist est', self.dist_est_world
+        self.last_update = now
+
+        if self.debug:
+            # Publish wrench showing only adaptation terms
+            adapation_wrench_body = self.world_to_body.dot(wrench_adaptation_world)
+            self.adaptation_wrench_pub.publish(self.make_wrench_msg(
+                adapation_wrench_body, frame_id=self.body_frame, stamp=now))
+            self.dist_wrench_pub.publish(self.make_wrench_msg(
+                self.dist_est_world, frame_id=self.global_frame, stamp=now))
+            self.drag_wrench_pub.publish(self.make_wrench_msg(
+                drag_effort_body, frame_id=self.body_frame, stamp=now))
+            self.pose_error_pub.publish(self.make_wrench_msg(
+                pose_error_world, frame_id=self.global_frame, stamp=now))
+            self.twist_error_pub.publish(self.make_wrench_msg(
+                twist_error_body, frame_id=self.body_frame, stamp=now))
+
+    @staticmethod
+    def make_wrench_msg(wrench, frame_id='base_link', stamp=rospy.Time()):
+        msg = WrenchStamped()
+        msg.header.stamp = stamp
+        msg.header.frame_id = frame_id
+        msg.wrench = numpy_to_wrench(wrench)
+        return msg
+
+    @staticmethod
+    def make_double_rotation(R):
+        R2 = np.zeros((6, 6))
+        R2[:3, :3] = R2[3:, 3:] = R
+        return R2
+
+    def trajectory_cb(self, msg):
+        with self.lock:
+            self.desired_position, self.desired_orientation = pose_to_numpy(msg.posetwist.pose)
+            body_to_world = self.make_double_rotation(quaternion_matrix(self.desired_orientation))
+            self.desired_twist_world = body_to_world.dot(np.hstack(twist_to_numpy(msg.posetwist.twist)))
+
+    def odom_cb(self, msg):
+        with self.lock:
+            self.body_frame = msg.child_frame_id
+            self.global_frame = msg.header.frame_id
+            (self.position, self.orientation), (linvel, angvel), _, _ = odometry_to_numpy(msg)
+            self.body_to_world = self.make_double_rotation(quaternion_matrix(self.orientation))
+            self.world_to_body = self.body_to_world.T
+            self.twist_body = np.concatenate((linvel, angvel))
+            self.twist_world = self.body_to_world.dot(self.twist_body)
+            self.update()
+
+
+if __name__ == '__main__':
+    rospy.init_node('subjugator_dynamics')
+    Sub8AdapativeController()
+    rospy.spin()

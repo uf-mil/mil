@@ -1,0 +1,115 @@
+#!/usr/bin/env python
+import rospy
+import numpy as np
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import WrenchStamped
+from mil_ros_tools.msg_helpers import numpy_to_quaternion, numpy_to_point, numpy_to_twist, wrench_to_numpy
+from mil_ros_tools.geometry_helpers import quaternion_matrix
+import tf.transformations as trans
+from sub8_system_id import SubjuGatorDynamics
+
+
+class Sub(object):
+    '''
+    A dynamics simulator for SubjuGator, modeling buoyancy, gravity, drag, and the user
+    inputed wrench to produce Odometry
+    '''
+
+    def __init__(self):
+        # Internal dynamics model of the sub from the system_id package
+        self.dynamics = SubjuGatorDynamics.from_ros_params()
+
+        # Hardcoded height of the sub used for buoyancy
+        self.z_len = 0.59
+        self.pose = np.zeros(7)
+        # Make initial orientation valid (quaternion 0 0 0 1)
+        self.pose[6] = 1.
+        self.twist = np.zeros(6)
+        self.last_wrench_time = None
+        self.wrench = np.zeros(6)
+
+        # Setup ROS pub/subs for odom an wrench
+        self.odom_pub = rospy.Publisher('odom', Odometry, queue_size=3)
+        self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.wrench_cb, queue_size=3)
+
+        # Setup timer to update model at 100hz
+        self.last_time = rospy.Time.now()
+        update_rate_hz = rospy.get_param('update_rate_hz', 50)
+        self.timer = rospy.Timer(rospy.Duration(1. / update_rate_hz), self.timer_cb)
+
+    def wrench_cb(self, msg):
+        '''
+        Set the wrench from the message
+        '''
+        wrench = np.empty(6, dtype=float)
+        wrench[0:3], wrench[3:] = wrench_to_numpy(msg.wrench)
+        self.last_wrench_time = rospy.Time.now()
+        self.set_wrench(wrench)
+
+    def set_wrench(self, wrench):
+        '''
+        Set the currently applied wrench from the thrusters from the 6x1 array (X, Y, Z, rot_x, rot_y, rot_z)
+        '''
+        self.wrench = wrench
+
+    def timer_cb(self, event):
+        '''
+        When timer triggers, update model with time delta
+        '''
+        now = rospy.Time.now()
+        dt = (now - self.last_time).to_sec()
+        self.update(dt)
+        self.last_time = now
+
+    def update(self, dt):
+        '''
+        Update the simulation forward by the specified time delta.
+        A new odometry will be published after the model is updated.
+        '''
+        if self.last_wrench_time is None or rospy.Time.now() - self.last_wrench_time > rospy.Duration(1):
+            self.set_wrench(np.array([0., 0., 0., 0., 0., 0.]))
+
+        # Calcuate rotation from body to global and global to body for later calculations
+        body_to_world = quaternion_matrix(self.pose[3:])
+        world_to_body = np.linalg.inv(body_to_world)
+
+        # Perform inverse dynamics to get current acceleration in body frame
+        accel = self.dynamics.inverse_dynamics(self.pose[2], self.twist, world_to_body, wrench=self.wrench)
+
+        # Increment velocity by current acceleration by the time delta
+        self.twist += accel * dt
+
+        # Rotate twist to global frame so pose can be computed
+        twist_linear_world = body_to_world.dot(self.twist[0:3])
+        twist_angular_world = body_to_world.dot(self.twist[3:])
+
+        # Update orientation if it has changed enough for the math to be stable
+        norm = np.linalg.norm(twist_angular_world)
+        if not np.isclose(norm, 0.):
+            quat_diff = trans.quaternion_about_axis(norm * dt, twist_angular_world / norm)
+            self.pose[3:] = trans.quaternion_multiply(self.pose[3:], quat_diff)
+
+        # Update position
+        self.pose[0:3] += twist_linear_world * dt
+
+        # Publish odometry after this update
+        self.publish_odom()
+
+    def publish_odom(self):
+        '''
+        Publish the current pose/twist to ROS as odometry
+        '''
+        odom = Odometry()
+        odom.pose.pose.position = numpy_to_point(self.pose[0:3])
+        odom.pose.pose.orientation = numpy_to_quaternion(self.pose[3:])
+        odom.twist.twist = numpy_to_twist(self.twist[0:3], self.twist[3:])
+        odom.header.stamp = rospy.Time.now()
+        odom.header.frame_id = '/map'
+        odom.child_frame_id = 'base_link'
+        self.odom_pub.publish(odom)
+
+
+if __name__ == '__main__':
+    rospy.init_node('subsim')
+    s = Sub()
+    rospy.spin()

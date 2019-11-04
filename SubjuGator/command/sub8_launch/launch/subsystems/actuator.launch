@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mil_pneumatic_actuator" type="pneumatic_actuator_node" name="actuator_driver" output="screen">
+        <param name="port" value="/dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_5_to_8_DMBP58-if00-port0"/>
+        <!-- TODO: Fill with correct ports -->
+        <rosparam param="actuators">
+          EXAMPLE: 2
+        </rosparam>
+    </node>
+</launch>

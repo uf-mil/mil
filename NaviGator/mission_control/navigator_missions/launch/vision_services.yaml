@@ -1,0 +1,32 @@
+# Example vision service
+#
+# NAME:
+#   service: SERVICE_NAME
+#   type: SRV_TYPE
+#   args: {}  # Dictionary to pass to service request
+#
+# Services need to be in navigator_msgs/srv/
+get_shape:
+  topic: /vision/get_shapes
+  type: GetDockShapes
+  args: {'Shape': "CIRCLE", 'Color':"RED"}
+
+get_shape_front:
+  topic: /vision/get_shapes_front
+  type: GetDockShapes
+  args: {'Shape': "CIRCLE", 'Color':"RED"}
+
+scan_the_code_activate:
+  topic: /vision/scan_the_code_activate
+  type: ScanTheCodeMission
+  args: {}
+
+scan_the_code_status:
+    topic: /vision/scan_the_code_status
+    type: ScanTheCodeMission
+    args: {}
+
+coral_survey:
+  topic: /vision/coral_survey
+  type: GetDockShape
+  args: {'Shape': "CIRCLE", 'Color':"ANY"}

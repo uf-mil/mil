@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="find_totems_challenge">
+      <include>
+        <pose>1.27 21.38 0 0 0 0 </pose>
+        <uri>model://green_totem</uri>
+      </include>
+      <include>
+        <pose>28.59 10.14 0 0 0 </pose>
+        <uri>model://blue_totem</uri>
+      </include>
+      <include>
+        <pose>12.49 6.86 0 0 0 0 </pose>
+        <uri>model://red_totem</uri>
+      </include>
+      <include>
+        <pose>31.57 34.82 0 0 0 0 </pose>
+        <uri>model://yellow_totem</uri>
+      </include>
+  </model>
+</sdf>

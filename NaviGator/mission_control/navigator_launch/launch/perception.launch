@@ -1,0 +1,8 @@
+<launch>
+  <arg name="simulation" default="False" />
+
+  <!-- Pinger processing nodes -->
+  <include file="$(find navigator_launch)/launch/perception/passive_sonar.launch">
+    <arg name="simulation" value="$(arg simulation)" />
+  </include>
+</launch>

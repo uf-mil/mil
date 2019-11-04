@@ -1,0 +1,145 @@
+{
+  "tools": [
+    {
+      "tool": "point",
+      "color": "#B39DDB",
+      "name": "None"
+    },
+    {
+      "tool": "rectangle",
+      "name": "buoy_black",
+      "color": "#616161"
+    },
+    {
+      "tool": "rectangle",
+      "name": "circle_blue",
+      "color": "#3F51B5"
+    },
+    {
+      "tool": "rectangle",
+      "name": "circle_green",
+      "color": "#33B679"
+    },
+    {
+      "tool": "rectangle",
+      "name": "circle_red",
+      "color": "#D50000"
+    },
+    {
+      "tool": "rectangle",
+      "name": "cruciform_blue",
+      "color": "#3F51B5"
+    },
+    {
+      "tool": "rectangle",
+      "name": "cruciform_green",
+      "color": "#33B679"
+    },
+    {
+      "color": "#D50000",
+      "tool": "rectangle",
+      "name": "cruciform_red"
+    },
+    {
+      "tool": "rectangle",
+      "name": "triangle_blue",
+      "color": "#3F51B5"
+    },
+    {
+      "tool": "rectangle",
+      "name": "triangle_green",
+      "color": "#33B679"
+    },
+    {
+      "tool": "rectangle",
+      "name": "triangle_red",
+      "color": "#D50000"
+    },
+    {
+      "tool": "rectangle",
+      "name": "dock_2018_platform",
+      "color": "#B39DDB"
+    },
+    {
+      "tool": "rectangle",
+      "name": "stc_panel_blue",
+      "color": "#3F51B5"
+    },
+    {
+      "tool": "rectangle",
+      "name": "stc_panel_green",
+      "color": "#33B679"
+    },
+    {
+      "tool": "rectangle",
+      "name": "stc_panel_off",
+      "color": "#616161"
+    },
+    {
+      "tool": "rectangle",
+      "name": "stc_panel_red",
+      "color": "#D50000"
+    },
+    {
+      "tool": "rectangle",
+      "name": "stc_panel_yellow",
+      "color": "#F6BF26"
+    },
+    {
+      "tool": "rectangle",
+      "name": "stc_platform",
+      "color": "#795548"
+    },
+    {
+      "tool": "rectangle",
+      "name": "target_large",
+      "color": "#795548"
+    },
+    {
+      "tool": "rectangle",
+      "name": "target_small",
+      "color": "#795548"
+    },
+    {
+      "tool": "rectangle",
+      "name": "totem_black",
+      "color": "#616161"
+    },
+    {
+      "tool": "rectangle",
+      "name": "totem_blue",
+      "color": "#3F51B5"
+    },
+    {
+      "tool": "rectangle",
+      "name": "totem_green",
+      "color": "#33B679"
+    },
+    {
+      "tool": "rectangle",
+      "name": "totem_red",
+      "color": "#D50000"
+    },
+    {
+      "tool": "rectangle",
+      "name": "totem_white",
+      "color": "#A79B8E"
+    },
+    {
+      "tool": "rectangle",
+      "name": "totem_yellow",
+      "color": "#F6BF26"
+    },
+    {
+      "tool": "rectangle",
+      "name": "can_buoy_red",
+      "color": "#D50000"
+    },
+    {
+      "tool": "rectangle",
+      "name": "can_buoy_green",
+      "color": "#33B679"
+    }
+  ],
+  "classifications": []
+}

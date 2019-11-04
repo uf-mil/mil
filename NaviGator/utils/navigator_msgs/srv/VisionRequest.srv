@@ -1,0 +1,6 @@
+string target_name
+---
+# Pose, stamped at the time of image receipt
+geometry_msgs/PoseStamped pose
+geometry_msgs/Vector3 covariance_diagonal
+bool found

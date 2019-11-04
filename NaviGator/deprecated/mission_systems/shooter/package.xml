@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <name>navigator_shooter</name>
+  <version>0.0.0</version>
+  <description>The navigator_shooter package</description>
+  <maintainer email="kma1660@gmail.com">Kevin Allen</maintainer>
+  <license>TODO</license>
+  <author email="kma1660@gmail.com">Kevin Allen</author> 
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>navigator_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>navigator_msgs</run_depend>
+  <run_depend>actionlib</run_depend>
+  <build_depend>actionlib</build_depend>
+</package>

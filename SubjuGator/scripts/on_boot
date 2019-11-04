@@ -1,0 +1,22 @@
+#!/bin/bash
+# Run on Subjugator on boot
+USER="sub8"
+ROSCORE="roscore"
+
+# Name of tmux session
+SESSION="boot"
+
+# Tmux command
+TMUX="tmux"
+
+# Exit if script is run for second time
+if $TMUX has-session -t $SESSION 2> /dev/null; then
+    echo "$SESSION already created, aborting"
+    exit 0
+fi
+
+# Start tmux session
+$TMUX new-session -d -s ${SESSION} -n "roscore"
+
+# Start roscore in first window
+$TMUX send-keys -t $SESSION:0 "$ROSCORE" C-m

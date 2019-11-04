@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>navigator_kill_board</name>
+  <version>1.0.0</version>
+  <description>The navigator_kill_board package</description>
+
+  <maintainer email="matthew.langford95@gmail.com">Matt Langford</maintainer>
+
+
+  <license>MIT</license>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <run_depend>rospy</run_depend>
+
+  <export>
+  </export>
+</package>

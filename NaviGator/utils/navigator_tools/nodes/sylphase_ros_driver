@@ -1,0 +1,126 @@
+#!/usr/bin/python
+# Written by Forrest Voight, imported into NaviGator project for future refactoring
+import time
+import traceback
+import socket
+import json
+import numpy
+import rospy
+from std_msgs.msg import Header
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Pose, PoseWithCovariance, Twist, TwistWithCovariance, Point, Vector3, \
+    Quaternion, Vector3Stamped
+
+
+rospy.init_node('sdgps_solution_ros_bridge')
+
+host = rospy.get_param('~host', '127.0.0.1')
+port = rospy.get_param('~port')
+child_frame_id = rospy.get_param('~child_frame_id')
+decimation = rospy.get_param('~decimation', 1)
+force_z_to_zero = rospy.get_param('~force_z_to_zero', False)
+
+odom_pub = rospy.Publisher('odom', Odometry, queue_size=100)
+absodom_pub = rospy.Publisher('absodom', Odometry, queue_size=100)
+acceleration_pub = rospy.Publisher('acceleration', Vector3Stamped, queue_size=100)
+
+
+def go():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((host, port))
+
+    first = True
+
+    buf = ''
+    count = 0
+    while not rospy.is_shutdown():
+        d = s.recv(2**12)
+        t = rospy.Time.now()
+        if not d:
+            break
+        buf += d
+
+        lines = buf.split('\n')
+        buf = lines[-1]
+        for line in lines[:-1]:
+            if first:
+                first = False
+                continue
+
+            if count % decimation == 0:
+                d = json.loads(line)
+                if not d['running']:
+                    rospy.logwarn_throttle(10, 'GPS not running: {}'.format(d['running_reason']))
+                    continue
+
+                if force_z_to_zero:
+                    d['relative_position_enu'][2] = 0
+
+                ecef_cov = numpy.array(d['X_position_relative_position_orientation_ecef_covariance'])
+                absodom_pub.publish(Odometry(
+                    header=Header(
+                        stamp=t,
+                        frame_id='/ecef',
+                    ),
+                    child_frame_id=child_frame_id,
+                    pose=PoseWithCovariance(
+                        pose=Pose(
+                            position=Point(*d['position_ecef']),
+                            orientation=Quaternion(**d['orientation_ecef']),
+                        ),
+                        covariance=numpy.vstack((
+                            numpy.hstack((ecef_cov[0:3, 0:3], ecef_cov[0:3, 6:9])),
+                            numpy.hstack((ecef_cov[6:9, 0:3], ecef_cov[6:9, 6:9])),
+                        )).flatten(),
+                    ),
+                    twist=TwistWithCovariance(
+                        twist=Twist(
+                            linear=Vector3(*d['velocity_body']),
+                            angular=Vector3(*d['angular_velocity_body']),
+                        ),
+                        covariance=numpy.vstack((
+                            numpy.hstack((d['X_velocity_body_covariance'], numpy.zeros((3, 3)))),
+                            numpy.hstack((numpy.zeros((3, 3)), d['X_angular_velocity_body_covariance'])),
+                        )).flatten(),
+                    ),
+                ))
+                odom_pub.publish(Odometry(
+                    header=Header(
+                        stamp=t,
+                        frame_id='/enu',
+                    ),
+                    child_frame_id=child_frame_id,
+                    pose=PoseWithCovariance(
+                        pose=Pose(
+                            position=Point(*d['relative_position_enu']),
+                            orientation=Quaternion(**d['orientation_enu']),
+                        ),
+                        covariance=numpy.array(d['X_relative_position_orientation_enu_covariance']).flatten(),
+                    ),
+                    twist=TwistWithCovariance(
+                        twist=Twist(
+                            linear=Vector3(*d['velocity_body']),
+                            angular=Vector3(*d['angular_velocity_body']),
+                        ),
+                        covariance=numpy.vstack((
+                            numpy.hstack((d['X_velocity_body_covariance'], numpy.zeros((3, 3)))),
+                            numpy.hstack((numpy.zeros((3, 3)), d['X_angular_velocity_body_covariance'])),
+                        )).flatten(),
+                    ),
+                ))
+                acceleration_pub.publish(Vector3Stamped(
+                    header=Header(
+                        stamp=t,
+                        frame_id=child_frame_id,
+                    ),
+                    vector=Vector3(*d['X_acceleration_body']),
+                ))
+
+            count += 1
+
+while not rospy.is_shutdown():
+    try:
+        go()
+    except Exception:
+        traceback.print_exc()
+        time.sleep(1)

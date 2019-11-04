@@ -1,0 +1,7 @@
+string name
+geometry_msgs/PointStamped position
+
+---
+
+bool success
+string message

@@ -1,0 +1,13 @@
+engine:
+  - prefix: "BL"
+    position: "-1.9304 1.016 0.318237"
+    orientation: "0.0 0.0 0.785398"
+  - prefix: "BR"
+    position: "-1.9304 -1.016 0.318237"
+    orientation: "0.0 0.0 -0.785398"
+  - prefix: "FL"
+    position: "1.5 0.6096 0.318237"
+    orientation: "0.0 0.0 -0.785398"
+  - prefix: "FR"
+    position: "1.5 -0.6096 0.318237"
+    orientation: "0.0 0.0 0.785398"

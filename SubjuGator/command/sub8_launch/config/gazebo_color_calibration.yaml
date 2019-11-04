@@ -1,0 +1,15 @@
+# Always prefer bgr to hsv when red is a possible color
+color:
+  buoy:
+    red:
+      LAB: [[0, 160, 148], [255, 190, 170]]
+
+    green:
+      LAB: [[0, 63, 170], [255, 90, 190]]
+
+    yellow:
+      LAB: [[0, 100, 172], [255, 115, 200]]
+
+  channel_marker:
+    hsv_low: [0.0, 0.0, 50.0]
+    hsv_high: [83.3782, 255.0, 255.0]

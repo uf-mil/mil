@@ -1,0 +1,11 @@
+<launch>
+    <param name="/is_simulation" type="bool" value="True" />
+
+    <!-- Run 2D Simulator -->
+    <include file="$(find navigator_2dsim)/launch/owl.launch" />
+
+    <!-- Run core navigator code, minus hardware -->
+    <include file="$(find navigator_launch)/launch/master.launch">
+      <arg name="simulation" value="true" />
+    </include>
+</launch>

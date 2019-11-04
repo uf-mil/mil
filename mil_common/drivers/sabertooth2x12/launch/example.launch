@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="sabertooth2x12" type="sabertooth2x12ros" name="sabertooth2x12">
+    <param name="port" value="/dev/tty0" />
+  </node>
+
+</launch>

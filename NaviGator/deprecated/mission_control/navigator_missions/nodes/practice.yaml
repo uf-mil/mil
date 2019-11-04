@@ -1,0 +1,61 @@
+# <Name of mission from nav_missions folder>:
+#   object_dep: [<name_of_object_dependency_1>, <name_of_object_dependency_2>]
+      # ! These must be names the same this as the objects used in Ira's DB !
+#   mission_dep: <name_of_mission_dependency>
+      # ! This must be a mame that is the same as another mission in this file !
+#   is_base : <boolean>
+      # ! Whether or not the mission is the mission that is run whenever nothing else can be run!
+      # If it is a base mission, it cannot have any objects dependencies or mission dependencies
+
+    
+explore:
+  marker_dep: None
+  mission_dep: None
+  is_base: True
+  points: 100
+  min_time: 1
+  weight: 2
+  looking_for: None
+
+detect_deliver:
+  marker_dep: "Shooter"
+  mission_dep: "circle_tower"
+  is_base: False
+  points: 100
+  min_time: 120
+  weight: 2
+  mission_script: "detect_deliver"
+  looking_for: None
+
+scan_the_code:
+  marker_dep: "Scan_The_Code"
+  mission_dep: None
+  is_base: False
+  points: 100
+  min_time: 120
+  weight: 2
+  mission_script: "scan_the_code"
+  looking_for: None
+
+circle_tower:
+  marker_dep: "BuoyField"
+  mission_dep: "scan_the_code"
+  is_base: False
+  points: 100
+  min_time: 120
+  weight: 2
+  mission_script: "circle_tower"
+  looking_for: None
+
+
+
+
+
+
+
+
+
+
+
+ 
+

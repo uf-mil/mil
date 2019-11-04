@@ -1,0 +1,30 @@
+<library path="src">
+  <class name="Dashboard" type="navigator_gui.Dashboard" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      RQT Dashboard to monitor onboard systems and change the control device
+    </description>
+    <qtgui>
+      <group>
+        <icon type="file">resource/mil_logo.png</icon>
+        <label>MIL</label>
+      </group>
+      <icon type="file">resource/dashboard.png</icon>
+      <label>Dashboard</label>
+      <statustip>Mike Seese, you just googled your name.</statustip>
+    </qtgui>
+  </class>
+  <class name="Shooter" type="navigator_gui.Shooter" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      RQT Dashboard to monitor and control the shooter mechanism
+    </description>
+    <qtgui>
+      <group>
+        <icon type="file">resource/mil_logo.png</icon>
+        <label>MIL</label>
+      </group>
+      <icon type="file">resource/shooter.png</icon>
+      <label>Shooter</label>
+      <statustip>I am not throwing away my shot.</statustip>
+    </qtgui>
+  </class>
+</library>

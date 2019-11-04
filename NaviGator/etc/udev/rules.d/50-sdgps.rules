@@ -1,0 +1,2 @@
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="f055", ATTRS{idProduct}=="ed4d", GROUP="sdgps", MODE="0660" # Sylphase Infix-1
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="601f", GROUP="sdgps", MODE="0660" # ugi4

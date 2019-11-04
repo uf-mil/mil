@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package>
+  <name>navigator_thrust_mapper</name>
+  <version>0.0.0</version>
+  <description>The thrust_mapper package</description>
+  <maintainer email="zachgoins@todo.todo">zachgoins</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>python_module</build_depend>
+  <run_depend>python_module</run_depend>
+  <export>
+  </export>
+</package>

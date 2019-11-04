@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <model name="base">
+    <static>true</static>
+    <pose>0 0 -0.0762 0 0 0</pose>
+    <link name="base_link">
+      <visual name="base">
+        <geometry>
+           <mesh>
+            <uri>file://scan_the_code/base.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name="panel_1">
+        <pose>-0.0195 0.124 1.601 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>.192 .01 .386</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Black</name>
+          </script>
+        </material>
+        <plugin name="model_push" filename="libanimated_box.so" />
+      </visual>
+      <visual name="panel_2">
+        <pose>-0.11 -0.03262 1.601 0 0 -1.0472</pose>
+        <geometry>
+          <box>
+            <size>.192 .01 .386</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Black</name>
+          </script>
+        </material>
+        <plugin name="model_push" filename="libanimated_box.so" />
+      </visual>
+      <visual name="panel_3">
+        <pose>0.07143 -0.03297 1.601 0 0 1.0472</pose>
+        <geometry>
+          <box>
+            <size>.192 .01 .386</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Black</name>
+          </script>
+        </material>
+        <plugin name="model_push" filename="libanimated_box.so" />
+      </visual>
+      <collision name="collision">
+        <geometry>
+           <mesh>
+            <uri>file://scan_the_code/base.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

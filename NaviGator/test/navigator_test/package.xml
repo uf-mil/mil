@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<package>
+  <name>navigator_test</name>
+  <version>0.0.0</version>
+  <description>The navigator_test package</description>
+  <maintainer email="tessbianchi@ufl.edu">Tess Bianchi</maintainer>
+  <license>MIT</license>
+  <author email="tessbianchi@ufl.edu">Tess Bianchi</author> 
+  <buildtool_depend>catkin</buildtool_depend>
+</package>

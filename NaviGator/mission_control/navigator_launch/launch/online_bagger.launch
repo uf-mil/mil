@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="mil_tools" type="online_bagger.py" name="online_bagger" output="screen">
+        <param name="stream_time" value="60" />
+    </node>
+</launch>

@@ -1,0 +1,2 @@
+use_boost          :  True
+marker_classifier  :  gentle_9tree_11depth.dic

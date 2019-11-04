@@ -1,0 +1,8 @@
+<launch>
+    <node name="sylphase_ros_driver" pkg="navigator_tools" type="sylphase_ros_driver">
+        <param name="port" value="1234" />
+        <param name="child_frame_id" value="ins" />
+        <param name="force_z_to_zero" value="False" />
+        <remap from="/odom" to="/ins_odom" />
+    </node>
+</launch>

@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>    
+    <node pkg="navigator_thrust_mapper" type="thrust_mapper.py" name="thrust_mapper" />
+</launch>

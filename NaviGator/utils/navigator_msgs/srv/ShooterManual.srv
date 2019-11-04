@@ -1,0 +1,4 @@
+float32 feeder
+float32 shooter
+---
+bool success

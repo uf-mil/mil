@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package>
+  <name>sabertooth2x12</name>
+  <version>0.0.0</version>
+  <description>ROS Driver for the Sabertooth 2x12 Motor Controller</description>
+  <maintainer email="kma1660@gmail.com">Kevin Allen</maintainer>
+  <license>TODO</license>
+  <author email="kma1660@gmail.com">Kevin Allen</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>rospy</run_depend>
+</package>

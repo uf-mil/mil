@@ -1,0 +1,7 @@
+geometry_msgs/PoseStamped pose_stamped
+float32[12] l_proj_mat
+float32[12] r_proj_mat
+geometry_msgs/Pose2D[4] l_obs_corners
+geometry_msgs/Pose2D[4] r_obs_corners
+---
+bool success
