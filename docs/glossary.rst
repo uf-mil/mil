@@ -1,6 +1,6 @@
 Glossary
 ========
-This page lists common words / acrynomys uses in MIL and robotics more generally. This should help get passed some of our jargon.
+This page lists common words / acronyms uses in MIL and robotics more generally. This should help get past some of our jargon.
 
 Some are technical while others are just insides jokes.
 
@@ -19,7 +19,7 @@ Some are technical while others are just insides jokes.
     A position (point in the world) and orientation (rotation in the world)
 
   perception
-    The program(s) which attempt to understand what is in the enviroment around a robot.
+    The program(s) which attempt to understand what is in the environment around a robot.
     Often uses cameras, lidar, radar, etc.
 
   State Estimation
@@ -28,14 +28,14 @@ Some are technical while others are just insides jokes.
     produce an estimate of the robot's :term:`pose`
 
   DVL
-    A dopler velocity log. Is used primarily in underwater
+    A Doppler velocity log. Is used primarily in underwater
     systems to measure the linear velocity of the robot.
 
   RobotX
     The :term:`AUVSI`-run competition which :term:`NaviGator` competes in
 
   NaviGator
-    An autnomous boat developed by MIL.
+    An autonomous boat developed by MIL.
 
   AUVSI
     A non-profit organization which runs several competitions which MIL participates in
@@ -56,7 +56,7 @@ Some are technical while others are just insides jokes.
     A program running on a robot. Usually performs a very specific purpose
 
   alarms
-    Global boolean state shared by many nodes, such as :term:`kill` or autonomous
+    Global Boolean state shared by many nodes, such as :term:`kill` or autonomous
 
   kill
     A global state indicating the the robot cannot move / actuate. This is largely
@@ -67,7 +67,7 @@ Some are technical while others are just insides jokes.
     Used to collect data to later play back for testing / debugging
 
   Drew Bagnell
-    An external USB harddrive used to store :term:`bag` files.
+    An external USB hard-drive used to store :term:`bag` files.
     Named after former member and legend Drew Bagnell, now CTO of Aurora Innovation
 
   root
@@ -76,7 +76,7 @@ Some are technical while others are just insides jokes.
        the root of the repository is installed to ~/catkin_ws/src/mil
 
   Food train
-    An spontanious event where people working in MIL go out somewhere to eat
+    An spontaneous event where people working in MIL go out somewhere to eat
 
   Langford
     (verb) Doing someone else's work before they complete it and without them knowing you were doing so

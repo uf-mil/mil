@@ -3,7 +3,7 @@ This guide describes how to get a local copy of the repository, make a change, a
 contribute this change back to the lab.
 
 Note this guide does not explore how to build or test changes to code (which should be done
-prior to submitting your changes). For this information, view the [Developement Guide](development_guide).
+prior to submitting your changes). For this information, view the [Development Guide](development_guide).
 
 ## Join the uf-mil github organization
 Our current workflow does not use forks, meaning in order to contribute you
@@ -51,7 +51,7 @@ Now its time to contribute! You may find these guides helpful in making and test
 Be sure to only change the files you intend to and don't add any files that aren't needed.
 
 
-## Commiting changes
+## Committing changes
 Now that you have some super awesome, well tested, well documented, and clean changes, it's time to submit them for review!
 
 You will need to provide a short description of your change when you commit it.
@@ -70,13 +70,13 @@ Follow [Github's guide for the Windows client](
 https://help.github.com/en/desktop/contributing-to-projects/committing-and-reviewing-changes-to-your-project)
 
 ## Creating a pull request
-Now that your changes have been commited, it's time to submit them to be reviewed and then merged into the repository on Github.
+Now that your changes have been committed, it's time to submit them to be reviewed and then merged into the repository on Github.
 
 Follow [Github's guide for creating pull requests](https://help.github.com/en/desktop/contributing-to-projects/creating-a-pull-request)
 
 
 ## Request and wait for review
-To ensure our code quality and robot safety, we require all code to be reviewed by atleast one developer before merging.
+To ensure our code quality and robot safety, we require all code to be reviewed by at least one developer before merging.
 If you have a friend in MIL or someone with a good knowledge of the things you changed, you can assign them as a reviewer on Github.
 If it has been a few days and no one has looked at your pull request, you can also bug people in slack. We strive for a 24hour
 turn around for the first review.
@@ -90,7 +90,7 @@ After making the requested changes, you need to commit them and push them.
 * Look at the changes you made with `git status` and `git diff`
 * Add the files you wish  to keep to staging `git add <file> <file...>` (or all files with `git add .`
 * Commit the changes with a descriptive message `git commit -m "<message>"`
-* Push your new commit to the same branch you submited your PR from `git push origin <branchname>`
+* Push your new commit to the same branch you submitted your PR from `git push origin <branchname>`
 
 Now it's time to wait for reviews again, this time hopefully you will be approved.
 
@@ -102,8 +102,8 @@ were made to the same files you changed.
 
 **Ubuntu**
 * Fetch the latest changes from upstream (this just caches them locally, not changing any of your code) `git fetch upstream`
-* Backup your current branch incase anything goes wrong during the rebase `git checkout -b <branchname>-backup` then go back to your original branch `git checkout <branchname>`
+* Backup your current branch in case anything goes wrong during the rebase `git checkout -b <branchname>-backup` then go back to your original branch `git checkout <branchname>`
 * Rebase your changes to the latest master branch `git rebase -i upstream/master`
 * This will open up your text editor with a list of the commits that will be added on top of master. Be sure to comment out (by adding `#` before the line) any commits that are not yours
-* Save and close the text editor. Git will now attempt to rebase your changes on top of the master branch. If git detects a conflcit, it will prompt you on how to manually fix them.
-* Once you have gone through the whole process and git says the rebase was succesful, push your updated branch `git push upstream -f <branchname>`. Note the `-f` which you need as you have re-written history
+* Save and close the text editor. Git will now attempt to rebase your changes on top of the master branch. If git detects a conflict, it will prompt you on how to manually fix them.
+* Once you have gone through the whole process and git says the rebase was successful, push your updated branch `git push upstream -f <branchname>`. Note the `-f` which you need as you have re-written history

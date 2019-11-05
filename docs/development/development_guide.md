@@ -24,7 +24,7 @@ You also need to give your user access to the docker group
 
 ### Alternative: run the setup scripts on your host operating system
 If you are running Ubuntu 18.04 and prefer to simply run code directly on your "host"
-operating sytem without using Docker, you can run the following scripts from the root of the repository
+operating system without using Docker, you can run the following scripts from the root of the repository
 
 `./docker/system/system_install`
 
@@ -34,7 +34,7 @@ operating sytem without using Docker, you can run the following scripts from the
 Now that you have docker installed, you must build the development container which
 you will build and test code in.
 
-From the root of the cloned repository in your *host operarating system*, run:
+From the root of the cloned repository in your *host operating system*, run:
 
 `./scripts/build_docker_containers`
 
@@ -42,9 +42,9 @@ From the root of the cloned repository in your *host operarating system*, run:
 
 This process requires internet and may take a while (up to an hour is common).
 
-##  Run the developement container
+##  Run the development container
 
-Now that the developement container is built, you can run the container.
+Now that the development container is built, you can run the container.
 
 `./scripts/run_developement_container`
 
@@ -59,7 +59,7 @@ building and testing changes within the container.
 ## Build the repository
 Now that you are inside the development container, try building the repository.
 
-We have a convienent alias for this, run `cm`
+We have a convenient alias for this, run `cm`
 
 *NOTE: If having issues building the VRX URDF due to permissions error, make sure your copy of the repo is owned by UID 1000
 
