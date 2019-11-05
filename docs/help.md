@@ -31,6 +31,8 @@ You may have noticed that these docs have a search bar. If you want
 to learn about a topic, try putting in some keywords related to your topic
 or finding a docs page in the table of contents.
 
+You may find the [Glossary](/docs/glossary) especially useful.
+
 ## Search the code (Grep)
 Perhaps the most useful command for a programmer is `grep`. Grep can search
 quickly through files for a particular pattern or string. `git grep` is an
