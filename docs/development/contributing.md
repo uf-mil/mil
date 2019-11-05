@@ -29,7 +29,13 @@ You need to clone (download) a copy of the repository onto your computer so you 
 
 **Ubuntu**
 
-First clone the upstream (MIL's fork) version of the repo:
+First clone the upstream (MIL's fork) version of the repo.
+It is recommended that you first create a catkin workspace
+and clone it into the `src` or that workspace.
+
+`mkdir -p ~/catkin_ws/src && cd ~/catkin_ws/src`
+
+Then clone the repo, being sure to pull submodules as well:
 
 `git clone --recursive https://github.com/uf-mil/mil.git`
 

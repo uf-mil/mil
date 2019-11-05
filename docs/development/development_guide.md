@@ -3,6 +3,10 @@ This page describes the recommended process of building and running code in this
 
 Note, this guide assumes you have already cloned the repository as described in the [Contributing Guide](contributing)
 
+It is also generally assumed that you are already running some modern distribution of linux
+(Ubuntu, etc). Folks have had some success on OSX, but Windows will be a real hassle.
+Things will go better if you dual boot Ubuntu (18.04) on your development machine.
+
 ## Install Docker
 It is recommended that you build and run MIL code within a Docker container.
 This process will differ depending on your host operating system, but it

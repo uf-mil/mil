@@ -1,0 +1,29 @@
+#!/bin/bash
+set -euo pipefail
+
+# Opens up a web browser
+
+# Path that ./scripts/build_docs generates
+MIL_DOCS_INDEX="/tmp/docs/html/index.html"
+
+# Check that the docs have been built locally
+if [[ ! -f "$MIL_DOCS_INDEX" ]]; then
+  echo "$MIL_DOCS_INDEX does not exist. Have you run ./scripts/build_docs ?"
+  exit
+fi
+
+# Convert path to a URL that can be opened by browser
+MIL_DOCS_URL="file://$(realpath $MIL_DOCS_INDEX)"
+
+# Try to open the program set to $BROWSER
+if [[ ! -z ${BROWSER:-} ]]; then
+  $BROWSER $MIL_DOCS_URL
+  exit
+fi
+
+# If $BROWSER wasn't set, use the default x-www-browser
+if which x-www-browser; then
+  x-www-browser $MIL_DOCS_URL
+else
+  echo "Please set \$DISPLAY to your favoriate browser"
+fi

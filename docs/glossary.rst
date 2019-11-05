@@ -2,6 +2,8 @@ Glossary
 ========
 This page lists common words / acrynomys uses in MIL and robotics more generally. This should help get passed some of our jargon.
 
+Some are technical while others are just insides jokes.
+
 
 .. glossary::
   :sorted:
@@ -17,7 +19,7 @@ This page lists common words / acrynomys uses in MIL and robotics more generally
     A position (point in the world) and orientation (rotation in the world)
 
   perception
-    The programs which determine what is in the enviroment around a robot.
+    The program(s) which attempt to understand what is in the enviroment around a robot.
     Often uses cameras, lidar, radar, etc.
 
   State Estimation
@@ -67,3 +69,19 @@ This page lists common words / acrynomys uses in MIL and robotics more generally
   Drew Bagnell
     An external USB harddrive used to store :term:`bag` files.
     Named after former member and legend Drew Bagnell, now CTO of Aurora Innovation
+
+  root
+    1. The administrator / superuser account on Linux. Has permission to do anything on the system
+    2. The top most directory or a project or the entire filesystem. For example,
+       the root of the repository is installed to ~/catkin_ws/src/mil
+
+  Food train
+    An spontanious event where people working in MIL go out somewhere to eat
+
+  Langford
+    (verb) Doing someone else's work before they complete it and without them knowing you were doing so
+
+  Feasible
+     A solution, though possibly not the best solution, to a problem.
+     In MIL, is used as a joke for a solution that technically meets
+     the criteria but does so in an unexpected or naive way

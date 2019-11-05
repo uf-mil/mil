@@ -26,8 +26,8 @@ It is important to generate the documentation website locally and view it in a w
 
 **Linux**
 
-* Generate documentation `./ci/build_docs`
-* Open the site `firefox /tmp/docs/html/index.html`
+* Generate documentation `./scripts/build_docs`
+* Open the site `./scripts/display_docs`
 
 **Windows**
 
