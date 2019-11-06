@@ -13,7 +13,7 @@ We use Slack as our primary communication platform. Our slack is [uf-mil.slack.c
 Once you're on slack, be sure to join the [#software](https://uf-mil.slack.com/messages/C6UQUU78Q) channel and introduce yourself.
 
 ## Join the Github organization
-In order to contribute code, you need to be in the [uf-mil Github organization](https://github.com/uf-mil). Ask someone in MIL / on slack to invite you.
+In order to contribute code, you need to be in the [uf-mil Github organization](https://github.com/uf-mil). First create an acount if you do not have one, then ask someone in MIL / on slack to invite you.
 
 ## Access the calendar
 We are using [this google calendar](https://calendar.google.com/calendar?cid=ajlwYjJhaGJjaXZtb2gzaTg3MTkzNGYyODhAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ) to track meetings, deadlines, etc. Please add it you
