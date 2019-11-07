@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <!-- Sets robot_description paramater to Navigator's URDF -->
 <launch>
-  <param name="robot_description" textfile="$(find navigator_gazebo)/urdf/navigator_vrx.urdf"/>
+  <param name="robot_description" command="rosrun navigator_gazebo fix_hector_plugins
+     $(find navigator_gazebo)/urdf/navigator_vrx.urdf"/>
 </launch>

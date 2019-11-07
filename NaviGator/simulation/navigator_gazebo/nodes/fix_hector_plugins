@@ -1,0 +1,38 @@
+#!/usr/bin/python2
+'''
+Fixes an URDF file which uses hector_gazebo_plugins for gps/imu.
+Beacause gazebo_ros's URDF->SDF blindly replaces link name strings with base_link, thus
+making the imu/gps plugins measure from base_link but report a different link.
+This fixes the urdf to have these sensors also be at baselink so transforms work correctly.
+Note: currently hardcoded for VRX purposes. Simply change the strings to work more genericly.
+'''
+from __future__ import print_function
+import xml.etree.ElementTree as ET
+import sys
+
+
+def set_joint_origin_to_zero(root, name):
+    tag = root.find("*[@name='{}']".format(name))
+    origin = tag.find("origin")
+    origin.set('rpy', '0 0 0')
+    origin.set('xyz', '0 0 0')
+
+
+def fix_gps(root):
+    set_joint_origin_to_zero(root, 'gps_wamv_joint')
+
+
+def fix_imu(root):
+    set_joint_origin_to_zero(root, 'imu_wamv_joint')
+
+
+def fix_file(filename):
+    tree = ET.parse(filename)
+    root = tree.getroot()
+    fix_gps(root) 
+    fix_imu(root)
+    print(ET.tostring(root))
+    
+    
+if __name__ == '__main__':
+    fix_file(sys.argv[1])
