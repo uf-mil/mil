@@ -6,7 +6,7 @@ persistant_cloud_filter_min_neighbors : 20
 persistant_cloud_filter_radius : 0.25
 
 # Clusterer
-cluster_tolerance_m : 4.4
+cluster_tolerance_m : 7.0
 cluster_min_points : 20
 cluster_max_points : 1000
 
