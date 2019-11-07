@@ -4,7 +4,8 @@ import txros
 import numpy as np
 from twisted.internet import defer
 from robot_localization.srv import FromLL, FromLLRequest
-from vrx_gazebo.msg import Task, ColorSequence
+from vrx_gazebo.msg import Task
+from vrx_gazebo.srv import ColorSequence
 from geographic_msgs.msg import GeoPoseStamped, GeoPath
 from std_msgs.msg import Float64, Float64MultiArray, String
 from navigator import Navigator
