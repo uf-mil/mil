@@ -84,6 +84,7 @@ class Navigator(BaseMission):
 
         cls._change_wrench = cls.nh.get_service_client('/wrench/select', MuxSelect)
         cls._change_trajectory = cls.nh.get_service_client('/trajectory/select', MuxSelect)
+        cls._database_query = cls.nh.get_service_client('/database/requests', ObjectDBQuery)
 
         cls.pose = None
 
@@ -141,7 +142,6 @@ class Navigator(BaseMission):
 
         try:
             cls._actuator_client = cls.nh.get_service_client('/actuator_driver/actuate', SetValve)
-            cls._database_query = cls.nh.get_service_client('/database/requests', ObjectDBQuery)
             cls._camera_database_query = cls.nh.get_service_client(
                 '/camera_database/requests', navigator_srvs.CameraDBQuery)
             cls._change_wrench = cls.nh.get_service_client('/wrench/select', MuxSelect)
