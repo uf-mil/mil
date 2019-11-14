@@ -24,6 +24,7 @@ void Object::update_msg()
   msg_.classification = "UNKNOWN";
   msg_.header.frame_id = "enu";
   msg_.header.stamp = ros::Time();
+  msg_.points.clear();
 
   if (points_.empty())
     return;
