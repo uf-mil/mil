@@ -93,13 +93,15 @@ mil_system_install \
   ros-melodic-teleop-tools \
   ros-melodic-teleop-twist-keyboard \
   python-pip
-pip install \
+sudo pip install \
   tqdm \
-  scipy
+  scipy \
+  sklearn \
+  pandas
 
 # Documentation dependencies
 mil_system_install python3-pip
-pip3 install -q \
+sudo pip3 install -q \
   sphinx \
   recommonmark \
   sphinx_rtd_theme
