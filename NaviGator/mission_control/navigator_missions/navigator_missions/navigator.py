@@ -12,7 +12,7 @@ import mil_tools
 from ros_alarms import TxAlarmListener
 from navigator_path_planner.msg import MoveAction, MoveGoal
 from nav_msgs.msg import Odometry
-from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
+from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped, PointStamped
 import navigator_msgs.srv as navigator_srvs
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
@@ -85,7 +85,6 @@ class Navigator(BaseMission):
         cls._change_wrench = cls.nh.get_service_client('/wrench/select', MuxSelect)
         cls._change_trajectory = cls.nh.get_service_client('/trajectory/select', MuxSelect)
         cls._database_query = cls.nh.get_service_client('/database/requests', ObjectDBQuery)
-        cls._reset_pcodar = cls.nh.get_service_client('/pcodar/reset', Trigger)
 
         cls.pose = None
 
@@ -100,9 +99,10 @@ class Navigator(BaseMission):
 
     @classmethod
     def _init_vrx(cls):
-         cls.killed = False
-         cls.odom_loss = False
-         cls.set_vrx_classifier_enabled = cls.nh.get_service_client('/vrx_classifier/set_enabled', SetBool)
+        cls.killed = False
+        cls.odom_loss = False
+        cls.tf_listener = tf.TransformListener(cls.nh)
+        cls.set_vrx_classifier_enabled = cls.nh.get_service_client('/vrx_classifier/set_enabled', SetBool)
 
     @classmethod
     @util.cancellableInlineCallbacks
@@ -175,12 +175,6 @@ class Navigator(BaseMission):
             yield defer.gatherResults([odom, enu_odom])  # Wait for all those to finish
 
         cls.docking_scan = 'NA'
-
-    @classmethod
-    @util.cancellableInlineCallbacks
-    def reset_pcodar(cls):
-        res = yield cls._reset_pcodar(TriggerRequest())
-        defer.returnValue(res)
 
     @classmethod
     def _grinch_limit_switch_cb(cls, data):

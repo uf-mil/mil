@@ -9,7 +9,7 @@ from vrx_gazebo.srv import ColorSequence
 from geographic_msgs.msg import GeoPoseStamped, GeoPath
 from std_msgs.msg import Float64, Float64MultiArray, String
 from navigator_missions import Navigator
-from mil_tools import rosmsg_to_numpy, numpy_to_point
+from mil_tools import rosmsg_to_numpy
 
 ___author___ = "Kevin Allen"
 
@@ -85,4 +85,6 @@ class Vrx(Navigator):
             yield self.run_submission('VrxNavigation')
         elif task_name == 'perception':
             yield self.run_submission('VrxPerception')
+        elif task_name == 'scan_and_dock':
+            yield self.run_submission('ScanTheCode')
         defer.returnValue(msg)

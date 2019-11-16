@@ -5,3 +5,4 @@ from vrx_navigation import VrxNavigation
 from vrx_wayfinding import VrxWayfinding
 from vrx_station_keeping import VrxStationKeeping
 from vrx_perception import VrxPerception
+from scan_the_code import ScanTheCode
