@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <node pkg="mil_missions" type="mission_server" name="mission_runner">
+    <node pkg="mil_missions" type="mission_server" name="mission_runner" output="screen">
         <param name="missions_module" value="vrx_missions" />
         <param name="base_mission" value="Navigator" />
     </node>
