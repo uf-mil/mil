@@ -48,12 +48,12 @@ class VrxClassifier(object):
         self.last_objects = None
         self.last_update_time = rospy.Time.now()
         self.objects_sub = rospy.Subscriber('/pcodar/objects', PerceptionObjectArray, self.process_objects, queue_size=2)
-        self.enabled = True
         self.enabled_srv = rospy.Service('~set_enabled', SetBool, self.set_enable_srv)
 
     @thread_lock(lock)
     def set_enable_srv(self, req):
         self.enabled = req.data
+        return {'success': True}
 
     def in_frame(self, pixel):
         # TODO: < or <= ???
@@ -164,8 +164,8 @@ class VrxClassifier(object):
             debug = cv2.bitwise_or(debug, colorful)
             scale = 3
             thickness = 2
-            center = np.array(pixel_centers[object_id], dtype=int)
-            text = str(self.last_objects.objects[object_id].id)
+            center = np.array(pixel_centers[index], dtype=int)
+            text = str(object_id)
             putText_ul(debug, text, center, fontScale=scale, thickness=thickness)
         '''
         if len(training) != 0:
