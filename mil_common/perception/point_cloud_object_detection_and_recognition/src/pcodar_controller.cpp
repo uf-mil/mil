@@ -112,12 +112,15 @@ Node::Node(ros::NodeHandle _nh) : NodeBase(_nh)
 {
   config_server_.setCallback(std::bind(&Node::ConfigCallback, this, std::placeholders::_1, std::placeholders::_2));
 
-  // TODO: pull from params
+  // TODO: pull from params (currently misleading)
+  // Currently based on WAMv in VRX, inflated x 1.2 for safety factor
+  const double HALF_LENGTH = 2.739625 * 1.2;
+  const double HALF_WIDTH = 2.02589 * 1.2;
   point_cloud robot_footprint;
-  robot_footprint.push_back(point_t(2.739625, 2.02589, 0.));
-  robot_footprint.push_back(point_t(2.739625, -2.02589, 0.));
-  robot_footprint.push_back(point_t(-2.739625, -2.02589, 0.));
-  robot_footprint.push_back(point_t(-2.739625, 2.02589, 0.));
+  robot_footprint.push_back(point_t(HALF_LENGTH, HALF_WIDTH, 0.));
+  robot_footprint.push_back(point_t(HALF_LENGTH, -HALF_WIDTH, 0.));
+  robot_footprint.push_back(point_t(-HALF_LENGTH, -HALF_WIDTH, 0.));
+  robot_footprint.push_back(point_t(-HALF_LENGTH, HALF_WIDTH, 0.));
   // Give the filter the footprint of the robot to remove from pointcloud
   input_cloud_filter_.set_robot_footprint(robot_footprint);
 }
