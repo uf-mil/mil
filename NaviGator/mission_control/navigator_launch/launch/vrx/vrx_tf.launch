@@ -16,5 +16,5 @@
   <!-- We still do not know the actual cause of this issue (likely upstream). This fix has its own issue, as each point will be offset -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="lidar_bug_fix" args="0 0 0 0 0 0 1 lidar_wamv_link wamv/lidar_wamv_link" />
   <node pkg="tf2_ros" type="static_transform_publisher" name="right_camera_optical" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 front_right_camera_link front_right_camera_link_optical" />
-
+  <node pkg="tf2_ros" type="static_transform_publisher" name="left_camera_optical" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 front_left_camera_link front_left_camera_link_optical" />
 </launch>
