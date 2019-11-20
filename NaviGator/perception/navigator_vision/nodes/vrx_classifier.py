@@ -134,7 +134,9 @@ class VrxClassifier(object):
                   for i in met_criteria]
         debug = np.zeros(img.shape, dtype=img.dtype)
 
-        # training = []
+        IS_TRANING = False
+        if IS_TRAINING:
+            training = []
 
         for i in xrange(len(rois)):
             index = met_criteria[i]
@@ -156,8 +158,11 @@ class VrxClassifier(object):
             if object_msg.labeled_classification != most_likely_name:
                 cmd = '{}={}'.format(object_id, most_likely_name)
                 rospy.loginfo('Updating object {} to {}'.format(object_id, most_likely_name))
-                self.database_client(ObjectDBQueryRequest(cmd=cmd))
-              #training.append(np.append(index, features))
+                if not IS_TRAINING:
+                    self.database_client(ObjectDBQueryRequest(cmd=cmd))
+            if IS_TRAINING and obj_title != 'UNKNOWN':
+                classification_index = self.classifier.CLASSES.index(obj_title)
+                training.append(np.append(classification_index, features))
 
             # Draw debug info
             colorful = cv2.bitwise_or(img, img, mask=mask)
@@ -167,8 +172,8 @@ class VrxClassifier(object):
             center = np.array(pixel_centers[index], dtype=int)
             text = str(object_id)
             putText_ul(debug, text, center, fontScale=scale, thickness=thickness)
-        '''
-        if len(training) != 0:
+
+        if IS_TRAININGlen(training) != 0:
            training = np.array(training)
            try:
                previous_data = pandas.DataFrame.from_csv(self.classifier.training_file).values
@@ -178,8 +183,7 @@ class VrxClassifier(object):
            self.classifier.save_csv(data[:, 1:], data[:, 0])
            rospy.signal_shutdown('fdfd')
            raise Exception('did something, kev')
-        '''
-        #print training
+
         self.image_mux[0] = img
         self.image_mux[1] = debug 
         self.debug_pub.publish(self.image_mux())
