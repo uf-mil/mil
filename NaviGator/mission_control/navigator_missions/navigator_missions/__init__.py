@@ -38,5 +38,4 @@ from detect_deliver import DetectDeliver
 from discount_docking import DiscountDocking
 from docking import Docking
 from shoot_balls import ShootBalls
-from vrx import Vrx
 import pose_editor
