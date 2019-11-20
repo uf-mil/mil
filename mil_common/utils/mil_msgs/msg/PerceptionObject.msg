@@ -1,10 +1,10 @@
 # Time stamp and frame of the object. All objects are in ENU frame.
 std_msgs/Header header
 
-# The classification of the object determined algorithmically. The labeled_classification field will be the
-# same as classification field, as long as the user did not intervene and change the object name. In which case 
-# the user provided classification will be used for that objectid until batcave(?) is restarted. 
+# CURRENTLY UNUSED, see labeled_classification
 string classification
+
+# The classification of the object determined algorithmically or by a human.
 string labeled_classification
 
 # Pose of the object in ENU
