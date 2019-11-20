@@ -16,6 +16,7 @@ from tf.transformations import quaternion_matrix
 from mil_tools import thread_lock
 from threading import Lock
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+from std_srvs.srv import SetBool
 import pandas
 
 lock = Lock()
@@ -48,6 +49,11 @@ class VrxClassifier(object):
         self.last_update_time = rospy.Time.now()
         self.objects_sub = rospy.Subscriber('/pcodar/objects', PerceptionObjectArray, self.process_objects, queue_size=2)
         self.enabled = True
+        self.enabled_srv = rospy.Service('~set_enabled', SetBool, self.set_enable_srv)
+
+    @thread_lock(lock)
+    def set_enable_srv(self, req):
+        self.enabled = req.data
 
     def in_frame(self, pixel):
         # TODO: < or <= ???
@@ -93,7 +99,7 @@ class VrxClassifier(object):
             return
         if self.camera_model is None:
             return
-        if self.last_objects is None:
+        if self.last_objects is None or len(self.last_objects.objects) == 0:
             return
         now = rospy.Time.now()
         if now - self.last_update_time < self.update_period:
