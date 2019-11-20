@@ -134,7 +134,7 @@ class VrxClassifier(object):
                   for i in met_criteria]
         debug = np.zeros(img.shape, dtype=img.dtype)
 
-        IS_TRANING = False
+        IS_TRAINING = False
         if IS_TRAINING:
             training = []
 
@@ -173,7 +173,7 @@ class VrxClassifier(object):
             text = str(object_id)
             putText_ul(debug, text, center, fontScale=scale, thickness=thickness)
 
-        if IS_TRAININGlen(training) != 0:
+        if IS_TRAINING and len(training) != 0:
            training = np.array(training)
            try:
                previous_data = pandas.DataFrame.from_csv(self.classifier.training_file).values
