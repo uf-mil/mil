@@ -6,12 +6,15 @@ from twisted.internet import defer
 from vrx import Vrx
 from mil_tools import rosmsg_to_numpy
 from geographic_msgs.msg import GeoPoseStamped
+from std_srvs.srv import TriggerRequest, SetBoolRequest
+from genpy import Duration
 
 ___author___ = "Kevin Allen"
 
 
 class VrxPerception(Vrx):
     def __init__(self, *args, **kwargs):
+        self.announced = set()
         super(VrxPerception, self).__init__(*args, **kwargs)
 
     @txros.util.cancellableInlineCallbacks
@@ -36,6 +39,8 @@ class VrxPerception(Vrx):
         if classification == 'UNKNOWN': 
             print 'Ignoing UNKNOWN object {}'.format(obj_id)
             defer.returnValue(False)
+        if obj_id in self.announced:
+            defer.returnValue(False)
         geo_point = yield self.enu_position_to_geo_point(position_enu)
         msg = GeoPoseStamped()
         msg.header.frame_id = classification
@@ -45,11 +50,27 @@ class VrxPerception(Vrx):
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
-        print 'perception'
         yield self.wait_for_task_such_that(lambda task: task.state in ['running'])
+        yield self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
         objects = {}
+        # Making assumptions about vrx. That the first object appears at 5 seconds,
+        # each object lasts for 5 secodns, and a new one appears 10 seconds after the previous appeared
+        next_reset = Duration.from_sec(5.0)
+        next_start = Duration.from_sec(1E5)
+        next_stop = Duration.from_sec(0)
         while True:
-            msg = yield self.task_info_sub.get_next_message()
+            task_info = yield self.task_info_sub.get_next_message()
+            elapsed_time = task_info.elapsed_time
+            if elapsed_time > next_reset:
+                self.send_feedback('Resetting PCODAR')
+                next_start = next_reset + Duration.from_sec(1.0)
+                next_stop = next_reset + Duration.from_sec(4.5)
+                next_reset += Duration.from_sec(10.0)
+                self.announced = set()
+                yield self.reset_pcodar()
+            if elapsed_time < next_start or elapsed_time > next_stop:
+                yield self.nh.sleep(0.1)
+                continue
             new_objects, positions = yield self.get_object_map()
             for key in new_objects:
                 if key not in objects:
