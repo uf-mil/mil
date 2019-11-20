@@ -3,13 +3,13 @@ from __future__ import division
 import txros
 import numpy as np
 from twisted.internet import defer
-from robot_localization.srv import FromLL, FromLLRequest
+from robot_localization.srv import FromLL, FromLLRequest, ToLL, ToLLRequest
 from vrx_gazebo.msg import Task
 from vrx_gazebo.srv import ColorSequence
 from geographic_msgs.msg import GeoPoseStamped, GeoPath
 from std_msgs.msg import Float64, Float64MultiArray, String
 from navigator_missions import Navigator
-from mil_tools import rosmsg_to_numpy
+from mil_tools import rosmsg_to_numpy, numpy_to_point
 
 ___author___ = "Kevin Allen"
 
@@ -23,6 +23,7 @@ class Vrx(Navigator):
         if hasattr(cls, '_vrx_init'):
             return
         cls.from_lla = cls.nh.get_service_client("/fromLL", FromLL)
+        cls.to_lla = cls.nh.get_service_client("/toLL", ToLL)
         cls.task_info_sub = cls.nh.subscribe("/vrx/task/info", Task)
         cls.scan_dock_color_sequence = cls.nh.get_service_client("/vrx/scan_dock/color_sequence", ColorSequence)
         cls.station_keep_goal = cls.nh.subscribe("/vrx/station_keeping/goal", GeoPoseStamped)
@@ -46,6 +47,12 @@ class Vrx(Navigator):
         position_enu = rosmsg_to_numpy(enu_msg.map_point)
         orientation_enu = rosmsg_to_numpy(geo.orientation)
         defer.returnValue((position_enu, orientation_enu))
+
+    @txros.util.cancellableInlineCallbacks
+    def enu_position_to_geo_point(self, enu_array):
+        self.send_feedback('Waiting for LLA conversion')
+        lla_msg = yield self.to_lla(ToLLRequest(map_point=numpy_to_point(enu_array)))
+        defer.returnValue(lla_msg.ll_point)
 
     @txros.util.cancellableInlineCallbacks
     def get_latching_msg(self, sub):

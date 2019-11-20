@@ -25,4 +25,4 @@ class VrxWayfinding(Vrx):
         yield self.wait_for_task_such_that(lambda task: task.state in ['running'])
         for pose in poses:
             self.send_feedback('Gong to {}'.format(pose))
-            yield self.move.set_position(pose[0]).set_orientation(pose[1]).go()
+            yield self.move.set_position(pose[0]).set_orientation(pose[1]).go(blind=True)

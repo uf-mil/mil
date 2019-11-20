@@ -74,6 +74,8 @@ class MissionRunner(object):
             return
         feedback = DoMissionFeedback()
         feedback.message = message
+        # Also print it out
+        print message
         self.server.publish_feedback(feedback)
 
     def do_new_mission(self):
