@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!--
+    Launches the gazebo simulator and all the same master.launch used on the real platform.
+-->
+<launch>
+    <node pkg="navigator_vision" type="vrx_classifier.py" name="vrx_classifier">
+        <param name="debug" value="True" />
+        <param name="image_topic" value="/wamv/sensors/cameras/front_left_camera/image_raw" />
+    </node>
+</launch>

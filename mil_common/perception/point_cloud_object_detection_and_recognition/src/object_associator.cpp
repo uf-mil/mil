@@ -16,6 +16,14 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
     }
   }
 
+  /* TODO
+   * TREE-IFY each
+   * pcl::registration::CorrespondenceEstimation to find point closeness
+   * pcl::registration::CorrespondenceRejectorTrimmed to just look for cloest points
+   * if one new cluster matches to multiple old clusters -> merge old clusters
+   * if one old cluster matches to multiple new clusters -> split old clusters
+   */
+
   pcl::search::Octree<point_t> search(0.01);
   for (cluster_t const& cluster : clusters)
   {
