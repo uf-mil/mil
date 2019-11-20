@@ -3,4 +3,12 @@
 <launch>
   <param name="robot_description" command="rosrun navigator_gazebo fix_hector_plugins
      $(find navigator_gazebo)/urdf/navigator_vrx.urdf"/>
+  <rosparam param="robot_footprint">
+    # 16 ft length = 4.8768 meters. /2 = 2.4384
+    # 8ft width = 2.4384. /2 = 1.2192
+    [[2.739625, 2.02589],
+     [2.739625, -2.02589],
+     [-2.739625, -2.02589],
+     [-2.739625, 2.02589]]
+  </rosparam>
 </launch>
