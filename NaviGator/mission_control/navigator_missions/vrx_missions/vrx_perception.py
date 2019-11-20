@@ -26,7 +26,7 @@ class VrxPerception(Vrx):
         ret = {}
         positions = {}
         for obj in current_objects_msg:
-            classification = obj.labeled_classification if obj.labeled_classification != '' else obj.classification
+            classification = obj.labeled_classification
             ret[obj.id] = classification
             positions[obj.id] = rosmsg_to_numpy(obj.pose.position)
         defer.returnValue((ret, positions))
