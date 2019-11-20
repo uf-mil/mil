@@ -114,10 +114,10 @@ Node::Node(ros::NodeHandle _nh) : NodeBase(_nh)
 
   // TODO: pull from params
   point_cloud robot_footprint;
-  robot_footprint.push_back(point_t(2.4384, 1.2192, 0.));
-  robot_footprint.push_back(point_t(2.4384, -1.2192, 0.));
-  robot_footprint.push_back(point_t(-2.4384, -1.2192, 0.));
-  robot_footprint.push_back(point_t(-2.4384, 1.2192, 0.));
+  robot_footprint.push_back(point_t(2.739625, 2.02589, 0.));
+  robot_footprint.push_back(point_t(2.739625, -2.02589, 0.));
+  robot_footprint.push_back(point_t(-2.739625, -2.02589, 0.));
+  robot_footprint.push_back(point_t(-2.739625, 2.02589, 0.));
   // Give the filter the footprint of the robot to remove from pointcloud
   input_cloud_filter_.set_robot_footprint(robot_footprint);
 }
