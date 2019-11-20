@@ -23,7 +23,7 @@ public:
   /// TODO: make private and provide function interfaces
   std::unordered_map<uint, Object> objects_;
   /// Add a new object by its pointcloud, given it a new unique id
-  void add_object(point_cloud pc);
+  void add_object(point_cloud_ptr const& pc);
   /// The id that will be assigned to the next new object, starting at 0
   size_t highest_id_;
 };

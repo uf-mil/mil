@@ -62,7 +62,8 @@ void PCODARGazebo::UpdateEntity(gazebo::physics::EntityPtr _entity)
   int id = _entity->GetId();
 
   // Create an object message for this entity
-  pcodar::Object object = pcodar::Object(pcodar::point_cloud());
+  auto cloud = boost::make_shared<pcodar::point_cloud>();
+  pcodar::Object object = pcodar::Object(cloud, 0);
   object.msg_.labeled_classification = (*it).second;
 
   // Get pose and bounding box for object
@@ -77,10 +78,13 @@ void PCODARGazebo::UpdateEntity(gazebo::physics::EntityPtr _entity)
 
   // Add or update object
   auto existing_object = pcodar_->objects_->objects_.find(id);
-  if (existing_object == pcodar_->objects_->objects_.end())
+  if (existing_object == pcodar_->objects_->objects_.end()) {
+    object.set_id(id);
     pcodar_->objects_->objects_.insert({ id, object });
-  else
+  } else {
+    object.set_id((*existing_object).first);
     (*existing_object).second = object;
+  }
 }
 
 void PCODARGazebo::GazeboPoseToRosMsg(ignition::math::Pose3d const& in, geometry_msgs::Pose& out)

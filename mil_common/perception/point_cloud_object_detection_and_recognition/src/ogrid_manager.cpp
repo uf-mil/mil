@@ -55,16 +55,17 @@ void OgridManager::update_ogrid(ObjectMap const& objects)
   for (auto const& pair : objects.objects_)
   {
     Object const& object = pair.second;
+    mil_msgs::PerceptionObject const& msg = object.as_msg();
 
     // In simulation, use bounding box
-    if (object.points_.empty())
+    if (object.get_points().empty())
     {
-      tf2::Quaternion quat(object.msg_.pose.orientation.x, object.msg_.pose.orientation.y,
-                           object.msg_.pose.orientation.z, object.msg_.pose.orientation.w);
+      tf2::Quaternion quat(msg.pose.orientation.x, msg.pose.orientation.y,
+                           msg.pose.orientation.z, msg.pose.orientation.w);
       double pitch, roll, yaw;
       tf2::getEulerYPR(quat, yaw, pitch, roll);
-      cv::RotatedRect rect(cv::Point2f(object.msg_.pose.position.x, object.msg_.pose.position.y),
-                           cv::Size2f(object.msg_.scale.x, object.msg_.scale.y), yaw);
+      cv::RotatedRect rect(cv::Point2f(msg.pose.position.x, msg.pose.position.y),
+                           cv::Size2f(msg.scale.x, msg.scale.y), yaw);
       cv::Point2f vertices[4];
       cv::Point vertices_fixed[4];
       rect.points(vertices);
@@ -76,7 +77,7 @@ void OgridManager::update_ogrid(ObjectMap const& objects)
     // Otherwise draw individual points
     else
     {
-      for (const auto& point : object.points_)
+      for (const auto& point : object.get_points())
       {
         cv::Point center(point_in_ogrid(point));
         cv::circle(ogrid_mat_, center, inflation_cells_, cv::Scalar(99), -1);

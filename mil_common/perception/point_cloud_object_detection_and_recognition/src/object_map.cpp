@@ -10,17 +10,18 @@ ObjectMap::ObjectMap() : highest_id_(0)
 mil_msgs::PerceptionObjectArray ObjectMap::to_msg()
 {
   mil_msgs::PerceptionObjectArray msg;
+  msg.objects.reserve(objects_.size());
   for (auto& pair : objects_)
   {
-    pair.second.msg_.id = pair.first;
-    msg.objects.push_back(pair.second.msg_);
+    msg.objects.push_back(pair.second.as_msg());
   }
   return msg;
 }
 
-void ObjectMap::add_object(point_cloud pc)
+void ObjectMap::add_object(point_cloud_ptr const& pc)
 {
-  objects_.insert({ highest_id_++, Object(pc) });
+  auto id = highest_id_++;
+  objects_.insert({id, Object(pc, id) });
 }
 
 bool ObjectMap::DatabaseQuery(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::ObjectDBQuery::Response& res)
@@ -75,7 +76,7 @@ bool ObjectMap::DatabaseQuery(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::O
     }
     else
     {
-      it->second.msg_.labeled_classification = cmd;
+      it->second.set_classification(cmd);
       res.found = true;
     }
     return true;
@@ -93,10 +94,10 @@ bool ObjectMap::DatabaseQuery(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::O
   res.found = false;
   for (auto const& pair : objects_)
   {
-    if (pair.second.msg_.labeled_classification == req.name)
+    if (pair.second.as_msg().labeled_classification == req.name)
     {
       res.found = true;
-      res.objects.push_back(pair.second.msg_);
+      res.objects.emplace_back(pair.second.as_msg());
     }
   }
 

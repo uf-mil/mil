@@ -40,7 +40,7 @@ void MarkerManager::feedbackCb(const visualization_msgs::InteractiveMarkerFeedba
     return;
 
   // Update the classification
-  (*it).second.msg_.labeled_classification = new_classification;
+  (*it).second.set_classification(new_classification);
 }
 
 void MarkerManager::update_interactive_marker(mil_msgs::PerceptionObject const& object)
@@ -131,7 +131,7 @@ void MarkerManager::update_markers()
   // Update / add markers for each object in database
   for (const auto& pair : objects_->objects_)
   {
-    mil_msgs::PerceptionObject const& msg = pair.second.msg_;
+    mil_msgs::PerceptionObject const& msg = pair.second.as_msg();
     update_interactive_marker(msg);
   }
 

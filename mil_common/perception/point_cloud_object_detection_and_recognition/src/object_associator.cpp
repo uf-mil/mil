@@ -7,14 +7,18 @@ namespace pcodar
 {
 void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clusters_t clusters)
 {
+/* Not needed?
   if (prev_objects.objects_.empty())
   {
     for (cluster_t const& cluster : clusters)
     {
+    point_cloud_ptr cluster_pc = boost::make_shared<point_cloud>(pc, cluster.indices);
+
       point_cloud cluster_pc(pc, cluster.indices);
       prev_objects.add_object(cluster_pc);
     }
   }
+*/
 
   /* TODO
    * TREE-IFY each
@@ -35,7 +39,7 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
     {
       int index = 0;
       float distance = 0.;
-      search.approxNearestSearch((*pair).second.center_, index, distance);
+      search.approxNearestSearch((*pair).second.get_center(), index, distance);
       // Search returns squared distance, so sqrt it here
       distance = sqrt(distance);
       if (distance < min && distance < max_distance_)
@@ -48,11 +52,11 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
     if (it == prev_objects.objects_.end())
     {
       // Add to object
-      prev_objects.add_object(*cluster_pc);
+      prev_objects.add_object(cluster_pc);
     }
     else
     {
-      (*it).second.update_points(*cluster_pc);
+      (*it).second.update_points(cluster_pc);
     }
   }
 }
