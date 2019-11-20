@@ -15,6 +15,7 @@ from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from tf.transformations import quaternion_matrix
 from mil_tools import thread_lock
 from threading import Lock
+from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 import pandas
 
 lock = Lock()
@@ -34,6 +35,7 @@ class VrxClassifier(object):
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
         self.get_params()
         self.last_panel_points_msg = None
+        self.database_client = rospy.ServiceProxy('/database/requests', ObjectDBQuery)
         self.sub = Image_Subscriber(self.image_topic, self.img_cb)
         self.camera_info = self.sub.wait_for_camera_info()
         self.camera_model = PinholeCameraModel()
@@ -43,6 +45,7 @@ class VrxClassifier(object):
                                       labels=['Result', 'Mask'])
             self.debug_pub = Image_Publisher('~debug_image')
         self.last_objects = None
+        self.last_update_time = rospy.Time.now()
         self.objects_sub = rospy.Subscriber('/pcodar/objects', PerceptionObjectArray, self.process_objects, queue_size=2)
         self.enabled = True
 
@@ -50,6 +53,7 @@ class VrxClassifier(object):
         # TODO: < or <= ???
         return pixel[0] > 0 and pixel[0] < self.camera_info.width and pixel[1] > 0 and pixel[1] < self.camera_info.height
 
+    @thread_lock(lock)
     def process_objects(self, msg):
         self.last_objects = msg
 
@@ -60,6 +64,7 @@ class VrxClassifier(object):
         '''
         self.debug = rospy.get_param('~debug', True)
         self.image_topic = rospy.get_param('~image_topic', '/camera/starboard/image_rect_color')
+        self.update_period = rospy.Duration(1.0 / rospy.get_param('~update_hz', 1))
         self.classifier = VrxColorClassifier()
         self.classifier.train_from_csv()
 
@@ -90,6 +95,10 @@ class VrxClassifier(object):
             return
         if self.last_objects is None:
             return
+        now = rospy.Time.now()
+        if now - self.last_update_time < self.update_period:
+            return
+        self.last_update_time = now
         # Get Transform from ENU to optical at the time of this image
         transform = self.tf_buffer.lookup_transform(
             self.sub.last_image_header.frame_id,
@@ -111,9 +120,9 @@ class VrxClassifier(object):
         met_criteria = []
         for i in xrange(len(self.last_objects.objects)):
             distance = distances[i]
-            if self.in_frame(pixel_centers[i]) and distance < CUTOFF_METERS:
+            if self.in_frame(pixel_centers[i]) and distance < CUTOFF_METERS and positions_camera[i][2] > 0:
                 met_criteria.append(i)
-        print 'Keeping {} of {}'.format(len(met_criteria), len(self.last_objects.objects))
+        # print 'Keeping {} of {}'.format(len(met_criteria), len(self.last_objects.objects))
 
         rois = [self.get_object_roi(translation, rotation_mat, self.last_objects.objects[i])
                   for i in met_criteria]
@@ -122,7 +131,9 @@ class VrxClassifier(object):
         # training = []
 
         for i in xrange(len(rois)):
-            object_id = met_criteria[i]
+            index = met_criteria[i]
+            object_msg = self.last_objects.objects[index]
+            object_id = object_msg.id
             if rois[i] is None:
                 rospy.logwarn('Object {} had no points, skipping'.format(object_id))
                 continue
@@ -130,14 +141,16 @@ class VrxClassifier(object):
             # Create image mask of just the object
             mask = contour_mask(contour, img_shape=img.shape)
             features = np.array(self.classifier.get_features(img, mask)).reshape(1, 9)
-            class_probabilities = self.classifier.feature_probabilities(features)
+            class_probabilities = self.classifier.feature_probabilities(features)[0]
             most_likely_index = np.argmax(class_probabilities)
             most_likely_name = self.classifier.CLASSES[most_likely_index]
-            obj_title = self.last_objects.objects[object_id].labeled_classification
-            print '{} ({}): {} {}'.format(obj_title, object_id, class_probabilities, most_likely_name)
-            if obj_title != 'UNKNOWN':
-              index = self.classifier.CLASSES.index(obj_title)
-              print 'Classified as {}, is {}'.format(most_likely_name, obj_title)
+            probability = class_probabilities[most_likely_index]
+            obj_title = object_msg.labeled_classification
+            rospy.loginfo('Object {} {} classified as {} ({}%)'.format(object_id, object_msg.labeled_classification, most_likely_name, probability * 100.))
+            if object_msg.labeled_classification != most_likely_name:
+                cmd = '{}={}'.format(object_id, most_likely_name)
+                rospy.loginfo('Updating object {} to {}'.format(object_id, most_likely_name))
+                self.database_client(ObjectDBQueryRequest(cmd=cmd))
               #training.append(np.append(index, features))
 
             # Draw debug info
@@ -165,36 +178,6 @@ class VrxClassifier(object):
         self.image_mux[1] = debug 
         self.debug_pub.publish(self.image_mux())
         return
-
-
-            
-        if bbox is not None:
-            bbox = np.array(bbox, dtype=int)
-            debug = contour_mask(bbox, img_shape=img.shape)
-            prediction = self.classifier.classify(img, debug)[0]
-            label = self.classifier.CLASSES[prediction]
-            symbol = label[10]
-            if len(self.classification_list) == 0 or self.classification_list[-1] != symbol:
-                if len(self.classification_list) >= 5:
-                    self.classification_list.popleft()
-                self.classification_list.append(symbol)
-            text = label + ' | ' + ''.join(self.classification_list)
-            scale = 3
-            thickness = 2
-            putText_ul(debug, text, (0, 0), fontScale=scale, thickness=thickness)
-            rospy.loginfo('saw {},  running {}'.format(symbol, text))
-            debug = cv2.bitwise_or(img, img, mask=debug)
-            self.image_mux[1] = debug
-            if len(self.classification_list) == 5 and self.classification_list[0] == 'o' \
-               and self.classification_list[4] == 'o' and self.classification_list[1] != 'o' \
-               and self.classification_list[2] != 'o' and self.classification_list[3] != 'o':
-                pattern = \
-                    (self.classification_list[1] + self.classification_list[2] + self.classification_list[3]).upper()
-                rospy.loginfo('SAW PATTERN {}!!!!!!!!!!!'.format(pattern))
-                self.pattern_pub.publish(ScanTheCode(color_pattern=pattern))
-        self.image_mux[0] = img
-        if self.debug:
-            self.debug_pub.publish(self.image_mux())
 
 
 if __name__ == '__main__':
