@@ -51,6 +51,8 @@ Now that the development container is built, you can run the container.
 This will open a shell into a Ubuntu instance where you can build and test the
 code in this repository (including your changes!).
 
+*Note: if you are not user 1000 on the host machine, you will need to first run `./fix_ownership_for_docker` from the host machine*
+
 Note that the clone of the repository from your host system is mounted into the container,
 so changes to the code in your host system are also changed in the container and visa-versa.
 This allows you to modify your code in your editor of choice on your host system while
