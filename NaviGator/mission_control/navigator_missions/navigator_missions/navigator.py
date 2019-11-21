@@ -26,6 +26,7 @@ from mil_poi import TxPOIClient
 from roboteq_msgs.msg import Command
 from std_msgs.msg import Bool
 from dynamic_reconfigure.srv import Reconfigure, ReconfigureRequest
+from dynamic_reconfigure.msg import Config
 
 
 class MissionResult(object):
@@ -184,6 +185,12 @@ class Navigator(BaseMission):
     def reset_pcodar(cls):
         res = yield cls._reset_pcodar(TriggerRequest())
         defer.returnValue(res)
+
+    @classmethod
+    @util.cancellableInlineCallbacks
+    def pcodar_set_params(self, **kwargs):
+        result = yield self._pcodar_set_params(ReconfigureRequest(Config(**kwargs)))
+        defer.returnValue(result)
 
     @classmethod
     def _grinch_limit_switch_cb(cls, data):
@@ -372,11 +379,6 @@ class Navigator(BaseMission):
         req = SetValveRequest(actuator=name, opened=state)
         return self._actuator_client(req)
 
-    @classmethod
-    @util.cancellableInlineCallbacks
-    def pcodar_set_params(self, **kwargs):
-        result = yield self._pcodar_set_params(ReconfigureRequest(**kwargs))
-        defer.returnValue(result)
 
     @util.cancellableInlineCallbacks
     def get_sorted_objects(self, name, n=-1, throw=True, **kwargs):

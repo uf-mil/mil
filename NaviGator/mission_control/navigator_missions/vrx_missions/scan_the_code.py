@@ -15,7 +15,7 @@ from cv_bridge import CvBridge
 from cv2 import bitwise_and
 from vrx_gazebo.srv import ColorSequenceRequest, ColorSequence
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
-
+from dynamic_reconfigure.msg import DoubleParameter
 
 LED_PANNEL_MAX  = 0.25
 LED_PANNEL_MIN = 0.6
@@ -55,78 +55,47 @@ class ScanTheCode(Vrx):
         self.camera_model.fromCameraInfo(info)
 
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
-        # see if we got scan the code tower
-        try:
-            _, pose = yield self.get_sorted_objects(name='stc_platform', n=1)
-            pose = pose[0]
-        except Exception as e:
-            try:
-                _, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
-            except Exception as e:
-                yield self.move.forward(20).go()
-                _, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
-            # go to avg of those objs to get better data on those points
-            print 'going to center of things'
-            yield self.move.set_position(sum(poses)/len(poses)).go()
-            msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
-            most_stc = msgs[0]
-            pose_idx = 0
-            least_error = self.stc_error(most_stc.scale)
-            for msg in msgs:
-                if self.stc_error(msg.scale) < least_error:
-                    least_error = self.stc_error(msg.scale)
-                    most_stc = msg
-            cmd = '%d=stc_platform'%most_stc.id
-            yield self._database_query(ObjectDBQueryRequest(name='', cmd=cmd))
-            _, pose = yield self.get_sorted_objects(name='stc_platform', n=1)
-            pose = pose[0]
+
+        pcodar_cluster_tol = DoubleParameter()
+        pcodar_cluster_tol.name = 'cluster_tolerance_m'
+        pcodar_cluster_tol.value = 20
+
+        yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
+        yield self.find_stc()
+        _, pose = yield self.get_sorted_objects(name='stc_platform', n=1)
+        pose = pose[0]
         yield self.move.look_at(pose).set_position(pose).backward(5).go()
-        # get updated points tf now that we a closer
+        # get updated points and tf now that we a closer
+
         stc_query = yield self.get_sorted_objects(name='stc_platform', n=1)
         stc = stc_query[0][0]
         tf = yield self.tf_listener.get_transform(CAMERA_LINK_OPTICAL, 'enu')
-        # do a z filter for the led points
-        top = max(stc.points, key=attrgetter('z')).z
-        points = np.array([[i.x, i.y, i.z] for i in stc.points 
-                            if i.z < top-LED_PANNEL_MAX and i.z > top-LED_PANNEL_MIN])
+        points = z_filter(stc)
+
         msg = np2pc2(points, self.nh.get_time(), 'enu')
         self.debug_points_pub.publish(msg)
 
-        for i in range(len(points)):
-            points[i] = tf.transform_point(points[i])
+        points = np.array([tf.transform_point(points[i]) for i in range(len(points))])
 
-        rect = rect_from_roi(roi_enclosing_points(self.camera_model, points))
-        bbox = np.array([[rect[0][0], rect[0][1]],
-                         [rect[1][0], rect[0][1]],
-                         [rect[1][0], rect[1][1]],
-                         [rect[0][0], rect[1][1]]])
-        self.contour = np.array(bbox, dtype=int)
+        contour = np.array(bbox_from_rect(
+            rect_from_roi(roi_enclosing_points(self.camera_model, points))), dtype=int)
         try:
-            sequence = yield txros.util.wrap_timeout(self.get_sequence(), TIMEOUT_SECONDS, 'Guessing RGB')
+            sequence = yield txros.util.wrap_timeout(self.get_sequence(contour), TIMEOUT_SECONDS, 'Guessing RGB')
         except txros.util.TimeoutError:
             sequence = ['red', 'green', 'blue']
         print 'Scan The Code Color Sequence', sequence
-
-        color_sequence = ColorSequenceRequest()
-        color_sequence.color1 = sequence[0]
-        color_sequence.color2 = sequence[1]
-        color_sequence.color3 = sequence[2]
-
-        try:
-            yield self.sequence_report(color_sequence)
-        except Exception as e: #catch erro incase vrx scroing isnt running
-            print e
-        self.send_feedback('Done!')
-
+        self.report_sequence(sequence)
+        yield self.send_feedback('Done!')
+        defer.returnValue(sequence)
 
     @txros.util.cancellableInlineCallbacks
-    def get_sequence(self):
+    def get_sequence(self, contour):
         sequence = []
         while len(sequence) < 3:
             img = yield self.camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img)
 
-            mask = contour_mask(self.contour, img_shape=img.shape)
+            mask = contour_mask(contour, img_shape=img.shape)
 
             img = img[:,:,[2,1,0]]
             mask_msg = self.bridge.cv2_to_imgmsg(bitwise_and(img, img, mask = mask))
@@ -145,11 +114,79 @@ class ScanTheCode(Vrx):
                 sequence.append(most_likely_name)
         defer.returnValue(sequence)
 
-    def stc_error(self, a):
-        '''
-        a: geometry_msg/Vector3. scale of potential stc pcodar object
-        returns: the squared error of a bounding box around an object from the stc box
-        '''
-        return np.linalg.norm(np.array([(a.z - STC_HEIGHT)**2,
-                                        (a.x - STC_WIDTH)**2,
-                                        (a.y - STC_WIDTH)**2]))
+    @txros.util.cancellableInlineCallbacks
+    def report_sequence(self, sequence):
+        color_sequence = ColorSequenceRequest()
+        color_sequence.color1 = sequence[0]
+        color_sequence.color2 = sequence[1]
+        color_sequence.color3 = sequence[2]
+
+        try:
+            yield self.sequence_report(color_sequence)
+        except Exception as e: #catch error incase vrx scroing isnt running
+            print e
+
+    @txros.util.cancellableInlineCallbacks
+    def label_stc(self):
+        msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
+        most_stc = msgs[0]
+        pose_idx = 0
+        least_error = stc_error(most_stc.scale)
+        for msg in msgs:
+            if stc_error(msg.scale) < least_error:
+                least_error = stc_error(msg.scale)
+                most_stc = msg
+        cmd = '%d=stc_platform'%most_stc.id
+        yield self._database_query(ObjectDBQueryRequest(name='', cmd=cmd))
+
+
+    @txros.util.cancellableInlineCallbacks
+    def find_stc(self):
+        # see if we already got scan the code tower
+        try:
+            _, pose = yield self.get_sorted_objects(name='stc_platform', n=1)
+            pose = pose[0]
+        # incase stc platform not already identified
+        except Exception as e:
+            # get all pcodar objects
+            try:
+                _, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
+            # if no pcodar objects, drive forward
+            # TODO: replace with actual explore
+            except Exception as e:
+                yield self.move.forward(50).go()
+                # get all pcodar objects
+                try:
+                    _, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
+                # if still no pcodar objects, guess RGB and exit mission
+                except Exception as e:
+                    sequence = ['red', 'green', 'blue']
+                    yield self.report_sequence(sequence)
+                    defer.returnValue(sequence)
+            # go to avg of those objs to get better data on those objs
+            print 'going to center of things'
+            yield self.move.set_position(sum(poses)/len(poses)).go()
+            yield self.label_stc()
+
+def z_filter(db_obj_msg):
+    # do a z filter for the led points
+    top = max(db_obj_msg.points, key=attrgetter('z')).z
+    points = np.array([[i.x, i.y, i.z] for i in db_obj_msg.points 
+                        if i.z < top-LED_PANNEL_MAX and i.z > top-LED_PANNEL_MIN])
+    return points
+
+def stc_error(a):
+    '''
+    a: geometry_msg/Vector3. scale of potential stc pcodar object
+    returns: the squared error of a bounding box around an object from the stc box
+    '''
+    return np.linalg.norm(np.array([(a.z - STC_HEIGHT)**2,
+                                    (a.x - STC_WIDTH)**2,
+                                    (a.y - STC_WIDTH)**2]))
+
+def bbox_from_rect(rect):
+    bbox = np.array([[rect[0][0], rect[0][1]],
+                     [rect[1][0], rect[0][1]],
+                     [rect[1][0], rect[1][1]],
+                     [rect[0][0], rect[1][1]]])
+    return bbox
