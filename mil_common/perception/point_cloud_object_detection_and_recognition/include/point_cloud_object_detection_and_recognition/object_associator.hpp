@@ -25,6 +25,7 @@ public:
 
 private:
   double max_distance_;
+  bool forget_unseen_;
 };
 
 }  // namespace pcodar

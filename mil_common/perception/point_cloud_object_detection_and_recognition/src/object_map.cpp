@@ -18,16 +18,17 @@ mil_msgs::PerceptionObjectArray ObjectMap::to_msg()
   return msg;
 }
 
-void ObjectMap::add_object(point_cloud_ptr const& pc, KdTreePtr const& search_tree)
+uint ObjectMap::add_object(point_cloud_ptr const& pc, KdTreePtr const& search_tree)
 {
   auto id = highest_id_++;
   objects_.insert({id, Object(pc, id, search_tree) });
+  return id;
 }
 
-void ObjectMap::erase_object(Iterator const& it)
+ObjectMap::Iterator ObjectMap::erase_object(Iterator const& it)
 {
   just_removed_.push_back((*it).first);
-  objects_.erase(it);
+  return objects_.erase(it);
 }
 
 bool ObjectMap::DatabaseQuery(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::ObjectDBQuery::Response& res)
