@@ -58,6 +58,9 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
       prev_objects.add_object(cluster_pc);
     } else {
       (*matches.at(0)).second.update_points(cluster_pc);
+      for(size_t i = 1; i < matches.size(); ++i) {
+        prev_objects.objects_.erase(matches.at(i));
+      }
     }
   }
 }
