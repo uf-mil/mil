@@ -3,7 +3,7 @@
   <node name="mrac" pkg="navigator_controller" type="mrac_controller.py" output="screen">
     <rosparam>
       kp: [1000.0, 1000.0, 5600.0]
-      kd: [1200.0, 1200.0, 6000.0]
+      kd: [1200.0, 800.0, 6000.0]
       ki: [0.1, 0.1, 0.1]
       kg: [5.0, 5.0, 5.0, 5.0, 5.0]
       mass: 251.19
