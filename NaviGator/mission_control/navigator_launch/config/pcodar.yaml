@@ -12,6 +12,7 @@ cluster_max_points : 1000
 
 # Associator
 associator_max_distance : 5
+associator_forget_unseen: False
 
 # Ogrid
 ogrid_height_meters : 500
