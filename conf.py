@@ -16,6 +16,7 @@ import sys
 import os
 import recommonmark
 from recommonmark.transform import AutoStructify
+from sphinx.ext import graphviz
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -32,7 +33,8 @@ sys.path.insert(0, os.path.abspath('..'))
 # ones.
 extensions = [
     'sphinx.ext.viewcode',
-    'recommonmark'
+    'recommonmark',
+    'sphinx.ext.graphviz'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
