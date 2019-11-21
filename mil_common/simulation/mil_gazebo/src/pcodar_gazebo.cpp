@@ -63,7 +63,8 @@ void PCODARGazebo::UpdateEntity(gazebo::physics::EntityPtr _entity)
 
   // Create an object message for this entity
   auto cloud = boost::make_shared<pcodar::point_cloud>();
-  pcodar::Object object = pcodar::Object(cloud, 0);
+  auto search_tree = boost::make_shared<pcodar::KdTree>();
+  pcodar::Object object = pcodar::Object(cloud, 0, search_tree);
   object.msg_.labeled_classification = (*it).second;
 
   // Get pose and bounding box for object

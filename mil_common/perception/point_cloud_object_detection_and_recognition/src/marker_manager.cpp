@@ -7,6 +7,15 @@
 
 #include <tf/transform_datatypes.h>
 
+namespace
+{
+std::string marker_name(uint id)
+{
+  return std::string("object") + std::to_string(id);
+}
+
+}
+
 namespace pcodar
 {
 void MarkerManager::initialize(ros::NodeHandle& nh, std::shared_ptr<ObjectMap> _objects)
@@ -46,7 +55,7 @@ void MarkerManager::feedbackCb(const visualization_msgs::InteractiveMarkerFeedba
 void MarkerManager::update_interactive_marker(mil_msgs::PerceptionObject const& object)
 {
   // Form the marker name from the object id
-  std::string name = "object" + std::to_string(object.id);
+  std::string name = marker_name(object.id);
 
   // Stores the new / pervious interactive marker
   visualization_msgs::InteractiveMarker int_marker;
@@ -134,6 +143,13 @@ void MarkerManager::update_markers()
     mil_msgs::PerceptionObject const& msg = pair.second.as_msg();
     update_interactive_marker(msg);
   }
+
+  // Remove and objects that were deleted from the marker server
+  for (auto id : objects_->just_removed_) {
+    std::string name = marker_name(id);
+    interactive_marker_server_->erase(name);
+  }
+  objects_->just_removed_.clear();
 
   // Publish marker changes to RVIZ clients
   interactive_marker_server_->applyChanges();

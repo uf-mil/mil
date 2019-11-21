@@ -6,6 +6,7 @@
 #include <pcl/PointIndices.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl/search/kdtree.h>
 
 #include <point_cloud_object_detection_and_recognition/PCODARConfig.h>
 
@@ -22,6 +23,8 @@ using point_cloud = pcl::PointCloud<point_t>;
 using point_cloud_ptr = point_cloud::Ptr;
 /// Constant poitner to PCODAR's pointclouds
 using point_cloud_const_ptr = point_cloud::ConstPtr;
+using KdTree = pcl::search::KdTree<point_t>;
+using KdTreePtr = KdTree::Ptr;
 
 /// Clusters used in object detection
 using cluster_t = pcl::PointIndices;

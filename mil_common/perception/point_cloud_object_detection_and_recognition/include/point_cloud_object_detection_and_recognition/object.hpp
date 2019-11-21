@@ -17,11 +17,12 @@ class Object
 {
 public:
   /// Create an object from a pointcloud of points associated with
-  Object(point_cloud_ptr const& pc, uint id);
+  Object(point_cloud_ptr const& pc, uint id, KdTreePtr const& search_tree);
   /// Update the points associated with an object
-  void update_points(point_cloud_ptr const& pc);
+  void update_points(point_cloud_ptr const& pc, KdTreePtr const& search_tree);
   point_cloud const& get_points() const;
   point_cloud_ptr get_points_ptr() const;
+  KdTreePtr get_search_tree() const;
   mil_msgs::PerceptionObject const& as_msg() const;
   point_t const& get_center() const;
   void set_classification(std::string const& classification);
@@ -32,6 +33,8 @@ private:
   mil_msgs::PerceptionObject msg_;
   /// The points associated with this object
   point_cloud_ptr points_;
+  /// Search tree, always kept up to date
+  KdTreePtr search_tree_;
   /// The center of the minimum area bounding box aroudn the objet
   point_t center_;
   /// Update points_ and center_, called after a call to update_points

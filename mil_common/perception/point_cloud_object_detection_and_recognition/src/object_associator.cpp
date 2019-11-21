@@ -9,41 +9,24 @@ namespace pcodar
 {
 void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clusters_t clusters)
 {
-/* Not needed?
-  if (prev_objects.objects_.empty())
-  {
-    for (cluster_t const& cluster : clusters)
-    {
-    point_cloud_ptr cluster_pc = boost::make_shared<point_cloud>(pc, cluster.indices);
-
-      point_cloud cluster_pc(pc, cluster.indices);
-      prev_objects.add_object(cluster_pc);
-    }
-  }
-*/
-
-  /* TODO
-   * TREE-IFY each
-   * pcl::registration::CorrespondenceEstimation to find point closeness
-   * pcl::registration::CorrespondenceRejectorTrimmed to just look for cloest points
-   * if one new cluster matches to multiple old clusters -> merge old clusters
-   * if one old cluster matches to multiple new clusters -> split old clusters
-   */
-
-  pcl::search::Octree<point_t> search(0.01);
+  // Iterate through each new cluster, finding which persistent cluster(s) it matches
   for (cluster_t const& cluster : clusters)
   {
+    // Make pointcloud from this pointcloud
     point_cloud_ptr cluster_pc = boost::make_shared<point_cloud>(pc, cluster.indices);
+    KdTreePtr cluster_search_tree = boost::make_shared<KdTree>();
+    cluster_search_tree->setInputCloud(cluster_pc);
+
+    using CorrespondenceEstimation = pcl::registration::CorrespondenceEstimation<point_t, point_t>;
+    CorrespondenceEstimation ce;
+    ce.setSearchMethodTarget(cluster_search_tree, true);
+    ce.setInputTarget(cluster_pc);
 
     using ObjectMapIt = decltype(prev_objects.objects_.begin());
     std::vector<ObjectMapIt> matches;
     for (auto pair = prev_objects.objects_.begin(); pair != prev_objects.objects_.end(); ++pair)
     {
-      using CorrespondenceEstimation = pcl::registration::CorrespondenceEstimation<point_t, point_t>;
-      CorrespondenceEstimation ce;
-      //pcl::registration::CorrespondenceRejectorTrimmed rt;
-
-      ce.setInputTarget(cluster_pc);
+      ce.setSearchMethodSource((*pair).second.get_search_tree(), true);
       ce.setInputSource((*pair).second.get_points_ptr());
 
       pcl::CorrespondencesPtr correspondences = boost::make_shared<pcl::Correspondences>();
@@ -55,11 +38,11 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
 
     if (matches.size() == 0) {
       // Add to object
-      prev_objects.add_object(cluster_pc);
+      prev_objects.add_object(cluster_pc, cluster_search_tree);
     } else {
-      (*matches.at(0)).second.update_points(cluster_pc);
+      (*matches.at(0)).second.update_points(cluster_pc, cluster_search_tree);
       for(size_t i = 1; i < matches.size(); ++i) {
-        prev_objects.objects_.erase(matches.at(i));
+        prev_objects.erase_object(matches.at(i));
       }
     }
   }

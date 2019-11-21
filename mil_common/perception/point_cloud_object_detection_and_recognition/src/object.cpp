@@ -7,17 +7,23 @@
 
 namespace pcodar
 {
-Object::Object(point_cloud_ptr const& _pc, uint id)
+Object::Object(point_cloud_ptr const& _pc, uint id, KdTreePtr const& search_tree)
 {
   set_id(id);
   set_classification("UNKNOWN");
-  update_points(_pc);
+  update_points(_pc, search_tree);
 }
 
-void Object::update_points(point_cloud_ptr const& pc)
+void Object::update_points(point_cloud_ptr const& pc, KdTree::Ptr const& search_tree)
 {
   points_ = pc;
+  search_tree_ = search_tree;
   update_msg();
+}
+
+KdTree::Ptr Object::get_search_tree() const
+{
+  return search_tree_;
 }
 
 point_cloud const& Object::get_points() const

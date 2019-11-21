@@ -18,10 +18,16 @@ mil_msgs::PerceptionObjectArray ObjectMap::to_msg()
   return msg;
 }
 
-void ObjectMap::add_object(point_cloud_ptr const& pc)
+void ObjectMap::add_object(point_cloud_ptr const& pc, KdTreePtr const& search_tree)
 {
   auto id = highest_id_++;
-  objects_.insert({id, Object(pc, id) });
+  objects_.insert({id, Object(pc, id, search_tree) });
+}
+
+void ObjectMap::erase_object(Iterator const& it)
+{
+  just_removed_.push_back((*it).first);
+  objects_.erase(it);
 }
 
 bool ObjectMap::DatabaseQuery(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::ObjectDBQuery::Response& res)
@@ -46,7 +52,7 @@ bool ObjectMap::DatabaseQuery(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::O
       {
         if ((*pair).first == id)
         {
-          objects_.erase(pair);
+          erase_object(pair);
           res.found = true;
           return true;
         }
