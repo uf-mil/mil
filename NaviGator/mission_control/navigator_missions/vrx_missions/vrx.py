@@ -86,5 +86,6 @@ class Vrx(Navigator):
         elif task_name == 'perception':
             yield self.run_submission('VrxPerception')
         elif task_name == 'scan_and_dock':
+            print 'Running Scan The Code'
             yield self.run_submission('ScanTheCode')
         defer.returnValue(msg)
