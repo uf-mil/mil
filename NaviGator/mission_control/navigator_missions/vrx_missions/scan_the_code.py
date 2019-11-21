@@ -14,6 +14,8 @@ from navigator_vision import VrxStcColorClassifier
 from cv_bridge import CvBridge
 from cv2 import bitwise_and
 from vrx_gazebo.srv import ColorSequenceRequest, ColorSequence
+from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+
 
 LED_PANNEL_MAX  = 0.25
 LED_PANNEL_MIN = 0.6
@@ -27,10 +29,12 @@ CAMERA_LINK_OPTICAL = 'front_left_camera_link_optical'
 
 COLOR_SEQUENCE_SERVICE = '/vrx/scan_dock/color_sequence'
 
+TIMEOUT_SECONDS = 30
+
 class ScanTheCode(Vrx):
 
-    def __init__(self):
-        super(ScanTheCode, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(ScanTheCode, self).__init__(*args, **kwargs)
         self.classifier = VrxStcColorClassifier()
         self.classifier.train_from_csv()
         self.camera_model = PinholeCameraModel()
@@ -68,18 +72,15 @@ class ScanTheCode(Vrx):
             most_stc = msgs[0]
             pose_idx = 0
             least_error = self.stc_error(most_stc.scale)
-            for i, msg in enumerate(msgs):
+            for msg in msgs:
                 if self.stc_error(msg.scale) < least_error:
                     least_error = self.stc_error(msg.scale)
                     most_stc = msg
-                    pose_idx = i
-            cmd = '%d=stc_platform'%pose_idx
-            yield self.get_sorted_objects(name='', n=-1, throw=True, cmd=cmd)
+            cmd = '%d=stc_platform'%most_stc.id
+            yield self._database_query(ObjectDBQueryRequest(name='', cmd=cmd))
             _, pose = yield self.get_sorted_objects(name='stc_platform', n=1)
             pose = pose[0]
-        yield self.move.look_at(pose).go()
-        yield self.move.set_position(pose).backward(5).go()
-
+        yield self.move.look_at(pose).set_position(pose).backward(5).go()
         # get updated points tf now that we a closer
         stc_query = yield self.get_sorted_objects(name='stc_platform', n=1)
         stc = stc_query[0][0]
@@ -99,13 +100,33 @@ class ScanTheCode(Vrx):
                          [rect[1][0], rect[0][1]],
                          [rect[1][0], rect[1][1]],
                          [rect[0][0], rect[1][1]]])
-        contour = np.array(bbox, dtype=int)
+        self.contour = np.array(bbox, dtype=int)
+        try:
+            sequence = yield txros.util.wrap_timeout(self.get_sequence(), TIMEOUT_SECONDS, 'Guessing RGB')
+        except txros.util.TimeoutError:
+            sequence = ['red', 'green', 'blue']
+        print 'Scan The Code Color Sequence', sequence
+
+        color_sequence = ColorSequenceRequest()
+        color_sequence.color1 = sequence[0]
+        color_sequence.color2 = sequence[1]
+        color_sequence.color3 = sequence[2]
+
+        try:
+            yield self.sequence_report(color_sequence)
+        except Exception as e: #catch erro incase vrx scroing isnt running
+            print e
+        self.send_feedback('Done!')
+
+
+    @txros.util.cancellableInlineCallbacks
+    def get_sequence(self):
         sequence = []
         while len(sequence) < 3:
             img = yield self.camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img)
 
-            mask = contour_mask(contour, img_shape=img.shape)
+            mask = contour_mask(self.contour, img_shape=img.shape)
 
             img = img[:,:,[2,1,0]]
             mask_msg = self.bridge.cv2_to_imgmsg(bitwise_and(img, img, mask = mask))
@@ -122,18 +143,7 @@ class ScanTheCode(Vrx):
                 sequence = []
             elif sequence == [] or  most_likely_name != sequence[-1]:
                 sequence.append(most_likely_name)
-        print 'Scan The Code Color Sequence', sequence
-
-        color_sequence = ColorSequenceRequest()
-        color_sequence.color1 = sequence[0]
-        color_sequence.color2 = sequence[1]
-        color_sequence.color3 = sequence[2]
-
-        try:
-            yield self.sequence_report(color_sequence)
-        except Exception as e: #catch erro incase vrx scroing isnt running
-            print e
-        self.send_feedback('Done!')
+        defer.returnValue(sequence)
 
     def stc_error(self, a):
         '''

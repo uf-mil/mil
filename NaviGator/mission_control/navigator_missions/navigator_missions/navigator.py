@@ -12,7 +12,7 @@ import mil_tools
 from ros_alarms import TxAlarmListener
 from navigator_path_planner.msg import MoveAction, MoveGoal
 from nav_msgs.msg import Odometry
-from std_srvs.srv import SetBool, SetBoolRequest
+from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
 from geometry_msgs.msg import PoseStamped, PointStamped
 import navigator_msgs.srv as navigator_srvs
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
@@ -25,6 +25,7 @@ from mil_pneumatic_actuator.srv import SetValve, SetValveRequest
 from mil_poi import TxPOIClient
 from roboteq_msgs.msg import Command
 from std_msgs.msg import Bool
+from dynamic_reconfigure.srv import Reconfigure, ReconfigureRequest
 
 
 class MissionResult(object):
@@ -85,6 +86,8 @@ class Navigator(BaseMission):
         cls._change_wrench = cls.nh.get_service_client('/wrench/select', MuxSelect)
         cls._change_trajectory = cls.nh.get_service_client('/trajectory/select', MuxSelect)
         cls._database_query = cls.nh.get_service_client('/database/requests', ObjectDBQuery)
+        cls._reset_pcodar = cls.nh.get_service_client('/pcodar/reset', Trigger)
+        cls._pcodar_set_params = cls.nh.get_service_client('/pcodar/set_parameters', Reconfigure)
 
         cls.pose = None
 
@@ -175,6 +178,12 @@ class Navigator(BaseMission):
             yield defer.gatherResults([odom, enu_odom])  # Wait for all those to finish
 
         cls.docking_scan = 'NA'
+
+    @classmethod
+    @util.cancellableInlineCallbacks
+    def reset_pcodar(cls):
+        res = yield cls._reset_pcodar(TriggerRequest())
+        defer.returnValue(res)
 
     @classmethod
     def _grinch_limit_switch_cb(cls, data):
@@ -362,6 +371,12 @@ class Navigator(BaseMission):
     def set_valve(self, name, state):
         req = SetValveRequest(actuator=name, opened=state)
         return self._actuator_client(req)
+
+    @classmethod
+    @util.cancellableInlineCallbacks
+    def pcodar_set_params(self, **kwargs):
+        result = yield self._pcodar_set_params(ReconfigureRequest(**kwargs))
+        defer.returnValue(result)
 
     @util.cancellableInlineCallbacks
     def get_sorted_objects(self, name, n=-1, throw=True, **kwargs):
