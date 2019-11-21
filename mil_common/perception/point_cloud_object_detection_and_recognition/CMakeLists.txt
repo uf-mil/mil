@@ -34,6 +34,11 @@ find_package(PCL 1.2 REQUIRED)
 # OPENCV stuff
 find_package(OpenCV 3.0 REQUIRED)
 
+
+catkin_package(INCLUDE_DIRS include
+               LIBRARIES pcodar
+               CATKIN_DEPENDS roscpp sensor_msgs std_msgs mil_msgs tf tf2 eigen_conversions pcl_ros)
+
 # Include directories
 include_directories(include ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
@@ -49,15 +54,10 @@ target_link_libraries(pcodar ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRA
 # Weird catkin stuff, We will never know what it does.
 add_dependencies(pcodar ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-
-catkin_package(INCLUDE_DIRS include
-               LIBRARIES pcodar
-               CATKIN_DEPENDS roscpp sensor_msgs std_msgs mil_msgs tf tf2 eigen_conversions pcl_ros)
-
 # executable that actually runs everything
 add_executable(pcodar_node nodes/main.cpp)
 target_link_libraries(pcodar_node pcodar)
-
+add_dependencies(pcodar_node pcodar)
 
 ###################################################
 # 				  LAUNCH CODE 					  #
