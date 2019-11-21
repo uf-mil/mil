@@ -7,31 +7,69 @@
 
 namespace pcodar
 {
-Object::Object(point_cloud const& _pc)
+Object::Object(point_cloud_ptr const& _pc, uint id, KdTreePtr const& search_tree)
 {
-  update_points(_pc);
-  msg_.labeled_classification = "UNKNOWN";
+  set_id(id);
+  set_classification("UNKNOWN");
+  update_points(_pc, search_tree);
 }
 
-void Object::update_points(point_cloud const& pc)
+void Object::update_points(point_cloud_ptr const& pc, KdTree::Ptr const& search_tree)
 {
   points_ = pc;
+  search_tree_ = search_tree;
   update_msg();
+}
+
+KdTree::Ptr Object::get_search_tree() const
+{
+  return search_tree_;
+}
+
+point_cloud const& Object::get_points() const
+{
+  return *points_;
+}
+
+point_cloud_ptr Object::get_points_ptr() const
+{
+  return points_;
+}
+
+mil_msgs::PerceptionObject const& Object::as_msg() const
+{
+  return msg_;
+}
+
+point_t const& Object::get_center() const
+{
+  return center_;
+}
+
+void Object::set_classification(std::string const& classification)
+{
+  msg_.labeled_classification = classification;
+}
+
+void Object::set_id(uint id)
+{
+  msg_.id = id;
 }
 
 void Object::update_msg()
 {
-  msg_.classification = "UNKNOWN";
+  // Classification field is unused, always set to empty string
+  msg_.classification = "";
   msg_.header.frame_id = "enu";
   msg_.header.stamp = ros::Time();
   msg_.points.clear();
 
-  if (points_.empty())
+  if (points_->empty())
     return;
   std::vector<cv::Point2f> cv_points;
   double min_z = std::numeric_limits<double>::max();
   double max_z = -std::numeric_limits<double>::max();
-  for (point_t const& point : points_)
+  for (point_t const& point : *points_)
   {
     cv_points.emplace_back(point.x, point.y);
     if (point.z > max_z)

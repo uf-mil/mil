@@ -2,57 +2,48 @@
 
 #include <mil_msgs/PerceptionObject.h>
 #include <pcl/search/octree.h>
+#include <pcl/registration/correspondence_rejection_trimmed.h>
+#include <pcl/registration/correspondence_estimation.h>
 
 namespace pcodar
 {
 void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clusters_t clusters)
 {
-  if (prev_objects.objects_.empty())
-  {
-    for (cluster_t const& cluster : clusters)
-    {
-      point_cloud cluster_pc(pc, cluster.indices);
-      prev_objects.add_object(cluster_pc);
-    }
-  }
-
-  /* TODO
-   * TREE-IFY each
-   * pcl::registration::CorrespondenceEstimation to find point closeness
-   * pcl::registration::CorrespondenceRejectorTrimmed to just look for cloest points
-   * if one new cluster matches to multiple old clusters -> merge old clusters
-   * if one old cluster matches to multiple new clusters -> split old clusters
-   */
-
-  pcl::search::Octree<point_t> search(0.01);
+  // Iterate through each new cluster, finding which persistent cluster(s) it matches
   for (cluster_t const& cluster : clusters)
   {
+    // Make pointcloud from this pointcloud
     point_cloud_ptr cluster_pc = boost::make_shared<point_cloud>(pc, cluster.indices);
-    search.setInputCloud(cluster_pc);
-    float min = std::numeric_limits<float>::max();
-    std::unordered_map<uint, Object>::iterator it = prev_objects.objects_.end();
+    KdTreePtr cluster_search_tree = boost::make_shared<KdTree>();
+    cluster_search_tree->setInputCloud(cluster_pc);
+
+    using CorrespondenceEstimation = pcl::registration::CorrespondenceEstimation<point_t, point_t>;
+    CorrespondenceEstimation ce;
+    ce.setSearchMethodTarget(cluster_search_tree, true);
+    ce.setInputTarget(cluster_pc);
+
+    using ObjectMapIt = decltype(prev_objects.objects_.begin());
+    std::vector<ObjectMapIt> matches;
     for (auto pair = prev_objects.objects_.begin(); pair != prev_objects.objects_.end(); ++pair)
     {
-      int index = 0;
-      float distance = 0.;
-      search.approxNearestSearch((*pair).second.center_, index, distance);
-      // Search returns squared distance, so sqrt it here
-      distance = sqrt(distance);
-      if (distance < min && distance < max_distance_)
-      {
-        min = distance;
-        it = pair;
-      }
+      ce.setSearchMethodSource((*pair).second.get_search_tree(), true);
+      ce.setInputSource((*pair).second.get_points_ptr());
+
+      pcl::CorrespondencesPtr correspondences = boost::make_shared<pcl::Correspondences>();
+      ce.determineCorrespondences(*correspondences, max_distance_);
+
+      if (correspondences->size() > 0)
+        matches.push_back(pair);
     }
 
-    if (it == prev_objects.objects_.end())
-    {
+    if (matches.size() == 0) {
       // Add to object
-      prev_objects.add_object(*cluster_pc);
-    }
-    else
-    {
-      (*it).second.update_points(*cluster_pc);
+      prev_objects.add_object(cluster_pc, cluster_search_tree);
+    } else {
+      (*matches.at(0)).second.update_points(cluster_pc, cluster_search_tree);
+      for(size_t i = 1; i < matches.size(); ++i) {
+        prev_objects.erase_object(matches.at(i));
+      }
     }
   }
 }
