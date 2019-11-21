@@ -21,6 +21,7 @@ public:
   /// Update the points associated with an object
   void update_points(point_cloud_ptr const& pc);
   point_cloud const& get_points() const;
+  point_cloud_ptr get_points_ptr() const;
   mil_msgs::PerceptionObject const& as_msg() const;
   point_t const& get_center() const;
   void set_classification(std::string const& classification);

@@ -2,6 +2,8 @@
 
 #include <mil_msgs/PerceptionObject.h>
 #include <pcl/search/octree.h>
+#include <pcl/registration/correspondence_rejection_trimmed.h>
+#include <pcl/registration/correspondence_estimation.h>
 
 namespace pcodar
 {
@@ -32,31 +34,30 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
   for (cluster_t const& cluster : clusters)
   {
     point_cloud_ptr cluster_pc = boost::make_shared<point_cloud>(pc, cluster.indices);
-    search.setInputCloud(cluster_pc);
-    float min = std::numeric_limits<float>::max();
-    std::unordered_map<uint, Object>::iterator it = prev_objects.objects_.end();
+
+    using ObjectMapIt = decltype(prev_objects.objects_.begin());
+    std::vector<ObjectMapIt> matches;
     for (auto pair = prev_objects.objects_.begin(); pair != prev_objects.objects_.end(); ++pair)
     {
-      int index = 0;
-      float distance = 0.;
-      search.approxNearestSearch((*pair).second.get_center(), index, distance);
-      // Search returns squared distance, so sqrt it here
-      distance = sqrt(distance);
-      if (distance < min && distance < max_distance_)
-      {
-        min = distance;
-        it = pair;
-      }
+      using CorrespondenceEstimation = pcl::registration::CorrespondenceEstimation<point_t, point_t>;
+      CorrespondenceEstimation ce;
+      //pcl::registration::CorrespondenceRejectorTrimmed rt;
+
+      ce.setInputTarget(cluster_pc);
+      ce.setInputSource((*pair).second.get_points_ptr());
+
+      pcl::CorrespondencesPtr correspondences = boost::make_shared<pcl::Correspondences>();
+      ce.determineCorrespondences(*correspondences, max_distance_);
+
+      if (correspondences->size() > 0)
+        matches.push_back(pair);
     }
 
-    if (it == prev_objects.objects_.end())
-    {
+    if (matches.size() == 0) {
       // Add to object
       prev_objects.add_object(cluster_pc);
-    }
-    else
-    {
-      (*it).second.update_points(cluster_pc);
+    } else {
+      (*matches.at(0)).second.update_points(cluster_pc);
     }
   }
 }

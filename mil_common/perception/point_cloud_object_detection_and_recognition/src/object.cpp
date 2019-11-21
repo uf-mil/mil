@@ -25,6 +25,11 @@ point_cloud const& Object::get_points() const
   return *points_;
 }
 
+point_cloud_ptr Object::get_points_ptr() const
+{
+  return points_;
+}
+
 mil_msgs::PerceptionObject const& Object::as_msg() const
 {
   return msg_;
