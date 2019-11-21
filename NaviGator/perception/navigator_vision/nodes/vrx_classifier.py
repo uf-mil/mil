@@ -49,6 +49,8 @@ class VrxClassifier(object):
         self.last_update_time = rospy.Time.now()
         self.objects_sub = rospy.Subscriber('/pcodar/objects', PerceptionObjectArray, self.process_objects, queue_size=2)
         self.enabled_srv = rospy.Service('~set_enabled', SetBool, self.set_enable_srv)
+        if self.is_training:
+            self.enabled = True
 
     @thread_lock(lock)
     def set_enable_srv(self, req):
@@ -68,6 +70,7 @@ class VrxClassifier(object):
         Set several constants used for image processing and classification
         from ROS params for runtime configurability.
         '''
+        self.is_training = rospy.get_param('~train', False)
         self.debug = rospy.get_param('~debug', True)
         self.image_topic = rospy.get_param('~image_topic', '/camera/starboard/image_rect_color')
         self.update_period = rospy.Duration(1.0 / rospy.get_param('~update_hz', 1))
@@ -134,8 +137,7 @@ class VrxClassifier(object):
                   for i in met_criteria]
         debug = np.zeros(img.shape, dtype=img.dtype)
 
-        IS_TRAINING = False
-        if IS_TRAINING:
+        if self.is_training:
             training = []
 
         for i in xrange(len(rois)):
@@ -158,9 +160,9 @@ class VrxClassifier(object):
             if object_msg.labeled_classification != most_likely_name:
                 cmd = '{}={}'.format(object_id, most_likely_name)
                 rospy.loginfo('Updating object {} to {}'.format(object_id, most_likely_name))
-                if not IS_TRAINING:
+                if not self.is_training:
                     self.database_client(ObjectDBQueryRequest(cmd=cmd))
-            if IS_TRAINING and obj_title != 'UNKNOWN':
+            if self.is_training and obj_title != 'UNKNOWN':
                 classification_index = self.classifier.CLASSES.index(obj_title)
                 training.append(np.append(classification_index, features))
 
@@ -173,7 +175,7 @@ class VrxClassifier(object):
             text = str(object_id)
             putText_ul(debug, text, center, fontScale=scale, thickness=thickness)
 
-        if IS_TRAINING and len(training) != 0:
+        if self.is_training and len(training) != 0:
            training = np.array(training)
            try:
                previous_data = pandas.DataFrame.from_csv(self.classifier.training_file).values
