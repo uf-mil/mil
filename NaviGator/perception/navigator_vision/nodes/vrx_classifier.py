@@ -123,7 +123,7 @@ class VrxClassifier(object):
                             for obj in self.last_objects.objects]
         pixel_centers = [self.camera_model.project3dToPixel(point) for point in positions_camera]
         distances = np.linalg.norm(positions_camera, axis=1)
-        CUTOFF_METERS = 20
+        CUTOFF_METERS = 15
 
         # Get a list of indicies of objects who are sufficiently close and can be seen by camera
         met_criteria = []
