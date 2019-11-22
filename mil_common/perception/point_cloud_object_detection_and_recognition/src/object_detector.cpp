@@ -5,11 +5,13 @@ namespace pcodar
 {
 clusters_t ObjectDetector::get_clusters(point_cloud_const_ptr pc)
 {
+  clusters_t cluster_indices;
+  if (pc->empty()) return cluster_indices;
+
   // Creating the KdTree object for the search method of the extraction
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
   tree->setInputCloud(pc);
 
-  clusters_t cluster_indices;
 
   cluster_extractor_.setSearchMethod(tree);
   cluster_extractor_.setInputCloud(pc);

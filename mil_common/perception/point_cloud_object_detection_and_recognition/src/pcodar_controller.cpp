@@ -185,8 +185,6 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
 
   // Get persistent cloud and publish for debug
   auto accrued = persistent_cloud_builder_.get_point_cloud();
-  if ((*accrued).empty())
-    return;
 
   // Filter out outliers
   point_cloud_ptr filtered_accrued = boost::make_shared<point_cloud>();
@@ -197,16 +195,15 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
   pub_pcl_.publish(filtered_accrued);
 
   // Skip object detection if all points where filtered out
-  if (!(*filtered_accrued).empty())
-  {
-    // Get object clusters from persistent pointcloud
-    clusters_t clusters = detector_.get_clusters(filtered_accrued);
-
-    // Associate current clusters with old ones
-    ass.associate(*objects_, *filtered_accrued, clusters);
-  }
-  else
+  if ((*filtered_accrued).empty())
     ROS_WARN_ONCE("Filtered pointcloud had no points. Consider changing filter parameters.");
+
+  // Get object clusters from persistent pointcloud
+  clusters_t clusters = detector_.get_clusters(filtered_accrued);
+
+  // Associate current clusters with old ones
+  ass.associate(*objects_, *filtered_accrued, clusters);
+
 }
 
 bool Node::bounds_update_cb(const mil_bounds::BoundsConfig& config)
