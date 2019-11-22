@@ -22,14 +22,14 @@ public:
   void set_bounds(point_cloud_ptr bounds);
   /// Set the robot footprint with a pointcloud in the robot's local frame where each point is a verticie of the
   /// footprint polygon
-  void set_robot_footprint(point_cloud const& robot);
+  void set_robot_footprint(Eigen::Vector4f const& min, Eigen::Vector4f const& max);
   /// Sets the transform from the global frame to the robot, should be called before @filter
   void set_robot_pose(Eigen::Affine3d const& transform);
 
 private:
   point_cloud robot_footprint_;
   pcl::CropHull<pcl::PointXYZ> bounds_filter_;
-  pcl::CropHull<pcl::PointXYZ> robot_filter_;
+  pcl::CropBox<pcl::PointXYZ> robot_filter_;
 };
 
 }  // namespace pcodar

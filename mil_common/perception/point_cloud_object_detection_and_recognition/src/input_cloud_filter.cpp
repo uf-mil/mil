@@ -7,8 +7,7 @@ InputCloudFilter::InputCloudFilter()
   bounds_filter_.setDim(2);
   bounds_filter_.setCropOutside(true);
 
-  robot_filter_.setDim(2);
-  robot_filter_.setCropOutside(false);
+  robot_filter_.setNegative(true);
 }
 
 void InputCloudFilter::filter(point_cloud_const_ptr in, point_cloud& pc)
@@ -34,31 +33,16 @@ void InputCloudFilter::set_bounds(point_cloud_ptr bounds)
   bounds_filter_.setHullIndices(hull);
 }
 
-void InputCloudFilter::set_robot_footprint(point_cloud const& robot)
+void InputCloudFilter::set_robot_footprint(Eigen::Vector4f const& min, Eigen::Vector4f const& max)
 {
-  robot_footprint_ = robot;
-
-  point_cloud_ptr pc(boost::make_shared<point_cloud>());
-  *pc = robot_footprint_;
-
-  pcl::Vertices indicies;
-  indicies.vertices.reserve(pc->size());
-  for (size_t i = 0; i < pc->size(); ++i)
-    indicies.vertices.push_back(i);
-  std::vector<pcl::Vertices> hull = { indicies };
-
-  robot_filter_.setHullCloud(pc);
-  robot_filter_.setHullIndices(hull);
+  robot_filter_.setMin(min);
+  robot_filter_.setMax(max);
 }
 
 void InputCloudFilter::set_robot_pose(Eigen::Affine3d const& transform)
 {
-  auto pc = robot_filter_.getHullCloud();
-  if (!pc)
-  {
-    ROS_WARN("set_robot_pose called before set_robot_footprint");
-  }
-  pcl::transformPointCloud(robot_footprint_, *pc, transform);
+  Eigen::Affine3f transform_float = transform.cast<float>();
+  robot_filter_.setTransform(transform_float);
 }
 
 }  // namespace pcodar
