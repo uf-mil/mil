@@ -92,6 +92,7 @@ class Vrx(Navigator):
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
         yield self.set_vrx_classifier_enabled.wait_for_service()
+        yield self._pcodar_set_params.wait_for_service()
         msg = yield self.task_info_sub.get_next_message()
         task_name = msg.name
         if task_name == 'stationkeeping':
