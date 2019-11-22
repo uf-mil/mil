@@ -8,6 +8,10 @@ PersistentCloudFilter::PersistentCloudFilter() : outlier_filter_(false)
 
 void PersistentCloudFilter::filter(point_cloud_const_ptr in, point_cloud& pc)
 {
+  if (in->empty()) {
+     pc.clear();
+     return;
+  }
   outlier_filter_.setInputCloud(in);
   outlier_filter_.filter(pc);
 }
