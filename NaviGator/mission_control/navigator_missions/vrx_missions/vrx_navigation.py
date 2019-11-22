@@ -21,11 +21,10 @@ class VrxNavigation(Vrx):
         yield self.move.look_at(position).set_position(position).backward(8.0).go()
         yield self.nh.sleep(2.)
 
-    @staticmethod
-    def get_index_of_type(objects, classifications):
+    def get_index_of_type(self, objects, classifications):
         if type(classifications) == str:
             classifications = [classifications]
-        return next(i for i, o in enumerate(objects) if o.labeled_classification in classifications)
+        return next(i for i, o in enumerate(objects) if o.labeled_classification in classifications and o.id not in self.objects_passed)
 
     @staticmethod
     def get_gate(one, two, position):
@@ -88,7 +87,6 @@ class VrxNavigation(Vrx):
             for i in range(len(objects_of_interest)):
                 if objects_of_interest[i].id not in investigated and objects_of_interest[i].labeled_classification == 'UNKNOWN':
                     yield self.inspect_object(positions[i])
-                    investigated.add(objects_of_interest[i].id)
                     explored = True
                     break
             if explored:
@@ -101,6 +99,8 @@ class VrxNavigation(Vrx):
         self.send_feedback('done' if end else 'not done, bro')
         left_position = positions[left_index]
         right_position = positions[right_index]
+        self.objects_passed.add(objects_of_interest[left_index].id)
+        self.objects_passed.add(objects_of_interest[right_index].id)
         gate = self.get_gate(left_position, right_position, p)
         yield self.go_thru_gate(gate)
         defer.returnValue(end)
@@ -117,8 +117,12 @@ class VrxNavigation(Vrx):
            yield self.inspect_object(closest_positions[0]) 
         if closest[1].labeled_classification == 'UNKNOWN':
            yield self.inspect_object(closest_positions[1]) 
-        white = closest_positions[self.get_index_of_type(closest, 'surmark46104')]
-        red = closest_positions[self.get_index_of_type(closest, ('red_totem', 'surmark950410'))]
+        white_index = self.get_index_of_type(closest, 'surmark46104')
+        white = closest_positions[white_index]
+        red_index = self.get_index_of_type(closest, ('red_totem', 'surmark950410'))
+        red = closest_positions[red_index]
+        self.objects_passed.add(closest[white_index].id)
+        self.objects_passed.add(closest[red_index].id)
         position = (yield self.tx_pose)[0]
         gate = self.get_gate(white, red, position)
         yield self.go_thru_gate(gate, AFTER=-2)
@@ -129,10 +133,11 @@ class VrxNavigation(Vrx):
         TODO: check for new objects in background, cancel move
               somefucking how handle case where gates litteraly loop back and head the other direction
         '''
+        self.objects_passed = set()
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
         yield self.prepare_to_enter()
         yield self.wait_for_task_such_that(lambda task: task.state =='running')
-        yield self.move.forward(4.0).go()
+        yield self.move.forward(7.0).go()
         while not (yield self.do_next_gate()):
             pass
         yield self.move.forward(10).go()
