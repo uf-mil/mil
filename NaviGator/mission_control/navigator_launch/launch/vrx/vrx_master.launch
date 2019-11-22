@@ -26,6 +26,6 @@
     <include file="$(find navigator_launch)/launch/gnc/path_planner.launch" />
 
     <node if="$(arg run_task)" name="run_vrx_task" pkg="mil_missions" type="mission_client"
-          args="run Vrx" />
+          args="run Vrx" output="screen" />
     <include file="$(find navigator_launch)/launch/vrx/vrx_classifier.launch" />
 </launch>
