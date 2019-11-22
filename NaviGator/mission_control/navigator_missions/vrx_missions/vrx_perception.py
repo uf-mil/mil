@@ -50,6 +50,7 @@ class VrxPerception(Vrx):
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
+        # TODO: use PCODAR amnesia to avoid this timing fiasco
         yield self.wait_for_task_such_that(lambda task: task.state in ['running'])
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
         objects = {}
