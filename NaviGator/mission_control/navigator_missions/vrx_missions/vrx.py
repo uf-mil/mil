@@ -10,6 +10,7 @@ from geographic_msgs.msg import GeoPoseStamped, GeoPath
 from std_msgs.msg import Float64, Float64MultiArray, String
 from navigator_missions import Navigator
 from mil_tools import rosmsg_to_numpy, numpy_to_point
+from sensor_msgs.msg import Image, CameraInfo
 
 ___author___ = "Kevin Allen"
 
@@ -33,12 +34,28 @@ class Vrx(Navigator):
         cls.wayfinding_min_errors = cls.nh.subscribe("/vrx/wayfinding/min_errors", Float64MultiArray)
         cls.wayfinding_mean_error = cls.nh.subscribe("/vrx/wayfinding/mean_error", Float64)
         cls.perception_landmark = cls.nh.advertise("/vrx/perception/landmark", GeoPoseStamped)
-        cls.scan_dock_placard_symbol = cls.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
+        #cls.scan_dock_placard_symbol = cls.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
+
+        Vrx.front_left_camera_info_sub = None 
+        Vrx.front_left_camera_sub = None
+
+
         cls._vrx_init = True
 
     #@txros.util.cancellableInlineCallbacks
     def cleanup(self):
         pass
+
+    @staticmethod
+    def init_front_left_camera():
+        if Vrx.front_left_camera_sub is None:
+            Vrx.front_left_camera_sub = Vrx.nh.subscribe(
+                "/wamv/sensors/cameras/front_left_camera/image_raw", Image)
+
+        if Vrx.front_left_camera_info_sub is None:
+            Vrx.front_left_camera_info_sub = Vrx.nh.subscribe(
+                "/wamv/sensors/cameras/front_left_camera/camera_info", CameraInfo)
+
 
     @txros.util.cancellableInlineCallbacks
     def geo_pose_to_enu_pose(self, geo):
@@ -86,5 +103,5 @@ class Vrx(Navigator):
         elif task_name == 'perception':
             yield self.run_submission('VrxPerception')
         elif task_name == 'scan_and_dock':
-            yield self.run_submission('ScanTheCode')
+            yield self.run_submission('ScanAndDock')
         defer.returnValue(msg)

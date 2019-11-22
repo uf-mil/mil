@@ -193,6 +193,12 @@ class Navigator(BaseMission):
         defer.returnValue(result)
 
     @classmethod
+    @util.cancellableInlineCallbacks
+    def pcodar_label(cls, idx, name):
+        cmd = '%d=%s'%(idx,name)
+        yield cls._database_query(ObjectDBQueryRequest(name='', cmd=cmd))
+
+    @classmethod
     def _grinch_limit_switch_cb(cls, data):
         cls.grinch_limit_switch_pressed = data.data
 

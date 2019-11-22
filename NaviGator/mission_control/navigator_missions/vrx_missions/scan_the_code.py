@@ -4,7 +4,7 @@ import numpy as np
 from vrx import Vrx
 from twisted.internet import defer
 from sensor_msgs.msg import PointCloud2
-from mil_tools import numpy_to_pointcloud2 as np2pc2
+from mil_tools import numpy_to_pointcloud2 as np2pc2, rosmsg_to_numpy
 from mil_vision_tools.cv_tools import rect_from_roi, roi_enclosing_points, contour_mask
 from image_geometry import PinholeCameraModel
 from sensor_msgs.msg import Image, CameraInfo
@@ -23,8 +23,6 @@ LED_PANNEL_MIN = 0.6
 STC_HEIGHT = 2.3
 STC_WIDTH = 2
 
-CAMERA_TOPIC = '/wamv/sensors/cameras/front_left_camera/image_raw'
-CAMERA_INFO_TOPIC = '/wamv/sensors/cameras/front_left_camera/camera_info'
 CAMERA_LINK_OPTICAL = 'front_left_camera_link_optical'
 
 COLOR_SEQUENCE_SERVICE = '/vrx/scan_dock/color_sequence'
@@ -39,34 +37,34 @@ class ScanTheCode(Vrx):
         self.classifier.train_from_csv()
         self.camera_model = PinholeCameraModel()
 
-    @classmethod
-    def init(cls):
-        cls.debug_points_pub = cls.nh.advertise('/stc_led_points', PointCloud2)
-        cls.camera_sub = cls.nh.subscribe(CAMERA_TOPIC, Image)
-        cls.camera_info_sub = cls.nh.subscribe(CAMERA_INFO_TOPIC, CameraInfo)
-        cls.bridge = CvBridge()
-        cls.image_debug_pub = cls.nh.advertise('/stc_mask_debug', Image)
-        cls.sequence_report = cls.nh.get_service_client(COLOR_SEQUENCE_SERVICE, ColorSequence)
-
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
+        self.debug_points_pub = self.nh.advertise('/stc_led_points', PointCloud2)
+        self.bridge = CvBridge()
+        self.image_debug_pub = self.nh.advertise('/stc_mask_debug', Image)
+        self.sequence_report = self.nh.get_service_client(COLOR_SEQUENCE_SERVICE, ColorSequence)
 
-        info = yield self.camera_info_sub.get_next_message()
-        self.camera_model.fromCameraInfo(info)
+        self.init_front_left_camera()
 
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
+        info = yield self.front_left_camera_info_sub.get_next_message()
+        self.camera_model.fromCameraInfo(info)
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = 'cluster_tolerance_m'
         pcodar_cluster_tol.value = 20
 
         yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
-        yield self.find_stc()
-        _, pose = yield self.get_sorted_objects(name='stc_platform', n=1)
-        pose = pose[0]
-        yield self.move.look_at(pose).set_position(pose).backward(5).go()
-        # get updated points and tf now that we a closer
+        try:
+            pose = yield self.find_stc()
+        except Exception as e:
+            sequence = ['red', 'green', 'blue']
+            yield self.report_sequence(sequence)
+            defer.returnValue(sequence)
 
+        yield self.move.look_at(pose).set_position(pose).backward(5).go()
+        yield self.nh.sleep(5)
+        # get updated points and tf now that we a closer
         stc_query = yield self.get_sorted_objects(name='stc_platform', n=1)
         stc = stc_query[0][0]
         tf = yield self.tf_listener.get_transform(CAMERA_LINK_OPTICAL, 'enu')
@@ -92,7 +90,7 @@ class ScanTheCode(Vrx):
     def get_sequence(self, contour):
         sequence = []
         while len(sequence) < 3:
-            img = yield self.camera_sub.get_next_message()
+            img = yield self.front_left_camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img)
 
             mask = contour_mask(contour, img_shape=img.shape)
@@ -126,47 +124,44 @@ class ScanTheCode(Vrx):
         except Exception as e: #catch error incase vrx scroing isnt running
             print e
 
-    @txros.util.cancellableInlineCallbacks
-    def label_stc(self):
-        msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
-        most_stc = msgs[0]
-        pose_idx = 0
-        least_error = stc_error(most_stc.scale)
-        for msg in msgs:
-            if stc_error(msg.scale) < least_error:
-                least_error = stc_error(msg.scale)
-                most_stc = msg
-        cmd = '%d=stc_platform'%most_stc.id
-        yield self._database_query(ObjectDBQueryRequest(name='', cmd=cmd))
 
 
     @txros.util.cancellableInlineCallbacks
     def find_stc(self):
+        pose = None
         # see if we already got scan the code tower
         try:
-            _, pose = yield self.get_sorted_objects(name='stc_platform', n=1)
-            pose = pose[0]
+            _, poses = yield self.get_sorted_objects(name='stc_platform', n=1)
+            pose = poses[0]
         # incase stc platform not already identified
         except Exception as e:
             # get all pcodar objects
             try:
                 _, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
             # if no pcodar objects, drive forward
-            # TODO: replace with actual explore
             except Exception as e:
                 yield self.move.forward(50).go()
                 # get all pcodar objects
-                try:
-                    _, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
+                _, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
                 # if still no pcodar objects, guess RGB and exit mission
-                except Exception as e:
-                    sequence = ['red', 'green', 'blue']
-                    yield self.report_sequence(sequence)
-                    defer.returnValue(sequence)
-            # go to avg of those objs to get better data on those objs
-            print 'going to center of things'
-            yield self.move.set_position(sum(poses)/len(poses)).go()
-            yield self.label_stc()
+            # go to nearest obj to get better data on that obj
+            print 'going to nearest object'
+            yield self.move.set_position(poses[0]).go()
+            # get data on closest obj
+            msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=1)
+            if np.linalg.norm(rosmsg_to_numpy(msgs[0].scale)) > 6.64:
+                # much bigger than scale of stc
+                # then we found the dock
+                yield self.pcodar_label(msgs[0].id, 'dock')
+                # get other things
+                msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=1)
+                # if no other things, throw error and exit mission
+                yield self.pcodar_label(msgs[0].id, 'stc_platform')
+                pose = poses[0]
+            else: # if about same size as stc, lable it stc
+                yield self.pcodar_label(msgs[0].id, 'stc_platform')
+                pose = poses[0]
+        defer.returnValue(pose)
 
 def z_filter(db_obj_msg):
     # do a z filter for the led points
@@ -174,15 +169,6 @@ def z_filter(db_obj_msg):
     points = np.array([[i.x, i.y, i.z] for i in db_obj_msg.points 
                         if i.z < top-LED_PANNEL_MAX and i.z > top-LED_PANNEL_MIN])
     return points
-
-def stc_error(a):
-    '''
-    a: geometry_msg/Vector3. scale of potential stc pcodar object
-    returns: the squared error of a bounding box around an object from the stc box
-    '''
-    return np.linalg.norm(np.array([(a.z - STC_HEIGHT)**2,
-                                    (a.x - STC_WIDTH)**2,
-                                    (a.y - STC_WIDTH)**2]))
 
 def bbox_from_rect(rect):
     bbox = np.array([[rect[0][0], rect[0][1]],
