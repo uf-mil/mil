@@ -8,7 +8,7 @@ from mil_tools import rosmsg_to_numpy
 from geographic_msgs.msg import GeoPoseStamped
 from std_srvs.srv import TriggerRequest, SetBoolRequest
 from genpy import Duration
-from dynamic_reconfigure.msg import BoolParameter, DoubleParameter
+from dynamic_reconfigure.msg import BoolParameter, DoubleParameter, IntParameter
 
 ___author___ = "Kevin Allen"
 
@@ -43,7 +43,7 @@ class VrxPerception(Vrx):
         if obj_id in self.announced:
             defer.returnValue(False)
         if np.linalg.norm(position_enu - boat_position_enu) < 3.5:
-            self.send_feedback('Ignoring {} b/c its too close', obj_id)
+            self.send_feedback('Ignoring {} b/c its too close'.format(obj_id))
             defer.returnValue(False)
         geo_point = yield self.enu_position_to_geo_point(position_enu)
         msg = GeoPoseStamped()
@@ -55,9 +55,11 @@ class VrxPerception(Vrx):
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
         p1 = BoolParameter(name='associator_forget_unseen', value=True)
-        p2 = DoubleParameter(name='cluster_tolerance_m', value=1.0)
-        p3 = DoubleParameter(name='associator_max_distance', value=1.0)
-        yield self.pcodar_set_params(bools=[p1], doubles=[p2, p3])
+        p2 = DoubleParameter(name='cluster_tolerance_m', value=0.25)
+        p3 = DoubleParameter(name='associator_max_distance', value=0.25)
+        p4 = IntParameter(name='cluster_min_points', value=1)
+        p5 = IntParameter(name='persistant_cloud_filter_min_neighbors', value=1)
+        yield self.pcodar_set_params(bools=[p1], doubles=[p2, p3], ints=[p4, p5])
         # TODO: use PCODAR amnesia to avoid this timing fiasco
         yield self.wait_for_task_such_that(lambda task: task.state in ['running'])
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
