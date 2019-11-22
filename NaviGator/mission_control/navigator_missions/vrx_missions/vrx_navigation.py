@@ -46,14 +46,13 @@ class VrxNavigation(Vrx):
         return np.array([center[0], center[1], 0.]), np.array([perp_vec[0], perp_vec[1], 0.])
 
     @txros.util.cancellableInlineCallbacks
-    def go_thru_gate(self, gate):
-        BEFORE = 5.0
-        AFTER = 4.0
+    def go_thru_gate(self, gate, BEFORE=5.0, AFTER=4.0):
         center, vec = gate
         before_position = center - (vec * BEFORE)
         after_position = center + (vec * AFTER)
         yield self.move.set_position(before_position).look_at(center).go()
-        yield self.move.look_at(after_position).set_position(after_position).go()
+        if AFTER > 0:
+            yield self.move.look_at(after_position).set_position(after_position).go()
 
     @txros.util.cancellableInlineCallbacks
     def get_objects_of_interest(self, pose):
@@ -110,7 +109,10 @@ class VrxNavigation(Vrx):
     def prepare_to_enter(self):
         closest = []
         while len(closest) < 2:
-            closest, closest_positions = yield self.get_sorted_objects('all', 2)
+            res = yield self.get_sorted_objects('all', 2, throw=False)
+            if res is None:
+                continue
+            closest, closest_positions = res
         if closest[0].labeled_classification == 'UNKNOWN':
            yield self.inspect_object(closest_positions[0]) 
         if closest[1].labeled_classification == 'UNKNOWN':
@@ -119,12 +121,18 @@ class VrxNavigation(Vrx):
         red = closest_positions[self.get_index_of_type(closest, ('red_totem', 'surmark950410'))]
         position = (yield self.tx_pose)[0]
         gate = self.get_gate(white, red, position)
-        yield self.go_thru_gate(gate)
+        yield self.go_thru_gate(gate, AFTER=-2)
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
+        '''
+        TODO: check for new objects in background, cancel move
+              somefucking how handle case where gates litteraly loop back and head the other direction
+        '''
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
         yield self.prepare_to_enter()
+        yield self.wait_for_task_such_that(lambda task: task.state =='running')
+        yield self.move.forward(4.0).go()
         while not (yield self.do_next_gate()):
             pass
         yield self.move.forward(10).go()
