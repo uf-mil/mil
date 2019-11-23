@@ -41,7 +41,7 @@ void InputCloudFilter::set_robot_footprint(Eigen::Vector4f const& min, Eigen::Ve
 
 void InputCloudFilter::set_robot_pose(Eigen::Affine3d const& transform)
 {
-  Eigen::Affine3f transform_float = transform.cast<float>();
+  Eigen::Affine3f transform_float = transform.inverse().cast<float>();
   robot_filter_.setTransform(transform_float);
 }
 
