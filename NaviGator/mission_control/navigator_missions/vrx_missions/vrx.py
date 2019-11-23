@@ -19,28 +19,29 @@ class Vrx(Navigator):
     def __init__(self, *args, **kwargs):
         super(Vrx, self).__init__(*args, **kwargs)
 
-    @classmethod
-    def init(cls):
-        if hasattr(cls, '_vrx_init'):
+    @staticmethod
+    def init():
+        if hasattr(Vrx, '_vrx_init'):
             return
-        cls.from_lla = cls.nh.get_service_client("/fromLL", FromLL)
-        cls.to_lla = cls.nh.get_service_client("/toLL", ToLL)
-        cls.task_info_sub = cls.nh.subscribe("/vrx/task/info", Task)
-        cls.scan_dock_color_sequence = cls.nh.get_service_client("/vrx/scan_dock/color_sequence", ColorSequence)
-        cls.station_keep_goal = cls.nh.subscribe("/vrx/station_keeping/goal", GeoPoseStamped)
-        cls.wayfinding_path_sub = cls.nh.subscribe("/vrx/wayfinding/waypoints", GeoPath)
-        cls.station_keeping_pose_error = cls.nh.subscribe("/vrx/station_keeping/pose_error", Float64)
-        cls.station_keeping_rms_error = cls.nh.subscribe("/vrx/station_keeping/rms_error", Float64)
-        cls.wayfinding_min_errors = cls.nh.subscribe("/vrx/wayfinding/min_errors", Float64MultiArray)
-        cls.wayfinding_mean_error = cls.nh.subscribe("/vrx/wayfinding/mean_error", Float64)
-        cls.perception_landmark = cls.nh.advertise("/vrx/perception/landmark", GeoPoseStamped)
-        #cls.scan_dock_placard_symbol = cls.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
+        print 'cALLING INITITTI'
+        Vrx.from_lla = Vrx.nh.get_service_client("/fromLL", FromLL)
+        Vrx.to_lla = Vrx.nh.get_service_client("/toLL", ToLL)
+        Vrx.task_info_sub = Vrx.nh.subscribe("/vrx/task/info", Task)
+        Vrx.scan_dock_color_sequence = Vrx.nh.get_service_client("/vrx/scan_dock/color_sequence", ColorSequence)
+        Vrx.station_keep_goal = Vrx.nh.subscribe("/vrx/station_keeping/goal", GeoPoseStamped)
+        Vrx.wayfinding_path_sub = Vrx.nh.subscribe("/vrx/wayfinding/waypoints", GeoPath)
+        Vrx.station_keeping_pose_error = Vrx.nh.subscribe("/vrx/station_keeping/pose_error", Float64)
+        Vrx.station_keeping_rms_error = Vrx.nh.subscribe("/vrx/station_keeping/rms_error", Float64)
+        Vrx.wayfinding_min_errors = Vrx.nh.subscribe("/vrx/wayfinding/min_errors", Float64MultiArray)
+        Vrx.wayfinding_mean_error = Vrx.nh.subscribe("/vrx/wayfinding/mean_error", Float64)
+        Vrx.perception_landmark = Vrx.nh.advertise("/vrx/perception/landmark", GeoPoseStamped)
+        #Vrx.scan_dock_placard_symbol = Vrx.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
 
         Vrx.front_left_camera_info_sub = None 
         Vrx.front_left_camera_sub = None
 
 
-        cls._vrx_init = True
+        Vrx._vrx_init = True
 
     #@txros.util.cancellableInlineCallbacks
     def cleanup(self):
@@ -91,10 +92,14 @@ class Vrx(Navigator):
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
+        print 'VRXXX'
         yield self.set_vrx_classifier_enabled.wait_for_service()
+        print 'ggf'
         yield self._pcodar_set_params.wait_for_service()
+        print 'gfgf'
         msg = yield self.task_info_sub.get_next_message()
         task_name = msg.name
+        print 'GET TASK'
         if task_name == 'stationkeeping':
             yield self.run_submission('VrxStationKeeping')
         elif task_name == 'wayfinding':
