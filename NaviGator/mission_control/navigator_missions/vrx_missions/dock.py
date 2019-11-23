@@ -37,11 +37,16 @@ class Dock(Vrx):
 
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
+        print 'a' 
         self.debug_points_pub = self.nh.advertise('/dock_pannel_points', PointCloud2)
         self.bridge = CvBridge()
+        print 'b'
+
         self.image_debug_pub = self.nh.advertise('/dock_mask_debug', Image)
 
         self.init_front_left_camera()
+        print 'c'
+
         args = str.split(args, ' ')
         self.color = args[0]
         self.shape = args[1]
@@ -57,7 +62,9 @@ class Dock(Vrx):
         yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
         self.nh.sleep(5)
 
+        print 'd'
         pose = yield self.find_dock()
+        print 'e'
         yield self.move.look_at(pose).set_position(pose).backward(20).go()
         # get updated points now that we a closer
         dock, pose = yield self.get_sorted_objects(name='dock', n=1)
@@ -150,11 +157,12 @@ class Dock(Vrx):
         # incase stc platform not already identified
         except Exception as e:
             # get all pcodar objects
-            try:
-                msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
-            except Exception as e:
-                yield self.move.forward(50).go()
-                msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
+            msgs = None
+            while msgs is None:
+                try:
+                    msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
+                except Exception as e:
+                    yield self.move.forward(10).go()
             yield self.pcodar_label(msgs[0].id, 'dock')
             # if no pcodar objects, throw error, exit mission
             pose = poses[0]
