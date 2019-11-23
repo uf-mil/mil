@@ -111,6 +111,8 @@ class VrxNavigation(Vrx):
                     if self.object_classified(objects_msg.objects, move_id_tuple[1]):
                         self.send_feedback('{} identified. Canceling investigation'.format(move_id_tuple[1]))
                         yield dl.cancel()
+                        yield move_id_tuple[0].cancel()
+                        # yield self.move.forward(0).go()
                         move_id_tuple = None
                 # Move succeeded:
                 else:
@@ -136,7 +138,7 @@ class VrxNavigation(Vrx):
                     self.send_feedback('Condition met. Canceling investigation')
                     yield dl.cancel()
                     yield move_id_tuple[0].cancel()
-                    yield self.move.forward(0).go()
+                    # yield self.move.forward(0).go()
                     move_id_tuple = None
                 defer.returnValue(ret)
 
@@ -187,8 +189,7 @@ class VrxNavigation(Vrx):
         def filter_and_sort(objects, positions):
             distances = np.linalg.norm(positions - robot_position, axis=1)
             argsort = np.argsort(distances)
-            closest_two_index = argsort[:2]
-            return closest_two_index
+            return argsort
 
         def is_done(objects, positions):
             res = self.get_objects_indicies_for_start(objects)
