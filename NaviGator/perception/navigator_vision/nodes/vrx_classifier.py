@@ -28,10 +28,38 @@ def bbox_countour_from_rectangle(bbox):
                      [bbox[1][0], bbox[1][1]],
                      [bbox[0][0], bbox[1][1]]])
 
+class RunningMean(object):
+    def __init__(self, value):
+        self.sum = 0
+        self.n = 0
+        self.add_value(value) 
+
+    def add_value(self, value):
+        self.sum += value
+        self.n += 1
+
+    @property
+    def mean(self):
+        return self.sum / self.n
 
 class VrxClassifier(object):
+    # Handle buoys / black totem specially, discrminating on volume as they have the same color
+    # The black objects that we have trained the color classifier on
+    BLACK_OBJECT_CLASSES = ['buoy', 'black_totem']
+    # All the black objects in VRX
+    POSSIBLE_BLACK_OBJECTS = ['polyform_a3', 'polyform_a5', 'polyform_a7']
+    # The average perceceived PCODAR volume of each above object
+    BLACK_OBJECT_VOLUMES = [0.3, 0.9, 1.9]
+    BLACK_OBJECT_AREA = [0., 0.5, 0., 0.]
+    TOTEM_MIN_HEIGHT = 0.9
+
     def __init__(self):
         self.enabled = False
+        # Maps ID to running class probabilities
+        self.object_map = {}
+        # Maps ID to mean volume, used to discriminate buoys / black totem
+        self.volume_means = {}
+        self.area_means = {}
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
         self.get_params()
@@ -96,6 +124,51 @@ class VrxClassifier(object):
         box_corners = self.get_bbox(p, q_mat, obj_msg)
         return self.get_box_roi(box_corners)
 
+    def update_object(self, object_msg, class_probabilities):
+        object_id = object_msg.id
+
+        # Update the total class probabilities
+        if object_id in self.object_map:
+            self.object_map[object_id] += class_probabilities
+        else:
+            self.object_map[object_id] = class_probabilities
+        total_probabilities = self.object_map[object_id]
+
+        # Guess the type of object based 
+        most_likely_index = np.argmax(total_probabilities)
+        most_likely_name = self.classifier.CLASSES[most_likely_index]
+        # Unforuntely this doesn't really work'
+        if most_likely_name in self.BLACK_OBJECT_CLASSES:
+            object_scale = rosmsg_to_numpy(object_msg.scale)
+            object_volume = object_scale.dot(object_scale) 
+            object_area = object_scale[:2].dot(object_scale[:2])
+            height = object_scale[2]
+            if object_id in self.volume_means:
+                self.volume_means[object_id].add_value(object_volume)
+                self.area_means[object_id].add_value(object_area)
+            else:
+                self.volume_means[object_id] = RunningMean(object_volume)
+                self.area_means[object_id] = RunningMean(object_area)
+            running_mean_volume = self.volume_means[object_id].mean
+            running_mean_area = self.area_means[object_id].mean
+           
+            if height > self.TOTEM_MIN_HEIGHT:
+                black_guess = 'black_totem'
+            else:
+                black_guess_index = np.argmin(np.abs(self.BLACK_OBJECT_VOLUMES - running_mean_volume))
+                black_guess = self.POSSIBLE_BLACK_OBJECTS[black_guess_index]
+            most_likely_name = black_guess
+            rospy.loginfo('{} current/running volume={}/{} area={}/{} height={}-> {}'.format(object_id, object_volume, running_mean_volume, object_area, running_mean_area, height, black_guess))
+        obj_title = object_msg.labeled_classification
+        probability = class_probabilities[most_likely_index]
+        rospy.loginfo('Object {} {} classified as {} ({}%)'.format(object_id, object_msg.labeled_classification, most_likely_name, probability * 100.))
+        if obj_title != most_likely_name:
+            cmd = '{}={}'.format(object_id, most_likely_name)
+            rospy.loginfo('Updating object {} to {}'.format(object_id, most_likely_name))
+            if not self.is_training:
+                self.database_client(ObjectDBQueryRequest(cmd=cmd))
+        return most_likely_name
+
     @thread_lock(lock)
     def img_cb(self, img):
         if not self.enabled:
@@ -140,28 +213,29 @@ class VrxClassifier(object):
         if self.is_training:
             training = []
 
+
         for i in xrange(len(rois)):
+            # The index in self.last_objects that this object is
             index = met_criteria[i]
+            # The actual message object we are looking at
             object_msg = self.last_objects.objects[index]
             object_id = object_msg.id
+            # Exit early if we could not get a valid roi
             if rois[i] is None:
                 rospy.logwarn('Object {} had no points, skipping'.format(object_id))
                 continue
+            # Form a contour from the ROI
             contour = np.array(rois[i], dtype=int)
-            # Create image mask of just the object
+            # Create image mask from the contour
             mask = contour_mask(contour, img_shape=img.shape)
+
+            # get the color mean features
             features = np.array(self.classifier.get_features(img, mask)).reshape(1, 9)
+            # Predict class probabilites based on color means
             class_probabilities = self.classifier.feature_probabilities(features)[0]
-            most_likely_index = np.argmax(class_probabilities)
-            most_likely_name = self.classifier.CLASSES[most_likely_index]
-            probability = class_probabilities[most_likely_index]
-            obj_title = object_msg.labeled_classification
-            rospy.loginfo('Object {} {} classified as {} ({}%)'.format(object_id, object_msg.labeled_classification, most_likely_name, probability * 100.))
-            if object_msg.labeled_classification != most_likely_name:
-                cmd = '{}={}'.format(object_id, most_likely_name)
-                rospy.loginfo('Updating object {} to {}'.format(object_id, most_likely_name))
-                if not self.is_training:
-                    self.database_client(ObjectDBQueryRequest(cmd=cmd))
+            # Use this and previous probabilities to guess at which object this is
+            guess = self.update_object(object_msg, class_probabilities)
+            # If training, save this
             if self.is_training and obj_title != 'UNKNOWN':
                 classification_index = self.classifier.CLASSES.index(obj_title)
                 training.append(np.append(classification_index, features))
