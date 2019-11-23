@@ -49,7 +49,7 @@ class VrxClassifier(object):
     # All the black objects in VRX
     POSSIBLE_BLACK_OBJECTS = ['polyform_a3', 'polyform_a5', 'polyform_a7']
     # The average perceceived PCODAR volume of each above object
-    BLACK_OBJECT_VOLUMES = [0.3, 0.9, 1.9]
+    BLACK_OBJECT_VOLUMES = [0.3, 0.6, 1.9]
     BLACK_OBJECT_AREA = [0., 0.5, 0., 0.]
     TOTEM_MIN_HEIGHT = 0.9
 

@@ -54,20 +54,6 @@ class VrxNavigation(Vrx):
             yield self.move.look_at(after_position).set_position(after_position).go()
 
     @txros.util.cancellableInlineCallbacks
-    def get_objects_of_interest(self, pose):
-        p = pose[0]
-        q_mat = quaternion_matrix(pose[1])
-        objects = (yield self.database_query(name='all')).objects
-        positions = np.array([rosmsg_to_numpy(obj.pose.position) for obj in objects])
-        positions_local = np.array([(q_mat.T.dot(position - p)) for position in positions])
-        positions_local_x = np.array(positions_local[:, 0])
-        forward_indicies = np.argwhere(positions_local_x > 1.0).flatten()
-        distances = np.linalg.norm(positions_local[forward_indicies], axis=1)
-        objects_of_interest_indicies = forward_indicies[np.argsort(distances).flatten()].tolist()
-        ret_objects = [objects[i] for i in objects_of_interest_indicies]
-        defer.returnValue((ret_objects, positions[objects_of_interest_indicies], positions_local[objects_of_interest_indicies]))
-
-    @txros.util.cancellableInlineCallbacks
     def do_next_gate(self):
         pose = yield self.tx_pose
         p = pose[0]
@@ -80,8 +66,8 @@ class VrxNavigation(Vrx):
             forward_indicies = np.array([i for i in forward_indicies if objects[i].id not in self.objects_passed])
             distances = np.linalg.norm(positions_local[forward_indicies], axis=1)
             indicies =  forward_indicies[np.argsort(distances).flatten()].tolist()
-            ids = [objects[i].id for i in indicies]
-            self.send_feedback('Im attracted to {}'.format(ids))
+            # ids = [objects[i].id for i in indicies]
+            # self.send_feedback('Im attracted to {}'.format(ids))
             return indicies
 
         def is_done(objects, positions):
@@ -101,41 +87,6 @@ class VrxNavigation(Vrx):
         self.objects_passed.add(right_obj.id)
         defer.returnValue(end)
 
-        p = pose[0]
-        # CURRENTLY NOT WORKING
-        investigated = set()
-        while True:
-            objects_of_interest, positions, positions_local = yield self.get_objects_of_interest(pose)
-            if len(objects_of_interest) < 2:
-                raise Exception('we done')
-            try:
-                left_index = self.get_index_of_type(objects_of_interest, ('surmark950400', 'green_totem', 'blue_totem'))
-                right_index = self.get_index_of_type(objects_of_interest, ('red_totem', 'surmark950410'))
-                break
-            except StopIteration:
-                pass
-            explored = False
-            for i in range(len(objects_of_interest)):
-                if objects_of_interest[i].id not in investigated and objects_of_interest[i].labeled_classification == 'UNKNOWN':
-                    yield self.inspect_object(positions[i])
-                    explored = True
-                    break
-            if explored:
-                continue
-            self.send_feedback('!!! NO MORE OBJECTS TO INVESTIGATE, CHOOSING TWO RANDOM BOIS')
-            left_index = np.argmax(positions_local[:, 1])
-            right_index = np.argmin(positions_local[:, 1])
-            break
-        end = objects_of_interest[left_index].labeled_classification == 'blue_totem'
-        self.send_feedback('done' if end else 'not done, bro')
-        left_position = positions[left_index]
-        right_position = positions[right_index]
-        self.objects_passed.add(objects_of_interest[left_index].id)
-        self.objects_passed.add(objects_of_interest[right_index].id)
-        gate = self.get_gate(left_position, right_position, p)
-        yield self.go_thru_gate(gate)
-        defer.returnValue(end)
-
     @txros.util.cancellableInlineCallbacks
     def explore_closest_until(self, is_done, filter_and_sort):
         '''
@@ -144,6 +95,7 @@ class VrxNavigation(Vrx):
         '''
         move_id_tuple = None
         service_req = None
+        dl = None
         investigated = set()
         while True:
             if move_id_tuple is not None:
@@ -158,7 +110,7 @@ class VrxNavigation(Vrx):
                     objects_msg = result
                     if self.object_classified(objects_msg.objects, move_id_tuple[1]):
                         self.send_feedback('{} identified. Canceling investigation'.format(move_id_tuple[1]))
-                        move_id_tuple[0].cancel()
+                        yield dl.cancel()
                         move_id_tuple = None
                 # Move succeeded:
                 else:
@@ -168,20 +120,30 @@ class VrxNavigation(Vrx):
                 objects_msg = yield self.database_query(name='all')
             objects = objects_msg.objects
             positions = np.array([rosmsg_to_numpy(obj.pose.position) for obj in objects])
-            indicies = filter_and_sort(objects, positions)
+            if len(objects) == 0:
+                indicies = []
+            else:
+                indicies = filter_and_sort(objects, positions)
             if indicies is None or len(indicies) == 0:
-                raise Exception('no objects')
+                self.send_feedback('No objects')
+                continue
             objects = [objects[i] for i in indicies]
             positions = positions[indicies]
             # Exit if done
             ret = is_done(objects, positions)
             if ret is not None:
                 if move_id_tuple is not None:
-                    move_id_tuple[0].cancel()
+                    self.send_feedback('Condition met. Canceling investigation')
+                    yield dl.cancel()
+                    yield move_id_tuple[0].cancel()
+                    yield self.move.forward(0).go()
+                    move_id_tuple = None
                 defer.returnValue(ret)
 
             if move_id_tuple is not None:
                 continue
+
+            self.send_feedback('ALREADY INVEST {}'.format(investigated))
 
             # Explore the next one
             for i in xrange(len(objects)):
@@ -190,7 +152,9 @@ class VrxNavigation(Vrx):
                     investigated.add(objects[i].id)
                     move = self.inspect_object(positions[i])
                     move_id_tuple = (move, objects[i].id)
+                    break
             if move_id_tuple is None:
+                self.send_feedback('!!!! NO MORE TO EXPLORE')
                 raise Exception('no more to explore')
 
     def get_objects_indicies_for_start(self, objects):
@@ -247,10 +211,12 @@ class VrxNavigation(Vrx):
               somefucking how handle case where gates litteraly loop back and head the other direction
         '''
         self.objects_passed = set()
+        # Wait a bit for PCDAR to get setup
+        yield self.nh.sleep(3.0)
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
-        #yield self.prepare_to_enter()
-        # yield self.wait_for_task_such_that(lambda task: task.state =='running')
-        # yield self.move.forward(7.0).go()
+        yield self.prepare_to_enter()
+        yield self.wait_for_task_such_that(lambda task: task.state =='running')
+        yield self.move.forward(7.0).go()
         while not (yield self.do_next_gate()):
             pass
         self.send_feedback('This is the last gate! Going through!')
