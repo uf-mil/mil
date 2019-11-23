@@ -115,8 +115,8 @@ Node::Node(ros::NodeHandle _nh) : NodeBase(_nh)
 
   // TODO: pull from params (currently misleading)
   // Currently based on WAMv in VRX, inflated x 1.2 for safety factor
-  const double HALF_LENGTH = 2.739625 * 1.0;
-  const double HALF_WIDTH = 2.02589 * 1.0;
+  const double HALF_LENGTH = 2.739625 * 1.2;
+  const double HALF_WIDTH = 2.02589 * 1.2;
   const double BOTTOM = -5.;
   const double TOP = 5.;
   Eigen::Vector4f min(-HALF_LENGTH, -HALF_WIDTH, BOTTOM, 1.);
