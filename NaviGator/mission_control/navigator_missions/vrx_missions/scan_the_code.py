@@ -108,7 +108,7 @@ class ScanTheCode(Vrx):
             #print most_likely_name
             if most_likely_name == 'off':
                 sequence = []
-            elif sequence == [] or  most_likely_name != sequence[-1]:
+            elif sequence == [] or most_likely_name != sequence[-1]:
                 sequence.append(most_likely_name)
         defer.returnValue(sequence)
 

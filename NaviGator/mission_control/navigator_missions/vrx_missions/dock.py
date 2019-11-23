@@ -55,6 +55,8 @@ class Dock(Vrx):
         pcodar_cluster_tol.value = 20
 
         yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
+        self.nh.sleep(5)
+
         pose = yield self.find_dock()
         yield self.move.look_at(pose).set_position(pose).backward(20).go()
         # get updated points now that we a closer
@@ -71,7 +73,7 @@ class Dock(Vrx):
         curr_color, masked_image = yield self.get_color()
         if curr_color!=self.color:
             # Dock at the other side of the dock, no further perception
-            yield self.move.backward(10).go(blind=True)
+            yield self.move.backward(5).go()
             yield self.move.set_position((-bbox_enu+position)).look_at(position).go()
             yield self.dock()
         else:
@@ -80,6 +82,7 @@ class Dock(Vrx):
                 yield self.dock()
             else:
                 # go to other one
+                yield self.move.backward(5).go()
                 yield self.move.set_position((-bbox_enu+position)).look_at(position).go()
                 curr_color, _ = yield self.get_color()
 
@@ -87,6 +90,7 @@ class Dock(Vrx):
                 if curr_color!=self.color and task_info.remaining_time.secs >= 60:
                     # if we got the right color on the other side and the wrong color on this side, 
                     # go dock in the other side
+                    yield self.move.backward(5).go()
                     yield self.move.set_position((bbox_enu+position)).look_at(position).go()
                     yield self.dock()
                 else:
@@ -146,7 +150,11 @@ class Dock(Vrx):
         # incase stc platform not already identified
         except Exception as e:
             # get all pcodar objects
-            msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
+            try:
+                msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
+            except Exception as e:
+                yield self.move.forward(50).go()
+                msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
             yield self.pcodar_label(msgs[0].id, 'dock')
             # if no pcodar objects, throw error, exit mission
             pose = poses[0]
