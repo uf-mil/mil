@@ -7,6 +7,7 @@ docs/_build
 # Editor cache files
 *.swo
 *.swp
+*.swn
 
 # Prerequisites
 *.d
