@@ -39,8 +39,8 @@ class Dock(Vrx):
     def run(self, args):
         self.debug_points_pub = self.nh.advertise('/dock_pannel_points', PointCloud2)
         self.bridge = CvBridge()
-        self.image_debug_pub = self.nh.advertise('/dock_mask_debug', Image)
 
+        self.image_debug_pub = self.nh.advertise('/dock_mask_debug', Image)
         self.init_front_left_camera()
         args = str.split(args, ' ')
         self.color = args[0]
@@ -150,11 +150,12 @@ class Dock(Vrx):
         # incase stc platform not already identified
         except Exception as e:
             # get all pcodar objects
-            try:
-                msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
-            except Exception as e:
-                yield self.move.forward(50).go()
-                msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
+            msgs = None
+            while msgs is None:
+                try:
+                    msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
+                except Exception as e:
+                    yield self.move.forward(10).go()
             yield self.pcodar_label(msgs[0].id, 'dock')
             # if no pcodar objects, throw error, exit mission
             pose = poses[0]
