@@ -8,6 +8,7 @@ docs/_build
 *.swo
 *.swp
 *.swn
+*.~lock*
 
 # Prerequisites
 *.d
