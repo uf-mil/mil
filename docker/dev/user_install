@@ -19,6 +19,7 @@ mil_user_setup()
   #basic/handy dev tools to have in a container
   sudo apt install -y tmux
   sudo apt install -y vim
+  sudo apt install -y awscli
 }
 
 # Add configuration lines to bashrc
