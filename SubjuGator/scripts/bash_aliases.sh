@@ -6,9 +6,11 @@
 # been aliased to make them faster or easier to execute. Becoming familiar with
 # these will likely increase productivity, so it is recommended to do so.
 
-
 # Directory navigation
-alias sub="cd \$CATKIN_DIR/src/SubjuGator"
+
+CATKIN_DIR="$(realpath $(dirname $BASH_SOURCE)/../../../../)"
+
+alias sub="cd \$CATKIN_DIR/src/mil/SubjuGator"
 
 # Networking
 alias rsub="ros_connect -n ${HOSTNAMES[0]}"
