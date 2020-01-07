@@ -52,7 +52,7 @@ build_mil_docker_image()
 
 build_vrx_image()
 {
-  $(realpath $(dirname $BASH_SOURCE)/../)/NaviGator/simulation/vrx/docker/build.bash ${NVIDIA} $(realpath $(dirname $BASH_SOURCE)/../)/NaviGator/simulation/vrx/
+  $(realpath $(dirname $BASH_SOURCE)/../)/NaviGator/simulation/VRX/vrx/docker/build.bash ${NVIDIA} $(realpath $(dirname $BASH_SOURCE)/../)/NaviGator/simulation/VRX/vrx/
 }
 
 # Build each of the images

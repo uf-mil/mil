@@ -18,8 +18,8 @@
 	path = mil_common/drivers/LMS1xx
 	url = https://github.com/uf-mil/LMS1xx.git
 [submodule "NaviGator/simulation/vrx"]
-	path = NaviGator/simulation/vrx
+	path = NaviGator/simulation/VRX/vrx
 	url = https://github.com/uf-mil/vrx.git
 [submodule "NaviGator/simulation/vrx-docker"]
-	path = NaviGator/simulation/vrx-docker
+	path = NaviGator/simulation/VRX/vrx-docker
 	url = https://github.com/uf-mil/vrx-docker.git
