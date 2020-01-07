@@ -68,4 +68,4 @@ We have a convenient alias for this, run `cm`
 ## Run some code
 Now that the repository is built, try running something!
 
-For example, [run VRX](/docs/development/vrx_operation)
+For example, [VRX](/docs/development/vrx)
