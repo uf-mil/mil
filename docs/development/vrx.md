@@ -2,6 +2,24 @@
 This page provides general info about developing for [VRX](https://bitbucket.org/osrf/vrx/src), a simulated competition based on the real-life RobotX challenge.
 MIL participates both in VRX and RobotX. Most code for this is hosted under NaviGator/.
 
+## Verifying that the VRX Environment is Functional / Playing Around in VRX
+
+1. Run the development container `./scripts/run_development_container`
+1. Start a [tmux session](https://www.hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/) from the container (allows you to have multiple terminals within the container) `tmux new`
+1. Split the tmux session with `Control+B` then `"`. You can switch between the terminals with `Control+B` then up arrow / down arrow
+1. In one panel, [run vrx](/docs/development/vrx)
+1. See below sections about other things to do in other panes
+
+### Run RVIZ
+You can visualize things by running `vrxviz`
+
+### Give a move command
+Give NaviGator a move command with `nmove forward 5m`, etc
+
+### See the current odometry
+Try streaming the content of a rostopic
+`rostopic echo /odom` 
+
 ## Quick testing
 The official VRX system runs our code and the simulator in separated, isolated containers to prevent cheating.
 However, for normal development in can be helpful to simply run both in the same container.
@@ -56,3 +74,28 @@ The recommended workflow for submitting our code to vrx is:
 6. Now you should have a trial container!
 
 	Follow the instructions at `https://bitbucket.org/osrf/vrx-docker/src/default/` to run this container against the vrx server.
+
+## How to Download and Replay logs from Phase 3 of VRX (2019)
+
+### To Download the Logs
+`./NaviGator/simulation/VRX/vrx_logs/2019/download_logs.bash`
+### To Play a Log
+`./NaviGator/simulation/VRX/vrx_logs/play_log.bash <year> <task> <run>`
+
+i.e. to play the 2019 docking task run 0:
+
+`./NaviGator/simulation/VRX/vrx_logs/play_log.bash 2019 dock 0`
+
+### To Download the Videos:
+  `./NaviGator/simulation/VRX/vrx_logs/2019/download_videos.bash`
+
+### To Play a Video:
+  `mplayer NaviGator/simulation/VRX/vrx_logs/2019/vrx_2019_videos/<task><run>.mp4`
+
+i.e. to play the 2019 docking task run 1:
+
+  `mplayer NaviGator/simulation/VRX/vrx_logs/2019/vrx_2019_videos/dock1.mp4`
+
+*NOTE: Not all tasks and runs have a video. Navigate to 
+`$MIL_REPO/NaviGator/simulation/VRX/vrx_logs/2019/vrx_2019_videos`
+to see the avalible videos.*

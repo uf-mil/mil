@@ -21,7 +21,6 @@ Pages:
    Contributing Changes <docs/development/contributing>
    Development Guide <docs/development/development_guide>
    VRX <docs/development/vrx>
-   Operating VRX <docs/development/vrx_operation.md>
    Adding Documentation <docs/development/adding_documentation>
    Style Guide <docs/development/style>
    docs/examples/index
