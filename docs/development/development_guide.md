@@ -26,9 +26,9 @@ You also need to give your user access to the docker group
 If you are running Ubuntu 18.04 and prefer to simply run code directly on your "host"
 operating system without using Docker, you can run the following scripts from the root of the repository
 
-`./docker/system/system_install`
+`./scripts/system_install`
 
-`./docker/dev/user_install`
+`./scripts/user_install`
 
 ## Build the containers
 Now that you have docker installed, you must build the development container which
