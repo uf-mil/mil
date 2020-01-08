@@ -42,8 +42,9 @@ From the root of the cloned repository in your *host operating system*, run:
 
 This process requires internet and may take a while (up to an hour is common).
 
-##  Run the development container
+##  Getting setup in the development container
 
+### Runing the development container
 Now that the development container is built, you can run the container.
 
 `./scripts/run_developement_container`
@@ -58,14 +59,20 @@ so changes to the code in your host system are also changed in the container and
 This allows you to modify your code in your editor of choice on your host system while
 building and testing changes within the container.
 
+### Starting a tmux session in the development container
+When using ROS and Gazebo, many terminals are required. [tmux](https://www.hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/) is a program which allows one terminal to be split into many terminals each called a panel. We highly recommend its use when runnning code, esspecially when working in a docker container.
+
+1. Start a tmux session from the container (allows you to have multiple terminals within the container) `tmux new`
+1. Split the tmux session with `Control+B` then `"`. You can switch between the terminals with `Control+B` then up arrow / down arrow
+
 ## Build the repository
 Now that you are inside the development container, try building the repository.
 
 We have a convenient alias for this, run `cm`
 
-*NOTE: If having issues building the VRX URDF due to permissions error, make sure your copy of the repo is owned by UID 1000
+*NOTE: If having issues building the VRX URDF due to permissions error, make sure your copy of the repo is owned by UID 1000*
 
 ## Run some code
 Now that the repository is built, try running something!
 
-For example, [VRX](/docs/development/vrx)
+For example, [SubjuGator](/docs/development/sub)

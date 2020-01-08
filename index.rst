@@ -20,6 +20,7 @@ Pages:
    Getting Help <docs/help>
    Contributing Changes <docs/development/contributing>
    Development Guide <docs/development/development_guide>
+   SubjuGator <docs/development/sub>
    VRX <docs/development/vrx>
    Adding Documentation <docs/development/adding_documentation>
    Style Guide <docs/development/style>
