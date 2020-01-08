@@ -21,6 +21,7 @@ mil_user_setup()
   sudo apt install -y tmux
   sudo apt install -y vim
   sudo apt install -y awscli
+  sudo apt install -y net-tools
   # User to mount MIL fileserver
   sudo apt install -y cifs-utils
 }
@@ -41,18 +42,9 @@ mil_user_setup_bashrc()
   fi
 }
 
-# Build repo with catkin
-mil_user_setup_build_repo()
-{
-  if ! catkin_make -C "$CATKIN_DIR"
-  then
-    echo "Failed to build repository. The repo may be broken."
-  fi
-}
 
 mil_user_setup
 mil_user_setup_bashrc
 set +u
 . /opt/ros/melodic/setup.bash
 set -u
-mil_user_setup_build_repo
