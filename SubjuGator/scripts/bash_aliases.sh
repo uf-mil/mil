@@ -6,9 +6,11 @@
 # been aliased to make them faster or easier to execute. Becoming familiar with
 # these will likely increase productivity, so it is recommended to do so.
 
-
 # Directory navigation
-alias sub="cd \$CATKIN_DIR/src/SubjuGator"
+
+CATKIN_DIR="$(realpath $(dirname $BASH_SOURCE)/../../../../)"
+
+alias sub="cd \$CATKIN_DIR/src/mil/SubjuGator"
 
 # Networking
 alias rsub="ros_connect -n ${HOSTNAMES[0]}"
@@ -37,11 +39,11 @@ alias submove="runmission Move"
 alias subfps="rostopic hz $bag_front_cams $bag_down_cam"
 
 # Visualization
-alias subviz="rviz -d \$CATKIN_DIR/src/SubjuGator/sub.rviz"
+alias subviz="rviz -d \$CATKIN_DIR/src/mil/SubjuGator/sub.rviz"
 
 # Development
 alias subfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 \$(rosrun mil_tools list_python_files \$CATKIN_DIR/src/SubjuGator __init__.py deprecated/)"
-alias subtest="(cd \$CATKIN_DIR; rosrun mil_tools catkin_tests_directory.py src/SubjuGator)"
+alias subtest="(cd \$CATKIN_DIR; rosrun mil_tools catkin_tests_directory.py src/mil/SubjuGator)"
 
 
 # Set robot model param, for using rviz when playing bags
