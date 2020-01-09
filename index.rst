@@ -17,7 +17,7 @@ Pages:
    Onboarding <docs/onboarding>
    Glossary <docs/glossary>
    Culture <docs/culture>
-   Getting Help <docs/help>
+   Getting Help <docs/development/help>
    Contributing Changes <docs/development/contributing>
    Development Guide <docs/development/development_guide>
    SubjuGator <docs/development/sub>

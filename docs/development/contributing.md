@@ -42,6 +42,9 @@ Then clone the repo, being sure to pull submodules as well:
 **Windows**
 Use the [Github Desktop GUI](https://help.github.com/en/desktop/contributing-to-projects/cloning-a-repository-from-github-to-github-desktop)
 
+## Find a project
+If you don't yet know what you want to work on, see our [issues list](https://github.com/uf-mil/mil/issues), the TODO column of the [SCUM board](https://github.com/orgs/uf-mil/projects/2), or ask around in slack.
+
 ## Make and test your changes!
 Now its time to contribute! You may find these guides helpful in making and testing changes:
 

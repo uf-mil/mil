@@ -3,9 +3,21 @@ This page describes the recommended process of building and running code in this
 
 Note, this guide assumes you have already cloned the repository as described in the [Contributing Guide](contributing)
 
-It is also generally assumed that you are already running some modern distribution of linux
-(Ubuntu, etc). Folks have had some success on OSX, but Windows will be a real hassle.
-Things will go better if you dual boot Ubuntu (18.04) on your development machine.
+## System Requirements
+
+### Operating System
+**It is recommended that you [dual boot Ubuntu 18.04](https://help.ubuntu.com/community/WindowsDualBoot) for development**
+
+We have made efforts to containerize out development environment to support other linux
+distributions, OSX, and possibly Windows, but these platforms are not officially
+supported.
+
+Virtual Machines will be able to run our software, but it may be too slow (see [hardware](#hardware))
+
+### Hardware
+Autonomous robotics is computationally expensive, especially when running simulations.
+If you can, use a powerful computer. We recommend you have at least 8GB RAM and a modern i5 or better CPU. Many tasks such as simulation and computer vision will run faster on a system with a GPU.
+
 
 ## Install Docker
 It is recommended that you build and run MIL code within a Docker container.
@@ -70,7 +82,7 @@ Now that you are inside the development container, try building the repository.
 
 We have a convenient alias for this, run `cm`
 
-*NOTE: If having issues building the VRX URDF due to permissions error, make sure your copy of the repo is owned by UID 1000*
+If something goes wrong, try the suggestions in [Getting Help](help)
 
 ## Run some code
 Now that the repository is built, try running something!
