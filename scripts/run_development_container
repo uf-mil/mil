@@ -1,6 +1,8 @@
 #!/bin/bash
 sudo docker run -it \
     -v $(realpath $(dirname $BASH_SOURCE)/../):/home/mil-dev/catkin_ws/src/mil/ \
+    -v $HOME/.mil/dev-docker-ws/build:/home/mil-dev/catkin_ws/build/ \
+    -v $HOME/.mil/dev-docker-ws/devel:/home/mil-dev/catkin_ws/devel/ \
     --env="DISPLAY" \
     --env="QT_X11_NO_MITSHM=1" \
     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
