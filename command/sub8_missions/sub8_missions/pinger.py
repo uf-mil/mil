@@ -49,12 +49,12 @@ class Pinger(SubjuGator):
             pinger_2_req = yield self.poi.get('pinger_shooter')
             fprint('Found two pinger guesses {} {}'.format(pinger_1_req, pinger_2_req), msg_color='green')
             pinger_midpoint = (pinger_1_req + pinger_2_req) / 2
-            half_way = pinger_midpoint / 2
+            #half_way = (pinger_midpoint - self.pose.position) / 2
             fprint('Looking at the poi')
             yield self.move.look_at_without_pitching(pinger_midpoint).go(speed=0.5)
             yield self.nh.sleep(3)
             fprint('Moving to the midpoint of the midpoint poi')
-            yield self.move.set_position(half_way).go(speed=1)
+            yield self.move.set_position(pinger_midpoint).depth(MOVE_AT_DEPTH).go(speed=1)
             yield self.nh.sleep(5)
 
 
@@ -135,13 +135,14 @@ class Pinger(SubjuGator):
           
                 if pinger_id == 1:
                     fprint('===DOING SHOOTER SETUP===', msg_color='green')
-                    sub_pos = yield self.pose.position
-                    sub_vec = -sub_pos / np.linalg.norm(sub_pos)
-                    fprint('Moving away'.format(sub_vec))
-                    yield self.move.set_position(sub_pos + ((2.5 * sub_vec)).depth(MOVE_AT_DEPTH).go(speed=SPEED)
-                    yield self.nh.sleep(1)
-                    fprint('Looking at shooter')
-                    yield self.move.look_at_without_pitching(sub_pos).go()
+                    #sub_pos = yield self.pose.position
+                    #sub_vec = -sub_pos / np.linalg.norm(sub_pos)
+                    #fprint('Moving away'.format(sub_vec))
+                    #yield self.move.set_position(sub_pos + (2.5 * sub_vec)).depth(MOVE_AT_DEPTH).go(speed=SPEED)
+                    #yield self.nh.sleep(1)
+                    #fprint('Looking at shooter')
+                    #yield self.move.look_at_without_pitching(sub_pos).go()
+                    #yield self.move.backward(2.5).go(speed=0.5)
                 yield self.nh.set_param("pinger_where", int(pinger_id))
 
                 break

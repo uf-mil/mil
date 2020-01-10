@@ -16,7 +16,7 @@ class Surface(SubjuGator):
         print('Move backward')
         yield self.move.look_at_without_pitching(np.array([0,0,0])).go(speed=0.5)
         yield self.nh.sleep(2)
-        yield self.move.forward(1.3).right(0.5).go(speed=0.3)
+        yield self.move.left(1.6).forward(0.5).go(speed=0.3)
         yield self.nh.sleep(2)
         yield self.move.depth(2).go(speed=0.3)
         self.actuators.gripper_close()

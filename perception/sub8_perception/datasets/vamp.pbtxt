@@ -1,0 +1,16 @@
+item {
+    id: 1
+    name: 'jiangshi'
+}
+item {
+    id: 2
+    name: 'draugr'
+}
+item {
+    id: 3
+    name: 'aswang'
+}
+item {
+    id: 4
+    name: 'vatalas'
+}

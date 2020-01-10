@@ -3,6 +3,7 @@ from twisted.internet import defer
 from ros_alarms import TxAlarmListener, TxAlarmBroadcaster
 from mil_misc_tools import text_effects
 import genpy
+import numpy as np
 from .sub_singleton import SubjuGator
 
 # Import missions here
@@ -48,10 +49,12 @@ class Autonomous(SubjuGator):
     @txros.util.cancellableInlineCallbacks
     def do_mission(self):
         fprint("RUNNING MISSION", msg_color="blue")
+        pinger_1_req = yield self.poi.get('pinger_surface')
+        pinger_2_req = yield self.poi.get('pinger_shooter')
 
         try:
             # Run start gate mission
-            yield self.run_mission(StartGateGuess(), 100)
+            yield self.run_mission(StartGateGuess(), 120)
 
             # Go to pinger and do corresponding mission
             completed = yield self.run_mission(Pinger(), 300)
@@ -63,9 +66,19 @@ class Autonomous(SubjuGator):
                         fprint('Surface Mission')
                         # yield self.run_mission(DraculaGrabber(), 100)
                         yield self.run_mission(Surface(), 30)
+                        yield self.move.look_at_without_pitching(pinger_2_req).go(speed=0.5)
+                        yield self.nh.sleep(3)
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')
-                        c = yield self.run_mission(ArmTorpedos(), 180)
+                        pos = self.pose.position
+                        vec = pinger_1_req - pos 
+                        vec = vec / np.linalg.norm(vec)
+                        fprint('Look at vec')
+                        yield self.move.relative(2.5 * vec).depth(1.5).go(speed=0.5)
+                        fprint('Move looking at')
+                        yield self.move.look_at_without_pitching(pinger_2_req).depth(1.5).go(speed=0.5)
+                        yield self.nh.sleep(2)
+                        c = yield self.run_mission(ArmTorpedos(), 120)
                         if not c:
                             yield self.run_mission(TorpedosTest(), 10)
 
@@ -85,7 +98,9 @@ class Autonomous(SubjuGator):
 
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')
-                        c = yield self.run_mission(ArmTorpedos(), 180)
+                        fprint('Moving backward')
+                        yield self.move.backward(2.5).depth(1.5).go(speed=0.5)
+                        c = yield self.run_mission(ArmTorpedos(), 120)
                         if not c:
                             yield self.run_mission(TorpedosTest(), 10)
 
@@ -146,12 +161,12 @@ class Autonomous(SubjuGator):
 
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
-        yield self.do_mission()
-        #al = yield TxAlarmListener.init(self.nh, "network-loss")
-        #self._auto_param_watchdog(self.nh)
+        #yield self.do_mission()
+        al = yield TxAlarmListener.init(self.nh, "network-loss")
+        self._auto_param_watchdog(self.nh)
 
-        #call_with_sub = lambda *args: self._check_for_run(*args)
-        #al.add_callback(call_with_sub, call_when_cleared=False)
+        call_with_sub = lambda *args: self._check_for_run(*args)
+        al.add_callback(call_with_sub, call_when_cleared=False)
 
-        #fprint("Waiting for network-loss...", msg_color="blue")
-        #yield defer.Deferred()
+        fprint("Waiting for network-loss...", msg_color="blue")
+        yield defer.Deferred()

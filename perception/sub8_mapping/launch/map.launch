@@ -1,0 +1,24 @@
+<launch>
+    <node pkg="sub8_mapping" type="map_generator"   name="sub8_mapping" >
+        <rosparam>
+            # Show the pointcloud
+            map_pc: true
+
+            # Weather or not to use sonar's world data
+            use_sonar: true
+
+            # 
+            map_objects: true
+
+            # Display latest DVL depth marker in Rviz
+            show_markers: true
+
+            # Maximum depth in meters to map
+            max_depth: 37
+
+            # Max amount of pcl to have in buffer
+            pcl_buffer: 5000
+
+        </rosparam>
+    </node>
+</launch>
