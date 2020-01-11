@@ -62,3 +62,10 @@ build_mil_docker_image dev
 build_mil_docker_image ci-build
 build_mil_docker_image ci-server
 
+# Create Space to save build and devel space for dev container
+mkdir -p $HOME/.mil/dev-docker-ws
+chown $UID:1000 -R $HOME/.mil/dev-docker-ws
+
+mkdir -p $HOME/.mil/dev-docker-ws/build
+mkdir -p $HOME/.mil/dev-docker-ws/devel
+
