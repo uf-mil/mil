@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Get root directory of MIL repo
 MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
@@ -8,3 +9,4 @@ BUILD_DIR=/tmp/docs
 mkdir -p $BUILD_DIR/doctrees
 mkdir -p $BUILD_DIR/html
 sphinx-build -b html -d $BUILD_DIR/doctrees  "-W" $MIL_DIR $BUILD_DIR/html
+echo "Docs available at file://$BUILD_DIR/html/index.html"

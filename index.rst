@@ -9,7 +9,7 @@ read the :doc:`Onboarding Guide <docs/onboarding>`.
 
 ..  _MIL repo: https://github.com/uf-mil/mil
 
-Pages:
+Helpful Docs:
 
 .. toctree::
    :maxdepth: 1
@@ -18,12 +18,9 @@ Pages:
    Glossary <docs/glossary>
    Culture <docs/culture>
    Getting Help <docs/development/help>
-   Contributing Changes <docs/development/contributing>
-   Development Guide <docs/development/development_guide>
+   Branding <docs/branding>
+   Development <docs/development/index>
    SubjuGator <docs/development/sub>
    VRX <docs/development/vrx>
-   Adding Documentation <docs/development/adding_documentation>
-   Style Guide <docs/development/style>
-   docs/examples/index
-   ci/readme
+   Infrastructure <docs/infra/index>
    View Github Readme <README>
