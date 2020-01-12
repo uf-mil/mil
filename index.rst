@@ -20,7 +20,8 @@ Helpful Docs:
    Getting Help <docs/development/help>
    Branding <docs/branding>
    Development <docs/development/index>
-   SubjuGator <docs/development/sub>
-   VRX <docs/development/vrx>
+   Projects <docs/projects>
+     SubjuGator <docs/subjugator/index>
+     VRX <docs/navigator/vrx>
    Infrastructure <docs/infra/index>
    View Github Readme <README>

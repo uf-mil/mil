@@ -10,7 +10,4 @@ Various docs related to how to develop MIL software
    Adding Documentation <adding_documentation>
    Documentation Examples <examples/index>
    Debugging <help>
-
    Style Guide <style>
-   SubjuGator <sub>
-   VRX <vrx>

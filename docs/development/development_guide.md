@@ -87,4 +87,4 @@ If something goes wrong, try the suggestions in [Getting Help](help)
 ## Run some code
 Now that the repository is built, try running something!
 
-For example, [SubjuGator](/docs/development/sub)
+For example, [SubjuGator](/docs/subjugator/index)
