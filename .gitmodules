@@ -4,9 +4,6 @@
 [submodule "txros"]
 	path = mil_common/txros
 	url = https://github.com/txros/txros.git
-[submodule "ros_alarms"]
-	path = mil_common/ros_alarms
-	url = https://github.com/uf-mil/ros_alarms.git
 [submodule "drivers/pointgrey_camera_driver"]
 	path = mil_common/deprecated/pointgrey_camera_driver
 	url = https://github.com/uf-mil/pointgrey_camera_driver
