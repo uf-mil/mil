@@ -1,0 +1,5 @@
+string alarm_name             # Name of the target alarm.
+---
+Header header                 # Stamp when alarm was raised/cleared.
+Alarm alarm                   # Alarm of intrest
+
