@@ -21,6 +21,8 @@ mil_user_setup()
   sudo apt install -y tmux
   sudo apt install -y vim
   sudo apt install -y awscli
+  # User to mount MIL fileserver
+  sudo apt-get install cifs-utils
 }
 
 # Add configuration lines to bashrc

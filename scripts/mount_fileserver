@@ -1,0 +1,23 @@
+#!/bin/bash
+set -euo pipefail
+
+usage()
+{
+  echo "Usage: <ad username> <share>"
+  echo "Example ./mount_fileserver kallen navigator"
+  exit 1
+}
+# Call usage() function if arguments not supplied.
+[[ $# -lt 2 ]] && usage
+
+# Parse args
+AD_USERNAME=$1
+SHARE=$2
+
+# Determine path to mount at
+MOUNTDIR_BASE=$HOME/.mil/fileserver
+MOUNTDIR_FULL="$MOUNTDIR_BASE/$SHARE"
+
+mkdir -p $MOUNTDIR_FULL
+sudo mount -t cifs -o uid=$(id -u),gid=$(id -g),user=$AD_USERNAME //fs.mil.ufl.edu/$SHARE $MOUNTDIR_FULL
+echo "Share $SHARE successfully mounted at $MOUNTDIR_FULL"
