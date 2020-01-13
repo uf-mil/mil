@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # ROS Connect is a small set of functions that makes managing the currently
 # selected ROS master simple and convenient. It's default is to dynamically
 # determine which hosts are online and allow the user to select one, but a
@@ -16,11 +15,14 @@ RC_CONFIG_FILE=$MIL_CONFIG_DIR/ros_connect.conf
 DEFAULT_HOST="localhost"
 SEARCH_DOMAIN="ad.mil.ufl.edu"
 SUBNET="192.168.37.0/24"
+SUB_HOSTNAME="mil-sub-sub8.$SEARCH_DOMAIN"
+NAV_HOSTNAME="mil-nav-wamv.$SEARCH_DOMAIN"
+SHUTTLE_HOSTNAME="mil-shuttle.$SEARCH_DOMAIN"
 
 # These are the hostnames for all MIL hosts that run a remote roscore
-HOSTNAMES=(	"mil-sub-sub8.$SEARCH_DOMAIN"
-		"mil-nav-wamv.$SEARCH_DOMAIN"
-		"mil-shuttle.$SEARCH_DOMAIN"
+HOSTNAMES=(	$SUB_HOSTNAME
+		$NAV_HOSTNAME
+		$SHUTTLE_HOSTNAME
 )
 
 # These are the common names that map one-to-one to the above hostnames
@@ -214,7 +216,7 @@ ros_disconnect() {
 
 # Generates the configuration file if it does not exist
 if [[ ! -f $RC_CONFIG_FILE ]]; then
-	write_rc_config_file "true" "$DEFAULT_HOST"
+	write_rc_config_file "false" "$DEFAULT_HOST"
 fi
 
 # A simple implementation of hostname selection persistence

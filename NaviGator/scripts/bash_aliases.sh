@@ -1,14 +1,10 @@
 #!/bin/bash
 
-# This script will be sourced by the MIL runcom file if the install script
-# cloned this repository during a run or if the install script was run after
-# it was cloned manually. It contains NaviGator specific commands that have
-# been aliased to make them faster or easier to execute. Becoming familiar with
-# these will likely increase productivity, so it is recommended to do so.
-
-
 # Directory navigation
-alias nav="cd $CATKIN_DIR/src/NaviGator"
+NAV_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
+alias nav="cd $NAV_DIR"
+# VRX
+alias vrxviz="rviz -d \$MIL_REPO/NaviGator/vrx.rviz"
 
 # Networking
 alias rnav="ros_connect -n ${HOSTNAMES[1]}"
@@ -90,7 +86,7 @@ alias nrespawn="rosservice call /gazebo/delete_model 'navigator' && roslaunch na
 
 # Work around for bagging to SSD and copying to HDD when possible
 # Sync bags from the SSD to the HDD
-alias syncbags="rsync -hru --progress $HOME/bags-fast/ $HOME/bags/"
+alias nsyncbags="rsync -hru --progress $HOME/bags-fast/ $HOME/bags/"
 # Bag to the SSD (so buffer doesn't overflow)
 alias bagfast="BAG_DIR=$HOME/bags-fast bag"
 # Clear the bag fast dir on the SSD (run after it is synced)
