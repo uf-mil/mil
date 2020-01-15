@@ -19,11 +19,11 @@ To use the Network Box:
 
 -  If possible, plug the box into wall power using the special cable
 -  Turn the box on by holding down the ON button until you hear a beep and the RED led turns on 
--  Connect your/other developer laptops via ethernet to any of the top ports BESIDES the one labeled POW
+-  Connect your/other developer laptops via ethernet to any of the top ports BESIDES the one labeled POE
 
     - Be sure your laptop is configured to automaticaly configure network over DHCP
     - If your laptop does not have Ethernet (RJ45), you can use one of the provided adapters inside the box
--  Connect the vehicle to the box. If connecting the Ubiquitii Antenna, connect it to the POW port
+-  Connect the vehicle to the box. If connecting the Ubiquitii Antenna, connect it to the POE port
 -  Wait a few minutes until your PC reports it is connected to the network
 -  To verify functionality, try pinging the vehicle or accessing the config panel
 
@@ -47,7 +47,7 @@ Internal
 -  `Xtreme J60-OE350 AC UPS <https://www.amazon.com/Xtreme-Power-Conversion-J60-350-Lithium/dp/B01M6Z1LJP/ref=pd_sbs_421_t_2/134-1879969-9121638?_encoding=UTF8&pd_rd_i=B01M6Z1LJP&pd_rd_r=b8c3ce7f-63e7-4436-94b9-1167024d1f20&pd_rd_w=pt6dy&pd_rd_wg=tIffo&pf_rd_p=5cfcfe89-300f-47d2-b1ad-a4e27203a02a&pf_rd_r=1FV7RXC72XPWH0T5AA14&psc=1&refRID=1FV7RXC72XPWH0T5AA14>`_
 -  `Protectli FW10408 PFsense router <https://protectli.com/product/fw1/>`_
 -  AC to 12v 5A DC adapter spliced to power both the switch and router
--  Ubiquiti GP-A240-050G POW injector
+-  Ubiquiti GP-A240-050G POE injector
 -  2 Amazon Basics USB to RJ45 devices velcrowed to the lid for
    developers without a RJ45 port
 
