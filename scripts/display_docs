@@ -4,7 +4,7 @@ set -euo pipefail
 # Opens up a web browser
 
 # Path that ./scripts/build_docs generates
-MIL_DOCS_INDEX="/tmp/docs/html/index.html"
+MIL_DOCS_INDEX="$HOME/.mil/docs/html/index.html"
 
 # Check that the docs have been built locally
 if [[ ! -f "$MIL_DOCS_INDEX" ]]; then

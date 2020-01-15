@@ -85,3 +85,8 @@ Some are technical while others are just insides jokes.
      A solution, though possibly not the best solution, to a problem.
      In MIL, is used as a joke for a solution that technically meets
      the criteria but does so in an unexpected or naive way
+
+  POE
+     Power-Over-Ethernet, a variety of protocols to provide
+     power over an ethernet cable, so that the same cable can be used
+     to both power and transmit data.
