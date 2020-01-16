@@ -1,5 +1,6 @@
 #!/bin/bash
 export MIL_CONFIG_DIR=$HOME/.mil
+mkdir -p $MIL_CONFIG_DIR
 export MIL_WS="$(realpath $(dirname $BASH_SOURCE)/../../..)"
 MIL_REPO="$MIL_WS/src/mil"
 
