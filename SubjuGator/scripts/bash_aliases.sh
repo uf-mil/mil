@@ -31,6 +31,10 @@ subvalveopenclose()
  sleep $2
  rosservice call /set_valve "{actuator: $1, opened: false}"
 }
+clearpcl()
+{
+ rosservice call /ogrid_pointcloud/clear_pcl "{}"
+}
 
 # Missions
 alias submove="runmission Move"

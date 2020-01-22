@@ -27,10 +27,14 @@ SPEED = 0.25
 X_OFFSET = 0
 Y_OFFSET = 0
 Z_OFFSET = 0
+
+USE_POI = False
+
 class VampireSlayer(SubjuGator):
 
     @util.cancellableInlineCallbacks
     def run(self, args):
+        yield self.move.depth(3.0).go()
         self.vision_proxies.xyz_points.start()
 
         global SPEED
@@ -42,32 +46,19 @@ class VampireSlayer(SubjuGator):
 
         fprint('Connecting camera')
 
-        cam_info_sub = yield self.nh.subscribe(
-            '/camera/front/left/camera_info',
-                                              CameraInfo)
-
         fprint('Obtaining cam info message')
-        cam_info = yield cam_info_sub.get_next_message()
+        cam_info = yield self.front_left_cam_info.get_next_message()
         model = PinholeCameraModel()
         model.fromCameraInfo(cam_info)
 
      #   enable_service = self.nh.get_service_client("/vamp/enable", SetBool)
      #   yield enable_service(SetBoolRequest(data=True))
 
-#        try:
-#            vamp_txros = yield self.nh.get_service_client('/guess_location',
-#                                                          GuessRequest)
-#            vamp_req = yield vamp_txros(GuessRequestRequest(item='vampire_slayer'))
-#            if vamp_req.found is False:
-#                use_prediction = False
-#                fprint(
-#                    'Forgot to add vampires to guess?',
-#                    msg_color='yellow')
-#            else:
-#                fprint('Found vampires.', msg_color='green')
-#                yield self.move.set_position(mil_ros_tools.rosmsg_to_numpy(vamp_req.location.pose.position)).depth(0.5).go(speed=0.4)
-#        except Exception as e:
-#            fprint(e)
+        if USE_POI:
+            vamp_req = yield self.poi.get('vampire_slayer')
+            yield self.move.set_position(vamp_req).depth(2).go(speed=0.4)
+        else:
+            fprint('Not using POI')
 
         markers = MarkerArray()
         pub_markers = yield self.nh.advertise('/torpedo/rays', MarkerArray)
@@ -82,11 +73,6 @@ class VampireSlayer(SubjuGator):
         yield self.move.down(.5).go()
         yield self.nh.sleep(2)
         yield self.move.up(.5).go()
-        yield self.move.forward(.75).go()
-        yield self.nh.sleep(2)
-        yield self.move.right(.75).go()
-        yield self.nh.sleep(2)
-        yield self.move.backward(.75).go()
         yield self.move.left(1).go()
         '''
         Did we find something?

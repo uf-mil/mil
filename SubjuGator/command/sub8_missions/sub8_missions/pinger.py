@@ -15,14 +15,20 @@ from .sub_singleton import SubjuGator
 
 fprint = text_effects.FprintFactory(title="PINGER", msg_color="cyan").fprint
 
-SPEED = 0.75
-FREQUENCY = 37000
+ALPHA = 30000
+BETA = 40000
+CHARLIE = 25000
+DELTA = 35000
+SCHWARTZ = 37000
+
+SPEED = 1
+FREQUENCY = CHARLIE
 FREQUENCY_TOL = 3000
 
-PINGER_HEIGHT = 0.75  # how high to go above pinger after found
-MOVE_AT_DEPTH = 0.5  # how low to swim and move
+PINGER_HEIGHT = 3 # how high to go above pinger after found
+MOVE_AT_DEPTH = 1.6  # how low to swim and move
 
-POSITION_TOL = 0.09  # how close to pinger before quiting
+POSITION_TOL = 0.1 # how close to pinger before quiting
 Z_POSITION_TOL = -0.53
 
 
@@ -36,26 +42,25 @@ class Pinger(SubjuGator):
 
         fprint('Getting Guess Locations')
 
-        use_prediction = True
+        use_prediction = False
 
         try:
-            save_pois = rospy.ServiceProxy(
-                '/poi_server/save_to_param', Trigger)
-            _ = save_pois();
-            if rospy.has_param('/poi_server/initial_pois/pinger_shooter') and\
-               rospy.has_param('/poi_server/initial_pois/pinger_surface'):
-                fprint('Found two pinger guesses', msg_color='green')
-                pinger_1_req = rospy.get_param('/poi_server/initial_pois/pinger_surface')
-                pinger_2_req = rospy.get_param('/poi_server/initial_pois/pinger_shooter')
+            pinger_1_req = yield self.poi.get('pinger_surface')
+            pinger_2_req = yield self.poi.get('pinger_shooter')
+            fprint('Found two pinger guesses {} {}'.format(pinger_1_req, pinger_2_req), msg_color='green')
+            pinger_midpoint = (pinger_1_req + pinger_2_req) / 2
+            #half_way = (pinger_midpoint - self.pose.position) / 2
+            fprint('Looking at the poi')
+            yield self.move.look_at_without_pitching(pinger_midpoint).go(speed=0.5)
+            yield self.nh.sleep(3)
+            fprint('Moving to the midpoint of the midpoint poi')
+            yield self.move.set_position(pinger_midpoint).depth(MOVE_AT_DEPTH).go(speed=1)
+            yield self.nh.sleep(5)
 
-                # check \/
-                pinger_guess = yield self.transform_to_baselink(
-                    self, pinger_1_req, pinger_2_req)
-                fprint(pinger_guess)
-            else:
-                use_prediction = False
-                fprint('Forgot to add pinger to guess server?',
-                        msg_color='yellow')
+
+            pinger_guess = yield self.transform_to_baselink(
+                self, pinger_1_req, pinger_2_req)
+            fprint(pinger_guess)
         except Exception as e:
             fprint(
                 'Failed to /guess_location. Procceding without guess',
@@ -113,19 +118,31 @@ class Pinger(SubjuGator):
 
             # Check if we are on top of pinger
             if abs(vec[0]) < POSITION_TOL and abs(vec[1]) < POSITION_TOL and vec[2] < Z_POSITION_TOL:
-                if not use_prediction:
-                    fprint("Arrived to pinger!")
-                    break
-
                 sub_position, _ = yield self.tx_pose()
                 dists = [
-                    np.linalg.norm(sub_position - mil_ros_tools.rosmsg_to_numpy(
-                        x.location.pose.position))
+                    np.linalg.norm(sub_position - x)
                     for x in (pinger_1_req, pinger_2_req)
                 ]
                 pinger_id = np.argmin(dists)
                 # pinger_id 0 = pinger_surface
                 # pinger_id 1 = pinger_shooter
+                if pinger_id == 0:
+                    # yikes, my bad guys
+                    yield self.nh.set_param("octagon_position_x", str(self.pose.position[0]))
+                    yield self.nh.set_param("octagon_position_y", str(self.pose.position[1]))
+                    yield self.nh.set_param("octagon_position_z", str(self.pose.position[2]))
+                    fprint('Set {}'.format(self.pose.position))
+          
+                if pinger_id == 1:
+                    fprint('===DOING SHOOTER SETUP===', msg_color='green')
+                    #sub_pos = yield self.pose.position
+                    #sub_vec = -sub_pos / np.linalg.norm(sub_pos)
+                    #fprint('Moving away'.format(sub_vec))
+                    #yield self.move.set_position(sub_pos + (2.5 * sub_vec)).depth(MOVE_AT_DEPTH).go(speed=SPEED)
+                    #yield self.nh.sleep(1)
+                    #fprint('Looking at shooter')
+                    #yield self.move.look_at_without_pitching(sub_pos).go()
+                    #yield self.move.backward(2.5).go(speed=0.5)
                 yield self.nh.set_param("pinger_where", int(pinger_id))
 
                 break

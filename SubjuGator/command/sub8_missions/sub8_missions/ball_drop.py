@@ -14,42 +14,34 @@ from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 import mil_ros_tools
 import rospy
 from std_srvs.srv import Trigger
+import math
+
+import genpy
 
 fprint = text_effects.FprintFactory(title="BALL_DROP", msg_color="cyan").fprint
 
 SPEED = 0.25
 FAST_SPEED = 1
 
-SEARCH_HEIGHT = 1.5
-HEIGHT_BALL_DROPER = 0.75
-TRAVEL_DEPTH = 0.75  # 2
-
+SEARCH_DEPTH = 1.6
+HEIGHT_BALL_DROPER = 2.2
+TRAVEL_DEPTH = 1.6  # 2
+SEARCH_POINTS = 8
+SEARCH_RADII = [1, 2, 3.5]
 
 class BallDrop(SubjuGator):
 
     @util.cancellableInlineCallbacks
     def run(self, args):
-        try:
-          ree = rospy.ServiceProxy('/vision/garlic/enable', SetBool)
-          resp = ree(True)
-          if not resp:
-            print("Error, failed to init neural net.")
-            return
-        except rospy.ServiceException, e:
-          print("Service Call Failed")
-
+                
         fprint('Enabling cam_ray publisher')
 
         yield self.nh.sleep(1)
 
         fprint('Connecting camera')
 
-        cam_info_sub = yield self.nh.subscribe(
-            '/camera/down/camera_info',
-            CameraInfo)
-
         fprint('Obtaining cam info message')
-        cam_info = yield cam_info_sub.get_next_message()
+        cam_info = yield self.down_cam_info.get_next_message()
         cam_center = np.array([cam_info.width/2, cam_info.height/2])
         cam_norm = np.sqrt(cam_center[0]**2 + cam_center[1]**2)
         fprint('Cam center: {}'.format(cam_center))
@@ -57,43 +49,91 @@ class BallDrop(SubjuGator):
         model = PinholeCameraModel()
         model.fromCameraInfo(cam_info)
 
-     #   enable_service = self.nh.get_service_client("/vamp/enable", SetBool)
-     #   yield enable_service(SetBoolRequest(data=True))
-
         try:
-            save_pois = rospy.ServiceProxy(
-                '/poi_server/save_to_param', Trigger)
-            _ = save_pois();
-            if not rospy.has_param('/poi_server/initial_pois/ball_drop'):
-                use_prediction = False
-                fprint(
-                    'Forgot to add ball_drop to guess?',
-                    msg_color='yellow')
-            else:
-                fprint('Found ball_drop.', msg_color='green')
-                yield self.move.set_position(np.array(rospy.get_param('/poi_server/initial_pois/ball_drop'))).depth(TRAVEL_DEPTH).go(speed=FAST_SPEED)
+            position = yield self.poi.get('ball_drop')
+            fprint('Found ball_drop: {}'.format(position), msg_color='green')
+            yield self.move.look_at_without_pitching(position).set_position(position).depth(TRAVEL_DEPTH).go(speed=FAST_SPEED)
         except Exception as e:
             fprint(str(e) + 'Forgot to run guess server?', msg_color='yellow')
 
-        ball_drop_sub = yield self.nh.subscribe('/bbox_pub', Point)
-        yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
+        enable_service = self.nh.get_service_client("/vision/garlic/enable", SetBool)
+        yield enable_service(SetBoolRequest(data=True))
 
-        while True:
+        yield self.move.depth(SEARCH_DEPTH).zero_roll_and_pitch().go(speed=SPEED)
+
+        fprint("Starting Pattern")
+        flag = True
+        count = 0
+        pattern = gen_pattern(SEARCH_POINTS, SEARCH_RADII)
+        while(flag and count < 24):
+          fprint(count)
+          ball_drop_msg = self.bbox_sub.get_next_message().addErrback(lambda x: None)
+
+          start_time = yield self.nh.get_time()
+          while self.nh.get_time() - start_time < genpy.Duration(3):
+            if len(ball_drop_msg.callbacks) == 0:
+              fprint('Time out, move again')
+              ball_drop_msg.cancel()
+              #flag = False
+            yield self.nh.sleep(0.5)
+            ball_drop_msg.cancel()
+          if count == 24:
+            yield self.actuators.drop_marker()
+            yield self.nh.sleep(0.5)
+            yield self.actuators.drop_marker()
+            defer.returnValue(False)
+          x = yield ball_drop_msg
+          fprint(x)
+          if x is not None:
+            flag = False
+            break
+          i = count % len(pattern)
+          print pattern[i]
+          yield self.move.relative(pattern[i]).go(speed=SPEED)
+          # Let controller catch up a bit
+          yield self.nh.sleep(1)
+          count = count + 1
+
+        fprint('FOUND! Trying to center')
+
+        for i in range(20):
             fprint('Getting location of ball drop...')
-            ball_drop_msg = yield ball_drop_sub.get_next_message()
+            ball_drop_msg = yield self.bbox_sub.get_next_message()
             ball_drop_xy = mil_ros_tools.rosmsg_to_numpy(ball_drop_msg)[:2]
             vec = ball_drop_xy - cam_center
-            fprint("Vec: {}".format(vec))
-            vec = vec / cam_norm
-            vec[1] = -vec[1]
-            fprint("Rel move vec {}".format(vec))
-            if np.allclose(vec, np.asarray(0), atol=50):
+            vec2 = [-vec[1], -vec[0]]
+
+            if np.linalg.norm(vec) < 50:
                 break
-            vec = np.append(vec, 0)
+            fprint("Vec: {}".format(vec2))
+            vec2 = vec2 / cam_norm
 
-            yield self.move.relative_depth(vec).go(speed=SPEED)
+            fprint("Rel move vec {}".format(vec2))
+            vec2 = np.append(vec2, 0)
 
+            yield self.move.relative_depth(vec2).go(speed=SPEED)
+
+        yield enable_service(SetBoolRequest(data=False))
         fprint('Centered, going to depth {}'.format(HEIGHT_BALL_DROPER))
         yield self.move.to_height(HEIGHT_BALL_DROPER).zero_roll_and_pitch().go(speed=SPEED)
         fprint('Dropping marker')
         yield self.actuators.drop_marker()
+        yield self.nh.sleep(0.5)
+        yield self.actuators.drop_marker()
+
+
+def gen_pattern(steps, radii=[]):
+    assert(steps > 0)
+    unit_pattern = [np.array([math.cos(i*(math.pi*2/steps)),
+                         math.sin(i*(math.pi*2/steps)), 0])
+                         for i in range(steps)]
+    pattern = [np.array([0,0,0])]
+    for r in radii:
+        for unit_v in unit_pattern:
+            pattern.append(unit_v*r)
+    rel_pattern = [np.array([0,0,0])]
+    for idx, point in enumerate(pattern):
+        if idx > 0:
+            rel_pattern.append(point - pattern[idx-1])
+    rel_pattern.append(-pattern[-1])
+    return rel_pattern

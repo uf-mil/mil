@@ -1,9 +1,0 @@
-global_frame: map
-initial_pois:
-  pinger_surface: [0, 1, 2]
-  pinger_shooter: [10, 5, -2.0]
-  start_gate1: [1, 1, 1]
-  start_gate2: [1, 1, 2]
-  start_gate2: [1, 1, 2]
-  ball_drop: [1, 3, 2]
-  dracula: [2, 2,2]

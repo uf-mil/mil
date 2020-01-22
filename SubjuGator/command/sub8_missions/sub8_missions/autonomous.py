@@ -3,15 +3,26 @@ from twisted.internet import defer
 from ros_alarms import TxAlarmListener, TxAlarmBroadcaster
 from mil_misc_tools import text_effects
 import genpy
+import numpy as np
 from .sub_singleton import SubjuGator
 
 # Import missions here
 from .start_gate import StartGate
+from .start_gate_guess import StartGateGuess
+
 from .pinger import Pinger
+
+
+from .dracula_grab import DraculaGrabber
 from .surface import Surface
-from .vampire_slayer import VampireSlayer
-from .arm_torpedos import FireTorpedos
+
+
+from .arm_torpedos import ArmTorpedos
+from .torpedos_test import TorpedosTest
+
+
 from .ball_drop import BallDrop
+from .buoy_mission import BuoyMission
 
 
 fprint = text_effects.FprintFactory(title="AUTO_MISSION").fprint
@@ -38,42 +49,69 @@ class Autonomous(SubjuGator):
     @txros.util.cancellableInlineCallbacks
     def do_mission(self):
         fprint("RUNNING MISSION", msg_color="blue")
+        pinger_1_req = yield self.poi.get('pinger_surface')
+        pinger_2_req = yield self.poi.get('pinger_shooter')
 
         try:
             # Run start gate mission
-            yield self.run_mission(StartGate(), 400)
+            yield self.run_mission(StartGateGuess(), 120)
 
             # Go to pinger and do corresponding mission
-            completed = yield self.run_mission(Pinger(), 400)
+            completed = yield self.run_mission(Pinger(), 300)
             if not completed:  # if we timeout
                 pass
             else:
                 if (yield self.nh.has_param('pinger_where')):
                     if (yield self.nh.get_param('pinger_where')) == 0:
                         fprint('Surface Mission')
+                        # yield self.run_mission(DraculaGrabber(), 100)
                         yield self.run_mission(Surface(), 30)
+                        yield self.move.look_at_without_pitching(pinger_2_req).go(speed=0.5)
+                        yield self.nh.sleep(3)
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')
-                        yield self.run_mission(FireTorpedos(), 400)
+                        pos = self.pose.position
+                        vec = pinger_1_req - pos 
+                        vec = vec / np.linalg.norm(vec)
+                        fprint('Look at vec')
+                        yield self.move.relative(2.5 * vec).depth(1.5).go(speed=0.5)
+                        fprint('Move looking at')
+                        yield self.move.look_at_without_pitching(pinger_2_req).depth(1.5).go(speed=0.5)
+                        yield self.nh.sleep(2)
+                        c = yield self.run_mission(ArmTorpedos(), 120)
+                        if not c:
+                            yield self.run_mission(TorpedosTest(), 10)
 
             # Go to the other pinger mission and do respective mission
-            completed = yield self.run_mission(Pinger(), 400)
+            fprint('Waiting 5 secs')
+            yield self.nh.sleep(5)
+            completed = yield self.run_mission(Pinger(), 300)
             if not completed:  # if we timeout
                 pass
             else:
                 if (yield self.nh.has_param('pinger_where')):
                     if (yield self.nh.get_param('pinger_where')) == 0:
                         fprint('Surface Mission')
+                        # yield self.run_mission(DraculaGrabber(), 100)
                         yield self.run_mission(Surface(), 30)
+
 
                     elif (yield self.nh.get_param('pinger_where')) == 1:
                         fprint('Shooting Mission')
-                        yield self.run_mission(FireTorpedos(), 400)
+                        fprint('Moving backward')
+                        yield self.move.backward(2.5).depth(1.5).go(speed=0.5)
+                        c = yield self.run_mission(ArmTorpedos(), 120)
+                        if not c:
+                            yield self.run_mission(TorpedosTest(), 10)
+
+            fprint("Garlic drop?")
+            x = yield self.run_mission(BallDrop(), 200)
+            if not x:
+                yield self.actuator.drop_marker()
 
             fprint("Vampire Slayer")
-            yield self.run_mission(VampireSlayer(), 400)
-            fprint("Garlic drop?")
-            yield self.rub_mission(BallDrop(), 400)
+            yield self.run_mission(BuoyMission(), 280)
+
 
         except Exception as e:
             fprint("Error in Chain 1 missions!", msg_color="red")
@@ -123,6 +161,7 @@ class Autonomous(SubjuGator):
 
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
+        #yield self.do_mission()
         al = yield TxAlarmListener.init(self.nh, "network-loss")
         self._auto_param_watchdog(self.nh)
 

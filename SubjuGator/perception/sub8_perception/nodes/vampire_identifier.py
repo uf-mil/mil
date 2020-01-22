@@ -14,8 +14,8 @@ from cv_bridge import CvBridgeError
 from sub8_vision_tools import MultiObservation
 from image_geometry import PinholeCameraModel
 from std_srvs.srv import SetBool, SetBoolResponse
-from geometry_msgs.msg import PoseStamped, Pose, Point
-from sub8_msgs.srv import VisionRequest, VisionRequestResponse
+from geometry_msgs.msg import PoseStamped, Pose, Point, Pose2D
+from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse
 from mil_ros_tools import Image_Subscriber, Image_Publisher
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server as DynamicReconfigureServer
@@ -45,13 +45,10 @@ class VampireIdentifier:
         self.override = False
         self.lower = [0, 0, 0]
         self.upper = [0, 0, 0]
-        self.min_trans = 0
-        self.max_velocity = 0
         self.timeout = 0
-        self.min_observations = 0
         self.camera = rospy.get_param('~camera_topic',
                                       '/camera/down/image_rect_color')
-        self.goal = None
+        self.goal = 'drac'
         self.last_config = None
         self.reconfigure_server = DynamicReconfigureServer(VampireIdentifierConfig, self.reconfigure)
 
@@ -66,6 +63,7 @@ class VampireIdentifier:
         self.est = None
         self.visual_id = 0
         self.enabled = False
+        self.point = None
         self.bridge = CvBridge()
 
         # Image Subscriber and Camera Information
@@ -79,17 +77,28 @@ class VampireIdentifier:
         self.frame_id = self.camera_model.tfFrame()
 
         # Ros Services so mission can be toggled and info requested
-        rospy.Service('~enable', SetBool, self.toggle_search)
-        self.multi_obs = MultiObservation(self.camera_model)
-        rospy.Service('~pose', VisionRequest, self.request_buoy)
+        self.enable_service = rospy.Service('/vision/vampire_identifier/enable', SetBool, self.toggle_search)
         self.image_pub = Image_Publisher("drac_vision/debug")
+        self.point_service = rospy.Service('/vision/vampire_identifier/2D', VisionRequest2D, self.request)
         self.point_pub = rospy.Publisher(
-            "drac_vision/points", Point, queue_size=1)
+            "/yellow_vectors", Point, queue_size=1)
         self.mask_image_pub = rospy.Publisher(
-            'drac_vision/mask', Image, queue_size=1)
+            '/yellow_mask', Image, queue_size=1)
+        self.max_contour_area = 300
+        self.min_contour_area = .01
 
         # Debug
         self.debug = rospy.get_param('~debug', True)
+
+    def request(self, srv):
+        if self.point is None or not self.enabled:
+            return VisionRequest2DResponse(found = False)
+        else:
+            return VisionRequest2DResponse(
+                header=Header(stamp=rospy.Time.now(), frame_id='/map'),
+                pose=self.point,
+                found=True)
+
 
     @staticmethod
     def parse_string(threshes):
@@ -101,13 +110,9 @@ class VampireIdentifier:
     def reconfigure(self, config, level):
             try:
                 self.override = config['override']
-                self.goal = config['target']
                 self.lower = self.parse_string(config['dyn_lower'])
                 self.upper = self.parse_string(config['dyn_upper'])
-                self.min_trans = config['min_trans']
-                self.max_velocity = config['max_velocity'] 
                 self.timeout = config['timeout']
-                self.min_observations = config['min_obs']
 
             except ValueError as e:
                 rospy.logwarn('Invalid dynamic reconfigure: {}'.format(e))
@@ -119,9 +124,9 @@ class VampireIdentifier:
                 self.upper = np.array(self.upper)
             else:
                 # Hard Set for use in Competition
-                if self.goal == 'drac':
-                    self.lower = rospy.get_param('~dracula_low_thresh', [0, 0, 80])
-                    self.upper = rospy.get_param('~dracula_high_thresh', [0, 0, 80])
+                if self.goal == 'drac':                                 # b g  r
+                    self.lower = rospy.get_param('~dracula_low_thresh', [100, 200, 150])
+                    self.upper = rospy.get_param('~dracula_high_thresh', [180, 255, 180])
                 else:
                     raise ValueError('Invalid Target Name')
             self.last_config = config
@@ -152,7 +157,7 @@ class VampireIdentifier:
         looking at frames for buoys.
         '''
         if srv.data:
-            rospy.loginfo("TARGET ACQUISITION: enabled")
+            rospy.logerr("TARGET ACQUISITION: enabled")
             self.enabled = True
 
         else:
@@ -161,58 +166,6 @@ class VampireIdentifier:
 
         return SetBoolResponse(success=True)
 
-    def request_buoy(self, srv):
-        '''
-        Callback for 3D vision request. Uses recent observations of target
-        board  specified in target_name to attempt a least-squares position
-        estimate. Ignoring orientation of board.
-        '''
-        if not self.enabled:
-            return VisionRequestResponse(found=False)
-        # buoy = self.buoys[srv.target_name]
-        if self.est is None:
-            return VisionRequestResponse(found=False)
-        return VisionRequestResponse(
-            pose=PoseStamped(
-                header=Header(stamp=self.last_image_time, frame_id='/map'),
-                pose=Pose(position=Point(*self.est))),
-            found=True)
-
-    def clear_old_observations(self):
-        '''
-        Observations older than two seconds are discarded.
-        '''
-        time = rospy.Time.now()
-        i = 0
-        while i < len(self._times):
-            if time - self._times[i] > self.timeout:
-                self._times.popleft()
-                self._observations.popleft()
-                self._pose_pairs.popleft()
-            else:
-                i += 1
-        # print('Clearing')
-
-    def add_observation(self, obs, pose_pair, time):
-        '''
-        Add a new observation associated with an object
-        '''
-
-        self.clear_old_observations()
-        # print('Adding...')
-        if slen(self._observations) == 0 or np.linalg.norm(
-                self._pose_pairs[-1][0] - pose_pair[0]) > self.min_trans:
-            self._observations.append(obs)
-            self._pose_pairs.append(pose_pair)
-            self._times.append(time)
-
-    def get_observations_and_pose_pairs(self):
-        '''
-        Fetch all recent observations + clear old ones
-        '''
-        
-        self.clear_old_observations()
-        return (self._observations, self._pose_pairs)
 
     def detect(self, c):
         '''
@@ -232,6 +185,7 @@ class VampireIdentifier:
 
     def mask_image(self, cv_image, lower, upper):
         mask = cv2.inRange(cv_image, lower, upper)
+        mask = cv2.blur(mask, (70, 70))
         # Remove anything not within the bounds of our mask
         output = cv2.bitwise_and(cv_image, cv_image, mask=mask)
         print('ree')
@@ -240,7 +194,7 @@ class VampireIdentifier:
             try:
                 # print(output)
                 self.mask_image_pub.publish(
-                    self.bridge.cv2_to_imgmsg(np.array(output), 'bgr8'))
+                    self.bridge.cv2_to_imgmsg(np.array(mask), 'passthrough'))
             except CvBridgeError as e:
                 print(e)
 
@@ -256,6 +210,7 @@ class VampireIdentifier:
 
         # Generate a mask based on the constants.
         blurred = self.mask_image(cv_image, lower, upper)
+        blurred = cv2.blur(blurred, (5,5))
         blurred = cv2.cvtColor(blurred, cv2.COLOR_BGR2GRAY)
         # Compute contours
         cnts = cv2.findContours(blurred.copy(), cv2.RETR_EXTERNAL,
@@ -280,8 +235,9 @@ class VampireIdentifier:
                 M["m00"] = .000001
             cX = int((M["m10"] / M["m00"]))
             cY = int((M["m01"] / M["m00"]))
+            self.point = Pose2D(x=cX, y=cY)
             self.point_pub.publish(Point(x=cX, y=cY))
-            shape = self.detect(c)
+            #shape = self.detect(c)
 
             # multiply the contour (x, y)-coordinates by the resize ratio,
             # then draw the contours and the name of the shape on the image
@@ -289,16 +245,12 @@ class VampireIdentifier:
             c = c.astype("float")
             # c *= ratio
             c = c.astype("int")
-            if shape == "Target Aquisition Successful":
-                if self.debug:
-                    try:
-                        cv2.drawContours(cv_image, [c], -1, (0, 255, 0), 2)
-                        cv2.putText(cv_image, shape, (cX, cY),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-                                    (255, 255, 255), 2)
-                        self.image_pub.publish(cv_image)
-                    except CvBridgeError as e:
-                        print(e)
+            if self.debug:
+                try:
+                    cv2.drawContours(cv_image, [c], -1, (0, 0, 255), 2)
+                    self.image_pub.publish(cv_image)
+                except CvBridgeError as e:
+                    print(e)
 
 
                 # Grab the largest contour. Generally this is a safe bet but... We may need to tweak this for the three different vampires.
@@ -308,40 +260,10 @@ class VampireIdentifier:
                     max_x = cX
                     max_y = cY
                     m_shape = shape
-        '''
-        Approximate 3D coordinates.
-        '''
-
-        if m_shape == "Target Aquisition Successful":
-            try:
-                self.tf_listener.waitForTransform('/map',
-                                                  self.camera_model.tfFrame(),
-                                                  self.last_image_time,
-                                                  rospy.Duration(0.2))
-            except tf.Exception as e:
-                rospy.logwarn(
-                    "Could not transform camera to map: {}".format(e))
-                return False
-
-            (t, rot_q) = self.tf_listener.lookupTransform(
-                '/map', self.camera_model.tfFrame(), self.last_image_time)
-            R = mil_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
-            center = np.array([max_x, max_y])
-            self.add_observation(center, (np.array(t), R),
-                                 self.last_image_time)
-
-            observations, pose_pairs = self.get_observations_and_pose_pairs()
-            if len(observations) > self.min_observations:
-                self.est = self.multi_obs.lst_sqr_intersection(
-                    observations, pose_pairs)
-                self.status = 'Pose found'
-
-            else:
-                self.status = '{} observations'.format(len(observations))
-
+                    self.point_pub.publish(Point(x=cX, y=cY))
 
 def main(args):
-    rospy.init_node('vamp_ident', anonymous=False)
+    rospy.init_node('vampire_identifier', anonymous=False)
     VampireIdentifier()
 
     try:

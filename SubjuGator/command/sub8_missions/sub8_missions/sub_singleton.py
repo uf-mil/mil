@@ -16,7 +16,7 @@ from sub8_actuator_board.srv import SetValve, SetValveRequest
 from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
 from nav_msgs.msg import Odometry
 from tf.transformations import quaternion_multiply, quaternion_from_euler
-from sensor_msgs.msg import PointCloud2
+from sensor_msgs.msg import PointCloud2, RegionOfInterest
 import sensor_msgs.point_cloud2 as pc2
 from mil_missions_core import BaseMission
 
@@ -26,6 +26,13 @@ import numpy as np
 from twisted.internet import defer
 import os
 import yaml
+
+from mil_poi import TxPOIClient
+import visualization_msgs.msg as visualization_msgs
+from visualization_msgs.msg import Marker, MarkerArray
+from geometry_msgs.msg import Point, Vector3
+
+from sensor_msgs.msg import CameraInfo
 
 
 class VisionProxy(object):
@@ -165,7 +172,7 @@ class _PoseProxy(object):
         # End goal can't be above the water
         if self._pose.position[2] > 0:
             print "GOAL TOO HIGH"
-            self._pos.position = -0.6
+            self._pos.position = -0.5
 
     def go(self, *args, **kwargs):
         if self.print_only:
@@ -216,12 +223,13 @@ class _ActuatorProxy(object):
 
     @util.cancellableInlineCallbacks
     def gripper_open(self):
-        self.close(4)
-        yield self.pulse(5)
+        self.close(5) # 5
+        yield self.nh.sleep(0.5)
+        yield self.pulse(7) # 7
         return
 
     def gripper_close(self):
-        self.open(4)
+        self.open(5) # 5
         return
 
     @util.cancellableInlineCallbacks
@@ -239,6 +247,133 @@ class _ActuatorProxy(object):
         yield self.pulse(2, time=0.75)
         yield self.pulse(3, time=0.25)
         return
+
+
+class _SonarPointcloud(object):
+
+    def __init__(self, nh, cls):
+        self._plane_subscriber = nh.subscribe(
+            '/ogrid_pointcloud/point_cloud/plane', PointCloud2)
+        self.nh = nh
+        self.cls = cls
+
+    def get_group_of_points(self, ray, min_points=50, cluster_radius=1):
+        '''
+            Given a ray, find the closest point in the current point plane that intercepts the ray and return a normal in that range
+
+            ray: a ray - [0] == origin, [1] == unit vector
+            min_points: for clustering, how many points should surrond the hit point
+            cluster_radius: the radius to consider clustering 
+
+            Example:
+                x = yield self.plane_sonar.get_group_of_points((self.pose.position, np.array([1,0,0])))
+        '''
+
+        # Get plane ping
+        last_point_plane = self._plane_subscriber.get_last_message()
+
+        pc = np.asarray(list(pc2.read_points(last_point_plane,
+                                             skip_nans=True, field_names=('x', 'y', 'z'))))
+
+        # Get closests points
+        dist = np.array([self._distance(ray, p) for p in pc])
+        idx = dist.argsort()
+        dist = dist[idx]
+        pc = pc[idx]
+
+        if len(pc) < min_points:
+            print('Not enough points to cluster. Got {}'.format(pc))
+            return pc[0], None
+
+        cluster = pc[:min_points]
+
+        # Cluster by distance
+        cluster = np.array(
+            [c for c in cluster if np.linalg.norm(c - cluster[0]) < cluster_radius])
+
+        # Project to 2d
+        cluster_2d = cluster[:, :2]
+
+        # Least square line fit
+        A = np.vstack([cluster_2d[:, 0], np.ones(len(cluster_2d[:, 0]))]).T
+        m, b = np.linalg.lstsq(A, cluster_2d[:, 1])[0]
+
+        # Solve for normal vector
+        p1 = m * cluster_2d[0, 0] + b
+        p2 = m * cluster_2d[-1, 0] + b
+        vec = np.array([cluster_2d[0, 0], p1]) - \
+            np.array([cluster_2d[-1, 0], p2])
+        vec = vec / np.linalg.norm(vec)
+        vec_perp = np.array([vec[1], -vec[0]])
+
+        vec_perp = vec_perp if ray[1][:2].dot(vec_perp) < 0 else -vec_perp
+
+        markers = MarkerArray()
+        marker = Marker(ns='map', type=Marker.ARROW, action=visualization_msgs.Marker.ADD, scale=Vector3(
+            0.2, 0.5, 0), points=np.array([Point(cluster_2d[0, 0], p1, 0), Point(cluster_2d[0, 0] + vec[0], p1 + vec[1], 0)]))
+        marker.id = 1000
+        marker.header.frame_id = '/map'
+        marker.color.a = 1
+        marker.color.r = 1
+        markers.markers.append(marker)
+
+        marker = Marker(ns='map', type=Marker.ARROW, action=visualization_msgs.Marker.ADD, scale=Vector3(
+            0.2, 0.5, 0), points=np.array([Point(cluster_2d[0, 0], p1, 0), Point(cluster_2d[0, 0]+vec_perp[0], p2 + vec_perp[1], 0)]))
+        marker.id = 1001
+        marker.header.frame_id = '/map'
+        marker.color.a = 1
+        marker.color.g = 1
+        markers.markers.append(marker)
+
+        marker = Marker(ns='map', type=Marker.ARROW, action=visualization_msgs.Marker.ADD, scale=Vector3(
+            0.2, 0.5, 0), points=np.array([Point(ray[0][0], ray[0][1], ray[0][2]), Point(ray[0][0]+ray[1][0], ray[0][1] + ray[1][0], ray[0][2]+ray[1][2])]))
+        marker.id = 1002
+        marker.header.frame_id = '/map'
+        marker.color.a = 1
+        marker.color.b = 1
+        markers.markers.append(marker)
+
+        for i, p in enumerate(cluster_2d):
+            marker = Marker(ns='map', type=Marker.SPHERE,
+                            action=visualization_msgs.Marker.ADD)
+            marker.header.frame_id = '/map'
+            marker.id = i
+            marker.pose.position.x = p[0]
+            marker.pose.position.y = p[1]
+            marker.pose.orientation.w = 1.0
+            marker.scale.x = 0.1
+            marker.scale.y = 0.1
+            marker.scale.z = 0.1 if i != 0 else 1
+            marker.color.a = 1
+            marker.color.r = 1
+            markers.markers.append(marker)
+        self.cls.pub_markers.publish(markers)
+
+        vec_perp = np.array([vec_perp[0], vec_perp[1], 0])
+
+        return (pc[0], vec_perp)
+
+    def _distance(self, ray, point):
+        '''
+        point: np.array of n elements
+
+        ray: list of 2 np.arrays of n elements
+            [0] == origin
+            [1] == unit vector
+        source: https://stackoverflow.com/questions/5227373/minimal-perpendicular-vector-between-a-point-and-a-line
+        '''
+
+        return np.linalg.norm((ray[0] - point) - ((ray[0] - point).dot(ray[1])) * ray[1])
+        #closest_point_on_vector = ray[0] + ((point-ray[0]).dot(ray[1]) * ray[1])
+        # return np.linalg.norm(point - closest_point_on_vector)
+        # possible code for cone filter:
+        # v0 = (point - ray[0]) / np.norm(point - ray[0])
+        # v1 = ray[1]
+        # angle = math.acos(np.clip(np.dot(v0,v1),-1.0,1.0))
+        # if angle > max_angle_diff:
+        #     return False
+        # else:
+        #     return True
 
 
 class SubjuGator(BaseMission):
@@ -262,8 +397,16 @@ class SubjuGator(BaseMission):
 
         cls.vision_proxies = _VisionProxies(cls.nh, 'vision_proxies.yaml')
         cls.actuators = _ActuatorProxy(cls.nh)
+        cls.plane_sonar = _SonarPointcloud(cls.nh, cls)
         cls.test_mode = False
         cls.pinger_sub = yield cls.nh.subscribe('/hydrophones/processed', ProcessedPing)
+        cls.poi = TxPOIClient(cls.nh)
+        cls.down_cam_info = yield cls.nh.subscribe('/camera/down/camera_info', CameraInfo)
+        cls.front_left_cam_info = yield cls.nh.subscribe('/camera/front/left/camera_info', CameraInfo)
+        cls.bbox_sub = yield cls.nh.subscribe('/bbox_pub', Point)
+        cls.roi_sub = yield cls.nh.subscribe('/roi_pub', RegionOfInterest)
+
+        cls.pub_markers = yield cls.nh.advertise('/a', MarkerArray)
 
     @property
     def pose(self):

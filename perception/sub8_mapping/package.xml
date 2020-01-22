@@ -1,0 +1,37 @@
+<package>
+  <name>sub8_mapping</name>
+  <version>1.0.0</version>
+  <description>
+    The primary function is to pubish the DVL depth as a marker in Rviz.
+    This is done for the ground as well as the surface of the water. If time permits 
+    a global map of the enviorment will be implemented using data from a combination 
+    of but not limited to: Imaging sonar, DVL, historic values(loop closure), and black
+    magic phuckery.
+  </description>
+
+  <maintainer email="michael201193@gmail.com">Michael Fleming</maintainer>
+
+
+  <license>MIT</license>
+
+  <author>Michael Fleming</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <run_depend>roscpp</run_depend>
+  <build_depend>libpcl-all-dev</build_depend>
+  <run_depend>libpcl-all</run_depend>
+  <build_depend>cv_bridge</build_depend>
+  <run_depend>cv_bridge</run_depend>
+  <build_depend>image_transport</build_depend>
+  <run_depend>image_transport</run_depend>
+  <build_depend>message_generation</build_depend>
+  <run_depend>message_runtime</run_depend>
+  <build_depend>mil_blueview_driver</build_depend>
+  <run_depend>mil_blueview_driver</run_depend>
+  <build_depend>tf2</build_depend>
+  <run_depend>tf2</run_depend>
+  <build_depend>eigen</build_depend>
+  <run_depend>eigen</run_depend>
+  <build_depend>c3_trajectory_generator</build_depend>
+  <run_depend>c3_trajectory_generator</run_depend>
+</package>
