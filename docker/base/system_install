@@ -93,6 +93,7 @@ mil_system_install \
   ros-melodic-teleop-tools \
   ros-melodic-teleop-twist-keyboard \
   python-pip
+  clang-format-3.8
 sudo pip install \
   tqdm \
   scipy \
