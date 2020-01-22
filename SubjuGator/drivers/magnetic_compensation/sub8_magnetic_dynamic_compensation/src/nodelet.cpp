@@ -4,10 +4,10 @@
 #include <boost/range/adaptor/map.hpp>
 
 #include <nodelet/nodelet.h>
-#include <pluginlib/class_list_macros.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/MagneticField.h>
 #include <tf/transform_datatypes.h>
+#include <pluginlib/class_list_macros.hpp>
 
 #include "magnetic_dynamic_compensation/FieldInfo.h"
 

@@ -79,10 +79,13 @@ void PCODARGazebo::UpdateEntity(gazebo::physics::EntityPtr _entity)
 
   // Add or update object
   auto existing_object = pcodar_->objects_->objects_.find(id);
-  if (existing_object == pcodar_->objects_->objects_.end()) {
+  if (existing_object == pcodar_->objects_->objects_.end())
+  {
     object.set_id(id);
     pcodar_->objects_->objects_.insert({ id, object });
-  } else {
+  }
+  else
+  {
     object.set_id((*existing_object).first);
     (*existing_object).second = object;
   }

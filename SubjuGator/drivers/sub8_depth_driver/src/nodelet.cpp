@@ -2,8 +2,8 @@
 #include <boost/thread.hpp>
 
 #include <nodelet/nodelet.h>
-#include <pluginlib/class_list_macros.hpp>
 #include <ros/ros.h>
+#include <pluginlib/class_list_macros.hpp>
 
 #include <mil_msgs/DepthStamped.h>
 #include <mil_tools/param_helpers.hpp>
@@ -68,5 +68,5 @@ private:
   boost::thread polling_thread_inst;
 };
 
-PLUGINLIB_EXPORT_CLASS( depth_driver::Nodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(depth_driver::Nodelet, nodelet::Nodelet);
 }

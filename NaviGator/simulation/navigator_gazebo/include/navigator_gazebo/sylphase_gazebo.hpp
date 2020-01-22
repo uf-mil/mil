@@ -44,6 +44,6 @@ private:
 
   using CoordinateType = gazebo::common::SphericalCoordinates::CoordinateType;
   static ignition::math::Pose3d SphericalCoordinatesTransform(const gazebo::common::SphericalCoordinates &_convert,
-                                                                const CoordinateType in, const CoordinateType out);
+                                                              const CoordinateType in, const CoordinateType out);
 };
 }

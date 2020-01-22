@@ -32,9 +32,9 @@ void MilDVLGazebo::Load(gazebo::sensors::SensorPtr _parent, sdf::ElementPtr _sdf
   }
 
   if (_sdf->HasElement("offset"))
-      offset_ = _sdf->GetElement("offset")->Get<ignition::math::Vector3d>();
+    offset_ = _sdf->GetElement("offset")->Get<ignition::math::Vector3d>();
   else
-      offset_ = ignition::math::Vector3d::Zero;
+    offset_ = ignition::math::Vector3d::Zero;
 
   pose_ = sensor_->Pose();
   auto new_pose = ignition::math::Pose3d(
@@ -56,7 +56,6 @@ void MilDVLGazebo::Load(gazebo::sensors::SensorPtr _parent, sdf::ElementPtr _sdf
 
 void MilDVLGazebo::OnUpdate()
 {
-
   if (range_pub_.getNumSubscribers())
   {
     double range = sensor_->Range(0) - offset_.Z();

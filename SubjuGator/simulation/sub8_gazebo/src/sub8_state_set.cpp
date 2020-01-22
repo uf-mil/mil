@@ -70,7 +70,8 @@ void StatePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 void StatePlugin::PoseRefUpdate(const geometry_msgs::PoseStampedConstPtr& ps)
 {
   ignition::math::Vector3d pos(ps->pose.position.x, ps->pose.position.y, ps->pose.position.z);
-  ignition::math::Quaterniond rot(ps->pose.orientation.w, ps->pose.orientation.x, ps->pose.orientation.y, ps->pose.orientation.z);
+  ignition::math::Quaterniond rot(ps->pose.orientation.w, ps->pose.orientation.x, ps->pose.orientation.y,
+                                  ps->pose.orientation.z);
 
   last_ref_pose_ = ignition::math::Pose3d(pos, rot);
   auto fixed_pose = last_ref_pose_ + first_pose_;

@@ -1,18 +1,18 @@
 #include <boost/bind.hpp>
 #include <boost/math/constants/constants.hpp>
-#include <boost/utility/in_place_factory.hpp> 
+#include <boost/utility/in_place_factory.hpp>
 
 #include <eigen_conversions/eigen_msg.h>
 #include <message_filters/subscriber.h>
 #include <nav_msgs/Odometry.h>
 #include <nodelet/nodelet.h>
-#include <pluginlib/class_list_macros.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
 #include <tf/message_filter.h>
 #include <tf/transform_listener.h>
 #include <tf_conversions/tf_eigen.h>
+#include <pluginlib/class_list_macros.hpp>
 
 #include <mil_msgs/DepthStamped.h>
 #include <mil_msgs/VelocityMeasurements.h>
@@ -388,5 +388,5 @@ public:
 private:
   boost::optional<NodeImpl> nodeimpl;
 };
-PLUGINLIB_EXPORT_CLASS( odom_estimator::Nodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(odom_estimator::Nodelet, nodelet::Nodelet);
 }

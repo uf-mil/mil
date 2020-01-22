@@ -1,6 +1,6 @@
 #include <mil_msgs/PerceptionObject.h>
-#include <mil_gazebo/mil_passive_sonar_gazebo.hpp>
 #include <mil_passive_sonar/ProcessedPing.h>
+#include <mil_gazebo/mil_passive_sonar_gazebo.hpp>
 
 namespace mil_gazebo
 {
@@ -16,10 +16,10 @@ void MilPassiveSonarGazebo::Load(gazebo::physics::ModelPtr _model, sdf::ElementP
   if (_sdf->HasElement("offset"))
     parent_from_sensor_ = _sdf->GetElement("offset")->Get<ignition::math::Pose3d>();
 
-  if(_sdf->HasElement("freq"))
+  if (_sdf->HasElement("freq"))
     freq_ = _sdf->GetElement("freq")->Get<double>();
 
-  if(_sdf->HasElement("amplitude"))
+  if (_sdf->HasElement("amplitude"))
     amplitude_ = _sdf->GetElement("amplitude")->Get<double>();
 
   if (!_sdf->HasElement("model"))
@@ -43,7 +43,8 @@ void MilPassiveSonarGazebo::Load(gazebo::physics::ModelPtr _model, sdf::ElementP
   nh_ = ros::NodeHandle("mil_model_heading");
   vector_pub_ = nh_.advertise<geometry_msgs::Vector3Stamped>("/hydrophones/direction", 1);
   processed_ping_pub_ = nh_.advertise<mil_passive_sonar::ProcessedPing>("/hydrophones/processed", 1);
-  timer_ = nh_.createTimer(ros::Duration(rate), std::bind(&MilPassiveSonarGazebo::TimerCb, this, std::placeholders::_1));
+  timer_ =
+      nh_.createTimer(ros::Duration(rate), std::bind(&MilPassiveSonarGazebo::TimerCb, this, std::placeholders::_1));
 }
 
 void MilPassiveSonarGazebo::TimerCb(const ros::TimerEvent&)
