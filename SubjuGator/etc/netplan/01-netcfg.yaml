@@ -1,0 +1,29 @@
+# This file describes the network interfaces available on your system
+# For more information, see netplan(5).
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eno1:
+      dhcp4: no
+    enx000acd337bbe:
+      dhcp4: no
+    enx000acd337bbf:
+      dhcp4: no
+  bridges:
+    br0:
+      addresses:
+        - 192.168.37.60/24
+      gateway4: 192.168.37.1
+      nameservers:
+        search:
+          - ad.mil.ufl.edu
+        addresses:
+          - 192.168.37.1
+          - 192.168.37.31
+          - 192.168.37.32
+
+      interfaces:
+        - eno1
+        - enx000acd337bbe
+        - enx000acd337bbf
