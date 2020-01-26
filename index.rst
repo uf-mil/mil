@@ -25,3 +25,4 @@ Helpful Docs:
      VRX <docs/navigator/vrx>
    Infrastructure <docs/infra/index>
    View Github Readme <README>
+   Testing Log <docs/testing_log>
