@@ -1,0 +1,19 @@
+#!/bin/bash
+# Script to give this user udev permission to MIL devices such as USB cameras
+set -euo pipefail
+
+# Create uf-mil group which has USB permissions
+sudo getent group uf-mil || groupadd uf-mil
+# Add this user to uf-mil group
+sudo usermod -a -G uf-mil "$USER"
+# Give user basic io permissions through dialout group
+sudo usermod -a -G dialout "$USER"
+
+# Make udev rules directory if it doesn't exist
+sudo mkdir -p /etc/udev/rules.d
+# Copy rules file from repo to udev config
+sudo cp $(realpath $(dirname $BASH_SOURCE)/../provisioning/99-mil.rules) /etc/udev/rules.d/
+# Reload udev rules so they take effect
+sudo udevadm control --reload-rules
+
+echo "$USER given permission for MIL devices. You may require a reboot to take effect"
