@@ -47,3 +47,6 @@ docs/_build
 
 # Auto Generated xacros
 NaviGator/simulation/navigator_gazebo/urdf/navigator_vrx/*.xacro
+
+# Auto Generated User Specfic Symbolic link
+mil_common/drivers/mil_blueview_driver/bvtsdk

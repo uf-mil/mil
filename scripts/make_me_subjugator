@@ -1,0 +1,60 @@
+#!/bin/bash
+set -euo pipefail
+
+NOCOLOR='\033[0m'
+LOGCOLOR='\033[1;36m'
+PASSCOLOR='\033[1;32m'
+WARNCOLOR='\033[1;31m'
+
+LOGPREFIX="${LOGCOLOR}INSTALLER:"
+WARNPREFIX="${WARNCOLOR}ERROR:"
+PASSTEXT="${PASSCOLOR}PASS"
+FAILTEXT="${WARNCOLOR}FAIL"
+
+instlog() {
+    printf "$LOGPREFIX $@ $NOCOLOR\n"
+}
+
+instwarn() {
+    printf "$WARNPREFIX $@ $NOCOLOR\n"
+}
+
+
+MIL_REPO=$(realpath $(dirname $BASH_SOURCE)/../)
+ROS_DISTRO=melodic
+MIL_CONFIG_DIR=~/.mil
+BVTSDK_DIR=$MIL_CONFIG_DIR/bvtsdk
+
+
+# If Not there, Decrypt and extract the BlueView SDK for the Teledyne imaging sonar
+if ! [ -d $BVTSDK_DIR/bvtsdk ]; then
+
+    instlog "Installing the BlueView SDK"
+    curl -s https://raw.githubusercontent.com/uf-mil/mil/master/deprecated/installer/libbvtsdk.tar.gz.enc | \
+    openssl enc -aes-256-cbc -md md5 -d | \
+    tar -xpzC $MIL_CONFIG_DIR
+
+    ln -s $BVTSDK_DIR $MIL_REPO/mil_common/drivers/mil_blueview_driver/bvtsdk
+fi
+
+# USB Cameras
+instlog "Enabling USB cameras (a reboot is required for this to take full effect)"
+sudo usermod -a -G dialout "$USER"
+set +e
+sudo groupadd --gid 999 pgrimaging
+set -e
+sudo usermod -a -G pgrimaging "$USER"
+sudo wget -q https://raw.githubusercontent.com/uf-mil/mil/master/deprecated/installer/40-pgr.rules -O /etc/udev/rules.d/40-pgr.rules
+sudo service udev restart
+
+# Hardware drivers
+instlog "Installing Hardware Drivers"
+sudo apt-get install -qq ros-$ROS_DISTRO-joy
+sudo apt-get install -qq ros-$ROS_DISTRO-serial
+sudo apt-get install -qq libpcap-dev  # Needed for velodyne driver building
+sudo apt-get install -qq ros-$ROS_DISTRO-usb-cam  # Used for See3Cam used on NaviGatoir
+
+# udev rule for sylphase passive sonar
+instlog "Installing Sylphase passive sonar"
+echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="601f", MODE="0666"' | sudo tee /etc/udev/rules.d/sylphase-passive-sonar.rules > /dev/null
+sudo udevadm trigger
