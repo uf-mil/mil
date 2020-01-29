@@ -1,0 +1,26 @@
+#!/usr/bin/python
+
+from __future__ import division
+
+import threading
+import sys
+
+import numpy
+import matplotlib.animation
+import matplotlib.pyplot as plt
+
+import util
+
+DECIMATION = 10
+CAPTURE_SAMPLES = int(util.fs*1)
+
+gen = util.connect_to_samples(CAPTURE_SAMPLES)
+samples = gen.next()
+
+plt.cla()
+plt.title(' '.join(sys.argv))
+for i, samples in enumerate(samples):
+    plt.plot(numpy.arange(len(samples[::DECIMATION]))/(util.fs/DECIMATION)/1e-3, samples[::DECIMATION], label='channel: {}'.format(i))
+plt.xlabel('time (ms)')
+plt.legend()
+plt.show()

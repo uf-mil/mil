@@ -1,0 +1,24 @@
+#!/usr/bin/python
+
+from __future__ import division
+
+import math
+
+import numpy
+import scipy.signal
+import scipy.io.wavfile
+
+import sys
+
+x = numpy.fromfile(sys.argv[1], numpy.dtype('h').newbyteorder('>'))
+x = x.reshape((len(x)//4, 4))
+x = x[:, 0]
+
+print x.shape[0]/1.2e6
+
+new_length = 2**int(math.floor(math.log(len(x), 2))-1)
+x = x[:new_length]
+
+x = scipy.signal.resample(x, len(x)//25)
+
+scipy.io.wavfile.write(sys.argv[2], 48e3, (x/numpy.max(numpy.abs(x))*2**30).astype(numpy.int32))
