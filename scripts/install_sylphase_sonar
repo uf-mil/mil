@@ -7,15 +7,15 @@ DESTINATION=$MIL_CONFIG_DIR/sylphase-sonar
 
 # Clone repo if it doesn't already exist
 if [ ! -d $DESTINATION/.git ]; then
-  echo "You will be prompted for your credentials to the Sylphase GitLab (gitlab.sylphase.com)"
-  echo "Ask a MIL leader if you do not have access to this Gitlib"
-  git clone --recursive https://gitlab.sylphase.com/sylphase/sonar.git $DESTINATION
+  echo "You will be prompted for your credentials to the Sylphase org on Gitlab (gitlab.com/sylphase)"
+  echo "Ask a MIL leader if you do not have access."
+  git clone --recursive https://gitlab.com/sylphase/passive_sonar $DESTINATION
 else
   echo "Sylphase sonar repo already installed"
 fi
 
 # Commit recommended by Forest
-COMMIT="31cf12660eaeb6347eb5ce8ef4f7e4c98fe46bd9"
+COMMIT="20f320f7fd881202f7adc0876315f39f9ebf29f6"
 
 # Checkout to recommended commit
 echo "Checking repo out to $COMMIT"

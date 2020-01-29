@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import util
 
 DECIMATION = 10
-CAPTURE_SAMPLES = int(util.fs*1)
+CAPTURE_SAMPLES = int(util.fs*3)
 
 gen = util.connect_to_samples(CAPTURE_SAMPLES)
 samples = gen.next()

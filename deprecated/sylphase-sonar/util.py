@@ -1,10 +1,8 @@
 from __future__ import division
 
 import itertools
-import Queue
 import socket
 import sys
-import threading
 import time
 
 import numpy
@@ -60,32 +58,6 @@ def connect_to_samples(samples_per_callback):
         print 'usage: %s <host> <port> or %s <filename' % (sys.argv[0], sys.argv[0],)
         sys.exit(1)
 
-
-class Publisher(object):
-    def __init__(self, port):
-        self._s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self._s.bind(('', port))
-        self._s.listen(10)
-        self._queues = set()
-        def thread2(c):
-            q = Queue.Queue()
-            self._queues.add(q)
-            try:
-                while True:
-                    d = q.get()
-                    c.send(d)
-            finally:
-                self._queues.remove(q)
-        def thread():
-            while True:
-                conn, addr = self._s.accept()
-                print 'got connection from', addr
-                threading.Thread(target=thread2, args=(conn,)).start()
-        threading.Thread(target=thread).start()
-    def write(self, data):
-        for q in set(self._queues):
-            q.put_nowait(data)
 
 def apply_along_first_axis(f, x):
     return numpy.array([f(x[i]) for i in xrange(x.shape[0])])
