@@ -1,0 +1,23 @@
+#!/bin/bash
+# Script to clone the sylphase sonar package
+set -euo pipefail
+
+# Directory to store sylphas repo, inside of $HOME/.mil
+DESTINATION=$MIL_CONFIG_DIR/sylphase-sonar
+
+# Clone repo if it doesn't already exist
+if [ ! -d $DESTINATION/.git ]; then
+  echo "You will be prompted for your credentials to the Sylphase GitLab (gitlab.sylphase.com)"
+  echo "Ask a MIL leader if you do not have access to this Gitlib"
+  git clone --recursive https://gitlab.sylphase.com/sylphase/sonar.git $DESTINATION
+else
+  echo "Sylphase sonar repo already installed"
+fi
+
+# Commit recommended by Forest
+COMMIT="31cf12660eaeb6347eb5ce8ef4f7e4c98fe46bd9"
+
+# Checkout to recommended commit
+echo "Checking repo out to $COMMIT"
+git -C $DESTINATION checkout $COMMIT
+git -C $DESTINATION submodule update --init --recursive
