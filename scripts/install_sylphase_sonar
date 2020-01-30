@@ -9,15 +9,14 @@ DESTINATION=$MIL_CONFIG_DIR/sylphase-sonar
 if [ ! -d $DESTINATION/.git ]; then
   echo "You will be prompted for your credentials to the Sylphase org on Gitlab (gitlab.com/sylphase)"
   echo "Ask a MIL leader if you do not have access."
-  git clone --recursive https://gitlab.com/sylphase/passive_sonar $DESTINATION
+  git clone https://gitlab.com/sylphase/passive_sonar $DESTINATION
 else
   echo "Sylphase sonar repo already installed"
 fi
 
-# Commit recommended by Forest
-COMMIT="20f320f7fd881202f7adc0876315f39f9ebf29f6"
-
-# Checkout to recommended commit
-echo "Checking repo out to $COMMIT"
-git -C $DESTINATION checkout $COMMIT
-git -C $DESTINATION submodule update --init --recursive
+# Checkout to latest commit
+echo "Checking repo out to master"
+git -C $DESTINATION fetch origin
+git -C $DESTINATION checkout origin/master -B master
+git -C $DESTINATION submodule init driver/ext/python-libusb1
+git -C $DESTINATION submodule update

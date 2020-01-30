@@ -6,6 +6,8 @@ One sample is represented as 4 big-endian signed 16-bit integers, one per channe
 
 Samples can also be saved to a file by using a command like `nc localhost 2000 > capture.raw`. This format specification also applies to that kind of file.
 
+An example capture file from Aug 3rd 2019 at the TRANSDEC is available [here](http://sylphase.com/files/oof.bin). It can be listened to by running `./downsample ~/Downloads/oof.bin 0 10 out.wav 20` and then `aplay out.wav`.
+
 The total data rate of a sample stream is `1.2 MHz * 4 channels * 2 bytes/cycle/channel = 9.6 MB/s`, which is somewhat hefty. Consumers of this data need to be written somewhat cleverly if they're written in a relatively slow language like Python. Don't try to loop over the samples; instead, convert the data to a NumPy array and just do NumPy operations on it.
 
 ## Example
