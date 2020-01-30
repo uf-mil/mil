@@ -13,7 +13,6 @@ std::string marker_name(uint id)
 {
   return std::string("object") + std::to_string(id);
 }
-
 }
 
 namespace pcodar
@@ -145,7 +144,8 @@ void MarkerManager::update_markers()
   }
 
   // Remove and objects that were deleted from the marker server
-  for (auto id : objects_->just_removed_) {
+  for (auto id : objects_->just_removed_)
+  {
     std::string name = marker_name(id);
     interactive_marker_server_->erase(name);
   }

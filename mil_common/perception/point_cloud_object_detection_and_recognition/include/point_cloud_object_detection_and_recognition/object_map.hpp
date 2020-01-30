@@ -18,7 +18,7 @@ public:
   /// Creates a ROS message of the objects to publish / use for markers
   mil_msgs::PerceptionObjectArray to_msg();
   /// Processes a database query service request
-  bool DatabaseQuery(mil_msgs::ObjectDBQuery::Request &req, mil_msgs::ObjectDBQuery::Response &res);
+  bool DatabaseQuery(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::ObjectDBQuery::Response& res);
   /// Internal map of id's to objects
   /// TODO: make private and provide function interfaces
   std::unordered_map<uint, Object> objects_;

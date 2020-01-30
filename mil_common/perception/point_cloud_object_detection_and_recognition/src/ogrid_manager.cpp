@@ -60,12 +60,12 @@ void OgridManager::update_ogrid(ObjectMap const& objects)
     // In simulation, use bounding box
     if (object.get_points().empty())
     {
-      tf2::Quaternion quat(msg.pose.orientation.x, msg.pose.orientation.y,
-                           msg.pose.orientation.z, msg.pose.orientation.w);
+      tf2::Quaternion quat(msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z,
+                           msg.pose.orientation.w);
       double pitch, roll, yaw;
       tf2::getEulerYPR(quat, yaw, pitch, roll);
-      cv::RotatedRect rect(cv::Point2f(msg.pose.position.x, msg.pose.position.y),
-                           cv::Size2f(msg.scale.x, msg.scale.y), yaw);
+      cv::RotatedRect rect(cv::Point2f(msg.pose.position.x, msg.pose.position.y), cv::Size2f(msg.scale.x, msg.scale.y),
+                           yaw);
       cv::Point2f vertices[4];
       cv::Point vertices_fixed[4];
       rect.points(vertices);

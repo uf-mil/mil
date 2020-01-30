@@ -2,8 +2,8 @@
 
 #include "pcodar_types.hpp"
 
-
-namespace mil_gazebo {
+namespace mil_gazebo
+{
 class PCODARGazebo;
 }
 
@@ -27,6 +27,7 @@ public:
   point_t const& get_center() const;
   void set_classification(std::string const& classification);
   void set_id(uint id);
+
 private:
   /// ROS message representing the object, automaticly kept up to date
   /// TODO: make private

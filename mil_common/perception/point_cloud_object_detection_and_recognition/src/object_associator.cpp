@@ -1,9 +1,9 @@
 #include <point_cloud_object_detection_and_recognition/object_associator.hpp>
 
 #include <mil_msgs/PerceptionObject.h>
-#include <pcl/search/octree.h>
-#include <pcl/registration/correspondence_rejection_trimmed.h>
 #include <pcl/registration/correspondence_estimation.h>
+#include <pcl/registration/correspondence_rejection_trimmed.h>
+#include <pcl/search/octree.h>
 #include <unordered_set>
 
 namespace pcodar
@@ -40,25 +40,34 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
         matches.push_back(pair);
     }
 
-    if (matches.size() == 0) {
+    if (matches.size() == 0)
+    {
       // Add to object
       auto id = prev_objects.add_object(cluster_pc, cluster_search_tree);
       seen.insert(id);
-    } else {
+    }
+    else
+    {
       seen.insert((*matches.at(0)).first);
       (*matches.at(0)).second.update_points(cluster_pc, cluster_search_tree);
-      for(size_t i = 1; i < matches.size(); ++i) {
+      for (size_t i = 1; i < matches.size(); ++i)
+      {
         prev_objects.erase_object(matches.at(i));
       }
     }
   }
 
   // forget any objects that we didn't see, if that functionality is enabled
-  if (forget_unseen_) {
-    for (auto pair = prev_objects.objects_.begin(); pair != prev_objects.objects_.end();) {
-      if (seen.find((*pair).first) == seen.end()) {
+  if (forget_unseen_)
+  {
+    for (auto pair = prev_objects.objects_.begin(); pair != prev_objects.objects_.end();)
+    {
+      if (seen.find((*pair).first) == seen.end())
+      {
         pair = prev_objects.erase_object(pair);
-      } else {
+      }
+      else
+      {
         ++pair;
       }
     }

@@ -1,0 +1,29 @@
+#!/bin/bash
+set -euo pipefail
+
+# Get root directory of MIL repo
+MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
+
+# Variable to store list of violating files
+declare -a FILES=()
+
+# Add any imported submodule / unmanaged code to the excluded list
+for FILE in $(find $MIL_DIR \
+                   -path $MIL_DIR/NaviGator/satellite/rviz_satellite -prune -o \
+                   -path $MIL_DIR/NaviGator/simulation/VRX/vrx -prune -o \
+                   -path $MIL_DIR/mil_common/drivers/LMS1xx -prune -o \
+                   -path $MIL_DIR/mil_common/drivers/roboteq -prune -o \
+                   -path $MIL_DIR/mil_common/drivers/mil_blueview_driver/bvtsdk -prune -o \
+                   -path $MIL_DIR/deprecated -prune -o \
+                   -regex ".*/.*\\.\\(c\\|cc\\|cpp\\|h\\|hpp\\|cxx\\|hxx\\)$"); do
+if [ ! -z "$(clang-format-3.9 -style=file -output-replacements-xml $FILE | grep '<replacement ')" ]; then
+  FILES+=( "$FILE" )
+fi
+done
+if (( ${#FILES[@]} > 0 )); then
+  echo "The C++ following files are not formatted correctly:"
+  for FILE in "${FILES[@]}"; do
+    echo "- $FILE"
+  done
+  exit 1
+fi

@@ -56,7 +56,8 @@ mil_system_install \
   ros-melodic-robot-localization \
   ros-melodic-teleop-tools \
   ros-melodic-teleop-twist-keyboard \
-  python-pip
+  python-pip \
+  clang-format-3.9
 sudo pip install \
   tqdm \
   scipy \

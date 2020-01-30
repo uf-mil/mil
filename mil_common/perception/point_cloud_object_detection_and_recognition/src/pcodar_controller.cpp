@@ -2,9 +2,9 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
+#include <boost/scope_exit.hpp>
 #include <functional>
 #include <point_cloud_object_detection_and_recognition/pcodar_controller.hpp>
-#include <boost/scope_exit.hpp>
 
 namespace pcodar
 {
@@ -161,9 +161,11 @@ bool Node::Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& r
 
 void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
 {
-  BOOST_SCOPE_EXIT(this_) {
+  BOOST_SCOPE_EXIT(this_)
+  {
     this_->UpdateObjects();
-  } BOOST_SCOPE_EXIT_END
+  }
+  BOOST_SCOPE_EXIT_END
 
   point_cloud_ptr pc = boost::make_shared<point_cloud>();
   // Transform new pointcloud to ENU
@@ -203,7 +205,6 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
 
   // Associate current clusters with old ones
   ass.associate(*objects_, *filtered_accrued, clusters);
-
 }
 
 bool Node::bounds_update_cb(const mil_bounds::BoundsConfig& config)

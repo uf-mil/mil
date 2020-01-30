@@ -21,7 +21,7 @@ mil_msgs::PerceptionObjectArray ObjectMap::to_msg()
 uint ObjectMap::add_object(point_cloud_ptr const& pc, KdTreePtr const& search_tree)
 {
   auto id = highest_id_++;
-  objects_.insert({id, Object(pc, id, search_tree) });
+  objects_.insert({ id, Object(pc, id, search_tree) });
   return id;
 }
 

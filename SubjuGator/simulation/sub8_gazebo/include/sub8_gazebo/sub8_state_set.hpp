@@ -29,7 +29,7 @@ protected:
   ros::Subscriber reference_sub_;
   ignition::math::Vector3d static_offset_;
   ignition::math::Vector3d modelOffset;  // Offset from the (0,0,0) point in the model to base_link
-  ignition::math::Pose3d first_pose_;     // Starting position of model, to add to each reference
+  ignition::math::Pose3d first_pose_;    // Starting position of model, to add to each reference
   ignition::math::Pose3d last_ref_pose_;
 };
 }
