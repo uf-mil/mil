@@ -98,6 +98,9 @@ void SylphaseSonarToRosNode::read_messages(boost::asio::ip::tcp::socket& socket)
   auto buffer = boost::asio::buffer(msg.data);
   bool first_packet = true;
 
+  // Used to recenter the signed integers centered around 0 to unsigned centered around 2^15
+  const uint16_t SIGNED_TO_UNSIGNED = 1 << 15;
+
   while (ros::ok())
   {
     // If the buffer is now full, ship the message off
@@ -106,7 +109,7 @@ void SylphaseSonarToRosNode::read_messages(boost::asio::ip::tcp::socket& socket)
       // Received packets are Big-Endian, convert to system
       for (size_t i = 0; i < msg.data.size(); ++i)
       {
-        msg.data[i] = ntohs(msg.data[i]);
+        msg.data[i] = ntohs(msg.data[i]) + SIGNED_TO_UNSIGNED;
       }
       ++msg.header.seq;
       pub_.publish(msg);
