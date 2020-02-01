@@ -8,6 +8,7 @@ DESTINATION=$MIL_CONFIG_DIR/sylphase-sonar
 # Clone repo if it doesn't already exist
 if [ ! -d $DESTINATION/.git ]; then
   echo "You will be prompted for your credentials to the Sylphase org on Gitlab (gitlab.com/sylphase)"
+  echo "You also need to have your ~/.ssh/config setup for github.com for the submodules"
   echo "Ask a MIL leader if you do not have access."
   git clone https://gitlab.com/sylphase/passive_sonar $DESTINATION
 else
