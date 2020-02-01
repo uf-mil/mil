@@ -20,14 +20,14 @@ mil_user_install_dependencies()
   local MIL_REPO_GIT="$MIL_REPO_DIR/.git"
   mkdir -p $CATKIN_SOURCE_DIR
   sudo apt update
-  sudo apt install -y git
-  #basic/handy dev tools to have in a container
-  sudo apt install -y tmux
-  sudo apt install -y vim
-  sudo apt install -y awscli
-  sudo apt install -y net-tools
-  # User to mount MIL fileserver
-  sudo apt install -y cifs-utils
+  sudo apt install -y \
+    git \
+    tmux \
+    vim \
+    awscli \
+    net-tools \
+    cifs-utils \
+    nmap
 }
 
 # Add line to user's bashrc which source the repo's setup files
@@ -52,8 +52,8 @@ mil_user_setup_bashrc()
 }
 
 
-mil_user_install_dependencies()
-mil_user_setup_bashrc()
+mil_user_install_dependencies
+mil_user_setup_bashrc
 set +u
 . /opt/ros/melodic/setup.bash
 set -u

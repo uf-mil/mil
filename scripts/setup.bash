@@ -22,6 +22,8 @@ _list_complete()
     done
 }
 
+# Source anything in scripts/rc.d. This allows
+# us to organize out aliases/rc so its not all in this script
 for f in $MIL_REPO/scripts/rc.d/*
 do
 	. "$f"
