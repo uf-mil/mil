@@ -36,14 +36,18 @@ if [[ $* == *--dev-server* ]]; then
 elif
     [[ $* == *--help* ]] || [[ $* == *-h* ]]; then
     usage
-else
-    usage
+fi
+
+VIM_CONFIG=""
+if [ -f $HOME/.vimrc ]; then
+    VIM_CONFIG="-v $HOME/.vimrc:/home/mil-dev/.vimrc"
 fi
 
 docker run -it \
     -v $(realpath $(dirname $BASH_SOURCE)/../):/home/mil-dev/catkin_ws/src/mil/ \
     -v $HOME/.mil/dev-docker-ws/build:/home/mil-dev/catkin_ws/build/ \
     -v $HOME/.mil/dev-docker-ws/devel:/home/mil-dev/catkin_ws/devel/ \
+    $VIM_CONFIG \
     --net host \
     $ROS_ENV \
     --env="DISPLAY" \

@@ -29,7 +29,7 @@ OPEN_SSH=true
 if [[ $* == *--safe* ]] || [[ $* == *-s* ]]; then
     OPEN_SSH=false
 
-elif [[*$ == *--help* ]] || [[ $* == *-h* ]]; then
+elif [[ $* == *--help* ]] || [[ $* == *-h* ]]; then
     usage
 fi
 
