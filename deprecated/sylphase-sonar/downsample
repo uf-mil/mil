@@ -1,0 +1,46 @@
+#!/usr/bin/python
+
+from __future__ import division
+
+import math
+import sys
+
+import numpy
+import scipy.signal
+import scipy.io.wavfile
+
+import util
+
+# usage example:
+# ./downsample capture.raw 0 10 out.wav 15
+
+IN_FILE = sys.argv[1]
+CHANNEL = int(sys.argv[2])
+FREQ_RATIO = float(sys.argv[3]) # 10 would turn 100 kHz into 10 kHz
+OUT_FILE = sys.argv[4]
+RESULT_DURATION = float(sys.argv[5]) if sys.argv[5:] else None
+
+SAMPLE_RATE = 48e3
+
+x = numpy.fromfile(IN_FILE, numpy.dtype('h').newbyteorder('>'))
+x = x.reshape((len(x)//4, 4))
+x = x[:, CHANNEL]
+
+print 'capture length (seconds):', x.shape[0]/util.fs
+
+SAMPLE_RATIO = SAMPLE_RATE/util.fs * FREQ_RATIO
+
+desired_input_samples = int(RESULT_DURATION*SAMPLE_RATE/SAMPLE_RATIO) if RESULT_DURATION is not None else len(x)
+
+new_length = 2**int(math.floor(math.log(min(desired_input_samples, len(x)), 2)))
+assert new_length <= len(x)
+x = x[:new_length]
+
+print 'trimmed capture length (seconds):', x.shape[0]/util.fs
+
+print 'sample ratio:', SAMPLE_RATIO
+print 'result length (seconds):', len(x)*SAMPLE_RATIO/SAMPLE_RATE
+
+x = scipy.signal.resample(x, int(len(x)*SAMPLE_RATIO))
+
+scipy.io.wavfile.write(OUT_FILE, SAMPLE_RATE, (x/numpy.max(numpy.abs(x))*2**30).astype(numpy.int32))

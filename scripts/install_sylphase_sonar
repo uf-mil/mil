@@ -1,0 +1,23 @@
+#!/bin/bash
+# Script to clone the sylphase sonar package
+set -euo pipefail
+
+# Directory to store sylphas repo, inside of $HOME/.mil
+DESTINATION=$MIL_CONFIG_DIR/sylphase-sonar
+
+# Clone repo if it doesn't already exist
+if [ ! -d $DESTINATION/.git ]; then
+  echo "You will be prompted for your credentials to the Sylphase org on Gitlab (gitlab.com/sylphase)"
+  echo "You also need to have your ~/.ssh/config setup for github.com for the submodules"
+  echo "Ask a MIL leader if you do not have access."
+  git clone https://gitlab.com/sylphase/passive_sonar $DESTINATION
+else
+  echo "Sylphase sonar repo already installed"
+fi
+
+# Checkout to latest commit
+echo "Checking repo out to master"
+git -C $DESTINATION fetch origin
+git -C $DESTINATION checkout origin/master -B master
+git -C $DESTINATION submodule init driver/ext/python-libusb1
+git -C $DESTINATION submodule update
