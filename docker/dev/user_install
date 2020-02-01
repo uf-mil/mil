@@ -1,6 +1,10 @@
 #!/bin/bash
+# Completes procedure to setup an individual linux user for MIL's development environment.
+# To be run after system_install has been run.
 set -euo pipefail
 
+# It is generally assumed that users will use ~/catkin_ws, but
+# setting CATKIN_WS prior to running this script will change this behavior.
 if [[ -z ${CATKIN_DIR:-} ]]; then
     CATKIN_DIR="$HOME/catkin_ws"
     echo "Using default catkin workspace $CATKIN_DIR"
@@ -11,7 +15,7 @@ CATKIN_SOURCE_DIR="$CATKIN_DIR/src"
 MIL_REPO_DIR="$CATKIN_SOURCE_DIR/mil"
 
 # Clone repositry
-mil_user_setup()
+mil_user_install_dependencies()
 {
   local MIL_REPO_GIT="$MIL_REPO_DIR/.git"
   mkdir -p $CATKIN_SOURCE_DIR
@@ -26,11 +30,16 @@ mil_user_setup()
   sudo apt install -y cifs-utils
 }
 
-# Add configuration lines to bashrc
+# Add line to user's bashrc which source the repo's setup files
+# This allows us to update aliases, environment variables, etc
 mil_user_setup_bashrc()
 {
-  # Lines added to ~/.bashrc
+  # Line(s) added to ~/.bashrc
+  # Note that for backwards compatiblity this should not be changed
+  # unless you have a very good reason.
   BASH_RC_LINES=". $MIL_REPO_DIR/scripts/setup.bash"
+
+  # Add the line(s) to bashrc if not already present
   if grep -Fq "$BASH_RC_LINES" ~/.bashrc
   then
     echo "milrc is already sourced in ~/.bashrc, skipping"
@@ -43,8 +52,8 @@ mil_user_setup_bashrc()
 }
 
 
-mil_user_setup
-mil_user_setup_bashrc
+mil_user_install_dependencies()
+mil_user_setup_bashrc()
 set +u
 . /opt/ros/melodic/setup.bash
 set -u
