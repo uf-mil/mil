@@ -1,0 +1,186 @@
+#!/usr/bin/env python
+import rospy
+import numpy as np
+from rospy.numpy_msg import numpy_msg
+from mil_passive_sonar.msg import HydrophoneSamples
+from mil_ros_tools import Plotter
+
+from scipy.fftpack import rfft
+from scipy.signal import remez, fftconvolve, correlate
+from scipy.ndimage.filters import maximum_filter1d
+
+
+class HydrophoneInterpreter:
+
+    def __init__(self):
+        #  Ros stuff
+        rospy.init_node('triggering', log_level=rospy.DEBUG)
+        self.sub = rospy.Subscriber('/samples', numpy_msg(HydrophoneSamples), self.hydrophones_cb)
+
+        # Attriburtes about our general frequency range (all pinger live here)
+        #  Frequency range garunteed to be relatively quiet except for the pingers (in Hz)
+        self.general_lower = 15000 # lowest frequency pinger - 10 kHz
+        self.general_upper = 50000 # highest frequency pinger + 10 kHz
+
+        # Attributes about our target frequency range (one pinger live here at a time)
+        #  Target Frquency we are looking for in Hz
+        self.target_frequency = 35000
+        #  Tolerance around that frequency in Hz
+        self.target_frequency_tol = 500
+
+        # Filter attributes
+        #  Filter order for bandpass filter, (higher is better, but slower to compute)
+        self.filt_order = 201
+        #  Filter used to do a band pass filter for our target frquency range, calcuated on first cb
+        self.bandpass_filter = None
+        #  special filter property, do not change in Hz
+        self.trans_width = 1000
+
+        # Physical Properties
+        #  max distance between any two hydrophones in m
+        self.max_hydrophone_dist = 0.0508
+        #  speed of sound in water in m/s
+        self.speed_of_sound = 1498
+
+        # Debug attributes
+        #  Debug plot publishers
+        self.fft_debug = Plotter('fft_debug')
+        self.fft_debug.enabled = False
+        self.trigger_debug = Plotter('trigger_debug')
+        self.sample_at_trigger_debug = Plotter('sample_at_trigger_debug')
+
+        # Misc attributes
+        #  minimum gradient of the max convolution wrt time to trigger a time of arivals calcualtion
+        self.threshold = 40
+        #  expected error in determining exactly where the triggering happend (after) in sec
+        self.trigger_time_error_future = 0.0003
+        #  expected error in determining exactly where the triggering happend (before) in sec
+        self.trigger_time_error_past = 0.0003
+        #  prev data buffer
+        self.prev_data = None
+        # time (from start of samples)
+        self.time = 0.0
+        # max convolution window (the amount of time that is sorted out for the max
+        self.window_time = 100e-3
+
+
+    def col_wise_normalization(self, data):
+        data = data - np.mean(data, axis=0).transpose()
+        data = data / np.std(data,axis=0).transpose()
+        return data
+
+
+    def make_bandpass_filter(self, rate):
+        # Make a bandpass for out target freq range
+        self.bandpass_filter = remez(self.filt_order,
+            [0, self.general_lower - self.trans_width,
+             self.general_lower, self.general_upper,
+             self.general_upper + self.trans_width, rate/2], [0,1,0], Hz = rate)
+
+
+    def hydrophones_cb(self, ping):
+        # Record start time of cb to make sure we are running in real time
+        start_cb = rospy.get_rostime()
+        # Resize the 1d array to be a 2d array of samples by channels
+        ping.data.resize(ping.samples, ping.channels)
+
+        # If no bandpass yet, make a bandpass (sample rate not expected to change)
+        if self.bandpass_filter is None:
+            self.make_bandpass_filter(ping.sample_rate)
+
+        # Apply a bandpass filter to the data for our target frequency range (on all channels)
+        new_data = np.apply_along_axis(lambda x: fftconvolve(x, self.bandpass_filter, 'valid'),
+            0, ping.data)
+
+        # We always look at 2 messages of data at a time concatenated (0.1 sec each msg (for sylphase board))
+        if self.prev_data is None:
+            self.prev_data = new_data
+            return
+        else:
+            data = np.concatenate((self.prev_data, new_data))
+        # Time according to the pinger interface (assuming no missed messages)
+        time = np.linspace(self.time, self.time + data.shape[0]/float(ping.sample_rate),
+            data.shape[0])
+
+        window_size = int(self.window_time * ping.sample_rate)
+
+        # only use hydrophone 0 to trigger, more efficient
+        # do a max convolution on the data
+        max_convolve = maximum_filter1d(data[:,0], window_size, axis=0)\
+                           [(window_size-1) - (window_size-1)/2 : data.shape[0] - (window_size-1)/2]
+                           # removes values influenced by padding
+
+        # crop time to reflect the times we actually have data for (offest by +(window_size-1)/2
+        #  because the convolution output is from the center of the window, not the right side of the window
+        time = time[(window_size-1): data.shape[0]]
+        # take the gradient of the max convolution (we are looking for steep increase = big gradient)
+        gradient = np.gradient(max_convolve, axis=0)
+
+        triggered_at_idx = False
+        if np.max(gradient) >= self.threshold:
+            print 'triggered at ', time[np.min(np.where(gradient >= self.threshold)[0])]
+            triggered_at_idx = np.min(np.where(gradient >= self.threshold)[0])
+
+        if self.trigger_debug.enabled:
+            plot_data = data[(window_size-1):data.shape[0],0]
+            titles = ['time vs Gradient of Max convolve',
+                      'time vs max_convolve (Window = %s sec)'%self.window_time,
+                      'time vs hydrophone0 data']
+            plotable = np.vstack((gradient, max_convolve, plot_data)).transpose()
+            plots = [None] * plotable.shape[1]
+            for i in xrange(plotable.shape[1]):
+                plots[i] = np.vstack((time, plotable[:,i]))
+            plots = np.vstack(tuple(plots))
+            self.trigger_debug.publish_plots(plots, titles)
+
+        if self.sample_at_trigger_debug.enabled and triggered_at_idx:
+            plot_data = data[(window_size-1): data.shape[0]]
+
+            start = triggered_at_idx - int(ping.sample_rate*self.trigger_time_error_past)
+            end = triggered_at_idx + int(ping.sample_rate*self.trigger_time_error_future)
+
+            plot_data = plot_data[start:end]
+            plot_time = time[start:end]
+
+            plots = [None] * plot_data.shape[1]
+            for i in xrange(plot_data.shape[1]):
+                plots[i] = np.vstack((plot_time, plot_data[:,i]))
+            plots = np.vstack(tuple(plots))
+            self.sample_at_trigger_debug.publish_plots(plots)
+
+        if self.fft_debug.enabled:
+            # Do a Fourier transform on all the channels
+            ffts = rfft(data, axis=0)
+
+            # Normalize the FFT (Gaussian)
+            ffts = self.col_wise_normalization(ffts)
+            # make the ffts absolute value for easier math later
+            ffts = np.absolute(ffts)
+
+            # Crop the FFT for our general frequency range
+            res = float(ping.sample_rate) / ping.samples
+            ffts = ffts[int((self.general_lower+5000)/res):int((self.general_upper-5000)/res)]
+
+            # Debug publish the FFTs of all hydrophones of the debuggies
+            plots = [None] * ping.channels
+            freq = np.arange((self.general_lower+5000)/res, (self.general_upper-5000)/res)*res
+            #freq = np.arange(ffts.shape[1])
+            for i in xrange(ping.channels):
+                plots[i] = np.vstack((freq, ffts[:,i]))
+            plots = np.vstack(tuple(plots))
+            self.fft_debug.publish_plots(plots)
+
+        self.time += ping.samples / float(ping.sample_rate)
+        self.prev_data = new_data
+
+        rospy.logdebug('Spare Time After Callback %f'%
+           (((float(ping.samples) / ping.sample_rate) - (rospy.get_rostime() - start_cb).to_sec())))
+
+
+
+
+if __name__ == '__main__':
+    a = HydrophoneInterpreter()
+    rospy.spin()
+
+
