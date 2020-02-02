@@ -3,7 +3,7 @@
 from __future__ import division
 
 import rospy
-from hydrophones.msg import Ping
+from mil_passive_sonar.msg import Ping
 
 import util
 

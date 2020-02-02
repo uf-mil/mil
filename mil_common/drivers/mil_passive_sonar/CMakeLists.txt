@@ -7,6 +7,7 @@ add_message_files(
   FILES
   ProcessedPing.msg
   Debug.msg
+  HydrophoneSamples.msg
   Ping.msg
 )
 
