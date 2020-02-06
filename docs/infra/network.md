@@ -13,6 +13,8 @@ a static IP address. Other devices are given the next unused IP from the pool wi
 ROS can be configured to talk only on your local machine, or allow communcation
 from your machine to another, such as one of our robots or a simulation server.
 
+This is done using [environment variables](http://wiki.ros.org/ROS/NetworkSetup).
+
 Assuming you have followed the [Development guide](/docs/development/development_guide),
 you can use the function `ros_connect` to set this up.
 
