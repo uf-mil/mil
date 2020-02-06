@@ -34,6 +34,7 @@ source $MIL_WS/src/mil/NaviGator/scripts/bash_aliases.sh
 # Repo aliases
 alias mil="cd $MIL_REPO"
 alias cm="catkin_make -C $MIL_WS"
+alias ws="cd $CATKIN_DIR"
 
 # General ROS aliases
 ros_env() {
