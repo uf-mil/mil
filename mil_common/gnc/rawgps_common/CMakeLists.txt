@@ -67,4 +67,4 @@ include_directories( ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
-install(PROGRAMS scripts/compute_vel DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+# install(PROGRAMS scripts/compute_vel DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

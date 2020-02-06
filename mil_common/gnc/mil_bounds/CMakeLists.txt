@@ -15,5 +15,5 @@ catkin_package()
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  add_rostest(test/bounds.test DEPENDENCIES ${PROJECT_NAME}_EXPORTED_TARGETS)
+  add_rostest(test/bounds.test DEPENDENCIES ${PROJECT_NAME}_gencfg)
 endif()
