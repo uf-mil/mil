@@ -90,11 +90,17 @@ ros_mil()
 
 # Setup ros_connect alias for zobelisk
 ZOBELISK_IP="192.168.37.174"
-alias ros_zobelisk="ros_mil $ZOBELISK_IP"
+ros_zobelisk()
+{
+  ros_mil "$ZOBELISK_IP"
+}
 
 # Setup ros connect alias for SubjuGator
 SUBJUGATOR_IP="192.168.37.60"
-alias ros_sub="ros_mil $SUBJUGATOR_IP"
+ros_sub()
+{
+  ros_mil "$SUBJUGATOR_IP"
+}
 
 # All the options you can pass to ros_connect
 ROS_CONNECT_OPTIONS="local lan sub mil -h"
