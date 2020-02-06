@@ -25,7 +25,7 @@ alias list_mil_devices="list_lan_devices 192.168.37.1/24"
 get_lan_ip()
 {
   IPS=( $(hostname -I) )
-  local MIL_IP=$(echo $IPS | grep "$MIL_NETWORK_PREFIX")
+  local MIL_IP=$(printf '%s\n' "${IPS[@]}" | grep "$MIL_NETWORK_PREFIX")
   if [ ! -z "$MIL_IP" ]; then
     echo "$MIL_IP"
   elif [ ! -z "$IPS" ]; then
