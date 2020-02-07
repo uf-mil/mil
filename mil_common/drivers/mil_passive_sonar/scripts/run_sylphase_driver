@@ -12,4 +12,4 @@ usage()
 [[ $# -lt 1 ]] && usage
 
 # Run sylphase 
-exec $MIL_CONFIG_DIR/sylphase-sonar/driver/publish $?
+exec $MIL_CONFIG_DIR/sylphase-sonar/driver/publish $@
