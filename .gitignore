@@ -9,9 +9,6 @@ docs/_build
 *.swp
 *.swn
 
-# Prerequisites
-*.d
-
 # Compiled Object files
 *.slo
 *.lo
