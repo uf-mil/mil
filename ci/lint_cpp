@@ -11,6 +11,7 @@ declare -a FILES=()
 for FILE in $(find $MIL_DIR \
                    -path $MIL_DIR/NaviGator/satellite/rviz_satellite -prune -o \
                    -path $MIL_DIR/NaviGator/simulation/VRX/vrx -prune -o \
+                   -path $MIL_DIR/mil_common/drivers/pointgrey_camera_driver -prune -o \
                    -path $MIL_DIR/mil_common/drivers/LMS1xx -prune -o \
                    -path $MIL_DIR/mil_common/drivers/roboteq -prune -o \
                    -path $MIL_DIR/mil_common/drivers/mil_blueview_driver/bvtsdk -prune -o \
