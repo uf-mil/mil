@@ -28,5 +28,6 @@ Helpful Docs:
    Projects <docs/projects>
      SubjuGator <docs/subjugator/index>
      VRX <docs/navigator/vrx>
+   Technical Design <docs/design/design>
    Infrastructure <docs/infra/index>
    View Github Readme <README>
