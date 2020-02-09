@@ -62,7 +62,7 @@ You will need to provide a short description of your change when you commit it.
 
 **Ubuntu**
 
-* Create a new branch for your changes `git branch -b <branchname>`. Be sure to pick a descriptive name and make sure there is not [already a branch with that name](https://github.com/uf-mil/mil/branches)
+* Create a new branch for your changes `git checkout -b <branchname>`. Be sure to pick a descriptive name and make sure there is not [already a branch with that name](https://github.com/uf-mil/mil/branches)
 * Look at the changes you made with `git status` and `git diff`
 * Add the files you wish  to keep to staging `git add <file> <file...>` (or all files with `git add .`
 * Commit the changes with a descriptive message `git commit -m "<message>"`
