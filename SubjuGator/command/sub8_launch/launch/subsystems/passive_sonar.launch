@@ -3,7 +3,6 @@
   <arg name="environment" default="real" />
   <arg name="port" default="10001" />
   <group if="$(eval environment == 'real')">
-    <node pkg="sub8_launch" type="passive_sonar_conn" name="passive_sonar_conn" />
     <node pkg="mil_passive_sonar" type="sylphase_sonar_ros_bridge" name="sylphase_sonar_ros_bridge">
       <param name="port" value="$(arg port)" />
       <param name="seconds_to_capture" value="0.1" />
