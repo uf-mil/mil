@@ -1,5 +1,0 @@
-#!/bin/sh
-
-SONAR_PATH=/home/sub8/sonar
-tmux new-session -d -s sylphase-passive-sonar "python ${SONAR_PATH}/software/publish 7337"
-tmux split-window -t sylphase-passive-sonar "python ${SONAR_PATH}/software/ros_bridge localhost 7337"
