@@ -54,7 +54,7 @@ class Plotter:
         cannot change color of plots
 
     Features:
-        Can be enables/disabled via the enable_<topic_name> service call
+        Can be enables/disabled via the <topic_name>_enable service call
     '''
 
     def __init__(self, topic_name, w=20, h=20, dpi=200):
@@ -66,7 +66,7 @@ class Plotter:
         self.enabled = True
         self.thread = None
 
-        rospy.Service(('/enable_%s'%topic_name), SetBool, self.enable_disable)
+        rospy.Service(('%s_enable'%topic_name), SetBool, self.enable_disable)
 
 
     def enable_disable(self, req):
@@ -74,19 +74,20 @@ class Plotter:
         return SetBoolResponse(success=True)
 
 
-    def publish_plots(self, plots, titles=[]):
-        if self.pub.get_num_connections() == 0:
-            return
-        if not self.enabled:
-            return
-        if (self.thread is not None) and self.thread.is_alive():
-            return
-        self.thread = threading.Thread(target=self.publish_plots_, args=(plots,titles))
-        self.thread.daemon = True
-        self.thread.start()
+    def is_go(self):
+        return self.enabled and\
+               self.pub.get_num_connections() > 0 and\
+               (self.thread is None or not self.thread.is_alive())
 
 
-    def publish_plots_(self, plots, titles=[]):
+    def publish_plots(self, plots, titles=[], v_lines=[]):
+        if self.is_go():
+            self.thread = threading.Thread(target=self.publish_plots_, args=(plots,titles, v_lines))
+            self.thread.daemon = True
+            self.thread.start()
+
+
+    def publish_plots_(self, plots, titles=[], v_lines=[]):
 
         num_of_plots = plots.shape[0]/2
 
@@ -96,10 +97,12 @@ class Plotter:
             ax.plot(plots[i*2,:], plots[i*2+1,:])
             if i < len(titles):
                 ax.set_title(titles[i])
+            if i < len(v_lines):
+                ax.axvline(v_lines[i])
         self.canvas.draw()
 
         s, (w, h) = self.canvas.print_to_buffer()
-
+        self.fig.clf()
         img = np.fromstring(s, np.uint8).reshape(w, h, 4)
 
         img = np.roll(img, 3, axis = 2)
@@ -109,4 +112,27 @@ class Plotter:
         msg = self.bridge.cv2_to_imgmsg(img, encoding='passthrough')
         # publish the image
         self.pub.publish(msg)
+
+
+def interweave(x, data):
+    '''Helper function of place a single x axis in every other row of a data matrix
+
+    x  must be a numpy array of shape (samples,)
+
+    data  must be a numpy ndarray of shape (channels, samples)
+
+    returns:
+        numpy ndarray of shape (channles*2, samples) where
+            even numbered rows are x, odd rows are the data
+
+    see mil_passive_sonar triggering for an example
+    '''
+    plots = [None] * data.shape[0]
+    for i in xrange(data.shape[0]):
+        plots[i] = np.vstack((x, data[i,:]))
+    plots = np.vstack(tuple(plots))
+    return plots
+
+
+
 

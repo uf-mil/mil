@@ -2,25 +2,28 @@
 <launch>
   <arg name="environment" default="real" />
   <arg name="port" default="10001" />
-  <group if="$(eval environment == 'real')">
-    <node pkg="mil_passive_sonar" type="sylphase_sonar_ros_bridge" name="sylphase_sonar_ros_bridge">
+  <arg name="config_file" default="passive_sonar.yaml" />
+  <arg name="ns" value="/hydrophones"/>
+
+  <group if="$(eval environment == 'file' or environment == 'real')" ns="$(arg ns)">
+    <node pkg="mil_passive_sonar" type="sylphase_sonar_ros_bridge" name="sylphase_sonar_ros_bridge" respawn="true">
       <param name="port" value="$(arg port)" />
       <param name="seconds_to_capture" value="0.1" />
-      <remap from="samples" to="/hydrophones/samples" />
     </node>
+  </group>
+
+  <group if="$(eval environment == 'real')" ns="$(arg ns)">
     <node pkg="mil_passive_sonar" type="run_sylphase_driver" name="run_sylphase_driver"
           args="$(arg port)"
           respawn="true"
           respawn_delay="5" />
-    <!-- TODO: replace with new sonar processing pipeline -->
-    <!--
-    <node pkg="mil_passive_sonar" type="hydrophones" name="hydrophones_heading">
-      <param name="dist_h" value="2.286e-02" />
-      <param name="dist_h4" value="2.286e-02" />
-      <param name="v_sound" value="1482" />
-    </node>
-    -->
   </group>
-  <node pkg="mil_tools" type="vector_to_marker" name="hydrophones_visualization"
-        args="/hydrophones/direction /hydrophones/direction_marker --length 4" />
+
+  <group ns="$(arg ns)">
+    <rosparam command="load" file="$(find sub8_launch)/config/$(arg config_file)" />
+    <node pkg="mil_passive_sonar" type="triggering" output="screen" name="triggering" respawn="true"/>
+    <node pkg="mil_passive_sonar" type="ping_locator" output="screen" name="ping_locator" respawn="true"/>
+    <node pkg="mil_tools" type="vector_to_marker" name="hydrophones_visualization"
+          args="$(arg ns)/direction $(arg ns)/direction_marker --length 4" />
+  </group>
 </launch>
