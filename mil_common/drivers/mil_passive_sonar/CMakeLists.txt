@@ -9,6 +9,7 @@ add_message_files(
   Debug.msg
   HydrophoneSamples.msg
   Ping.msg
+  Ping2.msg
 )
 
 add_service_files(

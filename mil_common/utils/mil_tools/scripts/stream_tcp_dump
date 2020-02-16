@@ -60,11 +60,23 @@ try:
         key = input("Press Right or Left Arrow")
       if key == right:
         print('   sent next sample')
-        return i-1
+        i = i-1
+        if i < 0:
+            return len(data) + i
+        if i > len(data) - 1:
+            return i - len(data)
+        else:
+            return i
       else:
         print('   sent previous sample')
-        return i+1
-
+        i = i+1
+        if i < 0:
+            return len(data) + i
+        if i > len(data) - 1:
+            return i - len(data)
+        else:
+            return i
+    print(len(data))
     while True:
       print('New connection')
       i = 0

@@ -133,7 +133,7 @@ void SylphaseSonarToRosNode::read_messages(boost::asio::ip::tcp::socket& socket)
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "my_node_name");
+  ros::init(argc, argv, "sylphase_ros_bridge");
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
