@@ -5,3 +5,4 @@ set -euo pipefail
 MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
 
 $MIL_DIR/ci/lint_cpp
+$MIL_DIR/ci/lint_py

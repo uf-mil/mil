@@ -1,0 +1,34 @@
+#!/bin/bash
+set -euo pipefail
+
+# Get root directory of MIL repo
+MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
+
+#Create temporary directory to store python files
+TMP_DIR=$(mktemp -d -t flake8-XXXXXXXXXX)
+
+# Add any imported submodule / unmanaged code to the excluded list
+for FILE in $(find $MIL_DIR \
+                   -path $MIL_DIR/NaviGator/satellite/rviz_satellite -prune -o \
+                   -path $MIL_DIR/NaviGator/simulation/VRX/vrx -prune -o \
+                   -path $MIL_DIR/mil_common/drivers/LMS1xx -prune -o \
+                   -path $MIL_DIR/mil_common/drivers/roboteq -prune -o \
+                   -path $MIL_DIR/mil_common/drivers/mil_blueview_driver/bvtsdk -prune -o \
+                   -path $MIL_DIR/deprecated -prune -o \
+                   -regex ".*/.*\\.\\(py\\)$");
+do
+    #Verify FILE is not a directory, copy to temporary directory
+    if [ ! -d $FILE ]; then
+        cp --parents $FILE $TMP_DIR
+    fi
+done
+
+echo "The following Python files are not formatted correctly:"
+
+#Run Flake8 on temporary directory, output improperly formatted files
+flake8 \
+    --format='- %(path)s::%(row)d,%(col)d::%(code)s::%(text)s' \
+    --ignore=E731 \
+    --max-line-length=120 \
+    --exclude=__init__.py $TMP_DIR 
+
