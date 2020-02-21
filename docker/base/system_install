@@ -58,7 +58,6 @@ mil_system_install \
   ros-melodic-teleop-tools \
   ros-melodic-teleop-twist-keyboard \
   python-pip \
-  flake8 \
   clang-format-3.9
 
 sudo pip install \
@@ -72,7 +71,8 @@ mil_system_install python3-pip
 sudo pip3 install -q \
   sphinx \
   recommonmark \
-  sphinx_rtd_theme
+  sphinx_rtd_theme \
+  flake8
 
 
 # Initialize rosdep
