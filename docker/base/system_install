@@ -58,8 +58,9 @@ mil_system_install \
   ros-melodic-teleop-tools \
   ros-melodic-teleop-twist-keyboard \
   python-pip \
-  clang-format-3.9 \ 
-  flake8
+  flake8 \
+  clang-format-3.9
+
 sudo pip install \
   tqdm \
   scipy \

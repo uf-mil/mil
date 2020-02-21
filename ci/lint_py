@@ -4,6 +4,8 @@ set -euo pipefail
 # Get root directory of MIL repo
 MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
 
+echo "The following Python files are not formatted correctly: "
+
 flake8 \
 --ignore E731 \
 --max-line-length=120 \
