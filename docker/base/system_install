@@ -60,6 +60,9 @@ mil_system_install \
   python-pip \
   clang-format-3.9
 
+#Install flake8 for formatting checks
+python2.7 -m sudo pip install flake8
+
 sudo pip install \
   tqdm \
   scipy \
@@ -72,7 +75,7 @@ sudo pip3 install -q \
   sphinx \
   recommonmark \
   sphinx_rtd_theme \
-  flake8
+ 
 
 
 # Initialize rosdep
