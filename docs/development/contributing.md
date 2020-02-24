@@ -104,9 +104,9 @@ you pull request to include these changes. This can sometimes be a tedious proce
 were made to the same files you changed.
 
 **Ubuntu**
-* Fetch the latest changes from upstream (this just caches them locally, not changing any of your code) `git fetch upstream`
+* Fetch the latest changes from upstream (this just caches them locally, not changing any of your code) `git fetch origin`
 * Backup your current branch in case anything goes wrong during the rebase `git checkout -b <branchname>-backup` then go back to your original branch `git checkout <branchname>`
-* Rebase your changes to the latest master branch `git rebase -i upstream/master`
+* Rebase your changes to the latest master branch `git rebase -i origin/master`
 * This will open up your text editor with a list of the commits that will be added on top of master. Be sure to comment out (by adding `#` before the line) any commits that are not yours
 * Save and close the text editor. Git will now attempt to rebase your changes on top of the master branch. If git detects a conflict, it will prompt you on how to manually fix them.
-* Once you have gone through the whole process and git says the rebase was successful, push your updated branch `git push upstream -f <branchname>`. Note the `-f` which you need as you have re-written history
+* Once you have gone through the whole process and git says the rebase was successful, push your updated branch `git push origin -f <branchname>`. Note the `-f` which you need as you have re-written history
