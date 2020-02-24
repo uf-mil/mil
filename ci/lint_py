@@ -6,7 +6,7 @@ MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
 
 echo "The following Python files are not formatted correctly: "
 
-flake8 \
+python2 -m flake8 \
 --ignore E731 \
 --max-line-length=120 \
 $(rosrun mil_tools list_python_files $MIL_DIR __init__.py deprecated/ rviz_satellite/ vrx/ LMS1xx/ roboteq/ bvtsdk/ VRX/ lqRRT/)
