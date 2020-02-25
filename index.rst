@@ -28,6 +28,7 @@ Helpful Docs:
    Projects <docs/projects>
      SubjuGator <docs/subjugator/index>
      VRX <docs/navigator/vrx>
+     Indy AV <docs/indyav/index>
    Technical Design <docs/design/design>
    Infrastructure <docs/infra/index>
    View Github Readme <README>

@@ -7,3 +7,4 @@ MIL works on the following projects / platforms:
 
   VRX <navigator/vrx>
   SubjuGator <subjugator/index>
+  Indy AV <indyav/index>
