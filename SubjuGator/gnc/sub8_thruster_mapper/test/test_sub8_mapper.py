@@ -73,7 +73,7 @@ class TestMapThrusters(unittest.TestCase):
             )
 
             thrust_pub.publish(wrench_msg)
-            timeout_t = time.time() + 0.01
+            timeout_t = time.time() + 0.5
             while not rospy.is_shutdown() and time.time() < timeout_t and not self.got_msg:
                 time.sleep(0.01)
 
