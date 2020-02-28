@@ -20,6 +20,7 @@ if __name__ == "__main__":
     assert al.is_cleared()
 
     rospy.sleep(0.5)
-    ab.raise_alarm(parameters={"int": 4, "list": [1, 2, 3], "str": "stringing"})
+    ab.raise_alarm(parameters={"int": 4, "list": [
+                   1, 2, 3], "str": "stringing"})
 
     print "All checks passed"

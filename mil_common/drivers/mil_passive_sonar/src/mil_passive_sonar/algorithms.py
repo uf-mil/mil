@@ -9,20 +9,27 @@ import matplotlib.pyplot as plt
 
 DEBUG = 0
 
+
 def run(samples, sample_rate, v_sound, dist_h, dist_h4):
     # Perform algorithm
-    if DEBUG: plt.cla()
-    if DEBUG: plt.subplot(2, 2, 1)
-    if DEBUG: map(plt.plot, samples)
+    if DEBUG:
+        plt.cla()
+    if DEBUG:
+        plt.subplot(2, 2, 1)
+    if DEBUG:
+        map(plt.plot, samples)
     samples = zero_mean(samples)
     freq, amplitude, samples_fft = compute_freq(
         samples, sample_rate, numpy.array([5e3, 40e3]), plot=True)
     fft_sharpness = amplitude**2 / numpy.sum(samples_fft)
-    if DEBUG: plt.subplot(2, 2, 2)
-    if DEBUG: map(plt.plot, samples_fft)
+    if DEBUG:
+        plt.subplot(2, 2, 2)
+    if DEBUG:
+        map(plt.plot, samples_fft)
     upsamples, upsample_rate = preprocess(samples, sample_rate, 3e6)
     deltas, delta_errors, template_pos, template_width = \
-        compute_deltas(upsamples, upsample_rate, max(dist_h, dist_h4) / v_sound, 20e-2 / v_sound)
+        compute_deltas(upsamples, upsample_rate, max(
+            dist_h, dist_h4) / v_sound, 20e-2 / v_sound)
     delta_errors = delta_errors / amplitude
     if len(deltas) == 3:
         pos = compute_pos_4hyd(deltas, upsample_rate, v_sound, dist_h, dist_h4)
@@ -129,8 +136,10 @@ def compute_deltas(samples,
     """
     template_width = int(round(template_duration * sample_rate))
     template, template_pos = make_template(samples[0, :], template_width)
-    if DEBUG: plt.subplot(2, 2, 3)
-    if DEBUG: plt.plot(template)
+    if DEBUG:
+        plt.subplot(2, 2, 3)
+    if DEBUG:
+        plt.plot(template)
     if template_pos is None:
         return numpy.empty(0), numpy.empty(0), None, template_width
     start = template_pos - int(round(max_delay * sample_rate * 1.25))
@@ -138,7 +147,8 @@ def compute_deltas(samples,
 
     deltas = numpy.empty(samples.shape[0] - 1)
     errors = numpy.empty(samples.shape[0] - 1)
-    if DEBUG: plt.subplot(2, 2, 4)
+    if DEBUG:
+        plt.subplot(2, 2, 4)
     for i in xrange(1 + deltas.shape[0]):
         res = match_template(samples[i, :], start, stop, template)
         if res is None:
@@ -148,7 +158,8 @@ def compute_deltas(samples,
             i -= 1
             deltas[i] = pos - template_pos
             errors[i] = error
-    if DEBUG: plt.show()
+    if DEBUG:
+        plt.show()
 
     return deltas, errors, template_pos, template_width
 
@@ -172,9 +183,11 @@ def match_template(channel, start, stop, template):
     assert stop <= channel.shape[0] - template.shape[0]
     stop = min(stop, channel.shape[0] - template.shape[0])
     err = calculate_error(channel, start, stop, template)
-    if DEBUG: plt.plot(err)
+    if DEBUG:
+        plt.plot(err)
     min_pt = find_minimum(err)
-    if min_pt is None: return None
+    if min_pt is None:
+        return None
 
     return start + min_pt, err[int(round(min_pt))]
 

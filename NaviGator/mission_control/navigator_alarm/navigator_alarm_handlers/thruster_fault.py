@@ -21,7 +21,8 @@ class ThrusterFault(HandlerBase):
         self._raised_alarms = {}
 
         # Subscribe to the status message for all thruster topics
-        [rospy.Subscriber(topic + '/status', Status, self._check_faults, topic) for topic in motor_topics]
+        [rospy.Subscriber(topic + '/status', Status,
+                          self._check_faults, topic) for topic in motor_topics]
 
     # Return a list that decodes the binary to strings
     def _get_fault_codes(self, fault_id):

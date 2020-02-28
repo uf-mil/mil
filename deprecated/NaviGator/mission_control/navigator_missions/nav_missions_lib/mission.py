@@ -49,4 +49,5 @@ class Mission(object):
                        "I hope this mission doesn't have any children.", msg_color="red")
         except Exception as exp:
             print exp
-            fprint("Oh man this is pretty bad, your mission's safe exit failed. SHAME!", msg_color="red")
+            fprint(
+                "Oh man this is pretty bad, your mission's safe exit failed. SHAME!", msg_color="red")

@@ -48,7 +48,8 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
         assert len(labels) == img.shape[2]
         flat = np.hstack(cv2.split(img))
         for i, label in enumerate(labels):
-            cv2.putText(flat, label, (i * w, int(h * 0.15)), cv2.FONT_HERSHEY_PLAIN, viz_scale * 5, 255, 2)
+            cv2.putText(flat, label, (i * w, int(h * 0.15)),
+                        cv2.FONT_HERSHEY_PLAIN, viz_scale * 5, 255, 2)
         return flat
 
     # Display small version of original image to the left of the grid
@@ -69,13 +70,17 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
             # Print values in each color space of current cursor location
             text = "[{l[0]}, {l[1]}, {l[2]}] = [{r[0]:>3}   {r[1]:>3}   {r[2]:>3}]".format(
                 l=images_and_labels[i][1], r=images_and_labels[i][0][mouse_y, mouse_x])
-            (t_w, t_h), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_PLAIN, 2.3 * viz_scale, 1)
+            (t_w, t_h), _ = cv2.getTextSize(
+                text, cv2.FONT_HERSHEY_PLAIN, 2.3 * viz_scale, 1)
             t_y += t_h * 2
-            cv2.putText(viz, text, (0, t_y), cv2.FONT_HERSHEY_PLAIN, 2.3 * viz_scale, (255, 255, 255), 1)
+            cv2.putText(viz, text, (0, t_y), cv2.FONT_HERSHEY_PLAIN,
+                        2.3 * viz_scale, (255, 255, 255), 1)
 
     # Set 3x3 grid of single channel images from 3 3-channel images
-    make_3deep = lambda x: np.repeat(x[:, :, np.newaxis], 3, axis=2)  # Needed for displaying in color
-    viz[:, w:] = np.vstack(map(make_3deep, map(lambda x: flatten_channels(*x), images_and_labels)))
+    def make_3deep(x): return np.repeat(
+        x[:, :, np.newaxis], 3, axis=2)  # Needed for displaying in color
+    viz[:, w:] = np.vstack(
+        map(make_3deep, map(lambda x: flatten_channels(*x), images_and_labels)))
 
     # If enabled, display a color histogram in each panel
     if show_histogram:
@@ -101,10 +106,13 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--use_cam', help='Use webcam (number)', type=int)
+    parser.add_argument('-c', '--use_cam',
+                        help='Use webcam (number)', type=int)
     parser.add_argument('-v', '--use_video', help='Use video', type=str)
-    parser.add_argument('-r', '--use_ros_topic', help='Use ROS topic', type=str)
-    parser.add_argument('-s', '--scale', help='Scale for image processing', type=float, default=0.5)
+    parser.add_argument('-r', '--use_ros_topic',
+                        help='Use ROS topic', type=str)
+    parser.add_argument(
+        '-s', '--scale', help='Scale for image processing', type=float, default=0.5)
     args = parser.parse_args()
 
     print "PRESS 'h' to display histograms"
@@ -145,7 +153,8 @@ if __name__ == '__main__':
         import rospy
         import mil_ros_tools
         rospy.init_node(NAME, anonymous=True)
-        mil_ros_tools.Image_Subscriber(topic=args.use_ros_topic, callback=image_cb)
+        mil_ros_tools.Image_Subscriber(
+            topic=args.use_ros_topic, callback=image_cb)
         rospy.spin()
 
     else:

@@ -42,10 +42,13 @@ class Sub8(Entity):
         self.geom = ode.GeomBox(space, lengths=(lx, ly, lz))
         self.geom.setBody(self.body)
 
-        self.truth_odom_pub = rospy.Publisher('truth/odom', Odometry, queue_size=1)
+        self.truth_odom_pub = rospy.Publisher(
+            'truth/odom', Odometry, queue_size=1)
         self.imu_sensor_pub = rospy.Publisher('imu', Imu, queue_size=1)
-        self.dvl_sensor_pub = rospy.Publisher('dvl', VelocityMeasurements, queue_size=1)
-        self.thruster_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=2)
+        self.dvl_sensor_pub = rospy.Publisher(
+            'dvl', VelocityMeasurements, queue_size=1)
+        self.thruster_sub = rospy.Subscriber(
+            'thrusters/thrust', Thrust, self.thrust_cb, queue_size=2)
         self.thrust_dict = {}
 
         self.last_force = (0.0, 0.0, 0.0)
@@ -80,14 +83,22 @@ class Sub8(Entity):
         # Make this a parameter
         # name, relative direction, relative position (COM)
         self.thruster_list = [
-            ("FLV", np.array([+0.000, +0.0, -1.]), np.array([+0.1583, +0.1690, +0.0142])),
-            ("FLL", np.array([-0.866, +0.5, +0.]), np.array([+0.2678, +0.2795, +0.0000])),
-            ("FRV", np.array([+0.000, +0.0, -1.]), np.array([+0.1583, -0.1690, +0.0142])),
-            ("FRL", np.array([-0.866, -0.5, +0.]), np.array([+0.2678, -0.2795, +0.0000])),
-            ("BLV", np.array([+0.000, +0.0, +1.]), np.array([-0.1583, +0.1690, +0.0142])),
-            ("BLL", np.array([+0.866, +0.5, +0.]), np.array([-0.2678, +0.2795, +0.0000])),
-            ("BRV", np.array([+0.000, +0.0, +1.]), np.array([-0.1583, -0.1690, +0.0142])),
-            ("BRL", np.array([+0.866, -0.5, +0.]), np.array([-0.2678, -0.2795, +0.0000])),
+            ("FLV", np.array([+0.000, +0.0, -1.]),
+             np.array([+0.1583, +0.1690, +0.0142])),
+            ("FLL", np.array([-0.866, +0.5, +0.]),
+             np.array([+0.2678, +0.2795, +0.0000])),
+            ("FRV", np.array([+0.000, +0.0, -1.]),
+             np.array([+0.1583, -0.1690, +0.0142])),
+            ("FRL", np.array([-0.866, -0.5, +0.]),
+             np.array([+0.2678, -0.2795, +0.0000])),
+            ("BLV", np.array([+0.000, +0.0, +1.]),
+             np.array([-0.1583, +0.1690, +0.0142])),
+            ("BLL", np.array([+0.866, +0.5, +0.]),
+             np.array([-0.2678, +0.2795, +0.0000])),
+            ("BRV", np.array([+0.000, +0.0, +1.]),
+             np.array([-0.1583, -0.1690, +0.0142])),
+            ("BRL", np.array([+0.866, -0.5, +0.]),
+             np.array([-0.2678, -0.2795, +0.0000])),
         ]
         self.thrust_range = (-70, 100)
         self.last_cmd_time = rospy.Time.now()
@@ -126,8 +137,10 @@ class Sub8(Entity):
         self.body.addRelTorque(desired_torque)
 
     def set_up_ros(self):
-        self.position_server = rospy.Service('sim/vehicle/set_pose', SimSetPose, self.set_pose_server)
-        self.keypress_sub = rospy.Subscriber('sim/keypress', String, self.keypress_callback)
+        self.position_server = rospy.Service(
+            'sim/vehicle/set_pose', SimSetPose, self.set_pose_server)
+        self.keypress_sub = rospy.Subscriber(
+            'sim/keypress', String, self.keypress_callback)
 
     def set_pose_server(self, srv):
         '''Set the pose of the submarine
@@ -150,7 +163,8 @@ class Sub8(Entity):
         if np.isclose(rotation_norm, 1., atol=1e-2):
             self.body.setQuaternion(mil_ros_tools.normalize(rotation_q))
         else:
-            rospy.logwarn("Commanded quaternion was not a unit quaternion, NOT setting rotation")
+            rospy.logwarn(
+                "Commanded quaternion was not a unit quaternion, NOT setting rotation")
 
         return SimSetPoseResponse()
 
@@ -171,7 +185,8 @@ class Sub8(Entity):
 
         pose = geometry.Pose(
             position=geometry.Point(*translation),
-            orientation=geometry.Quaternion(quaternion[1], quaternion[2], quaternion[3], quaternion[0]),
+            orientation=geometry.Quaternion(
+                quaternion[1], quaternion[2], quaternion[3], quaternion[0]),
         )
 
         twist = geometry.Twist(
@@ -202,12 +217,14 @@ class Sub8(Entity):
         # We can't get this nicely from body.getForce()
         g = self.body.vectorFromWorld(self.g)
         # Get current velocity of IMU in body frame
-        cur_vel = np.array(self.body.vectorFromWorld(self.body.getRelPointVel(self.imu_position)))
+        cur_vel = np.array(self.body.vectorFromWorld(
+            self.body.getRelPointVel(self.imu_position)))
         linear_acc = orientation_matrix.dot(cur_vel - self.last_vel) / dt
         linear_acc += g + (noise * dt)
 
         # TODO: Fix frame
-        angular_vel = orientation_matrix.dot(self.body.getAngularVel()) + (noise * dt)
+        angular_vel = orientation_matrix.dot(
+            self.body.getAngularVel()) + (noise * dt)
 
         header = mil_ros_tools.make_header(frame='/body')
 
@@ -239,7 +256,8 @@ class Sub8(Entity):
 
         header = mil_ros_tools.make_header(frame='/body')
 
-        vel_dvl_body = self.body.vectorFromWorld(self.body.getRelPointVel(self.dvl_position))
+        vel_dvl_body = self.body.vectorFromWorld(
+            self.body.getRelPointVel(self.dvl_position))
 
         velocity_measurements = []
 
@@ -264,7 +282,8 @@ class Sub8(Entity):
         for thrust_cmd in msg.thruster_commands:
             commanded_thrust = thrust_cmd.thrust
             # Clamp thrust, and add it to dictionary
-            self.thrust_dict[thrust_cmd.name] = np.clip(commanded_thrust, *self.thrust_range)
+            self.thrust_dict[thrust_cmd.name] = np.clip(
+                commanded_thrust, *self.thrust_range)
 
     def step(self, dt):
         '''Ignore dt

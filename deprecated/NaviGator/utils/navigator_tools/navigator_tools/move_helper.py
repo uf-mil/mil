@@ -33,10 +33,12 @@ class move_helper(object):
                                     self.odom.pose.pose.orientation.z, self.odom.pose.pose.orientation.w])[:2, :2]
         theta = gh.quat_to_euler(self.odom.pose.pose.orientation)
 
-        current = numpy.array([self.odom.pose.pose.position.x, self.odom.pose.pose.position.y, numpy.rad2deg(theta[2])])
+        current = numpy.array([self.odom.pose.pose.position.x,
+                               self.odom.pose.pose.position.y, numpy.rad2deg(theta[2])])
         shift = numpy.concatenate((R.dot([msg.x, msg.y]), [msg.z]))
         desired = current + shift
-        desired_quaternion = trns.quaternion_from_euler(0, 0, numpy.deg2rad(desired[2]))
+        desired_quaternion = trns.quaternion_from_euler(
+            0, 0, numpy.deg2rad(desired[2]))
 
         to_send.pose.position.x = desired[0]
         to_send.pose.position.y = desired[1]

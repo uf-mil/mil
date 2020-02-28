@@ -29,7 +29,8 @@ class ActuatorBoard():
         rospy.Service('/actuator_driver/actuate_raw', SetValve, self.actuate)
 
     def actuate(self, req):
-        rospy.loginfo('Setting simulated actuator {} to {}'.format(req.actuator, 'opened' if req.opened else 'closed'))
+        rospy.loginfo('Setting simulated actuator {} to {}'.format(
+            req.actuator, 'opened' if req.opened else 'closed'))
         return self._actuate(req)
 
     def acuate_raw(self, req):
@@ -49,6 +50,7 @@ class MarkerDropper():
     Dummy class to provide compatibility for simulated actuator board.
     Does nothing, but could be used to simulate marker dropping in the future.
     '''
+
     def __init__(self):
         pass
 
@@ -63,10 +65,14 @@ class TorpedoLauncher():
     def __init__(self):
         self.launched = False
 
-        self.set_torpedo = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
-        self.get_model = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-        rospy.Subscriber('/contact_bumper', ContactsState, self.check_contact, queue_size=1)
-        self.contact_pub = rospy.Publisher('/gazebo/torpedo_contact', String, queue_size=1)
+        self.set_torpedo = rospy.ServiceProxy(
+            '/gazebo/set_model_state', SetModelState)
+        self.get_model = rospy.ServiceProxy(
+            '/gazebo/get_model_state', GetModelState)
+        rospy.Subscriber('/contact_bumper', ContactsState,
+                         self.check_contact, queue_size=1)
+        self.contact_pub = rospy.Publisher(
+            '/gazebo/torpedo_contact', String, queue_size=1)
 
     def check_contact(self, msg):
         if not self.launched:
@@ -94,9 +100,11 @@ class TorpedoLauncher():
 
         # Generally, if the torpedo is laying on the ground the collision force will be very small.
         # So if the force is really small, we assume the impact collision has occured before the torpedo was launched.
-        print np.abs(np.linalg.norm(msg_helpers.rosmsg_to_numpy(real_state.total_wrench.force)))
+        print np.abs(np.linalg.norm(
+            msg_helpers.rosmsg_to_numpy(real_state.total_wrench.force)))
         if np.abs(np.linalg.norm(msg_helpers.rosmsg_to_numpy(real_state.total_wrench.force))) < 10:
-            rospy.loginfo("Torpedo probably still on the ground, still waiting.")
+            rospy.loginfo(
+                "Torpedo probably still on the ground, still waiting.")
             return
 
         # Now the torpedo has impacted something, publish what it hit.
@@ -119,7 +127,8 @@ class TorpedoLauncher():
 
         # Translate torpedo init velocity so that it first out of the front of the sub.
         muzzle_vel = np.array([10, 0, 0])
-        v = geometry_helpers.rotate_vect_by_quat(np.append(muzzle_vel, 0), sub_pose[1])
+        v = geometry_helpers.rotate_vect_by_quat(
+            np.append(muzzle_vel, 0), sub_pose[1])
 
         launch_twist = Twist()
         launch_twist.linear.x = v[0]
@@ -127,11 +136,13 @@ class TorpedoLauncher():
         launch_twist.linear.z = v[2]
 
         # This is offset so it fires approx at the torpedo launcher location.
-        launch_pos = geometry_helpers.rotate_vect_by_quat(np.array([.4, -.15, -.3, 0]), sub_pose[1])
+        launch_pos = geometry_helpers.rotate_vect_by_quat(
+            np.array([.4, -.15, -.3, 0]), sub_pose[1])
 
         model_state = ModelState()
         model_state.model_name = 'torpedo'
-        model_state.pose = msg_helpers.numpy_quat_pair_to_pose(sub_pose[0] + launch_pos, sub_pose[1])
+        model_state.pose = msg_helpers.numpy_quat_pair_to_pose(
+            sub_pose[0] + launch_pos, sub_pose[1])
         model_state.twist = launch_twist
         self.set_torpedo(model_state)
         self.launched = True
@@ -142,8 +153,10 @@ class TorpedoLauncher():
 class GripperController():
 
     def __init__(self):
-        self.apply_force = rospy.ServiceProxy('/gazebo/apply_joint_effort', ApplyJointEffort)
-        self.clear_force = rospy.ServiceProxy('/gazebo/clear_joint_forces', JointRequest)
+        self.apply_force = rospy.ServiceProxy(
+            '/gazebo/apply_joint_effort', ApplyJointEffort)
+        self.clear_force = rospy.ServiceProxy(
+            '/gazebo/clear_joint_forces', JointRequest)
 
         self.force_to_apply = 5  # Gazebo says these are Newton Meters
         self.joint_name = 'grip'
@@ -170,6 +183,7 @@ class GripperController():
 
         self.apply_force(joint_effort)
         return True
+
 
 if __name__ == '__main__':
     rospy.init_node('actuator_board_simulator')

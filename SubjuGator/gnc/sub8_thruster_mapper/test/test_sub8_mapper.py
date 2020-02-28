@@ -24,7 +24,8 @@ class TestMapThrusters(unittest.TestCase):
         '''
         self.got_msg = False
         self.test_data = []
-        rospy.Service('thrusters/thruster_range', ThrusterInfo, self.get_thruster_info)
+        rospy.Service('thrusters/thruster_range',
+                      ThrusterInfo, self.get_thruster_info)
 
     def thrust_callback(self, msg):
         self.got_msg = True
@@ -50,7 +51,8 @@ class TestMapThrusters(unittest.TestCase):
             "{} did not not come up in time".format(target_node)
         )
 
-        thrust_pub = rospy.Publisher('/wrench', WrenchStamped, queue_size=1, latch=True)
+        thrust_pub = rospy.Publisher(
+            '/wrench', WrenchStamped, queue_size=1, latch=True)
         wrenches = [
             np.zeros(6),
             np.arange(6) * 5,

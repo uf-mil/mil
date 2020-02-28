@@ -56,12 +56,14 @@ class Move(Navigator):
             command = commands[i]
             argument = arguments[i]
 
-            action_kwargs = {'move_type': args.movetype, 'speed_factor': args.speedfactor}
+            action_kwargs = {'move_type': args.movetype,
+                             'speed_factor': args.speedfactor}
 
             action_kwargs['blind'] = args.blind
             if args.speedfactor is not None:
                 if ',' in args.speedfactor:
-                    sf = np.array(map(float, args.speedfactor[1:-1].split(',')))
+                    sf = np.array(
+                        map(float, args.speedfactor[1:-1].split(',')))
                 else:
                     sf = [float(args.speedfactor)] * 3
 
@@ -78,7 +80,8 @@ class Move(Navigator):
 
             if command == 'custom':
                 # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
-                self.send_feedback("Moving with the command: {}".format(argument))
+                self.send_feedback(
+                    "Moving with the command: {}".format(argument))
                 res = yield eval("self.move.{}.go(move_type='{move_type}')".format(argument, **action_kwargs))
 
             elif command == 'rviz':
@@ -98,7 +101,8 @@ class Move(Navigator):
             else:
                 shorthand = {"f": "forward", "b": "backward", "l": "left",
                              "r": "right", "yl": "yaw_left", "yr": "yaw_right"}
-                command = command if command not in shorthand.keys() else shorthand[command]
+                command = command if command not in shorthand.keys(
+                ) else shorthand[command]
                 movement = getattr(self.move, command)
 
                 trans_move = command[:3] != "yaw"
@@ -106,7 +110,8 @@ class Move(Navigator):
                 amount = argument
                 # See if there's a non standard unit at the end of the argument
                 if not argument[-1].isdigit():
-                    last_digit_index = [i for i, c in enumerate(argument) if c.isdigit()][-1] + 1
+                    last_digit_index = [i for i, c in enumerate(
+                        argument) if c.isdigit()][-1] + 1
                     amount = float(argument[:last_digit_index])
                     unit = argument[last_digit_index:]
 
@@ -115,9 +120,11 @@ class Move(Navigator):
                 if station_hold:
                     action_kwargs['move_type'] = MoveGoal.HOLD
 
-                msg = "Moving {} ".format(command) if trans_move else "Yawing {} ".format(command[4:])
+                msg = "Moving {} ".format(
+                    command) if trans_move else "Yawing {} ".format(command[4:])
                 self.send_feedback(msg + "{}{}".format(amount, unit))
                 res = yield movement(float(amount), unit).go(**action_kwargs)
             if res.failure_reason is not '':
-                raise Exception('Move failed. Reason: {}'.format(res.failure_reason))
+                raise Exception(
+                    'Move failed. Reason: {}'.format(res.failure_reason))
         defer.returnValue('Move completed successfully!')

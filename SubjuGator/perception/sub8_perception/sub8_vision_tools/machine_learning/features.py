@@ -61,6 +61,7 @@ def conv_features(image):
 
     return np.dstack(all_convolutions)
 
+
 useful_kernels = [
     circle_kernel(5),
     circle_kernel(15),

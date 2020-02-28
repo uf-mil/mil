@@ -23,8 +23,10 @@ class BoundsServer(object):
     Runs the dynamic reconfigure server which implements a global 4 sided
     boundry.
     '''
+
     def __init__(self):
-        self.marker_pub = rospy.Publisher('~visualization', Marker, latch=True, queue_size=1)
+        self.marker_pub = rospy.Publisher(
+            '~visualization', Marker, latch=True, queue_size=1)
         self.server = Server(BoundsConfig, self.update_config)
 
     def update_config(self, config, level):
@@ -50,6 +52,7 @@ class BoundsClient(Client):
     Helper class to connect to the bounds server,
     having helper setter/getters with numpy.
     '''
+
     def __init__(self, server='bounds_server', **kwargs):
         super(BoundsClient, self).__init__(server, **kwargs)
 
@@ -89,6 +92,7 @@ class BoundsClient(Client):
         Get the latest bounds from a 4x3 numpy array
         '''
         return self.config_to_numpy(self.get_configuration())
+
 
 if __name__ == "__main__":
     rospy.init_node("bounds_server")

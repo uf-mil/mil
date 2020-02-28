@@ -22,6 +22,7 @@ class EntranceGate(Navigator):
             '''
                 https://stackoverflow.com/a/12117089
             '''
+
             def __init__(self, start, end):
                 self.start = start
                 self.end = end
@@ -51,7 +52,8 @@ class EntranceGate(Navigator):
                             help='set to configure that this is the exit pass')
         cls.parser = parser
 
-        cls.net_service_call = cls.nh.get_service_client('/entrance_exit_gate_message', MessageExtranceExitGate)
+        cls.net_service_call = cls.nh.get_service_client(
+            '/entrance_exit_gate_message', MessageExtranceExitGate)
 
     @util.cancellableInlineCallbacks
     def run(self, args):
@@ -195,13 +197,15 @@ class EntranceGate(Navigator):
             self.pinger_gate = multilateration_results[0]
             multilateration_confidence = multilateration_results[1]
 
-            self.send_feedback('Multilaterating Method has confidence of ' + str(multilateration_confidence))
+            self.send_feedback(
+                'Multilaterating Method has confidence of ' + str(multilateration_confidence))
         else:
             intersect_results = self.calculate_intersect()
             self.pinger_gate = intersect_results[0]
             intersect_confidence = intersect_results[1]
 
-            self.send_feedback('Intersecting Method has confidence of ' + str(intersect_confidence))
+            self.send_feedback(
+                'Intersecting Method has confidence of ' + str(intersect_confidence))
 
     @util.cancellableInlineCallbacks
     def run_pass_scan(self, args):
@@ -255,13 +259,15 @@ class EntranceGate(Navigator):
             self.pinger_gate = multilateration_results[0]
             multilateration_confidence = multilateration_results[1]
 
-            self.send_feedback('Multilaterating Method has confidence of ' + str(multilateration_confidence))
+            self.send_feedback(
+                'Multilaterating Method has confidence of ' + str(multilateration_confidence))
         else:
             intersect_results = self.calculate_intersect()
             self.pinger_gate = intersect_results[0]
             intersect_confidence = intersect_results[1]
 
-            self.send_feedback('Intersecting Method has confidence of ' + str(intersect_confidence))
+            self.send_feedback(
+                'Intersecting Method has confidence of ' + str(intersect_confidence))
 
     '''
 
@@ -280,9 +286,12 @@ class EntranceGate(Navigator):
             intersection = (1 - t) * gate_vector[0] + t * gate_vector[1]
 
             # Calculate the distances from each gate center to the intersection
-            gateDist[0] = np.linalg.norm(intersection - np.array(self.gate_centers[0]))
-            gateDist[1] = np.linalg.norm(intersection - np.array(self.gate_centers[1]))
-            gateDist[2] = np.linalg.norm(intersection - np.array(self.gate_centers[2]))
+            gateDist[0] = np.linalg.norm(
+                intersection - np.array(self.gate_centers[0]))
+            gateDist[1] = np.linalg.norm(
+                intersection - np.array(self.gate_centers[1]))
+            gateDist[2] = np.linalg.norm(
+                intersection - np.array(self.gate_centers[2]))
 
             # If the intersection is more than 15 meters from the center of the gates it is outside the gates
             if gateDist[1] > 16:
@@ -298,8 +307,10 @@ class EntranceGate(Navigator):
             vec_intersect = vec_intersect / np.linalg.norm(vec_intersect)
 
             # Calculate the angle between the edges of the gates and the angle between an edge and the intersection
-            ang_c1_c4 = np.arccos(np.clip(np.dot(vec_corner1, vec_corner4), -1.0, 1.0))
-            ang_c1_i4 = np.arccos(np.clip(np.dot(vec_corner1, vec_corner4), -1.0, 1.0))
+            ang_c1_c4 = np.arccos(
+                np.clip(np.dot(vec_corner1, vec_corner4), -1.0, 1.0))
+            ang_c1_i4 = np.arccos(
+                np.clip(np.dot(vec_corner1, vec_corner4), -1.0, 1.0))
 
             # If the angles are out of range, throw out this intersection
             if ang_c1_c4 >= 0 and (ang_c1_i4 < 0 or ang_c1_i4 > ang_c1_c4):
@@ -329,7 +340,8 @@ class EntranceGate(Navigator):
             heading_enu = heading_enu[0:2] / np.linalg.norm(heading_enu[0:2])
 
             # Track the ping
-            self.intersect_vectors.append((hydrophones_origin[0:2], hydrophones_origin[0:2] + heading_enu[0:2]))
+            self.intersect_vectors.append(
+                (hydrophones_origin[0:2], hydrophones_origin[0:2] + heading_enu[0:2]))
         except tf2_ros.TransformException, e:
             self.send_feedback('TF Exception: {}'.format(e))
 
@@ -348,7 +360,8 @@ class EntranceGate(Navigator):
         # Calculate the distances to each gate center
         distances = []
         for gate_center in self.gate_centers:
-            distances.append((gate_center[0] - pinger_pos[0]) ** 2 + (gate_center[1] - pinger_pos[1]) ** 2)
+            distances.append(
+                (gate_center[0] - pinger_pos[0]) ** 2 + (gate_center[1] - pinger_pos[1]) ** 2)
 
         # Determine which gate is closest
         pinger_gate = np.argmin(np.array(distances))
@@ -412,7 +425,8 @@ class EntranceGate(Navigator):
 
         # Calculate the center points of each gate
         gate_centers = [((gate_totems[0][0] + gate_totems[1][0]) / 2, (gate_totems[0][1] + gate_totems[1][1]) / 2),
-                        ((gate_totems[1][0] + gate_totems[2][0]) / 2, (gate_totems[1][1] + gate_totems[2][1]) / 2),
+                        ((gate_totems[1][0] + gate_totems[2][0]) / 2,
+                         (gate_totems[1][1] + gate_totems[2][1]) / 2),
                         ((gate_totems[2][0] + gate_totems[3][0]) / 2, (gate_totems[2][1] + gate_totems[3][1]) / 2)]
 
         # Calculate the line that goes through the gates
@@ -443,7 +457,8 @@ class EntranceGate(Navigator):
         # Sort them such that the point on the same side of the boat is first
         if (perpendicular_points[0][0] - boat_pose[0]) ** 2 + (perpendicular_points[0][1] - boat_pose[1]) ** 2 > \
                 (perpendicular_points[1][0] - boat_pose[0]) ** 2 + (perpendicular_points[1][1] - boat_pose[1]) ** 2:
-            perpendicular_points = [perpendicular_points[1], perpendicular_points[0]]
+            perpendicular_points = [
+                perpendicular_points[1], perpendicular_points[0]]
 
         perpendicular_points_np = []
 

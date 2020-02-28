@@ -19,7 +19,8 @@ class MissionsImportTest(unittest.TestCase):
             self.fail(msg='Exception importing module: {}'.format(e))
 
         if not hasattr(mission_module, self.base_class):
-            self.fail(msg='{} doesnt have base mission {}'.format(self.module, self.base_class))
+            self.fail(msg='{} doesnt have base mission {}'.format(
+                self.module, self.base_class))
         base_mission = getattr(mission_module, self.base_class)
 
         for name, cls in inspect.getmembers(mission_module):
@@ -27,6 +28,7 @@ class MissionsImportTest(unittest.TestCase):
                 self.assertTrue(
                     issubclass(cls, base_mission),
                     msg='{} is not a subclass of {}'.format(name, self.base_class))
+
 
 if __name__ == '__main__':
     import rostest

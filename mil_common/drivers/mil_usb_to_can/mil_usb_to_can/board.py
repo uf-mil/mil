@@ -11,6 +11,7 @@ class USBtoCANBoard(object):
     ROS-independent wrapper which provides an interface to connect to the USB to CAN board
     via a serial (or simulated serial) device. Provides thread-safe funtionality.
     '''
+
     def __init__(self, port, baud=9600, simulated=False, **kwargs):
         '''
         Creates an instance.
@@ -22,7 +23,8 @@ class USBtoCANBoard(object):
         if simulated:
             self.ser = SimulatedUSBtoCAN(**kwargs)
         else:
-            self.ser = serial.Serial(port=port, baudrate=baud, timeout=0.1, **kwargs)
+            self.ser = serial.Serial(
+                port=port, baudrate=baud, timeout=0.1, **kwargs)
         self.ser.flushOutput()
         self.ser.flushInput()
 

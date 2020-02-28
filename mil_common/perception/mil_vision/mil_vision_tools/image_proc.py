@@ -9,6 +9,7 @@ class ImageSet(object):
     '''
     Represents a set of images passed to ImageProc
     '''
+
     def __init__(self):
         self.color_encoding = None
         self.raw = None
@@ -58,7 +59,8 @@ class ImageProc(object):
         # Check that camera model is set if we are rectifying an image
         rect = bool(ImageProc.RECT | ImageProc.RECT_COLOR)
         if rect and not isinstance(model, PinholeCameraModel):
-            raise Exception('camera model is not a PinholeCameraModel instance')
+            raise Exception(
+                'camera model is not a PinholeCameraModel instance')
 
         raw_encoding = raw_msg.encoding
         # convert bayer to color and mono as needed

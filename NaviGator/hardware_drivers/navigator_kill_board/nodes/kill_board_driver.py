@@ -25,13 +25,17 @@ class KillInterface(object):
     """
 
     ALARM = 'hw-kill'  # Alarm to raise when hardware kill is detected
-    YELLOW_WRENCHES = ['rc', '/wrench/rc', 'keyboard', '/wrench/keyboard']  # Wrenches which activate YELLOW LED
-    GREEN_WRENCHES = ['autonomous', '/wrench/autonomous']  # Wrenches which activate GREEN LED
+    # Wrenches which activate YELLOW LED
+    YELLOW_WRENCHES = ['rc', '/wrench/rc', 'keyboard', '/wrench/keyboard']
+    # Wrenches which activate GREEN LED
+    GREEN_WRENCHES = ['autonomous', '/wrench/autonomous']
 
     def __init__(self):
-        self.port = rospy.get_param('~port', "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A104OWRY-if00-port0")
+        self.port = rospy.get_param(
+            '~port', "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A104OWRY-if00-port0")
         self.connected = False
-        self.diagnostics_pub = rospy.Publisher("/diagnostics", DiagnosticArray, queue_size=3)
+        self.diagnostics_pub = rospy.Publisher(
+            "/diagnostics", DiagnosticArray, queue_size=3)
         while not self.connected and not rospy.is_shutdown():
             try:
                 self.connect()
@@ -61,23 +65,28 @@ class KillInterface(object):
         self.ctrl_msg_count = 0
         self.ctrl_msg_timeout = 0
         self.sticks = {}
-        for stick in constants['CTRL_STICKS']:  # These are 3 signed 16-bit values for stick positions
+        # These are 3 signed 16-bit values for stick positions
+        for stick in constants['CTRL_STICKS']:
             self.sticks[stick] = 0x0000
         self.sticks_temp = 0x0000
         self.buttons = {}
-        for button in constants['CTRL_BUTTONS']:  # These are the button on/off states (16 possible inputs)
+        # These are the button on/off states (16 possible inputs)
+        for button in constants['CTRL_BUTTONS']:
             self.buttons[button] = False
         self.buttons_temp = 0x0000
 
-        self._hw_kill_listener = AlarmListener('hw-kill', self.hw_kill_alarm_cb)
+        self._hw_kill_listener = AlarmListener(
+            'hw-kill', self.hw_kill_alarm_cb)
         self._kill_listener = AlarmListener('kill', self.kill_alarm_cb)
         self._hw_kill_listener.wait_for_server()
         self._kill_listener.wait_for_server()
         rospy.Subscriber("/wrench/selected", String, self.wrench_cb)
-        rospy.Subscriber("/network", Header, self.network_cb)  # Passes along network hearbeat to kill board
+        # Passes along network hearbeat to kill board
+        rospy.Subscriber("/network", Header, self.network_cb)
 
     def connect(self):
-        if rospy.get_param('/is_simulation', False):  # If in Gazebo, run fake serial class following board's protocol
+        # If in Gazebo, run fake serial class following board's protocol
+        if rospy.get_param('/is_simulation', False):
             from navigator_kill_board import SimulatedKillBoard
             self.ser = SimulatedKillBoard()
         else:
@@ -120,7 +129,8 @@ class KillInterface(object):
             if (rospy.Time.now() - self.ctrl_msg_timeout) >= rospy.Duration(1):
                 self.ctrl_msg_received = False
                 self.ctrl_msg_count = 0
-                rospy.logwarn('Timeout receiving controller message. Please disconnect controller.')
+                rospy.logwarn(
+                    'Timeout receiving controller message. Please disconnect controller.')
             if self.ctrl_msg_count > 2:  # The first 6 bytes in the message are stick data bytes
                 if (self.ctrl_msg_count % 2) == 0:  # Even number byte: first byte in data word
                     self.sticks_temp = (int(msg.encode("hex"), 16) << 8)
@@ -139,8 +149,10 @@ class KillInterface(object):
                 else:  # Combine two bytes into the button data word
                     self.buttons_temp += int(msg.encode("hex"), 16)
                     for button in self.buttons:  # Each of the 16 bits represents a button on/off state
-                        button_check = int(constants['CTRL_BUTTONS_VALUES'][button].encode("hex"), 16)
-                        self.buttons[button] = ((self.buttons_temp & button_check) == button_check)
+                        button_check = int(
+                            constants['CTRL_BUTTONS_VALUES'][button].encode("hex"), 16)
+                        self.buttons[button] = (
+                            (self.buttons_temp & button_check) == button_check)
                     self.buttons_temp = 0x0000
                     self.ctrl_msg_received = True  # After receiving last byte, trigger joy update
             self.ctrl_msg_count -= 1
@@ -149,13 +161,15 @@ class KillInterface(object):
         if self.last_request is not None:
             if msg == constants['RESPONSE_FALSE']:
                 if self.board_status[self.last_request] is True:
-                    rospy.logdebug('SYNC FALSE for {}'.format(self.last_request))
+                    rospy.logdebug(
+                        'SYNC FALSE for {}'.format(self.last_request))
                 self.board_status[self.last_request] = False
                 self.last_request = None
                 return
             if msg == constants['RESPONSE_TRUE']:
                 if self.board_status[self.last_request] is False:
-                    rospy.logdebug('SYNC TRUE for {}'.format(self.last_request))
+                    rospy.logdebug(
+                        'SYNC TRUE for {}'.format(self.last_request))
                 self.board_status[self.last_request] = True
                 self.last_request = None
                 return
@@ -163,7 +177,8 @@ class KillInterface(object):
         for kill in self.board_status:
             if msg == constants[kill]['FALSE']:
                 if self.board_status[kill] is True:
-                    rospy.logdebug('ASYNC FALSE for {}'.format(self.last_request))
+                    rospy.logdebug(
+                        'ASYNC FALSE for {}'.format(self.last_request))
                 self.board_status[kill] = False
                 return
             if msg == constants[kill]['TRUE']:
@@ -209,11 +224,14 @@ class KillInterface(object):
         wrench = msg.data
         if wrench != self.wrench:
             if wrench in self.YELLOW_WRENCHES:
-                self.request(constants['LIGHTS']['YELLOW_REQUEST'], constants['LIGHTS']['YELLOW_RESPONSE'])
+                self.request(constants['LIGHTS']['YELLOW_REQUEST'],
+                             constants['LIGHTS']['YELLOW_RESPONSE'])
             elif wrench in self.GREEN_WRENCHES:
-                self.request(constants['LIGHTS']['GREEN_REQUEST'], constants['LIGHTS']['GREEN_RESPONSE'])
+                self.request(constants['LIGHTS']['GREEN_REQUEST'],
+                             constants['LIGHTS']['GREEN_RESPONSE'])
             else:
-                self.request(constants['LIGHTS']['OFF_REQUEST'], constants['LIGHTS']['OFF_RESPONSE'])
+                self.request(constants['LIGHTS']['OFF_REQUEST'],
+                             constants['LIGHTS']['OFF_RESPONSE'])
             self.wrench = wrench
 
     def network_cb(self, msg):
@@ -221,7 +239,8 @@ class KillInterface(object):
         Pings kill board on every network hearbeat message. Pretends to be the rf-based hearbeat because
         real one does not work :(
         '''
-        self.request(constants['PING']['REQUEST'], constants['PING']['RESPONSE'])
+        self.request(constants['PING']['REQUEST'],
+                     constants['PING']['RESPONSE'])
 
     def publish_diagnostics(self, err=None):
         '''
@@ -251,7 +270,8 @@ class KillInterface(object):
         current_joy.axes.extend([0] * 4)
         current_joy.buttons.extend([0] * 16)
         for stick in self.sticks:
-            if self.sticks[stick] >= 0x8000:  # Convert 2's complement hex to signed decimal if negative
+            # Convert 2's complement hex to signed decimal if negative
+            if self.sticks[stick] >= 0x8000:
                 self.sticks[stick] -= 0x10000
         current_joy.axes[0] = np.float32(self.sticks['LR']) / 2048
         current_joy.axes[1] = np.float32(self.sticks['UD']) / 2048
@@ -298,9 +318,11 @@ class KillInterface(object):
         Informs kill board about software kills through ROS Alarms
         '''
         if alarm.raised:
-            self.request(constants['COMPUTER']['KILL']['REQUEST'], constants['COMPUTER']['KILL']['RESPONSE'])
+            self.request(constants['COMPUTER']['KILL']['REQUEST'],
+                         constants['COMPUTER']['KILL']['RESPONSE'])
         else:
-            self.request(constants['COMPUTER']['CLEAR']['REQUEST'], constants['COMPUTER']['CLEAR']['RESPONSE'])
+            self.request(constants['COMPUTER']['CLEAR']['REQUEST'],
+                         constants['COMPUTER']['CLEAR']['RESPONSE'])
 
     def hw_kill_alarm_cb(self, alarm):
         self._hw_killed = alarm.raised

@@ -11,6 +11,7 @@ class TrackedObject(object):
     '''
     Contains a single object tracked by an ObjectsTracker instance.
     '''
+
     def __init__(self, id, stamp, features, data=None):
         '''
         Create a TrackedObject
@@ -91,7 +92,8 @@ class ObjectsTracker(object):
         '''
         if now is None:
             now = rospy.Time.now()
-        self.objects = filter(lambda obj: now - obj.stamp < self.expiration_seconds, self.objects)
+        self.objects = filter(lambda obj: now - obj.stamp <
+                              self.expiration_seconds, self.objects)
 
     def get_persistent_objects(self, min_observations=10, min_age=rospy.Duration(0)):
         '''
@@ -113,8 +115,10 @@ class CentroidObjectsTracker(ObjectsTracker):
 
     Features must be added as a (2,) numpy array (Cx, Cy)
     '''
+
     def __init__(self, max_distance=10.0, **kwargs):
-        super(CentroidObjectsTracker, self).__init__(max_distance=max_distance, **kwargs)
+        super(CentroidObjectsTracker, self).__init__(
+            max_distance=max_distance, **kwargs)
 
     def distance(self, a, b):
         '''

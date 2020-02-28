@@ -38,7 +38,8 @@ class KeyboardClient():
         self.uuid = ''
         self.is_locked = False
 
-        self.keyboard_server = rospy.ServiceProxy("/keyboard_control", KeyboardControl)
+        self.keyboard_server = rospy.ServiceProxy(
+            "/keyboard_control", KeyboardControl)
 
         self.help_menu = ["Lock:                 L          ",
                           "Quit:                 q          ",

@@ -26,7 +26,8 @@ class IdentifyDockMission:
     LOOK_AT_DISTANCE = 13  # Distance in front of bay to move to to look at shape
     LOOK_SHAPE_TIMEOUT = 10  # Time to look at bay with cam to see symbol
     DOCK_DISTANCE = 5   # Distance in front of bay point to dock to
-    DOCK_SLEEP_TIME = 2   # Time to wait after docking before undocking aka show off time 1.016+
+    # Time to wait after docking before undocking aka show off time 1.016+
+    DOCK_SLEEP_TIME = 2
     WAYPOINT_NAME = "Dock"
     TIMEOUT_CIRCLE_VISION_ONLY = 40
     MARKER_DISTANCE = 13  # How far in front of line made my markers to go to look for dock
@@ -34,8 +35,10 @@ class IdentifyDockMission:
 
     def __init__(self, navigator):
         self.navigator = navigator
-        self.ogrid_activation_client = self.navigator.nh.get_service_client('/identify_dock/active', SetBool)
-        self.get_bays = self.navigator.nh.get_service_client('/identify_dock/get_bays', GetDockBays)
+        self.ogrid_activation_client = self.navigator.nh.get_service_client(
+            '/identify_dock/active', SetBool)
+        self.get_bays = self.navigator.nh.get_service_client(
+            '/identify_dock/get_bays', GetDockBays)
         self.cameraLidarTransformer = self.navigator.nh.get_service_client(
             "/camera_to_lidar/front_right_cam", CameraToLidarTransform)
         self.identified_shapes = {}
@@ -106,7 +109,8 @@ class IdentifyDockMission:
         Go in front of each bay and look at the symbols present
         '''
         for pose in self.bay_poses:
-            move = self.navigator.move.set_position(pose + self.bay_normal * self.LOOK_AT_DISTANCE).look_at(pose)
+            move = self.navigator.move.set_position(
+                pose + self.bay_normal * self.LOOK_AT_DISTANCE).look_at(pose)
             print_good("Moving in front of bay for observation")
             yield move.go()
             start_time = self.navigator.nh.get_time()
@@ -117,11 +121,14 @@ class IdentifyDockMission:
             print_bad("Did not see shapes after going in front of bay")
 
     def update_shape(self, shape_res, normal_res, tf):
-        print_good("Found (Shape={}, Color={} in a bay".format(shape_res.Shape, shape_res.Color))
-        self.identified_shapes[(shape_res.Shape, shape_res.Color)] = self.get_shape_pos(normal_res, tf)
+        print_good("Found (Shape={}, Color={} in a bay".format(
+            shape_res.Shape, shape_res.Color))
+        self.identified_shapes[(shape_res.Shape, shape_res.Color)
+                               ] = self.get_shape_pos(normal_res, tf)
 
     def done_searching(self):
-        print_good("CURRENT IDENTIFIED BAYS: {}".format(self.identified_shapes))
+        print_good("CURRENT IDENTIFIED BAYS: {}".format(
+            self.identified_shapes))
         for shape_color, point_normal in self.identified_shapes.iteritems():
             if self.correct_shape(self.bay_1, shape_color):
                 for shape_color2, point_normal in self.identified_shapes.iteritems():
@@ -197,8 +204,10 @@ class IdentifyDockMission:
         defer.returnValue(normal_res)
 
     def get_shape_pos(self, normal_res, enu_cam_tf):
-        enunormal = enu_cam_tf.transform_vector(mil_tools.rosmsg_to_numpy(normal_res.normal))
-        enupoint = enu_cam_tf.transform_point(mil_tools.rosmsg_to_numpy(normal_res.closest))
+        enunormal = enu_cam_tf.transform_vector(
+            mil_tools.rosmsg_to_numpy(normal_res.normal))
+        enupoint = enu_cam_tf.transform_point(
+            mil_tools.rosmsg_to_numpy(normal_res.closest))
         return (enupoint, enunormal)
 
     @txros.util.cancellableInlineCallbacks
@@ -220,7 +229,8 @@ class IdentifyDockMission:
                 yield dock_func(incorrect_shapes[0])
                 del incorrect_shapes[0]
             else:
-                print_bad("First bay not found and no other bays found, moving on to second")
+                print_bad(
+                    "First bay not found and no other bays found, moving on to second")
         else:
             print_good("Docking in first desired bay")
             yield dock_func(bay_1_shape)
@@ -238,8 +248,10 @@ class IdentifyDockMission:
 
     @txros.util.cancellableInlineCallbacks
     def dock_in_bay_blind(self, (point, normal)):
-        move_front = self.navigator.move.set_position(point + normal * self.LOOK_AT_DISTANCE).look_at(point)
-        move_in = self.navigator.move.set_position(point + normal * self.DOCK_DISTANCE).look_at(point)
+        move_front = self.navigator.move.set_position(
+            point + normal * self.LOOK_AT_DISTANCE).look_at(point)
+        move_in = self.navigator.move.set_position(
+            point + normal * self.DOCK_DISTANCE).look_at(point)
         yield move_front.go(move_type='skid')
         yield move_in.go(move_type='skid', speed_factor=[0.5, 0.5, 0.5], blind=True)
         yield self.navigator.nh.sleep(self.DOCK_SLEEP_TIME)
@@ -247,8 +259,10 @@ class IdentifyDockMission:
 
     @txros.util.cancellableInlineCallbacks
     def dock_in_bay_using_ogrid(self, (point, normal)):
-        move_front = self.navigator.move.set_position(point + normal * self.LOOK_AT_DISTANCE).look_at(point)
-        move_in = self.navigator.move.set_position(point + normal * self.DOCK_DISTANCE).look_at(point)
+        move_front = self.navigator.move.set_position(
+            point + normal * self.LOOK_AT_DISTANCE).look_at(point)
+        move_in = self.navigator.move.set_position(
+            point + normal * self.DOCK_DISTANCE).look_at(point)
         yield move_front.go(move_type='skid')
         yield self.start_ogrid()
         yield move_in.go(move_type='skid', speed_factor=[0.5, 0.5, 0.5])
@@ -265,17 +279,21 @@ class IdentifyDockMission:
         right_pose = mil_tools.rosmsg_to_numpy(right_res.objects[0].position)
 
         search_line_vector = right_pose - left_pose
-        search_line_vector_normal = search_line_vector / np.linalg.norm(search_line_vector)
+        search_line_vector_normal = search_line_vector / \
+            np.linalg.norm(search_line_vector)
         if np.isnan(search_line_vector_normal[0]):
-            raise Exception("Gate Edge Markers are not in a line. Perhaps they were not placed")
+            raise Exception(
+                "Gate Edge Markers are not in a line. Perhaps they were not placed")
         rot_right = np.array([[0, 1, 0], [-1, 0, 0], [0, 0, 0]])
         search_line_rot = rot_right.dot(search_line_vector_normal)
 
         left_search = left_pose + search_line_rot * self.MARKER_DISTANCE
         right_search = right_pose + search_line_rot * self.MARKER_DISTANCE
 
-        move_left = self.navigator.move.set_position(left_search).look_at(left_pose)
-        move_right = self.navigator.move.set_position(right_search).look_at(right_pose)
+        move_left = self.navigator.move.set_position(
+            left_search).look_at(left_pose)
+        move_right = self.navigator.move.set_position(
+            right_search).look_at(right_pose)
 
         pose = self.navigator.pose[0][:2]
         distance_test = np.array([np.linalg.norm(pose - move_left.position[:2]),

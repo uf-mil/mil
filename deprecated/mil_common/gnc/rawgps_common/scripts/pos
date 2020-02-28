@@ -1,6 +1,12 @@
 #!/usr/bin/python
 
 from __future__ import division
+from rawgps_common.msg import Measurements, Satellite
+from rawgps_common import gps, glonass
+from uf_common.orientation_helpers import xyz_array
+from geometry_msgs.msg import Vector3, Point, PointStamped
+from std_msgs.msg import String, Header
+import rospy
 
 import math
 import struct
@@ -11,13 +17,6 @@ import scipy
 import roslib
 roslib.load_manifest('rawgps_common')
 
-import rospy
-from std_msgs.msg import String, Header
-from geometry_msgs.msg import Vector3, Point, PointStamped
-
-from uf_common.orientation_helpers import xyz_array
-from rawgps_common import gps, glonass
-from rawgps_common.msg import Measurements, Satellite
 
 rospy.init_node('pos', anonymous=True)
 

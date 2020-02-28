@@ -40,7 +40,8 @@ class Picker(object):
             self.mask = np.zeros(image.shape[:2], dtype=np.uint8)
             self.mask[:, :] = int(cv2.GC_PR_BGD)
         else:
-            self.mask = np.ones(image.shape[:2], dtype=np.uint8) * int(cv2.GC_PR_BGD)
+            self.mask = np.ones(
+                image.shape[:2], dtype=np.uint8) * int(cv2.GC_PR_BGD)
             self.mask[self.out_mask == int(cv2.GC_FGD)] = int(cv2.GC_FGD)
             self.mask[self.out_mask == int(cv2.GC_BGD)] = int(cv2.GC_BGD)
             # self.mask = initial_mask
@@ -48,7 +49,8 @@ class Picker(object):
             self.visualize_draw[self.mask == int(cv2.GC_BGD)] = (0, 0, 200)
 
         self.done_drawing = False
-        display = np.array(np.clip(self.visualize + self.visualize_draw * self.draw_opacity, 0, 255), np.uint8)
+        display = np.array(np.clip(
+            self.visualize + self.visualize_draw * self.draw_opacity, 0, 255), np.uint8)
         cv2.imshow("segment", display)
         cv2.waitKey(1)
 
@@ -64,10 +66,12 @@ class Picker(object):
         if self.done_drawing:
             return
 
-        cv2.circle(self.visual_brush_size, (x, y), self.brush_size, (255, 255, 255), 1)
+        cv2.circle(self.visual_brush_size, (x, y),
+                   self.brush_size, (255, 255, 255), 1)
         if event == cv2.EVENT_LBUTTONDOWN:
             self.mouse_state[0] = 1
-            cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 200, 0), -1)
+            cv2.circle(self.visualize_draw, (x, y),
+                       self.brush_size, (0, 200, 0), -1)
             cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_FGD), -1)
             self.brush_size_change = None
 
@@ -86,35 +90,44 @@ class Picker(object):
 
         elif event == cv2.EVENT_MBUTTONDOWN:
             self.visualize_draw *= 0
-            self.mask = np.ones(self.visualize_draw.shape[:2], dtype=np.uint8) * int(cv2.GC_PR_BGD)
+            self.mask = np.ones(
+                self.visualize_draw.shape[:2], dtype=np.uint8) * int(cv2.GC_PR_BGD)
 
         elif event == cv2.EVENT_MOUSEMOVE:
             if flags == cv2.EVENT_FLAG_CTRLKEY:
                 if self.opacity_change is None:
                     self.opacity_change = y
-                self.draw_opacity = np.clip((self.draw_opacity + (self.opacity_change - y) * .005), 0, 1)
+                self.draw_opacity = np.clip(
+                    (self.draw_opacity + (self.opacity_change - y) * .005), 0, 1)
                 self.opacity_change = y
 
             elif flags == cv2.EVENT_FLAG_SHIFTKEY:
                 if self.brush_size_change is None:
                     self.brush_size_change = y
-                self.brush_size = np.clip((self.brush_size + (self.brush_size_change - y)), 0, 99)
+                self.brush_size = np.clip(
+                    (self.brush_size + (self.brush_size_change - y)), 0, 99)
                 self.brush_size_change = y
                 self.brush_size_opacity = .9
 
             elif flags == cv2.EVENT_FLAG_ALTKEY:
-                cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 0, 200), -1)
-                cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_BGD), -1)
+                cv2.circle(self.visualize_draw, (x, y),
+                           self.brush_size, (0, 0, 200), -1)
+                cv2.circle(self.mask, (x, y), self.brush_size,
+                           int(cv2.GC_BGD), -1)
 
             else:
                 self.opacity_change = None
                 if self.mouse_state[0]:
-                    cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 200, 0), -1)
-                    cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_FGD), -1)
+                    cv2.circle(self.visualize_draw, (x, y),
+                               self.brush_size, (0, 200, 0), -1)
+                    cv2.circle(self.mask, (x, y), self.brush_size,
+                               int(cv2.GC_FGD), -1)
 
                 elif self.mouse_state[1]:
-                    cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 0, 200), -1)
-                    cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_BGD), -1)
+                    cv2.circle(self.visualize_draw, (x, y),
+                               self.brush_size, (0, 0, 200), -1)
+                    cv2.circle(self.mask, (x, y), self.brush_size,
+                               int(cv2.GC_BGD), -1)
 
         display = np.array(np.clip(self.visualize + self.visualize_draw * self.draw_opacity +
                                    self.visual_brush_size * self.brush_size_opacity, 0, 255), np.uint8)
@@ -131,7 +144,8 @@ class Picker(object):
                 return key
 
     def get_biggest_ctr(self, image):
-        contours, _ = cv2.findContours(np.copy(image), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(
+            np.copy(image), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         if len(contours) > 0:
             cnt = max(contours, key=cv2.contourArea)
             return cnt
@@ -181,7 +195,8 @@ class Picker(object):
             cv2.drawContours(return_mask, [ctr], -1, 1, -1)
 
         self.out_mask = out_mask
-        display = display_mask[:, :, np.newaxis] * self.image.astype(np.float64)
+        display = display_mask[:, :, np.newaxis] * \
+            self.image.astype(np.float64)
         cv2.imshow('segment', display / np.max(display))
 
         cv2.imshow('all', np.logical_not(bgnd).astype(np.uint8) * 255)
@@ -201,13 +216,15 @@ class Picker(object):
 
 
 if __name__ == '__main__':
-    usage_msg = ("Pass the path to a bag or the start of an image sequence, and we'll crawl through the images in it")
+    usage_msg = (
+        "Pass the path to a bag or the start of an image sequence, and we'll crawl through the images in it")
     desc_msg = "A tool for making manual segmentation fun! I am sorry the keyboard shortcuts are nonsense"
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument(dest='file_name',
                         help="Either the name of the bag or first image in a sequence you'd like to segment.")
-    parser.add_argument('--topic', type=str, help="Name of the topic to use or the usb camera number.")
+    parser.add_argument(
+        '--topic', type=str, help="Name of the topic to use or the usb camera number.")
     parser.add_argument('--output', type=str, help="Path that the output images should be saved to",
                         default='segments/')
 
@@ -234,7 +251,8 @@ if __name__ == '__main__':
             bc = image_crawler.ImageCrawler(file_name)
 
     if args.topic is not None:
-        assert args.topic in bc.image_topics, "{} not in the bag".format(args.topic)
+        assert args.topic in bc.image_topics, "{} not in the bag".format(
+            args.topic)
         print 'Crawling topic {}'.format(args.topic)
         crawl = bc.crawl(topic=args.topic)
     else:

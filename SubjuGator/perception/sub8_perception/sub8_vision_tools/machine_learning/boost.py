@@ -85,7 +85,8 @@ def train_classifier(x, y):
 
 
 def main():
-    usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")
+    usage_msg = (
+        "Pass the path to a bag, and we'll crawl through the images in it")
     desc_msg = "A tool for making manual segmentation fun!"
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
@@ -102,8 +103,10 @@ def main():
     image, targets = data[-1]
 
     some_observations = observe(image)
-    prediction = [int(x) for x in [clf.predict(obs, returnSum=True) for obs in some_observations]]
-    prediction2 = [int(x) for x in [clf.predict(obs) for obs in some_observations]]
+    prediction = [int(x) for x in [clf.predict(obs, returnSum=True)
+                                   for obs in some_observations]]
+    prediction2 = [int(x) for x in [clf.predict(obs)
+                                    for obs in some_observations]]
 
     print 'Saving as {}...'.format(args.output)
     clf.save(args.output, 's')

@@ -22,7 +22,8 @@ def balanced_resample(data, labels):
 
         while len(data_buffered) < num_required:
             data_buffered = np.vstack([data_buffered, data[in_this_label]])
-            labels_buffered = np.hstack([labels_buffered, labels[in_this_label]])
+            labels_buffered = np.hstack(
+                [labels_buffered, labels[in_this_label]])
 
         single_data_resampled, single_labels_resampled = utils.resample(
             data_buffered,
@@ -52,14 +53,15 @@ def desample_binary(data, labels, oversample=5):
     )
 
     data_resampled = np.vstack([data[in_minority], majority_data_resampled])
-    labels_resampled = np.hstack([labels[in_minority], majority_labels_resampled])
+    labels_resampled = np.hstack(
+        [labels[in_minority], majority_labels_resampled])
 
     return data_resampled, labels_resampled
 
 
 def split(img, size):
     """Chunk an image"""
-    _split = lambda p: np.array_split(p, size, axis=1)
+    def _split(p): return np.array_split(p, size, axis=1)
     split_x = np.array_split(img, size)
     split_y = map(_split, split_x)
     images = []
@@ -90,6 +92,7 @@ def make_dataset(data, size=10):
 def _pct(data, val):
     """Return the percentage of $data equal to $val"""
     return np.sum(data == val).astype(np.float32) / data.shape[0]
+
 
 if __name__ == '__main__':
     # todo: make this an actual unittest

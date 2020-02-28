@@ -12,6 +12,7 @@ class USBtoCANDriver(object):
     Allow users to specify a dictionary of device handle classes
     to be loaded at runtime to handle communication with specific devices.
     '''
+
     def __init__(self):
         port = rospy.get_param('~port', '/dev/tty0')
         baud = rospy.get_param('~baudrate', 115200)
@@ -19,17 +20,22 @@ class USBtoCANDriver(object):
         simulation = rospy.get_param('/is_simulation', False)
         # If simulation mode, load simualted devices
         if simulation:
-            rospy.logwarn('CAN2USB driver in simulation! Will not talk to real hardware.')
-            devices = dict(list(self.parse_module_dictionary(rospy.get_param('~simulated_devices'))))
-            self.board = USBtoCANBoard(port=port, baud=baud, simulated=simulation, devices=devices, can_id=can_id)
+            rospy.logwarn(
+                'CAN2USB driver in simulation! Will not talk to real hardware.')
+            devices = dict(list(self.parse_module_dictionary(
+                rospy.get_param('~simulated_devices'))))
+            self.board = USBtoCANBoard(
+                port=port, baud=baud, simulated=simulation, devices=devices, can_id=can_id)
         else:
-            self.board = USBtoCANBoard(port=port, baud=baud, simulated=simulation)
+            self.board = USBtoCANBoard(
+                port=port, baud=baud, simulated=simulation)
 
         # Add device handles from the modules specified in ROS params
         self.handles = dict((device_id, cls(self, device_id)) for device_id, cls in
                             self.parse_module_dictionary(rospy.get_param('~device_handles')))
 
-        self.timer = rospy.Timer(rospy.Duration(1. / 20.), self.process_in_buffer)
+        self.timer = rospy.Timer(rospy.Duration(
+            1. / 20.), self.process_in_buffer)
 
     def read_packet(self):
         '''
@@ -46,7 +52,8 @@ class USBtoCANDriver(object):
         if packet.device in self.handles:
             self.handles[packet.device].on_data(packet.data)
         else:
-            rospy.logwarn('Message received for device {}, but no handle registered'.format(packet.device))
+            rospy.logwarn(
+                'Message received for device {}, but no handle registered'.format(packet.device))
         return True
 
     def process_in_buffer(self, *args):

@@ -28,7 +28,8 @@ class Job(common.Job):
             s = SpawnModelRequest()
             s.model_name = 'ground_plane'
             s.model_xml = ground_plane
-            s.initial_pose = msg_helpers.numpy_quat_pair_to_pose([0, 0, -5], [0, 0, 0, 1])
+            s.initial_pose = msg_helpers.numpy_quat_pair_to_pose(
+                [0, 0, -5], [0, 0, 0, 1])
             yield self.spawn_model(s)
 
         for model in models.name:
@@ -44,15 +45,18 @@ class Job(common.Job):
         # Set sub position
         sub_point = np.random.uniform(-5, 5, size=3)
         sub_point[2] = -np.abs(sub_point[2]) / 2.1
-        sub_quat = tf.transformations.quaternion_from_euler(0, 0, np.random.uniform(-7, 7, size=1))
+        sub_quat = tf.transformations.quaternion_from_euler(
+            0, 0, np.random.uniform(-7, 7, size=1))
         sub_pose = msg_helpers.numpy_quat_pair_to_pose(sub_point, sub_quat)
         yield self.set_model_pose(sub_pose)
         print "MARKER_TEST - Sub at {0}".format(sub_pose)
 
         # Set marker position
         self.marker_point = np.random.uniform(-3, 3, size=2)
-        self.marker_quat = tf.transformations.quaternion_from_euler(0, 0, np.random.uniform(-7, 7, size=1))
-        self.marker_pose = msg_helpers.numpy_quat_pair_to_pose(np.append(self.marker_point, -4.9), self.marker_quat)
+        self.marker_quat = tf.transformations.quaternion_from_euler(
+            0, 0, np.random.uniform(-7, 7, size=1))
+        self.marker_pose = msg_helpers.numpy_quat_pair_to_pose(
+            np.append(self.marker_point, -4.9), self.marker_quat)
         print "MARKER_TEST - Marker at {0}".format(self.marker_pose)
         self.set_model_pose(self.marker_pose, model='channel_marker_1')
 
@@ -63,7 +67,8 @@ class Job(common.Job):
         # Call actual mission
         start_time = self.nh.get_time()
         try:
-            resp = yield txros.util.wrap_timeout(missions.align_channel.run(sub), 600)  # 10 minute timeout
+            # 10 minute timeout
+            resp = yield txros.util.wrap_timeout(missions.align_channel.run(sub), 600)
         except txros.util.TimeoutError:
             print "MARKER_TEST - TIMEOUT"
             defer.returnValue((False, "Timeout"))
@@ -73,14 +78,17 @@ class Job(common.Job):
                 defer.returnValue((False, "Error"))
             print "MARKER_TEST - No timeout."
 
-        print "MARKER_TEST - MISSION TIME:", (self.nh.get_time() - start_time) / 1000000000.0
+        print "MARKER_TEST - MISSION TIME:", (self.nh.get_time() -
+                                              start_time) / 1000000000.0
 
         sub_odom = msg_helpers.odometry_to_numpy((yield self.true_pose))[0]
 
         print
-        print "MARKER_TEST - Distance Error: {}".format(np.linalg.norm(sub_odom[0][:2] - self.marker_point))
+        print "MARKER_TEST - Distance Error: {}".format(
+            np.linalg.norm(sub_odom[0][:2] - self.marker_point))
         print
-        print "MARKER_TEST - Angle Error: {}".format(np.dot(sub_odom[1], self.marker_quat))
+        print "MARKER_TEST - Angle Error: {}".format(
+            np.dot(sub_odom[1], self.marker_quat))
         print
 
         distance_err = np.linalg.norm(sub_odom[0][:2] - self.marker_point)
@@ -101,5 +109,6 @@ class Job(common.Job):
         print
 
         defer.returnValue((True, resp_msg))
+
 
 ground_plane = '<?xml version="1.0" ?> <sdf version="1.5"> <model name="ground_plane"> <static>true</static> <link name="link"> <collision name="collision"> <geometry> <plane> <normal>0 0 1</normal> <size>100 100</size> </plane> </geometry> <surface> <friction> <ode> <mu>100</mu> <mu2>50</mu2> </ode> </friction> </surface> </collision> <visual name="visual"> <cast_shadows>false</cast_shadows> <geometry> <plane> <normal>0 0 1</normal> <size>1000 1000</size> </plane> </geometry> <material> <script> <uri>file://media/materials/scripts/gazebo.material</uri> <name>Gazebo/Grey</name> </script> </material> </visual> </link> </model> </sdf>'  # noqa: E501

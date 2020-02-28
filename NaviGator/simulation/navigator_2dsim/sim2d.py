@@ -13,6 +13,7 @@ class Navsim():
     '''
     A simple 2D simulation of the kinematics of NaviGator.
     '''
+
     def __init__(self, pose0=np.array([0, 0, 0]), twist0=np.array([0, 0, 0])):
         # Used to publish current state
         self.odom_publisher = rospy.Publisher("/odom", Odometry, queue_size=1)
@@ -34,7 +35,8 @@ class Navsim():
 
         # Subscribe to thrusters so we can simulate their forces
         for i, motor in enumerate(self.thrust_map.names):
-            rospy.Subscriber('/{}_motor/cmd'.format(motor), Command, self.thruster_cb, queue_size=3, callback_args=i)
+            rospy.Subscriber('/{}_motor/cmd'.format(motor), Command,
+                             self.thruster_cb, queue_size=3, callback_args=i)
 
         # Start timer to run simulator
         rospy.Timer(rospy.Duration(self.update_period), self.timer_cb)

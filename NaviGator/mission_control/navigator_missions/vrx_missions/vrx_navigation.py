@@ -32,7 +32,7 @@ class VrxNavigation(Vrx):
         two = two[:2]
         position = position[:2]
         delta = (one - two)[:2]
-        rot_right= np.array([[0, -1], [1, 0]], dtype=np.float)
+        rot_right = np.array([[0, -1], [1, 0]], dtype=np.float)
         perp_vec = rot_right.dot(delta)
         perp_vec = perp_vec / np.linalg.norm(perp_vec)
         center = (one + two) / 2.0
@@ -60,27 +60,34 @@ class VrxNavigation(Vrx):
         q_mat = quaternion_matrix(pose[1])
 
         def filter_and_sort(objects, positions):
-            positions_local = np.array([(q_mat.T.dot(position - p)) for position in positions])
+            positions_local = np.array(
+                [(q_mat.T.dot(position - p)) for position in positions])
             positions_local_x = np.array(positions_local[:, 0])
             forward_indicies = np.argwhere(positions_local_x > 1.0).flatten()
-            forward_indicies = np.array([i for i in forward_indicies if objects[i].id not in self.objects_passed])
-            distances = np.linalg.norm(positions_local[forward_indicies], axis=1)
-            indicies =  forward_indicies[np.argsort(distances).flatten()].tolist()
+            forward_indicies = np.array(
+                [i for i in forward_indicies if objects[i].id not in self.objects_passed])
+            distances = np.linalg.norm(
+                positions_local[forward_indicies], axis=1)
+            indicies = forward_indicies[np.argsort(
+                distances).flatten()].tolist()
             # ids = [objects[i].id for i in indicies]
             # self.send_feedback('Im attracted to {}'.format(ids))
             return indicies
 
         def is_done(objects, positions):
             try:
-                left_index = self.get_index_of_type(objects, ('surmark950400', 'green_totem', 'blue_totem'))
-                right_index = self.get_index_of_type(objects, ('red_totem', 'surmark950410'))
+                left_index = self.get_index_of_type(
+                    objects, ('surmark950400', 'green_totem', 'blue_totem'))
+                right_index = self.get_index_of_type(
+                    objects, ('red_totem', 'surmark950410'))
             except StopIteration:
                 return None
             end = objects[left_index].labeled_classification == 'blue_totem'
             return positions[left_index], objects[left_index], positions[right_index], objects[right_index], end
 
         left, left_obj, right, right_obj, end = yield self.explore_closest_until(is_done, filter_and_sort)
-        self.send_feedback('Going through gate of objects {} and {}'.format(left_obj.id, right_obj.id))
+        self.send_feedback('Going through gate of objects {} and {}'.format(
+            left_obj.id, right_obj.id))
         gate = self.get_gate(left, right, p)
         yield self.go_thru_gate(gate)
         self.objects_passed.add(left_obj.id)
@@ -101,7 +108,8 @@ class VrxNavigation(Vrx):
             if move_id_tuple is not None:
                 if service_req is None:
                     service_req = self.database_query(name='all')
-                dl = defer.DeferredList([service_req, move_id_tuple[0]], fireOnOneCallback=True)
+                dl = defer.DeferredList(
+                    [service_req, move_id_tuple[0]], fireOnOneCallback=True)
                 result, index = yield dl
 
                 # Database query sucseeded
@@ -109,19 +117,22 @@ class VrxNavigation(Vrx):
                     service_req = None
                     objects_msg = result
                     if self.object_classified(objects_msg.objects, move_id_tuple[1]):
-                        self.send_feedback('{} identified. Canceling investigation'.format(move_id_tuple[1]))
+                        self.send_feedback(
+                            '{} identified. Canceling investigation'.format(move_id_tuple[1]))
                         yield dl.cancel()
                         yield move_id_tuple[0].cancel()
                         # yield self.move.forward(0).go()
                         move_id_tuple = None
                 # Move succeeded:
                 else:
-                    self.send_feedback('Investigated {}'.format(move_id_tuple[1]))
+                    self.send_feedback(
+                        'Investigated {}'.format(move_id_tuple[1]))
                     move_id_tuple = None
             else:
                 objects_msg = yield self.database_query(name='all')
             objects = objects_msg.objects
-            positions = np.array([rosmsg_to_numpy(obj.pose.position) for obj in objects])
+            positions = np.array(
+                [rosmsg_to_numpy(obj.pose.position) for obj in objects])
             if len(objects) == 0:
                 indicies = []
             else:
@@ -135,7 +146,8 @@ class VrxNavigation(Vrx):
             ret = is_done(objects, positions)
             if ret is not None:
                 if move_id_tuple is not None:
-                    self.send_feedback('Condition met. Canceling investigation')
+                    self.send_feedback(
+                        'Condition met. Canceling investigation')
                     yield dl.cancel()
                     yield move_id_tuple[0].cancel()
                     # yield self.move.forward(0).go()
@@ -150,7 +162,8 @@ class VrxNavigation(Vrx):
             # Explore the next one
             for i in xrange(len(objects)):
                 if objects[i].labeled_classification == 'UNKNOWN' and objects[i].id not in investigated:
-                    self.send_feedback('Investingating {}'.format(objects[i].id))
+                    self.send_feedback(
+                        'Investingating {}'.format(objects[i].id))
                     investigated.add(objects[i].id)
                     move = self.inspect_object(positions[i])
                     move_id_tuple = (move, objects[i].id)
@@ -162,7 +175,8 @@ class VrxNavigation(Vrx):
     def get_objects_indicies_for_start(self, objects):
         try:
             white_index = self.get_index_of_type(objects, 'surmark46104')
-            red_index = self.get_index_of_type(objects, ('red_totem', 'surmark950410'))
+            red_index = self.get_index_of_type(
+                objects, ('red_totem', 'surmark950410'))
         except StopIteration:
             return None
         return white_index, red_index
@@ -186,6 +200,7 @@ class VrxNavigation(Vrx):
     def prepare_to_enter(self):
         closest = []
         robot_position = (yield self.tx_pose)[0]
+
         def filter_and_sort(objects, positions):
             distances = np.linalg.norm(positions - robot_position, axis=1)
             argsort = np.argsort(distances)
@@ -202,7 +217,8 @@ class VrxNavigation(Vrx):
         self.objects_passed.add(white.id)
         self.objects_passed.add(red.id)
         gate = self.get_gate(white_position, red_position, robot_position)
-        self.send_feedback('Going through start gate formed by {} and {}'.format(white.id, red.id))
+        self.send_feedback(
+            'Going through start gate formed by {} and {}'.format(white.id, red.id))
         yield self.go_thru_gate(gate, AFTER=-2)
 
     @txros.util.cancellableInlineCallbacks
@@ -216,11 +232,10 @@ class VrxNavigation(Vrx):
         yield self.nh.sleep(3.0)
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
         yield self.prepare_to_enter()
-        yield self.wait_for_task_such_that(lambda task: task.state =='running')
+        yield self.wait_for_task_such_that(lambda task: task.state == 'running')
         yield self.move.forward(7.0).go()
         while not (yield self.do_next_gate()):
             pass
         self.send_feedback('This is the last gate! Going through!')
         yield self.move.forward(10).go()
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
-

@@ -35,11 +35,14 @@ def run_tests(tests):
 
 if __name__ == '__main__':
     # parse configuration from arguments
-    parser = argparse.ArgumentParser(description='Prints all catkin test targets in a specified directory')
-    parser.add_argument('directory', type=str, default="src", nargs='?', help="directory to print all tests frome")
+    parser = argparse.ArgumentParser(
+        description='Prints all catkin test targets in a specified directory')
+    parser.add_argument('directory', type=str, default="src",
+                        nargs='?', help="directory to print all tests frome")
     parser.add_argument('-b', '--build-dir', dest="build_dir", type=str,
                         default="build", help="build directory of workspace with tests")
-    parser.add_argument('--ignore-dir', '-i', dest='ignore', type=str, nargs='*', help="packages to ignore")
+    parser.add_argument('--ignore-dir', '-i', dest='ignore',
+                        type=str, nargs='*', help="packages to ignore")
     args = parser.parse_args(sys.argv[1:])
 
     # get all available tests in workspace

@@ -40,7 +40,8 @@ class BumpBuoysMission(object):
         self.sub = sub
         self.print_info = FprintFactory(title=MISSION).fprint
         self.print_bad = FprintFactory(title=MISSION, msg_color="red").fprint
-        self.print_good = FprintFactory(title=MISSION, msg_color="green").fprint
+        self.print_good = FprintFactory(
+            title=MISSION, msg_color="green").fprint
         self.buoys = {'red': Buoy(), 'green': Buoy(), 'yellow': Buoy()}
         self.pattern_done = False
         self.generate_pattern()
@@ -61,7 +62,8 @@ class BumpBuoysMission(object):
             for buoy in self.buoys:
                 res = yield self.sub.vision_proxies.buoy.get_pose(target=buoy)
                 if res.found:
-                    self.buoys[buoy].update_position(rosmsg_to_numpy(res.pose.pose.position))
+                    self.buoys[buoy].update_position(
+                        rosmsg_to_numpy(res.pose.pose.position))
                 if self.buoys[buoy].position is not None:
                     info += buoy + ' '
                 yield self.sub.nh.sleep(0.5)  # Throttle service calls
@@ -110,7 +112,8 @@ class BumpBuoysMission(object):
                 return None
 
     def done(self):
-        bumped = sum(map(lambda b: 1 if self.buoys[b].bumped else 0, self.buoys))
+        bumped = sum(
+            map(lambda b: 1 if self.buoys[b].bumped else 0, self.buoys))
         return bumped == len(self.ORDER)
 
     @util.cancellableInlineCallbacks

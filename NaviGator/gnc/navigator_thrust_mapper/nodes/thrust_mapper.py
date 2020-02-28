@@ -14,6 +14,7 @@ class ThrusterMapperNode(object):
     Node to publish individual thruster commands from the body frame wrench.
     See thruster_map.py for more details on this process as this is simply the ROS wrapper.
     '''
+
     def __init__(self):
         self.is_vrx = rospy.get_param('/is_vrx', False)
 
@@ -46,7 +47,8 @@ class ThrusterMapperNode(object):
         # Joint state publisher
         # TODO(ironmig):
         if not self.is_vrx:
-            self.joint_state_pub = rospy.Publisher('/thruster_states', JointState, queue_size=1)
+            self.joint_state_pub = rospy.Publisher(
+                '/thruster_states', JointState, queue_size=1)
             self.joint_state_msg = JointState()
             for name in self.thruster_map.joints:
                 self.joint_state_msg.name.append(name)
@@ -75,7 +77,8 @@ class ThrusterMapperNode(object):
         if not self.kill:
             thrusts = self.thruster_map.wrench_to_thrusts(self.wrench)
             if len(thrusts) != len(self.publishers):
-                rospy.logfatal("Number of thrusts does not equal number of publishers")
+                rospy.logfatal(
+                    "Number of thrusts does not equal number of publishers")
                 return
             for i in range(len(self.publishers)):
                 commands[i].setpoint = thrusts[i]

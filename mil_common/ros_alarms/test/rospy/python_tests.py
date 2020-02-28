@@ -51,7 +51,8 @@ class ClientTester(unittest.TestCase):
         # Raise them all, with some arguments
         ab_a.raise_alarm(severity=_severity)
         ab_b.raise_alarm(severity=_severity, parameters=_blank_params)
-        ab_c.raise_alarm(problem_description=_problem_desc, parameters=_full_params)
+        ab_c.raise_alarm(problem_description=_problem_desc,
+                         parameters=_full_params)
 
         # Make sure all the alarm start off clear
         self.assertTrue(al_a.is_raised())

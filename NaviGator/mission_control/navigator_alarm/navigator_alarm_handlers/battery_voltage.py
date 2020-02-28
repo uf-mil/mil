@@ -10,7 +10,8 @@ class BatteryVoltage(HandlerBase):
         self.broadcaster = AlarmBroadcaster(self.alarm_name)
         self.low_threshold = rospy.get_param('~battery-voltage/low')
         self.critical_threshold = rospy.get_param('~battery-voltage/critical')
-        self.voltage_sub = rospy.Subscriber('/battery_monitor', Float32, self._check_voltage, queue_size=3)
+        self.voltage_sub = rospy.Subscriber(
+            '/battery_monitor', Float32, self._check_voltage, queue_size=3)
         self._raised = False
         self._severity = 0
 

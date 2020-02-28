@@ -183,7 +183,8 @@ class DBHelper(object):
             position = yield self.navigator.tx_pose
             position = position[0]
             self.position = position
-        defer.returnValue(np.linalg.norm(nt.rosmsg_to_numpy(x.position) - self.position))
+        defer.returnValue(np.linalg.norm(
+            nt.rosmsg_to_numpy(x.position) - self.position))
 
     @util.cancellableInlineCallbacks
     def get_object(self, object_name, volume_only=False, thresh=50, thresh_strict=50):

@@ -28,7 +28,8 @@ class KillMessage(ApplicationPacket):
         command_byte = cls.COMMAND if command else cls.RESPONSE
         hard_soft_byte = cls.HARD if hard else cls.SOFT
         assert_unassert_byte = cls.ASSERTED if asserted else cls.UNASSERTED
-        payload = struct.pack('BBBB', command_byte, hard_soft_byte, assert_unassert_byte, cls.PADDING)
+        payload = struct.pack('BBBB', command_byte,
+                              hard_soft_byte, assert_unassert_byte, cls.PADDING)
         return cls(cls.IDENTIFIER, payload)
 
     @property
@@ -58,14 +59,17 @@ class KillMessage(ApplicationPacket):
     def __str__(self):
         return 'KillMessage(command={}, hard={}, asserted={})'.format(self.is_command, self.is_hard, self.is_asserted)
 
+
 KillStatus = namedtuple('KillStatus', ['heartbeat_lost', 'mobo_soft_kill',
                                        'switch_soft_kill', 'soft_killed',
                                        'hard_killed', 'thrusters_initializing',
                                        'go_switch', 'soft_kill_switch',
                                        'hard_kill_switch'])
+
+
 class StatusMessage(KillStatus):
     BIT_MASK = KillStatus(1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7,
-                              1 << 11, 1 << 12, 1 << 13, 1 << 14)
+                          1 << 11, 1 << 12, 1 << 13, 1 << 14)
     STRUCT_FORMAT = '=h'
 
     def __init__(self, *args):
@@ -76,7 +80,7 @@ class StatusMessage(KillStatus):
         unpacked = struct.unpack(cls.STRUCT_FORMAT, data)[0]
         args = []
         for field in KillStatus._fields:
-                args.append(bool(unpacked & getattr(cls.BIT_MASK,field)))
+            args.append(bool(unpacked & getattr(cls.BIT_MASK, field)))
         return cls(*args)
 
     def to_bytes(self):
@@ -99,6 +103,7 @@ class HeartbeatMessage(ApplicationPacket):
 
     def __str__(self):
         return 'HeartbeatMessage()'
+
 
 class ThrustPacket(ApplicationPacket):
     '''

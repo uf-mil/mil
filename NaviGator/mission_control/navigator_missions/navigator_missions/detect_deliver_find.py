@@ -14,7 +14,8 @@ class DetectDeliverFind(Navigator):
     DOCK_SIZE_LONG = 16.0
     DOCK_SIZE_SHORT = 8.0
 
-    CIRCLE_DISTANCE = 8.0 + math.sqrt((DOCK_SIZE_SHORT / 2)**2 + (DOCK_SIZE_LONG / 2)**2)
+    CIRCLE_DISTANCE = 8.0 + \
+        math.sqrt((DOCK_SIZE_SHORT / 2)**2 + (DOCK_SIZE_LONG / 2)**2)
 
     @classmethod
     def decode_parameters(cls, parameters):
@@ -29,7 +30,7 @@ class DetectDeliverFind(Navigator):
         parser.add_argument('-l', '--longscan', action='store_true',
                             help='set to scan the long side')
         parser.add_argument('-s', '--shortscan', action='store_true',
-                            help = 'set to scan the short side')
+                            help='set to scan the short side')
         parser.add_argument('-o', '--overridescale', action='store_true',
                             help='''setting causes manual dock size to replace scale, where scale is only
                                     used to determine which side is longer''')
@@ -69,7 +70,8 @@ class DetectDeliverFind(Navigator):
 
         # If extra scanning circle is enabled, circle
         if pre_circle:
-            start_vect = (boat_pose - self.dock_position) / np.linalg.norm(boat_pose - self.dock_position)
+            start_vect = (boat_pose - self.dock_position) / \
+                np.linalg.norm(boat_pose - self.dock_position)
             start_pt = self.dock_position + start_vect * self.CIRCLE_DISTANCE
             yield self.move.set_position(start_pt).look_at(self.dock_position).yaw_right(1.57).go()
             yield self.move.circle_point(self.dock_position).go()
@@ -100,7 +102,7 @@ class DetectDeliverFind(Navigator):
         correct = False
         correct_scan_idx = -1
         for i in range(closest_scan, len(self.scans)) + range(0, closest_scan):
-            #yield self.move.set_position(self.scans[i][0]).look_at(self.scans[i][1]).go()
+            # yield self.move.set_position(self.scans[i][0]).look_at(self.scans[i][1]).go()
             yield self.move.set_position(self.scans[i][0]).look_at(self.dock_position).go()
             correct = yield self.scan_image()
             if correct:
@@ -118,7 +120,8 @@ class DetectDeliverFind(Navigator):
         angle = correct_scan[3]
         dist = end_dist
         pt = np.array([math.cos(angle) * (dist + self.dock_scale[0] / 2) + self.dock_position[0],
-                       math.sin(angle) * (dist + self.dock_scale[1] / 2) + self.dock_position[1],
+                       math.sin(angle) * (dist +
+                                          self.dock_scale[1] / 2) + self.dock_position[1],
                        self.dock_position[2]])
         if look_in:
             lpt = self.dock_position
@@ -140,7 +143,8 @@ class DetectDeliverFind(Navigator):
         self.dock_position = rosmsg_to_numpy(self.dock.pose.position)
         self.dock_orientation = rosmsg_to_numpy(self.dock.pose.orientation)
         self.dock_scale = rosmsg_to_numpy(self.dock.scale)
-        self.dock_orientation = tform.euler_from_quaternion(self.dock_orientation)
+        self.dock_orientation = tform.euler_from_quaternion(
+            self.dock_orientation)
 
         # If scale should be overwritten
         if override_scale:
@@ -159,7 +163,8 @@ class DetectDeliverFind(Navigator):
         for i in range(0, 4):
             # Calculate scan point and point to look at
             pt = np.array([math.cos(angle) * (scan_dist + self.dock_scale[0] / 2) + self.dock_position[0],
-                           math.sin(angle) * (scan_dist + self.dock_scale[1] / 2) + self.dock_position[1],
+                           math.sin(
+                               angle) * (scan_dist + self.dock_scale[1] / 2) + self.dock_position[1],
                            self.dock_position[2]])
             lpt = pt + np.array([math.sin(angle), -math.cos(angle), 0])
 

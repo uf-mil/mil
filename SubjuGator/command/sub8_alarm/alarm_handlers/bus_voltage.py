@@ -7,7 +7,8 @@ class BusVoltage(HandlerBase):
     previous_severity = 0
 
     def __init__(self):
-        self.initial_alarm = Alarm(self.alarm_name, False, node_name='alarm_server')
+        self.initial_alarm = Alarm(
+            self.alarm_name, False, node_name='alarm_server')
 
     def raised(self, alarm):
         if alarm.severity == 3 and self.previous_severity != 3:

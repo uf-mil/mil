@@ -19,7 +19,8 @@ class ThrusterVisualizer(object):
     MAX_LENGTH = 0.3  # Length of arrow when at max effort in current direction
 
     def __init__(self):
-        self.layout = rospy.get_param('/thruster_layout/thrusters')  # Add thruster layout from ROS param set by mapper
+        # Add thruster layout from ROS param set by mapper
+        self.layout = rospy.get_param('/thruster_layout/thrusters')
         assert self.layout is not None, 'Could not load thruster layout from ROS param'
 
         '''
@@ -49,8 +50,10 @@ class ThrusterVisualizer(object):
             self.markers.markers[idx].id = idx
 
         # Create publisher for marker and subscribe to thrust
-        self.pub = rospy.Publisher('/thrusters/markers', MarkerArray, queue_size=5)
-        self.thrust_sub = rospy.Subscriber('/thrusters/thrust', Thrust, self.thrust_cb, queue_size=5)
+        self.pub = rospy.Publisher(
+            '/thrusters/markers', MarkerArray, queue_size=5)
+        self.thrust_sub = rospy.Subscriber(
+            '/thrusters/thrust', Thrust, self.thrust_cb, queue_size=5)
 
     def thrust_cb(self, thrust):
         '''
@@ -90,7 +93,8 @@ class ThrusterVisualizer(object):
             # Select endpoint for arrow based on length and direction vector from layout
             direction = np.array(layout['direction'])
             direction = direction / np.linalg.norm(direction)
-            pt2 = np.array(layout['position']) + self.MAX_LENGTH * scale * direction
+            pt2 = np.array(layout['position']) + \
+                self.MAX_LENGTH * scale * direction
 
             self.markers.markers[idx].points[1] = numpy_to_point(pt2)
             self.markers.markers[idx].header.stamp = rospy.Time.now()

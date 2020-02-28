@@ -14,6 +14,7 @@ class ChecksumException(USB2CANException):
     '''
     Exception thrown when the checksum between motherboard and CAN2USb board is invalid
     '''
+
     def __init__(self, calculated, expected):
         super(ChecksumException, self).__init__(
             'Checksum was calculated as {} but reported as {}'.format(calculated, expected))
@@ -23,6 +24,7 @@ class PayloadTooLargeException(USB2CANException):
     '''
     Exception thrown when payload of data sent/received from CAN2USB is too large
     '''
+
     def __init__(self, length):
         super(PayloadTooLargeException, self).__init__(
             'Payload is {} bytes, which is greater than the maximum of 8'.format(length))
@@ -32,6 +34,7 @@ class InvalidFlagException(USB2CANException):
     '''
     Exception thrown when a constant flag in the CAN2USB protocol is invalid
     '''
+
     def __init__(self, description, expected, was):
         super(InvalidFlagException, self).__init__(
             '{} flag should be {} but was {}'.format(description, expected, was))
@@ -41,6 +44,7 @@ class InvalidStartFlagException(InvalidFlagException):
     '''
     Exception thrown when the SOF flag is invalid
     '''
+
     def __init__(self, was):
         super(InvalidStartFlagException, self).__init__('SOF', Packet.SOF, was)
 
@@ -49,6 +53,7 @@ class InvalidEndFlagException(InvalidFlagException):
     '''
     Exception thrown when the EOF flag is invalid
     '''
+
     def __init__(self, was):
         super(InvalidEndFlagException, self).__init__('EOF', Packet.EOF, was)
 
@@ -162,7 +167,8 @@ class ReceivePacket(Packet):
         for byte in payload:
             checksum += ord(byte)
         checksum %= 16
-        data = struct.pack('BB{}sB'.format(len(payload)), device_id, len(payload), payload, checksum)
+        data = struct.pack('BB{}sB'.format(len(payload)),
+                           device_id, len(payload), payload, checksum)
         return cls(data)
 
     @classmethod
@@ -234,7 +240,8 @@ class CommandPacket(Packet):
         '''
         if len(data) > 8:
             raise PayloadTooLargeException(len(data))
-        payload = struct.pack('BB{}s'.format(len(data)), length_byte, filter_id, data)
+        payload = struct.pack('BB{}s'.format(len(data)),
+                              length_byte, filter_id, data)
         return cls(payload)
 
     @classmethod

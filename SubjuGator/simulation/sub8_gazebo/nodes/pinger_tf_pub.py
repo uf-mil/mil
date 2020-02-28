@@ -52,10 +52,12 @@ class PingerTFPublisher():
         sub_pinger_T = np.linalg.inv(sub_R).dot(pinger_T - sub_T)
         sub_pinger_R = pinger_R
 
-        sub_pinger_pose = msg_helpers.numpy_pair_to_pose(sub_pinger_T, sub_pinger_R)
+        sub_pinger_pose = msg_helpers.numpy_pair_to_pose(
+            sub_pinger_T, sub_pinger_R)
         self.tf.transform.translation = sub_pinger_pose.position
         self.tf.transform.rotation = sub_pinger_pose.orientation
-        self.tf.header = Header(seq=self.seq, stamp=rospy.Time.now(), frame_id='base_link')
+        self.tf.header = Header(
+            seq=self.seq, stamp=rospy.Time.now(), frame_id='base_link')
         self.seq = self.seq + 1
         self.br.sendTransform(self.tf)
 

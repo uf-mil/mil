@@ -39,7 +39,8 @@ class Dashboard(Plugin):
         self.setObjectName("Dashboard")
 
         # Extend the widget with all attributes and children in the UI file
-        ui_file = os.path.join(rospkg.RosPack().get_path("navigator_gui"), "resource", "dashboard.ui")
+        ui_file = os.path.join(rospkg.RosPack().get_path(
+            "navigator_gui"), "resource", "dashboard.ui")
         loadUi(ui_file, self._widget)
 
         self.remote = RemoteControl("dashboard")
@@ -62,7 +63,8 @@ class Dashboard(Plugin):
 
         # Deals with problem when they're multiple instances of Dashboard plugin
         if context.serial_number() > 1:
-            self._widget.setWindowTitle(self._widget.windowTitle() + (" (%d)" % context.serial_number()))
+            self._widget.setWindowTitle(
+                self._widget.windowTitle() + (" (%d)" % context.serial_number()))
 
         # Add widget to the user interface
         context.add_widget(self._widget)
@@ -108,37 +110,55 @@ class Dashboard(Plugin):
         '''
 
         # Kill status
-        self.kill_status_frame = self._widget.findChild(QtWidgets.QFrame, "kill_status_frame")
-        self.kill_status_status = self._widget.findChild(QtWidgets.QLabel, "kill_status_status")
+        self.kill_status_frame = self._widget.findChild(
+            QtWidgets.QFrame, "kill_status_frame")
+        self.kill_status_status = self._widget.findChild(
+            QtWidgets.QLabel, "kill_status_status")
 
         # Operating mode status
-        self.operating_mode_frame = self._widget.findChild(QtWidgets.QFrame, "operating_mode_frame")
-        self.operating_mode_status = self._widget.findChild(QtWidgets.QLabel, "operating_mode_status")
+        self.operating_mode_frame = self._widget.findChild(
+            QtWidgets.QFrame, "operating_mode_frame")
+        self.operating_mode_status = self._widget.findChild(
+            QtWidgets.QLabel, "operating_mode_status")
 
         # Battery voltage
-        self.battery_voltage_frame = self._widget.findChild(QtWidgets.QFrame, "battery_voltage_frame")
-        self.battery_voltage_status = self._widget.findChild(QtWidgets.QLabel, "battery_voltage_status")
+        self.battery_voltage_frame = self._widget.findChild(
+            QtWidgets.QFrame, "battery_voltage_frame")
+        self.battery_voltage_status = self._widget.findChild(
+            QtWidgets.QLabel, "battery_voltage_status")
 
         # System time
-        self.system_time_frame = self._widget.findChild(QtWidgets.QFrame, "system_time_frame")
-        self.system_time_status = self._widget.findChild(QtWidgets.QLabel, "system_time_status")
+        self.system_time_frame = self._widget.findChild(
+            QtWidgets.QFrame, "system_time_frame")
+        self.system_time_status = self._widget.findChild(
+            QtWidgets.QLabel, "system_time_status")
 
         # Devices table
-        self.device_table = self._widget.findChild(QtWidgets.QFrame, "device_table")
+        self.device_table = self._widget.findChild(
+            QtWidgets.QFrame, "device_table")
 
         # Control panel buttons
-        toggle_kill_button = self._widget.findChild(QtWidgets.QPushButton, "toggle_kill_button")
+        toggle_kill_button = self._widget.findChild(
+            QtWidgets.QPushButton, "toggle_kill_button")
         toggle_kill_button.clicked.connect(self.remote.toggle_kill)
-        station_hold_button = self._widget.findChild(QtWidgets.QPushButton, "station_hold_button")
+        station_hold_button = self._widget.findChild(
+            QtWidgets.QPushButton, "station_hold_button")
         station_hold_button.clicked.connect(self.remote.station_hold)
-        rc_control_button = self._widget.findChild(QtWidgets.QPushButton, "rc_control_button")
+        rc_control_button = self._widget.findChild(
+            QtWidgets.QPushButton, "rc_control_button")
         rc_control_button.clicked.connect(self.remote.select_rc_control)
-        emergency_control_button = self._widget.findChild(QtWidgets.QPushButton, "emergency_control_button")
-        emergency_control_button.clicked.connect(self.remote.select_emergency_control)
-        keyboard_control_button = self._widget.findChild(QtWidgets.QPushButton, "keyboard_control_button")
-        keyboard_control_button.clicked.connect(self.remote.select_keyboard_control)
-        autonomous_control_button = self._widget.findChild(QtWidgets.QPushButton, "autonomous_control_button")
-        autonomous_control_button.clicked.connect(self.remote.select_autonomous_control)
+        emergency_control_button = self._widget.findChild(
+            QtWidgets.QPushButton, "emergency_control_button")
+        emergency_control_button.clicked.connect(
+            self.remote.select_emergency_control)
+        keyboard_control_button = self._widget.findChild(
+            QtWidgets.QPushButton, "keyboard_control_button")
+        keyboard_control_button.clicked.connect(
+            self.remote.select_keyboard_control)
+        autonomous_control_button = self._widget.findChild(
+            QtWidgets.QPushButton, "autonomous_control_button")
+        autonomous_control_button.clicked.connect(
+            self.remote.select_autonomous_control)
 
         # Defines the color scheme as QT style sheets
         self.colors = {
@@ -155,14 +175,18 @@ class Dashboard(Plugin):
         within this class.
         '''
         # Attempts to read the battery voltage parameters (sets them to defaults if they have not been set)
-        self.battery_low_voltage = rospy.get_param("/battery_monitor/battery_low_voltage", 24)
-        self.battery_critical_voltage = rospy.get_param("/battery_monitor/battery_critical_voltage", 20)
+        self.battery_low_voltage = rospy.get_param(
+            "/battery_monitor/battery_low_voltage", 24)
+        self.battery_critical_voltage = rospy.get_param(
+            "/battery_monitor/battery_critical_voltage", 20)
 
         rospy.Subscriber("/wrench/selected", String, self.cache_operating_mode)
-        rospy.Subscriber("/battery_monitor", Float32, self.cache_battery_voltage)
+        rospy.Subscriber("/battery_monitor", Float32,
+                         self.cache_battery_voltage)
         rospy.Subscriber("/host_monitor", Hosts, self.cache_hosts)
 
-        self.kill_listener = AlarmListener("kill", callback_funct=self.cache_kill_status)
+        self.kill_listener = AlarmListener(
+            "kill", callback_funct=self.cache_kill_status)
 
     @thread_lock(lock)
     def cache_kill_status(self, alarm):
@@ -259,14 +283,16 @@ class Dashboard(Plugin):
                 self.battery_voltage_frame.setStyleSheet(self.colors["yellow"])
             else:
                 self.battery_voltage["cached_warning_color"] = "green"
-            self.battery_voltage_status.setText(str(self.battery_voltage["current"])[:5])
+            self.battery_voltage_status.setText(
+                str(self.battery_voltage["current"])[:5])
 
         # Set the cached battery voltage to the value that was just displayed
         self.battery_voltage["displayed"] = self.battery_voltage["current"]
 
     def update_system_time_status(self):
         time_string = str(self.system_time["current"])
-        self.system_time_status.setText(time_string[:-9] + "." + time_string[-9:-8] + "s")
+        self.system_time_status.setText(
+            time_string[:-9] + "." + time_string[-9:-8] + "s")
         self.system_time["displayed"] = self.system_time["current"]
 
     def update_hosts_status(self):

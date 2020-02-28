@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
 from __future__ import division
+from odom_estimator.msg import Info
+from rawgps_common.msg import Measurements
+from rawgps_common import gps
+import rospy
 
 import math
 
@@ -10,12 +14,6 @@ import numpy
 import roslib
 roslib.load_manifest('rawgps_common')
 roslib.load_manifest('odom_estimator')
-import rospy
-
-from rawgps_common import gps
-from rawgps_common.msg import Measurements
-
-from odom_estimator.msg import Info
 
 
 def xyz_array(o): return numpy.array([o.x, o.y, o.z])

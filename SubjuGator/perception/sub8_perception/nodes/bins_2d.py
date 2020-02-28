@@ -53,11 +53,15 @@ class BinFinder:
         self.last_draw_image = None
         self.last_image_time = None
         self.camera_model = None
-        self.pose_service = rospy.Service('vision/bin/2D', VisionRequest2D, self.request_bin)
-        self.image_sub = mil_ros_tools.Image_Subscriber('/down/left/image_rect_color', self.image_cb)
-        self.image_pub = mil_ros_tools.Image_Publisher('/vision/bin_2d/target_info')
+        self.pose_service = rospy.Service(
+            'vision/bin/2D', VisionRequest2D, self.request_bin)
+        self.image_sub = mil_ros_tools.Image_Subscriber(
+            '/down/left/image_rect_color', self.image_cb)
+        self.image_pub = mil_ros_tools.Image_Publisher(
+            '/vision/bin_2d/target_info')
         self.range = None
-        self.range_sub = rospy.Subscriber("dvl/range", RangeStamped, self.range_callback)
+        self.range_sub = rospy.Subscriber(
+            "dvl/range", RangeStamped, self.range_callback)
 
         # Occasional status publisher
         self.timer = rospy.Timer(rospy.Duration(1.0), self.publish_target_info)
@@ -70,7 +74,8 @@ class BinFinder:
     def request_bin(self, srv):
         self.bin_type = srv.target_name
         if (self.last_image is not None):
-            response = self.find_single_bin(np.copy(self.last_image), srv.target_name)
+            response = self.find_single_bin(
+                np.copy(self.last_image), srv.target_name)
 
             if response is False or response is None:
                 rospy.loginfo('did not find')
@@ -80,7 +85,8 @@ class BinFinder:
                 # Fill in
                 center, radius = response
                 resp = VisionRequest2DResponse(
-                    header=Header(stamp=self.last_image_time, frame_id='/down'),
+                    header=Header(stamp=self.last_image_time,
+                                  frame_id='/down'),
                     pose=Pose2D(
                         x=center[0],
                         y=center[1],
@@ -113,14 +119,16 @@ class BinFinder:
 
     def find_single_bin(self, img, bin_type):
         """Find the bins and their orientations."""
-        assert bin_type in self.bins[bin_type], "Bins_2d does not know bin color: {}".format(bin_type)
+        assert bin_type in self.bins[bin_type], "Bins_2d does not know bin color: {}".format(
+            bin_type)
         if img is not None:
             kernel = np.ones((2, 2), np.float32) / 4
             img = cv2.filter2D(img, -1, kernel)
             debug_image = np.copy(img)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             ret, img = cv2.threshold(img, 254, 255, cv2.THRESH_BINARY)
-            contours, hierarchy = cv2.findContours(np.copy(img), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            contours, hierarchy = cv2.findContours(
+                np.copy(img), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             contours = contour_sort(contours)
             """This finds the bins and looks for the one that is orange or is not
                orange. Each bin is given an orangeness rating and either the most
@@ -139,7 +147,7 @@ class BinFinder:
                     roi = debug_image[y: y + h, x: x + w]
                     temp = evaluate_bin(roi)
                     if ((orangeness > temp and self.bin_type == 'norange') or
-                       (orangeness < temp and self.bin_type == 'orange')):
+                            (orangeness < temp and self.bin_type == 'orange')):
                         orangeness = temp
                         M = cv2.moments(contours[i])
                         cx = int(M['m10'] / M['m00'])
@@ -147,7 +155,8 @@ class BinFinder:
                         img_h, img_w, _ = np.shape(debug_image)
                         point = (cx, cy)
                         (_, _), (_, _), rad = cv2.fitEllipse(contours[i])
-                    cv2.rectangle(debug_image, (x, y), (x + w, y + h), (127), 2)
+                    cv2.rectangle(debug_image, (x, y),
+                                  (x + w, y + h), (127), 2)
                     ellipse = cv2.fitEllipse(contours[i])
                     cv2.ellipse(debug_image, ellipse, (170), 2)
 
@@ -162,7 +171,8 @@ class BinFinder:
                     pixels = np.asarray([pixels[0], pixels[1], 1])
                     ray = _P.dot(pixels)
                     tuple_center = self.range * ray
-                    tuple_center[2] = -tuple_center[2] + 0.45 + 1  # height of the bin and some buffer
+                    tuple_center[2] = -tuple_center[2] + 0.45 + \
+                        1  # height of the bin and some buffer
                     self.last_draw_image = debug_image
                     return tuple_center, rad
 
@@ -177,6 +187,7 @@ class BinFinder:
 def main(args):
     BinFinder()
     rospy.spin()
+
 
 if __name__ == '__main__':
     rospy.init_node('bin_vision')

@@ -46,20 +46,25 @@ class StartGate(Navigator):
         # Get the ones closest to us and assume those are the front
         front = buoys
 
-        t = txros.tf.Transform.from_Pose_message(mil_tools.numpy_quat_pair_to_pose(*pose))
+        t = txros.tf.Transform.from_Pose_message(
+            mil_tools.numpy_quat_pair_to_pose(*pose))
         t_mat44 = np.linalg.inv(t.as_matrix())
-        f_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in front]
+        f_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1))
+                      for buoy in front]
 
         # print f_bl_buoys
 
         # Angles are w.r.t positive x-axis. Positive is CCW around the z-axis.
-        angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in f_bl_buoys])
+        angle_buoys = np.array([np.arctan2(buoy[1], buoy[0])
+                                for buoy in f_bl_buoys])
         # print angle_buoys, front
-        f_left_buoy, f_right_buoy = front[np.argmax(angle_buoys)], front[np.argmin(angle_buoys)]
+        f_left_buoy, f_right_buoy = front[np.argmax(
+            angle_buoys)], front[np.argmin(angle_buoys)]
         between_v = f_right_buoy.position - f_left_buoy.position
         f_mid_point = f_left_buoy.position + between_v / 2
 
-        setup = self.move.set_position(f_mid_point).look_at(f_left_buoy.position).yaw_right(1.57).backward(setup_dist)
+        setup = self.move.set_position(f_mid_point).look_at(
+            f_left_buoy.position).yaw_right(1.57).backward(setup_dist)
         target = setup.forward(2 * setup_dist + channel_length)
 
         ogrid = OgridFactory(f_left_buoy.position, f_right_buoy.position,
@@ -78,27 +83,36 @@ class StartGate(Navigator):
         # print "back", back
 
         # Made it this far, make sure the red one is on the left and green on the right ================
-        t = txros.tf.Transform.from_Pose_message(mil_tools.numpy_quat_pair_to_pose(*pose))
+        t = txros.tf.Transform.from_Pose_message(
+            mil_tools.numpy_quat_pair_to_pose(*pose))
         t_mat44 = np.linalg.inv(t.as_matrix())
-        f_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in front]
-        b_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in back]
+        f_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1))
+                      for buoy in front]
+        b_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1))
+                      for buoy in back]
 
         # Angles are w.r.t positive x-axis. Positive is CCW around the z-axis.
-        angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in f_bl_buoys])
+        angle_buoys = np.array([np.arctan2(buoy[1], buoy[0])
+                                for buoy in f_bl_buoys])
         # print angle_buoys, front
-        f_left_buoy, f_right_buoy = front[np.argmax(angle_buoys)], front[np.argmin(angle_buoys)]
+        f_left_buoy, f_right_buoy = front[np.argmax(
+            angle_buoys)], front[np.argmin(angle_buoys)]
 
-        angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in b_bl_buoys])
-        b_left_buoy, b_right_buoy = back[np.argmax(angle_buoys)], back[np.argmin(angle_buoys)]
+        angle_buoys = np.array([np.arctan2(buoy[1], buoy[0])
+                                for buoy in b_bl_buoys])
+        b_left_buoy, b_right_buoy = back[np.argmax(
+            angle_buoys)], back[np.argmin(angle_buoys)]
 
         # Lets plot a course, yarrr
-        f_between_vector, f_direction_vector = self.get_path(f_left_buoy, f_right_buoy)
+        f_between_vector, f_direction_vector = self.get_path(
+            f_left_buoy, f_right_buoy)
         f_mid_point = f_left_buoy.position + f_between_vector / 2
 
         b_between_vector, _ = self.get_path(b_left_buoy, b_right_buoy)
         b_mid_point = b_left_buoy.position + b_between_vector / 2
 
-        setup = self.move.set_position(f_mid_point).look_at(b_mid_point).backward(setup_dist)
+        setup = self.move.set_position(f_mid_point).look_at(
+            b_mid_point).backward(setup_dist)
         target = setup.set_position(b_mid_point).forward(setup_dist)
 
         ogrid = OgridFactory(f_left_buoy.position, f_right_buoy.position, target.position,
@@ -150,7 +164,8 @@ class OgridFactory():
 
         # Some parameters
         self.resolution = .3  # meters/cell for ogrid
-        self.channel_length = channel_length  # Not sure what this acutally is for the course (m)
+        # Not sure what this acutally is for the course (m)
+        self.channel_length = channel_length
         self.edge_buffer = 10
 
     def generate_grid(self, pose):
@@ -212,7 +227,8 @@ class OgridFactory():
         b_theta = np.arctan2(mid_point_vector[1], mid_point_vector[0])
         b_rot_mat = trns.euler_matrix(0, 0, b_theta)[:3, :3]
 
-        rot_buffer = b_rot_mat.dot([np.linalg.norm(mid_point_vector) * 1.5, 0, 0])
+        rot_buffer = b_rot_mat.dot(
+            [np.linalg.norm(mid_point_vector) * 1.5, 0, 0])
         left_cone_point = self.left_f + rot_buffer
         right_cone_point = self.right_f + rot_buffer
 
@@ -226,7 +242,8 @@ class OgridFactory():
         self.y_upper = max(left_cone_point[1], right_cone_point[1],
                            endpoint_left_f[1], endpoint_right_f[1], self.target[1]) + self.edge_buffer
 
-        self.walls = [self.left_b, self.left_f, left_cone_point, right_cone_point, self.right_f, self.right_b]
+        self.walls = [self.left_b, self.left_f, left_cone_point,
+                      right_cone_point, self.right_f, self.right_b]
 
     def draw_lines(self, points):
         last_wall = None
@@ -240,8 +257,10 @@ class OgridFactory():
             last_wall = this_wall
 
     def draw_walls(self):
-        left_wall_points = np.array([self.transform(point) for point in self.left_wall_points])
-        right_wall_points = np.array([self.transform(point) for point in self.right_wall_points])
+        left_wall_points = np.array(
+            [self.transform(point) for point in self.left_wall_points])
+        right_wall_points = np.array(
+            [self.transform(point) for point in self.right_wall_points])
 
         rect = cv2.minAreaRect(left_wall_points[:, :2].astype(np.float32))
         box = cv2.boxPoints(rect)
@@ -259,15 +278,18 @@ class OgridFactory():
             return
 
         # Bob Ross it up (just for display)
-        left_f, right_f = self.transform(self.left_f), self.transform(self.right_f)
-        left_b, right_b = self.transform(self.left_b), self.transform(self.right_b)
+        left_f, right_f = self.transform(
+            self.left_f), self.transform(self.right_f)
+        left_b, right_b = self.transform(
+            self.left_b), self.transform(self.right_b)
 
         boat = self.transform(self.boat_pos)
         target = self.transform(self.target)
 
         cv2.circle(self.grid, tuple(boat[:2].astype(np.int32)), 8, 255)
         cv2.circle(self.grid, tuple(target[:2].astype(np.int32)), 15, 255)
-        cv2.circle(self.grid, tuple(self.transform(self.mid_point)[:2].astype(np.int32)), 5, 255)
+        cv2.circle(self.grid, tuple(self.transform(
+            self.mid_point)[:2].astype(np.int32)), 5, 255)
         cv2.circle(self.grid, tuple(left_f[:2].astype(np.int32)), 10, 255)
         cv2.circle(self.grid, tuple(right_f[:2].astype(np.int32)), 10, 255)
         cv2.circle(self.grid, tuple(left_b[:2].astype(np.int32)), 3, 125)

@@ -7,6 +7,7 @@ class ActuatorBoardSimulation(SimulatedCANDevice):
     '''
     Simulator for the communication of the actuator board
     '''
+
     def __init__(self, *args, **kwargs):
         # Tracks the status of the 12 valves
         self.status = dict((i, False) for i in range(12))
@@ -28,5 +29,6 @@ class ActuatorBoardSimulation(SimulatedCANDevice):
             self.status[message.address] = message.on
         # If message is a status request, send motherboard the status of the requested valve
         else:
-            response = FeedbackMessage.create_feedback_message(address=message.address, on=self.status[message.address])
+            response = FeedbackMessage.create_feedback_message(
+                address=message.address, on=self.status[message.address])
             self.send_data(response.to_bytes())

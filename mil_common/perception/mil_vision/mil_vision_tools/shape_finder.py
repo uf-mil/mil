@@ -35,7 +35,8 @@ class RectFinder(object):
                                   [-self.length / 2.0, self.width / 2.0, 0],
                                   [-self.length / 2.0, -self.width / 2.0, 0]], dtype=np.float)
 
-        scale = 10000 / self.length  # Scale 2D model to maintain precision when converting to int
+        # Scale 2D model to maintain precision when converting to int
+        scale = 10000 / self.length
         self.model_2D = np.array([[[0, 0]],
                                   [[self.width * scale, 0]],
                                   [[self.width * scale, self.length * scale]],
@@ -223,6 +224,7 @@ class EllipseFinder(RectFinder):
     The get_corners function will return the corners of the least area rotated
     rectangle around the ellipse contour, so 3D pose estimation will still work.
     '''
+
     def __init__(self, length=1.0, width=1.0):
         '''
         Create internal model for an ellipse.
@@ -234,8 +236,10 @@ class EllipseFinder(RectFinder):
         self.model_2D = np.zeros((50, 1, 2), dtype=np.int)
         # Approximate an ellipse with 50 points, so that verify_contour is reasonable fast still
         for idx, theta in enumerate(np.linspace(0.0, 2.0 * np.pi, num=50)):
-            self.model_2D[idx][0][0] = self.length * 0.5 * scale + self.length * 0.5 * scale * np.cos(theta)
-            self.model_2D[idx][0][1] = self.width * 0.5 * scale + self.width * 0.5 * scale * np.sin(theta)
+            self.model_2D[idx][0][0] = self.length * 0.5 * \
+                scale + self.length * 0.5 * scale * np.cos(theta)
+            self.model_2D[idx][0][1] = self.width * 0.5 * \
+                scale + self.width * 0.5 * scale * np.sin(theta)
 
     def get_corners(self, contour, debug_image=None):
         '''
@@ -243,7 +247,8 @@ class EllipseFinder(RectFinder):
         instead of a four sided polygon around the contour.
         '''
         ellipse = cv2.fitEllipse(contour)
-        points = np.array(cv2.boxPoints(ellipse), dtype=np.int32).reshape(4, 1, 2)
+        points = np.array(cv2.boxPoints(ellipse),
+                          dtype=np.int32).reshape(4, 1, 2)
         return self.sort_corners(points, debug_image=debug_image)
 
 
@@ -252,5 +257,6 @@ class CircleFinder(EllipseFinder):
     Cute abstraction for circles, which are just ellipses with the same
     length and width. See EllipseFinder for usage.
     '''
+
     def __init__(self, radius, _=None):
         super(CircleFinder, self).__init__(radius, radius)

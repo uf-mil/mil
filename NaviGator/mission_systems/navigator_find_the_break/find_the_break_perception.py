@@ -59,7 +59,8 @@ class FindTheBreakPerception(object):
         # cluster
         Z = frame.reshape((-1, 3))
         Z = np.float32(Z)
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+        criteria = (cv2.TERM_CRITERIA_EPS +
+                    cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
         K = 5
         ret, label, center = cv2.kmeans(Z, K, criteria, 10, 0)
         center = np.uint8(center)
@@ -161,7 +162,8 @@ class FindTheBreakPerception(object):
             return pipes
         for i, h in enumerate(pipes):
             dists = map(lambda x: np.linalg.norm(h - x), old_pipes)
-            pipe_to_update = min(old_pipes, key=lambda x: np.linalg.norm(h - x))
+            pipe_to_update = min(
+                old_pipes, key=lambda x: np.linalg.norm(h - x))
             idx = old_pipes.index(pipe_to_update)
             if dists[idx] < self.diff_thresh:
                 old_pipes[idx] = h

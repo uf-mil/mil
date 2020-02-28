@@ -12,7 +12,8 @@ from mil_ros_tools import rosmsg_to_numpy
 
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
-EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]
+EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(
+    np.pi / 2 * i, UP) for i in xrange(4)]
 
 
 def normalized(x):
@@ -304,7 +305,8 @@ class PoseEditor(object):
 
     def pitch_down(self, angle):
         return self.set_orientation(transformations.quaternion_multiply(
-            transformations.quaternion_about_axis(angle, self.zero_roll().left_vector),
+            transformations.quaternion_about_axis(
+                angle, self.zero_roll().left_vector),
             self.orientation,
         ))
 

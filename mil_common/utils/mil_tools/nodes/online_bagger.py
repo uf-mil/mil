@@ -403,8 +403,10 @@ class OnlineBaggerClient(object):
     filename. Uses tqdm to display a progress bar as the write
     occurs.
     '''
+
     def __init__(self, name='', topics='', time=0.0):
-        self.client = SimpleActionClient(OnlineBagger.BAG_TOPIC, BagOnlineAction)
+        self.client = SimpleActionClient(
+            OnlineBagger.BAG_TOPIC, BagOnlineAction)
         self.goal = BagOnlineGoal(bag_name=name, topics=topics, bag_time=time)
         self.result = None
         self.total_it = 0
@@ -435,7 +437,9 @@ class OnlineBaggerClient(object):
         if status == 3:
             print 'Bag successful'
         else:
-            print 'Bag {}: {}'.format(TerminalState.to_string(status), result.status)
+            print 'Bag {}: {}'.format(
+                TerminalState.to_string(status), result.status)
+
 
 if __name__ == "__main__":
     argv = rospy.myargv()
@@ -456,7 +460,8 @@ if __name__ == "__main__":
             topics = ''
         else:
             topics = ''.join(args.topics)
-        client = OnlineBaggerClient(name=args.name, topics=topics, time=args.time)
+        client = OnlineBaggerClient(
+            name=args.name, topics=topics, time=args.time)
         client.bag()
     else:  # Run as OnlineBagger server
         rospy.init_node('online_bagger')

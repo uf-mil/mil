@@ -93,6 +93,7 @@ def json_to_pascal(labelled_data='json_files/project_labels.json'):
 
     print('Done getting xml files')
 
+
 '''
 Translates the XML files generated from the PASCAL VOC
 format into correctly formatted CSV files that Tensorflow will read and convert into a TF record.

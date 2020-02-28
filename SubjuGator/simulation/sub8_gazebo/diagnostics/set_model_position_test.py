@@ -19,7 +19,8 @@ def run_mission(srv, sub, nh):
     point = np.random.uniform(-20, 20, size=3)
     point[2] = -np.abs(point[2]) / 4
 
-    quat = tf.transformations.quaternion_from_euler(0, 0, np.random.uniform(-7, 7, size=1))
+    quat = tf.transformations.quaternion_from_euler(
+        0, 0, np.random.uniform(-7, 7, size=1))
 
     pose = msg_helpers.numpy_quat_pair_to_pose(point, quat)
     print pose
@@ -57,6 +58,7 @@ def main():
     world_position_actual = yield nh.subscribe('/world_odom', Odometry)
     yield run_mission(None, world_position_actual, nh)
     print "Waiting for service call."
+
 
 if __name__ == '__main__':
     reactor.callWhenRunning(main)

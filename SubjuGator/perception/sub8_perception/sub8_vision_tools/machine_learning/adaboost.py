@@ -97,7 +97,8 @@ def monitor(i, self, local_vars):
 
 
 def main():
-    usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")
+    usage_msg = (
+        "Pass the path to a bag, and we'll crawl through the images in it")
     desc_msg = "A tool for making manual segmentation fun!"
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)

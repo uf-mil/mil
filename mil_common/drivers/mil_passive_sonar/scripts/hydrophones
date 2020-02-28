@@ -10,6 +10,7 @@ from mil_passive_sonar.msg import Ping, ProcessedPing, Debug
 from std_msgs.msg import Header
 from geometry_msgs.msg import Point, Vector3Stamped
 
+
 def process_ping(ping):
     ping.header.frame_id = 'hydrophones'
     samples = util.ping_to_samples(ping)
@@ -28,11 +29,11 @@ def process_ping(ping):
     if len(r['errors']) > 0:
         rospy.logwarn('Errors processing ping: ' + ", ".join(r['errors']))
 
-
     valid = len(r['pos']) > 0 and len(r['errors']) == 0
     if valid:
         pos2 = r['pos']/numpy.linalg.norm(r['pos'])
-        print 'result angle:', numpy.rad2deg(numpy.arctan2(pos2[1], pos2[0])) % 360
+        print 'result angle:', numpy.rad2deg(
+            numpy.arctan2(pos2[1], pos2[0])) % 360
 
         pub.publish(
             header=ping.header,
@@ -51,13 +52,15 @@ def process_ping(ping):
         heading=heading,
         declination=declination)
 
+
 rospy.init_node('hydrophones')
 dist_h = rospy.get_param('~dist_h')
 dist_h4 = rospy.get_param('~dist_h4')
 v_sound = rospy.get_param('~v_sound')
 template_periods = rospy.get_param('~template_periods', 3)
 pub = rospy.Publisher('hydrophones/processed', ProcessedPing, queue_size=10)
-pub_direction = rospy.Publisher('hydrophones/direction', Vector3Stamped, queue_size=10)
+pub_direction = rospy.Publisher(
+    'hydrophones/direction', Vector3Stamped, queue_size=10)
 pub_debug = rospy.Publisher('hydrophones/debug', Debug, queue_size=10)
 
 if rospy.myargv()[1:]:

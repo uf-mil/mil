@@ -39,6 +39,7 @@ class vision_sandbox:
         cv2.imshow("NaviGator Image Testing", self.master_image)
         cv2.waitKey(1)
 
+
 if __name__ == '__main__':
 
     rospy.init_node('vision_sandbox')

@@ -15,6 +15,7 @@ class NetworkBroadcaster(object):
         h.stamp = rospy.Time.now()
         self.pub.publish(h)
 
+
 if __name__ == "__main__":
     rospy.init_node("network_broadcaster")
     nb = NetworkBroadcaster()

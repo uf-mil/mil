@@ -25,6 +25,7 @@ import rospkg
 
 rospack = rospkg.RosPack()
 
+
 class classifier(object):
 
     def __init__(self):
@@ -32,13 +33,14 @@ class classifier(object):
         Parameters
         '''
         parser = argparse.ArgumentParser(description='TensorFlow Object Detection',
-                                        usage='''Default parameters: None''')
+                                         usage='''Default parameters: None''')
         parser.add_argument('-g', '--garlic', action='store_true',
                             help='Sets up Network for Bin Dropper')
-        parser.add_argument('-v', '--vamp', action='store_true', help='Sets up Network for the Buoy')
+        parser.add_argument('-v', '--vamp', action='store_true',
+                            help='Sets up Network for the Buoy')
         parser.add_argument('-s', '--stake', action='store_true',
                             help='Sets up Network for the Torpedo Board')
-        args= parser.parse_args()
+        args = parser.parse_args()
 
         self.tf_listener = tf.TransformListener()
 
@@ -50,17 +52,17 @@ class classifier(object):
             self.target = 'garlic'
             self.classes = 1
             self.see_sub = mil_tools.Image_Subscriber(
-              topic="/camera/down/image_raw", callback=self.img_callback)
+                topic="/camera/down/image_raw", callback=self.img_callback)
         elif self.vamp:
             self.target = 'vamp'
             self.classes = 4
             self.see_sub = mil_tools.Image_Subscriber(
-              topic="/camera/front/left/image_raw", callback=self.img_callback)
-        else:  
+                topic="/camera/front/left/image_raw", callback=self.img_callback)
+        else:
             self.target = 'stake'
             self.classes = 1
             self.see_sub = mil_tools.Image_Subscriber(
-              topic="/camera/front/left/image_raw", callback=self.img_callback)
+                topic="/camera/front/left/image_raw", callback=self.img_callback)
         # Number of frames
         self.num_frames = rospy.get_param('~num_frames', 0)
         # Number of objects we detect
@@ -80,7 +82,8 @@ class classifier(object):
         # CV bridge for converting from rosmessage to cv_image
         self.bridge = CvBridge()
 
-        self.inference_graph, self.sess = detector_utils.load_inference_graph(self.target, self.classes)
+        self.inference_graph, self.sess = detector_utils.load_inference_graph(
+            self.target, self.classes)
 
         # Subscribes to our image topic, allowing us to process the images
         # self.sub1 = rospy.Subscriber(
@@ -88,7 +91,7 @@ class classifier(object):
         self.see_frame_counter = 0
         self.see_camera_info = self.see_sub.wait_for_camera_info()
         self.see_img_geom = image_geometry.PinholeCameraModel()
-        self.see_img_geom.fromCameraInfo(self.see_camera_info)  
+        self.see_img_geom.fromCameraInfo(self.see_camera_info)
         '''
         Publishers:
         debug_image_pub: publishes the images showing what tensorflow has
@@ -98,7 +101,8 @@ class classifier(object):
         self.debug_image_pub = rospy.Publisher(
             'path_debug', Image, queue_size=1)
         self.bbox_pub = rospy.Publisher('bbox_pub', Point, queue_size=1)
-        self.roi_pub = rospy.Publisher('roi_pub', RegionOfInterest, queue_size=1)
+        self.roi_pub = rospy.Publisher(
+            'roi_pub', RegionOfInterest, queue_size=1)
         self.dictionary = {}
 
     def check_timestamp(self):
@@ -117,11 +121,11 @@ class classifier(object):
     def img_callback(self, data):
         self.parse_label_map()
         # if self.check_timestamp():
-           # return None
-        
+        # return None
+
         cv_image = data
         cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
-        self.im_height, self.im_width, channels  = cv_image.shape
+        self.im_height, self.im_width, channels = cv_image.shape
         print("Height ", self.im_height, " Width: ", self.im_width)
         #  cv_image = cv2.resize(cv_image, (256, 144))
         # Run image through tensorflow graph
@@ -142,20 +146,21 @@ class classifier(object):
         # Display FPS on frame
         detector_utils.draw_text_on_image(
             "FPS : " + str("{0:.2f}".format(fps)), cv_image)
-        print("bbox:", bbox)  
+        print("bbox:", bbox)
         if len(bbox) > 0:
-          pointx = (bbox[0][0] + bbox[1][0]) /2 
-          pointy = (bbox[0][1] + bbox[1][1]) /2
-          pointxdist = abs(bbox[0][0] - bbox[1][0])
-          pointydist = abs(bbox[0][1] - bbox[1][1])
-          print(pointxdist)
-          msg = Point(x=pointx, y=pointy, z=self.see_sub.last_image_time.to_sec())
-          print("X: ", pointx, "Y: ", pointy, "TIMESTAMP: ", msg.z)
-          self.bbox_pub.publish(msg)
-          roi = RegionOfInterest(x_offset=int(bbox[0][0]), y_offset=int(bbox[0][1]), height = int(pointydist), width=int(pointxdist))
-          self.roi_pub.publish(roi)
-        
-          
+            pointx = (bbox[0][0] + bbox[1][0]) / 2
+            pointy = (bbox[0][1] + bbox[1][1]) / 2
+            pointxdist = abs(bbox[0][0] - bbox[1][0])
+            pointydist = abs(bbox[0][1] - bbox[1][1])
+            print(pointxdist)
+            msg = Point(x=pointx, y=pointy,
+                        z=self.see_sub.last_image_time.to_sec())
+            print("X: ", pointx, "Y: ", pointy, "TIMESTAMP: ", msg.z)
+            self.bbox_pub.publish(msg)
+            roi = RegionOfInterest(x_offset=int(bbox[0][0]), y_offset=int(
+                bbox[0][1]), height=int(pointydist), width=int(pointxdist))
+            self.roi_pub.publish(roi)
+
         # Publish image
         try:
             cv_image = cv2.cvtColor(cv_image, cv2.COLOR_RGB2BGR)
@@ -165,7 +170,8 @@ class classifier(object):
             print(e)
 
     def parse_label_map(self):
-        labelmap = rospack.get_path('sub8_perception')+'/datasets/'+ self.target + '.pbtxt'
+        labelmap = rospack.get_path(
+            'sub8_perception')+'/datasets/' + self.target + '.pbtxt'
         with open(labelmap) as f:
             txt = f.read()
             labels = []
@@ -192,6 +198,7 @@ class classifier(object):
             # except:
                 # print("It errored! Whomp whomp. ", i)
         self.dictionary = dict(zip(ids, labels))
+
 
 if __name__ == '__main__':
     rospy.init_node('localizer', anonymous=False)

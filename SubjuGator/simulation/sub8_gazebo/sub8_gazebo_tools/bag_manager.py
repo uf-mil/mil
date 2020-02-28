@@ -98,7 +98,8 @@ class BagManager(object):
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        bag = rosbag.Bag(os.path.join(directory, str(int(time.time())) + '.bag'), 'w')
+        bag = rosbag.Bag(os.path.join(
+            directory, str(int(time.time())) + '.bag'), 'w')
 
         gen = self.read_from_cache()
 

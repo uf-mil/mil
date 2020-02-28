@@ -6,4 +6,3 @@ class HwKill(HandlerBase):
 
     def __init__(self):
         pass
-

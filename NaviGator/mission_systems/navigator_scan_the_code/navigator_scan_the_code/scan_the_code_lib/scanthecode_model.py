@@ -78,7 +78,8 @@ class ScanTheCodeModel:
             elif hue < self.GREEN_THRESH_HIGH and hue > self.GREEN_THRESH_LOW:
                 blue_vote += 1
         m = max(red_vote, black_vote, yellow_vote, green_vote, blue_vote)
-        avgh, avgs, avgv = np.round(h_sum / tot), np.round(s_sum / tot), np.round(v_sum / tot)
+        avgh, avgs, avgv = np.round(
+            h_sum / tot), np.round(s_sum / tot), np.round(v_sum / tot)
         fprint("Average H {}".format(avgh), msg_color="green")
         fprint("Average S {}".format(avgs), msg_color="green")
         fprint("Average V {}".format(avgv), msg_color="green")

@@ -9,14 +9,19 @@ class TxHydrophonesClient(object):
     '''
     TXROS abstraction for interacting with the nodes in this package
     '''
+
     def __init__(self, nh):
         '''
         Construct a client. nh is a txros nodehandle object
         '''
-        self._direction_sub = nh.subscribe("/hydrophones/direction", Vector3Stamped, callback=self.heading_cb)
-        self._enable_srv = nh.get_service_client("/multilateration/enable", SetBool)
-        self._reset_srv = nh.get_service_client("/multilateration/reset", Trigger)
-        self._position_sub = nh.subscribe("/hydrophones/position", PointStamped)
+        self._direction_sub = nh.subscribe(
+            "/hydrophones/direction", Vector3Stamped, callback=self.heading_cb)
+        self._enable_srv = nh.get_service_client(
+            "/multilateration/enable", SetBool)
+        self._reset_srv = nh.get_service_client(
+            "/multilateration/reset", Trigger)
+        self._position_sub = nh.subscribe(
+            "/hydrophones/position", PointStamped)
         self.dir_callback = None
 
     def get_direction(self):

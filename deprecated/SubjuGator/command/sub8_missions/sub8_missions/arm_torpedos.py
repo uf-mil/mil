@@ -111,12 +111,14 @@ class FireTorpedos(object):
     def pattern(self):
         self.print_info('Descending to Depth...')
         yield self.sub.move.depth(1.5).go(blind=self.BLIND, speed=0.1)
+
         def err():
             self.print_info('Search pattern canceled')
 
         self.pattern_done = False
         for i, move in enumerate(self.moves[self.move_index:]):
-            move = self.sub.move.relative(np.array(move)).go(blind=self.BLIND, speed=0.1)
+            move = self.sub.move.relative(np.array(move)).go(
+                blind=self.BLIND, speed=0.1)
             move.addErrback(err)
             yield move
             self.move_index = i + 1
@@ -130,16 +132,16 @@ class FireTorpedos(object):
         yield self.sub.move.go(blind=self.BLIND, speed=0.1)  # Station hold
         transform = yield self.sub._tf_listener.get_transform('/map', '/base_link')
         target_position = transform._q_mat.dot(
-                target_pose - transform._p)
+            target_pose - transform._p)
 
         sub_pos = yield self.sub.tx_pose()
         print('Current Sub Position: ', sub_pos)
 
         # sub_pos = transform._q_mat.dot(
-                # (sub_pos[0]) - transform._p)
+        # (sub_pos[0]) - transform._p)
         # target_position = target_position - sub_pos[0]
         # yield self.sub.move.look_at_without_pitching(target_position).go(
-            # blind=self.BLIND, speed=.1)
+        # blind=self.BLIND, speed=.1)
         print('Map Position: ', target_position)
         yield self.sub.move.relative(np.array([0, target_position[1], 0])).go(blind=True, speed=.1)
         yield self.sub.move.relative(np.array([target_position[0] + self.X_OFFSET, 0, target_position[2] + self.Z_OFFSET])).go(

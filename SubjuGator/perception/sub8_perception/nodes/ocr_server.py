@@ -18,8 +18,10 @@ class Ocr:
         self.last_image_time = None
         self.camera_model = None
         self.white_list = None
-        self.ocr_service = rospy.Service('vision/ocr', OcrRequest, self.request_characters)
-        self.image_sub = Image_Subscriber('/camera/front/right/image_rect_color', self.image_cb)
+        self.ocr_service = rospy.Service(
+            'vision/ocr', OcrRequest, self.request_characters)
+        self.image_sub = Image_Subscriber(
+            '/camera/front/right/image_rect_color', self.image_cb)
 
     def request_characters(self, srv):
         self.white_list = srv.target_name
@@ -62,8 +64,10 @@ class Ocr:
             # Convert to cv image to to pass to tess api
             # Derived from example code here: http://blog.mimvp.com/2015/11/python-ocr-recognition/
             height, width, channel = image.shape
-            iplimage = cv.CreateImageHeader((width, height), cv.IPL_DEPTH_8U, channel)
-            cv.SetData(iplimage, image.tostring(), image.dtype.itemsize * channel * (width))
+            iplimage = cv.CreateImageHeader(
+                (width, height), cv.IPL_DEPTH_8U, channel)
+            cv.SetData(iplimage, image.tostring(),
+                       image.dtype.itemsize * channel * (width))
             tesseract.SetCvImage(iplimage, api)
             api.Recognize(None)
             ri = api.GetIterator()
@@ -76,6 +80,7 @@ class Ocr:
 def main(args):
     Ocr()
     rospy.spin()
+
 
 if __name__ == '__main__':
     rospy.init_node('ocr')

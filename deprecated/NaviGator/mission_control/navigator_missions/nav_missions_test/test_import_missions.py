@@ -8,6 +8,7 @@ class ImportMissionsTest(unittest.TestCase):
 
     TODO: implement test for basic mission in SIM / with bag data (ex: move forward 1m)
     '''
+
     def test_import_navigator(self):
         err = None
         try:
@@ -29,7 +30,8 @@ class ImportMissionsTest(unittest.TestCase):
             except Exception as e:
                 missions[module[:-3]] = e
         for mission in missions:
-            self.assertIsNone(missions[mission], msg="Error with mission {}: {}".format(mission, missions[mission]))
+            self.assertIsNone(missions[mission], msg="Error with mission {}: {}".format(
+                mission, missions[mission]))
 
 
 if __name__ == '__main__':

@@ -25,7 +25,8 @@ class TrackTarget(Navigator):
         cls.base_link_to_shooter = -(yield cls.tf_listener.get_transform("base_link", "shooter"))._p
         cls.base_link_to_shooter[2] = 0.
         # Subscribe to pose
-        cls.target_pose_sub = cls.nh.subscribe("/detect_deliver_target_detector/pose", PoseStamped)
+        cls.target_pose_sub = cls.nh.subscribe(
+            "/detect_deliver_target_detector/pose", PoseStamped)
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
@@ -54,12 +55,14 @@ class TrackTarget(Navigator):
 
                 # Transform pose to ENU
                 transform = yield self.tf_listener.get_transform("enu", pose.header.frame_id, pose.header.stamp)
-                pos, quat = transform.transform_point(pos), transform.transform_quaternion(quat)
+                pos, quat = transform.transform_point(
+                    pos), transform.transform_quaternion(quat)
                 pos[2] = 0.
 
                 # Assemble Move:
                 # Start directly on target but rotated so shooter faces target
-                move = self.move.set_position(pos).set_orientation(quat).yaw_left(3.14)
+                move = self.move.set_position(
+                    pos).set_orientation(quat).yaw_left(3.14)
                 # Adjust for position of shooter
                 move = move.rel_position(self.base_link_to_shooter)
                 # Offset to optimize trajectory of launcher

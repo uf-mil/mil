@@ -85,11 +85,14 @@ class MissionPlannerTest(TestUnit):
         odom = Odometry()
         odom.pose.pose.position = Point(0, 0, 0)
 
-        self.pub_base_mission = sg.spoof_publisher("/odom", Odometry, [odom], [100000])
+        self.pub_base_mission = sg.spoof_publisher(
+            "/odom", Odometry, [odom], [100000])
 
-        self.serv_empty = sg.spoof_service("/database/requests", ObjectDBQuery, [empty_resp])
+        self.serv_empty = sg.spoof_service(
+            "/database/requests", ObjectDBQuery, [empty_resp])
 
-        self.serv_markers = sg.spoof_service("/database/requests", ObjectDBQuery, [all_marker])
+        self.serv_markers = sg.spoof_service(
+            "/database/requests", ObjectDBQuery, [all_marker])
         self.serv_markers_empty = sg.spoof_service("/database/requests", ObjectDBQuery,
                                                    [empty_resp, all_marker, all_marker, all_marker, all_marker,
                                                     all_marker, all_marker, all_marker, all_marker,
@@ -113,15 +116,18 @@ class MissionPlannerTest(TestUnit):
         #                                                                                   shooter_response,
         #                                                                                   stc_response])
 
-        self.markers = sg.spoof_publisher("/database/objects", PerceptionObjectArray, [stc_shooter], [1000])
+        self.markers = sg.spoof_publisher(
+            "/database/objects", PerceptionObjectArray, [stc_shooter], [1000])
 
-        self.empty = sg.spoof_publisher("/database/objects", PerceptionObjectArray, [empty], [1000])
+        self.empty = sg.spoof_publisher(
+            "/database/objects", PerceptionObjectArray, [empty], [1000])
 
     @util.cancellableInlineCallbacks
     def run_tests(self):
         self.pub_base_mission.start(self.nh)
         yield self.nh.subscribe("/mission_planner/mission", String, self.mission_cb)
-        base_file = '/'.join(__file__.split('/')[0:-1]) + "/mission_planner_yamls"
+        base_file = '/'.join(__file__.split('/')
+                             [0:-1]) + "/mission_planner_yamls"
 
         yield self._run_mission(base_file + "/shooter_in_database.yaml", self.empty, self.serv_markers, 30,
                                 "shooter is in the database",
@@ -195,7 +201,8 @@ class MissionPlannerTest(TestUnit):
                 fprint(desc, msg_color='green', title="STARTING TEST")
                 yield self.nh.sleep(.5)
                 yaml_text = yaml.load(stream)
-                init = MissionPlanner(total_minutes=time, mode='t').init_(yaml_text, sim_mode=True)
+                init = MissionPlanner(total_minutes=time, mode='t').init_(
+                    yaml_text, sim_mode=True)
                 planner = yield init
                 yield planner.empty_queue()
                 yield spoof_pub.stop()

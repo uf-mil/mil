@@ -22,9 +22,12 @@ class RvizVisualizer(object):
 
     def __init__(self):
         rospy.init_node('revisualizer')
-        self.rviz_pub = rospy.Publisher("visualization/state", visualization_msgs.Marker, queue_size=2)
-        self.rviz_pub_t = rospy.Publisher("visualization/state_t", visualization_msgs.Marker, queue_size=2)
-        self.rviz_pub_utils = rospy.Publisher("visualization/bus_voltage", visualization_msgs.Marker, queue_size=2)
+        self.rviz_pub = rospy.Publisher(
+            "visualization/state", visualization_msgs.Marker, queue_size=2)
+        self.rviz_pub_t = rospy.Publisher(
+            "visualization/state_t", visualization_msgs.Marker, queue_size=2)
+        self.rviz_pub_utils = rospy.Publisher(
+            "visualization/bus_voltage", visualization_msgs.Marker, queue_size=2)
         self.kill_server = InteractiveMarkerServer("interactive_kill")
 
         # text marker
@@ -40,8 +43,10 @@ class RvizVisualizer(object):
         self.depth_marker.scale.z = 0.1
 
         # create marker for displaying current battery voltage
-        self.low_battery_threshold = rospy.get_param('/battery/kill_voltage', 44.0)
-        self.warn_battery_threshold = rospy.get_param('/battery/warn_voltage', 44.5)
+        self.low_battery_threshold = rospy.get_param(
+            '/battery/kill_voltage', 44.0)
+        self.warn_battery_threshold = rospy.get_param(
+            '/battery/warn_voltage', 44.5)
         self.voltage_marker = visualization_msgs.Marker()
         self.voltage_marker.header.frame_id = "base_link"
         self.voltage_marker.lifetime = rospy.Duration(5)
@@ -78,11 +83,14 @@ class RvizVisualizer(object):
         self.kill_alarm = AlarmBroadcaster("kill")
 
         # distance to bottom
-        self.range_sub = rospy.Subscriber("dvl/range", RangeStamped, self.range_callback)
+        self.range_sub = rospy.Subscriber(
+            "dvl/range", RangeStamped, self.range_callback)
         # distance to surface
-        self.depth_sub = rospy.Subscriber("depth", DepthStamped, self.depth_callback)
+        self.depth_sub = rospy.Subscriber(
+            "depth", DepthStamped, self.depth_callback)
         # battery voltage
-        self.voltage_sub = rospy.Subscriber("/bus_voltage", Float64, self.voltage_callback)
+        self.voltage_sub = rospy.Subscriber(
+            "/bus_voltage", Float64, self.voltage_callback)
 
     def update_kill_button(self):
         if self.killed:

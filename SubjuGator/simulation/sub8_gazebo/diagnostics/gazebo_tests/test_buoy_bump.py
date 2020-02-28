@@ -16,7 +16,8 @@ class Job(common.Job):
         buoy_loc = np.array([20.0, 20.0, -1.0])
         start_seed = np.array([15.0, 20.0, -2.0])
 
-        pe = pose_editor.PoseEditor('/map', start_seed, np.array([0.0, 0.0, 0.0, 1.0]))
+        pe = pose_editor.PoseEditor(
+            '/map', start_seed, np.array([0.0, 0.0, 0.0, 1.0]))
         pe = pe.look_at_without_pitching(buoy_loc)
         pe = pe.backward(2.0)
         pe = pe.relative(

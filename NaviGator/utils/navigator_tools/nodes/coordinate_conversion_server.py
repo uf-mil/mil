@@ -29,7 +29,8 @@ class EarthCoordinateConverter(object):
         self.stamp = None
         self.enu_pos = None
         self.ecef_pos = None
-        self.ts = message_filters.TimeSynchronizer([odom_sub, abs_odom_sub], 10)
+        self.ts = message_filters.TimeSynchronizer(
+            [odom_sub, abs_odom_sub], 10)
         self.ts.registerCallback(self.odom_sync_cb)
 
     def odom_sync_cb(self, odom, absodom):
@@ -38,7 +39,8 @@ class EarthCoordinateConverter(object):
         values for later conversions and publishes current LLA.
         '''
         if self.first:  # Advertise convert service on first odom/absodom pair
-            self.convert_service = rospy.Service('convert', CoordinateConversion, self.convert_cb)
+            self.convert_service = rospy.Service(
+                'convert', CoordinateConversion, self.convert_cb)
             self.first = False
         self.stamp = odom.header.stamp
         self.enu_pos = odometry_to_numpy(odom)[0][0]

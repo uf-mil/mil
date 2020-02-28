@@ -39,6 +39,7 @@ class FireTorpedos(SubjuGator):
     Z_OFFSET = .2
     BACKUP_METERS = 3.0
     BLIND = True
+
     def __init__(self):
         self.print_info = FprintFactory(title=MISSION).fprint
         self.print_bad = FprintFactory(title=MISSION, msg_color="red").fprint
@@ -111,25 +112,25 @@ class FireTorpedos(SubjuGator):
     @util.cancellableInlineCallbacks
     def pattern(self):
         self.print_info('Descending to Depth...')
-        #yield self.move.depth(1.5).go(blind=self.BLIND, speed=0.1)
+        # yield self.move.depth(1.5).go(blind=self.BLIND, speed=0.1)
         yield self.move.left(1).go(blind=self.BLIND, speed=0.5)
         yield self.nh.sleep(2)
         yield self.move.right(2).go(blind=self.BLIND, speed=0.5)
         yield self.nh.sleep(2)
         yield self.move.left(1).go(blind=self.BLIND, speed=0.5)
         yield self.nh.sleep(2)
-        yield self.move.down(0.5).go(blind=self.BLIND,speed=0.5)
+        yield self.move.down(0.5).go(blind=self.BLIND, speed=0.5)
         yield self.nh.sleep(2)
-        #def err():
-            #self.print_info('Search pattern canceled')
+        # def err():
+        #self.print_info('Search pattern canceled')
 
         #self.pattern_done = False
-        #for i, move in enumerate(self.moves[self.move_index:]):
-            #move = self.move.relative(np.array(move)).go(blind=self.BLIND, speed=0.1)
-            #yield self.nh.sleep(2)
-            #move.addErrback(err)
-            #yield move
-            #self.move_index = i + 1
+        # for i, move in enumerate(self.moves[self.move_index:]):
+        #move = self.move.relative(np.array(move)).go(blind=self.BLIND, speed=0.1)
+        # yield self.nh.sleep(2)
+        # move.addErrback(err)
+        # yield move
+        #self.move_index = i + 1
         #self.print_bad('Pattern finished. Firing at any locked targets.')
         #self.pattern_done = True
 
@@ -145,7 +146,7 @@ class FireTorpedos(SubjuGator):
         sub_pos = yield self.tx_pose()
         print('Current Sub Position: ', sub_pos)
 
-        #sub_pos = transform._q_mat.dot(
+        # sub_pos = transform._q_mat.dot(
         #        (sub_pos[0]) - transform._p)
         #target_position = sub_pos[0] - target_pose
         print('Moving to Target Position: ', target_pose)
@@ -213,4 +214,3 @@ class FireTorpedos(SubjuGator):
         pattern.cancel()
         self.vision_proxies.xyz_points.stop()
         self.print_good('Done!')
-

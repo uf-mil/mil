@@ -40,6 +40,7 @@ class VRCSRException(SubjuGatorException):
     ''' Identifies exceptional states that are related to VideoRay CSR comms
     Takes an arbitrary number of ordered and keyword params
     '''
+
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
@@ -49,6 +50,7 @@ class Sub8SerialException(SubjuGatorException):
     ''' Identifies an exceptional state of the comms port
     Takes an arbitrary number of ordered and keyword params
     '''
+
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
@@ -76,8 +78,10 @@ class ThrusterModel(object):
         assert len(position) == 3, len(direction) == 3
         assert len(thrust_bounds) == 2, 'Need positive and backwards bounds'
         assert len(calib) == 2, 'Calib should have 2 fields: (forward, backward)'
-        assert len(calib['forward']) == 4, 'Expected coefficients of 4th order model'
-        assert len(calib['backward']) == 4, 'Expected coefficients of 4th order model'
+        assert len(calib['forward']
+                   ) == 4, 'Expected coefficients of 4th order model'
+        assert len(calib['backward']
+                   ) == 4, 'Expected coefficients of 4th order model'
 
         # Everything's good, assign to object
         self.node_id = node_id
@@ -134,10 +138,12 @@ class ThrusterPort(object):
         '''
         self.port_name = port_info['port']
         self.port = self.connect_port(self.port_name)
-        self.CONFIDENT_MODE = port_info['CONFIDENT_MODE']  # Dangerous mode that will not detect thruster losses
+        # Dangerous mode that will not detect thruster losses
+        self.CONFIDENT_MODE = port_info['CONFIDENT_MODE']
 
         self.thruster_info = {}  # Information about all thrusters declared in the layout
-        self.online_thruster_names = set()  # Keeps track of all thrusters that can be allocated thrust
+        # Keeps track of all thrusters that can be allocated thrust
+        self.online_thruster_names = set()
 
         # Flag to avoid simultaneous sharing of the serial line b/w thrusters
         self.serial_busy = False
@@ -148,19 +154,25 @@ class ThrusterPort(object):
 
         # Setup infrastructure to monitor comms quality
         names = self.get_declared_thruster_names()
-        self.command_tx_count = dict.fromkeys(names, 0)  # Commands sent per thruster
-        self.status_rx_count = dict.fromkeys(names, 0)  # Statuses received per thruster
-        self.command_latency_avg = dict.fromkeys(names, rospy.Duration(0))  # Average latency tx rx per thruster
+        self.command_tx_count = dict.fromkeys(
+            names, 0)  # Commands sent per thruster
+        self.status_rx_count = dict.fromkeys(
+            names, 0)  # Statuses received per thruster
+        self.command_latency_avg = dict.fromkeys(
+            names, rospy.Duration(0))  # Average latency tx rx per thruster
 
     def connect_port(self, port_name):
         '''Connect to and return a serial port'''
         try:
-            serial_port = serial.Serial(port_name, baudrate=self._baud_rate, timeout=self._read_timeout)
+            serial_port = serial.Serial(
+                port_name, baudrate=self._baud_rate, timeout=self._read_timeout)
             serial_port.flushInput()
             return serial_port
         except serial.serialutil.SerialException:
-            rospy.logwarn("Could not connect to thruster port {}".format(port_name))
-            raise Sub8SerialException('Unable to connect to serial port', port_name=port_name)
+            rospy.logwarn(
+                "Could not connect to thruster port {}".format(port_name))
+            raise Sub8SerialException(
+                'Unable to connect to serial port', port_name=port_name)
 
     def load_thruster(self, thruster_name, thruster_definitions):
         '''
@@ -172,9 +184,11 @@ class ThrusterPort(object):
             thruster_definitions[thruster_name]['node_id'], thruster_name, self.port_name)
 
         # Load thruster info regardless of wether thruster is responsive
-        self.thruster_info[thruster_name] = ThrusterModel(thruster_definitions[thruster_name])
+        self.thruster_info[thruster_name] = ThrusterModel(
+            thruster_definitions[thruster_name])
         if self.CONFIDENT_MODE:
-            self.online_thruster_names.add(thruster_name)  # Online to begin with, no response needed
+            # Online to begin with, no response needed
+            self.online_thruster_names.add(thruster_name)
 
         # See if thruster is responsive on this port
         if self.port and not self.check_for_thruster(self.thruster_info[thruster_name].node_id):
@@ -246,7 +260,8 @@ class ThrusterPort(object):
         @param _struct: Input struct for which  to calculate and append the crc32 checksum
         '''
         struct_bytearray = bytearray(_struct)
-        struct_checksum = bytearray(struct.pack('<I', binascii.crc32(struct_bytearray) & 0xffffffff))
+        struct_checksum = bytearray(struct.pack(
+            '<I', binascii.crc32(struct_bytearray) & 0xffffffff))
         return struct_bytearray + struct_checksum
 
     def validate_packet_integrity(self, response_bytearray):
@@ -282,7 +297,8 @@ class ThrusterPort(object):
         @type node_id: int
         @param node_id: Node_id of the thruster whose settings will be saved
         '''
-        self.set_register(node_id, 'save_settings', 0x1234)  # 0x1234 is the save settings password
+        self.set_register(node_id, 'save_settings',
+                          0x1234)  # 0x1234 is the save settings password
 
     def reboot_thruster(self, node_id):
         ''' Reboots a thruster
@@ -295,7 +311,8 @@ class ThrusterPort(object):
             flags=0x80 | register_size,
             address=address,
             length=register_size,
-            payload_bytes=self.checksum_struct(struct.pack('<' + format_char, 0xDEAD))
+            payload_bytes=self.checksum_struct(
+                struct.pack('<' + format_char, 0xDEAD))
         )
 
     def enter_config_mode(self, node_id, close_port=True):
@@ -309,12 +326,14 @@ class ThrusterPort(object):
         '''
         self.reboot_thruster(node_id)
         rospy.sleep(3)   # Time waiting for thruster reboot to take effect
-        [self.port.write('+') for i in range(5)]  # 5 plusses are used to trigger entry into config mode
+        # 5 plusses are used to trigger entry into config mode
+        [self.port.write('+') for i in range(5)]
 
         if close_port:
             self.port.close()
             msg = 'Run the following command to open a serial terminal in configuration mode:\n\'screen {} {}\''
-            rospy.loginfo(msg.format(self.port_name, self._baud_rate) + '\nThen press \'?\' to see the menu')
+            rospy.loginfo(msg.format(self.port_name, self._baud_rate) +
+                          '\nThen press \'?\' to see the menu')
             rospy.loginfo(
                 'To continue using this ThrusterPort, call \'{this}.port.open()\' after closing screen.')
 
@@ -352,11 +371,13 @@ class ThrusterPort(object):
         payload_start_idx = Const.header_size + Const.xsum_size + 1
         header_bytes = packet[:payload_start_idx]
         payload_bytes = packet[payload_start_idx:]
-        header_names = ['sync', 'node_id', 'flag', 'address', 'length', 'header_xsum', 'device_type']
+        header_names = ['sync', 'node_id', 'flag', 'address',
+                        'length', 'header_xsum', 'device_type']
         header_fields = struct.unpack('<HBBBB I B', header_bytes)
         response_dict = dict(zip(header_names, header_fields))
         response_dict.pop('header_xsum')
-        response_dict['payload_bytes'] = payload_bytes[:-Const.xsum_size]  # Exclude payload xsum
+        response_dict['payload_bytes'] = payload_bytes[:-
+                                                       Const.xsum_size]  # Exclude payload xsum
         return response_dict
 
     def read_register(self, node_id, register):
@@ -372,10 +393,12 @@ class ThrusterPort(object):
         '''
         # Validate input
         if register not in Const.csr_address.keys():
-            raise VRCSRException('Unknown register', node_id=node_id, register=register)
+            raise VRCSRException('Unknown register',
+                                 node_id=node_id, register=register)
         address, register_size, format_char, permission = Const.csr_address[register]
         if 'R' not in permission:
-            raise VRCSRException('Register doesn\'t have read permission', node_id=node_id, register=register)
+            raise VRCSRException(
+                'Register doesn\'t have read permission', node_id=node_id, register=register)
 
         # Do serial comms
         self.send_VRCSR_request_packet(
@@ -385,11 +408,14 @@ class ThrusterPort(object):
             length=0,
             payload_bytes=''  # It is important that the null payload xsum is ommitted!
         )
-        response_bytearray = self.port.read(Const.header_size + 2 * Const.xsum_size + 1 + register_size)
-        rospy.logdebug('Received packet: "' + self.make_hex(response_bytearray), '" on port ' + self.port_name)
+        response_bytearray = self.port.read(
+            Const.header_size + 2 * Const.xsum_size + 1 + register_size)
+        rospy.logdebug('Received packet: "' +
+                       self.make_hex(response_bytearray), '" on port ' + self.port_name)
         valid, reason = self.validate_packet_integrity(response_bytearray)
         if not valid:
-            raise VRCSRException('Response packet invalid', node_id=node_id, register=register, reason=reason)
+            raise VRCSRException(
+                'Response packet invalid', node_id=node_id, register=register, reason=reason)
 
         # Unpack response packet
         response_dict = self.parse_VRCSR_response_packet(response_bytearray)
@@ -420,11 +446,14 @@ class ThrusterPort(object):
         '''
         # Validate input
         if register not in Const.csr_address.keys():
-            raise VRCSRException('Unknown register', node_id=node_id, register=register)
+            raise VRCSRException('Unknown register',
+                                 node_id=node_id, register=register)
         address, register_size, format_char, permission = Const.csr_address[register]
-        expected_response_length = Const.header_size + Const.xsum_size + 1 + register_size + Const.xsum_size
+        expected_response_length = Const.header_size + \
+            Const.xsum_size + 1 + register_size + Const.xsum_size
         if 'W' not in permission:
-            raise VRCSRException('Register doesn\'t have write permission', node_id=node_id, register=register)
+            raise VRCSRException(
+                'Register doesn\'t have write permission', node_id=node_id, register=register)
 
         # Do serial comms
         self.send_VRCSR_request_packet(
@@ -432,13 +461,16 @@ class ThrusterPort(object):
             flags=0x80 | register_size,
             address=address,
             length=register_size,
-            payload_bytes=self.checksum_struct(struct.pack('<' + format_char, value))
+            payload_bytes=self.checksum_struct(
+                struct.pack('<' + format_char, value))
         )
         response_bytearray = self.port.read(expected_response_length)
-        rospy.logdebug('Received packet: "' + self.make_hex(response_bytearray), '" on port ' + self.port_name)
+        rospy.logdebug('Received packet: "' +
+                       self.make_hex(response_bytearray), '" on port ' + self.port_name)
         valid, reason = self.validate_packet_integrity(response_bytearray)
         if not valid:
-            raise VRCSRException('Response packet invalid', node_id=node_id, register=register, reason=reason)
+            raise VRCSRException(
+                'Response packet invalid', node_id=node_id, register=register, reason=reason)
 
         # Unpack response packet
         response_dict = self.parse_VRCSR_response_packet(response_bytearray)
@@ -470,7 +502,8 @@ class ThrusterPort(object):
                 value_after = self.read_register(node_id, register)[0]
                 if not np.isclose(value, value_after):
                     msg = 'Tried to set register "{}" on thruster {} to {}. It remained at value {}.'
-                    rospy.logwarn(msg.format(register, node_id, value, value_after))
+                    rospy.logwarn(msg.format(
+                        register, node_id, value, value_after))
             except VRCSRException as e:
                 msg = 'VRCSRException raised while attempting to set register {} on thruster {}. {}'
                 rospy.logwarn(msg.format(register, node_id, e))
@@ -506,7 +539,8 @@ class ThrusterPort(object):
             node_id=int(node_id),
             flags=Const.response_thruster_standard,
             address=Const.addr_custom_command,
-            length=6,  # 2 bytes and a float: (propulsion_command, node_id, effort)
+            # 2 bytes and a float: (propulsion_command, node_id, effort)
+            length=6,
             payload_bytes=self._make_thrust_payload(int(node_id), effort)
         )
 
@@ -551,18 +585,20 @@ class ThrusterPort(object):
 
         # Parse thrust response
         response_bytearray = self.port.read(Const.thrust_response_length)
-        rospy.logdebug('Received packet: "' + self.make_hex(response_bytearray), '" on port ' + self.port_name)
+        rospy.logdebug('Received packet: "' +
+                       self.make_hex(response_bytearray), '" on port ' + self.port_name)
         t1 = rospy.Time.now()
         self.serial_busy = False  # Release line
         valid, reason = self.validate_packet_integrity(response_bytearray)
-        response_dict = self.parse_VRCSR_response_packet(response_bytearray) if valid else None
+        response_dict = self.parse_VRCSR_response_packet(
+            response_bytearray) if valid else None
 
         # Keep track of thrusters going offline or coming back online
         if not valid:
             if name in self.online_thruster_names:
                 if self.CONFIDENT_MODE:
                     rospy.logdebug_throttle(1, 'Got invalid response from thruster {} (packet: {})'.format(node_id,
-                                            self.make_hex(response_bytearray)))
+                                                                                                           self.make_hex(response_bytearray)))
                 else:
                     self.online_thruster_names.remove(name)
         else:
@@ -570,11 +606,14 @@ class ThrusterPort(object):
                 self.online_thruster_names.add(name)
 
             # Keep track of latency
-            total_latency = (t1 - t0) + self.command_latency_avg[name] * self.status_rx_count[name]
+            total_latency = (
+                t1 - t0) + self.command_latency_avg[name] * self.status_rx_count[name]
             self.status_rx_count[name] = self.status_rx_count[name] + 1
-            self.command_latency_avg[name] = total_latency / self.status_rx_count[name]
+            self.command_latency_avg[name] = total_latency / \
+                self.status_rx_count[name]
 
-        ret = self.parse_thrust_response(response_dict['payload_bytes']) if valid else None
+        ret = self.parse_thrust_response(
+            response_dict['payload_bytes']) if valid else None
         if ret is not None:
             ret['command_tx_count'] = self.command_tx_count[name]
             ret['status_rx_count'] = self.status_rx_count[name]
@@ -590,7 +629,8 @@ if __name__ == '__main__':
     import rosparam
     import numpy.random as npr  # haha
     sub8_thruster_mapper = rospkg.RosPack().get_path('sub8_thruster_mapper')
-    thruster_layout = rosparam.load_file(sub8_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
+    thruster_layout = rosparam.load_file(
+        sub8_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
     print thruster_layout
 
     port_info = npr.choice(thruster_layout['thruster_ports'])

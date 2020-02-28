@@ -22,10 +22,12 @@ def main():
                 if do_cam_fix:
                     rot = tf.transformations.quaternion_multiply(
                         rot, cam_fix_quat)
-                print "(qx={}, qy={} , qz={}, qw={})".format(rot[0], rot[1], rot[2], rot[3])
+                print "(qx={}, qy={} , qz={}, qw={})".format(
+                    rot[0], rot[1], rot[2], rot[3])
                 print "(x={}, y={}, z={})".format(trans[0], trans[1], trans[2])
                 euler = tf.transformations.euler_from_quaternion(rot)
-                print "(Roll={}, Pitch={}, Yaw={})".format(euler[0], euler[1], euler[2])
+                print "(Roll={}, Pitch={}, Yaw={})".format(
+                    euler[0], euler[1], euler[2])
                 print "<pose> {} {} {} {} {} {} </pose>".format(trans[0], trans[1], trans[2],
                                                                 euler[0], euler[1], euler[2])
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):

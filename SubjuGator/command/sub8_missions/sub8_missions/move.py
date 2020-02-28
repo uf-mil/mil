@@ -13,7 +13,7 @@ UNITS = {'m': 1, 'ft': 0.3048, 'yard': 0.9144, 'rad': 1, 'deg': 0.0174533}
 SHORTHAND = {
     "f": "strafe_forward", "b": "strafe_backward", "l": "strafe_left", "r": "strafe_right", "rf":
     "forward", "rb": "backward", "rl": "left", "rr": "right", "yl": "yaw_left", "yr": "yaw_right", "pu": "pitch_up", "pd": "pitch_down",
-             "d": "down", "u": "up"}
+    "d": "down", "u": "up"}
 
 
 class Move(SubjuGator):
@@ -27,7 +27,7 @@ class Move(SubjuGator):
     def init(cls):
         parser = ThrowingArgumentParser(
             description='Command Line Mission Runner',
-                                        usage='Pass any pose editor commands with an arguments. \n\t\
+            usage='Pass any pose editor commands with an arguments. \n\t\
                                                forward 1 (moves forward 1 meter) \n\t\
                                                backward 2ft (moves backward 2 feet)\
                                                \n\t forward 1 backward 2ft\
@@ -136,7 +136,7 @@ class Move(SubjuGator):
                             node_name='kill')
                         yield ab.raise_alarm(
                             problem_description='TELEPORTING: KILLING SUB',
-                                             severity=5)
+                            severity=5)
                         yield self.nh.sleep(1)
                         yield state_set_pub.publish(modelstate)
                         yield self.nh.sleep(1)

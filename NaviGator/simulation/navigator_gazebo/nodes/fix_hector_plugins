@@ -29,10 +29,10 @@ def fix_imu(root):
 def fix_file(filename):
     tree = ET.parse(filename)
     root = tree.getroot()
-    fix_gps(root) 
+    fix_gps(root)
     fix_imu(root)
     print(ET.tostring(root))
-    
-    
+
+
 if __name__ == '__main__':
     fix_file(sys.argv[1])

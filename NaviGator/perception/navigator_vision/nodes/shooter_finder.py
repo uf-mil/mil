@@ -26,7 +26,8 @@ def rect_lines(rect):
     for i in xrange(4):
         angle = rect[4] + i / 4 * 2 * math.pi
         normal = numpy.array([math.cos(angle), math.sin(angle)])
-        d_normal_over_d_angle = numpy.array([-math.sin(angle), math.cos(angle)])
+        d_normal_over_d_angle = numpy.array(
+            [-math.sin(angle), math.cos(angle)])
         p = rect[:2] + (rect[2] if i % 2 == 0 else rect[3]) / 2 * normal
         yield (p, normal), numpy.array([
             [1, 0, normal[0] / 2 if i % 2 == 0 else 0, normal[0] / 2 if i %
@@ -139,10 +140,12 @@ def main():
             except tf.TooPastError:
                 print 'TooPastError!'
                 continue
-            gen = numpy.array(list(pc2.read_points(cloud, skip_nans=True, field_names=("x", "y", "z")))).T
+            gen = numpy.array(list(pc2.read_points(
+                cloud, skip_nans=True, field_names=("x", "y", "z")))).T
             print gen.shape
             print transform._p
-            gen = (transform._q_mat.dot(gen) + numpy.vstack([transform._p] * gen.shape[1]).T).T
+            gen = (transform._q_mat.dot(gen) +
+                   numpy.vstack([transform._p] * gen.shape[1]).T).T
             good_points = numpy.array([(x[0], x[1]) for x in gen if x[2] >
                                        Z_MIN and math.hypot(x[0] - center[0], x[1] - center[1]) < RADIUS])
             print 'end'
@@ -185,7 +188,8 @@ def main():
                     action=Marker.ADD,
                     pose=Pose(
                         position=Point(rect[0][0], rect[0][1], .5),
-                        orientation=Quaternion(*transformations.quaternion_about_axis(rect[2], [0, 0, 1])),
+                        orientation=Quaternion(
+                            *transformations.quaternion_about_axis(rect[2], [0, 0, 1])),
                     ),
                     scale=Vector3(rect[1][0], rect[1][1], 2),
                     color=ColorRGBA(1, 1, 1, .5),
@@ -196,7 +200,8 @@ def main():
             for i in xrange(4):
                 angle = rect[2] + i / 4 * 2 * math.pi
                 normal = numpy.array([math.cos(angle), math.sin(angle)])
-                p = numpy.array(rect[0]) + (rect[1][0] if i % 2 == 0 else rect[1][1]) / 2 * normal
+                p = numpy.array(rect[0]) + (rect[1][0] if i %
+                                            2 == 0 else rect[1][1]) / 2 * normal
                 possibilities.append((normal, p, transformations.quaternion_about_axis(
                     angle, [0, 0, 1]), rect[1][0] if i % 2 == 1 else rect[1][1]))
             best = max(possibilities, key=lambda normal_p_q_size: (
@@ -207,7 +212,8 @@ def main():
                 print 'filtered out based on side length'
                 continue
 
-            front_points = [pnt for pnt in good_points if abs((pnt - best[1]).dot(best[0])) < .2]
+            front_points = [pnt for pnt in good_points if abs(
+                (pnt - best[1]).dot(best[0])) < .2]
             print 'len(front_points)', len(front_points)
             a, b = numpy.linalg.lstsq(
                 numpy.vstack([
@@ -225,7 +231,8 @@ def main():
             )[0]
             print 'a, b', a, b, m, b_
 
-            print 'RES', numpy.std([numpy.array([a, b]).dot(pnt) for pnt in good_points])
+            print 'RES', numpy.std([numpy.array([a, b]).dot(pnt)
+                                    for pnt in good_points])
 
             # x = a, b
             # x . p = 1
@@ -244,7 +251,8 @@ def main():
             p = p + x * perp
             if normal.dot(best[0]) < 0:
                 normal = -normal
-            q = transformations.quaternion_about_axis(math.atan2(normal[1], normal[0]), [0, 0, 1])
+            q = transformations.quaternion_about_axis(
+                math.atan2(normal[1], normal[0]), [0, 0, 1])
 
             print 'XXX', p, best[1]
 

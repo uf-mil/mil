@@ -97,6 +97,7 @@ def create_tf_example(group, path):
     }))
     return tf_example
 
+
 '''
 Utility Functions for processing datasets into tf_records.
 These were copied from utils/dataset_util.py provided in

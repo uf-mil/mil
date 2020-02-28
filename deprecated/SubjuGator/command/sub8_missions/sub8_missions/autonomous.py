@@ -85,7 +85,8 @@ def _auto_param_watchdog(nh):
 
         if (yield nh.get_param("autonomous")) and not ready:
             ready = True
-            fprint("Autonomous mission armed. Disconnect now to run.", msg_color="yellow")
+            fprint("Autonomous mission armed. Disconnect now to run.",
+                   msg_color="yellow")
 
         elif not (yield nh.get_param("autonomous")) and ready:
             ready = False

@@ -40,7 +40,8 @@ class ScanTheCode(Navigator):
         # circle.cancel()
 
         mission.correct_pose(pose)
-        circle = self.move.d_circle_point(look_at, radius=8, granularity=30, direction='cw')
+        circle = self.move.d_circle_point(
+            look_at, radius=8, granularity=30, direction='cw')
         # print list(circle)
         for p in list(circle)[::-1]:
             if mission.stc_correct:

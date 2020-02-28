@@ -18,5 +18,6 @@ class ThrowingArgumentParser(ArgumentParser):
     https://stackoverflow.com/questions/14728376/i-want-python-argparse-to-throw-an-exception-rather-than-usage
 
     '''
+
     def error(self, message):
         raise ArgumentParserException(message)

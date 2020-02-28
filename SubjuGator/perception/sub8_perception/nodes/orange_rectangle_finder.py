@@ -60,7 +60,8 @@ class OrangeRectangleFinder():
         self.canny_low = rospy.get_param("~canny_low", 100)
         self.canny_ratio = rospy.get_param("~canny_ratio", 3.0)
         self.thresh_hue_high = rospy.get_param("~thresh_hue_high", 60)
-        self.thresh_saturation_low = rospy.get_param("~thresh_satuation_low", 100)
+        self.thresh_saturation_low = rospy.get_param(
+            "~thresh_satuation_low", 100)
         self.min_contour_area = rospy.get_param("~min_contour_area", 100)
         self.epsilon_range = rospy.get_param("~epsilon_range", (0.01, 0.1))
         self.epsilon_step = rospy.get_param("~epsilon_step", 0.01)
@@ -73,27 +74,36 @@ class OrangeRectangleFinder():
         width = rospy.get_param("~width", 0.1524)
         self.rect_model = RectFinder(length, width)
         self.do_3D = rospy.get_param("~do_3D", True)
-        camera = rospy.get_param("~image_topic", "/camera/down/left/image_rect_color")
+        camera = rospy.get_param(
+            "~image_topic", "/camera/down/left/image_rect_color")
 
         self.tf_listener = tf.TransformListener()
 
         # Create kalman filter to track 3d position and direction vector for marker in /map frame
         self.state_size = 5  # X, Y, Z, DY, DX
         self.filter = cv2.KalmanFilter(self.state_size, self.state_size)
-        self.filter.transitionMatrix = 1. * np.eye(self.state_size, dtype=np.float32)
-        self.filter.measurementMatrix = 1. * np.eye(self.state_size, dtype=np.float32)
-        self.filter.processNoiseCov = 1e-5 * np.eye(self.state_size, dtype=np.float32)
-        self.filter.measurementNoiseCov = 1e-4 * np.eye(self.state_size, dtype=np.float32)
-        self.filter.errorCovPost = 1. * np.eye(self.state_size, dtype=np.float32)
+        self.filter.transitionMatrix = 1. * \
+            np.eye(self.state_size, dtype=np.float32)
+        self.filter.measurementMatrix = 1. * \
+            np.eye(self.state_size, dtype=np.float32)
+        self.filter.processNoiseCov = 1e-5 * \
+            np.eye(self.state_size, dtype=np.float32)
+        self.filter.measurementNoiseCov = 1e-4 * \
+            np.eye(self.state_size, dtype=np.float32)
+        self.filter.errorCovPost = 1. * \
+            np.eye(self.state_size, dtype=np.float32)
 
         self.reset()
-        self.service_set_geometry = rospy.Service('~set_geometry', SetGeometry, self._set_geometry_cb)
+        self.service_set_geometry = rospy.Service(
+            '~set_geometry', SetGeometry, self._set_geometry_cb)
         if self.debug_ros:
             self.debug_pub = Image_Publisher("~debug_image")
             self.markerPub = rospy.Publisher('~marker', Marker, queue_size=10)
-        self.service2D = rospy.Service('~2D', VisionRequest2D, self._vision_cb_2D)
+        self.service2D = rospy.Service(
+            '~2D', VisionRequest2D, self._vision_cb_2D)
         if self.do_3D:
-            self.service3D = rospy.Service('~pose', VisionRequest, self._vision_cb_3D)
+            self.service3D = rospy.Service(
+                '~pose', VisionRequest, self._vision_cb_3D)
         self.toggle = rospy.Service('~enable', SetBool, self._enable_cb)
 
         self.image_sub = Image_Subscriber(camera, self._img_cb)
@@ -105,7 +115,8 @@ class OrangeRectangleFinder():
     def _set_geometry_cb(self, req):
         self.rect_model = RectFinder.from_polygon(req.model)
         self.reset()
-        rospy.loginfo("Resetting rectangle model to LENGTH=%f, WIDTH=%f", self.rect_model.length, self.rect_model.width)
+        rospy.loginfo("Resetting rectangle model to LENGTH=%f, WIDTH=%f",
+                      self.rect_model.length, self.rect_model.width)
         return {'success': True}
 
     def _send_debug_marker(self):
@@ -149,7 +160,8 @@ class OrangeRectangleFinder():
         if self.last_found_time_3D is None or self.image_sub.last_image_time is None:
             res.found = False
             return res
-        dt = (self.image_sub.last_image_time - self.last_found_time_3D).to_sec()
+        dt = (self.image_sub.last_image_time -
+              self.last_found_time_3D).to_sec()
         if dt < 0 or dt > self.timeout_seconds:
             res.found = False
         elif (self.last3d is None or not self.enabled):
@@ -198,7 +210,8 @@ class OrangeRectangleFinder():
         self.found_count = 0
         self.found = False
         self.last3d = None
-        self.filter.errorCovPre = 1. * np.eye(self.state_size, dtype=np.float32)
+        self.filter.errorCovPre = 1. * \
+            np.eye(self.state_size, dtype=np.float32)
         if state is not None:
             self.found_count = 1
             state = np.array(state, dtype=np.float32)
@@ -214,10 +227,12 @@ class OrangeRectangleFinder():
             self._clear_filter((x, y, z, dy, dx))
             self.last_found_time_3D = self.image_sub.last_image_time
             return
-        dt = (self.image_sub.last_image_time - self.last_found_time_3D).to_sec()
+        dt = (self.image_sub.last_image_time -
+              self.last_found_time_3D).to_sec()
         self.last_found_time_3D = self.image_sub.last_image_time
         if dt < 0 or dt > self.timeout_seconds:
-            rospy.logwarn("Timed out since last saw marker, resetting. DT={}".format(dt))
+            rospy.logwarn(
+                "Timed out since last saw marker, resetting. DT={}".format(dt))
             self._clear_filter((x, y, z, dy, dx))
             return
 
@@ -234,7 +249,8 @@ class OrangeRectangleFinder():
             self.found = True
 
     def _get_pose_3D(self, corners):
-        tvec, rvec = self.rect_model.get_pose_3D(corners, cam=self.cam, rectified=True)
+        tvec, rvec = self.rect_model.get_pose_3D(
+            corners, cam=self.cam, rectified=True)
         if tvec[2][0] < 0.3:  # Sanity check on position estimate
             rospy.logwarn("Marker too close, must be wrong...")
             return False
@@ -256,24 +272,28 @@ class OrangeRectangleFinder():
 
         # Transform pose estimate to map frame
         try:
-            self.tf_listener.waitForTransform('/map', ps.header.frame_id, ps.header.stamp, rospy.Duration(0.1))
+            self.tf_listener.waitForTransform(
+                '/map', ps.header.frame_id, ps.header.stamp, rospy.Duration(0.1))
             map_ps = self.tf_listener.transformPoint('/map', ps)
             map_vec3 = self.tf_listener.transformVector3('/map', vec3)
         except tf.Exception as err:
-            rospy.logwarn("Could not transform {} to /map error={}".format(self.cam.tfFrame(), err))
+            rospy.logwarn(
+                "Could not transform {} to /map error={}".format(self.cam.tfFrame(), err))
             return False
         # Try to ensure vector always points the same way, so kf is not thrown off at some angles
         if map_vec3.vector.y < 0.0:
             map_vec3.vector.y = -map_vec3.vector.y
             map_vec3.vector.x = -map_vec3.vector.x
-        measurement = (map_ps.point.x, map_ps.point.y, map_ps.point.z, map_vec3.vector.y, map_vec3.vector.x)
+        measurement = (map_ps.point.x, map_ps.point.y,
+                       map_ps.point.z, map_vec3.vector.y, map_vec3.vector.x)
 
         # Update filter and found state with the pose estimate from this frame
         self._update_kf(measurement)
 
         if self.debug_ros:
             # Draw coordinate axis onto object using pose estimate to project
-            refs, _ = cv2.projectPoints(self.REFERENCE_POINTS, rvec, tvec, self.cam.intrinsicMatrix(), np.zeros((5, 1)))
+            refs, _ = cv2.projectPoints(
+                self.REFERENCE_POINTS, rvec, tvec, self.cam.intrinsicMatrix(), np.zeros((5, 1)))
             refs = np.array(refs, dtype=np.int)
             cv2.line(self.last_image, (refs[0][0][0], refs[0][0][1]),
                      (refs[1][0][0], refs[1][0][1]), (0, 0, 255))  # X axis refs
@@ -317,7 +337,8 @@ class OrangeRectangleFinder():
         '''
         blur = cv2.blur(self.last_image, (5, 5))
         hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
-        thresh = cv2.inRange(hsv, (0, self.thresh_saturation_low, 0), (self.thresh_hue_high, 255, 255))
+        thresh = cv2.inRange(
+            hsv, (0, self.thresh_saturation_low, 0), (self.thresh_hue_high, 255, 255))
         return cv2.Canny(thresh, self.canny_low, self.canny_low * self.canny_ratio)
 
     def _img_cb(self, img):
@@ -325,22 +346,26 @@ class OrangeRectangleFinder():
             return
         self.last_image = img
         edges = self._get_edges()
-        _, contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        _, contours, _ = cv2.findContours(
+            edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         # Check if each contour is valid
         for idx, c in enumerate(contours):
             if self._is_valid_contour(c):
                 if self.debug_ros:
-                    cv2.drawContours(self.last_image, contours, idx, (0, 255, 0), 3)
+                    cv2.drawContours(self.last_image, contours,
+                                     idx, (0, 255, 0), 3)
                 break
             else:
                 if self.debug_ros:
-                    cv2.drawContours(self.last_image, contours, idx, (255, 0, 0), 3)
+                    cv2.drawContours(self.last_image, contours,
+                                     idx, (255, 0, 0), 3)
         if self.debug_ros:
             self.debug_pub.publish(self.last_image)
         if self.debug_gui:
             cv2.imshow("debug", self.last_image)
             cv2.waitKey(5)
+
 
 if __name__ == '__main__':
     rospy.init_node('orange_rectangle_finder')

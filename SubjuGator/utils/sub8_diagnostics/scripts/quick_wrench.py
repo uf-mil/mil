@@ -10,6 +10,7 @@ from std_msgs.msg import Header
 def zero():
     return Vector3(0, 0, 0)
 
+
 if __name__ == '__main__':
     desc_msg = "Tool to quickly format and publish a wrench"
     parser = argparse.ArgumentParser(description=desc_msg)

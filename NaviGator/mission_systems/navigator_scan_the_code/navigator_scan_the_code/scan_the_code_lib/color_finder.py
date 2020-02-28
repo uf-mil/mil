@@ -57,7 +57,8 @@ class ColorFinder:
         if val < 10:
             color = 'k'
 
-        cv2.putText(draw, "{} | {}".format(color, error), (20, 20), 1, 2, (255, 0, 0))
+        cv2.putText(draw, "{} | {}".format(color, error),
+                    (20, 20), 1, 2, (255, 0, 0))
         debug.add_image(draw, "colors", topic="colors")
         return color
 
@@ -106,7 +107,8 @@ class ColorFinder:
 
     def check_for_colors(self, image, colors, debug):
         color = self.get_color(colors, image, debug)
-        fprint("COLOR: {}, PREV_COLOR: {}, COLORS {}".format(color, self.prev_color, self.colors), msg_color='green')
+        fprint("COLOR: {}, PREV_COLOR: {}, COLORS {}".format(
+            color, self.prev_color, self.colors), msg_color='green')
         # cv2.imshow("asfd", image)
         # cv2.waitKey(0)
         if self.prev_color is None:

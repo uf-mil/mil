@@ -18,10 +18,13 @@ The computer can also command a kill (for example, if ROS notices a criticaly lo
 by sending the COMPUTER.KILL.REQUEST and undone with COMPUTER.CLEAR.REQUEST
 '''
 constants = {
-    'TIMEOUT_SECONDS': 8.0,  # How often board must be pinged to not set HEARTBERAT_REMOTE True
-                             # Note: not official documented, this is just a guess
-    'RESPONSE_FALSE': '\x00',  # True status for synchronous requests of individual addresses
-    'RESPONSE_TRUE': '\x01',   # False status for synchronous requests of individual addresses
+    # How often board must be pinged to not set HEARTBERAT_REMOTE True
+    'TIMEOUT_SECONDS': 8.0,
+    # Note: not official documented, this is just a guess
+    # True status for synchronous requests of individual addresses
+    'RESPONSE_FALSE': '\x00',
+    # False status for synchronous requests of individual addresses
+    'RESPONSE_TRUE': '\x01',
 
     'PING': {
         'REQUEST': '\x20',
@@ -96,10 +99,11 @@ constants = {
         'GREEN_REQUEST': '\x42',
         'GREEN_RESPONSE': '\x52',
     },
-    'CONTROLLER': '\xA0',  # Signifies the start of a controller message (joysticks & buttons)
-                           # Immediately followed by 8 bytes: 6 joystick bytes, 2 button bytes
-                           # Joystick message is 3 signed ints from -2048 to 2047
-                           # Button message is 16 bits signifying up to 16 buttons on/off
+    # Signifies the start of a controller message (joysticks & buttons)
+    'CONTROLLER': '\xA0',
+    # Immediately followed by 8 bytes: 6 joystick bytes, 2 button bytes
+    # Joystick message is 3 signed ints from -2048 to 2047
+    # Button message is 16 bits signifying up to 16 buttons on/off
     'CTRL_STICKS': ['UD', 'LR', 'TQ'],  # Up/Down, Left/Right, Torque
     'CTRL_BUTTONS': ['STATION_HOLD', 'RAISE_KILL', 'CLEAR_KILL', 'THRUSTER_RETRACT',\
                      'THRUSTER_DEPLOY', 'GO_INACTIVE', 'START', 'EMERGENCY_CONTROL'],

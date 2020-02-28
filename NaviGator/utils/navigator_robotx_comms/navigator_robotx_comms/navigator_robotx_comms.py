@@ -86,7 +86,8 @@ class RobotXHeartbeatMessage:
                                                                 east_west,
                                                                 delim,
                                                                 team_id,
-                                                                delim, str(system_mode), delim,
+                                                                delim, str(
+                                                                    system_mode), delim,
                                                                 str(auv_status))
 
         full_data = first_half_data + delim + second_half_data
@@ -99,7 +100,8 @@ class RobotXHeartbeatMessage:
         checksum = checksum_calc.ret_checksum(full_data)
         hex_checksum = format(checksum, '02X')
 
-        msg_return = "${0}*{1}\r\n".format(full_data, str(hex_checksum).zfill(2))
+        msg_return = "${0}*{1}\r\n".format(full_data,
+                                           str(hex_checksum).zfill(2))
 
         return msg_return
 

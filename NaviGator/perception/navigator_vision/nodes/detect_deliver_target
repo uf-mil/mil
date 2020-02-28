@@ -15,14 +15,16 @@ class DetectDeliverTargetDetector(VisionNode):
 
     def __init__(self):
         self.min_area = rospy.get_param('~min_area', default=1000)
-        self.max_contour_score = rospy.get_param('~max_contour_score', default=0.03)
+        self.max_contour_score = rospy.get_param(
+            '~max_contour_score', default=0.03)
         self.pose_pub = rospy.Publisher("~pose", PoseStamped, queue_size=3)
         self.tracker = CentroidObjectsTracker(max_distance=20.0)
         self.large_target_model = RectFinder(length=0.500126 + self.BORDER_THICKNESS_METERS,
                                              width=0.500126 + self.BORDER_THICKNESS_METERS)
         self.small_target_model = RectFinder(length=0.249936 + self.BORDER_THICKNESS_METERS,
                                              width=0.249936 + self.BORDER_THICKNESS_METERS)
-        self.image_mux = ImageMux(shape=(2, 2), labels=['Blur', 'Threshold', 'Edges', 'Found'])
+        self.image_mux = ImageMux(shape=(2, 2), labels=[
+                                  'Blur', 'Threshold', 'Edges', 'Found'])
         self.debug_pub = Image_Publisher("~debug")
         self.first_object_id = -1
         super(DetectDeliverTargetDetector, self).__init__()
@@ -46,7 +48,8 @@ class DetectDeliverTargetDetector(VisionNode):
         edges = auto_canny(thresh, sigma=0.66)
 
         # Find contours in edge mask
-        _, cnts, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        _, cnts, _ = cv2.findContours(
+            edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         # Draw contours for debugging
         contours_img = np.zeros(edges.shape, dtype=edges.dtype)
@@ -69,22 +72,27 @@ class DetectDeliverTargetDetector(VisionNode):
                 continue
 
             # Attempt to reduce the contour to a 4 sided polygon representing the corners
-            corners = self.large_target_model.get_corners(c, epsilon_range=(0.01, 0.04))
+            corners = self.large_target_model.get_corners(
+                c, epsilon_range=(0.01, 0.04))
             if corners is None:
                 continue
 
             # Track this contour with the previous contours
             centroid = contour_centroid(c)
-            obj = self.tracker.add_observation(self._image_sub.last_image_time, np.array(centroid), data=corners)
+            obj = self.tracker.add_observation(
+                self._image_sub.last_image_time, np.array(centroid), data=corners)
 
             # Draw this contour for debugging
-            putText_ul(img, str(obj.id), centroid, color=(0, 0, 255), fontScale=2)
+            putText_ul(img, str(obj.id), centroid,
+                       color=(0, 0, 255), fontScale=2)
             cv2.drawContours(img, [corners], -1, (0, 255, 0), 3)
 
-            found.append(create_object_msg("target_large", contour=cnts[num - 1], confidence=1.0))
+            found.append(create_object_msg("target_large",
+                                           contour=cnts[num - 1], confidence=1.0))
 
         # Get objects which have persisted over many frames
-        persistent = self.tracker.get_persistent_objects(min_observations=8, min_age=rospy.Duration(1.5))
+        persistent = self.tracker.get_persistent_objects(
+            min_observations=8, min_age=rospy.Duration(1.5))
 
         if len(persistent) > 0:
             if self.first_object_id == -1:
@@ -97,12 +105,14 @@ class DetectDeliverTargetDetector(VisionNode):
                 ps = PoseStamped()
                 ps.header = self._image_sub.last_image_header
                 # Get 3D pose of target use PnP
-                tvec, rvec = self.small_target_model.get_pose_3D(obj.data, cam=self.camera_model, rectified=True)
+                tvec, rvec = self.small_target_model.get_pose_3D(
+                    obj.data, cam=self.camera_model, rectified=True)
                 # Throw out up/down and convert to quaternion
                 # rvec[1] = 0.
                 rvec[2] = 0.
                 rvec = rvec / np.linalg.norm(rvec)
-                ps.pose = numpy_quat_pair_to_pose(tvec, quaternion_from_rvec(rvec))
+                ps.pose = numpy_quat_pair_to_pose(
+                    tvec, quaternion_from_rvec(rvec))
                 self.pose_pub.publish(ps)
 
         self.image_mux[3] = img

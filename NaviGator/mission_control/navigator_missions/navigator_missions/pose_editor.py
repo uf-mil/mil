@@ -13,7 +13,8 @@ import mil_tools
 from mil_misc_tools.text_effects import fprint
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
-EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]
+EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(
+    np.pi / 2 * i, UP) for i in xrange(4)]
 UNITS = {'m': 1, 'ft': 0.3048, 'yard': 0.9144, 'rad': 1, 'deg': 0.0174533}
 
 
@@ -128,7 +129,8 @@ class PoseEditor2(object):
     def go(self, *args, **kwargs):
         if self.nav.killed is True or self.nav.odom_loss is True:
             # What do we want to do with missions when the boat is killed
-            fprint("Boat is killed, ignoring go command!", title="POSE_EDITOR", msg_color="red")
+            fprint("Boat is killed, ignoring go command!",
+                   title="POSE_EDITOR", msg_color="red")
 
             class Res():
                 failure_reason = 'boat_killed'
@@ -138,7 +140,8 @@ class PoseEditor2(object):
         if len(self.kwargs) > 0:
             kwargs = dict(kwargs.items() + self.kwargs.items())
 
-        goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
+        goal = self.nav._moveto_client.send_goal(
+            self.as_MoveGoal(*args, **kwargs))
         self.result = goal.get_result()
         return self.result
 
@@ -185,7 +188,8 @@ class PoseEditor2(object):
     # ====== Some more advanced movements =========================
 
     def look_at_rel(self, rel_point):
-        return self.set_orientation(look_at_without_pitching(rel_point))  # Using no pitch here since we are 2D
+        # Using no pitch here since we are 2D
+        return self.set_orientation(look_at_without_pitching(rel_point))
 
     def look_at(self, point):
         return self.look_at_rel(point - self.position)
@@ -251,7 +255,8 @@ class PoseEditor2(object):
         sprinkles = transformations.euler_matrix(0, 0, angle_incrment)[:3, :3]
 
         # Find first point to go to using boat rotation
-        next_point = np.append(normalize(self.position[:2] - point[:2]), 0)  # Doing this in 2d
+        next_point = np.append(
+            normalize(self.position[:2] - point[:2]), 0)  # Doing this in 2d
         radius_increment = meters_per_rev / granularity
         for i in range(granularity * revolutions + 1):
             new = point + radius * next_point
@@ -304,7 +309,8 @@ class PoseEditor2(object):
 
     def as_Pose(self):
         return Pose(
-            position=Point(*np.array(self.position)),  # Don't set waypoints out of the water plane
+            # Don't set waypoints out of the water plane
+            position=Point(*np.array(self.position)),
             orientation=Quaternion(*self.orientation),
         )
 

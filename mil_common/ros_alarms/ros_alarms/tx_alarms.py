@@ -96,9 +96,11 @@ class TxAlarmListener(object):
         self._last_alarm = None
 
         # Data used to trigger callbacks
-        self._raised_cbs = []  # [(severity_for_cb1, cb1), (severity_for_cb2, cb2), ...]
+        # [(severity_for_cb1, cb1), (severity_for_cb2, cb2), ...]
+        self._raised_cbs = []
         self._cleared_cbs = []
-        self.update_sub = self._nh.subscribe("/alarm/updates", Alarm, self._alarm_update)
+        self.update_sub = self._nh.subscribe(
+            "/alarm/updates", Alarm, self._alarm_update)
 
         if callback_funct is not None:
             self.add_callback(callback_funct, **kwargs)
@@ -156,7 +158,8 @@ class TxAlarmListener(object):
                 yield funct(self._nh, self._last_alarm).addErrback(_errback)
 
         if call_when_cleared:
-            self._cleared_cbs.append(((0, 5), funct))  # Clear callbacks always run
+            # Clear callbacks always run
+            self._cleared_cbs.append(((0, 5), funct))
 
             if self._last_alarm is not None and not self._last_alarm.raised:
                 yield funct(self._nh, self._last_alarm).addErrback(_errback)
@@ -188,7 +191,8 @@ class TxAlarmListener(object):
                     yield cb(self._nh, alarm)
                 except Exception as e:
                     err_msg = "A callback function for the alarm: {} threw an error!\n{}\nException:{}"
-                    print err_msg.format(self._alarm_name, traceback.format_exc(), e)
+                    print err_msg.format(
+                        self._alarm_name, traceback.format_exc(), e)
 
 
 class TxHeartbeatMonitor(TxAlarmBroadcaster):

@@ -34,7 +34,9 @@ class RosVideoPlayer:
     def __init__(self):
         self.bridge = CvBridge()
         self.filename = rospy.get_param('~filename', sys.argv[1])
-        image_topic = "video_player/" + os.path.splitext(os.path.basename(self.filename))[0] + "/image_raw",
+        image_topic = "video_player/" + \
+            os.path.splitext(os.path.basename(self.filename))[
+                0] + "/image_raw",
         self.image_pub = rospy.Publisher(image_topic, Image, queue_size=10)
         self.slider = rospy.get_param('~slider', True)
         self.start_frame = rospy.get_param('~start_frames', 0)

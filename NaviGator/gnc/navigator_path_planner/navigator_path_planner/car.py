@@ -82,7 +82,8 @@ def lqr(x, u):
 # HEURISTICS
 
 
-goal_buffer = [0.5 * free_radius, 0.5 * free_radius, np.inf, np.inf, np.inf, np.inf]
+goal_buffer = [0.5 * free_radius, 0.5 *
+               free_radius, np.inf, np.inf, np.inf, np.inf]
 error_tol = np.copy(goal_buffer) / 10
 
 
@@ -92,7 +93,8 @@ def gen_ss(seed, goal, buff=[ss_start] * 4):
 
     """
     return [(min([seed[0], goal[0]]) - buff[0], max([seed[0], goal[0]]) + buff[1]),
-            (min([seed[1], goal[1]]) - buff[2], max([seed[1], goal[1]]) + buff[3]),
+            (min([seed[1], goal[1]]) - buff[2],
+             max([seed[1], goal[1]]) + buff[3]),
             (-np.pi, np.pi),
             (0.9 * velmax_pos[0], velmax_pos[0]),
             (-abs(velmax_neg[1]), velmax_pos[1]),

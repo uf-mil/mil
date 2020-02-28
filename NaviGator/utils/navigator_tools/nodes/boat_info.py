@@ -19,8 +19,10 @@ class RvizStrings(object):
         self.markers_pub = rospy.Publisher('/boat_info', Marker, queue_size=10)
         rospy.Subscriber("/wrench/selected", String, self.wrench_current_cb)
         rospy.Subscriber("/battery_monitor", Float32, self.battery_monitor_cb)
-        self.kill_listener = AlarmListener('kill', callback_funct=self.kill_alarm_cb)
-        self.station_hold_listner = AlarmListener('station-hold', callback_funct=self.station_alarm_cb)
+        self.kill_listener = AlarmListener(
+            'kill', callback_funct=self.kill_alarm_cb)
+        self.station_hold_listner = AlarmListener(
+            'station-hold', callback_funct=self.station_alarm_cb)
 
     def update(self):
         marker = Marker()

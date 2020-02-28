@@ -29,6 +29,7 @@ def finput(prompt):
     fprint(prompt)
     return input()
 
+
 while True:
     option = finput(main_menu)
     if option == 1:

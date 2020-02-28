@@ -26,7 +26,9 @@ def check_contact(msg, buoy_pub):
 
     buoy_pub.publish(object_name)
 
+
 rospy.init_node('torpedo_manager')
 buoy_pub = rospy.Publisher('/gazebo/buoy_bumping', String, queue_size=1)
-rospy.Subscriber('/contact_bumper', ContactsState, check_contact, buoy_pub, queue_size=10)
+rospy.Subscriber('/contact_bumper', ContactsState,
+                 check_contact, buoy_pub, queue_size=10)
 rospy.spin()

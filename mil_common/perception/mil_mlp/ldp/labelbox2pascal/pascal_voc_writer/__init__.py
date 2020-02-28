@@ -6,7 +6,8 @@ class Writer:
     def __init__(self, path, width, height, depth=3,
                  database='Unknown', segmented=0):
         environment = Environment(
-            loader=PackageLoader('labelbox2pascal', package_path='pascal_voc_writer/templates'),
+            loader=PackageLoader(
+                'labelbox2pascal', package_path='pascal_voc_writer/templates'),
             keep_trailing_newline=True)
         self.annotation_template = environment.get_template('annotation.xml')
 
@@ -50,5 +51,6 @@ class Writer:
 
     def save(self, annotation_path):
         with open(annotation_path, 'w') as file:
-            content = self.annotation_template.render(**self.template_parameters)
+            content = self.annotation_template.render(
+                **self.template_parameters)
             file.write(content)

@@ -29,7 +29,7 @@ class MRAC_Controller:
         # Disturbance adaptation rates, world frame
         self.ki = np.array(rospy.get_param('~ki', [0.1, 0.1, 0.1]))
         # Drag adaptation rates, world frame
-        self.kg = np.array(rospy.get_param('~kg',[5.0, 5.0, 5.0, 5.0, 5.0]))
+        self.kg = np.array(rospy.get_param('~kg', [5.0, 5.0, 5.0, 5.0, 5.0]))
         # Initial disturbance estimate
         self.dist_est = np.array([0, 0, 0])
         # Initial drag estimate
@@ -39,8 +39,10 @@ class MRAC_Controller:
         # Limits on drag estimate effort
         self.drag_limit = np.array([1000, 1000, 1000])
         # User-imposed speed limit
-        self.vel_max_body_positive = np.array([1.1, 0.45, 0.19])  # [m/s, m/s, rad/s]
-        self.vel_max_body_negative = np.array([0.68, 0.45, 0.19])  # [m/s, m/s, rad/s]
+        self.vel_max_body_positive = np.array(
+            [1.1, 0.45, 0.19])  # [m/s, m/s, rad/s]
+        self.vel_max_body_negative = np.array(
+            [0.68, 0.45, 0.19])  # [m/s, m/s, rad/s]
         # "Smart heading" threshold
         self.heading_threshold = 500  # m
         # Only use PD controller
@@ -52,8 +54,10 @@ class MRAC_Controller:
 
         # REFERENCE MODEL (note that this is not the adaptively estimated TRUE model; rather,
         #                     these parameters will govern the trajectory we want to achieve).
-        self.mass_ref = rospy.get_param('~mass', 500)  # kg, determined to be larger than boat in practice due to water mass
-        self.inertia_ref = rospy.get_param('~izz', 400)  # kg*m^2, determined to be larger than boat in practice due to water mass
+        # kg, determined to be larger than boat in practice due to water mass
+        self.mass_ref = rospy.get_param('~mass', 500)
+        # kg*m^2, determined to be larger than boat in practice due to water mass
+        self.inertia_ref = rospy.get_param('~izz', 400)
         self.thrust_max = 220  # N
 
         # back-left, back-right, front-left front-right, thruster positions in meters
@@ -67,11 +71,16 @@ class MRAC_Controller:
                                              [0.7071, -0.7071, 0.0000],
                                              [0.7071, -0.7071, 0.0000],
                                              [0.7071, 0.7071, 0.0000]])
-        self.lever_arms = np.cross(self.thruster_positions, self.thruster_directions)
-        self.B_body = np.concatenate((self.thruster_directions.T, self.lever_arms.T))
-        self.Fx_max_body = self.B_body.dot(self.thrust_max * np.array([1, 1, 1, 1]))
-        self.Fy_max_body = self.B_body.dot(self.thrust_max * np.array([1, -1, -1, 1]))
-        self.Mz_max_body = self.B_body.dot(self.thrust_max * np.array([-1, 1, -1, 1]))
+        self.lever_arms = np.cross(
+            self.thruster_positions, self.thruster_directions)
+        self.B_body = np.concatenate(
+            (self.thruster_directions.T, self.lever_arms.T))
+        self.Fx_max_body = self.B_body.dot(
+            self.thrust_max * np.array([1, 1, 1, 1]))
+        self.Fy_max_body = self.B_body.dot(
+            self.thrust_max * np.array([1, -1, -1, 1]))
+        self.Mz_max_body = self.B_body.dot(
+            self.thrust_max * np.array([-1, 1, -1, 1]))
         self.D_body_positive = abs(np.array([self.Fx_max_body[0], self.Fy_max_body[1],
                                              self.Mz_max_body[5]])) / self.vel_max_body_positive**2
         self.D_body_negative = abs(np.array([self.Fx_max_body[0], self.Fy_max_body[1],
@@ -109,17 +118,22 @@ class MRAC_Controller:
 
         # Subscribers
         if self.use_lqrrt:
-            rospy.Subscriber("/trajectory/cmd", Odometry, self.set_traj_from_odom_msg)
+            rospy.Subscriber("/trajectory/cmd", Odometry,
+                             self.set_traj_from_odom_msg)
         else:
             rospy.Subscriber("/trajectory", PoseTwistStamped, self.set_traj)
 
         rospy.Subscriber("/odom", Odometry, self.get_command)
         rospy.Subscriber("/wrench/selected", String, self.set_learning)
         # Publishers
-        self.wrench_pub = rospy.Publisher("/wrench/autonomous", WrenchStamped, queue_size=0)
-        self.pose_ref_pub = rospy.Publisher("pose_ref", PoseStamped, queue_size=0)
-        self.adaptation_pub = rospy.Publisher("adaptation", WrenchStamped, queue_size=0)
-        self.theta_pub = rospy.Publisher("~theta", Float64MultiArray, queue_size=0)
+        self.wrench_pub = rospy.Publisher(
+            "/wrench/autonomous", WrenchStamped, queue_size=0)
+        self.pose_ref_pub = rospy.Publisher(
+            "pose_ref", PoseStamped, queue_size=0)
+        self.adaptation_pub = rospy.Publisher(
+            "adaptation", WrenchStamped, queue_size=0)
+        self.theta_pub = rospy.Publisher(
+            "~theta", Float64MultiArray, queue_size=0)
 
         rospy.spin()
 
@@ -128,7 +142,8 @@ class MRAC_Controller:
         Sets instantaneous reference state.
         Convert twist to world frame for controller math.
         '''
-        self.p_ref = np.array([msg.posetwist.pose.position.x, msg.posetwist.pose.position.y])
+        self.p_ref = np.array(
+            [msg.posetwist.pose.position.x, msg.posetwist.pose.position.y])
         self.q_ref = np.array([msg.posetwist.pose.orientation.x, msg.posetwist.pose.orientation.y,
                                msg.posetwist.pose.orientation.z, msg.posetwist.pose.orientation.w])
 
@@ -149,13 +164,15 @@ class MRAC_Controller:
         Sets instantaneous reference state.
         Convert twist to world frame for controller math.
         '''
-        self.p_ref = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y])
+        self.p_ref = np.array(
+            [msg.pose.pose.position.x, msg.pose.pose.position.y])
         self.q_ref = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
                                msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
 
         R = trns.quaternion_matrix(self.q_ref)[:3, :3]
 
-        self.v_ref = R.dot(np.array([msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.linear.z]))[:2]
+        self.v_ref = R.dot(np.array(
+            [msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.linear.z]))[:2]
         self.w_ref = R.dot(
             np.array([msg.twist.twist.angular.x, msg.twist.twist.angular.y, msg.twist.twist.angular.z]))[2]
 
@@ -193,7 +210,8 @@ class MRAC_Controller:
         if self.last_odom is None:
             self.last_odom = msg
         else:
-            self.timestep = (msg.header.stamp - self.last_odom.header.stamp).to_sec()
+            self.timestep = (msg.header.stamp -
+                             self.last_odom.header.stamp).to_sec()
             self.last_odom = msg
 
         # ROS read-in
@@ -204,7 +222,8 @@ class MRAC_Controller:
 
         # ROS unpack
         self.position = np.array([position.x, position.y])
-        self.orientation = np.array([orientation.x, orientation.y, orientation.z, orientation.w])
+        self.orientation = np.array(
+            [orientation.x, orientation.y, orientation.z, orientation.w])
 
         # Frame management quantities
         R = np.eye(3)
@@ -212,8 +231,10 @@ class MRAC_Controller:
         y = trns.euler_from_quaternion(self.orientation)[2]
 
         # More ROS unpacking, converting body frame twist to world frame lin_vel and ang_vel
-        self.lin_vel = R.dot(np.array([lin_vel_body.x, lin_vel_body.y, lin_vel_body.z]))[:2]
-        self.ang_vel = R.dot(np.array([ang_vel_body.x, ang_vel_body.y, ang_vel_body.z]))[2]
+        self.lin_vel = R.dot(
+            np.array([lin_vel_body.x, lin_vel_body.y, lin_vel_body.z]))[:2]
+        self.ang_vel = R.dot(
+            np.array([ang_vel_body.x, ang_vel_body.y, ang_vel_body.z]))[2]
 
         # Convert body PD gains to world frame
         kp = R.dot(self.kp_body).dot(R.T)
@@ -237,15 +258,19 @@ class MRAC_Controller:
         # Compute the "learning" matrix
         drag_regressor = np.array([
             [
-                self.lin_vel[0] * np.cos(y)**2 + self.lin_vel[1] * np.sin(y) * np.cos(y),
-                self.lin_vel[0] / 2 - (self.lin_vel[0] * np.cos(2 * y)) / 2 - (self.lin_vel[1] * np.sin(2 * y)) / 2,
+                self.lin_vel[0] * np.cos(y)**2 +
+                self.lin_vel[1] * np.sin(y) * np.cos(y),
+                self.lin_vel[0] / 2 - (self.lin_vel[0] * np.cos(2 * y)) /
+                2 - (self.lin_vel[1] * np.sin(2 * y)) / 2,
                 -self.ang_vel * np.sin(y),
                 -self.ang_vel * np.cos(y),
                 0
             ],
             [
-                self.lin_vel[1] / 2 - (self.lin_vel[1] * np.cos(2 * y)) / 2 + (self.lin_vel[0] * np.sin(2 * y)) / 2,
-                self.lin_vel[1] * np.cos(y)**2 - self.lin_vel[0] * np.cos(y) * np.sin(y),
+                self.lin_vel[1] / 2 - (self.lin_vel[1] * np.cos(2 * y)) /
+                2 + (self.lin_vel[0] * np.sin(2 * y)) / 2,
+                self.lin_vel[1] * np.cos(y)**2 -
+                self.lin_vel[0] * np.cos(y) * np.sin(y),
                 self.ang_vel * np.cos(y),
                 -self.ang_vel * np.sin(y),
                 0
@@ -264,13 +289,16 @@ class MRAC_Controller:
             self.drag_effort = [0, 0, 0]
             self.dist_est = [0, 0, 0]
         else:
-            self.drag_effort = np.clip(drag_regressor.dot(self.drag_est), -self.drag_limit, self.drag_limit)
-            wrench = (kp.dot(err)) + (kd.dot(errdot)) + inertial_feedforward + self.dist_est + self.drag_effort
+            self.drag_effort = np.clip(drag_regressor.dot(
+                self.drag_est), -self.drag_limit, self.drag_limit)
+            wrench = (kp.dot(err)) + (kd.dot(errdot)) + \
+                inertial_feedforward + self.dist_est + self.drag_effort
             # Update disturbance estimate, drag estimates
             if self.learn and (npl.norm(p_err) < self.learning_radius):
                 self.dist_est = np.clip(self.dist_est + (self.ki * err * self.timestep), -
                                         self.dist_limit, self.dist_limit)
-                self.drag_est = self.drag_est + (self.kg * (drag_regressor.T.dot(err + errdot)) * self.timestep)
+                self.drag_est = self.drag_est + \
+                    (self.kg * (drag_regressor.T.dot(err + errdot)) * self.timestep)
 
         # Update model reference for the next call
         if not self.use_external_tgen:
@@ -336,10 +364,13 @@ class MRAC_Controller:
         v_err = -self.v_ref
         w_err = -self.w_ref
         if npl.norm(p_err) <= self.heading_threshold:
-            q_err = trns.quaternion_multiply(self.q_des, trns.quaternion_inverse(self.q_ref))
+            q_err = trns.quaternion_multiply(
+                self.q_des, trns.quaternion_inverse(self.q_ref))
         else:
-            q_direct = trns.quaternion_from_euler(0, 0, np.angle(p_err[0] + (1j * p_err[1])))
-            q_err = trns.quaternion_multiply(q_direct, trns.quaternion_inverse(self.q_ref))
+            q_direct = trns.quaternion_from_euler(
+                0, 0, np.angle(p_err[0] + (1j * p_err[1])))
+            q_err = trns.quaternion_multiply(
+                q_direct, trns.quaternion_inverse(self.q_ref))
         y_err = trns.euler_from_quaternion(q_err)[2]
 
         # Combine error components into error vectors
@@ -348,7 +379,8 @@ class MRAC_Controller:
         wrench = (kp.dot(err)) + (kd.dot(errdot))
 
         # Compute world frame thruster matrix (B) from thruster geometry, and then map wrench to thrusts
-        B = np.concatenate((R_ref.dot(self.thruster_directions.T), R_ref.dot(self.lever_arms.T)))
+        B = np.concatenate(
+            (R_ref.dot(self.thruster_directions.T), R_ref.dot(self.lever_arms.T)))
         B_3dof = np.concatenate((B[:2, :], [B[5, :]]))
         command = self.thruster_mapper(wrench, B_3dof)
         wrench_saturated = B.dot(command)
@@ -367,7 +399,8 @@ class MRAC_Controller:
         self.a_ref = (wrench_saturated[:2] - drag_ref[:2]) / self.mass_ref
         self.aa_ref = (wrench_saturated[5] - drag_ref[2]) / self.inertia_ref
         self.p_ref = self.p_ref + (self.v_ref * self.timestep)
-        self.q_ref = trns.quaternion_from_euler(0, 0, y_ref + (self.w_ref * self.timestep))
+        self.q_ref = trns.quaternion_from_euler(
+            0, 0, y_ref + (self.w_ref * self.timestep))
         self.v_ref = self.v_ref + (self.a_ref * self.timestep)
         self.w_ref = self.w_ref + (self.aa_ref * self.timestep)
 

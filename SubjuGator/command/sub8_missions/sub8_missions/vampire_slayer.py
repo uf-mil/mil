@@ -27,6 +27,8 @@ SPEED = 0.25
 X_OFFSET = 0
 Y_OFFSET = 0
 Z_OFFSET = 0
+
+
 class VampireSlayer(SubjuGator):
 
     @util.cancellableInlineCallbacks
@@ -44,7 +46,7 @@ class VampireSlayer(SubjuGator):
 
         cam_info_sub = yield self.nh.subscribe(
             '/camera/front/left/camera_info',
-                                              CameraInfo)
+            CameraInfo)
 
         fprint('Obtaining cam info message')
         cam_info = yield cam_info_sub.get_next_message()
@@ -95,7 +97,7 @@ class VampireSlayer(SubjuGator):
             target='buoy')
         MISSION = 'Vampires'
         print_info = FprintFactory(title=MISSION).fprint
-        
+
         if res.found:
             print_info("CHARGING BUOY")
             target_pose = rosmsg_to_numpy(res.pose.pose.position)
@@ -105,8 +107,6 @@ class VampireSlayer(SubjuGator):
             transform = yield self._tf_listener.get_transform('/map', '/base_link')
             target_position = target_pose
 #            target_position = target_pose / target_normal
-            
-            
 
             sub_pos = yield self.tx_pose()
             print('Current Sub Position: ', sub_pos)
@@ -115,7 +115,7 @@ class VampireSlayer(SubjuGator):
             #sub_pos = transform._q_mat.dot(sub_pos[0] - transform._p)
             #target_position = target_position - sub_pos[0]
             # yield self.move.look_at_without_pitching(target_position).go(blind=True, speed=.25)
-            #yield self.move.relative(np.array([0, target_position[1], 0])).go(blind=True, speed=.1)
+            # yield self.move.relative(np.array([0, target_position[1], 0])).go(blind=True, speed=.1)
             # Don't hit buoy yet
             print("MOVING TO X: ", target_position[0])
             print("MOVING TO Y: ", target_position[1])
@@ -123,12 +123,12 @@ class VampireSlayer(SubjuGator):
                 blind=True, speed=.1)
             # Go behind it
             #print('Going behind target')
-            #yield self.move.right(4).go(speed=1)
-            #yield self.move.forward(4).go(speed=1)
-            #yield self.move.left(4).go(speed=1)
+            # yield self.move.right(4).go(speed=1)
+            # yield self.move.forward(4).go(speed=1)
+            # yield self.move.left(4).go(speed=1)
             # Hit buoy
             #print('Hitting Target')
-            #yield self.move.strafe_backward(Y_OFFSET).go(speed=1)
+            # yield self.move.strafe_backward(Y_OFFSET).go(speed=1)
             print_info(
                 "Slaying the Vampire, good job Inquisitor.")
             sub_pos = yield self.tx_pose()
@@ -139,7 +139,7 @@ class VampireSlayer(SubjuGator):
                 type=Marker.ARROW,
                 scale=Vector3(0.2, 0.5, 0),
                 points=np.array([Point(0, 0, 0),
-                                    res.pose.pose.position]))
+                                 res.pose.pose.position]))
             marker.id = 3
             marker.header.frame_id = '/base_link'
             marker.color.r = 1

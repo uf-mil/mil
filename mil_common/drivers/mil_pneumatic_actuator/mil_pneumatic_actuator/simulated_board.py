@@ -8,6 +8,7 @@ class SimulatedPnuematicActuatorBoard(SimulatedSerial):
     '''
     A simulation of the pneumatic actuator board's serial protocol
     '''
+
     def __init__(self, *args, **kwargs):
         super(SimulatedPnuematicActuatorBoard, self).__init__()
 

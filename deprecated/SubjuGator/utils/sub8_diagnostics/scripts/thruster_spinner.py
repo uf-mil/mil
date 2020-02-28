@@ -28,7 +28,8 @@ def ports_from_layout(layout):
         try:
             port = port_info['port']
             thruster_names = port_info['thruster_names']
-            thruster_port = thrust_comm.thruster_comm_factory(port_info, thruster_definitions, fake=False)
+            thruster_port = thrust_comm.thruster_comm_factory(
+                port_info, thruster_definitions, fake=False)
 
             # Add the thrusters to the thruster dict
             for name in thruster_names:
@@ -48,7 +49,8 @@ rospy.init_node('thruster_spinner')
 
 # Connect to thrusters
 sub8_thruster_mapper = rospack.get_path('sub8_thruster_mapper')
-thruster_layout = rosparam.load_file(sub8_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
+thruster_layout = rosparam.load_file(
+    sub8_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
 thruster_ports = ports_from_layout(thruster_layout)
 if thruster_ports == {}:
     fprint('Unable to connect to any thruster ports. Quitting.')
@@ -74,7 +76,8 @@ fprint(help_msg)
 
 names_from_motor_id = {0: 'FLH', 1: 'FLV', 2: 'FRH', 3: 'FRV',
                        4: 'BLH', 5: 'BLV', 6: 'BRH', 7: 'BRV'}
-thruster_keys = [ord(str(x)) for x in names_from_motor_id]  # Will break if there is a motor_if not in [0, 9]
+# Will break if there is a motor_if not in [0, 9]
+thruster_keys = [ord(str(x)) for x in names_from_motor_id]
 unavailable_thrusters = []
 
 individual_mode = False
@@ -84,7 +87,8 @@ ALL_KEY = '*'
 
 # For individual mode on
 selected_idx = 0
-individual_thrusts = dict(zip(names_from_motor_id.keys(), np.zeros(len(names_from_motor_id))))
+individual_thrusts = dict(
+    zip(names_from_motor_id.keys(), np.zeros(len(names_from_motor_id))))
 
 # For individual mode off
 active_thrusters = set()
@@ -113,21 +117,27 @@ def check_for_thrusters():
 
     start_id = 0
     end_id = 127
-    fprint('Checking for thrusters with id\'s in [{}, {}]'.format(start_id, end_id))
+    fprint('Checking for thrusters with id\'s in [{}, {}]'.format(
+        start_id, end_id))
 
-    found_motor_ids, avg_turnaround_time = declared_ports[sel].get_node_ids_on_port(start_id, end_id)
-    fprint('Responding motor ids:\t\t\t{}'.format(te.Printer().set_cyan.bold(found_motor_ids)))
-    fprint('Average packet turnaround time:\t{} seconds'.format(te.Printer().set_cyan.bold(avg_turnaround_time)))
+    found_motor_ids, avg_turnaround_time = declared_ports[sel].get_node_ids_on_port(
+        start_id, end_id)
+    fprint('Responding motor ids:\t\t\t{}'.format(
+        te.Printer().set_cyan.bold(found_motor_ids)))
+    fprint('Average packet turnaround time:\t{} seconds'.format(
+        te.Printer().set_cyan.bold(avg_turnaround_time)))
 
 
 def command_thrusters(timer_event):
     ''' Sets the effort values for the motorcontrollers if comms are available '''
-    thrusters_to_command = names_from_motor_id.keys() if individual_mode else active_thrusters.copy()
+    thrusters_to_command = names_from_motor_id.keys(
+    ) if individual_mode else active_thrusters.copy()
     for motor_id in thrusters_to_command:
         name = names_from_motor_id[motor_id]
         try:
             if individual_mode:
-                thruster_ports[name].command_thruster(name, individual_thrusts[motor_id])
+                thruster_ports[name].command_thruster(
+                    name, individual_thrusts[motor_id])
             else:
                 thruster_ports[name].command_thruster(name, common_thrust)
         except thrust_comm.UnavailableThrusterException as e:
@@ -138,6 +148,7 @@ def command_thrusters(timer_event):
                 pass
         except serial.SerialException as e:
             fprint(e)
+
 
 # Command thrusters at a regular interval
 timer = rospy.Timer(period=rospy.Duration(0.01), callback=command_thrusters)
@@ -158,7 +169,8 @@ while not rospy.is_shutdown():
         active_thrusters = set()
         for key in individual_thrusts.keys():
             individual_thrusts[key] = 0
-        fprint('Individual mode: {}'.format('ON' if individual_mode else 'OFF'))
+        fprint('Individual mode: {}'.format(
+            'ON' if individual_mode else 'OFF'))
         continue
 
     # Modify thrust
@@ -167,14 +179,16 @@ while not rospy.is_shutdown():
             arrow_type = get_ch()
             if arrow_type == 'A':  # UP key
                 if individual_mode:
-                    individual_thrusts[selected_idx] = np.clip(individual_thrusts[selected_idx] + STEP, -1, 1)
+                    individual_thrusts[selected_idx] = np.clip(
+                        individual_thrusts[selected_idx] + STEP, -1, 1)
                     fprint('Thrusts: {}'.format(individual_thrusts))
                 else:
                     common_thrust = np.clip(common_thrust + STEP, -1, 1)
                     fprint('Common Thrust: {}'.format(common_thrust))
             if arrow_type == 'B':  # DOWN key
                 if individual_mode:
-                    individual_thrusts[selected_idx] = np.clip(individual_thrusts[selected_idx] - STEP, -1, 1)
+                    individual_thrusts[selected_idx] = np.clip(
+                        individual_thrusts[selected_idx] - STEP, -1, 1)
                     fprint('Thrusts: {}'.format(individual_thrusts))
                 else:
                     common_thrust = np.clip(common_thrust - STEP, -1, 1)

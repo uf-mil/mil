@@ -28,4 +28,3 @@ else:
 ab.wait_for_server()
 ab.clear_alarm(parameters=params)
 rospy.loginfo("Alarm cleared!")
-

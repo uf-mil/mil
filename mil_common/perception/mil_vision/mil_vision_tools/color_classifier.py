@@ -11,12 +11,12 @@ __author__ = 'Kevin Allen'
 
 
 def _get_param(one, two):
-        '''
-        Helpers function to get whichever param is not None, used
-        to have class defaults which can be overridden in function calls
-        '''
-        assert one is not None or two is not None, 'both params are None'
-        return two if one is None else one
+    '''
+    Helpers function to get whichever param is not None, used
+    to have class defaults which can be overridden in function calls
+    '''
+    assert one is not None or two is not None, 'both params are None'
+    return two if one is None else one
 
 
 class ContourClassifier(object):
@@ -95,7 +95,8 @@ class ContourClassifier(object):
         n = len(classes)
         correct = 0
         for i in range(n):
-            classification = self.classify_features(features[i, :].reshape(1, -1))
+            classification = self.classify_features(
+                features[i, :].reshape(1, -1))
             if classification == classes[i]:
                 correct += 1
         return float(correct) / n
@@ -186,7 +187,8 @@ class ContourClassifier(object):
             for l in label['Label']:
                 if l in self.classes:
                     for single_label in label['Label'][l]:
-                        points = LabelBoxParser.label_to_contour(single_label, img.shape[0])
+                        points = LabelBoxParser.label_to_contour(
+                            single_label, img.shape[0])
                         mask = contour_mask(points, img.shape)
                         features = self.get_features(img, mask)
                         label_features.append(features)
@@ -211,14 +213,17 @@ class ContourClassifier(object):
                              help='Path of json file containing labelbox labels')
         extract.add_argument('--image-dir', '-d', type=str, default=None,
                              help='Path to directory containing images for datasets labeled by label file')
-        score = subparser.add_parser('score', help='Print a accuracy score based on saved training file')
+        score = subparser.add_parser(
+            'score', help='Print a accuracy score based on saved training file')
         score.set_defaults(cmd='score')
         args = parser.parse_args(params)
         if args.cmd == 'extract':
-            features, classes = self.extract_labels(labelfile=args.label_file, image_dir=args.image_dir)
+            features, classes = self.extract_labels(
+                labelfile=args.label_file, image_dir=args.image_dir)
             self.save_csv(features, classes, training_file=args.training_file)
         if args.cmd == 'score':
-            features, classes = self.read_from_csv(training_file=args.training_file)
+            features, classes = self.read_from_csv(
+                training_file=args.training_file)
             self.train(features, classes)
             print 'Score: {}%'.format(self.score(features, classes) * 100)
 
@@ -242,7 +247,8 @@ class GaussianColorClassifier(ContourClassifier):
         mean = np.array([[mean[:3]]], dtype=np.uint8)
         mean_hsv = cv2.cvtColor(mean, cv2.COLOR_BGR2HSV)
         mean_lab = cv2.cvtColor(mean, cv2.COLOR_BGR2LAB)
-        features = np.hstack((mean.flatten(), mean_hsv.flatten(), mean_lab.flatten()))
+        features = np.hstack(
+            (mean.flatten(), mean_hsv.flatten(), mean_lab.flatten()))
         return features
 
     def classify_features(self, features):

@@ -37,7 +37,8 @@ class BusVoltageMonitor(object):
         window_duration - float (amount of seconds for which to keep a reading in the buffer)
         '''
         self.bus_voltage_alarm = AlarmBroadcaster("bus-voltage")
-        self.bus_voltage_pub = rospy.Publisher('bus_voltage', Float64, queue_size=1)
+        self.bus_voltage_pub = rospy.Publisher(
+            'bus_voltage', Float64, queue_size=1)
         self.warn_voltage = rospy.get_param("/battery/warn_voltage", 44.5)
         self.kill_voltage = rospy.get_param("/battery/kill_voltage", 44.0)
         self.last_estimate_time = rospy.Time.now()
@@ -91,7 +92,8 @@ class BusVoltageMonitor(object):
 
         if severity is not None and self.cached_severity != severity:
             self.bus_voltage_alarm.raise_alarm(
-                problem_description='Bus voltage has fallen to {}'.format(bus_voltage),
+                problem_description='Bus voltage has fallen to {}'.format(
+                    bus_voltage),
                 parameters={'bus_voltage': bus_voltage},
                 severity=severity
             )
@@ -112,17 +114,20 @@ class ThrusterDriver(object):
             - Send a thruster status message describing the status of the particular thruster
         '''
         self.failed_thrusters = set()       # This is only determined by comms
-        self.deactivated_thrusters = set()  # These will not come back online even if comms are good (user managed)
+        # These will not come back online even if comms are good (user managed)
+        self.deactivated_thrusters = set()
 
         # Alarms
         self.thruster_out_alarm = AlarmBroadcaster("thruster-out")
-        AlarmListener("thruster-out", self.check_alarm_status, call_when_raised=False)  # Prevent outside interference
+        AlarmListener("thruster-out", self.check_alarm_status,
+                      call_when_raised=False)  # Prevent outside interference
 
         # Create ThrusterPort objects in a dict indexed by port name
         self.load_thruster_ports(ports_layout, thruster_definitions)
 
         # Feedback on thrusters (thruster mapper blocks until it can use this service)
-        self.thruster_info_service = rospy.Service('thrusters/thruster_info', ThrusterInfo, self.get_thruster_info)
+        self.thruster_info_service = rospy.Service(
+            'thrusters/thruster_info', ThrusterInfo, self.get_thruster_info)
         self.status_publishers = {name: rospy.Publisher('thrusters/status/' + name, ThrusterStatus, queue_size=10)
                                   for name in self.thruster_to_port_map.keys()}
 
@@ -134,11 +139,14 @@ class ThrusterDriver(object):
         self.bus_voltage_monitor = BusVoltageMonitor(self._window_duration)
 
         # Command thrusters
-        self.thrust_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=1)
+        self.thrust_sub = rospy.Subscriber(
+            'thrusters/thrust', Thrust, self.thrust_cb, queue_size=1)
 
         # To programmatically deactivate thrusters
-        self.fail_thruster_server = rospy.Service('fail_thruster', FailThruster, self.fail_thruster)
-        self.unfail_thruster_server = rospy.Service('unfail_thruster', UnfailThruster, self.unfail_thruster)
+        self.fail_thruster_server = rospy.Service(
+            'fail_thruster', FailThruster, self.fail_thruster)
+        self.unfail_thruster_server = rospy.Service(
+            'unfail_thruster', UnfailThruster, self.unfail_thruster)
 
     @thread_lock(lock)
     def load_thruster_ports(self, ports_layout, thruster_definitions):
@@ -149,21 +157,25 @@ class ThrusterDriver(object):
 
         self.make_fake = rospy.get_param('simulate', False)
         if self.make_fake:
-            rospy.logwarn("Running fake thrusters for simulation, based on parameter '/simulate'")
+            rospy.logwarn(
+                "Running fake thrusters for simulation, based on parameter '/simulate'")
 
         # Instantiate thruster comms port
         for port_info in ports_layout:
             port_name = port_info['port']
-            self.ports[port_name] = thruster_comm_factory(port_info, thruster_definitions, fake=self.make_fake)
+            self.ports[port_name] = thruster_comm_factory(
+                port_info, thruster_definitions, fake=self.make_fake)
 
             # Add the thrusters to the thruster dict and configure if present
             for thruster_name in port_info['thruster_names']:
                 self.thruster_to_port_map[thruster_name] = port_info['port']
 
                 if thruster_name not in self.ports[port_name].online_thruster_names:
-                    rospy.logerr("ThrusterDriver: {} IS MISSING!".format(thruster_name))
+                    rospy.logerr(
+                        "ThrusterDriver: {} IS MISSING!".format(thruster_name))
                 else:
-                    rospy.loginfo("ThrusterDriver: {} registered".format(thruster_name))
+                    rospy.loginfo(
+                        "ThrusterDriver: {} registered".format(thruster_name))
 
                     # Set firmware settings
                     port = self.ports[port_name]
@@ -171,15 +183,17 @@ class ThrusterDriver(object):
                     config_path = (rospack.get_path('sub8_videoray_m5_thruster') + '/config/firmware_settings/' +
                                    thruster_name + '.yaml')
                     rospy.loginfo('Configuring {} with settings specified in {}.'.format(thruster_name,
-                                  config_path))
+                                                                                         config_path))
                     port.set_registers_from_dict(node_id=node_id,
                                                  reg_dict=rosparam.load_file(config_path)[0][0])
-                    port.reboot_thruster(node_id)  # Necessary for some settings to take effect
+                    # Necessary for some settings to take effect
+                    port.reboot_thruster(node_id)
 
     def get_thruster_info(self, srv):
         ''' Get the thruster info for a particular thruster name '''
         query_name = srv.thruster_name
-        info = self.ports[self.thruster_to_port_map[query_name]].thruster_info[query_name]
+        info = self.ports[self.thruster_to_port_map[query_name]
+                          ].thruster_info[query_name]
 
         thruster_info = ThrusterInfoResponse(
             node_id=info.node_id,
@@ -230,7 +244,8 @@ class ThrusterDriver(object):
 
         if name in self.failed_thrusters:
             if not np.isclose(thrust, 0):
-                rospy.logwarn('ThrusterDriver: commanding non-zero thrust to offline thruster (' + name + ')')
+                rospy.logwarn(
+                    'ThrusterDriver: commanding non-zero thrust to offline thruster (' + name + ')')
 
         effort = target_port.thruster_info[name].get_effort_from_thrust(thrust)
 
@@ -241,7 +256,8 @@ class ThrusterDriver(object):
         offline_on_port = target_port.get_offline_thruster_names()
         for offline in offline_on_port:
             if offline not in self.failed_thrusters:
-                self.failed_thrusters.add(offline)        # Thruster went offline
+                # Thruster went offline
+                self.failed_thrusters.add(offline)
         for failed in copy.deepcopy(self.failed_thrusters):
             if (failed in target_port.get_declared_thruster_names() and
                     failed not in offline_on_port and
@@ -263,7 +279,8 @@ class ThrusterDriver(object):
             'command_latency_avg'
         ]
 
-        message_keyword_args = {key: thruster_status[key] for key in message_contents}
+        message_keyword_args = {
+            key: thruster_status[key] for key in message_contents}
         power = thruster_status['bus_v'] * thruster_status['bus_i']
         self.status_publishers[name].publish(
             ThrusterStatus(
@@ -278,7 +295,8 @@ class ThrusterDriver(object):
         )
 
         # Will publish bus_voltage and raise alarm if necessary
-        self.bus_voltage_monitor.add_reading(message_keyword_args['bus_v'], rospy.Time.now())
+        self.bus_voltage_monitor.add_reading(
+            message_keyword_args['bus_v'], rospy.Time.now())
 
         # Undervolt/overvolt faults are unreliable (might not still be true - David)
         if message_keyword_args['fault'] > 2:
@@ -295,7 +313,8 @@ class ThrusterDriver(object):
             for code, fault_name in fault_codes.items():
                 if code & fault != 0:
                     faults.append(fault_name)
-            rospy.logwarn("Thruster: {} has entered fault with status {}".format(name, message_keyword_args))
+            rospy.logwarn("Thruster: {} has entered fault with status {}".format(
+                name, message_keyword_args))
             rospy.logwarn("Fault causes are: {}".format(faults))
         return
 
@@ -351,10 +370,13 @@ if __name__ == '__main__':
     rospy.init_node('videoray_m5_thruster_driver')
 
     layout_parameter = '/thruster_layout'
-    rospy.loginfo("Thruster Driver waiting for parameter, {}".format(layout_parameter))
+    rospy.loginfo(
+        "Thruster Driver waiting for parameter, {}".format(layout_parameter))
     thruster_layout = wait_for_param(layout_parameter)
     if thruster_layout is None:
-        raise IOError('/thruster_layout rosparam needs to be set before launching the thruster driver')
+        raise IOError(
+            '/thruster_layout rosparam needs to be set before launching the thruster driver')
 
-    thruster_driver = ThrusterDriver(thruster_layout['thruster_ports'], thruster_layout['thrusters'])
+    thruster_driver = ThrusterDriver(
+        thruster_layout['thruster_ports'], thruster_layout['thrusters'])
     rospy.spin()

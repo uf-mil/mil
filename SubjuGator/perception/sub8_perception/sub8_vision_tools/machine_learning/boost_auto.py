@@ -100,7 +100,8 @@ def train_on_data(observation_list, label_list, split_factor=4):
         process_round = 0
         # Split this into multiple passes in an attempt to free RAM (no idea if this works).
         for x, y in zip(all_observations_split, all_labels_split):
-            print "Training subset {}/{}.".format(process_round + 1, split_factor)
+            print "Training subset {}/{}.".format(
+                process_round + 1, split_factor)
             boost.train(x, cv2.CV_ROW_SAMPLE, y, params=parameters)
             process_round += 1
 
@@ -122,7 +123,8 @@ def load_images(path, images_to_use=8):
         try:
             if '_mask.png' in images[i]:
                 # This is the mask image - there should be a matching non mask image.
-                image_name = images[images.index(images[i].replace('_mask', ''))]
+                image_name = images[images.index(
+                    images[i].replace('_mask', ''))]
 
                 image = cv2.imread(path + image_name)
                 mask = cv2.imread(path + images[i], 0)
@@ -130,7 +132,8 @@ def load_images(path, images_to_use=8):
                 images.remove(image_name)
             else:
                 # This is the real image - there should be a matching mask image.
-                mask_name = images[images.index(images[i].replace('.png', '_mask.png'))]
+                mask_name = images[images.index(
+                    images[i].replace('.png', '_mask.png'))]
 
                 image = cv2.imread(path + images[i])
                 mask = cv2.imread(path + mask_name, 0)
@@ -163,7 +166,8 @@ def load_images(path, images_to_use=8):
 
 
 def main():
-    usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")
+    usage_msg = (
+        "Pass the path to a bag, and we'll crawl through the images in it")
     desc_msg = "A tool for making manual segmentation fun!"
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
@@ -176,6 +180,7 @@ def main():
 
     observation_list, label_list = load_images(args.folder)
     train_on_data(observation_list, label_list)
+
 
 if __name__ == "__main__":
     main()

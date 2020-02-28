@@ -41,7 +41,8 @@ ang_range = 2 * np.pi  # radians
 x_res = x_range / x_max
 ang_res = ang_range / ang_max
 
-print "Distance resolution: {} meters\nAngular resolution: {} radians".format(x_res, ang_res)
+print "Distance resolution: {} meters\nAngular resolution: {} radians".format(
+    x_res, ang_res)
 
 cv2.createTrackbar("x", 'tf', 0, x_max, lambda x: x)
 cv2.createTrackbar("y", 'tf', 0, x_max, lambda x: x)
@@ -192,4 +193,5 @@ while not rospy.is_shutdown():
     br.sendTransform(p, q, rospy.Time.now(), args.tf_child, args.tf_parent)
 
 # Print out the tf static transform line with the fudged tf
-print '\n', tf_line.format(child=args.tf_child, p=p, q=np.round(q, 5), parent=args.tf_parent, prd=prd)
+print '\n', tf_line.format(child=args.tf_child, p=p, q=np.round(
+    q, 5), parent=args.tf_parent, prd=prd)

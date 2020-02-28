@@ -26,8 +26,10 @@ class Threshold(object):
         Threshold([25, 180 180], np.array([50, 190, 200]), thresh_space='LAB')  # Thresholds BGR image in LAB
         Threshold((50, 50, 50), [200, 200, 200], in_space='HSV', thresh_space='LAB') # Threshold HSV image in LAB
         '''
-        assert isinstance(low, (tuple, list, np.ndarray)), 'param lower must be a tuple/list/np.ndarray'
-        assert isinstance(high, (tuple, list, np.ndarray)), 'param upper must be a tuple/list/np.ndarray'
+        assert isinstance(low, (tuple, list, np.ndarray)
+                          ), 'param lower must be a tuple/list/np.ndarray'
+        assert isinstance(high, (tuple, list, np.ndarray)
+                          ), 'param upper must be a tuple/list/np.ndarray'
         self.low = np.array(low)
         self.high = np.array(high)
         self.in_space = in_space
@@ -35,7 +37,8 @@ class Threshold(object):
         # If conversion code not specified, try to form it from other params
         if conversion_code is None and in_space != thresh_space:
             try:
-                self.conversion_code = getattr(cv2, 'COLOR_{}2{}'.format(in_space, thresh_space))
+                self.conversion_code = getattr(
+                    cv2, 'COLOR_{}2{}'.format(in_space, thresh_space))
             except AttributeError:
                 raise AttributeError('Could not determine conversion code from params.\
                                  Are [{}, {}] valid OpenCV colorspaces?'.format(in_space, thresh_space))
@@ -70,7 +73,8 @@ class Threshold(object):
                     pass
             raise AttributeError('No valid colorspace found in dictionary. Are {} valid OpenCV colorspaces?'.format(
                 d.keys()))
-        assert thresh_space in d, '{} color space not in dictionary'.format(thresh_space)
+        assert thresh_space in d, '{} color space not in dictionary'.format(
+            thresh_space)
         inner = d[thresh_space]
         if 'low' in inner and 'high' in inner:
             return cls(inner['low'], inner['high'], in_space=in_space, thresh_space=thresh_space)
@@ -175,10 +179,12 @@ def putText_ul(img, text, org, fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScal
     Puts text on image like cv2.putText but shifts it such that the origin is the upper left corner of
     where the text is placed, instead of the bottom left as cv2 does by default.
     '''
-    (text_width, text_height), _ = cv2.getTextSize(text, fontFace, fontScale, thickness)
+    (text_width, text_height), _ = cv2.getTextSize(
+        text, fontFace, fontScale, thickness)
     x, y = org
     y += text_height
-    cv2.putText(img, text, (x, y), fontFace, fontScale, color, thickness, lineType, bottomLeftOrigin)
+    cv2.putText(img, text, (x, y), fontFace, fontScale,
+                color, thickness, lineType, bottomLeftOrigin)
     return
 
 
@@ -225,10 +231,14 @@ def roi_enclosing_points(camera, points, border=(0, 0)):
     if not len(img_points):
         return None
     resolution = camera.fullResolution()
-    xmin = int(np.clip(np.round(np.min(img_points[:, 0]) - border[0]), 0, resolution[0]))
-    xmax = int(np.clip(np.round(np.max(img_points[:, 0]) + border[0]), 0, resolution[0]))
-    ymin = int(np.clip(np.round(np.min(img_points[:, 1]) - border[1]), 0, resolution[1]))
-    ymax = int(np.clip(np.round(np.max(img_points[:, 1]) + border[1]), 0, resolution[1]))
+    xmin = int(
+        np.clip(np.round(np.min(img_points[:, 0]) - border[0]), 0, resolution[0]))
+    xmax = int(
+        np.clip(np.round(np.max(img_points[:, 0]) + border[0]), 0, resolution[0]))
+    ymin = int(
+        np.clip(np.round(np.min(img_points[:, 1]) - border[1]), 0, resolution[1]))
+    ymax = int(
+        np.clip(np.round(np.max(img_points[:, 1]) + border[1]), 0, resolution[1]))
     return (slice(ymin, ymax), slice(xmin, xmax))
 
 

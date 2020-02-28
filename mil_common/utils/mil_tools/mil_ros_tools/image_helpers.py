@@ -140,6 +140,7 @@ class StereoImageSubscriber(object):
     Also contains a helper function to block until the camera info messages for both
     cameras are received.
     '''
+
     def __init__(self, left_image_topic, right_image_topic, callback=None, slop=None, encoding="bgr8", queue_size=10):
         '''
         Contruct a StereoImageSubscriber
@@ -184,7 +185,8 @@ class StereoImageSubscriber(object):
 
         # Use message_filters library to set up synchronized subscriber to both image topics
         if slop is None:
-            self._image_sub = message_filters.TimeSynchronizer([image_sub_left, image_sub_right], queue_size)
+            self._image_sub = message_filters.TimeSynchronizer(
+                [image_sub_left, image_sub_right], queue_size)
         else:
             self._image_sub = message_filters.ApproximateTimeSynchronizer([image_sub_left, image_sub_right],
                                                                           queue_size, slop)

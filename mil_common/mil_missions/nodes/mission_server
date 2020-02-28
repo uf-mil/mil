@@ -13,6 +13,7 @@ class MissionRunner(object):
     Node which runs the missions server, recieving goals from a client
     to run a mission, cancel a mission, and publish feedback.
     '''
+
     def __init__(self):
         pass
 
@@ -24,7 +25,8 @@ class MissionRunner(object):
         '''
         # Create NodeHandle and action server
         self.nh = yield NodeHandle.from_argv('mission_runner')
-        self.server = action.SimpleActionServer(self.nh, '/mission', DoMissionAction)
+        self.server = action.SimpleActionServer(
+            self.nh, '/mission', DoMissionAction)
 
         # Get mission_module and base_mission from params, if not set just crash
         mission_module_name = yield self.nh.get_param('~missions_module')
@@ -87,14 +89,17 @@ class MissionRunner(object):
         goal = self.server.accept_new_goal()
         if not self.has_mission(goal.mission):
             print('TASK RUNNER: unrecognized mission \'{}\''.format(goal.mission))
-            self.server.set_aborted(result=DoMissionResult(success=False, result='mission unknown'))
+            self.server.set_aborted(result=DoMissionResult(
+                success=False, result='mission unknown'))
             return
 
         # Attempt to decode parameters, abort if there is an exception
         try:
-            parameters = self.missions[goal.mission].decode_parameters(goal.parameters)
+            parameters = self.missions[goal.mission].decode_parameters(
+                goal.parameters)
         except Exception as e:
-            self.server.set_aborted(result=DoMissionResult(success=False, result=str(e)))
+            self.server.set_aborted(
+                result=DoMissionResult(success=False, result=str(e)))
             return
 
         # Start mission, and create callbacks even if it is not a deferred
@@ -137,18 +142,22 @@ class MissionRunner(object):
             # If mission was canceled, just set result to cancelled
             if final.check(defer.CancelledError):
                 result.result = 'mission cancelled'
-            elif final.check(MissionException):  # If a mission exception, return error message and params
+            # If a mission exception, return error message and params
+            elif final.check(MissionException):
                 exception = final.value
                 result.result = exception.message
                 result.parameters = json.dumps(exception.parameters)
-            else:  # If mission raised another kind of exception (like key error), return message and traceback
+            # If mission raised another kind of exception (like key error), return message and traceback
+            else:
                 result.result = final.getErrorMessage()
-                result.parameters = json.dumps({'traceback': final.getTraceback()})
+                result.parameters = json.dumps(
+                    {'traceback': final.getTraceback()})
             # Call mission cleanup functio
             cleanup = defer.maybeDeferred(self.mission.cleanup)
             cleanup.addErrback(self.cleanup_fail, self.mission.name())
             yield cleanup
-            self.server.set_aborted(result=result, text=result.result)  # Set mission aborted in either case
+            # Set mission aborted in either case
+            self.server.set_aborted(result=result, text=result.result)
 
         # If mission was successful, set goal to succeeded with specified result
         else:
@@ -182,6 +191,7 @@ def main():
     d = t.init()
     d.addErrback(err)
     yield d
+
 
 if __name__ == '__main__':
     t = MissionRunner()

@@ -16,11 +16,13 @@ class NetworkBroadcaster(object):
         hz = rospy.get_param('~hz', 20)
         topic = rospy.get_param('~topic', 'network')
 
-        rospy.loginfo('NETWORK BROADCASTER: publishing to {} at {}hz'.format(topic, hz))
+        rospy.loginfo(
+            'NETWORK BROADCASTER: publishing to {} at {}hz'.format(topic, hz))
         self.msg = Header()
         self.msg.seq = 0
         self.num_connections = -1
-        self.pub = rospy.Publisher(topic, Header, queue_size=1, tcp_nodelay=True)
+        self.pub = rospy.Publisher(
+            topic, Header, queue_size=1, tcp_nodelay=True)
         rospy.Timer(rospy.Duration(1 / hz), self._publish)
 
     def _publish(self, *args):
@@ -29,7 +31,8 @@ class NetworkBroadcaster(object):
             if connections == 0:
                 rospy.loginfo('NETWORK BROADCASTER: no connections')
             else:
-                rospy.loginfo('NETWORK BROADCASTER: connected to {} nodes'.format(connections))
+                rospy.loginfo(
+                    'NETWORK BROADCASTER: connected to {} nodes'.format(connections))
             self.num_connections = connections
         self.msg.stamp = rospy.Time.now()
         self.pub.publish(self.msg)

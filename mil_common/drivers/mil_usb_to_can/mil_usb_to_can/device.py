@@ -12,6 +12,7 @@ class CANDeviceHandle(object):
     Helper class to allow developers to write handles for communication with a particular CAN device.
     See ExampleCANDeviceHandle for an example of implementing one of these.
     '''
+
     def __init__(self, driver, device_id):
         '''
         Creates a CANDeviceHandle.
@@ -40,6 +41,7 @@ class ExampleEchoDeviceHandle(CANDeviceHandle):
     An example implementation of a CANDeviceHandle which will handle
     a device that echos back any data sent to it.
     '''
+
     def __init__(self, *args, **kwargs):
         super(ExampleEchoDeviceHandle, self).__init__(*args, **kwargs)
         self.last_sent = None
@@ -49,7 +51,8 @@ class ExampleEchoDeviceHandle(CANDeviceHandle):
         if self.last_sent is None:
             print 'Received {} but have not yet sent anthing'.format(data)
         elif data != self.last_sent[0]:
-            print 'ERROR! Reveived {} but last sent {}'.format(data, self.last_sent)
+            print 'ERROR! Reveived {} but last sent {}'.format(
+                data, self.last_sent)
         else:
             print 'SUCCESSFULLY echoed {} in {}seconds'.format(
                 self.last_sent[0],
@@ -70,11 +73,13 @@ class ExampleAdderDeviceHandle(CANDeviceHandle):
     An example implementation of a CANDeviceHandle which will handle
     a device that echos back any data sent to it.
     '''
+
     def __init__(self, *args, **kwargs):
         super(ExampleAdderDeviceHandle, self).__init__(*args, **kwargs)
         self.correct_response = 37
         self.response_received = None
-        self._srv = rospy.Service('add_two_ints', AddTwoInts, self.on_service_req)
+        self._srv = rospy.Service(
+            'add_two_ints', AddTwoInts, self.on_service_req)
 
     def on_service_req(self, req):
         payload = struct.pack('hh', req.a, req.b)
@@ -85,7 +90,8 @@ class ExampleAdderDeviceHandle(CANDeviceHandle):
         while self.response_received is None:
             if rospy.Time.now() - start > rospy.Duration(1):
                 return -1
-        res = ApplicationPacket.from_bytes(self.response_received, expected_identifier=37)
+        res = ApplicationPacket.from_bytes(
+            self.response_received, expected_identifier=37)
         my_sum = struct.unpack('i', res.payload)
         return my_sum
 

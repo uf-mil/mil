@@ -14,6 +14,7 @@ class Actuator(object):
     Encapsulates the configuration for an actuator, which can contain up to 2 valves
     and can be of 'set' or 'pulse type.
     '''
+
     def __init__(self, type_str, open_id, open_default, close_id, close_default, pulse_time):
         self.pulse_time = pulse_time
         self.type = type_str
@@ -48,6 +49,7 @@ class PnuematicActuatorNode():
     TODO: Add a function to try and reconnect to the serial port if we lose connection.
     TODO: publish info to /diagnostics
     '''
+
     def __init__(self):
         # Connect to board of serial or simulated serial
         self.baud_rate = rospy.get_param('~baud_rate', 9600)
@@ -89,7 +91,8 @@ class PnuematicActuatorNode():
         '''
         Set a valve open/close by raw id
         '''
-        rospy.loginfo('Setting valve {} to {}'.format(srv.actuator, 'open' if srv.opened else 'closed'))
+        rospy.loginfo('Setting valve {} to {}'.format(
+            srv.actuator, 'open' if srv.opened else 'closed'))
         self.set_port(int(srv.actuator), srv.opened)
         return {'success': True}
 
@@ -113,7 +116,8 @@ class PnuematicActuatorNode():
         # If board is disconnected, try to connect / reconnect
         if not self.connected:
             try:
-                self.driver = PnuematicActuatorDriver(self.port, baud=self.baud_rate, simulated=self.is_simulation)
+                self.driver = PnuematicActuatorDriver(
+                    self.port, baud=self.baud_rate, simulated=self.is_simulation)
             except SerialException as e:
                 rospy.logwarn(e)
                 return
@@ -153,7 +157,8 @@ class PnuematicActuatorNode():
 
         # If actuator is pulse type, open it and setup timer to close after pulse time
         if actuator.type == 'pulse':
-            rospy.loginfo('Pulsing {} for {}s'.format(srv.actuator, actuator.pulse_time))
+            rospy.loginfo('Pulsing {} for {}s'.format(
+                srv.actuator, actuator.pulse_time))
             self.set_port(actuator.open_id, not actuator.open_default)
             self.set_port(actuator.close_id, not actuator.close_default)
 
@@ -161,7 +166,8 @@ class PnuematicActuatorNode():
                 self.set_port(actuator.open_id, actuator.open_default)
                 self.set_port(actuator.close_id, actuator.close_default)
 
-            rospy.Timer(rospy.Duration(actuator.pulse_time), close, oneshot=True)
+            rospy.Timer(rospy.Duration(actuator.pulse_time),
+                        close, oneshot=True)
 
         # If actuator is set type, open/close as requested
         elif actuator.type == 'set':

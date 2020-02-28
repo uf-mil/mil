@@ -344,7 +344,8 @@ class Ephemeris(object):
         t_k = t - self.t_oe
         assert abs(t_k) < week_length / 2
         if not (abs(t_k) < 6 * 60 * 60):
-            print 'ERROR: ephemeris predicting more than 6 hours from now (%f hours)' % (t_k / 60 / 60,)
+            print 'ERROR: ephemeris predicting more than 6 hours from now (%f hours)' % (
+                t_k / 60 / 60,)
         n = n_0 + self.Deltan
         M_k = self.M_0 + n * t_k
         E_k = newton(M_k,
@@ -647,7 +648,8 @@ def estimate_pos(sats, use_corrections, quiet=False, pos_guess=None):
             # print 'r', r
             # print sum(r)
             if not quiet:
-                print '|r|', numpy.linalg.norm(r) / math.sqrt(len(r)), use_corrections, x
+                print '|r|', numpy.linalg.norm(
+                    r) / math.sqrt(len(r)), use_corrections, x
             # print 'J', J
             try:
                 # dx = (J^T J)^-1 J^T r

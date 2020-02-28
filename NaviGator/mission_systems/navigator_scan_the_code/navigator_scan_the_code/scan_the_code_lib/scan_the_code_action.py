@@ -18,7 +18,8 @@ class ScanTheCodeAction(object):
         Returns the position that you want the boat and the position of scan the code.
         """
         self.distance = distance
-        position = [scan_the_code.position.x, scan_the_code.position.y, scan_the_code.position.z]
+        position = [scan_the_code.position.x,
+                    scan_the_code.position.y, scan_the_code.position.z]
         now = datetime.datetime.now()
         now_time = now.time()
         if now_time < datetime.time(12, 00):
@@ -33,8 +34,10 @@ class ScanTheCodeAction(object):
         Returns the new correct position of the boat
         """
         position = pose
-        stc_position = np.array([scan_the_code.position.x, scan_the_code.position.y, scan_the_code.position.z])
+        stc_position = np.array(
+            [scan_the_code.position.x, scan_the_code.position.y, scan_the_code.position.z])
         d = np.linalg.norm(position - stc_position)
         point_a = position[0] + d * np.sqrt(3)
-        dir_vec = (stc_position - point_a) / np.linalg.norm(stc_position - point_a)
+        dir_vec = (stc_position - point_a) / \
+            np.linalg.norm(stc_position - point_a)
         return position + dir_vec * self.distance

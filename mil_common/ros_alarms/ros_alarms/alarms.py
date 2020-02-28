@@ -126,7 +126,8 @@ class Alarm(object):
                 try:
                     funct(self)
                 except Exception:
-                    rospy.logwarn(_make_callback_error_string(self.alarm_name, traceback.format_exc()))
+                    rospy.logwarn(_make_callback_error_string(
+                        self.alarm_name, traceback.format_exc()))
 
         if call_when_cleared:
             self.cleared_cbs.append(((0, 5), funct))
@@ -135,7 +136,8 @@ class Alarm(object):
                 try:
                     funct(self)
                 except Exception:
-                    rospy.logwarn(_make_callback_error_string(self.alarm_name, traceback.format_exc()))
+                    rospy.logwarn(_make_callback_error_string(
+                        self.alarm_name, traceback.format_exc()))
 
     def update(self, srv):
         ''' Updates this alarm with a new AlarmSet request.
@@ -153,7 +155,8 @@ class Alarm(object):
         self.parameters = parameters
         self.severity = srv.severity
 
-        rospy.loginfo("Updating alarm: {}, {}.".format(self.alarm_name, "raised" if self.raised else "cleared"))
+        rospy.loginfo("Updating alarm: {}, {}.".format(
+            self.alarm_name, "raised" if self.raised else "cleared"))
         # Run the callbacks for that alarm
         cb_list = self.raised_cbs if srv.raised else self.cleared_cbs
         for severity, cb in cb_list:
@@ -165,7 +168,8 @@ class Alarm(object):
             try:
                 cb(self)
             except Exception:
-                rospy.logwarn(_make_callback_error_string(self.alarm_name, traceback.format_exc()))
+                rospy.logwarn(_make_callback_error_string(
+                    self.alarm_name, traceback.format_exc()))
 
     def as_msg(self):
         ''' Get this alarm as an Alarm message '''
@@ -206,7 +210,8 @@ class AlarmBroadcaster(object):
         if timeout is not None and timeout < 1.5:
             self._alarm_set.wait_for_service(timeout=timeout)
         else:
-            wait_for_service(self._alarm_set, warn_time=1.0, warn_msg='Waiting for alarm server..', timeout=timeout)
+            wait_for_service(self._alarm_set, warn_time=1.0,
+                             warn_msg='Waiting for alarm server..', timeout=timeout)
         rospy.logdebug('alarm server connected')
 
     def _generate_request(self, raised, node_name=None, problem_description="",
@@ -262,7 +267,8 @@ class AlarmListener(object):
         self._alarm_get = rospy.ServiceProxy("/alarm/get", AlarmGet)
 
         # Data used to trigger callbacks
-        self._raised_cbs = []  # [(severity_for_cb1, cb1), (severity_for_cb2, cb2), ...]
+        # [(severity_for_cb1, cb1), (severity_for_cb2, cb2), ...]
+        self._raised_cbs = []
         self._cleared_cbs = []
         rospy.Subscriber("/alarm/updates", AlarmMsg, self._alarm_update)
 
@@ -278,7 +284,8 @@ class AlarmListener(object):
         if timeout is not None and timeout < 1.5:
             self._alarm_get.wait_for_service(timeout=timeout)
         else:
-            wait_for_service(self._alarm_get, warn_time=1.0, warn_msg='Waiting for alarm server..', timeout=timeout)
+            wait_for_service(self._alarm_get, warn_time=1.0,
+                             warn_msg='Waiting for alarm server..', timeout=timeout)
         rospy.logdebug('alarm server connected')
         self.get_alarm()  # Now that we have service, update callbacks
 
@@ -301,7 +308,8 @@ class AlarmListener(object):
         if not fetch:
             return self._last_alarm
         try:
-            resp = self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
+            resp = self._alarm_get(
+                AlarmGetRequest(alarm_name=self._alarm_name))
         except rospy.service.ServiceException:
             rospy.logerr("No alarm sever found!")
             return self._last_alarm
@@ -336,17 +344,20 @@ class AlarmListener(object):
                     alarm.parameters = parse_json_str(alarm.parameters)
                     funct(alarm)
                 except Exception:
-                    rospy.logwarn(_make_callback_error_string(self._alarm_name, traceback.format_exc()))
+                    rospy.logwarn(_make_callback_error_string(
+                        self._alarm_name, traceback.format_exc()))
 
         if call_when_cleared:
-            self._cleared_cbs.append(((0, 5), funct))  # Clear callbacks always run
+            # Clear callbacks always run
+            self._cleared_cbs.append(((0, 5), funct))
             if alarm is not None and not alarm.raised:
                 # Try to run the callback, absorbing any errors
                 try:
                     alarm.parameters = parse_json_str(alarm.parameters)
                     funct(alarm)
                 except Exception:
-                    rospy.logwarn(_make_callback_error_string(self._alarm_name, traceback.format_exc()))
+                    rospy.logwarn(_make_callback_error_string(
+                        self._alarm_name, traceback.format_exc()))
 
     def clear_callbacks(self):
         ''' Clears all callbacks '''
@@ -368,7 +379,8 @@ class AlarmListener(object):
             try:
                 cb(alarm)
             except Exception:
-                rospy.logerr(_make_callback_error_string(self._alarm_name, traceback.format_exc()))
+                rospy.logerr(_make_callback_error_string(
+                    self._alarm_name, traceback.format_exc()))
 
 
 class HeartbeatMonitor(AlarmBroadcaster):
@@ -384,7 +396,8 @@ class HeartbeatMonitor(AlarmBroadcaster):
         self._prd = rospy.Duration(prd)
         self._dropped = False
 
-        super(HeartbeatMonitor, self).__init__(alarm_name, nowarn=nowarn, **kwargs)
+        super(HeartbeatMonitor, self).__init__(
+            alarm_name, nowarn=nowarn, **kwargs)
         rospy.Subscriber(topic_name, msg_class, self._got_msg)
 
         rospy.Timer(rospy.Duration(prd / 2), self._check_for_message)

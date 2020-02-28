@@ -39,9 +39,12 @@ class AlarmMonitor(object):
         self.screen.nodelay(True)
         curses.curs_set(0)
         curses.noecho()
-        curses.init_pair(self.COLOR_RAISED, curses.COLOR_WHITE, curses.COLOR_RED)
-        curses.init_pair(self.COLOR_CLEARED, curses.COLOR_WHITE, curses.COLOR_GREEN)
-        curses.init_pair(self.COLOR_UNKNOWN, curses.COLOR_BLACK, curses.COLOR_WHITE)
+        curses.init_pair(self.COLOR_RAISED,
+                         curses.COLOR_WHITE, curses.COLOR_RED)
+        curses.init_pair(self.COLOR_CLEARED,
+                         curses.COLOR_WHITE, curses.COLOR_GREEN)
+        curses.init_pair(self.COLOR_UNKNOWN,
+                         curses.COLOR_BLACK, curses.COLOR_WHITE)
         rospy.Timer(rospy.Duration(0.01), self._update_key)
         self._draw()
 
@@ -88,12 +91,17 @@ class AlarmMonitor(object):
         if height < 3:
             return
         center = height / 2
-        if width >= len(self.alarm_name):  # If box is wide enough, display alarm name in center
-            status_window.addstr(center - 1, (width - len(self.alarm_name)) / 2, self.alarm_name)
-        if width >= len(status_str):       # If box is wide enough, display status text in center
-            status_window.addstr(center, (width - len(status_str)) / 2, status_str)
+        # If box is wide enough, display alarm name in center
+        if width >= len(self.alarm_name):
+            status_window.addstr(
+                center - 1, (width - len(self.alarm_name)) / 2, self.alarm_name)
+        # If box is wide enough, display status text in center
+        if width >= len(status_str):
+            status_window.addstr(
+                center, (width - len(status_str)) / 2, status_str)
         if description_str is not None and width >= len(description_str) and height >= 4:
-            status_window.addstr(center + 1, (width - len(description_str)) / 2, description_str)
+            status_window.addstr(
+                center + 1, (width - len(description_str)) / 2, description_str)
 
     def _read_key(self):
         if self.screen is None:
@@ -125,15 +133,18 @@ class AlarmMonitor(object):
             if key == 10:  # Draw window in window resize
                 self._draw()
             if key in self.RAISE_KEYS:
-                self.broadcaster.raise_alarm(problem_description='User raised from amonitor')
+                self.broadcaster.raise_alarm(
+                    problem_description='User raised from amonitor')
             elif key in self.CLEAR_KEYS:
                 self.broadcaster.clear_alarm()
 
 
 if __name__ == "__main__":
     # Grab alarm name from argv
-    parser = argparse.ArgumentParser(description='A curses interface for ros_alarms')
-    parser.add_argument('alarm', type=str, help='name of alarm to monitor and control')
+    parser = argparse.ArgumentParser(
+        description='A curses interface for ros_alarms')
+    parser.add_argument('alarm', type=str,
+                        help='name of alarm to monitor and control')
     args = parser.parse_args()
 
     # Restore cursor on close

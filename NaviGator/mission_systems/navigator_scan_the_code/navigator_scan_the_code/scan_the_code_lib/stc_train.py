@@ -61,7 +61,8 @@ if __name__ == "__main__":
             image_clone = img.copy()
             print roi, color
             xmin, ymin, w, h = roi[0], roi[1], roi[2], roi[3]
-            cv2.rectangle(image_clone, (xmin, ymin), (xmin + w, ymin + h), (0, 255, 0), 2)
+            cv2.rectangle(image_clone, (xmin, ymin),
+                          (xmin + w, ymin + h), (0, 255, 0), 2)
             roi = img[ymin:ymin + h, xmin:xmin + w]
             t.train(img, roi, color)
     t.pickle("stc_train.p")

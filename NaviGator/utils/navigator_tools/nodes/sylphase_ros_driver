@@ -22,7 +22,8 @@ force_z_to_zero = rospy.get_param('~force_z_to_zero', False)
 
 odom_pub = rospy.Publisher('odom', Odometry, queue_size=100)
 absodom_pub = rospy.Publisher('absodom', Odometry, queue_size=100)
-acceleration_pub = rospy.Publisher('acceleration', Vector3Stamped, queue_size=100)
+acceleration_pub = rospy.Publisher(
+    'acceleration', Vector3Stamped, queue_size=100)
 
 
 def go():
@@ -50,13 +51,15 @@ def go():
             if count % decimation == 0:
                 d = json.loads(line)
                 if not d['running']:
-                    rospy.logwarn_throttle(10, 'GPS not running: {}'.format(d['running_reason']))
+                    rospy.logwarn_throttle(
+                        10, 'GPS not running: {}'.format(d['running_reason']))
                     continue
 
                 if force_z_to_zero:
                     d['relative_position_enu'][2] = 0
 
-                ecef_cov = numpy.array(d['X_position_relative_position_orientation_ecef_covariance'])
+                ecef_cov = numpy.array(
+                    d['X_position_relative_position_orientation_ecef_covariance'])
                 absodom_pub.publish(Odometry(
                     header=Header(
                         stamp=t,
@@ -69,8 +72,10 @@ def go():
                             orientation=Quaternion(**d['orientation_ecef']),
                         ),
                         covariance=numpy.vstack((
-                            numpy.hstack((ecef_cov[0:3, 0:3], ecef_cov[0:3, 6:9])),
-                            numpy.hstack((ecef_cov[6:9, 0:3], ecef_cov[6:9, 6:9])),
+                            numpy.hstack(
+                                (ecef_cov[0:3, 0:3], ecef_cov[0:3, 6:9])),
+                            numpy.hstack(
+                                (ecef_cov[6:9, 0:3], ecef_cov[6:9, 6:9])),
                         )).flatten(),
                     ),
                     twist=TwistWithCovariance(
@@ -79,8 +84,10 @@ def go():
                             angular=Vector3(*d['angular_velocity_body']),
                         ),
                         covariance=numpy.vstack((
-                            numpy.hstack((d['X_velocity_body_covariance'], numpy.zeros((3, 3)))),
-                            numpy.hstack((numpy.zeros((3, 3)), d['X_angular_velocity_body_covariance'])),
+                            numpy.hstack(
+                                (d['X_velocity_body_covariance'], numpy.zeros((3, 3)))),
+                            numpy.hstack(
+                                (numpy.zeros((3, 3)), d['X_angular_velocity_body_covariance'])),
                         )).flatten(),
                     ),
                 ))
@@ -95,7 +102,8 @@ def go():
                             position=Point(*d['relative_position_enu']),
                             orientation=Quaternion(**d['orientation_enu']),
                         ),
-                        covariance=numpy.array(d['X_relative_position_orientation_enu_covariance']).flatten(),
+                        covariance=numpy.array(
+                            d['X_relative_position_orientation_enu_covariance']).flatten(),
                     ),
                     twist=TwistWithCovariance(
                         twist=Twist(
@@ -103,8 +111,10 @@ def go():
                             angular=Vector3(*d['angular_velocity_body']),
                         ),
                         covariance=numpy.vstack((
-                            numpy.hstack((d['X_velocity_body_covariance'], numpy.zeros((3, 3)))),
-                            numpy.hstack((numpy.zeros((3, 3)), d['X_angular_velocity_body_covariance'])),
+                            numpy.hstack(
+                                (d['X_velocity_body_covariance'], numpy.zeros((3, 3)))),
+                            numpy.hstack(
+                                (numpy.zeros((3, 3)), d['X_angular_velocity_body_covariance'])),
                         )).flatten(),
                     ),
                 ))
@@ -117,6 +127,7 @@ def go():
                 ))
 
             count += 1
+
 
 while not rospy.is_shutdown():
     try:

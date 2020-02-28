@@ -15,7 +15,8 @@ class SimulatedSabertooth2x12(SimulatedSerial):
         address, command, data, checksum = struct.unpack('BBBB', data)
         checksum_verify = (address + command + data) & 127
         if checksum_verify != checksum:
-            rospy.logerr('Invalid checksum. Is {} should be {}'.format(checksum, checksum_verify))
+            rospy.logerr('Invalid checksum. Is {} should be {}'.format(
+                checksum, checksum_verify))
             return
         if command == 0:
             rospy.loginfo('Setting motor1 to {}'.format(data / 127.0))

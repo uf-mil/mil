@@ -18,17 +18,21 @@ def process_image(img, image_pub, clf):
 
     some_observations = observe(img)
     print '-------------------------'
-    segmentation = np.array([x for x in [clf.predict(obs) for obs in some_observations]])
+    segmentation = np.array([x for x in [clf.predict(obs)
+                                         for obs in some_observations]])
     segmentation_image = np.reshape(segmentation, img[:, :, 2].shape)
 
-    image_pub.publish(np.dstack([(segmentation_image * 250).astype(np.uint8)] * 3))
+    image_pub.publish(
+        np.dstack([(segmentation_image * 250).astype(np.uint8)] * 3))
     print "Pubbing Image"
+
 
 if __name__ == '__main__':
     rospy.init_node("Buoy_Test")
 
     parser = argparse.ArgumentParser(usage="", description="")
-    parser.add_argument(dest='classifer', type=str, help="Name of the classifer to use.")
+    parser.add_argument(dest='classifer', type=str,
+                        help="Name of the classifer to use.")
     parser.add_argument(
         dest='topic',
         type=str,
@@ -40,7 +44,8 @@ if __name__ == '__main__':
     clf = cv2.Boost()
     clf.load(args.classifer)
 
-    image_sub = mil_ros_tools.Image_Subscriber(args.topic, got_image, queue_size=1)
+    image_sub = mil_ros_tools.Image_Subscriber(
+        args.topic, got_image, queue_size=1)
     image_pub = mil_ros_tools.Image_Publisher(args.topic + "_segmented")
 
     last_image = None

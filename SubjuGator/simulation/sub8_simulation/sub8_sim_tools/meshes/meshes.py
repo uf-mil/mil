@@ -11,7 +11,8 @@ def load_and_cache_mesh(file_path, url=None):
     if url is None:
         np.savez(file_path, vertices=vertices, faces=faces, normals=normals)
     else:
-        np.savez(file_path, vertices=vertices, faces=faces, normals=normals, url=url)
+        np.savez(file_path, vertices=vertices,
+                 faces=faces, normals=normals, url=url)
     return vertices, faces, normals, texcoords
 
 
@@ -38,7 +39,8 @@ def load_mesh(path):
 
             # Are we out of date?
             if 'url' not in array_data.keys():
-                print 'SIM: Existing model does not contain a version for {}, downloading a new one...'.format(file_)
+                print 'SIM: Existing model does not contain a version for {}, downloading a new one...'.format(
+                    file_)
                 download_and_unzip(urls[file_], dir_)
                 print urls[file_]
                 return load_and_cache_mesh(path, url=urls[file_])
@@ -49,13 +51,15 @@ def load_mesh(path):
 
             # Yes - download a new copy
             else:
-                print 'SIM: Existing model out of date for {}, downloading a new one...'.format(file_)
+                print 'SIM: Existing model out of date for {}, downloading a new one...'.format(
+                    file_)
                 download_and_unzip(urls[file_], dir_)
                 return load_and_cache_mesh(path, url=urls[file_])
 
         else:
             # If we don't have the file cached, there's no way we've downloaded it
-            print 'SIM: Model for {} does not exist, downloading it...'.format(file_)
+            print 'SIM: Model for {} does not exist, downloading it...'.format(
+                file_)
             download_and_unzip(urls[file_], dir_)
             return load_and_cache_mesh(path, url=urls[file_])
 
@@ -68,7 +72,8 @@ def load_mesh(path):
         return load_and_cache_mesh(path)
 
     else:
-        raise Exception('SIM ERROR: Something went wrong, we could not load a mesh at {}'.format(file_))
+        raise Exception(
+            'SIM ERROR: Something went wrong, we could not load a mesh at {}'.format(file_))
 
 
 _filepath = os.path.dirname(os.path.realpath(__file__))

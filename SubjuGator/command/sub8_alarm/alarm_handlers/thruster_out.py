@@ -12,7 +12,8 @@ class ThrusterOut(HandlerBase):
                                    node_name='alarm_server',
                                    parameters={'offline_thruster_names': []})
 
-        self._update_layout_proxy = rospy.ServiceProxy('update_thruster_layout', UpdateThrusterLayout)
+        self._update_layout_proxy = rospy.ServiceProxy(
+            'update_thruster_layout', UpdateThrusterLayout)
 
     def update_layout(self, *args, **kwargs):
         try:

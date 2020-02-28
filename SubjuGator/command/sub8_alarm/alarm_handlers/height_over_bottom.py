@@ -10,11 +10,13 @@ class HeightOverBottom(HandlerBase):
         self._killed = False
         self._update_height()
 
-        self.ab = AlarmBroadcaster(self.alarm_name, node_name="height_over_bottom_kill")
+        self.ab = AlarmBroadcaster(
+            self.alarm_name, node_name="height_over_bottom_kill")
 
         # Keep track of the current height
         self._last_height = 100
-        set_last_height = lambda msg: setattr(self, "_last_height", msg.range)
+        def set_last_height(msg): return setattr(
+            self, "_last_height", msg.range)
         rospy.Subscriber("/dvl/range", RangeStamped, set_last_height)
 
         # Every 5 seconds, check for an updated height param. A pseudo dynamic reconfig thing.

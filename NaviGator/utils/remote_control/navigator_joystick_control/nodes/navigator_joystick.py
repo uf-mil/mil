@@ -56,7 +56,8 @@ class Joystick(object):
 
                 # The controller times out after 15 minutes
                 if self.active:
-                    rospy.logwarn("Controller Timed out. Hold start to resume.")
+                    rospy.logwarn(
+                        "Controller Timed out. Hold start to resume.")
                     self.reset()
 
         else:

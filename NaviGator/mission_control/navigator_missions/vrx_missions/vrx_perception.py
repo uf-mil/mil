@@ -37,7 +37,7 @@ class VrxPerception(Vrx):
 
     @txros.util.cancellableInlineCallbacks
     def announce_object(self, obj_id, classification, position_enu, boat_position_enu):
-        if classification == 'UNKNOWN': 
+        if classification == 'UNKNOWN':
             self.send_feedback('Ignoing UNKNOWN object {}'.format(obj_id))
             defer.returnValue(False)
         if obj_id in self.announced:
@@ -58,7 +58,8 @@ class VrxPerception(Vrx):
         p2 = DoubleParameter(name='cluster_tolerance_m', value=0.25)
         p3 = DoubleParameter(name='associator_max_distance', value=0.25)
         p4 = IntParameter(name='cluster_min_points', value=1)
-        p5 = IntParameter(name='persistant_cloud_filter_min_neighbors', value=1)
+        p5 = IntParameter(
+            name='persistant_cloud_filter_min_neighbors', value=1)
         yield self.pcodar_set_params(bools=[p1], doubles=[p2, p3], ints=[p4, p5])
         # TODO: use PCODAR amnesia to avoid this timing fiasco
         yield self.wait_for_task_such_that(lambda task: task.state in ['running'])
@@ -70,9 +71,11 @@ class VrxPerception(Vrx):
             position_enu = (yield self.tx_pose)[0]
             for key in new_objects:
                 if key not in objects:
-                    self.send_feedback('NEW object {} {}'.format(key, new_objects[key]))
+                    self.send_feedback(
+                        'NEW object {} {}'.format(key, new_objects[key]))
                     yield self.announce_object(key, new_objects[key], positions[key], position_enu)
                 elif objects[key] != new_objects[key]:
-                    self.send_feedback('{} changed from {} to {}'.format(key, objects[key], new_objects[key]))
+                    self.send_feedback('{} changed from {} to {}'.format(
+                        key, objects[key], new_objects[key]))
                     yield self.announce_object(key, new_objects[key], positions[key], position_enu)
             objects = new_objects

@@ -22,6 +22,7 @@ while not rospy.is_shutdown():
         velocity_measurements=[VelocityMeasurement(
             velocity=0,
             correlation=0,
-            direction=Vector3(*[math.cos(i * 2 * math.pi / 4), math.sin(i * 2 * math.pi / 4), 0]),
+            direction=Vector3(
+                *[math.cos(i * 2 * math.pi / 4), math.sin(i * 2 * math.pi / 4), 0]),
         ) for i in xrange(4)],
     ))

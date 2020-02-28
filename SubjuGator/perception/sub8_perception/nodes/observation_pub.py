@@ -26,7 +26,7 @@ Perception component of the Torpedo Board Challenge. Utilizes code from
 the pyimagesearch blog post on color thresholding and shape detection
 as well as code from the buoy_finder mission of previous years.
 '''
-MISSION='PERCEPTION'
+MISSION = 'PERCEPTION'
 
 
 class MultiObs:
@@ -59,7 +59,7 @@ class MultiObs:
         self.plane = None
         self.visual_id = 0
         self.enabled = False
-        self.bridge = CvBridge() 
+        self.bridge = CvBridge()
         self.print_info = FprintFactory(title=MISSION).fprint
         # Image Subscriber and Camera Information
         self.point_sub = rospy.Subscriber(
@@ -110,8 +110,8 @@ class MultiObs:
         estimate. Ignoring orientation of board.
         '''
         if not self.enabled:
-          print("REEEE")  
-          return VisionRequestResponse(found=False)
+            print("REEEE")
+            return VisionRequestResponse(found=False)
         #buoy = self.buoys[srv.target_name]
         if self.est is None:
             self.print_info("NO ESTIMATE!")
@@ -122,7 +122,7 @@ class MultiObs:
                 header=Header(stamp=rospy.Time.now(), frame_id='/map'),
                 pose=Pose(position=Point(*((self.est + self.est1 + self.est2) / 3)),
                           orientation=Quaternion(x=self.plane[0], y=self.plane[1], z=self.plane[2]))),
-                found=True)
+            found=True)
 
     def clear_old_observations(self):
         # Observations older than three seconds are discarded.
@@ -167,16 +167,16 @@ class MultiObs:
         ac = self.est - self.est2
         # print("AB: ", ab)
         # print("AC: ", ac)
-        x = np.cross(ab,ac)
+        x = np.cross(ab, ac)
         return x / np.linalg.norm(x)
 
     def marker_msg(self, point, point_name):
         robotMarker = Marker()
         robotMarker.header.frame_id = "/map"
-        robotMarker.header.stamp    = rospy.get_rostime()
+        robotMarker.header.stamp = rospy.get_rostime()
         robotMarker.ns = point_name
         robotMarker.id = 0
-        robotMarker.type = 2 # sphere
+        robotMarker.type = 2  # sphere
         robotMarker.action = 0
         robotMarker.pose.position = Point(point[0], point[1], point[2])
         robotMarker.pose.orientation.x = 0
@@ -197,13 +197,13 @@ class MultiObs:
 
     def acquire_targets(self, roi):
         if not self.enabled:
-          return
+            return
         # NOTE: point.z contains the timestamp of the image when it was processed in the neural net.
         x0 = roi.x_offset
         y0 = roi.y_offset
         height = roi.height
         width = roi.width
-        
+
         point0 = np.array([x0, y0])
         point1 = np.array([x0+width, y0])
         point2 = np.array([x0, y0+height])
@@ -212,9 +212,10 @@ class MultiObs:
         # print("p2: ", point2)
         try:
             self.tf_listener.waitForTransform('/map',
-                                                '/front_left_cam_optical',
-                                                self.image_sub.last_image_time - rospy.Time(.2),
-                                                rospy.Duration(0.2))
+                                              '/front_left_cam_optical',
+                                              self.image_sub.last_image_time -
+                                              rospy.Time(.2),
+                                              rospy.Duration(0.2))
         except tf.Exception as e:
             rospy.logwarn(
                 "Could not transform camera to map: {}".format(e))
@@ -225,11 +226,11 @@ class MultiObs:
         R = mil_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
 
         self.add_observation(point0, (np.array(t), R),
-                                self.image_sub.last_image_time)
+                             self.image_sub.last_image_time)
         observations1, pose_pairs1 = self.add_observation1(point1, (np.array(t), R),
-                                self.image_sub.last_image_time)
+                                                           self.image_sub.last_image_time)
         observations2, pose_pairs2 = self.add_observation2(point2, (np.array(t), R),
-                                self.image_sub.last_image_time)
+                                                           self.image_sub.last_image_time)
 
         observations, pose_pairs = self.get_observations_and_pose_pairs()
         if len(observations) > self.min_observations:
@@ -250,7 +251,7 @@ class MultiObs:
             self.markerPub2.publish(self.marker_msg(self.est2, 'est2'))
             print((self.est + self.est1 + self.est2) / 3)
 
-        else:   
+        else:
             self.status = '{} observations'.format(len(observations))
 
 

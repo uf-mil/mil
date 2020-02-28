@@ -41,12 +41,14 @@ class Pinger(SubjuGator):
         try:
             save_pois = rospy.ServiceProxy(
                 '/poi_server/save_to_param', Trigger)
-            _ = save_pois();
+            _ = save_pois()
             if rospy.has_param('/poi_server/initial_pois/pinger_shooter') and\
                rospy.has_param('/poi_server/initial_pois/pinger_surface'):
                 fprint('Found two pinger guesses', msg_color='green')
-                pinger_1_req = rospy.get_param('/poi_server/initial_pois/pinger_surface')
-                pinger_2_req = rospy.get_param('/poi_server/initial_pois/pinger_shooter')
+                pinger_1_req = rospy.get_param(
+                    '/poi_server/initial_pois/pinger_surface')
+                pinger_2_req = rospy.get_param(
+                    '/poi_server/initial_pois/pinger_shooter')
 
                 # check \/
                 pinger_guess = yield self.transform_to_baselink(
@@ -55,7 +57,7 @@ class Pinger(SubjuGator):
             else:
                 use_prediction = False
                 fprint('Forgot to add pinger to guess server?',
-                        msg_color='yellow')
+                       msg_color='yellow')
         except Exception as e:
             fprint(
                 'Failed to /guess_location. Procceding without guess',
@@ -134,7 +136,7 @@ class Pinger(SubjuGator):
             if use_prediction:
                 pinger_guess = yield self.transform_to_baselink(
                     self, pinger_1_req,
-                                                           pinger_2_req)
+                    pinger_2_req)
                 fprint('Transformed guess: {}'.format(pinger_guess))
                 # Check if the pinger aligns with guess
                 # check, vec = self.check_with_guess(vec, pinger_guess)
@@ -196,8 +198,8 @@ class Pinger(SubjuGator):
         transform = yield sub._tf_listener.get_transform('/base_link', '/map')
         position = yield sub.pose.position
         pinger_guess = [
-            transform._q_mat.dot(np.array(x) - position)\
-                for x in (pinger_1_req, pinger_2_req)
+            transform._q_mat.dot(np.array(x) - position)
+            for x in (pinger_1_req, pinger_2_req)
         ]
         for idx, guess in enumerate(pinger_guess):
             marker = Marker(

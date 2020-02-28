@@ -31,7 +31,8 @@ class KeyboardServer(object):
 
     def __init__(self):
         self.force_scale = rospy.get_param("/joystick_wrench/force_scale", 600)
-        self.torque_scale = rospy.get_param("/joystick_wrench/torque_scale", 500)
+        self.torque_scale = rospy.get_param(
+            "/joystick_wrench/torque_scale", 500)
 
         self.remote = RemoteControl("keyboard", "/wrench/keyboard")
         rospy.Service("/keyboard_control", KeyboardControl, self.key_recieved)
@@ -58,7 +59,8 @@ class KeyboardServer(object):
                              curses.KEY_LEFT: lambda: self.remote.publish_wrench(0, 0, self.torque_scale),
                              curses.KEY_RIGHT: lambda: self.remote.publish_wrench(0, 0, -self.torque_scale)
                              }
-        self.movement_keys = [ord('w'), ord('s'), ord('a'), ord('d'), curses.KEY_LEFT, curses.KEY_RIGHT]
+        self.movement_keys = [ord('w'), ord('s'), ord(
+            'a'), ord('d'), curses.KEY_LEFT, curses.KEY_RIGHT]
 
     def key_recieved(self, req):
         '''

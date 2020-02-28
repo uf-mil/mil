@@ -18,7 +18,8 @@ class Canvas(app.Canvas):
 
         # How much physics time should pass for each physics iteration
         self.physics_dt = physics_dt
-        print 'Time per second', self.dt_per_second, 'gaptime:', self.physics_dt / self.dt_per_second
+        print 'Time per second', self.dt_per_second, 'gaptime:', self.physics_dt / \
+            self.dt_per_second
 
         self.size = (800, 800)
 
@@ -27,7 +28,8 @@ class Canvas(app.Canvas):
 
         gloo.set_state(depth_test=True, blend=True, preset='translucent')
         self._timer = app.Timer(1 / 27, connect=self.on_timer, start=True)
-        self.physics_timer = app.Timer(self.physics_dt / self.dt_per_second, connect=self.step_physics, start=True)
+        self.physics_timer = app.Timer(
+            self.physics_dt / self.dt_per_second, connect=self.step_physics, start=True)
         self.clock = 0.0
         self.view = np.eye(4)
 
@@ -36,7 +38,8 @@ class Canvas(app.Canvas):
         if show_window:
             self.show()
 
-        self.keypress_pub = rospy.Publisher('sim/keypress', String, queue_size=10)
+        self.keypress_pub = rospy.Publisher(
+            'sim/keypress', String, queue_size=10)
 
     def end(self):
         '''This sometimes generates errors due to unfavorable ROS-Vispy interactions
@@ -125,6 +128,7 @@ class Canvas(app.Canvas):
             rotate(self.rotate[2], (0, 0, 1))
         )
         self.view = self.view.dot(translate(list(self.translate)))
+
 
 if __name__ == '__main__':
     rospy.init_node('simulation_test')

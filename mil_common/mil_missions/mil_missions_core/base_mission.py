@@ -101,7 +101,8 @@ class BaseMission(object):
                            the format expected by the child.
         '''
         if not self.has_mission(name):
-            raise Exception('Cannot run_submission, \'{}\' unrecognized'.format(name))
+            raise Exception(
+                'Cannot run_submission, \'{}\' unrecognized'.format(name))
         mission = self.mission_runner.missions[name](parent=self)
         return defer.maybeDeferred(mission.run, parameters)
 

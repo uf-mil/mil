@@ -31,7 +31,8 @@ if __name__ == '__main__':
         print '-------------------------'
         print 'Observing took {} seconds'.format(time() - tic_observation)
         tic_prediction = time()
-        segmentation = [x for x in [clf.predict(obs) for obs in some_observations]]
+        segmentation = [x for x in [clf.predict(
+            obs) for obs in some_observations]]
         print 'Predicting took {} seconds'.format(time() - tic_prediction)
         total_time = time() - tic_observation
 
@@ -42,7 +43,8 @@ if __name__ == '__main__':
         bool_targets = mask == 1
         bool_predictions = segmentation_image == 1
 
-        true_positives = np.sum(bool_targets & bool_predictions) / np.sum(bool_targets).astype(np.float32)
+        true_positives = np.sum(
+            bool_targets & bool_predictions) / np.sum(bool_targets).astype(np.float32)
         false_positives = np.sum(
             np.logical_not(bool_targets) & bool_predictions
         ) / np.sum(np.logical_not(bool_targets)).astype(np.float32)
@@ -57,8 +59,11 @@ if __name__ == '__main__':
         if key == 'q':
             break
 
-    print 'Average accuracy: {}'.format(np.average(attributes['true_positives']))
-    print 'Average false positives: {}'.format(np.average(attributes['false_positives']))
+    print 'Average accuracy: {}'.format(
+        np.average(attributes['true_positives']))
+    print 'Average false positives: {}'.format(
+        np.average(attributes['false_positives']))
     print 'Min accuracy: {}'.format(np.min(attributes['true_positives']))
-    print 'Max false positives: {}'.format(np.max(attributes['false_positives']))
+    print 'Max false positives: {}'.format(
+        np.max(attributes['false_positives']))
     print 'Average execution time: {}'.format(np.average(attributes['times']))

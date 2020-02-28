@@ -15,7 +15,8 @@ import mil_ros_tools
 import rospy
 from std_srvs.srv import Trigger
 
-fprint = text_effects.FprintFactory(title="DRACULA_GRAB", msg_color="cyan").fprint
+fprint = text_effects.FprintFactory(
+    title="DRACULA_GRAB", msg_color="cyan").fprint
 
 SPEED = 0.25
 FAST_SPEED = 1
@@ -54,7 +55,7 @@ class DraculaGrabber(SubjuGator):
         try:
             save_pois = rospy.ServiceProxy(
                 '/poi_server/save_to_param', Trigger)
-            _ = save_pois();
+            _ = save_pois()
             if not rospy.has_param('/poi_server/initial_pois/dracula'):
                 dracula_req = yield vamp_txros(GuessRequestRequest(item='dracula'))
                 use_prediction = False
@@ -89,4 +90,3 @@ class DraculaGrabber(SubjuGator):
         yield self.move.to_height(HEIGHT_DRACULA_GRABBER).zero_roll_and_pitch().go(speed=SPEED)
         fprint('Dropping marker')
         yield self.actuators.gripper_close()
-        

@@ -73,7 +73,8 @@ class RectangleFinderClustering(object):
         Z = roi.reshape((-1, 3))
         Z = np.float32(Z)
         fprint("K" + str(self.K), msg_color='green')
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+        criteria = (cv2.TERM_CRITERIA_EPS +
+                    cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
         if self.count_incorrect / self.count > .15 and self.count > 20 and self.K > 3:
             fprint("CHANGED KMEANS VALUES!", msg_color="red")
             self.K -= 1
@@ -89,7 +90,8 @@ class RectangleFinderClustering(object):
         debug.add_image(image_as_centers, "labels", topic="labels")
 
         possible_clusters = list(np.arange(self.K))
-        whiteness = map(lambda x: npl.norm(x - np.array([255, 255, 255])), centers)
+        whiteness = map(lambda x: npl.norm(
+            x - np.array([255, 255, 255])), centers)
         whitest = np.argmin(whiteness)
         possible_clusters.remove(whitest)
         energys = []
@@ -153,7 +155,9 @@ class RectangleFinderClustering(object):
                 "LOW ENERGY!"
                 continue
             print num, "area: ", area, "filled:", top, "total:", bottom,\
-                'rat', top / bottom, "l/w", abs(2.5 - l / w), "vcost", vcost, "energy", energy
+                'rat', top / \
+                bottom, "l/w", abs(2.5 - l /
+                                   w), "vcost", vcost, "energy", energy
             energys.append(energy)
             correct_masks.append(mask_obj)
 
@@ -162,7 +166,8 @@ class RectangleFinderClustering(object):
             print "EVERY ENERGY WRONG"
             return False, None
 
-        correct_masks = [x for y, x in sorted(zip(energys, correct_masks), reverse=True)]
+        correct_masks = [x for y, x in sorted(
+            zip(energys, correct_masks), reverse=True)]
         energys = sorted(energys, reverse=True)
 
         if len(energys) > 1 and abs(energys[0] - energys[1]) < .2:

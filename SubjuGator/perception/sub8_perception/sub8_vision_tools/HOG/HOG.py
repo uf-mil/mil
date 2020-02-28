@@ -34,5 +34,6 @@ def main(args):
         print "Shutting down"
     cv2.DestroyAllWindows()
 
+
 if __name__ == '__main__':
     main(sys.argv)

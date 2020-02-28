@@ -74,7 +74,8 @@ class killtest(unittest.TestCase):
         Because hw-kill will be initialized to cleared then later raised when alarm server is fully started,
         so we need to allow for pottentialy two updates before it is raised.
         '''
-        alarm = self.wait_for_kill_update(timeout=rospy.Duration(10.0))  # Allow lots of time for initial alarm setup
+        alarm = self.wait_for_kill_update(timeout=rospy.Duration(
+            10.0))  # Allow lots of time for initial alarm setup
         if alarm.raised:
             self.assertTrue(True)
             return
@@ -101,7 +102,8 @@ class killtest(unittest.TestCase):
         '''
         Tests that button kills work through simulated service.
         '''
-        bfp = rospy.ServiceProxy('/kill_board_interface/BUTTON_{}'.format(button), SetBool)
+        bfp = rospy.ServiceProxy(
+            '/kill_board_interface/BUTTON_{}'.format(button), SetBool)
         bfp.wait_for_service(timeout=5.0)
 
         self.reset_update()

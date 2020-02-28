@@ -84,11 +84,15 @@ class Navigator(BaseMission):
         cls.rviz_goal = cls.nh.subscribe("/move_base_simple/goal", PoseStamped)
         cls.rviz_point = cls.nh.subscribe("/clicked_point", PointStamped)
 
-        cls._change_wrench = cls.nh.get_service_client('/wrench/select', MuxSelect)
-        cls._change_trajectory = cls.nh.get_service_client('/trajectory/select', MuxSelect)
-        cls._database_query = cls.nh.get_service_client('/database/requests', ObjectDBQuery)
+        cls._change_wrench = cls.nh.get_service_client(
+            '/wrench/select', MuxSelect)
+        cls._change_trajectory = cls.nh.get_service_client(
+            '/trajectory/select', MuxSelect)
+        cls._database_query = cls.nh.get_service_client(
+            '/database/requests', ObjectDBQuery)
         cls._reset_pcodar = cls.nh.get_service_client('/pcodar/reset', Trigger)
-        cls._pcodar_set_params = cls.nh.get_service_client('/pcodar/set_parameters', Reconfigure)
+        cls._pcodar_set_params = cls.nh.get_service_client(
+            '/pcodar/set_parameters', Reconfigure)
 
         cls.pose = None
 
@@ -106,7 +110,8 @@ class Navigator(BaseMission):
         cls.killed = False
         cls.odom_loss = False
         cls.tf_listener = tf.TransformListener(cls.nh)
-        cls.set_vrx_classifier_enabled = cls.nh.get_service_client('/vrx_classifier/set_enabled', SetBool)
+        cls.set_vrx_classifier_enabled = cls.nh.get_service_client(
+            '/vrx_classifier/set_enabled', SetBool)
 
     @classmethod
     @util.cancellableInlineCallbacks
@@ -133,7 +138,8 @@ class Navigator(BaseMission):
 
         def enu_odom_set(odom):
             return setattr(cls, 'ecef_pose', mil_tools.odometry_to_numpy(odom)[0])
-        cls._ecef_odom_sub = cls.nh.subscribe('absodom', Odometry, enu_odom_set)
+        cls._ecef_odom_sub = cls.nh.subscribe(
+            'absodom', Odometry, enu_odom_set)
 
         cls.hydrophones = TxHydrophonesClient(cls.nh)
 
@@ -147,11 +153,14 @@ class Navigator(BaseMission):
         cls._grind_motor_pub = cls.nh.advertise("/grinch_spin/cmd", Command)
 
         try:
-            cls._actuator_client = cls.nh.get_service_client('/actuator_driver/actuate', SetValve)
+            cls._actuator_client = cls.nh.get_service_client(
+                '/actuator_driver/actuate', SetValve)
             cls._camera_database_query = cls.nh.get_service_client(
                 '/camera_database/requests', navigator_srvs.CameraDBQuery)
-            cls._change_wrench = cls.nh.get_service_client('/wrench/select', MuxSelect)
-            cls._change_trajectory = cls.nh.get_service_client('/trajectory/select', MuxSelect)
+            cls._change_wrench = cls.nh.get_service_client(
+                '/wrench/select', MuxSelect)
+            cls._change_trajectory = cls.nh.get_service_client(
+                '/trajectory/select', MuxSelect)
         except AttributeError, err:
             fprint("Error getting service clients in nav singleton init: {}".format(
                 err), title="NAVIGATOR", msg_color='red')
@@ -159,8 +168,10 @@ class Navigator(BaseMission):
         cls.tf_listener = tf.TransformListener(cls.nh)
 
         # Vision
-        cls.obstacle_course_vision_enable = cls.nh.get_service_client('/vision/obsc/enable', SetBool)
-        cls.docks_vision_enable = cls.nh.get_service_client('/vision/docks/enable', SetBool)
+        cls.obstacle_course_vision_enable = cls.nh.get_service_client(
+            '/vision/obsc/enable', SetBool)
+        cls.docks_vision_enable = cls.nh.get_service_client(
+            '/vision/docks/enable', SetBool)
 
         yield cls._make_alarms()
 
@@ -174,9 +185,12 @@ class Navigator(BaseMission):
             fprint("Yes he yields!", title="NAVIGATOR")
 
             fprint("Waiting for odom...", title="NAVIGATOR")
-            odom = util.wrap_time_notice(cls._odom_sub.get_next_message(), 2, "Odom listener")
-            enu_odom = util.wrap_time_notice(cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
-            yield defer.gatherResults([odom, enu_odom])  # Wait for all those to finish
+            odom = util.wrap_time_notice(
+                cls._odom_sub.get_next_message(), 2, "Odom listener")
+            enu_odom = util.wrap_time_notice(
+                cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
+            # Wait for all those to finish
+            yield defer.gatherResults([odom, enu_odom])
 
         cls.docking_scan = 'NA'
 
@@ -195,7 +209,7 @@ class Navigator(BaseMission):
     @classmethod
     @util.cancellableInlineCallbacks
     def pcodar_label(cls, idx, name):
-        cmd = '%d=%s'%(idx,name)
+        cmd = '%d=%s' % (idx, name)
         yield cls._database_query(ObjectDBQueryRequest(name='', cmd=cmd))
 
     @classmethod
@@ -257,7 +271,8 @@ class Navigator(BaseMission):
         d.cancel()
         '''
         while True:
-            self._grind_motor_pub.publish(Command(setpoint=speed * self.max_grinch_effort))
+            self._grind_motor_pub.publish(
+                Command(setpoint=speed * self.max_grinch_effort))
             yield self.nh.sleep(interval)
 
     @util.cancellableInlineCallbacks
@@ -268,7 +283,8 @@ class Navigator(BaseMission):
         cancel the defer
         '''
         while True:
-            self._winch_motor_pub.publish(Command(setpoint=speed * self.max_grinch_effort))
+            self._winch_motor_pub.publish(
+                Command(setpoint=speed * self.max_grinch_effort))
             yield self.nh.sleep(interval)
 
     @util.cancellableInlineCallbacks
@@ -385,7 +401,6 @@ class Navigator(BaseMission):
         req = SetValveRequest(actuator=name, opened=state)
         return self._actuator_client(req)
 
-
     @util.cancellableInlineCallbacks
     def get_sorted_objects(self, name, n=-1, throw=True, **kwargs):
         '''
@@ -493,17 +508,21 @@ class Navigator(BaseMission):
     @classmethod
     def _load_vision_services(cls, fname="vision_services.yaml"):
         rospack = rospkg.RosPack()
-        config_file = os.path.join(rospack.get_path('navigator_missions'), 'launch', fname)
+        config_file = os.path.join(rospack.get_path(
+            'navigator_missions'), 'launch', fname)
         f = yaml.load(open(config_file, 'r'))
 
         for name in f:
             try:
                 s_type = getattr(navigator_srvs, f[name]["type"])
-                s_req = getattr(navigator_srvs, "{}Request".format(f[name]["type"]))
+                s_req = getattr(
+                    navigator_srvs, "{}Request".format(f[name]["type"]))
                 s_args = f[name]['args']
                 s_client = cls.nh.get_service_client(f[name]["topic"], s_type)
-                s_switch = cls.nh.get_service_client(f[name]["topic"] + '/switch', SetBool)
-                cls.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
+                s_switch = cls.nh.get_service_client(
+                    f[name]["topic"] + '/switch', SetBool)
+                cls.vision_proxies[name] = VisionProxy(
+                    s_client, s_req, s_args, s_switch)
             except Exception, e:
                 err = "Error loading vision sevices: {}".format(e)
                 fprint("" + err, title="NAVIGATOR", msg_color='red')
@@ -511,7 +530,8 @@ class Navigator(BaseMission):
     @classmethod
     def _load_mission_params(cls, fname="mission_params.yaml"):
         rospack = rospkg.RosPack()
-        config_file = os.path.join(rospack.get_path('navigator_missions'), 'launch', fname)
+        config_file = os.path.join(rospack.get_path(
+            'navigator_missions'), 'launch', fname)
         f = yaml.load(open(config_file, 'r'))
 
         for name in f:
@@ -520,7 +540,8 @@ class Navigator(BaseMission):
                 options = f[name]["options"]
                 desc = f[name]["description"]
                 default = f[name].get("default")
-                cls.mission_params[name] = MissionParam(cls.nh, param, options, desc, default)
+                cls.mission_params[name] = MissionParam(
+                    cls.nh, param, options, desc, default)
             except Exception, e:
                 err = "Error loading mission params: {}".format(e)
                 fprint("" + err, title="NAVIGATOR", msg_color='red')
@@ -587,7 +608,8 @@ class MissionParam(object):
                 yield self.set(self.default)
                 defer.returnValue(self.default)
             if raise_exception:
-                raise Exception("Mission Param {} not yet set".format(self.param))
+                raise Exception(
+                    "Mission Param {} not yet set".format(self.param))
             else:
                 defer.returnValue(False)
         value = yield self.nh.get_param(self.param)
@@ -659,7 +681,8 @@ class Searcher(object):
     def start_search(self, timeout=120, loop=True, spotings_req=2, **kwargs):
         fprint("Starting.", title="SEARCHER")
         looker = self._run_look(spotings_req).addErrback(self.catch_error)
-        finder = self._run_search_pattern(loop, **kwargs).addErrback(self.catch_error)
+        finder = self._run_search_pattern(
+            loop, **kwargs).addErrback(self.catch_error)
 
         start_pose = self.nav.move.forward(0)
         start_time = self.nav.nh.get_time()
@@ -729,7 +752,8 @@ class Searcher(object):
         fprint("Looking for object.", title="SEARCHER")
         while spotings < spotings_req:
             if (yield self.looker(**self.looker_kwargs)):
-                fprint("Object found! {}/{}".format(spotings + 1, spotings_req), title="SEARCHER")
+                fprint("Object found! {}/{}".format(spotings +
+                                                    1, spotings_req), title="SEARCHER")
                 spotings += 1
             else:
                 spotings = 0

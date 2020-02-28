@@ -27,8 +27,10 @@ def vrx_force_to_command_scalar(force):
     elif force < 0:
         return -0.113122 * np.log(-154.285 * (0.99 - ((1.88948 * 10 ** 12) / ((199.13 + force) ** 5.34))))
     else:
-        #approx broken range as strait line with 0.01cmd/3.2N
+        # approx broken range as strait line with 0.01cmd/3.2N
         return (0.01/3.27398)*force
+
+
 vrx_force_to_command = np.vectorize(vrx_force_to_command_scalar)
 
 
@@ -71,7 +73,8 @@ class ThrusterMap(object):
         self._force_to_command = force_to_command
         self.force_limit = force_limit
         if len(self.force_limit) != 2 or self.force_limit[1] > self.force_limit[0]:
-            raise Exception('self.force_limit {} is invalid'.format(self.force_limit))
+            raise Exception(
+                'self.force_limit {} is invalid'.format(self.force_limit))
 
         ''' Iterate through thruster positions and create thruster trans matrix'''
         thruster_matrix = []
@@ -84,12 +87,14 @@ class ThrusterMap(object):
             sin = np.sin(angles[thruster_number])
             torque_effect = np.cross((l_x, l_y), (cos, sin))
             # must transpose to stack correctly
-            thruster_column = np.transpose(np.array([[cos, sin, torque_effect]]))
+            thruster_column = np.transpose(
+                np.array([[cos, sin, torque_effect]]))
             thruster_matrix.append(thruster_column)
 
         # returns a matrix made of the thruster collumns
         self.thruster_matrix = np.hstack(thruster_matrix)
-        self.thruster_matrix_inv = np.linalg.pinv(self.thruster_matrix)  # Magical numpy psuedoinverse
+        self.thruster_matrix_inv = np.linalg.pinv(
+            self.thruster_matrix)  # Magical numpy psuedoinverse
 
     @classmethod
     def from_vrx_urdf(cls, urdf_string):
@@ -102,10 +107,11 @@ class ThrusterMap(object):
         for link in urdf.links:
             find = link.name.find('_propeller_link')
             if find == -1:
-              continue
+                continue
             name = link.name[:find]
             try:
-                trans = buff.lookup_transform('base_link', link.name, rospy.Time(), rospy.Duration(10))
+                trans = buff.lookup_transform(
+                    'base_link', link.name, rospy.Time(), rospy.Duration(10))
             except tf2_ros.TransformException as e:
                 raise Exception(e)
             translation = rosmsg_to_numpy(trans.transform.translation)
@@ -135,21 +141,26 @@ class ThrusterMap(object):
             find = transmission.name.find(transmission_suffix)
             if find != -1 and find + len(transmission_suffix) == len(transmission.name):
                 if len(transmission.joints) != 1:
-                    raise Exception('Transmission {} does not have 1 joint'.format(transmission.name))
+                    raise Exception(
+                        'Transmission {} does not have 1 joint'.format(transmission.name))
                 if len(transmission.actuators) != 1:
-                    raise Exception('Transmission {} does not have 1 actuator'.format(transmission.name))
+                    raise Exception(
+                        'Transmission {} does not have 1 actuator'.format(transmission.name))
                 t_ratio = transmission.actuators[0].mechanicalReduction
                 if ratio != -1 and ratio != t_ratio:
-                    raise Exception('Transmission {} has a different reduction ratio (not supported)'.format(t_ratio))
+                    raise Exception(
+                        'Transmission {} has a different reduction ratio (not supported)'.format(t_ratio))
                 ratio = t_ratio
                 joint = None
                 for t_joint in urdf.joints:
                     if t_joint.name == transmission.joints[0].name:
                         joint = t_joint
                 if joint is None:
-                    rospy.logerr('Transmission joint {} not found'.format(transmission.joints[0].name))
+                    rospy.logerr('Transmission joint {} not found'.format(
+                        transmission.joints[0].name))
                 try:
-                    trans = buff.lookup_transform('base_link', joint.child, rospy.Time(), rospy.Duration(10))
+                    trans = buff.lookup_transform(
+                        'base_link', joint.child, rospy.Time(), rospy.Duration(10))
                 except tf2_ros.TransformException as e:
                     raise Exception(e)
                 translation = rosmsg_to_numpy(trans.transform.translation)
@@ -160,7 +171,8 @@ class ThrusterMap(object):
                 angles.append(yaw)
                 joints.append(joint.name)
                 if limit != -1 and joint.limit.effort != limit:
-                    raise Exception('Thruster {} had a different limit, cannot proceed'.format(joint.name))
+                    raise Exception(
+                        'Thruster {} had a different limit, cannot proceed'.format(joint.name))
                 limit = joint.limit.effort
         limit_tuple = (limit, -limit)
         return cls(names, positions, angles, generate_linear_force_to_command(ratio), limit_tuple, joints=joints)
@@ -172,7 +184,8 @@ class ThrusterMap(object):
         param thrusts: np float array of thruster efforts in order of ThrusterMap.THRUSTERS
         returns: wrench (x, y, torque about z) force/torque applied to boat
         '''
-        raise Exception('Unimplemented. Please file an issue if you encounter this error')
+        raise Exception(
+            'Unimplemented. Please file an issue if you encounter this error')
         return self.effort_to_force(np.linalg.lstsq(self.thruster_matrix_inv, thrusts)[0])
 
     def wrench_to_thrusts(self, wrench):
@@ -196,5 +209,6 @@ class ThrusterMap(object):
         '''
         Maps a list of thrusts in effort units to the corosponding force in newtons
         '''
-        raise Exception('Unimplemented. Please file an issue if you encounter this error')
+        raise Exception(
+            'Unimplemented. Please file an issue if you encounter this error')
         return effort / self.effort_ratio

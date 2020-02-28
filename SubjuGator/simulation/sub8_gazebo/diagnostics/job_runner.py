@@ -118,7 +118,8 @@ class JobManager(object):
             print "JOB - Done!"
 
             print "------------------------------------------------------------------"
-            print "{0} Successes, {1} Fails, {2} Total".format(self.successes, self.fails, current_loop)
+            print "{0} Successes, {1} Fails, {2} Total".format(
+                self.successes, self.fails, current_loop)
             print "------------------------------------------------------------------"
             print
 
@@ -143,9 +144,11 @@ class JobManager(object):
             print "\n-----------------------------------------------------------\n"
 
     def queue_job(self, name, runs):
-        available_tests = [test_name for test_name in dir(gazebo_tests) if not test_name.startswith('_')]
+        available_tests = [test_name for test_name in dir(
+            gazebo_tests) if not test_name.startswith('_')]
         assert name in available_tests, "Unknown test, {}".format(name)
-        assert isinstance(runs, int), "Cannot do non-integer runs, wtf are you trying to do?"
+        assert isinstance(
+            runs, int), "Cannot do non-integer runs, wtf are you trying to do?"
 
         job_module = getattr(gazebo_tests, name)
         # This is not a very clean API
@@ -155,27 +158,27 @@ class JobManager(object):
 
 @txros.util.cancellableInlineCallbacks
 def main(args):
-        nh = yield txros.NodeHandle.from_argv('job_runner_controller')
+    nh = yield txros.NodeHandle.from_argv('job_runner_controller')
 
-        print 'JOB - getting sub'
-        sub = yield tx_sub.get_sub(nh)
-        yield sub.last_pose()
+    print 'JOB - getting sub'
+    sub = yield tx_sub.get_sub(nh)
+    yield sub.last_pose()
 
-        print "JOB - Queueing Jobs...."
-        job_manager = JobManager(nh, sub, args.bag, args.verbose)
+    print "JOB - Queueing Jobs...."
+    job_manager = JobManager(nh, sub, args.bag, args.verbose)
 
-        try:
-            for test_name in args.test_names:
-                job_manager.queue_job(test_name, args.iterations)
+    try:
+        for test_name in args.test_names:
+            job_manager.queue_job(test_name, args.iterations)
 
-            print "JOB - Running jobs..."
-            yield job_manager.run()
+        print "JOB - Running jobs..."
+        yield job_manager.run()
 
-        except Exception:
-            traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
 
-        finally:
-            reactor.stop()
+    finally:
+        reactor.stop()
 
 
 if __name__ == '__main__':

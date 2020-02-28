@@ -26,7 +26,8 @@ class Docking(Navigator):
         cls.parser = parser
 
         cls.bboxsub = cls.nh.subscribe("/bbox_pub", ObjectsInImage)
-        cls.camera_lidar_tf = cls.nh.get_service_client('/camera_to_lidar/front_right_cam', CameraToLidarTransform)
+        cls.camera_lidar_tf = cls.nh.get_service_client(
+            '/camera_to_lidar/front_right_cam', CameraToLidarTransform)
 
     @util.cancellableInlineCallbacks
     def run(self, args):

@@ -26,23 +26,30 @@ class Vrx(Navigator):
         Vrx.from_lla = Vrx.nh.get_service_client("/fromLL", FromLL)
         Vrx.to_lla = Vrx.nh.get_service_client("/toLL", ToLL)
         Vrx.task_info_sub = Vrx.nh.subscribe("/vrx/task/info", Task)
-        Vrx.scan_dock_color_sequence = Vrx.nh.get_service_client("/vrx/scan_dock/color_sequence", ColorSequence)
-        Vrx.station_keep_goal = Vrx.nh.subscribe("/vrx/station_keeping/goal", GeoPoseStamped)
-        Vrx.wayfinding_path_sub = Vrx.nh.subscribe("/vrx/wayfinding/waypoints", GeoPath)
-        Vrx.station_keeping_pose_error = Vrx.nh.subscribe("/vrx/station_keeping/pose_error", Float64)
-        Vrx.station_keeping_rms_error = Vrx.nh.subscribe("/vrx/station_keeping/rms_error", Float64)
-        Vrx.wayfinding_min_errors = Vrx.nh.subscribe("/vrx/wayfinding/min_errors", Float64MultiArray)
-        Vrx.wayfinding_mean_error = Vrx.nh.subscribe("/vrx/wayfinding/mean_error", Float64)
-        Vrx.perception_landmark = Vrx.nh.advertise("/vrx/perception/landmark", GeoPoseStamped)
+        Vrx.scan_dock_color_sequence = Vrx.nh.get_service_client(
+            "/vrx/scan_dock/color_sequence", ColorSequence)
+        Vrx.station_keep_goal = Vrx.nh.subscribe(
+            "/vrx/station_keeping/goal", GeoPoseStamped)
+        Vrx.wayfinding_path_sub = Vrx.nh.subscribe(
+            "/vrx/wayfinding/waypoints", GeoPath)
+        Vrx.station_keeping_pose_error = Vrx.nh.subscribe(
+            "/vrx/station_keeping/pose_error", Float64)
+        Vrx.station_keeping_rms_error = Vrx.nh.subscribe(
+            "/vrx/station_keeping/rms_error", Float64)
+        Vrx.wayfinding_min_errors = Vrx.nh.subscribe(
+            "/vrx/wayfinding/min_errors", Float64MultiArray)
+        Vrx.wayfinding_mean_error = Vrx.nh.subscribe(
+            "/vrx/wayfinding/mean_error", Float64)
+        Vrx.perception_landmark = Vrx.nh.advertise(
+            "/vrx/perception/landmark", GeoPoseStamped)
         #Vrx.scan_dock_placard_symbol = Vrx.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
 
-        Vrx.front_left_camera_info_sub = None 
+        Vrx.front_left_camera_info_sub = None
         Vrx.front_left_camera_sub = None
-
 
         Vrx._vrx_init = True
 
-    #@txros.util.cancellableInlineCallbacks
+    # @txros.util.cancellableInlineCallbacks
     def cleanup(self):
         pass
 
@@ -55,7 +62,6 @@ class Vrx(Navigator):
         if Vrx.front_left_camera_info_sub is None:
             Vrx.front_left_camera_info_sub = Vrx.nh.subscribe(
                 "/wamv/sensors/cameras/front_left_camera/camera_info", CameraInfo)
-
 
     @txros.util.cancellableInlineCallbacks
     def geo_pose_to_enu_pose(self, geo):

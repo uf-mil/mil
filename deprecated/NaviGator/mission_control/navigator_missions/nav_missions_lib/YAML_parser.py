@@ -25,7 +25,8 @@ def yaml_parse(yaml_text, navigator, total_time):
         if marker_dep != "None":
             marker = yield navigator.database_query(marker_dep, raise_exception=False)
             if not marker.found:
-                fprint("NOT COMPLETING {}, NO MARKER FOUND".format(name), msg_color="green")
+                fprint("NOT COMPLETING {}, NO MARKER FOUND".format(
+                    name), msg_color="green")
                 continue
             marker = marker.objects[0]
         else:
@@ -39,9 +40,11 @@ def yaml_parse(yaml_text, navigator, total_time):
 
         if "mission_script" in mission.keys():
             mission_script = mission["mission_script"]
-            m = Mission(name, marker, min_time, weight, points, looking_for, num_mission_deps, mission_script=mission_script)
+            m = Mission(name, marker, min_time, weight, points, looking_for,
+                        num_mission_deps, mission_script=mission_script)
         else:
-            m = Mission(name, marker, min_time, weight, points, looking_for, num_mission_deps)
+            m = Mission(name, marker, min_time, weight,
+                        points, looking_for, num_mission_deps)
         my_missions[name] = m
 
         if is_base:

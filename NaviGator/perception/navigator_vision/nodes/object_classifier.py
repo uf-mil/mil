@@ -46,15 +46,18 @@ class ObjectClassifier(object):
         clss, prob = self.classifier.classify(desc)
         clss = self.config.to_class(clss)
 
-        cv2.rectangle(draw, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), (0, 0, 255))
-        cv2.putText(draw, clss + ": " + str(np.round(prob)), (bbox[0], bbox[1]), 1, 1.0, (0, 255, 0))
+        cv2.rectangle(
+            draw, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), (0, 0, 255))
+        cv2.putText(draw, clss + ": " + str(np.round(prob)),
+                    (bbox[0], bbox[1]), 1, 1.0, (0, 255, 0))
         self.debug.add_image(draw, "stuff", topic="panda")
 
         if name == clss and prob > .8:
             fprint("Object Found", msg_color='green')
             resp.found = True
         else:
-            fprint("Object missclassified with class {}, prob {}".format(clss, prob), msg_color='red')
+            fprint("Object missclassified with class {}, prob {}".format(
+                clss, prob), msg_color='red')
             resp.found = False
         defer.returnValue(resp)
 

@@ -48,18 +48,23 @@ def MakeChainWithTimeout(base):
             if 'missions' not in parameters:
                 raise ParametersException('must have "missions" list')
             if not isinstance(parameters['missions'], list):
-                raise ParametersException('"missions" attribute must be a list')
+                raise ParametersException(
+                    '"missions" attribute must be a list')
             for mission in parameters['missions']:
                 if 'mission' not in mission:
-                    raise Exception('invalid parameters, missing attribute "mission"')
+                    raise Exception(
+                        'invalid parameters, missing attribute "mission"')
                 if not cls.has_mission(mission['mission']):
-                    raise Exception('mission "{}" not available'.format(mission['mission']))
+                    raise Exception(
+                        'mission "{}" not available'.format(mission['mission']))
                 if 'parameters' not in mission:
                     mission['parameters'] = ''
                 try:
-                    mission['parameters'] = cls.get_mission(mission['mission']).decode_parameters(mission['parameters'])
+                    mission['parameters'] = cls.get_mission(
+                        mission['mission']).decode_parameters(mission['parameters'])
                 except Exception as e:
-                    raise ParametersException('Invalid parameters for {}: {}'.format(mission['mission'], str(e)))
+                    raise ParametersException(
+                        'Invalid parameters for {}: {}'.format(mission['mission'], str(e)))
                 if 'timeout' not in mission:
                     mission['timeout'] = 0
                 if 'required' not in mission:
@@ -79,13 +84,18 @@ def MakeChainWithTimeout(base):
                     mission is required.
                     '''
                     if isinstance(final, failure.Failure):
-                        self.send_feedback('{} FAILED: {}'.format(mission['mission'], final.getErrorMessage()))
-                        if mission['required']:  # Fail whole chain if a required mission times out or fails
-                            raise SubmissionException(mission['mission'], final.getErrorMessage())
+                        self.send_feedback('{} FAILED: {}'.format(
+                            mission['mission'], final.getErrorMessage()))
+                        # Fail whole chain if a required mission times out or fails
+                        if mission['required']:
+                            raise SubmissionException(
+                                mission['mission'], final.getErrorMessage())
                     else:
-                        self.send_feedback('{} SUCCEEDED: {}'.format(mission['mission'], final))
+                        self.send_feedback('{} SUCCEEDED: {}'.format(
+                            mission['mission'], final))
                         print 'NO FAIL BRO'
-                df = self.run_submission_with_timeout(mission['mission'], mission['timeout'], mission['parameters'])
+                df = self.run_submission_with_timeout(
+                    mission['mission'], mission['timeout'], mission['parameters'])
                 df.addBoth(cb)
                 yield df
             self.send_feedback('Done with all')

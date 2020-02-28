@@ -49,7 +49,8 @@ class Mission(object):
                        "I hope this mission doesn't have any children.", msg_color="red")
         except Exception as exp:
             print exp
-            fprint("Oh man this is pretty bad, your mission's safe exit failed. SHAME!", msg_color="red")
+            fprint(
+                "Oh man this is pretty bad, your mission's safe exit failed. SHAME!", msg_color="red")
 
 
 class MissionPlanner:
@@ -156,7 +157,8 @@ class MissionPlanner:
         """
         for mission in self.tree:
             if self.can_complete(mission) and not self._is_in_queue(mission) and mission.name != self.current_mission_name:
-                fprint("mission: {}".format(mission.name), msg_color="blue", title="ADDING")
+                fprint("mission: {}".format(mission.name),
+                       msg_color="blue", title="ADDING")
                 self.queue.put(mission)
 
     def can_complete(self, mission):
@@ -189,7 +191,8 @@ class MissionPlanner:
             self.keep_running = False
 
     def _object_gone_missing(self, missing_objects):
-        fprint("This object {} is no longer in the list".format(missing_objects), msg_color="red")
+        fprint("This object {} is no longer in the list".format(
+            missing_objects), msg_color="red")
         self.helper.stop_ensuring_object_permanence()
         for o in missing_objects:
             if o in self.found:
@@ -201,7 +204,8 @@ class MissionPlanner:
         self.running_mission = False
         self.current_mission_name = None
         if err.type == defer.CancelledError:
-            fprint("Base mission cancelled", msg_color="red", title="BASE MISSION ERROR:")
+            fprint("Base mission cancelled", msg_color="red",
+                   title="BASE MISSION ERROR:")
         else:
             fprint(err, msg_color="red", title="BASE MISSION ERROR:")
 
@@ -228,13 +232,15 @@ class MissionPlanner:
                    title="{} MISSION ERROR: ".format(self.current_mission_name))
             defer.returnValue(True)
         else:
-            fprint(err, msg_color="red", title="{} MISSION ERROR: ".format(self.current_mission_name))
+            fprint(err, msg_color="red", title="{} MISSION ERROR: ".format(
+                self.current_mission_name))
         yield self.current_mission.safe_exit(self.navigator, err, self, self.module)
         self._mission_complete(self.current_mission)
         self.current_mission = None
 
     def _end_mission(self, result):
-        self.pub_msn_info.publish(String("Ending Mission {}".format(self.current_mission_name)))
+        self.pub_msn_info.publish(
+            String("Ending Mission {}".format(self.current_mission_name)))
         fprint(str(result) + " TIME: " + str((self.nh.get_time() - self.current_mission_start_time).to_sec()),
                msg_color="green", title="{} MISSION COMPLETE: ".format(self.current_mission_name))
         self.running_mission = False
@@ -246,23 +252,27 @@ class MissionPlanner:
 
     @util.cancellableInlineCallbacks
     def _run_mission(self, mission):
-        self.pub_msn_info.publish(String("Starting Mission {}".format(mission.name)))
+        self.pub_msn_info.publish(
+            String("Starting Mission {}".format(mission.name)))
         yield self.nh.sleep(.3)
         self.running_mission = True
         self.current_mission_name = mission.name
         self.current_mission = mission
-        self.helper.ensure_object_permanence(mission.item_dep, self._object_gone_missing)
+        self.helper.ensure_object_permanence(
+            mission.item_dep, self._object_gone_missing)
         self.mission_defer = self.do_mission(mission)
         self.current_mission_timeout = genpy.Duration(mission.timeout)
         self.current_mission_start_time = self.nh.get_time()
-        self.mission_defer.addCallbacks(self._end_mission, errback=self._err_mission)
+        self.mission_defer.addCallbacks(
+            self._end_mission, errback=self._err_mission)
 
     def _run_base_mission(self):
         if self.base_mission is not None:
             self.running_mission = True
             self.current_mission_name = self.base_mission.name
             self.mission_defer = self.do_mission(self.base_mission)
-            self.mission_defer.addCallbacks(self._end_base_mission, errback=self._err_base_mission)
+            self.mission_defer.addCallbacks(
+                self._end_base_mission, errback=self._err_base_mission)
 
     @util.cancellableInlineCallbacks
     def empty_queue(self):
@@ -271,7 +281,8 @@ class MissionPlanner:
         while self.keep_running:
             if self.current_mission_timeout is not None:
                 if (self.nh.get_time() - self.current_mission_start_time) > self.current_mission_timeout:
-                    fprint(self.current_mission_name, msg_color="red", title="MISSION TIMEOUT:")
+                    fprint(self.current_mission_name,
+                           msg_color="red", title="MISSION TIMEOUT:")
                     self.mission_defer.cancel()
             if self.running_mission:
                 self.refresh()
@@ -288,4 +299,5 @@ class MissionPlanner:
                 self.refresh()
                 yield self.nh.sleep(1)
 
-        fprint("TOTAL RUN TIME: {}".format((self.nh.get_time() - starting_time).to_sec()), msg_color="green")
+        fprint("TOTAL RUN TIME: {}".format(
+            (self.nh.get_time() - starting_time).to_sec()), msg_color="green")

@@ -53,7 +53,8 @@ class VampireIdentifier:
                                       '/camera/down/image_rect_color')
         self.goal = None
         self.last_config = None
-        self.reconfigure_server = DynamicReconfigureServer(VampireIdentifierConfig, self.reconfigure)
+        self.reconfigure_server = DynamicReconfigureServer(
+            VampireIdentifierConfig, self.reconfigure)
 
         # Instantiate remaining variables and objects
         self._observations = deque()
@@ -99,34 +100,35 @@ class VampireIdentifier:
         return ret
 
     def reconfigure(self, config, level):
-            try:
-                self.override = config['override']
-                self.goal = config['target']
-                self.lower = self.parse_string(config['dyn_lower'])
-                self.upper = self.parse_string(config['dyn_upper'])
-                self.min_trans = config['min_trans']
-                self.max_velocity = config['max_velocity'] 
-                self.timeout = config['timeout']
-                self.min_observations = config['min_obs']
+        try:
+            self.override = config['override']
+            self.goal = config['target']
+            self.lower = self.parse_string(config['dyn_lower'])
+            self.upper = self.parse_string(config['dyn_upper'])
+            self.min_trans = config['min_trans']
+            self.max_velocity = config['max_velocity']
+            self.timeout = config['timeout']
+            self.min_observations = config['min_obs']
 
-            except ValueError as e:
-                rospy.logwarn('Invalid dynamic reconfigure: {}'.format(e))
-                return self.last_config
+        except ValueError as e:
+            rospy.logwarn('Invalid dynamic reconfigure: {}'.format(e))
+            return self.last_config
 
-            if self.override:
-                # Dynamic Values for testing
-                self.lower = np.array(self.lower)
-                self.upper = np.array(self.upper)
+        if self.override:
+            # Dynamic Values for testing
+            self.lower = np.array(self.lower)
+            self.upper = np.array(self.upper)
+        else:
+            # Hard Set for use in Competition
+            if self.goal == 'drac':
+                self.lower = rospy.get_param('~dracula_low_thresh', [0, 0, 80])
+                self.upper = rospy.get_param(
+                    '~dracula_high_thresh', [0, 0, 80])
             else:
-                # Hard Set for use in Competition
-                if self.goal == 'drac':
-                    self.lower = rospy.get_param('~dracula_low_thresh', [0, 0, 80])
-                    self.upper = rospy.get_param('~dracula_high_thresh', [0, 0, 80])
-                else:
-                    raise ValueError('Invalid Target Name')
-            self.last_config = config
-            rospy.loginfo('Params succesfully updated via dynamic reconfigure')
-            return config
+                raise ValueError('Invalid Target Name')
+        self.last_config = config
+        rospy.loginfo('Params succesfully updated via dynamic reconfigure')
+        return config
 
     def image_cb(self, image):
         '''
@@ -210,7 +212,7 @@ class VampireIdentifier:
         '''
         Fetch all recent observations + clear old ones
         '''
-        
+
         self.clear_old_observations()
         return (self._observations, self._pose_pairs)
 
@@ -299,7 +301,6 @@ class VampireIdentifier:
                         self.image_pub.publish(cv_image)
                     except CvBridgeError as e:
                         print(e)
-
 
                 # Grab the largest contour. Generally this is a safe bet but... We may need to tweak this for the three different vampires.
                 peri = cv2.arcLength(c, True)

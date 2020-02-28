@@ -10,13 +10,15 @@ class ImageCrawler(object):
         '''
         assert '.' in starting_image, "Please include the first image in your sequence."
         self.image_path = starting_image.rsplit('/', 1)[0] + '/'
-        self.starting_image, self.image_format = starting_image.rsplit('/', 1)[1].split('.')
+        self.starting_image, self.image_format = starting_image.rsplit(
+            '/', 1)[1].split('.')
 
     def crawl(self, topic, max_msgs=float('inf')):
         num_seen = 0
         while num_seen < max_msgs:
             image_number = int(self.starting_image) + int(num_seen)
-            image_path = self.image_path + str(image_number) + '.' + self.image_format
+            image_path = self.image_path + \
+                str(image_number) + '.' + self.image_format
             image = cv2.imread(image_path)
 
             num_seen += 1
@@ -44,6 +46,7 @@ class VideoCrawler(object):
     @property
     def image_topics(self):
         return [None]
+
 
 if __name__ == '__main__':
     bag = '/Volumes/FLASHDRIVE/2016-05-22-11-31-42_images/0.png'

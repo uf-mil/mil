@@ -112,9 +112,11 @@ class ScanTheCodePerception(object):
 
     def _get_2d_points_stc(self, points_3d):
         # xmin, ymin, zmin = self._get_top_left_point(points_3d)
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+        criteria = (cv2.TERM_CRITERIA_EPS +
+                    cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
         points_3d = np.float32(points_3d)
-        ret, label, centers = cv2.kmeans(np.array(points_3d), 2, criteria, 10, 0)
+        ret, label, centers = cv2.kmeans(
+            np.array(points_3d), 2, criteria, 10, 0)
         data = Counter(label.flatten())
         max_label = data.most_common(1)[0][0]
         c = centers[max_label]
@@ -123,7 +125,8 @@ class ScanTheCodePerception(object):
         points_3d = [[xmin - .3, ymin - .3, zmin], [xmin + .3, ymin + .3, zmin],
                      [xmin - .3, ymin + .3, zmin], [xmin + .3, ymin - .3, zmin]]
 
-        points_2d = map(lambda x: self.camera_model.project3dToPixel(x), points_3d)
+        points_2d = map(
+            lambda x: self.camera_model.project3dToPixel(x), points_3d)
         return points_2d
 
     def _get_bounding_rect(self, points_2d, img):
@@ -210,7 +213,8 @@ class ScanTheCodePerception(object):
 
         # points_3d = yield self._get_3d_points_stereo(scan_the_code.points, image_ros.header.stamp)
         # points_2d = map(lambda x: self.camera_model.project3dToPixel(x), points_3d)
-        points_2d = map(lambda x: self.camera_model.project3dToPixel(x), points_3d)
+        points_2d = map(
+            lambda x: self.camera_model.project3dToPixel(x), points_3d)
         for p in points_2d:
             po = (int(round(p[0])), int(round(p[1])))
             cv2.circle(image_clone, po, 2, (0, 255, 0), -1)
@@ -230,7 +234,8 @@ class ScanTheCodePerception(object):
         if not succ:
             defer.returnValue((False, None))
 
-        self.mission_complete, colors = self.color_finder.check_for_colors(image, color_vec, self.debug)
+        self.mission_complete, colors = self.color_finder.check_for_colors(
+            image, color_vec, self.debug)
         if self.mission_complete:
             print "MISSION COMPLETE"
             defer.returnValue((True, colors))
@@ -243,7 +248,8 @@ class ScanTheCodePerception(object):
         pntcloud = yield self.vel_sub.get_next_message()
         points_3d = yield self.get_stc_points(pntcloud, scan_the_code.position)
         xmin, ymin, zmin = self._get_top_left_point(points_3d)
-        points_oi = self._get_points_in_range('y', ymin - .1, ymin + .2, points_3d)
+        points_oi = self._get_points_in_range(
+            'y', ymin - .1, ymin + .2, points_3d)
         if len(points_oi) == 0:
             defer.returnValue(False)
 

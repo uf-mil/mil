@@ -11,6 +11,7 @@ class MissionClientCli(object):
     Node to send and monitor a new mission, cancel a mission, or cancel the current
     missions. Verbosely prints current state and fedback to the terminal.
     '''
+
     def __init__(self):
         self.client = MissionClient()
         connected = self.client.wait_for_server(rospy.Duration(0.25))
@@ -24,7 +25,8 @@ class MissionClientCli(object):
     def list(cls):
         missions = MissionClient.available_missions()
         if not missions:
-            print '{} param not set. Is mission runner running?'.format(cls.LIST_PARAM)
+            print '{} param not set. Is mission runner running?'.format(
+                cls.LIST_PARAM)
             return
         print 'Available Missions:'
         for mission in missions:
@@ -52,7 +54,8 @@ class MissionClientCli(object):
         self.first_feedback = True
         print 'Starting mission ', mission
         self.running = True
-        self.client.run_mission(mission, parameters, feedback_cb=self._feedback_cb)
+        self.client.run_mission(mission, parameters,
+                                feedback_cb=self._feedback_cb)
         self.client.wait_for_result()
         result = self.client.get_result()
         self.running = False
@@ -77,13 +80,15 @@ class MissionClientCli(object):
 
 def main():
     argv = rospy.myargv()
-    parser = argparse.ArgumentParser(description='Runs a mission on the mission_runner server')
+    parser = argparse.ArgumentParser(
+        description='Runs a mission on the mission_runner server')
     subparser = parser.add_subparsers()
 
     list_parser = subparser.add_parser('list', help='List available missions')
     list_parser.set_defaults(cmd='list')
 
-    cancel_parser = subparser.add_parser('cancel', help='Cancel current mission')
+    cancel_parser = subparser.add_parser(
+        'cancel', help='Cancel current mission')
     cancel_parser.set_defaults(cmd='cancel')
 
     run_parser = subparser.add_parser('run', help='Start a new mission')
@@ -105,6 +110,7 @@ def main():
     assert args.cmd == 'run'
     parameters = ' '.join(args.parameters)
     client.run_mission(args.mission, parameters)
+
 
 if __name__ == '__main__':
     main()

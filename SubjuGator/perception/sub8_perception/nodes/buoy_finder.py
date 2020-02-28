@@ -23,6 +23,7 @@ class Buoy(object):
     color values to segment an image for its color and an internal
     buffer of observations to use in position estimation.
     '''
+
     def __init__(self, color, debug_cv=False):
         self._observations = deque()
         self._pose_pairs = deque()
@@ -35,7 +36,8 @@ class Buoy(object):
         self.timeout = rospy.Duration(rospy.get_param('~timeout_seconds'))
         self.min_trans = rospy.get_param('~min_trans')
         self.threshold = Threshold.from_param('/color/buoy/{}'.format(color))
-        rospy.loginfo('{} buoy has {}'.format(color, self.threshold))  # Print threshold for each buoy
+        # Print threshold for each buoy
+        rospy.loginfo('{} buoy has {}'.format(color, self.threshold))
         if debug_cv:
             self.threshold.create_trackbars(window=color)
 
@@ -107,6 +109,7 @@ class BuoyFinder(object):
 
     TODO: Use same mask for yellow/green
     '''
+
     def __init__(self):
         self.tf_listener = tf.TransformListener()
 
@@ -114,7 +117,8 @@ class BuoyFinder(object):
         self.last_image = None
         self.last_image_time = None
         self.camera_model = None
-        self.circle_finder = CircleFinder(1.0)  # Model radius doesn't matter beacause it's not being used for 3D pose
+        # Model radius doesn't matter beacause it's not being used for 3D pose
+        self.circle_finder = CircleFinder(1.0)
 
         # Various constants for tuning, debugging. See buoy_finder.yaml for more info
         self.min_observations = rospy.get_param('~min_observations')
@@ -125,7 +129,8 @@ class BuoyFinder(object):
         self.max_velocity = rospy.get_param('~max_velocity')
         self.roi_y = rospy.get_param('~roi_y')
         self.roi_height = rospy.get_param('~roi_height')
-        camera = rospy.get_param('~camera_topic', '/camera/front/right/image_rect_color')
+        camera = rospy.get_param(
+            '~camera_topic', '/camera/front/right/image_rect_color')
 
         self.buoys = {}
         for color in ['red', 'yellow', 'green']:
@@ -136,7 +141,8 @@ class BuoyFinder(object):
 
         # Keep latest odom message for sanity check
         self.last_odom = None
-        self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_cb, queue_size=3)
+        self.odom_sub = rospy.Subscriber(
+            '/odom', Odometry, self.odom_cb, queue_size=3)
 
         self.image_sub = Image_Subscriber(camera, self.image_cb)
         if self.debug_ros:
@@ -231,12 +237,14 @@ class BuoyFinder(object):
         roi_y = int(self.roi_y * height)
         roi_height = height - int(self.roi_height * height)
         self.roi = (0, roi_y, roi_height, image.shape[1])
-        self.last_image = image[self.roi[1]:self.roi[2], self.roi[0]:self.roi[3]]
+        self.last_image = image[self.roi[1]
+            :self.roi[2], self.roi[0]:self.roi[3]]
         self.image_area = self.last_image.shape[0] * self.last_image.shape[1]
 
         if self.debug_ros:
             # Create a blacked out debug image for putting masks in
-            self.mask_image = np.zeros(self.last_image.shape, dtype=image.dtype)
+            self.mask_image = np.zeros(
+                self.last_image.shape, dtype=image.dtype)
         if self.last_image_time is not None and self.image_sub.last_image_time < self.last_image_time:
             # Clear tf buffer if time went backwards (nice for playing bags in loop)
             self.tf_listener.clear()
@@ -286,10 +294,12 @@ class BuoyFinder(object):
         circular_contours = filter(self.is_circular_contour, contours)
         if len(circular_contours) == 0:
             return None, 'fails circularity test'
-        circles_sorted = sorted(circular_contours, key=cv2.contourArea, reverse=True)
+        circles_sorted = sorted(
+            circular_contours, key=cv2.contourArea, reverse=True)
         if cv2.contourArea(circles_sorted[0]) < self.min_contour_area * self.image_area:
             return None, 'fails area test'
-        return circles_sorted[0], None  # Return the largest contour that pases shape test
+        # Return the largest contour that pases shape test
+        return circles_sorted[0], None
 
     def find_single_buoy(self, buoy_type):
         '''
@@ -302,7 +312,8 @@ class BuoyFinder(object):
         5) If observations for this buoy is now >= min_observations, approximate buoy
            position using the least squares tool imported
         '''
-        assert buoy_type in self.buoys.keys(), "Buoys_2d does not know buoy color: {}".format(buoy_type)
+        assert buoy_type in self.buoys.keys(
+        ), "Buoys_2d does not know buoy color: {}".format(buoy_type)
         buoy = self.buoys[buoy_type]
         mask = buoy.get_mask(self.last_image)
         kernel = np.ones((5, 5), np.uint8)
@@ -312,7 +323,8 @@ class BuoyFinder(object):
         _, contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE,
                                           offset=(self.roi[0], self.roi[1]))
         if self.debug_ros:
-            cv2.add(self.mask_image.copy(), buoy.cv_colors, mask=mask, dst=self.mask_image)
+            cv2.add(self.mask_image.copy(), buoy.cv_colors,
+                    mask=mask, dst=self.mask_image)
         if self.debug_cv:
             self.debug_images[buoy_type] = mask.copy()
 
@@ -328,7 +340,8 @@ class BuoyFinder(object):
                        int(radius), buoy.cv_colors, 4)
 
         try:
-            self.tf_listener.waitForTransform('/map', self.frame_id, self.last_image_time, rospy.Duration(0.2))
+            self.tf_listener.waitForTransform(
+                '/map', self.frame_id, self.last_image_time, rospy.Duration(0.2))
         except tf.Exception as e:
             rospy.logwarn("Could not transform camera to map: {}".format(e))
             return False
@@ -337,14 +350,16 @@ class BuoyFinder(object):
             buoy.status = 'failed sanity check'
             return False
 
-        (t, rot_q) = self.tf_listener.lookupTransform('/map', self.frame_id, self.last_image_time)
+        (t, rot_q) = self.tf_listener.lookupTransform(
+            '/map', self.frame_id, self.last_image_time)
         R = mil_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
 
         buoy.add_observation(center, (np.array(t), R), self.last_image_time)
 
         observations, pose_pairs = buoy.get_observations_and_pose_pairs()
         if len(observations) > self.min_observations:
-            buoy.est = self.multi_obs.lst_sqr_intersection(observations, pose_pairs)
+            buoy.est = self.multi_obs.lst_sqr_intersection(
+                observations, pose_pairs)
             buoy.status = 'Pose found'
             if self.debug_ros:
                 self.rviz.draw_sphere(buoy.est, color=buoy.draw_colors,
@@ -366,6 +381,7 @@ class BuoyFinder(object):
             return False
 
         return True
+
 
 if __name__ == '__main__':
     rospy.init_node('buoy_finder')

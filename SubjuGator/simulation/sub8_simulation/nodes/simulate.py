@@ -24,9 +24,11 @@ class SimWorld(rendering.Canvas):
         self.entity_pairs = []
 
         # Physics world starts with such a plane
-        self.rendering_world.add_plane((0.0, 0.0, 1.0), 100.0, 100.0, color=(0, 0, 255, 170))
+        self.rendering_world.add_plane(
+            (0.0, 0.0, 1.0), 100.0, 100.0, color=(0, 0, 255, 170))
 
-        self.rendering_world.add_mesh(Transdec, (0.0, 0.0, 0.0), orientation=None, color=(155, 155, 100), shininess=3.0)
+        self.rendering_world.add_mesh(
+            Transdec, (0.0, 0.0, 0.0), orientation=None, color=(155, 155, 100), shininess=3.0)
         self.physics_world.add_entity(Mesh, (0.0, 0.0, 0.0), 10., Transdec)
 
         self.rendering_world.add_point_light((0.0, 1.0, 0.0), (0.0, 0.0, 0.0))
@@ -55,7 +57,8 @@ class SimWorld(rendering.Canvas):
         self.entity_pairs.append((visual, physical))
 
     def add_sub(self, position):
-        self.sub = Sub(self.rendering_world, self.physics_world, position, thrust_indicators=False)
+        self.sub = Sub(self.rendering_world, self.physics_world,
+                       position, thrust_indicators=False)
         visual = self.sub.visual  # property
         physical = self.sub.physical  # property
         self.entity_pairs.append((visual, physical))

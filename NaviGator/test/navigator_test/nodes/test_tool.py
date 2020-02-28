@@ -20,7 +20,8 @@ def _import(module):
 def main():
     """Main method to the test node"""
     nh, args = yield NodeHandle.from_argv_with_remaining("navigator_test")
-    available_missions = [mission_name for mission_name in dir(navigator_tests) if mission_name[0] != '_']
+    available_missions = [mission_name for mission_name in dir(
+        navigator_tests) if mission_name[0] != '_']
 
     parser = argparse.ArgumentParser(description='NaviGator Test')
     parser.add_argument('tests', type=str, nargs='+',

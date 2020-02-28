@@ -9,6 +9,7 @@ class AdderDeviceTest(unittest.TestCase):
     Integration test for CAN2USB board driver. Talks
     to a simualted CAN device which should add two integers
     '''
+
     def __init__(self, *args):
         self.srv = rospy.ServiceProxy('add_two_ints', AddTwoInts)
         super(AdderDeviceTest, self).__init__(*args)

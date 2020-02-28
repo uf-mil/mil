@@ -47,14 +47,16 @@ class BagConfig(object):
             raise Exception('Config for bag has no filename')
         self.filename = config['file']
         if 'topics' not in config:
-            raise Exception('{} config has no topics listed'.format(self.filename))
+            raise Exception(
+                '{} config has no topics listed'.format(self.filename))
         self.topics = config['topics']
         if not isinstance(self.topics, list):
             self.topics = [self.topics]
         self.start = config['start'] if 'start' in config else None
         self.stop = config['stop'] if 'stop' in config else None
         self.freq = config['freq'] if 'freq' in config else None
-        self.name = config['name'] if 'name' in config else self.default_name(self.filename)
+        self.name = config['name'] if 'name' in config else self.default_name(
+            self.filename)
         self.outfile = config['outfile'] if 'outfile' in config else self.filename
 
 
@@ -160,16 +162,21 @@ class BagToLabelMe(object):
 
         # Load start, stop, and frequency from config or defaults
         _, _, first_time = bag.read_messages().next()
-        start = first_time + rospy.Duration(config.start) if config.start else first_time
-        stop = first_time + rospy.Duration(config.stop) if config.stop else None
-        interval = rospy.Duration(1.0 / config.freq) if config.freq else rospy.Duration(0)
+        start = first_time + \
+            rospy.Duration(config.start) if config.start else first_time
+        stop = first_time + \
+            rospy.Duration(config.stop) if config.stop else None
+        interval = rospy.Duration(
+            1.0 / config.freq) if config.freq else rospy.Duration(0)
 
         # Crawl through bag in configured time and frequency, writing images into labelme
         next_time = start + interval
         for topic, msg, time in bag.read_messages(topics=config.topics, start_time=start, end_time=stop):
             if time >= next_time:
-                img = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
-                filename = os.path.join(paths[topic], str(msg.header.stamp) + '.jpg')
+                img = self.bridge.imgmsg_to_cv2(
+                    msg, desired_encoding='passthrough')
+                filename = os.path.join(
+                    paths[topic], str(msg.header.stamp) + '.jpg')
                 cv2.imwrite(filename, img)
                 next_time = time + interval
 
@@ -188,11 +195,14 @@ class BagToLabelMe(object):
         '''
         # Open output bag to write labels (along with original content) to
         outfilename = os.path.join(self.outdir, bag.outfile)
-        if os.path.exists(outfilename):  # If output bag already exists, only override if force glag is set
+        # If output bag already exists, only override if force glag is set
+        if os.path.exists(outfilename):
             if self.force:
-                self._print('{} already exists. OVERRIDING'.format(outfilename))
+                self._print(
+                    '{} already exists. OVERRIDING'.format(outfilename))
             else:
-                self._print('{} already exists. Not overriding'.format(outfilename))
+                self._print(
+                    '{} already exists. Not overriding'.format(outfilename))
                 return
         infilename = os.path.join(self.indir, bag.filename)
         inbag = rosbag.Bag(infilename)
@@ -236,7 +246,8 @@ class BagToLabelMe(object):
             total_xml_count += x
             total_img_count += i
         if total_img_count == 0:
-            print "{}/{} TOTAL images labeled (0%)".format(total_xml_count, total_img_count)
+            print "{}/{} TOTAL images labeled (0%)".format(
+                total_xml_count, total_img_count)
         else:
             print "{}/{} TOTAL images labeled ({:.1%})".format(total_xml_count, total_img_count,
                                                                total_xml_count / total_img_count)
@@ -264,7 +275,8 @@ class BagToLabelMe(object):
                 for imgfile in os.listdir(img_path):
                     img_count += 1
         if img_count == 0:
-            self._print("\t{}/{} images labeled in {} (0%)", xml_count, img_count, bag.name)
+            self._print("\t{}/{} images labeled in {} (0%)",
+                        xml_count, img_count, bag.name)
         else:
             self._print("\t{}/{} images labeled in {} ({:.1%})", xml_count, img_count, bag.name,
                         xml_count / img_count)

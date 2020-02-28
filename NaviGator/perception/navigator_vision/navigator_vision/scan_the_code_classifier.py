@@ -5,7 +5,8 @@ import os
 
 
 class ScanTheCodeClassifier(GaussianColorClassifier):
-    CLASSES = ['stc_panel_off', 'stc_panel_red', 'stc_panel_green', 'stc_panel_blue', 'stc_panel_yellow']
+    CLASSES = ['stc_panel_off', 'stc_panel_red',
+               'stc_panel_green', 'stc_panel_blue', 'stc_panel_yellow']
 
     def __init__(self):
         rospack = RosPack()

@@ -65,7 +65,8 @@ class RobotXStartServices:
         rospy.Subscriber("lla", PointStamped, self.gps_coord_callback)
         rospy.Subscriber("odom", Odometry, self.gps_odom_callback)
         rospy.Subscriber("/wrench/selected", String, self.wrench_callback)
-        rospy.Subscriber("/scan_the_code", ScanTheCode, self.scan_the_code_callback)
+        rospy.Subscriber("/scan_the_code", ScanTheCode,
+                         self.scan_the_code_callback)
 
         # track kill state for inferring system mode
         self.kill_listener = AlarmListener('kill', self.kill_callback)
@@ -198,10 +199,12 @@ class RobotXClient:
 
     def connect(self):
         if not self.connected:
-            rospy.loginfo("Attempting Connection to TD Server at {}:{}".format(self.tcp_ip, self.tcp_port))
+            rospy.loginfo("Attempting Connection to TD Server at {}:{}".format(
+                self.tcp_ip, self.tcp_port))
         while not self.connected and not rospy.is_shutdown():
             # recreate socket
-            self.socket_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket_connection = socket.socket(
+                socket.AF_INET, socket.SOCK_STREAM)
             # attempt to reconnect, otherwise sleep for 2 seconds
             try:
                 self.socket_connection.connect((self.tcp_ip, self.tcp_port))

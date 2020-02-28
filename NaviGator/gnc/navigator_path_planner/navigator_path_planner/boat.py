@@ -90,7 +90,8 @@ def gen_ss(seed, goal, buff=[ss_start] * 4):
 
     """
     return [(min([seed[0], goal[0]]) - buff[0], max([seed[0], goal[0]]) + buff[1]),
-            (min([seed[1], goal[1]]) - buff[2], max([seed[1], goal[1]]) + buff[3]),
+            (min([seed[1], goal[1]]) - buff[2],
+             max([seed[1], goal[1]]) + buff[3]),
             (-np.pi, np.pi),
             (-abs(velmax_neg[0]), velmax_pos[0]),
             (-abs(velmax_neg[1]), velmax_pos[1]),

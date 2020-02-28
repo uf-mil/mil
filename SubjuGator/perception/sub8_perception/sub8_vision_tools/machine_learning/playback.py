@@ -20,7 +20,8 @@ if __name__ == '__main__':
         dest='classifer',
         type=str,
         help="Name of the classifer to use. Right now only sklearn classifers.")
-    parser.add_argument('--topic', type=str, help="Name of the topic to use in a bag or the usb camera number.")
+    parser.add_argument(
+        '--topic', type=str, help="Name of the topic to use in a bag or the usb camera number.")
 
     args = parser.parse_args(sys.argv[1:])
 
@@ -38,7 +39,8 @@ if __name__ == '__main__':
 
     last_mask = None
     if args.topic is not None:
-        assert args.topic in bc.image_topics, "{} not in the bag".format(args.topic)
+        assert args.topic in bc.image_topics, "{} not in the bag".format(
+            args.topic)
         print 'Crawling topic {}'.format(args.topic)
         crawl = bc.crawl(topic=args.topic)
     else:
@@ -46,7 +48,8 @@ if __name__ == '__main__':
 
     for image in crawl:
         some_observations = observe(image)
-        mask = clf.predict(some_observations.reshape(-1, some_observations.shape[1])) * 255
+        mask = clf.predict(some_observations.reshape(-1,
+                                                     some_observations.shape[1])) * 255
         cv2.imshow('image', image)
         cv2.imshow('mask', mask.reshape(image.shape[:2]).astype(np.uint8))
         cv2.waitKey(1)

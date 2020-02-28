@@ -21,6 +21,7 @@ class RunMissionTest(unittest.TestCase):
         self.assertEqual(result.parameters, '')
         self.assertEqual(result.result, 'The darkness isnt so scary')
 
+
 if __name__ == '__main__':
     import rostest
     rospy.init_node('run_mission_test')

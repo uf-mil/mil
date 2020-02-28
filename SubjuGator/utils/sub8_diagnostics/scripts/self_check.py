@@ -88,7 +88,8 @@ class ThrusterChecker(TemplateChecker):
 
     @txros.util.cancellableInlineCallbacks
     def tx_init(self):
-        self.thruster_topic = self.nh.subscribe("thrusters/thruster_status", ThrusterStatus)
+        self.thruster_topic = self.nh.subscribe(
+            "thrusters/thruster_status", ThrusterStatus)
 
         thrusters = None
         try:
@@ -106,15 +107,18 @@ class ThrusterChecker(TemplateChecker):
         try:
             passed = yield txros.util.wrap_timeout(self.get_all_thrusters(), MESSAGE_TIMEOUT)
         except txros.util.TimeoutError:
-            lost_thrusters = [x[0] for x in self.found_thrusters.items() if not x[1]]
+            lost_thrusters = [x[0]
+                              for x in self.found_thrusters.items() if not x[1]]
             err_msg = ''
             if not any(self.found_thrusters.values()):
                 self.fail_check("no messages found.")
             elif self.found_thrusters.values().count(False) > 1:
-                err_msg += "more than one failed thruster: {}".format(lost_thrusters)
+                err_msg += "more than one failed thruster: {}".format(
+                    lost_thrusters)
                 self.fail_check(err_msg)
             elif self.found_thrusters.values().count(False) == 1:
-                err_msg += "one thruster is out ({}), things should still work.".format(lost_thrusters)
+                err_msg += "one thruster is out ({}), things should still work.".format(
+                    lost_thrusters)
                 self.warn_check(err_msg)
             else:
                 self.warn_check("unknown timeout reason.")
@@ -141,15 +145,22 @@ class CameraChecker(TemplateChecker):
     @txros.util.cancellableInlineCallbacks
     def tx_init(self):
         self.front_cam_product_id = "1e10:3300"  # should be changed if cameras change
-        self.right = self.nh.subscribe("/camera/front/right/image_rect_color", Image)
-        self.right_info = self.nh.subscribe("/camera/front/right/camera_info", CameraInfo)
-        self.left = self.nh.subscribe("/camera/front/left/image_rect_color", Image)
-        self.left_info = self.nh.subscribe("/camera/front/left/camera_info", CameraInfo)
-        self.down = self.nh.subscribe("/camera/down/left/image_rect_color", Image)  # TODO
-        self.down_info = self.nh.subscribe("/camera/down/left/camera_info", CameraInfo)  # TODO
+        self.right = self.nh.subscribe(
+            "/camera/front/right/image_rect_color", Image)
+        self.right_info = self.nh.subscribe(
+            "/camera/front/right/camera_info", CameraInfo)
+        self.left = self.nh.subscribe(
+            "/camera/front/left/image_rect_color", Image)
+        self.left_info = self.nh.subscribe(
+            "/camera/front/left/camera_info", CameraInfo)
+        self.down = self.nh.subscribe(
+            "/camera/down/left/image_rect_color", Image)  # TODO
+        self.down_info = self.nh.subscribe(
+            "/camera/down/left/camera_info", CameraInfo)  # TODO
 
         self.subs = [("Right Image", self.right.get_next_message()), ("Right Info", self.right_info.get_next_message()),
-                     ("Left Image", self.left.get_next_message()), ("Left Info", self.left_info.get_next_message()),
+                     ("Left Image", self.left.get_next_message()
+                      ), ("Left Info", self.left_info.get_next_message()),
                      ("Down Image", self.down.get_next_message()), ("Down Info", self.down_info.get_next_message())]
 
         print self.p.bold("\n  >>>>   ").set_blue.bold("Camera Check")
@@ -162,7 +173,8 @@ class CameraChecker(TemplateChecker):
         err_str = "{} front camera{} not connected to usb port"
         try:
             count_front_cam_usb = \
-                subprocess.check_output(["/bin/sh", "-c", command]).count("Point Grey")
+                subprocess.check_output(
+                    ["/bin/sh", "-c", command]).count("Point Grey")
             if(count_front_cam_usb < 2):
                 self.fail_check(err_str.format("One", ""))
         except subprocess.CalledProcessError:
@@ -191,11 +203,14 @@ class StateEstChecker(TemplateChecker):
         self.mag = self.nh.subscribe("/imu/mag", MagneticField)
 
         self.subs = [("Odom", self.odom.get_next_message()), ("TF", self.tf.get_next_message()),
-                     ("DVL", self.dvl.get_next_message()), ("Height", self.height.get_next_message()),
-                     ("Depth", self.depth.get_next_message()), ("IMU", self.imu.get_next_message()),
+                     ("DVL", self.dvl.get_next_message()
+                      ), ("Height", self.height.get_next_message()),
+                     ("Depth", self.depth.get_next_message()
+                      ), ("IMU", self.imu.get_next_message()),
                      ("Mag", self.mag.get_next_message())]
 
-        print self.p.bold("\n  >>>>   ").set_blue.bold("State Estimation Check")
+        print self.p.bold("\n  >>>>   ").set_blue.bold(
+            "State Estimation Check")
         yield self.nh.sleep(0.1)  # Try to get all the subs
 
     @txros.util.cancellableInlineCallbacks
@@ -278,6 +293,7 @@ def main():
 
     print p.newline().set_blue.bold("-------- Finished!").newline()
     reactor.stop()
+
 
 if __name__ == '__main__':
     reactor.callWhenRunning(main)

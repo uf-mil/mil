@@ -24,7 +24,8 @@ class DoOdom(object):
     def __init__(self, rand_size):
         self.odom_pub = rospy.Publisher("/odom", Odometry, queue_size=2)
         self.odom = None
-        self.carrot_sub = rospy.Subscriber("/trajectory/cmd", Odometry, self.set_odom)
+        self.carrot_sub = rospy.Subscriber(
+            "/trajectory/cmd", Odometry, self.set_odom)
 
         fprint("Shaking hands and taking names.")
         rospy.sleep(1)
@@ -61,7 +62,8 @@ class Sim(object):
         self.origin = mil_tools.numpy_quat_pair_to_pose([-bf_size, -bf_size, 0],
                                                         [0, 0, 0, 1])
 
-        self.publish_ogrid = lambda *args: self.ogrid_pub.publish(self.get_message())
+        self.publish_ogrid = lambda *args: self.ogrid_pub.publish(
+            self.get_message())
 
         self.buoy_size = 1  # radius of buoy (m)
         self.totem_size = 1  # radius of totem (m)
@@ -78,19 +80,23 @@ class Sim(object):
         rospy.Timer(rospy.Duration(1), self.publish_ogrid)
 
     def _make_ogrid_transform(self):
-        self.grid = np.zeros((self.height / self.resolution, self.width / self.resolution))
+        self.grid = np.zeros(
+            (self.height / self.resolution, self.width / self.resolution))
         # Transforms points from ENU to ogrid frame coordinates
         self.t = np.array([[1 / self.resolution, 0, -self.origin.position.x / self.resolution],
-                           [0, 1 / self.resolution, -self.origin.position.y / self.resolution],
+                           [0, 1 / self.resolution, -
+                               self.origin.position.y / self.resolution],
                            [0, 0, 1]])
 
         return lambda point: self.t.dot(np.append(point[:2], 1))[:2]
 
     def reseed(self, req):
         # Generate some buoys and totems
-        buoy_positions = np.random.uniform(self.bf_size, size=(self.num_of_buoys, 2))
+        buoy_positions = np.random.uniform(
+            self.bf_size, size=(self.num_of_buoys, 2))
         self.ids = np.array([1, 45, 32, 55])
-        self.totem_positions = np.array([[47, 41], [45, 15], [25, 40], [5, 12]])
+        self.totem_positions = np.array(
+            [[47, 41], [45, 15], [25, 40], [5, 12]])
         self.colors = [[0, 1, 0], [0, 0, 1], [0, 0, 1], [0, 0, 0]]
 
         # Let's make sure no buoys arae too close to the totems
@@ -100,7 +106,8 @@ class Sim(object):
                 _buoy_positions.append(b)
         self.buoy_positions = np.array(_buoy_positions)
         print len(self.buoy_positions)
-        fprint("Removed {} buoys that were too close to totems".format(len(self.buoy_positions) - len(_buoy_positions)))
+        fprint("Removed {} buoys that were too close to totems".format(
+            len(self.buoy_positions) - len(_buoy_positions)))
         # assert len(self.buoy_positions) > .5 * self.num_of_buoys, "Not enough buoys remain, try rerunning."
         if len(self.buoy_positions) < .5 * self.num_of_buoys:
             self.reseed(req)
@@ -128,11 +135,14 @@ class Sim(object):
         fprint("Request recieved {}".format(req.name))
         if req.name in self.ids:
             index = np.argwhere(self.ids == req.name)
-            objects = [self.position_to_object(self.totem_positions[index], self.colors[index], req.name)]
+            objects = [self.position_to_object(
+                self.totem_positions[index], self.colors[index], req.name)]
         elif req.name == "totem":
-            objects = [self.position_to_object(p, c, i) for p, c, i in zip(self.totem_positions, self.colors, self.ids)]
+            objects = [self.position_to_object(p, c, i) for p, c, i in zip(
+                self.totem_positions, self.colors, self.ids)]
         elif req.name == "BuoyField":
-            objects = [self.position_to_object([self.bf_size / 2, self.bf_size / 2, 0], [0, 0, 0], 0, "BuoyField")]
+            objects = [self.position_to_object(
+                [self.bf_size / 2, self.bf_size / 2, 0], [0, 0, 0], 0, "BuoyField")]
         else:
             return {'found': False}
 
@@ -140,8 +150,10 @@ class Sim(object):
 
     def get_message(self):
         if self.grid is None:
-            fprint("Ogrid was requested but no ogrid was found. Using blank.", msg_color='yellow')
-            self.grid = np.zeros((self.height / self.resolution, self.width / self.resolution))
+            fprint(
+                "Ogrid was requested but no ogrid was found. Using blank.", msg_color='yellow')
+            self.grid = np.zeros(
+                (self.height / self.resolution, self.width / self.resolution))
 
         ogrid = OccupancyGrid()
         ogrid.header = mil_tools.make_header(frame="enu")
@@ -156,13 +168,16 @@ class Sim(object):
     def draw_buoys(self):
         for b in self.buoy_positions:
             center = tuple(self.transform(b).astype(np.int32).tolist())
-            cv2.circle(self.grid, center, int(self.buoy_size / self.resolution), 255, -1)
+            cv2.circle(self.grid, center, int(
+                self.buoy_size / self.resolution), 255, -1)
 
     def draw_totems(self):
         for b in self.totem_positions:
             center = tuple(self.transform(b).astype(np.int32).tolist())
-            cv2.circle(self.grid, center, int(self.totem_size / self.resolution), 255, -1)
-            cv2.circle(self.grid, center, int(.5 * self.totem_size / self.resolution), -50, -1)
+            cv2.circle(self.grid, center, int(
+                self.totem_size / self.resolution), 255, -1)
+            cv2.circle(self.grid, center,
+                       int(.5 * self.totem_size / self.resolution), -50, -1)
 
 
 if __name__ == "__main__":

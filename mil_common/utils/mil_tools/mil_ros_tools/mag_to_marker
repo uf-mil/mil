@@ -18,6 +18,7 @@ class MagToMarker(object):
     @param marker_topic: topic of marker to publish
     @param length: length to scale vector to, if None, leave original scale
     '''
+
     def __init__(self, mag_topic, marker_topic, length=1.0, color=[0, 0, 1, 1]):
         self.length = length
         self.pub = rospy.Publisher(marker_topic, Marker, queue_size=1)
@@ -44,11 +45,14 @@ class MagToMarker(object):
         marker.points.append(numpy_to_point(vec))
         self.pub.publish(marker)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Publishes a rviz marker representing a MagneticField message')
-    parser.add_argument('mag_topic', type=str, help='Topic of magnetic field to subscribe to')
-    parser.add_argument('marker_topic', type=str, nargs='?', default='marker', help='Topic to publish marker to')
+    parser.add_argument('mag_topic', type=str,
+                        help='Topic of magnetic field to subscribe to')
+    parser.add_argument('marker_topic', type=str, nargs='?',
+                        default='marker', help='Topic to publish marker to')
     parser.add_argument('--length', '-l', type=float, default=None,
                         help='Length of vector to output. Default: do not scale')
     parser.add_argument('--color', type=float, nargs=4, default=[0, 0, 1, 1], metavar=('R', 'G', 'B', 'A'),
@@ -56,5 +60,6 @@ if __name__ == '__main__':
     args = rospy.myargv()
     args = parser.parse_args(args[1:])
     rospy.init_node('mag_to_marker')
-    MagToMarker(args.mag_topic, args.marker_topic, length=args.length, color=args.color)
+    MagToMarker(args.mag_topic, args.marker_topic,
+                length=args.length, color=args.color)
     rospy.spin()

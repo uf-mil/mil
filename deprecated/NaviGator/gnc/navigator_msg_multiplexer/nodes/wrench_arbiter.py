@@ -14,7 +14,7 @@ class WrenchArbiter(object):
 
         # Set the four receiving variables
         self.rc_wrench = None
-	self.rc_emergency = None
+        self.rc_emergency = None
         self.keyboard_wrench = None
         self.autonomous_wrench = None
 
@@ -24,8 +24,10 @@ class WrenchArbiter(object):
 
         # ROS stuff - Wrench changing service, final output wrench, and the three input sources
         rospy.Service("/change_wrench", WrenchSelect, self.change_wrench)
-        self.wrench_pub = rospy.Publisher("/wrench/cmd", WrenchStamped, queue_size=1)
-        self.control_pub = rospy.Publisher("/wrench/current", String, queue_size=1)
+        self.wrench_pub = rospy.Publisher(
+            "/wrench/cmd", WrenchStamped, queue_size=1)
+        self.control_pub = rospy.Publisher(
+            "/wrench/current", String, queue_size=1)
         self.learn = rospy.Publisher("learn", Bool, queue_size=1)
 
         # Subscribers to listen for wrenches
@@ -64,7 +66,8 @@ class WrenchArbiter(object):
         This sets the wrench output to the correct source by setting the "control" variable
         to the right source.
         '''
-        rospy.loginfo("Server received request for wrench control change - " + req.str)
+        rospy.loginfo(
+            "Server received request for wrench control change - " + req.str)
         self.control = req.str if req.str in self.control_inputs else self.control
 
         self.control_pub.publish(self.control)

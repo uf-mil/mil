@@ -1,6 +1,14 @@
 #!/usr/bin/python
 
 from __future__ import division
+import threading
+from rawgps_common.msg import Measurements, Satellite
+from rawgps_common import gps, glonass
+from uf_common.orientation_helpers import xyz_array
+from tf import transformations
+from geometry_msgs.msg import Vector3, Point, PointStamped
+from std_msgs.msg import String, Header
+import rospy
 
 import math
 import struct
@@ -11,15 +19,6 @@ import scipy
 
 import roslib
 roslib.load_manifest('rawgps_common')
-
-import rospy
-from std_msgs.msg import String, Header
-from geometry_msgs.msg import Vector3, Point, PointStamped
-from tf import transformations
-
-from uf_common.orientation_helpers import xyz_array
-from rawgps_common import gps, glonass
-from rawgps_common.msg import Measurements, Satellite
 
 
 def mean(xs):
@@ -74,10 +73,10 @@ def handle(hist):
     total = .99 * total + .01 * dpos
 
     dpos_filtered = total
-    print new[0].sync - new[1].sync, len(common_prns), gps.enu_from_ecef(dpos_filtered, pos[0])
+    print new[0].sync - \
+        new[1].sync, len(common_prns), gps.enu_from_ecef(dpos_filtered, pos[0])
 
 
-import threading
 lock = threading.Lock()
 
 

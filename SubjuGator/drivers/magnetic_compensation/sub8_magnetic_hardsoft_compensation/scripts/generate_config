@@ -76,7 +76,8 @@ def fit_ellipsoid(points):
     scale_inv = numpy.linalg.inv(scale)
     compensated = [scale_inv.dot(p - shift) for p in points]
     for axis in xrange(3):
-        assert min(p[axis] for p in compensated) < 0 < max(p[axis] for p in compensated)
+        assert min(p[axis] for p in compensated) < 0 < max(p[axis]
+                                                           for p in compensated)
 
     return scale, shift, compensated
 
@@ -86,25 +87,31 @@ def test():
     # that the fitted transform matches
 
     rot = transformations.random_rotation_matrix()[:3, :3]
-    s = normalized_matrix(numpy.diag([random.expovariate(1) for i in xrange(3)]))
+    s = normalized_matrix(numpy.diag(
+        [random.expovariate(1) for i in xrange(3)]))
 
     scale = rot.dot(s).dot(rot.T)
     shift = numpy.random.randn(3)
 
-    points = [scale.dot(transformations.unit_vector(numpy.random.randn(3))) + shift for i in xrange(1000)]
+    points = [scale.dot(transformations.unit_vector(
+        numpy.random.randn(3))) + shift for i in xrange(1000)]
 
     scale2, shift2, compensated = fit_ellipsoid(points)
     error = calculate_error(compensated)
 
-    assert numpy.allclose(scale2, scale), "Magnetic Hardsoft Compenstion self-test failed"
+    assert numpy.allclose(
+        scale2, scale), "Magnetic Hardsoft Compenstion self-test failed"
     assert numpy.allclose(shift2, shift), \
-        "Magnetic Hardsoft Compenstion self-test failed, shifts: {}".format((shift2, shift))
-    assert error < 1e-5, "Magnetic Hardsoft Compenstion self-test failed, error: {}".format(error)
+        "Magnetic Hardsoft Compenstion self-test failed, shifts: {}".format(
+            (shift2, shift))
+    assert error < 1e-5, "Magnetic Hardsoft Compenstion self-test failed, error: {}".format(
+        error)
 
 
 def axisEqual3D(ax):
     ax.axis('tight')
-    extents = numpy.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
+    extents = numpy.array(
+        [getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
     r = numpy.max(numpy.abs(extents))
     for dim in 'xyz':
         getattr(ax, 'set_{}lim'.format(dim))(-r, r)

@@ -40,17 +40,23 @@ class ThrusterMapper(object):
         self.B = self.generate_B(self.thruster_layout)
         self.Binv = np.linalg.pinv(self.B)
         self.min_thrusts, self.max_thrusts = self.get_ranges()
-        self.default_min_thrusts, self.default_max_thrusts = np.copy(self.min_thrusts), np.copy(self.max_thrusts)
+        self.default_min_thrusts, self.default_max_thrusts = np.copy(
+            self.min_thrusts), np.copy(self.max_thrusts)
         self.update_layout_server = rospy.Service('update_thruster_layout', UpdateThrusterLayout,
                                                   self.update_layout)
 
         # Expose B matrix through a srv
-        self.b_matrix_server = rospy.Service('b_matrix', BMatrix, self.get_b_matrix)
+        self.b_matrix_server = rospy.Service(
+            'b_matrix', BMatrix, self.get_b_matrix)
 
-        self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.request_wrench_cb, queue_size=1)
-        self.actual_wrench_pub = rospy.Publisher('wrench_actual', WrenchStamped, queue_size=1)
-        self.wrench_error_pub = rospy.Publisher('wrench_error', WrenchStamped, queue_size=1)
-        self.thruster_pub = rospy.Publisher('thrusters/thrust', Thrust, queue_size=1)
+        self.wrench_sub = rospy.Subscriber(
+            'wrench', WrenchStamped, self.request_wrench_cb, queue_size=1)
+        self.actual_wrench_pub = rospy.Publisher(
+            'wrench_actual', WrenchStamped, queue_size=1)
+        self.wrench_error_pub = rospy.Publisher(
+            'wrench_error', WrenchStamped, queue_size=1)
+        self.thruster_pub = rospy.Publisher(
+            'thrusters/thrust', Thrust, queue_size=1)
 
     @thread_lock(lock)
     def update_layout(self, srv):
@@ -67,7 +73,8 @@ class ThrusterMapper(object):
 
         for thruster_name in self.dropped_thrusters:
             thruster_index = self.thruster_name_map.index(thruster_name)
-            self.min_thrusts[thruster_index] = -self.min_commandable_thrust * 0.5
+            self.min_thrusts[thruster_index] = - \
+                self.min_commandable_thrust * 0.5
             self.max_thrusts[thruster_index] = self.min_commandable_thrust * 0.5
 
         rospy.logwarn("Layout updated")
@@ -84,7 +91,8 @@ class ThrusterMapper(object):
 
     def get_thruster_wrench(self, position, direction):
         '''Compute a single column of B, or the wrench created by a particular thruster'''
-        assert np.isclose(1.0, np.linalg.norm(direction), atol=1e-3), "Direction must be a unit vector"
+        assert np.isclose(1.0, np.linalg.norm(direction),
+                          atol=1e-3), "Direction must be a unit vector"
         forces = direction
         torques = np.cross(position, forces)
         wrench_column = np.hstack([forces, torques])
@@ -159,7 +167,8 @@ class ThrusterMapper(object):
             method='slsqp',
             fun=objective,
             jac=obj_jacobian,
-            x0=np.clip(self.Binv.dot(wrench), self.min_thrusts, self.max_thrusts),
+            x0=np.clip(self.Binv.dot(wrench),
+                       self.min_thrusts, self.max_thrusts),
             bounds=zip(self.min_thrusts, self.max_thrusts),
             tol=1E-6
         )
@@ -201,11 +210,13 @@ class ThrusterMapper(object):
 
         actual_wrench = self.B.dot(u)
         self.actual_wrench_pub.publish(
-            msg_helpers.make_wrench_stamped(actual_wrench[:3], actual_wrench[3:], frame='/base_link')
+            msg_helpers.make_wrench_stamped(
+                actual_wrench[:3], actual_wrench[3:], frame='/base_link')
         )
         mapper_wrench_error = wrench - actual_wrench
         self.wrench_error_pub.publish(
-            msg_helpers.make_wrench_stamped(mapper_wrench_error[:3], mapper_wrench_error[3:], frame='/base_link')
+            msg_helpers.make_wrench_stamped(
+                mapper_wrench_error[:3], mapper_wrench_error[3:], frame='/base_link')
         )
         self.thruster_pub.publish(thrust_cmds)
 

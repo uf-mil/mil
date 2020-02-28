@@ -17,7 +17,7 @@ from vrx_gazebo.srv import ColorSequenceRequest, ColorSequence
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from dynamic_reconfigure.msg import DoubleParameter
 
-LED_PANNEL_MAX  = 0.25
+LED_PANNEL_MAX = 0.25
 LED_PANNEL_MIN = 0.6
 
 STC_HEIGHT = 2.3
@@ -29,6 +29,7 @@ COLOR_SEQUENCE_SERVICE = '/vrx/scan_dock/color_sequence'
 
 TIMEOUT_SECONDS = 30
 
+
 class ScanTheCode(Vrx):
 
     def __init__(self, *args, **kwargs):
@@ -39,10 +40,12 @@ class ScanTheCode(Vrx):
 
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
-        self.debug_points_pub = self.nh.advertise('/stc_led_points', PointCloud2)
+        self.debug_points_pub = self.nh.advertise(
+            '/stc_led_points', PointCloud2)
         self.bridge = CvBridge()
         self.image_debug_pub = self.nh.advertise('/stc_mask_debug', Image)
-        self.sequence_report = self.nh.get_service_client(COLOR_SEQUENCE_SERVICE, ColorSequence)
+        self.sequence_report = self.nh.get_service_client(
+            COLOR_SEQUENCE_SERVICE, ColorSequence)
 
         self.init_front_left_camera()
 
@@ -54,7 +57,7 @@ class ScanTheCode(Vrx):
         pcodar_cluster_tol.name = 'cluster_tolerance_m'
         pcodar_cluster_tol.value = 20
 
-        yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
+        yield self.pcodar_set_params(doubles=[pcodar_cluster_tol])
         try:
             pose = yield self.find_stc()
         except Exception as e:
@@ -73,7 +76,8 @@ class ScanTheCode(Vrx):
         msg = np2pc2(points, self.nh.get_time(), 'enu')
         self.debug_points_pub.publish(msg)
 
-        points = np.array([tf.transform_point(points[i]) for i in range(len(points))])
+        points = np.array([tf.transform_point(points[i])
+                           for i in range(len(points))])
 
         contour = np.array(bbox_from_rect(
             rect_from_roi(roi_enclosing_points(self.camera_model, points))), dtype=int)
@@ -95,13 +99,16 @@ class ScanTheCode(Vrx):
 
             mask = contour_mask(contour, img_shape=img.shape)
 
-            img = img[:,:,[2,1,0]]
-            mask_msg = self.bridge.cv2_to_imgmsg(bitwise_and(img, img, mask = mask))
+            img = img[:, :, [2, 1, 0]]
+            mask_msg = self.bridge.cv2_to_imgmsg(
+                bitwise_and(img, img, mask=mask))
 
             self.image_debug_pub.publish(mask_msg)
-            features = np.array(self.classifier.get_features(img, mask)).reshape(1, 9)
+            features = np.array(
+                self.classifier.get_features(img, mask)).reshape(1, 9)
             #print features
-            class_probabilities = self.classifier.feature_probabilities(features)[0]
+            class_probabilities = self.classifier.feature_probabilities(features)[
+                0]
             most_likely_index = np.argmax(class_probabilities)
             most_likely_name = self.classifier.CLASSES[most_likely_index]
             probability = class_probabilities[most_likely_index]
@@ -121,10 +128,8 @@ class ScanTheCode(Vrx):
 
         try:
             yield self.sequence_report(color_sequence)
-        except Exception as e: #catch error incase vrx scroing isnt running
+        except Exception as e:  # catch error incase vrx scroing isnt running
             print e
-
-
 
     @txros.util.cancellableInlineCallbacks
     def find_stc(self):
@@ -158,17 +163,19 @@ class ScanTheCode(Vrx):
                 # if no other things, throw error and exit mission
                 yield self.pcodar_label(msgs[0].id, 'stc_platform')
                 pose = poses[0]
-            else: # if about same size as stc, lable it stc
+            else:  # if about same size as stc, lable it stc
                 yield self.pcodar_label(msgs[0].id, 'stc_platform')
                 pose = poses[0]
         defer.returnValue(pose)
 
+
 def z_filter(db_obj_msg):
     # do a z filter for the led points
     top = max(db_obj_msg.points, key=attrgetter('z')).z
-    points = np.array([[i.x, i.y, i.z] for i in db_obj_msg.points 
-                        if i.z < top-LED_PANNEL_MAX and i.z > top-LED_PANNEL_MIN])
+    points = np.array([[i.x, i.y, i.z] for i in db_obj_msg.points
+                       if i.z < top-LED_PANNEL_MAX and i.z > top-LED_PANNEL_MIN])
     return points
+
 
 def bbox_from_rect(rect):
     bbox = np.array([[rect[0][0], rect[0][1]],

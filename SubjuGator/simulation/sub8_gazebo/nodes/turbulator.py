@@ -11,13 +11,16 @@ class Turbulizor():
 
     def __init__(self, mag, freq):
         rospy.wait_for_service('/gazebo/apply_body_wrench')
-        self.set_wrench = rospy.ServiceProxy('/gazebo/apply_body_wrench', ApplyBodyWrench)
-        self.get_model = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+        self.set_wrench = rospy.ServiceProxy(
+            '/gazebo/apply_body_wrench', ApplyBodyWrench)
+        self.get_model = rospy.ServiceProxy(
+            '/gazebo/get_model_state', GetModelState)
 
         self.turbulence_mag = mag
         self.turbulence_freq = freq
 
-        self.reset_srv = rospy.Service('gazebo/set_turbulence', SetTurbulence, self.set_turbulence)
+        self.reset_srv = rospy.Service(
+            'gazebo/set_turbulence', SetTurbulence, self.set_turbulence)
 
         # Wait for all the models and such to spawn.
         rospy.sleep(3)
@@ -54,13 +57,15 @@ class Turbulizor():
 
             for i in range(int(time_step)):
                 # Square function: -(x - a/2)^2 + (a/2)^2
-                mag_multiplier = -((i - time_step / 2) ** 2 - (time_step / 2) ** 2 - 1) * turbulence_mag_step
+                mag_multiplier = -((i - time_step / 2) ** 2 -
+                                   (time_step / 2) ** 2 - 1) * turbulence_mag_step
 
                 # Create service call
                 body_wrench = ApplyBodyWrenchRequest()
                 body_wrench.body_name = model_name
                 body_wrench.reference_frame = model_name
-                body_wrench.wrench = msg_helpers.make_wrench_stamped(f * mag_multiplier, r * mag_multiplier).wrench
+                body_wrench.wrench = msg_helpers.make_wrench_stamped(
+                    f * mag_multiplier, r * mag_multiplier).wrench
                 body_wrench.start_time = rospy.Time()
                 body_wrench.duration = rospy.Duration(sleep_step)
 
@@ -69,6 +74,7 @@ class Turbulizor():
                 self.set_wrench(body_wrench)
 
                 rospy.sleep(sleep_step)
+
 
 if __name__ == '__main__':
     rospy.init_node('turbulator')

@@ -16,7 +16,8 @@ class OdomKill(HandlerBase):
 
     alarm_name = 'odom-kill'
     TIMEOUT_SECONDS = 1.0  # Max time delta between Odometry messages before alarm is raised
-    MAX_DISTANCE_METERS = 0.5  # Max distance in position between Odometry messages before alarm is raised
+    # Max distance in position between Odometry messages before alarm is raised
+    MAX_DISTANCE_METERS = 0.5
 
     def __init__(self):
         self.hm = HeartbeatMonitor(self.alarm_name, "/odom", Odometry,
@@ -27,7 +28,8 @@ class OdomKill(HandlerBase):
         self.last_position = None
         self._raised = False
         self.ab = AlarmBroadcaster('odom-kill', node_name='odom-kill')
-        rospy.Subscriber('/odom', Odometry, self.check_continuity, queue_size=5)
+        rospy.Subscriber('/odom', Odometry,
+                         self.check_continuity, queue_size=5)
 
     def check_continuity(self, odom):
         '''

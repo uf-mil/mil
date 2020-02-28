@@ -37,7 +37,7 @@ class launcher(object):
             rospy.loginfo('Enabling {}'.format(self.name))
             # Open up a subprocess under PID
             alive_processes[self.name] = subprocess.Popen(
-		'rosrun sub8_perception localizer.py --{}'.format(self.name),
+                'rosrun sub8_perception localizer.py --{}'.format(self.name),
                 shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,

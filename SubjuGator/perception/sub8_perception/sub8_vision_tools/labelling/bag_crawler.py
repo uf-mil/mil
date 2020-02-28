@@ -30,8 +30,10 @@ class BagCrawler(object):
     def image_topics(self):
         all_topics = self.bag.get_type_and_topic_info()[1].keys()
         all_types = self.bag.get_type_and_topic_info()[1].values()
-        topics = [all_topics[k] for k, topic in enumerate(all_topics) if (all_types[k][0] == 'sensor_msgs/Image')]
+        topics = [all_topics[k] for k, topic in enumerate(
+            all_topics) if (all_types[k][0] == 'sensor_msgs/Image')]
         return topics
+
 
 if __name__ == '__main__':
     import cv2

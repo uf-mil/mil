@@ -7,6 +7,7 @@ from std_msgs.msg import String
 def printit(alarm):
     rospy.loginfo("Alarm {} raised".format(alarm.alarm_name))
 
+
 if __name__ == "__main__":
     rospy.init_node("heartbeat_test")
 

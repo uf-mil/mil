@@ -22,7 +22,8 @@ class Const(object):
 
     # Standard propulsion response is the device type (1 byte) followed by 4 32-bit floats and 1 byte
     response_thruster_standard_length = 18
-    thrust_response_length = header_size + xsum_size + response_thruster_standard_length + xsum_size
+    thrust_response_length = header_size + xsum_size + \
+        response_thruster_standard_length + xsum_size
 
     # Add your stupid size to this!
     response_normal_length = header_size + xsum_size + xsum_size
@@ -61,13 +62,18 @@ class Const(object):
         'rpm_kP':                    (0x90, 4, 'f', 'RW'),
         'rpm_kI':                    (0x94, 4, 'f', 'RW'),
         'rpm_kD':                    (0x98, 4, 'f', 'RW'),
-        'max_allowable_power':       (0x99, 4, 'I', 'RW'), # ? (Recently changed in some firmwares)
-        'fault_control':             (0xa3, 1, 'B', 'RW'), # The addresses in this section are one
-        'undervoltage_trigger':      (0xa4, 1, 'B', 'RW'), # less than what was documented by
-        'overvoltage_trigger':       (0xa5, 1, 'B', 'RW'), # VideoRay becauese I discovered it to
-        'overcurrent_trigger':       (0xa6, 1, 'B', 'RW'), # be wrong experimentally.
-        'temp_trigger':              (0xa7, 1, 'B', 'RW'), #
-        'stall_count_max':           (0xa8, 1, 'B', 'RW'), #                   - David Soto
+        # ? (Recently changed in some firmwares)
+        'max_allowable_power':       (0x99, 4, 'I', 'RW'),
+        # The addresses in this section are one
+        'fault_control':             (0xa3, 1, 'B', 'RW'),
+        # less than what was documented by
+        'undervoltage_trigger':      (0xa4, 1, 'B', 'RW'),
+        # VideoRay becauese I discovered it to
+        'overvoltage_trigger':       (0xa5, 1, 'B', 'RW'),
+        # be wrong experimentally.
+        'overcurrent_trigger':       (0xa6, 1, 'B', 'RW'),
+        'temp_trigger':              (0xa7, 1, 'B', 'RW'),
+        'stall_count_max':           (0xa8, 1, 'B', 'RW'),  # - David Soto
         'undervoltage_err_cnt':      (0xac, 4, 'I', 'R'),
         'overvoltage_err_cnt':       (0xb0, 4, 'I', 'R'),
         'overcurrent_err_cnt':       (0xb4, 4, 'I', 'R'),

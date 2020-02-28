@@ -9,6 +9,7 @@ class SubjuGatorDynamics(object):
     Models the dynamcis of SubjuGator, providing a shared interface for nodes using dynamics or
     inverse dynamics.
     '''
+
     def __init__(self, mass, rotational_inertia, volume, drag_coeffs, height,
                  water_density, air_density, G):
         '''
@@ -47,8 +48,10 @@ class SubjuGatorDynamics(object):
         root = urdf.link_map[urdf.get_root()]
         mass = root.inertial.mass
         rotational_inertia = np.array(root.inertial.inertia.to_matrix())
-        drag_linear = np.array(rospy.get_param('/robot_parameters/drag/linear_coeffs'))
-        drag_angular = np.array(rospy.get_param('/robot_parameters/drag/angular_coeffs'))
+        drag_linear = np.array(rospy.get_param(
+            '/robot_parameters/drag/linear_coeffs'))
+        drag_angular = np.array(rospy.get_param(
+            '/robot_parameters/drag/angular_coeffs'))
         drag_coeffs = np.hstack((drag_linear, drag_angular)).T
         volume = rospy.get_param('/robot_parameters/volume')
         height = rospy.get_param('/robot_parameters/height')
@@ -84,13 +87,16 @@ class SubjuGatorDynamics(object):
 
         # Calculate the portion of buoyancy force above the water
         # https://en.wikipedia.org/wiki/Archimedes%27_principle
-        buoyancy_above_water = (self.air_density * self.G * self.volume) * proportion_above_water
+        buoyancy_above_water = (
+            self.air_density * self.G * self.volume) * proportion_above_water
         # Calculate the portion of the buoyancy force below the water
-        buoyancy_below_water = (self.water_density * self.G * self.volume) * (1. - proportion_above_water)
+        buoyancy_below_water = (
+            self.water_density * self.G * self.volume) * (1. - proportion_above_water)
 
         # Combine buoyancy and gravity into a single force vector
         grav_buoyancy = np.zeros(6)
-        grav_buoyancy[2] = buoyancy_above_water + buoyancy_below_water + gravity
+        grav_buoyancy[2] = buoyancy_above_water + \
+            buoyancy_below_water + gravity
         # Rotate it into the body frame to be used in total force calculation
         grav_buoyancy[:3] = world_to_body.dot(grav_buoyancy[:3])
         return grav_buoyancy
@@ -101,7 +107,8 @@ class SubjuGatorDynamics(object):
         @param twist: 6x1 linear + angular velocity in body frame, m/s or rad/s
         '''
         extra_term = np.zeros(6)
-        extra_term[3:6] = np.cross(twist[3:6], self.inertia[3:6, 3:6].dot(twist[3:6]))
+        extra_term[3:6] = np.cross(
+            twist[3:6], self.inertia[3:6, 3:6].dot(twist[3:6]))
         return extra_term
 
     def inverse_dynamics(self, z, twist, world_to_body, wrench=np.zeros(6)):
@@ -114,7 +121,8 @@ class SubjuGatorDynamics(object):
         @param wrench: 6x1 force + torque additional applied to body from motors, etc
         @return 6x1 linear + angular acceleration in body frame, m/s^2 or rad/s^2
         '''
-        total_wrench = wrench + self.drag(twist) + self.gravity_and_buoyancy(z, world_to_body)
+        total_wrench = wrench + \
+            self.drag(twist) + self.gravity_and_buoyancy(z, world_to_body)
         return self.inverse_dynamics_from_total_wrench(twist, total_wrench)
 
     def inverse_dynamics_from_total_wrench(self, twist, total_wrench):

@@ -13,6 +13,7 @@ class BoundsTest(unittest.TestCase):
     Tests mil_bounds by simulating rviz clicked points and ensuring that the bounds
     are changed and correctly transformed.
     '''
+
     def setUp(self):
         pub = rospy.Publisher('clicked_point', PointStamped, queue_size=4)
         rospy.sleep(1)

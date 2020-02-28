@@ -28,7 +28,8 @@ def main():
     else:
         mission_source = nav_missions
 
-    available_missions = [mission_name for mission_name in dir(mission_source) if mission_name[0] != '_']
+    available_missions = [mission_name for mission_name in dir(
+        mission_source) if mission_name[0] != '_']
 
     if "list" in args.missions:
         print "\nAvailable missions:\n   *",
@@ -40,7 +41,8 @@ def main():
 
     for mission in args.missions:
         # Make sure all missions exist before we run
-        assert mission in available_missions, "'{}' mission not found".format(mission)
+        assert mission in available_missions, "'{}' mission not found".format(
+            mission)
 
     for mission in args.missions:
         to_run = getattr(mission_source, mission)
@@ -48,12 +50,14 @@ def main():
         result = yield to_run.main(n)
 
         if result is None:
-            fprint("{} finished with no result.".format(mission), title="MISSION")
+            fprint("{} finished with no result.".format(
+                mission), title="MISSION")
         else:
             fprint("{} finished with:".format(mission), title="MISSION")
             print result
 
     defer.returnValue(reactor.stop())
+
 
 if __name__ == '__main__':
     reactor.callWhenRunning(main)

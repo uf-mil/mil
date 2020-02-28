@@ -26,7 +26,8 @@ def raise_some(setter, count=20):
             continue
 
         setter(a)
-        rospy.loginfo("{} '{}' alarm".format('Raised' if a.alarm.raised else 'Cleared', a.alarm.alarm_name))
+        rospy.loginfo("{} '{}' alarm".format(
+            'Raised' if a.alarm.raised else 'Cleared', a.alarm.alarm_name))
         if a.alarm.raised:
             raised.append(a.alarm.alarm_name)
         else:

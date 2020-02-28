@@ -65,11 +65,15 @@ class PingerExitMission(Navigator):
     def get_gate_thru_points(self):
         """Set points needed to cross through correct gate"""
         if self.negate:
-            pose1 = self.gate_poses[self.gate_index] - self.GATE_CROSS_METERS * self.g_perp
-            pose2 = self.gate_poses[self.gate_index] + self.GATE_CROSS_METERS * self.g_perp
+            pose1 = self.gate_poses[self.gate_index] - \
+                self.GATE_CROSS_METERS * self.g_perp
+            pose2 = self.gate_poses[self.gate_index] + \
+                self.GATE_CROSS_METERS * self.g_perp
         else:
-            pose1 = self.gate_poses[self.gate_index] + self.GATE_CROSS_METERS * self.g_perp
-            pose2 = self.gate_poses[self.gate_index] - self.GATE_CROSS_METERS * self.g_perp
+            pose1 = self.gate_poses[self.gate_index] + \
+                self.GATE_CROSS_METERS * self.g_perp
+            pose2 = self.gate_poses[self.gate_index] - \
+                self.GATE_CROSS_METERS * self.g_perp
         self.gate_thru_points = (np.append(pose1, 0), np.append(pose2, 0))
 
     @txros.util.cancellableInlineCallbacks

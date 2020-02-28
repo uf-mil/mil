@@ -49,9 +49,12 @@ class VerifyController(object):
 
         self.all_histories = []
         self.cur_state_history = []
-        self.odom_sub = rospy.Subscriber('/truth/odom', nav_msgs.Odometry, self.odom_cb, queue_size=1)
-        self.target_sub = rospy.Subscriber('/trajectory', Trajectory, self.traj_cb)
-        self.target_pub = rospy.Publisher('/trajectory', Trajectory, latch=True, queue_size=1)
+        self.odom_sub = rospy.Subscriber(
+            '/truth/odom', nav_msgs.Odometry, self.odom_cb, queue_size=1)
+        self.target_sub = rospy.Subscriber(
+            '/trajectory', Trajectory, self.traj_cb)
+        self.target_pub = rospy.Publisher(
+            '/trajectory', Trajectory, latch=True, queue_size=1)
         self.target_state = None
 
         rospy.wait_for_service('sim/vehicle/set_pose', timeout=7.5)

@@ -10,18 +10,21 @@ lock = threading.Lock()
 
 class PnuematicActuatorDriverError(Exception):
     def __init__(self, message):
-        super(PnuematicActuatorDriverError, self).__init__('Actuator board: ' + message)
+        super(PnuematicActuatorDriverError, self).__init__(
+            'Actuator board: ' + message)
 
 
 class PnuematicActuatorDriverChecksumError(PnuematicActuatorDriverError):
     def __init__(self, checksum_is, checksum_should_be):
-        message = 'Invalid checksum. Recievied {}, should be {}'.format(hex(checksum_is), hex(checksum_should_be))
+        message = 'Invalid checksum. Recievied {}, should be {}'.format(
+            hex(checksum_is), hex(checksum_should_be))
         super(PnuematicActuatorDriverChecksumError, self).__init__(message)
 
 
 class PnuematicActuatorDriverResponseError(PnuematicActuatorDriverError):
     def __init__(self, received, expected):
-        message = 'Unexpected response. Expected {}, recieved {}'.format(hex(received), hex(expected))
+        message = 'Unexpected response. Expected {}, recieved {}'.format(
+            hex(received), hex(expected))
         super(PnuematicActuatorDriverResponseError, self).__init__(message)
 
 
@@ -65,6 +68,7 @@ class PnuematicActuatorDriver(object):
       (ex. 0x40 + 0x09 (valve #9) = 0x49 <-- byte to send), will reply with 0x00
       if switch is open (not pressed) or 0x01 if switch is closed (pressed).
     '''
+
     def __init__(self, port, baud=9600, simulated=False):
         if simulated:
             self.ser = SimulatedPnuematicActuatorBoard()
@@ -75,7 +79,8 @@ class PnuematicActuatorDriver(object):
     @classmethod
     def _verify_checksum(cls, byte, checksum):
         if not Constants.verify_checksum(byte, checksum):
-            raise PnuematicActuatorDriverChecksumError(checksum, Constants.create_checksum(byte))
+            raise PnuematicActuatorDriverChecksumError(
+                checksum, Constants.create_checksum(byte))
 
     def _get_response(self):
         data = self.ser.read(2)
@@ -93,7 +98,8 @@ class PnuematicActuatorDriver(object):
         self.ser.write(data)
         response = self._get_response()
         if expected_response is not None and expected_response != response:
-            raise PnuematicActuatorDriverResponseError(response, expected_response)
+            raise PnuematicActuatorDriverResponseError(
+                response, expected_response)
         return response
 
     def open_port(self, port):

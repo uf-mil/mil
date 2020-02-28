@@ -47,7 +47,8 @@ class ConstantVelocity(Navigator):
         where x, y and the desired linear velocity in base_link frame in m/s
         and z is desired angular velocity in base_link frame in rad/s
         '''
-        err = Exception('parameters must be in form [x,y,yaw] in m/s,m/s,rad/s')
+        err = Exception(
+            'parameters must be in form [x,y,yaw] in m/s,m/s,rad/s')
         if len(parameters) == 0:
             raise err
         parsed = yaml.load(parameters)
@@ -69,13 +70,15 @@ class ConstantVelocity(Navigator):
         self.msg.header.stamp = odom.header.stamp
         self.msg.pose = odom.pose
         self.msg.twist.twist = Twist()
-        self.send_feedback('Sending Zero Velocity for {} seconds'.format(self.ZERO_TIME))
+        self.send_feedback(
+            'Sending Zero Velocity for {} seconds'.format(self.ZERO_TIME))
         while (yield self.nh.get_time()) < done_zero:
             self.ref_pub.publish(self.msg)
             yield self.nh.sleep(0.1)
 
         # Publish user selected velocity until task is canceled or a new task is run
-        self.send_feedback('Publishing constant velocity {}. Cancel task to stop.'.format(args))
+        self.send_feedback(
+            'Publishing constant velocity {}. Cancel task to stop.'.format(args))
         self.msg.twist.twist.linear.x = args[0]
         self.msg.twist.twist.linear.y = args[1]
         self.msg.twist.twist.angular.z = args[2]

@@ -47,7 +47,8 @@ class BuoySelector(object):
         self.color = color
 
         self.scale_factor = scale_factor
-        self.img = cv2.resize(img, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_CUBIC)
+        self.img = cv2.resize(img, None, fx=scale_factor,
+                              fy=scale_factor, interpolation=cv2.INTER_CUBIC)
         self.draw_img = self.img
 
         self.mouse_position = (0, 0)
@@ -55,7 +56,8 @@ class BuoySelector(object):
     def segment(self):
         while self.point is None:
             draw_img = np.copy(self.img)
-            cv2.circle(draw_img, self.mouse_position, self.draw_radius, self.color, 1)
+            cv2.circle(draw_img, self.mouse_position,
+                       self.draw_radius, self.color, 1)
             cv2.imshow(self.name, draw_img)
 
             k = cv2.waitKey(10) & 0xFF
@@ -96,12 +98,14 @@ class Segmenter(object):
         Make sure input image is BGR
         If you want only the debug image returned, pass a color in for `debug_color` (ex. (255, 0, 0) for blue)
         '''
-        image = orig_image if self.color_space == 'bgr' else cv2.cvtColor(orig_image, cv2.COLOR_BGR2HSV)
+        image = orig_image if self.color_space == 'bgr' else cv2.cvtColor(
+            orig_image, cv2.COLOR_BGR2HSV)
 
         mask = cv2.inRange(image, self.lower, self.upper)
         filtered_mask = self.filter_mask(mask)
 
-        cnts, _ = cv2.findContours(filtered_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        cnts, _ = cv2.findContours(
+            filtered_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         cnt = sorted(cnts, key=cv2.contourArea, reverse=True)[0]
         M = cv2.moments(cnt)
         center = np.array([M['m10'], M['m01']]) / M['m00']
@@ -110,7 +114,8 @@ class Segmenter(object):
             debug_img = np.copy(orig_image)
             x, y, w, h = cv2.boundingRect(cnt)
             cv2.rectangle(debug_img, (x, y), (x + w, y + h), debug_color, 2)
-            cv2.circle(debug_img, tuple(center.astype(np.int16)), 2, debug_color, -1)
+            cv2.circle(debug_img, tuple(
+                center.astype(np.int16)), 2, debug_color, -1)
             return debug_img
 
         return center, cv2.contourArea(cnt)
@@ -166,7 +171,8 @@ def do_the_magic(pt_l, pt_r, cam_tf):
     inital_estimate = intersect(origin_1, ray_1, origin_2, ray_2)
 
     # Now re-project points and find the minimum error
-    estimate = minimize_repro_error(left_cam, right_cam, pt_l, pt_r, inital_estimate)
+    estimate = minimize_repro_error(
+        left_cam, right_cam, pt_l, pt_r, inital_estimate)
 
     return estimate
 
@@ -175,7 +181,8 @@ def load_from_parameter(color):
     param_name = '/start_gate/{}'.format(color)
     if not rospy.has_param(param_name):
         rospy.logerr("No parameters have been set!")
-        rospy.signal_shutdown("Requires param to be set: {}".format(param_name))
+        rospy.signal_shutdown(
+            "Requires param to be set: {}".format(param_name))
         # exit()
 
     param = rospy.get_param(param_name)
@@ -195,12 +202,14 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
         # Get all the required TF links
         try:
             # Working copy of the current frame obtained at the same time as the tf link
-            tf_listener.waitForTransform("enu", "front_left_cam_optical", rospy.Time(), rospy.Duration(4.0))
+            tf_listener.waitForTransform(
+                "enu", "front_left_cam_optical", rospy.Time(), rospy.Duration(4.0))
             left_image, right_image = left.frame, right.frame
             cam_tf = tf_listener.lookupTransform("front_left_cam_optical",
                                                  "front_right_cam_optical",
                                                  left.sub.last_image_time)
-            cam_p, cam_q = tf_listener.lookupTransform("enu", "front_left_cam_optical", left.sub.last_image_time)
+            cam_p, cam_q = tf_listener.lookupTransform(
+                "enu", "front_left_cam_optical", left.sub.last_image_time)
             cam_p = np.array([cam_p])
             cam_r = tf.transformations.quaternion_matrix(cam_q)[:3, :3]
             break
@@ -229,10 +238,14 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
     # Just for visualization
     for i in range(5):
         # Publish it 5 times so we can see it in rviz
-        mil_tools.draw_ray_3d(red_left_pt, left_cam, [1, 0, 0, 1], m_id=0, frame="front_left_cam_optical")
-        mil_tools.draw_ray_3d(red_right_pt, right_cam, [1, 0, 0, 1], m_id=1, frame="front_right_cam_optical")
-        mil_tools.draw_ray_3d(green_left_pt, left_cam, [0, 1, 0, 1], m_id=2, frame="front_left_cam_optical")
-        mil_tools.draw_ray_3d(green_right_pt, right_cam, [0, 1, 0, 1], m_id=3, frame="front_right_cam_optical")
+        mil_tools.draw_ray_3d(red_left_pt, left_cam, [
+                              1, 0, 0, 1], m_id=0, frame="front_left_cam_optical")
+        mil_tools.draw_ray_3d(red_right_pt, right_cam, [
+                              1, 0, 0, 1], m_id=1, frame="front_right_cam_optical")
+        mil_tools.draw_ray_3d(green_left_pt, left_cam, [
+                              0, 1, 0, 1], m_id=2, frame="front_left_cam_optical")
+        mil_tools.draw_ray_3d(green_right_pt, right_cam, [
+                              0, 1, 0, 1], m_id=3, frame="front_right_cam_optical")
 
         red_point = PointStamped()
         red_point.header = mil_tools.make_header(frame="enu")
@@ -248,7 +261,8 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
 
     # Now we have two points, find their midpoint and calculate a target angle
     midpoint = (red_point_np + green_point_np) / 2
-    between_vector = green_point_np - red_point_np  # Red is on the left when we go out.
+    # Red is on the left when we go out.
+    between_vector = green_point_np - red_point_np
     yaw_theta = np.arctan2(between_vector[1], between_vector[0])
     # Rotate that theta by 90 deg to get the angle through the buoys
     yaw_theta += np.pi / 2.0
@@ -279,7 +293,8 @@ if __name__ == "__main__":
     red_pub = rospy.Publisher("red_buoy", PointStamped, queue_size=5)
     green_pub = rospy.Publisher("green_buoy", PointStamped, queue_size=5)
     red_debug = rospy.Publisher("vision/start_gate/red", Image, queue_size=5)
-    green_debug = rospy.Publisher("vision/start_gate/green", Image, queue_size=5)
+    green_debug = rospy.Publisher(
+        "vision/start_gate/green", Image, queue_size=5)
 
     left = ImageGetter('/camera/front/left/image_rect_color')
     left_cam = image_geometry.PinholeCameraModel()

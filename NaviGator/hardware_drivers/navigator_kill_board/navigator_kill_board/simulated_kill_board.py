@@ -106,7 +106,8 @@ class SimulatedKillBoard(SimulatedSerial):
         }
         for key in constants['KILLS']:
             if key.find('BUTTON') == 0:
-                rospy.Service('~{}'.format(key), SetBool, lambda req, _button=key: self._set_button(_button, req.data))
+                rospy.Service('~{}'.format(key), SetBool, lambda req,
+                              _button=key: self._set_button(_button, req.data))
 
         self.killed = False
         self.light = 'OFF'

@@ -16,7 +16,8 @@ class MultiObservation(object):
     def __init__(self, camera_model, debug=False):
         self.debug = debug
         self.camera_model = camera_model
-        self.image_size = (self.camera_model.cx() * 2, self.camera_model.cy() * 2)
+        self.image_size = (self.camera_model.cx() * 2,
+                           self.camera_model.cy() * 2)
         self.K = np.array(camera_model.fullIntrinsicMatrix(), dtype=np.float32)
         self.K_inv = np.linalg.inv(self.K)
 
@@ -148,7 +149,8 @@ def test():
             print "Doing a random observation"
             projected = np.random.random(2) * np.array([640., 480.])
         else:
-            projected_h = MO.K.dot(np.dot(R.transpose(), real) - R.transpose().dot(camera_t))
+            projected_h = MO.K.dot(
+                np.dot(R.transpose(), real) - R.transpose().dot(camera_t))
             projected = projected_h[:2] / projected_h[2]
 
         obs_final = projected + np.random.normal(scale=2.0, size=2)

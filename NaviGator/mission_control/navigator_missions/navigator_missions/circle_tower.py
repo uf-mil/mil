@@ -10,7 +10,8 @@ class CircleTower(Navigator):
     have searching funcitonality found
     '''
     CIRCLE_DISTANCE = 5.0  # Distance around totem to circle
-    DIRECTIONS = {'RED': 'cw', 'GREEN': 'ccw', 'BLUE': 'cw', 'YELLOW': 'ccw', 'WHITE': 'ccw'}
+    DIRECTIONS = {'RED': 'cw', 'GREEN': 'ccw',
+                  'BLUE': 'cw', 'YELLOW': 'ccw', 'WHITE': 'ccw'}
 
     @classmethod
     def decode_parameters(cls, parameters):
@@ -30,9 +31,11 @@ class CircleTower(Navigator):
                         colors[i] = "GREEN"
                     elif val == 'B':
                         colors[i] = "BLUE"
-                self.send_feedback("Colors specified, running {}".format(" ".join(colors)))
+                self.send_feedback(
+                    "Colors specified, running {}".format(" ".join(colors)))
             else:
-                self.send_feedback("No colors Specified, defaulting to {}".format(" ".join(colors)))
+                self.send_feedback(
+                    "No colors Specified, defaulting to {}".format(" ".join(colors)))
         else:
             # Make sure they are valid colors
             for color in parameters:
@@ -65,12 +68,14 @@ class CircleTower(Navigator):
             color = target[1]
             position = target[0]
             direction = self.DIRECTIONS[color]
-            self.send_feedback('Attempting to circle {} {}'.format(color, direction))
+            self.send_feedback(
+                'Attempting to circle {} {}'.format(color, direction))
             self.send_feedback('Moving in front of totem')
             yield self.nh.sleep(0.1)
 
             # Move close to totem
-            move = self.move.look_at(position).set_position(position).backward(self.CIRCLE_DISTANCE)
+            move = self.move.look_at(position).set_position(
+                position).backward(self.CIRCLE_DISTANCE)
 
             # Rotate for faster rotate
             if direction == 'cw':

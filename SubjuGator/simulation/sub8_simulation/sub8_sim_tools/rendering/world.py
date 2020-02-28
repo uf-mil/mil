@@ -24,12 +24,14 @@ class Entity(object):
         if orientation is None:
             self.orientation = np.eye(4)
         else:
-            assert orientation.shape == (4, 4), "Orientation must be a 4x4 numpy array"
+            assert orientation.shape == (
+                4, 4), "Orientation must be a 4x4 numpy array"
             self.orientation = orientation
 
         if len(color) == 3:
             color = color + (255,)
-        self.color = np.array(color, dtype=np.float32) / 255.  # Normalize to [0, 1]
+        self.color = np.array(color, dtype=np.float32) / \
+            255.  # Normalize to [0, 1]
 
         self.program = gloo.Program(self._vertex_shader, self._fragment_shader)
         self.program.bind(mesh)
@@ -114,7 +116,8 @@ class Sphere(Entity):
         )
 
         sphere_buffer, faces = self.make_buffer(sphere_mesh)
-        super(self.__class__, self).__init__(sphere_buffer, faces=faces, position=position, color=color)
+        super(self.__class__, self).__init__(sphere_buffer,
+                                             faces=faces, position=position, color=color)
         shader_manager.register_lighting_shader(self)
         self.program['u_shininess'] = 16.0
         self.program['u_specular_color'] = self.color[:3]
@@ -202,7 +205,8 @@ class Indicator(Entity):
         )
 
         arrow_buffer, faces = self.make_buffer(arrow_mesh)
-        super(self.__class__, self).__init__(arrow_buffer, faces=faces, color=color)
+        super(self.__class__, self).__init__(
+            arrow_buffer, faces=faces, color=color)
 
     def draw(self):
         # pose = self.physics_entity.pose
@@ -217,7 +221,8 @@ class Indicator(Entity):
         if not self.rigid:
             model = compose_transformation(np.transpose(R), pos)
         else:
-            model = compose_transformation(R, (0, 0, 0)).dot(self.physics_entity.pose)
+            model = compose_transformation(
+                R, (0, 0, 0)).dot(self.physics_entity.pose)
 
         self.program['u_model'] = self.offset.dot(model)
         self.program['u_length_scale'] = norm * self.scaling_factor
@@ -278,12 +283,14 @@ class World(object):
 
     def add_box(self, position, width, height, depth, color):
         '''Add a box entity to the scene'''
-        box = Box(position, width, height, depth, color, shader_manager=self.shader_manager)
+        box = Box(position, width, height, depth, color,
+                  shader_manager=self.shader_manager)
         self.entities.append(box)
         return box
 
     def add_plane(self, position, width, height, color=(0, 0, 255), orientation=None):
-        plane = Plane(position, width, height, color, orientation, shader_manager=self.shader_manager)
+        plane = Plane(position, width, height, color, orientation,
+                      shader_manager=self.shader_manager)
         self.entities.append(plane)
         return plane
 

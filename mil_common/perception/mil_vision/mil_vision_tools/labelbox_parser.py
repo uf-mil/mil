@@ -11,6 +11,7 @@ class LabelBoxParser(object):
     and call a user specified callback function with this parsed annotation along with the
     image it annotates.
     '''
+
     def __init__(self, labelfile, image_dir='.'):
         '''
         @param labelfile: name of json file containing labelbox annotations
@@ -61,7 +62,8 @@ class LabelBoxParser(object):
                         found = True
                         break
                 if not found:
-                    raise Exception('Could not find image {} in image dir'.format(label['External ID']))
+                    raise Exception(
+                        'Could not find image {} in image dir'.format(label['External ID']))
             img = cv2.imread(imgname)
             cb(label, img)
 
@@ -72,7 +74,8 @@ if __name__ == '__main__':
     this in a window
     '''
     import argparse
-    parser = argparse.ArgumentParser(description='Example of labelbox reader class. Displays images with label')
+    parser = argparse.ArgumentParser(
+        description='Example of labelbox reader class. Displays images with label')
     parser.add_argument('labels', type=str,
                         help='JSON file with labels exported from labelbox.io')
     parser.add_argument('dir', type=str, default='.', nargs='?',

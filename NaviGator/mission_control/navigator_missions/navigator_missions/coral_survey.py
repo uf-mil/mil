@@ -32,7 +32,8 @@ class CoralSurvey(Navigator):
         totem = yield self.database_query("all")
 
         # Get the closest totem object to the boat
-        totems_np = map(lambda obj: mil_tools.rosmsg_to_numpy(obj.position), totem.objects)
+        totems_np = map(lambda obj: mil_tools.rosmsg_to_numpy(
+            obj.position), totem.objects)
         dist = map(lambda totem_np: np.linalg.norm(
             totem_np - mil_tools.rosmsg_to_numpy(est_coral_survey.objects[0].position)), totems_np)
         middle_point = totems_np[np.argmin(dist)]
@@ -51,8 +52,10 @@ class CoralSurvey(Navigator):
         # Construct waypoint list along NSEW directions then rotate 45 degrees to get a good spot to go to.
         directions = [EAST, NORTH, WEST, SOUTH]
         # for quad in quads_to_search:
-        mid = self.move.set_position(middle_point).set_orientation(directions[quad - 1])
-        search_center = mid.yaw_left(45, "deg").forward(waypoint_from_center).set_orientation(NORTH)
+        mid = self.move.set_position(
+            middle_point).set_orientation(directions[quad - 1])
+        search_center = mid.yaw_left(45, "deg").forward(
+            waypoint_from_center).set_orientation(NORTH)
         yield search_center.left(6).go()
         yield self.move.circle_point(search_center.position, direction='cw').go()
 
@@ -91,7 +94,8 @@ class OgridFactory():
                                                         [0, 0, 0, 1])
 
         # The grid needs to have it's axes swaped since its row major
-        self.grid = np.zeros((self.height / self.resolution, self.width / self.resolution)) - 1
+        self.grid = np.zeros(
+            (self.height / self.resolution, self.width / self.resolution)) - 1
 
         # Transforms points from ENU to ogrid frame coordinates
         self.t = np.array([[1 / self.resolution, 0, -origin_x / self.resolution],

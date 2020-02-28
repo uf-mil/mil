@@ -56,7 +56,8 @@ def recurse_on_tree(tree):
             add_all_children(new_item, items_children)
             children.append(new_item)
     else:
-        print "Encountered unparseable json entity of type {}".format(type(tree))
+        print "Encountered unparseable json entity of type {}".format(
+            type(tree))
 
     return children
 
@@ -105,7 +106,8 @@ class AlarmPlugin(Plugin):
         self._widget = QWidget()
 
         # Get path to UI file which should be in the "resource" folder of this package
-        ui_file = os.path.join(rospkg.RosPack().get_path('sub8_rqt'), 'resource', 'sub8_rqt_alarms.ui')
+        ui_file = os.path.join(rospkg.RosPack().get_path(
+            'sub8_rqt'), 'resource', 'sub8_rqt_alarms.ui')
 
         # Extend the widget with all attributes and children from UI file
         self.ui = loadUi(ui_file, self._widget)
@@ -113,7 +115,8 @@ class AlarmPlugin(Plugin):
         self._widget.setObjectName('AlarmPlugin')
         self.alarm_tree = self._widget.findChild(qtg.QTreeWidget, 'alarm_tree')
 
-        self.alarm_table = self._widget.findChild(qtg.QTableWidget, 'alarm_table')
+        self.alarm_table = self._widget.findChild(
+            qtg.QTableWidget, 'alarm_table')
 
         # Alarm parameter cache stores some additional information about the alarm
         # (for use when an alarm is clicked)
@@ -126,10 +129,12 @@ class AlarmPlugin(Plugin):
         self.alarm_table.clicked.connect(self.open_alarm)
 
         # ---- ROS ----
-        self.alarm_sub = rospy.Subscriber('alarm', Alarm, self.new_alarm_callback)
+        self.alarm_sub = rospy.Subscriber(
+            'alarm', Alarm, self.new_alarm_callback)
 
         if context.serial_number() > 1:
-            self._widget.setWindowTitle(self._widget.windowTitle() + (' (%d)' % context.serial_number()))
+            self._widget.setWindowTitle(
+                self._widget.windowTitle() + (' (%d)' % context.serial_number()))
 
         # Add widget to the user interface
         context.add_widget(self._widget)
@@ -145,7 +150,8 @@ class AlarmPlugin(Plugin):
 
         # Get pub time
         alarm_epoch = msg.header.stamp.to_time()
-        formatted_time = datetime.datetime.fromtimestamp(alarm_epoch).strftime('%I:%M:%S.%f')
+        formatted_time = datetime.datetime.fromtimestamp(
+            alarm_epoch).strftime('%I:%M:%S.%f')
         row_elements.append(formatted_time)
         color = self._severity_mapping[msg.severity]
         self.alarm_table.insertRow(0)
@@ -191,7 +197,8 @@ class AlarmPlugin(Plugin):
         try:
             build_tree_from_json(self.alarm_tree, json_parameters)
         except AssertionError:
-            rospy.logwarn("Could not draw json tree for alarm (Is it a dictionary?)")
+            rospy.logwarn(
+                "Could not draw json tree for alarm (Is it a dictionary?)")
 
     def shutdown_plugin(self):
         '''Unregister our subsribers'''

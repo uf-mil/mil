@@ -17,6 +17,7 @@ class BackAndForth(Navigator):
             '''
             while True:
                 # forward, left, yaw_left
-                amts = np.random.random(3) * np.array([60, 60, 6.28]) - np.array([30, 30, 3.14])
+                amts = np.random.random(
+                    3) * np.array([60, 60, 6.28]) - np.array([30, 30, 3.14])
                 rand = home.forward(amts[0]).left(amts[1]).yaw_left(amts[2])
                 yield rand.go()

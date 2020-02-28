@@ -7,12 +7,15 @@ from geometry_msgs.msg import PoseStamped
 
 
 def odom_callback(odom_msg):
-    controller.give_new_state(odom_msg.pose.pose, odom_msg.twist.twist, odom_msg.header.stamp.to_sec())
+    controller.give_new_state(
+        odom_msg.pose.pose, odom_msg.twist.twist, odom_msg.header.stamp.to_sec())
 
 
 def reference_callback(ref_msg):
-    pose_ref_pub.publish(PoseStamped(header=ref_msg.header, pose=ref_msg.posetwist.pose))
-    controller.give_new_reference(ref_msg.posetwist.pose, ref_msg.posetwist.twist)
+    pose_ref_pub.publish(PoseStamped(
+        header=ref_msg.header, pose=ref_msg.posetwist.pose))
+    controller.give_new_reference(
+        ref_msg.posetwist.pose, ref_msg.posetwist.twist)
 
 
 controller = NN_controller(dof=3, kp=[1000, 1000, 5600], kd=[1200, 1200, 6000],

@@ -43,8 +43,10 @@ invM = np.array([1 / m, 1 / m, 1 / I])
 
 # SPEED AND THRUST LIMITS
 
-velmax_pos = np.array([1.2, 0.6, 0.22])  # (m/s, m/s, rad/s), body-frame forward
-velmax_neg = np.array([-0.6, -0.6, -0.22])  # (m/s, m/s, rad/s), body-frame backward
+# (m/s, m/s, rad/s), body-frame forward
+velmax_pos = np.array([1.2, 0.6, 0.22])
+# (m/s, m/s, rad/s), body-frame backward
+velmax_neg = np.array([-0.6, -0.6, -0.22])
 thrust_max = np.array([220, 220, 220, 220])  # N, per thruster
 
 # THRUSTER CONFIGURATION

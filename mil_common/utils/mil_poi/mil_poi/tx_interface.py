@@ -11,13 +11,15 @@ class TxPOIClient(object):
 
     TODO: add service interfaces for adding / moving / deleting POI
     '''
+
     def __init__(self, nh):
         '''
         Create a TxPOIClient with a txros nodehandle object
         '''
         self.last_msg = None
         self.defers = {}
-        self._poi_sub = nh.subscribe("/points_of_interest", POIArray, callback=self._cb)
+        self._poi_sub = nh.subscribe(
+            "/points_of_interest", POIArray, callback=self._cb)
 
     def _cb(self, msg):
         '''

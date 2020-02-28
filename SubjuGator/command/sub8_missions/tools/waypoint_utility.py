@@ -55,20 +55,27 @@ class Spacenav(object):
         self.target_orientation = np.eye(3)
         self.target_orientation_quaternion = np.array([0.0, 0.0, 0.0, 1.0])
 
-        self.client = actionlib.SimpleActionClient('/moveto', mil_msgs.MoveToAction)
+        self.client = actionlib.SimpleActionClient(
+            '/moveto', mil_msgs.MoveToAction)
         # self.client.wait_for_server()
 
-        self.target_pose_pub = rospy.Publisher('/posegoal', PoseStamped, queue_size=1)
-        self.target_distance_pub = rospy.Publisher('/pose_distance', Marker, queue_size=1)
-        self.odom_sub = rospy.Subscriber('/odom', nav_msgs.Odometry, self.odom_cb, queue_size=1)
-        self.twist_sub = rospy.Subscriber('/spacenav/twist', Twist, self.twist_cb, queue_size=1)
-        self.joy_sub = rospy.Subscriber('/spacenav/joy', Joy, self.joy_cb, queue_size=1)
+        self.target_pose_pub = rospy.Publisher(
+            '/posegoal', PoseStamped, queue_size=1)
+        self.target_distance_pub = rospy.Publisher(
+            '/pose_distance', Marker, queue_size=1)
+        self.odom_sub = rospy.Subscriber(
+            '/odom', nav_msgs.Odometry, self.odom_cb, queue_size=1)
+        self.twist_sub = rospy.Subscriber(
+            '/spacenav/twist', Twist, self.twist_cb, queue_size=1)
+        self.joy_sub = rospy.Subscriber(
+            '/spacenav/joy', Joy, self.joy_cb, queue_size=1)
 
     def odom_cb(self, msg):
         '''HACK: Intermediate hack until we have tf set up'''
         pose, twist, _, _ = mil_ros_tools.odometry_to_numpy(msg)
         position, orientation = pose
-        self.world_to_body = self.transformer.fromTranslationRotation(position, orientation)[:3, :3]
+        self.world_to_body = self.transformer.fromTranslationRotation(
+            position, orientation)[:3, :3]
 
         self.cur_position = position
         cur_orientation = tf.transformations.quaternion_matrix(orientation)
@@ -79,8 +86,10 @@ class Spacenav(object):
             return
         linear = mil_ros_tools.rosmsg_to_numpy(msg.linear)
         angular = mil_ros_tools.rosmsg_to_numpy(msg.angular)
-        self.target_position += self.target_orientation.dot(self._position_gain * linear)
-        self.diff_position = np.subtract(self.cur_position, self.target_position)
+        self.target_position += self.target_orientation.dot(
+            self._position_gain * linear)
+        self.diff_position = np.subtract(
+            self.cur_position, self.target_position)
 
         gained_angular = self._orientation_gain * angular
         skewed = mil_ros_tools.skew_symmetric_cross(gained_angular)
@@ -91,14 +100,17 @@ class Spacenav(object):
         # self.target_orientation = rotation.dot(self.target_orientation)
 
         self.target_orientation = self.target_orientation.dot(rotation)
-        self.target_distance = round(np.linalg.norm(np.array([self.diff_position[0], self.diff_position[1]])), 3)
+        self.target_distance = round(np.linalg.norm(
+            np.array([self.diff_position[0], self.diff_position[1]])), 3)
         self.target_depth = round(self.diff_position[2], 3)
         self.target_orientation = self.target_orientation.dot(rotation)
 
         blank = np.eye(4)
         blank[:3, :3] = self.target_orientation
-        self.target_orientation_quaternion = tf.transformations.quaternion_from_matrix(blank)
-        self.publish_target_pose(self.target_position, self.target_orientation_quaternion)
+        self.target_orientation_quaternion = tf.transformations.quaternion_from_matrix(
+            blank)
+        self.publish_target_pose(self.target_position,
+                                 self.target_orientation_quaternion)
 
     def publish_target_pose(self, position, orientation):
         self.target_pose_pub.publish(
@@ -125,7 +137,8 @@ class Spacenav(object):
 
         if left:
             if self.target_orientation_quaternion is not None:
-                self.moveto_action(self.target_position, self.target_orientation_quaternion)
+                self.moveto_action(self.target_position,
+                                   self.target_orientation_quaternion)
             rospy.sleep(1.0)
 
     def moveto_action(self, position, orientation):

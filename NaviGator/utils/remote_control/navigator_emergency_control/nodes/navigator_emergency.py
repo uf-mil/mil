@@ -19,7 +19,8 @@ class Joystick(object):
 
     def __init__(self):
         self.force_scale = rospy.get_param("/joystick_wrench/force_scale", 600)
-        self.torque_scale = rospy.get_param("/joystick_wrench/torque_scale", 500)
+        self.torque_scale = rospy.get_param(
+            "/joystick_wrench/torque_scale", 500)
 
         self.remote = RemoteControl("emergency", "/wrench/emergency")
         rospy.Subscriber("joy_emergency", Joy, self.joy_recieved)
@@ -57,7 +58,8 @@ class Joystick(object):
 
                 # The controller times out after 15 minutes
                 if self.active:
-                    rospy.logwarn("Controller Timed out. Hold start to resume.")
+                    rospy.logwarn(
+                        "Controller Timed out. Hold start to resume.")
                     self.reset()
 
         else:

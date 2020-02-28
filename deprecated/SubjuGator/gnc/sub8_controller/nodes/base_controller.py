@@ -32,14 +32,18 @@ class Controller(object):
             - Adaptive controller (Estimate m!)
         '''
         rospy.init_node('adaptive_controller_EML6350')
-        self.state_variables = ['position', 'linear_vel', 'orientation_q', 'angular_vel']
+        self.state_variables = ['position',
+                                'linear_vel', 'orientation_q', 'angular_vel']
 
         self.dynamic_reconfig_srv = Server(GainConfig, self.dynamic_reconfig)
 
         # Ros setup
-        self.wrench_pub = rospy.Publisher('/wrench', geometry_msgs.WrenchStamped, queue_size=1)
-        self.odom_sub = rospy.Subscriber(odom_topic, nav_msgs.Odometry, self.odom_cb, queue_size=1)
-        self.trajectory_sub = rospy.Subscriber('/trajectory', Trajectory, self.trajectory_cb, queue_size=1)
+        self.wrench_pub = rospy.Publisher(
+            '/wrench', geometry_msgs.WrenchStamped, queue_size=1)
+        self.odom_sub = rospy.Subscriber(
+            odom_topic, nav_msgs.Odometry, self.odom_cb, queue_size=1)
+        self.trajectory_sub = rospy.Subscriber(
+            '/trajectory', Trajectory, self.trajectory_cb, queue_size=1)
 
         # Initialize timers and history trackers
         self.last_sample = rospy.Time.now()
@@ -73,7 +77,8 @@ class Controller(object):
 
     @mil_ros_tools.thread_lock(lock)
     def dynamic_reconfig(self, config, level):
-        rospy.logwarn("Reconfiguring contoller gains at level {}".format(level))
+        rospy.logwarn(
+            "Reconfiguring contoller gains at level {}".format(level))
         self.cfg = config
         return config
 
@@ -148,14 +153,17 @@ class Controller(object):
         if self.target_trajectory is None:
             return
         if len(self.target_trajectory['position']) > 1:
-            p_error = np.linalg.norm(position - self.target_trajectory['position'][0])
-            v_error = np.linalg.norm(linear_vel - self.target_trajectory['linear_vel'][0])
+            p_error = np.linalg.norm(
+                position - self.target_trajectory['position'][0])
+            v_error = np.linalg.norm(
+                linear_vel - self.target_trajectory['linear_vel'][0])
 
             if p_error + v_error < self.waypoint_epsilon:
                 rospy.logwarn("Waypoint achieved!")
                 for state in self.state_variables:
 
-                    self.target_trajectory[state].popleft()  # Remove a target state!
+                    # Remove a target state!
+                    self.target_trajectory[state].popleft()
 
     def send_wrench(self, force, torque):
         '''
@@ -185,7 +193,8 @@ class Controller(object):
             return np.array([0.0, 0.0, 0.0])
 
         angle_axis = mil_ros_tools.deskew(lie_alg_error)
-        assert np.linalg.norm(angle_axis) < (2 * np.pi) + 0.01, "uh-oh, unnormalized {}".format(angle_axis)
+        assert np.linalg.norm(angle_axis) < (
+            2 * np.pi) + 0.01, "uh-oh, unnormalized {}".format(angle_axis)
         return angle_axis
 
     @mil_ros_tools.thread_lock(lock)
@@ -222,19 +231,25 @@ class Controller(object):
         '''This is the default 'execute' implementation
            Your code should implement this method
         '''
-        (current_position, current_linear_vel, current_orientation_q, current_angular_vel) = xxx_todo_changeme
-        (target_position, target_linear_vel, target_orientation_q, target_angular_vel) = xxx_todo_changeme1
-        orientation_est = transformations.quaternion_matrix(current_orientation_q)[:3, :3]
+        (current_position, current_linear_vel, current_orientation_q,
+         current_angular_vel) = xxx_todo_changeme
+        (target_position, target_linear_vel, target_orientation_q,
+         target_angular_vel) = xxx_todo_changeme1
+        orientation_est = transformations.quaternion_matrix(current_orientation_q)[
+            :3, :3]
 
         error_position = target_position - current_position
         error_linear_vel = target_linear_vel - current_linear_vel
-        error_orientation = self.orientation_error(current_orientation_q, target_orientation_q)
+        error_orientation = self.orientation_error(
+            current_orientation_q, target_orientation_q)
         error_angular_vel = target_angular_vel - current_angular_vel
 
-        world_force = (self.cfg['kp_trans'] * error_position) + (self.cfg['kd_trans'] * error_linear_vel)
+        world_force = (self.cfg['kp_trans'] * error_position) + \
+            (self.cfg['kd_trans'] * error_linear_vel)
 
         # Feed forward gravity
-        world_force += (self.cfg['sub_mass'] * 9.81) * np.array([0.0, 0.0, 1.0])
+        world_force += (self.cfg['sub_mass'] * 9.81) * \
+            np.array([0.0, 0.0, 1.0])
 
         # Rotate force into body frame for mapper to work
         body_force = orientation_est.dot(world_force)
@@ -243,11 +258,13 @@ class Controller(object):
         # I did do a Lyapunov-based proof of this section
 
         # Might be negative of error_angular_vel
-        world_torque = (self.cfg['kp_angle'] * error_orientation) + (self.cfg['kd_angle'] * error_angular_vel)
+        world_torque = (self.cfg['kp_angle'] * error_orientation) + \
+            (self.cfg['kd_angle'] * error_angular_vel)
         body_torque = orientation_est.dot(-world_torque)
 
         # Send the wrench to the thruster mapper!
         self.send_wrench(body_force, body_torque)
+
 
 if __name__ == '__main__':
     controller = Controller(odom_topic='/odom', sampling_period=0.01, control_period=0.01,

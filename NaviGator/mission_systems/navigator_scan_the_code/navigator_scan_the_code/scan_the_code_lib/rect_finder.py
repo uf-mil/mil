@@ -64,7 +64,8 @@ class RectangleFinder(object):
                     curr_top = j
                     curr_count = 0
             if max_length > self.min_line_length:
-                cv2.line(self.edges_1, (i, max_top), (i, max_bottom), (255, 0, 0))
+                cv2.line(self.edges_1, (i, max_top),
+                         (i, max_bottom), (255, 0, 0))
                 lines.append((max_length, max_top, max_bottom, i))
 
         lines = np.array(lines)
@@ -157,7 +158,8 @@ class RectangleFinder(object):
             line2 = new_lines[2]
             midx = (line1[3] + line2[3]) / 2
             midy = (line1[2] + line1[1]) / 2
-            xmin, xmax, ymin, ymax = int(midx - w * .05), int(midx + w * .05), int(midy - h * .1), int(midy + h * .1)
+            xmin, xmax, ymin, ymax = int(
+                midx - w * .05), int(midx + w * .05), int(midy - h * .1), int(midy + h * .1)
             # $$$$$$$$$$$$$$$$$$$$ DEBUG $s$$$$$$$$$$$$$$$$$$$$$
             self._draw_circle(self.edges_3, xmin, ymin, xmax, ymax)
             self.debug.add_image(self.edges_3, "debug", topic="points")
@@ -173,7 +175,8 @@ class RectangleFinder(object):
             midy = (line1[2] + line1[1]) / 2
             midx = line2[3]
             if dist2 > dist1:
-                xmin, xmax, ymin, ymax = midx, int(midx + w * .1), int(midy - h * .1), int(midy + h * .1)
+                xmin, xmax, ymin, ymax = midx, int(
+                    midx + w * .1), int(midy - h * .1), int(midy + h * .1)
                 # $$$$$$$$$$$$$$$$$$$$ DEBUG $s$$$$$$$$$$$$$$$$$$$$$
                 self._draw_circle(self.edges_3, xmin, ymin, xmax, ymax)
                 self.debug.add_image(self.edges_3, "debug", topic="points")
@@ -181,7 +184,8 @@ class RectangleFinder(object):
                 return True, self._make_rec(xmin, ymin, xmax, ymax)
 
             if dist1 >= dist1:
-                xmin, xmax, ymin, ymax = int(midx - w * .1), midx, int(midy - h * .1), int(midy + h * .1)
+                xmin, xmax, ymin, ymax = int(
+                    midx - w * .1), midx, int(midy - h * .1), int(midy + h * .1)
                 # $$$$$$$$$$$$$$$$$$$$ DEBUG $s$$$$$$$$$$$$$$$$$$$$$
                 self._draw_circle(self.edges_3, xmin, ymin, xmax, ymax)
                 self.debug.add_image(self.edges_3, "debug", topic="points")
@@ -196,7 +200,8 @@ class RectangleFinder(object):
                 return False, None
             midx = (line1[3] + line2[3]) / 2
             midy = (line1[2] + line1[1]) / 2
-            xmin, xmax, ymin, ymax = int(midx - w * .05), int(midx + w * .05), int(midy - h * .1), int(midy + h * .1)
+            xmin, xmax, ymin, ymax = int(
+                midx - w * .05), int(midx + w * .05), int(midy - h * .1), int(midy + h * .1)
             # $$$$$$$$$$$$$$$$$$$$ DEBUG $s$$$$$$$$$$$$$$$$$$$$$
             self._draw_circle(self.edges_3, xmin, ymin, xmax, ymax)
             self.debug.add_image(self.edges_3, "debug", topic="points")

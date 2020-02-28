@@ -1,6 +1,11 @@
 #!/usr/bin/python
 
 from __future__ import division
+from rawgps_common.msg import Measurements
+from rawgps_common import gps
+from std_msgs.msg import Header
+import rospy
+from geometry_msgs.msg import Vector3, Vector3Stamped
 
 import struct
 import time
@@ -10,12 +15,6 @@ import numpy
 
 import roslib
 roslib.load_manifest('rawgps_common')
-from geometry_msgs.msg import Vector3, Vector3Stamped
-import rospy
-from std_msgs.msg import Header
-
-from rawgps_common import gps
-from rawgps_common.msg import Measurements
 
 
 def xyz_array(o): return numpy.array([o.x, o.y, o.z])

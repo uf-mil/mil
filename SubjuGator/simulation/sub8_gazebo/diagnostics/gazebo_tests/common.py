@@ -16,8 +16,10 @@ class Job(object):
     def __init__(self, nh):
         self.nh = nh
         self.true_pose_sub = nh.subscribe('/world_odom', Odometry)
-        self.delete_model = nh.get_service_client('/gazebo/delete_model', DeleteModel)
-        self.spawn_model = nh.get_service_client('/gazebo/spawn_sdf_model', SpawnModel)
+        self.delete_model = nh.get_service_client(
+            '/gazebo/delete_model', DeleteModel)
+        self.spawn_model = nh.get_service_client(
+            '/gazebo/spawn_sdf_model', SpawnModel)
         self.model_states = nh.subscribe('/gazebo/model_states', ModelStates)
 
     @property

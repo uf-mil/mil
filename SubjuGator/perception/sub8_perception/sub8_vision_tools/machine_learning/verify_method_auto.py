@@ -20,7 +20,8 @@ def load_images(path, images_to_use=2):
         try:
             if '_mask.png' in images[i]:
                 # This is the mask image - there should be a matching non mask image.
-                image_name = images[images.index(images[i].replace('_mask', ''))]
+                image_name = images[images.index(
+                    images[i].replace('_mask', ''))]
 
                 image = cv2.imread(path + image_name)
                 mask = cv2.imread(path + images[i], 0)
@@ -28,7 +29,8 @@ def load_images(path, images_to_use=2):
                 images.remove(image_name)
             else:
                 # This is the real image - there should be a matching mask image.
-                mask_name = images[images.index(images[i].replace('.png', '_mask.png'))]
+                mask_name = images[images.index(
+                    images[i].replace('.png', '_mask.png'))]
 
                 image = cv2.imread(path + images[i])
                 mask = cv2.imread(path + mask_name, 0)
@@ -113,7 +115,8 @@ if __name__ == '__main__':
             tic_prediction = time()
 
             try:
-                segmentation = [x for x in [clf.predict(obs) for obs in some_observations]]
+                segmentation = [x for x in [clf.predict(
+                    obs) for obs in some_observations]]
             except:
                 print "Failed to load. File probably doesn't exist"
                 break
@@ -132,7 +135,8 @@ if __name__ == '__main__':
                 print "No data in frame. Skipping."
                 continue
 
-            true_positives = np.sum(bool_targets & bool_predictions) / np.sum(bool_targets).astype(np.float32)
+            true_positives = np.sum(
+                bool_targets & bool_predictions) / np.sum(bool_targets).astype(np.float32)
             false_positives = np.sum(
                 np.logical_not(bool_targets) & bool_predictions
             ) / np.sum(np.logical_not(bool_targets)).astype(np.float32)
@@ -150,18 +154,28 @@ if __name__ == '__main__':
             print
 
         try:
-            print 'Average accuracy: {}'.format(np.average(attributes['true_positives']))
-            print 'Average false positives: {}'.format(np.average(attributes['false_positives']))
-            print 'Min accuracy: {}'.format(np.min(attributes['true_positives']))
-            print 'Max false positives: {}'.format(np.max(attributes['false_positives']))
-            print 'Average execution time: {}'.format(np.average(attributes['times']))
+            print 'Average accuracy: {}'.format(
+                np.average(attributes['true_positives']))
+            print 'Average false positives: {}'.format(
+                np.average(attributes['false_positives']))
+            print 'Min accuracy: {}'.format(
+                np.min(attributes['true_positives']))
+            print 'Max false positives: {}'.format(
+                np.max(attributes['false_positives']))
+            print 'Average execution time: {}'.format(
+                np.average(attributes['times']))
 
             report_data["Type"].append(f_name)
-            report_data["Average accuracy"].append(np.average(attributes['true_positives']))
-            report_data["Average false positives"].append(np.average(attributes['false_positives']))
-            report_data["Min accuracy"].append(np.min(attributes['true_positives']))
-            report_data["Max false positives"].append(np.max(attributes['false_positives']))
-            report_data["Average execution time"].append(np.average(attributes['times']))
+            report_data["Average accuracy"].append(
+                np.average(attributes['true_positives']))
+            report_data["Average false positives"].append(
+                np.average(attributes['false_positives']))
+            report_data["Min accuracy"].append(
+                np.min(attributes['true_positives']))
+            report_data["Max false positives"].append(
+                np.max(attributes['false_positives']))
+            report_data["Average execution time"].append(
+                np.average(attributes['times']))
         except:
             print "Issue"
 

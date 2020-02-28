@@ -10,6 +10,7 @@ class SimulatedCANDevice(object):
     Simulates a CAN device, with functions to be overrided
     to handle data requests and sends from motherboard
     '''
+
     def __init__(self, sim_board, can_id):
         '''
         Constructs the simulated device, storing the simulated CAN2USB board it is attached to
@@ -44,6 +45,7 @@ class ExampleSimulatedEchoDevice(SimulatedCANDevice):
     On sends, stores the transmited data in a buffer.
     When data is requested, it echos this data back.
     '''
+
     def __init__(self, *args, **kwargs):
         # Call parent classes contructor
         super(ExampleSimulatedEchoDevice, self).__init__(*args, **kwargs)
@@ -59,6 +61,7 @@ class ExampleSimulatedAdderDevice(SimulatedCANDevice):
     On sends, stores the transmited data in a buffer.
     When data is requested, it echos this data back.
     '''
+
     def __init__(self, *args, **kwargs):
         # Call parent classes contructor
         super(ExampleSimulatedAdderDevice, self).__init__(*args, **kwargs)
@@ -76,6 +79,7 @@ class SimulatedUSBtoCAN(SimulatedSerial):
     Simulates the USB to CAN board. Is supplied with a dictionary of simualted
     CAN devices to simulate the behavior of the whole CAN network.
     '''
+
     def __init__(self, devices={0: SimulatedCANDevice}, can_id=-1, *args, **kwargs):
         '''
         @param devices: dictionary {device_id: SimulatedCANDevice} mapping CAN IDs
@@ -83,7 +87,8 @@ class SimulatedUSBtoCAN(SimulatedSerial):
         @param can_id: ID of the CAN2USB device
         '''
         self._my_id = can_id
-        self._devices = dict((can_id, device(self, can_id)) for can_id, device in devices.iteritems())
+        self._devices = dict((can_id, device(self, can_id))
+                             for can_id, device in devices.iteritems())
         super(SimulatedUSBtoCAN, self).__init__()
 
     def send_to_bus(self, can_id, data, from_mobo=False):
@@ -94,7 +99,8 @@ class SimulatedUSBtoCAN(SimulatedSerial):
         '''
         # If not from the motherboard, store this for future requests from motherboard
         if not from_mobo:
-            self.buffer += ReceivePacket.create_receive_packet(can_id, data).to_bytes()
+            self.buffer += ReceivePacket.create_receive_packet(
+                can_id, data).to_bytes()
         # Send data to all simulated devices besides the sender
         for device_can_id, device in self._devices.iteritems():
             if device_can_id != can_id:

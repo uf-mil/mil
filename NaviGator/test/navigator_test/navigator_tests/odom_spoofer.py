@@ -15,10 +15,12 @@ class MissionPlannerTest(TestUnit):
         sg = SpoofGenerator()
         odom = Odometry()
         odom.pose.pose.position = Point(0, 0, 0)
-        self.pub_base_mission = sg.spoof_publisher("/odom", Odometry, [odom], [100000])
+        self.pub_base_mission = sg.spoof_publisher(
+            "/odom", Odometry, [odom], [100000])
         self.pub_base_mission.start(self.nh)
 
-        self.pub_base_mission1 = sg.spoof_publisher("/absodom", Odometry, [odom], [100000])
+        self.pub_base_mission1 = sg.spoof_publisher(
+            "/absodom", Odometry, [odom], [100000])
         self.pub_base_mission1.start(self.nh)
 
     @util.cancellableInlineCallbacks

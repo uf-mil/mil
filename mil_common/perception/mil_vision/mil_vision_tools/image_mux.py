@@ -14,6 +14,7 @@ class ImageMux(object):
 
     See bottom of this file for a usage example.
     '''
+
     def __init__(self, size=(480, 640), shape=(2, 2), labels=None, keep_ratio=True,
                  border_color=(255, 255, 255), border_thickness=1, text_color=(255, 255, 255),
                  text_font=cv2.FONT_HERSHEY_COMPLEX_SMALL, text_scale=1, text_thickness=2):
@@ -43,7 +44,8 @@ class ImageMux(object):
         if labels is None:
             self.labels = [None for _ in xrange(self.shape[0] * self.shape[1])]
         else:
-            assert len(labels) == self.shape[0] * self.shape[1], 'not enough labels'
+            assert len(labels) == self.shape[0] * \
+                self.shape[1], 'not enough labels'
             self.labels = labels
 
         self._image = np.zeros((size[0], size[1], 3), dtype=np.uint8)
@@ -61,19 +63,24 @@ class ImageMux(object):
         '''
         # Add border if thickness > 0
         if self.border_thickness > 0:
-            for row in xrange(1, self.shape[0]):  # Add horizontal line for rows 1 - m
+            # Add horizontal line for rows 1 - m
+            for row in xrange(1, self.shape[0]):
                 y = int(self.pane_size[0] * row)
-                cv2.line(self._image, (0, y), (self.size[1], y), self.border_color, self.border_thickness)
-            for col in xrange(1, self.shape[1]):  # Add vertical line for rows 1 - n
+                cv2.line(
+                    self._image, (0, y), (self.size[1], y), self.border_color, self.border_thickness)
+            # Add vertical line for rows 1 - n
+            for col in xrange(1, self.shape[1]):
                 x = int(self.pane_size[1] * col)
-                cv2.line(self._image, (x, 0), (x, self.size[0]), self.border_color, self.border_thickness)
+                cv2.line(self._image, (x, 0), (x,
+                                               self.size[0]), self.border_color, self.border_thickness)
 
         # Add label text for each pane if it is not None
         for i, label in enumerate(self.labels):
             if label is None:
                 continue
             tup = self._index_to_tuple(i)
-            (text_width, text_height), _ = cv2.getTextSize(label, self.text_font, self.text_scale, self.text_thickness)
+            (text_width, text_height), _ = cv2.getTextSize(
+                label, self.text_font, self.text_scale, self.text_thickness)
             x = int(self.pane_size[1] * tup[1])
             y = int(self.pane_size[0] * tup[0] + text_height)
             # Adjust text position to not overlap border
@@ -106,18 +113,23 @@ class ImageMux(object):
         assert isinstance(key, tuple), 'must be tuple'
         assert len(key) == 2, 'index best be 2D'
         assert key[0] < self.shape[0] and key[1] < self.shape[1], 'out of bounds'
-        rows = slice(key[0] * self.pane_size[0], (key[0] + 1) * self.pane_size[0])
-        cols = slice(key[1] * self.pane_size[1], (key[1] + 1) * self.pane_size[1])
+        rows = slice(key[0] * self.pane_size[0],
+                     (key[0] + 1) * self.pane_size[0])
+        cols = slice(key[1] * self.pane_size[1],
+                     (key[1] + 1) * self.pane_size[1])
         if self.keep_ratio:
             row_count = rows.stop - rows.start
             col_count = cols.stop - cols.start
-            ratio = np.array([img.shape[0] / row_count, img.shape[1] / col_count])
+            ratio = np.array(
+                [img.shape[0] / row_count, img.shape[1] / col_count])
             scale = 1 / np.max(ratio)
             size = (int(img.shape[1] * scale), int(img.shape[0] * scale))
             v_border = int((row_count - size[1]) / 2)
             h_border = int((col_count - size[0]) / 2)
-            rows = slice(rows.start + v_border, rows.start + size[1] + v_border)
-            cols = slice(cols.start + h_border, cols.start + size[0] + h_border)
+            rows = slice(rows.start + v_border,
+                         rows.start + size[1] + v_border)
+            cols = slice(cols.start + h_border,
+                         cols.start + size[0] + h_border)
             self._image[rows, cols] = cv2.resize(img, size)
         else:
             size = (self.pane_size[1], self.pane_size[0])
@@ -148,13 +160,19 @@ if __name__ == '__main__':
     To run this yourself, download some images, put them in $HOME/Pictures/[1.jpg, 2.jpg, 3.jpg, 4.jpg]
     '''
     import os
-    labels = ['Chubby Racoon', 'Kiddo Racoons', 'wide', 'tall', 'big wide', 'big tall']  # Create strings for labels
-    images = [cv2.imread(os.path.join(os.environ['HOME'], 'Pictures', str(i + 1) + '.jpg')) for i in xrange(2)]
+    labels = ['Chubby Racoon', 'Kiddo Racoons', 'wide', 'tall',
+              'big wide', 'big tall']  # Create strings for labels
+    images = [cv2.imread(os.path.join(os.environ['HOME'],
+                                      'Pictures', str(i + 1) + '.jpg')) for i in xrange(2)]
     # Add strange ratio white blocks to test keep_ratio flag
-    images.append(255 * np.ones((20, 201, 3), dtype=np.uint8))     # A small, wide image
-    images.append(255 * np.ones((200, 20, 3), dtype=np.uint8))     # A small, tall image
-    images.append(255 * np.ones((200, 2000, 3), dtype=np.uint8))   # A large, wide image
-    images.append(255 * np.ones((2000, 200, 3), dtype=np.uint8))   # A large, tall image
+    images.append(255 * np.ones((20, 201, 3), dtype=np.uint8)
+                  )     # A small, wide image
+    images.append(255 * np.ones((200, 20, 3), dtype=np.uint8)
+                  )     # A small, tall image
+    # A large, wide image
+    images.append(255 * np.ones((200, 2000, 3), dtype=np.uint8))
+    # A large, tall image
+    images.append(255 * np.ones((2000, 200, 3), dtype=np.uint8))
     t = ImageMux(size=(500, 900), border_color=(0, 0, 255), border_thickness=3, shape=(3, 2),
                  labels=labels, text_scale=1, keep_ratio=True)
     for i in xrange(len(images)):

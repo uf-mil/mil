@@ -20,13 +20,15 @@ class Kill(HandlerBase):
         self.first = True
         self._last_mission_killed = False
         self.condition = Condition()
-        self.bag_client = SimpleActionClient('/online_bagger/bag', BagOnlineAction)
+        self.bag_client = SimpleActionClient(
+            '/online_bagger/bag', BagOnlineAction)
         self._set_mobo_kill = rospy.ServiceProxy('/set_mobo_kill', SetBool)
         try:
             self._set_mobo_kill.wait_for_service(3.)
         except rospy.ROSException as e:
-            rospy.logerr('Could not contact kill board! Kills will only be software')
-        self.set_mobo_kill(True) # Tell HW that we started off as killed
+            rospy.logerr(
+                'Could not contact kill board! Kills will only be software')
+        self.set_mobo_kill(True)  # Tell HW that we started off as killed
 
     def set_mobo_kill(self, *args, **kwargs):
         try:
@@ -51,7 +53,8 @@ class Kill(HandlerBase):
             if self.get_alarm('hw-kill').raised:
                 self.condition.wait(self.HARDWARE_KILL_GRACE_PERIOD_SECONDS)
                 if self.get_alarm('hw-kill').raised:
-                    rospy.logwarn('Attempted to clear kill but hw-kill is still raised')
+                    rospy.logwarn(
+                        'Attempted to clear kill but hw-kill is still raised')
                     self.set_mobo_kill(True)
                     return False
                 self._killed = False
@@ -60,14 +63,16 @@ class Kill(HandlerBase):
         if status == 3:
             rospy.loginfo('KILL BAG WRITTEN TO {}'.format(result.filename))
         else:
-            rospy.logwarn('KILL BAG {}, status: {}'.format(TerminalState.to_string(status), result.status))
+            rospy.logwarn('KILL BAG {}, status: {}'.format(
+                TerminalState.to_string(status), result.status))
 
     def bagger_dump(self):
         """Call online_bagger/dump service"""
         if self.first:
             return
         if 'BAG_ALWAYS' not in os.environ or 'bag_kill' not in os.environ:
-            rospy.logwarn('BAG_ALWAYS or BAG_KILL not set. Not making kill bag.')
+            rospy.logwarn(
+                'BAG_ALWAYS or BAG_KILL not set. Not making kill bag.')
             return
         goal = BagOnlineGoal(bag_name='kill.bag')
         goal.topics = os.environ['BAG_ALWAYS'] + ' ' + os.environ['bag_kill']

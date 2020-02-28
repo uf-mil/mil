@@ -35,14 +35,17 @@ class DemonstrateNavigation(Navigator):
         # Go to autonomous mode
         yield self.change_wrench('autonomous')
         if not parameters.pcodar:
-            self.send_feedback('Please click between the end tower of the navigation pass.')
+            self.send_feedback(
+                'Please click between the end tower of the navigation pass.')
             target_point = yield self.rviz_point.get_next_message()
             target_point = rosmsg_to_numpy(target_point.point)
             us = (yield self.tx_pose)[0]
-            distance = np.linalg.norm(target_point - us) + self.END_MARGIN_METERS
+            distance = np.linalg.norm(
+                target_point - us) + self.END_MARGIN_METERS
             distance_per_move = distance / parameters.num_moves
             for i in range(parameters.num_moves):
-                self.send_feedback("Doing move {}/{}".format(i + 1, parameters.num_moves))
+                self.send_feedback(
+                    "Doing move {}/{}".format(i + 1, parameters.num_moves))
                 yield self.move.look_at(target_point).forward(distance_per_move).go(blind=True)
             defer.returnValue(True)
         else:

@@ -20,6 +20,7 @@ class POIServer(object):
     Node to act as a server to hold a list of points of interest which
     can be modified by services or interactive markers
     '''
+
     def __init__(self):
         '''
         Create a POIServer
@@ -39,8 +40,10 @@ class POIServer(object):
         self.pois.header.frame_id = self.global_frame
 
         # Create publisher to notify clients of updates and interactive marker server
-        self.pub = rospy.Publisher("points_of_interest", POIArray, queue_size=1, latch=True)
-        self.interactive_marker_server = InteractiveMarkerServer("points_of_interest")
+        self.pub = rospy.Publisher(
+            "points_of_interest", POIArray, queue_size=1, latch=True)
+        self.interactive_marker_server = InteractiveMarkerServer(
+            "points_of_interest")
 
         # Load initial POIs from params
         if rospy.has_param('~initial_pois'):
@@ -59,9 +62,12 @@ class POIServer(object):
 
         # Create services to add / delete / move a POI
         self.add_poi_server = rospy.Service('~add', AddPOI, self.add_poi_cb)
-        self.delete_poi_server = rospy.Service('~delete', DeletePOI, self.delete_poi_cb)
-        self.move_poi_service = rospy.Service('~move', MovePOI, self.move_poi_cb)
-        self.save_to_param = rospy.Service("~save_to_param", Trigger, self.save_to_param_cb)
+        self.delete_poi_server = rospy.Service(
+            '~delete', DeletePOI, self.delete_poi_cb)
+        self.move_poi_service = rospy.Service(
+            '~move', MovePOI, self.move_poi_cb)
+        self.save_to_param = rospy.Service(
+            "~save_to_param", Trigger, self.save_to_param_cb)
 
     def transform_position(self, ps):
         '''
@@ -72,10 +78,12 @@ class POIServer(object):
         if ps.header.frame_id == "":
             return ps.point
         try:
-            ps_tf = self.tf_buffer.transform(ps, self.global_frame, timeout=rospy.Duration(5))
+            ps_tf = self.tf_buffer.transform(
+                ps, self.global_frame, timeout=rospy.Duration(5))
             return ps_tf.point
         except tf2_ros.TransformException as e:
-            rospy.logwarn('Error transforming "{}" to "{}": {}'.format(ps.header.frame_id, self.global_frame, e))
+            rospy.logwarn('Error transforming "{}" to "{}": {}'.format(
+                ps.header.frame_id, self.global_frame, e))
             return None
 
     def process_feedback(self, feedback):
@@ -102,7 +110,8 @@ class POIServer(object):
         rospy.set_param('~global_frame', self.global_frame)
         d = {}
         for poi in self.pois.pois:
-            d[poi.name] = [float(poi.position.x), float(poi.position.y), float(poi.position.z)]
+            d[poi.name] = [float(poi.position.x), float(
+                poi.position.y), float(poi.position.z)]
         rospy.set_param('~initial_pois', d)
         return {'success': True}
 
@@ -266,6 +275,7 @@ class POIServer(object):
         control.markers.append(point_marker)
         control.markers.append(text_marker)
         int_marker.controls.append(control)
-        self.interactive_marker_server.insert(int_marker, self.process_feedback)
+        self.interactive_marker_server.insert(
+            int_marker, self.process_feedback)
 
         return True

@@ -32,25 +32,33 @@ class RemoteControl(object):
 
     def __init__(self, controller_name, wrench_pub=None):
         self.name = controller_name
-        self.wrench_choices = itertools.cycle(["rc", "emergency", "keyboard", "autonomous"])
+        self.wrench_choices = itertools.cycle(
+            ["rc", "emergency", "keyboard", "autonomous"])
 
         self.kill_broadcaster = AlarmBroadcaster('kill')
         self.station_hold_broadcaster = AlarmBroadcaster('station-hold')
 
         self.wrench_changer = rospy.ServiceProxy("/wrench/select", MuxSelect)
         self.task_client = MissionClient()
-        self.kill_listener = AlarmListener('kill', callback_funct=self._update_kill_status)
+        self.kill_listener = AlarmListener(
+            'kill', callback_funct=self._update_kill_status)
 
         if (wrench_pub is None):
             self.wrench_pub = wrench_pub
         else:
-            self.wrench_pub = rospy.Publisher(wrench_pub, WrenchStamped, queue_size=1)
+            self.wrench_pub = rospy.Publisher(
+                wrench_pub, WrenchStamped, queue_size=1)
 
-        self.shooter_load_client = actionlib.SimpleActionClient("/shooter/load", ShooterDoAction)
-        self.shooter_fire_client = actionlib.SimpleActionClient("/shooter/fire", ShooterDoAction)
-        self.shooter_cancel_client = rospy.ServiceProxy("/shooter/cancel", Trigger)
-        self.shooter_manual_client = rospy.ServiceProxy("/shooter/manual", ShooterManual)
-        self.shooter_reset_client = rospy.ServiceProxy("/shooter/reset", Trigger)
+        self.shooter_load_client = actionlib.SimpleActionClient(
+            "/shooter/load", ShooterDoAction)
+        self.shooter_fire_client = actionlib.SimpleActionClient(
+            "/shooter/fire", ShooterDoAction)
+        self.shooter_cancel_client = rospy.ServiceProxy(
+            "/shooter/cancel", Trigger)
+        self.shooter_manual_client = rospy.ServiceProxy(
+            "/shooter/manual", ShooterManual)
+        self.shooter_reset_client = rospy.ServiceProxy(
+            "/shooter/reset", Trigger)
 
         self.is_killed = False
         self.is_timed_out = False
@@ -189,21 +197,24 @@ class RemoteControl(object):
         '''
         Prints the feedback that is returned by the shooter load action client
         '''
-        rospy.loginfo("Shooter Load Status={} Success={} Error={}".format(status, result.success, result.error))
+        rospy.loginfo("Shooter Load Status={} Success={} Error={}".format(
+            status, result.success, result.error))
 
     @_timeout_check
     def shooter_load(self, *args, **kwargs):
         '''
         Loads the shooter by using the action client to retract the linear actuator
         '''
-        self.shooter_load_client.send_goal(goal=ShooterDoActionGoal(), done_cb=self._shooter_load_feedback)
+        self.shooter_load_client.send_goal(
+            goal=ShooterDoActionGoal(), done_cb=self._shooter_load_feedback)
         rospy.loginfo("Kip, do not throw away your shot.")
 
     def _shooter_fire_feedback(self, status, result):
         '''
         Prints the feedback that is returned by the shooter fire action client
         '''
-        rospy.loginfo("Shooter Fire Status={} Success={} Error={}".format(status, result.success, result.error))
+        rospy.loginfo("Shooter Fire Status={} Success={} Error={}".format(
+            status, result.success, result.error))
 
     @_timeout_check
     def shooter_fire(self, *args, **kwargs):
@@ -211,8 +222,10 @@ class RemoteControl(object):
         Fires the shooter by using the action client to spin up the
         acceleration discs and extend the linear actuator.
         '''
-        self.shooter_fire_client.send_goal(goal=ShooterDoActionGoal(), done_cb=self._shooter_fire_feedback)
-        rospy.loginfo("One, two, three, four, five, six, seven, eight, nine. Number... TEN PACES! FIRE!")
+        self.shooter_fire_client.send_goal(
+            goal=ShooterDoActionGoal(), done_cb=self._shooter_fire_feedback)
+        rospy.loginfo(
+            "One, two, three, four, five, six, seven, eight, nine. Number... TEN PACES! FIRE!")
 
     @_timeout_check
     def shooter_cancel(self, *args, **kwargs):
@@ -223,7 +236,8 @@ class RemoteControl(object):
         rospy.loginfo("Canceling shooter requests")
         self.shooter_cancel_client(TriggerRequest())
         rospy.loginfo("I imaging death so much it feels more like a memory.")
-        rospy.loginfo("When's it gonna get me? While I'm blocked? Seven clocks ahead of me?")
+        rospy.loginfo(
+            "When's it gonna get me? While I'm blocked? Seven clocks ahead of me?")
 
     def _shooter_reset_helper(self, event):
         '''
@@ -231,7 +245,8 @@ class RemoteControl(object):
         '''
         rospy.loginfo("Reseting the shooter service")
         self.shooter_reset_client(TriggerRequest())
-        rospy.loginfo("In New York you can be a new man! In New York you can be a new man!")
+        rospy.loginfo(
+            "In New York you can be a new man! In New York you can be a new man!")
 
     @_timeout_check
     def shooter_reset(self, *args, **kwargs):
@@ -240,7 +255,8 @@ class RemoteControl(object):
         using a ~6s delay before calling the actual reset service.
         '''
         self.shooter_linear_retract()
-        rospy.Timer(rospy.Duration(6), self._shooter_reset_helper, oneshot=True)
+        rospy.Timer(rospy.Duration(
+            6), self._shooter_reset_helper, oneshot=True)
 
     @_timeout_check
     def shooter_linear_extend(self, *args, **kwargs):
@@ -267,7 +283,8 @@ class RemoteControl(object):
         a percentage from -100 to 100, which is scaled down to a number from -1
         to 1.
         '''
-        rospy.loginfo("Setting the shooter's accelerator disc speed to {}".format(speed))
+        rospy.loginfo(
+            "Setting the shooter's accelerator disc speed to {}".format(speed))
         self.shooter_manual_client(0, float(speed) / -100)
 
     @_timeout_check

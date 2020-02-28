@@ -107,9 +107,11 @@ class BagImageExtractorSource(object):
         try:
             _, msg, _ = bag.read_messages(topics=camera_info_topic).next()
         except StopIteration:
-            raise Exception('no camera info messages found on topic {} in {}'.format(camera_info_topic, bag))
+            raise Exception('no camera info messages found on topic {} in {}'.format(
+                camera_info_topic, bag))
         if msg._type != 'sensor_msgs/CameraInfo':
-            raise Exception('msg on topic {} are not camera info in bag {}'.format(camera_info_topic, bag))
+            raise Exception('msg on topic {} are not camera info in bag {}'.format(
+                camera_info_topic, bag))
         model = PinholeCameraModel()
         model.fromCameraInfo(msg)
         return model
@@ -120,7 +122,8 @@ class BagImageExtractorSource(object):
         converted to a string. Uses mil image proc to rectify / convert color as
         configured (see __init__)
         '''
-        ImageProc.process(msg, self.camera_model, self.image_set, self.encoding)
+        ImageProc.process(msg, self.camera_model,
+                          self.image_set, self.encoding)
         if self.encoding == 0:
             img = self.image_set.raw
         elif self.encoding == ImageProc.MONO:
@@ -135,7 +138,8 @@ class BagImageExtractorSource(object):
         # If color, convert to bgr
         if self.encoding == ImageProc.COLOR or self.encoding == ImageProc.RECT_COLOR:
             img = cvtColor2(img, self.image_set.color_encoding, 'bgr8')
-        filename = os.path.join(image_dir, prefix + str(msg.header.stamp) + '.png')
+        filename = os.path.join(
+            image_dir, prefix + str(msg.header.stamp) + '.png')
         cv2.imwrite(filename, img)
 
     def extract_images(self, source_dir='.', image_dir='.', verbose=False):
@@ -144,7 +148,8 @@ class BagImageExtractorSource(object):
         relative to source_dir and placing extracted images into image_dir.
         '''
         if verbose:
-            print '\tExtracting images from topic {} in {}'.format(self.topic, self.filename)
+            print '\tExtracting images from topic {} in {}'.format(
+                self.topic, self.filename)
         filename = os.path.join(source_dir, self.filename)
         b = rosbag.Bag(filename)
         if self.encoding != 0:
@@ -152,11 +157,14 @@ class BagImageExtractorSource(object):
         else:
             self.camera_model = None
         _, _, first_time = b.read_messages().next()
-        start = first_time + rospy.Duration(self.start) if self.start else first_time
+        start = first_time + \
+            rospy.Duration(self.start) if self.start else first_time
         stop = first_time + rospy.Duration(self.stop) if self.stop else None
-        interval = rospy.Duration(1.0 / self.freq) if self.freq else rospy.Duration(0)
+        interval = rospy.Duration(
+            1.0 / self.freq) if self.freq else rospy.Duration(0)
         next_time = start
-        prefix = slugify(unicode(self.filename)) + '_' + slugify(unicode(self.topic))
+        prefix = slugify(unicode(self.filename)) + '_' + \
+            slugify(unicode(self.topic))
         for _, msg, time in b.read_messages(topics=self.topic, start_time=start, end_time=stop):
             if time >= next_time:
                 next_time = time + interval
@@ -169,6 +177,7 @@ class BagImageExtractorDatasets(object):
     extracted and put into the same directory. For example, a set of bags
     containing a particular challenge from the same day.
     '''
+
     def __init__(self, name, sources):
         '''
         @param name: the name of this dataset (string), will be used to write extracted images to
@@ -198,7 +207,8 @@ class BagImageExtractorDatasets(object):
         if 'name' not in d:
             raise Exception('dict must contain a name')
         if 'sources' not in d:
-            raise Exception('yaml must contain a list of sources. See example.')
+            raise Exception(
+                'yaml must contain a list of sources. See example.')
         sources = []
         for source in d['sources']:
             sources.append(BagImageExtractorSource.from_dict(source))
@@ -220,10 +230,12 @@ class BagImageExtractorDatasets(object):
         image_dir = os.path.join(image_dir, self.name)
         if not os.path.isdir(image_dir):
             if os.path.exists(image_dir):
-                raise Exception('{} exsists but is not a diretory'.format(image_dir))
+                raise Exception(
+                    '{} exsists but is not a diretory'.format(image_dir))
             os.makedirs(image_dir)
         for source in self.sources:
-            source.extract_images(source_dir=source_dir, image_dir=image_dir, verbose=verbose)
+            source.extract_images(source_dir=source_dir,
+                                  image_dir=image_dir, verbose=verbose)
 
 
 class BagImageExtractorProject(object):
@@ -233,6 +245,7 @@ class BagImageExtractorProject(object):
     for the labeling buoys, which contains 3 datasets each with
     bags from different test days.
     '''
+
     def __init__(self, datasets, source_dir='.', image_dir='.'):
         '''
         @param datasets: a list of BagImageExtractorDatasets forming this project
@@ -264,7 +277,9 @@ class BagImageExtractorProject(object):
 
     def extract_images(self, verbose=False):
         for dataset in self.datasets:
-            dataset.extract_images(source_dir=self.source_dir, image_dir=self.image_dir, verbose=verbose)
+            dataset.extract_images(
+                source_dir=self.source_dir, image_dir=self.image_dir, verbose=verbose)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -279,14 +294,16 @@ if __name__ == "__main__":
     parser.add_argument('--image-dir', '-o', dest="image_dir", type=str, default=None,
                         help="directory to resolve relative paths specified in YAML for output (labeled) bags. \n\
                               Defaults to current directory.")
-    parser.add_argument('--verbose', '-v', action='store_true', help='Print status info along the way')
+    parser.add_argument('--verbose', '-v', action='store_true',
+                        help='Print status info along the way')
     args = parser.parse_args()
 
     # Load config from yaml file specified
     config_file = open(args.config)
     config = yaml.load(config_file)
     if not isinstance(config, dict):
-        raise Exception('yaml config should be in dictionary format. See example')
+        raise Exception(
+            'yaml config should be in dictionary format. See example')
 
     # Set bag_dir and image_dir from cli args or yaml config or default
     if args.source_dir is not None:

@@ -47,8 +47,10 @@ class ObstacleAvoid(Navigator):
         self.send_feedback('Found square; calculating traversal points')
 
         # Calculate the midpoints of each side of the line
-        midpoints_close = self.get_midpoints(self.square[0], self.square[1], num_passes)
-        midpoints_far = self.get_midpoints(self.square[3], self.square[2], num_passes)
+        midpoints_close = self.get_midpoints(
+            self.square[0], self.square[1], num_passes)
+        midpoints_far = self.get_midpoints(
+            self.square[3], self.square[2], num_passes)
 
         # Calculate the points to traverse the gate at
         traverse_points = []
@@ -123,7 +125,8 @@ class ObstacleAvoid(Navigator):
 
                             avg = np.average(edges)
 
-                            diffs = np.absolute(edges - np.array([avg, avg, avg, avg]))
+                            diffs = np.absolute(
+                                edges - np.array([avg, avg, avg, avg]))
                             maxdif = diffs[np.argmax(diffs)]
 
                             if maxdif > self.DIFF_TOLERANCE:
@@ -204,7 +207,8 @@ class ObstacleAvoid(Navigator):
         # Sort them such that the point on the same side of the boat is first
         if (perpendicular_points[0][0] - boat_pose[0]) ** 2 + (perpendicular_points[0][1] - boat_pose[1]) ** 2 > \
                 (perpendicular_points[1][0] - boat_pose[0]) ** 2 + (perpendicular_points[1][1] - boat_pose[1]) ** 2:
-            perpendicular_points = [perpendicular_points[1], perpendicular_points[0]]
+            perpendicular_points = [
+                perpendicular_points[1], perpendicular_points[0]]
 
         perpendicular_points_np = []
 

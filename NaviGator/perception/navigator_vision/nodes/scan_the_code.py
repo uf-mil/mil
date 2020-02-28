@@ -24,7 +24,8 @@ def bbox_countour_from_rectangle(bbox):
 class ScanTheCodePerception(object):
     def __init__(self):
         self.enabled = False
-        self.pattern_pub = rospy.Publisher("/scan_the_code", ScanTheCode, queue_size=3)
+        self.pattern_pub = rospy.Publisher(
+            "/scan_the_code", ScanTheCode, queue_size=3)
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
         self.get_params()
@@ -37,7 +38,8 @@ class ScanTheCodePerception(object):
             self.image_mux = ImageMux(size=(info.height, info.width), shape=(1, 2),
                                       labels=['Result', 'Mask'])
             self.debug_pub = Image_Publisher('~debug_image')
-        self.bbox_sub = rospy.Subscriber("stc_led_pts_marshall", PointCloud2, self.panel_points_cb)
+        self.bbox_sub = rospy.Subscriber(
+            "stc_led_pts_marshall", PointCloud2, self.panel_points_cb)
         self.classification_list = deque()
         self.enabled = True
 
@@ -47,7 +49,8 @@ class ScanTheCodePerception(object):
         from ROS params for runtime configurability.
         '''
         self.debug = rospy.get_param('~debug', True)
-        self.image_topic = rospy.get_param('~image_topic', '/camera/starboard/image_rect_color')
+        self.image_topic = rospy.get_param(
+            '~image_topic', '/camera/starboard/image_rect_color')
         self.classifier = ScanTheCodeClassifier()
         self.classifier.train_from_csv()
 
@@ -70,8 +73,10 @@ class ScanTheCodePerception(object):
             rospy.logwarn(e)
             return None
 
-        transformed_cloud = do_transform_cloud(self.last_panel_points_msg, transform)
-        points = np.array(list(sensor_msgs.point_cloud2.read_points(transformed_cloud, skip_nans=True)))
+        transformed_cloud = do_transform_cloud(
+            self.last_panel_points_msg, transform)
+        points = np.array(list(sensor_msgs.point_cloud2.read_points(
+            transformed_cloud, skip_nans=True)))
         if len(points) < 4:
             rospy.logwarn('less than 4 points')
             return None
@@ -118,7 +123,8 @@ class ScanTheCodePerception(object):
             text = label + ' | ' + ''.join(self.classification_list)
             scale = 3
             thickness = 2
-            putText_ul(debug, text, (0, 0), fontScale=scale, thickness=thickness)
+            putText_ul(debug, text, (0, 0),
+                       fontScale=scale, thickness=thickness)
             rospy.loginfo('saw {},  running {}'.format(symbol, text))
             debug = cv2.bitwise_or(img, img, mask=debug)
             self.image_mux[1] = debug
@@ -126,7 +132,8 @@ class ScanTheCodePerception(object):
                and self.classification_list[4] == 'o' and self.classification_list[1] != 'o' \
                and self.classification_list[2] != 'o' and self.classification_list[3] != 'o':
                 pattern = \
-                    (self.classification_list[1] + self.classification_list[2] + self.classification_list[3]).upper()
+                    (self.classification_list[1] + self.classification_list[2] +
+                     self.classification_list[3]).upper()
                 rospy.loginfo('SAW PATTERN {}!!!!!!!!!!!'.format(pattern))
                 self.pattern_pub.publish(ScanTheCode(color_pattern=pattern))
         self.image_mux[0] = img

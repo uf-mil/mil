@@ -41,8 +41,10 @@ def mlab_color_imshow(image, **kwargs):
     alpha = np.ones(image.shape[0] * image.shape[1]) * 255
 
     image_LUT_array = np.c_[image.reshape(-1, 3), alpha]
-    image_LUT_array[:, 0], image_LUT_array[:, 2] = np.copy(image_LUT_array[:, 2]), np.copy(image_LUT_array[:, 0])
-    LUT_lookup = np.arange(image.shape[0] * image.shape[1]).reshape(image.shape[0], image.shape[1])
+    image_LUT_array[:, 0], image_LUT_array[:, 2] = np.copy(
+        image_LUT_array[:, 2]), np.copy(image_LUT_array[:, 0])
+    LUT_lookup = np.arange(
+        image.shape[0] * image.shape[1]).reshape(image.shape[0], image.shape[1])
 
     mlab_imshow = mlab.imshow(LUT_lookup, colormap='binary', **kwargs)
     mlab_imshow.module_manager.scalar_lut_manager.lut.table = image_LUT_array
@@ -94,7 +96,8 @@ class ExtentDialog(traits.api.HasTraits):
 
     @traits.api.on_trait_change('x_min, x_max, y_min, y_max, z_min, z_max')
     def update_extent(self):
-        conditions = (self.x_min < self.x_max, self.y_min < self.y_max, self.z_min < self.z_max)
+        conditions = (self.x_min < self.x_max, self.y_min <
+                      self.y_max, self.z_min < self.z_max)
         if (self.filter_box is not None and all(conditions)):
 
             self.ranges = np.array([
@@ -116,7 +119,8 @@ class ExtentDialog(traits.api.HasTraits):
             self.filter_box.mlab_source.z = self.ranges[2, :]
 
             if self.image is not None:
-                r = cv2.inRange(self.image, self.ranges[:, 0], self.ranges[:, 1])
+                r = cv2.inRange(
+                    self.image, self.ranges[:, 0], self.ranges[:, 1])
                 cv2.imshow("segmented", r)
 
     view = traitsui.api.View(

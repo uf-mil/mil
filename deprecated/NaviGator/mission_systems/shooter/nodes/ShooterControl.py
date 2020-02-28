@@ -11,24 +11,32 @@ from std_msgs.msg import String
 
 class ShooterControl:
     def __init__(self):
-        self.controller_file = rospy.get_param('~controller/controller_serial', '/dev/ttyUSB0')
+        self.controller_file = rospy.get_param(
+            '~controller/controller_serial', '/dev/ttyUSB0')
         use_sim = rospy.get_param('/is_simulation', False)
         if use_sim:
             rospy.loginfo("Shooter controller running in simulation mode")
             print "Running in sim"
-            self.motor_controller = Sabertooth2x12(self.controller_file, sim=True)
+            self.motor_controller = Sabertooth2x12(
+                self.controller_file, sim=True)
         else:
             self.motor_controller = Sabertooth2x12(self.controller_file)
-        rospy.loginfo("Shooter connecting to motor controller at: %s", self.controller_file)
+        rospy.loginfo(
+            "Shooter connecting to motor controller at: %s", self.controller_file)
         self.load_retract_time = rospy.Duration(0, rospy.get_param(
             '~controller/load/retract_time_millis', 950) * 1000000)
-        self.load_extend_time = rospy.Duration(0, rospy.get_param('~controller/load/extend_time_millis', 500) * 1000000)
-        self.load_pause_time = rospy.Duration(0, rospy.get_param('~controller/load/pause_time_millis', 100) * 1000000)
-        self.load_total_time = self.load_retract_time + self.load_pause_time + self.load_extend_time
+        self.load_extend_time = rospy.Duration(0, rospy.get_param(
+            '~controller/load/extend_time_millis', 500) * 1000000)
+        self.load_pause_time = rospy.Duration(0, rospy.get_param(
+            '~controller/load/pause_time_millis', 100) * 1000000)
+        self.load_total_time = self.load_retract_time + \
+            self.load_pause_time + self.load_extend_time
         self.fire_retract_time = rospy.Duration(0, rospy.get_param(
             '~controller/fire/retract_time_millis', 400) * 1000000)
-        self.fire_shoot_time = rospy.Duration(0, rospy.get_param('~controller/fire/shoot_time_millis', 1000) * 1000000)
-        self.total_fire_time = max(self.fire_shoot_time, self.fire_retract_time)
+        self.fire_shoot_time = rospy.Duration(0, rospy.get_param(
+            '~controller/fire/shoot_time_millis', 1000) * 1000000)
+        self.total_fire_time = max(
+            self.fire_shoot_time, self.fire_retract_time)
         self.loaded = False  # Assume linear actuator starts forward
         self.stop = False
         self.motor1_stop = 0
@@ -39,14 +47,19 @@ class ShooterControl:
         self.load_server = actionlib.SimpleActionServer(
             '/shooter/load', ShooterDoAction, self.load_execute_callback, False)
         self.load_server.start()
-        self.cancel_service = rospy.Service('/shooter/cancel', Trigger, self.cancel_callback)
-        self.manual_service = rospy.Service('/shooter/manual', ShooterManual, self.manual_callback)
-        self.reset_service = rospy.Service('/shooter/reset', Trigger, self.reset_callback)
+        self.cancel_service = rospy.Service(
+            '/shooter/cancel', Trigger, self.cancel_callback)
+        self.manual_service = rospy.Service(
+            '/shooter/manual', ShooterManual, self.manual_callback)
+        self.reset_service = rospy.Service(
+            '/shooter/reset', Trigger, self.reset_callback)
         self.status = "Standby"
-        self.status_pub = rospy.Publisher('/shooter/status', String, queue_size=5)
+        self.status_pub = rospy.Publisher(
+            '/shooter/status', String, queue_size=5)
         self.manual_used = False
         self.killed = False
-        self.kill_listener = AlarmListener("kill", callback_funct=self.update_kill_status)
+        self.kill_listener = AlarmListener(
+            "kill", callback_funct=self.update_kill_status)
 
     def update_kill_status(self, alarm):
         '''

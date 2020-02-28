@@ -18,9 +18,10 @@ class VrxWayfinding(Vrx):
         self.send_feedback('Waiting for task to start')
         yield self.wait_for_task_such_that(lambda task: task.state in ['ready', 'running'])
         path_msg = yield self.get_latching_msg(self.wayfinding_path_sub)
-        poses = [ (yield self.geo_pose_to_enu_pose(geo_pose.pose)) for geo_pose in path_msg.poses]
+        poses = [(yield self.geo_pose_to_enu_pose(geo_pose.pose)) for geo_pose in path_msg.poses]
         position = self.pose[0]
-        poses = sorted(poses, key=lambda pose: np.linalg.norm(pose[0] - position))
+        poses = sorted(
+            poses, key=lambda pose: np.linalg.norm(pose[0] - position))
         self.send_feedback('Sorted poses' + str(poses))
         yield self.wait_for_task_such_that(lambda task: task.state in ['running'])
         for pose in poses:

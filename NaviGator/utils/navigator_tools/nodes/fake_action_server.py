@@ -16,12 +16,14 @@ from mil_misc_tools.text_effects import fprint as _fprint
 from behaviors import params
 
 
-fprint = lambda *args, **kwargs: _fprint(title="FAKE_ACTION_SERVER", time="", *args, **kwargs)
+fprint = lambda *args, **kwargs: _fprint(
+    title="FAKE_ACTION_SERVER", time="", *args, **kwargs)
 
 
 class FakeActionServer(object):
     def __init__(self):
-        self.goal_pose_pub = rospy.Publisher("/lqrrt/goal", PoseStamped, queue_size=3)
+        self.goal_pose_pub = rospy.Publisher(
+            "/lqrrt/goal", PoseStamped, queue_size=3)
 
         # Parameters to simulate lqrrt
         self.blind = False
@@ -43,7 +45,8 @@ class FakeActionServer(object):
         fprint("Move request received!", msg_color="blue")
 
         if msg.move_type not in ['hold', 'drive', 'skid', 'circle']:
-            fprint("Move type '{}' not found".format(msg.move_type), msg_color='red')
+            fprint("Move type '{}' not found".format(
+                msg.move_type), msg_color='red')
             self.move_server.set_aborted(MoveResult('move_type'))
             return
 
@@ -57,7 +60,8 @@ class FakeActionServer(object):
         # Sleep before you continue
         rospy.sleep(1)
 
-        yaw = trns.euler_from_quaternion(rosmsg_to_numpy(msg.goal.orientation))[2]
+        yaw = trns.euler_from_quaternion(
+            rosmsg_to_numpy(msg.goal.orientation))[2]
         if not self.is_feasible(np.array([msg.goal.position.x, msg.goal.position.y, yaw]), np.zeros(3)):
             fprint("Not feasible", msg_color='red')
             self.move_server.set_aborted(MoveResult('occupied'))
@@ -90,7 +94,8 @@ class FakeActionServer(object):
         indicies = (cpm * (points - origin)).astype(np.int64)
 
         try:
-            data = np.array(self.ogrid.data).reshape(self.ogrid.info.width, self.ogrid.info.height)
+            data = np.array(self.ogrid.data).reshape(
+                self.ogrid.info.width, self.ogrid.info.height)
             grid_values = data[indicies[:, 1], indicies[:, 0]]
         except IndexError:
             return False

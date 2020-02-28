@@ -38,7 +38,8 @@ class ProjectionParticleFilter(object):
             - If probabilities fall below something reasonable, more frequently do reset_to_ray
                 - In some cases, reset the worst 25% of particles to ray
         """
-        assert isinstance(camera_model, image_geometry.PinholeCameraModel), "Must be pinhole camera"
+        assert isinstance(
+            camera_model, image_geometry.PinholeCameraModel), "Must be pinhole camera"
         self.aggressive = aggressive
         self.min_Z = 0.0
         self.max_Z = max_Z
@@ -50,7 +51,8 @@ class ProjectionParticleFilter(object):
         self.cameras = []
         self.observations = []
 
-        self.image_size = (self.camera_model.cx() * 2, self.camera_model.cy() * 2)
+        self.image_size = (self.camera_model.cx() * 2,
+                           self.camera_model.cy() * 2)
         self.K = np.array(camera_model.fullIntrinsicMatrix(), dtype=np.float32)
         self.K_inv = np.linalg.inv(self.K)
 
@@ -112,7 +114,8 @@ class ProjectionParticleFilter(object):
 
     def _transform_pts(self, t, R):
         """Supply a transform to the camera frame"""
-        particles = np.copy(np.dot(R.transpose(), self.particles) - R.transpose().dot(t))
+        particles = np.copy(
+            np.dot(R.transpose(), self.particles) - R.transpose().dot(t))
         return particles
 
     def get_ray(self, observation):
@@ -142,7 +145,8 @@ class ProjectionParticleFilter(object):
             # This favors distant particles, which is not what we want
             # range_distribution = np.random.uniform(self.min_Z, self.max_Z, size=self.num_particles)
 
-            range_distribution = np.random.normal(loc=self.max_Z / 2, scale=self.max_Z / 6, size=self.num_particles)
+            range_distribution = np.random.normal(
+                loc=self.max_Z / 2, scale=self.max_Z / 6, size=self.num_particles)
 
             self.particles = self.t + (range_distribution * unit_ray)
             self.particles += np.random.normal(
@@ -162,7 +166,8 @@ class ProjectionParticleFilter(object):
             ) * unit_ray
 
             self.particles[:, weights < average_p] += np.random.normal(
-                scale=(self.salt, self.salt, self.salt), size=(self.num_particles, 3)
+                scale=(self.salt, self.salt, self.salt), size=(
+                    self.num_particles, 3)
             ).transpose()
 
     def observe(self, observation):
@@ -196,14 +201,18 @@ class ProjectionParticleFilter(object):
         error = np.linalg.norm(expected_obs - observation, axis=0)
         if self.aggressive:
             # TODO: logpdf instead
-            z_prob = stats.uniform.pdf(particles[2, :], loc=0.0, scale=self.max_Z)
-            reprojection_prob = stats.norm.pdf(error, scale=self.observation_noise)
+            z_prob = stats.uniform.pdf(
+                particles[2, :], loc=0.0, scale=self.max_Z)
+            reprojection_prob = stats.norm.pdf(
+                error, scale=self.observation_noise)
 
             # p(z | x) = (1 - p_outlier ) * p(err | sigma) + (p_outlier * p(err | random))
-            prob = ((1 - self.jitter) * (z_prob * reprojection_prob)) + (self.jitter * self.jitter_pdf.pdf(error))
+            prob = ((1 - self.jitter) * (z_prob * reprojection_prob)) + \
+                (self.jitter * self.jitter_pdf.pdf(error))
 
         else:
-            prob = ((1 - self.jitter) * np.power(error ** 2, -1)) + (self.jitter * self.jitter_pdf.pdf(error))
+            prob = ((1 - self.jitter) * np.power(error ** 2, -1)) + \
+                (self.jitter * self.jitter_pdf.pdf(error))
 
         # Normalize because we suck
         normalized_prob = prob / np.sum(prob)
@@ -255,7 +264,8 @@ def draw_cameras(observations, cameras):
     for observation, camera in zip(observations, cameras):
         t, R = camera
         draw_camera(t, R)
-        draw_line(t, t + (R.dot(observation.flatten()) * 15), color=(0.0, 1.0, 0.0))
+        draw_line(t, t + (R.dot(observation.flatten()) * 15),
+                  color=(0.0, 1.0, 0.0))
 
 
 def draw_camera(t, R):
@@ -331,7 +341,8 @@ def main():
         if (np.random.random() < p_wrong) and (k > 1):
             projected = np.random.random(2) * np.array([640., 480.])
         else:
-            projected_h = ppf.K.dot(np.dot(R.transpose(), real) - R.transpose().dot(camera_t))
+            projected_h = ppf.K.dot(
+                np.dot(R.transpose(), real) - R.transpose().dot(camera_t))
             projected = projected_h[:2] / projected_h[2]
 
         obs_final = projected + np.random.normal(scale=5.0, size=2)
@@ -350,7 +361,8 @@ def main():
         best_v, cov = ppf.get_best()
 
     draw_cameras(observations, cameras)
-    draw_particles(ppf, color_hsv=((k + 1) / (max_k + 1), 0.7, 0.8), scale=0.1 * ((k + 1) / max_k))
+    draw_particles(ppf, color_hsv=((k + 1) / (max_k + 1),
+                                   0.7, 0.8), scale=0.1 * ((k + 1) / max_k))
 
     mayavi.mlab.show()
 

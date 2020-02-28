@@ -30,13 +30,13 @@ class BallDrop(SubjuGator):
     @util.cancellableInlineCallbacks
     def run(self, args):
         try:
-          ree = rospy.ServiceProxy('/vision/garlic/enable', SetBool)
-          resp = ree(True)
-          if not resp:
-            print("Error, failed to init neural net.")
-            return
+            ree = rospy.ServiceProxy('/vision/garlic/enable', SetBool)
+            resp = ree(True)
+            if not resp:
+                print("Error, failed to init neural net.")
+                return
         except rospy.ServiceException, e:
-          print("Service Call Failed")
+            print("Service Call Failed")
 
         fprint('Enabling cam_ray publisher')
 
@@ -63,7 +63,7 @@ class BallDrop(SubjuGator):
         try:
             save_pois = rospy.ServiceProxy(
                 '/poi_server/save_to_param', Trigger)
-            _ = save_pois();
+            _ = save_pois()
             if not rospy.has_param('/poi_server/initial_pois/ball_drop'):
                 use_prediction = False
                 fprint(

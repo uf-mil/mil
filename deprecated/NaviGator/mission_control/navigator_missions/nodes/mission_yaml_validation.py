@@ -9,7 +9,8 @@ from navigator_msgs.msg import PerceptionObject
 class MissionYAMLValidation(object):
 
     def __init__(self, yaml_text):
-        self.mission_names = [mission_name for mission_name in dir(nav_missions) if mission_name[0] != '_']
+        self.mission_names = [mission_name for mission_name in dir(
+            nav_missions) if mission_name[0] != '_']
         # self.object_names = [PerceptionObject.DETECT_DELIVER_PLATFORM,
         #                      PerceptionObject.IDENTIFY_AND_DOCK,
         #                      PerceptionObject.SCAN_THE_CODE,
@@ -45,7 +46,8 @@ class MissionYAMLValidation(object):
             # assert (timeout == "inf" or timeout is int)
             mission_to_id[name] = str(i)
             print i
-            self.dot.node(str(i), "{}\n{}\n{}\n{}".format(name, obj_dep, is_base))
+            self.dot.node(str(i), "{}\n{}\n{}\n{}".format(
+                name, obj_dep, is_base))
         for i, name in enumerate(yaml_text.keys()):
             mission = yaml_text[name]
             mis_dep = mission["mission_dep"]
@@ -58,6 +60,7 @@ class MissionYAMLValidation(object):
         dir_path = os.path.dirname(os.path.realpath(__file__))
         gv_file = dir_path + "/graph_validations/Missions.gv"
         self.dot.render(gv_file)
+
 
 if __name__ == "__main__":
     yaml_text = None

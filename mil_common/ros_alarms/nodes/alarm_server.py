@@ -22,7 +22,8 @@ class AlarmServer(object):
         msg = "Expecting at most the following alarms: {}"
         rospy.loginfo(msg.format(rospy.get_param("/known_alarms", [])))
 
-        self._alarm_pub = rospy.Publisher("/alarm/updates", AlarmMsg, latch=True, queue_size=100)
+        self._alarm_pub = rospy.Publisher(
+            "/alarm/updates", AlarmMsg, latch=True, queue_size=100)
 
         self._create_meta_alarms()
         self._create_alarm_handlers()
@@ -72,7 +73,8 @@ class AlarmServer(object):
         Calls the meta_predicate callback for an alarm handler when one of its metal alarms has changed.
         Then, updates the status of the parent alarm, if nessesary.
         '''
-        alarms = {name: alarm for name, alarm in self.alarms.items() if name in sub_alarms}
+        alarms = {name: alarm for name, alarm in self.alarms.items()
+                  if name in sub_alarms}
         meta = self.alarms[meta_alarm]
 
         # Check the predicate, this should return either an alarm object or a boolean for if should be raised
@@ -92,7 +94,8 @@ class AlarmServer(object):
             if alarm.raised:  # If it is raised, set problem description
                 alarm.problem_description = 'Raised by meta alarm'
         else:
-            rospy.logwarn('Meta alarm callback for {} failed to return an Alarm or boolean'.format(meta_alarm))
+            rospy.logwarn(
+                'Meta alarm callback for {} failed to return an Alarm or boolean'.format(meta_alarm))
             return
         self.set_alarm(alarm)
 
@@ -129,7 +132,8 @@ class AlarmServer(object):
                 if alarm_name in self.alarms:
                     self.alarms[alarm_name].update(h.initial_alarm)
                 else:
-                    self.alarms[alarm_name] = h.initial_alarm  # Update even if already added to server
+                    # Update even if already added to server
+                    self.alarms[alarm_name] = h.initial_alarm
             elif alarm_name not in self.alarms:  # Add default initial if not there already
                 self.alarms[alarm_name] = self.make_tagged_alarm(alarm_name)
             else:

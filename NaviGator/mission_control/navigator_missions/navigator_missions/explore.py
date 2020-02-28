@@ -13,9 +13,11 @@ def get_closest_objects(position, objects, max_len=3, max_dist=30):
     idx = max_len
     if num < max_len:
         idx = num
-    objects = sorted(objects, key=lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position)))
+    objects = sorted(objects, key=lambda x: np.linalg.norm(
+        position - rosmsg_to_numpy(x.position)))
     objects = objects[:idx]
-    dists = map(lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position)), objects)
+    dists = map(lambda x: np.linalg.norm(
+        position - rosmsg_to_numpy(x.position)), objects)
     final_objs = []
     for i, d in enumerate(dists):
         if d < max_dist:
@@ -79,7 +81,8 @@ def myfunc(navigator, looking_for, center_marker):
             yield navigator.database_query(cmd="lock {} {}".format(obj.id, looking_for))
             defer.returnValue(True)
         except MissingPerceptionObject:
-            fprint("The object {} is not in the database".format(looking_for), msg_color="red")
+            fprint("The object {} is not in the database".format(
+                looking_for), msg_color="red")
     try:
         objs = yield navigator.database_query(object_name="all")
         objs = get_closest_objects(pos, objs.objects)

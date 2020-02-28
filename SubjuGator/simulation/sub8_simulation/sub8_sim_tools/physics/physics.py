@@ -29,7 +29,8 @@ class World(object):
         try:
             self.ode_world.setAngularDamping(0.2)
         except AttributeError:
-            rospy.logerr("SIM ERROR: You need to re-run the install script, or manually fix pyode")
+            rospy.logerr(
+                "SIM ERROR: You need to re-run the install script, or manually fix pyode")
             rospy.logerr("SIM ERROR: Killing simulation")
             exit(0)
 
@@ -67,7 +68,8 @@ class World(object):
         for entity in self.entities:
             entity.step(dt)
 
-        self.space.collide((self.ode_world, self.contact_group), self.near_callback)
+        self.space.collide(
+            (self.ode_world, self.contact_group), self.near_callback)
         self.ode_world.step(dt)
 
         # Remove all contact joints
@@ -141,7 +143,8 @@ class Entity(object):
         '''
         h = np.clip(self.pos[2] + self.radius, 0.0, 2 * self.radius)
         sphere_volume = (4. / 3.) * (np.pi * (self.radius ** 3.))
-        above_water_volume = (1 / 3) * np.pi * (h ** 2) * ((3 * self.radius) - h)
+        above_water_volume = (1 / 3) * np.pi * (h ** 2) * \
+            ((3 * self.radius) - h)
         submerged_volume = sphere_volume - above_water_volume
         return submerged_volume
 
@@ -162,8 +165,10 @@ class Entity(object):
 
     def apply_damping_torque(self):
         '''Apply a linear rotational damping torque'''
-        angular_velocity = np.array(self.body.getAngularVel(), dtype=np.float32)
-        norm_velocity = self._rotational_damping_coeff * np.linalg.norm(angular_velocity)
+        angular_velocity = np.array(
+            self.body.getAngularVel(), dtype=np.float32)
+        norm_velocity = self._rotational_damping_coeff * \
+            np.linalg.norm(angular_velocity)
         self.body.addTorque(norm_velocity * angular_velocity)
 
 

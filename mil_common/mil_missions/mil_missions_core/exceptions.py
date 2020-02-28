@@ -10,6 +10,7 @@ class TimeoutException(Exception):
     Represents an exception from a mission or submission not finishing within
     the requested time.
     '''
+
     def __init__(self, timeout):
         '''
         @param timeout: time in seconds mission/submission should have finished in
@@ -34,6 +35,7 @@ class SubmissionException(Exception):
     Keeps the name of the submission which failed, so the user knowns where
     the failure occurred.
     '''
+
     def __init__(self, mission, exception):
         '''
         @param mission: string name of the mission

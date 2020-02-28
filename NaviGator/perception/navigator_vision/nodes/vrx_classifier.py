@@ -28,11 +28,12 @@ def bbox_countour_from_rectangle(bbox):
                      [bbox[1][0], bbox[1][1]],
                      [bbox[0][0], bbox[1][1]]])
 
+
 class RunningMean(object):
     def __init__(self, value):
         self.sum = 0
         self.n = 0
-        self.add_value(value) 
+        self.add_value(value)
 
     def add_value(self, value):
         self.sum += value
@@ -41,6 +42,7 @@ class RunningMean(object):
     @property
     def mean(self):
         return self.sum / self.n
+
 
 class VrxClassifier(object):
     # Handle buoys / black totem specially, discrminating on volume as they have the same color
@@ -64,7 +66,8 @@ class VrxClassifier(object):
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
         self.get_params()
         self.last_panel_points_msg = None
-        self.database_client = rospy.ServiceProxy('/database/requests', ObjectDBQuery)
+        self.database_client = rospy.ServiceProxy(
+            '/database/requests', ObjectDBQuery)
         self.sub = Image_Subscriber(self.image_topic, self.img_cb)
         self.camera_info = self.sub.wait_for_camera_info()
         self.camera_model = PinholeCameraModel()
@@ -75,8 +78,10 @@ class VrxClassifier(object):
             self.debug_pub = Image_Publisher('~debug_image')
         self.last_objects = None
         self.last_update_time = rospy.Time.now()
-        self.objects_sub = rospy.Subscriber('/pcodar/objects', PerceptionObjectArray, self.process_objects, queue_size=2)
-        self.enabled_srv = rospy.Service('~set_enabled', SetBool, self.set_enable_srv)
+        self.objects_sub = rospy.Subscriber(
+            '/pcodar/objects', PerceptionObjectArray, self.process_objects, queue_size=2)
+        self.enabled_srv = rospy.Service(
+            '~set_enabled', SetBool, self.set_enable_srv)
         if self.is_training:
             self.enabled = True
 
@@ -100,8 +105,10 @@ class VrxClassifier(object):
         '''
         self.is_training = rospy.get_param('~train', False)
         self.debug = rospy.get_param('~debug', True)
-        self.image_topic = rospy.get_param('~image_topic', '/camera/starboard/image_rect_color')
-        self.update_period = rospy.Duration(1.0 / rospy.get_param('~update_hz', 1))
+        self.image_topic = rospy.get_param(
+            '~image_topic', '/camera/starboard/image_rect_color')
+        self.update_period = rospy.Duration(
+            1.0 / rospy.get_param('~update_hz', 1))
         self.classifier = VrxColorClassifier()
         self.classifier.train_from_csv()
 
@@ -115,7 +122,7 @@ class VrxClassifier(object):
         return bbox_contour
 
     def get_bbox(self, p, q_mat, obj_msg):
-        points = np.zeros((len(obj_msg.points), 3) , dtype=np.float)
+        points = np.zeros((len(obj_msg.points), 3), dtype=np.float)
         for i in range(len(obj_msg.points)):
             points[i, :] = p + q_mat.dot(rosmsg_to_numpy(obj_msg.points[i]))
         return points
@@ -134,13 +141,13 @@ class VrxClassifier(object):
             self.object_map[object_id] = class_probabilities
         total_probabilities = self.object_map[object_id]
 
-        # Guess the type of object based 
+        # Guess the type of object based
         most_likely_index = np.argmax(total_probabilities)
         most_likely_name = self.classifier.CLASSES[most_likely_index]
         # Unforuntely this doesn't really work'
         if most_likely_name in self.BLACK_OBJECT_CLASSES:
             object_scale = rosmsg_to_numpy(object_msg.scale)
-            object_volume = object_scale.dot(object_scale) 
+            object_volume = object_scale.dot(object_scale)
             object_area = object_scale[:2].dot(object_scale[:2])
             height = object_scale[2]
             if object_id in self.volume_means:
@@ -151,20 +158,24 @@ class VrxClassifier(object):
                 self.area_means[object_id] = RunningMean(object_area)
             running_mean_volume = self.volume_means[object_id].mean
             running_mean_area = self.area_means[object_id].mean
-           
+
             if height > self.TOTEM_MIN_HEIGHT:
                 black_guess = 'black_totem'
             else:
-                black_guess_index = np.argmin(np.abs(self.BLACK_OBJECT_VOLUMES - running_mean_volume))
+                black_guess_index = np.argmin(
+                    np.abs(self.BLACK_OBJECT_VOLUMES - running_mean_volume))
                 black_guess = self.POSSIBLE_BLACK_OBJECTS[black_guess_index]
             most_likely_name = black_guess
-            rospy.loginfo('{} current/running volume={}/{} area={}/{} height={}-> {}'.format(object_id, object_volume, running_mean_volume, object_area, running_mean_area, height, black_guess))
+            rospy.loginfo('{} current/running volume={}/{} area={}/{} height={}-> {}'.format(object_id,
+                                                                                             object_volume, running_mean_volume, object_area, running_mean_area, height, black_guess))
         obj_title = object_msg.labeled_classification
         probability = class_probabilities[most_likely_index]
-        rospy.loginfo('Object {} {} classified as {} ({}%)'.format(object_id, object_msg.labeled_classification, most_likely_name, probability * 100.))
+        rospy.loginfo('Object {} {} classified as {} ({}%)'.format(
+            object_id, object_msg.labeled_classification, most_likely_name, probability * 100.))
         if obj_title != most_likely_name:
             cmd = '{}={}'.format(object_id, most_likely_name)
-            rospy.loginfo('Updating object {} to {}'.format(object_id, most_likely_name))
+            rospy.loginfo('Updating object {} to {}'.format(
+                object_id, most_likely_name))
             if not self.is_training:
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
         return most_likely_name
@@ -194,7 +205,8 @@ class VrxClassifier(object):
         # Transform the center of each object into optical frame
         positions_camera = [translation + rotation_mat.dot(rosmsg_to_numpy(obj.pose.position))
                             for obj in self.last_objects.objects]
-        pixel_centers = [self.camera_model.project3dToPixel(point) for point in positions_camera]
+        pixel_centers = [self.camera_model.project3dToPixel(
+            point) for point in positions_camera]
         distances = np.linalg.norm(positions_camera, axis=1)
         CUTOFF_METERS = 15
 
@@ -207,12 +219,11 @@ class VrxClassifier(object):
         # print 'Keeping {} of {}'.format(len(met_criteria), len(self.last_objects.objects))
 
         rois = [self.get_object_roi(translation, rotation_mat, self.last_objects.objects[i])
-                  for i in met_criteria]
+                for i in met_criteria]
         debug = np.zeros(img.shape, dtype=img.dtype)
 
         if self.is_training:
             training = []
-
 
         for i in xrange(len(rois)):
             # The index in self.last_objects that this object is
@@ -222,7 +233,8 @@ class VrxClassifier(object):
             object_id = object_msg.id
             # Exit early if we could not get a valid roi
             if rois[i] is None:
-                rospy.logwarn('Object {} had no points, skipping'.format(object_id))
+                rospy.logwarn(
+                    'Object {} had no points, skipping'.format(object_id))
                 continue
             # Form a contour from the ROI
             contour = np.array(rois[i], dtype=int)
@@ -230,9 +242,11 @@ class VrxClassifier(object):
             mask = contour_mask(contour, img_shape=img.shape)
 
             # get the color mean features
-            features = np.array(self.classifier.get_features(img, mask)).reshape(1, 9)
+            features = np.array(
+                self.classifier.get_features(img, mask)).reshape(1, 9)
             # Predict class probabilites based on color means
-            class_probabilities = self.classifier.feature_probabilities(features)[0]
+            class_probabilities = self.classifier.feature_probabilities(features)[
+                0]
             # Use this and previous probabilities to guess at which object this is
             guess = self.update_object(object_msg, class_probabilities)
             # If training, save this
@@ -247,21 +261,23 @@ class VrxClassifier(object):
             thickness = 2
             center = np.array(pixel_centers[index], dtype=int)
             text = str(object_id)
-            putText_ul(debug, text, center, fontScale=scale, thickness=thickness)
+            putText_ul(debug, text, center,
+                       fontScale=scale, thickness=thickness)
 
         if self.is_training and len(training) != 0:
-           training = np.array(training)
-           try:
-               previous_data = pandas.DataFrame.from_csv(self.classifier.training_file).values
-               data = np.vstack((previous_data, training))
-           except Exception as e:
-               data = training
-           self.classifier.save_csv(data[:, 1:], data[:, 0])
-           rospy.signal_shutdown('fdfd')
-           raise Exception('did something, kev')
+            training = np.array(training)
+            try:
+                previous_data = pandas.DataFrame.from_csv(
+                    self.classifier.training_file).values
+                data = np.vstack((previous_data, training))
+            except Exception as e:
+                data = training
+            self.classifier.save_csv(data[:, 1:], data[:, 0])
+            rospy.signal_shutdown('fdfd')
+            raise Exception('did something, kev')
 
         self.image_mux[0] = img
-        self.image_mux[1] = debug 
+        self.image_mux[1] = debug
         self.debug_pub.publish(self.image_mux())
         return
 

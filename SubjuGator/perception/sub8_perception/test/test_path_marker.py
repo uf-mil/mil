@@ -27,10 +27,12 @@ class TestPathMarker(unittest.TestCase):
         self.img_topic = "/camera/down/left/image_rect_color"
         rospy.wait_for_service('/vision/orange_rectangle/2D', 3.0)
         rospy.wait_for_service('/vision/orange_rectangle/enable', 3.0)
-        self.service = rospy.ServiceProxy('/vision/orange_rectangle/2D', VisionRequest2D)
+        self.service = rospy.ServiceProxy(
+            '/vision/orange_rectangle/2D', VisionRequest2D)
         enable = rospy.ServiceProxy('/vision/orange_rectangle/enable', SetBool)
         enable(SetBoolRequest(data=True))
-        self.cam_info_pub = rospy.Publisher(self.info_topic, CameraInfo, queue_size=5)
+        self.cam_info_pub = rospy.Publisher(
+            self.info_topic, CameraInfo, queue_size=5)
         self.img_pub = rospy.Publisher(self.img_topic, Image, queue_size=5)
         super(TestPathMarker, self).__init__(*args)
 
@@ -76,7 +78,8 @@ class TestPathMarker(unittest.TestCase):
         res_xy = np.array([res.pose.x, res.pose.y])
         correct_xy = np.array([correct.pose.x, correct.pose.y])
         err = np.linalg.norm(res_xy - correct_xy)
-        msg = "Marker pose (x,y) too much error Res={} Correct={} Error={}".format(res_xy, correct_xy, err)
+        msg = "Marker pose (x,y) too much error Res={} Correct={} Error={}".format(
+            res_xy, correct_xy, err)
         self.assertLess(err,
                         20.0,
                         # A little bit of tolerance given in precise ground truth. Will lower when new label system
@@ -123,6 +126,7 @@ class TestPathMarker(unittest.TestCase):
         self._test_bag(rospy.get_param(self.name + '/pool_path3'),
                        rospy.Duration(5.8),
                        [[188, 330], [354, 322]])
+
 
 if __name__ == '__main__':
     import rostest

@@ -104,7 +104,8 @@ class MissionPlanner:
 
         self.current_mission.start_time = self.nh.get_time()
         self.current_mission_defer = self._do_mission(self.current_mission)
-        self.current_mission_defer.addCallbacks(self._cb_mission, errback=self._err_mission)
+        self.current_mission_defer.addCallbacks(
+            self._cb_mission, errback=self._err_mission)
         res = yield self.current_mission_defer
         self.failed = False
         defer.returnValue(res)
@@ -114,7 +115,8 @@ class MissionPlanner:
         if self.base_mission is not None:
             base_mission = self._do_mission(self.base_mission, center_marker=self.current_mission.marker,
                                             looking_for=self.current_mission.looking_for)
-            base_mission.addErrback(lambda err: fprint(err, msg_color="red", title="MISSION ERR | BASE MISSION"))
+            base_mission.addErrback(lambda err: fprint(
+                err, msg_color="red", title="MISSION ERR | BASE MISSION"))
             res = yield base_mission
             yield self.publish("Ending", mission=self.base_mission)
             defer.returnValue(res)
@@ -134,8 +136,10 @@ class MissionPlanner:
 
     @util.cancellableInlineCallbacks
     def _err_mission(self, err):
-        if hasattr(err, "type") and err.type == defer.CancelledError:  # This means there was a timeout
-            fprint(self.current_mission.name, msg_color="red", title="MISSION TIMEOUT")
+        # This means there was a timeout
+        if hasattr(err, "type") and err.type == defer.CancelledError:
+            fprint(self.current_mission.name,
+                   msg_color="red", title="MISSION TIMEOUT")
             yield self.publish("TimingOut")
             if (TimeoutManager.can_repeat(self.missions_left, self._get_time_left(), self.current_mission)) or len(self.missions_left) == 1:
                 yield self.publish("Retrying")
@@ -144,7 +148,8 @@ class MissionPlanner:
                 yield self._run_mission(self.current_mission, redo=True)
                 defer.returnValue(False)
         else:
-            fprint(err, msg_color="red", title="{} MISSION ERROR: ".format(self.current_mission.name))
+            fprint(err, msg_color="red", title="{} MISSION ERROR: ".format(
+                self.current_mission.name))
         yield self.publish("Failing")
         yield self.current_mission.safe_exit(self.navigator, err, self, self.module)
         self._mission_complete()
@@ -185,10 +190,13 @@ class MissionPlanner:
             real_time_left = self._get_real_timeleft()
             if real_time_left < 0:
                 break
-            TimeoutManager.generate_timeouts(time_left, real_time_left, self.missions_left)
+            TimeoutManager.generate_timeouts(
+                time_left, real_time_left, self.missions_left)
             m = yield self._get_closest_mission()
             print m.name
             yield self._run_mission(m)
 
-        fprint("MISSIONS COMPLETE, TOTAL RUN TIME: {}".format((self.nh.get_time() - self.start_time).to_sec()), msg_color="green")
-        fprint("MISSIONS COMPLETE, TOTAL POINTS: {}".format((self.points), msg_color="green"))
+        fprint("MISSIONS COMPLETE, TOTAL RUN TIME: {}".format(
+            (self.nh.get_time() - self.start_time).to_sec()), msg_color="green")
+        fprint("MISSIONS COMPLETE, TOTAL POINTS: {}".format(
+            (self.points), msg_color="green"))

@@ -1,6 +1,14 @@
 #!/usr/bin/python
 
 from __future__ import division
+import threading
+import rosbag
+from rawgps_common.msg import Measurements, Satellite
+from rawgps_common import gps, glonass
+from uf_common.orientation_helpers import xyz_array
+from geometry_msgs.msg import Vector3, Point, PointStamped
+from std_msgs.msg import String, Header
+import rospy
 
 import math
 import struct
@@ -12,16 +20,6 @@ import scipy
 
 import roslib
 roslib.load_manifest('rawgps_common')
-
-import rospy
-from std_msgs.msg import String, Header
-from geometry_msgs.msg import Vector3, Point, PointStamped
-
-from uf_common.orientation_helpers import xyz_array
-from rawgps_common import gps, glonass
-from rawgps_common.msg import Measurements, Satellite
-
-import rosbag
 
 
 half_wavelength = (gps.c / gps.L1_f0) / 2
@@ -223,7 +221,6 @@ def cb(msg):
 # [  737793.47470689 -5499013.87053299  3135423.99413285]
 
 
-import threading
 lock = threading.Lock()
 
 
@@ -251,7 +248,8 @@ def match(name, msg):
                  for a, b in zip(new[0].satellites, new[1].satellites) if a.prn == 21]
             for a, b in zip(new[0].satellites, new[1].satellites):
                 print a.prn,
-                print a.carrier_distance - b.carrier_distance - mean(q), xyz_array(a.direction_enu)
+                print a.carrier_distance - b.carrier_distance - \
+                    mean(q), xyz_array(a.direction_enu)
             print
 
 

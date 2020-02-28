@@ -13,7 +13,8 @@ class PingerAndy(Navigator):
     '''
     @classmethod
     def init(cls):
-        cls.pinger_heading = cls.nh.subscribe("/hydrophones/ping_direction", Vector3Stamped)
+        cls.pinger_heading = cls.nh.subscribe(
+            "/hydrophones/ping_direction", Vector3Stamped)
 
     @staticmethod
     def line(p1, p2):
@@ -70,7 +71,8 @@ class PingerAndy(Navigator):
         gates = yield self.get_gates()
 
         # Get heading towards pinger from Andy hydrophone system
-        self.send_feedback('All gates clicked on! Waiting for pinger heading...')
+        self.send_feedback(
+            'All gates clicked on! Waiting for pinger heading...')
         heading = yield self.pinger_heading.get_next_message()
         self.send_feedback('Recieved pinger heading')
 
@@ -81,7 +83,8 @@ class PingerAndy(Navigator):
         heading_enu = hydrophones_to_enu.transform_vector(heading)
         heading_enu = heading_enu[0:2] / np.linalg.norm(heading_enu[0:2])
 
-        pinger_line = self.line(hydrophones_origin, hydrophones_origin + heading_enu)
+        pinger_line = self.line(
+            hydrophones_origin, hydrophones_origin + heading_enu)
         gates_line = self.line(gates[0], gates[-1])
 
         # Find intersection of these two lines. This is the approximate position of the pinger

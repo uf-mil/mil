@@ -19,6 +19,7 @@ def cb2(alarm):
     cb2_ran = True
     print "Callback2!"
 
+
 if __name__ == "__main__":
     rospy.init_node("callback_test")
 

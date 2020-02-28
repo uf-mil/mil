@@ -54,7 +54,8 @@ class ShaderManager(object):
 
     def register(self, entity):
         if entity in self.entities:
-            raise ValueError("ERROR: You've registered one entity with more that one manager, this is not allowed.")
+            raise ValueError(
+                "ERROR: You've registered one entity with more that one manager, this is not allowed.")
         else:
             self.entities.append(entity)
 

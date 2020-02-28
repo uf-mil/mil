@@ -16,6 +16,7 @@ class Thruster(object):
     '''
     Models the force (thrust) to PWM (effort) of a thruster
     '''
+
     def __init__(self, forward_calibration, backward_calibration):
         self.forward_calibration = forward_calibration
         self.backward_calibration = backward_calibration

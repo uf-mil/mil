@@ -7,9 +7,11 @@ import tensorflow as tf
 from utils import label_map_util
 
 rospack = rospkg.RosPack()
-TRAINED_MODEL_DIR = rospack.get_path('sub8_perception') + '/ml_classifiers/dice'
+TRAINED_MODEL_DIR = rospack.get_path(
+    'sub8_perception') + '/ml_classifiers/dice'
 # Path to frozen detection graph. This is the actual model+weights that is used for the object detection.
-PATH_TO_CKPT = TRAINED_MODEL_DIR + '/frozen_graphs/faster_rcnn_243_dice_v2/frozen_inference_graph.pb'
+PATH_TO_CKPT = TRAINED_MODEL_DIR + \
+    '/frozen_graphs/faster_rcnn_243_dice_v2/frozen_inference_graph.pb'
 # List of the strings that is used to add correct label for each box.
 PATH_TO_LABELS = TRAINED_MODEL_DIR + '/frozen_graphs/dice_labelmap.pbtxt'
 

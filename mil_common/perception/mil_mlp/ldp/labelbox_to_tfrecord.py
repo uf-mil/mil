@@ -70,7 +70,8 @@ def main(_):
         print('Successfully created the TFRecords: {}'.format(output_path))
 
         if FLAGS.check_tfrecords:
-            print('Checking Validity of TFRecords. Expect image encoding alongside label data.')
+            print(
+                'Checking Validity of TFRecords. Expect image encoding alongside label data.')
             if FLAGS.output_path is 'default':
                 for example in tf.python_io.tf_record_iterator(
                         '../docker_tf/transfer_learning/data/' + (folder + '.record')):
@@ -99,5 +100,7 @@ def main(_):
         except Exception as e:
             print(
                 "Cleanup failed, either a directory or file was missing. Could indicate failed download.", e)
+
+
 if __name__ == '__main__':
     tf.app.run()

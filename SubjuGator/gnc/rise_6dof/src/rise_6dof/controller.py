@@ -68,7 +68,7 @@ class Controller(object):
         world_from_body2[:3, :3] = world_from_body2[3:, 3:] = world_from_body
 
         # Permitting lambda assignment b/c legacy
-        body_gain = lambda x: world_from_body2.dot(x).dot(world_from_body2.T)  # noqa
+        def body_gain(x): return world_from_body2.dot(x).dot(world_from_body2.T)  # noqa
 
         error_velocity_world = (desired_x_dot + body_gain(
             numpy.diag(self.config['k'])).dot(error_position_world)) - x_dot
@@ -89,7 +89,8 @@ class Controller(object):
         output = pd_output
         if self.config['use_rise']:
             rise_term_int = body_gain(numpy.diag(self.config['ks'] * self.config['alpha'])).dot(error_velocity_world) +\
-                body_gain(numpy.diag(self.config['beta'])).dot(numpy.sign(error_velocity_world))
+                body_gain(numpy.diag(self.config['beta'])).dot(
+                    numpy.sign(error_velocity_world))
 
             self._rise_term = self._rise_term + dt / 2 * (
                 rise_term_int + self._rise_term_int_prev)
@@ -106,7 +107,7 @@ class Controller(object):
             numpy.diag(self.config['vel_feedforward'])).dot(desired_x_dot)
 
         # Permitting lambda assignment b/c legacy
-        wrench_from_vec = lambda output: (world_from_body.T.dot(output[0:3]), world_from_body.T.dot(output[3:6]))  # noqa
+        def wrench_from_vec(output): return (world_from_body.T.dot(output[0:3]), world_from_body.T.dot(output[3:6]))  # noqa
         if DEBUG:
             print('{:6} {}'.format('PD:', wrench_from_vec(pd_output)))
             print('{:6} {}'.format('PID(R):', wrench_from_vec(output)))

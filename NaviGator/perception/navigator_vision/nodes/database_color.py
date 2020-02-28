@@ -96,7 +96,8 @@ class ImageHistory(object):
             if len(self._images) == 0:
                 continue
 
-            closest = min(self._images, key=lambda image: abs(image.time - time))
+            closest = min(
+                self._images, key=lambda image: abs(image.time - time))
             if abs(closest.time - time) > ros_t(margin):
                 continue  # Return invalid image
 
@@ -116,7 +117,8 @@ class DebugImage(object):
     def publish(self, *args):
         if self.image is not None:
             try:
-                image_message = self.bridge.cv2_to_imgmsg(self.image, self.encoding)
+                image_message = self.bridge.cv2_to_imgmsg(
+                    self.image, self.encoding)
                 self.im_pub.publish(image_message)
             except CvBridgeError as e:
                 # Intentionally absorb CvBridge Errors
@@ -210,7 +212,8 @@ class Colorama(object):
         image_topic = camera_root + "/image_rect_color"
 
         self.tf_listener = tf.TransformListener()
-        self.status_pub = rospy.Publisher("/database_color_status", ColoramaDebug, queue_size=1)
+        self.status_pub = rospy.Publisher(
+            "/database_color_status", ColoramaDebug, queue_size=1)
 
         self.odom = None
 
@@ -223,7 +226,8 @@ class Colorama(object):
         fprint("Odom found!", msg_color='green')
 
         db_request = rospy.ServiceProxy("/database/requests", ObjectDBQuery)
-        self.make_request = lambda **kwargs: db_request(ObjectDBQueryRequest(**kwargs))
+        self.make_request = lambda **kwargs: db_request(
+            ObjectDBQueryRequest(**kwargs))
 
         self.image_history = ImageHistory(image_topic)
 
@@ -231,7 +235,8 @@ class Colorama(object):
         fprint("Waiting for camera info on: '{}'".format(info_topic))
         while not rospy.is_shutdown():
             try:
-                camera_info_msg = rospy.wait_for_message(info_topic, CameraInfo, timeout=3)
+                camera_info_msg = rospy.wait_for_message(
+                    info_topic, CameraInfo, timeout=3)
             except rospy.exceptions.ROSException:
                 rospy.sleep(1)
                 continue
@@ -257,11 +262,13 @@ class Colorama(object):
         # Observation parameters
         self.saturation_reject = 20  # Reject color obs with below this saturation
         self.value_reject = 50      # Reject color obs with below this value
-        self.height_remove = 0.4    # Remove points that are this percent down on the object (%)
+        # Remove points that are this percent down on the object (%)
+        self.height_remove = 0.4
         # 1 keeps all, .4 removes the bottom 40%
         # Update parameters
         self.history_length = 100   # How many of each color to keep
-        self.min_obs = 5            # Need atleast this many observations before making a determination
+        # Need atleast this many observations before making a determination
+        self.min_obs = 5
         self.conf_reject = .5       # When to reject an observation based on it's confidence
 
         # Confidence weights
@@ -297,7 +304,8 @@ class Colorama(object):
         """
         Returns an angluar differnce between q and target_q in radians
         """
-        dq = trns.quaternion_multiply(np.array(target_q), trns.quaternion_inverse(np.array(q)))
+        dq = trns.quaternion_multiply(
+            np.array(target_q), trns.quaternion_inverse(np.array(q)))
         return 2 * np.arccos(dq[3])
 
     def _get_closest_color(self, hue_angle):
@@ -319,7 +327,8 @@ class Colorama(object):
                 error = this_error
                 likely_color = color
 
-        fprint("Likely color: {} with an hue error of {} rads.".format(likely_color, np.round(error, 3)))
+        fprint("Likely color: {} with an hue error of {} rads.".format(
+            likely_color, np.round(error, 3)))
         return [likely_color, error]
 
     def do_estimate(self, totem_id):
@@ -332,13 +341,15 @@ class Colorama(object):
         t_color = self.colored[totem_id]
 
         if len(t_color) < self.min_obs:
-            fprint("Only {} observations. {} required.".format(len(t_color), self.min_obs), msg_color='red')
+            fprint("Only {} observations. {} required.".format(
+                len(t_color), self.min_obs), msg_color='red')
             return None
 
         kwargs = {'v_u': self.v_u, 'v_sig': self.v_sig, 'dist_sig': self.dist_sig,
                   'q_factor': self.q_factor, 'q_sig': self.q_sig}
 
-        w, weights = t_color.compute_confidence([self.v_factor, self.dist_factor, self.q_factor], True, **kwargs)
+        w, weights = t_color.compute_confidence(
+            [self.v_factor, self.dist_factor, self.q_factor], True, **kwargs)
         fprint("CONF: {}".format(w))
         if np.mean(w) < self.conf_reject:
             return None
@@ -362,7 +373,8 @@ class Colorama(object):
 
     def got_request(self, req):
         # Threading blah blah something unsafe
-        colored_ids = [_id for _id, color_err in self.colored.iteritems() if self.valid_color(_id) == req.color]
+        colored_ids = [_id for _id, color_err in self.colored.iteritems(
+        ) if self.valid_color(_id) == req.color]
 
         fprint("Colored IDs: {}".format(colored_ids), msg_color='blue')
         print '\n' * 50
@@ -378,7 +390,8 @@ class Colorama(object):
         if resp.found:
             # Time of the databse request
             time_of_marker = resp.objects[0].header.stamp  # - ros_t(1)
-            fprint("Looking for image at {}".format(time_of_marker.to_sec()), msg_color='yellow')
+            fprint("Looking for image at {}".format(
+                time_of_marker.to_sec()), msg_color='yellow')
             image_holder = self.image_history.get_around_time(time_of_marker)
             if not image_holder.contains_valid_image:
                 t = self.image_history.newest_image.time
@@ -396,7 +409,8 @@ class Colorama(object):
             cam_tf = self.camera_model.tfFrame()
             try:
                 fprint("Getting transform between /enu and {}...".format(cam_tf))
-                self.tf_listener.waitForTransform("/enu", cam_tf, time_of_marker, ros_t(1))
+                self.tf_listener.waitForTransform(
+                    "/enu", cam_tf, time_of_marker, ros_t(1))
                 t_mat44 = self.tf_listener.asMatrix(cam_tf, header)
             except tf.ExtrapolationException as e:
                 fprint("TF error found and excepted: {}".format(e))
@@ -410,8 +424,10 @@ class Colorama(object):
                 fprint("{} {}".format(obj.id, "=" * 50))
 
                 # Get object position in px coordinates to determine if it's in frame
-                object_cam = t_mat44.dot(np.append(point_to_numpy(obj.position), 1))
-                object_px = map(int, self.camera_model.project3dToPixel(object_cam[:3]))
+                object_cam = t_mat44.dot(
+                    np.append(point_to_numpy(obj.position), 1))
+                object_px = map(
+                    int, self.camera_model.project3dToPixel(object_cam[:3]))
                 if not self._object_in_frame(object_cam):
                     fprint("Object not in frame")
                     continue
@@ -424,15 +440,19 @@ class Colorama(object):
                     fprint("Object too small")
                     continue
 
-                threshold = np.min(points_np[:, 2]) + self.height_remove * height
+                threshold = np.min(points_np[:, 2]) + \
+                    self.height_remove * height
                 points_np = points_np[points_np[:, 2] > threshold]
 
                 # Shove ones in there to make homogenous points to get points in image frame
-                points_np_homo = np.hstack((points_np, np.ones((points_np.shape[0], 1)))).T
+                points_np_homo = np.hstack(
+                    (points_np, np.ones((points_np.shape[0], 1)))).T
                 points_cam = t_mat44.dot(points_np_homo).T
-                points_px = map(self.camera_model.project3dToPixel, points_cam[:, :3])
+                points_px = map(
+                    self.camera_model.project3dToPixel, points_cam[:, :3])
 
-                [cv2.circle(self.debug.image, tuple(map(int, p)), 2, (255, 255, 255), -1) for p in points_px]
+                [cv2.circle(self.debug.image, tuple(map(int, p)), 2,
+                            (255, 255, 255), -1) for p in points_px]
 
                 # Get color information from the points
                 roi = self._get_ROI_from_points(points_px)
@@ -443,7 +463,8 @@ class Colorama(object):
                 target_q = self._get_solar_angle()
                 q_err = self._get_quaternion_error(boat_q, target_q)
 
-                dist = np.linalg.norm(self.odom[0] - point_to_numpy(obj.position))
+                dist = np.linalg.norm(
+                    self.odom[0] - point_to_numpy(obj.position))
 
                 fprint("H: {}, S: {}, V: {}".format(h, s, v))
                 fprint("q_err: {}, dist: {}".format(q_err, dist))
@@ -451,7 +472,8 @@ class Colorama(object):
                 # Add to database and setup debug image
                 if s < self.saturation_reject or v < self.value_reject:
                     err_msg = "The colors aren't expressive enough s: {} ({}) v: {} ({}). Rejecting."
-                    fprint(err_msg.format(s, self.saturation_reject, v, self.value_reject), msg_color='red')
+                    fprint(err_msg.format(s, self.saturation_reject,
+                                          v, self.value_reject), msg_color='red')
 
                 else:
                     if obj.id not in self.colored:
@@ -469,12 +491,14 @@ class Colorama(object):
                     rgb = self.database_color_map[color[0]]
 
                     cmd = '{name}={rgb[0]},{rgb[1]},{rgb[2]},{_id}'
-                    self.make_request(cmd=cmd.format(name=obj.name, _id=obj.id, rgb=rgb))
+                    self.make_request(cmd=cmd.format(
+                        name=obj.name, _id=obj.id, rgb=rgb))
 
                 bgr = rgb[::-1]
                 cv2.circle(self.debug.image, tuple(object_px), 10, bgr, -1)
                 font = cv2.FONT_HERSHEY_SIMPLEX
-                cv2.putText(self.debug.image, str(obj.id), tuple(object_px), font, 1, bgr, 2)
+                cv2.putText(self.debug.image, str(obj.id),
+                            tuple(object_px), font, 1, bgr, 2)
 
     def _get_solar_angle(self):
         return [0, 0, 0, 1]
@@ -501,7 +525,8 @@ class Colorama(object):
         # Now check that s and v are in a good range
         if s < self.saturation_reject or v < self.value_reject:
             err_msg = "The colors aren't expressive enough s: {} ({}) v: {} ({}). Rejecting."
-            fprint(err_msg.format(s, self.saturation_reject, v, self.value_reject), msg_color='red')
+            fprint(err_msg.format(s, self.saturation_reject,
+                                  v, self.value_reject), msg_color='red')
             return None
 
         # Compute hue error in SO2
@@ -519,7 +544,8 @@ class Colorama(object):
                 likely_color, np.round(error, 3), self.hue_error_reject), msg_color='red')
             return None
 
-        fprint("Likely color: {} with an hue error of {} rads.".format(likely_color, np.round(error, 3)))
+        fprint("Likely color: {} with an hue error of {} rads.".format(
+            likely_color, np.round(error, 3)))
         return [likely_color, error]
 
     def _object_in_frame(self, object_point):
