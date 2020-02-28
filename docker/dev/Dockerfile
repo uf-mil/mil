@@ -12,3 +12,10 @@ WORKDIR /home/mil-dev
 ADD --chown=mil-dev:mil-dev user_install /tmp/user_install
 RUN chmod +x /tmp/user_install && /tmp/user_install
 RUN mkdir -p /home/mil-dev/catkin_ws/src/mil
+
+# Use an interactive bash terminal as the shell
+# This allows the user to start the container running a ROS command, etc
+ENTRYPOINT ["/bin/bash", "-ic"]
+
+# Default to just opening a shell if no command is specified
+CMD ["bash"]

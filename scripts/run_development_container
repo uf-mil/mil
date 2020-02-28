@@ -3,8 +3,7 @@ set -euo pipefail
 
 usage()
 {
-    echo "Usage: $0 [OPTION]"
-
+    echo "Usage: $0 [OPTION] [COMMAND ARGS...]"
 
     echo "OPTIONS:
 
@@ -14,13 +13,16 @@ usage()
 
         --dev-server
 
-            This flag causes the correct export of ros environment variables to the container when running remotely. Only to be used when runnning the container on the dev server."
+            This flag causes the correct export of ros environment variables to the container when running remotely. Only to be used when runnning the container on the dev server.
+
+        [COMMAND ARG...] If additional arugments are given, they will be passed as the command to run inside the container. Be default, it will open an interactive bash terminal"
 
 exit 1
 }
 
 ROS_ENV=""
 NAME=""
+
 
 
 if [[ $* == *--dev-server* ]]; then
@@ -33,15 +35,23 @@ if [[ $* == *--dev-server* ]]; then
       --env ROS_PORT=$ROS_PORT"
     NAME="--name dev-$USER-$UID"
 
+    COMMAND_WITHIN_CONTAINER="${@:2}"
 elif
     [[ $* == *--help* ]] || [[ $* == *-h* ]]; then
     usage
+
+    COMMAND_WITHIN_CONTAINER="${@:2}"
+else
+    COMMAND_WITHIN_CONTAINER="${@:1}"
 fi
 
 VIM_CONFIG=""
 if [ -f $HOME/.vimrc ]; then
     VIM_CONFIG="-v $HOME/.vimrc:/home/mil-dev/.vimrc"
 fi
+
+# Default command is an interactive shell
+COMMAND_WITHIN_CONTAINER=${COMMAND_WITHIN_CONTAINER:-"bash"}
 
 docker run -it \
     -v $(realpath $(dirname $BASH_SOURCE)/../):/home/mil-dev/catkin_ws/src/mil/ \
@@ -55,4 +65,5 @@ docker run -it \
     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
     $NAME \
     --rm \
-    uf-mil:dev
+    uf-mil:dev \
+    "$COMMAND_WITHIN_CONTAINER"
