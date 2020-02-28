@@ -6,6 +6,7 @@ steps:
     command: "./ci/run_ci"
     plugins:
       - docker#v3.3.0:
-          image: uf-mil-commit-${BUILDKITE_COMMIT}:ci-build
+          image: uf-mil-commit-${BUILDKITE_COMMIT}:dev
           mount-buildkite-agent: false
-          workdir: /home/mil-ci/catkin_ws/src/mil
+          workdir: /home/mil-dev/catkin_ws/src/mil
+          shell: ["/bin/bash", "-ic"]

@@ -1,4 +1,3 @@
 #!/bin/bash
-. /opt/ros/melodic/setup.bash
 catkin_make -C $MIL_WS
 

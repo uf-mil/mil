@@ -13,11 +13,12 @@ if [ ! -d $DESTINATION/.git ]; then
   git clone https://gitlab.com/sylphase/passive_sonar $DESTINATION
 else
   echo "Sylphase sonar repo already installed"
+  git -C $DESTINATION fetch origin
 fi
 
 # Checkout to latest commit
 echo "Checking repo out to master"
-git -C $DESTINATION fetch origin
 git -C $DESTINATION checkout origin/master -B master
 git -C $DESTINATION submodule init driver/ext/python-libusb1
 git -C $DESTINATION submodule update
+make -C $DESTINATION/fpga -j3

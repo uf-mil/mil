@@ -22,11 +22,17 @@ _list_complete()
     done
 }
 
+# Source anything in scripts/rc.d. This allows
+# us to organize out aliases/rc so its not all in this script
+for f in $MIL_REPO/scripts/rc.d/*
+do
+	. "$f"
+done
+
 # Source other aliases / tools
 source $MIL_WS/src/mil/SubjuGator/scripts/bash_aliases.sh
 source $MIL_WS/src/mil/mil_common/ros_alarms/scripts/bash_aliases.sh
 source $MIL_WS/src/mil/mil_common/scripts/bag.sh
-source $MIL_WS/src/mil/mil_common/scripts/ros_connect.sh
 source $MIL_WS/src/mil/mil_common/mil_missions/setup.bash
 source $MIL_WS/src/mil/mil_common/perception/point_cloud_object_detection_and_recognition/setup.bash
 source $MIL_WS/src/mil/NaviGator/scripts/bash_aliases.sh

@@ -5,5 +5,6 @@ Various docs for the Mechanical team.
 .. toctree::
    :maxdepth: 1
 
-   Onboarding <onboarding>
- 
+   Issues <issuesM> 
+   Resources <resourcesM>
+   Onboarding <onboardingM>
