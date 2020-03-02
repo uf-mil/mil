@@ -1,33 +1,45 @@
-# Perception
-This directory should contain code that uses sensors to classify entities in the world.
+Perception
+==========
 
-## Packages
-Information about current included software will go here.
+Perception Packages
+-------------------
+No software developed yet.
 
-## Discussion
+Discussion
+----------
 If the assumption is that the vehicle will be able to localize relative to a preconstructed map, then what is left to perceive is only other racers on the track.
 
 Potential sensors
 
-### LIDAR
+LIDAR
+*****
 
-#### Pros
+Pros
+####
 * Provides accurate geometric data.
 
-#### Cons
+Cons
+####
 * Not as feature rich as images
 * Max data rate of ~20Hz
 
-### Camera
+Camera
+******
 
-#### Pros
+Pros
+####
 * Feature rich data
 * A lot of research and development for this sensor
 
-#### Cons
+Cons
+####
 
-### Radar
+Radar
+*****
 No previous experience with this sensor
-#### Pros
 
-#### Cons
+Pros
+####
+
+Cons
+####
