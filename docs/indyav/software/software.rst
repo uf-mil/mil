@@ -12,8 +12,8 @@ because of the speed of the vehicle.
    :maxdepth: 1
    :caption: Elements of Autonomony
 
-   Control <../../IndyAV/control/README.md>
-   Localization <../../IndyAV/localization/README.md>
-   Perception <../../IndyAV/perception/README.md>
-   Planning <../../IndyAV/planning/README.md>
-   Simulation <../../IndyAV/simulation/README.md>
+   Control <control>
+   Localization <localization>
+   Perception <perception>
+   Planning <planning>
+   Simulation <simulation>

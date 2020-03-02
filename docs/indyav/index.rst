@@ -25,6 +25,6 @@ Collaborators
    Onboarding <onboarding>
    Autonomy Architecture <autonomy_architecture>
    Hardware <hardware/hardware>
-   Software <../../IndyAV/software>
+   Software <software/software>
 
 
