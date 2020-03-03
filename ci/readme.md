@@ -27,6 +27,6 @@ When a new build is triggered from commits to master or a pull request, the foll
 * The agent starts an instance of the `uf-mil:dev` container built from this commit and copies the git repo into in
 * The container runs ```ci/build```, streaming the output to the web interface and failing the build if any command in that script returns a non-zero exit code
 
-## TODOs
-* Use the [docker-compose-buildkite-plugin](https://github.com/buildkite-plugins/docker-compose-buildkite-plugin) to build the `uf-mil:dev` container for each new build so changes to the Dockerfile/install scripts are tested by ci
-* Investigate if build containers/data are properly being deleted after they run, so the server hard drive does not fill up
+## Testing CI process locally
+To see if your code pass will CI
+`CLEAN_BUILD=true ./scripts/run_development_container /home/mil-dev/catkin_ws/src/mil/ci/run_ci`

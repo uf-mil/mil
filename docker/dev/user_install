@@ -5,7 +5,7 @@ set -euo pipefail
 
 # It is generally assumed that users will use ~/catkin_ws, but
 # setting CATKIN_WS prior to running this script will change this behavior.
-if [[ -z ${CATKIN_DIR:-} ]]; then
+if [[ -z ${CATKIN_DIR:-""} ]]; then
     CATKIN_DIR="$HOME/catkin_ws"
     echo "Using default catkin workspace $CATKIN_DIR"
 else
@@ -17,8 +17,6 @@ MIL_REPO_DIR="$CATKIN_SOURCE_DIR/mil"
 # Clone repositry
 mil_user_install_dependencies()
 {
-  local MIL_REPO_GIT="$MIL_REPO_DIR/.git"
-  mkdir -p $CATKIN_SOURCE_DIR
   sudo apt update
   sudo apt install -y \
     git \
@@ -51,9 +49,18 @@ mil_user_setup_bashrc()
   fi
 }
 
+# Sets up the catkin workspace so that user can build
+# If the repo is already cloned here, it will build the MIL code
+mil_user_setup_init_catkin()
+{
+  mkdir -p $CATKIN_SOURCE_DIR
+  catkin_init_workspace $CATKIN_SOURCE_DIR
+  catkin_make -C $CATKIN_DIR
+}
 
 mil_user_install_dependencies
 mil_user_setup_bashrc
 set +u
 . /opt/ros/melodic/setup.bash
 set -u
+mil_user_setup_init_catkin
