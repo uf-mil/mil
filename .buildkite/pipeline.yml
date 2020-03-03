@@ -10,3 +10,4 @@ steps:
           mount-buildkite-agent: false
           workdir: /home/mil-dev/catkin_ws/src/mil
           shell: false
+          init: false
