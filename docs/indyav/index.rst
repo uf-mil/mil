@@ -22,7 +22,7 @@ Collaborators
    :maxdepth: 1
    :caption: Links
 
-   Onboarding <onboarding>
+   Getting Started on Indy AV <onboarding>
    Autonomy Architecture <autonomy_architecture>
    Hardware <hardware/hardware>
    Software <software/software>

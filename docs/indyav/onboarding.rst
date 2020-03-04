@@ -3,15 +3,16 @@ Getting Started on Indy AV
 
 Collaboration
 -------------
+Make sure to checkout `Development <../development/index.html>`_ first.
 
 Slack
 *****
-Join the slack to keep updated on the developement at `uf-cimar <uf-cimar.slack.com>`_.
+Join the slack to keep updated on the developement at `uf-cimar <https://uf-cimar.slack.com>`_.
 Any valid @ufl.edu email will be able to create an account.
 
 Github
 ******
-If you see this documentation you are probably already aware of the repository
+Documentation and all work (except CAD) for Indy AV will go in the `MIL REPO <https://github.com/uf-mil/mil>`_
 
 Grabcad
 *******
@@ -19,7 +20,7 @@ We use GrabCAD Workbench to manage mechanical design files.
 
 Software
 --------
-We will follow MIL's `current development practices <https://github.com/uf-mil/mil/blob/master/docs/development/development_guide.md>`_
+We will follow MIL's `MIL's development practices <../development/development_guide.html>`_
 
 Mechanical
 ----------
