@@ -39,8 +39,11 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
 
     # Pick a width and height of each image in GUI window based on start
     # parameters
-    w, h = (int(rgb_image.shape[1] * viz_scale), int(rgb_image.shape[0] * viz_scale)) if disp_size is None \
-        else (int(disp_size[0] / 4), int(disp_size[1] / 3))
+    w, h = (int(rgb_image.shape[1] *
+                viz_scale), int(rgb_image.shape[0] *
+                                viz_scale)) if disp_size is None else (int(disp_size[0] /
+                                                                           4), int(disp_size[1] /
+                                                                                   3))
     viz = np.zeros((h * 3, w * 4, 3), dtype=np.uint8)
     labels = [['B', 'G', 'R'], ['H', 'S', 'V'], ['L', 'A', 'B']]
 
@@ -58,9 +61,8 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
     viz[h:h * 2, :w] = rgb_small
 
     # Create small versions of image converted to HSV and LAB colorspaces
-    images_and_labels = \
-        zip([rgb_small, cv2.cvtColor(rgb_small, cv2.COLOR_BGR2HSV), cv2.cvtColor(rgb_small, cv2.COLOR_BGR2LAB)],
-            labels)
+    images_and_labels = zip([rgb_small, cv2.cvtColor(
+        rgb_small, cv2.COLOR_BGR2HSV), cv2.cvtColor(rgb_small, cv2.COLOR_BGR2LAB)], labels)
 
     # If enabled, show specific color information at current cursor location
     if show_color and mouse_x is not None and mouse_y is not None:
@@ -80,8 +82,8 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
     # Set 3x3 grid of single channel images from 3 3-channel images
     def make_3deep(x): return np.repeat(
         x[:, :, np.newaxis], 3, axis=2)  # Needed for displaying in color
-    viz[:, w:] = np.vstack(
-        map(make_3deep, map(lambda x: flatten_channels(*x), images_and_labels)))
+    viz[:, w:] = np.vstack(map(make_3deep, map(
+        lambda x: flatten_channels(*x), images_and_labels)))
 
     # If enabled, display a color histogram in each panel
     if show_histogram:
@@ -101,8 +103,11 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
                 mask = np.zeros(images_and_labels[i][0].shape, dtype=np.uint8)
                 cv2.polylines(mask, [curve], False, (255, 0, 0))
                 mask = np.flipud(mask)
-                cv2.bitwise_or(viz[i * h:(i + 1) * h, (c + 1) * w:(c + 2) * w], mask,
-                               dst=viz[i * h:(i + 1) * h, (c + 1) * w:(c + 2) * w])
+                cv2.bitwise_or(viz[i * h:(i + 1) * h,
+                                   (c + 1) * w:(c + 2) * w],
+                               mask,
+                               dst=viz[i * h:(i + 1) * h,
+                                       (c + 1) * w:(c + 2) * w])
     return viz
 
 
@@ -114,7 +119,11 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--use_ros_topic',
                         help='Use ROS topic', type=str)
     parser.add_argument(
-        '-s', '--scale', help='Scale for image processing', type=float, default=0.5)
+        '-s',
+        '--scale',
+        help='Scale for image processing',
+        type=float,
+        default=0.5)
     args = parser.parse_args()
 
     print "PRESS 'h' to display histograms"

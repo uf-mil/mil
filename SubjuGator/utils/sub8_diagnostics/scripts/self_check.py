@@ -158,10 +158,19 @@ class CameraChecker(TemplateChecker):
         self.down_info = self.nh.subscribe(
             "/camera/down/left/camera_info", CameraInfo)  # TODO
 
-        self.subs = [("Right Image", self.right.get_next_message()), ("Right Info", self.right_info.get_next_message()),
-                     ("Left Image", self.left.get_next_message()
-                      ), ("Left Info", self.left_info.get_next_message()),
-                     ("Down Image", self.down.get_next_message()), ("Down Info", self.down_info.get_next_message())]
+        self.subs = [
+            ("Right Image",
+             self.right.get_next_message()),
+            ("Right Info",
+             self.right_info.get_next_message()),
+            ("Left Image",
+             self.left.get_next_message()),
+            ("Left Info",
+             self.left_info.get_next_message()),
+            ("Down Image",
+             self.down.get_next_message()),
+            ("Down Info",
+             self.down_info.get_next_message())]
 
         print self.p.bold("\n  >>>>   ").set_blue.bold("Camera Check")
         yield self.nh.sleep(0.1)  # Try to get all the images
@@ -202,12 +211,21 @@ class StateEstChecker(TemplateChecker):
         self.imu = self.nh.subscribe("/imu/data_raw", Imu)
         self.mag = self.nh.subscribe("/imu/mag", MagneticField)
 
-        self.subs = [("Odom", self.odom.get_next_message()), ("TF", self.tf.get_next_message()),
-                     ("DVL", self.dvl.get_next_message()
-                      ), ("Height", self.height.get_next_message()),
-                     ("Depth", self.depth.get_next_message()
-                      ), ("IMU", self.imu.get_next_message()),
-                     ("Mag", self.mag.get_next_message())]
+        self.subs = [
+            ("Odom",
+             self.odom.get_next_message()),
+            ("TF",
+             self.tf.get_next_message()),
+            ("DVL",
+             self.dvl.get_next_message()),
+            ("Height",
+             self.height.get_next_message()),
+            ("Depth",
+             self.depth.get_next_message()),
+            ("IMU",
+             self.imu.get_next_message()),
+            ("Mag",
+             self.mag.get_next_message())]
 
         print self.p.bold("\n  >>>>   ").set_blue.bold(
             "State Estimation Check")
@@ -271,8 +289,12 @@ class ShoreControlChecker(TemplateChecker):
 @txros.util.cancellableInlineCallbacks
 def main():
     nh = yield txros.NodeHandle.from_argv("startup_checker")
-    check_order = [ThrusterChecker(nh, "Thrusters"), CameraChecker(nh, "Cameras"),
-                   StateEstChecker(nh, "State Estimation"), ShoreControlChecker(nh, "Shore Control")]
+    check_order = [
+        ThrusterChecker(
+            nh, "Thrusters"), CameraChecker(
+            nh, "Cameras"), StateEstChecker(
+                nh, "State Estimation"), ShoreControlChecker(
+                    nh, "Shore Control")]
 
     p = text_effects.Printer()
     yield txros.util.nonblocking_raw_input(str(p.bold("\n  >>>>").text("   Press return when ")

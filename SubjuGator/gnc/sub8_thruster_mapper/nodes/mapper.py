@@ -42,8 +42,8 @@ class ThrusterMapper(object):
         self.min_thrusts, self.max_thrusts = self.get_ranges()
         self.default_min_thrusts, self.default_max_thrusts = np.copy(
             self.min_thrusts), np.copy(self.max_thrusts)
-        self.update_layout_server = rospy.Service('update_thruster_layout', UpdateThrusterLayout,
-                                                  self.update_layout)
+        self.update_layout_server = rospy.Service(
+            'update_thruster_layout', UpdateThrusterLayout, self.update_layout)
 
         # Expose B matrix through a srv
         self.b_matrix_server = rospy.Service(
@@ -84,10 +84,10 @@ class ThrusterMapper(object):
     def get_ranges(self):
         '''Get upper and lower thrust limits for each thruster
         '''
-        minima = np.array([self.thruster_layout['thrusters'][x]['thrust_bounds'][0]
-                           for x in self.thruster_name_map])
-        maxima = np.array([self.thruster_layout['thrusters'][x]['thrust_bounds'][1]
-                           for x in self.thruster_name_map])
+        minima = np.array([self.thruster_layout['thrusters'][x][
+                          'thrust_bounds'][0] for x in self.thruster_name_map])
+        maxima = np.array([self.thruster_layout['thrusters'][x][
+                          'thrust_bounds'][1] for x in self.thruster_name_map])
         return minima, maxima
 
     def get_thruster_wrench(self, position, direction):
@@ -217,10 +217,8 @@ class ThrusterMapper(object):
                 actual_wrench[:3], actual_wrench[3:], frame='/base_link')
         )
         mapper_wrench_error = wrench - actual_wrench
-        self.wrench_error_pub.publish(
-            msg_helpers.make_wrench_stamped(
-                mapper_wrench_error[:3], mapper_wrench_error[3:], frame='/base_link')
-        )
+        self.wrench_error_pub.publish(msg_helpers.make_wrench_stamped(
+            mapper_wrench_error[:3], mapper_wrench_error[3:], frame='/base_link'))
         self.thruster_pub.publish(thrust_cmds)
 
 

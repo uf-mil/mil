@@ -20,10 +20,11 @@ class ActuatorBoard():
         self.gripper_controller = GripperController()
         self.marker_dropper = MarkerDropper()
 
-        self.actuator_lookup = {'torpedo1': self.torpedo_launcher.launch_torpedo,
-                                'torpedo2': self.torpedo_launcher.launch_torpedo,
-                                'gripper': self.gripper_controller.set_gripper,
-                                'dropper': self.marker_dropper.drop}
+        self.actuator_lookup = {
+            'torpedo1': self.torpedo_launcher.launch_torpedo,
+            'torpedo2': self.torpedo_launcher.launch_torpedo,
+            'gripper': self.gripper_controller.set_gripper,
+            'dropper': self.marker_dropper.drop}
 
         rospy.Service('/actuator_driver/actuate', SetValve, self.actuate)
         rospy.Service('/actuator_driver/actuate_raw', SetValve, self.actuate)
@@ -34,8 +35,8 @@ class ActuatorBoard():
         return self._actuate(req)
 
     def acuate_raw(self, req):
-        rospy.loginfo('Setting simulated actuator {} to {} (raw)'.format(req.actuator,
-                                                                         'opened' if req.opened else 'closed'))
+        rospy.loginfo('Setting simulated actuator {} to {} (raw)'.format(
+            req.actuator, 'opened' if req.opened else 'closed'))
         return self._actuate(req)
 
     def _actuate(self, req):

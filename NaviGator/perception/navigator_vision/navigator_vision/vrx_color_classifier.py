@@ -5,8 +5,16 @@ import os
 
 
 class VrxColorClassifier(GaussianColorClassifier):
-    CLASSES = ['buoy', 'red_totem', 'green_totem', 'blue_totem', 'yellow_totem',
-               'black_totem', 'surmark46104', 'surmark950400', 'surmark950410']
+    CLASSES = [
+        'buoy',
+        'red_totem',
+        'green_totem',
+        'blue_totem',
+        'yellow_totem',
+        'black_totem',
+        'surmark46104',
+        'surmark950400',
+        'surmark950410']
 
     def __init__(self):
         rospack = RosPack()

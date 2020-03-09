@@ -27,7 +27,9 @@ class RvizVisualizer(object):
         self.rviz_pub_t = rospy.Publisher(
             "visualization/state_t", visualization_msgs.Marker, queue_size=2)
         self.rviz_pub_utils = rospy.Publisher(
-            "visualization/bus_voltage", visualization_msgs.Marker, queue_size=2)
+            "visualization/bus_voltage",
+            visualization_msgs.Marker,
+            queue_size=2)
         self.kill_server = InteractiveMarkerServer("interactive_kill")
 
         # text marker

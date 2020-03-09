@@ -28,8 +28,8 @@ def main():
                 euler = tf.transformations.euler_from_quaternion(rot)
                 print "(Roll={}, Pitch={}, Yaw={})".format(
                     euler[0], euler[1], euler[2])
-                print "<pose> {} {} {} {} {} {} </pose>".format(trans[0], trans[1], trans[2],
-                                                                euler[0], euler[1], euler[2])
+                print "<pose> {} {} {} {} {} {} </pose>".format(
+                    trans[0], trans[1], trans[2], euler[0], euler[1], euler[2])
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             continue
         rate.sleep()

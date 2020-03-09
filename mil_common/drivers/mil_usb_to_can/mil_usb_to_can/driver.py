@@ -25,14 +25,20 @@ class USBtoCANDriver(object):
             devices = dict(list(self.parse_module_dictionary(
                 rospy.get_param('~simulated_devices'))))
             self.board = USBtoCANBoard(
-                port=port, baud=baud, simulated=simulation, devices=devices, can_id=can_id)
+                port=port,
+                baud=baud,
+                simulated=simulation,
+                devices=devices,
+                can_id=can_id)
         else:
             self.board = USBtoCANBoard(
                 port=port, baud=baud, simulated=simulation)
 
         # Add device handles from the modules specified in ROS params
-        self.handles = dict((device_id, cls(self, device_id)) for device_id, cls in
-                            self.parse_module_dictionary(rospy.get_param('~device_handles')))
+        self.handles = dict(
+            (device_id, cls(
+                self, device_id)) for device_id, cls in self.parse_module_dictionary(
+                rospy.get_param('~device_handles')))
 
         self.timer = rospy.Timer(rospy.Duration(
             1. / 20.), self.process_in_buffer)
@@ -53,7 +59,8 @@ class USBtoCANDriver(object):
             self.handles[packet.device].on_data(packet.data)
         else:
             rospy.logwarn(
-                'Message received for device {}, but no handle registered'.format(packet.device))
+                'Message received for device {}, but no handle registered'.format(
+                    packet.device))
         return True
 
     def process_in_buffer(self, *args):

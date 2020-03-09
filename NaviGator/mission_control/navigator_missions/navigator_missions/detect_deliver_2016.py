@@ -64,8 +64,13 @@ class DetectDeliver(Navigator):
             self.target_offset_meters = self.SHAPE_CENTER_TO_SMALL_TARGET
         self.Shape = yield self.mission_params["detect_deliver_shape"].get()
         self.Color = yield self.mission_params["detect_deliver_color"].get()
-        fprint("Color={} Shape={} Target={}".format(self.Color, self.Shape, target),
-               title="DETECT DELIVER", msg_color='green')
+        fprint(
+            "Color={} Shape={} Target={}".format(
+                self.Color,
+                self.Shape,
+                target),
+            title="DETECT DELIVER",
+            msg_color='green')
 
     @txros.util.cancellableInlineCallbacks
     def get_waypoint(self):
@@ -92,8 +97,11 @@ class DetectDeliver(Navigator):
                     defer.returnValue(
                         ((shape.Shape, shape.Color), self.identified_shapes[(shape.Shape, shape.Color)]))
                 else:
-                    fprint("Normal not found Error={}".format(normal_res.error),
-                           title="DETECT DELIVER", msg_color='red')
+                    fprint(
+                        "Normal not found Error={}".format(
+                            normal_res.error),
+                        title="DETECT DELIVER",
+                        msg_color='red')
         else:
             fprint("shape not found Error={}".format(shapes.error),
                    title="DETECT DELIVER", msg_color="red")
@@ -119,8 +127,11 @@ class DetectDeliver(Navigator):
             if res is False:
                 yield self.nh.sleep(0.25)
                 continue
-            fprint("Shape ({}found, using normal to look at other 3 shapes if needed".format(
-                res[0]), title="DETECT DELIVER", msg_color="green")
+            fprint(
+                "Shape ({}found, using normal to look at other 3 shapes if needed".format(
+                    res[0]),
+                title="DETECT DELIVER",
+                msg_color="green")
             #  circle_defer.cancel()
             shape_color, found_shape_pose = res
             if self.correct_shape(shape_color):
@@ -184,8 +195,12 @@ class DetectDeliver(Navigator):
             if self.correct_shape(shape_color):
                 self.shape_pose = found_pose
                 return
-            fprint("Saw (Shape={}, Color={}) on this side".format(
-                shape_color[0], shape_color[1]), title="DETECT DELIVER", msg_color='green')
+            fprint(
+                "Saw (Shape={}, Color={}) on this side".format(
+                    shape_color[0],
+                    shape_color[1]),
+                title="DETECT DELIVER",
+                msg_color='green')
 
     @txros.util.cancellableInlineCallbacks
     def search_shape(self):
@@ -204,8 +219,11 @@ class DetectDeliver(Navigator):
 
                 else:
                     if not self.last_lidar_error == normal_res.error:
-                        fprint("Normal not found Error={}".format(normal_res.error),
-                               title="DETECT DELIVER", msg_color='red')
+                        fprint(
+                            "Normal not found Error={}".format(
+                                normal_res.error),
+                            title="DETECT DELIVER",
+                            msg_color='red')
                     self.last_lidar_error = normal_res.error
         else:
             if not self.last_shape_error == shapes.error:
@@ -291,8 +309,11 @@ class DetectDeliver(Navigator):
             fprint("Firing Shooter {}".format(i),
                    title="DETECT DELIVER", msg_color='green')
             yield goal.get_result()
-            fprint("Waiting {} seconds between shots".format(
-                self.WAIT_BETWEEN_SHOTS), title="DETECT DELIVER", msg_color='green')
+            fprint(
+                "Waiting {} seconds between shots".format(
+                    self.WAIT_BETWEEN_SHOTS),
+                title="DETECT DELIVER",
+                msg_color='green')
             yield self.nh.sleep(self.WAIT_BETWEEN_SHOTS)
 
     @txros.util.cancellableInlineCallbacks
@@ -341,8 +362,11 @@ class DetectDeliver(Navigator):
         fprint("Aligned successs. Shooting while using forest realign",
                title="DETECT DELIVER", msg_color="green")
         align_defer = self.continuously_align()
-        fprint("Sleeping for {} seconds to allow for alignment",
-               title="DETECT DELIVER".format(self.FOREST_SLEEP), msg_color="green")
+        fprint(
+            "Sleeping for {} seconds to allow for alignment",
+            title="DETECT DELIVER".format(
+                self.FOREST_SLEEP),
+            msg_color="green")
         yield self.nh.sleep(self.FOREST_SLEEP)
         for i in range(self.NUM_BALLS):
             goal = yield self.shooterLoad.send_goal(ShooterDoAction())
@@ -357,8 +381,11 @@ class DetectDeliver(Navigator):
             yield goal.get_result()
             yield self.nh.sleep(1)
             self.align_forest_pause = False
-            fprint("Waiting {} seconds between shots".format(
-                self.WAIT_BETWEEN_SHOTS), title="DETECT DELIVER", msg_color='green')
+            fprint(
+                "Waiting {} seconds between shots".format(
+                    self.WAIT_BETWEEN_SHOTS),
+                title="DETECT DELIVER",
+                msg_color='green')
             yield self.nh.sleep(self.WAIT_BETWEEN_SHOTS)
         align_defer.cancel()
 

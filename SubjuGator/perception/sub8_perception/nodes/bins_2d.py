@@ -79,8 +79,9 @@ class BinFinder:
 
             if response is False or response is None:
                 rospy.loginfo('did not find')
-                resp = VisionRequest2DResponse(header=mil_ros_tools.make_header(frame='/down'),
-                                               found=False)
+                resp = VisionRequest2DResponse(
+                    header=mil_ros_tools.make_header(
+                        frame='/down'), found=False)
             else:
                 # Fill in
                 center, radius = response

@@ -122,10 +122,12 @@ class Pinger(SubjuGator):
 
                 sub_position, _ = yield self.tx_pose()
                 dists = [
-                    np.linalg.norm(sub_position - mil_ros_tools.rosmsg_to_numpy(
-                        x.location.pose.position))
-                    for x in (pinger_1_req, pinger_2_req)
-                ]
+                    np.linalg.norm(
+                        sub_position -
+                        mil_ros_tools.rosmsg_to_numpy(
+                            x.location.pose.position)) for x in (
+                        pinger_1_req,
+                        pinger_2_req)]
                 pinger_id = np.argmin(dists)
                 # pinger_id 0 = pinger_surface
                 # pinger_id 1 = pinger_shooter

@@ -20,8 +20,10 @@ samples = gen.next()
 plt.cla()
 plt.title(' '.join(sys.argv))
 for i, samples in enumerate(samples):
-    plt.plot(numpy.arange(len(samples[::DECIMATION])) / (
-        util.fs / DECIMATION) / 1e-3, samples[::DECIMATION], label='channel: {}'.format(i))
+    plt.plot(numpy.arange(len(samples[::DECIMATION])) /
+             (util.fs /
+              DECIMATION) /
+             1e-3, samples[::DECIMATION], label='channel: {}'.format(i))
 plt.xlabel('time (ms)')
 plt.legend()
 plt.show()

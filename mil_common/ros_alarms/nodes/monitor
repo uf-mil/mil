@@ -94,8 +94,9 @@ class AlarmMonitor(object):
         center = height / 2
         # If box is wide enough, display alarm name in center
         if width >= len(self.alarm_name):
-            status_window.addstr(
-                center - 1, (width - len(self.alarm_name)) / 2, self.alarm_name)
+            status_window.addstr(center - 1,
+                                 (width - len(self.alarm_name)) / 2,
+                                 self.alarm_name)
         # If box is wide enough, display status text in center
         if width >= len(status_str):
             status_window.addstr(
@@ -103,7 +104,9 @@ class AlarmMonitor(object):
         if description_str is not None and width >= len(
                 description_str) and height >= 4:
             status_window.addstr(
-                center + 1, (width - len(description_str)) / 2, description_str)
+                center + 1,
+                (width - len(description_str)) / 2,
+                description_str)
 
     def _read_key(self):
         if self.screen is None:

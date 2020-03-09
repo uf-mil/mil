@@ -16,8 +16,12 @@ class ChecksumException(USB2CANException):
     '''
 
     def __init__(self, calculated, expected):
-        super(ChecksumException, self).__init__(
-            'Checksum was calculated as {} but reported as {}'.format(calculated, expected))
+        super(
+            ChecksumException,
+            self).__init__(
+            'Checksum was calculated as {} but reported as {}'.format(
+                calculated,
+                expected))
 
 
 class PayloadTooLargeException(USB2CANException):
@@ -36,8 +40,13 @@ class InvalidFlagException(USB2CANException):
     '''
 
     def __init__(self, description, expected, was):
-        super(InvalidFlagException, self).__init__(
-            '{} flag should be {} but was {}'.format(description, expected, was))
+        super(
+            InvalidFlagException,
+            self).__init__(
+            '{} flag should be {} but was {}'.format(
+                description,
+                expected,
+                was))
 
 
 class InvalidStartFlagException(InvalidFlagException):

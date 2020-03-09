@@ -246,8 +246,15 @@ class PoseEditor2(object):
     def circle_point(self, point, *args, **kwargs):
         return self.spiral_point(point, *args, **kwargs)
 
-    def d_spiral_point(self, point, radius, granularity=8, revolutions=1, direction='ccw',
-                       theta_offset=0, meters_per_rev=0):
+    def d_spiral_point(
+            self,
+            point,
+            radius,
+            granularity=8,
+            revolutions=1,
+            direction='ccw',
+            theta_offset=0,
+            meters_per_rev=0):
         """
         Sprials a point using discrete moves
         This produces a generator
@@ -303,8 +310,10 @@ class PoseEditor2(object):
 
         for key in kwargs.keys():
             if not hasattr(MoveGoal, key):
-                fprint("MoveGoal msg doesn't have a field called '{}' you tried to set via kwargs.".format(key),
-                       title="POSE_EDITOR", msg_color="red")
+                fprint(
+                    "MoveGoal msg doesn't have a field called '{}' you tried to set via kwargs.".format(key),
+                    title="POSE_EDITOR",
+                    msg_color="red")
                 del kwargs[key]
 
         return MoveGoal(

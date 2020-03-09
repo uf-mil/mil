@@ -229,10 +229,10 @@ class MultiObs:
 
         self.add_observation(point0, (np.array(t), R),
                              self.image_sub.last_image_time)
-        observations1, pose_pairs1 = self.add_observation1(point1, (np.array(t), R),
-                                                           self.image_sub.last_image_time)
-        observations2, pose_pairs2 = self.add_observation2(point2, (np.array(t), R),
-                                                           self.image_sub.last_image_time)
+        observations1, pose_pairs1 = self.add_observation1(
+            point1, (np.array(t), R), self.image_sub.last_image_time)
+        observations2, pose_pairs2 = self.add_observation2(
+            point2, (np.array(t), R), self.image_sub.last_image_time)
 
         observations, pose_pairs = self.get_observations_and_pose_pairs()
         if len(observations) > self.min_observations:

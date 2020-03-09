@@ -188,7 +188,8 @@ class FindTheBreakPerception(object):
             hpipes, vpipes = self._get_all_pipes(frame)
             # Look for NEW pipes
             new_hpipes, new_vpipes = self._update_pipes(
-                hpipes, self.old_hpipe_pos), self._update_pipes(vpipes, self.old_vpipe_pos)
+                hpipes, self.old_hpipe_pos), self._update_pipes(
+                vpipes, self.old_vpipe_pos)
 
             # the second hpipe is found
             if len(new_hpipes) > 0 and self.hpipe_found:

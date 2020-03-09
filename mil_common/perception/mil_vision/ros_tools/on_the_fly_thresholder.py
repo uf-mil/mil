@@ -16,18 +16,24 @@ class Trackbars(object):
 
     def __init__(self, thresh_type):
         self.thresh_type = list(thresh_type)
-        [cv2.createTrackbar(name + '_high', 'parameters', 0, 255 if name !=
-                            'h' else 179, lambda a: a) for name in self.thresh_type]
-        [cv2.createTrackbar(name + '_low', 'parameters', 0, 255 if name !=
-                            'h' else 179, lambda a: a) for name in self.thresh_type]
+        [cv2.createTrackbar(name + '_high',
+                            'parameters',
+                            0,
+                            255 if name != 'h' else 179,
+                            lambda a: a) for name in self.thresh_type]
+        [cv2.createTrackbar(name + '_low',
+                            'parameters',
+                            0,
+                            255 if name != 'h' else 179,
+                            lambda a: a) for name in self.thresh_type]
 
         cv2.waitKey(10)
 
     def get_bounds(self):
         upper_bounds = np.array([cv2.getTrackbarPos(
             name + '_high', 'parameters') for name in self.thresh_type])
-        lower_bounds = np.array(
-            [cv2.getTrackbarPos(name + '_low', 'parameters') for name in self.thresh_type])
+        lower_bounds = np.array([cv2.getTrackbarPos(
+            name + '_low', 'parameters') for name in self.thresh_type])
         return lower_bounds, upper_bounds
 
 
@@ -104,8 +110,9 @@ def do_parsing():
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument(dest='topic_name',
                         help="The topic name you'd like to listen to.")
-    parser.add_argument(dest='parameter_family',
-                        help="This script will set the rosparams: \n\t `parameter_family`/bgr_high \n\t\
+    parser.add_argument(
+        dest='parameter_family',
+        help="This script will set the rosparams: \n\t `parameter_family`/bgr_high \n\t\
                               `parameter_family`/bgr_low \n OR \\n\t `parameter_family`/hsv_high \n\t\
                               `parameter_family`/hsv_high \n (depending on --hsv)")
     parser.add_argument('--hsv', action='store_true',

@@ -74,8 +74,12 @@ class RosVideoPlayer:
                 self.roi_height), int(self.height), self.roi_height_cb)
             cv2.createTrackbar('ROI width', 'Video Control', int(
                 self.roi_width), int(self.width), self.roi_width_cb)
-        rospy.loginfo("Playing {} at {}fps starting at frame {} ({} Total Frames)".format(
-            self.filename, self.fps, self.start_frame, self.num_frames))
+        rospy.loginfo(
+            "Playing {} at {}fps starting at frame {} ({} Total Frames)".format(
+                self.filename,
+                self.fps,
+                self.start_frame,
+                self.num_frames))
 
     def run(self):
         r = rospy.Rate(self.fps)  # 10hz

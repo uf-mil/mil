@@ -34,8 +34,12 @@ class CoralSurvey(Navigator):
         # Get the closest totem object to the boat
         totems_np = map(lambda obj: mil_tools.rosmsg_to_numpy(
             obj.position), totem.objects)
-        dist = map(lambda totem_np: np.linalg.norm(
-            totem_np - mil_tools.rosmsg_to_numpy(est_coral_survey.objects[0].position)), totems_np)
+        dist = map(
+            lambda totem_np: np.linalg.norm(
+                totem_np -
+                mil_tools.rosmsg_to_numpy(
+                    est_coral_survey.objects[0].position)),
+            totems_np)
         middle_point = totems_np[np.argmin(dist)]
 
         print "Totem sorted:", totems_np
@@ -91,17 +95,21 @@ class OgridFactory():
     def make_ogrid_transform(self):
         origin_x = self.center[0] - 30
         origin_y = self.center[1] - 30
-        self.origin = mil_tools.numpy_quat_pair_to_pose([origin_x, origin_y, 0],
-                                                        [0, 0, 0, 1])
+        self.origin = mil_tools.numpy_quat_pair_to_pose(
+            [origin_x, origin_y, 0], [0, 0, 0, 1])
 
         # The grid needs to have it's axes swaped since its row major
         self.grid = np.zeros(
             (self.height / self.resolution, self.width / self.resolution)) - 1
 
         # Transforms points from ENU to ogrid frame coordinates
-        self.t = np.array([[1 / self.resolution, 0, -origin_x / self.resolution],
-                           [0, 1 / self.resolution, -origin_y / self.resolution],
-                           [0, 0, 1]])
+        self.t = np.array([[1 /
+                            self.resolution, 0, -
+                            origin_x /
+                            self.resolution], [0, 1 /
+                                               self.resolution, -
+                                               origin_y /
+                                               self.resolution], [0, 0, 1]])
 
         self.transform = lambda point: self.t.dot(np.append(point[:2], 1))[:2]
 

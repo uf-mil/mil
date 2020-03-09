@@ -138,8 +138,14 @@ class TxAlarmListener(object):
         return self._last_alarm.severity == severity
 
     @txros.util.cancellableInlineCallbacks
-    def add_callback(self, funct, call_when_raised=True, call_when_cleared=True,
-                     severity_required=(0, 5)):
+    def add_callback(
+        self,
+        funct,
+        call_when_raised=True,
+        call_when_cleared=True,
+        severity_required=(
+            0,
+            5)):
         ''' Deals with adding function callbacks
         The user can specify if the function should be run on a raise or clear of this alarm.
 

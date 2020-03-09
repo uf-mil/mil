@@ -22,7 +22,8 @@ class ShooterControl:
         else:
             self.motor_controller = Sabertooth2x12(self.controller_file)
         rospy.loginfo(
-            "Shooter connecting to motor controller at: %s", self.controller_file)
+            "Shooter connecting to motor controller at: %s",
+            self.controller_file)
         self.load_retract_time = rospy.Duration(0, rospy.get_param(
             '~controller/load/retract_time_millis', 950) * 1000000)
         self.load_extend_time = rospy.Duration(0, rospy.get_param(

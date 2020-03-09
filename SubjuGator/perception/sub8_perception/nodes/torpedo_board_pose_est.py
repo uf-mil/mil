@@ -184,8 +184,11 @@ class ParsedPoseEstRequest(object):
         self.orientation = req.pose_stamped.pose.orientation
         quat = np.array([self.orientation.x, self.orientation.y,
                          self.orientation.z, self.orientation.w])
-        self.pose = np.array([self.position.x, self.position.y, self.position.z,
-                              tf.transformations.euler_from_quaternion(quat, 'syxz')[0]])
+        self.pose = np.array([self.position.x,
+                              self.position.y,
+                              self.position.z,
+                              tf.transformations.euler_from_quaternion(quat,
+                                                                       'syxz')[0]])
         self.left_cam_matx = np.array([
             [req.l_proj_mat[0], req.l_proj_mat[1],
                 req.l_proj_mat[2], req.l_proj_mat[3]],

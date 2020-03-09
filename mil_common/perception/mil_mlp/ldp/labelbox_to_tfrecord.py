@@ -100,7 +100,8 @@ def main(_):
             shutil.rmtree('train/')
         except Exception as e:
             print(
-                "Cleanup failed, either a directory or file was missing. Could indicate failed download.", e)
+                "Cleanup failed, either a directory or file was missing. Could indicate failed download.",
+                e)
 
 
 if __name__ == '__main__':

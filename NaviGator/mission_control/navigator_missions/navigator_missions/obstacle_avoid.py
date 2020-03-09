@@ -17,12 +17,21 @@ class ObstacleAvoid(Navigator):
 
     @classmethod
     def init(cls):
-        parser = ThrowingArgumentParser(description='Start Gate Mission',
-                                        usage='Default parameters: \'runtask ObstacleAvoid\'')
-        parser.add_argument('-p', '--numpasses', type=int, default=3,
-                            help='number of passes through the obstacle course to make')
-        parser.add_argument('-d', '--outoffset', type=int, default=10,
-                            help='distance from the course in meters to traverse to')
+        parser = ThrowingArgumentParser(
+            description='Start Gate Mission',
+            usage='Default parameters: \'runtask ObstacleAvoid\'')
+        parser.add_argument(
+            '-p',
+            '--numpasses',
+            type=int,
+            default=3,
+            help='number of passes through the obstacle course to make')
+        parser.add_argument(
+            '-d',
+            '--outoffset',
+            type=int,
+            default=10,
+            help='distance from the course in meters to traverse to')
         parser.add_argument('-i', '--usepoi', action='store_true',
                             help='set to use pois for square corners')
         parser.add_argument('-s', '--speed', type=float, default=0.75,
@@ -203,14 +212,15 @@ class ObstacleAvoid(Navigator):
         boat_pose = boat_pose[0]
 
         # Find the two points on either side of the line
-        perpendicular_points = [(point[0] + perpendicular_vector[0] * offset_distance,
-                                 point[1] + perpendicular_vector[1] * offset_distance),
-                                (point[0] + perpendicular_vector[0] * -offset_distance,
-                                 point[1] + perpendicular_vector[1] * -offset_distance)]
+        perpendicular_points = [
+            (point[0] + perpendicular_vector[0] * offset_distance,
+             point[1] + perpendicular_vector[1] * offset_distance),
+            (point[0] + perpendicular_vector[0] * -offset_distance,
+             point[1] + perpendicular_vector[1] * -offset_distance)]
 
         # Sort them such that the point on the same side of the boat is first
-        if (perpendicular_points[0][0] - boat_pose[0]) ** 2 + (perpendicular_points[0][1] - boat_pose[1]) ** 2 > \
-                (perpendicular_points[1][0] - boat_pose[0]) ** 2 + (perpendicular_points[1][1] - boat_pose[1]) ** 2:
+        if (perpendicular_points[0][0] - boat_pose[0]) ** 2 + (perpendicular_points[0][1] - boat_pose[1]) ** 2 > (
+                perpendicular_points[1][0] - boat_pose[0]) ** 2 + (perpendicular_points[1][1] - boat_pose[1]) ** 2:
             perpendicular_points = [
                 perpendicular_points[1], perpendicular_points[0]]
 

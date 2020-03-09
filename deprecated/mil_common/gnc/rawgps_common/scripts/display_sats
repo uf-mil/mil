@@ -42,8 +42,8 @@ rospy.Subscriber('/odom_estimator/info', Info, update_last_info)
 def got_msg(msg):
     display.fill((0, 0, 0))
     for elevation in [0, 30, 60]:
-        pygame.draw.circle(display, (255, 255, 255),
-                           (250, 250), round(200 * math.cos(math.radians(elevation))), 1)
+        pygame.draw.circle(display, (255, 255, 255), (250, 250), round(
+            200 * math.cos(math.radians(elevation))), 1)
     pygame.draw.circle(display, (255, 255, 255), (250, 250), 200, 1)
     for sat in msg.satellites:
         pos = (

@@ -462,8 +462,8 @@ class GPSPublisher(object):
         home = os.path.expanduser('~')
         if home == '~':
             raise AssertionError("home path expansion didn't work")
-        self._ionospheric_model_path = os.path.join(home, '.ros',
-                                                    'rawgps_common', 'ionospheric_model.yaml')
+        self._ionospheric_model_path = os.path.join(
+            home, '.ros', 'rawgps_common', 'ionospheric_model.yaml')
         if os.path.exists(self._ionospheric_model_path):
             with open(self._ionospheric_model_path, 'rb') as f:
                 self.ionospheric_model = IonosphericModel(**yaml.load(f))
@@ -574,8 +574,16 @@ class GPSPublisher(object):
         self.ephemerises[prn] = Ephemeris(*subframes)
 
 
-def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycles, doppler_freq,
-                               approximate_receiver_position=None, ionospheric_model=None):
+def generate_satellite_message(
+        prn,
+        eph,
+        cn0,
+        gps_t,
+        pseudo_range,
+        carrier_cycles,
+        doppler_freq,
+        approximate_receiver_position=None,
+        ionospheric_model=None):
     if pseudo_range is None:  # need pseudorange
         return None
 
@@ -602,13 +610,16 @@ def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycle
         direction = sat_pos - approximate_receiver_position
         direction /= numpy.linalg.norm(direction)
         direction_enu = enu_from_ecef(direction, approximate_receiver_position)
-        T_iono = ionospheric_model.evaluate(approximate_receiver_position,
-                                            sat_pos, gps_t) if ionospheric_model is not None else nan
+        T_iono = ionospheric_model.evaluate(
+            approximate_receiver_position,
+            sat_pos,
+            gps_t) if ionospheric_model is not None else nan
         T_tropo = tropospheric_model(
             approximate_receiver_position, sat_pos) / c
 
         sat_pos_enu = enu_from_ecef(
-            sat_pos - approximate_receiver_position, approximate_receiver_position)
+            sat_pos - approximate_receiver_position,
+            approximate_receiver_position)
         sat_dir_enu = sat_pos_enu / numpy.linalg.norm(sat_pos_enu)
 
         E = math.asin(sat_dir_enu[2])

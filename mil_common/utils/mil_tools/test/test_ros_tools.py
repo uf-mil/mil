@@ -91,7 +91,8 @@ class TestROSTools(unittest.TestCase):
         self.assertTrue(fake_lock.entry, msg='Thread was never locked')
         self.assertTrue(fake_lock.exit, msg='Thread was never released')
         self.assertTrue(
-            result, msg='Thread was not locked while the function was executed')
+            result,
+            msg='Thread was not locked while the function was executed')
 
     def test_skew_symmetric_cross(self):
         '''Test that the skew symmetric cross product matrix produces the definition
@@ -104,7 +105,9 @@ class TestROSTools(unittest.TestCase):
             [-2, +1, +0],
         ])
         np.testing.assert_allclose(
-            skew_sym, truth, err_msg="Did not make a Skew-symmetric matrix. Pretty big screw-up imho.")
+            skew_sym,
+            truth,
+            err_msg="Did not make a Skew-symmetric matrix. Pretty big screw-up imho.")
 
     def test_make_rotation(self):
         '''Test several random vector pairs, and see if we can generate a valid alignment'''

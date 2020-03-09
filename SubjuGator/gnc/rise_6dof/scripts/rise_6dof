@@ -114,15 +114,12 @@ class Node(object):
             if not self.is_constant_wrench_valid():
                 self.controller.config = self.processed_config
                 pd_wrench, wrench = self.controller.update(
-                    dt,
-                    (
-                        pose_to_numpy(self.desired.posetwist.pose), twist_to_numpy(
-                            self.desired.posetwist.twist),
-                        twist_to_numpy(self.desired.posetwist.acceleration)
-                    ),
-                    (pose_to_numpy(self.current.pose.pose),
-                     twist_to_numpy(self.current.twist.twist)),
-                )
+                    dt, (pose_to_numpy(
+                        self.desired.posetwist.pose), twist_to_numpy(
+                        self.desired.posetwist.twist), twist_to_numpy(
+                        self.desired.posetwist.acceleration)), (pose_to_numpy(
+                            self.current.pose.pose), twist_to_numpy(
+                            self.current.twist.twist)), )
 
                 pd_pub.publish(WrenchStamped(
                     header=Header(

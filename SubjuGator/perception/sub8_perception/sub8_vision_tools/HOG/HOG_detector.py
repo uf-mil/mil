@@ -72,8 +72,7 @@ class HOGDetector:
     def detect(self, img):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         (rects, weights) = self.hog.detectMultiScale(img, winStride=(4, 4),
-                                                     padding=(0, 0), hitThreshold=.15, scale=1.6,
-                                                     useMeanshiftGrouping=True)
+                                                     padding=(0, 0), hitThreshold=.15, scale=1.6, useMeanshiftGrouping=True)
         for (x, y, w, h) in rects:
             cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
         return img

@@ -24,23 +24,33 @@ class DetectDeliverFind(Navigator):
 
     @classmethod
     def init(cls):
-        parser = ThrowingArgumentParser(description='Detect Deliver Find',
-                                        usage='''Default parameters: \'runtask DetectDeliverFind
+        parser = ThrowingArgumentParser(
+            description='Detect Deliver Find',
+            usage='''Default parameters: \'runtask DetectDeliverFind
                                          \'''')
         parser.add_argument('-l', '--longscan', action='store_true',
                             help='set to scan the long side')
         parser.add_argument('-s', '--shortscan', action='store_true',
                             help='set to scan the short side')
-        parser.add_argument('-o', '--overridescale', action='store_true',
-                            help='''setting causes manual dock size to replace scale, where scale is only
+        parser.add_argument(
+            '-o',
+            '--overridescale',
+            action='store_true',
+            help='''setting causes manual dock size to replace scale, where scale is only
                                     used to determine which side is longer''')
-        parser.add_argument('-c', '--circle', action='store_true',
-                            help='''setting causes navigator to circle the dock once first in order to help
+        parser.add_argument(
+            '-c',
+            '--circle',
+            action='store_true',
+            help='''setting causes navigator to circle the dock once first in order to help
                                     PCODAR gather enough information to produce scale and an accurate orientation''')
         parser.add_argument('-d', '--scandist', type=int, default=6,
                             help='distance to scan the images from')
-        parser.add_argument('-i', '--lookin', action='store_true',
-                            help='look into the dock at the end instead of being side ways')
+        parser.add_argument(
+            '-i',
+            '--lookin',
+            action='store_true',
+            help='look into the dock at the end instead of being side ways')
         parser.add_argument('-e', '--enddist', type=int, default=5,
                             help='the distance to go to as the end point')
         cls.parser = parser
@@ -121,10 +131,15 @@ class DetectDeliverFind(Navigator):
         # Calculate closer location
         angle = correct_scan[3]
         dist = end_dist
-        pt = np.array([math.cos(angle) * (dist + self.dock_scale[0] / 2) + self.dock_position[0],
-                       math.sin(angle) * (dist +
-                                          self.dock_scale[1] / 2) + self.dock_position[1],
-                       self.dock_position[2]])
+        pt = np.array([math.cos(angle) *
+                       (dist +
+                        self.dock_scale[0] /
+                        2) +
+                       self.dock_position[0], math.sin(angle) *
+                       (dist +
+                        self.dock_scale[1] /
+                        2) +
+                       self.dock_position[1], self.dock_position[2]])
         if look_in:
             lpt = self.dock_position
         else:
@@ -164,10 +179,15 @@ class DetectDeliverFind(Navigator):
 
         for i in range(0, 4):
             # Calculate scan point and point to look at
-            pt = np.array([math.cos(angle) * (scan_dist + self.dock_scale[0] / 2) + self.dock_position[0],
-                           math.sin(
-                               angle) * (scan_dist + self.dock_scale[1] / 2) + self.dock_position[1],
-                           self.dock_position[2]])
+            pt = np.array([math.cos(angle) *
+                           (scan_dist +
+                            self.dock_scale[0] /
+                            2) +
+                           self.dock_position[0], math.sin(angle) *
+                           (scan_dist +
+                            self.dock_scale[1] /
+                            2) +
+                           self.dock_position[1], self.dock_position[2]])
             lpt = pt + np.array([math.sin(angle), -math.cos(angle), 0])
 
             # Calculate distance from scan point to dock and boat

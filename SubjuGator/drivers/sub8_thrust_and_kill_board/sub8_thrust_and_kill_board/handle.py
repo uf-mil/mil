@@ -45,8 +45,12 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         Called on service calls to /set_mobo_kill, sending the approrpriate packet to the board
         to unassert or assert to motherboard-origin kill
         '''
-        self.send_data(KillMessage.create_kill_message(command=True, hard=False, asserted=req.data).to_bytes(),
-                       can_id=KILL_SEND_ID)
+        self.send_data(
+            KillMessage.create_kill_message(
+                command=True,
+                hard=False,
+                asserted=req.data).to_bytes(),
+            can_id=KILL_SEND_ID)
         return {'success': True}
 
     def send_heartbeat(self, timer):
@@ -71,7 +75,8 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             # If we don't have a mapping for this thruster, ignore it
             if cmd.name not in self.thrusters:
                 rospy.logwarn(
-                    'Command received for {}, but this is not a thruster.'.format(cmd.name))
+                    'Command received for {}, but this is not a thruster.'.format(
+                        cmd.name))
                 continue
             # Map commanded thrust (in newetons) to effort value (-1 to 1)
             effort = self.thrusters[cmd.name].effort_from_thrust(cmd.thrust)

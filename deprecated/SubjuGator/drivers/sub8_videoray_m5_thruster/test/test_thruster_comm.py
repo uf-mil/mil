@@ -17,8 +17,10 @@ class TestThrusterComm(unittest.TestCase):
     def test_thruster_comm_factory_fake(self):
         '''Test that the thruster factory returns a proper simulated FakeThrusterPort'''
         # This should succeed
-        thrust_comm = thruster_comm_factory(self.thruster_layout['thruster_ports'][0],
-                                            self.thruster_layout['thrusters'], fake=True)
+        thrust_comm = thruster_comm_factory(
+            self.thruster_layout['thruster_ports'][0],
+            self.thruster_layout['thrusters'],
+            fake=True)
         self.assertIsNotNone(thrust_comm)
 
     def test_fake_thruster_status(self):

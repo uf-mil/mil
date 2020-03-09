@@ -45,12 +45,15 @@ class Mission(object):
             if hasattr(to_run, 'safe_exit'):
                 yield to_run.safe_exit(navigator, err)
             else:
-                fprint("Hmmmm. This isn't good. Your mission failed, and there was no safe exit. "
-                       "I hope this mission doesn't have any children.", msg_color="red")
+                fprint(
+                    "Hmmmm. This isn't good. Your mission failed, and there was no safe exit. "
+                    "I hope this mission doesn't have any children.",
+                    msg_color="red")
         except Exception as exp:
             print exp
             fprint(
-                "Oh man this is pretty bad, your mission's safe exit failed. SHAME!", msg_color="red")
+                "Oh man this is pretty bad, your mission's safe exit failed. SHAME!",
+                msg_color="red")
 
 
 class MissionPlanner:
@@ -222,15 +225,21 @@ class MissionPlanner:
         self.helper.stop_ensuring_object_permanence()
         self.current_mission_timeout = None
         if err.type == defer.CancelledError:
-            fprint("Mission Canceled", msg_color="red",
-                   title="{} MISSION ERROR: ".format(self.current_mission_name))
+            fprint(
+                "Mission Canceled",
+                msg_color="red",
+                title="{} MISSION ERROR: ".format(
+                    self.current_mission_name))
             defer.returnValue(True)
         elif err.type == MissingPerceptionObject:
             if err.value.missing_object in self.found:
                 self.helper.remove_found(err.value.missing_object)
                 self.found.remove(err.value.missing_object)
-            fprint("Missing Perception Object thrown", msg_color="red",
-                   title="{} MISSION ERROR: ".format(self.current_mission_name))
+            fprint(
+                "Missing Perception Object thrown",
+                msg_color="red",
+                title="{} MISSION ERROR: ".format(
+                    self.current_mission_name))
             defer.returnValue(True)
         else:
             fprint(err, msg_color="red", title="{} MISSION ERROR: ".format(
@@ -242,8 +251,12 @@ class MissionPlanner:
     def _end_mission(self, result):
         self.pub_msn_info.publish(
             String("Ending Mission {}".format(self.current_mission_name)))
-        fprint(str(result) + " TIME: " + str((self.nh.get_time() - self.current_mission_start_time).to_sec()),
-               msg_color="green", title="{} MISSION COMPLETE: ".format(self.current_mission_name))
+        fprint(
+            str(result) + " TIME: " + str(
+                (self.nh.get_time() - self.current_mission_start_time).to_sec()),
+            msg_color="green",
+            title="{} MISSION COMPLETE: ".format(
+                self.current_mission_name))
         self.running_mission = False
         self.current_mission_name = None
         self.helper.stop_ensuring_object_permanence()

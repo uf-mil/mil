@@ -9,11 +9,23 @@ from tf import transformations
 
 class AdaptiveController(Controller):
 
-    def __init__(self, odom_topic='/truth/odom', sampling_period=0.1, control_period=None,
-                 history_length=100, waypoint_epsilon=1, plot=False):
+    def __init__(
+            self,
+            odom_topic='/truth/odom',
+            sampling_period=0.1,
+            control_period=None,
+            history_length=100,
+            waypoint_epsilon=1,
+            plot=False):
 
-        super(self.__class__, self).__init__(odom_topic, sampling_period, control_period,
-                                             history_length, waypoint_epsilon)
+        super(
+            self.__class__,
+            self).__init__(
+            odom_topic,
+            sampling_period,
+            control_period,
+            history_length,
+            waypoint_epsilon)
 
         self.alpha = np.diag([1e-4, 1e-4, 1e-4])
         self.Kp_trans = np.diag([15.0, 15.0, 45.0])
@@ -147,7 +159,12 @@ class AdaptiveController(Controller):
 if __name__ == '__main__':
     # controller = Controller(odom_topic='/truth/odom', sampling_period=0.01, control_period=0.01,
     # history_length=100, waypoint_epsilon=1)
-    controller = AdaptiveController(odom_topic='/odom', sampling_period=0.1, control_period=0.1,
-                                    history_length=100, waypoint_epsilon=1, plot=True)
+    controller = AdaptiveController(
+        odom_topic='/odom',
+        sampling_period=0.1,
+        control_period=0.1,
+        history_length=100,
+        waypoint_epsilon=1,
+        plot=True)
     controller.start()
     rospy.spin()

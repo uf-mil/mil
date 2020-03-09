@@ -30,8 +30,10 @@ def mean(xs):
 def jacobian(f, x):
     x = numpy.array(x)
     c = numpy.array(f(x))
-    return numpy.array(
-        [(f(x + [1 if j == i else 0 for j in xrange(len(x))]) - c) / 1 for i in xrange(len(x))]).T
+    return numpy.array([(f(x +
+                           [1 if j == i else 0 for j in xrange(len(x))]) -
+                         c) /
+                        1 for i in xrange(len(x))]).T
 
 
 def find_minimum(x0, residuals):
@@ -58,11 +60,18 @@ total = numpy.zeros(3)
 
 
 def handle(hist):
-    common_prns = reduce(set.intersection,
-                         [set(sat.prn for sat in x.satellites if not math.isnan(sat.time)) for x in hist.itervalues()])
+    common_prns = reduce(set.intersection, [set(
+        sat.prn for sat in x.satellites if not math.isnan(sat.time)) for x in hist.itervalues()])
 
-    new = [Measurements(satellites=[sat for sat in x.satellites if sat.prn in common_prns], sync=x.sync, position=x.position, position_valid=x.position_valid)
-           for _, x in sorted(hist.iteritems())]
+    new = [
+        Measurements(
+            satellites=[
+                sat for sat in x.satellites if sat.prn in common_prns],
+            sync=x.sync,
+            position=x.position,
+            position_valid=x.position_valid) for _,
+        x in sorted(
+            hist.iteritems())]
 
     for x in new:
         x.satellites.sort(key=lambda sat: sat.prn)

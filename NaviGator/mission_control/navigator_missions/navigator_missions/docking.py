@@ -19,8 +19,9 @@ class Docking(Navigator):
 
     @classmethod
     def init(cls):
-        parser = ThrowingArgumentParser(description='Dock',
-                                        usage='''Default parameters: \'runtask Docking
+        parser = ThrowingArgumentParser(
+            description='Dock',
+            usage='''Default parameters: \'runtask Docking
                                          \'''')
         parser.add_argument('-t', '--time', type=int, default=-1)
         cls.parser = parser

@@ -44,7 +44,10 @@ def mlab_color_imshow(image, **kwargs):
     image_LUT_array[:, 0], image_LUT_array[:, 2] = np.copy(
         image_LUT_array[:, 2]), np.copy(image_LUT_array[:, 0])
     LUT_lookup = np.arange(
-        image.shape[0] * image.shape[1]).reshape(image.shape[0], image.shape[1])
+        image.shape[0] *
+        image.shape[1]).reshape(
+        image.shape[0],
+        image.shape[1])
 
     mlab_imshow = mlab.imshow(LUT_lookup, colormap='binary', **kwargs)
     mlab_imshow.module_manager.scalar_lut_manager.lut.table = image_LUT_array

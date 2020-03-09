@@ -102,10 +102,7 @@ if __name__ == '__main__':
     motor_id = thruster_definitions[thruster_name]['node_id']
 
     print 'Test fake thruster comm over port {}, node_id {}, thruster name {}'.format(
-        port_info['port'],
-        motor_id,
-        thruster_name
-    )
+        port_info['port'], motor_id, thruster_name)
 
     tp = FakeThrusterPort(port_info, thruster_definitions)
     print tp.command_thruster(thruster_name, 0.04)

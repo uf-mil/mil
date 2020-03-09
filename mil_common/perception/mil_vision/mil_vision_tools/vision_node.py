@@ -164,8 +164,11 @@ if __name__ == "__main__":
                 # Demonstration of adding an object where a bounding rectangle
                 # can be identified
                 if idx % 3 == 2:
-                    objects.append(create_object_msg(
-                        "contour", rect=cv2.boundingRect(contour), confidence=0.8))
+                    objects.append(
+                        create_object_msg(
+                            "contour",
+                            rect=cv2.boundingRect(contour),
+                            confidence=0.8))
 
             # Log that an image has been received for debugging this demo
             rospy.loginfo("Image")

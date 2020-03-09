@@ -53,8 +53,16 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         return self.soft_kill_plug_pulled or self.soft_kill_mobo or self.heartbeat_timedout
 
     def send_updates(self, *args):
-        status = StatusMessage(self.heartbeat_timedout, self.soft_kill_mobo, self.soft_kill_plug_pulled, self.soft_killed, self.hard_killed, False, self.go_button,
-                               not self.soft_kill_plug_pulled, not self.hard_kill_plug_pulled)
+        status = StatusMessage(
+            self.heartbeat_timedout,
+            self.soft_kill_mobo,
+            self.soft_kill_plug_pulled,
+            self.soft_killed,
+            self.hard_killed,
+            False,
+            self.go_button,
+            not self.soft_kill_plug_pulled,
+            not self.hard_kill_plug_pulled)
         self.send_data(status.to_bytes())
 
     def on_data(self, data, can_id):

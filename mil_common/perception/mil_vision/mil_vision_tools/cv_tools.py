@@ -41,8 +41,10 @@ class Threshold(object):
                 self.conversion_code = getattr(
                     cv2, 'COLOR_{}2{}'.format(in_space, thresh_space))
             except AttributeError:
-                raise AttributeError('Could not determine conversion code from params.\
-                                 Are [{}, {}] valid OpenCV colorspaces?'.format(in_space, thresh_space))
+                raise AttributeError(
+                    'Could not determine conversion code from params.\
+                                 Are [{}, {}] valid OpenCV colorspaces?'.format(
+                        in_space, thresh_space))
         else:
             self.conversion_code = conversion_code
 
@@ -73,8 +75,9 @@ class Threshold(object):
                         d, in_space=in_space, thresh_space=key)
                 except AttributeError:
                     pass
-            raise AttributeError('No valid colorspace found in dictionary. Are {} valid OpenCV colorspaces?'.format(
-                d.keys()))
+            raise AttributeError(
+                'No valid colorspace found in dictionary. Are {} valid OpenCV colorspaces?'.format(
+                    d.keys()))
         assert thresh_space in d, '{} color space not in dictionary'.format(
             thresh_space)
         inner = d[thresh_space]
@@ -117,11 +120,15 @@ class Threshold(object):
             if t == 'high':
                 self.high[i] = x
         for i in range(len(self.low)):
-            cv2.createTrackbar('low {}'.format(i), window, int(self.low[i]), 255,
-                               lambda x, _self=self, _i=i: set_thresh('low', _i, x))
+            cv2.createTrackbar(
+                'low {}'.format(i), window, int(
+                    self.low[i]), 255, lambda x, _self=self, _i=i: set_thresh(
+                    'low', _i, x))
         for i in range(len(self.high)):
-            cv2.createTrackbar('high {}'.format(i), window, int(self.high[i]), 255,
-                               lambda x, _self=self, _i=i: set_thresh('high', _i, x))
+            cv2.createTrackbar(
+                'high {}'.format(i), window, int(
+                    self.high[i]), 255, lambda x, _self=self, _i=i: set_thresh(
+                    'high', _i, x))
 
     def __str__(self):
         if self.conversion_code is not None:
@@ -179,8 +186,16 @@ def contour_mask(contour, img_shape=None, mask=None):
     return mask
 
 
-def putText_ul(img, text, org, fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale=1, color=255,
-               thickness=2, lineType=8, bottomLeftOrigin=False):
+def putText_ul(
+        img,
+        text,
+        org,
+        fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL,
+        fontScale=1,
+        color=255,
+        thickness=2,
+        lineType=8,
+        bottomLeftOrigin=False):
     '''
     Puts text on image like cv2.putText but shifts it such that the origin is the upper left corner of
     where the text is placed, instead of the bottom left as cv2 does by default.

@@ -17,8 +17,21 @@ class Entity(object):
             - Draw outlines of faces in red'''
         self.debug = debug
 
-    def __init__(self, mesh, position=(0.0, 0.0, 0.0), orientation=None, color=(255., 0., 0., 255.0), faces=None,
-                 shader_manager=None):
+    def __init__(
+            self,
+            mesh,
+            position=(
+                0.0,
+                0.0,
+                0.0),
+            orientation=None,
+            color=(
+                255.,
+                0.,
+                0.,
+                255.0),
+        faces=None,
+            shader_manager=None):
         '''Orientation must be a 4x4 rotation matrix'''
         self.position = np.array(position, dtype=np.float32)
         if orientation is None:
@@ -116,8 +129,13 @@ class Sphere(Entity):
         )
 
         sphere_buffer, faces = self.make_buffer(sphere_mesh)
-        super(self.__class__, self).__init__(sphere_buffer,
-                                             faces=faces, position=position, color=color)
+        super(
+            self.__class__,
+            self).__init__(
+            sphere_buffer,
+            faces=faces,
+            position=position,
+            color=color)
         shader_manager.register_lighting_shader(self)
         self.program['u_shininess'] = 16.0
         self.program['u_specular_color'] = self.color[:3]
@@ -149,8 +167,13 @@ class Box(Entity):
         # No textures for now
         # vertex_buffer['a_texcoord'] = box_buffer['texcoord']
 
-        super(self.__class__, self).__init__(gloo.VertexBuffer(box_buffer), faces=box_faces, position=position,
-                                             color=color)
+        super(
+            self.__class__,
+            self).__init__(
+            gloo.VertexBuffer(box_buffer),
+            faces=box_faces,
+            position=position,
+            color=color)
 
 
 class Plane(Entity):
@@ -177,8 +200,13 @@ class Plane(Entity):
         )
         plane_buffer['a_position'] = plane_mesh['position']
         plane_buffer['a_normal'] = plane_mesh['normal']
-        super(self.__class__, self).__init__(gloo.VertexBuffer(plane_buffer), faces=plane_faces, position=position,
-                                             color=color)
+        super(
+            self.__class__,
+            self).__init__(
+            gloo.VertexBuffer(plane_buffer),
+            faces=plane_faces,
+            position=position,
+            color=color)
 
         self.set_debug()
         shader_manager.register_lighting_shader(self)
@@ -190,8 +218,20 @@ class Indicator(Entity):
     _vertex_shader = Shaders.indicators['thrust_indicator']['vertex']
     _fragment_shader = Shaders.indicators['thrust_indicator']['fragment']
 
-    def __init__(self, physics_entity, radius, offset=np.eye(4), get_param=lambda physent: physent.velocity,
-                 get_offset=None, color=(0, 255, 0), scaling_factor=1.0, rigid=False, shader_manager=None):
+    def __init__(
+            self,
+            physics_entity,
+            radius,
+            offset=np.eye(4),
+            get_param=lambda physent: physent.velocity,
+            get_offset=None,
+            color=(
+                0,
+                255,
+                0),
+            scaling_factor=1.0,
+            rigid=False,
+            shader_manager=None):
         self.physics_entity = physics_entity
         self.get_param_func = get_param
         self.scaling_factor = scaling_factor

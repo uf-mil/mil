@@ -28,13 +28,18 @@ class SimWorld(rendering.Canvas):
             (0.0, 0.0, 1.0), 100.0, 100.0, color=(0, 0, 255, 170))
 
         self.rendering_world.add_mesh(
-            Transdec, (0.0, 0.0, 0.0), orientation=None, color=(155, 155, 100), shininess=3.0)
+            Transdec, (0.0, 0.0, 0.0), orientation=None, color=(
+                155, 155, 100), shininess=3.0)
         self.physics_world.add_entity(Mesh, (0.0, 0.0, 0.0), 10., Transdec)
 
         self.rendering_world.add_point_light((0.0, 1.0, 0.0), (0.0, 0.0, 0.0))
 
-        super(self.__class__, self).__init__(
-            self.time_acceleration, show_window=self.draw, physics_dt=self.physics_dt)
+        super(
+            self.__class__,
+            self).__init__(
+            self.time_acceleration,
+            show_window=self.draw,
+            physics_dt=self.physics_dt)
 
         self.view = np.array([
             [1., +0.000, +0.0000, +0.0],

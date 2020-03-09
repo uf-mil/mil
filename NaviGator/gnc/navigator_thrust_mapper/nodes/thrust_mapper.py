@@ -39,11 +39,17 @@ class ThrusterMapperNode(object):
 
         # Publisher for each thruster
         if self.is_vrx:
-            self.publishers = [rospy.Publisher("/wamv/thrusters/{}_thrust_cmd".format(name), Float32, queue_size=1)
-                               for name in self.thruster_map.names]
+            self.publishers = [
+                rospy.Publisher(
+                    "/wamv/thrusters/{}_thrust_cmd".format(name),
+                    Float32,
+                    queue_size=1) for name in self.thruster_map.names]
         else:
-            self.publishers = [rospy.Publisher("/{}_motor/cmd".format(name), Command, queue_size=1)
-                               for name in self.thruster_map.names]
+            self.publishers = [
+                rospy.Publisher(
+                    "/{}_motor/cmd".format(name),
+                    Command,
+                    queue_size=1) for name in self.thruster_map.names]
 
         # Joint state publisher
         # TODO(ironmig):

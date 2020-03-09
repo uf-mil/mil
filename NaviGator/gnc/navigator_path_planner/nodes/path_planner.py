@@ -39,8 +39,18 @@ else:
 
 class LQRRT_Node(object):
 
-    def __init__(self, odom_topic, ref_topic, move_topic, path_topic, tree_topic,
-                 goal_topic, focus_topic, effort_topic, ogrid_topic, ogrid_threshold):
+    def __init__(
+            self,
+            odom_topic,
+            ref_topic,
+            move_topic,
+            path_topic,
+            tree_topic,
+            goal_topic,
+            focus_topic,
+            effort_topic,
+            ogrid_topic,
+            ogrid_threshold):
         """
         Initialize with topic names and ogrid threshold as applicable.
         Defaults are generated at the ROS params level.
@@ -169,8 +179,13 @@ class LQRRT_Node(object):
         self.set_goal(self.unpack_pose(msg.goal))
 
         # Check given move_type
-        if msg.move_type in [MoveGoal.HOLD, MoveGoal.DRIVE, MoveGoal.DRIVE_SMOOTH,
-                             MoveGoal.SKID, MoveGoal.SPIRAL, MoveGoal.BYPASS]:
+        if msg.move_type in [
+                MoveGoal.HOLD,
+                MoveGoal.DRIVE,
+                MoveGoal.DRIVE_SMOOTH,
+                MoveGoal.SKID,
+                MoveGoal.SPIRAL,
+                MoveGoal.BYPASS]:
             if msg.blind:
                 self.blind = True
                 print("Preparing: blind {}".format(msg.move_type))
@@ -294,8 +309,12 @@ class LQRRT_Node(object):
             if len(x_seq_spr) and spr_success:
                 self.x_seq = x_seq_spr
                 self.set_goal(x_seq_spr[-1][:])
-                self.get_ref = interp1d(np.arange(len(x_seq_spr)) * self.dt, np.array(x_seq_spr), axis=0,
-                                        assume_sorted=True, bounds_error=False, fill_value=x_seq_spr[-1][:])
+                self.get_ref = interp1d(np.arange(len(x_seq_spr)) * self.dt,
+                                        np.array(x_seq_spr),
+                                        axis=0,
+                                        assume_sorted=True,
+                                        bounds_error=False,
+                                        fill_value=x_seq_spr[-1][:])
                 self.last_update_time = self.rostime()
                 self.next_runtime = T_spr
                 self.lock_tree = True
@@ -327,10 +346,18 @@ class LQRRT_Node(object):
                 # Begin interpolating rotation move
                 self.last_update_time = self.rostime()
                 if len(x_seq_rot):
-                    self.get_ref = interp1d(np.arange(len(x_seq_rot)) * self.dt, np.array(x_seq_rot), axis=0,
-                                            assume_sorted=True, bounds_error=False, fill_value=x_seq_rot[-1][:])
-                    self.get_eff = interp1d(np.arange(len(u_seq_rot)) * self.dt, np.array(u_seq_rot), axis=0,
-                                            assume_sorted=True, bounds_error=False, fill_value=u_seq_rot[-1][:])
+                    self.get_ref = interp1d(np.arange(len(x_seq_rot)) * self.dt,
+                                            np.array(x_seq_rot),
+                                            axis=0,
+                                            assume_sorted=True,
+                                            bounds_error=False,
+                                            fill_value=x_seq_rot[-1][:])
+                    self.get_eff = interp1d(np.arange(len(u_seq_rot)) * self.dt,
+                                            np.array(u_seq_rot),
+                                            axis=0,
+                                            assume_sorted=True,
+                                            bounds_error=False,
+                                            fill_value=u_seq_rot[-1][:])
                     self.next_runtime = np.clip(
                         T_rot, params.basic_duration, 2 * np.pi / params.velmax_pos[2])
                     self.next_seed = np.copy(x_seq_rot[-1])
@@ -467,12 +494,13 @@ class LQRRT_Node(object):
             assert self.next_runtime is None
 
         # Update plan
-        clean_update = self.behavior.planner.update_plan(x0=self.next_seed,
-                                                         sample_space=self.sample_space,
-                                                         goal_bias=self.goal_bias,
-                                                         guide=self.guide,
-                                                         pruning=self.pruning,
-                                                         specific_time=self.next_runtime)
+        clean_update = self.behavior.planner.update_plan(
+            x0=self.next_seed,
+            sample_space=self.sample_space,
+            goal_bias=self.goal_bias,
+            guide=self.guide,
+            pruning=self.pruning,
+            specific_time=self.next_runtime)
 
         # Update finished properly
         if clean_update:
@@ -699,8 +727,14 @@ class LQRRT_Node(object):
                     ss_seed = self.intup(np.subtract(
                         seed, [offset_x[0], offset_y[0]]))
                     test_flood = np.copy(ss_img)
-                    cv2.floodFill(test_flood, np.zeros(
-                        (test_flood.shape[0] + 2, test_flood.shape[1] + 2), np.uint8), ss_goal, 69)
+                    cv2.floodFill(
+                        test_flood,
+                        np.zeros(
+                            (test_flood.shape[0] + 2,
+                             test_flood.shape[1] + 2),
+                            np.uint8),
+                        ss_goal,
+                        69)
                     if test_flood[ss_seed[1], ss_seed[0]] == 69:
                         gs[:2] = (np.add([col, row], [last_offsets[0], last_offsets[1]]).astype(
                             np.float64) / self.ogrid_cpm) + self.ogrid_origin
@@ -850,8 +884,8 @@ class LQRRT_Node(object):
 
         # Check that the next reeval_time seconds in the current plan are still
         # feasible
-        p_seq = np.copy(x_seq[iters_passed:min(
-            [len(x_seq), int(iters_passed + (params.reeval_time / self.dt)), params.reeval_limit])])
+        p_seq = np.copy(x_seq[iters_passed:min([len(x_seq), int(
+            iters_passed + (params.reeval_time / self.dt)), params.reeval_limit])])
         if len(p_seq):
             p_seq[:, 3:] = 0
             for i, (x, u) in enumerate(zip(p_seq, [np.zeros(3)] * len(p_seq))):
@@ -929,19 +963,32 @@ class LQRRT_Node(object):
             time_till_next_branch = next_runtime - \
                 (self.rostime() - last_update_time)
             if self.move_type == MoveGoal.SPIRAL:
-                self.move_server.publish_feedback(MoveFeedback('boat',
-                                                               0,
-                                                               self.tracking,
-                                                               self.erf(self.goal, self.get_ref(
-                                                                   self.rostime() - last_update_time))[:3],
-                                                               time_till_next_branch))
+                self.move_server.publish_feedback(
+                    MoveFeedback(
+                        'boat',
+                        0,
+                        self.tracking,
+                        self.erf(
+                            self.goal,
+                            self.get_ref(
+                                self.rostime() -
+                                last_update_time))[
+                            :3],
+                        time_till_next_branch))
             elif self.enroute_behavior is not None and self.tree is not None and self.tracking is not None:
-                self.move_server.publish_feedback(MoveFeedback(self.enroute_behavior.__name__[10:],
-                                                               self.tree.size,
-                                                               self.tracking,
-                                                               self.erf(self.goal, self.get_ref(
-                                                                   self.rostime() - last_update_time))[:3],
-                                                               time_till_next_branch))
+                self.move_server.publish_feedback(
+                    MoveFeedback(
+                        self.enroute_behavior.__name__[
+                            10:],
+                        self.tree.size,
+                        self.tracking,
+                        self.erf(
+                            self.goal,
+                            self.get_ref(
+                                self.rostime() -
+                                last_update_time))[
+                            :3],
+                        time_till_next_branch))
 
 # LIL MATH DOERS
 
@@ -1090,16 +1137,32 @@ class LQRRT_Node(object):
 
         # If goal can flood to seed then done
         flood_goal = np.copy(img)
-        cv2.floodFill(flood_goal, np.zeros(
-            (flood_goal.shape[0] + 2, flood_goal.shape[1] + 2), np.uint8), goal, fc1)
+        cv2.floodFill(
+            flood_goal,
+            np.zeros(
+                (flood_goal.shape[0] +
+                 2,
+                 flood_goal.shape[1] +
+                 2),
+                np.uint8),
+            goal,
+            fc1)
         if flood_goal[seed[1], seed[0]] == fc1:
             return 'connected'
 
         # Filter out the dividing boundary
         flood_goal_thresh = fc1 * np.equal(flood_goal, fc1).astype(np.uint8)
         flood_seed = np.copy(flood_goal_thresh)
-        cv2.floodFill(flood_seed, np.zeros(
-            (flood_seed.shape[0] + 2, flood_seed.shape[1] + 2), np.uint8), seed, fc2)
+        cv2.floodFill(
+            flood_seed,
+            np.zeros(
+                (flood_seed.shape[0] +
+                 2,
+                 flood_seed.shape[1] +
+                 2),
+                np.uint8),
+            seed,
+            fc2)
         flood_seed_thresh = fc2 * np.equal(flood_seed, fc2).astype(np.uint8)
 
         # Buffered boundaries and dimensions
@@ -1228,12 +1291,12 @@ class LQRRT_Node(object):
             return
 
         # Construct and publish
-        point_list = [Point32(self.sample_space[0][0], self.sample_space[1][0], 0),
-                      Point32(self.sample_space[0][1],
-                              self.sample_space[1][0], 0),
-                      Point32(self.sample_space[0][1],
-                              self.sample_space[1][1], 0),
-                      Point32(self.sample_space[0][0], self.sample_space[1][1], 0)]
+        point_list = [
+            Point32(
+                self.sample_space[0][0], self.sample_space[1][0], 0), Point32(
+                self.sample_space[0][1], self.sample_space[1][0], 0), Point32(
+                self.sample_space[0][1], self.sample_space[1][1], 0), Point32(
+                    self.sample_space[0][0], self.sample_space[1][1], 0)]
         ss_msg = PolygonStamped()
         ss_msg.header.frame_id = self.world_frame_id
         ss_msg.polygon.points = point_list
@@ -1304,8 +1367,12 @@ class LQRRT_Node(object):
         """
         q = [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
              msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
-        return np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, trns.euler_from_quaternion(q)[2],
-                         msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.angular.z])
+        return np.array([msg.pose.pose.position.x,
+                         msg.pose.pose.position.y,
+                         trns.euler_from_quaternion(q)[2],
+                         msg.twist.twist.linear.x,
+                         msg.twist.twist.linear.y,
+                         msg.twist.twist.angular.z])
 
     def pack_pose(self, state):
         """

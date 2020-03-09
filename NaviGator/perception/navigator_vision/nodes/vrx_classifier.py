@@ -73,13 +73,19 @@ class VrxClassifier(object):
         self.camera_model = PinholeCameraModel()
         self.camera_model.fromCameraInfo(self.camera_info)
         if self.debug:
-            self.image_mux = ImageMux(size=(self.camera_info.height, self.camera_info.width), shape=(1, 2),
-                                      labels=['Result', 'Mask'])
+            self.image_mux = ImageMux(
+                size=(
+                    self.camera_info.height, self.camera_info.width), shape=(
+                    1, 2), labels=[
+                    'Result', 'Mask'])
             self.debug_pub = Image_Publisher('~debug_image')
         self.last_objects = None
         self.last_update_time = rospy.Time.now()
         self.objects_sub = rospy.Subscriber(
-            '/pcodar/objects', PerceptionObjectArray, self.process_objects, queue_size=2)
+            '/pcodar/objects',
+            PerceptionObjectArray,
+            self.process_objects,
+            queue_size=2)
         self.enabled_srv = rospy.Service(
             '~set_enabled', SetBool, self.set_enable_srv)
         if self.is_training:
@@ -166,12 +172,23 @@ class VrxClassifier(object):
                     np.abs(self.BLACK_OBJECT_VOLUMES - running_mean_volume))
                 black_guess = self.POSSIBLE_BLACK_OBJECTS[black_guess_index]
             most_likely_name = black_guess
-            rospy.loginfo('{} current/running volume={}/{} area={}/{} height={}-> {}'.format(object_id,
-                                                                                             object_volume, running_mean_volume, object_area, running_mean_area, height, black_guess))
+            rospy.loginfo(
+                '{} current/running volume={}/{} area={}/{} height={}-> {}'.format(
+                    object_id,
+                    object_volume,
+                    running_mean_volume,
+                    object_area,
+                    running_mean_area,
+                    height,
+                    black_guess))
         obj_title = object_msg.labeled_classification
         probability = class_probabilities[most_likely_index]
-        rospy.loginfo('Object {} {} classified as {} ({}%)'.format(
-            object_id, object_msg.labeled_classification, most_likely_name, probability * 100.))
+        rospy.loginfo(
+            'Object {} {} classified as {} ({}%)'.format(
+                object_id,
+                object_msg.labeled_classification,
+                most_likely_name,
+                probability * 100.))
         if obj_title != most_likely_name:
             cmd = '{}={}'.format(object_id, most_likely_name)
             rospy.loginfo('Updating object {} to {}'.format(
@@ -203,8 +220,11 @@ class VrxClassifier(object):
         rotation_mat = quaternion_matrix(rotation)[:3, :3]
 
         # Transform the center of each object into optical frame
-        positions_camera = [translation + rotation_mat.dot(rosmsg_to_numpy(obj.pose.position))
-                            for obj in self.last_objects.objects]
+        positions_camera = [
+            translation +
+            rotation_mat.dot(
+                rosmsg_to_numpy(
+                    obj.pose.position)) for obj in self.last_objects.objects]
         pixel_centers = [self.camera_model.project3dToPixel(
             point) for point in positions_camera]
         distances = np.linalg.norm(positions_camera, axis=1)
@@ -220,8 +240,11 @@ class VrxClassifier(object):
                 met_criteria.append(i)
         # print 'Keeping {} of {}'.format(len(met_criteria), len(self.last_objects.objects))
 
-        rois = [self.get_object_roi(translation, rotation_mat, self.last_objects.objects[i])
-                for i in met_criteria]
+        rois = [
+            self.get_object_roi(
+                translation,
+                rotation_mat,
+                self.last_objects.objects[i]) for i in met_criteria]
         debug = np.zeros(img.shape, dtype=img.dtype)
 
         if self.is_training:

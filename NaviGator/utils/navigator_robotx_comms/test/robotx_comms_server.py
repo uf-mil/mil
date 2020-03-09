@@ -69,13 +69,17 @@ class TestRobotXComms(unittest.TestCase):
                             checksum_list_test_data = test_data.split("*")
                             self.assertEquals(
                                 data_list[7], list_test_data[7], "team id incorrect")
-                            self.assertEquals(checksum_list[1], checksum_list_test_data[1],
-                                              "heartbeat message checksum incorrect")
+                            self.assertEquals(
+                                checksum_list[1],
+                                checksum_list_test_data[1],
+                                "heartbeat message checksum incorrect")
                         else:
                             self.assertEquals(
                                 data_list[7], self.team_id, "team id incorrect")
-                            self.assertEquals(checksum_list[1], final_checksum_string,
-                                              "heartbeat message checksum incorrect")
+                            self.assertEquals(
+                                checksum_list[1],
+                                final_checksum_string,
+                                "heartbeat message checksum incorrect")
                         times_ran += 1
 
         finally:
@@ -91,8 +95,8 @@ class TestRobotXComms(unittest.TestCase):
         light_pattern = "RBG"
 
         rospy.wait_for_service("entrance_exit_gate_message")
-        send_robot_x_entrance_exit_gate_message = rospy.ServiceProxy("entrance_exit_gate_message",
-                                                                     MessageExtranceExitGate)
+        send_robot_x_entrance_exit_gate_message = rospy.ServiceProxy(
+            "entrance_exit_gate_message", MessageExtranceExitGate)
 
         robot_x_entrance_exit_gate_message = RobotXEntranceExitGateMessage()
 
@@ -125,8 +129,10 @@ class TestRobotXComms(unittest.TestCase):
                             checksum_list_test_data = test_data.split("*")
                             self.assertEquals(
                                 data_list[3], list_test_data[3], "team id incorrect")
-                            self.assertEquals(checksum_list[1], checksum_list_test_data[1],
-                                              "entrance exit gate message checksum incorrect")
+                            self.assertEquals(
+                                checksum_list[1],
+                                checksum_list_test_data[1],
+                                "entrance exit gate message checksum incorrect")
                             self.assertEquals(int(data_list[4]), int(
                                 list_test_data[4]), "entrance gate incorrect")
                             self.assertEquals(int(data_list[5]), int(
@@ -140,8 +146,10 @@ class TestRobotXComms(unittest.TestCase):
                         else:
                             self.assertEquals(
                                 data_list[3], self.team_id, "team id incorrect")
-                            self.assertEquals(checksum_list[1], final_checksum_string,
-                                              "entrance exit gate message checksum incorrect")
+                            self.assertEquals(
+                                checksum_list[1],
+                                final_checksum_string,
+                                "entrance exit gate message checksum incorrect")
                             self.assertEquals(
                                 int(data_list[4]), entrance_gate, "entrance gate incorrect")
                             self.assertEquals(
@@ -199,8 +207,10 @@ class TestRobotXComms(unittest.TestCase):
                             checksum_list_test_data = test_data.split("*")
                             self.assertEquals(
                                 data_list[3], list_test_data[3], "team id incorrect")
-                            self.assertEquals(checksum_list[1], checksum_list_test_data[1],
-                                              "scan code message checksum incorrect")
+                            self.assertEquals(
+                                checksum_list[1],
+                                checksum_list_test_data[1],
+                                "scan code message checksum incorrect")
                             msg_color_pattern = data_list[4].split("*")[0]
                             light_pattern = list_test_data[4].split("*")[0]
                             self.assertEquals(
@@ -208,8 +218,10 @@ class TestRobotXComms(unittest.TestCase):
                         else:
                             self.assertEquals(
                                 data_list[3], self.team_id, "team id incorrect")
-                            self.assertEquals(checksum_list[1], final_checksum_string,
-                                              "scan code message checksum incorrect")
+                            self.assertEquals(
+                                checksum_list[1],
+                                final_checksum_string,
+                                "scan code message checksum incorrect")
                             msg_color_pattern = data_list[4].split("*")[0]
                             self.assertEquals(
                                 msg_color_pattern, color_pattern, "color pattern incorrect")
@@ -226,8 +238,8 @@ class TestRobotXComms(unittest.TestCase):
         shape = "TRIAN"
 
         rospy.wait_for_service("identify_symbols_dock_message")
-        send_robot_x_identify_symbols_dock_message = rospy.ServiceProxy("identify_symbols_dock_message",
-                                                                        MessageIdentifySymbolsDock)
+        send_robot_x_identify_symbols_dock_message = rospy.ServiceProxy(
+            "identify_symbols_dock_message", MessageIdentifySymbolsDock)
 
         robot_x_identify_symbols_dock_message = RobotXIdentifySymbolsDockMessage()
 
@@ -259,8 +271,10 @@ class TestRobotXComms(unittest.TestCase):
                             checksum_list_test_data = test_data.split("*")
                             self.assertEquals(
                                 data_list[3], list_test_data[3], "team id incorrect")
-                            self.assertEquals(checksum_list[1], checksum_list_test_data[1],
-                                              "identify symbols dock message checksum incorrect")
+                            self.assertEquals(
+                                checksum_list[1],
+                                checksum_list_test_data[1],
+                                "identify symbols dock message checksum incorrect")
                             self.assertEquals(
                                 data_list[4], list_test_data[4], "shape color incorrect")
                             msg_shape = data_list[5].split("*")[0]
@@ -270,8 +284,10 @@ class TestRobotXComms(unittest.TestCase):
                         else:
                             self.assertEquals(
                                 data_list[3], self.team_id, "team id incorrect")
-                            self.assertEquals(checksum_list[1], final_checksum_string,
-                                              "identify symbols dock message checksum incorrect")
+                            self.assertEquals(
+                                checksum_list[1],
+                                final_checksum_string,
+                                "identify symbols dock message checksum incorrect")
                             self.assertEquals(
                                 data_list[4], shape_color, "shape color incorrect")
                             msg_shape = data_list[5].split("*")[0]
@@ -289,8 +305,8 @@ class TestRobotXComms(unittest.TestCase):
         shape = "CIRCL"
 
         rospy.wait_for_service("detect_deliver_message")
-        send_robot_x_detect_deliver_message = rospy.ServiceProxy("detect_deliver_message",
-                                                                 MessageDetectDeliver)
+        send_robot_x_detect_deliver_message = rospy.ServiceProxy(
+            "detect_deliver_message", MessageDetectDeliver)
 
         robot_x_detect_deliver_message = RobotXDetectDeliverMessage()
 
@@ -322,8 +338,10 @@ class TestRobotXComms(unittest.TestCase):
                             checksum_list_test_data = test_data.split("*")
                             self.assertEquals(
                                 data_list[3], list_test_data[3], "team id incorrect")
-                            self.assertEquals(checksum_list[1], checksum_list_test_data[1],
-                                              "detect deliver message checksum incorrect")
+                            self.assertEquals(
+                                checksum_list[1],
+                                checksum_list_test_data[1],
+                                "detect deliver message checksum incorrect")
                             self.assertEquals(
                                 data_list[4], list_test_data[4], "shape color incorrect")
                             msg_shape = data_list[5].split("*")[0]
@@ -333,8 +351,10 @@ class TestRobotXComms(unittest.TestCase):
                         else:
                             self.assertEquals(
                                 data_list[3], self.team_id, "team id incorrect")
-                            self.assertEquals(checksum_list[1], final_checksum_string,
-                                              "detect deliver message checksum incorrect")
+                            self.assertEquals(
+                                checksum_list[1],
+                                final_checksum_string,
+                                "detect deliver message checksum incorrect")
                             self.assertEquals(
                                 data_list[4], shape_color, "shape color incorrect")
                             msg_shape = data_list[5].split("*")[0]

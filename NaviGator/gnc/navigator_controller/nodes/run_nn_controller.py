@@ -8,7 +8,9 @@ from geometry_msgs.msg import PoseStamped
 
 def odom_callback(odom_msg):
     controller.give_new_state(
-        odom_msg.pose.pose, odom_msg.twist.twist, odom_msg.header.stamp.to_sec())
+        odom_msg.pose.pose,
+        odom_msg.twist.twist,
+        odom_msg.header.stamp.to_sec())
 
 
 def reference_callback(ref_msg):

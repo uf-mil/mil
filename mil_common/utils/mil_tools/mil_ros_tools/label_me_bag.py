@@ -254,8 +254,8 @@ class BagToLabelMe(object):
             print "{}/{} TOTAL images labeled (0%)".format(
                 total_xml_count, total_img_count)
         else:
-            print "{}/{} TOTAL images labeled ({:.1%})".format(total_xml_count, total_img_count,
-                                                               total_xml_count / total_img_count)
+            print "{}/{} TOTAL images labeled ({:.1%})".format(
+                total_xml_count, total_img_count, total_xml_count / total_img_count)
 
     def _completion_bag(self, bag):
         """
@@ -283,8 +283,13 @@ class BagToLabelMe(object):
             self._print("\t{}/{} images labeled in {} (0%)",
                         xml_count, img_count, bag.name)
         else:
-            self._print("\t{}/{} images labeled in {} ({:.1%})", xml_count, img_count, bag.name,
-                        xml_count / img_count)
+            self._print(
+                "\t{}/{} images labeled in {} ({:.1%})",
+                xml_count,
+                img_count,
+                bag.name,
+                xml_count /
+                img_count)
         return xml_count, img_count
 
     @staticmethod
@@ -318,31 +323,73 @@ class BagToLabelMe(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Generates rosbags based on LabelMe data and visa/versa')
-    parser.add_argument('config', type=str,
-                        help='YAML file specifying what bags to read and extract images from.\
+    parser.add_argument(
+        'config',
+        type=str,
+        help='YAML file specifying what bags to read and extract images from.\
                               See example YAML for details')
-    parser.add_argument('--labelme-dir', '-d', dest='dir', type=str, default="",
-                        help='root directory of labelme instalation. \nDefaults to current directory.')
-    parser.add_argument('--bag-dir', '-b', dest="bag_dir", type=str, default="",
-                        help="directory to resolve relative paths specifed in YAML for input bags. \n\
+    parser.add_argument(
+        '--labelme-dir',
+        '-d',
+        dest='dir',
+        type=str,
+        default="",
+        help='root directory of labelme instalation. \nDefaults to current directory.')
+    parser.add_argument(
+        '--bag-dir',
+        '-b',
+        dest="bag_dir",
+        type=str,
+        default="",
+        help="directory to resolve relative paths specifed in YAML for input bags. \n\
                               Defaults to current directory.")
-    parser.add_argument('--output-dir', '-o', dest="output_dir", type=str, default="",
-                        help="directory to resolve relative paths specified in YAML for output (labeled) bags. \n\
+    parser.add_argument(
+        '--output-dir',
+        '-o',
+        dest="output_dir",
+        type=str,
+        default="",
+        help="directory to resolve relative paths specified in YAML for output (labeled) bags. \n\
                               Defaults to current directory.")
-    parser.add_argument('--extract', '-e', dest='extract_labels', action='store_true',
-                        help='Instead of putting bag images into LabelMe, read annotations from labelme,\
+    parser.add_argument(
+        '--extract',
+        '-e',
+        dest='extract_labels',
+        action='store_true',
+        help='Instead of putting bag images into LabelMe, read annotations from labelme,\
                               inserting them into a new bag as specified in config')
-    parser.add_argument('--generate-report', '-r', dest='do_report', action='store_true',
-                        help='Read annotations from labelme and produces a report on labeling coverage')
-    parser.add_argument('--dry-run', '-n', dest='do_dry_run', action='store_true',
-                        help='No op, just verify parsed config of yaml')
-    parser.add_argument('--verbose', '-v', dest='verbose', action='store_true',
-                        help='Print extra information about what the script is doing')
-    parser.add_argument('--force', '-f', dest='force', action='store_true',
-                        help='Override bags if they already exist when running extract mode')
+    parser.add_argument(
+        '--generate-report',
+        '-r',
+        dest='do_report',
+        action='store_true',
+        help='Read annotations from labelme and produces a report on labeling coverage')
+    parser.add_argument(
+        '--dry-run',
+        '-n',
+        dest='do_dry_run',
+        action='store_true',
+        help='No op, just verify parsed config of yaml')
+    parser.add_argument(
+        '--verbose',
+        '-v',
+        dest='verbose',
+        action='store_true',
+        help='Print extra information about what the script is doing')
+    parser.add_argument(
+        '--force',
+        '-f',
+        dest='force',
+        action='store_true',
+        help='Override bags if they already exist when running extract mode')
     args = parser.parse_args()
-    bag_to_labelme = BagToLabelMe.from_yaml_file(args.config, labelme_dir=args.dir, verbose=args.verbose,
-                                                 indir=args.bag_dir, outdir=args.output_dir, force=args.force)
+    bag_to_labelme = BagToLabelMe.from_yaml_file(
+        args.config,
+        labelme_dir=args.dir,
+        verbose=args.verbose,
+        indir=args.bag_dir,
+        outdir=args.output_dir,
+        force=args.force)
     if args.do_dry_run:
         pass
     elif args.extract_labels:

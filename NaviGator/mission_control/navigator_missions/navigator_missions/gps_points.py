@@ -5,8 +5,13 @@ from navigator import Navigator
 
 
 class GPSWaypoints(Navigator):
-    DEFAULT_WAYPOINTS = np.array([[29.534882, -82.303701], [29.534614, -82.303594], [29.534418, -82.303839],
-                                  [29.534801, -82.303917], [29.534660, -82.304180], [29.534554, -82.304366]])
+    DEFAULT_WAYPOINTS = np.array([[29.534882, -
+                                   82.303701], [29.534614, -
+                                                82.303594], [29.534418, -
+                                                             82.303839], [29.534801, -
+                                                                          82.303917], [29.534660, -
+                                                                                       82.304180], [29.534554, -
+                                                                                                    82.304366]])
 
     def verify_parameters(self, parameters):
         arr = np.array(parameters, dtype=np.float)

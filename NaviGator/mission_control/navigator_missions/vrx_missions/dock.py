@@ -191,9 +191,13 @@ class Dock(Vrx):
         msg = np2pc2(points, self.nh.get_time(), 'enu')
         self.debug_points_pub.publish(msg)
 
-        contour = np.array(bbox_from_rect(
-                           rect_from_roi(
-                               roi_enclosing_points(self.camera_model, points))), dtype=int)
+        contour = np.array(
+            bbox_from_rect(
+                rect_from_roi(
+                    roi_enclosing_points(
+                        self.camera_model,
+                        points))),
+            dtype=int)
 
         sequence = []
         masked_img = None

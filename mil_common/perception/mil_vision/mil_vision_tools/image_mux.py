@@ -15,9 +15,28 @@ class ImageMux(object):
     See bottom of this file for a usage example.
     '''
 
-    def __init__(self, size=(480, 640), shape=(2, 2), labels=None, keep_ratio=True,
-                 border_color=(255, 255, 255), border_thickness=1, text_color=(255, 255, 255),
-                 text_font=cv2.FONT_HERSHEY_COMPLEX_SMALL, text_scale=1, text_thickness=2):
+    def __init__(
+            self,
+            size=(
+                480,
+                640),
+            shape=(
+                2,
+                2),
+        labels=None,
+        keep_ratio=True,
+        border_color=(
+                255,
+                255,
+                255),
+            border_thickness=1,
+            text_color=(
+                255,
+                255,
+                255),
+            text_font=cv2.FONT_HERSHEY_COMPLEX_SMALL,
+            text_scale=1,
+            text_thickness=2):
         '''
         Contruct an ImageMux grid.
         @param size: Tuple (rows, cols) representing the size of the grid image, in pixels
@@ -67,12 +86,24 @@ class ImageMux(object):
             for row in xrange(1, self.shape[0]):
                 y = int(self.pane_size[0] * row)
                 cv2.line(
-                    self._image, (0, y), (self.size[1], y), self.border_color, self.border_thickness)
+                    self._image,
+                    (0,
+                     y),
+                    (self.size[1],
+                     y),
+                    self.border_color,
+                    self.border_thickness)
             # Add vertical line for rows 1 - n
             for col in xrange(1, self.shape[1]):
                 x = int(self.pane_size[1] * col)
-                cv2.line(self._image, (x, 0), (x,
-                                               self.size[0]), self.border_color, self.border_thickness)
+                cv2.line(
+                    self._image,
+                    (x,
+                     0),
+                    (x,
+                     self.size[0]),
+                    self.border_color,
+                    self.border_thickness)
 
         # Add label text for each pane if it is not None
         for i, label in enumerate(self.labels):
@@ -88,8 +119,8 @@ class ImageMux(object):
                 y += self.border_thickness
             if tup[1] != 0:
                 x += self.border_thickness
-            cv2.putText(self._image, label, (x, y),
-                        self.text_font, self.text_scale, self.text_color, self.text_thickness)
+            cv2.putText(self._image, label, (x, y), self.text_font,
+                        self.text_scale, self.text_color, self.text_thickness)
 
     def set_image(self, key, img):
         '''
@@ -162,8 +193,11 @@ if __name__ == '__main__':
     import os
     labels = ['Chubby Racoon', 'Kiddo Racoons', 'wide', 'tall',
               'big wide', 'big tall']  # Create strings for labels
-    images = [cv2.imread(os.path.join(os.environ['HOME'],
-                                      'Pictures', str(i + 1) + '.jpg')) for i in xrange(2)]
+    images = [
+        cv2.imread(
+            os.path.join(
+                os.environ['HOME'], 'Pictures', str(
+                    i + 1) + '.jpg')) for i in xrange(2)]
     # Add strange ratio white blocks to test keep_ratio flag
     images.append(255 * np.ones((20, 201, 3), dtype=np.uint8)
                   )     # A small, wide image
@@ -173,8 +207,11 @@ if __name__ == '__main__':
     images.append(255 * np.ones((200, 2000, 3), dtype=np.uint8))
     # A large, tall image
     images.append(255 * np.ones((2000, 200, 3), dtype=np.uint8))
-    t = ImageMux(size=(500, 900), border_color=(0, 0, 255), border_thickness=3, shape=(3, 2),
-                 labels=labels, text_scale=1, keep_ratio=True)
+    t = ImageMux(
+        size=(
+            500, 900), border_color=(
+            0, 0, 255), border_thickness=3, shape=(
+                3, 2), labels=labels, text_scale=1, keep_ratio=True)
     for i in xrange(len(images)):
         t[i] = np.array(images[i])
     cv2.imshow('Grid', t.image)

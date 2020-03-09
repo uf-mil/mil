@@ -14,8 +14,9 @@ class ExploreTowers(Navigator):
 
     @classmethod
     def init(cls):
-        parser = ThrowingArgumentParser(description='Explore a bit mission',
-                                        usage='Default parameters: \'runtask ExploreJaxon\'')
+        parser = ThrowingArgumentParser(
+            description='Explore a bit mission',
+            usage='Default parameters: \'runtask ExploreJaxon\'')
         parser.add_argument('-c', '--count', type=int, default=5,
                             help='number of unclassified objects to attempt')
         parser.add_argument('-d', '--dist', type=float, default=30.,

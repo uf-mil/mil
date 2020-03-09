@@ -9,8 +9,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument(dest='pickles', nargs="*",
                         help="List of pickles to combine.")
-    parser.add_argument('--output', type=str, help="Path to a file to output to (and overwrite)",
-                        default='combine.p')
+    parser.add_argument(
+        '--output',
+        type=str,
+        help="Path to a file to output to (and overwrite)",
+        default='combine.p')
 
     args = parser.parse_args(sys.argv[1:])
 

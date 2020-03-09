@@ -30,24 +30,54 @@ class EntranceGate(Navigator):
             def __eq__(self, other):
                 return self.start <= other <= self.end
 
-        parser = ThrowingArgumentParser(description='Start Gate Mission',
-                                        usage='''Default parameters: \'runtask EntranceGate
+        parser = ThrowingArgumentParser(
+            description='Start Gate Mission',
+            usage='''Default parameters: \'runtask EntranceGate
                                          --scandist 10 --speed 0.75 --scantime 10 --traversaldist 7\'''')
-        parser.add_argument('-r', '--drift', action='store_true',
-                            help='''setting results in a scan by listening at two points (two points scan mode,
+        parser.add_argument(
+            '-r',
+            '--drift',
+            action='store_true',
+            help='''setting results in a scan by listening at two points (two points scan mode,
                             not setting results in a scan by traversing the gates (pass scan mode)''')
-        parser.add_argument('-m', '--multilateration', action='store_true',
-                            help='setting enables multilateration-based scanning, otherwise uses intersecting lines')
-        parser.add_argument('-c', '--scandist', type=int, default=6,
-                            help='distance from the gates in meters to scan from')
-        parser.add_argument('-s', '--speed', type=float, default=0.5, choices=[Range(0.0, 1.0)],
-                            help='speed to move when scanning in pass pass mode')
-        parser.add_argument('-k', '--nokill', action='store_false',
-                            help='set to not kill thrusters during scan in two points scan mode')
-        parser.add_argument('-t', '--scantime', type=int, default=10,
-                            help='number of seconds to scan at each point for in two points scan mode')
-        parser.add_argument('-d', '--traversaldist', type=int, default=8,
-                            help='distance from each side of the gates to navigate to when crossing')
+        parser.add_argument(
+            '-m',
+            '--multilateration',
+            action='store_true',
+            help='setting enables multilateration-based scanning, otherwise uses intersecting lines')
+        parser.add_argument(
+            '-c',
+            '--scandist',
+            type=int,
+            default=6,
+            help='distance from the gates in meters to scan from')
+        parser.add_argument(
+            '-s',
+            '--speed',
+            type=float,
+            default=0.5,
+            choices=[
+                Range(
+                    0.0,
+                    1.0)],
+            help='speed to move when scanning in pass pass mode')
+        parser.add_argument(
+            '-k',
+            '--nokill',
+            action='store_false',
+            help='set to not kill thrusters during scan in two points scan mode')
+        parser.add_argument(
+            '-t',
+            '--scantime',
+            type=int,
+            default=10,
+            help='number of seconds to scan at each point for in two points scan mode')
+        parser.add_argument(
+            '-d',
+            '--traversaldist',
+            type=int,
+            default=8,
+            help='distance from each side of the gates to navigate to when crossing')
         parser.add_argument('-e', '--exit', action='store_true',
                             help='set to configure that this is the exit pass')
         cls.parser = parser
@@ -198,14 +228,16 @@ class EntranceGate(Navigator):
             multilateration_confidence = multilateration_results[1]
 
             self.send_feedback(
-                'Multilaterating Method has confidence of ' + str(multilateration_confidence))
+                'Multilaterating Method has confidence of ' +
+                str(multilateration_confidence))
         else:
             intersect_results = self.calculate_intersect()
             self.pinger_gate = intersect_results[0]
             intersect_confidence = intersect_results[1]
 
             self.send_feedback(
-                'Intersecting Method has confidence of ' + str(intersect_confidence))
+                'Intersecting Method has confidence of ' +
+                str(intersect_confidence))
 
     @util.cancellableInlineCallbacks
     def run_pass_scan(self, args):
@@ -260,14 +292,16 @@ class EntranceGate(Navigator):
             multilateration_confidence = multilateration_results[1]
 
             self.send_feedback(
-                'Multilaterating Method has confidence of ' + str(multilateration_confidence))
+                'Multilaterating Method has confidence of ' +
+                str(multilateration_confidence))
         else:
             intersect_results = self.calculate_intersect()
             self.pinger_gate = intersect_results[0]
             intersect_confidence = intersect_results[1]
 
             self.send_feedback(
-                'Intersecting Method has confidence of ' + str(intersect_confidence))
+                'Intersecting Method has confidence of ' +
+                str(intersect_confidence))
 
     '''
 
@@ -281,8 +315,10 @@ class EntranceGate(Navigator):
         gateDist = [0, 0, 0]
         for pinger_vector in self.intersect_vectors:
             # Calculate intersection between the gate and the pinger vector
-            t, s = np.linalg.solve(np.array([gate_vector[1] - gate_vector[0], pinger_vector[0] - pinger_vector[1]]).T,
-                                   pinger_vector[0] - gate_vector[0])
+            t, s = np.linalg.solve(np.array([gate_vector[1] -
+                                             gate_vector[0], pinger_vector[0] -
+                                             pinger_vector[1]]).T, pinger_vector[0] -
+                                   gate_vector[0])
             intersection = (1 - t) * gate_vector[0] + t * gate_vector[1]
 
             # Calculate the distances from each gate center to the intersection
@@ -427,10 +463,13 @@ class EntranceGate(Navigator):
             gate_totems = [t1, t3, t2, t4]
 
         # Calculate the center points of each gate
-        gate_centers = [((gate_totems[0][0] + gate_totems[1][0]) / 2, (gate_totems[0][1] + gate_totems[1][1]) / 2),
-                        ((gate_totems[1][0] + gate_totems[2][0]) / 2,
-                         (gate_totems[1][1] + gate_totems[2][1]) / 2),
-                        ((gate_totems[2][0] + gate_totems[3][0]) / 2, (gate_totems[2][1] + gate_totems[3][1]) / 2)]
+        gate_centers = [
+            ((gate_totems[0][0] + gate_totems[1][0]) / 2,
+             (gate_totems[0][1] + gate_totems[1][1]) / 2),
+            ((gate_totems[1][0] + gate_totems[2][0]) / 2,
+             (gate_totems[1][1] + gate_totems[2][1]) / 2),
+            ((gate_totems[2][0] + gate_totems[3][0]) / 2,
+             (gate_totems[2][1] + gate_totems[3][1]) / 2)]
 
         # Calculate the line that goes through the gates
         gates_line = self.line(gate_centers[0], gate_centers[2])
@@ -453,14 +492,15 @@ class EntranceGate(Navigator):
             boat_pose = boat_pose[0]
 
         # Find the two points on either side of the line
-        perpendicular_points = [(center_point[0] + perpendicular_vector[0] * offset_distance,
-                                 center_point[1] + perpendicular_vector[1] * offset_distance),
-                                (center_point[0] + perpendicular_vector[0] * -offset_distance,
-                                 center_point[1] + perpendicular_vector[1] * -offset_distance)]
+        perpendicular_points = [
+            (center_point[0] + perpendicular_vector[0] * offset_distance,
+             center_point[1] + perpendicular_vector[1] * offset_distance),
+            (center_point[0] + perpendicular_vector[0] * -offset_distance,
+             center_point[1] + perpendicular_vector[1] * -offset_distance)]
 
         # Sort them such that the point on the same side of the boat is first
-        if (perpendicular_points[0][0] - boat_pose[0]) ** 2 + (perpendicular_points[0][1] - boat_pose[1]) ** 2 > \
-                (perpendicular_points[1][0] - boat_pose[0]) ** 2 + (perpendicular_points[1][1] - boat_pose[1]) ** 2:
+        if (perpendicular_points[0][0] - boat_pose[0]) ** 2 + (perpendicular_points[0][1] - boat_pose[1]) ** 2 > (
+                perpendicular_points[1][0] - boat_pose[0]) ** 2 + (perpendicular_points[1][1] - boat_pose[1]) ** 2:
             perpendicular_points = [
                 perpendicular_points[1], perpendicular_points[0]]
 

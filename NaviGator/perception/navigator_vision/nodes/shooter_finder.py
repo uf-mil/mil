@@ -40,8 +40,8 @@ def rect_lines(rect):
 
 
 def dist_from_line(p, line, J):
-    return (p - line[0]).dot(line[1]), numpy.array([-line[1][0], -
-                                                    line[1][1], p[0] - line[0][0], p[1] - line[0][1]]).dot(J)
+    return (p - line[0]).dot(line[1]), numpy.array([-line[1][0], - \
+            line[1][1], p[0] - line[0][0], p[1] - line[0][1]]).dot(J)
 
 
 def dist_from_rect(p, rect):
@@ -147,8 +147,8 @@ def main():
             print transform._p
             gen = (transform._q_mat.dot(gen) +
                    numpy.vstack([transform._p] * gen.shape[1]).T).T
-            good_points = numpy.array([(x[0], x[1]) for x in gen if x[2] >
-                                       Z_MIN and math.hypot(x[0] - center[0], x[1] - center[1]) < RADIUS])
+            good_points = numpy.array([(x[0], x[1]) for x in gen if x[2] > Z_MIN and math.hypot(
+                x[0] - center[0], x[1] - center[1]) < RADIUS])
             print 'end'
 
             if len(good_points) < 10:
@@ -203,10 +203,19 @@ def main():
                 normal = numpy.array([math.cos(angle), math.sin(angle)])
                 p = numpy.array(rect[0]) + (rect[1][0] if i %
                                             2 == 0 else rect[1][1]) / 2 * normal
-                possibilities.append((normal, p, transformations.quaternion_about_axis(
-                    angle, [0, 0, 1]), rect[1][0] if i % 2 == 1 else rect[1][1]))
-            best = max(possibilities, key=lambda normal_p_q_size: (
-                msg_helpers.ros_to_np_3D(odom.pose.pose.position)[:2] - rect[0]).dot(normal_p_q_size[0]))
+                possibilities.append(
+                    (normal, p, transformations.quaternion_about_axis(
+                        angle, [
+                            0, 0, 1]), rect[1][0] if i %
+                        2 == 1 else rect[1][1]))
+            best = max(
+                possibilities,
+                key=lambda normal_p_q_size: (
+                    msg_helpers.ros_to_np_3D(
+                        odom.pose.pose.position)[
+                        :2] -
+                    rect[0]).dot(
+                    normal_p_q_size[0]))
 
             print 'side length:', best[-1]
             if abs(best[-1] - 1.8) > .25:

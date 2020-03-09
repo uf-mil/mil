@@ -73,15 +73,18 @@ class RobotXStartServices:
         self.kill_listener.wait_for_server()
 
         # setup all services
-        self.service_entrance_exit_gate_message = rospy.Service("entrance_exit_gate_message",
-                                                                MessageExtranceExitGate,
-                                                                self.handle_entrance_exit_gate_message)
-        self.service_identify_symbols_dock_message = rospy.Service("identify_symbols_dock_message",
-                                                                   MessageIdentifySymbolsDock,
-                                                                   self.handle_identify_symbols_dock_message)
-        self.service_detect_deliver_message = rospy.Service("detect_deliver_message",
-                                                            MessageDetectDeliver,
-                                                            self.handle_detect_deliver_message)
+        self.service_entrance_exit_gate_message = rospy.Service(
+            "entrance_exit_gate_message",
+            MessageExtranceExitGate,
+            self.handle_entrance_exit_gate_message)
+        self.service_identify_symbols_dock_message = rospy.Service(
+            "identify_symbols_dock_message",
+            MessageIdentifySymbolsDock,
+            self.handle_identify_symbols_dock_message)
+        self.service_detect_deliver_message = rospy.Service(
+            "detect_deliver_message",
+            MessageDetectDeliver,
+            self.handle_detect_deliver_message)
 
         # start sending heartbeat every second
         rospy.Timer(rospy.Duration(1), self.handle_heartbeat_message)
@@ -119,9 +122,15 @@ class RobotXStartServices:
         self.update_system_mode()
         hst_date_time = self.get_hst_date_time()
 
-        message = self.robotx_heartbeat_message.to_string(self.delim, self.team_id, hst_date_time,
-                                                          self.gps_array, self.odom, self.auv_status,
-                                                          self.system_mode, self.use_test_data)
+        message = self.robotx_heartbeat_message.to_string(
+            self.delim,
+            self.team_id,
+            hst_date_time,
+            self.gps_array,
+            self.odom,
+            self.auv_status,
+            self.system_mode,
+            self.use_test_data)
         self.robotx_client.send_message(message)
 
     def handle_entrance_exit_gate_message(self, data):
@@ -131,8 +140,8 @@ class RobotXStartServices:
                 rospy.sleep(1 - seconds_elapsed)
         self.time_last_entrance_exit = rospy.get_time()
         hst_date_time = self.get_hst_date_time()
-        message = self.robotx_entrance_exit_gate_message.to_string(self.delim, self.team_id, hst_date_time,
-                                                                   data, self.use_test_data)
+        message = self.robotx_entrance_exit_gate_message.to_string(
+            self.delim, self.team_id, hst_date_time, data, self.use_test_data)
         self.robotx_client.send_message(message.message)
         return message
 
@@ -143,8 +152,8 @@ class RobotXStartServices:
                 rospy.sleep(1 - seconds_elapsed)
         self.time_last_scan_code = rospy.get_time()
         hst_date_time = self.get_hst_date_time()
-        message = self.robotx_scan_code_message.to_string(self.delim, self.team_id, hst_date_time,
-                                                          color_pattern, self.use_test_data)
+        message = self.robotx_scan_code_message.to_string(
+            self.delim, self.team_id, hst_date_time, color_pattern, self.use_test_data)
         self.robotx_client.send_message(message)
 
     def handle_identify_symbols_dock_message(self, data):
@@ -154,8 +163,8 @@ class RobotXStartServices:
                 rospy.sleep(1 - seconds_elapsed)
         self.time_last_identify_symbols = rospy.get_time()
         hst_date_time = self.get_hst_date_time()
-        message = self.robotx_identify_symbols_dock_message.to_string(self.delim, self.team_id, hst_date_time,
-                                                                      data, self.use_test_data)
+        message = self.robotx_identify_symbols_dock_message.to_string(
+            self.delim, self.team_id, hst_date_time, data, self.use_test_data)
         self.robotx_client.send_message(message.message)
         return message
 
@@ -166,8 +175,8 @@ class RobotXStartServices:
                 rospy.sleep(1 - seconds_elapsed)
         self.time_last_detect_deliver = rospy.get_time()
         hst_date_time = self.get_hst_date_time()
-        message = self.robotx_detect_deliver_message.to_string(self.delim, self.team_id, hst_date_time,
-                                                               data, self.use_test_data)
+        message = self.robotx_detect_deliver_message.to_string(
+            self.delim, self.team_id, hst_date_time, data, self.use_test_data)
         self.robotx_client.send_message(message.message)
         return message
 

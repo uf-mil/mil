@@ -44,14 +44,17 @@ class Sub(object):
         return self._visual
 
     def make_visual(self, physical, position, thrust_indicators=False):
-        visual = self.rendering_world.add_mesh(Sub8Visual, position,
-                                               orientation=None, color=(20, 20, 20, 1), shininess=20)
+        visual = self.rendering_world.add_mesh(
+            Sub8Visual, position, orientation=None, color=(
+                20, 20, 20, 1), shininess=20)
 
         self.rendering_world.add_entity(
             rendering.Indicator, physical, radius=0.05)
 
-        self.rendering_world.add_entity(rendering.Indicator, physical, get_param=lambda o: np.array(o.last_force),
-                                        radius=0.025, color=(200, 10, 0), scaling_factor=0.01)
+        self.rendering_world.add_entity(
+            rendering.Indicator, physical, get_param=lambda o: np.array(
+                o.last_force), radius=0.025, color=(
+                200, 10, 0), scaling_factor=0.01)
 
         class ThrustGetter(object):
 

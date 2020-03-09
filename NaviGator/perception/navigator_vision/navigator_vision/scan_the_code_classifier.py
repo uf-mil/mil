@@ -13,8 +13,12 @@ class ScanTheCodeClassifier(GaussianColorClassifier):
         path = rospack.get_path('navigator_vision')
         training_file = os.path.join(path, 'config/stc/training.csv')
         labelfile = os.path.join(path, 'config/stc/labels.json')
-        super(ScanTheCodeClassifier, self).__init__(ScanTheCodeClassifier.CLASSES,
-                                                    training_file=training_file, labelfile=labelfile)
+        super(
+            ScanTheCodeClassifier,
+            self).__init__(
+            ScanTheCodeClassifier.CLASSES,
+            training_file=training_file,
+            labelfile=labelfile)
 
 
 if __name__ == '__main__':

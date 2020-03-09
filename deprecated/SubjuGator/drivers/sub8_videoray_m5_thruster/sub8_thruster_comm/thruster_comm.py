@@ -169,7 +169,9 @@ class ThrusterPort(object):
         '''Connect to and return a serial port'''
         try:
             serial_port = serial.Serial(
-                port_name, baudrate=self._baud_rate, timeout=self._read_timeout)
+                port_name,
+                baudrate=self._baud_rate,
+                timeout=self._read_timeout)
             serial_port.flushInput()
             return serial_port
         except serial.serialutil.SerialException:
@@ -408,7 +410,9 @@ class ThrusterPort(object):
         address, register_size, format_char, permission = Const.csr_address[register]
         if 'R' not in permission:
             raise VRCSRException(
-                'Register doesn\'t have read permission', node_id=node_id, register=register)
+                'Register doesn\'t have read permission',
+                node_id=node_id,
+                register=register)
 
         # Do serial comms
         self.send_VRCSR_request_packet(
@@ -420,12 +424,18 @@ class ThrusterPort(object):
         )
         response_bytearray = self.port.read(
             Const.header_size + 2 * Const.xsum_size + 1 + register_size)
-        rospy.logdebug('Received packet: "' +
-                       self.make_hex(response_bytearray), '" on port ' + self.port_name)
+        rospy.logdebug(
+            'Received packet: "' +
+            self.make_hex(response_bytearray),
+            '" on port ' +
+            self.port_name)
         valid, reason = self.validate_packet_integrity(response_bytearray)
         if not valid:
             raise VRCSRException(
-                'Response packet invalid', node_id=node_id, register=register, reason=reason)
+                'Response packet invalid',
+                node_id=node_id,
+                register=register,
+                reason=reason)
 
         # Unpack response packet
         response_dict = self.parse_VRCSR_response_packet(response_bytearray)
@@ -434,8 +444,10 @@ class ThrusterPort(object):
 
         # Validate packet
         if response_dict['node_id'] != node_id:
-            raise VRCSRException('Got response packet from wrong thruster', sent_to=node_id,
-                                 received_from=response_dict['node_id'])
+            raise VRCSRException(
+                'Got response packet from wrong thruster',
+                sent_to=node_id,
+                received_from=response_dict['node_id'])
 
         return register_val, self.make_hex(register_bytes)
 
@@ -463,7 +475,9 @@ class ThrusterPort(object):
             Const.xsum_size + 1 + register_size + Const.xsum_size
         if 'W' not in permission:
             raise VRCSRException(
-                'Register doesn\'t have write permission', node_id=node_id, register=register)
+                'Register doesn\'t have write permission',
+                node_id=node_id,
+                register=register)
 
         # Do serial comms
         self.send_VRCSR_request_packet(
@@ -475,12 +489,18 @@ class ThrusterPort(object):
                 struct.pack('<' + format_char, value))
         )
         response_bytearray = self.port.read(expected_response_length)
-        rospy.logdebug('Received packet: "' +
-                       self.make_hex(response_bytearray), '" on port ' + self.port_name)
+        rospy.logdebug(
+            'Received packet: "' +
+            self.make_hex(response_bytearray),
+            '" on port ' +
+            self.port_name)
         valid, reason = self.validate_packet_integrity(response_bytearray)
         if not valid:
             raise VRCSRException(
-                'Response packet invalid', node_id=node_id, register=register, reason=reason)
+                'Response packet invalid',
+                node_id=node_id,
+                register=register,
+                reason=reason)
 
         # Unpack response packet
         response_dict = self.parse_VRCSR_response_packet(response_bytearray)
@@ -489,8 +509,10 @@ class ThrusterPort(object):
 
         # Validate packet
         if response_dict['node_id'] != node_id:
-            raise VRCSRException('Got response packet from wrong thruster', sent_to=node_id,
-                                 received_from=response_dict['node_id'])
+            raise VRCSRException(
+                'Got response packet from wrong thruster',
+                sent_to=node_id,
+                received_from=response_dict['node_id'])
 
         return register_val, self.make_hex(register_bytes)
 
@@ -583,8 +605,9 @@ class ThrusterPort(object):
         ) - t0 < rospy.Duration(self._wait_for_line_timeout):
             rospy.sleep(0.001)
         if self.serial_busy and name in self.online_thruster_names:  # Don't raise if thruster is offline
-            rospy.logwarn('{} timed out waiting on busy serial line (waited {} s)'.
-                          format(name, (rospy.Time.now() - t0).to_sec()))
+            rospy.logwarn(
+                '{} timed out waiting on busy serial line (waited {} s)'. format(
+                    name, (rospy.Time.now() - t0).to_sec()))
 
         # Might not need to do this mutex around tx and rx together
         self.serial_busy = True  # Take ownership of line
@@ -596,8 +619,11 @@ class ThrusterPort(object):
 
         # Parse thrust response
         response_bytearray = self.port.read(Const.thrust_response_length)
-        rospy.logdebug('Received packet: "' +
-                       self.make_hex(response_bytearray), '" on port ' + self.port_name)
+        rospy.logdebug(
+            'Received packet: "' +
+            self.make_hex(response_bytearray),
+            '" on port ' +
+            self.port_name)
         t1 = rospy.Time.now()
         self.serial_busy = False  # Release line
         valid, reason = self.validate_packet_integrity(response_bytearray)
@@ -608,8 +634,9 @@ class ThrusterPort(object):
         if not valid:
             if name in self.online_thruster_names:
                 if self.CONFIDENT_MODE:
-                    rospy.logdebug_throttle(1, 'Got invalid response from thruster {} (packet: {})'.format(node_id,
-                                                                                                           self.make_hex(response_bytearray)))
+                    rospy.logdebug_throttle(
+                        1, 'Got invalid response from thruster {} (packet: {})'.format(
+                            node_id, self.make_hex(response_bytearray)))
                 else:
                     self.online_thruster_names.remove(name)
         else:
@@ -652,10 +679,7 @@ if __name__ == '__main__':
     node_id = thruster_definitions[thruster_name]['node_id']
 
     print'Test thruster comm over port {}, node_id {}, thruster name {}'.format(
-        port_info['port'],
-        node_id,
-        thruster_name
-    )
+        port_info['port'], node_id, thruster_name)
 
     tp = ThrusterPort(port_info, thruster_definitions)
     print tp.command_thruster(thruster_name, 0.04)

@@ -26,8 +26,9 @@ class MissionsImportTest(unittest.TestCase):
         for name, cls in inspect.getmembers(mission_module):
             if inspect.isclass(cls) and issubclass(cls, BaseMission):
                 self.assertTrue(
-                    issubclass(cls, base_mission),
-                    msg='{} is not a subclass of {}'.format(name, self.base_class))
+                    issubclass(
+                        cls, base_mission), msg='{} is not a subclass of {}'.format(
+                        name, self.base_class))
 
 
 if __name__ == '__main__':

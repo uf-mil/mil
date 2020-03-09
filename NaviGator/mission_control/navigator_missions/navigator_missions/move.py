@@ -22,17 +22,34 @@ class Move(Navigator):
                    forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet)')
         parser.add_argument('commands', type=str, nargs='*',
                             help='Pose editor command to run')
-        parser.add_argument('-m', '--movetype', type=str, default='drive',
-                            help='Move type. See lqrrt documentation for info on how to use this.')
-        parser.add_argument('-f', '--focus', type=str,
-                            help='Point to focus on. See lqrrt documentation for info on how to use this. \
+        parser.add_argument(
+            '-m',
+            '--movetype',
+            type=str,
+            default='drive',
+            help='Move type. See lqrrt documentation for info on how to use this.')
+        parser.add_argument(
+            '-f',
+            '--focus',
+            type=str,
+            help='Point to focus on. See lqrrt documentation for info on how to use this. \
                                   If not specified, default to focusing around clicked point. ex. "[10, 2.3, 1]"')
-        parser.add_argument('-p', '--plantime', type=float,
-                            help='Time given to the planner for it\'s first plan.')
-        parser.add_argument('-b', '--blind', action='store_true',
-                            help='Move without looking at the ogrid. DANGEROUS.')
-        parser.add_argument('-sf', '--speedfactor', type=str, default="[1, 1, 1]",
-                            help='Speed to execute the command, don\'t go too much higher than 1 on the real boat. \
+        parser.add_argument(
+            '-p',
+            '--plantime',
+            type=float,
+            help='Time given to the planner for it\'s first plan.')
+        parser.add_argument(
+            '-b',
+            '--blind',
+            action='store_true',
+            help='Move without looking at the ogrid. DANGEROUS.')
+        parser.add_argument(
+            '-sf',
+            '--speedfactor',
+            type=str,
+            default="[1, 1, 1]",
+            help='Speed to execute the command, don\'t go too much higher than 1 on the real boat. \
                                   Use like "[1, 1, .2]" to reduce rotation speed to 20% max or just ".5"\
                                   to reduce x, y, and rotational speed to 50% max.')
         cls.parser = parser

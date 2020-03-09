@@ -46,7 +46,11 @@ class OccGridUtils(object):
 
         p = Point(x=-starting_pose.x * res, y=-starting_pose.y * res, z=0)
         q = Quaternion(
-            *tf.transformations.quaternion_from_euler(0, 0, starting_pose.theta))
+            *
+            tf.transformations.quaternion_from_euler(
+                0,
+                0,
+                starting_pose.theta))
         self.meta_data.origin = Pose(position=p, orientation=q)
 
         rospy.Service('/reset_occ_grid', Empty, self.reset_grid)
@@ -166,8 +170,12 @@ class Searcher():
         np_pose = msg_helpers.pose_to_numpy(srv.intial_position)
         rot_mat = make_2D_rotation(
             tf.transformations.euler_from_quaternion(np_pose[1])[2])
-        coor = np.append(np.dot(rot_mat, next(self.poly_generator)) * srv.search_radius * 1.75, 0) \
-            + np_pose[0]
+        coor = np.append(
+            np.dot(
+                rot_mat,
+                next(
+                    self.poly_generator)) * srv.search_radius * 1.75,
+            0) + np_pose[0]
 
         # if self.current_search > self.max_searches:
         #     rospy.logwarn("Searched {} times. Marker not found.".format(self.max_searches))

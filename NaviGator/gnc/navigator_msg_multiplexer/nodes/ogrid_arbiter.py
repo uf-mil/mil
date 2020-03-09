@@ -326,10 +326,14 @@ class OGridServer:
                         np_grid[start_y:end_y, start_x:end_x] += to_add
                 except Exception as e:
                     fprint(
-                        "Exception caught, probably a dimension mismatch:", msg_color='red')
+                        "Exception caught, probably a dimension mismatch:",
+                        msg_color='red')
                     print e
-                    fprint("w: {}, h: {}".format(global_ogrid.info.width,
-                                                 global_ogrid.info.height), msg_color='red')
+                    fprint(
+                        "w: {}, h: {}".format(
+                            global_ogrid.info.width,
+                            global_ogrid.info.height),
+                        msg_color='red')
 
         if self.draw_bounds and self.enforce_bounds:
             ogrid_bounds = transform_enu_to_ogrid(

@@ -240,7 +240,7 @@ class BuoyFinder(object):
         roi_y = int(self.roi_y * height)
         roi_height = height - int(self.roi_height * height)
         self.roi = (0, roi_y, roi_height, image.shape[1])
-        self.last_image = image[self.roi[1]:self.roi[2], self.roi[0]:self.roi[3]]
+        self.last_image = image[self.roi[1]                                :self.roi[2], self.roi[0]:self.roi[3]]
         self.image_area = self.last_image.shape[0] * self.last_image.shape[1]
 
         if self.debug_ros:
@@ -324,8 +324,9 @@ class BuoyFinder(object):
         mask = cv2.erode(mask, kernel, iterations=2)
         mask = cv2.dilate(mask, kernel, iterations=2)
 
-        _, contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE,
-                                          offset=(self.roi[0], self.roi[1]))
+        _, contours, _ = cv2.findContours(
+            mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE, offset=(
+                self.roi[0], self.roi[1]))
         if self.debug_ros:
             cv2.add(self.mask_image.copy(), buoy.cv_colors,
                     mask=mask, dst=self.mask_image)
@@ -340,8 +341,12 @@ class BuoyFinder(object):
         center, radius = cv2.minEnclosingCircle(cnt)
 
         if self.debug_ros:
-            cv2.circle(self.mask_image, (int(center[0] - self.roi[0]), int(center[1]) - self.roi[1]),
-                       int(radius), buoy.cv_colors, 4)
+            cv2.circle(self.mask_image,
+                       (int(center[0] - self.roi[0]),
+                        int(center[1]) - self.roi[1]),
+                       int(radius),
+                       buoy.cv_colors,
+                       4)
 
         try:
             self.tf_listener.waitForTransform(

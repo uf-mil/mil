@@ -130,8 +130,11 @@ class ThrusterDriver(object):
         # service)
         self.thruster_info_service = rospy.Service(
             'thrusters/thruster_info', ThrusterInfo, self.get_thruster_info)
-        self.status_publishers = {name: rospy.Publisher('thrusters/status/' + name, ThrusterStatus, queue_size=10)
-                                  for name in self.thruster_to_port_map.keys()}
+        self.status_publishers = {
+            name: rospy.Publisher(
+                'thrusters/status/' + name,
+                ThrusterStatus,
+                queue_size=10) for name in self.thruster_to_port_map.keys()}
 
         # These alarms require this service to be available before things will
         # work
@@ -183,12 +186,16 @@ class ThrusterDriver(object):
                     # Set firmware settings
                     port = self.ports[port_name]
                     node_id = thruster_definitions[thruster_name]['node_id']
-                    config_path = (rospack.get_path('sub8_videoray_m5_thruster') + '/config/firmware_settings/' +
-                                   thruster_name + '.yaml')
-                    rospy.loginfo('Configuring {} with settings specified in {}.'.format(thruster_name,
-                                                                                         config_path))
-                    port.set_registers_from_dict(node_id=node_id,
-                                                 reg_dict=rosparam.load_file(config_path)[0][0])
+                    config_path = (
+                        rospack.get_path('sub8_videoray_m5_thruster') +
+                        '/config/firmware_settings/' +
+                        thruster_name +
+                        '.yaml')
+                    rospy.loginfo(
+                        'Configuring {} with settings specified in {}.'.format(
+                            thruster_name, config_path))
+                    port.set_registers_from_dict(
+                        node_id=node_id, reg_dict=rosparam.load_file(config_path)[0][0])
                     # Necessary for some settings to take effect
                     port.reboot_thruster(node_id)
 
@@ -243,8 +250,9 @@ class ThrusterDriver(object):
         thruster_model = target_port.thruster_info[name]
 
         if thrust < thruster_model.thrust_bounds[0] or thrust > thruster_model.thrust_bounds[1]:
-            rospy.logwarn('Tried to command thrust ({}) outside of physical thrust bounds ({})'.format(
-                thrust, thruster_model.thrust_bounds))
+            rospy.logwarn(
+                'Tried to command thrust ({}) outside of physical thrust bounds ({})'.format(
+                    thrust, thruster_model.thrust_bounds))
 
         if name in self.failed_thrusters:
             if not np.isclose(thrust, 0):
@@ -318,8 +326,9 @@ class ThrusterDriver(object):
             for code, fault_name in fault_codes.items():
                 if code & fault != 0:
                     faults.append(fault_name)
-            rospy.logwarn("Thruster: {} has entered fault with status {}".format(
-                name, message_keyword_args))
+            rospy.logwarn(
+                "Thruster: {} has entered fault with status {}".format(
+                    name, message_keyword_args))
             rospy.logwarn("Fault causes are: {}".format(faults))
         return
 

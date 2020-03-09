@@ -9,8 +9,9 @@ import rospy
 all_topics = rospy.get_published_topics()
 topics = [topic[0] for topic in all_topics if topic[1] == 'sensor_msgs/Image']
 
-usage_msg = ("Name an image topic, we'll subscribe to it and grab the first image we can. " +
-             "Then click a rectangle around the area of interest")
+usage_msg = (
+    "Name an image topic, we'll subscribe to it and grab the first image we can. " +
+    "Then click a rectangle around the area of interest")
 desc_msg = "A tool for making threshold determination fun!"
 
 parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)

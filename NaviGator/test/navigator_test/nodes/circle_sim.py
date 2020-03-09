@@ -59,8 +59,8 @@ class Sim(object):
         self.resolution = 0.3
         self.height = bf_size * 3
         self.width = bf_size * 3
-        self.origin = mil_tools.numpy_quat_pair_to_pose([-bf_size, -bf_size, 0],
-                                                        [0, 0, 0, 1])
+        self.origin = mil_tools.numpy_quat_pair_to_pose(
+            [-bf_size, -bf_size, 0], [0, 0, 0, 1])
 
         self.publish_ogrid = lambda *args: self.ogrid_pub.publish(
             self.get_message())
@@ -83,10 +83,13 @@ class Sim(object):
         self.grid = np.zeros(
             (self.height / self.resolution, self.width / self.resolution))
         # Transforms points from ENU to ogrid frame coordinates
-        self.t = np.array([[1 / self.resolution, 0, -self.origin.position.x / self.resolution],
-                           [0, 1 / self.resolution, -
-                               self.origin.position.y / self.resolution],
-                           [0, 0, 1]])
+        self.t = np.array([[1 /
+                            self.resolution, 0, -
+                            self.origin.position.x /
+                            self.resolution], [0, 1 /
+                                               self.resolution, -
+                                               self.origin.position.y /
+                                               self.resolution], [0, 0, 1]])
 
         return lambda point: self.t.dot(np.append(point[:2], 1))[:2]
 
@@ -152,7 +155,8 @@ class Sim(object):
     def get_message(self):
         if self.grid is None:
             fprint(
-                "Ogrid was requested but no ogrid was found. Using blank.", msg_color='yellow')
+                "Ogrid was requested but no ogrid was found. Using blank.",
+                msg_color='yellow')
             self.grid = np.zeros(
                 (self.height / self.resolution, self.width / self.resolution))
 

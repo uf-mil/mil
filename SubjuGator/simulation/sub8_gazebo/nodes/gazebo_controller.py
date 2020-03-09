@@ -110,8 +110,8 @@ class GazeboInterface(object):
             twist = msg.twist[target_index]
 
             # Add position offset to make the start position (0, 0, -depth)
-            position_np, orientation_np = mil_ros_tools.pose_to_numpy(msg.pose[
-                                                                      target_index])
+            position_np, orientation_np = mil_ros_tools.pose_to_numpy(
+                msg.pose[target_index])
             pose = mil_ros_tools.numpy_quat_pair_to_pose(
                 position_np - self.position_offset, orientation_np)
 

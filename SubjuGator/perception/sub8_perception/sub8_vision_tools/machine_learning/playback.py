@@ -14,14 +14,17 @@ if __name__ == '__main__':
     desc_msg = "glhf"
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
-    parser.add_argument(dest='file_name',
-                        help="Pass the path to a bag, the start of an image sequence, or 'video' for a webcam.")
+    parser.add_argument(
+        dest='file_name',
+        help="Pass the path to a bag, the start of an image sequence, or 'video' for a webcam.")
     parser.add_argument(
         dest='classifer',
         type=str,
         help="Name of the classifer to use. Right now only sklearn classifers.")
     parser.add_argument(
-        '--topic', type=str, help="Name of the topic to use in a bag or the usb camera number.")
+        '--topic',
+        type=str,
+        help="Name of the topic to use in a bag or the usb camera number.")
 
     args = parser.parse_args(sys.argv[1:])
 

@@ -82,14 +82,16 @@ class RobotXHeartbeatMessage:
                                                          delim,
                                                          north_south)
 
-        second_half_data = "{0}{1}{2}{3}{4}{5}{6}{7}{8}".format(longitude,
-                                                                delim,
-                                                                east_west,
-                                                                delim,
-                                                                team_id,
-                                                                delim, str(
-                                                                    system_mode), delim,
-                                                                str(auv_status))
+        second_half_data = "{0}{1}{2}{3}{4}{5}{6}{7}{8}".format(
+            longitude,
+            delim,
+            east_west,
+            delim,
+            team_id,
+            delim,
+            str(system_mode),
+            delim,
+            str(auv_status))
 
         full_data = first_half_data + delim + second_half_data
 
@@ -126,19 +128,10 @@ class RobotXEntranceExitGateMessage:
         else:
             light_buoy_active_letter = "N"
 
-        data = "{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}".format(self.message_id,
-                                                                   delim,
-                                                                   hst_date_time,
-                                                                   delim,
-                                                                   team_id,
-                                                                   delim,
-                                                                   str(data.entrance_gate),
-                                                                   delim,
-                                                                   str(data.exit_gate),
-                                                                   delim,
-                                                                   light_buoy_active_letter,
-                                                                   delim,
-                                                                   data.light_pattern)
+        data = "{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}".format(
+            self.message_id, delim, hst_date_time, delim, team_id, delim, str(
+                data.entrance_gate), delim, str(
+                data.exit_gate), delim, light_buoy_active_letter, delim, data.light_pattern)
 
         # test data
         if use_test_data:

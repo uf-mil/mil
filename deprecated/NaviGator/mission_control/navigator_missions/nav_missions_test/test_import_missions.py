@@ -21,8 +21,10 @@ class ImportMissionsTest(unittest.TestCase):
         import os
         import rospkg
         missions = {}
-        for module in os.listdir(os.path.join(
-                rospkg.RosPack().get_path("navigator_missions"), 'nav_missions/')):
+        for module in os.listdir(
+            os.path.join(
+                rospkg.RosPack().get_path("navigator_missions"),
+                'nav_missions/')):
             if module[0] == '_' or module[-3:] != '.py':
                 continue
             missions[module[:-3]] = None
@@ -31,8 +33,11 @@ class ImportMissionsTest(unittest.TestCase):
             except Exception as e:
                 missions[module[:-3]] = e
         for mission in missions:
-            self.assertIsNone(missions[mission], msg="Error with mission {}: {}".format(
-                mission, missions[mission]))
+            self.assertIsNone(
+                missions[mission],
+                msg="Error with mission {}: {}".format(
+                    mission,
+                    missions[mission]))
 
 
 if __name__ == '__main__':

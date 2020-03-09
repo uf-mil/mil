@@ -16,8 +16,11 @@ class BBOXPCODAR(object):
         self.max_distance = 20.
         self.camera_model = None
         self.confidence_thresh = 0.
-        self.camera_info_sub = rospy.Subscriber('/camera/front/right/camera_info',
-                                                CameraInfo, self.camera_info_cb, queue_size=1)
+        self.camera_info_sub = rospy.Subscriber(
+            '/camera/front/right/camera_info',
+            CameraInfo,
+            self.camera_info_cb,
+            queue_size=1)
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(30))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
         self.cached_objects = {}
@@ -51,8 +54,8 @@ class BBOXPCODAR(object):
             return
         # Get transform from enu to camera currently
         try:
-            transform = self.tf_buffer.lookup_transform(msg.header.frame_id, "enu",
-                                                        msg.header.stamp, timeout=rospy.Duration(3, ))
+            transform = self.tf_buffer.lookup_transform(
+                msg.header.frame_id, "enu", msg.header.stamp, timeout=rospy.Duration(3, ))
         except tf2_ros.TransformException as e:
             rospy.logwarn(e)
             return

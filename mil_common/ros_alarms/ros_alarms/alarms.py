@@ -111,8 +111,14 @@ class Alarm(object):
         # Not a tuple, just an int. The severities should match
         return self.severity == severity
 
-    def add_callback(self, funct, call_when_raised=True, call_when_cleared=True,
-                     severity_required=(0, 5)):
+    def add_callback(
+        self,
+        funct,
+        call_when_raised=True,
+        call_when_cleared=True,
+        severity_required=(
+            0,
+            5)):
         ''' Deals with adding handler function callbacks
         The user can specify if the function should be run on a raise or clear
         This will call the function when added if that condition is met.
@@ -212,8 +218,11 @@ class AlarmBroadcaster(object):
         if timeout is not None and timeout < 1.5:
             self._alarm_set.wait_for_service(timeout=timeout)
         else:
-            wait_for_service(self._alarm_set, warn_time=1.0,
-                             warn_msg='Waiting for alarm server..', timeout=timeout)
+            wait_for_service(
+                self._alarm_set,
+                warn_time=1.0,
+                warn_msg='Waiting for alarm server..',
+                timeout=timeout)
         rospy.logdebug('alarm server connected')
 
     def _generate_request(self, raised, node_name=None, problem_description="",
@@ -288,8 +297,11 @@ class AlarmListener(object):
         if timeout is not None and timeout < 1.5:
             self._alarm_get.wait_for_service(timeout=timeout)
         else:
-            wait_for_service(self._alarm_get, warn_time=1.0,
-                             warn_msg='Waiting for alarm server..', timeout=timeout)
+            wait_for_service(
+                self._alarm_get,
+                warn_time=1.0,
+                warn_msg='Waiting for alarm server..',
+                timeout=timeout)
         rospy.logdebug('alarm server connected')
         self.get_alarm()  # Now that we have service, update callbacks
 
@@ -331,8 +343,14 @@ class AlarmListener(object):
         # Not a tuple or list, just an int. The severities should match
         return self._last_alarm.severity == severity
 
-    def add_callback(self, funct, call_when_raised=True, call_when_cleared=True,
-                     severity_required=(0, 5)):
+    def add_callback(
+        self,
+        funct,
+        call_when_raised=True,
+        call_when_cleared=True,
+        severity_required=(
+            0,
+            5)):
         ''' Deals with adding function callbacks
         The user can specify if the function should be run on a raise or clear of this alarm.
 

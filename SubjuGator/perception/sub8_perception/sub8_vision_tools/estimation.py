@@ -8,8 +8,15 @@ import mayavi
 class ProjectionParticleFilter(object):
     _debug = True
 
-    def __init__(self, camera_model, num_particles=10000, max_Z=25, observation_noise=5.0, jitter_prob=0.2, salting=0.1,
-                 aggressive=True):
+    def __init__(
+            self,
+            camera_model,
+            num_particles=10000,
+            max_Z=25,
+            observation_noise=5.0,
+            jitter_prob=0.2,
+            salting=0.1,
+            aggressive=True):
         """A particle filter for estimating pose from multiple camera views
 
         ppf = ProjectionParticleFitler(image_geometry.PinholeCameraModel(msg.cameraInfo))
@@ -159,11 +166,13 @@ class ProjectionParticleFilter(object):
         else:
             # Doesn't yet work
             average_p = 0.2 * np.average(weights)
-            self.particles[:, weights < average_p] = np.reshape(-self.t, (3, 1)) + np.random.uniform(
-                self.min_Z,
-                self.max_Z,
-                size=self.particles[:, weights < average_p]
-            ) * unit_ray
+            self.particles[:,
+                           weights < average_p] = np.reshape(-self.t,
+                                                             (3,
+                                                              1)) + np.random.uniform(self.min_Z,
+                                                                                      self.max_Z,
+                                                                                      size=self.particles[:,
+                                                                                                          weights < average_p]) * unit_ray
 
             self.particles[:, weights < average_p] += np.random.normal(
                 scale=(self.salt, self.salt, self.salt), size=(

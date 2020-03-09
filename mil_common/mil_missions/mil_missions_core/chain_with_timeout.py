@@ -56,15 +56,18 @@ def MakeChainWithTimeout(base):
                         'invalid parameters, missing attribute "mission"')
                 if not cls.has_mission(mission['mission']):
                     raise Exception(
-                        'mission "{}" not available'.format(mission['mission']))
+                        'mission "{}" not available'.format(
+                            mission['mission']))
                 if 'parameters' not in mission:
                     mission['parameters'] = ''
                 try:
                     mission['parameters'] = cls.get_mission(
-                        mission['mission']).decode_parameters(mission['parameters'])
+                        mission['mission']).decode_parameters(
+                        mission['parameters'])
                 except Exception as e:
                     raise ParametersException(
-                        'Invalid parameters for {}: {}'.format(mission['mission'], str(e)))
+                        'Invalid parameters for {}: {}'.format(
+                            mission['mission'], str(e)))
                 if 'timeout' not in mission:
                     mission['timeout'] = 0
                 if 'required' not in mission:

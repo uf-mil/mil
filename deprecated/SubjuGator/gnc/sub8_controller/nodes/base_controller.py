@@ -18,8 +18,13 @@ lock = threading.Lock()
 
 class Controller(object):
 
-    def __init__(self, odom_topic='/truth/odom', sampling_period=0.1, control_period=None,
-                 history_length=100, waypoint_epsilon=1):
+    def __init__(
+            self,
+            odom_topic='/truth/odom',
+            sampling_period=0.1,
+            control_period=None,
+            history_length=100,
+            waypoint_epsilon=1):
         '''
         Note:
             Sampling period and control_period are specified in seconds
@@ -226,8 +231,16 @@ class Controller(object):
 
         # Setup Done ##### #
 
-        self.execute((current_position, current_linear_vel, current_orientation_q, current_angular_vel),
-                     (target_position, target_linear_vel, target_orientation_q, target_angular_vel), self.state_history)
+        self.execute(
+            (current_position,
+             current_linear_vel,
+             current_orientation_q,
+             current_angular_vel),
+            (target_position,
+             target_linear_vel,
+             target_orientation_q,
+             target_angular_vel),
+            self.state_history)
 
     def execute(self, xxx_todo_changeme, xxx_todo_changeme1, state_history):
         '''This is the default 'execute' implementation
@@ -269,7 +282,11 @@ class Controller(object):
 
 
 if __name__ == '__main__':
-    controller = Controller(odom_topic='/odom', sampling_period=0.01, control_period=0.01,
-                            history_length=100, waypoint_epsilon=1)
+    controller = Controller(
+        odom_topic='/odom',
+        sampling_period=0.01,
+        control_period=0.01,
+        history_length=100,
+        waypoint_epsilon=1)
     controller.start()
     rospy.spin()

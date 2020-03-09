@@ -19,10 +19,12 @@ class DetectDeliverTargetDetector(VisionNode):
             '~max_contour_score', default=0.03)
         self.pose_pub = rospy.Publisher("~pose", PoseStamped, queue_size=3)
         self.tracker = CentroidObjectsTracker(max_distance=20.0)
-        self.large_target_model = RectFinder(length=0.500126 + self.BORDER_THICKNESS_METERS,
-                                             width=0.500126 + self.BORDER_THICKNESS_METERS)
-        self.small_target_model = RectFinder(length=0.249936 + self.BORDER_THICKNESS_METERS,
-                                             width=0.249936 + self.BORDER_THICKNESS_METERS)
+        self.large_target_model = RectFinder(
+            length=0.500126 + self.BORDER_THICKNESS_METERS,
+            width=0.500126 + self.BORDER_THICKNESS_METERS)
+        self.small_target_model = RectFinder(
+            length=0.249936 + self.BORDER_THICKNESS_METERS,
+            width=0.249936 + self.BORDER_THICKNESS_METERS)
         self.image_mux = ImageMux(shape=(2, 2), labels=[
                                   'Blur', 'Threshold', 'Edges', 'Found'])
         self.debug_pub = Image_Publisher("~debug")

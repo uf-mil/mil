@@ -47,8 +47,11 @@ class OnlineBagger(object):
             return
         self.make_dicts()
 
-        self._action_server = SimpleActionServer(OnlineBagger.BAG_TOPIC, BagOnlineAction,
-                                                 execute_cb=self.start_bagging, auto_start=False)
+        self._action_server = SimpleActionServer(
+            OnlineBagger.BAG_TOPIC,
+            BagOnlineAction,
+            execute_cb=self.start_bagging,
+            auto_start=False)
         self.subscribe_loop()
         rospy.loginfo('Remaining Failed Topics: {}\n'.format(
             self.get_subscriber_list(False)))
@@ -170,8 +173,10 @@ class OnlineBagger(object):
             i = i + 1
             if i % 1000 == 0:
                 rospy.logdebug('still subscribing!')
-        rospy.loginfo("Subscribed to {} of {} topics, will try again every {} seconds".format(
-                      self.successful_subscription_count, len(self.subscriber_list), self.resubscribe_period))
+        rospy.loginfo(
+            "Subscribed to {} of {} topics, will try again every {} seconds".format(
+                self.successful_subscription_count, len(
+                    self.subscriber_list), self.resubscribe_period))
         self.resubscriber = rospy.Timer(rospy.Duration(
             self.resubscribe_period), self.subscribe)
 
@@ -200,8 +205,13 @@ class OnlineBagger(object):
                 msg_class = rostopic.get_topic_class(topic)
                 if msg_class[1] is not None:
                     self.successful_subscription_count += 1
-                    rospy.Subscriber(topic, msg_class[0],
-                                     lambda msg, _topic=topic: self.bagger_callback(msg, _topic))
+                    rospy.Subscriber(
+                        topic,
+                        msg_class[0],
+                        lambda msg,
+                        _topic=topic: self.bagger_callback(
+                            msg,
+                            _topic))
 
                     self.subscriber_list[topic] = (time, True)
 
@@ -264,8 +274,10 @@ class OnlineBagger(object):
 
         # verify streaming is popping off and recording topics
         if self.iteration_count % 100 == 0:
-            rospy.logdebug("{} has {} messages spanning {} seconds".format(
-                topic, self.get_topic_message_count(topic), round(time_diff.to_sec(), 2)))
+            rospy.logdebug(
+                "{} has {} messages spanning {} seconds".format(
+                    topic, self.get_topic_message_count(topic), round(
+                        time_diff.to_sec(), 2)))
 
         while time_diff > rospy.Duration(
                 self.subscriber_list[topic][0]) and not rospy.is_shutdown():
@@ -446,14 +458,30 @@ class OnlineBaggerClient(object):
 
 if __name__ == "__main__":
     argv = rospy.myargv()
-    parser = argparse.ArgumentParser(description='ROS node to maintain buffers to create bags of the past\
+    parser = argparse.ArgumentParser(
+        description='ROS node to maintain buffers to create bags of the past\
                                                   and client to call this node.')
-    parser.add_argument('-c', '--client', dest='client', action='store_true',
-                        help='Run as an online bagger client instead of server')
-    parser.add_argument('-d', '--duration', dest='time', type=float, default=0.0,
-                        help='Time in seconds to bag when running as client')
-    parser.add_argument('-t', '--topics', dest='topics', type=str, nargs='+', metavar='topic',
-                        help='List of topics to include in bag when running in client, bag all topics if not set')
+    parser.add_argument(
+        '-c',
+        '--client',
+        dest='client',
+        action='store_true',
+        help='Run as an online bagger client instead of server')
+    parser.add_argument(
+        '-d',
+        '--duration',
+        dest='time',
+        type=float,
+        default=0.0,
+        help='Time in seconds to bag when running as client')
+    parser.add_argument(
+        '-t',
+        '--topics',
+        dest='topics',
+        type=str,
+        nargs='+',
+        metavar='topic',
+        help='List of topics to include in bag when running in client, bag all topics if not set')
     parser.add_argument('-n', '--name', dest='name', type=str, default='',
                         help='name of bag to create when running as client')
     args = parser.parse_args(argv[1:])

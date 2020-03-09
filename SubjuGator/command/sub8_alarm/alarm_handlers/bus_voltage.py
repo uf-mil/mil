@@ -12,15 +12,19 @@ class BusVoltage(HandlerBase):
 
     def raised(self, alarm):
         if alarm.severity == 3 and self.previous_severity != 3:
-            subprocess.Popen('echo "Warning: bus voltage is low!" | wall', shell=True,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
+            subprocess.Popen(
+                'echo "Warning: bus voltage is low!" | wall',
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT)
             self.previous_severity = 3
 
         if alarm.severity == 5 and self.previous_severity != 5:
-            subprocess.Popen('echo "Error: Killing due to low bus voltage" | wall', shell=True,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
+            subprocess.Popen(
+                'echo "Error: Killing due to low bus voltage" | wall',
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT)
             self.previous_severity = 5
 
     def cleared(self, alarm):

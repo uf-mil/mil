@@ -55,7 +55,9 @@ class BagFixer():
             if not self.valid_topic(topic):
                 continue
             topic = self.fix_topic(topic)
-            if hasattr(msg, 'header') and msg.header._type == 'std_msgs/Header':
+            if hasattr(
+                    msg,
+                    'header') and msg.header._type == 'std_msgs/Header':
                 msg.header.frame_id = self.fix_frame(msg.header.frame_id)
             if msg._type == 'tf2_msgs/TFMessage' or msg._type == 'tf/tfMessage':
                 msg = self.fix_tf(msg)
@@ -102,24 +104,54 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fix bag topics/frame_ids')
     parser.add_argument('--in', '-i', dest='infile', type=str, required=True,
                         help='Bag to read and fix')
-    parser.add_argument('--out', '-o', type=str, dest='outfile',
-                        help='Bag to output with fixed content, defaults to INPUTFILENAME_fixed.bag')
-    parser.add_argument('--remap-topics', dest='topics', required=False, nargs='+', type=str,
-                        metavar='oldtopic:newtopic',
-                        help="list of topics to remap, seperated by a colon, ex /down_cam/:/camera/down/\
+    parser.add_argument(
+        '--out',
+        '-o',
+        type=str,
+        dest='outfile',
+        help='Bag to output with fixed content, defaults to INPUTFILENAME_fixed.bag')
+    parser.add_argument(
+        '--remap-topics',
+        dest='topics',
+        required=False,
+        nargs='+',
+        type=str,
+        metavar='oldtopic:newtopic',
+        help="list of topics to remap, seperated by a colon, ex /down_cam/:/camera/down/\
                               /my_odom:/odom\nIf ends in a slash (ex: /cameras/:/cams/,\
                               all topics after slash will be remaped")
-    parser.add_argument('--remap-frames', dest='frames', required=False, nargs='+', type=str,
-                        metavar='oldframe:newframe',
-                        help="list of frame_ids in headers to be maped, ex: my_camera:cam_front")
-    parser.add_argument('--start', required=False, type=float, metavar='TIME',
-                        help="duration in bag, in seconds, to start output bag")
+    parser.add_argument(
+        '--remap-frames',
+        dest='frames',
+        required=False,
+        nargs='+',
+        type=str,
+        metavar='oldframe:newframe',
+        help="list of frame_ids in headers to be maped, ex: my_camera:cam_front")
+    parser.add_argument(
+        '--start',
+        required=False,
+        type=float,
+        metavar='TIME',
+        help="duration in bag, in seconds, to start output bag")
     parser.add_argument('--stop', required=False, type=float, metavar='TIME',
                         help="duration in bag, in seconds, to stop output bag")
-    parser.add_argument('--keep-topics', dest='keep_topics', required=False, nargs='+', type=str, metavar='topic',
-                        help="if used, output bag will contain only this list of topics")
-    parser.add_argument('--ignore-topics', dest='ignore_topics', required=False, nargs='+', type=str, metavar='topic',
-                        help="if used, output bag will not contain these topics")
+    parser.add_argument(
+        '--keep-topics',
+        dest='keep_topics',
+        required=False,
+        nargs='+',
+        type=str,
+        metavar='topic',
+        help="if used, output bag will contain only this list of topics")
+    parser.add_argument(
+        '--ignore-topics',
+        dest='ignore_topics',
+        required=False,
+        nargs='+',
+        type=str,
+        metavar='topic',
+        help="if used, output bag will not contain these topics")
 
     args = parser.parse_args()
     if args.keep_topics and args.ignore_topics:

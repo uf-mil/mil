@@ -54,10 +54,27 @@ if __name__ == '__main__':
                         help='Topic of magnetic field to subscribe to')
     parser.add_argument('marker_topic', type=str, nargs='?',
                         default='marker', help='Topic to publish marker to')
-    parser.add_argument('--length', '-l', type=float, default=None,
-                        help='Length of vector to output. Default: do not scale')
-    parser.add_argument('--color', type=float, nargs=4, default=[0, 0, 1, 1], metavar=('R', 'G', 'B', 'A'),
-                        help='Color of vector to publish as floats RGBA 0 to 1')
+    parser.add_argument(
+        '--length',
+        '-l',
+        type=float,
+        default=None,
+        help='Length of vector to output. Default: do not scale')
+    parser.add_argument(
+        '--color',
+        type=float,
+        nargs=4,
+        default=[
+            0,
+            0,
+            1,
+            1],
+        metavar=(
+            'R',
+            'G',
+            'B',
+            'A'),
+        help='Color of vector to publish as floats RGBA 0 to 1')
     args = rospy.myargv()
     args = parser.parse_args(args[1:])
     rospy.init_node('mag_to_marker')

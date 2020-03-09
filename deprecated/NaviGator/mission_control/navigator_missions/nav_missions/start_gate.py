@@ -115,8 +115,12 @@ class StartGate(Navigator):
             b_mid_point).backward(setup_dist)
         target = setup.set_position(b_mid_point).forward(setup_dist)
 
-        ogrid = OgridFactory(f_left_buoy.position, f_right_buoy.position, target.position,
-                             left_b_pos=b_left_buoy.position, right_b_pos=b_right_buoy.position)
+        ogrid = OgridFactory(
+            f_left_buoy.position,
+            f_right_buoy.position,
+            target.position,
+            left_b_pos=b_left_buoy.position,
+            right_b_pos=b_right_buoy.position)
 
         defer.returnValue([ogrid, setup, target])
 
@@ -178,8 +182,8 @@ class OgridFactory():
         self.draw_lines(self.walls)
 
     def make_ogrid_transform(self):
-        self.origin = mil_tools.numpy_quat_pair_to_pose([self.x_lower, self.y_lower, 0],
-                                                        [0, 0, 0, 1])
+        self.origin = mil_tools.numpy_quat_pair_to_pose(
+            [self.x_lower, self.y_lower, 0], [0, 0, 0, 1])
         dx = self.x_upper - self.x_lower
         dy = self.y_upper - self.y_lower
         _max = max(dx, dy)
@@ -188,9 +192,13 @@ class OgridFactory():
         self.grid = np.zeros((dy / self.resolution, dx / self.resolution))
 
         # Transforms points from ENU to ogrid frame coordinates
-        self.t = np.array([[1 / self.resolution, 0, -self.x_lower / self.resolution],
-                           [0, 1 / self.resolution, -self.y_lower / self.resolution],
-                           [0, 0, 1]])
+        self.t = np.array([[1 /
+                            self.resolution, 0, -
+                            self.x_lower /
+                            self.resolution], [0, 1 /
+                                               self.resolution, -
+                                               self.y_lower /
+                                               self.resolution], [0, 0, 1]])
         self.transform = lambda point: self.t.dot(np.append(point[:2], 1))[:2]
 
     def get_size_and_build_walls(self):
@@ -234,14 +242,30 @@ class OgridFactory():
         right_cone_point = self.right_f + rot_buffer
 
         # Define bounds for the grid
-        self.x_lower = min(left_cone_point[0], right_cone_point[0],
-                           endpoint_left_f[0], endpoint_right_f[0], self.target[0]) - self.edge_buffer
-        self.x_upper = max(left_cone_point[0], right_cone_point[0],
-                           endpoint_left_f[0], endpoint_right_f[0], self.target[0]) + self.edge_buffer
-        self.y_lower = min(left_cone_point[1], right_cone_point[1],
-                           endpoint_left_f[1], endpoint_right_f[1], self.target[1]) - self.edge_buffer
-        self.y_upper = max(left_cone_point[1], right_cone_point[1],
-                           endpoint_left_f[1], endpoint_right_f[1], self.target[1]) + self.edge_buffer
+        self.x_lower = min(
+            left_cone_point[0],
+            right_cone_point[0],
+            endpoint_left_f[0],
+            endpoint_right_f[0],
+            self.target[0]) - self.edge_buffer
+        self.x_upper = max(
+            left_cone_point[0],
+            right_cone_point[0],
+            endpoint_left_f[0],
+            endpoint_right_f[0],
+            self.target[0]) + self.edge_buffer
+        self.y_lower = min(
+            left_cone_point[1],
+            right_cone_point[1],
+            endpoint_left_f[1],
+            endpoint_right_f[1],
+            self.target[1]) - self.edge_buffer
+        self.y_upper = max(
+            left_cone_point[1],
+            right_cone_point[1],
+            endpoint_left_f[1],
+            endpoint_right_f[1],
+            self.target[1]) + self.edge_buffer
 
         self.walls = [self.left_b, self.left_f, left_cone_point,
                       right_cone_point, self.right_f, self.right_b]

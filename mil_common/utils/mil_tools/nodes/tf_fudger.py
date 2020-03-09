@@ -22,8 +22,12 @@ parser.add_argument(dest='tf_parent',
                     help="Parent tf frame.")
 parser.add_argument(dest='tf_child',
                     help="Child tf frame.")
-parser.add_argument('--range', action='store', type=float, default=3,
-                    help="Maximum range allowed for linear displacement (in meters)")
+parser.add_argument(
+    '--range',
+    action='store',
+    type=float,
+    default=3,
+    help="Maximum range allowed for linear displacement (in meters)")
 
 args = parser.parse_args(sys.argv[1:])
 
@@ -120,8 +124,14 @@ while not rospy.is_shutdown():
     x, y, z = toTfLin(cv2.getTrackbarPos("x", "tf")), toTfLin(
         cv2.getTrackbarPos("y", "tf")), toTfLin(cv2.getTrackbarPos("z", "tf"))
     p = (x, y, z)
-    rpy = (toTfAng(cv2.getTrackbarPos("roll", "tf")), toTfAng(
-        cv2.getTrackbarPos("pitch", "tf")), toTfAng(cv2.getTrackbarPos("yaw", "tf")))
+    rpy = (
+        toTfAng(
+            cv2.getTrackbarPos(
+                "roll", "tf")), toTfAng(
+            cv2.getTrackbarPos(
+                "pitch", "tf")), toTfAng(
+            cv2.getTrackbarPos(
+                "yaw", "tf")))
     q = tf.transformations.quaternion_from_euler(*rpy)
 
     if (not p == p_last) or (not rpy == rpy_last):

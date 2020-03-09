@@ -30,8 +30,11 @@ class ActuatorBoard(CANDeviceHandle):
         # Wait some time for board to process command
         rospy.sleep(0.01)
         # Request the status of the valve just commanded to ensure it worked
-        self.send_data(CommandMessage.create_command_message(address=req.actuator, write=False).to_bytes(),
-                       can_id=SEND_ID)
+        self.send_data(
+            CommandMessage.create_command_message(
+                address=req.actuator,
+                write=False).to_bytes(),
+            can_id=SEND_ID)
         return {'success': True}
 
     def on_data(self, data):

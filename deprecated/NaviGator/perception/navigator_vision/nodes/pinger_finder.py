@@ -61,11 +61,16 @@ class PingerFinder(object):
         print rospkg.get_ros_package_path()
         print "PINGERFINDER: freq={p.freq:.0f}  amp={p.amplitude:.0f}".format(
             p=ping)
-        if abs(ping.freq - self.target_freq) < self.freq_tol and ping.amplitude > self.min_amp and self.listen:
+        if abs(
+                ping.freq -
+                self.target_freq) < self.freq_tol and ping.amplitude > self.min_amp and self.listen:
             trans, rot = None, None
             try:
                 self.tf_listener.waitForTransform(
-                    self.map_frame, self.hydrophone_frame, ping.header.stamp, rospy.Duration(0.25))
+                    self.map_frame,
+                    self.hydrophone_frame,
+                    ping.header.stamp,
+                    rospy.Duration(0.25))
                 trans, rot = self.tf_listener.lookupTransform(
                     self.map_frame, self.hydrophone_frame, ping.header.stamp)
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:

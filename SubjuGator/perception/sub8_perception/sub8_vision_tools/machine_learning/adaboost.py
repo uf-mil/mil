@@ -104,8 +104,11 @@ def main():
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument(dest='pkl',
                         help="The pickle data file to train on")
-    parser.add_argument('--output', type=str, help="Path to a file to output to (and overwrite)",
-                        default='adaboost.pkl')
+    parser.add_argument(
+        '--output',
+        type=str,
+        help="Path to a file to output to (and overwrite)",
+        default='adaboost.pkl')
 
     args = parser.parse_args(sys.argv[1:])
 

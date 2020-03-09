@@ -34,8 +34,11 @@ class MultilaterationNode(object):
         self.enabled = False
         self.last_pos = None
         self.global_frame = rospy.get_param('~global_frame', default='enu')
-        self.heading_sub = rospy.Subscriber('/hydrophones/direction',
-                                            Vector3Stamped, self.heading_cb, queue_size=10)
+        self.heading_sub = rospy.Subscriber(
+            '/hydrophones/direction',
+            Vector3Stamped,
+            self.heading_cb,
+            queue_size=10)
         self.position_pub = rospy.Publisher('/hydrophones/position',
                                             PointStamped, queue_size=1)
         self.enable_srv = rospy.Service('~enable', SetBool,
@@ -56,11 +59,13 @@ class MultilaterationNode(object):
             return
         try:
             # Transform ping into gloabl frame
-            transformed_vec = self.tfBuffer.transform(p_message,
-                                                      self.global_frame, rospy.Duration(2))
-            transformed_origin = self.tfBuffer.lookup_transform(self.global_frame,
-                                                                p_message.header.frame_id, p_message.header.stamp,
-                                                                rospy.Duration(2))
+            transformed_vec = self.tfBuffer.transform(
+                p_message, self.global_frame, rospy.Duration(2))
+            transformed_origin = self.tfBuffer.lookup_transform(
+                self.global_frame,
+                p_message.header.frame_id,
+                p_message.header.stamp,
+                rospy.Duration(2))
             vec = rosmsg_to_numpy(transformed_vec.vector)
             vec = vec / np.linalg.norm(vec)
             origin = \
@@ -94,7 +99,8 @@ class MultilaterationNode(object):
         # If no point could be determined, don't publish
         if where is None:
             rospy.logwarn_throttle(
-                10.0, 'Could not determine point; likely because too many lobs were filtered out due to intersections close to their origins')
+                10.0,
+                'Could not determine point; likely because too many lobs were filtered out due to intersections close to their origins')
             return
 
         # Publish point

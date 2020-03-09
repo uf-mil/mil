@@ -20,8 +20,12 @@ class OdomKill(HandlerBase):
     MAX_DISTANCE_METERS = 0.5
 
     def __init__(self):
-        self.hm = HeartbeatMonitor(self.alarm_name, "/odom", Odometry,
-                                   node_name="alarm_server", prd=self.TIMEOUT_SECONDS)
+        self.hm = HeartbeatMonitor(
+            self.alarm_name,
+            "/odom",
+            Odometry,
+            node_name="alarm_server",
+            prd=self.TIMEOUT_SECONDS)
         self.MAX_JUMP = 0.5
         self.launch_time = rospy.Time.now()
         self.last_time = self.launch_time
@@ -42,8 +46,9 @@ class OdomKill(HandlerBase):
             if jump > self.MAX_JUMP and not self._raised:
                 self._raised = True  # Avoid raising multiple times
                 rospy.logwarn('ODOM DISCONTINUITY DETECTED')
-                self.ab.raise_alarm(problem_description='ODOM DISCONTINUITY DETECTED. JUMPED {} METERS'.format(jump),
-                                    severity=5)
+                self.ab.raise_alarm(
+                    problem_description='ODOM DISCONTINUITY DETECTED. JUMPED {} METERS'.format(jump),
+                    severity=5)
         self.last_position = position
         self.last_time = odom.header.stamp
 

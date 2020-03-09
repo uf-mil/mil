@@ -25,16 +25,18 @@ class MissionPlannerTest(TestUnit):
         passed = True
         if len(my_res) != len(self.results):
             passed = False
-            fprint("EXPECTED RESULT {} DOES NOT MATCH ACTUAL RESULT {}. TEST FAILED".format(my_res, self.results),
-                   msg_color="red")
+            fprint(
+                "EXPECTED RESULT {} DOES NOT MATCH ACTUAL RESULT {}. TEST FAILED".format(
+                    my_res, self.results), msg_color="red")
             fprint("-----------\n\n\n\n", msg_color="red")
             return
         for i, result in enumerate(my_res):
             if result[0] != self.results[i][0] or result[1] != self.results[i][1]:
                 passed = False
         if not passed:
-            fprint("EXPECTED RESULT {} DOES NOT MATCH ACTUAL RESULT {}. TEST FAILED".format(my_res, self.results),
-                   msg_color="red")
+            fprint(
+                "EXPECTED RESULT {} DOES NOT MATCH ACTUAL RESULT {}. TEST FAILED".format(
+                    my_res, self.results), msg_color="red")
             fprint("-----------\n\n\n\n", msg_color="red")
         else:
             fprint("CONGRATS! TEST PASSED", msg_color="green")
@@ -93,11 +95,27 @@ class MissionPlannerTest(TestUnit):
 
         self.serv_markers = sg.spoof_service(
             "/database/requests", ObjectDBQuery, [all_marker])
-        self.serv_markers_empty = sg.spoof_service("/database/requests", ObjectDBQuery,
-                                                   [empty_resp, all_marker, all_marker, all_marker, all_marker,
-                                                    all_marker, all_marker, all_marker, all_marker,
-                                                    all_marker, all_marker, all_marker, all_marker,
-                                                    all_marker, all_marker, all_marker, all_marker])
+        self.serv_markers_empty = sg.spoof_service(
+            "/database/requests",
+            ObjectDBQuery,
+            [
+                empty_resp,
+                all_marker,
+                all_marker,
+                all_marker,
+                all_marker,
+                all_marker,
+                all_marker,
+                all_marker,
+                all_marker,
+                all_marker,
+                all_marker,
+                all_marker,
+                all_marker,
+                all_marker,
+                all_marker,
+                all_marker,
+                all_marker])
 
         # self.missing_marker = sg.spoof_service("/database/requests", ObjectDBQuery, [stc_response,
         #                                                                                   shooter_response,

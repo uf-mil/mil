@@ -297,10 +297,18 @@ class OrangeRectangleFinder():
         if self.debug_ros:
             # Draw coordinate axis onto object using pose estimate to project
             refs, _ = cv2.projectPoints(
-                self.REFERENCE_POINTS, rvec, tvec, self.cam.intrinsicMatrix(), np.zeros((5, 1)))
+                self.REFERENCE_POINTS, rvec, tvec, self.cam.intrinsicMatrix(), np.zeros(
+                    (5, 1)))
             refs = np.array(refs, dtype=np.int)
-            cv2.line(self.last_image, (refs[0][0][0], refs[0][0][1]),
-                     (refs[1][0][0], refs[1][0][1]), (0, 0, 255))  # X axis refs
+            cv2.line(
+                self.last_image,
+                (refs[0][0][0],
+                 refs[0][0][1]),
+                (refs[1][0][0],
+                 refs[1][0][1]),
+                (0,
+                 0,
+                 255))  # X axis refs
             cv2.line(self.last_image, (refs[0][0][0], refs[0][0][1]),
                      (refs[2][0][0], refs[2][0][1]), (0, 255, 0))  # Y axis ref
             cv2.line(self.last_image, (refs[0][0][0], refs[0][0][1]),
@@ -321,9 +329,11 @@ class OrangeRectangleFinder():
         if match > self.shape_match_thresh:
             return False
         # Checks that contour is 4 sided
-        corners = self.rect_model.get_corners(contour, debug_image=self.last_image,
-                                              epsilon_range=self.epsilon_range,
-                                              epsilon_step=self.epsilon_step)
+        corners = self.rect_model.get_corners(
+            contour,
+            debug_image=self.last_image,
+            epsilon_range=self.epsilon_range,
+            epsilon_step=self.epsilon_step)
         if corners is None:
             return False
         self.last2d = self.rect_model.get_pose_2D(corners)

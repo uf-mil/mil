@@ -111,10 +111,16 @@ class Shooter(Plugin):
             "green": "QWidget {background-color:#B1EB00;}",
             "yellow": "QWidget {background-color:#FDEF14;}"
         }
-        self.status_colors = {"green": ["Standby", "Loaded"],
-                              "yellow": ["Loading", "Firing", "Canceled", "Manual"],
-                              "red": ["Unknown"]
-                              }
+        self.status_colors = {
+            "green": [
+                "Standby",
+                "Loaded"],
+            "yellow": [
+                "Loading",
+                "Firing",
+                "Canceled",
+                "Manual"],
+            "red": ["Unknown"]}
 
         # Creates a monitor that update the shooter status on the GUI
         # periodically

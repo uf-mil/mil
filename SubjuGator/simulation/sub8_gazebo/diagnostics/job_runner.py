@@ -70,10 +70,7 @@ class JobManager(object):
                 yield current_job.setup()
             except Exception as error:
                 response = "On test #{}, a {} raised an error on test setup, error:\n{}".format(
-                    current_loop,
-                    current_job._job_name,
-                    error.message
-                )
+                    current_loop, current_job._job_name, error.message)
                 self.log(response)
                 continue
 
@@ -86,10 +83,7 @@ class JobManager(object):
                 success, description = yield current_job.run(self.sub)
             except Exception as error:
                 response = "On test #{}, a {} raised an error on run, error:\n{}".format(
-                    current_loop,
-                    current_job._job_name,
-                    error.message
-                )
+                    current_loop, current_job._job_name, error.message)
                 self.log(response)
                 continue
 
@@ -182,8 +176,9 @@ def main(args):
 
 
 if __name__ == '__main__':
-    usage_msg = ("Input the name of the test you would like to run.\nExamples: " +
-                 "\n\n\trosrun sub8_gazebo job_runner align_marker_test")
+    usage_msg = (
+        "Input the name of the test you would like to run.\nExamples: " +
+        "\n\n\trosrun sub8_gazebo job_runner align_marker_test")
     desc_msg = "-- Mr. Job Manager --"
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument(

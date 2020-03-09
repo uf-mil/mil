@@ -11,9 +11,20 @@ from mil_misc_tools import ThrowingArgumentParser
 
 UNITS = {'m': 1, 'ft': 0.3048, 'yard': 0.9144, 'rad': 1, 'deg': 0.0174533}
 SHORTHAND = {
-    "f": "strafe_forward", "b": "strafe_backward", "l": "strafe_left", "r": "strafe_right", "rf":
-    "forward", "rb": "backward", "rl": "left", "rr": "right", "yl": "yaw_left", "yr": "yaw_right", "pu": "pitch_up", "pd": "pitch_down",
-    "d": "down", "u": "up"}
+    "f": "strafe_forward",
+    "b": "strafe_backward",
+    "l": "strafe_left",
+    "r": "strafe_right",
+    "rf": "forward",
+    "rb": "backward",
+    "rl": "left",
+    "rr": "right",
+    "yl": "yaw_left",
+    "yr": "yaw_right",
+    "pu": "pitch_up",
+    "pd": "pitch_down",
+    "d": "down",
+    "u": "up"}
 
 
 class Move(SubjuGator):
@@ -32,8 +43,11 @@ class Move(SubjuGator):
                                                backward 2ft (moves backward 2 feet)\
                                                \n\t forward 1 backward 2ft\
                                                (moves forward 1 meter then from there moves backward 2 feet), ')
-        parser.add_argument('commands', type=str, nargs='*',
-                            help='Pose editor commands to run each followed by an argument to pass to the command\
+        parser.add_argument(
+            'commands',
+            type=str,
+            nargs='*',
+            help='Pose editor commands to run each followed by an argument to pass to the command\
                                   (distance or angle usally). \
                                   Optionally a unit can be added if a non-standard unit is desired.')
         parser.add_argument('-s', '--speed', type=float, default=0.2,

@@ -11,8 +11,11 @@ class Guess:
     def __init__(self):
         rospy.sleep(1.0)
         self.items = [
-            'pinger_surface', 'pinger_shooter', 'vampire_slayer', 'start_gate1', 'start_gate2'
-        ]
+            'pinger_surface',
+            'pinger_shooter',
+            'vampire_slayer',
+            'start_gate1',
+            'start_gate2']
         self.guess_service = rospy.Service('guess_location', GuessRequest,
                                            self.request_location)
         self.markers_subscribers = []

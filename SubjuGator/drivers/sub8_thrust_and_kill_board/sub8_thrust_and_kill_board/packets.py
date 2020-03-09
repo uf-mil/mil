@@ -28,8 +28,12 @@ class KillMessage(ApplicationPacket):
         command_byte = cls.COMMAND if command else cls.RESPONSE
         hard_soft_byte = cls.HARD if hard else cls.SOFT
         assert_unassert_byte = cls.ASSERTED if asserted else cls.UNASSERTED
-        payload = struct.pack('BBBB', command_byte,
-                              hard_soft_byte, assert_unassert_byte, cls.PADDING)
+        payload = struct.pack(
+            'BBBB',
+            command_byte,
+            hard_soft_byte,
+            assert_unassert_byte,
+            cls.PADDING)
         return cls(cls.IDENTIFIER, payload)
 
     @property

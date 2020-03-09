@@ -37,11 +37,11 @@ class TrackTarget(Navigator):
         # Continuously align until all shots are fired
         while fired < self.NUMBER_SHOTS:
             if reload_wait is not None:
-                select = defer.DeferredList([self.target_pose_sub.get_next_message(), self.tx_pose, reload_wait],
-                                            fireOnOneCallback=True, fireOnOneErrback=True)
+                select = defer.DeferredList([self.target_pose_sub.get_next_message(
+                ), self.tx_pose, reload_wait], fireOnOneCallback=True, fireOnOneErrback=True)
             else:
-                select = defer.DeferredList([self.target_pose_sub.get_next_message(), self.tx_pose],
-                                            fireOnOneCallback=True, fireOnOneErrback=True)
+                select = defer.DeferredList([self.target_pose_sub.get_next_message(
+                ), self.tx_pose], fireOnOneCallback=True, fireOnOneErrback=True)
             result, index = yield select
 
             # New target pose

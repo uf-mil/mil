@@ -32,14 +32,34 @@ class WrenchArbiter(object):
         self.learn = rospy.Publisher("learn", Bool, queue_size=1)
 
         # Subscribers to listen for wrenches
-        rospy.Subscriber("/wrench/rc", WrenchStamped,
-                         lambda msg: self.republish(msg, control_t="rc", learn=False))
-        rospy.Subscriber("/wrench/emergency", WrenchStamped,
-                         lambda msg: self.republish(msg, control_t="emergency", learn=False))
-        rospy.Subscriber("/wrench/keyboard", WrenchStamped,
-                         lambda msg: self.republish(msg, control_t="keyboard", learn=False))
-        rospy.Subscriber("/wrench/autonomous", WrenchStamped,
-                         lambda msg: self.republish(msg, control_t="autonomous", learn=True))
+        rospy.Subscriber(
+            "/wrench/rc",
+            WrenchStamped,
+            lambda msg: self.republish(
+                msg,
+                control_t="rc",
+                learn=False))
+        rospy.Subscriber(
+            "/wrench/emergency",
+            WrenchStamped,
+            lambda msg: self.republish(
+                msg,
+                control_t="emergency",
+                learn=False))
+        rospy.Subscriber(
+            "/wrench/keyboard",
+            WrenchStamped,
+            lambda msg: self.republish(
+                msg,
+                control_t="keyboard",
+                learn=False))
+        rospy.Subscriber(
+            "/wrench/autonomous",
+            WrenchStamped,
+            lambda msg: self.republish(
+                msg,
+                control_t="autonomous",
+                learn=True))
 
     def republish(self, msg, control_t, learn):
         '''

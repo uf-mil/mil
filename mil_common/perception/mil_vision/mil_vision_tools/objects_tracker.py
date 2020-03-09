@@ -104,8 +104,9 @@ class ObjectsTracker(object):
         @param min_age: Minimum age an object must be to be returned in result
         @return: List of TrackedObject instances of those objects meeting the above criteria
         '''
-        return filter(lambda obj: obj.age >=
-                      min_age and obj.observations >= min_observations, self.objects)
+        return filter(
+            lambda obj: obj.age >= min_age and obj.observations >= min_observations,
+            self.objects)
 
     @abc.abstractmethod
     def distance(self, a, b):

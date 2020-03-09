@@ -13,9 +13,15 @@ class ThrusterFault(HandlerBase):
         motor_topics = ['/FL_motor', '/FR_motor', '/BL_motor', '/BR_motor']
 
         # Dictionary for the faults as defined in roboteq_msgs/Status
-        self.fault_codes = {1: 'OVERHEAT', 2: 'OVERVOLTAGE', 4: 'UNDERVOLTAGE', 8: 'SHORT_CIRCUIT',
-                            16: 'EMERGENCY_STOP', 32: 'SEPEX_EXCITATION_FAULT', 64: 'MOSFET_FAILURE',
-                            128: 'STARTUP_CONFIG_FAULT'}
+        self.fault_codes = {
+            1: 'OVERHEAT',
+            2: 'OVERVOLTAGE',
+            4: 'UNDERVOLTAGE',
+            8: 'SHORT_CIRCUIT',
+            16: 'EMERGENCY_STOP',
+            32: 'SEPEX_EXCITATION_FAULT',
+            64: 'MOSFET_FAILURE',
+            128: 'STARTUP_CONFIG_FAULT'}
 
         self._raised = False
         self._raised_alarms = {}

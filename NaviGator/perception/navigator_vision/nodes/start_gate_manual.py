@@ -136,10 +136,21 @@ def intersect(A, a, B, b):
     # Based on http://morroworks.com/Content/Docs/Rays%20closest%20point.pdf
     # Finds the intersection of two rays `a` and `b` whose origin are `A` and
     # `B`
-    return (A + a * (-np.dot(a, b) * np.dot(b, B - A) + np.dot(a, B - A) * np.dot(b, b)) /
-            (np.dot(a, a) * np.dot(b, b) - np.dot(a, b) ** 2) +
-            B + b * (np.dot(a, b) * np.dot(a, B - A) - np.dot(b, B - A) * np.dot(a, a)) /
-            (np.dot(a, a) * np.dot(b, b) - np.dot(a, b) ** 2)) / 2
+    return (A + a * (-np.dot(a,
+                             b) * np.dot(b,
+                                         B - A) + np.dot(a,
+                                                         B - A) * np.dot(b,
+                                                                         b)) / (np.dot(a,
+                                                                                       a) * np.dot(b,
+                                                                                                   b) - np.dot(a,
+                                                                                                               b) ** 2) + B + b * (np.dot(a,
+                                                                                                                                          b) * np.dot(a,
+                                                                                                                                                      B - A) - np.dot(b,
+                                                                                                                                                                      B - A) * np.dot(a,
+                                                                                                                                                                                      a)) / (np.dot(a,
+                                                                                                                                                                                                    a) * np.dot(b,
+                                                                                                                                                                                                                b) - np.dot(a,
+                                                                                                                                                                                                                            b) ** 2)) / 2
 
 
 def minimize_repro_error(left_cam, right_cam, pt_l, pt_r, estimation):
@@ -206,7 +217,10 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
             # Working copy of the current frame obtained at the same time as
             # the tf link
             tf_listener.waitForTransform(
-                "enu", "front_left_cam_optical", rospy.Time(), rospy.Duration(4.0))
+                "enu",
+                "front_left_cam_optical",
+                rospy.Time(),
+                rospy.Duration(4.0))
             left_image, right_image = left.frame, right.frame
             cam_tf = tf_listener.lookupTransform("front_left_cam_optical",
                                                  "front_right_cam_optical",
@@ -230,7 +244,10 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
 
     area_tol = 50
     if np.linalg.norm(
-            rl_area - rr_area) > area_tol or np.linalg.norm(gl_area - gr_area) > area_tol:
+            rl_area -
+            rr_area) > area_tol or np.linalg.norm(
+            gl_area -
+            gr_area) > area_tol:
         rospy.logwarn("Unsafe segmentation")
         StartGateResponse(success=False)
 
@@ -242,14 +259,18 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
     # Just for visualization
     for i in range(5):
         # Publish it 5 times so we can see it in rviz
-        mil_tools.draw_ray_3d(red_left_pt, left_cam, [
-                              1, 0, 0, 1], m_id=0, frame="front_left_cam_optical")
-        mil_tools.draw_ray_3d(red_right_pt, right_cam, [
-                              1, 0, 0, 1], m_id=1, frame="front_right_cam_optical")
-        mil_tools.draw_ray_3d(green_left_pt, left_cam, [
-                              0, 1, 0, 1], m_id=2, frame="front_left_cam_optical")
-        mil_tools.draw_ray_3d(green_right_pt, right_cam, [
-                              0, 1, 0, 1], m_id=3, frame="front_right_cam_optical")
+        mil_tools.draw_ray_3d(
+            red_left_pt, left_cam, [
+                1, 0, 0, 1], m_id=0, frame="front_left_cam_optical")
+        mil_tools.draw_ray_3d(
+            red_right_pt, right_cam, [
+                1, 0, 0, 1], m_id=1, frame="front_right_cam_optical")
+        mil_tools.draw_ray_3d(
+            green_left_pt, left_cam, [
+                0, 1, 0, 1], m_id=2, frame="front_left_cam_optical")
+        mil_tools.draw_ray_3d(
+            green_right_pt, right_cam, [
+                0, 1, 0, 1], m_id=3, frame="front_right_cam_optical")
 
         red_point = PointStamped()
         red_point.header = mil_tools.make_header(frame="enu")
@@ -320,8 +341,16 @@ if __name__ == "__main__":
     #     red_debug.publish(mil_tools.make_image_msg(debug_img))
     #     rospy.sleep(1)
 
-    s = rospy.Service("/vision/start_gate_buoys", StartGate,
-                      lambda srv: do_buoys(srv, left, right, red_seg, green_seg, tf_listener))
+    s = rospy.Service(
+        "/vision/start_gate_buoys",
+        StartGate,
+        lambda srv: do_buoys(
+            srv,
+            left,
+            right,
+            red_seg,
+            green_seg,
+            tf_listener))
 
     # rospy.Timer(rospy.Duration(.5), lambda republish: publish_debug(red_debug, green_debug,
     # red_seg, green_seg, left))

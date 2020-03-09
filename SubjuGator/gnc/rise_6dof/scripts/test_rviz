@@ -103,9 +103,8 @@ if __name__ == '__main__':
         global desired_posetwist
         if feedback is not None and feedback.event_type == InteractiveMarkerFeedback.POSE_UPDATE:
             # compute twist from this and last pose update
-            if desired_posetwist is not None and \
-               rospy.Duration.from_sec(0) < rospy.Time.now() - desired_posetwist.header.stamp \
-               < rospy.Duration.from_sec(.05):
+            if desired_posetwist is not None and rospy.Duration.from_sec(0) < rospy.Time.now(
+            ) - desired_posetwist.header.stamp < rospy.Duration.from_sec(.05):
                 dt = (
                     rospy.Time.now() -
                     desired_posetwist.header.stamp).to_sec()
@@ -117,11 +116,12 @@ if __name__ == '__main__':
                     if q[3] < 0:
                         q *= -1
                     return 2 / numpy.sinc(q[3] / math.pi) * numpy.array(q[:3])
-                angvel = quat_to_scaledaxis(transformations.quaternion_multiply(
-                    xyzw_array(feedback.pose.orientation),
-                    transformations.quaternion_conjugate(xyzw_array(
-                        desired_posetwist.posetwist.pose.orientation)),
-                )) / dt
+                angvel = quat_to_scaledaxis(
+                    transformations.quaternion_multiply(
+                        xyzw_array(
+                            feedback.pose.orientation), transformations.quaternion_conjugate(
+                            xyzw_array(
+                                desired_posetwist.posetwist.pose.orientation)), )) / dt
                 twist = Twist(linear=Vector3(*vel), angular=Vector3(*angvel))
             else:
                 twist = Twist(linear=Vector3(0, 0, 0),

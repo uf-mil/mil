@@ -50,8 +50,14 @@ class Picker(object):
             self.visualize_draw[self.mask == int(cv2.GC_BGD)] = (0, 0, 200)
 
         self.done_drawing = False
-        display = np.array(np.clip(
-            self.visualize + self.visualize_draw * self.draw_opacity, 0, 255), np.uint8)
+        display = np.array(
+            np.clip(
+                self.visualize +
+                self.visualize_draw *
+                self.draw_opacity,
+                0,
+                255),
+            np.uint8)
         cv2.imshow("segment", display)
         cv2.waitKey(1)
 
@@ -130,8 +136,16 @@ class Picker(object):
                     cv2.circle(self.mask, (x, y), self.brush_size,
                                int(cv2.GC_BGD), -1)
 
-        display = np.array(np.clip(self.visualize + self.visualize_draw * self.draw_opacity +
-                                   self.visual_brush_size * self.brush_size_opacity, 0, 255), np.uint8)
+        display = np.array(
+            np.clip(
+                self.visualize +
+                self.visualize_draw *
+                self.draw_opacity +
+                self.visual_brush_size *
+                self.brush_size_opacity,
+                0,
+                255),
+            np.uint8)
 
         cv2.imshow("segment", display)
         self.visual_brush_size *= 0
@@ -222,12 +236,18 @@ if __name__ == '__main__':
     desc_msg = "A tool for making manual segmentation fun! I am sorry the keyboard shortcuts are nonsense"
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
-    parser.add_argument(dest='file_name',
-                        help="Either the name of the bag or first image in a sequence you'd like to segment.")
     parser.add_argument(
-        '--topic', type=str, help="Name of the topic to use or the usb camera number.")
-    parser.add_argument('--output', type=str, help="Path that the output images should be saved to",
-                        default='segments/')
+        dest='file_name',
+        help="Either the name of the bag or first image in a sequence you'd like to segment.")
+    parser.add_argument(
+        '--topic',
+        type=str,
+        help="Name of the topic to use or the usb camera number.")
+    parser.add_argument(
+        '--output',
+        type=str,
+        help="Path that the output images should be saved to",
+        default='segments/')
 
     args = parser.parse_args(sys.argv[1:])
 

@@ -57,8 +57,12 @@ class IdentifyDockMission:
         bay_2_shape = yield self.navigator.mission_params["dock_shape_2"].get()
         self.bay_1 = (bay_1_shape, bay_1_color)
         self.bay_2 = (bay_2_shape, bay_2_color)
-        print_good("Docking in Bay (Shape={}, Color={}) then (Shape={}, Color={})".format(
-            bay_1_shape, bay_1_color, bay_2_shape, bay_2_color))
+        print_good(
+            "Docking in Bay (Shape={}, Color={}) then (Shape={}, Color={})".format(
+                bay_1_shape,
+                bay_1_color,
+                bay_2_shape,
+                bay_2_color))
 
     @txros.util.cancellableInlineCallbacks
     def get_waypoint(self):

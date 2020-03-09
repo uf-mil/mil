@@ -94,7 +94,10 @@ def main():
     run_parser = subparser.add_parser('run', help='Start a new mission')
     run_parser.set_defaults(cmd='run')
     run_parser.add_argument('mission', help='name of mission to run')
-    run_parser.add_argument('parameters', nargs=argparse.REMAINDER, help='list of parameters to pass to mission.\
+    run_parser.add_argument(
+        'parameters',
+        nargs=argparse.REMAINDER,
+        help='list of parameters to pass to mission.\
                                                        Will be concatenated into one string')
     args = parser.parse_args(argv[1:])
 

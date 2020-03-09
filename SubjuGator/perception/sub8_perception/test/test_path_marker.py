@@ -89,10 +89,8 @@ class TestPathMarker(unittest.TestCase):
         theta_err = abs(
             np.arctan2(np.sin(res.pose.theta - correct.pose.theta),
                        np.cos(res.pose.theta - correct.pose.theta)))
-        msg = "Marker pose angle (theta) too much error Res={} Correct={} Error={}".format(np.degrees(res.pose.theta),
-                                                                                           np.degrees(
-                                                                                               correct.pose.theta),
-                                                                                           np.degrees(theta_err))
+        msg = "Marker pose angle (theta) too much error Res={} Correct={} Error={}".format(
+            np.degrees(res.pose.theta), np.degrees(correct.pose.theta), np.degrees(theta_err))
         self.assertLess(theta_err,
                         0.15,
                         msg=msg)

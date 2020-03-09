@@ -262,8 +262,8 @@ class Dashboard(Plugin):
 
         # Sets the battery voltage to 'Unknown' if no message has been current
         # in 15s
-        if (((rospy.Time.now() - self.battery_voltage["stamp"]) > rospy.Duration(15)) or
-                (self.battery_voltage["current"] is None)):
+        if (((rospy.Time.now() - self.battery_voltage["stamp"]) > rospy.Duration(
+                15)) or (self.battery_voltage["current"] is None)):
             self.battery_voltage["current"] = "Unknown"
 
         # Updates the displayed data if a new battery voltage has been current

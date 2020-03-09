@@ -115,8 +115,10 @@ class MissionPlanner:
     @util.cancellableInlineCallbacks
     def _run_base_mission(self):
         if self.base_mission is not None:
-            base_mission = self._do_mission(self.base_mission, center_marker=self.current_mission.marker,
-                                            looking_for=self.current_mission.looking_for)
+            base_mission = self._do_mission(
+                self.base_mission,
+                center_marker=self.current_mission.marker,
+                looking_for=self.current_mission.looking_for)
             base_mission.addErrback(lambda err: fprint(
                 err, msg_color="red", title="MISSION ERR | BASE MISSION"))
             res = yield base_mission
@@ -143,8 +145,9 @@ class MissionPlanner:
             fprint(self.current_mission.name,
                    msg_color="red", title="MISSION TIMEOUT")
             yield self.publish("TimingOut")
-            if (TimeoutManager.can_repeat(self.missions_left, self._get_time_left(
-            ), self.current_mission)) or len(self.missions_left) == 1:
+            if (TimeoutManager.can_repeat(self.missions_left,
+                                          self._get_time_left(),
+                                          self.current_mission)) or len(self.missions_left) == 1:
                 yield self.publish("Retrying")
                 self.failed = False
                 self.current_mission.timeout = self.current_mission.min_time
@@ -161,8 +164,12 @@ class MissionPlanner:
     def _cb_mission(self, result):
         if not self.failed:
             yield self.publish("Ending")
-            fprint(str(result) + " TIME: " + str((self.nh.get_time() - self.current_mission.start_time).to_sec()),
-                   msg_color="green", title="{} MISSION COMPLETE: ".format(self.current_mission.name))
+            fprint(
+                str(result) + " TIME: " + str(
+                    (self.nh.get_time() - self.current_mission.start_time).to_sec()),
+                msg_color="green",
+                title="{} MISSION COMPLETE: ".format(
+                    self.current_mission.name))
             self.points += self.current_mission.points
             self._mission_complete()
 
@@ -176,8 +183,8 @@ class MissionPlanner:
             # print self.current_mission.name
             # print self.current_mission.timeout
 
-            if ((self.nh.get_time() - self.current_mission.start_time).to_sec() > self.current_mission.timeout and
-                    self.current_mission_defer is not None):
+            if ((self.nh.get_time() - self.current_mission.start_time).to_sec() >
+                    self.current_mission.timeout and self.current_mission_defer is not None):
                 if not self.current_mission_defer.called:
                     self.current_mission_defer.cancel()
                 self.current_mission_defer = None
@@ -199,7 +206,9 @@ class MissionPlanner:
             print m.name
             yield self._run_mission(m)
 
-        fprint("MISSIONS COMPLETE, TOTAL RUN TIME: {}".format(
-            (self.nh.get_time() - self.start_time).to_sec()), msg_color="green")
+        fprint(
+            "MISSIONS COMPLETE, TOTAL RUN TIME: {}".format(
+                (self.nh.get_time() - self.start_time).to_sec()),
+            msg_color="green")
         fprint("MISSIONS COMPLETE, TOTAL POINTS: {}".format(
             (self.points), msg_color="green"))

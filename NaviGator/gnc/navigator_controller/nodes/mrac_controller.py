@@ -85,10 +85,18 @@ class MRAC_Controller:
             self.thrust_max * np.array([1, -1, -1, 1]))
         self.Mz_max_body = self.B_body.dot(
             self.thrust_max * np.array([-1, 1, -1, 1]))
-        self.D_body_positive = abs(np.array([self.Fx_max_body[0], self.Fy_max_body[1],
-                                             self.Mz_max_body[5]])) / self.vel_max_body_positive**2
-        self.D_body_negative = abs(np.array([self.Fx_max_body[0], self.Fy_max_body[1],
-                                             self.Mz_max_body[5]])) / self.vel_max_body_negative**2
+        self.D_body_positive = abs(
+            np.array(
+                [
+                    self.Fx_max_body[0],
+                    self.Fy_max_body[1],
+                    self.Mz_max_body[5]])) / self.vel_max_body_positive**2
+        self.D_body_negative = abs(
+            np.array(
+                [
+                    self.Fx_max_body[0],
+                    self.Fy_max_body[1],
+                    self.Mz_max_body[5]])) / self.vel_max_body_negative**2
 
         # BASIC INITIALIZATIONS
         # Position waypoint
@@ -148,20 +156,40 @@ class MRAC_Controller:
         '''
         self.p_ref = np.array(
             [msg.posetwist.pose.position.x, msg.posetwist.pose.position.y])
-        self.q_ref = np.array([msg.posetwist.pose.orientation.x, msg.posetwist.pose.orientation.y,
-                               msg.posetwist.pose.orientation.z, msg.posetwist.pose.orientation.w])
+        self.q_ref = np.array([msg.posetwist.pose.orientation.x,
+                               msg.posetwist.pose.orientation.y,
+                               msg.posetwist.pose.orientation.z,
+                               msg.posetwist.pose.orientation.w])
 
         R = trns.quaternion_matrix(self.q_ref)[:3, :3]
 
-        self.v_ref = R.dot(np.array([msg.posetwist.twist.linear.x,
-                                     msg.posetwist.twist.linear.y, msg.posetwist.twist.linear.z]))[:2]
-        self.w_ref = R.dot(np.array([msg.posetwist.twist.angular.x,
-                                     msg.posetwist.twist.angular.y, msg.posetwist.twist.angular.z]))[2]
+        self.v_ref = R.dot(
+            np.array(
+                [
+                    msg.posetwist.twist.linear.x,
+                    msg.posetwist.twist.linear.y,
+                    msg.posetwist.twist.linear.z]))[
+            :2]
+        self.w_ref = R.dot(
+            np.array(
+                [
+                    msg.posetwist.twist.angular.x,
+                    msg.posetwist.twist.angular.y,
+                    msg.posetwist.twist.angular.z]))[2]
 
-        self.a_ref = R.dot(np.array([msg.posetwist.acceleration.linear.x,
-                                     msg.posetwist.acceleration.linear.y, msg.posetwist.acceleration.linear.z]))[:2]
-        self.aa_ref = R.dot(np.array([msg.posetwist.acceleration.angular.x,
-                                      msg.posetwist.acceleration.angular.y, msg.posetwist.acceleration.angular.z]))[2]
+        self.a_ref = R.dot(
+            np.array(
+                [
+                    msg.posetwist.acceleration.linear.x,
+                    msg.posetwist.acceleration.linear.y,
+                    msg.posetwist.acceleration.linear.z]))[
+            :2]
+        self.aa_ref = R.dot(
+            np.array(
+                [
+                    msg.posetwist.acceleration.angular.x,
+                    msg.posetwist.acceleration.angular.y,
+                    msg.posetwist.acceleration.angular.z]))[2]
 
     def set_traj_from_odom_msg(self, msg):
         '''
@@ -170,15 +198,17 @@ class MRAC_Controller:
         '''
         self.p_ref = np.array(
             [msg.pose.pose.position.x, msg.pose.pose.position.y])
-        self.q_ref = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
-                               msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+        self.q_ref = np.array([msg.pose.pose.orientation.x,
+                               msg.pose.pose.orientation.y,
+                               msg.pose.pose.orientation.z,
+                               msg.pose.pose.orientation.w])
 
         R = trns.quaternion_matrix(self.q_ref)[:3, :3]
 
         self.v_ref = R.dot(np.array(
             [msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.linear.z]))[:2]
-        self.w_ref = R.dot(
-            np.array([msg.twist.twist.angular.x, msg.twist.twist.angular.y, msg.twist.twist.angular.z]))[2]
+        self.w_ref = R.dot(np.array(
+            [msg.twist.twist.angular.x, msg.twist.twist.angular.y, msg.twist.twist.angular.z]))[2]
 
         self.a_ref = np.array([0, 0])
         self.aa_ref = 0
@@ -301,7 +331,10 @@ class MRAC_Controller:
                 inertial_feedforward + self.dist_est + self.drag_effort
             # Update disturbance estimate, drag estimates
             if self.learn and (npl.norm(p_err) < self.learning_radius):
-                self.dist_est = np.clip(self.dist_est + (self.ki * err * self.timestep), -
+                self.dist_est = np.clip(self.dist_est +
+                                        (self.ki *
+                                         err *
+                                         self.timestep), -
                                         self.dist_limit, self.dist_limit)
                 self.drag_est = self.drag_est + \
                     (self.kg * (drag_regressor.T.dot(err + errdot)) * self.timestep)
@@ -387,7 +420,9 @@ class MRAC_Controller:
         # Compute world frame thruster matrix (B) from thruster geometry, and
         # then map wrench to thrusts
         B = np.concatenate(
-            (R_ref.dot(self.thruster_directions.T), R_ref.dot(self.lever_arms.T)))
+            (R_ref.dot(
+                self.thruster_directions.T), R_ref.dot(
+                self.lever_arms.T)))
         B_3dof = np.concatenate((B[:2, :], [B[5, :]]))
         command = self.thruster_mapper(wrench, B_3dof)
         wrench_saturated = B.dot(command)

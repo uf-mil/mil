@@ -36,13 +36,14 @@ class OdomKill(HandlerBase):
                     pass
                 else:  # Odom is probably not publishing
                     self._killed = True
-                    self.ab.raise_alarm(problem_description='STATE ESTIMATION NOT AVAILABLE: KILLING SUB',
-                                        severity=5)
+                    self.ab.raise_alarm(
+                        problem_description='STATE ESTIMATION NOT AVAILABLE: KILLING SUB', severity=5)
                     rospy.logerr('STATE ESTIMATION NOT AVAILABLE: KILLING SUB')
             else:
                 self._killed = True
                 self.ab.raise_alarm(
-                    problem_description='STATE ESTIMATION LOSS: KILLING SUB', severity=5)
+                    problem_description='STATE ESTIMATION LOSS: KILLING SUB',
+                    severity=5)
                 rospy.logerr("STATE ESTIMATION LOSS: KILLING SUB")
 
     def got_odom_msg(self, msg):
@@ -61,8 +62,9 @@ class OdomKill(HandlerBase):
                 ** 2 + (this_p.z - last_p.z) ** 2) ** 0.5
         if jump > self.MAX_JUMP:
             rospy.logerr('ODOM DISCONTINUITY DETECTED')
-            self.ab.raise_alarm(problem_description='ODOM DISCONTINUITY DETECTED JUMPED {} METERS'.format(jump),
-                                severity=5)
+            self.ab.raise_alarm(
+                problem_description='ODOM DISCONTINUITY DETECTED JUMPED {} METERS'.format(jump),
+                severity=5)
             self.odom_discontinuity = True
             return False
 

@@ -150,10 +150,12 @@ class ThrusterMap(object):
                     len(transmission_suffix) == len(transmission.name):
                 if len(transmission.joints) != 1:
                     raise Exception(
-                        'Transmission {} does not have 1 joint'.format(transmission.name))
+                        'Transmission {} does not have 1 joint'.format(
+                            transmission.name))
                 if len(transmission.actuators) != 1:
                     raise Exception(
-                        'Transmission {} does not have 1 actuator'.format(transmission.name))
+                        'Transmission {} does not have 1 actuator'.format(
+                            transmission.name))
                 t_ratio = transmission.actuators[0].mechanicalReduction
                 if ratio != -1 and ratio != t_ratio:
                     raise Exception(
@@ -180,7 +182,8 @@ class ThrusterMap(object):
                 joints.append(joint.name)
                 if limit != -1 and joint.limit.effort != limit:
                     raise Exception(
-                        'Thruster {} had a different limit, cannot proceed'.format(joint.name))
+                        'Thruster {} had a different limit, cannot proceed'.format(
+                            joint.name))
                 limit = joint.limit.effort
         limit_tuple = (limit, -limit)
         return cls(names, positions, angles, generate_linear_force_to_command(

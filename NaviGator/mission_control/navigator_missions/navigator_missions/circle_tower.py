@@ -35,7 +35,8 @@ class CircleTower(Navigator):
                     "Colors specified, running {}".format(" ".join(colors)))
             else:
                 self.send_feedback(
-                    "No colors Specified, defaulting to {}".format(" ".join(colors)))
+                    "No colors Specified, defaulting to {}".format(
+                        " ".join(colors)))
         else:
             # Make sure they are valid colors
             for color in parameters:

@@ -46,9 +46,12 @@ class Mission(object):
                 yield to_run.safe_exit(navigator, err)
                 yield planner.publish("SafeExiting")
             else:
-                fprint("Hmmmm. This isn't good. Your mission failed, and there was no safe exit. "
-                       "I hope this mission doesn't have any children.", msg_color="red")
+                fprint(
+                    "Hmmmm. This isn't good. Your mission failed, and there was no safe exit. "
+                    "I hope this mission doesn't have any children.",
+                    msg_color="red")
         except Exception as exp:
             print exp
             fprint(
-                "Oh man this is pretty bad, your mission's safe exit failed. SHAME!", msg_color="red")
+                "Oh man this is pretty bad, your mission's safe exit failed. SHAME!",
+                msg_color="red")

@@ -621,8 +621,9 @@ class MissionParam(object):
                 defer.returnValue(False)
         value = yield self.nh.get_param(self.param)
         if not self._valid(value):
-            raise Exception("Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
-                value, self.param, self.options, self.description))
+            raise Exception(
+                "Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
+                    value, self.param, self.options, self.description))
         else:
             defer.returnValue(value)
 
@@ -632,8 +633,9 @@ class MissionParam(object):
     @util.cancellableInlineCallbacks
     def set(self, value):
         if not self._valid(value):
-            raise Exception("Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
-                value, self.param, self.options, self.description))
+            raise Exception(
+                "Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
+                    value, self.param, self.options, self.description))
         yield self.nh.set_param(self.param, value)
 
     @util.cancellableInlineCallbacks
@@ -762,8 +764,8 @@ class Searcher(object):
         fprint("Looking for object.", title="SEARCHER")
         while spotings < spotings_req:
             if (yield self.looker(**self.looker_kwargs)):
-                fprint("Object found! {}/{}".format(spotings +
-                                                    1, spotings_req), title="SEARCHER")
+                fprint("Object found! {}/{}".format(spotings + \
+                       1, spotings_req), title="SEARCHER")
                 spotings += 1
             else:
                 spotings = 0

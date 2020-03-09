@@ -45,8 +45,11 @@ class ObserveActionClient(ActionClient):
         self.observe_goals = {}
         self.observer_transition_cb = None
         self.observer_feedback_cb = None
-        self.goal_sub = rospy.Subscriber(rospy.remap_name(ns) + '/goal', self.ActionGoal,
-                                         callback=self.goal_cb, queue_size=5)
+        self.goal_sub = rospy.Subscriber(
+            rospy.remap_name(ns) + '/goal',
+            self.ActionGoal,
+            callback=self.goal_cb,
+            queue_size=5)
 
     def register_observer_transition_cb(self, fn):
         self.observer_transition_cb = fn

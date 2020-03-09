@@ -35,8 +35,11 @@ class ScanTheCodePerception(object):
         self.camera_model = PinholeCameraModel()
         self.camera_model.fromCameraInfo(info)
         if self.debug:
-            self.image_mux = ImageMux(size=(info.height, info.width), shape=(1, 2),
-                                      labels=['Result', 'Mask'])
+            self.image_mux = ImageMux(
+                size=(
+                    info.height, info.width), shape=(
+                    1, 2), labels=[
+                    'Result', 'Mask'])
             self.debug_pub = Image_Publisher('~debug_image')
         self.bbox_sub = rospy.Subscriber(
             "stc_led_pts_marshall", PointCloud2, self.panel_points_cb)
@@ -132,9 +135,10 @@ class ScanTheCodePerception(object):
             if len(self.classification_list) == 5 and self.classification_list[0] == 'o' \
                and self.classification_list[4] == 'o' and self.classification_list[1] != 'o' \
                and self.classification_list[2] != 'o' and self.classification_list[3] != 'o':
-                pattern = \
-                    (self.classification_list[1] + self.classification_list[2] +
-                     self.classification_list[3]).upper()
+                pattern = (
+                    self.classification_list[1] +
+                    self.classification_list[2] +
+                    self.classification_list[3]).upper()
                 rospy.loginfo('SAW PATTERN {}!!!!!!!!!!!'.format(pattern))
                 self.pattern_pub.publish(ScanTheCode(color_pattern=pattern))
         self.image_mux[0] = img

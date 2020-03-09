@@ -348,8 +348,12 @@ class Colorama(object):
                 len(t_color), self.min_obs), msg_color='red')
             return None
 
-        kwargs = {'v_u': self.v_u, 'v_sig': self.v_sig, 'dist_sig': self.dist_sig,
-                  'q_factor': self.q_factor, 'q_sig': self.q_sig}
+        kwargs = {
+            'v_u': self.v_u,
+            'v_sig': self.v_sig,
+            'dist_sig': self.dist_sig,
+            'q_factor': self.q_factor,
+            'q_sig': self.q_sig}
 
         w, weights = t_color.compute_confidence(
             [self.v_factor, self.dist_factor, self.q_factor], True, **kwargs)
@@ -402,8 +406,12 @@ class Colorama(object):
                     fprint("No images found.")
                     return
 
-                fprint("No valid image found for t={} ({}) dt: {}".format(
-                    time_of_marker.to_sec(), t.to_sec(), (rospy.Time.now() - t).to_sec()), msg_color='red')
+                fprint(
+                    "No valid image found for t={} ({}) dt: {}".format(
+                        time_of_marker.to_sec(),
+                        t.to_sec(),
+                        (rospy.Time.now() - t).to_sec()),
+                    msg_color='red')
                 return
             header = make_header(frame='/enu', stamp=image_holder.time)
             image = image_holder.image
@@ -479,8 +487,13 @@ class Colorama(object):
                 # Add to database and setup debug image
                 if s < self.saturation_reject or v < self.value_reject:
                     err_msg = "The colors aren't expressive enough s: {} ({}) v: {} ({}). Rejecting."
-                    fprint(err_msg.format(s, self.saturation_reject,
-                                          v, self.value_reject), msg_color='red')
+                    fprint(
+                        err_msg.format(
+                            s,
+                            self.saturation_reject,
+                            v,
+                            self.value_reject),
+                        msg_color='red')
 
                 else:
                     if obj.id not in self.colored:
@@ -541,8 +554,10 @@ class Colorama(object):
 
         # Display the current values
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(self.debug.image, "h_val: {}".format(np.degrees(hue_angle)),
-                    tuple(roi[1]), font, 1, (255, 255, 255), 2)
+        cv2.putText(
+            self.debug.image, "h_val: {}".format(
+                np.degrees(hue_angle)), tuple(
+                roi[1]), font, 1, (255, 255, 255), 2)
 
         likely_color, error = self.get_closest_color(hue_angle)
 

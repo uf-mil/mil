@@ -63,8 +63,12 @@ class Kill(HandlerBase):
         raised = [name for name, alarm in alarms.items(
         ) if name not in ignore and alarm.raised]
         if len(raised):
-            return Alarm('kill', True, node_name=rospy.get_name(),
-                         problem_description='Killed by meta alarm(s) ' + ', '.join(
-                             raised),
-                         parameters={'Raised': raised})
+            return Alarm(
+                'kill',
+                True,
+                node_name=rospy.get_name(),
+                problem_description='Killed by meta alarm(s) ' +
+                ', '.join(raised),
+                parameters={
+                    'Raised': raised})
         return self._killed

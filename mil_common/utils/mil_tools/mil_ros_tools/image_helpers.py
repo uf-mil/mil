@@ -84,7 +84,10 @@ class Image_Subscriber(object):
 
         root_topic, image_subtopic = path.split(rospy.remap_name(topic))
         self.info_sub = rospy.Subscriber(
-            root_topic + '/camera_info', CameraInfo, self.info_cb, queue_size=queue_size)
+            root_topic + '/camera_info',
+            CameraInfo,
+            self.info_cb,
+            queue_size=queue_size)
 
         self.bridge = CvBridge()
         self.callback = callback
@@ -95,7 +98,8 @@ class Image_Subscriber(object):
         Note: 'timeout' is in seconds.
         '''
         rospy.logwarn(
-            "Blocking -- waiting at most %d seconds for camera info." % timeout)
+            "Blocking -- waiting at most %d seconds for camera info." %
+            timeout)
 
         timeout = rospy.Duration(timeout)
         rospy.sleep(.1)  # Make sure we don't have negative time
@@ -176,13 +180,25 @@ class StereoImageSubscriber(object):
         # Subscribe to image and camera info topics for both cameras
         root_topic_left, image_subtopic_left = path.split(left_image_topic)
         self._info_sub_left = rospy.Subscriber(
-            root_topic_left + '/camera_info', CameraInfo,
-            lambda info: setattr(self, 'camera_info_left', info), queue_size=queue_size)
+            root_topic_left +
+            '/camera_info',
+            CameraInfo,
+            lambda info: setattr(
+                self,
+                'camera_info_left',
+                info),
+            queue_size=queue_size)
         image_sub_left = message_filters.Subscriber(left_image_topic, Image)
         root_topic_right, image_subtopic_right = path.split(right_image_topic)
         self._info_sub_right = rospy.Subscriber(
-            root_topic_right + '/camera_info', CameraInfo,
-            lambda info: setattr(self, 'camera_info_right', info), queue_size=queue_size)
+            root_topic_right +
+            '/camera_info',
+            CameraInfo,
+            lambda info: setattr(
+                self,
+                'camera_info_right',
+                info),
+            queue_size=queue_size)
         image_sub_right = message_filters.Subscriber(right_image_topic, Image)
 
         # Use message_filters library to set up synchronized subscriber to both
@@ -191,8 +207,8 @@ class StereoImageSubscriber(object):
             self._image_sub = message_filters.TimeSynchronizer(
                 [image_sub_left, image_sub_right], queue_size)
         else:
-            self._image_sub = message_filters.ApproximateTimeSynchronizer([image_sub_left, image_sub_right],
-                                                                          queue_size, slop)
+            self._image_sub = message_filters.ApproximateTimeSynchronizer(
+                [image_sub_left, image_sub_right], queue_size, slop)
         self._image_sub.registerCallback(self._image_callback)
 
     def wait_for_camera_info(self, timeout=10, unregister=True):

@@ -48,8 +48,13 @@ def from_json(labeled_data, annotations_output_dir, images_output_dir,
 
     for data in label_data:
         try:
-            write_label(data['ID'], data['Labeled Data'], data['Label'], label_format,
-                        images_output_dir, annotations_output_dir)
+            write_label(
+                data['ID'],
+                data['Labeled Data'],
+                data['Label'],
+                label_format,
+                images_output_dir,
+                annotations_output_dir)
 
         except requests.exceptions.MissingSchema as e:
             logging.exception(('"Labeled Data" field must be a URL. '

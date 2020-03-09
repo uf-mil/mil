@@ -43,8 +43,8 @@ def split_data(image_dir='Images', ann_dir='Annotations',
         os.remove(image_dir + '/' + z)
     X = sorted(glob.glob(image_dir + "/*"))
 
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y,
-                                                        test_size=0.30, random_state=10)
+    X_train, X_test, Y_train, Y_test = train_test_split(
+        X, Y, test_size=0.30, random_state=10)
 
     if not os.path.exists('train'):
         os.makedirs('train')
@@ -89,8 +89,11 @@ def json_to_pascal(labelled_data='json_files/project_labels.json'):
     # call the Labelbox to Pascal conversion
     # NOTE: make sure to specify the correct label_format based on the export
     #  format chosen on Labelbox; 'WKT' or 'XY'.
-    lb2pa.from_json(labeled_data=labelled_data, annotations_output_dir=ann_output_dir,
-                    images_output_dir=images_output_dir, label_format='XY')
+    lb2pa.from_json(
+        labeled_data=labelled_data,
+        annotations_output_dir=ann_output_dir,
+        images_output_dir=images_output_dir,
+        label_format='XY')
 
     print('Done getting xml files')
 
@@ -134,7 +137,8 @@ def xml_to_csv(path, labelmap, resize=False, size=[256, 150]):
                 labels.append(i[1].strip("'"))
         else:
             print(
-                "Error, incorrect key located in labelmap. Should be only id or name. Instead found: ", i[1])
+                "Error, incorrect key located in labelmap. Should be only id or name. Instead found: ",
+                i[1])
     # except:
         # print("It errored! Whomp whomp. ", i)
     dictionary = dict(zip(labels, ids))

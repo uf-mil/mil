@@ -57,9 +57,13 @@ class CommandMessage(ApplicationPacket):
 
 class InvalidAddressException(RuntimeError):
     def __init__(self, address):
-        super(InvalidAddressException, self).__init__(
+        super(
+            InvalidAddressException,
+            self).__init__(
             'Attempted to command valve {}, but valid addresses are only [0,{}]'.format(
-                address, CommandMessage.NUM_VALVES - 1))
+                address,
+                CommandMessage.NUM_VALVES -
+                1))
 
 
 class FeedbackMessage(ApplicationPacket):

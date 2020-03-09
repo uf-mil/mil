@@ -19,10 +19,18 @@ class DemonstrateNavigation(Navigator):
     @classmethod
     def init(cls):
         parser = ThrowingArgumentParser(description="Navigation Pass Mission")
-        parser.add_argument('--use-pcodar', dest='pcodar', action='store_true',
-                            help='User PCODAR objects instead of clicked point')
-        parser.add_argument('-m', '--moves', dest='num_moves', type=int, default=5,
-                            help='Number of moves to make, more is more likely to not leave gate')
+        parser.add_argument(
+            '--use-pcodar',
+            dest='pcodar',
+            action='store_true',
+            help='User PCODAR objects instead of clicked point')
+        parser.add_argument(
+            '-m',
+            '--moves',
+            dest='num_moves',
+            type=int,
+            default=5,
+            help='Number of moves to make, more is more likely to not leave gate')
         cls.parser = parser
 
     @classmethod

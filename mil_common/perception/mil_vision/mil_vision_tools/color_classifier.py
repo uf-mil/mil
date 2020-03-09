@@ -205,15 +205,27 @@ class ContourClassifier(object):
         Can be used to run a classifier as an executable for common tasks like extracting labels
         '''
         parser = argparse.ArgumentParser(description=description)
-        parser.add_argument('--training-file', '-t', type=str, default=None,
-                            help='CSV file to save/load training features and label to.')
+        parser.add_argument(
+            '--training-file',
+            '-t',
+            type=str,
+            default=None,
+            help='CSV file to save/load training features and label to.')
         subparser = parser.add_subparsers()
         extract = subparser.add_parser('extract', help='Extract labels')
         extract.set_defaults(cmd='extract')
-        extract.add_argument('--label-file', '-l', type=str, default=None,
-                             help='Path of json file containing labelbox labels')
-        extract.add_argument('--image-dir', '-d', type=str, default=None,
-                             help='Path to directory containing images for datasets labeled by label file')
+        extract.add_argument(
+            '--label-file',
+            '-l',
+            type=str,
+            default=None,
+            help='Path of json file containing labelbox labels')
+        extract.add_argument(
+            '--image-dir',
+            '-d',
+            type=str,
+            default=None,
+            help='Path to directory containing images for datasets labeled by label file')
         score = subparser.add_parser(
             'score', help='Print a accuracy score based on saved training file')
         score.set_defaults(cmd='score')

@@ -32,8 +32,9 @@ class classifier(object):
         '''
         Parameters
         '''
-        parser = argparse.ArgumentParser(description='TensorFlow Object Detection',
-                                         usage='''Default parameters: None''')
+        parser = argparse.ArgumentParser(
+            description='TensorFlow Object Detection',
+            usage='''Default parameters: None''')
         parser.add_argument('-g', '--garlic', action='store_true',
                             help='Sets up Network for Bin Dropper')
         parser.add_argument('-v', '--vamp', action='store_true',
@@ -194,7 +195,8 @@ class classifier(object):
                         labels.append(i[1].strip("'"))
                 else:
                     print(
-                        "Error, incorrect key located in labelmap. Should be only id or name. Instead found: ", i[1])
+                        "Error, incorrect key located in labelmap. Should be only id or name. Instead found: ",
+                        i[1])
             # except:
                 # print("It errored! Whomp whomp. ", i)
         self.dictionary = dict(zip(ids, labels))

@@ -103,8 +103,9 @@ def triggering(sample_generator):
     f_high = 50e3  # should be at least 10 kHz above maximum pinger frequency
     transition_width = 10e3
     if 1:  # bandpass
-        h = scipy.signal.remez(201, [0, f_low - transition_width, f_low,
-                                     f_high, f_high + transition_width, 600e3], [0, 1, 0], Hz=fs)
+        h = scipy.signal.remez(201, [0, f_low -
+                                     transition_width, f_low, f_high, f_high +
+                                     transition_width, 600e3], [0, 1, 0], Hz=fs)
     else:  # no bandpass
         h = numpy.array([1])
     if 1:  # notch out 40kHz

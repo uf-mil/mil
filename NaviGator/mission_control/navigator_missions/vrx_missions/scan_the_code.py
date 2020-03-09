@@ -79,8 +79,13 @@ class ScanTheCode(Vrx):
         points = np.array([tf.transform_point(points[i])
                            for i in range(len(points))])
 
-        contour = np.array(bbox_from_rect(
-            rect_from_roi(roi_enclosing_points(self.camera_model, points))), dtype=int)
+        contour = np.array(
+            bbox_from_rect(
+                rect_from_roi(
+                    roi_enclosing_points(
+                        self.camera_model,
+                        points))),
+            dtype=int)
         try:
             sequence = yield txros.util.wrap_timeout(self.get_sequence(contour), TIMEOUT_SECONDS, 'Guessing RGB')
         except txros.util.TimeoutError:

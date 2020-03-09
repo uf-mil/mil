@@ -15,12 +15,21 @@ def main():
     nh, args = yield NodeHandle.from_argv_with_remaining("navigator_mission_runner", anonymous=True)
 
     parser = argparse.ArgumentParser(description='Mission Runner')
-    parser.add_argument('missions', type=str, nargs='+',
-                        help='Misison(s) from the navigator_missions folder to run.')
-    parser.add_argument('-s', '--sim', action='store_true',
-                        help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
-    parser.add_argument('-t', '--test', action='store_true',
-                        help='This allow you to run test missions, rather than real mission.')
+    parser.add_argument(
+        'missions',
+        type=str,
+        nargs='+',
+        help='Misison(s) from the navigator_missions folder to run.')
+    parser.add_argument(
+        '-s',
+        '--sim',
+        action='store_true',
+        help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
+    parser.add_argument(
+        '-t',
+        '--test',
+        action='store_true',
+        help='This allow you to run test missions, rather than real mission.')
     args = parser.parse_args(args[1:])
 
     if args.test:

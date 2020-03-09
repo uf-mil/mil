@@ -41,7 +41,8 @@ def create_dict():
                 labels.append(i[1].strip("'"))
         else:
             print(
-                "Error, incorrect key located in labelmap. Should be only id or name. Instead found: ", i[1])
+                "Error, incorrect key located in labelmap. Should be only id or name. Instead found: ",
+                i[1])
     dictionary = dict(zip(labels, ids))
 
 

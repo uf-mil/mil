@@ -87,26 +87,44 @@ class PingerMission(Navigator):
             branch_pt0 = self.gate_poses[0] + dis
             branch_pt1 = self.gate_poses[2] - dis
             if self.negate:
-                self.observation_points = (np.append((branch_pt0 - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
-                                           np.append((branch_pt1 - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
+                self.observation_points = (
+                    np.append(
+                        (branch_pt0 - self.OBSERVE_DISTANCE_METERS * self.g_perp),
+                        0),
+                    np.append(
+                        (branch_pt1 - self.OBSERVE_DISTANCE_METERS * self.g_perp),
+                        0))
             else:
-                self.observation_points = (np.append((branch_pt0 + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
-                                           np.append((branch_pt1 + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
+                self.observation_points = (
+                    np.append(
+                        (branch_pt0 + self.OBSERVE_DISTANCE_METERS * self.g_perp),
+                        0),
+                    np.append(
+                        (branch_pt1 + self.OBSERVE_DISTANCE_METERS * self.g_perp),
+                        0))
             self.look_at_points = (
                 np.append(branch_pt0, 0), np.append(branch_pt1, 0))
         else:
             if self.negate:
                 self.observation_points = (
                     np.append(
-                        (self.gate_poses[0] - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
-                    np.append((self.gate_poses[2] - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
+                        (self.gate_poses[0] - self.OBSERVE_DISTANCE_METERS * self.g_perp),
+                        0),
+                    np.append(
+                        (self.gate_poses[2] - self.OBSERVE_DISTANCE_METERS * self.g_perp),
+                        0))
             else:
                 self.observation_points = (
                     np.append(
-                        (self.gate_poses[0] + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
-                    np.append((self.gate_poses[2] + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
+                        (self.gate_poses[0] + self.OBSERVE_DISTANCE_METERS * self.g_perp),
+                        0),
+                    np.append(
+                        (self.gate_poses[2] + self.OBSERVE_DISTANCE_METERS * self.g_perp),
+                        0))
             self.look_at_points = (
-                np.append(self.gate_poses[0], 0), np.append(self.gate_poses[2], 0))
+                np.append(
+                    self.gate_poses[0], 0), np.append(
+                    self.gate_poses[2], 0))
 
     @txros.util.cancellableInlineCallbacks
     def search_samples(self):
@@ -129,10 +147,17 @@ class PingerMission(Navigator):
             self.pinger_pose = self.gate_poses[1]
         pinger_pose = res.pinger_position
         self.pinger_pose = mil_tools.rosmsg_to_numpy(pinger_pose)[:2]
-        self.distances = np.array([np.linalg.norm(self.pinger_pose - self.gate_poses[0]),
-                                   np.linalg.norm(
-                                       self.pinger_pose - self.gate_poses[1]),
-                                   np.linalg.norm(self.pinger_pose - self.gate_poses[2])])
+        self.distances = np.array(
+            [
+                np.linalg.norm(
+                    self.pinger_pose -
+                    self.gate_poses[0]),
+                np.linalg.norm(
+                    self.pinger_pose -
+                    self.gate_poses[1]),
+                np.linalg.norm(
+                    self.pinger_pose -
+                    self.gate_poses[2])])
 
     @txros.util.cancellableInlineCallbacks
     def go_thru_gate(self):
@@ -142,8 +167,25 @@ class PingerMission(Navigator):
         for p in self.gate_thru_points:
             yield self.move.set_position(p).go(initial_plan_time=5)
 
-    def new_marker(self, ns="/debug", frame="enu", time=None, type=Marker.CUBE,
-                   position=(0, 0, 0), orientation=(0, 0, 0, 1), color=(1, 0, 0)):
+    def new_marker(
+        self,
+        ns="/debug",
+        frame="enu",
+        time=None,
+        type=Marker.CUBE,
+        position=(
+            0,
+            0,
+            0),
+        orientation=(
+            0,
+            0,
+            0,
+            1),
+            color=(
+                1,
+                0,
+            0)):
         marker = Marker()
         marker.ns = ns
         if time is not None:
@@ -190,17 +232,35 @@ class PingerMission(Navigator):
 
         totems = yield self.database_query("totem", raise_exception=False)
         if totems.found:
-            sorted_1 = sorted(totems.objects, key=lambda t: np.linalg.norm(
-                estimated_1_endbuoy - mil_tools.rosmsg_to_numpy(t.position)[:2]))
-            sorted_3 = sorted(totems.objects, key=lambda t: np.linalg.norm(
-                estimated_3_endbuoy - mil_tools.rosmsg_to_numpy(t.position)[:2]))
+            sorted_1 = sorted(
+                totems.objects,
+                key=lambda t: np.linalg.norm(
+                    estimated_1_endbuoy -
+                    mil_tools.rosmsg_to_numpy(
+                        t.position)[
+                        :2]))
+            sorted_3 = sorted(
+                totems.objects,
+                key=lambda t: np.linalg.norm(
+                    estimated_3_endbuoy -
+                    mil_tools.rosmsg_to_numpy(
+                        t.position)[
+                        :2]))
 
-            sorted_circle = sorted(totems.objects, key=lambda t: abs(np.linalg.norm(
-                estimated_circle_buoy - mil_tools.rosmsg_to_numpy(t.position)[:2])))
+            sorted_circle = sorted(
+                totems.objects,
+                key=lambda t: abs(
+                    np.linalg.norm(
+                        estimated_circle_buoy -
+                        mil_tools.rosmsg_to_numpy(
+                            t.position)[
+                            :2])))
             self.new_marker(position=mil_tools.rosmsg_to_numpy(
                 sorted_circle[0].position), color=(1, 1, 1), time=cur_time)
             circle_error = np.linalg.norm(
-                mil_tools.rosmsg_to_numpy(sorted_circle[0].position)[:2] - estimated_circle_buoy)
+                mil_tools.rosmsg_to_numpy(
+                    sorted_circle[0].position)[
+                    :2] - estimated_circle_buoy)
             if circle_error < self.MAX_CIRCLE_BUOY_ERROR:
                 self.circle_totem = mil_tools.rosmsg_to_numpy(
                     sorted_circle[0].position)
@@ -208,7 +268,8 @@ class PingerMission(Navigator):
                     self.circle_totem), msg_color='green')
             else:
                 fprint(
-                    "PINGER: circle buoy is too far from where it should be", msg_color='red')
+                    "PINGER: circle buoy is too far from where it should be",
+                    msg_color='red')
 
             if sorted_3[0].color.r > 0.9:
                 self.color_wrong = True

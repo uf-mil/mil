@@ -121,7 +121,8 @@ class VrxNavigation(Vrx):
                     if self.object_classified(
                             objects_msg.objects, move_id_tuple[1]):
                         self.send_feedback(
-                            '{} identified. Canceling investigation'.format(move_id_tuple[1]))
+                            '{} identified. Canceling investigation'.format(
+                                move_id_tuple[1]))
                         yield dl.cancel()
                         yield move_id_tuple[0].cancel()
                         # yield self.move.forward(0).go()
@@ -221,7 +222,8 @@ class VrxNavigation(Vrx):
         self.objects_passed.add(red.id)
         gate = self.get_gate(white_position, red_position, robot_position)
         self.send_feedback(
-            'Going through start gate formed by {} and {}'.format(white.id, red.id))
+            'Going through start gate formed by {} and {}'.format(
+                white.id, red.id))
         yield self.go_thru_gate(gate, AFTER=-2)
 
     @txros.util.cancellableInlineCallbacks

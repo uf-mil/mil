@@ -57,8 +57,9 @@ def positionorientationvelocityangularvelocity_generator(t):
 
     orient1 = positionorientationvelocity_generator(t - dt / 2)[1]
     orient2 = positionorientationvelocity_generator(t + dt / 2)[1]
-    angvel = orientation_helpers.quat_to_rotvec(transformations.quaternion_multiply(
-        orient2, transformations.quaternion_inverse(orient1))) / dt
+    angvel = orientation_helpers.quat_to_rotvec(
+        transformations.quaternion_multiply(
+            orient2, transformations.quaternion_inverse(orient1))) / dt
 
     return pos, orient, vel, angvel
 

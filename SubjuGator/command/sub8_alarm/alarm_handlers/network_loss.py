@@ -7,7 +7,11 @@ class NetworkLoss(HandlerBase):
 
     def __init__(self):
         self.hm = HeartbeatMonitor(
-            self.alarm_name, "/network", Header, prd=0.8, node_name="network_loss_kill")
+            self.alarm_name,
+            "/network",
+            Header,
+            prd=0.8,
+            node_name="network_loss_kill")
 
     def raised(self, alarm):
         pass

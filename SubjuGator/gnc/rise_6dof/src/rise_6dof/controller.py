@@ -88,9 +88,12 @@ class Controller(object):
 
         output = pd_output
         if self.config['use_rise']:
-            rise_term_int = body_gain(numpy.diag(self.config['ks'] * self.config['alpha'])).dot(error_velocity_world) +\
-                body_gain(numpy.diag(self.config['beta'])).dot(
-                    numpy.sign(error_velocity_world))
+            rise_term_int = body_gain(
+                numpy.diag(
+                    self.config['ks'] * self.config['alpha'])).dot(error_velocity_world) + body_gain(
+                numpy.diag(
+                    self.config['beta'])).dot(
+                numpy.sign(error_velocity_world))
 
             self._rise_term = self._rise_term + dt / 2 * (
                 rise_term_int + self._rise_term_int_prev)
