@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 from __future__ import print_function
 import sys
 import tf
@@ -33,13 +33,13 @@ class MultiObs:
 
     def __init__(self):
 
-        # Pull constants from config file
+        #  Pull constants from config file
         self.min_trans = rospy.get_param('~min_trans', .25)
         self.max_velocity = rospy.get_param('~max_velocity', 1)
         self.min_observations = rospy.get_param('~min_observations', 30)
         self.camera = rospy.get_param('~camera_topic',
                                       '/camera/front/left/image_rect_color')
-        # Instantiate remaining variables and objects
+        #  Instantiate remaining variables and objects
         self._observations = deque()
         self._pose_pairs = deque()
         self._times = deque()
@@ -61,7 +61,7 @@ class MultiObs:
         self.enabled = False
         self.bridge = CvBridge()
         self.print_info = FprintFactory(title=MISSION).fprint
-        # Image Subscriber and Camera Information
+        #  Image Subscriber and Camera Information
         self.point_sub = rospy.Subscriber(
             '/roi_pub', RegionOfInterest, self.acquire_targets)
         self.image_sub = Image_Subscriber(self.camera, self.image_cb)
@@ -73,12 +73,12 @@ class MultiObs:
         self.markerPub0 = rospy.Publisher('estMarker0', Marker, queue_size=1)
         self.markerPub1 = rospy.Publisher('estMarker1', Marker, queue_size=1)
         self.markerPub2 = rospy.Publisher('estMarker2', Marker, queue_size=1)
-        # Ros Services so mission can be toggled and info requested
+        #  Ros Services so mission can be toggled and info requested
         rospy.Service('~enable', SetBool, self.toggle_search)
         self.multi_obs = MultiObservation(self.camera_model)
         rospy.Service('~pose', VisionRequest, self.request_board3d)
 
-        # Debug
+        #  Debug
         self.debug = rospy.get_param('~debug', True)
 
     def image_cb(self, image):
@@ -112,12 +112,12 @@ class MultiObs:
         if not self.enabled:
             print("REEEE")
             return VisionRequestResponse(found=False)
-        #buoy = self.buoys[srv.target_name]
+        # buoy = self.buoys[srv.target_name]
         if self.est is None:
             self.print_info("NO ESTIMATE!")
             return VisionRequestResponse(found=False)
-        # NOTE: returns normal vec encoded into a quaternion message (so not
-        # actually a quaternion)
+        #  NOTE: returns normal vec encoded into a quaternion message (so not
+        #  actually a quaternion)
         return VisionRequestResponse(
             pose=PoseStamped(
                 header=Header(stamp=rospy.Time.now(), frame_id='/map'),
@@ -126,10 +126,10 @@ class MultiObs:
             found=True)
 
     def clear_old_observations(self):
-        # Observations older than three seconds are discarded.
-        # print(self._observations)
-        # print(self._observations1)
-        # print(self._observations2)
+        #  Observations older than three seconds are discarded.
+        #  print(self._observations)
+        #  print(self._observations1)
+        #  print(self._observations2)
         return
 
     def size(self):
@@ -166,8 +166,8 @@ class MultiObs:
     def generate_plane(self):
         ab = self.est - self.est1
         ac = self.est - self.est2
-        # print("AB: ", ab)
-        # print("AC: ", ac)
+        #  print("AB: ", ab)
+        #  print("AC: ", ac)
         x = np.cross(ab, ac)
         return x / np.linalg.norm(x)
 
@@ -177,7 +177,7 @@ class MultiObs:
         robotMarker.header.stamp = rospy.get_rostime()
         robotMarker.ns = point_name
         robotMarker.id = 0
-        robotMarker.type = 2  # sphere
+        robotMarker.type = 2  #  sphere
         robotMarker.action = 0
         robotMarker.pose.position = Point(point[0], point[1], point[2])
         robotMarker.pose.orientation.x = 0
@@ -199,8 +199,8 @@ class MultiObs:
     def acquire_targets(self, roi):
         if not self.enabled:
             return
-        # NOTE: point.z contains the timestamp of the image when it was
-        # processed in the neural net.
+        #  NOTE: point.z contains the timestamp of the image when it was
+        #  processed in the neural net.
         x0 = roi.x_offset
         y0 = roi.y_offset
         height = roi.height
@@ -210,8 +210,8 @@ class MultiObs:
         point1 = np.array([x0 + width, y0])
         point2 = np.array([x0, y0 + height])
         point3 = np.array([x0 + width, y0 + height])
-        # print("p1: ", point1)
-        # print("p2: ", point2)
+        #  print("p1: ", point1)
+        #  print("p2: ", point2)
         try:
             self.tf_listener.waitForTransform('/map',
                                               '/front_left_cam_optical',
@@ -242,12 +242,12 @@ class MultiObs:
                 observations1, pose_pairs1)
             self.est2 = self.multi_obs.lst_sqr_intersection(
                 observations2, pose_pairs2)
-            # print('est1: ', self.est1)
-            # print('est2: ', self.est2)
+            #  print('est1: ', self.est1)
+            #  print('est2: ', self.est2)
             self.status = 'Pose found'
             self.print_info("Pose Found!")
             self.plane = self.generate_plane()
-            # print("Plane: ", self.plane)
+            #  print("Plane: ", self.plane)
             self.markerPub0.publish(self.marker_msg(self.est, 'est0'))
             self.markerPub1.publish(self.marker_msg(self.est1, 'est1'))
             self.markerPub2.publish(self.marker_msg(self.est2, 'est2'))

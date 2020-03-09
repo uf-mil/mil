@@ -11,7 +11,7 @@ DEBUG = 0
 
 
 def run(samples, sample_rate, v_sound, dist_h, dist_h4):
-    # Perform algorithm
+    #  Perform algorithm
     if DEBUG:
         plt.cla()
     if DEBUG:
@@ -36,7 +36,7 @@ def run(samples, sample_rate, v_sound, dist_h, dist_h4):
     else:
         pos = numpy.empty(0)
 
-    # Check for errors
+    #  Check for errors
     errors = []
     if amplitude < 80:
         errors.append('Low amplitude at maximum frequency')
@@ -74,7 +74,7 @@ def compute_freq(samples, sample_rate, freq_range, plot=False):
     """Checks whether samples are likely a solid ping and returns the frequency."""
     samples_window = samples * numpy.hamming(samples.shape[1])
 
-    # Compute fft, find peaks in desired range
+    #  Compute fft, find peaks in desired range
     fft_length = samples.shape[1]
     samples_fft = numpy.absolute(
         numpy.fft.fft(samples_window, fft_length,
@@ -83,7 +83,7 @@ def compute_freq(samples, sample_rate, freq_range, plot=False):
     peaks = bin_range[0] + numpy.argmax(
         samples_fft[:, bin_range[0]:bin_range[1]], axis=1)
 
-    # Sort peaks, take mean of the middle
+    #  Sort peaks, take mean of the middle
     middle_peaks = numpy.sort(peaks)[len(peaks) // 4:
                                      len(peaks) - len(peaks) // 4]
     peak = numpy.mean(middle_peaks)
@@ -107,7 +107,7 @@ def preprocess(samples, sample_rate, desired_sample_rate):
     samples = bandpass(samples, sample_rate)
     samples = normalize(samples)
 
-    # Upsample each channel
+    #  Upsample each channel
     upfact = int(round(desired_sample_rate / sample_rate))
     upsamples = numpy.empty((samples.shape[0], samples.shape[1] * upfact))
     for i in xrange(samples.shape[0]):
@@ -117,7 +117,7 @@ def preprocess(samples, sample_rate, desired_sample_rate):
 
 def bandpass(samples, sample_rate):
     """Applies a 20-30khz bandpass FIR filter"""
-    # 25-40KHz is the range of the pinger for the roboboat competition
+    #  25-40KHz is the range of the pinger for the roboboat competition
     fir = scipy.signal.firwin(
         128, [19e3 / (sample_rate / 2), 41e3 / (sample_rate / 2)],
         window='hann',
@@ -201,9 +201,9 @@ def calculate_error(channel, start, stop, template):
     width = template.shape[0]
     res = numpy.zeros(stop - start)
     for i in xrange(start, stop):
-        # used to use mean absolute difference; now using (negative) pearson
-        # correlation coefficient to be invariant to scale/shift
-        #res[i - start] = numpy.mean(numpy.abs(channel[i:i + width] - template))
+        #  used to use mean absolute difference; now using (negative) pearson
+        #  correlation coefficient to be invariant to scale/shift
+        # res[i - start] = numpy.mean(numpy.abs(channel[i:i + width] - template))
         res[i - start] = -numpy.corrcoef(channel[i:i + width], template)[0, 1]
     return res
 

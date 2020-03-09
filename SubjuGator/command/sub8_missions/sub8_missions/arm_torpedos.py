@@ -46,8 +46,8 @@ class FireTorpedos(SubjuGator):
         self.print_good = FprintFactory(
             title=MISSION, msg_color="green").fprint
 
-        # B = bottom; T = Top; L = left; R = right; C = center; O = unblocked;
-        # X = blocked;
+        #  B = bottom; T = Top; L = left; R = right; C = center; O = unblocked;
+        #  X = blocked;
         self.targets = {
             'TCX': Target(),
             'TRX': Target(),
@@ -106,13 +106,13 @@ class FireTorpedos(SubjuGator):
             if self.targets[target].position is not None:
                 print("TARGET IS NOT NONE")
                 info += target + ' '
-            yield self.nh.sleep(0.1)  # Throttle service calls
+            yield self.nh.sleep(0.1)  #  Throttle service calls
             self.print_info(info)
 
     @util.cancellableInlineCallbacks
     def pattern(self):
         self.print_info('Descending to Depth...')
-        # yield self.move.depth(1.5).go(blind=self.BLIND, speed=0.1)
+        #  yield self.move.depth(1.5).go(blind=self.BLIND, speed=0.1)
         yield self.move.left(1).go(blind=self.BLIND, speed=0.5)
         yield self.nh.sleep(2)
         yield self.move.right(2).go(blind=self.BLIND, speed=0.5)
@@ -121,38 +121,38 @@ class FireTorpedos(SubjuGator):
         yield self.nh.sleep(2)
         yield self.move.down(0.5).go(blind=self.BLIND, speed=0.5)
         yield self.nh.sleep(2)
-        # def err():
-        #self.print_info('Search pattern canceled')
+        #  def err():
+        # self.print_info('Search pattern canceled')
 
-        #self.pattern_done = False
-        # for i, move in enumerate(self.moves[self.move_index:]):
-        #move = self.move.relative(np.array(move)).go(blind=self.BLIND, speed=0.1)
-        # yield self.nh.sleep(2)
-        # move.addErrback(err)
-        # yield move
-        #self.move_index = i + 1
-        #self.print_bad('Pattern finished. Firing at any locked targets.')
-        #self.pattern_done = True
+        # self.pattern_done = False
+        #  for i, move in enumerate(self.moves[self.move_index:]):
+        # move = self.move.relative(np.array(move)).go(blind=self.BLIND, speed=0.1)
+        #  yield self.nh.sleep(2)
+        #  move.addErrback(err)
+        #  yield move
+        # self.move_index = i + 1
+        # self.print_bad('Pattern finished. Firing at any locked targets.')
+        # self.pattern_done = True
 
     @util.cancellableInlineCallbacks
     def fire(self, target):
         self.print_info("FIRING {}".format(target))
         target_pose = self.targets[target].position
-        yield self.move.go(blind=self.BLIND, speed=0.1)  # Station hold
+        yield self.move.go(blind=self.BLIND, speed=0.1)  #  Station hold
         transform = yield self._tf_listener.get_transform('/map', '/base_link')
-        # target_position = transform._q_mat.dot(
-        #         target_pose - transform._p)
+        #  target_position = transform._q_mat.dot(
+        #          target_pose - transform._p)
 
         sub_pos = yield self.tx_pose()
         print('Current Sub Position: ', sub_pos)
 
-        # sub_pos = transform._q_mat.dot(
-        #        (sub_pos[0]) - transform._p)
-        #target_position = sub_pos[0] - target_pose
+        #  sub_pos = transform._q_mat.dot(
+        #         (sub_pos[0]) - transform._p)
+        # target_position = sub_pos[0] - target_pose
         print('Moving to Target Position: ', target_pose)
         target_position = target_pose + self.normal
-        # yield self.move.look_at_without_pitching(target_position).go(
-        #     blind=self.BLIND, speed=.25)
+        #  yield self.move.look_at_without_pitching(target_position).go(
+        #      blind=self.BLIND, speed=.25)
         print('Target normal: ', self.normal)
         print('Point: ', target_position)
         yield self.move.set_position(np.array([target_position[0], target_position[1], target_position[2]])).go(blind=True, speed=.5)
@@ -179,7 +179,7 @@ class FireTorpedos(SubjuGator):
         '''
         if self.targets[target].destroyed:
             pass
-            # temp = target
+            #  temp = target
         elif self.targets[target].position is not None:
             return target
         elif self.pattern_done and self.targets[target].position is not None:
@@ -189,8 +189,8 @@ class FireTorpedos(SubjuGator):
 
     @util.cancellableInlineCallbacks
     def run(self, args):
-        # start_time = yield self.nh.get_time()  # Store time mission
-        # starts for timeout
+        #  start_time = yield self.nh.get_time()  #  Store time mission
+        #  starts for timeout
 
         self.print_info("Enabling Perception")
         self.print_info("{}, Ree".format(self.vision_proxies.xyz_points))

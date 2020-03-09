@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 from __future__ import division
 import txros
 import numpy as np
@@ -42,14 +42,14 @@ class Vrx(Navigator):
             "/vrx/wayfinding/mean_error", Float64)
         Vrx.perception_landmark = Vrx.nh.advertise(
             "/vrx/perception/landmark", GeoPoseStamped)
-        #Vrx.scan_dock_placard_symbol = Vrx.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
+        # Vrx.scan_dock_placard_symbol = Vrx.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
 
         Vrx.front_left_camera_info_sub = None
         Vrx.front_left_camera_sub = None
 
         Vrx._vrx_init = True
 
-    # @txros.util.cancellableInlineCallbacks
+    #  @txros.util.cancellableInlineCallbacks
     def cleanup(self):
         pass
 

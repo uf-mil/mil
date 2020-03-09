@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 import txros
 import numpy as np
 from vrx import Vrx
@@ -67,7 +67,7 @@ class ScanTheCode(Vrx):
 
         yield self.move.look_at(pose).set_position(pose).backward(5).go()
         yield self.nh.sleep(5)
-        # get updated points and tf now that we a closer
+        #  get updated points and tf now that we a closer
         stc_query = yield self.get_sorted_objects(name='stc_platform', n=1)
         stc = stc_query[0][0]
         tf = yield self.tf_listener.get_transform(CAMERA_LINK_OPTICAL, 'enu')
@@ -111,13 +111,13 @@ class ScanTheCode(Vrx):
             self.image_debug_pub.publish(mask_msg)
             features = np.array(
                 self.classifier.get_features(img, mask)).reshape(1, 9)
-            #print features
+            # print features
             class_probabilities = self.classifier.feature_probabilities(features)[
                 0]
             most_likely_index = np.argmax(class_probabilities)
             most_likely_name = self.classifier.CLASSES[most_likely_index]
             probability = class_probabilities[most_likely_index]
-            #print most_likely_name
+            # print most_likely_name
             if most_likely_name == 'off':
                 sequence = []
             elif sequence == [] or most_likely_name != sequence[-1]:
@@ -133,49 +133,49 @@ class ScanTheCode(Vrx):
 
         try:
             yield self.sequence_report(color_sequence)
-        except Exception as e:  # catch error incase vrx scroing isnt running
+        except Exception as e:  #  catch error incase vrx scroing isnt running
             print e
 
     @txros.util.cancellableInlineCallbacks
     def find_stc(self):
         pose = None
-        # see if we already got scan the code tower
+        #  see if we already got scan the code tower
         try:
             _, poses = yield self.get_sorted_objects(name='stc_platform', n=1)
             pose = poses[0]
-        # incase stc platform not already identified
+        #  incase stc platform not already identified
         except Exception as e:
-            # get all pcodar objects
+            #  get all pcodar objects
             try:
                 _, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
-            # if no pcodar objects, drive forward
+            #  if no pcodar objects, drive forward
             except Exception as e:
                 yield self.move.forward(50).go()
-                # get all pcodar objects
+                #  get all pcodar objects
                 _, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
-                # if still no pcodar objects, guess RGB and exit mission
-            # go to nearest obj to get better data on that obj
+                #  if still no pcodar objects, guess RGB and exit mission
+            #  go to nearest obj to get better data on that obj
             print 'going to nearest object'
             yield self.move.set_position(poses[0]).go()
-            # get data on closest obj
+            #  get data on closest obj
             msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=1)
             if np.linalg.norm(rosmsg_to_numpy(msgs[0].scale)) > 6.64:
-                # much bigger than scale of stc
-                # then we found the dock
+                #  much bigger than scale of stc
+                #  then we found the dock
                 yield self.pcodar_label(msgs[0].id, 'dock')
-                # get other things
+                #  get other things
                 msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=1)
-                # if no other things, throw error and exit mission
+                #  if no other things, throw error and exit mission
                 yield self.pcodar_label(msgs[0].id, 'stc_platform')
                 pose = poses[0]
-            else:  # if about same size as stc, lable it stc
+            else:  #  if about same size as stc, lable it stc
                 yield self.pcodar_label(msgs[0].id, 'stc_platform')
                 pose = poses[0]
         defer.returnValue(pose)
 
 
 def z_filter(db_obj_msg):
-    # do a z filter for the led points
+    #  do a z filter for the led points
     top = max(db_obj_msg.points, key=attrgetter('z')).z
     points = np.array([[i.x, i.y, i.z] for i in db_obj_msg.points
                        if i.z < top - LED_PANNEL_MAX and i.z > top - LED_PANNEL_MIN])

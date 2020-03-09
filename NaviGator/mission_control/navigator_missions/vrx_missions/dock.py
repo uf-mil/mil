@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 import txros
 import numpy as np
 from vrx import Vrx
@@ -61,7 +61,7 @@ class Dock(Vrx):
 
         pose = yield self.find_dock()
         yield self.move.look_at(pose).set_position(pose).backward(20).go()
-        # get updated points now that we a closer
+        #  get updated points now that we a closer
         dock, pose = yield self.get_sorted_objects(name='dock', n=1)
         dock = dock[0]
         position, quat = pose_to_numpy(dock.pose)
@@ -74,7 +74,7 @@ class Dock(Vrx):
         yield self.move.set_position((bbox_enu + position)).look_at(position).go()
         curr_color, masked_image = yield self.get_color()
         if curr_color != self.color:
-            # Dock at the other side of the dock, no further perception
+            #  Dock at the other side of the dock, no further perception
             yield self.move.backward(5).go()
             yield self.move.set_position((-bbox_enu + position)).look_at(position).go()
             yield self.dock()
@@ -83,21 +83,21 @@ class Dock(Vrx):
                 print 'shapes match'
                 yield self.dock()
             else:
-                # go to other one
+                #  go to other one
                 yield self.move.backward(5).go()
                 yield self.move.set_position((-bbox_enu + position)).look_at(position).go()
                 curr_color, _ = yield self.get_color()
 
                 task_info = yield self.task_info_sub.get_next_message()
                 if curr_color != self.color and task_info.remaining_time.secs >= 60:
-                    # if we got the right color on the other side and the wrong color on this side,
-                    # go dock in the other side
+                    #  if we got the right color on the other side and the wrong color on this side,
+                    #  go dock in the other side
                     yield self.move.backward(5).go()
                     yield self.move.set_position((bbox_enu + position)).look_at(position).go()
                     yield self.dock()
                 else:
-                    # this side is the right color
-                    # Dock at the other side of the dock, no further perception
+                    #  this side is the right color
+                    #  Dock at the other side of the dock, no further perception
                     yield self.dock()
         yield self.send_feedback('Done!')
 
@@ -144,13 +144,13 @@ class Dock(Vrx):
 
     @txros.util.cancellableInlineCallbacks
     def find_dock(self):
-        # see if we already got scan the code tower
+        #  see if we already got scan the code tower
         try:
             _, poses = yield self.get_sorted_objects(name='dock', n=1)
             pose = poses[0]
-        # incase stc platform not already identified
+        #  incase stc platform not already identified
         except Exception as e:
-            # get all pcodar objects
+            #  get all pcodar objects
             msgs = None
             while msgs is None:
                 try:
@@ -158,7 +158,7 @@ class Dock(Vrx):
                 except Exception as e:
                     yield self.move.forward(10).go()
             yield self.pcodar_label(msgs[0].id, 'dock')
-            # if no pcodar objects, throw error, exit mission
+            #  if no pcodar objects, throw error, exit mission
             pose = poses[0]
         defer.returnValue(pose)
 
@@ -215,12 +215,12 @@ class Dock(Vrx):
 
             features = np.array(
                 self.classifier.get_features(img, mask)).reshape(1, 9)
-            #print features
+            # print features
             class_probabilities = self.classifier.feature_probabilities(features)[
                 0]
             most_likely_index = np.argmax(class_probabilities)
             most_likely_name = self.classifier.CLASSES[most_likely_index]
-            #print most_likely_name
+            # print most_likely_name
             sequence.append(most_likely_name)
         mode = max(set(sequence), key=sequence.count)
         print 'detected as ', mode
@@ -232,7 +232,7 @@ def vec3_to_np(vec):
 
 
 def z_filter(db_obj_msg):
-    # do a z filter for the led points
+    #  do a z filter for the led points
     top = max(db_obj_msg.points, key=attrgetter('z')).z
     points = np.array([[i.x, i.y, i.z] for i in db_obj_msg.points
                        if i.z < top - PANNEL_MAX and i.z > top - PANNEL_MIN])

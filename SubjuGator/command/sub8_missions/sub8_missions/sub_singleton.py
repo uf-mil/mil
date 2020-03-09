@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 from __future__ import division
 
 import genpy
@@ -11,7 +11,7 @@ import mil_ros_tools
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
 from mil_msgs.srv import SetGeometry, SetGeometryRequest
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
-#from sub8_msgs.srv import SetValve, SetValveRequest
+# from sub8_msgs.srv import SetValve, SetValveRequest
 from sub8_actuator_board.srv import SetValve, SetValveRequest
 from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
 from nav_msgs.msg import Odometry
@@ -36,9 +36,9 @@ class VisionProxy(object):
             object of intrest in real world or pixel
         - All services need to have the same root, for example:
             A buoy finder node may provide the following:
-            /vision/buoy_finder/enable  # Starts and stops the perception (type = setBool)
-            /vision/buoy_finder/2D      # Returns the pixel coordinates for the buoy (type = VisionRequest2D)
-            /vision/buoy_finder/pose    # Returns a 3d pose of the buoy (type = VisionRequest)
+            /vision/buoy_finder/enable  #  Starts and stops the perception (type = setBool)
+            /vision/buoy_finder/2D      #  Returns the pixel coordinates for the buoy (type = VisionRequest2D)
+            /vision/buoy_finder/pose    #  Returns a 3d pose of the buoy (type = VisionRequest)
     '''
 
     def __init__(self, service_root, nh):
@@ -141,7 +141,7 @@ class _PoseProxy(object):
         self._pose = pose
         self.print_only = print_only
 
-    # Normal moves get routed here
+    #  Normal moves get routed here
     def __getattr__(self, name):
         def sub_attr_proxy(*args, **kwargs):
             return _PoseProxy(
@@ -151,7 +151,7 @@ class _PoseProxy(object):
 
         return sub_attr_proxy
 
-    # Some special moves
+    #  Some special moves
     def to_height(self, height):
         dist_to_bot = self._sub._dvl_range_sub.get_last_message()
         delta_height = dist_to_bot.range - height
@@ -162,7 +162,7 @@ class _PoseProxy(object):
         Current checks are:
             - End goal can't be above the water
         '''
-        # End goal can't be above the water
+        #  End goal can't be above the water
         if self._pose.position[2] > 0:
             print "GOAL TOO HIGH"
             self._pos.position = -0.6
@@ -269,7 +269,7 @@ class SubjuGator(BaseMission):
     def pose(self):
         last_odom_msg = self._odom_sub.get_last_message()
         if self.test_mode:
-            last_odom_msg = Odometry()  # All 0's
+            last_odom_msg = Odometry()  #  All 0's
         pose = pose_editor.PoseEditor.from_Odometry(last_odom_msg)
         return pose
 
@@ -327,7 +327,7 @@ class Searcher(object):
         else:
             print "SEARCHER - There was an error."
             print failure.printTraceback()
-            # Handle error
+            #  Handle error
 
     @util.cancellableInlineCallbacks
     def start_search(self, timeout=60, loop=True, spotings_req=2, speed=.1):
@@ -340,7 +340,7 @@ class Searcher(object):
         start_time = self.sub.nh.get_time()
         while self.sub.nh.get_time() - start_time < genpy.Duration(timeout):
 
-            # If we find the object
+            #  If we find the object
             if self.object_found:
                 searcher.cancel()
                 print "SEARCHER - Object found."
@@ -506,10 +506,10 @@ class SonarObjects(object):
 
         for pose in self.pattern:
             yield pose.go(speed=speed, blind=True)
-            # sleep
+            #  sleep
             yield self.sub.nh.sleep(0.1)
 
-            # Break out of loop if we find something satisifying function
+            #  Break out of loop if we find something satisifying function
             res = yield self._objects_service(ObjectDBQueryRequest())
             g_obj = self._get_objects_within_cone(res.objects, start_point,
                                                   ray, angle_tol, distance_tol)

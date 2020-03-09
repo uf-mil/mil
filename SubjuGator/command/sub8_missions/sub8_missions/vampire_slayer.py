@@ -53,23 +53,23 @@ class VampireSlayer(SubjuGator):
         model = PinholeCameraModel()
         model.fromCameraInfo(cam_info)
 
-     #   enable_service = self.nh.get_service_client("/vamp/enable", SetBool)
-     #   yield enable_service(SetBoolRequest(data=True))
+     #    enable_service = self.nh.get_service_client("/vamp/enable", SetBool)
+     #    yield enable_service(SetBoolRequest(data=True))
 
-#        try:
-#            vamp_txros = yield self.nh.get_service_client('/guess_location',
-#                                                          GuessRequest)
-#            vamp_req = yield vamp_txros(GuessRequestRequest(item='vampire_slayer'))
-#            if vamp_req.found is False:
-#                use_prediction = False
-#                fprint(
-#                    'Forgot to add vampires to guess?',
-#                    msg_color='yellow')
-#            else:
-#                fprint('Found vampires.', msg_color='green')
-#                yield self.move.set_position(mil_ros_tools.rosmsg_to_numpy(vamp_req.location.pose.position)).depth(0.5).go(speed=0.4)
-#        except Exception as e:
-#            fprint(e)
+#         try:
+#             vamp_txros = yield self.nh.get_service_client('/guess_location',
+#                                                           GuessRequest)
+#             vamp_req = yield vamp_txros(GuessRequestRequest(item='vampire_slayer'))
+#             if vamp_req.found is False:
+#                 use_prediction = False
+#                 fprint(
+#                     'Forgot to add vampires to guess?',
+#                     msg_color='yellow')
+#             else:
+#                 fprint('Found vampires.', msg_color='green')
+#                 yield self.move.set_position(mil_ros_tools.rosmsg_to_numpy(vamp_req.location.pose.position)).depth(0.5).go(speed=0.4)
+#         except Exception as e:
+#             fprint(e)
 
         markers = MarkerArray()
         pub_markers = yield self.nh.advertise('/torpedo/rays', MarkerArray)
@@ -103,32 +103,32 @@ class VampireSlayer(SubjuGator):
             target_pose = rosmsg_to_numpy(res.pose.pose.position)
             target_normal = rosmsg_to_numpy(res.pose.pose.orientation)[:2]
             print('Normal: ', target_normal)
-            yield self.move.go(blind=True, speed=0.1)  # Station hold
+            yield self.move.go(blind=True, speed=0.1)  #  Station hold
             transform = yield self._tf_listener.get_transform('/map', '/base_link')
             target_position = target_pose
-#            target_position = target_pose / target_normal
+#             target_position = target_pose / target_normal
 
             sub_pos = yield self.tx_pose()
             print('Current Sub Position: ', sub_pos)
 
             print('Map Position: ', target_position)
-            #sub_pos = transform._q_mat.dot(sub_pos[0] - transform._p)
-            #target_position = target_position - sub_pos[0]
-            # yield self.move.look_at_without_pitching(target_position).go(blind=True, speed=.25)
-            # yield self.move.relative(np.array([0, target_position[1], 0])).go(blind=True, speed=.1)
-            # Don't hit buoy yet
+            # sub_pos = transform._q_mat.dot(sub_pos[0] - transform._p)
+            # target_position = target_position - sub_pos[0]
+            #  yield self.move.look_at_without_pitching(target_position).go(blind=True, speed=.25)
+            #  yield self.move.relative(np.array([0, target_position[1], 0])).go(blind=True, speed=.1)
+            #  Don't hit buoy yet
             print("MOVING TO X: ", target_position[0])
             print("MOVING TO Y: ", target_position[1])
             yield self.move.set_position(np.array([target_position[0], target_position[1], target_position[2]])).go(
                 blind=True, speed=.1)
-            # Go behind it
-            #print('Going behind target')
-            # yield self.move.right(4).go(speed=1)
-            # yield self.move.forward(4).go(speed=1)
-            # yield self.move.left(4).go(speed=1)
-            # Hit buoy
-            #print('Hitting Target')
-            # yield self.move.strafe_backward(Y_OFFSET).go(speed=1)
+            #  Go behind it
+            # print('Going behind target')
+            #  yield self.move.right(4).go(speed=1)
+            #  yield self.move.forward(4).go(speed=1)
+            #  yield self.move.left(4).go(speed=1)
+            #  Hit buoy
+            # print('Hitting Target')
+            #  yield self.move.strafe_backward(Y_OFFSET).go(speed=1)
             print_info(
                 "Slaying the Vampire, good job Inquisitor.")
             sub_pos = yield self.tx_pose()
@@ -148,6 +148,6 @@ class VampireSlayer(SubjuGator):
             markers.markers.append(marker)
             pub_markers.publish(markers)
 
-            yield self.nh.sleep(0.5)  # Throttle service calls
-            # print_info(info)
+            yield self.nh.sleep(0.5)  #  Throttle service calls
+            #  print_info(info)
             self.vision_proxies.xyz_points.stop()
