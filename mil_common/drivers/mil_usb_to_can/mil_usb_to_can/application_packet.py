@@ -21,7 +21,8 @@ class ApplicationPacket(object):
         self.payload = payload
 
     def to_bytes(self):
-        return struct.pack('B{}s'.format(len(self.payload)), self.identifier, self.payload)
+        return struct.pack('B{}s'.format(len(self.payload)),
+                           self.identifier, self.payload)
 
     @classmethod
     def from_bytes(cls, data, expected_identifier=None):
@@ -33,4 +34,5 @@ class ApplicationPacket(object):
         return packet
 
     def __str__(self):
-        return 'MilApplicationPacket(identifer={}, payload={})'.format(self.identifier, self.payload)
+        return 'MilApplicationPacket(identifer={}, payload={})'.format(
+            self.identifier, self.payload)

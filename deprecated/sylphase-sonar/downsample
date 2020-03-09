@@ -23,26 +23,26 @@ RESULT_DURATION = float(sys.argv[5]) if sys.argv[5:] else None
 SAMPLE_RATE = 48e3
 
 x = numpy.fromfile(IN_FILE, numpy.dtype('h').newbyteorder('>'))
-x = x.reshape((len(x)//4, 4))
+x = x.reshape((len(x) // 4, 4))
 x = x[:, CHANNEL]
 
-print 'capture length (seconds):', x.shape[0]/util.fs
+print 'capture length (seconds):', x.shape[0] / util.fs
 
-SAMPLE_RATIO = SAMPLE_RATE/util.fs * FREQ_RATIO
+SAMPLE_RATIO = SAMPLE_RATE / util.fs * FREQ_RATIO
 
-desired_input_samples = int(RESULT_DURATION*SAMPLE_RATE /
+desired_input_samples = int(RESULT_DURATION * SAMPLE_RATE /
                             SAMPLE_RATIO) if RESULT_DURATION is not None else len(x)
 
 new_length = 2**int(math.floor(math.log(min(desired_input_samples, len(x)), 2)))
 assert new_length <= len(x)
 x = x[:new_length]
 
-print 'trimmed capture length (seconds):', x.shape[0]/util.fs
+print 'trimmed capture length (seconds):', x.shape[0] / util.fs
 
 print 'sample ratio:', SAMPLE_RATIO
-print 'result length (seconds):', len(x)*SAMPLE_RATIO/SAMPLE_RATE
+print 'result length (seconds):', len(x) * SAMPLE_RATIO / SAMPLE_RATE
 
-x = scipy.signal.resample(x, int(len(x)*SAMPLE_RATIO))
+x = scipy.signal.resample(x, int(len(x) * SAMPLE_RATIO))
 
 scipy.io.wavfile.write(OUT_FILE, SAMPLE_RATE,
-                       (x/numpy.max(numpy.abs(x))*2**30).astype(numpy.int32))
+                       (x / numpy.max(numpy.abs(x)) * 2**30).astype(numpy.int32))

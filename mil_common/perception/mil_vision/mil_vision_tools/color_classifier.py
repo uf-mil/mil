@@ -199,7 +199,8 @@ class ContourClassifier(object):
             raise Exception('No labels found. Please check parameters')
         return np.array(label_features), np.array(label_classes)
 
-    def main(self, params, description="Interface with a contour classifier class"):
+    def main(self, params,
+             description="Interface with a contour classifier class"):
         '''
         Can be used to run a classifier as an executable for common tasks like extracting labels
         '''

@@ -70,7 +70,8 @@ class AlarmMonitor(object):
         else:
             status_window = self.screen.subwin(0, 0)
 
-        # Set a text string and background color for window depending on alarm status
+        # Set a text string and background color for window depending on alarm
+        # status
         status_str = 'UNKNOWN'
         description_str = None
         if self.last_alarm is not None:
@@ -99,7 +100,8 @@ class AlarmMonitor(object):
         if width >= len(status_str):
             status_window.addstr(
                 center, (width - len(status_str)) / 2, status_str)
-        if description_str is not None and width >= len(description_str) and height >= 4:
+        if description_str is not None and width >= len(
+                description_str) and height >= 4:
             status_window.addstr(
                 center + 1, (width - len(description_str)) / 2, description_str)
 
@@ -113,7 +115,8 @@ class AlarmMonitor(object):
         keycode = -1
         new_keycode = self.screen.getch()
 
-        # This eliminates building a buffer of keys that takes forever to process
+        # This eliminates building a buffer of keys that takes forever to
+        # process
         while ((new_keycode != -1) and (not rospy.is_shutdown())):
             keycode = new_keycode
             new_keycode = self.screen.getch()

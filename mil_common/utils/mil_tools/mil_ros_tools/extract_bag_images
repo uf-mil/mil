@@ -35,7 +35,8 @@ class BagImageExtractorSource(object):
     RECT_COLOR = 'rect_color'
     RAW = 'raw'
 
-    def __init__(self, filename, topic, start=None, stop=None, freq=None, encoding=None):
+    def __init__(self, filename, topic, start=None,
+                 stop=None, freq=None, encoding=None):
         '''
         @param filename: name of bag file. Can be an absolute path, or will be resolved relative
                          to specified dir when
@@ -165,7 +166,8 @@ class BagImageExtractorSource(object):
         next_time = start
         prefix = slugify(unicode(self.filename)) + '_' + \
             slugify(unicode(self.topic))
-        for _, msg, time in b.read_messages(topics=self.topic, start_time=start, end_time=stop):
+        for _, msg, time in b.read_messages(
+                topics=self.topic, start_time=start, end_time=stop):
             if time >= next_time:
                 next_time = time + interval
                 self._save_img(msg, time, image_dir, prefix=prefix)

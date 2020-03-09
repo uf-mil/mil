@@ -9,7 +9,8 @@ from utils import label_map_util
 rospack = rospkg.RosPack()
 TRAINED_MODEL_DIR = rospack.get_path(
     'sub8_perception') + '/ml_classifiers/dice'
-# Path to frozen detection graph. This is the actual model+weights that is used for the object detection.
+# Path to frozen detection graph. This is the actual model+weights that is
+# used for the object detection.
 PATH_TO_CKPT = TRAINED_MODEL_DIR + \
     '/frozen_graphs/faster_rcnn_243_dice_v2/frozen_inference_graph.pb'
 # List of the strings that is used to add correct label for each box.
@@ -80,7 +81,8 @@ def detect_objects(image_np, detection_graph, sess):
     '''
     # Definite input and output Tensors for detection_graph
     image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
-    # Each box represents a part of the image where a particular object was detected.
+    # Each box represents a part of the image where a particular object was
+    # detected.
     detection_boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
     # Each score represent how level of confidence for each of the objects.
     # Score is shown on the result image, together with the class label.
@@ -89,7 +91,8 @@ def detect_objects(image_np, detection_graph, sess):
         'detection_classes:0')
     num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
-    # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
+    # Expand dimensions since the model expects images to have shape: [1,
+    # None, None, 3]
     image_np_expanded = np.expand_dims(image_np, axis=0)
 
     (boxes, scores, classes, num) = sess.run(

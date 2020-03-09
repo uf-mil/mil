@@ -179,7 +179,9 @@ class FindTheBreakPerception(object):
             try:
                 frame = yield self.curr_image
             except util.TimeoutError:
-                fprint("Image isn't being received, fail mission", msg_color="red")
+                fprint(
+                    "Image isn't being received, fail mission",
+                    msg_color="red")
                 raise Exception("Image isn't being received")
 
             # get all the pipes in the current frame

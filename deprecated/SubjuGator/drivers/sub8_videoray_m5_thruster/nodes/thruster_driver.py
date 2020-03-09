@@ -51,7 +51,8 @@ class BusVoltageMonitor(object):
         ''' Adds voltage readings to buffer '''
         voltage = float(voltage)
 
-        # Only add if it makes sense (the M5's will give nonsense feedback at times)
+        # Only add if it makes sense (the M5's will give nonsense feedback at
+        # times)
         if voltage >= self.VMIN and voltage <= self.VMAX:
             self.buffer.append(self.VoltageReading(voltage, time))
             self.prune_buffer()
@@ -125,13 +126,15 @@ class ThrusterDriver(object):
         # Create ThrusterPort objects in a dict indexed by port name
         self.load_thruster_ports(ports_layout, thruster_definitions)
 
-        # Feedback on thrusters (thruster mapper blocks until it can use this service)
+        # Feedback on thrusters (thruster mapper blocks until it can use this
+        # service)
         self.thruster_info_service = rospy.Service(
             'thrusters/thruster_info', ThrusterInfo, self.get_thruster_info)
         self.status_publishers = {name: rospy.Publisher('thrusters/status/' + name, ThrusterStatus, queue_size=10)
                                   for name in self.thruster_to_port_map.keys()}
 
-        # These alarms require this service to be available before things will work
+        # These alarms require this service to be available before things will
+        # work
         rospy.wait_for_service("update_thruster_layout")
         self.update_thruster_out_alarm()
 
@@ -205,7 +208,8 @@ class ThrusterDriver(object):
         return thruster_info
 
     def check_alarm_status(self, alarm):
-        # If someone else cleared this alarm, we need to make sure to raise it again
+        # If someone else cleared this alarm, we need to make sure to raise it
+        # again
         if not alarm.raised and alarm.node_name != self._NODE_NAME:
             self.update_thruster_out_alarm()
 
@@ -298,7 +302,8 @@ class ThrusterDriver(object):
         self.bus_voltage_monitor.add_reading(
             message_keyword_args['bus_v'], rospy.Time.now())
 
-        # Undervolt/overvolt faults are unreliable (might not still be true - David)
+        # Undervolt/overvolt faults are unreliable (might not still be true -
+        # David)
         if message_keyword_args['fault'] > 2:
             fault_codes = {
                 (1 << 0): 'UNDERVOLT',

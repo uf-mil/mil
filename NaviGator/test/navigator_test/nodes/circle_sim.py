@@ -102,7 +102,8 @@ class Sim(object):
         # Let's make sure no buoys arae too close to the totems
         _buoy_positions = []
         for b in buoy_positions:
-            if np.all(np.linalg.norm(self.totem_positions - b, axis=1) > self.min_t_spacing):
+            if np.all(np.linalg.norm(self.totem_positions - b,
+                                     axis=1) > self.min_t_spacing):
                 _buoy_positions.append(b)
         self.buoy_positions = np.array(_buoy_positions)
         print len(self.buoy_positions)

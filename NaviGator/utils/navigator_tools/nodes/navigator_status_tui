@@ -23,7 +23,8 @@ class nav_tui(object):
 
         self.y, self.x = screen.getmaxyx()
         self.window = screen.subwin(self.y, self.x, 0, 0)
-        # Allows for escape sequences (ctrl-c) to be interpreted by the curses window
+        # Allows for escape sequences (ctrl-c) to be interpreted by the curses
+        # window
         self.window.keypad(1)
         # Creates a panel of window object, self.window
         self.panel = panel.new_panel(self.window)
@@ -31,7 +32,8 @@ class nav_tui(object):
         panel.update_panels()
         # Fixed rate for while loop to update at: 2 hz
         self.rate = rospy.Rate(2)
-        # The following are default field initalizations for various values that that will be overwritten
+        # The following are default field initalizations for various values
+        # that that will be overwritten
         self.voltage = 0
         self.wrench = None
         self.LAT = None
@@ -49,7 +51,8 @@ class nav_tui(object):
                             16: 'EMERGENCY_STOP', 32: 'SEPEX_EXCITATION_FAULT', 64: 'MOSFET_FAILURE',
                             128: 'STARTUP_CONFIG_FAULT'}
 
-        # Will try and access low/critical voltage ros parameters, if none are located default values are used
+        # Will try and access low/critical voltage ros parameters, if none are
+        # located default values are used
         self.lowThreshold = rospy.get_param('battery-voltage/low', default=26)
         self.criticalThreshold = rospy.get_param(
             'battery-voltage/critical', default=20)
@@ -88,7 +91,8 @@ class nav_tui(object):
         elif topic == '/BR_motor':
             self.BR_fault = status.fault
 
-    # Method for converting the 8-bit int sum fault value into a list of the corresponding faults
+    # Method for converting the 8-bit int sum fault value into a list of the
+    # corresponding faults
     def decode_fault_status(self, faults):
         ordered_faults = [128, 64, 32, 16, 8, 4, 2, 1]
         faults_list = []
@@ -155,7 +159,8 @@ class nav_tui(object):
                                " NaviGator Diagnostics TUI ", curses.color_pair(4))
 
             self.window.addstr(2, 0, kill_name, color)
-            # Displays kill status in red if the boat is killed, green otherwise
+            # Displays kill status in red if the boat is killed, green
+            # otherwise
             if self.raised:
                 self.window.addstr(3, 0, kill_raised, curses.color_pair(1))
             elif not self.raised:
@@ -165,7 +170,8 @@ class nav_tui(object):
             self.window.addstr(5, 0, 'Wrench Mode:', color)
             self.window.addstr(6, 0, wrench_mode, color)
 
-            # Displays voltage in a color corresponding to its state; green = okay, yellow = low, red = critical
+            # Displays voltage in a color corresponding to its state; green =
+            # okay, yellow = low, red = critical
             self.window.addstr(8, 0, 'Battery Voltage:', color)
             if self.voltage > self.lowThreshold:
                 self.window.addstr(9, 0, battery_voltage, curses.color_pair(3))

@@ -82,7 +82,8 @@ class TestPathMarker(unittest.TestCase):
             res_xy, correct_xy, err)
         self.assertLess(err,
                         20.0,
-                        # A little bit of tolerance given in precise ground truth. Will lower when new label system
+                        # A little bit of tolerance given in precise ground
+                        # truth. Will lower when new label system
                         msg=msg)
         # 5 degrees error accepted
         theta_err = abs(

@@ -37,7 +37,8 @@ class KeyboardServer(object):
         self.remote = RemoteControl("keyboard", "/wrench/keyboard")
         rospy.Service("/keyboard_control", KeyboardControl, self.key_recieved)
 
-        # Initialize this to a random UUID so that a client without a UUID cannot authenticate
+        # Initialize this to a random UUID so that a client without a UUID
+        # cannot authenticate
         self.locked_uuid = uuid.uuid4().hex
 
         # This maps each key to a remote control function
@@ -69,22 +70,26 @@ class KeyboardServer(object):
         and control of the service is locked to it.
         '''
 
-        # If the key pressed was L, locks control of the service to the clinet's UUID
+        # If the key pressed was L, locks control of the service to the
+        # clinet's UUID
         if (req.keycode == 76):
 
-            # Generates a new UUID for the client if it does not already have one
+            # Generates a new UUID for the client if it does not already have
+            # one
             if (req.uuid is ''):
                 self.locked_uuid = uuid.uuid4().hex
             else:
                 self.locked_uuid = req.uuid
             return {"generated_uuid": self.locked_uuid, "is_locked": True}
 
-        # If the key was from the client with locked control, pass it to execution
+        # If the key was from the client with locked control, pass it to
+        # execution
         elif (req.uuid == self.locked_uuid):
             self.execute_key(req.keycode)
             return {"generated_uuid": '', "is_locked": True}
 
-        # Ignore keys sent by a client that has not locked control of the service
+        # Ignore keys sent by a client that has not locked control of the
+        # service
         else:
             return {"generated_uuid": '', "is_locked": False}
 

@@ -59,7 +59,7 @@ class Image_Publisher(object):
         try:
             image_message = self.bridge.cv2_to_imgmsg(cv_image, self.encoding)
             self.im_pub.publish(image_message)
-        except CvBridgeError, e:
+        except CvBridgeError as e:
             # Intentionally absorb CvBridge Errors
             rospy.logerr(e)
 
@@ -101,7 +101,8 @@ class Image_Subscriber(object):
         rospy.sleep(.1)  # Make sure we don't have negative time
         start_time = rospy.Time.now()
 
-        while (rospy.Time.now() - start_time < timeout) and (not rospy.is_shutdown()):
+        while (rospy.Time.now() - start_time <
+               timeout) and (not rospy.is_shutdown()):
             if self.camera_info is not None:
                 rospy.loginfo("Camera info found!")
                 return self.camera_info
@@ -128,7 +129,7 @@ class Image_Subscriber(object):
             image = self.bridge.imgmsg_to_cv2(
                 data, desired_encoding=self.encoding)
             self.callback(image)
-        except CvBridgeError, e:
+        except CvBridgeError as e:
             # Intentionally absorb CvBridge Errors
             rospy.logerr(e)
 
@@ -141,7 +142,8 @@ class StereoImageSubscriber(object):
     cameras are received.
     '''
 
-    def __init__(self, left_image_topic, right_image_topic, callback=None, slop=None, encoding="bgr8", queue_size=10):
+    def __init__(self, left_image_topic, right_image_topic,
+                 callback=None, slop=None, encoding="bgr8", queue_size=10):
         '''
         Contruct a StereoImageSubscriber
 
@@ -183,7 +185,8 @@ class StereoImageSubscriber(object):
             lambda info: setattr(self, 'camera_info_right', info), queue_size=queue_size)
         image_sub_right = message_filters.Subscriber(right_image_topic, Image)
 
-        # Use message_filters library to set up synchronized subscriber to both image topics
+        # Use message_filters library to set up synchronized subscriber to both
+        # image topics
         if slop is None:
             self._image_sub = message_filters.TimeSynchronizer(
                 [image_sub_left, image_sub_right], queue_size)
@@ -235,6 +238,6 @@ class StereoImageSubscriber(object):
             img_right = self.bridge.imgmsg_to_cv2(
                 right_img, desired_encoding=self.encoding)
             self.callback(img_left, img_right)
-        except CvBridgeError, e:
+        except CvBridgeError as e:
             # Intentionally absorb CvBridge Errors
             rospy.logerr(e)

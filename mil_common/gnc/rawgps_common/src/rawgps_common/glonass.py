@@ -11,7 +11,8 @@ w_E = 0.729211510e-4
 # to be correct, should take precession and nutation into account too
 
 
-def inertial_from_ecef(t, (x, y, z)):
+def inertial_from_ecef(t, xxx_todo_changeme1):
+    (x, y, z) = xxx_todo_changeme1
     th = w_E * t  # needs offset
     return numpy.array([
         x * math.cos(th) - y * math.sin(th),
@@ -20,7 +21,8 @@ def inertial_from_ecef(t, (x, y, z)):
     ])
 
 
-def inertial_vel_from_ecef_vel(t, (x, y, z), inertial_point):
+def inertial_vel_from_ecef_vel(t, xxx_todo_changeme2, inertial_point):
+    (x, y, z) = xxx_todo_changeme2
     th = w_E * t  # needs offset
     return numpy.array([
         x * math.cos(th) - y * math.sin(th) - w_E * inertial_point[1],
@@ -29,7 +31,8 @@ def inertial_vel_from_ecef_vel(t, (x, y, z), inertial_point):
     ])
 
 
-def ecef_from_inertial(t, (x, y, z)):
+def ecef_from_inertial(t, xxx_todo_changeme3):
+    (x, y, z) = xxx_todo_changeme3
     th = w_E * t  # needs offset
     return numpy.array([
         +x * math.cos(th) + y * math.sin(th),
@@ -38,7 +41,8 @@ def ecef_from_inertial(t, (x, y, z)):
     ])
 
 
-def ecef_vel_from_inertial_vel(t, (x, y, z), inertial_point):
+def ecef_vel_from_inertial_vel(t, xxx_todo_changeme4, inertial_point):
+    (x, y, z) = xxx_todo_changeme4
     th = w_E * t  # needs offset
     x += w_E * inertial_point[1]
     y -= w_E * inertial_point[0]
@@ -95,7 +99,8 @@ class Ephemeris(object):
         mu = 398600.44e9
         C_20 = -1082.63e-6
 
-        def F(t, (x, y, z, vx, vy, vz)):
+        def F(t, xxx_todo_changeme):
+            (x, y, z, vx, vy, vz) = xxx_todo_changeme
             pos = numpy.array([x, y, z])
             pos_bar = pos / numpy.linalg.norm(pos)
             mu_bar = mu / numpy.linalg.norm(pos)**2
@@ -110,7 +115,9 @@ class Ephemeris(object):
 
         # print 'Y:', Y
 
-        return ecef_from_inertial(t, Y[:3]), ecef_vel_from_inertial_vel(t, Y[3:], Y[:3])
+        return ecef_from_inertial(
+            t, Y[:3]), ecef_vel_from_inertial_vel(t, Y[3:], Y[:3])
 
     def __str__(self):
-        return 'Ephemeris(\n' + ''.join('    %s=%r\n' % (k, v) for k, v in sorted(self.__dict__.iteritems())) + ')'
+        return 'Ephemeris(\n' + ''.join('    %s=%r\n' % (k, v)
+                                        for k, v in sorted(self.__dict__.iteritems())) + ')'

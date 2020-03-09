@@ -26,7 +26,8 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         self._kill_broadcaster = AlarmBroadcaster('hw-kill')
         # Alarm broadaster for GO command
         self._go_alarm_broadcaster = AlarmBroadcaster('go')
-        # Listens to hw-kill updates to ensure another nodes doesn't manipulate it
+        # Listens to hw-kill updates to ensure another nodes doesn't manipulate
+        # it
         self._hw_kill_listener = AlarmListener(
             'hw-kill', callback_funct=self.on_hw_kill)
         # Provide service for alarm handler to set/clear the motherboard kill

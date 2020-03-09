@@ -7,7 +7,8 @@ class TimeoutManager(object):
     def generate_timeouts(cls, time_left, real_time_left, missions_left):
         if time_left < 0:
             for i, m in enumerate(missions_left):
-                # Lets just give the next mission the rest of the time, for simplicity
+                # Lets just give the next mission the rest of the time, for
+                # simplicity
                 m.timeout = real_time_left
                 return
         weights = np.array([x.weight for x in missions_left], dtype=np.float32)

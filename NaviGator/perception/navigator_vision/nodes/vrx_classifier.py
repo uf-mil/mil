@@ -210,11 +210,13 @@ class VrxClassifier(object):
         distances = np.linalg.norm(positions_camera, axis=1)
         CUTOFF_METERS = 15
 
-        # Get a list of indicies of objects who are sufficiently close and can be seen by camera
+        # Get a list of indicies of objects who are sufficiently close and can
+        # be seen by camera
         met_criteria = []
         for i in xrange(len(self.last_objects.objects)):
             distance = distances[i]
-            if self.in_frame(pixel_centers[i]) and distance < CUTOFF_METERS and positions_camera[i][2] > 0:
+            if self.in_frame(
+                    pixel_centers[i]) and distance < CUTOFF_METERS and positions_camera[i][2] > 0:
                 met_criteria.append(i)
         # print 'Keeping {} of {}'.format(len(met_criteria), len(self.last_objects.objects))
 
@@ -247,7 +249,8 @@ class VrxClassifier(object):
             # Predict class probabilites based on color means
             class_probabilities = self.classifier.feature_probabilities(features)[
                 0]
-            # Use this and previous probabilities to guess at which object this is
+            # Use this and previous probabilities to guess at which object this
+            # is
             guess = self.update_object(object_msg, class_probabilities)
             # If training, save this
             if self.is_training and obj_title != 'UNKNOWN':

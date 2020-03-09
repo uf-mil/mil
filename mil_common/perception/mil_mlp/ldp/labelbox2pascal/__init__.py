@@ -61,7 +61,8 @@ def from_json(labeled_data, annotations_output_dir, images_output_dir,
             continue
 
 
-def write_label(label_id, image_url, labels, label_format, images_output_dir, annotations_output_dir):
+def write_label(label_id, image_url, labels, label_format,
+                images_output_dir, annotations_output_dir):
     "Writes a Pascal VOC formatted image and label pair to disk."
     # Download image and save it
     response = requests.get(image_url, stream=True)
@@ -103,7 +104,7 @@ def write_label(label_id, image_url, labels, label_format, images_output_dir, an
 
 def _add_pascal_object_from_wkt(xml_writer, img_height, wkt_data, label):
     polygons = []
-    if type(wkt_data) is list:  # V3+
+    if isinstance(wkt_data, list):  # V3+
         polygons = map(lambda x: wkt.loads(x['geometry']), wkt_data)
     else:  # V2
         polygons = wkt.loads(wkt_data)
@@ -111,7 +112,7 @@ def _add_pascal_object_from_wkt(xml_writer, img_height, wkt_data, label):
     for m in polygons:
         xy_coords = []
         for x, y in m.exterior.coords:
-            xy_coords.extend([x, img_height-y])
+            xy_coords.extend([x, img_height - y])
         # remove last polygon if it is identical to first point
         if xy_coords[-2:] == xy_coords[:2]:
             xy_coords = xy_coords[:-2]
@@ -124,13 +125,13 @@ def _add_pascal_object_from_xy(xml_writer, img_height, polygons, label):
         if 'geometry' in polygon:  # V3
             polygon = polygon['geometry']
         try:
-            assert type(polygon) is list  # V2 and V3
-        except:
+            assert isinstance(polygon, list)  # V2 and V3
+        except BaseException:
             print("Only one value of polygon, skipping...")
             continue
 
         xy_coords = []
         for x, y in [(p['x'], p['y']) for p in polygon]:
-            xy_coords.extend([x, img_height-y])
+            xy_coords.extend([x, img_height - y])
         xml_writer.addObject(name=label, xy_coords=xy_coords)
     return xml_writer

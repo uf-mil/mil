@@ -19,7 +19,8 @@ class ExtendedGoalManager(GoalManager):
     a goal that did not originate in this node.
     '''
 
-    def init_observe_goal(self, action_goal, transition_cb=None, feedback_cb=None):
+    def init_observe_goal(
+            self, action_goal, transition_cb=None, feedback_cb=None):
         csm = CommStateMachine(action_goal, transition_cb, feedback_cb,
                                self.send_goal_fn, self.cancel_fn)
         with self.list_mutex:
@@ -54,7 +55,8 @@ class ObserveActionClient(ActionClient):
         self.observer_feedback_cb = fn
 
     def _observer_transition_cb(self, goal, handler):
-        # TODO: delete from self.observe_goals when very old.... shouldnt really be a problem though
+        # TODO: delete from self.observe_goals when very old.... shouldnt
+        # really be a problem though
         if self.observer_transition_cb:
             self.observer_transition_cb(goal, handler)
 
@@ -158,7 +160,8 @@ class Dashboard(Plugin):
         self.connect_ui()
         self.reload_available_missions(None)
 
-        # Deals with problem when they're multiple instances of Dashboard plugin
+        # Deals with problem when they're multiple instances of Dashboard
+        # plugin
         if context.serial_number() > 1:
             self._widget.setWindowTitle(
                 self._widget.windowTitle() + (" (%d)" % context.serial_number()))
@@ -227,7 +230,8 @@ class Dashboard(Plugin):
         Load available missions from the ROS param set by the mission server. Called when the refresh
         button is hit and once on startup. Also clears the chained pane as it may now be invalid.
         '''
-        if not rospy.has_param('/available_missions'):  # If the param is not there, log this
+        if not rospy.has_param(
+                '/available_missions'):  # If the param is not there, log this
             self.ui_log(
                 'ERROR: /available_missions param not set. Perhaps mission runner is not running?')
             return

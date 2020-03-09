@@ -96,7 +96,7 @@ class classifier(object):
         Publishers:
         debug_image_pub: publishes the images showing what tensorflow has
         identified as path markers
-        bbox_pub: publishes the bounding boxes. 
+        bbox_pub: publishes the bounding boxes.
         '''
         self.debug_image_pub = rospy.Publisher(
             'path_debug', Image, queue_size=1)
@@ -171,7 +171,7 @@ class classifier(object):
 
     def parse_label_map(self):
         labelmap = rospack.get_path(
-            'sub8_perception')+'/datasets/' + self.target + '.pbtxt'
+            'sub8_perception') + '/datasets/' + self.target + '.pbtxt'
         with open(labelmap) as f:
             txt = f.read()
             labels = []

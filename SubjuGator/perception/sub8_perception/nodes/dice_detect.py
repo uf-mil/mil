@@ -68,7 +68,8 @@ class DiceDetect(object):
         # Change thresholds
         params.minThreshold = 0
         params.maxThreshold = 255
-        # The idea is that, we want to check all thresholds to take care of varied lighting conditions
+        # The idea is that, we want to check all thresholds to take care of
+        # varied lighting conditions
 
         # Filter by Area.
         params.filterByArea = True
@@ -152,7 +153,8 @@ class DiceDetect(object):
                             (int(keypoints[i].pt[0]), int(keypoints[i].pt[1])),
                             font_face, 1, (255, 255, 255), 1, cv2.LINE_AA)
 
-        # im_with_keypoints now displays image, keypoints and x, y values displayed as text
+        # im_with_keypoints now displays image, keypoints and x, y values
+        # displayed as text
 
         return d, im_with_keypoints, im_c
 

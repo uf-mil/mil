@@ -79,7 +79,8 @@ class OrangeRectangleFinder():
 
         self.tf_listener = tf.TransformListener()
 
-        # Create kalman filter to track 3d position and direction vector for marker in /map frame
+        # Create kalman filter to track 3d position and direction vector for
+        # marker in /map frame
         self.state_size = 5  # X, Y, Z, DY, DX
         self.filter = cv2.KalmanFilter(self.state_size, self.state_size)
         self.filter.transitionMatrix = 1. * \
@@ -217,12 +218,13 @@ class OrangeRectangleFinder():
             state = np.array(state, dtype=np.float32)
             self.filter.statePost = state
 
-    def _update_kf(self, (x, y, z, dy, dx)):
+    def _update_kf(self, xxx_todo_changeme):
         '''
         Updates the kalman filter using the pose estimation
         from the most recent frame. Also tracks time since last seen and how
         often is has been seen to set the boolean "found" for the vision request
         '''
+        (x, y, z, dy, dx) = xxx_todo_changeme
         if self.last_found_time_3D is None:  # First time found, set initial KF pose to this frame
             self._clear_filter((x, y, z, dy, dx))
             self.last_found_time_3D = self.image_sub.last_image_time
@@ -257,7 +259,8 @@ class OrangeRectangleFinder():
         rmat, _ = cv2.Rodrigues(rvec)
         vec = rmat[:, 0]
 
-        # Convert position estimate and 2d direction vector to messages to they can be transformed
+        # Convert position estimate and 2d direction vector to messages to they
+        # can be transformed
         ps = PointStamped()
         ps.header.frame_id = self.cam.tfFrame()
         ps.header.stamp = self.image_sub.last_image_time
@@ -280,7 +283,8 @@ class OrangeRectangleFinder():
             rospy.logwarn(
                 "Could not transform {} to /map error={}".format(self.cam.tfFrame(), err))
             return False
-        # Try to ensure vector always points the same way, so kf is not thrown off at some angles
+        # Try to ensure vector always points the same way, so kf is not thrown
+        # off at some angles
         if map_vec3.vector.y < 0.0:
             map_vec3.vector.y = -map_vec3.vector.y
             map_vec3.vector.x = -map_vec3.vector.x
@@ -339,7 +343,8 @@ class OrangeRectangleFinder():
         hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
         thresh = cv2.inRange(
             hsv, (0, self.thresh_saturation_low, 0), (self.thresh_hue_high, 255, 255))
-        return cv2.Canny(thresh, self.canny_low, self.canny_low * self.canny_ratio)
+        return cv2.Canny(thresh, self.canny_low,
+                         self.canny_low * self.canny_ratio)
 
     def _img_cb(self, img):
         if not self.enabled or self.cam is None:

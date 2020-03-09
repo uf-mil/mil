@@ -27,7 +27,8 @@ class ShaderReader(object):
 
                 current_shader_hierarchy = line[1:].strip().split(':')
 
-            # Don't parse any lines if the current shader has not been specified
+            # Don't parse any lines if the current shader has not been
+            # specified
             elif current_shader_hierarchy is None:
                 continue
 

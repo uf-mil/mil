@@ -121,4 +121,5 @@ class PnuematicActuatorDriver(object):
         return self._send_request(byte)
 
     def ping(self):
-        return self._send_request(Constants.PING_REQUEST, Constants.PING_RESPONSE)
+        return self._send_request(
+            Constants.PING_REQUEST, Constants.PING_RESPONSE)

@@ -141,7 +141,8 @@ class TBPoseEstimator(object):
             pose_tb_from_cam[3], np.array([[0], [1], [0]]))[:3, :3]
         trans_tb_from_cam = np.array([
             [pose_tb_from_cam[0]], [pose_tb_from_cam[1]], [-pose_tb_from_cam[2]]])
-        # TODO: figure out why a negative is needed above, is there a problem with my frames?
+        # TODO: figure out why a negative is needed above, is there a problem
+        # with my frames?
         homogenizer = np.array([[0, 0, 0, 1]])
         tf_cam_from_tb_hom = np.vstack((
             np.hstack((

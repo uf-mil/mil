@@ -71,7 +71,8 @@ class BagToLabelMe(object):
     - add enocoding option somewhere for how bag image will be encoded to a jpg (rgb, mono, etc)
     """
 
-    def __init__(self, config, labelme_dir='labelme', verbose=False, indir='', outdir='', force=False):
+    def __init__(self, config, labelme_dir='labelme',
+                 verbose=False, indir='', outdir='', force=False):
         """
         @param config: configuration dictionary in valid format, also see from_yaml_file
         @param labelme_dir: directory of labelme instance
@@ -169,9 +170,11 @@ class BagToLabelMe(object):
         interval = rospy.Duration(
             1.0 / config.freq) if config.freq else rospy.Duration(0)
 
-        # Crawl through bag in configured time and frequency, writing images into labelme
+        # Crawl through bag in configured time and frequency, writing images
+        # into labelme
         next_time = start + interval
-        for topic, msg, time in bag.read_messages(topics=config.topics, start_time=start, end_time=stop):
+        for topic, msg, time in bag.read_messages(
+                topics=config.topics, start_time=start, end_time=stop):
             if time >= next_time:
                 img = self.bridge.imgmsg_to_cv2(
                     msg, desired_encoding='passthrough')
@@ -209,7 +212,8 @@ class BagToLabelMe(object):
         outbag = rosbag.Bag(outfilename, mode='w')
 
         # Generate dictionary of topics to dictionaries of stamps to
-        # ex: labels['/camera'][12756153011397] -> rosmsg of labels at this time
+        # ex: labels['/camera'][12756153011397] -> rosmsg of labels at this
+        # time
         labels = {}
         for topic in bag.topics:
             path = self._annotations_directory(bag.name, topic)
@@ -223,7 +227,8 @@ class BagToLabelMe(object):
 
         # Go through bag, on any matched images and labels, write labels
         for topic, msg, t in inbag.read_messages(topics=labels.keys()):
-            if msg._type == 'sensor_msgs/Image' and str(msg.header.stamp) in labels[topic]:
+            if msg._type == 'sensor_msgs/Image' and str(
+                    msg.header.stamp) in labels[topic]:
                 label = labels[topic][str(msg.header.stamp)]
                 label.header = msg.header
                 outbag.write(topic + '/labels', label, t)

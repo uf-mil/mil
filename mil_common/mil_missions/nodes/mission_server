@@ -28,7 +28,8 @@ class MissionRunner(object):
         self.server = action.SimpleActionServer(
             self.nh, '/mission', DoMissionAction)
 
-        # Get mission_module and base_mission from params, if not set just crash
+        # Get mission_module and base_mission from params, if not set just
+        # crash
         mission_module_name = yield self.nh.get_param('~missions_module')
         base_mission_name = yield self.nh.get_param('~base_mission')
         mission_module = __import__(mission_module_name)
@@ -42,7 +43,8 @@ class MissionRunner(object):
         # Import all missions which extend the base class and initilize them
         self.missions = {}
         for name, cls in inspect.getmembers(mission_module):
-            if inspect.isclass(cls) and issubclass(cls, base_mission) and name != base_mission_name:
+            if inspect.isclass(cls) and issubclass(
+                    cls, base_mission) and name != base_mission_name:
                 yield cls.init()
                 self.missions[cls.name()] = cls
 
@@ -88,7 +90,9 @@ class MissionRunner(object):
             return
         goal = self.server.accept_new_goal()
         if not self.has_mission(goal.mission):
-            print('TASK RUNNER: unrecognized mission \'{}\''.format(goal.mission))
+            print(
+                'TASK RUNNER: unrecognized mission \'{}\''.format(
+                    goal.mission))
             self.server.set_aborted(result=DoMissionResult(
                 success=False, result='mission unknown'))
             return
@@ -147,7 +151,8 @@ class MissionRunner(object):
                 exception = final.value
                 result.result = exception.message
                 result.parameters = json.dumps(exception.parameters)
-            # If mission raised another kind of exception (like key error), return message and traceback
+            # If mission raised another kind of exception (like key error),
+            # return message and traceback
             else:
                 result.result = final.getErrorMessage()
                 result.parameters = json.dumps(
@@ -159,7 +164,8 @@ class MissionRunner(object):
             # Set mission aborted in either case
             self.server.set_aborted(result=result, text=result.result)
 
-        # If mission was successful, set goal to succeeded with specified result
+        # If mission was successful, set goal to succeeded with specified
+        # result
         else:
             result.success = True
             if isinstance(final, MissionResult):

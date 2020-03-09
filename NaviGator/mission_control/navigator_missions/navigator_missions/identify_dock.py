@@ -86,7 +86,8 @@ class IdentifyDockMission:
         print_good("Circling dock to get bays")
         circle_bay()
         start_time = self.navigator.nh.get_time()
-        while self.navigator.nh.get_time() - start_time < genpy.Duration(self.BAY_SEARCH_TIMEOUT) and not done_circle:
+        while self.navigator.nh.get_time(
+        ) - start_time < genpy.Duration(self.BAY_SEARCH_TIMEOUT) and not done_circle:
             res = yield self.call_get_bays()
             if not res.success:
                 yield self.navigator.nh.sleep(0.1)
@@ -99,7 +100,9 @@ class IdentifyDockMission:
             return
         raise Exception("Bays not found after circling or timed out")
 
-    def correct_shape(self, (desired_shape, desired_color), (test_shape, test_color)):
+    def correct_shape(self, xxx_todo_changeme2, xxx_todo_changeme3):
+        (desired_shape, desired_color) = xxx_todo_changeme2
+        (test_shape, test_color) = xxx_todo_changeme3
         return (desired_color == "ANY" or desired_color == test_color) and\
                (desired_shape == "ANY" or desired_shape == test_shape)
 
@@ -247,7 +250,8 @@ class IdentifyDockMission:
             yield dock_func(bay_2_shape)
 
     @txros.util.cancellableInlineCallbacks
-    def dock_in_bay_blind(self, (point, normal)):
+    def dock_in_bay_blind(self, xxx_todo_changeme):
+        (point, normal) = xxx_todo_changeme
         move_front = self.navigator.move.set_position(
             point + normal * self.LOOK_AT_DISTANCE).look_at(point)
         move_in = self.navigator.move.set_position(
@@ -258,7 +262,8 @@ class IdentifyDockMission:
         yield move_front.go(move_type='skid', speed_factor=[0.5, 0.5, 0.5], blind=True)
 
     @txros.util.cancellableInlineCallbacks
-    def dock_in_bay_using_ogrid(self, (point, normal)):
+    def dock_in_bay_using_ogrid(self, xxx_todo_changeme1):
+        (point, normal) = xxx_todo_changeme1
         move_front = self.navigator.move.set_position(
             point + normal * self.LOOK_AT_DISTANCE).look_at(point)
         move_in = self.navigator.move.set_position(
@@ -310,7 +315,8 @@ class IdentifyDockMission:
         yield self.search_moves[0].go(move_type="skid")
         second_move = self.search_moves[1].go(move_type="skid")
         start_time = self.navigator.nh.get_time()
-        while self.navigator.nh.get_time() - start_time < genpy.Duration(self.MARKER_SEARCH_TIME) and not done_moves:
+        while self.navigator.nh.get_time(
+        ) - start_time < genpy.Duration(self.MARKER_SEARCH_TIME) and not done_moves:
             if (yield self.search_shape_vision_only()):
                 second_move.cancel()
                 return

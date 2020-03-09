@@ -79,7 +79,8 @@ class Packet(object):
         Returns the binary represnetation of this packet to be sent accross the CAN network
         @return bytes/string object for this packet
         '''
-        return struct.pack('B{}sB'.format(len(self.payload)), self.SOF, self.payload, self.EOF)
+        return struct.pack('B{}sB'.format(len(self.payload)),
+                           self.SOF, self.payload, self.EOF)
 
     @classmethod
     def unpack_payload(cls, data):
@@ -116,7 +117,8 @@ class Packet(object):
         @param payload_length: the length of the payload of this packet you are expecting, in bytes
         @return a Packet object of the read packet or None if it failed
         '''
-        # Read until SOF is encourntered incase buffer contains the end of a previous packet
+        # Read until SOF is encourntered incase buffer contains the end of a
+        # previous packet
         sof = None
         for _ in xrange(10):
             sof = ser.read(1)
@@ -298,6 +300,8 @@ class CommandPacket(Packet):
 
     def __str__(self):
         if self.is_receive:
-            return 'CommandPacket(filter_id={}, is_receive=True, receive_length={})'.format(self.filter_id, self.length)
+            return 'CommandPacket(filter_id={}, is_receive=True, receive_length={})'.format(
+                self.filter_id, self.length)
         else:
-            return 'CommandPacket(filter_id={}, is_receive=False, data={})'.format(self.filter_id, self.data)
+            return 'CommandPacket(filter_id={}, is_receive=False, data={})'.format(
+                self.filter_id, self.data)

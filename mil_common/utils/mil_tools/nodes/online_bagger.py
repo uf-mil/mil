@@ -210,7 +210,8 @@ class OnlineBagger(object):
         Return current time duration of topic
         """
 
-        return self.topic_messages[topic][-1][0] - self.topic_messages[topic][0][0]
+        return self.topic_messages[topic][-1][0] - \
+            self.topic_messages[topic][0][0]
 
     def get_header_time(self, msg):
         """
@@ -266,7 +267,8 @@ class OnlineBagger(object):
             rospy.logdebug("{} has {} messages spanning {} seconds".format(
                 topic, self.get_topic_message_count(topic), round(time_diff.to_sec(), 2)))
 
-        while time_diff > rospy.Duration(self.subscriber_list[topic][0]) and not rospy.is_shutdown():
+        while time_diff > rospy.Duration(
+                self.subscriber_list[topic][0]) and not rospy.is_shutdown():
             self.topic_messages[topic].popleft()
             time_diff = self.get_topic_duration(topic)
 
@@ -290,7 +292,8 @@ class OnlineBagger(object):
         return total_message_count
 
     def _get_default_filename(self):
-        return str(datetime.date.today()) + '-' + str(datetime.datetime.now().time())[0:8]
+        return str(datetime.date.today()) + '-' + \
+            str(datetime.datetime.now().time())[0:8]
 
     def get_bag_name(self, filename=''):
         """

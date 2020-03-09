@@ -17,7 +17,8 @@ class Sabertooth2x12:
             import rospy
 
     def _map(self, x, in_min, in_max, out_min, out_max):
-        return int(math.ceil((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min))
+        return int(math.ceil((x - in_min) * (out_max - out_min) /
+                             (in_max - in_min) + out_min))
 
     def _contrain(self, x, low, high):
         return max(min(x, high), low)

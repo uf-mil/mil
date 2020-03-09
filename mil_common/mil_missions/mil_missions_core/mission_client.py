@@ -30,9 +30,11 @@ class MissionClient(SimpleActionClient):
         '''
         self.cancel_all_goals()
 
-    def run_mission(self, mission, parameters='', done_cb=None, active_cb=None, feedback_cb=None):
+    def run_mission(self, mission, parameters='', done_cb=None,
+                    active_cb=None, feedback_cb=None):
         '''
         Send a goal to start a new mission with the specified parameters
         '''
         goal = DoMissionGoal(mission=mission, parameters=parameters)
-        return self.send_goal(goal, done_cb=done_cb, active_cb=active_cb, feedback_cb=feedback_cb)
+        return self.send_goal(goal, done_cb=done_cb,
+                              active_cb=active_cb, feedback_cb=feedback_cb)

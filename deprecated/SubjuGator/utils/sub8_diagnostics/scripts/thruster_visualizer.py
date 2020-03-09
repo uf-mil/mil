@@ -70,27 +70,31 @@ class ThrusterVisualizer(object):
             idx = layout['node_id']
             bounds = layout['thrust_bounds']
 
-            # Select an arrow length based on commanded thrust, max thrust (from layout), and the MAX_LENGTH constant
+            # Select an arrow length based on commanded thrust, max thrust
+            # (from layout), and the MAX_LENGTH constant
             if cmd.thrust < 0:
                 scale = -cmd.thrust / bounds[0]
             else:
                 scale = cmd.thrust / bounds[1]
 
-            if np.isclose(scale, 0.0):  # Avoid sending 0 length disk-like markers
+            if np.isclose(
+                    scale, 0.0):  # Avoid sending 0 length disk-like markers
                 self.markers.markers[idx].action = Marker.DELETE
                 continue
             else:
                 self.markers.markers[idx].action = Marker.ADD
 
             # Set color of marker based on thrust
-            if (cmd.thrust < 0 and cmd.thrust == bounds[0]) or cmd.thrust == bounds[1]:
+            if (cmd.thrust < 0 and cmd.thrust ==
+                    bounds[0]) or cmd.thrust == bounds[1]:
                 self.markers.markers[idx].color.r = 1.0
                 self.markers.markers[idx].color.g = 0.0
             else:
                 self.markers.markers[idx].color.r = abs(scale)
                 self.markers.markers[idx].color.g = 1.0
 
-            # Select endpoint for arrow based on length and direction vector from layout
+            # Select endpoint for arrow based on length and direction vector
+            # from layout
             direction = np.array(layout['direction'])
             direction = direction / np.linalg.norm(direction)
             pt2 = np.array(layout['position']) + \

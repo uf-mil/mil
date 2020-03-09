@@ -34,7 +34,8 @@ def balanced_resample(data, labels):
         data_resampled.append(single_data_resampled)
         labels_resampled.append(single_labels_resampled)
 
-    return np.vstack(data_resampled).astype(data.dtype), np.hstack(labels_resampled).astype(labels.dtype)
+    return np.vstack(data_resampled).astype(data.dtype), np.hstack(
+        labels_resampled).astype(labels.dtype)
 
 
 def desample_binary(data, labels, oversample=5):

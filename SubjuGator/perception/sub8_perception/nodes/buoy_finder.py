@@ -79,7 +79,8 @@ class Buoy(object):
 
     def add_observation(self, obs, pose_pair, time):
         self.clear_old_observations()
-        if self.size() == 0 or np.linalg.norm(self._pose_pairs[-1][0] - pose_pair[0]) > self.min_trans:
+        if self.size() == 0 or np.linalg.norm(
+                self._pose_pairs[-1][0] - pose_pair[0]) > self.min_trans:
             self._observations.append(obs)
             self._pose_pairs.append(pose_pair)
             self._times.append(time)
@@ -120,7 +121,8 @@ class BuoyFinder(object):
         # Model radius doesn't matter beacause it's not being used for 3D pose
         self.circle_finder = CircleFinder(1.0)
 
-        # Various constants for tuning, debugging. See buoy_finder.yaml for more info
+        # Various constants for tuning, debugging. See buoy_finder.yaml for
+        # more info
         self.min_observations = rospy.get_param('~min_observations')
         self.debug_ros = rospy.get_param('~debug/ros', True)
         self.debug_cv = rospy.get_param('~debug/cv', False)
@@ -232,13 +234,13 @@ class BuoyFinder(object):
         if not self.enabled:
             return
 
-        # Crop out some of the top and bottom to exclude the floor and surface reflections
+        # Crop out some of the top and bottom to exclude the floor and surface
+        # reflections
         height = image.shape[0]
         roi_y = int(self.roi_y * height)
         roi_height = height - int(self.roi_height * height)
         self.roi = (0, roi_y, roi_height, image.shape[1])
-        self.last_image = image[self.roi[1]
-            :self.roi[2], self.roi[0]:self.roi[3]]
+        self.last_image = image[self.roi[1]:self.roi[2], self.roi[0]:self.roi[3]]
         self.image_area = self.last_image.shape[0] * self.last_image.shape[1]
 
         if self.debug_ros:
@@ -246,7 +248,8 @@ class BuoyFinder(object):
             self.mask_image = np.zeros(
                 self.last_image.shape, dtype=image.dtype)
         if self.last_image_time is not None and self.image_sub.last_image_time < self.last_image_time:
-            # Clear tf buffer if time went backwards (nice for playing bags in loop)
+            # Clear tf buffer if time went backwards (nice for playing bags in
+            # loop)
             self.tf_listener.clear()
         self.last_image_time = self.image_sub.last_image_time
         self.find_buoys()
@@ -296,7 +299,8 @@ class BuoyFinder(object):
             return None, 'fails circularity test'
         circles_sorted = sorted(
             circular_contours, key=cv2.contourArea, reverse=True)
-        if cv2.contourArea(circles_sorted[0]) < self.min_contour_area * self.image_area:
+        if cv2.contourArea(
+                circles_sorted[0]) < self.min_contour_area * self.image_area:
             return None, 'fails area test'
         # Return the largest contour that pases shape test
         return circles_sorted[0], None

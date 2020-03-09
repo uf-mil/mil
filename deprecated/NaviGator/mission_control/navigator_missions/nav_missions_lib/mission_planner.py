@@ -69,10 +69,12 @@ class MissionPlanner:
         #         defer.returnValue(m)
 
     def _get_time_left(self):
-        return self.total_time - (self.nh.get_time() - self.start_time).to_sec()
+        return self.total_time - \
+            (self.nh.get_time() - self.start_time).to_sec()
 
     def _get_real_timeleft(self):
-        return self.total_time_save - (self.nh.get_time() - self.start_time).to_sec()
+        return self.total_time_save - \
+            (self.nh.get_time() - self.start_time).to_sec()
 
     @util.cancellableInlineCallbacks
     def publish(self, action, mission=None):
@@ -141,7 +143,8 @@ class MissionPlanner:
             fprint(self.current_mission.name,
                    msg_color="red", title="MISSION TIMEOUT")
             yield self.publish("TimingOut")
-            if (TimeoutManager.can_repeat(self.missions_left, self._get_time_left(), self.current_mission)) or len(self.missions_left) == 1:
+            if (TimeoutManager.can_repeat(self.missions_left, self._get_time_left(
+            ), self.current_mission)) or len(self.missions_left) == 1:
                 yield self.publish("Retrying")
                 self.failed = False
                 self.current_mission.timeout = self.current_mission.min_time

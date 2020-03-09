@@ -155,8 +155,10 @@ class DetectDeliver(Navigator):
         self.identified_shapes[(shape_res.Shape, shape_res.Color)
                                ] = self.get_shape_pos(normal_res, tf)
 
-    def correct_shape(self, (shape, color)):
-        return (self.Color == "ANY" or self.Color == color) and (self.Shape == "ANY" or self.Shape == shape)
+    def correct_shape(self, xxx_todo_changeme):
+        (shape, color) = xxx_todo_changeme
+        return (self.Color == "ANY" or self.Color == color) and (
+            self.Shape == "ANY" or self.Shape == shape)
 
     @txros.util.cancellableInlineCallbacks
     def search_side(self):
@@ -241,7 +243,8 @@ class DetectDeliver(Navigator):
         defer.returnValue(move_complete)
 
     def get_shape(self):
-        return self.vision_proxies["get_shape"].get_response(Shape="ANY", Color="ANY")
+        return self.vision_proxies["get_shape"].get_response(
+            Shape="ANY", Color="ANY")
 
     def get_aligned_pose(self, enupoint, enunormal):
         aligned_position = enupoint + self.shoot_distance_meters * \

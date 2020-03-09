@@ -14,7 +14,7 @@ ex usage:
 
 def get_tests(directory):
     cmd = "make -C {}".format(directory)
-    cmd += "  -qp | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}'"
+    cmd += r"  -qp | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}'"
     tests = subprocess.check_output(["bash", "-c", cmd])
     tests = tests.split()
     return tests
@@ -59,7 +59,8 @@ if __name__ == '__main__':
         print 'no packages found'
         exit(1)
 
-    # produce a list of all test build targets from a package in the specified folders
+    # produce a list of all test build targets from a package in the specified
+    # folders
     valid = []
     for p in packages:
         test = 'run_tests_{}'.format(p)

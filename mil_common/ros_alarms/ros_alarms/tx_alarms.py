@@ -51,7 +51,8 @@ class TxAlarmBroadcaster(object):
 
         print "Created alarm broadcaster for alarm {}".format(name)
 
-    def _generate_request(self, raised, problem_description="", parameters={}, severity=0):
+    def _generate_request(
+            self, raised, problem_description="", parameters={}, severity=0):
         request = AlarmSetRequest()
         request.alarm.alarm_name = self._alarm_name
         request.alarm.node_name = self._node_name
@@ -177,7 +178,8 @@ class TxAlarmListener(object):
             # Run the callbacks if severity conditions are met
             cb_list = self._raised_cbs if alarm.raised else self._cleared_cbs
             for severity, cb in cb_list:
-                # If the cb severity is not valid for this alarm's severity, skip it
+                # If the cb severity is not valid for this alarm's severity,
+                # skip it
                 if not self._severity_cb_check(severity):
                     continue
 
@@ -185,7 +187,7 @@ class TxAlarmListener(object):
                 try:
                     try:
                         alarm.parameters = json.loads(alarm.parameters)
-                    except:
+                    except BaseException:
                         pass
 
                     yield cb(self._nh, alarm)
@@ -199,7 +201,8 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
 
     @classmethod
     @txros.util.cancellableInlineCallbacks
-    def init(cls, nh, alarm_name, topic_name, msg_class, prd=0.2, predicate=None, **kwargs):
+    def init(cls, nh, alarm_name, topic_name, msg_class,
+             prd=0.2, predicate=None, **kwargs):
         ''' Used to trigger an alarm if a message on the topic `topic_name` isn't published
             atleast every `prd` seconds. This alarm is self clearing.
 

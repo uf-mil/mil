@@ -15,7 +15,8 @@ class Actuator(object):
     and can be of 'set' or 'pulse type.
     '''
 
-    def __init__(self, type_str, open_id, open_default, close_id, close_default, pulse_time):
+    def __init__(self, type_str, open_id, open_default,
+                 close_id, close_default, pulse_time):
         self.pulse_time = pulse_time
         self.type = type_str
         self.open_id = open_id
@@ -25,7 +26,7 @@ class Actuator(object):
 
     @classmethod
     def from_dict(cls, config):
-        if type(config) == int:
+        if isinstance(config, int):
             return cls.from_int(config)
         type_str = config['type']
         pulse_time = config['pulse_time'] if 'pulse_time' in config else None
@@ -34,7 +35,8 @@ class Actuator(object):
         if 'close_port' in config['ports']:
             close_id = config['ports']['close_port']['id']
             close_default = config['ports']['close_port']['default']
-            return cls(type_str, open_id, open_default, close_id, close_default, pulse_time)
+            return cls(type_str, open_id, open_default,
+                       close_id, close_default, pulse_time)
         return cls(type_str, open_id, open_default, -1, 0, pulse_time)
 
     @classmethod
@@ -155,7 +157,8 @@ class PnuematicActuatorNode():
             return {'success': False, 'message': 'actuator not registered'}
         actuator = self.actuators[srv.actuator]
 
-        # If actuator is pulse type, open it and setup timer to close after pulse time
+        # If actuator is pulse type, open it and setup timer to close after
+        # pulse time
         if actuator.type == 'pulse':
             rospy.loginfo('Pulsing {} for {}s'.format(
                 srv.actuator, actuator.pulse_time))

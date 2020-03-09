@@ -8,7 +8,8 @@ __author__ = "Kevin Allen"
 
 
 class Threshold(object):
-    def __init__(self, low, high, conversion_code=None, in_space='BGR', thresh_space='BGR'):
+    def __init__(self, low, high, conversion_code=None,
+                 in_space='BGR', thresh_space='BGR'):
         '''
         Convience class to store lower and upper bounds for doing a color threshold in OpenCV
 
@@ -68,7 +69,8 @@ class Threshold(object):
             assert len(d) > 0, 'Dictionary is empty'
             for key in d:  # Try each key for valid threshold
                 try:
-                    return cls.from_dict(d, in_space=in_space, thresh_space=key)
+                    return cls.from_dict(
+                        d, in_space=in_space, thresh_space=key)
                 except AttributeError:
                     pass
             raise AttributeError('No valid colorspace found in dictionary. Are {} valid OpenCV colorspaces?'.format(
@@ -77,16 +79,19 @@ class Threshold(object):
             thresh_space)
         inner = d[thresh_space]
         if 'low' in inner and 'high' in inner:
-            return cls(inner['low'], inner['high'], in_space=in_space, thresh_space=thresh_space)
+            return cls(inner['low'], inner['high'],
+                       in_space=in_space, thresh_space=thresh_space)
         assert len(inner) == 2, 'Cannot get low and high bounds from dictionary'
-        return cls(inner[0], inner[1], in_space=in_space, thresh_space=thresh_space)
+        return cls(inner[0], inner[1], in_space=in_space,
+                   thresh_space=thresh_space)
 
     @classmethod
     def from_param(cls, param, in_space='BGR', thresh_space=None):
         '''
         Loads thresholds from a ROS param. Param must be a valid dictionary, see from_dict
         '''
-        return cls.from_dict(rospy.get_param(param), in_space=in_space, thresh_space=thresh_space)
+        return cls.from_dict(rospy.get_param(
+            param), in_space=in_space, thresh_space=thresh_space)
 
     def threshold(self, img):
         if self.conversion_code is not None:
@@ -120,7 +125,8 @@ class Threshold(object):
 
     def __str__(self):
         if self.conversion_code is not None:
-            return 'Threshold from {} to {} using conversion code {}'.format(self.low, self.high, self.conversion_code)
+            return 'Threshold from {} to {} using conversion code {}'.format(
+                self.low, self.high, self.conversion_code)
         return 'Threshold {} images in {} colorspace from {} to {}'.format(
             self.in_space, self.thresh_space, self.low, self.high)
 

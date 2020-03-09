@@ -123,7 +123,8 @@ class SimulatedKillBoard(SimulatedSerial):
     def _check_timeout(self, *args):
         if self.last_ping is None:
             return
-        if (rospy.Time.now() - self.last_ping).to_sec() >= constants['TIMEOUT_SECONDS']:
+        if (rospy.Time.now() -
+                self.last_ping).to_sec() >= constants['TIMEOUT_SECONDS']:
             self._set_kill('HEARTBEAT_COMPUTER', True)
         else:
             self._set_kill('HEARTBEAT_COMPUTER', False)

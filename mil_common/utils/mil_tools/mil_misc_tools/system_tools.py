@@ -11,6 +11,6 @@ def slugify(value):
     From: https://stackoverflow.com/questions/295135/turn-a-string-into-a-valid-filename
     """
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
-    value = unicode(re.sub('[^\w\s-]', '_', value).strip().lower())
-    value = unicode(re.sub('[-\s]+', '-', value))
+    value = unicode(re.sub(r'[^\w\s-]', '_', value).strip().lower())
+    value = unicode(re.sub(r'[-\s]+', '-', value))
     return value

@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 
 import util
 
-SAMPLES = int(util.fs*10)
+SAMPLES = int(util.fs * 10)
 DECIMATION = 100
-CAPTURE_SAMPLES = int(util.fs*.1)
+CAPTURE_SAMPLES = int(util.fs * .1)
 assert SAMPLES % CAPTURE_SAMPLES == 0
 
 sample_buf = numpy.zeros((4, SAMPLES))
@@ -25,7 +25,8 @@ gen = util.connect_to_samples(CAPTURE_SAMPLES)
 def read_thread():
     global sample_buf_pos
     for samples in gen:
-        sample_buf[:, sample_buf_pos:sample_buf_pos+CAPTURE_SAMPLES] = samples
+        sample_buf[:, sample_buf_pos:sample_buf_pos +
+                   CAPTURE_SAMPLES] = samples
         sample_buf_pos += CAPTURE_SAMPLES
         if sample_buf_pos == SAMPLES:
             sample_buf_pos = 0
@@ -42,12 +43,12 @@ def redraw(frame):
     a = sample_buf_pos
     b = sample_buf.copy()
     c = sample_buf_pos
-    plt.axvline(a/util.fs/1e-3)
+    plt.axvline(a / util.fs / 1e-3)
     for i, samples in enumerate(b):
-        plt.plot(numpy.arange(len(samples[::DECIMATION]))/(
-            util.fs/DECIMATION)/1e-3, samples[::DECIMATION], label='channel: {}'.format(i))
+        plt.plot(numpy.arange(len(samples[::DECIMATION])) / (
+            util.fs / DECIMATION) / 1e-3, samples[::DECIMATION], label='channel: {}'.format(i))
     plt.legend()
-    plt.axvline(c/util.fs/1e-3)
+    plt.axvline(c / util.fs / 1e-3)
 
 
 fig, ax = plt.subplots()

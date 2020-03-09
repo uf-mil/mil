@@ -387,7 +387,8 @@ class Ephemeris(object):
         return self.SV_health == 0
 
     def __str__(self):
-        return 'Ephemeris(\n' + ''.join('    %s=%r\n' % (k, v) for k, v in sorted(self.__dict__.iteritems())) + ')'
+        return 'Ephemeris(\n' + ''.join('    %s=%r\n' % (k, v)
+                                        for k, v in sorted(self.__dict__.iteritems())) + ')'
 
 
 class IonosphericModel(object):
@@ -656,7 +657,7 @@ def estimate_pos(sats, use_corrections, quiet=False, pos_guess=None):
                 # (J^T J) dx = J^T r
                 # dx = numpy.linalg.solve(J^T J, J^T r)
                 x = x - numpy.linalg.solve(J.T.dot(J), J.T.dot(r))
-            except:
+            except BaseException:
                 numpy.set_printoptions(threshold=numpy.nan)
                 print repr(sats), use_corrections
                 print 'J =', J

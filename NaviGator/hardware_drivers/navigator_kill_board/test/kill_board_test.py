@@ -119,7 +119,8 @@ class killtest(unittest.TestCase):
         '''
         Tests each of the four buttons
         '''
-        for button in ['FRONT_PORT', 'AFT_PORT', 'FRONT_STARBOARD', 'AFT_STARBOARD']:
+        for button in ['FRONT_PORT', 'AFT_PORT',
+                       'FRONT_STARBOARD', 'AFT_STARBOARD']:
             self._test_button('FRONT_PORT')
 
     def test_4_remote(self):

@@ -24,7 +24,7 @@ def download_and_unzip(url, output_dir):
     '''
     try:
         html = download(url)
-    except:
+    except BaseException:
         raise(IOError("Could not load file at {}".format(url)))
 
     fake_file = StringIO.StringIO(html)

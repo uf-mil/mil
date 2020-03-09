@@ -18,7 +18,8 @@ class UnavailableThrusterException(SubjuGatorException):
         self.node_id = node_id
 
     def __repr__(self):
-        return 'Thruster ({}, {}) is not available to be commanded'.format(self.node_id, self.thruster_name)
+        return 'Thruster ({}, {}) is not available to be commanded'.format(
+            self.node_id, self.thruster_name)
 
     __str__ = __repr__
 
@@ -31,7 +32,8 @@ class UndeclaredThrusterException(SubjuGatorException):
         self.node_id = node_id
 
     def __repr__(self):
-        return 'Thruster ({}, {}) was not declared in the layout'.format(self.node_id, self.thruster_name)
+        return 'Thruster ({}, {}) was not declared in the layout'.format(
+            self.node_id, self.thruster_name)
 
     __str__ = __repr__
 
@@ -70,11 +72,12 @@ class ThrusterModel(object):
         # Minimum and Maximum thrust in newtons
         thrust_bounds = thruster_definition['thrust_bounds']
 
-        # Loads forward and backward thrust to effort mappings (4th order polynomial)
+        # Loads forward and backward thrust to effort mappings (4th order
+        # polynomial)
         calib = thruster_definition['calib']
 
         # Validate config yaml
-        assert type(node_id) == int
+        assert isinstance(node_id, int)
         assert len(position) == 3, len(direction) == 3
         assert len(thrust_bounds) == 2, 'Need positive and backwards bounds'
         assert len(calib) == 2, 'Calib should have 2 fields: (forward, backward)'
@@ -148,7 +151,8 @@ class ThrusterPort(object):
         # Flag to avoid simultaneous sharing of the serial line b/w thrusters
         self.serial_busy = False
 
-        # Load thruster configurations and check if the requested thruster exists on this port
+        # Load thruster configurations and check if the requested thruster
+        # exists on this port
         for thruster_name in port_info['thruster_names']:
             self.load_thruster(thruster_name, thruster_definitions)
 
@@ -191,7 +195,8 @@ class ThrusterPort(object):
             self.online_thruster_names.add(thruster_name)
 
         # See if thruster is responsive on this port
-        if self.port and not self.check_for_thruster(self.thruster_info[thruster_name].node_id):
+        if self.port and not self.check_for_thruster(
+                self.thruster_info[thruster_name].node_id):
             rospy.logwarn(errstr)
         else:
             self.online_thruster_names.add(thruster_name)
@@ -242,7 +247,8 @@ class ThrusterPort(object):
             if self.check_for_thruster(i):
                 found_ids.append(i)
                 turnaround_times.append((rospy.Time.now() - t0).to_sec())
-        return found_ids, np.mean(turnaround_times) if len(turnaround_times) > 0 else 0
+        return found_ids, np.mean(turnaround_times) if len(
+            turnaround_times) > 0 else 0
 
     def make_hex(self, msg):
         ''' Return a bytearray formatted as a string of hexadecimal characters
@@ -250,7 +256,7 @@ class ThrusterPort(object):
         @type msg: string|bytearray
         @param msg: Input to format as a hex string
         '''
-        if type(msg) == str:
+        if isinstance(msg, str):
             msg = bytearray(msg)
         return ":".join("{:02x}".format(c) for c in msg)
 
@@ -273,8 +279,10 @@ class ThrusterPort(object):
         @return: Packet validity, reason for packet being invalid if it is
         '''
         size = len(response_bytearray)
-        if size < Const.header_size + 1 + 2 * Const.xsum_size:  # Minimum size is header + device_type + 2 xsums
-            return False, 'Packet size ({}) less than minimum for a valid packet'.format(size)
+        if size < Const.header_size + 1 + 2 * \
+                Const.xsum_size:  # Minimum size is header + device_type + 2 xsums
+            return False, 'Packet size ({}) less than minimum for a valid packet'.format(
+                size)
         payload_start_idx = Const.header_size + Const.xsum_size
         header_bytes = response_bytearray[:Const.header_size]
         header_xsum_bytes = response_bytearray[Const.header_size: payload_start_idx]
@@ -282,7 +290,8 @@ class ThrusterPort(object):
         actual_header_xsum = binascii.crc32(header_bytes) & 0xffffffff
         if expected_header_xsum != actual_header_xsum:
             return False, 'Packet has invalid header checksum'
-        if len(response_bytearray) > payload_start_idx:  # Null checksums are usually ommited
+        if len(
+                response_bytearray) > payload_start_idx:  # Null checksums are usually ommited
             remaining_bytes = response_bytearray[payload_start_idx:]
             payload_bytes = remaining_bytes[:-Const.xsum_size]
             payload_xsum_bytes = remaining_bytes[-Const.xsum_size:]
@@ -337,7 +346,8 @@ class ThrusterPort(object):
             rospy.loginfo(
                 'To continue using this ThrusterPort, call \'{this}.port.open()\' after closing screen.')
 
-    def send_VRCSR_request_packet(self, node_id, flags, address, length, payload_bytes):
+    def send_VRCSR_request_packet(
+            self, node_id, flags, address, length, payload_bytes):
         ''' Writes a VideoRay CSR (Control Service Register) packet to the serial port
         Refer to the VRCSR protocol documentation for the specific meaning of each of these
         fields:
@@ -569,7 +579,8 @@ class ThrusterPort(object):
 
         # Don't try to send command packet if line is busy
         t0 = rospy.Time.now()
-        while self.serial_busy and rospy.Time.now() - t0 < rospy.Duration(self._wait_for_line_timeout):
+        while self.serial_busy and rospy.Time.now(
+        ) - t0 < rospy.Duration(self._wait_for_line_timeout):
             rospy.sleep(0.001)
         if self.serial_busy and name in self.online_thruster_names:  # Don't raise if thruster is offline
             rospy.logwarn('{} timed out waiting on busy serial line (waited {} s)'.

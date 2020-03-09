@@ -31,7 +31,8 @@ class DBHelper(object):
     @util.cancellableInlineCallbacks
     def init_(self, navigator=None):
         """Initialize the txros parts of the DBHelper."""
-        # self._sub_database = yield self.nh.subscribe('/database/objects', PerceptionObjectArray, self.object_cb)
+        # self._sub_database = yield self.nh.subscribe('/database/objects',
+        # PerceptionObjectArray, self.object_cb)
         self._database = yield self.nh.get_service_client("/database/requests", ObjectDBQuery)
         self.navigator = navigator
         if navigator is None:
@@ -67,13 +68,15 @@ class DBHelper(object):
         req.name = 'All'
         resp1 = yield self._database(req)
         for o in resp.objects:
-            # The is upper call is because the first case is upper case if it is a 'fake' object... WHYYYYY
+            # The is upper call is because the first case is upper case if it
+            # is a 'fake' object... WHYYYYY
             if o.name not in self.found:
                 self.found.add(o.name)
                 self.new_object_subscriber(o)
 
         for o in resp1.objects:
-            # The is upper call is because the first case is upper case if it is a 'fake' object... WHYYYYY
+            # The is upper call is because the first case is upper case if it
+            # is a 'fake' object... WHYYYYY
             if o.name not in self.found:
                 self.found.add(o.name)
                 self.new_object_subscriber(o)
@@ -187,7 +190,8 @@ class DBHelper(object):
             nt.rosmsg_to_numpy(x.position) - self.position))
 
     @util.cancellableInlineCallbacks
-    def get_object(self, object_name, volume_only=False, thresh=50, thresh_strict=50):
+    def get_object(self, object_name, volume_only=False,
+                   thresh=50, thresh_strict=50):
         """Get an object from the database."""
         if volume_only:
             req = ObjectDBQueryRequest()

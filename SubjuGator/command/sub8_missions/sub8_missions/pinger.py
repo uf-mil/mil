@@ -114,7 +114,8 @@ class Pinger(SubjuGator):
             markers.markers.append(marker)
 
             # Check if we are on top of pinger
-            if abs(vec[0]) < POSITION_TOL and abs(vec[1]) < POSITION_TOL and vec[2] < Z_POSITION_TOL:
+            if abs(vec[0]) < POSITION_TOL and abs(
+                    vec[1]) < POSITION_TOL and vec[2] < Z_POSITION_TOL:
                 if not use_prediction:
                     fprint("Arrived to pinger!")
                     break

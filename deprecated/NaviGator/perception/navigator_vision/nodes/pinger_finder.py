@@ -14,13 +14,13 @@ import navigator_tools
 
 class PingerFinder(object):
     """
-    This class will find the position of a pinger at a given frequency. For it 
+    This class will find the position of a pinger at a given frequency. For it
     to find a good solution, it needs to get observations from at least 2 sufficiently
-    different positions. Observations are considered valid if they fall within 
+    different positions. Observations are considered valid if they fall within
     self.freq_tol of self.target_freq, where self.target_freq can be set
     using 'rosservice call /hydrophones/set_freq "frequency: ____"'.
 
-    The default behaviour is to not store observations. To start recording valid 
+    The default behaviour is to not store observations. To start recording valid
     observations, run 'rosservice call /hydrophones/set_listen "data: true"'. Remember
     to run 'rosservice call /hydrophones/set_listen "data: false"' to stop recording
     observations. For best results, it is best to only record observations while the

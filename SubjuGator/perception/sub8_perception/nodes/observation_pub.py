@@ -116,7 +116,8 @@ class MultiObs:
         if self.est is None:
             self.print_info("NO ESTIMATE!")
             return VisionRequestResponse(found=False)
-        # NOTE: returns normal vec encoded into a quaternion message (so not actually a quaternion)
+        # NOTE: returns normal vec encoded into a quaternion message (so not
+        # actually a quaternion)
         return VisionRequestResponse(
             pose=PoseStamped(
                 header=Header(stamp=rospy.Time.now(), frame_id='/map'),
@@ -198,16 +199,17 @@ class MultiObs:
     def acquire_targets(self, roi):
         if not self.enabled:
             return
-        # NOTE: point.z contains the timestamp of the image when it was processed in the neural net.
+        # NOTE: point.z contains the timestamp of the image when it was
+        # processed in the neural net.
         x0 = roi.x_offset
         y0 = roi.y_offset
         height = roi.height
         width = roi.width
 
         point0 = np.array([x0, y0])
-        point1 = np.array([x0+width, y0])
-        point2 = np.array([x0, y0+height])
-        point3 = np.array([x0+width, y0+height])
+        point1 = np.array([x0 + width, y0])
+        point2 = np.array([x0, y0 + height])
+        point3 = np.array([x0 + width, y0 + height])
         # print("p1: ", point1)
         # print("p2: ", point2)
         try:

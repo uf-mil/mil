@@ -96,7 +96,8 @@ class RectFinder(object):
         # Sort by arctan formed by vector from centroid to each point
         rect = rect[atan_indicies]
         # If rect is horizontal, correct indicies as noted above
-        if np.linalg.norm(rect[0] - rect[1]) > np.linalg.norm(rect[0] - rect[3]):
+        if np.linalg.norm(
+                rect[0] - rect[1]) > np.linalg.norm(rect[0] - rect[3]):
             rect = rect[[3, 0, 1, 2]]
         # Print indicies onto image if debug_image is given
         if debug_image is not None:
@@ -116,7 +117,8 @@ class RectFinder(object):
         '''
         return cv2.matchShapes(contour, self.model_2D, 3, 0.0)
 
-    def get_corners(self, contour, debug_image=None, epsilon_range=(0.01, 0.1), epsilon_step=0.01):
+    def get_corners(self, contour, debug_image=None,
+                    epsilon_range=(0.01, 0.1), epsilon_step=0.01):
         '''
         Attempts to find the 4 corners of a contour representing a quadrilateral.
 
@@ -140,7 +142,8 @@ class RectFinder(object):
             epsilon += epsilon_step
         return None
 
-    def get_pose_3D(self, corners, intrinsics=None, dist_coeffs=None, cam=None, rectified=False):
+    def get_pose_3D(self, corners, intrinsics=None,
+                    dist_coeffs=None, cam=None, rectified=False):
         '''
         Uses the model of the object, the corresponding pixels in the image, and camera
         intrinsics to estimate a 3D pose of the object.
@@ -234,7 +237,8 @@ class EllipseFinder(RectFinder):
         # Correct 2D model to be an oval to that verify_contour works
         scale = 1000.0 / self.length
         self.model_2D = np.zeros((50, 1, 2), dtype=np.int)
-        # Approximate an ellipse with 50 points, so that verify_contour is reasonable fast still
+        # Approximate an ellipse with 50 points, so that verify_contour is
+        # reasonable fast still
         for idx, theta in enumerate(np.linspace(0.0, 2.0 * np.pi, num=50)):
             self.model_2D[idx][0][0] = self.length * 0.5 * \
                 scale + self.length * 0.5 * scale * np.cos(theta)

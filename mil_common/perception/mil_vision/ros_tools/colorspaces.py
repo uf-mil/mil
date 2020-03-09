@@ -37,7 +37,8 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
     global w, h
     global mouse_x, mouse_y
 
-    # Pick a width and height of each image in GUI window based on start parameters
+    # Pick a width and height of each image in GUI window based on start
+    # parameters
     w, h = (int(rgb_image.shape[1] * viz_scale), int(rgb_image.shape[0] * viz_scale)) if disp_size is None \
         else (int(disp_size[0] / 4), int(disp_size[1] / 3))
     viz = np.zeros((h * 3, w * 4, 3), dtype=np.uint8)
@@ -95,7 +96,8 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
             return curves
 
         for i in range(len(images_and_labels)):
-            for c, curve in enumerate(get_hist_curves(images_and_labels[i][0])):
+            for c, curve in enumerate(
+                    get_hist_curves(images_and_labels[i][0])):
                 mask = np.zeros(images_and_labels[i][0].shape, dtype=np.uint8)
                 cv2.polylines(mask, [curve], False, (255, 0, 0))
                 mask = np.flipud(mask)

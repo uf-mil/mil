@@ -71,12 +71,12 @@ class Dock(Vrx):
         min_dim = np.argmin(bbox[:2])
         bbox[min_dim] = 0
         bbox_enu = np.dot(rotation[:3, :3], bbox)
-        yield self.move.set_position((bbox_enu+position)).look_at(position).go()
+        yield self.move.set_position((bbox_enu + position)).look_at(position).go()
         curr_color, masked_image = yield self.get_color()
         if curr_color != self.color:
             # Dock at the other side of the dock, no further perception
             yield self.move.backward(5).go()
-            yield self.move.set_position((-bbox_enu+position)).look_at(position).go()
+            yield self.move.set_position((-bbox_enu + position)).look_at(position).go()
             yield self.dock()
         else:
             if self.get_shape(masked_image) == self.shape:
@@ -85,7 +85,7 @@ class Dock(Vrx):
             else:
                 # go to other one
                 yield self.move.backward(5).go()
-                yield self.move.set_position((-bbox_enu+position)).look_at(position).go()
+                yield self.move.set_position((-bbox_enu + position)).look_at(position).go()
                 curr_color, _ = yield self.get_color()
 
                 task_info = yield self.task_info_sub.get_next_message()
@@ -93,7 +93,7 @@ class Dock(Vrx):
                     # if we got the right color on the other side and the wrong color on this side,
                     # go dock in the other side
                     yield self.move.backward(5).go()
-                    yield self.move.set_position((bbox_enu+position)).look_at(position).go()
+                    yield self.move.set_position((bbox_enu + position)).look_at(position).go()
                     yield self.dock()
                 else:
                     # this side is the right color
@@ -126,7 +126,7 @@ class Dock(Vrx):
         approx_area = []
         for contour in contours:
             approx = cv2.approxPolyDP(
-                contour, 0.01*cv2.arcLength(contour, True), True)
+                contour, 0.01 * cv2.arcLength(contour, True), True)
             area = cv2.contourArea(contour)
             print len(approx), area
             approx_area.append((approx, area))
@@ -169,7 +169,7 @@ class Dock(Vrx):
         tf = yield self.tf_listener.get_transform(CAMERA_LINK_OPTICAL, 'enu')
         points = z_filter(dock)
         points = np.array([points[i] for i in range(len(points))])
-        avg_point = sum(points)/len(points)
+        avg_point = sum(points) / len(points)
         defer.returnValue(avg_point)
 
     @txros.util.cancellableInlineCallbacks
@@ -231,7 +231,7 @@ def z_filter(db_obj_msg):
     # do a z filter for the led points
     top = max(db_obj_msg.points, key=attrgetter('z')).z
     points = np.array([[i.x, i.y, i.z] for i in db_obj_msg.points
-                       if i.z < top-PANNEL_MAX and i.z > top-PANNEL_MIN])
+                       if i.z < top - PANNEL_MAX and i.z > top - PANNEL_MIN])
     return points
 
 

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 import util
 
-gen = util.triggering(util.connect_to_samples(int(util.fs*.1)))
+gen = util.triggering(util.connect_to_samples(int(util.fs * .1)))
 last_ping = gen.next()
 
 

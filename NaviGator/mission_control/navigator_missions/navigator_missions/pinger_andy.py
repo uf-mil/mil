@@ -87,7 +87,8 @@ class PingerAndy(Navigator):
             hydrophones_origin, hydrophones_origin + heading_enu)
         gates_line = self.line(gates[0], gates[-1])
 
-        # Find intersection of these two lines. This is the approximate position of the pinger
+        # Find intersection of these two lines. This is the approximate
+        # position of the pinger
         intersection = self.intersection(pinger_line, gates_line)
         if intersection is None:
             raise Exception('No intersection')
@@ -109,7 +110,8 @@ class PingerAndy(Navigator):
         direction_vector = R.dot(between_vector)
         direction_vector /= np.linalg.norm(direction_vector)
         position = self.pose[0][:2]
-        if np.linalg.norm(position - (gate + direction_vector)) > np.linalg.norm(position - (gate - direction_vector)):
+        if np.linalg.norm(position - (gate + direction_vector)
+                          ) > np.linalg.norm(position - (gate - direction_vector)):
             direction_vector = -direction_vector
 
         before_distance = 3.0

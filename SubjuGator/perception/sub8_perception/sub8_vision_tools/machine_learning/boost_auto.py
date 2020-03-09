@@ -98,7 +98,8 @@ def train_on_data(observation_list, label_list, split_factor=4):
 
         s_time = time.time()
         process_round = 0
-        # Split this into multiple passes in an attempt to free RAM (no idea if this works).
+        # Split this into multiple passes in an attempt to free RAM (no idea if
+        # this works).
         for x, y in zip(all_observations_split, all_labels_split):
             print "Training subset {}/{}.".format(
                 process_round + 1, split_factor)
@@ -119,10 +120,12 @@ def load_images(path, images_to_use=8):
 
     print "Images found in folder: {}".format(len(images) / 2 - 1)
     count = 0
-    for i in tqdm.trange(len(images) / 2 - 1, desc="Loading images", unit=' images'):
+    for i in tqdm.trange(len(images) / 2 - 1,
+                         desc="Loading images", unit=' images'):
         try:
             if '_mask.png' in images[i]:
-                # This is the mask image - there should be a matching non mask image.
+                # This is the mask image - there should be a matching non mask
+                # image.
                 image_name = images[images.index(
                     images[i].replace('_mask', ''))]
 
@@ -131,7 +134,8 @@ def load_images(path, images_to_use=8):
 
                 images.remove(image_name)
             else:
-                # This is the real image - there should be a matching mask image.
+                # This is the real image - there should be a matching mask
+                # image.
                 mask_name = images[images.index(
                     images[i].replace('.png', '_mask.png'))]
 
@@ -159,7 +163,7 @@ def load_images(path, images_to_use=8):
         except KeyboardInterrupt:
             return None
 
-        except:
+        except BaseException:
             print "There was an issue with loading an image. Skipping it..."
 
     return observation_list, label_list

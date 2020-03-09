@@ -59,7 +59,8 @@ class Printer(object):
 
     def __add__(self, other):
         extra_space = ' ' if self._autospace and self._string is not '' else ''
-        return Printer(self._string + extra_space + str(other), self._autospace)
+        return Printer(self._string + extra_space +
+                       str(other), self._autospace)
 
     @property
     def set_red(self):
@@ -107,7 +108,8 @@ class Printer(object):
 
 
 class FprintFactory(object):
-    def __init__(self, title=None, time=None, msg_color=None, auto_bold=True, newline=1):
+    def __init__(self, title=None, time=None,
+                 msg_color=None, auto_bold=True, newline=1):
         assert time is None or callable(
             time), "`time` should be `None` for no printing or a function that generates a timestamp."
         assert msg_color is None or isinstance(

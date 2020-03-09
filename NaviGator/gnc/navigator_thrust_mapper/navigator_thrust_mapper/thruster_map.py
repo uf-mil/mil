@@ -19,16 +19,19 @@ def vrx_force_to_command_scalar(force):
     # vrx inverse: force->command | force > 3.27398
     #   -0.2 log(-0.246597 (0.56 - 4.73341/(-0.01 + x)^0.38))
     elif force > 3.27398:
-        return -0.2 * np.log(-0.246597 * (0.56 - (4.73341 / ((-0.01 + force) ** 0.38))))
+        return -0.2 * np.log(-0.246597 *
+                             (0.56 - (4.73341 / ((-0.01 + force) ** 0.38))))
     # vrx: command->force | command < 0.01
     #   -199.13 + (-0.09+199.13)/((0.99 + exp(-8.84*(x+0.57)))^(1/5.34))
     # vrx inverse: force->command | force < 3.27398
     #   -0.113122 log(-154.285 (0.99 - (1.88948x10^12)/(199.13 + x)^5.34))
     elif force < 0:
-        return -0.113122 * np.log(-154.285 * (0.99 - ((1.88948 * 10 ** 12) / ((199.13 + force) ** 5.34))))
+        return -0.113122 * \
+            np.log(-154.285 * (0.99 -
+                               ((1.88948 * 10 ** 12) / ((199.13 + force) ** 5.34))))
     else:
         # approx broken range as strait line with 0.01cmd/3.2N
-        return (0.01/3.27398)*force
+        return (0.01 / 3.27398) * force
 
 
 vrx_force_to_command = np.vectorize(vrx_force_to_command_scalar)
@@ -46,7 +49,8 @@ class ThrusterMap(object):
     arbitrary effort unit. See thruster_mapper_node.py for usage example.
     '''
 
-    def __init__(self, names, positions, angles, force_to_command, force_limit, com=np.zeros(2), joints=None):
+    def __init__(self, names, positions, angles, force_to_command,
+                 force_limit, com=np.zeros(2), joints=None):
         '''
         Creates a ThurserMapper instance
         param positions: list of X Y positions for each thuster [(x, y), (x,y), ...],
@@ -72,7 +76,8 @@ class ThrusterMap(object):
         self.joints = joints
         self._force_to_command = force_to_command
         self.force_limit = force_limit
-        if len(self.force_limit) != 2 or self.force_limit[1] > self.force_limit[0]:
+        if len(
+                self.force_limit) != 2 or self.force_limit[1] > self.force_limit[0]:
             raise Exception(
                 'self.force_limit {} is invalid'.format(self.force_limit))
 
@@ -120,10 +125,12 @@ class ThrusterMap(object):
             names.append(name)
             positions.append(translation[0:2])
             angles.append(yaw)
-        return cls(names, positions, angles, vrx_force_to_command, (250., -100.))
+        return cls(names, positions, angles,
+                   vrx_force_to_command, (250., -100.))
 
     @classmethod
-    def from_urdf(cls, urdf_string, transmission_suffix='_thruster_transmission'):
+    def from_urdf(cls, urdf_string,
+                  transmission_suffix='_thruster_transmission'):
         '''
         Load from an URDF string. Expects each thruster to be connected a transmission ending in the specified suffix.
         A transform between the propeller joint and base_link must be available
@@ -139,7 +146,8 @@ class ThrusterMap(object):
         ratio = -1
         for transmission in urdf.transmissions:
             find = transmission.name.find(transmission_suffix)
-            if find != -1 and find + len(transmission_suffix) == len(transmission.name):
+            if find != -1 and find + \
+                    len(transmission_suffix) == len(transmission.name):
                 if len(transmission.joints) != 1:
                     raise Exception(
                         'Transmission {} does not have 1 joint'.format(transmission.name))
@@ -175,7 +183,8 @@ class ThrusterMap(object):
                         'Thruster {} had a different limit, cannot proceed'.format(joint.name))
                 limit = joint.limit.effort
         limit_tuple = (limit, -limit)
-        return cls(names, positions, angles, generate_linear_force_to_command(ratio), limit_tuple, joints=joints)
+        return cls(names, positions, angles, generate_linear_force_to_command(
+            ratio), limit_tuple, joints=joints)
 
     def thrusts_to_wrench(self, thrusts):
         '''
@@ -186,7 +195,8 @@ class ThrusterMap(object):
         '''
         raise Exception(
             'Unimplemented. Please file an issue if you encounter this error')
-        return self.effort_to_force(np.linalg.lstsq(self.thruster_matrix_inv, thrusts)[0])
+        return self.effort_to_force(np.linalg.lstsq(
+            self.thruster_matrix_inv, thrusts)[0])
 
     def wrench_to_thrusts(self, wrench):
         '''
@@ -197,13 +207,15 @@ class ThrusterMap(object):
         param wrench: np float array of force/torque (x, y, torque about z) in Newtons/Newton*Meters
         returns: wrench (x, y, torque) force/torque applied to boat
         '''
-        return self.force_to_command(np.linalg.lstsq(self.thruster_matrix, wrench, rcond=-1)[0])
+        return self.force_to_command(np.linalg.lstsq(
+            self.thruster_matrix, wrench, rcond=-1)[0])
 
     def force_to_command(self, force):
         '''
         Maps a list of thruster forces to their corposponding effort units
         '''
-        return self._force_to_command(np.clip(force, self.force_limit[1], self.force_limit[0]))
+        return self._force_to_command(
+            np.clip(force, self.force_limit[1], self.force_limit[0]))
 
     def effort_to_force(self, effort):
         '''

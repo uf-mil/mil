@@ -105,7 +105,7 @@ class MissionPlannerTest(TestUnit):
         #                                                                                   stc_response,
         #                                                                                   shooter_response,
         #                                                                                   shooter_response,
-        #                                                                                   stc_response])
+        # stc_response])
 
         # self.serv_missing_marker = sg.spoof_service("/database/requests", ObjectDBQuery, [empty_resp,
         #                                                                                   stc_response,
@@ -114,7 +114,7 @@ class MissionPlannerTest(TestUnit):
         #                                                                                   stc_response,
         #                                                                                   shooter_response,
         #                                                                                   shooter_response,
-        #                                                                                   stc_response])
+        # stc_response])
 
         self.markers = sg.spoof_publisher(
             "/database/objects", PerceptionObjectArray, [stc_shooter], [1000])
@@ -193,7 +193,8 @@ class MissionPlannerTest(TestUnit):
         fprint("{} Missions passed".format(self.count), msg_color="green")
 
     @util.cancellableInlineCallbacks
-    def _run_mission(self, yaml_file, spoof_pub, spoof_service, time, desc, res):
+    def _run_mission(self, yaml_file, spoof_pub,
+                     spoof_service, time, desc, res):
         with open(yaml_file, 'r') as stream:
             try:
                 spoof_pub.start(self.nh)

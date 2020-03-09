@@ -108,7 +108,8 @@ class RemoteControl(object):
         '''
         rospy.loginfo("Toggling Kill")
 
-        # Responds to the kill broadcaster and checks the status of the kill alarm
+        # Responds to the kill broadcaster and checks the status of the kill
+        # alarm
         if self.is_killed:
             self.kill_broadcaster.clear_alarm()
         else:

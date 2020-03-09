@@ -173,7 +173,7 @@ def z_filter(db_obj_msg):
     # do a z filter for the led points
     top = max(db_obj_msg.points, key=attrgetter('z')).z
     points = np.array([[i.x, i.y, i.z] for i in db_obj_msg.points
-                       if i.z < top-LED_PANNEL_MAX and i.z > top-LED_PANNEL_MIN])
+                       if i.z < top - LED_PANNEL_MAX and i.z > top - LED_PANNEL_MIN])
     return points
 
 

@@ -22,7 +22,7 @@ params = {}
 for name, value in split:
     try:
         params[name] = eval(value)
-    except:
+    except BaseException:
         params[name] = value
 
 # Clip severity between [0, 5]

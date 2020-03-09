@@ -71,7 +71,8 @@ class DetectDeliverTargetDetector(VisionNode):
             if score > self.max_contour_score:
                 continue
 
-            # Attempt to reduce the contour to a 4 sided polygon representing the corners
+            # Attempt to reduce the contour to a 4 sided polygon representing
+            # the corners
             corners = self.large_target_model.get_corners(
                 c, epsilon_range=(0.01, 0.04))
             if corners is None:

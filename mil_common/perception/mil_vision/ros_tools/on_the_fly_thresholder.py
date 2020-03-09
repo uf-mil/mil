@@ -59,7 +59,8 @@ class Thresholder(object):
     def to_dict(self):
         lower = map(float, self.lower)
         upper = map(float, self.upper)
-        return {'color_space': self.thresh_type, 'ranges': {'lower': lower, 'upper': upper}, 'invert': False}
+        return {'color_space': self.thresh_type, 'ranges': {
+            'lower': lower, 'upper': upper}, 'invert': False}
 
 
 @util.cancellableInlineCallbacks

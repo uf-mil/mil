@@ -43,7 +43,7 @@ def MakeChainWithTimeout(base):
             raise an exception.
             '''
             parameters = json.loads(parameters)
-            if type(parameters) != dict:
+            if not isinstance(parameters, dict):
                 raise ParametersException('must be a dictionary')
             if 'missions' not in parameters:
                 raise ParametersException('must have "missions" list')
@@ -86,7 +86,8 @@ def MakeChainWithTimeout(base):
                     if isinstance(final, failure.Failure):
                         self.send_feedback('{} FAILED: {}'.format(
                             mission['mission'], final.getErrorMessage()))
-                        # Fail whole chain if a required mission times out or fails
+                        # Fail whole chain if a required mission times out or
+                        # fails
                         if mission['required']:
                             raise SubmissionException(
                                 mission['mission'], final.getErrorMessage())

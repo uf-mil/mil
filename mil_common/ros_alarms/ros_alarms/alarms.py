@@ -41,7 +41,8 @@ def _make_callback_error_string(alarm_name, backtrace=''):
     return err_msg.format(alarm_name, backtrace)
 
 
-def wait_for_service(service, warn_time=1.0, warn_msg='Waiting for service..', timeout=None):
+def wait_for_service(service, warn_time=1.0,
+                     warn_msg='Waiting for service..', timeout=None):
     '''
     A fancy extension of wait for service that will warn with a message if it is taking a while.
 
@@ -160,7 +161,8 @@ class Alarm(object):
         # Run the callbacks for that alarm
         cb_list = self.raised_cbs if srv.raised else self.cleared_cbs
         for severity, cb in cb_list:
-            # If the cb severity is not valid for this alarm's severity, skip it
+            # If the cb severity is not valid for this alarm's severity, skip
+            # it
             if srv.raised and not self._severity_cb_check(severity):
                 continue
 
@@ -236,7 +238,8 @@ class AlarmBroadcaster(object):
         @return boolean, True if alarm successfully raised
         '''
         try:
-            return self._alarm_set(self._generate_request(True, **kwargs)).succeed
+            return self._alarm_set(
+                self._generate_request(True, **kwargs)).succeed
         except rospy.service.ServiceException:
             rospy.logerr("No alarm sever found! Can't raise alarm.")
             return False
@@ -250,7 +253,8 @@ class AlarmBroadcaster(object):
         @return boolean, True if alarm successfully cleared
         '''
         try:
-            return self._alarm_set(self._generate_request(False, **kwargs)).succeed
+            return self._alarm_set(
+                self._generate_request(False, **kwargs)).succeed
         except rospy.service.ServiceException:
             rospy.logerr("No alarm sever found! Can't clear alarm.")
             return False
@@ -338,7 +342,8 @@ class AlarmListener(object):
         alarm = self._last_alarm
         if call_when_raised:
             self._raised_cbs.append((severity_required, funct))
-            if alarm is not None and alarm.raised and self._severity_cb_check(severity_required):
+            if alarm is not None and alarm.raised and self._severity_cb_check(
+                    severity_required):
                 # Try to run the callback, absorbing any errors
                 try:
                     alarm.parameters = parse_json_str(alarm.parameters)
@@ -371,7 +376,8 @@ class AlarmListener(object):
         self._last_alarm = alarm
         cb_list = self._raised_cbs if alarm.raised else self._cleared_cbs
         for severity, cb in cb_list:
-            # If the cb severity is not valid for this alarm's severity, skip it
+            # If the cb severity is not valid for this alarm's severity, skip
+            # it
             if not self._severity_cb_check(severity):
                 continue
 
@@ -385,7 +391,8 @@ class AlarmListener(object):
 
 class HeartbeatMonitor(AlarmBroadcaster):
 
-    def __init__(self, alarm_name, topic_name, msg_class, prd=0.2, predicate=None, nowarn=False, **kwargs):
+    def __init__(self, alarm_name, topic_name, msg_class,
+                 prd=0.2, predicate=None, nowarn=False, **kwargs):
         ''' Used to trigger an alarm if a message on the topic `topic_name` isn't published
             atleast every `prd` seconds.
 

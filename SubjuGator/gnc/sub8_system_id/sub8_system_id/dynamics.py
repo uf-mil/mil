@@ -78,7 +78,8 @@ class SubjuGatorDynamics(object):
         # Calculate effect of gravity
         gravity = - self.G * self.mass
 
-        # Estimate proportion of Sub's volume which is above the water (for buoyancy calculation)
+        # Estimate proportion of Sub's volume which is above the water (for
+        # buoyancy calculation)
         height_above_water = min(self.height, max(0., 0.5 * self.height + z))
         if height_above_water == 0.:
             proportion_above_water = 0.
@@ -134,7 +135,8 @@ class SubjuGatorDynamics(object):
         '''
         # Perform Newton-Euler equation to determine acceleration
         # https://en.wikipedia.org/wiki/Newton%E2%80%93Euler_equations#Center_of_mass_frame
-        return self.inertia_inv.dot(total_wrench - self.newton_euler_extra_term(twist))
+        return self.inertia_inv.dot(
+            total_wrench - self.newton_euler_extra_term(twist))
 
     def dynamics(self, twist, accel):
         '''

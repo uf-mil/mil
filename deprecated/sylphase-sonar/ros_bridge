@@ -10,10 +10,10 @@ import util
 rospy.init_node('sonar_ros_bridge')
 pub = rospy.Publisher('hydrophones/ping', Ping, queue_size=5)
 
-for ping in util.triggering(util.connect_to_samples(int(util.fs*.1))):
+for ping in util.triggering(util.connect_to_samples(int(util.fs * .1))):
     pub.publish(Ping(
         channels=ping.shape[0],
         samples=ping.shape[1],
         sample_rate=int(round(util.fs)),
-        data=map(int, (ping+2**15).T.flatten()),
+        data=map(int, (ping + 2**15).T.flatten()),
     ))

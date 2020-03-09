@@ -27,7 +27,8 @@ class ThrusterMapperNode(object):
         else:
             self.thruster_map = ThrusterMap.from_urdf(urdf)
 
-        # To track kill state so no thrust is sent when killed (kill board hardware also ensures this)
+        # To track kill state so no thrust is sent when killed (kill board
+        # hardware also ensures this)
         self.kill = False
         if not self.is_vrx:
             self.kill_listener = AlarmListener('kill', self.kill_cb)

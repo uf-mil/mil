@@ -70,7 +70,8 @@ class KeyboardClient():
         keycode = -1
         new_keycode = self.screen.getch()
 
-        # This eliminates building a buffer of keys that takes forever to process
+        # This eliminates building a buffer of keys that takes forever to
+        # process
         while ((new_keycode != -1) and (not rospy.is_shutdown())):
             keycode = new_keycode
             new_keycode = self.screen.getch()
@@ -123,7 +124,8 @@ class KeyboardClient():
         help_menu_rows = height - 3
         help_menu_columns = int((width - 1) / len(self.help_menu[0]))
 
-        # Prints the help menu based on how many rows and columns are available in the space of the window
+        # Prints the help menu based on how many rows and columns are available
+        # in the space of the window
         for row in range(help_menu_rows):
             for column in range(help_menu_columns):
                 if (index < len(self.help_menu)):

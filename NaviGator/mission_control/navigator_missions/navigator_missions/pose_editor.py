@@ -44,9 +44,11 @@ def get_perpendicular(a, b=None):
     return normalized(x)
 
 
-def triad((a1, a2), (b1, b2)):
+def triad(xxx_todo_changeme, xxx_todo_changeme1):
     # returns quaternion that rotates b1 to a1 and b2 near a2
     # can get orientation by passing in (global, local)
+    (a1, a2) = xxx_todo_changeme
+    (b1, b2) = xxx_todo_changeme1
     aa = get_perpendicular(a1, a2)
     A = np.array([normalized(a1), aa, normalized(np.cross(a1, aa))])
     bb = get_perpendicular(b1, b2)
@@ -146,7 +148,8 @@ class PoseEditor2(object):
         return self.result
 
     def set_position(self, position):
-        return PoseEditor2(self.nav, [np.array(position), np.array(self.orientation)])
+        return PoseEditor2(
+            self.nav, [np.array(position), np.array(self.orientation)])
 
     def rel_position(self, rel_pos):
         position = self.position + self._rot.dot(np.array(rel_pos))
@@ -216,7 +219,8 @@ class PoseEditor2(object):
         enu_vector[2] = 0  # We don't want to move in the z at all
         return self.set_position(enu_pos + enu_vector)
 
-    def spiral_point(self, point, direction='ccw', revolutions=1, meters_per_rev=0):
+    def spiral_point(self, point, direction='ccw',
+                     revolutions=1, meters_per_rev=0):
         """
         Sprials an ENU point.
 
@@ -236,7 +240,8 @@ class PoseEditor2(object):
 
         focus.append(sign_direction * revolutions)
 
-        return PoseEditor2(self.nav, [position, [0, 0, 0, 1]], focus=np.array(focus), move_type=MoveGoal.SPIRAL)
+        return PoseEditor2(self.nav, [position, [0, 0, 0, 1]], focus=np.array(
+            focus), move_type=MoveGoal.SPIRAL)
 
     def circle_point(self, point, *args, **kwargs):
         return self.spiral_point(point, *args, **kwargs)
@@ -290,7 +295,8 @@ class PoseEditor2(object):
             if not isinstance(kwargs['focus'], Point):
                 kwargs['focus'] = mil_tools.numpy_to_point(kwargs['focus'])
 
-        if 'speed_factor' in kwargs and isinstance(kwargs['speed_factor'], float):
+        if 'speed_factor' in kwargs and isinstance(
+                kwargs['speed_factor'], float):
             # User wants a uniform speed factor
             sf = kwargs['speed_factor']
             kwargs['speed_factor'] = [sf, sf, sf]

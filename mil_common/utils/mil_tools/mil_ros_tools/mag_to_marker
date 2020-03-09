@@ -19,7 +19,8 @@ class MagToMarker(object):
     @param length: length to scale vector to, if None, leave original scale
     '''
 
-    def __init__(self, mag_topic, marker_topic, length=1.0, color=[0, 0, 1, 1]):
+    def __init__(self, mag_topic, marker_topic,
+                 length=1.0, color=[0, 0, 1, 1]):
         self.length = length
         self.pub = rospy.Publisher(marker_topic, Marker, queue_size=1)
         self.color = numpy_to_colorRGBA(color)

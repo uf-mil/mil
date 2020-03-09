@@ -67,7 +67,8 @@ class ThrusterMapper(object):
         self.dropped_thrusters = srv.dropped_thrusters
         rospy.logwarn("Missing thrusters: {}".format(self.dropped_thrusters))
 
-        # Reset min and max thrusts, this will be overwritten by any dropped thrusters
+        # Reset min and max thrusts, this will be overwritten by any dropped
+        # thrusters
         self.min_thrusts = np.copy(self.default_min_thrusts)
         self.max_thrusts = np.copy(self.default_max_thrusts)
 
@@ -112,7 +113,8 @@ class ThrusterMapper(object):
         Meaning where u = [thrust_1, ... thrust_n],
          B * u = [Fx, Fy, Fz, Tx, Ty, Tz]
         '''
-        # Maintain an ordered list, tracking which column corresponds to which thruster
+        # Maintain an ordered list, tracking which column corresponds to which
+        # thruster
         self.thruster_name_map = []
         self.thruster_bounds = []
         B = []
@@ -162,7 +164,8 @@ class ThrusterMapper(object):
             effort_jacobian = np.transpose(u).dot(2 * thrust_cost)
             return error_jacobian + effort_jacobian
 
-        # Initialize minimization at the analytical solution of the unconstrained problem
+        # Initialize minimization at the analytical solution of the
+        # unconstrained problem
         minimization = minimize(
             method='slsqp',
             fun=objective,

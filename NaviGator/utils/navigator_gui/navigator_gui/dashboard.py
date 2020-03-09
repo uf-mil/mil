@@ -45,7 +45,8 @@ class Dashboard(Plugin):
 
         self.remote = RemoteControl("dashboard")
 
-        # Creates dictionaries that are used by the monitor functions to keep track of their node or service
+        # Creates dictionaries that are used by the monitor functions to keep
+        # track of their node or service
         node_monitor_template = {
             "current": "Unknown",
             "displayed": "Unknown",
@@ -61,7 +62,8 @@ class Dashboard(Plugin):
         self.connect_ui()
         self.connect_ros()
 
-        # Deals with problem when they're multiple instances of Dashboard plugin
+        # Deals with problem when they're multiple instances of Dashboard
+        # plugin
         if context.serial_number() > 1:
             self._widget.setWindowTitle(
                 self._widget.windowTitle() + (" (%d)" % context.serial_number()))
@@ -79,9 +81,11 @@ class Dashboard(Plugin):
             self.update_system_time_status()
         if (self.kill_status["current"] != self.kill_status["displayed"]):
             self.update_kill_status()
-        if (self.operating_mode["current"] != self.operating_mode["displayed"]):
+        if (self.operating_mode["current"] !=
+                self.operating_mode["displayed"]):
             self.update_operating_mode_status()
-        if (self.battery_voltage["current"] != self.battery_voltage["displayed"]):
+        if (self.battery_voltage["current"] !=
+                self.battery_voltage["displayed"]):
             self.update_battery_voltage_status()
         if (self.hosts["current"] != self.hosts["displayed"]):
             self.update_hosts_status()
@@ -174,7 +178,8 @@ class Dashboard(Plugin):
         Connect ROS nodes, services, and alarms to variables and methods
         within this class.
         '''
-        # Attempts to read the battery voltage parameters (sets them to defaults if they have not been set)
+        # Attempts to read the battery voltage parameters (sets them to
+        # defaults if they have not been set)
         self.battery_low_voltage = rospy.get_param(
             "/battery_monitor/battery_low_voltage", 24)
         self.battery_critical_voltage = rospy.get_param(
@@ -255,13 +260,16 @@ class Dashboard(Plugin):
         display an unknown status if it has been 15s since the last message.
         '''
 
-        # Sets the battery voltage to 'Unknown' if no message has been current in 15s
+        # Sets the battery voltage to 'Unknown' if no message has been current
+        # in 15s
         if (((rospy.Time.now() - self.battery_voltage["stamp"]) > rospy.Duration(15)) or
                 (self.battery_voltage["current"] is None)):
             self.battery_voltage["current"] = "Unknown"
 
-        # Updates the displayed data if a new battery voltage has been current since the last timer
-        if (self.battery_voltage["current"] != self.battery_voltage["displayed"]):
+        # Updates the displayed data if a new battery voltage has been current
+        # since the last timer
+        if (self.battery_voltage["current"] !=
+                self.battery_voltage["displayed"]):
             self.update_battery_voltage_status()
 
         # Schedules the next instance of this method with a QT timer
@@ -277,7 +285,8 @@ class Dashboard(Plugin):
             self.battery_voltage_status.setText("Unknown")
             self.battery_voltage_frame.setStyleSheet(self.colors["red"])
         else:
-            if (self.battery_voltage["current"] <= self.battery_critical_voltage):
+            if (self.battery_voltage["current"]
+                    <= self.battery_critical_voltage):
                 self.battery_voltage_frame.setStyleSheet(self.colors["red"])
             elif (self.battery_voltage["current"] <= self.battery_low_voltage):
                 self.battery_voltage_frame.setStyleSheet(self.colors["yellow"])

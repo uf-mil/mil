@@ -38,7 +38,8 @@ class BatteryMonitor():
         self.voltage = None
 
         # Initialize a list to hold the 1000 most recent supply voltage readings
-        # Holding 1000 values ensures that changes in the average are gradual rather than sharp
+        # Holding 1000 values ensures that changes in the average are gradual
+        # rather than sharp
         self.supply_voltages = []
 
         self.hw_kill_raised = None
@@ -76,7 +77,8 @@ class BatteryMonitor():
             return
         self.supply_voltages.append(feedback.supply_voltage)
 
-        # Limits the list by removing the oldest readings when it contains more then 1000 readings
+        # Limits the list by removing the oldest readings when it contains more
+        # then 1000 readings
         while (len(self.supply_voltages) > 1000):
             del self.supply_voltages[0]
 

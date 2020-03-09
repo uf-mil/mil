@@ -67,7 +67,9 @@ def _check_for_run(sub, nh, alarm):
         fprint('Running Missions')
         yield do_mission(sub)
     else:
-        fprint("Network loss deteceted but NOT starting mission.", msg_color='red')
+        fprint(
+            "Network loss deteceted but NOT starting mission.",
+            msg_color='red')
 
 
 @txros.util.cancellableInlineCallbacks

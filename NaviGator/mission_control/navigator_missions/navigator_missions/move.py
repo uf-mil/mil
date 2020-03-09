@@ -79,7 +79,8 @@ class Move(Navigator):
                 action_kwargs['focus'] = point
 
             if command == 'custom':
-                # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
+                # Let the user input custom commands, the eval may be dangerous
+                # so do away with that at some point.
                 self.send_feedback(
                     "Moving with the command: {}".format(argument))
                 res = yield eval("self.move.{}.go(move_type='{move_type}')".format(argument, **action_kwargs))

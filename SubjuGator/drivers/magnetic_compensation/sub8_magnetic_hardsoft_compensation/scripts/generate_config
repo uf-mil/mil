@@ -62,7 +62,8 @@ def fit_ellipsoid(points):
     shift = ka.dot(X[6:9])
 
     # the A matrix has eigenvalues which are squares of the axis scale factors, so
-    # taking the matrix square root yields the transform from a sphere to the ellipsoid
+    # taking the matrix square root yields the transform from a sphere to the
+    # ellipsoid
     scale = scipy.linalg.sqrtm(ka)
     assert numpy.isreal(scale).all(), scale
     scale = numpy.real(scale)
@@ -145,7 +146,7 @@ if __name__ == '__main__':
         ax.scatter(*zip(*points[::10, :]))
         axisEqual3D(ax)
         plt.show()
-    except:
+    except BaseException:
         import traceback
         traceback.print_exc()
 
@@ -164,7 +165,7 @@ if __name__ == '__main__':
         axisEqual3D(ax)
         plt.show()
 
-    except:
+    except BaseException:
         import traceback
         traceback.print_exc()
 

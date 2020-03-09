@@ -36,7 +36,8 @@ class Picker(object):
         self.visualize_draw = np.copy(image) * 0
         self.visual_brush_size = np.copy(image) * 0
 
-        if self.out_mask is None or len(self.out_mask[self.out_mask == 1]) == 0:
+        if self.out_mask is None or len(
+                self.out_mask[self.out_mask == 1]) == 0:
             self.mask = np.zeros(image.shape[:2], dtype=np.uint8)
             self.mask[:, :] = int(cv2.GC_PR_BGD)
         else:
@@ -238,7 +239,8 @@ if __name__ == '__main__':
         bc = bag_crawler.BagCrawler(file_name)
         print bc.image_topics[0]
     else:
-        # Assuming we don't have ros installed, so make our own ros for rospy.is_shutdown()
+        # Assuming we don't have ros installed, so make our own ros for
+        # rospy.is_shutdown()
         class rospy():
             @classmethod
             def is_shutdown(self):
@@ -274,7 +276,8 @@ if __name__ == '__main__':
             print 'ignoring image'
             continue
         elif key == 'n':
-            # There's not a good way to step a generator backwards - so just skip it.
+            # There's not a good way to step a generator backwards - so just
+            # skip it.
             print 'ignoring segment'
             continue
 

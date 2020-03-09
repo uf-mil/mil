@@ -24,10 +24,12 @@ class ActuatorBoardSimulation(SimulatedCANDevice):
         assert CommandMessage.IDENTIFIER == ord(data[0])
         # Parse message
         message = CommandMessage.from_bytes(data)
-        # If message is writing a valve, store this change in the internal dictionary
+        # If message is writing a valve, store this change in the internal
+        # dictionary
         if message.write:
             self.status[message.address] = message.on
-        # If message is a status request, send motherboard the status of the requested valve
+        # If message is a status request, send motherboard the status of the
+        # requested valve
         else:
             response = FeedbackMessage.create_feedback_message(
                 address=message.address, on=self.status[message.address])

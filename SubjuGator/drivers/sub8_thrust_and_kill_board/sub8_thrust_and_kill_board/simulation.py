@@ -45,7 +45,8 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
 
     @property
     def heartbeat_timedout(self):
-        return self._last_heartbeat is None or (rospy.Time.now() - self._last_heartbeat) > self.HEARTBEAT_TIMEOUT_SECONDS
+        return self._last_heartbeat is None or (
+            rospy.Time.now() - self._last_heartbeat) > self.HEARTBEAT_TIMEOUT_SECONDS
 
     @property
     def soft_killed(self):

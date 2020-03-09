@@ -35,7 +35,8 @@ class BuoySelector(object):
     Allows user to manually click the buoys
     '''
 
-    def __init__(self, name, img, scale_factor=1, color=(10, 75, 250), draw_radius=10):
+    def __init__(self, name, img, scale_factor=1,
+                 color=(10, 75, 250), draw_radius=10):
         assert img is not None, "Image is none"
 
         cv2.namedWindow(name)
@@ -133,7 +134,8 @@ class Segmenter(object):
 
 def intersect(A, a, B, b):
     # Based on http://morroworks.com/Content/Docs/Rays%20closest%20point.pdf
-    # Finds the intersection of two rays `a` and `b` whose origin are `A` and `B`
+    # Finds the intersection of two rays `a` and `b` whose origin are `A` and
+    # `B`
     return (A + a * (-np.dot(a, b) * np.dot(b, B - A) + np.dot(a, B - A) * np.dot(b, b)) /
             (np.dot(a, a) * np.dot(b, b) - np.dot(a, b) ** 2) +
             B + b * (np.dot(a, b) * np.dot(a, B - A) - np.dot(b, B - A) * np.dot(a, a)) /
@@ -201,7 +203,8 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
     while not rospy.is_shutdown():
         # Get all the required TF links
         try:
-            # Working copy of the current frame obtained at the same time as the tf link
+            # Working copy of the current frame obtained at the same time as
+            # the tf link
             tf_listener.waitForTransform(
                 "enu", "front_left_cam_optical", rospy.Time(), rospy.Duration(4.0))
             left_image, right_image = left.frame, right.frame
@@ -226,7 +229,8 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
     green_right_pt, gr_area = green_seg.segment(right_image)
 
     area_tol = 50
-    if np.linalg.norm(rl_area - rr_area) > area_tol or np.linalg.norm(gl_area - gr_area) > area_tol:
+    if np.linalg.norm(
+            rl_area - rr_area) > area_tol or np.linalg.norm(gl_area - gr_area) > area_tol:
         rospy.logwarn("Unsafe segmentation")
         StartGateResponse(success=False)
 
@@ -320,6 +324,6 @@ if __name__ == "__main__":
                       lambda srv: do_buoys(srv, left, right, red_seg, green_seg, tf_listener))
 
     # rospy.Timer(rospy.Duration(.5), lambda republish: publish_debug(red_debug, green_debug,
-    #                                                                 red_seg, green_seg, left))
+    # red_seg, green_seg, left))
 
     rospy.spin()

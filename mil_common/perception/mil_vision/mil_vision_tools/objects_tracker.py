@@ -44,7 +44,8 @@ class TrackedObject(object):
         return self.stamp - self.created_at
 
     def __str__(self):
-        return "TrackedObject(id={}, observations={}, age={}s)".format(self.id, self.observations, self.age.to_sec())
+        return "TrackedObject(id={}, observations={}, age={}s)".format(
+            self.id, self.observations, self.age.to_sec())
 
 
 class ObjectsTracker(object):
@@ -95,14 +96,16 @@ class ObjectsTracker(object):
         self.objects = filter(lambda obj: now - obj.stamp <
                               self.expiration_seconds, self.objects)
 
-    def get_persistent_objects(self, min_observations=10, min_age=rospy.Duration(0)):
+    def get_persistent_objects(
+            self, min_observations=10, min_age=rospy.Duration(0)):
         '''
         Get a list of objects which have persisted sufficiently long.
         @param min_observations: Minimum number of times the object was seen to be returned
         @param min_age: Minimum age an object must be to be returned in result
         @return: List of TrackedObject instances of those objects meeting the above criteria
         '''
-        return filter(lambda obj: obj.age >= min_age and obj.observations >= min_observations, self.objects)
+        return filter(lambda obj: obj.age >=
+                      min_age and obj.observations >= min_observations, self.objects)
 
     @abc.abstractmethod
     def distance(self, a, b):

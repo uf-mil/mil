@@ -22,9 +22,10 @@ class VrxNavigation(Vrx):
         yield self.nh.sleep(5.)
 
     def get_index_of_type(self, objects, classifications):
-        if type(classifications) == str:
+        if isinstance(classifications, str):
             classifications = [classifications]
-        return next(i for i, o in enumerate(objects) if o.labeled_classification in classifications and o.id not in self.objects_passed)
+        return next(i for i, o in enumerate(
+            objects) if o.labeled_classification in classifications and o.id not in self.objects_passed)
 
     @staticmethod
     def get_gate(one, two, position):
@@ -42,7 +43,8 @@ class VrxNavigation(Vrx):
         ])
         if np.argmin(distances) == 0:
             perp_vec = -perp_vec
-        return np.array([center[0], center[1], 0.]), np.array([perp_vec[0], perp_vec[1], 0.])
+        return np.array([center[0], center[1], 0.]), np.array(
+            [perp_vec[0], perp_vec[1], 0.])
 
     @txros.util.cancellableInlineCallbacks
     def go_thru_gate(self, gate, BEFORE=5.0, AFTER=4.0):
@@ -116,7 +118,8 @@ class VrxNavigation(Vrx):
                 if index == 0:
                     service_req = None
                     objects_msg = result
-                    if self.object_classified(objects_msg.objects, move_id_tuple[1]):
+                    if self.object_classified(
+                            objects_msg.objects, move_id_tuple[1]):
                         self.send_feedback(
                             '{} identified. Canceling investigation'.format(move_id_tuple[1]))
                         yield dl.cancel()

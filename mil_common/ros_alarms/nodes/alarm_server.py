@@ -57,7 +57,8 @@ class AlarmServer(object):
     def _on_get_alarm(self, srv):
         ''' Either returns the alarm request if it exists or a blank alarm '''
         rospy.logdebug("Got request for alarm: {}".format(srv.alarm_name))
-        return self.alarms.get(srv.alarm_name, Alarm.blank(srv.alarm_name)).as_srv_resp()
+        return self.alarms.get(srv.alarm_name, Alarm.blank(
+            srv.alarm_name)).as_srv_resp()
 
     def make_tagged_alarm(self, name):
         '''
@@ -77,14 +78,15 @@ class AlarmServer(object):
                   if name in sub_alarms}
         meta = self.alarms[meta_alarm]
 
-        # Check the predicate, this should return either an alarm object or a boolean for if should be raised
+        # Check the predicate, this should return either an alarm object or a
+        # boolean for if should be raised
         res = self.meta_alarms[meta_alarm](meta, alarms)
 
         # If it an alarm instance send it out as is
         if isinstance(res, Alarm):
             alarm = res
             alarm.alarm_name = meta_alarm  # Ensure alarm name is correct
-        elif type(res) == bool:
+        elif isinstance(res, bool):
             # If it is a boolean, only update if it changes the raised status
             raised_status = res
             if raised_status == meta.raised:
@@ -127,7 +129,8 @@ class AlarmServer(object):
 
             alarm_name = handler.alarm_name
 
-            # Set initial state if necessary (could have already been added while creating metas)
+            # Set initial state if necessary (could have already been added
+            # while creating metas)
             if hasattr(h, 'initial_alarm'):
                 if alarm_name in self.alarms:
                     self.alarms[alarm_name].update(h.initial_alarm)
@@ -139,7 +142,8 @@ class AlarmServer(object):
             else:
                 pass
 
-            # If a handler exists for a meta alarm, we need to save the predicate
+            # If a handler exists for a meta alarm, we need to save the
+            # predicate
             if alarm_name in self.meta_alarms:
                 self.meta_alarms[alarm_name] = h.meta_predicate
 

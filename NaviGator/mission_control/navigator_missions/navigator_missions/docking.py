@@ -133,7 +133,8 @@ class Docking(Navigator):
 
         # Which is closer
         boat_pos = (yield self.tx_pose)[0]
-        if np.linalg.norm(found_pt_1 - boat_pos) > np.linalg.norm(found_pt_2 - boat_pos):
+        if np.linalg.norm(
+                found_pt_1 - boat_pos) > np.linalg.norm(found_pt_2 - boat_pos):
             found_pt = found_pt_2
         else:
             found_pt = found_pt_1

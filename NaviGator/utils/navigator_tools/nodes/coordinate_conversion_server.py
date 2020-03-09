@@ -73,7 +73,8 @@ class EarthCoordinateConverter(object):
         func = getattr(self, req.frame)
         for i in range(len(req.points)):
             converted[i] = func(rosmsg_to_numpy(req.points[i]))[idx]
-        return CoordinateConversionResponse(converted=numpy_to_points(converted))
+        return CoordinateConversionResponse(
+            converted=numpy_to_points(converted))
 
     def lla(self, point):
         '''

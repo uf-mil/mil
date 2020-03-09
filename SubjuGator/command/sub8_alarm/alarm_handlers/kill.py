@@ -12,7 +12,8 @@ class Kill(HandlerBase):
     HARDWARE_KILL_GRACE_PERIOD_SECONDS = 6.0
 
     def __init__(self):
-        # Alarm server wil set this as the intial state of kill alarm (starts killed)
+        # Alarm server wil set this as the intial state of kill alarm (starts
+        # killed)
         self.initial_alarm = Alarm(self.alarm_name, True,
                                    node_name='alarm_server',
                                    problem_description='Initial kill')
@@ -99,7 +100,8 @@ class Kill(HandlerBase):
         ignore.append("odom-kill")
 
         # If we lose network but don't want to go autonomous
-        if sub_alarms["network-loss"].raised and not rospy.get_param("/autonomous", False):
+        if sub_alarms["network-loss"].raised and not rospy.get_param(
+                "/autonomous", False):
             return True
         ignore.append("network-loss")
 

@@ -109,7 +109,8 @@ class LidarToImage(object):
         xmin, ymin, xmax, ymax = self._get_bounding_rect(points_2d, img)
         xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
         h, w, r = img.shape
-        if xmin < 0 or xmax < 0 or xmin > w or xmax > w or xmax - xmin == 0 or ymax - ymin == 0:
+        if xmin < 0 or xmax < 0 or xmin > w or xmax > w or xmax - \
+                xmin == 0 or ymax - ymin == 0:
             defer.returnValue((None, None))
         if ymin < 0:
             ymin = 0
@@ -138,7 +139,7 @@ class LidarToImage(object):
     def get_closest_image(self, time):
         min_img = None
         for i in range(0, 20):
-            min_diff = genpy.Duration(sys.maxint)
+            min_diff = genpy.Duration(sys.maxsize)
             for img in self.image_cache:
                 diff = abs(time - img.header.stamp)
                 if diff < min_diff:

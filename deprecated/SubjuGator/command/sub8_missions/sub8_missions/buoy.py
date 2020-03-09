@@ -118,7 +118,8 @@ class BumpBuoysMission(object):
 
     @util.cancellableInlineCallbacks
     def run(self):
-        # start_time = yield self.sub.nh.get_time()  # Store time mission starts for timeout
+        # start_time = yield self.sub.nh.get_time()  # Store time mission
+        # starts for timeout
 
         self.print_info("Enabling Perception")
         self.sub.vision_proxies.buoy.start()

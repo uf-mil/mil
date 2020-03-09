@@ -49,7 +49,8 @@ class CoralSurvey(Navigator):
         msg = ogrid.get_message()
         latched = self.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
 
-        # Construct waypoint list along NSEW directions then rotate 45 degrees to get a good spot to go to.
+        # Construct waypoint list along NSEW directions then rotate 45 degrees
+        # to get a good spot to go to.
         directions = [EAST, NORTH, WEST, SOUTH]
         # for quad in quads_to_search:
         mid = self.move.set_position(

@@ -98,11 +98,13 @@ class DetectDeliverFind(Navigator):
         scanbtdists = np.array([sc[4] for sc in self.scans])
         closest_scan = np.argmin(scanbtdists)
 
-        # Scan each point, stop and set correct, correct_scan, when correct found.
+        # Scan each point, stop and set correct, correct_scan, when correct
+        # found.
         correct = False
         correct_scan_idx = -1
         for i in range(closest_scan, len(self.scans)) + range(0, closest_scan):
-            # yield self.move.set_position(self.scans[i][0]).look_at(self.scans[i][1]).go()
+            # yield
+            # self.move.set_position(self.scans[i][0]).look_at(self.scans[i][1]).go()
             yield self.move.set_position(self.scans[i][0]).look_at(self.dock_position).go()
             correct = yield self.scan_image()
             if correct:
@@ -183,7 +185,8 @@ class DetectDeliverFind(Navigator):
     def scan_image(self):
         msgf = yield self.bboxsub.get_next_message()
         for msg in msgf.objects:
-            if not (('circle' in msg.name) or ('triangle' in msg.name) or ('cruciform' in msg.name)):
+            if not (('circle' in msg.name) or ('triangle' in msg.name)
+                    or ('cruciform' in msg.name)):
                 continue
 
             if self.long_scan:

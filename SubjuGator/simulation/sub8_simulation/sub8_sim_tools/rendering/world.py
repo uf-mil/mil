@@ -127,7 +127,8 @@ class Box(Entity):
     _vertex_shader = Shaders.lighting['lambert']['vertex']
     _fragment_shader = Shaders.lighting['lambert']['fragment']
 
-    def __init__(self, position, width, height, depth, color, shader_manager=None):
+    def __init__(self, position, width, height,
+                 depth, color, shader_manager=None):
         box_mesh, box_faces, _ = geometry.create_box(
             width, height, depth,
             width_segments=int(width * 5),
@@ -156,7 +157,8 @@ class Plane(Entity):
     _vertex_shader = Shaders.base_shaders['phong']['vertex']
     _fragment_shader = Shaders.base_shaders['phong']['fragment']
 
-    def __init__(self, position, width, height, color=(0, 255, 0), orientation=None, shader_manager=None):
+    def __init__(self, position, width, height, color=(
+            0, 255, 0), orientation=None, shader_manager=None):
         '''TODO:
             - Add set plane normal
         '''
@@ -235,7 +237,8 @@ class Mesh(Entity):
     _vertex_shader = Shaders.base_shaders['phong']['vertex']
     _fragment_shader = Shaders.base_shaders['phong']['fragment']
 
-    def __init__(self, mesh, position, orientation=None, color=(0, 255, 0), shininess=16.0, shader_manager=None):
+    def __init__(self, mesh, position, orientation=None, color=(
+            0, 255, 0), shininess=16.0, shader_manager=None):
         '''TODO: Make loading this consistent with everything else'''
         # Texcoords is always none in the current version of Vispy
         mesh_vertices, mesh_faces, mesh_normals, texcoords = mesh
@@ -288,7 +291,8 @@ class World(object):
         self.entities.append(box)
         return box
 
-    def add_plane(self, position, width, height, color=(0, 0, 255), orientation=None):
+    def add_plane(self, position, width, height,
+                  color=(0, 0, 255), orientation=None):
         plane = Plane(position, width, height, color, orientation,
                       shader_manager=self.shader_manager)
         self.entities.append(plane)

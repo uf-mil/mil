@@ -51,7 +51,8 @@ class CommandMessage(ApplicationPacket):
         return cls(cls.IDENTIFIER, payload)
 
     def __str__(self):
-        return 'CommandMessage(address={}, write={}, on={})'.format(self.address, self.write, self.on)
+        return 'CommandMessage(address={}, write={}, on={})'.format(
+            self.address, self.write, self.on)
 
 
 class InvalidAddressException(RuntimeError):
@@ -94,4 +95,5 @@ class FeedbackMessage(ApplicationPacket):
         return cls(cls.IDENTIFIER, payload)
 
     def __str__(self):
-        return 'FeedbackMessage(address={}, on={})'.format(self.address, self.on)
+        return 'FeedbackMessage(address={}, on={})'.format(
+            self.address, self.on)

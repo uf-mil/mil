@@ -293,7 +293,8 @@ class EntranceGate(Navigator):
             gateDist[2] = np.linalg.norm(
                 intersection - np.array(self.gate_centers[2]))
 
-            # If the intersection is more than 15 meters from the center of the gates it is outside the gates
+            # If the intersection is more than 15 meters from the center of the
+            # gates it is outside the gates
             if gateDist[1] > 16:
                 # Ignore it
                 continue
@@ -306,7 +307,8 @@ class EntranceGate(Navigator):
             vec_intersect = intersection - pinger_vector[0]
             vec_intersect = vec_intersect / np.linalg.norm(vec_intersect)
 
-            # Calculate the angle between the edges of the gates and the angle between an edge and the intersection
+            # Calculate the angle between the edges of the gates and the angle
+            # between an edge and the intersection
             ang_c1_c4 = np.arccos(
                 np.clip(np.dot(vec_corner1, vec_corner4), -1.0, 1.0))
             ang_c1_i4 = np.arccos(
@@ -342,7 +344,7 @@ class EntranceGate(Navigator):
             # Track the ping
             self.intersect_vectors.append(
                 (hydrophones_origin[0:2], hydrophones_origin[0:2] + heading_enu[0:2]))
-        except tf2_ros.TransformException, e:
+        except tf2_ros.TransformException as e:
             self.send_feedback('TF Exception: {}'.format(e))
 
     '''
@@ -418,7 +420,8 @@ class EntranceGate(Navigator):
         t4 = t4[1][0][:2]
 
         # Make sure the two white totems get ordered properly
-        if (t2[0] - t1[0]) ** 2 + (t2[1] - t1[1]) ** 2 < (t3[0] - t1[0]) ** 2 + (t3[1] - t1[1]) ** 2:
+        if (t2[0] - t1[0]) ** 2 + (t2[1] - t1[1]
+                                   ) ** 2 < (t3[0] - t1[0]) ** 2 + (t3[1] - t1[1]) ** 2:
             gate_totems = [t1, t2, t3, t4]
         else:
             gate_totems = [t1, t3, t2, t4]
@@ -440,7 +443,8 @@ class EntranceGate(Navigator):
     '''
 
     @util.cancellableInlineCallbacks
-    def get_perpendicular_points(self, center_point, offset_distance, boat_pose=None):
+    def get_perpendicular_points(
+            self, center_point, offset_distance, boat_pose=None):
         # Find the perpendicular line
         perpendicular_vector = self.perpendicular(self.gates_line)
 

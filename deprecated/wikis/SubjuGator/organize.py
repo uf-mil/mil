@@ -7,6 +7,7 @@ from git import Repo
 import re
 import os
 import functools
+from functools import reduce
 
 _filepath = os.path.dirname(os.path.realpath(__file__))
 join = functools.partial(os.path.join, _filepath)

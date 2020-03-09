@@ -22,7 +22,7 @@ from dynamic_reconfigure.server import Server as DynamicReconfigureServer
 
 '''
 This Vampiric Grymoire identifies the four major types of Vampire:
-    Jiangshi --> Flat "Buoy"        
+    Jiangshi --> Flat "Buoy"
     Draugr   --> 3 Sided Buoy
     Aswang   --> 3 Sided Buoy
     Vetalas  --> 3 Sided Buoy
@@ -32,8 +32,8 @@ General outline of task
     Boop the Buoy.
     Find 3 Sided Buoy with Sonar.
     Find Declared Enemy based on config.
-    Boop the Declared Enemy. 
-    Flee scene of crime before other vampires get to us. 
+    Boop the Declared Enemy.
+    Flee scene of crime before other vampires get to us.
 '''
 
 
@@ -219,7 +219,7 @@ class VampireIdentifier:
     def detect(self, c):
         '''
         Verify the shape in the masked image is large enough to be a valid target.
-        This changes depending on target Vampire, as does the number of targets we want.  
+        This changes depending on target Vampire, as does the number of targets we want.
         '''
         target = "unidentified"
         peri = cv2.arcLength(c, True)
@@ -302,7 +302,8 @@ class VampireIdentifier:
                     except CvBridgeError as e:
                         print(e)
 
-                # Grab the largest contour. Generally this is a safe bet but... We may need to tweak this for the three different vampires.
+                # Grab the largest contour. Generally this is a safe bet but...
+                # We may need to tweak this for the three different vampires.
                 peri = cv2.arcLength(c, True)
                 if peri > peri_max:
                     peri_max = peri

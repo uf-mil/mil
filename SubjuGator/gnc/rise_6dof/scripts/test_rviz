@@ -106,7 +106,9 @@ if __name__ == '__main__':
             if desired_posetwist is not None and \
                rospy.Duration.from_sec(0) < rospy.Time.now() - desired_posetwist.header.stamp \
                < rospy.Duration.from_sec(.05):
-                dt = (rospy.Time.now() - desired_posetwist.header.stamp).to_sec()
+                dt = (
+                    rospy.Time.now() -
+                    desired_posetwist.header.stamp).to_sec()
                 vel = (xyz_array(feedback.pose.position) -
                        xyz_array(desired_posetwist.posetwist.pose.position)) / dt
 
@@ -165,7 +167,8 @@ if __name__ == '__main__':
 
         current_pos += dt * current_vel
 
-        def quat_exp((x, y, z)):
+        def quat_exp(xxx_todo_changeme):
+            (x, y, z) = xxx_todo_changeme
             return transformations.quaternion_about_axis(
                 numpy.linalg.norm((x, y, z)), (x, y, z))
 

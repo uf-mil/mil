@@ -49,24 +49,28 @@ class MRAC_Controller:
         self.only_PD = False
         self.learning_radius = 10  # m
         # Use external trajectory generator instead of internal reference generator
-        # Subscribes to /trajectory if using external, else just takes /waypoint for the end goal
+        # Subscribes to /trajectory if using external, else just takes
+        # /waypoint for the end goal
         self.use_external_tgen = True
 
         # REFERENCE MODEL (note that this is not the adaptively estimated TRUE model; rather,
         #                     these parameters will govern the trajectory we want to achieve).
         # kg, determined to be larger than boat in practice due to water mass
         self.mass_ref = rospy.get_param('~mass', 500)
-        # kg*m^2, determined to be larger than boat in practice due to water mass
+        # kg*m^2, determined to be larger than boat in practice due to water
+        # mass
         self.inertia_ref = rospy.get_param('~izz', 400)
         self.thrust_max = 220  # N
 
-        # back-left, back-right, front-left front-right, thruster positions in meters
+        # back-left, back-right, front-left front-right, thruster positions in
+        # meters
         self.thruster_positions = np.array([[-1.9000, 1.0000, -0.0123],
                                             [-1.9000, -1.0000, -0.0123],
                                             [1.6000, 0.6000, -0.0123],
                                             [1.6000, -0.6000, -0.0123]])
 
-        # back-left, back-right, front-left, front-right thruster directions in radians
+        # back-left, back-right, front-left, front-right thruster directions in
+        # radians
         self.thruster_directions = np.array([[0.7071, 0.7071, 0.0000],
                                              [0.7071, -0.7071, 0.0000],
                                              [0.7071, -0.7071, 0.0000],
@@ -206,7 +210,8 @@ class MRAC_Controller:
         if self.p_ref is None:
             return  # C3 is killed
 
-        # Compute timestep from interval between this message's stamp and last's
+        # Compute timestep from interval between this message's stamp and
+        # last's
         if self.last_odom is None:
             self.last_odom = msg
         else:
@@ -230,7 +235,8 @@ class MRAC_Controller:
         R[:2, :2] = trns.quaternion_matrix(self.orientation)[:2, :2]
         y = trns.euler_from_quaternion(self.orientation)[2]
 
-        # More ROS unpacking, converting body frame twist to world frame lin_vel and ang_vel
+        # More ROS unpacking, converting body frame twist to world frame
+        # lin_vel and ang_vel
         self.lin_vel = R.dot(
             np.array([lin_vel_body.x, lin_vel_body.y, lin_vel_body.z]))[:2]
         self.ang_vel = R.dot(
@@ -378,7 +384,8 @@ class MRAC_Controller:
         errdot = np.concatenate((v_err, [w_err]))
         wrench = (kp.dot(err)) + (kd.dot(errdot))
 
-        # Compute world frame thruster matrix (B) from thruster geometry, and then map wrench to thrusts
+        # Compute world frame thruster matrix (B) from thruster geometry, and
+        # then map wrench to thrusts
         B = np.concatenate(
             (R_ref.dot(self.thruster_directions.T), R_ref.dot(self.lever_arms.T)))
         B_3dof = np.concatenate((B[:2, :], [B[5, :]]))

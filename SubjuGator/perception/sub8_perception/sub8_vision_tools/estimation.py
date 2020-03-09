@@ -191,7 +191,8 @@ class ProjectionParticleFilter(object):
         expected_obs_h = self.K.dot(particles)
         expected_obs = expected_obs_h[:2, :] / expected_obs_h[2, :]
 
-        # Check how many particles are in the field of view, if we have a problem, don't try
+        # Check how many particles are in the field of view, if we have a
+        # problem, don't try
         infront = np.sum(self.in_fov(particles))
         if infront < 5:
             # TODO: Do a partial ray-reset
@@ -206,7 +207,8 @@ class ProjectionParticleFilter(object):
             reprojection_prob = stats.norm.pdf(
                 error, scale=self.observation_noise)
 
-            # p(z | x) = (1 - p_outlier ) * p(err | sigma) + (p_outlier * p(err | random))
+            # p(z | x) = (1 - p_outlier ) * p(err | sigma) + (p_outlier * p(err
+            # | random))
             prob = ((1 - self.jitter) * (z_prob * reprojection_prob)) + \
                 (self.jitter * self.jitter_pdf.pdf(error))
 

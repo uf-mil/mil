@@ -92,7 +92,7 @@ class VisionProxy(object):
                 VisionRequestRequest(target_name=target))
         except (serviceclient.ServiceError):
             return None
-        except Exception, e:
+        except Exception as e:
             print type(e)
         return pose
 
@@ -365,7 +365,7 @@ class Searcher(object):
             while True:
                 for pose in self.search_pattern:
                     print "SEARCHER - going to next position."
-                    if type(pose) == list or type(pose) == np.ndarray:
+                    if isinstance(pose, list) or isinstance(pose, np.ndarray):
                         yield self.sub.move.relative(pose).go(speed=speed)
                     else:
                         yield pose.go()
@@ -374,7 +374,7 @@ class Searcher(object):
 
         else:
             for pose in self.search_pattern:
-                if type(pose) == list or type(pose) == np.ndarray:
+                if isinstance(pose, list) or isinstance(pose, np.ndarray):
                     yield self.sub.move.relative(
                         np.array(pose)).go(speed=speed)
                 else:
@@ -690,7 +690,7 @@ class SonarPointcloud(object):
     @util.cancellableInlineCallbacks
     def _run_move_pattern(self, speed):
         for pose in self.pattern:
-            if type(pose) == list or type(pose) == np.ndarray:
+            if isinstance(pose, list) or isinstance(pose, np.ndarray):
                 yield self.sub.move.relative(np.array(pose)).go(speed=speed)
             else:
                 yield pose.go()

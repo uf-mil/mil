@@ -31,7 +31,7 @@ def process_ping(ping):
 
     valid = len(r['pos']) > 0 and len(r['errors']) == 0
     if valid:
-        pos2 = r['pos']/numpy.linalg.norm(r['pos'])
+        pos2 = r['pos'] / numpy.linalg.norm(r['pos'])
         print 'result angle:', numpy.rad2deg(
             numpy.arctan2(pos2[1], pos2[0])) % 360
 

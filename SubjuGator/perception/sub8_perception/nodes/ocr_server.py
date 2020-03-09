@@ -62,7 +62,8 @@ class Ocr:
             api.SetPageSegMode(tesseract.PSM_AUTO)
             api.SetVariable("tessedit_char_whitelist", self.white_list)
             # Convert to cv image to to pass to tess api
-            # Derived from example code here: http://blog.mimvp.com/2015/11/python-ocr-recognition/
+            # Derived from example code here:
+            # http://blog.mimvp.com/2015/11/python-ocr-recognition/
             height, width, channel = image.shape
             iplimage = cv.CreateImageHeader(
                 (width, height), cv.IPL_DEPTH_8U, channel)

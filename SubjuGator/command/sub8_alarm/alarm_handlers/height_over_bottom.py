@@ -19,7 +19,8 @@ class HeightOverBottom(HandlerBase):
             self, "_last_height", msg.range)
         rospy.Subscriber("/dvl/range", RangeStamped, set_last_height)
 
-        # Every 5 seconds, check for an updated height param. A pseudo dynamic reconfig thing.
+        # Every 5 seconds, check for an updated height param. A pseudo dynamic
+        # reconfig thing.
         rospy.Timer(rospy.Duration(5), self._update_height)
 
         # This should smooth out random dips below the limit

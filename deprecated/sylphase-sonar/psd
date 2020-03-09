@@ -21,11 +21,12 @@ def handle_capture(capture):
     if random.random() > .1:
         return
     for i, samples in enumerate(capture):
-        samples = samples-numpy.mean(samples)
-        freq = numpy.fft.rfftfreq(len(samples), 1/util.fs)
-        fft = numpy.fft.rfft(samples*numpy.hamming(len(samples)))/len(samples)
+        samples = samples - numpy.mean(samples)
+        freq = numpy.fft.rfftfreq(len(samples), 1 / util.fs)
+        fft = numpy.fft.rfft(
+            samples * numpy.hamming(len(samples))) / len(samples)
 
-        res = 10*numpy.log10(numpy.abs(fft*fft.conj())+1e-100)
+        res = 10 * numpy.log10(numpy.abs(fft * fft.conj()) + 1e-100)
         if avg[i] is not None:
             res = .95 * avg[i][1] + .05 * res
         avg[i] = freq, res

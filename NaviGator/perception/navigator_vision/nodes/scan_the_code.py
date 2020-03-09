@@ -116,7 +116,8 @@ class ScanTheCodePerception(object):
             prediction = self.classifier.classify(img, debug)[0]
             label = self.classifier.CLASSES[prediction]
             symbol = label[10]
-            if len(self.classification_list) == 0 or self.classification_list[-1] != symbol:
+            if len(
+                    self.classification_list) == 0 or self.classification_list[-1] != symbol:
                 if len(self.classification_list) >= 5:
                     self.classification_list.popleft()
                 self.classification_list.append(symbol)

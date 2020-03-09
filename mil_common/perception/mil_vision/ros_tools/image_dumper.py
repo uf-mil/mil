@@ -81,7 +81,7 @@ class ImageHandler:
                     cv2.imwrite(self.working_dir + '/' +
                                 str(self.image_index) + '.png', cv_image)
                     self.image_index = self.image_index + 1
-                except CvBridgeError, e:
+                except CvBridgeError as e:
                     print e
                 pbar.update(1)
             self.bag.close()

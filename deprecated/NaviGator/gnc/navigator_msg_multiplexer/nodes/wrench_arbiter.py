@@ -22,7 +22,8 @@ class WrenchArbiter(object):
         self.control = None
         self.control_inputs = ["rc", "emergency", "keyboard", "autonomous"]
 
-        # ROS stuff - Wrench changing service, final output wrench, and the three input sources
+        # ROS stuff - Wrench changing service, final output wrench, and the
+        # three input sources
         rospy.Service("/change_wrench", WrenchSelect, self.change_wrench)
         self.wrench_pub = rospy.Publisher(
             "/wrench/cmd", WrenchStamped, queue_size=1)

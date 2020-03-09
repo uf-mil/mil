@@ -14,7 +14,8 @@ rviz_pub = rospy.Publisher(
     "visualization", visualization_msgs.Marker, queue_size=3)
 
 
-def draw_sphere(position, color, scaling=(0.11, 0.11, 0.11), m_id=4, frame='/base_link'):
+def draw_sphere(position, color, scaling=(
+        0.11, 0.11, 0.11), m_id=4, frame='/base_link'):
     pose = Pose(
         position=mil_ros_tools.numpy_to_point(position),
         orientation=mil_ros_tools.numpy_to_quaternion([0.0, 0.0, 0.0, 1.0])
@@ -34,7 +35,8 @@ def draw_sphere(position, color, scaling=(0.11, 0.11, 0.11), m_id=4, frame='/bas
     rviz_pub.publish(marker)
 
 
-def draw_ray_3d(pix_coords, camera_model, color, frame='/stereo_front', m_id=0, length=35):
+def draw_ray_3d(pix_coords, camera_model, color,
+                frame='/stereo_front', m_id=0, length=35):
     marker = make_ray(
         base=np.array([0.0, 0.0, 0.0]),
         direction=np.array(camera_model.projectPixelTo3dRay(pix_coords)),
@@ -47,7 +49,8 @@ def draw_ray_3d(pix_coords, camera_model, color, frame='/stereo_front', m_id=0, 
     rviz_pub.publish(marker)
 
 
-def make_ray(base, direction, length, color, frame='/base_link', m_id=0, **kwargs):
+def make_ray(base, direction, length, color,
+             frame='/base_link', m_id=0, **kwargs):
     '''Handle the frustration that Rviz cylinders are designated by their center, not base'''
     marker = visualization_msgs.Marker(
         ns='wamv',

@@ -121,7 +121,8 @@ class Controller(object):
             [1] http://docs.ros.org/jade/api/nav_msgs/html/msg/Odometry.html
         '''
 
-        # Using ropsy.Time.now() so we can use simulated accelerated time (not CPU time)
+        # Using ropsy.Time.now() so we can use simulated accelerated time (not
+        # CPU time)
         pose, twist, pose_cov, twist_cov = mil_ros_tools.odometry_to_numpy(msg)
         (position, orientation_q), (linear_vel, angular_vel) = pose, twist
 
@@ -137,7 +138,8 @@ class Controller(object):
         else:
             self.last_sample = time_of
 
-        # For now, we'll ignore pose and twist covariance (Implementing for controls final project)
+        # For now, we'll ignore pose and twist covariance (Implementing for
+        # controls final project)
 
         # Don't include states that are "too old"
         for state_variable in self.state_variables:

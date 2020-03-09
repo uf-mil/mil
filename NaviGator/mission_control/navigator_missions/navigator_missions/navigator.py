@@ -35,7 +35,8 @@ class MissionResult(object):
     DbObjectNotFound = 2
     OtherResponse = 100
 
-    def __init__(self, success=True, response=None, message="", need_rerun=False, post_function=None):
+    def __init__(self, success=True, response=None, message="",
+                 need_rerun=False, post_function=None):
         self.success = success
         self.response = self.NoResponse if response is None else response
         self.message = message
@@ -137,7 +138,8 @@ class Navigator(BaseMission):
             cls.sim = False
 
         def enu_odom_set(odom):
-            return setattr(cls, 'ecef_pose', mil_tools.odometry_to_numpy(odom)[0])
+            return setattr(cls, 'ecef_pose',
+                           mil_tools.odometry_to_numpy(odom)[0])
         cls._ecef_odom_sub = cls.nh.subscribe(
             'absodom', Odometry, enu_odom_set)
 
@@ -161,7 +163,7 @@ class Navigator(BaseMission):
                 '/wrench/select', MuxSelect)
             cls._change_trajectory = cls.nh.get_service_client(
                 '/trajectory/select', MuxSelect)
-        except AttributeError, err:
+        except AttributeError as err:
             fprint("Error getting service clients in nav singleton init: {}".format(
                 err), title="NAVIGATOR", msg_color='red')
 
@@ -363,7 +365,8 @@ class Navigator(BaseMission):
         Deploy all 4 thrusters simultaneously.
         TODO: perform in sequence after testing has been done to see if this is needed
         '''
-        return defer.DeferredList([self.deploy_thruster(name) for name in ['FL', 'FR', 'BL', 'BR']])
+        return defer.DeferredList([self.deploy_thruster(name)
+                                   for name in ['FL', 'FR', 'BL', 'BR']])
 
     def retract_thrusters(self):
         '''
@@ -371,7 +374,8 @@ class Navigator(BaseMission):
         TODO: perform in sequence after testing has been done to see if this is needed
         '''
 
-        return defer.DeferredList([self.retract_thruster(name) for name in ['FL', 'FR', 'BL', 'BR']])
+        return defer.DeferredList([self.retract_thruster(name)
+                                   for name in ['FL', 'FR', 'BL', 'BR']])
 
     @util.cancellableInlineCallbacks
     def reload_launcher(self):
@@ -486,7 +490,8 @@ class Navigator(BaseMission):
         return Searcher(self, *args, **kwargs)
 
     @util.cancellableInlineCallbacks
-    def latching_publisher(self, topic, msg_type, msg, freq=2, update_header=True):
+    def latching_publisher(self, topic, msg_type, msg,
+                           freq=2, update_header=True):
         '''
         Creates a publisher that publishes a message at a set frequency.
         Usage:
@@ -523,7 +528,7 @@ class Navigator(BaseMission):
                     f[name]["topic"] + '/switch', SetBool)
                 cls.vision_proxies[name] = VisionProxy(
                     s_client, s_req, s_args, s_switch)
-            except Exception, e:
+            except Exception as e:
                 err = "Error loading vision sevices: {}".format(e)
                 fprint("" + err, title="NAVIGATOR", msg_color='red')
 
@@ -542,7 +547,7 @@ class Navigator(BaseMission):
                 default = f[name].get("default")
                 cls.mission_params[name] = MissionParam(
                     cls.nh, param, options, desc, default)
-            except Exception, e:
+            except Exception as e:
                 err = "Error loading mission params: {}".format(e)
                 fprint("" + err, title="NAVIGATOR", msg_color='red')
 
@@ -558,7 +563,9 @@ class Navigator(BaseMission):
         cls.odom_loss_listener = yield TxAlarmListener.init(
             cls.nh, 'odom-kill',
             lambda _, alarm: setattr(cls, 'odom_loss', alarm.raised))
-        fprint("Alarm listener created, listening to alarms: ", title="NAVIGATOR")
+        fprint(
+            "Alarm listener created, listening to alarms: ",
+            title="NAVIGATOR")
 
         cls.kill_alarm = yield cls.kill_listener.get_alarm()
         cls.killed = cls.kill_alarm.raised
@@ -655,7 +662,8 @@ class MissionParam(object):
 
 
 class Searcher(object):
-    def __init__(self, nav, search_pattern=None, looker=None, vision_proxy="test", **kwargs):
+    def __init__(self, nav, search_pattern=None,
+                 looker=None, vision_proxy="test", **kwargs):
         self.nav = nav
         self.looker = looker
         if looker is None:
@@ -701,7 +709,9 @@ class Searcher(object):
             # This doesn't work...
             fprint("Control C detected!", title="SEARCHER")
 
-        fprint("Object NOT found. Returning to start position.", title="SEARCHER")
+        fprint(
+            "Object NOT found. Returning to start position.",
+            title="SEARCHER")
         finder.cancel()
         looker.cancel()
 
@@ -719,7 +729,7 @@ class Searcher(object):
         def pattern():
             for pose in self.search_pattern:
                 fprint("Going to next position.", title="SEARCHER")
-                if type(pose) == list or type(pose) == np.ndarray:
+                if isinstance(pose, list) or isinstance(pose, np.ndarray):
                     yield self.nav.move.relative(pose).go(**kwargs)
                 else:
                     yield pose.go(**kwargs)

@@ -80,7 +80,8 @@ class SimulatedUSBtoCAN(SimulatedSerial):
     CAN devices to simulate the behavior of the whole CAN network.
     '''
 
-    def __init__(self, devices={0: SimulatedCANDevice}, can_id=-1, *args, **kwargs):
+    def __init__(self, devices={0: SimulatedCANDevice},
+                 can_id=-1, *args, **kwargs):
         '''
         @param devices: dictionary {device_id: SimulatedCANDevice} mapping CAN IDs
                         to SimulatedCANDevice classes that will be used for that ID
@@ -97,7 +98,8 @@ class SimulatedUSBtoCAN(SimulatedSerial):
         @param can_id: ID of sender
         @param data: data paylod
         '''
-        # If not from the motherboard, store this for future requests from motherboard
+        # If not from the motherboard, store this for future requests from
+        # motherboard
         if not from_mobo:
             self.buffer += ReceivePacket.create_receive_packet(
                 can_id, data).to_bytes()

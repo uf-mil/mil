@@ -59,11 +59,13 @@ class Sub8(Entity):
         self.g = np.array(world.getGravity())
 
         # TODO: Fix position of DVL, IMU
-        # We assume that the DVL and IMU are xyz-FLU aligned (No rotation w.r.t sub)
+        # We assume that the DVL and IMU are xyz-FLU aligned (No rotation w.r.t
+        # sub)
         self.dvl_position = np.array([0.0, 0.0, 0.0])
         self.imu_position = np.array([0.0, 0.0, 0.0])
 
-        # Define 4 rays to implement a DVL sensor and the relative position of the sensor on the sub
+        # Define 4 rays to implement a DVL sensor and the relative position of
+        # the sensor on the sub
         self.dvl_ray_geoms = (
             ode.GeomRay(None, 1e3),
             ode.GeomRay(None, 1e3),
@@ -309,7 +311,8 @@ class Sub8(Entity):
         self.publish_dvl()
         self.publish_imu(dt)
 
-        # Sets the position and direction of the DVL sensor rays to point below the current position of the sub
+        # Sets the position and direction of the DVL sensor rays to point below
+        # the current position of the sub
         dvl_position = self.body.getRelPointPos(self.dvl_position)
         for ray_geom, ray_orientation in self.dvl_rays:
             world_ray_orientation = self.body.vectorToWorld(ray_orientation)

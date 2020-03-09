@@ -65,12 +65,13 @@ class MultilaterationNode(object):
             vec = vec / np.linalg.norm(vec)
             origin = \
                 rosmsg_to_numpy(transformed_origin.transform.translation)
-        except tf2_ros.TransformException, e:
+        except tf2_ros.TransformException as e:
             rospy.logwarn('TF Exception: {}'.format(e))
             return
 
         # Check if two samples were taken too close to each other
-        if self.last_pos is not None and np.linalg.norm(self.last_pos - origin) < self.minimum_delta_dist:
+        if self.last_pos is not None and np.linalg.norm(
+                self.last_pos - origin) < self.minimum_delta_dist:
             rospy.loginfo("Observation too close to previous, ignoring")
             return
         self.last_pos = origin
@@ -109,7 +110,8 @@ class MultilaterationNode(object):
         Filter lobs such that no lob can have more than a number of intersections with other lines within a radius of the boat
         """
 
-        # Filter out lobs that intersect with many other lobs close to their origin
+        # Filter out lobs that intersect with many other lobs close to their
+        # origin
 
         line_array = np.array([[0, 0, 0, 0]])
         line_intersecting_array = np.array([])
@@ -126,14 +128,16 @@ class MultilaterationNode(object):
                 # Calculate the intersection of the two lines
                 # https://stackoverflow.com/a/47823499
                 t, s = np.linalg.solve(
-                    np.array([line1[1]-line1[0], line2[0]-line2[1]]).T, line2[0]-line1[0])
-                intersection = (1-t)*line1[0] + t*line1[1]
+                    np.array([line1[1] - line1[0], line2[0] - line2[1]]).T, line2[0] - line1[0])
+                intersection = (1 - t) * line1[0] + t * line1[1]
 
-                # Calculate the distance to the boat's position from the intersection
+                # Calculate the distance to the boat's position from the
+                # intersection
                 distance1 = np.linalg.norm(intersection - boat_pos1)
                 distance2 = np.linalg.norm(intersection - boat_pos2)
 
-                # If the distances are within the filter radius, increment the intersections count
+                # If the distances are within the filter radius, increment the
+                # intersections count
                 if distance1 < self.filter_dist or distance2 < self.filter_dist:
                     line_intersections += 1
 

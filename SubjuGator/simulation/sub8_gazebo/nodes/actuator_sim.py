@@ -99,10 +99,12 @@ class TorpedoLauncher():
             return
 
         # Generally, if the torpedo is laying on the ground the collision force will be very small.
-        # So if the force is really small, we assume the impact collision has occured before the torpedo was launched.
+        # So if the force is really small, we assume the impact collision has
+        # occured before the torpedo was launched.
         print np.abs(np.linalg.norm(
             msg_helpers.rosmsg_to_numpy(real_state.total_wrench.force)))
-        if np.abs(np.linalg.norm(msg_helpers.rosmsg_to_numpy(real_state.total_wrench.force))) < 10:
+        if np.abs(np.linalg.norm(msg_helpers.rosmsg_to_numpy(
+                real_state.total_wrench.force))) < 10:
             rospy.loginfo(
                 "Torpedo probably still on the ground, still waiting.")
             return
@@ -125,7 +127,8 @@ class TorpedoLauncher():
         sub_state = self.get_model(model_name='sub8')
         sub_pose = msg_helpers.pose_to_numpy(sub_state.pose)
 
-        # Translate torpedo init velocity so that it first out of the front of the sub.
+        # Translate torpedo init velocity so that it first out of the front of
+        # the sub.
         muzzle_vel = np.array([10, 0, 0])
         v = geometry_helpers.rotate_vect_by_quat(
             np.append(muzzle_vel, 0), sub_pose[1])

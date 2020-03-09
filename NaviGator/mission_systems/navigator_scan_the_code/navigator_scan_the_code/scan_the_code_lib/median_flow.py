@@ -70,7 +70,8 @@ class MedianFlow(object):
     def _calculate_forward_backward_error(self, prev_frame, prev_points):
         # Get the last set of frame in the list, calulate optical flow from f(t) to f(t-TRACKING_LENGTH)
         # for the number of frame in tracking frame
-        # Go backwards through the list because we want the most recent element first
+        # Go backwards through the list because we want the most recent element
+        # first
         for i in range(self.TRACKING_LENGTH - 1, -1, -1):
             _frame = self.tracking_frames[i]
             _points, status, err = cv2.calcOpticalFlowPyrLK(
@@ -115,7 +116,8 @@ class MedianFlow(object):
             msk = np.ones(len(diff_norm), dtype=bool)
             msk[high_val] = False
 
-        # Eliminate these from the current points, also, from all previous points as well
+        # Eliminate these from the current points, also, from all previous
+        # points as well
         points = points[msk]
         for i, tp in enumerate(self.tracking_points):
             self.tracking_points[i] = tp[np.array(msk)]
@@ -148,7 +150,8 @@ class MedianFlow(object):
         x_n = int(round(x + x_d))
         y_n = int(round(y + y_d))
 
-        # Scale is a little trickier, get every permutation of two points from previous points and current points
+        # Scale is a little trickier, get every permutation of two points from
+        # previous points and current points
         prev_comb = list(itertools.permutations(self.prev_points, 2))
         curr_comb = list(itertools.permutations(curr_points, 2))
         ratios = []

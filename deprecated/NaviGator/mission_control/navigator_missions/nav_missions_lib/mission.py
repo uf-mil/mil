@@ -6,7 +6,8 @@ from mil_misc_tools.text_effects import fprint
 class Mission(object):
     """The class that represents a mission."""
 
-    def __init__(self, name, marker, min_time, weight, points, looking_for, mission_deps_left, mission_script=None):
+    def __init__(self, name, marker, min_time, weight, points,
+                 looking_for, mission_deps_left, mission_script=None):
         """Initialize a Mission object."""
         self.name = name
         self.marker = marker

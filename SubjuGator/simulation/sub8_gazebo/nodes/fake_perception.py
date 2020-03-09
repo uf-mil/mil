@@ -41,7 +41,8 @@ def handle_fake_perception(extra, target_object):
         fprint("NO TARGET")
         sys.exit(0)
     model = get_position(target_object)
-    # Library of offets. Models must be manually offset as gazebo coordinates != center of model.
+    # Library of offets. Models must be manually offset as gazebo coordinates
+    # != center of model.
     centlib = {'start_gate': Point(1.5, 0, 0), 'nav_gate': Point(
         1.15, 0, 0), 'orange_rectangle': Point(0, 0, 2)}
     if target_object in centlib:
@@ -49,7 +50,8 @@ def handle_fake_perception(extra, target_object):
     else:
         offset = Point(0, 0, 0)
     pose_stamp = PoseStamped(header=Header(seq=k, stamp=now, frame_id="/map"),
-                             # Offset our pose by the starting position of the sub relative to the world in Gazebo.
+                             # Offset our pose by the starting position of the
+                             # sub relative to the world in Gazebo.
                              pose=Pose(position=Point(model.pose.position.x - 13 + offset.x,
                                                       model.pose.position.y - 24 + offset.y,
                                                       model.pose.position.z + offset.z),

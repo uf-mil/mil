@@ -37,7 +37,8 @@ class RobotXHeartbeatMessage:
         checksum_list = string.split("*")
         return data_list, checksum_list
 
-    def to_string(self, delim, team_id, hst_date_time, gps_array, odom, auv_status, system_mode, use_test_data):
+    def to_string(self, delim, team_id, hst_date_time, gps_array,
+                  odom, auv_status, system_mode, use_test_data):
         if gps_array is not None:
             latitude = gps_array.point.x
             longitude = gps_array.point.y
@@ -165,7 +166,8 @@ class RobotXScanCodeMessage:
         checksum_list = string.split("*")
         return data_list, checksum_list
 
-    def to_string(self, delim, team_id, hst_date_time, color_pattern, use_test_data):
+    def to_string(self, delim, team_id, hst_date_time,
+                  color_pattern, use_test_data):
         data = "{0}{1}{2}{3}{4}{5}{6}".format(self.message_id,
                                               delim,
                                               hst_date_time,

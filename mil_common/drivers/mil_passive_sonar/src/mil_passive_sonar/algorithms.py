@@ -169,7 +169,7 @@ def make_template(channel, width):
     Returns a template of the specified width, with its 25% position being at
     where the lower-level driver triggered.
     """
-    pos = int(round(channel.shape[0] * .35/(.35+.25) - width*.25))
+    pos = int(round(channel.shape[0] * .35 / (.35 + .25) - width * .25))
     return channel[pos:pos + width], pos
 
 
@@ -217,8 +217,8 @@ def find_minimum(data):
     if pos == 0 or pos == len(data) - 1:
         print 'warning: pos on border; search region not large enough?'
         return None
-    yl, yc, yr = data[pos-1], data[pos], data[pos+1]
-    pos += (yr-yl)/(4*yc-2*yl-2*yr)
+    yl, yc, yr = data[pos - 1], data[pos], data[pos + 1]
+    pos += (yr - yl) / (4 * yc - 2 * yl - 2 * yr)
     return pos
 
 

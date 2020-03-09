@@ -62,7 +62,8 @@ class FakeActionServer(object):
 
         yaw = trns.euler_from_quaternion(
             rosmsg_to_numpy(msg.goal.orientation))[2]
-        if not self.is_feasible(np.array([msg.goal.position.x, msg.goal.position.y, yaw]), np.zeros(3)):
+        if not self.is_feasible(
+                np.array([msg.goal.position.x, msg.goal.position.y, yaw]), np.zeros(3)):
             fprint("Not feasible", msg_color='red')
             self.move_server.set_aborted(MoveResult('occupied'))
             return

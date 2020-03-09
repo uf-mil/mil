@@ -313,7 +313,8 @@ class LQRRT_Node(object):
             p_err = self.goal[:2] - self.state[:2]
             h_goal = np.arctan2(p_err[1], p_err[0])
 
-            # If we aren't within a cone of that heading and the goal is far away, construct rotation
+            # If we aren't within a cone of that heading and the goal is far
+            # away, construct rotation
             if abs(self.angle_diff(h_goal, self.state[2])) > params.pointshoot_tol and npl.norm(
                     p_err) > params.free_radius and self.move_type != MoveGoal.DRIVE_SMOOTH:
                 x_seq_rot, T_rot, rot_success, u_seq_rot = self.rotation_move(
@@ -359,7 +360,8 @@ class LQRRT_Node(object):
             self.move_count += 1
 
             # Print feedback
-            if clean_update and not (self.preempted or self.unreachable or self.stuck or self.lock_tree):
+            if clean_update and not (
+                    self.preempted or self.unreachable or self.stuck or self.lock_tree):
                 print("\nMove {}\n----".format(self.move_count))
                 print("Behavior: {}".format(
                     self.enroute_behavior.__name__[10:]))
@@ -573,7 +575,8 @@ class LQRRT_Node(object):
         # Analyze ogrid to find good bias and sample space buffer
         if self.ogrid is not None and not self.blind and self.next_seed is not None:
 
-            # Get opencv-ready image from current ogrid (255 is occupied, 0 is clear)
+            # Get opencv-ready image from current ogrid (255 is occupied, 0 is
+            # clear)
             occ_img = 255 * np.greater(self.ogrid,
                                        self.ogrid_threshold).astype(np.uint8)
 
@@ -583,7 +586,8 @@ class LQRRT_Node(object):
             occ_img_dial = cv2.dilate(
                 occ_img, np.ones((boat_pix, boat_pix), np.uint8))
 
-            # Construct the initial sample space and get bounds in pixel coordinates
+            # Construct the initial sample space and get bounds in pixel
+            # coordinates
             ss = self.behavior.gen_ss(self.next_seed, self.goal)
             pmin = self.intup(
                 self.ogrid_cpm * ([ss[0][0], ss[1][0]] - self.ogrid_origin))
@@ -680,7 +684,8 @@ class LQRRT_Node(object):
                         push[3] += step
                         npush += 1
 
-                    # Get image cropped to sample space and offset points of interest
+                    # Get image cropped to sample space and offset points of
+                    # interest
                     offset_x = (pmin[0] - push[0], pmax[0] + push[1])
                     offset_y = (pmin[1] - push[2], pmax[1] + push[3])
                     ss_img = np.copy(
@@ -705,7 +710,8 @@ class LQRRT_Node(object):
                 # Used for remembering the previous sample space coordinates
                 last_offsets = [offset_x[0], offset_y[0]]
 
-            # If we expanded to the limit and found no entry (and goal is unoccupied), goal is infeasible
+            # If we expanded to the limit and found no entry (and goal is
+            # unoccupied), goal is infeasible
             if not found_entry and self.is_feasible(self.goal, np.zeros(3)):
                 print("\nGoal is unreachable!")
                 self.unreachable = True
@@ -736,7 +742,8 @@ class LQRRT_Node(object):
 
         # For boating
         if self.behavior is boat:
-            if npl.norm(self.goal[:2] - self.next_seed[:2]) < params.free_radius:
+            if npl.norm(self.goal[:2] - self.next_seed[:2]
+                        ) < params.free_radius:
                 return([1, 1, 1, 0, 0, 0], ss, gs, False)
             else:
                 if boat.focus is None:
@@ -801,7 +808,8 @@ class LQRRT_Node(object):
         iters_passed = int((self.rostime() - last_update_time) / self.dt)
 
         # Make sure that the goal pose is still feasible
-        if not self.is_feasible(self.goal, np.zeros(3)) and self.move_type != MoveGoal.SPIRAL:
+        if not self.is_feasible(self.goal, np.zeros(
+                3)) and self.move_type != MoveGoal.SPIRAL:
             print("\nThe given goal is occupied!\nGoing nearby instead.")
             self.time_till_issue = np.inf
             self.failure_reason = 'occupied'
@@ -840,7 +848,8 @@ class LQRRT_Node(object):
                 behavior.planner.kill_update()
             return
 
-        # Check that the next reeval_time seconds in the current plan are still feasible
+        # Check that the next reeval_time seconds in the current plan are still
+        # feasible
         p_seq = np.copy(x_seq[iters_passed:min(
             [len(x_seq), int(iters_passed + (params.reeval_time / self.dt)), params.reeval_limit])])
         if len(p_seq):
@@ -902,7 +911,8 @@ class LQRRT_Node(object):
         if self.preempted or not self.move_server.is_active():
             return
 
-        if self.move_server.is_preempt_requested() or (rospy.is_shutdown() and self.lock_tree):
+        if self.move_server.is_preempt_requested() or (
+                rospy.is_shutdown() and self.lock_tree):
             self.preempted = True
             self.failure_reason = 'preempted'
             print("\nAction preempted!")
@@ -957,9 +967,11 @@ class LQRRT_Node(object):
         while not rospy.is_shutdown():
 
             # Stop if pose is infeasible
-            if not self.is_feasible(np.concatenate((x[:3], np.zeros(3))), np.zeros(3)) and len(x_seq):
+            if not self.is_feasible(np.concatenate(
+                    (x[:3], np.zeros(3))), np.zeros(3)) and len(x_seq):
                 portion = params.FPR * len(x_seq)
-                return (x_seq[:int(portion)], T - portion * self.dt, False, u_seq[:int(portion)])
+                return (x_seq[:int(portion)], T - portion *
+                        self.dt, False, u_seq[:int(portion)])
             else:
                 x_seq.append(x)
                 u_seq.append(u)
@@ -1162,7 +1174,8 @@ class LQRRT_Node(object):
         # Publish interpolated reference
         self.ref_pub.publish(self.pack_odom(self.get_ref(T), stamp))
 
-        # Not really necessary, but for fun-and-profit also publish the planner's effort wrench
+        # Not really necessary, but for fun-and-profit also publish the
+        # planner's effort wrench
         if self.get_eff is not None:
             self.eff_pub.publish(
                 self.pack_wrenchstamped(self.get_eff(T), stamp))
@@ -1281,7 +1294,8 @@ class LQRRT_Node(object):
         """
         q = [msg.orientation.x, msg.orientation.y,
              msg.orientation.z, msg.orientation.w]
-        return np.array([msg.position.x, msg.position.y, trns.euler_from_quaternion(q)[2], 0, 0, 0])
+        return np.array([msg.position.x, msg.position.y,
+                         trns.euler_from_quaternion(q)[2], 0, 0, 0])
 
     def unpack_odom(self, msg):
         """

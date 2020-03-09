@@ -3,7 +3,7 @@ from alarms import parse_json_str, Alarm
 
 try:
     from tx_alarms import TxAlarmListener, TxAlarmBroadcaster, TxHeartbeatMonitor
-except:
+except BaseException:
     # No txros installed
     pass
 

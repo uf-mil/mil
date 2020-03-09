@@ -42,7 +42,7 @@ class DraculaGrabber(SubjuGator):
 
         fprint('Obtaining cam info message')
         cam_info = yield cam_info_sub.get_next_message()
-        cam_center = np.array([cam_info.width/2, cam_info.height/2])
+        cam_center = np.array([cam_info.width / 2, cam_info.height / 2])
         cam_norm = np.sqrt(cam_center[0]**2 + cam_center[1]**2)
         fprint('Cam center: {}'.format(cam_center))
 

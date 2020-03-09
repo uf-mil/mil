@@ -54,7 +54,8 @@ def wait_for_subscriber(node_name, topic, timeout=5.0):
     return success
 
 
-def wait_for_service(service, warn_time=1.0, warn_msg='Waiting for service..', timeout=None):
+def wait_for_service(service, warn_time=1.0,
+                     warn_msg='Waiting for service..', timeout=None):
     '''
     A fancy extension of wait for service that will warn with a message if it is taking a while.
 

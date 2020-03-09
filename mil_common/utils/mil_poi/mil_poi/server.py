@@ -39,7 +39,8 @@ class POIServer(object):
         self.global_frame = rospy.get_param("~global_frame", "map")
         self.pois.header.frame_id = self.global_frame
 
-        # Create publisher to notify clients of updates and interactive marker server
+        # Create publisher to notify clients of updates and interactive marker
+        # server
         self.pub = rospy.Publisher(
             "points_of_interest", POIArray, queue_size=1, latch=True)
         self.interactive_marker_server = InteractiveMarkerServer(
@@ -50,8 +51,8 @@ class POIServer(object):
             pois = rospy.get_param('~initial_pois')
             assert isinstance(pois, dict)
             for key, value in pois.iteritems():
-                assert type(key) == str
-                assert type(value) == list
+                assert isinstance(key, str)
+                assert isinstance(value, list)
                 assert len(value) == 3
                 name = key
                 position = numpy_to_point(value)
@@ -218,7 +219,8 @@ class POIServer(object):
         '''
         Internal implementation of remove_poi, which is NOT thread safe and does NOT update clients of change
         '''
-        # Return false if marker with that name not added to interactive marker server
+        # Return false if marker with that name not added to interactive marker
+        # server
         if not self.interactive_marker_server.erase(name):
             return False
         # Find POI with specifed name and delete it from list

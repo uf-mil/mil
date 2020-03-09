@@ -112,7 +112,8 @@ class VoltageWidget(QWidget):
         self.height = height
 
         # Fonts like 16, 24 are references to height of letters. So I thought it would
-        # Make sense to change font size proportionally to changes in window height
+        # Make sense to change font size proportionally to changes in window
+        # height
         self.fontSize = self.fontSize * heightRatio
         newfont = QtGui.QFont("Times", self.fontSize, QtGui.QFont.Bold)
 
@@ -132,7 +133,8 @@ class VoltageWidget(QWidget):
         # If the parameter server has not set these values then we use the DEFAULT
         # values as of Oct. 2017 which are 26 and 20
         # The GUI notifies that it is using defualt values and will continually
-        # check to see if the params have been set, as symboloized by self.gotParams
+        # check to see if the params have been set, as symboloized by
+        # self.gotParams
         self.gotParams = True
         self.lowThreshold = 26
         self.criticalThreshold = 20
@@ -141,7 +143,7 @@ class VoltageWidget(QWidget):
             self.lowThreshold = rospy.get_param('battery-voltage/low')
             self.criticalThreshold = rospy.get_param(
                 'battery-voltage/critical')
-        except:
+        except BaseException:
             print("Low and Critical Voltage not set, Low: 26 Critical:20")
             self.lowThreshold = 26
             self.criticalThreshold = 20
@@ -159,14 +161,15 @@ class VoltageWidget(QWidget):
             "Times", (self.fontSize) / 3, QtGui.QFont.Bold)
         self.labelThresh.setFont(threshFont)
 
-    # If self.gotParams is False, the updateLabel function calls testParams every 5 seconds
+    # If self.gotParams is False, the updateLabel function calls testParams
+    # every 5 seconds
     def testParams(self):
         try:
             self.lowThreshold = rospy.get_param('battery-voltage/low')
             self.criticalThreshold = rospy.get_param(
                 'battery-voltage/critical')
             self.gotParams = True
-        except:
+        except BaseException:
             self.gotParams = False
 
         if self.gotParams:
@@ -244,7 +247,7 @@ class VoltageWidget(QWidget):
             numMain = float(stringMain)
             numMain = int(numMain * 100)
             numMain = numMain / 100.0
-        except:
+        except BaseException:
             if self.warningCounter == 0:
                 print("battery monitor is not online!!")
                 self.warningCounter = 1
@@ -252,33 +255,34 @@ class VoltageWidget(QWidget):
 
         self.setColors(numMain)
 
-        # Turns all the voltages into strings and sets them as text in GUI boxes
+        # Turns all the voltages into strings and sets them as text in GUI
+        # boxes
         self.labelMain.setText("{}".format(numMain))
         try:
             numFL = (int(self.voltageFL * 100)) / 100
             stringFL = str(numFL)
             self.labelFL.setText("{}".format(stringFL))
-        except:
+        except BaseException:
             pass
 
         try:
             numFR = (int(self.voltageFR * 100)) / 100
             stringFR = str(numFR)
             self.labelFR.setText("{}".format(stringFR))
-        except:
+        except BaseException:
             pass
 
         try:
             numBL = (int(self.voltageBL * 100)) / 100
             stringBL = str(numBL)
             self.labelBL.setText("{}".format(stringBL))
-        except:
+        except BaseException:
             pass
 
         try:
             stringBR = float("{0:.2f}".format(self.voltageBR))
             self.labelBR.setText("{}".format(stringBR))
-        except:
+        except BaseException:
             pass
 
         QApplication.processEvents()

@@ -160,7 +160,8 @@ class Observation(object):
 
     def __repr__(self):
         _str = 'hues: {}\nvalues: {}\ndists: {}\nq_errs: {}'
-        return _str.format(*np.round(map(np.array, [self.hues, self.values, self.dists, self.q_errs]), 3))
+        return _str.format(
+            *np.round(map(np.array, [self.hues, self.values, self.dists, self.q_errs]), 3))
 
     def extend(self, params_tuple):
         """Add lists of data in at once"""
@@ -203,7 +204,8 @@ class Observation(object):
         return c
 
     def _guass(self, data, mean, sig):
-        return np.exp(-np.power(np.array(data).astype(np.float64) - mean, 2) / (2 * np.power(sig, 2)))
+        return np.exp(-np.power(np.array(data).astype(np.float64) -
+                                mean, 2) / (2 * np.power(sig, 2)))
 
 
 class Colorama(object):
@@ -321,7 +323,8 @@ class Colorama(object):
         for color, h_val in self.color_map.iteritems():
             cg = np.cos(h_val)
             sg = np.sin(h_val)
-            # We need a signed error for some math later on so no absolute value
+            # We need a signed error for some math later on so no absolute
+            # value
             this_error = np.arctan2(sg * c - cg * s, cg * c + sg * s)
             if np.abs(this_error) < np.abs(error):
                 error = this_error
@@ -423,7 +426,8 @@ class Colorama(object):
 
                 fprint("{} {}".format(obj.id, "=" * 50))
 
-                # Get object position in px coordinates to determine if it's in frame
+                # Get object position in px coordinates to determine if it's in
+                # frame
                 object_cam = t_mat44.dot(
                     np.append(point_to_numpy(obj.position), 1))
                 object_px = map(
@@ -432,11 +436,13 @@ class Colorama(object):
                     fprint("Object not in frame")
                     continue
 
-                # Get enu points associated with this totem and remove ones that are too low
+                # Get enu points associated with this totem and remove ones
+                # that are too low
                 points_np = np.array(map(point_to_numpy, obj.points))
                 height = np.max(points_np[:, 2]) - np.min(points_np[:, 2])
                 if height < .1:
-                    # If the height of the object is too small, skip (units are meters)
+                    # If the height of the object is too small, skip (units are
+                    # meters)
                     fprint("Object too small")
                     continue
 
@@ -444,7 +450,8 @@ class Colorama(object):
                     self.height_remove * height
                 points_np = points_np[points_np[:, 2] > threshold]
 
-                # Shove ones in there to make homogenous points to get points in image frame
+                # Shove ones in there to make homogenous points to get points
+                # in image frame
                 points_np_homo = np.hstack(
                     (points_np, np.ones((points_np.shape[0], 1)))).T
                 points_cam = t_mat44.dot(points_np_homo).T

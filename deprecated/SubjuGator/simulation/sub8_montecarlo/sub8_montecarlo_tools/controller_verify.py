@@ -127,7 +127,8 @@ class VerifyController(object):
 
         # Don't close with timeout if you don't want to close
         if close_after is not None:
-            # Creating a timer object and setting an interval of $close_after seconds
+            # Creating a timer object and setting an interval of $close_after
+            # seconds
             timer = fig.canvas.new_timer(interval=close_after * 1000)
             timer.add_callback(lambda: plt.close())
             timer.start()

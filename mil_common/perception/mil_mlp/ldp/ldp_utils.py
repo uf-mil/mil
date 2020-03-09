@@ -16,7 +16,8 @@ Supports resizing images, but given that this has shown no performance increase,
 '''
 
 
-def split_data(image_dir='Images', ann_dir='Annotations', resize=False, size=[256, 150]):
+def split_data(image_dir='Images', ann_dir='Annotations',
+               resize=False, size=[256, 150]):
 
     if resize:
         imgs_jpg = glob.glob(image_dir + '/*.png')

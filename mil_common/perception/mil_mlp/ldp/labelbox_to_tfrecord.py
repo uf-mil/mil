@@ -78,7 +78,8 @@ def main(_):
                     result = tf.train.Example.FromString(example)
                     print(result)
             else:
-                for example in tf.python_io.tf_record_iterator(FLAGS.output_path):
+                for example in tf.python_io.tf_record_iterator(
+                        FLAGS.output_path):
                     result = tf.train.Example.FromString(example)
                     print(result)
     # Clean up

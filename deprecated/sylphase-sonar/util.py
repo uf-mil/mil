@@ -22,7 +22,7 @@ def connect_to_samples(samples_per_callback):
         start_time = time.time()
         callbacks = 0
 
-        buf = bytearray('\0'*(8*samples_per_callback))
+        buf = bytearray('\0' * (8 * samples_per_callback))
         buf_pos = 0
 
         while True:
@@ -48,10 +48,10 @@ def connect_to_samples(samples_per_callback):
         with open(filename, 'rb') as f:
             t0 = time.time() + 1
             for i in itertools.count():
-                d = f.read(8*samples_per_callback)
-                if len(d) != 8*samples_per_callback:
+                d = f.read(8 * samples_per_callback)
+                if len(d) != 8 * samples_per_callback:
                     break
-                dt = t0 + (i+1) * samples_per_callback / fs - time.time()
+                dt = t0 + (i + 1) * samples_per_callback / fs - time.time()
                 if dt < 0:
                     print 'running slower than realtime!'
                 else:
@@ -81,11 +81,11 @@ def filter(sample_generator, h):
 def _max_convolve_slow(x, n):
     assert n >= 1
     # equivalent, but less efficient
-    return [max(x[i:i+n]) for i in xrange(0, len(x) - n + 1)]
+    return [max(x[i:i + n]) for i in xrange(0, len(x) - n + 1)]
 
 
 def _max_convolve(x, n):
-    return maximum_filter1d(x, n)[n-1 - (n-1)//2:len(x) - (n-1)//2]
+    return maximum_filter1d(x, n)[n - 1 - (n - 1) // 2:len(x) - (n - 1) // 2]
 
 
 for n in xrange(1, 100):
@@ -103,15 +103,16 @@ def triggering(sample_generator):
     f_high = 50e3  # should be at least 10 kHz above maximum pinger frequency
     transition_width = 10e3
     if 1:  # bandpass
-        h = scipy.signal.remez(201, [0, f_low-transition_width, f_low,
-                                     f_high, f_high+transition_width, 600e3], [0, 1, 0], Hz=fs)
+        h = scipy.signal.remez(201, [0, f_low - transition_width, f_low,
+                                     f_high, f_high + transition_width, 600e3], [0, 1, 0], Hz=fs)
     else:  # no bandpass
         h = numpy.array([1])
     if 1:  # notch out 40kHz
-        # tweak filter length so that we have a bin on exactly the desired frequency with the desired width
-        h = numpy.concatenate([h, numpy.zeros(21000-len(h))])
+        # tweak filter length so that we have a bin on exactly the desired
+        # frequency with the desired width
+        h = numpy.concatenate([h, numpy.zeros(21000 - len(h))])
         H = numpy.fft.rfft(h)
-        H_freq = numpy.fft.rfftfreq(len(h), 1/fs)
+        H_freq = numpy.fft.rfftfreq(len(h), 1 / fs)
         k = min(xrange(len(H)), key=lambda i: abs(H_freq[i] - 40e3))
         assert H_freq[k] == 40e3
         #print 'width', H_freq[k] - H_freq[k-1]
@@ -119,9 +120,9 @@ def triggering(sample_generator):
         h = numpy.fft.irfft(H)
     if 0:  # change to 1 to view filter response
         # zero pad to get more frequency resolution
-        h2 = numpy.concatenate([h, numpy.zeros(len(h)*9)])
+        h2 = numpy.concatenate([h, numpy.zeros(len(h) * 9)])
         freq, response = numpy.fft.rfftfreq(
-            len(h2), 1/fs), numpy.abs(numpy.fft.rfft(h2))
+            len(h2), 1 / fs), numpy.abs(numpy.fft.rfft(h2))
         pyplot.semilogy(freq, response, 'b-')
         #freq, response = scipy.signal.freqz(h)
         #pyplot.semilogy(0.5*fs*freq/numpy.pi, numpy.abs(response), 'g-')
@@ -136,7 +137,8 @@ def triggering(sample_generator):
     #                        |                         |
     #                         <----------> <---------->
     #                          before time  after time
-    # and waits for a sample to trigger at that has magnitude THRESHOLD times the maximum magnitude in the quiet window
+    # and waits for a sample to trigger at that has magnitude THRESHOLD times
+    # the maximum magnitude in the quiet window
 
     QUIET_TIME = int(100e-3 * fs)
     IGNORE_TIME = int(1e-3 * fs)
@@ -186,15 +188,15 @@ def triggering(sample_generator):
                 assert first_sample >= BEFORE
                 assert sample_buf.shape[1] >= first_sample + AFTER
                 this_ping = sample_buf[:, first_sample -
-                                       BEFORE:first_sample+AFTER].copy()
+                                       BEFORE:first_sample + AFTER].copy()
                 this_trigger_mag = sample_buf[:,
-                                              first_sample-BEFORE:first_sample+AFTER].copy()
+                                              first_sample - BEFORE:first_sample + AFTER].copy()
                 assert this_ping.shape[1] == BEFORE + AFTER
-                print 'triggered at', (offset+first_sample)/fs
+                print 'triggered at', (offset + first_sample) / fs
                 # pyplot.plot(this_ping.T)
                 # pyplot.show()
                 yield this_ping
-                processed_end = first_sample+DEAD_TIME
+                processed_end = first_sample + DEAD_TIME
             else:
                 processed_end = processing_now[1]
 

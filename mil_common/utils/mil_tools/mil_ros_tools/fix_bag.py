@@ -64,12 +64,12 @@ class BagFixer():
         out.close()
 
     def _fix_strings(self, strings):
-        if type(strings) == dict:
+        if isinstance(strings, dict):
             return strings
         d = {}
         if strings is None:
             return d
-        assert type(strings) == list
+        assert isinstance(strings, list)
         for s in strings:
             split = s.split(':')
             assert len(split) == 2
@@ -86,7 +86,8 @@ class BagFixer():
             return False
         return True
 
-    def __init__(self, topic_map={}, frame_map={}, start=None, stop=None, keep=[], ignore=[]):
+    def __init__(self, topic_map={}, frame_map={},
+                 start=None, stop=None, keep=[], ignore=[]):
         if ignore is None:
             ignore = []
         self.topic_map = self._fix_strings(topic_map)

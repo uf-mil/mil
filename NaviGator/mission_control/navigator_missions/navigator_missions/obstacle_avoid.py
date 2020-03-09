@@ -63,7 +63,8 @@ class ObstacleAvoid(Navigator):
             ppoints_far = yield self.get_perpendicular_points(self.square[3], self.square[2],
                                                               midpoints_far[i], out_offset)
 
-            # If its on the first side go to the close side then the far side, otherwise vise versa
+            # If its on the first side go to the close side then the far side,
+            # otherwise vise versa
             if i % 2 == 0:
                 traverse_points.append(ppoints_close[0])
                 traverse_points.append(ppoints_far[1])
@@ -106,7 +107,8 @@ class ObstacleAvoid(Navigator):
                     if np.array_equal(totem1, totem2):
                         continue
                     for totem3 in white_totems:
-                        if np.array_equal(totem1, totem3) or np.array_equal(totem2, totem3):
+                        if np.array_equal(totem1, totem3) or np.array_equal(
+                                totem2, totem3):
                             continue
                         for totem4 in white_totems:
                             if (np.array_equal(totem1, totem4) or
@@ -133,11 +135,13 @@ class ObstacleAvoid(Navigator):
                                 print('Failed edge with {}'.format(maxdif))
                                 continue
 
-                            if abs(diagonals[0] - diagonals[1]) > self.DIFF_TOLERANCE:
+                            if abs(diagonals[0] - diagonals[1]
+                                   ) > self.DIFF_TOLERANCE:
                                 print('Failed diagonal with {}'.format(maxdif))
                                 continue
 
-                            print('Passed square with edgedif {}'.format(maxdif))
+                            print(
+                                'Passed square with edgedif {}'.format(maxdif))
                             self.square = (totem1, totem2, totem3, totem4)
                             break
 

@@ -34,7 +34,7 @@ def rosmsg_to_numpy(rosmsg, keys=None):
     '''
 
     # Recurse for lists like geometry_msgs/Polygon, Pointclou
-    if type(rosmsg) == list:
+    if isinstance(rosmsg, list):
         output_array = []
         for item in rosmsg:
             output_array.append(rosmsg_to_numpy(item, keys=keys))
@@ -126,7 +126,8 @@ def numpy_to_quaternion(np_quaternion):
 def numpy_to_twist(linear_vel, angular_vel):
     '''TODO: Unit-test
     '''
-    return geometry_msgs.Twist(linear=geometry_msgs.Vector3(*linear_vel), angular=geometry_msgs.Vector3(*angular_vel))
+    return geometry_msgs.Twist(linear=geometry_msgs.Vector3(
+        *linear_vel), angular=geometry_msgs.Vector3(*angular_vel))
 
 
 def numpy_to_wrench(forcetorque):
@@ -227,7 +228,8 @@ def odom_sub(topic, callback):
         msg = args[-1]
         callback(odometry_to_numpy(msg))
 
-    return rospy.Subscriber(topic, nav_msgs.Odometry, wrapped_callback, queue_size=1)
+    return rospy.Subscriber(topic, nav_msgs.Odometry,
+                            wrapped_callback, queue_size=1)
 
 
 def ros_to_np_3D(msg):

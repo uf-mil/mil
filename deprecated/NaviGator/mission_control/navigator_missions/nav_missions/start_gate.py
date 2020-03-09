@@ -82,7 +82,7 @@ class StartGate(Navigator):
         # print "front", front
         # print "back", back
 
-        # Made it this far, make sure the red one is on the left and green on the right ================
+        # Made it this far, make sure the red one is on the left and green on t
         t = txros.tf.Transform.from_Pose_message(
             mil_tools.numpy_quat_pair_to_pose(*pose))
         t_mat44 = np.linalg.inv(t.as_matrix())
@@ -152,7 +152,8 @@ class StartGate(Navigator):
 
 
 class OgridFactory():
-    def __init__(self, left_f_pos, right_f_pos, target, left_b_pos=None, right_b_pos=None, channel_length=30):
+    def __init__(self, left_f_pos, right_f_pos, target,
+                 left_b_pos=None, right_b_pos=None, channel_length=30):
         # Front buoys
         self.left_f = left_f_pos
         self.right_f = right_f_pos
@@ -209,7 +210,7 @@ class OgridFactory():
         endpoint_left_f = self.left_f + rot_buffer
         endpoint_right_f = self.right_f - rot_buffer
 
-        # Now lets build some wall points ======================================
+        # Now lets build some wall points =====================================
 
         if self.left_b is None:
             # For rotations of the `target_vector` and the enu x-axis
@@ -220,7 +221,7 @@ class OgridFactory():
             self.left_b = self.left_f + rot_channel
             self.right_b = self.right_f + rot_channel
 
-        # Now draw contours from the boat to the start gate ====================
+        # Now draw contours from the boat to the start gate ===================
         # Get vector from boat to mid_point
         mid_point_vector = self.boat_pos - self.mid_point
 

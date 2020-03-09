@@ -26,7 +26,8 @@ class Node(object):
     def reconfigure(self, config, level):
         try:
             processed_config = {}
-            for name in 'k ks alpha beta accel_feedforward vel_feedforward'.split(' '):
+            for name in 'k ks alpha beta accel_feedforward vel_feedforward'.split(
+                    ' '):
                 x = numpy.array(map(float, config[name].split(',')))
                 assert len(x) == 6
                 processed_config[name] = x
@@ -37,7 +38,7 @@ class Node(object):
             self.processed_config = processed_config
 
             return config
-        except:
+        except BaseException:
             traceback.print_exc()
             # go back to old config if new is invalid
             return self.config
@@ -147,7 +148,8 @@ class Node(object):
     def is_constant_wrench_valid(self):
         if self.constant_wrench is None:
             return False
-        return rospy.Duration(0) <= rospy.Time.now() - self.constant_wrench_time < self.constant_wrench.lifetime
+        return rospy.Duration(0) <= rospy.Time.now(
+        ) - self.constant_wrench_time < self.constant_wrench.lifetime
 
     def send_constant_wrench(self, constant_wrench):
         self.constant_wrench_time = rospy.Time.now()

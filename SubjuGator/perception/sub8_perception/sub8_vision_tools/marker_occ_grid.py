@@ -32,7 +32,8 @@ class OccGridUtils(object):
     All distance measured in meters.
     '''
 
-    def __init__(self, res, width, height, starting_pose, topic_name='/search_grid'):
+    def __init__(self, res, width, height, starting_pose,
+                 topic_name='/search_grid'):
         self.meta_data = MapMetaData()
         # Resolution is m/cell. Width is X, height is Y.
         self.meta_data.resolution = res  # rospy.get_param("map_resolution")
@@ -71,7 +72,7 @@ class OccGridUtils(object):
 
         try:
             radius = int(radius / self.meta_data.resolution)
-        except:
+        except BaseException:
             radius = 0
 
         cv2.circle(self.searched, tuple(
@@ -160,7 +161,8 @@ class Searcher():
             self.poly_generator = self.polygon_generator()
             return [0, False, srv.intial_position]
 
-        # We search at 1.5 * r so that there is some overlay in the search feilds.
+        # We search at 1.5 * r so that there is some overlay in the search
+        # feilds.
         np_pose = msg_helpers.pose_to_numpy(srv.intial_position)
         rot_mat = make_2D_rotation(
             tf.transformations.euler_from_quaternion(np_pose[1])[2])
@@ -193,7 +195,8 @@ class Searcher():
             center_offset.astype(np.int32)), radius, 1, -1)
         masked_search = self.searched_area * circle_mask
 
-        # If there has already been a marker found on the grid in our search area go there.
+        # If there has already been a marker found on the grid in our search
+        # area go there.
         if np.max(masked_search) > 5:
             return 0
 
@@ -201,7 +204,8 @@ class Searcher():
         if len(circle_mask[circle_mask > .5]) / (np.pi * radius ** 2) < .3:
             return 1
 
-        return len(masked_search[masked_search > .5]) / len(circle_mask[circle_mask > .5])
+        return len(masked_search[masked_search > .5]) / \
+            len(circle_mask[circle_mask > .5])
 
     def polygon_generator(self, n=12):
         '''
@@ -237,7 +241,8 @@ class MarkerOccGrid(OccGridUtils):
     TODO: Upon call can return some path to go to in order to find them.
     '''
 
-    def __init__(self, image_sub, grid_res, grid_width, grid_height, grid_starting_pose):
+    def __init__(self, image_sub, grid_res, grid_width,
+                 grid_height, grid_starting_pose):
         super(
             self.__class__,
             self).__init__(res=grid_res,

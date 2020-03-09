@@ -52,7 +52,8 @@ def quat_to_rotvec(q):
 
 
 def rotvec_to_quat(rotvec):
-    return transformations.quaternion_about_axis(np.linalg.norm(rotvec), rotvec)
+    return transformations.quaternion_about_axis(
+        np.linalg.norm(rotvec), rotvec)
 
 
 def triad(xxx_todo_changeme, xxx_todo_changeme1):
@@ -124,7 +125,8 @@ class PoseEditor(object):
 
     @classmethod
     def from_PoseTwistStamped_topic(cls, topic):
-        return cls.from_PoseTwistStamped(safe_wait_for_message(topic, PoseTwistStamped))
+        return cls.from_PoseTwistStamped(
+            safe_wait_for_message(topic, PoseTwistStamped))
 
     @classmethod
     def from_PoseTwistStamped(cls, msg):
@@ -132,7 +134,8 @@ class PoseEditor(object):
 
     @classmethod
     def from_Pose(cls, frame_id, msg):
-        return cls(frame_id, rosmsg_to_numpy(msg.position), rosmsg_to_numpy(msg.orientation))
+        return cls(frame_id, rosmsg_to_numpy(msg.position),
+                   rosmsg_to_numpy(msg.orientation))
 
     def __init__(self, frame_id, position, orientation):
         self.frame_id = frame_id
@@ -209,7 +212,8 @@ class PoseEditor(object):
         return self.relative([0, 0, -distance])
 
     def absolute(self, abs_pos):
-        return type(self)(self.frame_id, self.position + abs_pos, self.orientation)
+        return type(self)(self.frame_id, self.position +
+                          abs_pos, self.orientation)
 
     def east(self, distance):
         return self.absolute([+distance, 0, 0])
@@ -249,13 +253,15 @@ class PoseEditor(object):
         return self.point_vec_towards_rel(body_vec, towards_point - self.pos)
 
     def point_vec_towards_rel(self, body_vec, towards_rel_point):
-        return self.set_orientation(triad((towards_rel_point, UP), (body_vec, UP)))
+        return self.set_orientation(
+            triad((towards_rel_point, UP), (body_vec, UP)))
 
     def turn_vec_towards(self, body_vec, towards_point):
         return self.turn_vec_towards_rel(body_vec, towards_point - self.pos)
 
     def turn_vec_towards_rel(self, body_vec, towards_rel_point):
-        return self.set_orientation(triad((UP, towards_rel_point), (UP, body_vec)))
+        return self.set_orientation(
+            triad((UP, towards_rel_point), (UP, body_vec)))
 
     def yaw_left(self, angle):
         return self.set_orientation(transformations.quaternion_multiply(
@@ -320,7 +326,8 @@ class PoseEditor(object):
         return self.pitch_up(np.radians(angle_degrees))
 
     def zero_roll_and_pitch(self):
-        return self.set_orientation(look_at_without_pitching(self.forward_vector))
+        return self.set_orientation(
+            look_at_without_pitching(self.forward_vector))
 
     def as_Pose(self):
         return Pose(

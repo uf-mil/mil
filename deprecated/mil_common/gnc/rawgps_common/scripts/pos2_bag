@@ -19,6 +19,7 @@ import numpy
 import scipy
 
 import roslib
+from functools import reduce
 roslib.load_manifest('rawgps_common')
 
 
@@ -168,7 +169,8 @@ def mean(xs):
 def jacobian(f, x):
     x = numpy.array(x)
     c = numpy.array(f(x))
-    return numpy.array([(f(x + [1 if j == i else 0 for j in xrange(len(x))]) - c) / 1 for i in xrange(len(x))]).T
+    return numpy.array(
+        [(f(x + [1 if j == i else 0 for j in xrange(len(x))]) - c) / 1 for i in xrange(len(x))]).T
 
 
 def find_minimum(x0, residuals):

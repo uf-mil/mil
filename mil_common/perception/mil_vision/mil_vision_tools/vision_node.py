@@ -10,7 +10,8 @@ import abc
 __author__ = "Kevin Allen"
 
 
-def create_object_msg(name, confidence=None, center=None, contour=None, rect=None, attributes=''):
+def create_object_msg(name, confidence=None, center=None,
+                      contour=None, rect=None, attributes=''):
     '''
     Helper function to create a mil_msgs/ObjectInImage message.
     Note: only set one of center, contour, or rect depending on what informaton is needed/available in your application
@@ -105,7 +106,8 @@ class VisionNode(object):
         msg = ObjectsInImage()
         msg.header = self._image_sub.last_image_header
         msg.objects = self.find_objects(img)
-        if not isinstance(msg.objects, list) or (len(msg.objects) and not isinstance(msg.objects[0], ObjectInImage)):
+        if not isinstance(msg.objects, list) or (
+                len(msg.objects) and not isinstance(msg.objects[0], ObjectInImage)):
             rospy.logwarn(
                 "find_objects did not return a list of mil_msgs/ObjectInImage message. Ignoring.")
         self._objects_pub.publish(msg)
@@ -128,7 +130,8 @@ if __name__ == "__main__":
         '''
 
         def __init__(self):
-            # Call base class's init. Important to do this if you override __init__ in child class.
+            # Call base class's init. Important to do this if you override
+            # __init__ in child class.
             super(VisionNodeExample, self).__init__()
 
         def find_objects(self, img):
@@ -144,7 +147,8 @@ if __name__ == "__main__":
             # In real application, only one of the three methods will be used depending on the algorithm
             # and what information is needed.
             for idx, contour in enumerate(contours):
-                # Demonstration of adding an object where only the center point can be identified
+                # Demonstration of adding an object where only the center point
+                # can be identified
                 if idx % 3 == 0:
                     try:
                         center = contour_centroid(contour)
@@ -152,11 +156,13 @@ if __name__ == "__main__":
                         continue
                     objects.append(create_object_msg(
                         "contour", center=center, attributes='green'))
-                # Demonstration of adding an object where the entire contour outline can be identified
+                # Demonstration of adding an object where the entire contour
+                # outline can be identified
                 if idx % 3 == 1:
                     objects.append(create_object_msg(
                         "contour", contour=contour, confidence=0.5))
-                # Demonstration of adding an object where a bounding rectangle can be identified
+                # Demonstration of adding an object where a bounding rectangle
+                # can be identified
                 if idx % 3 == 2:
                     objects.append(create_object_msg(
                         "contour", rect=cv2.boundingRect(contour), confidence=0.8))

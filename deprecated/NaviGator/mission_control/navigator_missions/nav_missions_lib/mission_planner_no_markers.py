@@ -115,7 +115,7 @@ class MissionPlanner:
             is_base = mission["is_base"]
             timeout = mission["timeout"]
             if timeout == 'inf':
-                timeout = sys.maxint
+                timeout = sys.maxsize
             m = Mission(name, obj_dep, timeout)
             my_missions[name] = m
             if is_base:
@@ -156,7 +156,8 @@ class MissionPlanner:
         CALLED ASYNCHRONOUS
         """
         for mission in self.tree:
-            if self.can_complete(mission) and not self._is_in_queue(mission) and mission.name != self.current_mission_name:
+            if self.can_complete(mission) and not self._is_in_queue(
+                    mission) and mission.name != self.current_mission_name:
                 fprint("mission: {}".format(mission.name),
                        msg_color="blue", title="ADDING")
                 self.queue.put(mission)
@@ -280,7 +281,8 @@ class MissionPlanner:
         starting_time = self.nh.get_time()
         while self.keep_running:
             if self.current_mission_timeout is not None:
-                if (self.nh.get_time() - self.current_mission_start_time) > self.current_mission_timeout:
+                if (self.nh.get_time() -
+                        self.current_mission_start_time) > self.current_mission_timeout:
                     fprint(self.current_mission_name,
                            msg_color="red", title="MISSION TIMEOUT:")
                     self.mission_defer.cancel()

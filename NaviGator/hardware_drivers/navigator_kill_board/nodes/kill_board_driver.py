@@ -118,21 +118,25 @@ class KillInterface(object):
         React to a byte recieved from the board. This could by an async update of a kill status or
         a known response to a recent request
         '''
-        # If the controller message start byte is received, next 8 bytes are the controller data
+        # If the controller message start byte is received, next 8 bytes are
+        # the controller data
         if msg == constants['CONTROLLER']:
             self.ctrl_msg_count = 8
             self.ctrl_msg_timeout = rospy.Time.now()
             return
-        # If receiving the controller message, record the byte as stick/button data
+        # If receiving the controller message, record the byte as stick/button
+        # data
         if (self.ctrl_msg_count > 0) and (self.ctrl_msg_count <= 8):
-            # If 1 second has passed since the message began, timeout and report warning
+            # If 1 second has passed since the message began, timeout and
+            # report warning
             if (rospy.Time.now() - self.ctrl_msg_timeout) >= rospy.Duration(1):
                 self.ctrl_msg_received = False
                 self.ctrl_msg_count = 0
                 rospy.logwarn(
                     'Timeout receiving controller message. Please disconnect controller.')
             if self.ctrl_msg_count > 2:  # The first 6 bytes in the message are stick data bytes
-                if (self.ctrl_msg_count % 2) == 0:  # Even number byte: first byte in data word
+                if (self.ctrl_msg_count %
+                        2) == 0:  # Even number byte: first byte in data word
                     self.sticks_temp = (int(msg.encode("hex"), 16) << 8)
                 else:  # Odd number byte: combine two bytes into a stick's data word
                     self.sticks_temp += int(msg.encode("hex"), 16)
@@ -157,7 +161,8 @@ class KillInterface(object):
                     self.ctrl_msg_received = True  # After receiving last byte, trigger joy update
             self.ctrl_msg_count -= 1
             return
-        # If a response has been recieved to a requested status (button, remove, etc), update internal state
+        # If a response has been recieved to a requested status (button,
+        # remove, etc), update internal state
         if self.last_request is not None:
             if msg == constants['RESPONSE_FALSE']:
                 if self.board_status[self.last_request] is True:
@@ -186,7 +191,8 @@ class KillInterface(object):
                     rospy.logdebug('ASYNC TRUE FOR {}'.format(kill))
                 self.board_status[kill] = True
                 return
-        # If a response to another request, like ping or computer kill/clear is recieved
+        # If a response to another request, like ping or computer kill/clear is
+        # recieved
         for index, byte in enumerate(self.expected_responses):
             if msg == byte:
                 del self.expected_responses[index]
@@ -293,7 +299,8 @@ class KillInterface(object):
         Raise/Clear hw-kill ROS Alarm is nessesary (any kills on board are engaged)
         '''
         killed = self.board_status['OVERALL']
-        if (killed and not self._hw_killed) or (killed and self.board_status != self._last_hw_kill_paramaters):
+        if (killed and not self._hw_killed) or (
+                killed and self.board_status != self._last_hw_kill_paramaters):
             self._hw_killed = True
             self.hw_kill_broadcaster.raise_alarm(parameters=self.board_status)
             self._last_hw_kill_paramaters = copy.copy(self.board_status)

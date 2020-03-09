@@ -57,7 +57,8 @@ def load_mesh(path):
                 return load_and_cache_mesh(path, url=urls[file_])
 
         else:
-            # If we don't have the file cached, there's no way we've downloaded it
+            # If we don't have the file cached, there's no way we've downloaded
+            # it
             print 'SIM: Model for {} does not exist, downloading it...'.format(
                 file_)
             download_and_unzip(urls[file_], dir_)

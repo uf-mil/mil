@@ -10,7 +10,8 @@ import sys
 
 class Canvas(app.Canvas):
 
-    def __init__(self, time_acceleration=1.0, show_window=True, physics_dt=(1 / 30.)):
+    def __init__(self, time_acceleration=1.0,
+                 show_window=True, physics_dt=(1 / 30.)):
         app.Canvas.__init__(self, keys='interactive', size=(800, 800))
         rospy.on_shutdown(self.end)
         # How much sim time should pass for each real world second

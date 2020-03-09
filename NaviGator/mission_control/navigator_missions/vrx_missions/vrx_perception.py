@@ -36,7 +36,8 @@ class VrxPerception(Vrx):
         defer.returnValue((ret, positions))
 
     @txros.util.cancellableInlineCallbacks
-    def announce_object(self, obj_id, classification, position_enu, boat_position_enu):
+    def announce_object(self, obj_id, classification,
+                        position_enu, boat_position_enu):
         if classification == 'UNKNOWN':
             self.send_feedback('Ignoing UNKNOWN object {}'.format(obj_id))
             defer.returnValue(False)

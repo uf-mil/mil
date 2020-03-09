@@ -20,7 +20,7 @@ def myfunc(navigator, **kwargs):
             yield navigator.move.set_position(pos).go()
             nt.fprint(o.name, msg_color='green')
 
-        except:
+        except BaseException:
             nt.fprint("Missing Marker", msg_color="red")
 
 

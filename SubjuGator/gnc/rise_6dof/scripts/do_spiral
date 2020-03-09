@@ -30,7 +30,8 @@ start[2] = -.25
 def position_generator_orig(t):
     r = RADIUS  # *(1 - math.e**(-t/30))
     w = 2 * math.pi / PERIOD
-    return numpy.array([r * math.sin(w * t), r * -math.cos(w * t), -DESCENT * t / PERIOD])
+    return numpy.array(
+        [r * math.sin(w * t), r * -math.cos(w * t), -DESCENT * t / PERIOD])
 
 
 def position_generator(t):

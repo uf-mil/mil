@@ -55,7 +55,8 @@ class ConstantVelocity(Navigator):
         if not isinstance(parsed, list) or len(parsed) != 3:
             raise err
         for i in range(3):
-            if not (isinstance(parsed[i], int) or isinstance(parsed[i], float)):
+            if not (isinstance(parsed[i], int)
+                    or isinstance(parsed[i], float)):
                 raise err
         return parsed
 
@@ -76,7 +77,8 @@ class ConstantVelocity(Navigator):
             self.ref_pub.publish(self.msg)
             yield self.nh.sleep(0.1)
 
-        # Publish user selected velocity until task is canceled or a new task is run
+        # Publish user selected velocity until task is canceled or a new task
+        # is run
         self.send_feedback(
             'Publishing constant velocity {}. Cancel task to stop.'.format(args))
         self.msg.twist.twist.linear.x = args[0]

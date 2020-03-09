@@ -16,10 +16,12 @@ def load_images(path, images_to_use=2):
 
     print "Images found in folder: {}".format(len(images) / 2 - 1)
     count = 0
-    for i in tqdm.trange(len(images) / 2 - 1, desc="Loading images", unit=' images'):
+    for i in tqdm.trange(len(images) / 2 - 1,
+                         desc="Loading images", unit=' images'):
         try:
             if '_mask.png' in images[i]:
-                # This is the mask image - there should be a matching non mask image.
+                # This is the mask image - there should be a matching non mask
+                # image.
                 image_name = images[images.index(
                     images[i].replace('_mask', ''))]
 
@@ -28,7 +30,8 @@ def load_images(path, images_to_use=2):
 
                 images.remove(image_name)
             else:
-                # This is the real image - there should be a matching mask image.
+                # This is the real image - there should be a matching mask
+                # image.
                 mask_name = images[images.index(
                     images[i].replace('.png', '_mask.png'))]
 
@@ -53,7 +56,7 @@ def load_images(path, images_to_use=2):
         except KeyboardInterrupt:
             return None
 
-        except:
+        except BaseException:
             print "There was an issue with loading an image. Skipping it..."
 
     return data
@@ -91,7 +94,7 @@ if __name__ == '__main__':
         try:
             clf = cv2.Boost()
             clf.load(args.classpath + f_name)
-        except:
+        except BaseException:
             print "Failed to load."
             continue
 
@@ -117,7 +120,7 @@ if __name__ == '__main__':
             try:
                 segmentation = [x for x in [clf.predict(
                     obs) for obs in some_observations]]
-            except:
+            except BaseException:
                 print "Failed to load. File probably doesn't exist"
                 break
 
@@ -176,7 +179,7 @@ if __name__ == '__main__':
                 np.max(attributes['false_positives']))
             report_data["Average execution time"].append(
                 np.average(attributes['times']))
-        except:
+        except BaseException:
             print "Issue"
 
     # Give the results.

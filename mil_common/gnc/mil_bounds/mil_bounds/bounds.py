@@ -9,7 +9,8 @@ import numpy as np
 
 
 def config_to_tuple(config, index):
-    return (config['x%d' % index], config['y%d' % index], config['z%d' % index])
+    return (config['x%d' % index], config['y%d' %
+                                          index], config['z%d' % index])
 
 
 def tuple_to_config(tup, config, index):

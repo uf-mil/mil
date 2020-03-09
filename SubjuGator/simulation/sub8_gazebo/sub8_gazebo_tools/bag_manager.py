@@ -46,7 +46,8 @@ class BagManager(object):
                 if msg is not None:
                     if (self.nh.get_time() > rospy.Time.from_sec(30)) and\
                        (msg_time < self.nh.get_time() - rospy.Duration(30)):
-                        # This fixes a negative time exception if we are within the first 30 seconds of time.
+                        # This fixes a negative time exception if we are within
+                        # the first 30 seconds of time.
                         continue
 
                     if msg_time == last_timestamps[key]:
@@ -127,7 +128,8 @@ class BagManager(object):
             yield self.nh.sleep(self.time_step)
 
         print "Saving pre-fail data. Do not exit."
-        # We've written the post crash stuff now let's write the pre-crash data.
+        # We've written the post crash stuff now let's write the pre-crash
+        # data.
         for i in range(self.buffer_array_size):
             msgs = next(gen)
             if msgs is not None:

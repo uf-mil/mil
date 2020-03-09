@@ -139,7 +139,8 @@ class OGridServer:
         self.global_ogrid = self.create_grid((map_size, map_size))
 
         def set_odom(msg):
-            return setattr(self, 'odom', mil_tools.pose_to_numpy(msg.pose.pose))
+            return setattr(
+                self, 'odom', mil_tools.pose_to_numpy(msg.pose.pose))
         rospy.Subscriber('/odom', Odometry, set_odom)
         self.publisher = rospy.Publisher(
             '/ogrid_master', OccupancyGrid, queue_size=1)
@@ -264,7 +265,8 @@ class OGridServer:
 
         for ogrids in [to_add, to_replace]:
             for ogrid in ogrids:
-                # Hard coded 5 second timeout - probably no need to reconfig this.
+                # Hard coded 5 second timeout - probably no need to reconfig
+                # this.
                 if ogrid.nav_ogrid is None or ogrid.callback_delta > self.ogrid_timeout:
                     # fprint("Ogrid too old!")
                     continue
@@ -307,7 +309,7 @@ class OGridServer:
                 # fprint("width: {}, height: {}".format(index_width, index_height))
                 # fprint("Ogrid size: {}, {}".format(ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width))
 
-                to_add = ogrid.np_map[l_ogrid_start[1]                                      :index_height, l_ogrid_start[0]:index_width]
+                to_add = ogrid.np_map[l_ogrid_start[1]:index_height, l_ogrid_start[0]:index_width]
 
                 # fprint("to_add shape: {}".format(to_add.shape))
 

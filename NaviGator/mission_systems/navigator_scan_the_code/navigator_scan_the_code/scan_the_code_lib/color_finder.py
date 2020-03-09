@@ -35,7 +35,8 @@ class ColorFinder:
         for color, h_val in self.color_map.iteritems():
             cg = np.cos(h_val)
             sg = np.sin(h_val)
-            # We need a signed error for some math later on so no absolute value
+            # We need a signed error for some math later on so no absolute
+            # value
             this_error = np.arctan2(sg * c - cg * s, cg * c + sg * s)
             if np.abs(this_error) < np.abs(error):
                 error = this_error
@@ -120,7 +121,8 @@ class ColorFinder:
             self.curr_count += 1
 
         elif self.prev_color != color and self.prev_color != 'k':
-            if self.curr_count > 1 and (len(self.colors) == 0 or self.colors[len(self.colors) - 1] != self.prev_color):
+            if self.curr_count > 1 and (
+                    len(self.colors) == 0 or self.colors[len(self.colors) - 1] != self.prev_color):
                 self.colors.append(self.prev_color)
 
             self.curr_count = 0
