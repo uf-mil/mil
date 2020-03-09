@@ -28,6 +28,7 @@ Helpful Docs:
    Projects <docs/projects>
      SubjuGator <docs/subjugator/index>
      VRX <docs/navigator/vrx>
+     Indy AV <docs/indyav/index>
    Technical Design <docs/design/design>
    Testing Procedure <docs/testingprocedures.md>
    Infrastructure <docs/infra/index>
