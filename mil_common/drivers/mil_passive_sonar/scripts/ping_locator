@@ -43,8 +43,8 @@ class PingLocator:
 
 
     def ping_cb(self, msg):
-        msg.data.resize((msg.samples, msg.channels))
         data = msg.data
+        data.resize((msg.samples, msg.channels))
         rate = msg.sample_rate
 
         cross_corr = np.array([correlate(data[:,0], data[:,i], mode='same')
@@ -54,12 +54,19 @@ class PingLocator:
         time = np.linspace(total_time / -2, total_time / 2, cross_corr.shape[0])
 
         deltas = np.zeros((4,))
-        deltas = np.array([time[np.argmax(cross_corr[:,i])] for i in xrange(cross_corr.shape[1])])
+
+        maxes = np.array([np.argmax(cross_corr[:,i]) for i in xrange(cross_corr.shape[1])])
+
+        if (maxes == cross_corr.shape[0] - 1).any() or (maxes == 0).any():
+            rospy.logerr('/hydrophones/ping_locator lack of features on one of the channels')
+            return
+
+        deltas = np.array(time[maxes])
         deltas -= deltas[0]
 
         plots = interweave(time, cross_corr.transpose())
         titles = ['h0 cross h%d'%i for i in xrange(data.shape[0])]
-        self.debug.publish_plots(plots, titles, deltas)
+        self.debug.publish_plots(plots, titles, time[maxes])
 
         plots = interweave(time, data.transpose())
         titles = ['h%d'%i for i in xrange(data.shape[0])]
@@ -73,7 +80,7 @@ class PingLocator:
             return
 
         v = Vector3Stamped()
-        v.header = Header()
+        v.header = msg.header
         v.header.frame_id = 'hydrophones'
         v.vector = numpy_to_vector3(vec)
         self.pub.publish(v)

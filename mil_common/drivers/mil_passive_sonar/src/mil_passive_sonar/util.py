@@ -82,15 +82,6 @@ def ping_to_samples(ping):
         ping.data, dtype=numpy.float64).reshape((ping.samples,
                                                  ping.channels)).transpose()
 
-
-def make_bandpass_filter(lower, upper, rate, order, trans_width):
-    bandpass_filter = scipy.signal.remez(order,
-        [0, lower - trans_width,
-         lower, upper,
-         upper + trans_width, rate/2], [0,1,0], Hz = rate)
-    return bandpass_filter
-
-
 def find_freq(data, rate):
     '''Helper Function to find the freq of a signal
     *NOTE: Assumes the signal is strongest at the end and there is generally one dominant sin wave*
@@ -147,7 +138,7 @@ def find_freq_response(filt, rate, lower_freq, upper_freq, worN=2000):
     return x, y
 
 
-def calculate_dir_pinger(deltas, h_dist, v_sound, acceptable_x_error=-1):
+def calculate_dir_pinger(deltas, h_dist, v_sound):
     '''
     deltas:
         numpy array of shape (4,) where datas[i] = time delay from h_0 to h_i
@@ -189,27 +180,13 @@ def calculate_dir_pinger(deltas, h_dist, v_sound, acceptable_x_error=-1):
     '''
     if numpy.max(deltas) > h_dist / float(v_sound):
         raise Exception("an impossible time delay was detected ( > %f)"%float(h_dist / v_sound))
-
-    if numpy.sign(deltas[1]) == numpy.sign(deltas[2]):
-        raise Exception("h1 and h3 have same sign")
-
-    # if there is a 10 percent error between the two delays on x axis, throw out the ping
-    if acceptable_x_error != -1:
-        if numpy.abs(deltas[1]) > numpy.abs(deltas[2]):
-            a = deltas[1]
-            b = deltas[2]
-        else:
-            a = deltas[2]
-            b = deltas[1]
-
-        if numpy.abs(a / b) > acceptable_x_error:
-            raise Exception("Diffrence on x axis time delay > %f"%acceptable_x_error)
-
     x = numpy.zeros((3,))
 
     # average the values from h1 and h3 since on the same axis
-    x[0] = ((deltas[1] * v_sound /  h_dist) - (deltas[2] * v_sound /  h_dist)) / 2
+    x[0] = -1 * (((deltas[1] * v_sound /  h_dist) - (deltas[2] * v_sound /  h_dist)) / 2)
     x[1] = deltas[3] * v_sound / h_dist
+
+    x *= -1
     # since x is a unit vector and we know that the pinger is below us
     if x[0]**2 + x[1]**2 >= 1.0:
         x /= numpy.linalg.norm(x)

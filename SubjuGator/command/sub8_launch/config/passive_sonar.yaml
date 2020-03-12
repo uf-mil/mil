@@ -3,16 +3,13 @@ dist_h: 2.286e-02
 # speed of sound in water
 v_sound: 1482
 #  target Frquency in Hz
-triggering/target_frequency: 25000
+triggering/target_frequency: 30000
 #  tolerance around target frequerncy in Hz
 triggering/frequency_tolerance: 100
-# how many terms the filter has, dont touch
-triggering/filter_order: 5000
 # known min time between pings in sec
-triggering/min_time_between_pings: 0.25
+triggering/min_time_between_pings: 1.5
+# threshold for triggering on gradient(max_convolution(bandpass(signal)))
+triggering/threshold: 2.0
 # how many seconds to offset the trigger time
 triggering/trigger_offset: 0.0
-#  max convolution window, the amount of time that we assume should be quiet before a ping in sec
-#  NOTE: maxes out at (sample_rate * samples) (currently maxed out)
-triggering/max_convolve_window: 0.1
-
+triggering/enable_on_launch: True
