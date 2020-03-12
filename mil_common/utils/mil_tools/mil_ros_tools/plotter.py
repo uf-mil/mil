@@ -57,7 +57,7 @@ class Plotter:
         Can be enables/disabled via the <topic_name>_enable service call
     '''
 
-    def __init__(self, topic_name, w=20, h=20, dpi=200):
+    def __init__(self, topic_name, w=20, h=20, dpi=150):
         matplotlib.rcParams.update({'font.size': 22})
         self.pub = rospy.Publisher(topic_name, Image, queue_size=1)
         self.bridge = CvBridge()

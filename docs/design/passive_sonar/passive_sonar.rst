@@ -72,8 +72,12 @@ To make a custom configation
 
 * ``roslaunch sub8_launch passive_sonar.launch config_file:=my_passive_sonar.yaml``
 
+To change the configuration at runtime
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+* set whatever param you want to change ie:``rosparam set /hydrophones/triggering/target_frequency 25000``
 
+* call the reset service ie: ``rosservice call /hydrophones/triggering/reset "{}"``
 
 
 Testing ROS bridge

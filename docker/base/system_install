@@ -23,7 +23,7 @@ mil_system_install --no-install-recommends \
   wget \
   expect
 
-# Install ROS apt source
+# ROS apt source
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 # Install Gazebo apt source
 sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -sc) main" > /etc/apt/sources.list.d/gazebo-stable.list' \
@@ -66,11 +66,27 @@ sudo pip install \
   pandas
 
 # Documentation dependencies
-mil_system_install python3-pip
+mil_system_install \
+  python3-pip \
+  xvfb \
+  xdg-utils \
+  libappindicator3-1 \
+  libsecret-1-0
+
 sudo pip3 install -q \
   sphinx \
   recommonmark \
   sphinx_rtd_theme
+
+#  install drawio
+python3 -m pip install sphinxcontrib-drawio
+
+sudo wget -O /tmp/drawio.deb https://github.com/jgraph/drawio-desktop/releases/download/v12.3.2/draw.io-amd64-12.3.2.deb
+sudo dpkg -i /tmp/drawio.deb
+sudo apt -y -f install /tmp/drawio.deb
+sudo rm /tmp/drawio.deb
+
+PATH=$PATH:/opt/drawio/
 
 # Initialize rosdep
 sudo pip install -U rosdep
