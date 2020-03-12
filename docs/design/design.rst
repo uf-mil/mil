@@ -5,4 +5,4 @@ Some technical info on various design:
 .. toctree::
   :maxdepth: 1
 
-  Pasive Sonar <passive_sonar>
+  Pasive Sonar <passive_sonar/passive_sonar>

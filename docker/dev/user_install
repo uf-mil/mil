@@ -25,7 +25,19 @@ mil_user_install_dependencies()
     awscli \
     net-tools \
     cifs-utils \
-    nmap
+    nmap \
+    xvfb \
+    xdg-utils \
+    libappindicator3-1 \
+    libsecret-1-0
+
+  # install drawio
+  sudo pip3 install \
+   sphinxcontrib-drawio
+  wget https://github.com/jgraph/drawio-desktop/releases/download/v12.3.2/draw.io-amd64-12.3.2.deb
+  sudo dpkg -i draw.io-amd64-12.3.2.deb
+  sudo apt -y -f install
+  rm draw.io-amd64-12.3.2.deb
 }
 
 # Add line to user's bashrc which source the repo's setup files

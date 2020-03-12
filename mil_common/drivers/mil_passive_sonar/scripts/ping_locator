@@ -16,7 +16,7 @@ from scipy.signal import correlate, decimate, resample
 class PingLocator:
     '''Subscribers to `/pings`
 
-    publishes vector to the pinger'''
+    publishes vector to the pinger on /direction'''
 
     def __init__(self):
         rospy.init_node('ping_locator')
