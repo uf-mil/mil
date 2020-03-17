@@ -5,9 +5,11 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pedantic -Wall -std=c++11")
 find_package(catkin REQUIRED COMPONENTS 
   rostest
   std_msgs
+  std_srvs
   rospy
   roscpp
   cv_bridge
+  rosbag
 )
 
 find_package(Eigen3 REQUIRED)
@@ -44,4 +46,5 @@ add_library(mil_tools
 )
 target_include_directories(mil_tools PUBLIC include ${EIGEN3_INCLUDE_DIRS})
 target_link_libraries(mil_tools ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
 

@@ -72,7 +72,6 @@ sudo pip3 install -q \
   recommonmark \
   sphinx_rtd_theme
 
-
 # Initialize rosdep
 sudo pip install -U rosdep
 sudo rosdep init
