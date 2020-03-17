@@ -7,6 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "mil_tools/topic_recorder.hpp"
+#include "mil_tools/topic_player.hpp"
+
 namespace mil_tools
 {
 static const double PI = 3.1415926535897932;
