@@ -9,7 +9,16 @@ triggering/frequency_tolerance: 100
 # known min time between pings in sec
 triggering/min_time_between_pings: 1.5
 # threshold for triggering on gradient(max_convolution(bandpass(signal)))
+# NOTE: Tuned for a swimming pool, at Transdec recommended value :4.0
 triggering/threshold: 2.0
 # how many seconds to offset the trigger time
 triggering/trigger_offset: 0.0
 triggering/enable_on_launch: True
+# msg type on samples topic. make "Ping" for old bags
+#  NOTE: this will give warnings about not being able to determine the frequency of ping,
+#   safely ignore these when using the "Ping" message type
+#triggering/sample_msg_type: "Ping"
+triggering/sample_msg_type: "HydrophoneSamplesStamped"
+
+
+

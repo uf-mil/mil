@@ -2,7 +2,7 @@
  * and publish it to ROS as a mil_passive_sonar/HydrophoneSamples message
  */
 #include <arpa/inet.h>
-#include <mil_passive_sonar/HydrophoneSamples.h>
+#include <mil_passive_sonar/HydrophoneSamplesStamped.h>
 #include <ros/ros.h>
 #include <boost/asio.hpp>
 
@@ -29,7 +29,7 @@ private:
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
   ros::Publisher pub_;
-  mil_passive_sonar::HydrophoneSamples msg;
+  mil_passive_sonar::HydrophoneSamplesStamped msg;
   std::string frame_id_;
   std::string ip_;
   int port_;
@@ -62,7 +62,7 @@ void SylphaseSonarToRosNode::run()
 SylphaseSonarToRosNode::SylphaseSonarToRosNode(ros::NodeHandle nh, ros::NodeHandle private_nh)
   : nh_(nh), private_nh_(private_nh)
 {
-  pub_ = nh.advertise<mil_passive_sonar::HydrophoneSamples>("samples", 1);
+  pub_ = nh.advertise<mil_passive_sonar::HydrophoneSamplesStamped>("samples", 1);
   ip_ = private_nh.param<std::string>("ip", std::string("127.0.0.1"));
   port_ = private_nh.param<int>("port", 10001);
   frame_id_ = private_nh.param<std::string>("frame", "hydrophones");
@@ -87,15 +87,15 @@ void SylphaseSonarToRosNode::read_messages(boost::asio::ip::tcp::socket& socket)
   const size_t BYTES_TO_CAPTURE = sizeof(uint16_t) * SAMPLES_TO_CAPTURE;
 
   // Pre-allocate message
-  mil_passive_sonar::HydrophoneSamples msg;
+  mil_passive_sonar::HydrophoneSamplesStamped msg;
   msg.header.frame_id = frame_id_;
   msg.header.seq = 0;
-  msg.channels = CHANNELS;
-  msg.samples = SAMPLES_TO_CAPTURE_PER_CHANNEL;
-  msg.sample_rate = SAMPLES_PER_SECOND;
-  msg.data.resize(SAMPLES_TO_CAPTURE);
+  msg.hydrophone_samples.channels = CHANNELS;
+  msg.hydrophone_samples.samples = SAMPLES_TO_CAPTURE_PER_CHANNEL;
+  msg.hydrophone_samples.sample_rate = SAMPLES_PER_SECOND;
+  msg.hydrophone_samples.data.resize(SAMPLES_TO_CAPTURE);
 
-  auto buffer = boost::asio::buffer(msg.data);
+  auto buffer = boost::asio::buffer(msg.hydrophone_samples.data);
   bool first_packet = true;
 
   while (ros::ok())
@@ -104,15 +104,15 @@ void SylphaseSonarToRosNode::read_messages(boost::asio::ip::tcp::socket& socket)
     if (!boost::asio::buffer_size(buffer))
     {
       // Received packets are Big-Endian, convert to system
-      for (size_t i = 0; i < msg.data.size(); ++i)
+      for (size_t i = 0; i < msg.hydrophone_samples.data.size(); ++i)
       {
-        msg.data[i] = ntohs(msg.data[i]);
+        msg.hydrophone_samples.data[i] = ntohs(msg.hydrophone_samples.data[i]);
       }
       ++msg.header.seq;
       pub_.publish(msg);
 
       // Reset the buffer to the start of the vector and reset first_packet
-      buffer = boost::asio::buffer(msg.data);
+      buffer = boost::asio::buffer(msg.hydrophone_samples.data);
       first_packet = true;
     }
 

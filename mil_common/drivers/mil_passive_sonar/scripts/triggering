@@ -5,7 +5,7 @@ from rospy.numpy_msg import numpy_msg
 from std_msgs.msg import Header
 from std_srvs.srv import SetBool, SetBoolResponse
 from std_srvs.srv import Trigger, TriggerResponse
-from mil_passive_sonar.msg import HydrophoneSamples, Ping2, Ping
+from mil_passive_sonar.msg import HydrophoneSamplesStamped, Triggered, Ping
 from mil_passive_sonar import util
 from mil_passive_sonar.streamed_bandpass import StreamedBandpass
 from mil_ros_tools import Plotter, interweave
@@ -42,10 +42,16 @@ class HydrophoneTrigger:
 
         # Ros stuff
         rospy.init_node('hydrophone_trigger')
-        # if running with old bags use:
-        self.sub = rospy.Subscriber('samples', numpy_msg(Ping), self.hydrophones_cb)
-        self.sub = rospy.Subscriber('samples', numpy_msg(HydrophoneSamples), self.hydrophones_cb)
-        #self.pub = rospy.Publisher('pings', numpy_msg(Ping2), queue_size=1)
+        # used for old bags
+        msg_type = rospy.get_param('~sample_msg_type')
+        if msg_type == 'Ping':
+          self.sub = rospy.Subscriber('samples', numpy_msg(Ping), self.hydrophones_cb)
+        elif msg_type == 'HydrophoneSamplesStamped':
+            self.sub = rospy.Subscriber('samples', numpy_msg(HydrophoneSamplesStamped), self.hydrophones_cb)
+        else:
+            ROS_FATAL('sample_msg_type not supported')
+            return
+        self.pub = rospy.Publisher('pings', numpy_msg(Triggered), queue_size=1)
         rospy.Service('~filter_debug_trigger', Trigger, self.filter_response)
         rospy.Service('~enable', SetBool, self.enable)
         rospy.Service('~reset', Trigger, self.reset)
@@ -124,22 +130,34 @@ class HydrophoneTrigger:
     def hydrophones_cb(self, msg):
         # Record start time of cb to make sure we are running in real time
         start_cb = rospy.get_rostime()
+        if type(msg) == numpy_msg(Ping):
+            msg_header = msg.header
+            msg_channels = msg.channels
+            msg_samples = msg.samples
+            msg_sample_rate = msg.sample_rate
+            msg_data = msg.data
+        elif type(msg) == numpy_msg(HydrophoneSamplesStamped):
+            msg_header = msg.header
+            msg_channels = msg.hydrophone_samples.channels
+            msg_samples = msg.hydrophone_samples.samples
+            msg_sample_rate = msg.hydrophone_samples.sample_rate
+            msg_data = msg.hydrophone_samples.data
 
         # if not enabled, go no further
         if not self.enabled:
             return
 
         if self.bandpass_filter.rate is None:
-            self.rate = msg.sample_rate
+            self.rate = msg_sample_rate
             self.window_size = int(self.window_time * self.rate)
             self.bandpass_filter.rate = self.rate
             self.bandpass_filter.make_filter()
 
         # Resize the 1d array to be a 2d array of samples by channels
-        msg.data.resize(msg.samples, msg.channels)
+        msg_data.resize(msg_samples, msg_channels)
 
         # Apply a bandpass filter to the data for our general frequency range (on all channels)
-        new_data = self.bandpass_filter.convolve(msg.data)
+        new_data = self.bandpass_filter.convolve(msg_data)
         # We always look at 2 messages of data at a time concatenated (0.1 sec each msg (for sylphase board))
         if self.prev_data is None:
             self.prev_data = new_data
@@ -186,14 +204,14 @@ class HydrophoneTrigger:
                     freq = self.target
                 rospy.loginfo('triggered at %f on %f Hz'%(trigger_time, freq))
 
-                ping = Ping2()
+                ping = Triggered()
                 ping.header = Header()
                 ping.header.stamp = rospy.Time.now()
-                ping.channels = msg.channels
-                ping.samples = end - start
-                ping.sample_rate = self.rate
-                ping.data = ping_data.flatten()
-                ping.ping_time = -1 * (trigger_time -\
+                ping.hydrophone_samples.channels = msg_channels
+                ping.hydrophone_samples.samples = end - start
+                ping.hydrophone_samples.sample_rate = self.rate
+                ping.hydrophone_samples.data = ping_data.flatten()
+                ping.trigger_time = -1 * (trigger_time -\
                                  ((2*trigger_time - self.trigger_window_past + self.trigger_window_future) / 2))
                 self.pub.publish(ping)
 
@@ -216,10 +234,10 @@ class HydrophoneTrigger:
                     vline = [trigger_time_samples]
                     self.sample_at_trigger_debug.publish_plots(plots, titles, vline)
 
-        self.time += msg.samples / float(self.rate)
+        self.time += msg_samples / float(self.rate)
         self.prev_data = new_data
 
-        spare_time = (float(msg.samples) / self.rate) - (rospy.get_rostime() - start_cb).to_sec()
+        spare_time = (float(msg_samples) / self.rate) - (rospy.get_rostime() - start_cb).to_sec()
 
         if spare_time < 0:
             rospy.logwarn('Spare Time After Callback: %f, Running slower than real time'%spare_time)
