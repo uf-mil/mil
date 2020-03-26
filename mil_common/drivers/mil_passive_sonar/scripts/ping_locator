@@ -5,7 +5,7 @@ from rospy.numpy_msg import numpy_msg
 from std_srvs.srv import SetBool, SetBoolResponse
 from std_msgs.msg import Header
 from geometry_msgs.msg import Vector3Stamped
-from mil_passive_sonar.msg import Ping2
+from mil_passive_sonar.msg import Triggered
 from mil_passive_sonar import util
 from mil_ros_tools import Plotter, interweave
 from mil_tools import numpy_to_vector3
@@ -20,7 +20,7 @@ class PingLocator:
 
     def __init__(self):
         rospy.init_node('ping_locator')
-        self.sub = rospy.Subscriber('pings', numpy_msg(Ping2), self.ping_cb)
+        self.sub = rospy.Subscriber('pings', numpy_msg(Triggered), self.ping_cb)
         self.pub = rospy.Publisher('direction', Vector3Stamped, queue_size=10)
 
         rospy.Service('~enable', SetBool, self.enable)
@@ -43,9 +43,9 @@ class PingLocator:
 
 
     def ping_cb(self, msg):
-        data = msg.data
-        data.resize((msg.samples, msg.channels))
-        rate = msg.sample_rate
+        data = msg.hydrophone_samples.data
+        data.resize((msg.hydrophone_samples.samples, msg.hydrophone_samples.channels))
+        rate = msg.hydrophone_samples.sample_rate
 
         cross_corr = np.array([correlate(data[:,0], data[:,i], mode='same')
                           for i in xrange(0, data.shape[1])]).transpose()
@@ -70,7 +70,7 @@ class PingLocator:
 
         plots = interweave(time, data.transpose())
         titles = ['h%d'%i for i in xrange(data.shape[0])]
-        vlines = np.array([-1 * deltas[i] + msg.ping_time  for i in xrange(deltas.shape[0])])
+        vlines = np.array([-1 * deltas[i] + msg.trigger_time  for i in xrange(deltas.shape[0])])
         self.debug_samples.publish_plots(plots, titles, vlines)
 
         try:

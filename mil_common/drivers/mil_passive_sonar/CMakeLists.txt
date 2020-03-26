@@ -8,8 +8,9 @@ add_message_files(
   ProcessedPing.msg
   Debug.msg
   HydrophoneSamples.msg
+  HydrophoneSamplesStamped.msg
   Ping.msg
-  Ping2.msg
+  Triggered.msg
 )
 
 add_service_files(
