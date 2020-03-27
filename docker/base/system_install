@@ -74,4 +74,5 @@ sudo pip3 install -q \
 
 
 # Initialize rosdep
+sudo pip install -U rosdep
 sudo rosdep init
