@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "mil_tools/topic_recorder.hpp"
 #include "mil_tools/topic_player.hpp"
+#include "mil_tools/topic_recorder.hpp"
 
 namespace mil_tools
 {
