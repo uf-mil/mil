@@ -3,16 +3,6 @@ mil_tools::TopicPlayer<MSG>::TopicPlayer(ros::NodeHandle* _nh)
 {
     nh_ = _nh;
 
-    // load file name
-    std::string file_name;
-    if (!nh_->getParam("file_name", file_name))
-    {
-        ROS_FATAL("topic player could not get file_name ros param");
-        return;
-    }
-
-    bag_.open(file_name, rosbag::bagmode::Read);
-
     if (!nh_->getParam("play_topic", topic_))
     {
         ROS_FATAL("topic player could not get play_topic ros param");
@@ -29,26 +19,37 @@ mil_tools::TopicPlayer<MSG>::TopicPlayer(ros::NodeHandle* _nh)
 template<class MSG>
 void mil_tools::TopicPlayer<MSG>::Play(const ros::TimerEvent& event)
 {
-    std::vector<std::string> topics = {topic_};
-    rosbag::View view(bag_, rosbag::TopicQuery(topics));
     auto start = ros::Time::now();
-    ros::Duration offset;
-    bool first = true;
+    rosbag::View view(bag_);
+    //check type in first msg, make sure is correct
+    if (view.begin()->instantiate<MSG>() == nullptr)
+    {
+        ROS_FATAL("topic player, wrong type in bag file");
+        return;
+    }
+    // get the time of the first message
+    ros::Time prev_msg_stamp = view.begin()->instantiate<MSG>()->header.stamp;
+    ROS_INFO("Playing");
     for(rosbag::MessageInstance const m : view)
     {
+        if (!enabled_)
+            break;
         auto msg = m.instantiate<MSG>();
+        // if encounter wrong msg types later on, do not publish them and print warn
         if(msg != nullptr)
         {
-            if (first)
-            {
-                offset = msg->header.stamp - start;
-                first = false;
-            }
-            if (msg->header.stamp + offset < ros::Time::now())
-                ros::Duration(ros::Time::now() - msg->header.stamp + offset).sleep();
+            auto now  = ros::Time::now();
+            ros::Duration sleep_for = msg->header.stamp - prev_msg_stamp;
+            sleep_for.sleep();
+            prev_msg_stamp = msg->header.stamp;
             pub_.publish(*msg);
         }
+        else
+        {
+            ROS_WARN("topic player, wrong messgae type in bag file, skipping");
+        }
     }
+    bag_.close();
     return;
 }
 
@@ -59,10 +60,21 @@ bool mil_tools::TopicPlayer<MSG>::Enable(std_srvs::SetBool::Request& req, std_sr
     enabled_ = req.data;
     if (enabled_)
     {
+        // load file name
+        std::string file_name;
+        if (!nh_->getParam("file_name", file_name))
+        {
+            ROS_FATAL("topic player could not get file_name ros param");
+            res.success = false;
+            return true;
+        }
+
+        bag_.open(file_name, rosbag::bagmode::Read);
+
         res.success = true;
         float start_in = 1.0;
-        //ROS_INFO("playing %d Messages in %f sec", (int)buffer_.size(), start_in);
-        start_timer_ = nh_->createTimer(ros::Duration(start_in), &TopicPlayer<MSG>::Play, this, true);
+        start_timer_ = nh_->createTimer(ros::Duration(start_in),
+                                          &TopicPlayer<MSG>::Play, this, true);
     }
     return true;
 }
