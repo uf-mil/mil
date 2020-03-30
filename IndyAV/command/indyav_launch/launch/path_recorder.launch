@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
-  <arg name="file" default="$(find indyav_path)/paths/test.bag"/>
+  <arg name="file" default="~/test.bag"/>
   <arg name="environment" default="gazebo"/>
   <arg name="record_topic" default="/absodom"/>
   <arg name="record_rate" default="10"/>

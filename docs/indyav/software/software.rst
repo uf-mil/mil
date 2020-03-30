@@ -15,5 +15,5 @@ because of the speed of the vehicle.
    Control <control>
    Localization <localization>
    Perception <perception>
-   Planning <planning>
+   Planning <planning/planning.rst>
    Simulation <simulation>
