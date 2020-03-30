@@ -26,7 +26,7 @@ class PathRecorder : protected mil_tools::TopicRecorder<nav_msgs::Odometry>
             period_ = ROS_DURATION(1.0 / rate);
             last_save_ = ROS_TIME::now();
         }
-
+        // TODO: findout what the controller actually needs and place it here
         void CallBack(const nav_msgs::Odometry& _msg)
         {
             if (!enabled_)

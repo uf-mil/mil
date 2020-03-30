@@ -40,6 +40,12 @@ bool mil_tools::TopicRecorder<MSG>::Enable(std_srvs::SetBool::Request& req, std_
         ROS_INFO("%d messages written to %s", message_count_, file_name_.c_str());
         bag_.close();
     }
+    if (!nh_->getParam("file_name", file_name_))
+    {
+        ROS_FATAL("topic recorder file_name ros param not found");
+        res.success = false;
+        return false;
+    }
     res.success = true;
     return true;
 }

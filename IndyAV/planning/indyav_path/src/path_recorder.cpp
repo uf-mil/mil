@@ -4,6 +4,9 @@
 
 #include <indyav_path/path_recorder.hpp>
 
+/*
+periodic odom recorder meant for prerecording and playing back pathes later
+*/
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "path_recorder");
