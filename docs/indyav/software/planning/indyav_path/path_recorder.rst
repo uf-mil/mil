@@ -1,6 +1,3 @@
-Path
-====
-
 Path Recorder
 -------------
 This is a Utility we use to save a human gernerated path in the global frame: ``/ecef``.
@@ -10,17 +7,7 @@ Indyav Path Recorder inherits from the ``mil_tools TopicRecorder``. We override 
 Basic Usage Example
 ^^^^^^^^^^^^^^^^^^^
 
-- In a new panel:
-  ``roslaunch sub8_launch gazebo.launch``
-
-- In a new panel:
-  ``amonitor kill``
-
-- Clear the kill:
-  ``Shift + c``
-
-- In a new panel, visualize all the things:
-  ``subviz``
+- Launch `SubjuGator <../../../../subjugator/index.html>`_ in gazebo, clear the kill, and bring up subviz.
 
 - In a new panel, launch the recorder on odom topic:
   ``roslaunch indyav_launch path_recorder.launch record_topic:=/odom``
@@ -42,7 +29,7 @@ Basic Usage Example
   ``Ctrl + c``
 
 - Play back the recording as a normal rosbag on a diffrent topic and visualize it:
-  ``rosbag play $MIL_REPO/IndyAV/planning/indyav_path/paths/test.bag  /odom:=/odom2 -l``
+  ``rosbag play ~/test.bag  /odom:=/odom2 -l``
 
 - Visualize this new topic in rviz by clicking `Add` and then `/odom2 -> Odometry`
 
