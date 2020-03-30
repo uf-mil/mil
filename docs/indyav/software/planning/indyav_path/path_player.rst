@@ -13,7 +13,7 @@ Basic Usage Example
 - Launch `SubjuGator <../../../../subjugator/index.html>`_ in gazebo and clear the kill.
 
 - In a new panel, play the previously recorded bag file.
-``roslaunch indyav_launch path_player.launch``
+  ``roslaunch indyav_launch path_player.launch``
 
 - Visualize in Rviz by adding ``/path``.
 
