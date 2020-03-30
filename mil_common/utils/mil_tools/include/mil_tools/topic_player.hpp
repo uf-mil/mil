@@ -10,6 +10,7 @@
 
 namespace mil_tools
 {
+/*Utility that publishes the contents of a bag assuming that bag has ONE topic recorded on it.*/
 template<class MSG>
 class TopicPlayer
 {
@@ -21,8 +22,6 @@ class TopicPlayer
         ros::NodeHandle* nh_;
 
         std::string topic_;
-
-        //std::vector<MSG> buffer_;
 
         rosbag::Bag bag_;
 
