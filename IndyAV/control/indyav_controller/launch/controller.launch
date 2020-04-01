@@ -1,0 +1,29 @@
+<launch>
+    <node name="velocity_control_node" pkg="indyav_controller" type="velocity_control_node" />
+    
+    <!-- PID Tuning Values -->
+    <rosparam ns="pid_tuning">
+        kp: 1.0
+        ki: 0.5
+        kd: 0.0
+        cycle_time: 10.0
+        min: -50.0
+        max: 100.0
+    </rosparam>
+
+    <!-- Car Attributes -->
+    <rosparam ns="car_attributes">
+        mass: 80.0
+        surface_area: 1.0
+    </rosparam>
+
+    <!--Drag Constants -->
+    <rosparam ns="drag">
+        air_density: 1.225
+        drag_coefficient: 0.3
+    </rosparam>
+
+    <rosparam ns="topics">
+        waypoints: 'hello'
+    </rosparam>
+</launch>
