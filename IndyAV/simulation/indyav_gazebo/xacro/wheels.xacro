@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="wheels">
+  <xacro:include filename="$(find mil_gazebo)/xacro/util.xacro"/>
+
+  <xacro:property name="wheel_length" value="0.25"/>
+  <xacro:property name="wheel_width" value="0.25"/>
+  <xacro:property name="wheel_height" value="0.25"/>
+  <xacro:property name="wheel_mass" value="5"/>
+
+  <xacro:macro name="wheel_geometry">
+    <geometry>
+      <box size="${wheel_length} ${wheel_width} ${wheel_height}"/>
+    </geometry>
+  </xacro:macro>
+
+  <xacro:macro name="wheel_surface">
+    <surface>
+      <friction>
+        <ode>
+          <mu>1000</mu> <!-- left / right  friction ,very high -->
+          <mu2>1</mu2> <!-- forwards / backwards friction, very low -->
+          <fdir1> 0 1 0 </fdir1>
+        </ode>
+      </friction>
+    </surface>
+  </xacro:macro>
+
+  <xacro:macro name="do_wheel_surface" params="name">
+    <gazebo reference="${name}_link">
+      <collision>
+        <xacro:wheel_surface/>
+      </collision>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:macro name="wheel_physical">
+    <inertial>
+      <mass value="${wheel_mass}"/>
+      <xacro:box_inertia x="${wheel_length}" y="${wheel_width}" z="${wheel_height}"
+                         mass="${wheel_mass}"/>
+    </inertial>
+    <collision>
+      <xacro:wheel_geometry/>
+    </collision>
+    <visual>
+      <xacro:wheel_geometry/>
+    </visual>
+  </xacro:macro>
+
+  <xacro:macro name="back_wheel" params="name xyz parent_link:='base_link'">
+    <link name="${name}_link">
+      <xacro:wheel_physical/>
+    </link>
+    <joint name="${parent_link}_to_${name}_link_joint" type="fixed">
+      <parent link="${parent_link}" />
+      <child link="${name}_link" />
+      <origin xyz="${xyz}" rpy="0 0 0"/>
+    </joint>
+    <xacro:do_wheel_surface name="${name}"/>
+  </xacro:macro>
+
+  <xacro:macro name="front_wheel" params="name xyz parent_link:='base_link'
+                                          max_deflection_left_deg:='30'
+                                          max_deflection_right_deg:='30'">
+    <link name="${name}_link">
+      <xacro:wheel_physical/>
+    </link>
+
+    <joint name="${parent_link}_to_${name}_link_joint" type="revolute">
+      <parent link="${parent_link}" />
+      <child link="${name}_link" />
+      <limit lower="${radians(-1 * float(max_deflection_right_deg))}"
+             upper="${radians(float(max_deflection_left_deg))}" effort="10000" velocity="100"/>
+      <axis xyz="0 0 1"/>
+      <origin xyz="${xyz}" rpy="0 0 0"/>
+    </joint>
+
+    <xacro:do_wheel_surface name="${name}"/>
+
+    <transmission name="${name}_transmission">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${parent_link}_to_${name}_link_joint">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${name}_actuator">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+
+
+  </xacro:macro>
+
+</robot>
