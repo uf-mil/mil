@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="indyav_car">
+  <xacro:include filename="$(find indyav_gazebo)/xacro/go_kart.xacro"/>
+  <xacro:include filename="$(find indyav_gazebo)/xacro/wheels.xacro"/>
+
+  <link name="base_link">
+    <xacro:body_inertial/>
+    <visual>
+      <xacro:body_geometry/>
+    </visual>
+    <collision>
+      <xacro:body_geometry/>
+    </collision>
+  </link>
+  <xacro:back_wheel name="back_left_wheel"  xyz="-1   0.4 -0.2"/>
+  <xacro:back_wheel name="back_right_wheel"  xyz="-1 -0.4 -0.2"/>
+  <gazebo>
+    <plugin name="back_wheel_plugin" filename="libbackwheel_plugin.so">
+      <wheels>
+        <wheel_0> back_right_wheel_link </wheel_0>
+        <wheel_1> back_left_wheel_link </wheel_1>
+      </wheels>
+      <max_thrust>1000</max_thrust>
+      <max_velocity>20</max_velocity>
+      <topic_name> throttle </topic_name>
+    </plugin>
+  </gazebo>
+
+  <xacro:front_wheel name="front_left_wheel"  xyz="1 0.4 -0.2"/>
+  <xacro:front_wheel name="front_right_wheel"  xyz="1 -0.4 -0.2"/>
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"/>
+  </gazebo>
+
+</robot>

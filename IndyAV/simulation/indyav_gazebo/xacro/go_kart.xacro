@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<!-- TODO: find out if car is box -->
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="go_kart">
+  <xacro:include filename="$(find mil_gazebo)/xacro/util.xacro"/>
+
+  <xacro:property name="chassis_length" value = "1.0"/> <!-- x -->
+  <xacro:property name="chassis_width" value = "0.75"/>  <!-- y -->
+  <xacro:property name="chassis_height" value = "0.25"/> <!-- z -->
+  <xacro:property name="chassis_mass" value = "50.0"/>
+
+  <xacro:macro name="body_geometry">
+    <geometry>
+      <box size="${chassis_length} ${chassis_width} ${chassis_height}" />
+    </geometry>
+  </xacro:macro>
+
+  <xacro:macro name="body_inertial">
+    <inertial>
+      <mass value="${chassis_mass}"/>
+      <xacro:box_inertia x="${chassis_length}" y="${chassis_width}" z="${chassis_height}" mass="${chassis_mass}"/>
+    </inertial>
+  </xacro:macro>
+
+
+</robot>

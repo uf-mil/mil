@@ -1,0 +1,15 @@
+#TODO: fill out with actual params in the smart motor
+joint_state_publisher:
+  type: joint_state_controller/JointStateController
+  publish_rate: 50
+car:
+  simulated_hardware_controllers:
+    steering:
+      left:
+        type: effort_controllers/JointPositionController
+        joint: base_link_to_front_left_wheel_link_joint
+        pid: {p: 1000.0, i: 0.01, d: 10.0}
+      right:
+        type: effort_controllers/JointPositionController
+        joint: base_link_to_front_right_wheel_link_joint
+        pid: {p: 1000.0, i: 0.01, d: 10.0}

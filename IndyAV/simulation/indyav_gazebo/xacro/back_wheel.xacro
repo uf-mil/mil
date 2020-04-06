@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="wheel_geometry">
+    <geometry>
+      <box size="0.25 0.25 0.25"/>
+    </geometry>
+  </xacro:macro>
+
+  <xacro:macro name="wheel_surface">
+    <surface>
+      <friction>
+        <ode>
+          <mu>1000</mu>
+          <mu2>1.0</mu2>
+          <fdir1> 0 1 0 </fdir1>
+        </ode>
+      </friction>
+    </surface>
+  </xacro:macro>
+
+  <xacro:macro name="wheel_physical">
+    <collision>
+      <xacro:wheel_geometry/>
+    </collision>
+    <visual>
+      <xacro:wheel_geometry/>
+    </visual>
+  </xacro:macro>
+
+  <xacro:macro name="back_wheel" params="name xyz parent_link:='base_link'">
+    <link name="${name}_link">
+      <xacro:wheel_physical/>
+    </link>
+    <joint name="${parent_link}_to_${name}_link_joint" type="fixed">
+      <parent link="${parent_link}" />
+      <child link="${name}_link" />
+      <origin xyz="${xyz}" rpy="0 0 0"/>
+    </joint>
+
+    <gazebo reference="${name}_link">
+      <collision name="${parent_link}_fixed_joint_lump__${name}_link_collision_1">
+        <xacro:wheel_surface/>
+      </collision>
+    </gazebo>
+
+  </xacro:macro>
+</robot>
