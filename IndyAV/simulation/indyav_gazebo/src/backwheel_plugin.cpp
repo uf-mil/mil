@@ -23,7 +23,7 @@ void BackWheelPlugin::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sd
 void BackWheelPlugin::Callback(const indyav_control::ThrustStamped& _msg)
 {
   //TODO: simulate engine input delay
-  if (_msg.thrust <= max_thrust_)
+  if (abs(_msg.thrust) <= max_thrust_)
     thrust_.X(_msg.thrust);
 }
 
