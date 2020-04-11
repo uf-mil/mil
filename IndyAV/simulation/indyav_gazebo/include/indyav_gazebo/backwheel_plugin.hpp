@@ -1,7 +1,7 @@
 #pragma once
 
-#include <indyav_gazebo/wheel_plugin.hpp>
 #include <indyav_control/ThrustStamped.h>
+#include <indyav_gazebo/wheel_plugin.hpp>
 
 namespace gazebo
 {
@@ -21,7 +21,6 @@ protected:
 
   double max_thrust_ = 0.0;
   double max_velocity_ = 0.0;
-
 };
 
 GZ_REGISTER_MODEL_PLUGIN(BackWheelPlugin)

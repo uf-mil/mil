@@ -2,7 +2,6 @@
 
 namespace gazebo
 {
-
 BackWheelPlugin::BackWheelPlugin() : WheelPlugin()
 {
 }
@@ -22,15 +21,15 @@ void BackWheelPlugin::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sd
 
 void BackWheelPlugin::Callback(const indyav_control::ThrustStamped& _msg)
 {
-  //TODO: simulate engine input delay
+  // TODO: simulate engine input delay
   if (abs(_msg.thrust) <= max_thrust_)
     thrust_.X(_msg.thrust);
 }
 
 void BackWheelPlugin::OnUpdate()
 {
-  //TODO: only apply forces when wheel collisions are touching the ground
-  //TODO: apply forces on base_link at the offsets of the wheels in varrying amounts
+  // TODO: only apply forces when wheel collisions are touching the ground
+  // TODO: apply forces on base_link at the offsets of the wheels in varrying amounts
   //  to replicate a differential torque thingy
   if (model_->RelativeLinearVel().X() < max_velocity_)
     base_link_->AddLinkForce(thrust_, ignition::math::Vector3<double>::Zero);
@@ -38,7 +37,6 @@ void BackWheelPlugin::OnUpdate()
 
 void BackWheelPlugin::Init()
 {
-  updateConnection_ = event::Events::ConnectWorldUpdateBegin(
-                      std::bind(&BackWheelPlugin::OnUpdate, this));
+  updateConnection_ = event::Events::ConnectWorldUpdateBegin(std::bind(&BackWheelPlugin::OnUpdate, this));
 }
 }

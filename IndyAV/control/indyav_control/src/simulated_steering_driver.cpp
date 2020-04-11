@@ -1,17 +1,14 @@
-#include <indyav_control/simulated_steering_driver.hpp>
 #include <std_msgs/Float64.h>
+#include <indyav_control/simulated_steering_driver.hpp>
 
-
-template<class MSG>
-SimulatedSteeringDriver<MSG>::SimulatedSteeringDriver(ros::NodeHandle* _nh,
-                                                      const std::string& sub_topic)
+template <class MSG>
+SimulatedSteeringDriver<MSG>::SimulatedSteeringDriver(ros::NodeHandle* _nh, const std::string& sub_topic)
 {
-
   nh_ = _nh;
 
   sub_ = nh_->subscribe(sub_topic, 1, &SimulatedSteeringDriver::Callback, this);
 
-  //get all the controllers from the ros params
+  // get all the controllers from the ros params
   std::string name = "/car";
   ROS_ASSERT_MSG(ros::param::has(name), "no car param namspace");
   name += "/simulated_hardware_controllers";
@@ -26,23 +23,20 @@ SimulatedSteeringDriver<MSG>::SimulatedSteeringDriver(ros::NodeHandle* _nh,
   auto right_name = name + "/right";
   ROS_ASSERT_MSG(ros::param::has(right_name), "no right controller");
   pubs_[right_name] = nh_->advertise<std_msgs::Float64>(right_name + "/command", 5);
-
 }
 
-template<class MSG>
+template <class MSG>
 void SimulatedSteeringDriver<MSG>::Callback(const MSG& _msg)
 {
   double cmd_angle = _msg.steering_angle;
-  for(auto i = pubs_.begin(); i != pubs_.end(); ++i)
+  for (auto i = pubs_.begin(); i != pubs_.end(); ++i)
   {
-    //TODO: impliment ackerman steering angles
+    // TODO: impliment ackerman steering angles
     std_msgs::Float64 msg;
     msg.data = cmd_angle;
     i->second.publish(msg);
   }
 }
-
-
 
 int main(int argc, char** argv)
 {
@@ -54,5 +48,3 @@ int main(int argc, char** argv)
   ros::spin();
   return 0;
 }
-
-
