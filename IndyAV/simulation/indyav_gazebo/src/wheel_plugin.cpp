@@ -9,7 +9,6 @@ WheelPlugin<MSG>::WheelPlugin()
 template <class MSG>
 void WheelPlugin<MSG>::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
-
   GZ_ASSERT(_model != NULL, "Model is NULL");
 
   model_ = _model;
@@ -21,7 +20,7 @@ void WheelPlugin<MSG>::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _s
   GZ_ASSERT(_sdf->HasElement("wheels"), "No Wheels specified");
   unsigned int i = 0;
   auto wheels = _sdf->GetElement("wheels");
-  while(wheels->HasElement("wheel_" + std::to_string(i)))
+  while (wheels->HasElement("wheel_" + std::to_string(i)))
   {
     wheel_names_.push_back(wheels->Get<std::string>("wheel_" + std::to_string(i)));
     ++i;

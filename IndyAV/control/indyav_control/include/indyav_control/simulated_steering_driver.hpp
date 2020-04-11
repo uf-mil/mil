@@ -1,7 +1,7 @@
-#include <ros/ros.h>
 #include <indyav_control/SteeringStamped.h>
+#include <ros/ros.h>
 
-template<class MSG>
+template <class MSG>
 class SimulatedSteeringDriver
 {
 public:
@@ -13,12 +13,4 @@ protected:
   std::map<std::string, ros::Publisher> pubs_;
 
   void Callback(const MSG& _msg);
-
 };
-
-
-
-
-
-
-
