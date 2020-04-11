@@ -36,6 +36,7 @@ source $MIL_WS/src/mil/mil_common/scripts/bag.sh
 source $MIL_WS/src/mil/mil_common/mil_missions/setup.bash
 source $MIL_WS/src/mil/mil_common/perception/point_cloud_object_detection_and_recognition/setup.bash
 source $MIL_WS/src/mil/NaviGator/scripts/bash_aliases.sh
+source $MIL_WS/src/mil/IndyAV/scripts/bash_aliases.sh
 
 # Repo aliases
 alias mil="cd $MIL_REPO"
