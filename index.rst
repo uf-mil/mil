@@ -20,11 +20,11 @@ Helpful Docs:
 
    Mechanical <docs/mechanical/mechanical>
    Onboarding (Software) <docs/onboarding>
+   Development <docs/development/index>
    Glossary <docs/glossary>
    Culture <docs/culture>
    Getting Help <docs/development/help>
    Branding <docs/branding>
-   Development <docs/development/index>
    Projects <docs/projects>
      SubjuGator <docs/subjugator/index>
      VRX <docs/navigator/vrx>
