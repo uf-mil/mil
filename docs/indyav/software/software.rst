@@ -16,4 +16,4 @@ because of the speed of the vehicle.
    Localization <localization>
    Perception <perception>
    Planning <planning/planning.rst>
-   Simulation <simulation>
+   Simulation <simulation/simulation.rst>
