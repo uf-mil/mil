@@ -1,7 +1,23 @@
 # Development Guide
 This page describes the recommended process of building and running code in this repository.
 
-Note, this guide assumes you have already cloned the repository as described in the [Contributing Guide](contributing)
+**Note, this guide assumes you have already cloned the repository as described in the** [Contributing Guide](contributing)
+
+
+## Running Scripts in the MIL Repository
+In this guide, you will need to run [bash scripts](https://ryanstutorials.net/bash-scripting-tutorial/bash-script.php) located in the MIL repository.
+
+You are going to see commands like: `./scripts/build_docker_containers`. (This command runs the script to build the docker containers.)
+
+It is important that these commands are all run from **the root of the repository**.
+
+**Navigate to the root of the repository now.**
+
+If you have followed the intructions from the [Contributing Guide](contributing) exactly, you can get there by running
+
+`cd ~/catkin_ws/src/mil`
+
+
 
 ## System Requirements
 
@@ -41,6 +57,9 @@ operating system without using Docker, you can run the following scripts from th
 `./scripts/system_install`
 
 `./scripts/user_install`
+
+*NOTE: now the MIL aliases will work on your machine. You can type* `mil` *to take you to the root of the repo anytime*
+
 
 ## Build the containers
 Now that you have docker installed, you must build the development container which
