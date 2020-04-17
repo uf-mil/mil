@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+DOCKER=${DOCKER:-"false"}
+
 mil_system_install()
 {
   sudo apt install -y $@
@@ -37,7 +39,6 @@ sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key D2486D2D
 wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 # Update apt again and install ros
 sudo apt update
-
 mil_system_install ros-melodic-desktop-full
 # Install additional dependencies not bundled by default with ros
 # Please put each on a new line for readability
@@ -73,14 +74,17 @@ mil_system_install \
   libappindicator3-1 \
   libsecret-1-0
 
-sudo pip3 install -q \
-  sphinx \
-  recommonmark \
-  sphinx_rtd_theme
+
+if [ $DOCKER == "true" ]; then
+  DOC_REQUIRMENTS="/tmp/doc_requirements.txt"
+elif [ $DOCKER == "false" ]; then
+  MIL_REPO="$(realpath $(dirname $BASH_SOURCE)/..)"
+  DOC_REQUIRMENTS="$MIL_REPO/docker/base/doc_requirements.txt"
+fi
+
+sudo pip3 install -q -r $DOC_REQUIRMENTS
 
 #  install drawio
-python3 -m pip install sphinxcontrib-drawio
-
 sudo wget -O /tmp/drawio.deb https://github.com/jgraph/drawio-desktop/releases/download/v12.3.2/draw.io-amd64-12.3.2.deb
 sudo dpkg -i /tmp/drawio.deb
 sudo apt -y -f install /tmp/drawio.deb

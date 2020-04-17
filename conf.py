@@ -35,7 +35,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'recommonmark',
     'sphinx.ext.graphviz',
-    'sphinxcontrib.drawio'
+    'sphinxcontrib.drawio_html'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -9,6 +9,8 @@ ENV LC_ALL C.UTF-8
 
 RUN apt update && apt install -y sudo && apt clean
 
+ENV DOCKER true
 ADD system_install /tmp/system_install
+ADD doc_requirements.txt /tmp/doc_requirements.txt
 RUN chmod +x /tmp/system_install && /tmp/system_install
 

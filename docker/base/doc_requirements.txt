@@ -1,0 +1,5 @@
+sphinx==2.4.4
+recommonmark
+sphinx_rtd_theme
+sphinxcontrib-drawio-html
+
