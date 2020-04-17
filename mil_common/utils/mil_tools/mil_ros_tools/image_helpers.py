@@ -11,7 +11,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, CameraInfo
 from mil_ros_tools import wait_for_param
 import message_filters
-from image_geometry import PinholeCameraModel
+from image_geometry import PinholeCameraModel, StereoCameraModel
 
 
 def get_parameter_range(parameter_root):
@@ -46,6 +46,37 @@ def get_image_msg(ros_image, encoding='bgr8'):
     bridge = CvBridge()
     cv_image = bridge.imgmsg_to_cv2(ros_image, desired_encoding=encoding)
     return cv_image
+
+
+def project_points3d_to_pixels_depths(camera_info, points, pinhole_model=None):
+    '''Project 3d points already in the camera optical frame to pixels on the camera image
+    @param camera_info: camera_info message
+
+    @param points: numpy array of shape (3, n) where n is the number of points
+
+    @param pinhole_model: initialized pinhole model for the camera, generated from camera_info if not specified
+
+    @return: pixles (a numpy array of shape (2, m) where m is the number of points that projected in the bounds of the camera)
+             depths(a numpy array of shape(m,) where every entry coincides with an entry from returned pixles)
+    @raise exception: if none of the projected points are in bound of the camera info
+    '''
+    if pinhole_model is None:
+        pinhole_model = PinHoleCameraModel()
+        pinhole_model.fromCameraInfo(camera_info)
+
+    pixels = np.apply_along_axis(lambda x: pinhole_model.project3dToPixel(x), 0, points)
+
+    in_bounds = np.argwhere(np.logical_and(
+                              np.logical_and(pixels[0,:] > 0,
+                                             pixels[0,:] < camera_info.height),
+                              np.logical_and(pixels[1,:] > 0,
+                                             pixels[1,:] < camera_info.width)))
+
+    if len(in_bounds) == 0:
+        raise Exception("no points projected into the camera bounds")
+    pixels = np.squeeze(pixels[:,in_bounds]).astype(np.int16)
+    depths = np.squeeze(points[2,in_bounds])
+    return pixels, depths
 
 
 class Image_Publisher(object):
@@ -140,7 +171,7 @@ class StereoImageSubscriber(object):
     Also contains a helper function to block until the camera info messages for both
     cameras are received.
     '''
-    def __init__(self, left_image_topic, right_image_topic, callback=None, slop=None, encoding="bgr8", queue_size=10):
+    def __init__(self, left_image_topic, right_image_topic, callback=None, slop=0.2, encoding="bgr8", queue_size=10):
         '''
         Contruct a StereoImageSubscriber
 
@@ -165,6 +196,9 @@ class StereoImageSubscriber(object):
         self.callback = callback
         self.camera_info_left = None
         self.camera_info_right = None
+        self.camera_model_right = None
+        self.camera_model_left = None
+        self.camera_model_stereo = None
         self.last_image_left = None
         self.last_image_time_left = None
         self.last_image_right = None
@@ -183,10 +217,7 @@ class StereoImageSubscriber(object):
         image_sub_right = message_filters.Subscriber(right_image_topic, Image)
 
         # Use message_filters library to set up synchronized subscriber to both image topics
-        if slop is None:
-            self._image_sub = message_filters.TimeSynchronizer([image_sub_left, image_sub_right], queue_size)
-        else:
-            self._image_sub = message_filters.ApproximateTimeSynchronizer([image_sub_left, image_sub_right],
+        self._image_sub = message_filters.ApproximateTimeSynchronizer([image_sub_left, image_sub_right],
                                                                           queue_size, slop)
         self._image_sub.registerCallback(self._image_callback)
 
@@ -214,6 +245,22 @@ class StereoImageSubscriber(object):
                 self._info_sub_right.unregister()
             return self.camera_info_left, self.camera_info_right
         raise Exception("Camera info not found.")
+
+
+    def wait_for_camera_model(self, **kwargs):
+        '''
+        wrapper for wait_for_camera_info that also
+        fills out self.camera_model_right and self.camera_model_left with
+        Pinhole Camera Models appropriately
+        '''
+        ret = self.wait_for_camera_info(**kwargs)
+        self.camera_model_right = PinholeCameraModel()
+        self.camera_model_left = PinholeCameraModel()
+        self.camera_model_stereo = StereoCameraModel()
+        self.camera_model_right.fromCameraInfo(self.camera_info_right)
+        self.camera_model_left.fromCameraInfo(self.camera_info_left)
+        self.camera_model_stereo.fromCameraInfo(self.camera_info_left, self.camera_info_right)
+        return ret
 
     def _image_callback(self, left_img, right_img):
         '''

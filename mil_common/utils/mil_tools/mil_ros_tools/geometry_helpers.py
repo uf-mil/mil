@@ -8,15 +8,20 @@ from geometry_msgs.msg import Quaternion
 def rotate_vect_by_quat(v, q):
     '''
     Rotate a vector by a quaterion.
-    v' = q*vq
+    v' = qvq*
 
-    q should be [x,y,z,w] (standard ros convention)
+    q should be [x,y,z,w] (standard ros convntion)
+
+    refrence: https://answers.ros.org/question/196149/how-to-rotate-vector-by-quaternion-in-python/
     '''
-    cq = np.array([-q[0], -q[1], -q[2], q[3]])
-    cq_v = trans.quaternion_multiply(cq, v)
-    v = trans.quaternion_multiply(cq_v, q)
-    v[1:] *= -1  # Only seemed to work when I flipped this around, is there a problem with the math here?
-    return np.array(v)[:3]
+
+    mag = np.linalg.norm(v)
+    v = trans.unit_vector(v)
+    v = np.array([v[0], v[1], v[2], 0])
+
+    q_v = trans.quaternion_multiply(q, v)
+    q_v_cq = trans.quaternion_multiply(q_v, trans.quaternion_conjugate(q))
+    return np.array(q_v_cq)[:3] * mag
 
 
 def make_rotation(vector_a, vector_b):
