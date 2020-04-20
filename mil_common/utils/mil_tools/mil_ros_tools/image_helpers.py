@@ -164,6 +164,28 @@ class Image_Subscriber(object):
             rospy.logerr(e)
 
 
+class MilStereoCamera(object):
+    '''
+    class to hold the data associated with a single stereo camera
+    '''
+    def __init__(self, image_topic):
+
+        self.root_topic, self.image_subtopic = path.split(image_topic)
+
+        self.info = None
+        self.info_sub = rospy.Subscriber(
+            root_topic + '/camera_info', CameraInfo,
+            lambda info: setattr(self, 'info', info), queue_size=queue_size)
+
+        self.image = None
+        self.image_sub = message_filters.Subscriber(image_topic, Image)
+        self.last_image_time = None
+
+        self.model = None
+
+        self.transform = None
+
+
 class StereoImageSubscriber(object):
     '''
     Abstraction to subscribe to two image topics (ex: left and right camera) and
@@ -188,36 +210,18 @@ class StereoImageSubscriber(object):
         '''
         if callback is None:  # Set default callback to just set image_left and image_right
             def callback(image_left, image_right):
-                setattr(self, 'last_image_left', image_left)
-                setattr(self, 'last_image_right', image_right)
+                setattr(self.left, 'image', image_left)
+                setattr(self.right, 'image', image_right)
 
         self.bridge = CvBridge()
         self.encoding = encoding
         self.callback = callback
-        self.camera_info_left = None
-        self.camera_info_right = None
-        self.camera_model_right = None
-        self.camera_model_left = None
-        self.camera_model_stereo = None
-        self.last_image_left = None
-        self.last_image_time_left = None
-        self.last_image_right = None
-        self.last_image_time_right = None
 
-        # Subscribe to image and camera info topics for both cameras
-        root_topic_left, image_subtopic_left = path.split(left_image_topic)
-        self._info_sub_left = rospy.Subscriber(
-            root_topic_left + '/camera_info', CameraInfo,
-            lambda info: setattr(self, 'camera_info_left', info), queue_size=queue_size)
-        image_sub_left = message_filters.Subscriber(left_image_topic, Image)
-        root_topic_right, image_subtopic_right = path.split(right_image_topic)
-        self._info_sub_right = rospy.Subscriber(
-            root_topic_right + '/camera_info', CameraInfo,
-            lambda info: setattr(self, 'camera_info_right', info), queue_size=queue_size)
-        image_sub_right = message_filters.Subscriber(right_image_topic, Image)
+        self.right = MilStereoCamera(right_image_topic)
+        self.left = MilStereoCamera(left_image_topic)
 
         # Use message_filters library to set up synchronized subscriber to both image topics
-        self._image_sub = message_filters.ApproximateTimeSynchronizer([image_sub_left, image_sub_right],
+        self._image_sub = message_filters.ApproximateTimeSynchronizer([self.left.image_sub, self.right.image_sub],
                                                                           queue_size, slop)
         self._image_sub.registerCallback(self._image_callback)
 
@@ -233,17 +237,17 @@ class StereoImageSubscriber(object):
         '''
         timeout = rospy.Time.now() + rospy.Duration(timeout)
         while (rospy.Time.now() < timeout) and (not rospy.is_shutdown()):
-            if self.camera_info_left is not None and self.camera_info_right is not None:
+            if self.left.info is not None and self.right.info is not None:
                 if unregister:
-                    self._info_sub_left.unregister()
-                    self._info_sub_right.unregister()
-                return self.camera_info_left, self.camera_info_right
+                    self.left.info_sub.unregister()
+                    self.right.info_sub.unregister()
+                return self.left.info, self.right.info
             rospy.sleep(0.05)
-        if self.camera_info_left is not None and self.camera_info_right is not None:
+        if self.left.info is not None and self.right.info is not None:
             if unregister:
-                self._info_sub_left.unregister()
-                self._info_sub_right.unregister()
-            return self.camera_info_left, self.camera_info_right
+                self.left.info_sub.unregister()
+                self.right.info_sub.unregister()
+            return self.left.info, self.right.info
         raise Exception("Camera info not found.")
 
 
@@ -254,12 +258,12 @@ class StereoImageSubscriber(object):
         Pinhole Camera Models appropriately
         '''
         ret = self.wait_for_camera_info(**kwargs)
-        self.camera_model_right = PinholeCameraModel()
-        self.camera_model_left = PinholeCameraModel()
-        self.camera_model_stereo = StereoCameraModel()
-        self.camera_model_right.fromCameraInfo(self.camera_info_right)
-        self.camera_model_left.fromCameraInfo(self.camera_info_left)
-        self.camera_model_stereo.fromCameraInfo(self.camera_info_left, self.camera_info_right)
+        self.right.model = PinholeCameraModel()
+        self.left.model = PinholeCameraModel()
+        self.stereo_model = StereoCameraModel()
+        self.right.model.fromCameraInfo(self.camera_info_right)
+        self.left.model.fromCameraInfo(self.camera_info_left)
+        self.stereo_model.fromCameraInfo(self.left.info, self.right.info)
         return ret
 
     def _image_callback(self, left_img, right_img):
@@ -273,8 +277,8 @@ class StereoImageSubscriber(object):
         @param right_img: the synchronized image from the right camera
         '''
         try:
-            self.last_image_time_left = left_img.header.stamp
-            self.last_image_time_right = right_img.header.stamp
+            self.left.last_image_time = left_img.header.stamp
+            self.right.last_image_time = right_img.header.stamp
             img_left = self.bridge.imgmsg_to_cv2(
                 left_img, desired_encoding=self.encoding)
             img_right = self.bridge.imgmsg_to_cv2(
@@ -283,3 +287,18 @@ class StereoImageSubscriber(object):
         except CvBridgeError, e:
             # Intentionally absorb CvBridge Errors
             rospy.logerr(e)
+
+
+    def get_static_optical_transforms(self, frame_id):
+        '''
+        Get the transform from frame_id to the optical frame of both cameras and enter it
+        into the camera's transform dictionary
+
+        @param frame_id: a frame id of a frame that has a static transform to the camera
+
+        '''
+        
+
+
+
+

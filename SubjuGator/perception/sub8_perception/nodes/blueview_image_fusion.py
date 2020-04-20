@@ -83,12 +83,14 @@ class ImageBlueviewFussion (StereoImageSubscriber):
             rospy.logerr(e)
             return
 
-        np.apply_along_axis(lambda x: cv2.circle(self.last_image_right,
-                              tuple(x[:2].astype(np.int16)), 1,
-                              [0,0,int(x[2]*25)], -1),
-                            0, pixel_depth_right)
 
-        self.debug_pub.publish(self.last_image_right)
+        if self.debug_pub.get_num_connections() > 0:
+            np.apply_along_axis(lambda x: cv2.circle(self.last_image_right,
+                                  tuple(x[:2].astype(np.int16)), 1,
+                                  [0,0,int(x[2]*25)], -1),
+                                0, pixel_depth_right)
+
+            self.debug_pub.publish(self.last_image_right)
 
 
 
