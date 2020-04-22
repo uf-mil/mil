@@ -107,7 +107,7 @@ struct Coeff
   Coeff(std::string const &line)
   {
     std::istringstream ss(line);
-    ss.exceptions(std::ios::eofbit | std::ios::failbit | std::ios::badbit);
+    ss.exceptions(std::ios::failbit | std::ios::badbit);
     ss >> n >> m >> g >> h >> gdot >> hdot;
   }
 };
@@ -126,7 +126,7 @@ public:
     std::string header;
     getline(f, header);
     std::istringstream header_ss(header);
-    header_ss.exceptions(std::ios::eofbit | std::ios::failbit | std::ios::badbit);
+    header_ss.exceptions(std::ios::failbit | std::ios::badbit);
     header_ss >> t0_year;
 
     while (true)
