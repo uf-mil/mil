@@ -57,6 +57,8 @@ mil_system_install \
   ros-melodic-robot-localization \
   ros-melodic-teleop-tools \
   ros-melodic-teleop-twist-keyboard \
+  ros-melodic-ros-control \
+  ros-melodic-ros-controllers \
   python-pip \
   clang-format-3.9
 sudo pip install \
