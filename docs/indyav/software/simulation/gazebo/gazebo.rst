@@ -31,32 +31,32 @@ Command a Steering angle
 ************************
 in a new pannel::
 
-  rostopic pub /steering indyav_control/SteeringStamped "header:
-    seq: 0
-    stamp:
-      secs: 0
-      nsecs: 0
-    frame_id: ''
-  steering_angle: 0.5" -r 10
+  rostopic pub /steering indyav_control/SteeringStamped -r 10 '{header: {
+  seq: 0,
+  stamp: {
+    secs: 0,
+    nsecs: 0},
+  frame_id: ''},
+  steering_angle: 0.5}'
 
 Command throttle
 ****************
 in a new pannel::
 
-  rostopic pub /throttle indyav_control/ThrustStamped "header:
-    seq: 0
-    stamp:
-      secs: 0
-      nsecs: 0
-    frame_id: ''
-  thrust: 900.000" -r 10``
+  rostopic pub /throttle indyav_control/ThrustStamped -r 10 '{header: {
+  seq: 0,
+  stamp: {
+    secs: 0,
+    nsecs: 0},
+  frame_id: ''},
+  thrust: 900.000}'
 
 and see the car drive in circles in both Rviz and gazebo client
 
 But How Does Any of This Work
 -----------------------------
 
-.. drawio:: gazebo.drawio
+.. graphviz:: gazebo.dot
 
 
 
