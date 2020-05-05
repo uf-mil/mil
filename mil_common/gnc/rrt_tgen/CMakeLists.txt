@@ -2,22 +2,32 @@ cmake_minimum_required(VERSION 2.8.3)
 project(rrt_tgen)
 add_compile_options(-std=c++11)
 find_package(catkin REQUIRED)
+find_package(nanoflann REQUIRED)
+find_package(Boost REQUIRED COMPONENTS graph)
+find_package(Eigen3 REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES rrt_tgen
 #  CATKIN_DEPENDS other_catkin_pkg
-  DEPENDS nanoflann
+  DEPENDS nanoflann Boost Eigen
 )
 
 ###########
 ## Build ##
 ###########
 
+# DBG
+message(WARNING "INCLUDE IS AT ${nanoflann_INCLUDE_DIR}")
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
 # include
 # ${catkin_INCLUDE_DIRS}
+  SYSTEM
+  ${nanoflann_INCLUDE_DIR}
+  ${Boost_INCLUDE_DIR}
+  ${EIGEN3_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -48,6 +58,8 @@ add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
+   ${Boost_LIBRARIES}
+   ${Eigen_LIBRARIES}
 )
 
 #############
