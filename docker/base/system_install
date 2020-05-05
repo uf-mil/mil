@@ -75,6 +75,18 @@ sudo pip3 install -q \
   recommonmark \
   sphinx_rtd_theme
 
+mil_system_install_nanoflann()
+{
+  NANOFLANN_DIR=$(realpath $(mktemp -d))
+  echo $NANOFLANN_DIR
+  git clone https://github.com/jlblancoc/nanoflann.git "$NANOFLANN_DIR"
+  git -C $NANOFLANN_DIR checkout c4c4daf6bb9bda9890fb5832428
+  (cd $NANOFLANN_DIR; cmake .)
+  (cd $NANOFLANN_DIR; sudo make install)
+}
+mil_system_install_nanoflann
+
+
 # Initialize rosdep
 sudo pip install -U rosdep
 sudo rosdep init
