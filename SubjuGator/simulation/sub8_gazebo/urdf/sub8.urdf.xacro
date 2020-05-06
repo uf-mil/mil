@@ -9,6 +9,7 @@
   <xacro:include filename="$(find mil_gazebo)/xacro/depth.xacro" />
   <xacro:include filename="$(find mil_gazebo)/xacro/drag.xacro" />
   <xacro:include filename="$(find mil_gazebo)/xacro/passive_sonar.xacro" />
+  <xacro:include filename="$(find mil_gazebo)/xacro/inclinometer.xacro" />
 
   <!-- Base link of sub -->
   <link name="base_link">
@@ -40,6 +41,7 @@
                               lx="0.08825985" ly="0.08825985" lz="0.08825985" />
 
   <xacro:mil_dvl name="dvl" xyz="0.0908 0 -0.2459" rpy="0 0 0.785" gazebo_offset="0 0 -1" rate="6.5" />
+  <xacro:mil_inclinometer name="inclinometer" xyz="0 0 0" rpy="0 0 0" rate="210" lx="0.08825985" ly="0.08825985" lz="0.08825985" />
   <xacro:mil_depth name="depth" xyz="-0.235 0 -0.170" rpy="0 0 0" rate="20" />
   <xacro:mil_passive_sonar name="hydrophones" xyz="-0.0908 0 -0.2459" rpy="0 0 1.571"
                            model="transdec_pinger" freq="37000" amplitude="1000"/>
