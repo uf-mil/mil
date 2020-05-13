@@ -38,7 +38,7 @@ void MilInclinometerGazebo::Load(gazebo::sensors::SensorPtr _parent, sdf::Elemen
   {
     frame_name = sensor_->ParentName();
   }
-    
+
   msg_.incremental_velocity_covariance[0] =
       NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_LINACC_X_NOISE_METERS_PER_S_SQR));
   msg_.incremental_velocity_covariance[4] =
@@ -58,7 +58,7 @@ void MilInclinometerGazebo::OnUpdate()
     msg_.header.frame_id = frame_name;
     Convert(sensor_->LastMeasurementTime(), msg_.header.stamp);
 
-    current_velocity = parent_->RelativeLinearVel(); 
+    current_velocity = parent_->RelativeLinearVel();
     incremental_velocity = current_velocity - previous_velocity;
     previous_velocity = current_velocity;
     Convert(incremental_velocity, msg_.incremental_velocity);
@@ -66,4 +66,4 @@ void MilInclinometerGazebo::OnUpdate()
     pub_.publish(msg_);
   }
 }
-}
+}  // namespace mil_gazebo

@@ -5,15 +5,13 @@
 #include <ros/ros.h>
 #include <gazebo/common/common.hh>
 #include <gazebo/sensors/sensors.hh>
-#include <mil_gazebo/mil_gazebo_utils.hpp>
 #include <ignition/math/Vector3.hh>
+#include <mil_gazebo/mil_gazebo_utils.hpp>
 
 namespace mil_gazebo
 {
-
 class MilInclinometerGazebo : public gazebo::SensorPlugin
 {
-  
 public:
   MilInclinometerGazebo();
   ~MilInclinometerGazebo();
@@ -36,6 +34,6 @@ private:
   std::string frame_name;
   mil_msgs::IncrementalVelocity msg_;
 };
-}
+}  // namespace mil_gazebo
 
 #endif
