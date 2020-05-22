@@ -5,6 +5,7 @@ Note:
      is intentional, to avoid the use of a global cvbridge, and to avoid reinstantiating a CvBrige for each use.
 '''
 import rospy
+import tf
 import numpy as np
 from os import path
 from cv_bridge import CvBridge, CvBridgeError
@@ -168,13 +169,13 @@ class MilStereoCamera(object):
     '''
     class to hold the data associated with a single stereo camera
     '''
-    def __init__(self, image_topic):
+    def __init__(self, image_topic, queue_size):
 
         self.root_topic, self.image_subtopic = path.split(image_topic)
 
         self.info = None
         self.info_sub = rospy.Subscriber(
-            root_topic + '/camera_info', CameraInfo,
+            self.root_topic + '/camera_info', CameraInfo,
             lambda info: setattr(self, 'info', info), queue_size=queue_size)
 
         self.image = None
@@ -183,8 +184,28 @@ class MilStereoCamera(object):
 
         self.model = None
 
-        self.transform = None
+    def wait_static_optical_transform(self, frame_id):
+        '''
+        wait for the transform from frame_id to the optical frame of this camera and return it
 
+        @param frame_id: a frame id of a frame that has a static transform to the camera
+        @param timeout: number of seconds to try to get the transform.
+
+        @returns: transform from frame_id to the optical frame of the stereo camera
+        '''
+        listener = tf.TransformListener()
+        got_transform = False
+        while(not got_transform):
+            try:
+                transform = listener.lookupTransform(
+                                          self.info.header.frame_id,
+                                          frame_id,
+                                          rospy.Time(0))
+
+                got_transform = True
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
+        return transform
 
 class StereoImageSubscriber(object):
     '''
@@ -210,18 +231,18 @@ class StereoImageSubscriber(object):
         '''
         if callback is None:  # Set default callback to just set image_left and image_right
             def callback(image_left, image_right):
-                setattr(self.left, 'image', image_left)
-                setattr(self.right, 'image', image_right)
+                setattr(self.left_camera, 'image', image_left)
+                setattr(self.right_camera, 'image', image_right)
 
         self.bridge = CvBridge()
         self.encoding = encoding
         self.callback = callback
 
-        self.right = MilStereoCamera(right_image_topic)
-        self.left = MilStereoCamera(left_image_topic)
+        self.right_camera = MilStereoCamera(right_image_topic, queue_size)
+        self.left_camera = MilStereoCamera(left_image_topic, queue_size)
 
         # Use message_filters library to set up synchronized subscriber to both image topics
-        self._image_sub = message_filters.ApproximateTimeSynchronizer([self.left.image_sub, self.right.image_sub],
+        self._image_sub = message_filters.ApproximateTimeSynchronizer([self.left_camera.image_sub, self.right_camera.image_sub],
                                                                           queue_size, slop)
         self._image_sub.registerCallback(self._image_callback)
 
@@ -231,23 +252,23 @@ class StereoImageSubscriber(object):
 
         @param timeout: Time in seconds to wait before throwing exception if camera info is not received
         @param unregister: Boolean, if True will unsubscribe to camera info after receiving initial info message,
-               so self.camera_info_left and self.camera_info_right will not be updated
-        @return: Tuple(camera_info_left, camera_info_right) camera info for each camera if received before timeout
+               so self.left_camera.info and self.right_camera.info will not be updated
+        @return: Tuple(left.info, right.info) camera info for each camera if received before timeout
         @raise Exception: if camera info for both cameras is not received within timeout
         '''
         timeout = rospy.Time.now() + rospy.Duration(timeout)
         while (rospy.Time.now() < timeout) and (not rospy.is_shutdown()):
-            if self.left.info is not None and self.right.info is not None:
+            if self.left_camera.info is not None and self.right_camera.info is not None:
                 if unregister:
-                    self.left.info_sub.unregister()
-                    self.right.info_sub.unregister()
-                return self.left.info, self.right.info
+                    self.left_camera.info_sub.unregister()
+                    self.right_camera.info_sub.unregister()
+                return self.left_camera.info, self.right_camera.info
             rospy.sleep(0.05)
-        if self.left.info is not None and self.right.info is not None:
+        if self.left_camera.info is not None and self.right_camera.info is not None:
             if unregister:
-                self.left.info_sub.unregister()
-                self.right.info_sub.unregister()
-            return self.left.info, self.right.info
+                self.left_camera.info_sub.unregister()
+                self.right_camera.info_sub.unregister()
+            return self.left_camera.info, self.right_camera.info
         raise Exception("Camera info not found.")
 
 
@@ -258,12 +279,12 @@ class StereoImageSubscriber(object):
         Pinhole Camera Models appropriately
         '''
         ret = self.wait_for_camera_info(**kwargs)
-        self.right.model = PinholeCameraModel()
-        self.left.model = PinholeCameraModel()
+        self.right_camera.model = PinholeCameraModel()
+        self.left_camera.model = PinholeCameraModel()
         self.stereo_model = StereoCameraModel()
-        self.right.model.fromCameraInfo(self.camera_info_right)
-        self.left.model.fromCameraInfo(self.camera_info_left)
-        self.stereo_model.fromCameraInfo(self.left.info, self.right.info)
+        self.right_camera.model.fromCameraInfo(self.right_camera.info)
+        self.left_camera.model.fromCameraInfo(self.left_camera.info)
+        self.stereo_model.fromCameraInfo(self.left_camera.info, self.right_camera.info)
         return ret
 
     def _image_callback(self, left_img, right_img):
@@ -277,8 +298,8 @@ class StereoImageSubscriber(object):
         @param right_img: the synchronized image from the right camera
         '''
         try:
-            self.left.last_image_time = left_img.header.stamp
-            self.right.last_image_time = right_img.header.stamp
+            self.left_camera.last_image_time = left_img.header.stamp
+            self.right_camera.last_image_time = right_img.header.stamp
             img_left = self.bridge.imgmsg_to_cv2(
                 left_img, desired_encoding=self.encoding)
             img_right = self.bridge.imgmsg_to_cv2(
@@ -289,15 +310,6 @@ class StereoImageSubscriber(object):
             rospy.logerr(e)
 
 
-    def get_static_optical_transforms(self, frame_id):
-        '''
-        Get the transform from frame_id to the optical frame of both cameras and enter it
-        into the camera's transform dictionary
-
-        @param frame_id: a frame id of a frame that has a static transform to the camera
-
-        '''
-        
 
 
 

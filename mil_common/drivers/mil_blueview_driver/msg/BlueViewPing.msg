@@ -6,7 +6,7 @@ Header header
 
 # raw bearings data from ping, in degrees
 
-# Bearing of hits in sonar frame, in degrees, where positive is clockwise looking down at head
+# Bearing of hits in sonar frame, in radians, where positive is clockwise looking down at head
 float32[] bearings
 
 # Distance to hit in meters

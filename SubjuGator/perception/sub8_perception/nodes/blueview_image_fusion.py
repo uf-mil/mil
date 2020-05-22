@@ -30,19 +30,10 @@ class ImageBlueviewFussion (StereoImageSubscriber):
         self.wait_for_camera_model()
 
         # get tf from bv to left / right cam
-        listener = tf.TransformListener()
-        success = False
-        while(not success):
-            try:
-                self.right_transform = listener.lookupTransform(
-                                          self.camera_info_right.header.frame_id + '_optical',
-                                          blueview_frame_id,
-                                          rospy.Time(0))
-
-                success = True
-            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-                continue
+        self.right_camera.transform = self.right_camera.wait_static_optical_transform(blueview_frame_id)
+        self.left_camera.transform = self.left_camera.wait_static_optical_transform(blueview_frame_id)
         self.enabled = True
+
 
     def bv_callback(self, msg):
         if not self.enabled:
@@ -53,7 +44,6 @@ class ImageBlueviewFussion (StereoImageSubscriber):
         if len(good) == 0:
             rospy.logerr('no good pings from the imaging sonar')
             return
-        #TODO: threshold the blueview
 
         # overlay the bv data onto the cam images
         data_polar = np.array([msg.bearings[good],
@@ -62,35 +52,34 @@ class ImageBlueviewFussion (StereoImageSubscriber):
         intensities = np.squeeze(msg.intensities[good])
 
         # translate these polar corrds to cartisian
-        data_cartisian = np.apply_along_axis(lambda x:
-                                    np.array([x[1] * np.cos(x[0]),
-                                              x[1] * np.sin(x[0]),
-                                              0.]),
-                                    0, data_polar)
+
+        data_cartisian = np.vstack((np.cos(data_polar[0,:]) * data_polar[1,:],
+                                    np.sin(data_polar[0,:]) * data_polar[1,:],
+                                    np.zeros(data_polar[0,:].shape)))
 
         # transform these points from the blueview frame to the right camera frame
         data_right = np.apply_along_axis(lambda x:
-                       rotate_vect_by_quat(x[:3], self.right_transform[1]) +
-                       self.right_transform[0],
+                       rotate_vect_by_quat(x[:3], self.right_camera.transform[1]) +
+                       self.right_camera.transform[0],
                        0,
                        data_cartisian)
         try:
-            pixels_right, depths = project_points3d_to_pixels_depths(self.camera_info_right,
+            pixels_right, depths = project_points3d_to_pixels_depths(self.right_camera.info,
                                                                      data_right,
-                                                                     self.camera_model_right)
+                                                                     self.right_camera.model)
             pixel_depth_right = np.vstack((pixels_right, depths))
         except Exception as e:
             rospy.logerr(e)
             return
 
 
-        if self.debug_pub.get_num_connections() > 0:
-            np.apply_along_axis(lambda x: cv2.circle(self.last_image_right,
+        if self.debug_pub.im_pub.get_num_connections() > 0:
+            np.apply_along_axis(lambda x: cv2.circle(self.right_camera.image,
                                   tuple(x[:2].astype(np.int16)), 1,
                                   [0,0,int(x[2]*25)], -1),
                                 0, pixel_depth_right)
 
-            self.debug_pub.publish(self.last_image_right)
+            self.debug_pub.publish(self.right_camera.image)
 
 
 
@@ -100,5 +89,4 @@ if __name__ == '__main__':
                              '/blueview_driver/ranges',
                              'blueview')
     rospy.spin()
-
 
