@@ -44,6 +44,8 @@ docs/_build
 
 # Auto Generated xacros
 NaviGator/simulation/navigator_gazebo/urdf/navigator_vrx/*.xacro
+IndyAV/simulation/indyav_gazebo/worlds/racetracks/*.xacro
+
 
 # Unpackaged proprietary software
 mil_common/drivers/mil_blueview_driver/bvtsdk

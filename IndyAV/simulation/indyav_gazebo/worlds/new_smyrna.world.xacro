@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<!-- World containing only new smyrna model -->
+<sdf version="1.6" xmlns:xacro="http://ros.org/wiki/xacro">
+  <world name="new_smyrna">
+    <xacro:include filename="$(find indyav_gazebo)/worlds/new_smyrna.xacro" />
+    <xacro:new_smyrna/>
+
+  </world>
+</sdf>

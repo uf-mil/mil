@@ -1,0 +1,13 @@
+track_name: 'new_smyrna_speedway'
+width: 16.46
+radius: 64.0
+center_dist: 200.0
+resolution: 1
+# deterimined with https://www.acscdg.com
+pose:
+  azimuth: 187.0
+  x: 64.0
+  y: 0.0
+
+
+

@@ -63,7 +63,8 @@ target_link_libraries(
 add_dependencies(backwheel_plugin
     include/wheel_plugin.hpp
     indyav_control_generate_message
-    ${catkin_EXPORTED_TARGETS})
+    ${catkin_EXPORTED_TARGETS}
+)
 
 
 ## Add cmake target dependencies of the library
@@ -91,6 +92,25 @@ add_dependencies(backwheel_plugin
 #   ${catkin_LIBRARIES}
 # )
 
+
+# Add new_smyrna speedway generation
+add_custom_target(new_smyrna
+    ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_racetrack.py ${CMAKE_CURRENT_SOURCE_DIR}/worlds/new_smyrna.yaml ${CMAKE_CURRENT_SOURCE_DIR}/worlds/racetracks/new_smyrna_speedway.xacro
+  BYPRODUCTS
+    ${CMAKE_CURRENT_SOURCE_DIR}/worlds/racetracks/new_smyrna_speedway.xacro
+  DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_racetrack.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/worlds/new_smyrna.yaml
+  USES_TERMINAL
+)
+xacro_add_files(
+  worlds/new_smyrna.world.xacro
+  INORDER INSTALL DESTINATION ${CMAKE_CURRENT_DEVEL_DIR}/worlds
+  DEPENDS new_smyrna
+)
+
+
+# add car urdf
 xacro_add_files(
   urdf/indyav_car.urdf.xacro
   INORDER INSTALL DESTINATION urdf

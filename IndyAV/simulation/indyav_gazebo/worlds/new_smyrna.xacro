@@ -1,0 +1,56 @@
+<?xml version="1.0" ?>
+
+<!-- Macro to insert the new smyrna speedway into the world -->
+<world xmlns:xacro="http://ros.org/wiki/xacro">
+<xacro:include filename="$(find indyav_gazebo)/worlds/racetracks/new_smyrna_speedway.xacro"/>
+  <xacro:macro name="new_smyrna">
+    <scene>
+      <sky>
+        <clouds>
+          <speed>12</speed>
+        </clouds>
+      </sky>
+      <grid>0</grid>
+      <origin_visual>0</origin_visual>
+    </scene>
+    <!-- Estimated latitude/longitude of center of starting line at
+         new smyrna from satellite imagery -->
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>29.013809</latitude_deg>
+      <longitude_deg>-81.070471</longitude_deg>
+      <!-- elevation gotten from https://viewer.nationalmap.gov/theme/elevation/##bottom -->
+      <elevation>11.70432</elevation>
+    </spherical_coordinates>
+
+    <!-- Invisible ground plane -->
+    <model name="ground_plane">
+      <pose> 0 0 0 0 0 0 </pose>
+      <link name="body">
+        <collision name="geom">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+              </ode>
+            </friction>
+          </surface>
+        </collision>
+      </link>
+      <static>true</static>
+    </model>
+
+    <xacro:new_smyrna_speedway/>
+
+    <!-- A global light source -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+  </xacro:macro>
+</world>
