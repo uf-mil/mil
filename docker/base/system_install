@@ -73,7 +73,9 @@ mil_system_install  python3-pip
 sudo pip3 install -q \
   sphinx \
   recommonmark \
-  sphinx_rtd_theme
+  sphinx_rtd_theme \
+  numpy \
+  matplotlib
 
 # Initialize rosdep
 sudo pip install -U rosdep

@@ -1,0 +1,18 @@
+track_name: 'new_smyrna_speedway'
+width: 16.46
+radius: 64.0
+center_dist: 200.0
+resolution: 1
+# deterimined with https://www.acscdg.com
+pose:
+  orientation:
+    azimuth: 187.0 # the heading of the first straight away in degrees deflected to the right from North
+    center_of_rotation: # the point around which the track will be rotated relative to the track's center
+      x: 64.0
+      y: 0.0
+  translation: # where the center of rotation of the track is in the frame of the gazebo simulation
+    x: 0.0
+    y: 0.0
+
+
+
