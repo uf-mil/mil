@@ -1,0 +1,2 @@
+geometry_msgs/Vector3 incremental_linear_velocity
+float64[9] incremental_linear_velocity_covariance
