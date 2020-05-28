@@ -1,7 +1,7 @@
 #ifndef MIL_INCLINOMETER_GAZEBO_HPP
 #define MIL_INCLINOMETER_GAZEBO_HPP
 
-#include <mil_msgs/IncrementalVelocity.h>
+#include <mil_msgs/IncrementalLinearVelocityStamped.h>
 #include <ros/ros.h>
 #include <gazebo/common/common.hh>
 #include <gazebo/sensors/sensors.hh>
@@ -22,6 +22,8 @@ private:
 
   ros::NodeHandle nh_;
   ros::Publisher pub_;
+  int queue_size;
+  std::string topic_name;
 
   gazebo::sensors::SensorPtr sensor_;
   gazebo::physics::LinkPtr parent_;
@@ -32,7 +34,7 @@ private:
   ignition::math::Vector3d incremental_velocity;
 
   std::string frame_name;
-  mil_msgs::IncrementalVelocity msg_;
+  mil_msgs::IncrementalLinearVelocityStamped msg_;
 };
 }  // namespace mil_gazebo
 
