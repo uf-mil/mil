@@ -1,5 +1,5 @@
 # VRX
-This page provides general info about developing for [VRX](https://bitbucket.org/osrf/vrx/src), a simulated competition based on the real-life RobotX challenge.
+This page provides general info about developing for [VRX](https://github.com/osrf/vrx), a simulated competition based on the real-life RobotX challenge.
 MIL participates both in VRX and RobotX. Most code for this is hosted under NaviGator/.
 
 *NOTE: Please go through the [development guide](/docs/development/development_guide) before going through this tutorial. We will assume you are currently in the development container running a tmux session.*
