@@ -41,8 +41,11 @@
                               lx="0.08825985" ly="0.08825985" lz="0.08825985" />
 
   <xacro:mil_dvl name="dvl" xyz="0.0908 0 -0.2459" rpy="0 0 0.785" gazebo_offset="0 0 -1" rate="6.5" />
-  <!-- STIM300 Rate Options (Hz): 125, 250, 500, 1000, 2000 -->
-  <xacro:mil_inclinometer name="inclinometer" topic_name='/imu/inclinometer' queue_size='20' xyz="0.21236 0.00254 -0.10233" rpy="0 -1.571 0" rate="250" lx="0.08825985" ly="0.08825985" lz="0.08825985" />
+  
+  <!-- STIM300 Rate Options (Hz): 125, 250, 500, 1000, 2000; Velocity Random Walk (vrw) and Correlation Time (ctime) taken from datasheet; 
+  Given same xyz/rpy as imu_magnetometer -->
+  <xacro:mil_inclinometer name="inclinometer" topic_name='/imu/inclinometer' queue_size='20' xyz="0.21236 0.00254 -0.10233" rpy="0 -1.571 0" 
+			  rate="250" vrw="0.08" ctime="1" />
   <xacro:mil_depth name="depth" xyz="-0.235 0 -0.170" rpy="0 0 0" rate="20" />
   <xacro:mil_passive_sonar name="hydrophones" xyz="-0.0908 0 -0.2459" rpy="0 0 1.571"
                            model="transdec_pinger" freq="37000" amplitude="1000"/>
