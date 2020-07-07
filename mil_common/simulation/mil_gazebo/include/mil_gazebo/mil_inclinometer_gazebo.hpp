@@ -4,8 +4,8 @@
 #include <mil_msgs/IncrementalLinearVelocityStamped.h>
 #include <ros/ros.h>
 #include <gazebo/common/common.hh>
-#include <gazebo/sensors/sensors.hh>
 #include <gazebo/sensors/GaussianNoiseModel.hh>
+#include <gazebo/sensors/sensors.hh>
 #include <ignition/math/Vector3.hh>
 #include <mil_gazebo/mil_gazebo_utils.hpp>
 
@@ -31,7 +31,7 @@ private:
   double previous_bias;
   double velocity_random_walk;
   double correlation_time;
-  
+
   gazebo::sensors::SensorPtr sensor_;
   gazebo::physics::LinkPtr parent_;
   gazebo::event::ConnectionPtr update_connection_;
