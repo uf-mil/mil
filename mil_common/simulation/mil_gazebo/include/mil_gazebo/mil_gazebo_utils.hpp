@@ -12,6 +12,8 @@ void Convert(gazebo::common::Time const& _in, ros::Time& _out);
 
 double NoiseCovariance(gazebo::sensors::Noise const& _noise);
 
+double addRandomWalkNoise(double& _in, double& dt, double& previous_bias, double& random_walk, double& correlation_time);
+
 /**
  * Determines weither a tag is set in sdf or has the ros paramter refered
  * to with the value of that tag + "_param"

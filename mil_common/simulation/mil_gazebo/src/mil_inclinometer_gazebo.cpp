@@ -1,4 +1,5 @@
 #include <mil_gazebo/mil_inclinometer_gazebo.hpp>
+#include <mil_gazebo/mil_gazebo_utils.hpp>
 
 namespace mil_gazebo
 {
@@ -49,17 +50,29 @@ void MilInclinometerGazebo::Load(gazebo::sensors::SensorPtr _parent, sdf::Elemen
     queue_size = _sdf->GetElement("queue")->Get<int>();
   }
 
-  msg_.vel.incremental_linear_velocity_covariance[0] =
-      NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_LINACC_X_NOISE_METERS_PER_S_SQR));
-  msg_.vel.incremental_linear_velocity_covariance[4] =
-      NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_LINACC_Y_NOISE_METERS_PER_S_SQR));
-  msg_.vel.incremental_linear_velocity_covariance[8] =
-      NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_LINACC_Z_NOISE_METERS_PER_S_SQR));
+  if (_sdf->HasElement("update_rate"))
+  {
+    update_rate = _sdf->GetElement("update_rate")->Get<double>();
+  }
+  
+  if(_sdf->HasElement("dynamic_bias_stddev"))
+  {
+    velocity_random_walk = _sdf->GetElement("dynamic_bias_stddev")->Get<double>();
+  }
+
+  if(_sdf->HasElement("dynamic_bias_correlation_time"))
+  {
+    correlation_time = _sdf->GetElement("dynamic_bias_correlation_time")->Get<double>();
+  }
+
+  previous_bias = 0;
+  msg_.vel.incremental_linear_velocity_covariance[0] = velocity_random_walk;
+  msg_.vel.incremental_linear_velocity_covariance[4] = velocity_random_walk;
+  msg_.vel.incremental_linear_velocity_covariance[8] = velocity_random_walk;
 
   pub_ = nh_.advertise<mil_msgs::IncrementalLinearVelocityStamped>(topic_name, queue_size);
 
   update_connection_ = sensor_->ConnectUpdated(boost::bind(&MilInclinometerGazebo::OnUpdate, this));
-
 }
 
 void MilInclinometerGazebo::OnUpdate()
@@ -69,9 +82,16 @@ void MilInclinometerGazebo::OnUpdate()
     msg_.header.frame_id = frame_name;
     Convert(sensor_->LastMeasurementTime(), msg_.header.stamp);
 
+    //Calculate incremental velocity
     current_velocity = parent_->RelativeLinearVel();
     incremental_velocity = current_velocity - previous_velocity;
     previous_velocity = current_velocity;
+
+    //Add noise
+    double dt = 1 / update_rate;
+    incremental_velocity.X(addRandomWalkNoise(incremental_velocity.X(), dt, previous_bias, velocity_random_walk, correlation_time));
+    incremental_velocity.Y(addRandomWalkNoise(incremental_velocity.Y(), dt, previous_bias, velocity_random_walk, correlation_time));
+    incremental_velocity.Z(addRandomWalkNoise(incremental_velocity.Z(), dt, previous_bias, velocity_random_walk, correlation_time));
     Convert(incremental_velocity, msg_.vel.incremental_linear_velocity);
 
     pub_.publish(msg_);
