@@ -20,8 +20,9 @@ MIL_DOCKER_TAG_ROOT=${MIL_DOCKER_TAG_ROOT:-"uf-mil"}
 # Quite mode so will only output if something goes wrong
 DOCKER_ARGS=""
 
+MIL_REPO="$(realpath $(dirname $BASH_SOURCE)/../)"
 # Cache path in repo where dockerfiles are
-DOCKER_BASE_PATH="$(realpath $(dirname $BASH_SOURCE)/../docker)"
+DOCKER_BASE_PATH=$MIL_REPO/docker
 
 build_mil_docker_image()
 {
@@ -44,14 +45,9 @@ if [ ! -f $HOME/.mil/dev-docker-ws/devel/setup.sh ] && [ $USER != "root" ]; then
     mkdir -p $HOME/.mil/dev-docker-ws/devel
 
     # Run the Dev container once and compile
-    docker run -t \
-        --rm \
-        -v $(realpath $(dirname $BASH_SOURCE)/../):/home/mil-dev/catkin_ws/src/mil/ \
-        -v $HOME/.mil/dev-docker-ws/build:/home/mil-dev/catkin_ws/build/ \
-        -v $HOME/.mil/dev-docker-ws/devel:/home/mil-dev/catkin_ws/devel/ \
-        --name dev-$USER-$UID \
-        uf-mil:dev \
-        /bin/bash -c "source /opt/ros/melodic/setup.bash && \
-                      catkin_make -C /home/mil-dev/catkin_ws -j8"
+    $MIL_REPO/scripts/run_development_container \
+        /bin/bash -c "source /opt/ros/melodic/setup.bash; \
+                      catkin_make -C /home/mil-dev/catkin_ws -j8; \
+                      exit"
 fi
 
