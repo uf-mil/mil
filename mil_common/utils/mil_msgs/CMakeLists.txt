@@ -31,6 +31,8 @@ add_message_files(FILES
   Point2D.msg
   ObjectInImage.msg
   ObjectsInImage.msg
+  IncrementalLinearVelocity.msg
+  IncrementalLinearVelocityStamped.msg
 )
 
 add_service_files(FILES

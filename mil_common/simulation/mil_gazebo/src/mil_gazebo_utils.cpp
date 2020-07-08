@@ -28,6 +28,21 @@ double NoiseCovariance(gazebo::sensors::Noise const& _noise)
     return 0.;
 }
 
+// This function is based on the technique used in Gazebo 11's GaussianNoiseModel Class to simulate random walk bias
+// Link: https://github.com/osrf/gazebo/blob/gazebo11/gazebo/sensors/GaussianNoiseModel.cc
+double addRandomWalkNoise(double& input, double& dt, double& previous_bias, double& random_walk,
+                          double& correlation_time)
+{
+  double sigmaB = random_walk;
+  double tau = correlation_time;
+  double sigmaBD = sqrt(-sigmaB * sigmaB * tau / 2 * expm1(-2 * dt / tau));
+  double phiD = exp(-dt / tau);
+  double newBias = phiD * previous_bias + ignition::math::Rand::DblNormal(0, sigmaBD);
+  previous_bias = newBias;
+
+  return input + newBias;
+}
+
 int TagInSDFOrRosParam(sdf::ElementPtr _sdf, std::string const& tag)
 {
   if (_sdf->HasElement(tag))
@@ -80,4 +95,4 @@ bool GetFromSDFOrRosParam(sdf::ElementPtr _sdf, std::string const& tag, ignition
   else
     return false;
 }
-}
+}  // namespace mil_gazebo

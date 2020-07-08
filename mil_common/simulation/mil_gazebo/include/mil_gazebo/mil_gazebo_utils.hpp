@@ -12,6 +12,9 @@ void Convert(gazebo::common::Time const& _in, ros::Time& _out);
 
 double NoiseCovariance(gazebo::sensors::Noise const& _noise);
 
+double addRandomWalkNoise(double& _in, double& dt, double& previous_bias, double& random_walk,
+                          double& correlation_time);
+
 /**
  * Determines weither a tag is set in sdf or has the ros paramter refered
  * to with the value of that tag + "_param"
@@ -33,6 +36,6 @@ bool GetFromSDFOrRosParam(sdf::ElementPtr _sdf, std::string const& tag, double& 
  *
  */
 bool GetFromSDFOrRosParam(sdf::ElementPtr _sdf, std::string const& tag, ignition::math::Vector3d& val);
-}
+}  // namespace mil_gazebo
 
 #endif  // MIL_GAZEBO_UTILS_H

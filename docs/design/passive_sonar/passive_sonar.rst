@@ -1,7 +1,6 @@
 Passive sonar
 =============
 
-.. drawio:: passive_sonar.drawio
 
 How to Use
 ----------
@@ -89,3 +88,7 @@ Testing ROS bridge
   * On Sub8 run the actual driver ``(cd ~/.mil/sylphase-sonar/; ./driver/publish 10001)``
 * Make sure samples are being published ``rostopic echo /samples``
 
+How Does It Work?
+-----------------
+
+.. graphviz:: passive_sonar.dot
