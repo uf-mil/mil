@@ -36,12 +36,12 @@ Pros
 Cons
 ####
 * Slow data acquisition rate, at high speeds a mechanical spinning LIDAR would not capture the world correctly
-* Somewhat costly, not as bad anyone
+* Somewhat costly, not as bad anymore
 * Mechanical spinning LIDARS will be affected my the fast movements of the vehicle.
 
 Camera Localization
 *******************
-Camera based localization would rely on algorithm suchs as [ORB-SLAM](https://webdiis.unizar.es/~raulmur/orbslam/) to determine the position and orientation of the sensor with repsect to a pre-constructed map.
+Camera based localization would rely on algorithm suchs as [ORB-SLAM](https://webdiis.unizar.es/~raulmur/orbslam/) to determine the position and orientation of the sensor with respect to a pre-constructed map.
 
 Pros
 ####
@@ -51,4 +51,4 @@ Pros
 Cons
 ####
 * Camera based computations can be costly which would reduce the effectiveness of their high data acquisition
-* Lighting can have an extremely affect the usuability of the sensor.
+* Lighting can extremely affect the usability of the sensor.
