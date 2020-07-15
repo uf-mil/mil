@@ -35,24 +35,45 @@ To view all points of the triggering pipline
 ____________________________________________
 (raw, max convolution, gradient) that caused the most recent trigger (only hydrophone 0), look at ``/hydrophones/triggering/trigger_debug``
 
+It should look somthing like this (30kHz):
+
+.. image:: trigger_debug.png
+
 To view raw samples from all hydrophones around the triggering time
 ____________________________________________________________________
 look at ``/hydrophones/triggering/sample_at_trigger_debug``
 
+It should look something like this (30kHz):
+
+.. image:: sample_at_trigger_debug.png
+
 To view the frequency response of the bandpass filter
 _____________________________________________________
 open ``/hydrophones/triggering/filter_debug`` in rviz. Then, in a new pannel ``rosservice call /hydrophones/triggering/filter_debug_trigger "{}"`` Go look at the rviz and see the frequency response of the filter cropped for our general frequency range.
+
+
+It should look something like this (30kHz):
+
+.. image:: filter_debug.png
 
 To view the signals sent to the ping locator node
 _________________________________________________
 (and vertical lines at the trigger times) view ``/hydrophones/ping_locator/samples_debug``
 *NOTE:The Vertical lines are where triggering is detected on each hydrophone channel.*
 
+
+It should look something like this (90deg to the right):
+
+.. image:: samples.png
+
 To view the cross correlations between the hydrophones
 ______________________________________________________
 (and therefore the time delays) look at ``/hydrophones/ping_locator/cross_correlation_debug``
 *NOTE:The Vertical lines are the max of the cross correleation and therfore the negative of the time delays.*
 
+It should look something like this (90deg to the right):
+
+.. image:: cross_correlation_debug.png
 
 Configuration
 *************
