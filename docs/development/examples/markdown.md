@@ -4,7 +4,7 @@ Demonstation of writing documentation in markdown. See the source for this doc t
 ## Math
 <!-- test -->
 ```math
-E = m^2
+E = m c^2
 ```
 
 ## Code

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="mil_inclinometer" params="name:=inclinometer parent:='base_link' topic_name:=/imu/inclinometer queue_size:=20 
+                                               xyz:='0 0 0' rpy='0 0 0' rate:=100 vrw:=0 ctime:=1">
+    <link name="${name}" />
+    <joint name="${name}_joint" type="fixed">
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <parent link="${parent}"/>
+      <child link="${name}"/>
+    </joint>
+    <gazebo reference="${name}">
+      <sensor type="imu" name="${name}_sensor">
+        <always_on>true</always_on>
+        <update_rate>${rate}</update_rate>
+        <plugin name="${name}_plugin" filename="libmil_inclinometer_gazebo.so">
+          <frame_id>${name}</frame_id>
+          <topic>${topic_name}</topic>
+          <queue>${queue_size}</queue>
+          <dynamic_bias_stddev>${vrw}</dynamic_bias_stddev>
+          <dynamic_bias_correlation_time>${ctime}</dynamic_bias_correlation_time>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+</robot>

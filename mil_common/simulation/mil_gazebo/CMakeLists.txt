@@ -100,6 +100,18 @@ target_link_libraries(mil_imu_gazebo
 )
 add_dependencies(mil_imu_gazebo mil_gazebo_utils ${catkin_EXPORTED_TARGETS})
 
+#Add Inclinometer Plugin
+add_library(
+    mil_inclinometer_gazebo
+        src/mil_inclinometer_gazebo.cpp
+)
+target_link_libraries(mil_inclinometer_gazebo
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+  mil_gazebo_utils
+)
+add_dependencies(mil_inclinometer_gazebo mil_gazebo_utils ${catkin_EXPORTED_TARGETS})
+
 # Add Drag plugin
 add_library(
     mil_drag_gazebo
