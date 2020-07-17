@@ -21,7 +21,8 @@ mil_system_install --no-install-recommends \
   mercurial \
   ruby \
   wget \
-  expect
+  expect \
+  graphviz-dev
 
 # ROS apt source
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -75,7 +76,8 @@ sudo pip3 install -q \
   recommonmark \
   sphinx_rtd_theme \
   numpy \
-  matplotlib
+  matplotlib \
+  graphviz
 
 # Initialize rosdep
 sudo pip install -U rosdep
