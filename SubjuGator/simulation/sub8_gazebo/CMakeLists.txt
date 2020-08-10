@@ -113,6 +113,7 @@ catkin_package(
 # Generate Sub8's URDF
 xacro_add_files(
   urdf/sub8.urdf.xacro
+  urdf/sub9.urdf.xacro
   urdf/sub8_no_cams.urdf.xacro
   INSTALL DESTINATION urdf
   TARGET xacro_urdf

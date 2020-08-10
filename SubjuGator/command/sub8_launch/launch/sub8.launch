@@ -3,13 +3,17 @@
   <!-- Defines what environment the system is running on, can be 'real', 'gazebo' or 'dynsim' -->
   <arg name="environment" default="real" />
   <arg name="use_adaptive_controller" default="True" />
+  <!-- Whether to use cameras simulated by Gazebo (true) or to use a connected USB camera (false) -->
   <arg name="simulate_cams" default="true" />
+  <arg name="sub" default="sub8"/>
+
   <param name="/environment" value="$(arg environment)" />
   <param name="/is_simulation" value="$(eval environment != 'real')" />
   <rosparam param="/autonomous">True</rosparam>
 
   <include file="$(find sub8_launch)/launch/tf.launch" >
     <arg name="simulate_cams" value="$(arg simulate_cams)" />
+    <arg name="sub" value="$(arg sub)"/>
   </include>
 
   <include if="$(eval environment != 'dynsim')" file="$(find sub8_launch)/launch/subsystems/nav_box.launch" >
