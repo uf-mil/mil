@@ -3,11 +3,15 @@
   <!-- Defines what environment the system is running on, can be 'real', 'gazebo' or 'dynsim' -->
   <arg name="environment" default="real" />
   <arg name="use_adaptive_controller" default="True" />
+  <arg name="sub" default="sub8"/>
+
   <param name="/environment" value="$(arg environment)" />
   <param name="/is_simulation" value="$(eval environment != 'real')" />
   <rosparam param="/autonomous">False</rosparam>
 
-  <include file="$(find sub8_launch)/launch/tf.launch" />
+  <include file="$(find sub8_launch)/launch/tf.launch">
+    <arg name="sub" value="$(arg sub)"/>
+  </include>
 
   <include if="$(eval environment != 'dynsim')" file="$(find sub8_launch)/launch/subsystems/nav_box.launch" >
     <arg name="imu" value="true" />

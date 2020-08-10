@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
+  <arg name="sub" default="sub8"/>
   <node
     name="spawn_sub" pkg="gazebo_ros" type="spawn_model"
     args="-urdf -param robot_description
-      -x 0. -y 0. -z 0 -model sub8 -w water"
+      -x 0. -y 0. -z 0 -model $(arg sub) -w water"
     output="screen" />
 </launch>

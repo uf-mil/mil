@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <include file="$(find sub8_launch)/launch/upload_urdf.launch" />
+  <arg name="sub" default="sub8"/>
+  <include file="$(find sub8_launch)/launch/upload_urdf.launch" >
+    <arg name="sub" value="$(arg sub)"/>
+  </include>
   <node pkg="robot_state_publisher" name="robot_state_publisher" type="robot_state_publisher">
     <param name="use_tf_static" value="false" />
   </node>

@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <!-- Sets robot_description paramater to Navigator's URDF -->
 <launch>
-  <param name="robot_description" textfile="$(find sub8_gazebo)/urdf/sub8.urdf"/>
+  <arg name="sub" default="sub8"/>
+  <param name="robot_description" textfile="$(find sub8_gazebo)/urdf/$(arg sub).urdf"/>
   <rosparam param="robot_parameters">
     volume: 0.04822
     drag:
