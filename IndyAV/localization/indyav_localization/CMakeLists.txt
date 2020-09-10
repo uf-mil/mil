@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   nav_msgs
   tf
+  rostest
 )
 
 ## System dependencies are found with CMake's conventions
@@ -117,7 +118,6 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -155,6 +155,13 @@ target_link_libraries(ground_truth_tf
 #############
 ## Testing ##
 #############
+
+if(CATKIN_ENABLE_TESTING)
+  foreach(T
+      test/test_sylphase.test)
+     add_rostest(${T})
+  endforeach()
+endif()
 
 ## Add gtest based cpp test target and link libraries
 # catkin_add_gtest(${PROJECT_NAME}-test test/test_indyav_localization.cpp)
