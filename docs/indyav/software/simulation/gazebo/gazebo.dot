@@ -6,7 +6,7 @@ digraph indyav_gazebo
     "wheels.xacro"->"indyav_car.urdf.xacro":nw [label="  included by  "];
     "utils.xacro"->"indyav_car.urdf.xacro":n [label="  included by  "];
     "go_kart.xacro"->"indyav_car.urdf.xacro":ne [label="  included by  "];
-    "gazebo_ros_p3d"->"indyav_car.urdf.xacro":e [label="  included by  "];
+    "sylphase.xacro"->"indyav_car.urdf.xacro":e [label="  included by  "];
     "indyav_car.urdf.xacro"->"indyav_car.urdf" [label="  interpreted into  "];
     
     "actuators.yaml"->"Controller manager" [label="  informs  "]
@@ -37,7 +37,7 @@ digraph indyav_gazebo
     
             back_wheel [label="BackWheelPlugin\n(Applies Thrust)"];        
             invis [style=invis, pos="0,0"];
-            p3d [label="p3d Plugin \n(give the gound truth odom)"];
+            sylphase_ins [label="sylphase_ins Plugin \n(give the gound truth odom)"];
     
             right_wheel [label="right front wheel controller\n(controlls the steering angle of the right \nfront wheel)"];
             left_wheel[label="left front wheel controller\n(controlls the steering angle of the left \nfront wheel)"];
@@ -51,11 +51,11 @@ digraph indyav_gazebo
     "Controller manager"->left_wheel
         [label="  manages  "];
     
-    p3d->"/indyav_car/sensorsposition/ground_truth_odometry"[label="Publishes"];
-    "/indyav_car/sensorsposition/ground_truth_odometry"->"ground_truth_tf"
+    sylphase_ins->"/ins_odom"[label="Publishes"];
+    "/ins_odom"->"dumb_truth_tf"
         [label="Subscribes"];
     
-    "ground_truth_tf"->"Transform: map <=> base_link"[label="Broadcasts"];
+    "dumb_truth_tf"->"Transform: enu <=> base_link"[label="Broadcasts"];
     
     right_command [label="/car/simulated_hardware_controllers\n/steering/right/command", pos="-1,-1"];
     right_command -> right_wheel [label="Subscribes"];

@@ -16,7 +16,7 @@ void cb(const nav_msgs::Odometry& _msg)
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "ground_thruth_odom_tf");
+  ros::init(argc, argv, "dumb_truth_odom_tf");
   ros::NodeHandle nh("~");
   std::string topic_name;
   ROS_ASSERT_MSG(nh.getParam("topic_name", topic_name), "no topic name provided");
