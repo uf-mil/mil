@@ -6,6 +6,7 @@
   <maintainer email="marshallrawson@ufl.edu">Marshall Rawson</maintainer>
   <license>MIT</license>
   <build_depend>roslaunch</build_depend>
+  <depend> tf </depend>
   <exec_depend>mil_tools</exec_depend>
   <exec_depend>indyav_path</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
