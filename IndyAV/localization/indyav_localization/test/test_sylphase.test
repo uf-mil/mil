@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find indyav_launch)/launch/gazebo.launch" />
+  <test test-name="test_name" pkg="indyav_localization" type="test_sylphase.py" retry="2"/>
+
+</launch>
+

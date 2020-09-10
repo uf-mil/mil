@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
 <launch>
+
   <arg name="environment" default="real"/>
-  <!-- TODO: replace this with a proper odom estimator -->
   <node if="$(eval environment == 'gazebo')" 
-        pkg="indyav_localization" type="ground_truth_tf" name="ground_truth_localization">
-    <param name="topic_name" value="/indyav_car/sensorsposition/ground_truth_odometry"/>
+	  pkg="indyav_localization" type="dumb_truth_tf" name="ins_odom_localization">
+	  <param name="topic_name" value="/ins_odom"/>
   </node>
+
 </launch>
