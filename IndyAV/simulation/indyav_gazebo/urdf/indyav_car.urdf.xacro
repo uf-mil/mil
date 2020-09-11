@@ -2,7 +2,7 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="indyav_car">
   <xacro:include filename="$(find indyav_gazebo)/xacro/go_kart.xacro"/>
   <xacro:include filename="$(find indyav_gazebo)/xacro/wheels.xacro"/>
-  <xacro:include filename="$(find wamv_gazebo)/urdf/sensors/wamv_p3d.xacro"/>
+  <xacro:include filename="$(find indyav_gazebo)/xacro/sylphase.xacro"/>
 
   <link name="base_link">
     <xacro:body_inertial/>
@@ -17,7 +17,7 @@
   <!-- TODO: replace this with a sylphase img gps -->
   <xacro:property name="namespace" value="indyav_car"/>
   <xacro:property name="sensor_namespace" value="sensors"/>
-  <xacro:wamv_p3d/>
+  <xacro:sylphase/>
 
   <xacro:back_wheel name="back_left_wheel"  xyz="-1   0.4 -0.2"/>
   <xacro:back_wheel name="back_right_wheel"  xyz="-1 -0.4 -0.2"/>
