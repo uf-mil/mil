@@ -49,6 +49,7 @@ well documented for Windows, OSX, and several Linux operating systems.
 You also need to give your user access to the docker group
 * Ubuntu: `sudo usermod -a -G docker $USER` then reboot
 
+*NOTE: In the Docker contianer, no GUI applications will be availible. The terminal interface will be the only way to interact with the container. However, all ROS.Gazebo GUI utilities (RViz, GazeboClient, and RQT) will work when run on the host machine because the Development Docker Container is attached to the host network*
 
 ### Alternative: run the setup scripts on your host operating system
 If you are running Ubuntu 18.04 and prefer to simply run code directly on your "host"

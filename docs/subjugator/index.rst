@@ -6,9 +6,8 @@ This page provides general info about developing for
 competition for autonomous submarines. MIL has participated in RoboSub
 for 20+ years. Most code for this is hosted under SubjuGator/.
 
-*NOTE: Please go through the* `development
-guide </docs/development/development_guide>`__ *before going through this
-tutorial. We will assume you are currently in the development container
+*NOTE: Please go through the* `development guide </docs/development/development_guide>`__ 
+*before going through this tutorial. We will assume you are currently in the development container
 running a tmux session.*
 
 Software Design
@@ -21,17 +20,38 @@ interact, see the below graph (open in a new window).
 Running SubjuGator in Simulation
 --------------------------------
 
-Launch Gazebo
-~~~~~~~~~~~~~
+Launch Gazebo Server
+~~~~~~~~~~~~~~~~~~~~
 
-In one panel, ``roslaunch sub8_launch gazebo.launch gui:=true`` This
-will launch the gazebo simulator with a visualization of truth in the
-simulator. This is not a represenation of what the robot knows.
+In one panel, ``roslaunch sub8_launch gazebo.launch`` This
+will launch the server side of the gazebo simulator. The gazebo server (a.k.a. gzserver)
+is the half of the simulator that will do all the heavy lifting in terms of simulating phyiscs,
+running stock / custom plugins (of which we have many), and tying into ROS.
+
+Run Gazebo Client
+~~~~~~~~~~~~~~~~~
+
+Gazebo also has gui visulalization componet to it called Gazebo Client (a.k.a gzclient).
+This half of the simulator really only does image rendering of the simulated environment.
+
+*NOTE: The Gazebo Client will not work inside of the development docker container*
+
+*NOTE: Simulated cameras are rendered in gzserver*
+
+We have a custom `alias <https://alvinalexander.com/blog/post/linux-unix/create-aliases>`__ setup
+to run the gazebogui with special parameters:
+
+``gazebogui``
+
+This will show you ground truth of the simulated environment. However, when debuggin robot behavior, it is usually more usful to have an idea of exactly what the robot knows, which is why there is also Rviz.
 
 Run RVIZ
 ~~~~~~~~
 
-You can visualize things by running ``subviz`` in a new panel.
+You can visualize what the robot knows by running ``subviz`` in a new panel.
+
+*NOTE: Rviz will not work inside of the development docker container*
+
 ``subviz`` is an
 `alias <https://alvinalexander.com/blog/post/linux-unix/create-aliases>`__
 which launches `RVIZ <http://wiki.ros.org/rviz>`__ with a configuration
