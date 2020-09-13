@@ -15,6 +15,7 @@ in a new pannel
 ``indyviz``
 (this represents what the robot knows)
 
+*NOTE: this will not if run in the docker container*
 
 Launch the gazebo client (visualizer and gui)
 *********************************************
@@ -22,6 +23,7 @@ in a new pannel
 ``gazebogui``
 (this represents ground truth)
 
+*NOTE: this will not if run in the docker container*
 
 *NOTE: to kill the gazebo client after you are done, usually* ``Ctrl + \`` *isrequired*
 
