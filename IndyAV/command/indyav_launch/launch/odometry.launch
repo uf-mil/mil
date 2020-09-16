@@ -9,6 +9,8 @@
   </node> -->
 
   <node if="$(eval environment == 'gazebo')" 
-        pkg="indyav_localization" type="ins_odom_node_tf" name="ins_odom_tf">
+	  pkg="indyav_localization" type="dumb_truth_tf" name="ins_odom_localization">
+	  <param name="topic_name" value="/ins_odom"/>
+
   </node> 
 </launch>

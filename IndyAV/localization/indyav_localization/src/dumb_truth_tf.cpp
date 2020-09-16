@@ -16,11 +16,13 @@ void cb(const nav_msgs::Odometry& _msg)
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "ins_odom_tf");
-  ros::NodeHandle nh;
-  ros::Subscriber sub = nh.subscribe("/ins_odom", 1, cb);
+  ros::init(argc, argv, "dumb_truth_odom_tf");
+  ros::NodeHandle nh("~");
+  std::string topic_name;
+  ROS_ASSERT_MSG(nh.getParam("topic_name", topic_name), "no topic name provided");
+  ros::Subscriber sub = nh.subscribe(topic_name, 1, cb);
+
   ros::spin();
 
   return 0;
 }
-
