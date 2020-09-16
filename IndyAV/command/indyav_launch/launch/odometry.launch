@@ -8,4 +8,8 @@
     <param name="topic_name" value="/indyav_car/sensorsposition/ground_truth_odometry"/>
   </node> -->
 
+  <node if="$(eval environment == 'gazebo')" 
+        pkg="indyav_localization" type="ins_odom_node_tf" name="ins_odom_tf">
+  </node> 
+
 </launch>
