@@ -1,3 +1,4 @@
 #!/bin/bash
+git -C $MIL_WS/src/mil submodule sync
 catkin_make -C $MIL_WS
 
