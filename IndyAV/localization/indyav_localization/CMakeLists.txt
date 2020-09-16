@@ -134,10 +134,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-#add_executable(ground_truth_tf src/ground_truth_tf.cpp)
-add_executable(ins_odom_node_tf src/ins_odom_tf.cpp)
-target_link_libraries(ins_odom_node_tf ${catkin_LIBRARIES})
-
+add_executable(dumb_truth_tf src/dumb_truth_tf.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -147,12 +144,12 @@ target_link_libraries(ins_odom_node_tf ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-#add_dependencies(ground_truth_tf ${catkin_EXPORTED_TARGETS})
+add_dependencies(dumb_truth_tf ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-#target_link_libraries(ground_truth_tf
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(dumb_truth_tf
+   ${catkin_LIBRARIES}
+ )
 
 
 #############
