@@ -34,7 +34,7 @@ class SylphaseTestCase(unittest.TestCase):
         # wait till the robot is spawned in gazebo
         rospy.wait_for_service("/gazebo/spawn_urdf_model")
         tf_listener = tf.TransformListener()
-        tf_listener.waitForTransform('base_link', 'enu', rospy.Time.now(), rospy.Duration(5.0))
+        tf_listener.waitForTransform('base_link', 'enu', rospy.Time(0), rospy.Duration(5.0))
 
 if __name__ == '__main__':
     rospy.init_node('test_sylphase')
