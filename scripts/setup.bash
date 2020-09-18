@@ -65,4 +65,4 @@ alias srcbrc="source ~/.bashrc"
 # Gazebo aliases
 alias gazebogui="rosrun gazebo_ros gzclient __name:=gzclient"
 # Simulation
-alias killgazebo="killall -9 gazebo && killall -9 gzserver && killall -9 gzclient"
+alias killgazebo="killall -9 gzserver && killall -9 gzclient"
