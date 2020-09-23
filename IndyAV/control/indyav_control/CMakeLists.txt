@@ -68,8 +68,13 @@ add_dependencies(simulated_steering_driver
   std_msgs
   ${catkin_EXPORTED_TARGETS})
 target_link_libraries(simulated_steering_driver
-  ${catkin_LIBRARIES}
-)
+  ${catkin_LIBRARIES})
+add_executable(joy_teleop 
+  src/joy_teleop.cpp)
+add_dependencies(joy_teleop
+  ${catkin_EXPORTED_TARGETS})
+target_link_libraries(joy_teleop 
+  ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

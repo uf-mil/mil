@@ -12,7 +12,7 @@ SimulatedSteeringDriver<MSG>::SimulatedSteeringDriver(ros::NodeHandle* _nh, cons
   std::string name = "/car";
   ROS_ASSERT_MSG(ros::param::has(name), "no car param namspace");
   name += "/simulated_hardware_controllers";
-  ROS_ASSERT_MSG(nh_->hasParam(name), "no simualted hardware controllers param namspace");
+  ROS_ASSERT_MSG(nh_->hasParam(name), "no simulated hardware controllers param namspace");
   name += "/steering";
   ROS_ASSERT_MSG(nh_->hasParam(name), "no steering param namspace");
 

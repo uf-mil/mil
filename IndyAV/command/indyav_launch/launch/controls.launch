@@ -9,7 +9,7 @@
       args="car/simulated_hardware_controllers/steering/left
             car/simulated_hardware_controllers/steering/right
             joint_state_publisher"/>
-    <node name="simualted_steering_driver" pkg="indyav_control" type="simulated_steering_driver"
+    <node name="simulated_steering_driver" pkg="indyav_control" type="simulated_steering_driver"
       respawn="true">
       <param name="input_topic" value="/steering"/>
     </node>
