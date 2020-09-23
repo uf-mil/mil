@@ -32,6 +32,14 @@ void SimulatedSteeringDriver<MSG>::Callback(const MSG& _msg)
   for (auto i = pubs_.begin(); i != pubs_.end(); ++i)
   {
     // TODO: impliment ackerman steering angles
+
+    // Steering angle for inside wheel = tan^(-1)(L/R-(T/2))
+    // Steering angle for outside wheel = tan^(-1)(L/R+(T/2))
+    // L = wheelbase = distance between the two axles.
+    // T = track = distance between center line of each tire.
+    // R = radius of the turn as experienced from the center of the vehicle. Will this need to be calculated from the center of the track
+    // More info: http://datagenetics.com/blog/december12016/index.html
+
     std_msgs::Float64 msg;
     msg.data = cmd_angle;
     i->second.publish(msg);
