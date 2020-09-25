@@ -29,10 +29,14 @@ struct empty
 
 using boost::core::demangle;
 typedef std::shared_ptr<std::any> Token;
+typedef std::vector<Token> TokenVec;
 typedef std::map<std::size_t, Token> TypeToken;
+typedef std::map<std::size_t, TokenVec> TypeTokenVec;
 typedef std::map<std::string, TypeToken> PlaceTypeToken;
+typedef std::map<std::string, TypeTokenVec> PlaceTypeTokenVec;
 
 Token make_token(const std::any& data);
+Token make_token();
 
 template <typename T>
 std::pair<std::size_t, std::string> in_type()
@@ -47,43 +51,56 @@ std::size_t hash_code()
 }
 
 template <typename T>
-T token_cast(Token t)
+const T& token_cast(const Token& _t)
 {
-  return std::any_cast<T>(*t);
+  std::any* t = _t.get();
+  try
+  {
+    std::any_cast<T>(t);
+  }
+  catch (std::bad_any_cast& e)
+  {
+    throw std::runtime_error(std::string("Token is of type ") + demangle(t->type().name()) +
+                             std::string(" but is trying to be cast to something else.\n") + e.what());
+  }
+  const T* _ret = std::any_cast<T>(t);
+  const T& ret = *_ret;
+  return ret;
 }
 
 template <typename T>
-T ReturnGet(const PlaceTypeToken& _ptt, const std::string _place)
+std::vector<T> ReturnGet(const PlaceTypeTokenVec& _pttv, const std::string& _place)
 {
-  TypeToken tt;
   try
   {
-    tt = _ptt.at(_place);
+    auto& tt = _pttv.at(_place);
   }
   catch (std::out_of_range& e)
   {
     throw std::out_of_range(_place + " had no output tokens to Return\n" + e.what());
   }
-  Token t;
+  auto& ttv = _pttv.at(_place);
   try
   {
-    t = tt.at(hash_code<T>());
+    ttv.at(hash_code<T>());
   }
   catch (std::out_of_range& e)
   {
     throw std::out_of_range(_place + " had no output tokens of the type " + typeid(T).name() + " to Return\n" +
                             e.what());
   }
-  return token_cast<T>(t);
+  std::vector<T> out;
+  for (const auto& i : ttv.at(hash_code<T>()))
+    out.push_back(token_cast<T>(i));
+  return out;
 }
 
 template <typename T>
-T ReturnGet(Token _t, const std::string _place)
+std::vector<T> ReturnGet(Token _t, const std::string _place)
 {
-  PlaceTypeToken ptt;
   try
   {
-    ptt = token_cast<PlaceTypeToken>(_t);
+    const PlaceTypeToken& ptt = token_cast<PlaceTypeToken>(_t);
   }
   catch (std::bad_any_cast& e)
   {
@@ -97,7 +114,8 @@ T ReturnGet(Token _t, const std::string _place)
                                "\n" + e.what());
     }
   }
-  return ReturnGet<T>(ptt, _place);
+  const PlaceTypeTokenVec& pttv = token_cast<PlaceTypeTokenVec>(_t);
+  return ReturnGet<T>(pttv, _place);
 }
 
 class ThreadSafe
@@ -116,8 +134,6 @@ class MessageQueue : public std::queue<T>, public ThreadSafe
 {
 };
 typedef MessageQueue<Token> TokenQueue;
-typedef std::map<std::size_t, TokenQueue&> TypeTokenQueueRef;
-typedef std::map<std::string, TypeTokenQueueRef> PlaceTypeTokenQueueRef;
 
 class Place;
 struct StartMsg
@@ -204,13 +220,14 @@ public:
   void AddTransition(const std::string& _name);
 
   // add an edge from a place to a transition
-  void ConnectPlaceTransition(const std::string& _p, const std::string& _t, const std::type_info& _type);
+  void ConnectPlaceTransition(const std::string& _p, const std::string& _t, const std::type_info& _type,
+                              const int _quantity = 1);
   void ConnectPlaceTransition(const std::string& _p, const std::string& _t, const std::string& _type_name,
-                              const std::size_t _type_hash);
+                              const std::size_t _type_hash, const int _quantity = 1);
 
   // add an edge from a transition to a place
   void ConnectTransitionPlace(const std::string& _t, const std::string& _p,
-                              std::function<Token(const PlaceTypeToken&)> _token_mux);
+                              std::function<Token(const PlaceTypeTokenVec&)> _token_mux);
 
   bool GetDebug()
   {
@@ -229,7 +246,7 @@ public:
   void Kill(const std::string& _err_msg = std::string(""));
 
   // Places call to signal a close of the petri net
-  void StartTokens(const std::map<std::string, Token>& _start_tokens);
+  void StartTokens(const std::multimap<std::string, Token>& _start_tokens);
 
   Token Spin();
 
@@ -268,12 +285,24 @@ private:
 
 class Transition
 {
+  struct InEdge
+  {
+    InEdge(TokenQueue& _token_q, const int _quantity) : token_q_(_token_q), quantity_(_quantity)
+    {
+    }
+    TokenQueue& token_q_;
+    const int quantity_;
+  };
+  typedef std::map<std::size_t, InEdge> TypeInEdge;
+  typedef std::map<std::string, TypeInEdge> PlaceTypeInEdge;
+
 public:
   void TryFire();
 
-  void AddInEdge(const std::string& _place, const std::size_t _hash_code, TokenQueue& _out_channel);
+  void AddInEdge(const std::string& _place, const std::size_t _hash_code, TokenQueue& _out_channel,
+                 const int _quantity = 1);
 
-  void AddOutEdge(const std::string& _place, const std::function<Token(const PlaceTypeToken&)> _token_mux);
+  void AddOutEdge(const std::string& _place, const std::function<Token(const PlaceTypeTokenVec&)> _token_mux);
 
   void str(std::ostream& _out) const;
 
@@ -281,16 +310,16 @@ private:
   friend class PetriNet;
   Transition(const std::string& _namepsace, PetriNet& _net);
 
-  std::string DeterminRelativeName(const std::string& _abs_name);
+  std::string DetermineRelativeName(const std::string& _abs_name);
 
   PetriNet& net_;
 
-  PlaceTypeTokenQueueRef in_edges_;
+  PlaceTypeInEdge in_edges_;
   std::map<std::string, std::string> in_edges_rel_names_;
 
   std::string namespace_;
 
-  std::map<std::string, std::function<Token(const PlaceTypeToken&)>> out_edges_;
+  std::map<std::string, std::function<Token(const PlaceTypeTokenVec&)>> out_edges_;
 };
 
 class Place

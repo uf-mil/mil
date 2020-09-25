@@ -1,0 +1,44 @@
+digraph G
+{
+subgraph cluster_1
+{
+label="/Return/";
+"/Return/Place"[label="/Return/Place.0"
+shape="oval"
+xlabel="PlaceTypeTokenVec,
+"];
+"/Return/Transition"[shape="rectangle"];
+"/Return/Transition"->"/Return/Place";
+}
+subgraph cluster_0
+{
+label="/";
+"/Mult"[label="/Mult.4"
+shape="oval"
+xlabel="std::pair<double, int>,
+std::pair<int, int>,
+std::pair<int, double>,
+std::pair<double, double>,
+"];
+subgraph cluster_2
+{
+label="/Mult->int/";
+style="filled";
+"/Mult->int/Transition"[shape="rectangle"];
+"/Mult->int/Place.0"[shape="oval"];
+"/Mult->int/Transition"->"/Mult->int/Place.0";
+}
+"/Mult"->"/Mult->int/Transition";
+"/Mult->int/Place.0"->"/Return/Transition";
+subgraph cluster_3
+{
+label="/Mult->double/";
+style="filled";
+"/Mult->double/Transition"[shape="rectangle"];
+"/Mult->double/Place.0"[shape="oval"];
+"/Mult->double/Transition"->"/Mult->double/Place.0";
+}
+"/Mult"->"/Mult->double/Transition";
+"/Mult->double/Place.0"->"/Return/Transition";
+}
+}

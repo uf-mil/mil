@@ -1,4 +1,6 @@
+#pragma once
 #include <mil_petri_net_missions/petri_net.hpp>
+
 namespace petri_net::tests
 {
 void arithmetic_chain(PetriNet& pn, bool _print)
@@ -28,8 +30,8 @@ void arithmetic_chain(PetriNet& pn, bool _print)
     auto t = make_token(res);
     return t;
   });
-  pn.ConnectTransitionPlace("Add to Mult", "Mult", [&](const PlaceTypeToken& _in) -> Token {
-    return make_token(std::make_pair(5, token_cast<int>(_in.at("Add").at(hash_code<int>()))));
+  pn.ConnectTransitionPlace("Add to Mult", "Mult", [&](const PlaceTypeTokenVec& _in) -> Token {
+    return make_token(std::make_pair(5, token_cast<int>(_in.at("Add").at(hash_code<int>()).at(0))));
   });
   pn.AddTransition("Mult to Div");
 
@@ -44,8 +46,8 @@ void arithmetic_chain(PetriNet& pn, bool _print)
     return make_token(res);
   });
   pn.ConnectPlaceTransition("Mult", "Mult to Div", typeid(int));
-  pn.ConnectTransitionPlace("Mult to Div", "Div", [](const PlaceTypeToken& _in) -> Token {
-    return make_token(std::make_pair(token_cast<int>(_in.at("Mult").at(hash_code<int>())), 5));
+  pn.ConnectTransitionPlace("Mult to Div", "Div", [](const PlaceTypeTokenVec& _in) -> Token {
+    return make_token(std::make_pair(token_cast<int>(_in.at("Mult").at(hash_code<int>()).at(0)), 5));
   });
 
   pn.AddTransition("Div to Sub");
@@ -61,8 +63,8 @@ void arithmetic_chain(PetriNet& pn, bool _print)
     return ret;
   });
   pn.ConnectPlaceTransition("Div", "Div to Sub", typeid(int));
-  pn.ConnectTransitionPlace("Div to Sub", "Sub", [](const PlaceTypeToken& _in) -> Token {
-    return make_token(std::make_pair(token_cast<int>(_in.at("Div").at(hash_code<int>())), 5));
+  pn.ConnectTransitionPlace("Div to Sub", "Sub", [](const PlaceTypeTokenVec& _in) -> Token {
+    return make_token(std::make_pair(token_cast<int>(_in.at("Div").at(hash_code<int>()).at(0)), 5));
   });
   pn.ConnectPlaceTransition("Sub", "Return/Transition", typeid(int));
 }

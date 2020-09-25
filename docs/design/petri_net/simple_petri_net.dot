@@ -1,0 +1,9 @@
+digraph G {
+"My Place"[shape="oval"];
+"My Second Place"[shape="oval"];
+"My Transition"[shape="rectangle"];
+"My Place"->"My Transition";
+"My Second Place"->"My Transition";
+"My Third Place"[shape="oval"];
+"My Transition"->"My Third Place";
+}

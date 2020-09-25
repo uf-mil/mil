@@ -7,6 +7,10 @@ Token make_token(const std::any& data)
   return std::make_shared<std::any>(data);
 }
 
+Token make_token()
+{
+  return std::make_shared<std::any>();
+}
 //////////////////////// ThreadSafe
 void ThreadSafe::SafeDo(std::function<void(ThreadSafe&)> _thing)
 {
@@ -49,9 +53,9 @@ void PetriNet::AddReturnSubNet()
                                           name + "Return/\";\n");
 
   AddTransition("Transition");
-  AddPlace("Place", { { typeid(PlaceTypeToken).hash_code(), "PlaceTypeToken" } });
+  AddPlace("Place", { { typeid(PlaceTypeTokenVec).hash_code(), "PlaceTypeTokenVec" } });
   SetPlaceCallback("Place", [&](const Token _t) -> Token { return _t; });
-  ConnectTransitionPlace("Transition", "Place", [](const PlaceTypeToken& _in) -> Token { return make_token(_in); });
+  ConnectTransitionPlace("Transition", "Place", [](const PlaceTypeTokenVec& _in) -> Token { return make_token(_in); });
 
   places_.at(name + "Return/Place").is_return_place_ = false;
   SetNamespace(name);
@@ -81,13 +85,14 @@ void PetriNet::AddTransition(const std::string& _name)
   transitions_.emplace(name, Transition(namespace_, *this));
 }
 
-void PetriNet::ConnectPlaceTransition(const std::string& _p, const std::string& _t, const std::type_info& _type)
+void PetriNet::ConnectPlaceTransition(const std::string& _p, const std::string& _t, const std::type_info& _type,
+                                      const int _quantity)
 {
-  ConnectPlaceTransition(_p, _t, demangle(_type.name()), _type.hash_code());
+  ConnectPlaceTransition(_p, _t, demangle(_type.name()), _type.hash_code(), _quantity);
 }
 
 void PetriNet::ConnectPlaceTransition(const std::string& _p, const std::string& _t, const std::string& _type_name,
-                                      const std::size_t _type_hash)
+                                      const std::size_t _type_hash, const int _quantity)
 {
   auto p = namespace_ + _p;
   auto t = namespace_ + _t;
@@ -102,18 +107,18 @@ void PetriNet::ConnectPlaceTransition(const std::string& _p, const std::string& 
 
   if (places_.at(p).HasOutType(_type_hash))
   {
-    msg_qs_.emplace_back();
-    places_.at(p).AddOutEdge(_type_name, _type_hash, t, msg_qs_.back());
+    places_.at(p).AddOutEdge(_type_name, _type_hash, t);
   }
   else
   {
-    places_.at(p).AddOutEdge(_type_name, _type_hash, t);
+    msg_qs_.emplace_back();
+    places_.at(p).AddOutEdge(_type_name, _type_hash, t, msg_qs_.back());
   }
-  transitions_.at(t).AddInEdge(p, _type_hash, places_.at(p).GetTokenQueue(_type_hash));
+  transitions_.at(t).AddInEdge(p, _type_hash, places_.at(p).GetTokenQueue(_type_hash), _quantity);
 }
 
 void PetriNet::ConnectTransitionPlace(const std::string& _t, const std::string& _p,
-                                      std::function<Token(const PlaceTypeToken&)> _token_mux)
+                                      std::function<Token(const PlaceTypeTokenVec&)> _token_mux)
 {
   auto p = namespace_ + _p;
   auto t = namespace_ + _t;
@@ -201,7 +206,7 @@ void PetriNet::Kill(const std::string& _err_msg)
   thread_pool_.Kill();
 }
 
-void PetriNet::StartTokens(const std::map<std::string, Token>& _start_tokens)
+void PetriNet::StartTokens(const std::multimap<std::string, Token>& _start_tokens)
 {
   for (const auto& start_msg : _start_tokens)
   {
@@ -213,6 +218,10 @@ Token PetriNet::Spin()
 {
   return_.reset();
   thread_pool_.Spin();
+  if (!return_)
+  {
+    throw std::runtime_error("return is null");
+  }
   return return_;
 }
 
@@ -325,7 +334,7 @@ Transition::Transition(const std::string& _namespace, PetriNet& _net) : namespac
 {
 }
 
-std::string Transition::DeterminRelativeName(const std::string& _abs_name)
+std::string Transition::DetermineRelativeName(const std::string& _abs_name)
 {
   std::string rel_name;
 
@@ -361,29 +370,36 @@ void Transition::TryFire()
   net_.SafeDo([&](ThreadSafe& _ts) -> void {
     // check all the input message quese for any data
     bool all_ins_ready = true;
-    for (auto& place__hash_tokenqueue : in_edges_)
+    for (auto& place__hash_inedge : in_edges_)
     {
-      for (auto& hash__tokenqueue : place__hash_tokenqueue.second)
+      for (auto& hash__inedge : place__hash_inedge.second)
       {
-        if (hash__tokenqueue.second.size() == 0)
-          all_ins_ready = false;
-        break;
+        hash__inedge.second.token_q_.SafeDo([&](ThreadSafe& ts) -> void {
+          if (hash__inedge.second.token_q_.size() < hash__inedge.second.quantity_)
+            all_ins_ready = false;
+        });
+        if (!all_ins_ready)
+          break;
       }
     }
     // if so, then get the tokens
     if (all_ins_ready)
     {
-      PlaceTypeToken in_place_tokens;
-      for (auto& place__hash_tokenqueue : in_edges_)
+      PlaceTypeTokenVec in_place_tokens;
+      for (auto& place__hash_inedge : in_edges_)
       {
-        const auto& abs_name = place__hash_tokenqueue.first;
+        const auto& abs_name = place__hash_inedge.first;
         std::string rel_name = in_edges_rel_names_.at(abs_name);
-        in_place_tokens.emplace(rel_name, TypeToken());
-        for (auto& hash__tokenqueue : place__hash_tokenqueue.second)
+        in_place_tokens.emplace(rel_name, TypeTokenVec());
+        for (auto& hash__inedge : place__hash_inedge.second)
         {
-          hash__tokenqueue.second.SafeDo([&](ThreadSafe& _ts)->void {
-          in_place_tokens.at(rel_name).emplace(hash__tokenqueue.first, hash__tokenqueue.second.front());
-          hash__tokenqueue.second.pop();
+          hash__inedge.second.token_q_.SafeDo([&](ThreadSafe& _ts) -> void {
+            in_place_tokens.at(rel_name).emplace(hash__inedge.first, TokenVec());
+            for (int i = 0; i < hash__inedge.second.quantity_; ++i)
+            {
+              in_place_tokens.at(rel_name).at(hash__inedge.first).push_back(hash__inedge.second.token_q_.front());
+              hash__inedge.second.token_q_.pop();
+            }
           });
         }
       }
@@ -394,20 +410,18 @@ void Transition::TryFire()
         net_.thread_pool_.Post(start_msg);
       }
     }
-    else
-    {
-    }
   });
 }
 
-void Transition::AddInEdge(const std::string& _place, const std::size_t _hash_code, TokenQueue& _out_channel)
+void Transition::AddInEdge(const std::string& _place, const std::size_t _hash_code, TokenQueue& _out_channel,
+                           const int _quantity)
 {
-  in_edges_.emplace(_place, TypeTokenQueueRef());
-  in_edges_.at(_place).emplace(_hash_code, _out_channel);
-  in_edges_rel_names_.emplace(_place, DeterminRelativeName(_place));
+  in_edges_.emplace(_place, TypeInEdge());
+  in_edges_.at(_place).emplace(_hash_code, InEdge{ _out_channel, _quantity });
+  in_edges_rel_names_.emplace(_place, DetermineRelativeName(_place));
 }
 
-void Transition::AddOutEdge(const std::string& _place, const std::function<Token(const PlaceTypeToken&)> _token_mux)
+void Transition::AddOutEdge(const std::string& _place, const std::function<Token(const PlaceTypeTokenVec&)> _token_mux)
 {
   out_edges_.emplace(_place, _token_mux);
 }
@@ -455,7 +469,7 @@ void Place::_Callback(const Token _token)
     });
     return;
   }
-  // if not, kill the net
+  // if not supported return type, kill the net
   if (out_edges_.find(token->type().hash_code()) == out_edges_.end())
   {
     // error the type returned is wrong
@@ -469,14 +483,15 @@ void Place::_Callback(const Token _token)
   {
     net_.SafeDo([&](ThreadSafe& _ts) -> void {
       in_progress_--;
-      out.msg_q_.SafeDo([&](ThreadSafe& _ts)->void { out.msg_q_.push(token);});
+      out.msg_q_.SafeDo([&](ThreadSafe& _ts) -> void { out.msg_q_.push(token); });
+      net_.DebugOutput();
     });
   }
   // if not, the we do not have to
   else
   {
     in_progress_--;
-    out.msg_q_.SafeDo([&](ThreadSafe& _ts)->void { out.msg_q_.push(token);});
+    out.msg_q_.SafeDo([&](ThreadSafe& _ts) -> void { out.msg_q_.push(token); });
   }
   // iterate through and call the transitions that belong to that type
   for (auto& transition : out.transitions_)
@@ -493,7 +508,7 @@ bool Place::HasOutType(const std::type_info& _type) const
 
 bool Place::HasOutType(const std::size_t _type) const
 {
-  return out_edges_.find(_type) == out_edges_.end();
+  return !(out_edges_.find(_type) == out_edges_.end());
 }
 
 void Place::AddOutEdge(const std::string& _type_name, const std::size_t _type_hash, const std::string& _transition)
