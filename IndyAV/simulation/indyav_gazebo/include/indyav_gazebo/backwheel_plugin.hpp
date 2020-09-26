@@ -5,23 +5,24 @@
 
 namespace gazebo
 {
-class BackWheelPlugin : public WheelPlugin<indyav_control::ThrustStamped>
-{
-public:
-  BackWheelPlugin();
-  virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
-  virtual void Init();
-  virtual void Callback(const indyav_control::ThrustStamped& _msg);
-  virtual void OnUpdate();
+  class BackWheelPlugin : public WheelPlugin<indyav_control::ThrustStamped>
+  {
+  public:
+    BackWheelPlugin();
+    virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
+    virtual void Init();
+    virtual void Callback(const indyav_control::ThrustStamped& _msg);
+    virtual void OnUpdate();
 
-protected:
-  physics::LinkPtr base_link_;
+  protected:
+    //physics::LinkPtr base_link_;
+    physics::LinkPtr back_left_wheel_link_;
+    physics::LinkPtr back_right_wheel_link_;
 
-  ignition::math::Vector3<double> thrust_ = ignition::math::Vector3<double>::Zero;
+    ignition::math::Vector3<double> thrust_ = ignition::math::Vector3<double>::Zero;
 
-  double max_thrust_ = 0.0;
-  double max_velocity_ = 0.0;
-};
-
+    double max_thrust_ = 0.0;
+    double max_velocity_ = 0.0;
+  };
 GZ_REGISTER_MODEL_PLUGIN(BackWheelPlugin)
 }

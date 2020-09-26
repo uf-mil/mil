@@ -66,6 +66,11 @@ add_dependencies(backwheel_plugin
     ${catkin_EXPORTED_TARGETS}
 )
 
+add_executable(wheel_touch_ground src/wheel_contact.cpp)
+target_link_libraries(
+	wheel_touch_ground
+	${GAZEBO_LIBRARIES}
+       	${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

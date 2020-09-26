@@ -20,6 +20,13 @@
 
   <xacro:back_wheel name="back_left_wheel"  xyz="-1   0.4 -0.2"/>
   <xacro:back_wheel name="back_right_wheel"  xyz="-1 -0.4 -0.2"/>
+  <gazebo reference="base_link_to_back_left_wheel_link_joint">
+    <disableFixedJointLumping>true</disableFixedJointLumping> 
+  </gazebo>
+  <gazebo reference="base_link_to_back_right_wheel_link_joint">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo>
+  
   <gazebo>
     <plugin name="back_wheel_plugin" filename="libbackwheel_plugin.so">
       <wheels>

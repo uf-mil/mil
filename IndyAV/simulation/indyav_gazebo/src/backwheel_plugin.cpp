@@ -16,7 +16,9 @@ void BackWheelPlugin::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sd
   GZ_ASSERT(_sdf->HasElement("max_velocity"), "no max velocity provided");
   max_velocity_ = _sdf->Get<double>("max_velocity");
 
-  base_link_ = model_->GetLink("base_link");
+  //base_link_ = model_->GetLink("base_link");
+  back_left_wheel_link_ = model_->GetLink("back_left_wheel_link");
+  back_right_wheel_link_ = model_->GetLink("back_right_wheel_link");
 }
 
 void BackWheelPlugin::Callback(const indyav_control::ThrustStamped& _msg)
@@ -28,11 +30,20 @@ void BackWheelPlugin::Callback(const indyav_control::ThrustStamped& _msg)
 
 void BackWheelPlugin::OnUpdate()
 {
-  // TODO: only apply forces when wheel collisions are touching the ground
   // TODO: apply forces on base_link at the offsets of the wheels in varrying amounts
   //  to replicate a differential torque thingy
-  if (model_->RelativeLinearVel().X() < max_velocity_)
-    base_link_->AddLinkForce(thrust_, ignition::math::Vector3<double>::Zero);
+  bool back_wheel_grounded;
+  //ros::param::get("wheel_contact/wheel_touch_ground", back_wheel_grounded);
+  ros::param::set("view_thrust", thrust_[0]);
+  if (model_->RelativeLinearVel().X() < max_velocity_ /*&& back_wheel_grounded == true*/){
+    //base_link_->AddLinkForce(thrust_, ignition::math::Vector3<double>::Zero);
+    back_left_wheel_link_->AddLinkForce(thrust_, ignition::math::Vector3<double>::Zero);
+    back_right_wheel_link_->AddLinkForce(thrust_, ignition::math::Vector3<double>::Zero);
+  }/* else if(back_wheel_grounded == false){
+    thrust_[0] = 0.0;
+    back_left_wheel_link_->AddLinkForce(thrust_, ignition::math::Vector3<double>::Zero);
+    back_right_wheel_link_->AddLinkForce(thrust_, ignition::math::Vector3<double>::Zero);
+  }*/
 }
 
 void BackWheelPlugin::Init()

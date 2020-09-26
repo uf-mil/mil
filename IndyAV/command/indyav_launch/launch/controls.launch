@@ -14,4 +14,8 @@
       <param name="input_topic" value="/steering"/>
     </node>
   </group>
+  <node name="wheel_contact" pkg="indyav_gazebo" type="wheel_touch_ground">
+      <param name="wheel_touch_ground" value="false"/>
+  </node>
+
 </launch>
