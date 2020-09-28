@@ -32,13 +32,22 @@ void SimulatedSteeringDriver<MSG>::Callback(const MSG& _msg)
   for (auto i = pubs_.begin(); i != pubs_.end(); ++i)
   {
     // TODO: impliment ackerman steering angles
+    // Worked Mr. Daniel Williams and Mr. Jin-hyuk, Yu
 
-    // Steering angle for inside wheel = tan^(-1)(L/R-(T/2))
-    // Steering angle for outside wheel = tan^(-1)(L/R+(T/2))
-    // L = wheelbase = distance between the two axles.
-    // T = track = distance between center line of each tire.
-    // R = radius of the turn as experienced from the center of the vehicle. Will this need to be calculated from the center of the track
-    // More info: http://datagenetics.com/blog/december12016/index.html
+    // cmd_angle = theta. an input angle based on geometric bicycle model for the vehicle
+    // Steering_angle_inside = tan^(-1)((2*L*sin(theta))/(2*L*cos(theta)-W*sin(theta))) 
+    // Steering_angle_outside = tan^(-1)((2*L*sin(theta))/(2*L*cos(theta)+W*sin(theta))) 
+    // L = the wheel base = distance between the two axles
+    // T = the track width = distance between center line of each tire
+    // We don't have to find R, the radius of the turn. 
+    // GoKart mechanical properties, the wheel base and the track width, are needed.
+    
+    // Reference
+    // 1) Ackerman Steering, Robert Eisele, https://www.xarg.org/book/kinematics/ackerman-steering/
+    // 2) Ackerman Steering Geometry, https://en.wikipedia.org/wiki/Ackermann_steering_geometry
+    // 3) Page 11-12, Path Tracking for Unmanned Ground Vehicle Navigation, J. Giesbrecht, D. Mackay, J. Collier, S. Verret, DRDC Suffield, 2005
+    // 4) page 8-9, Automatic Steering Methods for Autonomous Automobile Path Tracking, Jarrod M. Snider, Robotics Institute at CMU, 2009
+    // 5) http://datagenetics.com/blog/december12016/index.html
 
     std_msgs::Float64 msg;
     msg.data = cmd_angle;
