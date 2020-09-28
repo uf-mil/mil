@@ -1,0 +1,4 @@
+#!/bin/bash
+
+arduino-cli upload ./src/sensors/ -p /dev/ttyACM0 --fqbn arduino:avr:mega:cpu=atmega2560 --verbose
+

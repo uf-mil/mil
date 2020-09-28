@@ -60,7 +60,9 @@ mil_system_install \
   ros-melodic-ros-control \
   ros-melodic-ros-controllers \
   python-pip \
-  clang-format-3.9
+  clang-format-3.9 \
+  golang-go
+
 sudo pip install \
   tqdm \
   scipy \
@@ -80,3 +82,11 @@ sudo pip3 install -q \
 # Initialize rosdep
 sudo pip install -U rosdep
 sudo rosdep init
+
+# Install the Arduino CLI from source (because no ppa right now)
+go get -u github.com/arduino/arduino-cli
+arduino-cli core update-index
+
+# We are currently using a Arduino Mega 2560 Rev3, which uses the avr core
+#  https://store.arduino.cc/usa/mega-2560-r3
+arduino-cli core install arduino:avr
