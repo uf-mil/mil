@@ -1,0 +1,4 @@
+#!/bin/bash
+
+BUILD_DIR=$MIL_WS/build/mil/IndyAV/electrical/indyav_electrical/arduino/
+arduino-cli upload --input-dir $BUILD_DIR -p /dev/ttyACM0 --fqbn arduino:avr:mega:cpu=atmega2560 --verbose

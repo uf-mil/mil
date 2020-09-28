@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="environment" default ="real"/>
+  <group if="$(eval environment == 'real')">
+    <!-- gps ins -->
+    <include file="$(find navigator_launch)/launch/hardware/gps.launch"/>
+    <!-- arduino -->
+    <node name="arduino_driver" pkg="indyav_electrical" type="arduino_driver.py"/>
+  </group>
+</launch>

@@ -16,6 +16,8 @@
   <exec_depend>joy</exec_depend>
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>indyav_gazebo</exec_depend>
+  <exec_depend>navigator_launch</exec_depend>
+  <exec_depend>indyav_electrical</exec_depend>
   <buildtool_depend>catkin</buildtool_depend>
   <export>
   </export>

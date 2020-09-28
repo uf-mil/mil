@@ -1,0 +1,21 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eno1:
+      dhcp4: no
+      addresses: [192.168.37.37/24]
+      gateway4: 192.168.37.1
+      nameservers:
+        addresses: [8.8.4.4,8.8.8.8]
+  wifis:
+    wlp58s0:
+      dhcp4: no
+      optional: true
+      addresses: [192.168.37.38/24]
+      gateway4: 192.168.37.1
+      nameservers:
+        addresses: [8.8.4.4, 8.8.8.8]
+      access-points:
+        "MIL_Mobile":
+          password: "fuelsnob"
