@@ -11,6 +11,7 @@ sudo apt update
 
 # System dependencies
 mil_system_install apt-utils
+
 mil_system_install --no-install-recommends \
   ca-certificates \
   tzdata \
@@ -21,7 +22,8 @@ mil_system_install --no-install-recommends \
   mercurial \
   ruby \
   wget \
-  expect
+  expect \
+  curl
 
 # ROS apt source
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -60,8 +62,7 @@ mil_system_install \
   ros-melodic-ros-control \
   ros-melodic-ros-controllers \
   python-pip \
-  clang-format-3.9 \
-  golang-go
+  clang-format-3.9
 
 sudo pip install \
   tqdm \
@@ -81,12 +82,12 @@ sudo pip3 install -q \
 
 # Initialize rosdep
 sudo pip install -U rosdep
+ROSDEP=/etc/ros/rosdep/sources.list.d/20-default.list
+[ -f $ROSDEP ] && sudo rm -rf $ROSDEP
 sudo rosdep init
 
-# Install the Arduino CLI from source (because no ppa right now)
-go get -u github.com/arduino/arduino-cli
+ARDUINO_CLI_DIR=${ARDUINO_CLI_DIR:-~/.local/bin}
+curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | \
+  BINDIR=$ARDUINO_CLI_DIR sh
 arduino-cli core update-index
-
-# We are currently using a Arduino Mega 2560 Rev3, which uses the avr core
-#  https://store.arduino.cc/usa/mega-2560-r3
 arduino-cli core install arduino:avr

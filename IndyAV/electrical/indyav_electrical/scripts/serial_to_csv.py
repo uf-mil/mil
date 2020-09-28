@@ -2,6 +2,8 @@
 ## This script reads lines from arduino serial communication and saves it to 'output.txt'
 ## Requires package: pyserial
 
+# TODO rewrite this in a proper c++ ros sensor driver
+
 import serial
 import csv
 from time import sleep

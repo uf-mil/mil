@@ -41,8 +41,14 @@ include_directories(
 )
 
 # TODO: Make this a CMake Macro
-add_custom_target(${PROJECT_NAME}_sensors 
-    arduino-cli compile --fqbn arduino:avr:mega:cpu=atmega2560 ${CMAKE_CURRENT_SOURCE_DIR}/src/sensors
+add_custom_target(${PROJECT_NAME}_sensors
+    mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/sensors && arduino-cli compile --fqbn arduino:avr:mega:cpu=atmega2560 ${CMAKE_CURRENT_SOURCE_DIR}/src/sensors --output-dir ${CMAKE_CURRENT_BINARY_DIR}/sensors
+  BYPRODUCTS
+    ${CMAKE_CURRENT_BINARY_DIR}/sensors/sensors.ino.eep
+    ${CMAKE_CURRENT_BINARY_DIR}/sensors/sensors.ino.elf
+    ${CMAKE_CURRENT_BINARY_DIR}/sensors/sensors.ino.hex
+    ${CMAKE_CURRENT_BINARY_DIR}/sensors/sensors.ino.with_bootloader.bin
+    ${CMAKE_CURRENT_BINARY_DIR}/sensors/sensors.ino.with_bootloader.hex
   DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/sensors/sensors.ino
   USES_TERMINAL
