@@ -7,5 +7,5 @@
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
   </node>
   <node pkg="tf" type="static_transform_publisher" name="base_link_to_ins_broadcaster"
-        args="-0.05 -0.0 -0.05 0 0 0 ins base_link 100" />
+        args="-0.585 0.05 0 -3.14 0 0 ins base_link 100" />
 </launch>

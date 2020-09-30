@@ -1,0 +1,7 @@
+<launch>
+
+<include file="$(find navigator_launch)/launch/hardware/gps.launch"/>
+
+<node name="chassis_sensors_driver" pkg="indyav_electrical" type="chassis_sensors_driver"/>
+
+</launch>

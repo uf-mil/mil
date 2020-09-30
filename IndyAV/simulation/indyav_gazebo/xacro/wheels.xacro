@@ -2,14 +2,16 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="wheels">
   <xacro:include filename="$(find mil_gazebo)/xacro/util.xacro"/>
 
-  <xacro:property name="wheel_length" value="0.25"/>
-  <xacro:property name="wheel_width" value="0.25"/>
-  <xacro:property name="wheel_height" value="0.25"/>
-  <xacro:property name="wheel_mass" value="5"/>
+  <xacro:property name="back_wheel_radius" value="0.25"/>
+  <xacro:property name="back_wheel_width" value="0.25"/>
+  <xacro:property name="back_wheel_mass" value="2.25"/>
+  <xacro:property name="front_wheel_radius" value="0.25"/>
+  <xacro:property name="front_wheel_width" value="0.25"/>
+  <xacro:property name="front_wheel_mass" value="1.65"/>
 
-  <xacro:macro name="wheel_geometry">
+  <xacro:macro name="wheel_geometry" params="radius width">
     <geometry>
-      <box size="${wheel_length} ${wheel_width} ${wheel_height}"/>
+      <box size="${radius} ${width} ${radius}"/>
     </geometry>
   </xacro:macro>
 
@@ -33,23 +35,25 @@
     </gazebo>
   </xacro:macro>
 
-  <xacro:macro name="wheel_physical">
+  <xacro:macro name="wheel_physical" params="mass radius width">
     <inertial>
-      <mass value="${wheel_mass}"/>
-      <xacro:box_inertia x="${wheel_length}" y="${wheel_width}" z="${wheel_height}"
-                         mass="${wheel_mass}"/>
+      <mass value="${mass}"/>
+      <xacro:box_inertia x="${radius}" y="${width}" z="${radius}"
+                         mass="${mass}"/>
     </inertial>
     <collision>
-      <xacro:wheel_geometry/>
+      <xacro:wheel_geometry radius="${radius}" width="${width}"/>
     </collision>
     <visual>
-      <xacro:wheel_geometry/>
+      <xacro:wheel_geometry radius="${radius}" width="${width}"/>
     </visual>
   </xacro:macro>
 
   <xacro:macro name="back_wheel" params="name xyz parent_link:='base_link'">
     <link name="${name}_link">
-      <xacro:wheel_physical/>
+      <xacro:wheel_physical mass=  "${back_wheel_mass}"
+                            radius="${back_wheel_radius}"
+                            width= "${back_wheel_width}"/>
     </link>
     <joint name="${parent_link}_to_${name}_link_joint" type="fixed">
       <parent link="${parent_link}" />
@@ -63,7 +67,9 @@
                                           max_deflection_left_deg:='30'
                                           max_deflection_right_deg:='30'">
     <link name="${name}_link">
-      <xacro:wheel_physical/>
+      <xacro:wheel_physical mass=  "${front_wheel_mass}"
+                            radius="${front_wheel_radius}"
+                            width= "${front_wheel_width}"/>
     </link>
 
     <joint name="${parent_link}_to_${name}_link_joint" type="revolute">
