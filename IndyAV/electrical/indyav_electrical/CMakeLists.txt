@@ -40,8 +40,10 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+
+
 # TODO: Make this a CMake Macro
-add_custom_target(${PROJECT_NAME}_sensors
+add_custom_target(${PROJECT_NAME}_sensors ALL
     mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/sensors && arduino-cli compile --fqbn arduino:avr:mega:cpu=atmega2560 ${CMAKE_CURRENT_SOURCE_DIR}/src/sensors --output-dir ${CMAKE_CURRENT_BINARY_DIR}/sensors
   BYPRODUCTS
     ${CMAKE_CURRENT_BINARY_DIR}/sensors/sensors.ino.eep

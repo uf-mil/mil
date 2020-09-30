@@ -1,5 +1,5 @@
 #!/bin/bash
 
 # TODO test new on kart
-BUILD_DIR=$MIL_WS/build/mil/IndyAV/electrical/indyav_electrical/sensors
-arduino-cli upload $BUILD_DIR -p /dev/ttyACM0 --fqbn arduino:avr:mega:cpu=atmega2560 --verbose
+BUILD_DIR=$MIL_WS/build/mil/IndyAV/electrical/indyav_electrical/sensors/
+arduino-cli upload --input-dir $BUILD_DIR -p /dev/ttyACM0 --fqbn arduino:avr:mega:cpu=atmega2560 --verbose
