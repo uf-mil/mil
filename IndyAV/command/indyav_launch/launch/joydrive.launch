@@ -1,26 +1,22 @@
 <?xml version="1.0"?>
 <launch>
 
-  <!-- Joystick Driver -->
+ <!-- Joystick Driver -->
   <node pkg="joy" type="joy_node" name="joy">
    <param name="dev" value="/dev/input/js1"/>
-   <!--<param name="autorepeat_rate" type="double" value="10.0" />  -->
    <param name="autorepeat_rate" value="10"/>
   </node>
 
-  <!--Joystick Teleop -->
-  <!--  <rosparam file="$(find vrx_gazebo)/config/diffdrive.yaml"
-    command="load"/>
-  <node pkg="joy_teleop" type="joy_teleop.py" name="joy_teleop">
-   <remap from="cmd_vel" to="cmd_vel" />
-  </node>-->
-
  <!--Axes-->
+ <node pkg="indyav_control" type="joy_teleop" name="joy_teleop">
   <param name="axis_steer" value="1" type="int"/>
   <param name="axis_throttle" value="5" type="int"/>
   <param name="axis_brake" value="2" type="int"/> 
-  <param name="scale_steer" value="2" type="double"/>
+  <param name="scale_steer" value="5" type="double"/>
   <param name="scale_trigger" value="1000" type="double"/>
-  <node pkg="indyav_gazebo" type="joy_teleop_left_node" name="joy_teleop_left_node"/>
+  <param name="throttle_topic" value="throttle"/>
+  <param name="steering_topic" value="steering"/>
+ </node>
 
 </launch>
+

@@ -71,6 +71,8 @@ target_link_libraries(simulated_steering_driver
   ${catkin_LIBRARIES})
 add_executable(joy_teleop 
   src/joy_teleop.cpp)
+add_dependencies(joy_teleop
+  ${catkin_EXPORTED_TARGETS})
 target_link_libraries(joy_teleop 
   ${catkin_LIBRARIES})
 
