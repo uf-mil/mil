@@ -1,33 +1,37 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(indyav_electrical)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
-
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  message_generation
 )
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+add_message_files(
+  DIRECTORY msg
+  FILES
+  SteeringPotStamped.msg
+  ThrottleBrakeStamped.msg
+  WheelEncodersStamped.msg
+)
 
-
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 catkin_python_setup()
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
 
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES indyav_electrical
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
 #  DEPENDS system_lib
 )
+
+
 
 ###########
 ## Build ##
@@ -42,17 +46,18 @@ include_directories(
 
 
 
+
 # TODO: Make this a CMake Macro
-add_custom_target(${PROJECT_NAME}_sensors ALL
-    mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/sensors && arduino-cli compile --fqbn arduino:avr:mega:cpu=atmega2560 ${CMAKE_CURRENT_SOURCE_DIR}/src/sensors --output-dir ${CMAKE_CURRENT_BINARY_DIR}/sensors
+add_custom_target(${PROJECT_NAME}_chassis_sensors ALL
+    mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/chassis_sensors && arduino-cli compile --fqbn arduino:avr:mega:cpu=atmega2560 ${CMAKE_CURRENT_SOURCE_DIR}/src/chassis_sensors --output-dir ${CMAKE_CURRENT_BINARY_DIR}/chassis_sensors
   BYPRODUCTS
-    ${CMAKE_CURRENT_BINARY_DIR}/sensors/sensors.ino.eep
-    ${CMAKE_CURRENT_BINARY_DIR}/sensors/sensors.ino.elf
-    ${CMAKE_CURRENT_BINARY_DIR}/sensors/sensors.ino.hex
-    ${CMAKE_CURRENT_BINARY_DIR}/sensors/sensors.ino.with_bootloader.bin
-    ${CMAKE_CURRENT_BINARY_DIR}/sensors/sensors.ino.with_bootloader.hex
+    ${CMAKE_CURRENT_BINARY_DIR}/chassis_sensors/chassis_sensors.ino.eep
+    ${CMAKE_CURRENT_BINARY_DIR}/chassis_sensors/chassis_sensors.ino.elf
+    ${CMAKE_CURRENT_BINARY_DIR}/chassis_sensors/chassis_sensors.ino.hex
+    ${CMAKE_CURRENT_BINARY_DIR}/chassis_sensors/chassis_sensors.ino.with_bootloader.bin
+    ${CMAKE_CURRENT_BINARY_DIR}/chassis_sensors/chassis_sensors.ino.with_bootloader.hex
   DEPENDS
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/sensors/sensors.ino
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/chassis_sensors/chassis_sensors.ino
   USES_TERMINAL
 )
 
