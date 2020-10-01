@@ -5,6 +5,7 @@ from nav_msgs.msg import Odometry
 from time import sleep
 import rostest
 import tf
+import os
 
 class SylphaseTestCase(unittest.TestCase):
     sylphase_pub = False
@@ -40,3 +41,4 @@ if __name__ == '__main__':
     rospy.init_node('test_sylphase')
     import rostest
     rostest.rosrun('test_package', 'test_name', SylphaseTestCase)
+    os.system('killgazebo')
