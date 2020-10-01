@@ -5,11 +5,11 @@ joint_state_publisher:
 car:
   simulated_hardware_controllers:
     steering:
-      left:
+       left:
         type: effort_controllers/JointPositionController
-        joint: base_link_to_front_left_wheel_link_joint
+        joint: base_link_to_front_left_axle_link_joint
         pid: {p: 1000.0, i: 0.01, d: 10.0}
-      right:
+       right:
         type: effort_controllers/JointPositionController
-        joint: base_link_to_front_right_wheel_link_joint
+        joint: base_link_to_front_right_axle_link_joint
         pid: {p: 1000.0, i: 0.01, d: 10.0}

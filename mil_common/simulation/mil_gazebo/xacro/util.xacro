@@ -10,6 +10,26 @@
              iyz="0.0"
              izz="${((y*y) + (x*x))*mass/12.0}"/>
   </xacro:macro>
+  
+  <xacro:macro name="cylinder_inertia" params="r h mass">
+    <inertia ixx="${((3*r*r) + (h*h))*mass/12.0}"
+             ixy="0.0"
+             ixz="0.0"
+             iyy="${((3*r*r) + (h*h))*mass/12.0}"
+             iyz="0.0"
+             izz="${(r*r)*mass/2.0}"/>
+  </xacro:macro>
 
-
+  <xacro:macro name="joint_transmission" params="name parent_link">
+    <transmission name="${name}_transmission">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${parent_link}_to_${name}_link_joint">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${name}_actuator">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+  </xacro:macro>
 </robot>

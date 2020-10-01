@@ -45,13 +45,13 @@ Command throttle
 ****************
 in a new pannel::
 
-  rostopic pub /throttle indyav_control/ThrustStamped -r 10 '{header: {
+  rostopic pub /throttle indyav_control/RevsStamped -r 10 '{header: {
   seq: 0,
   stamp: {
     secs: 0,
     nsecs: 0},
   frame_id: ''},
-  thrust: 900.000}'
+  radians_per_second: 30.000}'
 
 and see the car drive in circles in both Rviz and gazebo client
 

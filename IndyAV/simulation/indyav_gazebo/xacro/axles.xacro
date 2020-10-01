@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="axles">
+  
+  <xacro:macro name="axle_physical">
+      <xacro:property name="axle_length" value="0.005"/>
+      <xacro:property name="axle_mass" value="1"/>
+      <xacro:property name="axle_radius" value="0.005"/>
+
+      <inertial>
+        <mass value="${axle_mass}"/>
+        <origin xyz="0 0 0" rpy="0 0 1.5708"/>
+        <xacro:cylinder_inertia h="${axle_length}" r="${axle_radius}" mass="${axle_mass}"/>
+      </inertial>
+  </xacro:macro>
+
+
+  <!-- Front Axle Xacro -->
+  <xacro:macro name="front_axle" params="name xyz parent_link:='base_link' 
+                                                      max_deflection_left_deg:='45'
+                                                      max_deflection_right_deg:='45'">
+
+    <link name="${name}_link">
+       <xacro:axle_physical/>
+    </link>
+
+    <joint name="${parent_link}_to_${name}_link_joint" type="revolute">
+      <parent link="${parent_link}" />
+      <child link="${name}_link" />
+      <limit lower="${radians(-1 * float(max_deflection_right_deg))}"
+             upper="${radians(float(max_deflection_left_deg))}" effort="10000" velocity="100"/>
+      <axis xyz="0 0 1"/>
+      <origin xyz="${xyz}" rpy="0 0 1.5708"/>
+    </joint>
+
+    <xacro:joint_transmission name="${name}" parent_link="${parent_link}"/>
+  </xacro:macro>
+
+  <!-- Back Axle Xacro -->
+  <xacro:macro name="back_axle" params="name xyz parent_link:='base_link'">
+
+    <link name="${name}_link">
+       <xacro:axle_physical/>
+    </link>
+
+    <joint name="${parent_link}_to_${name}_link_joint" type="continuous">
+      <parent link="${parent_link}" />
+      <child link="${name}_link" />
+      <axis xyz="0 1 0"/>
+      <origin xyz="${xyz}"/>
+    </joint>
+
+    <xacro:joint_transmission name="${name}" parent_link="${parent_link}"/>
+  </xacro:macro>
+
+</robot>
+
