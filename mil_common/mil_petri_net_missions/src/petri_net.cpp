@@ -274,11 +274,11 @@ void PetriNet::ThreadPool::Spin()
   {
     net_.SafeDo([&](ThreadSafe& _ts) -> void {
       auto& net = static_cast<PetriNet&>(_ts);
-      // start the threads that need to be started
       if (net_.return_)
       {
         exit = true;
       }
+      // start the threads that need to be started
       bool state_changed = false;
       threads_to_start_.SafeDo([&](ThreadSafe& _ts) -> void {
         while (threads_to_start_.size() > 0)
@@ -367,50 +367,48 @@ std::string Transition::DetermineRelativeName(const std::string& _abs_name)
 
 void Transition::TryFire()
 {
-  net_.SafeDo([&](ThreadSafe& _ts) -> void {
-    // check all the input message quese for any data
-    bool all_ins_ready = true;
+  // check all the input message quese for any data
+  bool all_ins_ready = true;
+  for (auto& place__hash_inedge : in_edges_)
+  {
+    for (auto& hash__inedge : place__hash_inedge.second)
+    {
+      hash__inedge.second.token_q_.SafeDo([&](ThreadSafe& ts) -> void {
+        if (hash__inedge.second.token_q_.size() < hash__inedge.second.quantity_)
+          all_ins_ready = false;
+      });
+      if (!all_ins_ready)
+        break;
+    }
+  }
+  // if so, then get the tokens
+  if (all_ins_ready)
+  {
+    PlaceTypeTokenVec in_place_tokens;
     for (auto& place__hash_inedge : in_edges_)
     {
+      const auto& abs_name = place__hash_inedge.first;
+      std::string rel_name = in_edges_rel_names_.at(abs_name);
+      in_place_tokens.emplace(rel_name, TypeTokenVec());
       for (auto& hash__inedge : place__hash_inedge.second)
       {
-        hash__inedge.second.token_q_.SafeDo([&](ThreadSafe& ts) -> void {
-          if (hash__inedge.second.token_q_.size() < hash__inedge.second.quantity_)
-            all_ins_ready = false;
+        hash__inedge.second.token_q_.SafeDo([&](ThreadSafe& _ts) -> void {
+          in_place_tokens.at(rel_name).emplace(hash__inedge.first, TokenVec());
+          for (int i = 0; i < hash__inedge.second.quantity_; ++i)
+          {
+            in_place_tokens.at(rel_name).at(hash__inedge.first).push_back(hash__inedge.second.token_q_.front());
+            hash__inedge.second.token_q_.pop();
+          }
         });
-        if (!all_ins_ready)
-          break;
       }
     }
-    // if so, then get the tokens
-    if (all_ins_ready)
+    // distribute those token to the other places
+    for (const auto& place : out_edges_)
     {
-      PlaceTypeTokenVec in_place_tokens;
-      for (auto& place__hash_inedge : in_edges_)
-      {
-        const auto& abs_name = place__hash_inedge.first;
-        std::string rel_name = in_edges_rel_names_.at(abs_name);
-        in_place_tokens.emplace(rel_name, TypeTokenVec());
-        for (auto& hash__inedge : place__hash_inedge.second)
-        {
-          hash__inedge.second.token_q_.SafeDo([&](ThreadSafe& _ts) -> void {
-            in_place_tokens.at(rel_name).emplace(hash__inedge.first, TokenVec());
-            for (int i = 0; i < hash__inedge.second.quantity_; ++i)
-            {
-              in_place_tokens.at(rel_name).at(hash__inedge.first).push_back(hash__inedge.second.token_q_.front());
-              hash__inedge.second.token_q_.pop();
-            }
-          });
-        }
-      }
-      // distribute those token to the other places
-      for (const auto& place : out_edges_)
-      {
-        StartMsg start_msg{ place.first, place.second(in_place_tokens) };
-        net_.thread_pool_.Post(start_msg);
-      }
+      StartMsg start_msg{ place.first, place.second(in_place_tokens) };
+      net_.thread_pool_.Post(start_msg);
     }
-  });
+  }
 }
 
 void Transition::AddInEdge(const std::string& _place, const std::size_t _hash_code, TokenQueue& _out_channel,
@@ -476,29 +474,21 @@ void Place::_Callback(const Token _token)
     net_.Kill(name_ + ": Returned Token of type " + demangle(token->type().name()) + " is not supported\n");
     return;
   }
-  auto& out = out_edges_.at(token->type().hash_code());
-
-  // if We are debugging, it is important to do everything in a critical section
-  if (net_.GetDebug())
-  {
-    net_.SafeDo([&](ThreadSafe& _ts) -> void {
-      in_progress_--;
-      out.msg_q_.SafeDo([&](ThreadSafe& _ts) -> void { out.msg_q_.push(token); });
-      net_.DebugOutput();
-    });
-  }
-  // if not, the we do not have to
-  else
-  {
+  net_.SafeDo([&](ThreadSafe& _ts) -> void {
+    auto& out = out_edges_.at(token->type().hash_code());
     in_progress_--;
     out.msg_q_.SafeDo([&](ThreadSafe& _ts) -> void { out.msg_q_.push(token); });
-  }
-  // iterate through and call the transitions that belong to that type
-  for (auto& transition : out.transitions_)
-  {
-    net_.transitions_.at(transition).TryFire();
-  }
-  net_.thread_pool_.Join(std::this_thread::get_id());
+    if (net_.GetDebug())
+    {
+      net_.DebugOutput();
+    }
+    // iterate through and call the transitions that belong to that type
+    for (auto& transition : out.transitions_)
+    {
+      net_.transitions_.at(transition).TryFire();
+    }
+    net_.thread_pool_.Join(std::this_thread::get_id());
+  });
 }
 
 bool Place::HasOutType(const std::type_info& _type) const
