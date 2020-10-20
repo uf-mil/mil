@@ -83,7 +83,7 @@ A petri net as a function which "places" the elements in an already exiting petr
 
 Notice that we do not need to include the return transition and return place, they are taken car of for us by the library when ever adding elements to a petri net / sub net.
 
-**NOTE: All this code came from the** ``test/mult.hpp`` **under the tests directry of the mil_petri_net_missions package**
+**NOTE: All this code came from the** ``test/mult.hpp`` **under the tests directry of the mil_petri_nets package**
 
 Action
 ******
@@ -129,13 +129,13 @@ To run the render on a log file from the tests:
 
 run the tests with:
 
-``mil && cd ../.. && catkin_make run_tests_mil_petri_net_missions_gtest``
+``mil && cd ../.. && catkin_make run_tests_mil_petri_nets_gtest``
 
 Then, the logs will have been generated.
 
 To render the log file, from the multi_type test, run.
 
-``rosrun mil_petri_net_missions render_log.py ~/.mil/petri_net_tests/multi_type.log``
+``rosrun mil_petri_nets render_log.py ~/.mil/petri_net_tests/multi_type.log``
 
 This should bring up a rendering of the mult petri net (that was demonstrated earlier). You can advance the state in the renderer by pressing the ``Enter`` key on your keybard in the terminal where you are running the renderer script.
 

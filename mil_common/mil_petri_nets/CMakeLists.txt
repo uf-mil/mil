@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(mil_petri_net_missions)
+project(mil_petri_nets)
 
 add_compile_options(-std=c++17)
 
@@ -13,7 +13,7 @@ catkin_python_setup()
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES mil_petri_net_missions
+  LIBRARIES mil_petri_nets
   DEPENDS system_lib
 )
 

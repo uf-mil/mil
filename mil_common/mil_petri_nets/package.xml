@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>mil_petri_net_missions</name>
+  <name>mil_petri_nets</name>
   <version>0.0.0</version>
-  <description>The mil_petri_net_missions package</description>
+  <description>The mil_petri_nets package</description>
 
   <maintainer email="marshallrawson@ufl.edu">MarshallRawson</maintainer>
   <author email="marshallrawson@ufl.edu">MarshallRawson</author>
   <license>MIT</license>
 
 
-  <!-- <url type="website">http://wiki.ros.org/mil_petri_net_missions</url> -->
+  <!-- <url type="website">http://wiki.ros.org/mil_petri_nets</url> -->
   <depend>roscpp</depend>
   <depend>rospy</depend>
   <test_depend>gtest</test_depend>

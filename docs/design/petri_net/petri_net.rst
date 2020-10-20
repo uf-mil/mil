@@ -59,7 +59,7 @@ These distributed systems include concurrent programing.
 How They Used in MIL?
 ---------------------
 
-The ``mil_petri_net_missions`` package is a concurrnet programming framework where the programmer builds a concurrent program by describing a petri net in terms of a tranditional program.
+The ``mil_petri_nets`` package is a concurrnet programming framework where the programmer builds a concurrent program by describing a petri net in terms of a tranditional program.
 
 This is the exact inverse of what is tranditionally done with modeling languages where the program would be described in terms of a petri net after it is written.
 

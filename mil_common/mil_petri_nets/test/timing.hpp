@@ -1,6 +1,6 @@
 #pragma once
 #include <ros/ros.h>
-#include <mil_petri_net_missions/petri_net.hpp>
+#include <mil_petri_nets/petri_net.hpp>
 namespace petri_net::tests
 {
 void timing(PetriNet& pn)

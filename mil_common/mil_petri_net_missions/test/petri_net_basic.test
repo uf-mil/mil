@@ -1,3 +1,0 @@
- <launch>
-   <test test-name="petri_net_basic_test" pkg="mil_petri_net_missions" type="mil_petri_net_missions-test" retry="2"/>
- </launch>
