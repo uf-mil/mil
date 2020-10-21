@@ -19,7 +19,7 @@ throttle_pub = rospy.Publisher('/throttle/meausred', ThrottleBrakeStamped)
 wheel_pub = rospy.Publisher('/wheels/measured', WheelEncodersStamped)
 
 serial = serial.Serial("/dev/ttyACM0",115200,timeout = 1);
-print(serial);
+#print(serial);
 
 # Serial readline loop
 '''
@@ -29,10 +29,17 @@ with open('output.csv', 'w') as new_file:
                              "rearSpeed","passSpeed","driverSpeed"])
 '''
 while True:
-    data = np.array(serial.readline().strip().split(','))
-    data = data.astype(np.int64)
-
-    print(data);
+    data = serial.readline().strip()
+    try:
+        data = data.decode()
+    except UnicodeDecodeError as e:
+        continue
+    print(data)
+    data = data.split(',')
+    if len(data) != 8:
+        continue
+    data = [int(d) for d in data]
+    #print(data);
     steering_msg = SteeringPotStamped()
     steering_msg.header.stamp = rospy.Time.now()
     steering_msg.steering_pot = data[1]

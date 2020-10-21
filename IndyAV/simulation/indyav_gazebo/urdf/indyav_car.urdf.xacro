@@ -16,7 +16,7 @@
   </link>
 
   <xacro:sylphase name="ins"
-                  xyz="-0.585 0.05 0" rpy="0 ${radians(0)} ${pi}"/>
+                  xyz="-0.585 0.05 0" rpy="0 ${radians(0)} 0"/>
   <!-- TODO: distance from base_link in all directions -->
   <xacro:back_wheel name="back_left_wheel"   xyz="-1  0.6 -0.1"/>
   <xacro:back_wheel name="back_right_wheel"  xyz="-1 -0.6 -0.1"/>
