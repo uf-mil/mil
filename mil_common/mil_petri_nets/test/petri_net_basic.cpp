@@ -2,8 +2,8 @@
 #include <mil_petri_nets/petri_net.hpp>
 #include "arithmetic_chain.hpp"
 #include "mult.hpp"
-#include "timing.hpp"
 #include "negative_thresholding.hpp"
+#include "timing.hpp"
 
 std::string make_log(const std::string& name)
 {
@@ -127,8 +127,8 @@ TEST(PetriNetBasic, negativeThresholdTest)
 {
   petri_net::PetriNet pn(make_log("negative_threshold.log"));
   petri_net::tests::negative_threshold(pn);
-  pn.StartTokens( { { "Generator", petri_net::make_token(petri_net::Empty {}) },
-                    { "Timer", petri_net::make_token(petri_net::Empty{})      } } );
+  pn.StartTokens({ { "Generator", petri_net::make_token(petri_net::Empty{}) },
+                   { "Timer", petri_net::make_token(petri_net::Empty{}) } });
   const int size = petri_net::ReturnGet<int>(pn.Spin(), "../Buffer").size();
   ASSERT_TRUE(size == 5);
 }

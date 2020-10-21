@@ -44,7 +44,7 @@ std::pair<std::size_t, std::string> in_type()
   return std::make_pair<std::size_t, std::string>(typeid(T).hash_code(), demangle(typeid(T).name()));
 }
 
-template<typename T>
+template <typename T>
 std::pair<std::size_t, std::string> out_type()
 {
   return in_type<T>();
@@ -92,8 +92,8 @@ std::vector<T> ReturnGet(const PlaceTypeTokenVec& _pttv, const std::string& _pla
   }
   catch (std::out_of_range& e)
   {
-    throw std::out_of_range(_place + " had no output tokens of the type " + demangle(typeid(T).name()) + " to Return\n" +
-                            e.what());
+    throw std::out_of_range(_place + " had no output tokens of the type " + demangle(typeid(T).name()) +
+                            " to Return\n" + e.what());
   }
   std::vector<T> out;
   for (const auto& i : ttv.at(hash_code<T>()))
@@ -223,7 +223,8 @@ public:
   ~PetriNet();
 
   // functions that are used to build the petri net, cannot be called after the net is started
-  void AddPlace(const std::string& _name, const std::map<std::size_t, std::string>& _in_types, const std::map<std::size_t, std::string>& _out_types = {});
+  void AddPlace(const std::string& _name, const std::map<std::size_t, std::string>& _in_types,
+                const std::map<std::size_t, std::string>& _out_types = {});
 
   void SetPlaceCallback(const std::string& _name, std::function<Token(const Token)> _callback);
 

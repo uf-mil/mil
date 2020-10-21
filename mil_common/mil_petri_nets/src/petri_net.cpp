@@ -67,7 +67,8 @@ PetriNet::~PetriNet()
     delete debug_;
 }
 
-void PetriNet::AddPlace(const std::string& _name, const std::map<std::size_t, std::string>& _in_types, const std::map<std::size_t, std::string>& _out_types)
+void PetriNet::AddPlace(const std::string& _name, const std::map<std::size_t, std::string>& _in_types,
+                        const std::map<std::size_t, std::string>& _out_types)
 {
   auto name = namespace_ + _name;
   places_.emplace(name, Place(name, _in_types, *this));
@@ -76,8 +77,7 @@ void PetriNet::AddPlace(const std::string& _name, const std::map<std::size_t, st
     if (!places_.at(name).HasOutType(i.first))
     {
       msg_qs_.emplace_back();
-      places_.at(name).out_edges_.emplace(i.first,
-        OutChannel(name + "->" + i.second, msg_qs_.back()));
+      places_.at(name).out_edges_.emplace(i.first, OutChannel(name + "->" + i.second, msg_qs_.back()));
     }
   }
 }
@@ -124,7 +124,8 @@ void PetriNet::ConnectPlaceTransition(const std::string& _p, const std::string& 
     places_.at(p).AddOutEdge(_type_name, _type_hash, t, msg_qs_.back());
   }
   if (_quantity == 0)
-    throw std::runtime_error("theshold quanity for a place -> transition edge canNOT be zero. It can be positive (wait for quanity tokens and take that many tokens when firing) \n\
+    throw std::runtime_error(
+        "theshold quanity for a place -> transition edge canNOT be zero. It can be positive (wait for quanity tokens and take that many tokens when firing) \n\
   OR\n\
   theshold quantity for place -> transition edge can be nagative (wait for abs(quanity) tokens to fire and take ALL the availible tokens when firing)");
   transitions_.at(t).AddInEdge(p, _type_hash, places_.at(p).GetTokenQueue(_type_hash), _quantity);
