@@ -3,6 +3,7 @@
 #include "arithmetic_chain.hpp"
 #include "mult.hpp"
 #include "timing.hpp"
+#include "negative_thresholding.hpp"
 
 std::string make_log(const std::string& name)
 {
@@ -50,7 +51,7 @@ TEST(PetriNetBasic, timingTest)
 {
   petri_net::PetriNet pn(make_log("timing.log"));
   petri_net::tests::timing(pn);
-  pn.StartTokens({ { "Start", petri_net::make_token(petri_net::empty{}) } });
+  pn.StartTokens({ { "Start", petri_net::make_token(petri_net::Empty{}) } });
   auto ptt = petri_net::token_cast<petri_net::PlaceTypeTokenVec>(pn.Spin());
   ASSERT_TRUE(test_timing_results(ptt));
 }
@@ -62,7 +63,7 @@ TEST(PetriNetBasic, subnetTest)
                [](petri_net::PetriNet& _pn) -> void { petri_net::tests::arithmetic_chain(_pn, false); });
   pn.AddSubNet("Timing", &petri_net::tests::timing);
   pn.StartTokens({ { "Arithmetic Chain/Add", petri_net::make_token(std::make_pair(5, 10)) },
-                   { "Timing/Start", petri_net::make_token(petri_net::empty{}) } });
+                   { "Timing/Start", petri_net::make_token(petri_net::Empty{}) } });
   pn.ConnectPlaceTransition("Timing/Return/Place", "Return/Transition", "PlaceTypeTokenVec",
                             typeid(petri_net::PlaceTypeTokenVec).hash_code());
   pn.ConnectPlaceTransition("Arithmetic Chain/Return/Place", "Return/Transition", "PlaceTypeTokenVec",
@@ -120,6 +121,16 @@ TEST(PetriNetBasic, multiTypeTest)
   ASSERT_TRUE(int_int_count == 1);
   ASSERT_TRUE(double_int_count == 2);
   ASSERT_TRUE(double_double_count == 1);
+}
+
+TEST(PetriNetBasic, negativeThresholdTest)
+{
+  petri_net::PetriNet pn(make_log("negative_threshold.log"));
+  petri_net::tests::negative_threshold(pn);
+  pn.StartTokens( { { "Generator", petri_net::make_token(petri_net::Empty {}) },
+                    { "Timer", petri_net::make_token(petri_net::Empty{})      } } );
+  const int size = petri_net::ReturnGet<int>(pn.Spin(), "../Buffer").size();
+  ASSERT_TRUE(size == 5);
 }
 
 int main(int argc, char** argv)

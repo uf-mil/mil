@@ -23,7 +23,7 @@
 
 namespace petri_net
 {
-struct empty
+struct Empty
 {
 };
 
@@ -42,6 +42,12 @@ template <typename T>
 std::pair<std::size_t, std::string> in_type()
 {
   return std::make_pair<std::size_t, std::string>(typeid(T).hash_code(), demangle(typeid(T).name()));
+}
+
+template<typename T>
+std::pair<std::size_t, std::string> out_type()
+{
+  return in_type<T>();
 }
 
 template <typename T>
@@ -77,7 +83,7 @@ std::vector<T> ReturnGet(const PlaceTypeTokenVec& _pttv, const std::string& _pla
   }
   catch (std::out_of_range& e)
   {
-    throw std::out_of_range(_place + " had no output tokens to Return\n" + e.what());
+    throw std::out_of_range(_place + " was not found\n" + e.what());
   }
   auto& ttv = _pttv.at(_place);
   try
@@ -86,7 +92,7 @@ std::vector<T> ReturnGet(const PlaceTypeTokenVec& _pttv, const std::string& _pla
   }
   catch (std::out_of_range& e)
   {
-    throw std::out_of_range(_place + " had no output tokens of the type " + typeid(T).name() + " to Return\n" +
+    throw std::out_of_range(_place + " had no output tokens of the type " + demangle(typeid(T).name()) + " to Return\n" +
                             e.what());
   }
   std::vector<T> out;
@@ -198,11 +204,15 @@ class PetriNet : ThreadSafe
 
     void Join(const std::thread::id _id);
 
+    bool HasStartTokens();
+
   private:
     std::list<std::thread> pool_;
     // msg q to give the threads that need to be run and with what params
     MessageQueue<StartMsg> threads_to_start_;
     MessageQueue<std::thread::id> threads_to_join_;
+
+    void JoinAllThreads();
 
     PetriNet& net_;
   };
@@ -213,7 +223,7 @@ public:
   ~PetriNet();
 
   // functions that are used to build the petri net, cannot be called after the net is started
-  void AddPlace(const std::string& _name, const std::map<std::size_t, std::string>& _in_types);
+  void AddPlace(const std::string& _name, const std::map<std::size_t, std::string>& _in_types, const std::map<std::size_t, std::string>& _out_types = {});
 
   void SetPlaceCallback(const std::string& _name, std::function<Token(const Token)> _callback);
 
@@ -248,7 +258,7 @@ public:
   // Places call to signal a close of the petri net
   void StartTokens(const std::multimap<std::string, Token>& _start_tokens);
 
-  Token Spin();
+  const Token Spin();
 
   void AddSubNet(const std::string& _namespace, std::function<void(PetriNet&)>);
   void GetNamespace(std::string& _out)

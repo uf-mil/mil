@@ -67,10 +67,19 @@ PetriNet::~PetriNet()
     delete debug_;
 }
 
-void PetriNet::AddPlace(const std::string& _name, const std::map<std::size_t, std::string>& _in_types)
+void PetriNet::AddPlace(const std::string& _name, const std::map<std::size_t, std::string>& _in_types, const std::map<std::size_t, std::string>& _out_types)
 {
   auto name = namespace_ + _name;
   places_.emplace(name, Place(name, _in_types, *this));
+  for (const auto& i : _out_types)
+  {
+    if (!places_.at(name).HasOutType(i.first))
+    {
+      msg_qs_.emplace_back();
+      places_.at(name).out_edges_.emplace(i.first,
+        OutChannel(name + "->" + i.second, msg_qs_.back()));
+    }
+  }
 }
 
 void PetriNet::SetPlaceCallback(const std::string& _name, std::function<Token(Token)> _callback)
@@ -114,6 +123,10 @@ void PetriNet::ConnectPlaceTransition(const std::string& _p, const std::string& 
     msg_qs_.emplace_back();
     places_.at(p).AddOutEdge(_type_name, _type_hash, t, msg_qs_.back());
   }
+  if (_quantity == 0)
+    throw std::runtime_error("theshold quanity for a place -> transition edge canNOT be zero. It can be positive (wait for quanity tokens and take that many tokens when firing) \n\
+  OR\n\
+  theshold quantity for place -> transition edge can be nagative (wait for abs(quanity) tokens to fire and take ALL the availible tokens when firing)");
   transitions_.at(t).AddInEdge(p, _type_hash, places_.at(p).GetTokenQueue(_type_hash), _quantity);
 }
 
@@ -214,9 +227,11 @@ void PetriNet::StartTokens(const std::multimap<std::string, Token>& _start_token
   }
 }
 
-Token PetriNet::Spin()
+const Token PetriNet::Spin()
 {
   return_.reset();
+  if (!thread_pool_.HasStartTokens())
+    throw std::runtime_error("No Start Tokens have been given! Start tokens are required for the net to do anything.");
   thread_pool_.Spin();
   if (!return_)
   {
@@ -317,6 +332,7 @@ void PetriNet::ThreadPool::Spin()
       }
     });
   }
+  JoinAllThreads();
 }
 
 void PetriNet::ThreadPool::Post(const StartMsg& _start_msg)
@@ -327,6 +343,21 @@ void PetriNet::ThreadPool::Post(const StartMsg& _start_msg)
 void PetriNet::ThreadPool::Join(const std::thread::id _id)
 {
   threads_to_join_.SafeDo([&](ThreadSafe& _ts) -> void { threads_to_join_.push(_id); });
+}
+
+bool PetriNet::ThreadPool::HasStartTokens()
+{
+  bool ret = false;
+  threads_to_start_.SafeDo([&](ThreadSafe& _ts) -> void { ret = threads_to_start_.size() > 0; });
+  return ret;
+}
+
+void PetriNet::ThreadPool::JoinAllThreads()
+{
+  for (auto i = pool_.begin(); i != pool_.end(); i++)
+  {
+    i->join();
+  }
 }
 
 //////////////////////// Transition
@@ -374,7 +405,7 @@ void Transition::TryFire()
     for (auto& hash__inedge : place__hash_inedge.second)
     {
       hash__inedge.second.token_q_.SafeDo([&](ThreadSafe& ts) -> void {
-        if (hash__inedge.second.token_q_.size() < hash__inedge.second.quantity_)
+        if (hash__inedge.second.token_q_.size() < abs(hash__inedge.second.quantity_))
           all_ins_ready = false;
       });
       if (!all_ins_ready)
@@ -394,10 +425,23 @@ void Transition::TryFire()
       {
         hash__inedge.second.token_q_.SafeDo([&](ThreadSafe& _ts) -> void {
           in_place_tokens.at(rel_name).emplace(hash__inedge.first, TokenVec());
-          for (int i = 0; i < hash__inedge.second.quantity_; ++i)
+          // if the quantity is positive, grab that many tokens
+          if (hash__inedge.second.quantity_ > 0)
           {
-            in_place_tokens.at(rel_name).at(hash__inedge.first).push_back(hash__inedge.second.token_q_.front());
-            hash__inedge.second.token_q_.pop();
+            for (int i = 0; i < hash__inedge.second.quantity_; ++i)
+            {
+              in_place_tokens.at(rel_name).at(hash__inedge.first).push_back(hash__inedge.second.token_q_.front());
+              hash__inedge.second.token_q_.pop();
+            }
+          }
+          // if the quanity is negative, then grab all of the availible tokens
+          else
+          {
+            while (hash__inedge.second.token_q_.size() > 0)
+            {
+              in_place_tokens.at(rel_name).at(hash__inedge.first).push_back(hash__inedge.second.token_q_.front());
+              hash__inedge.second.token_q_.pop();
+            }
           }
         });
       }
