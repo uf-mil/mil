@@ -51,19 +51,23 @@ void SimulatedSteeringDriver<MSG>::Callback(const MSG& _msg)
     if (R1 == R2)
     {
       R = R1;
-    }
-    // Boundary Condition 2 : Space requirement for turning 
-    // Maximum and Minimum radius of vehicle turning
-    double m1, m2, RMax, RMin;
-    RMin = L/tan(theta) - wf/2 - wr/2;
-    m1 = RMin + wr;
-    m2 = L + g; // g is the length between the front wheel and bumper
-    RMax = sqrt(pow(m1,2)+pow(m2,2));
-    if (R>RMin && R<RMax)
-    {
-      theta_I = theta_L // the angle that will be put in the left side
-      theta_O = theta_R // the angle that will be put in the right side
-    }
+      // Boundary Condition 2 : Space requirement for turning 
+      // Maximum and Minimum radius of vehicle turning
+      double m1, m2, RMax, RMin;
+      RMin = L/tan(theta) - wf/2 - wr/2;
+      m1 = RMin + wr;
+      m2 = L // g is the length between the front wheel and bumper
+      RMax = sqrt(pow(m1,2)+pow(m2,2));
+      if (R>RMin && R<RMax)
+      {
+        theta_I = theta_L // the angle that will be put in the left side
+        theta_O = theta_R // the angle that will be put in the right side
+      }
+      else
+      {
+        theta_I = theta_L + 1;
+        theta_O = theta_R + 1;
+      }
 
     std_msgs::Float64 msg;
     msg.data = cmd_angle;
