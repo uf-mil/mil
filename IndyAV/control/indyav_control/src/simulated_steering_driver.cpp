@@ -1,5 +1,7 @@
 #include <std_msgs/Float64.h>
 #include <indyav_control/simulated_steering_driver.hpp>
+#include <math.h>
+#include <cmath>
 
 template <class MSG>
 SimulatedSteeringDriver<MSG>::SimulatedSteeringDriver(ros::NodeHandle* _nh, const std::string& sub_topic)
@@ -31,14 +33,41 @@ void SimulatedSteeringDriver<MSG>::Callback(const MSG& _msg)
   double cmd_angle = _msg.steering_angle;
   for (auto i = pubs_.begin(); i != pubs_.end(); ++i)
   {
-    // TODO: impliment ackerman steering angles
+        // TODO: impliment ackerman steering angles
+    // Worked Mr. Daniel Williams and Mr. Jin-hyuk, Yu
 
-    // Steering angle for inside wheel = tan^(-1)(L/R-(T/2))
-    // Steering angle for outside wheel = tan^(-1)(L/R+(T/2))
-    // L = wheelbase = distance between the two axles.
-    // T = track = distance between center line of each tire.
-    // R = radius of the turn as experienced from the center of the vehicle. Will this need to be calculated from the center of the track
-    // More info: http://datagenetics.com/blog/december12016/index.html
+    // Ackermann angle calculation
+    double theta = cmd_angle; // an input angle based on geometric bicycle model for the vehicle
+    double wf, wr, L, R1, A2, R2, theta_I, theta_O;
+    wf = 94;// = the front wheel width
+    wr = 96.5;// = the rear wheel width
+    L =  104; // the length of the wheel base
+    theta_I = tan^(-1)((2*L*sin(theta))/(2*L*cos(theta)-wf*sin(theta)));// Steering_angle_inside(left)
+    theta_O = tan^(-1)((2*L*sin(theta))/(2*L*cos(theta)+wf*sin(theta));// Steering_angle_outside(right)
+    // Boundary Condition 1 : Ackermann equation satisfy check
+    R1 = (wf/2) + l/tan(theta_I);
+    A2 = 56;// the distance from the rear wheel to the center of the kart
+    R2 = sqrt(pow(A2,2)+pow(L,2)*pow((1/tan(theta)),2));
+    if (R1 == R2)
+    {
+      R = R1;
+      // Boundary Condition 2 : Space requirement for turning 
+      // Maximum and Minimum radius of vehicle turning
+      double m1, m2, RMax, RMin;
+      RMin = L/tan(theta) - wf/2 - wr/2;
+      m1 = RMin + wr;
+      m2 = L // g is the length between the front wheel and bumper
+      RMax = sqrt(pow(m1,2)+pow(m2,2));
+      if (R>RMin && R<RMax)
+      {
+        theta_I = theta_L // the angle that will be put in the left side
+        theta_O = theta_R // the angle that will be put in the right side
+      }
+      else
+      {
+        theta_I = theta_L + 1;
+        theta_O = theta_R + 1;
+      }
 
     std_msgs::Float64 msg;
     msg.data = cmd_angle;
