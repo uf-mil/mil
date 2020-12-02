@@ -39,6 +39,7 @@ add_service_files(FILES
   CameraToLidarTransform.srv
   SetGeometry.srv
   ObjectDBQuery.srv
+  GaussianDistribution.srv
 )
 
 generate_messages(
