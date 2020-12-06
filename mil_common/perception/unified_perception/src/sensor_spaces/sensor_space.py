@@ -1,21 +1,31 @@
 from abc import ABCMeta, abstractmethod
 from threading import Thread, Lock
-
 import tf
+import rospy
+
 
 class SensorSpace():
   __metaclass__ = ABCMeta
-  def __init__(self, topic):
+  def __init__(self, name):
     self.score = None
     # should be a list of tuples of (msg, mutex)
     self.msg_buffer = []
-    self.topic = topic
+    self.name = name
     self.listener = tf.TransformListener()
+    self.world_frame = rospy.get_param('world_frame_id')
 
   def clear_msg_buffer(self):
     self.reset_score()
 
     self.musg_buffer = []
+
+  @abstractmethod
+  def project_to_world_frame(msg):
+    pass
+
+  @abstractmethod
+  def project_from_world_frame(msg):
+    pass
 
   @abstractmethod
   def extract_interesting_region(self, (msg, mutex), probability, min_score):
@@ -39,7 +49,7 @@ class SensorSpace():
     return self.msg_buffer
 
   @abstractmethod
-  def add_distribution_from(self, distribution):
+  def add_distribution(self, distribution):
     pass
 
   @abstractmethod

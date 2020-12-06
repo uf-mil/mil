@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+  <arg name="environment" default="gazebo" />
+  <arg name="config_file" default="example.yaml" />
+  <arg name="ns" default="/unified_perception/"/>
+  <group ns="$(arg ns)">
+    <rosparam command="load" file="$(find unified_perception)/config/$(arg config_file)" />
+    <node pkg="unified_perception" type="unified_perception.py" output="screen"
+          name="unified_perception"/>
+  </group>
+
+
+
+</launch>

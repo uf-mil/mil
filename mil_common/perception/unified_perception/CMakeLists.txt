@@ -10,6 +10,7 @@ project(unified_perception)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
+  mil_msgs
 )
 
 ## System dependencies are found with CMake's conventions

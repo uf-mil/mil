@@ -1,6 +1,6 @@
 Header header
-float64[3] mu
-float64[9] covariance
+float64[2] mu
+float64[4] cov
 string id
 string sensor_name
 ---

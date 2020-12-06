@@ -40,6 +40,7 @@ add_service_files(FILES
   SetGeometry.srv
   ObjectDBQuery.srv
   GaussianDistribution.srv
+  GaussianDistribution2D.srv
 )
 
 generate_messages(
