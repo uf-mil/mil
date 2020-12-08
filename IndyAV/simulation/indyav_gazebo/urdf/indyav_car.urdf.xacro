@@ -4,7 +4,7 @@
   <xacro:include filename="$(find indyav_gazebo)/xacro/wheels.xacro"/>
   <xacro:include filename="$(find indyav_gazebo)/xacro/axles.xacro"/>
   <xacro:include filename="$(find navigator_gazebo)/urdf/sylphase.xacro" />
-  
+
   <link name="base_link">
     <xacro:body_inertial/>
     <visual>
@@ -20,12 +20,12 @@
 
   <xacro:front_wheel name="front_left_wheel" xyz="0 0 0" parent_link="front_left_axle_link"/>
   <xacro:front_wheel name="front_right_wheel" xyz="0 0 0" parent_link="front_right_axle_link"/>
-  
+
   <xacro:back_axle name="back_axle" xyz="-0.52 0 -0.2"/>
 
   <xacro:back_wheel name="back_left_wheel"  xyz="0 0.4825 0" parent_link="back_axle_link"/>
   <xacro:back_wheel name="back_right_wheel"  xyz="0 -0.4825 0" parent_link="back_axle_link"/>
-  
+
   <gazebo>
     <plugin name="back_wheel_plugin" filename="libbackwheel_plugin.so">
       <wheels>
@@ -33,12 +33,13 @@
         <wheel_1> back_axle_link_to_back_left_wheel_link_joint </wheel_1>
       </wheels>
       <back_axle_joint> base_link_to_back_axle_link_joint </back_axle_joint>
-      <max_wheel_rotational_vel>1000</max_wheel_rotational_vel>
+      <wheel_radius>${back_wheel_radius}</wheel_radius>
+      <engine_to_wheel_ratio>10</engine_to_wheel_ratio>
       <max_velocity>20</max_velocity>
-      <topic_name> throttle </topic_name>
+      <topic_name> /throttle </topic_name>
     </plugin>
   </gazebo>
-  
+
   <xacro:sylphase name="ins"
                   xyz="-0.585 0.0 0.0" rpy="0 0 0" />
   <gazebo>

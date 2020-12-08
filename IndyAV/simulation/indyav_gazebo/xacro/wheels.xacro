@@ -5,12 +5,12 @@
   <xacro:property name="front_wheel_radius" value="0.127"/>
   <xacro:property name="front_wheel_width" value="0.127"/>
   <xacro:property name="front_wheel_mass" value="3"/>
-  
+
   <xacro:property name="back_wheel_radius" value="0.1335"/>
   <xacro:property name="back_wheel_width" value="0.203"/>
   <xacro:property name="back_wheel_mass" value="5"/>
 
-  <xacro:macro name="front_wheel_geometry">	  
+  <xacro:macro name="front_wheel_geometry">
     <geometry>
        <cylinder length="${front_wheel_width}" radius="${front_wheel_radius}"/>
     </geometry>
@@ -27,7 +27,7 @@
       <mu1>500</mu1> <!-- friction parallel to the tire (wheels need friction to roll) -->
     </gazebo>
   </xacro:macro>
-  
+
   <xacro:macro name="front_wheel_origin">
      <origin rpy="0 1.5708 0"/>
   </xacro:macro>

@@ -10,7 +10,7 @@ add_message_files(
   DIRECTORY msg
   FILES
   SteeringStamped.msg
-  RevsStamped.msg
+  ThrottleBrakeStamped.msg
 )
 
 ## Generate services in the 'srv' folder

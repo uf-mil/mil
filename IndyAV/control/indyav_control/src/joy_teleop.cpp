@@ -1,5 +1,5 @@
 #include <geometry_msgs/Twist.h>
-#include <indyav_control/RevsStamped.h>
+#include <indyav_control/ThrottleBrakeStamped.h>
 #include <indyav_control/SteeringStamped.h>
 
 #include <sstream>
@@ -78,14 +78,14 @@ JoyTeleop::JoyTeleop(ros::NodeHandle* _nh)
     ROS_ERROR("Failed to get param 'steering_topic'");
   }
 
-  throttle_pub_ = nh_->advertise<indyav_control::RevsStamped>(t_advertise_, 1);
+  throttle_pub_ = nh_->advertise<indyav_control::ThrottleBrakeStamped>(t_advertise_, 1);
   steering_pub_ = nh_->advertise<indyav_control::SteeringStamped>(s_advertise_, 1);
   joy_ = nh_->subscribe<sensor_msgs::Joy>("/joy", 100, &JoyTeleop::Callback, this);
 }
 
 void JoyTeleop::Callback(const sensor_msgs::Joy::ConstPtr& _joy)
 {
-  static indyav_control::RevsStamped radians_per_second;
+  static indyav_control::ThrottleBrakeStamped radians_per_second;
   static indyav_control::SteeringStamped steering_angle;
 
   steering_angle.steering_angle = s_scale_ * _joy->axes.at(steer_axis_);
@@ -97,7 +97,7 @@ void JoyTeleop::Callback(const sensor_msgs::Joy::ConstPtr& _joy)
   if (_joy->axes.at(throttle_axis_) != 0)
     gamepad_init = true;
   if (gamepad_init)
-    radians_per_second.radians_per_second = r_scale_ * (abs(_joy->axes.at(throttle_axis_) - 1)) / 2;
+    radians_per_second.cmd = r_scale_ * (abs(_joy->axes.at(throttle_axis_) - 1)) / 2;
 
   steering_pub_.publish(steering_angle);
   throttle_pub_.publish(radians_per_second);
