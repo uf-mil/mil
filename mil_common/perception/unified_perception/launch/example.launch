@@ -5,8 +5,11 @@
   <arg name="ns" default="/unified_perception/"/>
   <group ns="$(arg ns)">
     <rosparam command="load" file="$(find unified_perception)/config/$(arg config_file)" />
+
     <node pkg="unified_perception" type="unified_perception.py" output="screen"
           name="unified_perception"/>
+    <node pkg="unified_perception" type="object_ground_truth_publisher.py" output="screen"
+          name="object_ground_truth_publisher"/>
   </group>
 
 

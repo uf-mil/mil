@@ -1,17 +1,10 @@
 # the minimum value of the sum of pdfs that is needed for a region to be considered interesting
 min_score: 0.5
+quantum: 0.1
 sensors:
-    - ['Camera', 'front_left_camera']
-gaussian_srv: 'gaussian_srv'
-gaussian_2d_srv: 'gaussian_2d_srv'
-world_frame_id: 'map'
+    - ['camera.Camera', 'front_left_camera']
+gaussian_topic: 'gaussians'
+gaussian_2d_topic: 'gaussians_2d'
+world_frame_id: 'enu'
 front_left_camera/image_topic: '/wamv/sensors/cameras/front_left_camera/image_raw'
 front_left_camera/info_topic: '/wamv/sensors/cameras/front_left_camera/camera_info'
-
-
-
-
-
-
-
-

@@ -4,14 +4,11 @@ interfaces with by UnifiedPerception
 
 import rospy
 
-from camera import Camera
+from . import *
 
 
 def SensorSpaceFactory(sensor_type):
-  space_mapping = {
-    'Camera': Camera,
-  }
-  return space_mapping[sensor_type]
+  return eval(sensor_type)
 
 
 

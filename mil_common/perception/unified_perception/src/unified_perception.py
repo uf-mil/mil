@@ -10,12 +10,15 @@
 '''
 import rospy
 from rospy.numpy_msg import numpy_msg
+from mil_msgs.msg import GaussianDistribution, GaussianDistribution2D
+from threading import Lock, Thread
+
 from sensor_spaces.sensor_space_factory import SensorSpaceFactory
-from mil_msgs.srv import GaussianDistribution, GaussianDistribution2D
 
 
 class UnifiedPerceptionServer:
   def __init__(self):
+    self.inited = False
     self.id = 0
     rospy.init_node('unified_perception_server')
     # create a sensor space instance for each sensor
@@ -24,50 +27,61 @@ class UnifiedPerceptionServer:
     sensors = rospy.get_param('sensors')
     for i in sensors:
       self.sensors[i[1]] = SensorSpaceFactory(i[0])(i[1])
-    # setup a timer that once every quantum will call the quantum callback
-    # setup a ros service that will regsiter distributions in certain sensor spaces
     self.distributions = {}
-    # currently the only supported distributions are gaussian, but no reason others couldn't be added later
-    #  so long as they can be mutliplied together fairly easily
-    gaussian_srv = rospy.Service(rospy.get_param('gaussian_srv'),
-                                 GaussianDistribution,
-                                 self.report_gaussian)
-    gaussian_2d_srv = rospy.Service(rospy.get_param('gaussian_2d_srv'),
-                                    GaussianDistribution2D,
-                                    self.report_gaussian)
+    gaussian_sub = rospy.Subscriber(rospy.get_param('gaussian_topic'),
+                                 numpy_msg(GaussianDistribution),
+                                 self.gaussian_cb, 10)
+    gaussian_2d_sub = rospy.Subscriber(rospy.get_param('gaussian_2d_topic'),
+                                    numpy_msg(GaussianDistribution2D),
+                                    self.gaussian_cb, 10)
+    self.timer = rospy.Timer(rospy.Duration(rospy.get_param('quantum')), self.quantum_cb)
+    self.lock = Lock()
+    self.inited = True
 
 
-  def report_gaussian(self, msg):
+  def gaussian_cb(self, msg, count):
+    if self.inited != True:
+      return
+    self.lock.acquire()
     # project from sensor space to the world space
     dist = self.sensors[msg.sensor_name].project_to_world_frame(msg)
     # add to the distributions dict
     if msg.id != '':
-      if msg.id in self.distrubitions:
-        self.distrubutions[msg.id] *= dist
+      if msg.id in self.distributions:
+        self.distributions[msg.id] *= dist
       else:
-        self.distrubutions[msg.id] = dist
+        self.distributions[msg.id] = dist
     else:
       self.distrubutions[str(self.id)] = dist
       self.id += 1
-
-
-  def quantum_callback(self):
-    interesting_data = []
-    # may need to parrellize this for perforamance increases
-    for name, sensor in self.sensors:
-      projected_dists = {}
-      for key, dists in self.distributions:
-        projected_dists[key] = []
-        for dist in dists:
-          # project the distributions onto the sensor
-          projected_dists[key].append(sensor.project_distribution_from(dist))
-        # reduce and add each unique distrubtuion
-        sensor.add_distribution(reduce(lambda x, y : x*y, projected_dists[key]))
-      # extract the interesting data from that sensor
-      interesting_data += sensor.extract_interesting_regions(self.min_score)
-      sensor.clear_msg_buffer()
-    #TODO: publish the useful data to the 'world model topic'
+    self.lock.release()
     return
+
+  def quantum_cb(self, event):
+    self.lock.acquire()
+    # may need to remove old gaussians that are not valid anymore
+    world_model = {}
+    world_model['gaussians'] = self.distributions
+    world_model['data'] = {}
+    # apply gaussians to the data in the buffers
+    threads = []
+    for sensor in self.sensors.values():
+      threads.append(Thread(target=sensor.apply_distributions,
+                            args=[self.min_score, self.distributions]))
+      threads[-1].start()
+    for t in threads:
+      t.join()
+
+    for name, sensor in self.sensors.items():
+      world_model['data'][name] = sensor.msg_buffer
+      sensor.clear_msg_buffer()
+    # publish that data along with the gaussians as the world model
+    # publish gaussians in RVIZ as poses with cov
+    markers = []
+    for i in world_model['gaussians'].values():
+      markers.append(i.to_rviz_marker())
+      
+    self.lock.release()
 
 
 if __name__ == '__main__':

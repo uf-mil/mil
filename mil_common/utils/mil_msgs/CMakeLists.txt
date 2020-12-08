@@ -33,14 +33,14 @@ add_message_files(FILES
   ObjectsInImage.msg
   IncrementalLinearVelocity.msg
   IncrementalLinearVelocityStamped.msg
+  GaussianDistribution.msg
+  GaussianDistribution2D.msg
 )
 
 add_service_files(FILES
   CameraToLidarTransform.srv
   SetGeometry.srv
   ObjectDBQuery.srv
-  GaussianDistribution.srv
-  GaussianDistribution2D.srv
 )
 
 generate_messages(

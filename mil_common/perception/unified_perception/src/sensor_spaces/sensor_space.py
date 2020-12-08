@@ -7,7 +7,6 @@ import rospy
 class SensorSpace():
   __metaclass__ = ABCMeta
   def __init__(self, name):
-    self.score = None
     # should be a list of tuples of (msg, mutex)
     self.msg_buffer = []
     self.name = name
@@ -15,8 +14,6 @@ class SensorSpace():
     self.world_frame = rospy.get_param('world_frame_id')
 
   def clear_msg_buffer(self):
-    self.reset_score()
-
     self.musg_buffer = []
 
   @abstractmethod
@@ -24,34 +21,27 @@ class SensorSpace():
     pass
 
   @abstractmethod
-  def project_from_world_frame(msg):
+  def project_from_world_frame(dist):
     pass
 
   @abstractmethod
-  def extract_interesting_region(self, (msg, mutex), probability, min_score):
+  def apply_distributions_to(self, (msg, mutex), dists, min_score):
     pass
 
-  @abstractmethod
-  def reset_score(self):
-    pass
-
-  def extract_interesting_regions(self, min_score):
+  def apply_distributions(self, min_score, distributions):
+    dists = {}
+    for name, dist in distributions.items():
+      dists[name] = self.project_from_world_frame(dist)
     # call extract_interesting_region in a new thread on each msg in the message list
     threads = []
-    for i in msg_buffer:
-      threads.append(Thread(target=self.extract_interesting_region,
-                            args=[i, self.score, min_score]))
+    for i in self.msg_buffer:
+      threads.append(Thread(target=self.apply_distributions_to,
+                            args=[i, dists, min_score]))
       threads[-1].start()
     # wait for them to finish
     for i in threads:
       i.join()
-    # return the messages
-    return self.msg_buffer
+    return
 
-  @abstractmethod
-  def add_distribution(self, distribution):
-    pass
-
-  @abstractmethod
-  def callback(msg):
-    pass
+  def callback(self, msg):
+    self.msg_buffer.append((msg, Lock()))
