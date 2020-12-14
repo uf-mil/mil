@@ -6,7 +6,7 @@ import numpy as np
 from gazebo_msgs.msg import LinkStates
 import tf
 import tf2_ros
-from mil_msgs.msg import GaussianDistribution
+from mil_msgs.msg import GaussianDistribution, GaussianDistributionStamped
 
 from distributions.gaussian import Gaussian
 
@@ -20,16 +20,14 @@ links = ['robotx_navigation_challenge::gate_' + i + '::link'
                     'end_green']]
 rospy.init_node('ground_truth_publisher')
 
-listener = tf.TransformListener()
-listener.waitForTransform('base_link', 'front_left_camera_link_optical', rospy.Time(0), rospy.Duration(10.0))
+g_topic = rospy.get_param('distributions')['topics']['mil_msgs.msg.GaussianDistributionStamped']
 
-pub = rospy.Publisher(rospy.get_param('gaussian_topic'), numpy_msg(GaussianDistribution),
-                      queue_size=10)
+pub = rospy.Publisher(g_topic, numpy_msg(GaussianDistributionStamped), queue_size=10)
 
 
-gd = numpy_msg(GaussianDistribution)()
-gd.header.frame_id = 'front_left_camera_link_optical'
-gd.sensor_name = 'front_left_camera'
+gd = GaussianDistributionStamped()
+gd.header.frame_id = 'base_link'
+gd.distribution.sensor_name = 'front_left_camera'
 
 def cb(msg, count):
   # get the base link pose and the bouys' pose
@@ -56,21 +54,17 @@ def cb(msg, count):
     cov = np.array([[1,0,0],
                     [0,1,0],
                     [0,0,1]])
-    try:
-      g = Gaussian(3, mu, cov, 'base_link').transform_to_frame(gd.header.frame_id,
-                                                               listener,
-                                                               time=rospy.Time.now())[0]
-    except Exception as e:
-      return
+
+    g = Gaussian(3, mu, cov, 'base_link')
     # if the object is in front of the camera and < 100m away
     if g.mu[0] > 0 and np.linalg.norm(g.mu) < 100:
-      gd.mu = g.mu
-      gd.cov = g.cov
-      gd.id = links[i]
+      gd.distribution.mu = g.mu
+      gd.distribution.cov = np.ravel(g.cov)
+      gd.distribution.id = links[i]
+      gd.distribution.classification = 'totem'
       gd.header.seq += 1
       gd.header.stamp = rospy.Time.now()
       pub.publish(gd)
-    rospy.sleep(0.1)
 
 
 

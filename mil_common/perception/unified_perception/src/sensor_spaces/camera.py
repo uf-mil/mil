@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 '''
 This is the code required to describe a camera sensor space for unified perception
-/lo
 This uses the pinhole camera model for all math
 '''
 import numpy as np
@@ -9,43 +8,50 @@ import rospy
 import tf
 from rospy.numpy_msg import numpy_msg
 from sensor_space import SensorSpace
-from mil_msgs.srv import GaussianDistribution, GaussianDistribution2D
+from mil_msgs.msg import GaussianDistributionStamped, GaussianDistribution2DStamped
 from sensor_msgs.msg import Image, CameraInfo
 from image_geometry import PinholeCameraModel
 from threading import Lock
+from cv_bridge import CvBridge
+import cv2
+from scipy.stats import multivariate_normal
 
+from matplotlib import pyplot as plt
 
 from distributions.gaussian import Gaussian
 
 
 class Camera(SensorSpace):
-
   def __init__(self, name):
-    super(Camera, self).__init__(name)
-    # TODO get topic from rosparam
-    # TODO get info topic from rosparam
+    topic = rospy.get_param(name+'/image_topic')
+    super(Camera, self).__init__(name, topic, Image)
     # subscribe to the camera topic as well as the camera info topic
-    self.topic = rospy.get_param(self.name+'/image_topic')
-    self.sub = rospy.Subscriber(self.topic, numpy_msg(Image), self.callback)
-    # not sure if this will work
     self.info_topic = rospy.get_param(self.name+'/info_topic')
     self.info = rospy.wait_for_message(self.info_topic, CameraInfo)
     self.model = PinholeCameraModel()
     self.model.fromCameraInfo(self.info)
-    o_frame = self.info.header.frame_id
+    o_frame = self.model.tfFrame()
     self.optical_frame = o_frame[o_frame.rfind('/')+1:]
     self.listener.waitForTransform(self.optical_frame, self.world_frame, rospy.Time(0),
                                    rospy.Duration(10))
-
+    self.cv_bridge = CvBridge()
+    self.score_scale = rospy.get_param(self.name + '/score_scale')
+    self.cov_scale = rospy.get_param(self.name + '/cov_scale')
 
   def project_to_world_frame(self, msg):
-    '''msg is a Gaussiandistribution or a GaussianDistribution2D
+    '''msg is a Gaussiandistribution or a GaussianDistribution2D Stamped
     '''
-    g = Gaussian(len(msg.mu), msg.mu, msg.cov, msg.header.frame_id)
-    return g.transform_to_frame(self.world_frame, self.listener)[0]
+    #TODO add projection from 2D
+    if isinstance(msg, GaussianDistributionStamped):
+      g = Gaussian(len(msg.distribution.mu), msg.distribution.mu,
+                   msg.distribution.cov, msg.header.frame_id,
+                   classification=msg.distribution.classification)
+      g_wf, t, q = g.transform_to_frame(self.world_frame, self.listener)
+      return g_wf
+    else:
+      raise Exception(self.name + ' was given ' + str(type(msg)) + ', which is not supported')
 
-
-  def apply_distributions_to(self, (msg, mutex), dists, min_score):
+  def apply_score_to(self, m, new_msgs, idx, (score, mus), min_score):
     '''
       msg is a message from the msg_buffer
       mutex is msg's associated mutex
@@ -54,11 +60,26 @@ class Camera(SensorSpace):
       (in this case it means blacked out
     '''
     #TODO
-    # lock the mutex
-    mutex.acquire()
-    # make every pixel that is below the min_score black
-    # unlock the mutex
-    mutex.release()
+    img = self.cv_bridge.imgmsg_to_cv2(m, desired_encoding='passthrough')
+    #new_img = np.zeros(img.shape).copy()
+
+    new_img = img.copy()
+    for i in xrange(3):
+      new_img[:,:,i] = np.multiply(img[:,:,i],
+                        np.clip((score*self.score_scale).astype(np.float), 0, 1))
+
+    #for i in mus:
+    #  cv2.circle(new_img, tuple(i.astype(np.int)), 10, (0,0,255), -1)
+
+
+    new_msg = self.cv_bridge.cv2_to_imgmsg(new_img)
+    new_msg.header = m.header
+    new_msg.height = m.height
+    new_msg.width = m.width
+    new_msg.encoding = m.encoding
+    new_msg.is_bigendian = m.is_bigendian
+    new_msg.step = m.step
+    new_msgs[idx] = new_msg
     return
 
 
@@ -67,10 +88,7 @@ class Camera(SensorSpace):
       dist is a Gaussian that is in the world frame and needs to be projected onto the sensor
       (in this case onto and image)
     '''
-    #TODO
-    # poject from that frame into the camera's optical frame
-    # get the projection matrices for the nessesary transform
-    # transform the dist into the optical frame
+    # TODO: test
     # NOTE: gaussian distributions are the only ones that are supported right now
     g = dist.transform_to_frame(self.optical_frame, self.listener, time=rospy.Time.now())[0]
     # project mu onto the camera pixel coordinates
@@ -84,8 +102,23 @@ class Camera(SensorSpace):
     J_f_persp = np.array([[1/Z_c, 0,     -X_c/Z_c**2],
                           [0,     1/Z_c, -Y_c/Z_c**2]])
     R_cw = self.model.rotationMatrix()
-    J_f = np.matmul(J_f_intr, np.matmul(J_f_persp, R_cw))
-    cov_pix = np.matmul(J_f, np.matmul(g.cov, J_f.T))
+    J_f = J_f_intr * J_f_persp * R_cw
+    cov_pix = J_f * g.cov * J_f.T
+    cov_pix = np.abs(cov_pix) * self.cov_scale
+    #print 'cov_pix:\n', cov_pix
     # 2D gaussian dist which can be multiplied with other distributions returned by this function
     # return the projected distrubution
     return Gaussian(2, mu_pix, cov_pix, self.optical_frame)
+
+
+  def evaluate_distributions(self, dists):
+    height = self.info.height
+    width = self.info.width
+    score = np.zeros((height, width))
+    x, y = np.mgrid[0:height:1, 0:width:1]
+    pos = np.dstack((y,x))
+    mus = [dist.mu for dist in dists.values()]
+    for dist in dists.values():
+      rv = multivariate_normal(dist.mu, dist.cov.T)
+      score += rv.pdf(pos)
+    return (score, mus);

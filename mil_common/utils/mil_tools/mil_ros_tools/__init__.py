@@ -8,4 +8,4 @@ from rviz_helpers import *
 from cv_debug import *
 from bag_crawler import *
 from plotter import *
-
+from lazy_publisher import *

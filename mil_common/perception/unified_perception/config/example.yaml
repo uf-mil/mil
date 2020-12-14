@@ -1,10 +1,45 @@
 # the minimum value of the sum of pdfs that is needed for a region to be considered interesting
 min_score: 0.5
-quantum: 0.1
-sensors:
-    - ['camera.Camera', 'front_left_camera']
-gaussian_topic: 'gaussians'
-gaussian_2d_topic: 'gaussians_2d'
+quantum: .1
+cov_growth_rate: 1.1
 world_frame_id: 'enu'
+sensors:
+    front_left_camera:
+        sensor_space: 'camera.Camera'
+        visualization:
+            topic: 'debug/front_left_camera'
+            msg_type: 'numpy_msg(sensor_msgs.msg.Image)'
+#   velodyne:
+#       sensor_space: 'lidar.Lidar'
+#       visualization:
+#           topic: 'debug/point_cloud'
+#           msg_type: 'numpy_msg(sensor_msgs.msg.PointCloud2)'
+
+distributions:
+    topics:
+        {'mil_msgs.msg.GaussianDistributionStamped': 'gaussians',
+         'mil_msgs.msg.GaussianDistribution2DStamped': 'gaussians_2d'}
+
+    visualization:
+        Gaussian:
+            vis_msg_type: 'numpy_msg(visualization_msgs.msg.MarkerArray)'
+            topic: 'debug/gaussians'
+
+
+sensor_msg_type_to_world_model_field:
+    {'numpy_msg(sensor_msgs.msg.Image)': 'images',
+     'numpy_msg(sensor_msgs.msg.PointCloud2)': 'point_clouds'}
+
+world_model_topic: 'world_model'
+
+
+# extra params for individual sensors
 front_left_camera/image_topic: '/wamv/sensors/cameras/front_left_camera/image_raw'
 front_left_camera/info_topic: '/wamv/sensors/cameras/front_left_camera/camera_info'
+# makes the visualized area around an object larger
+front_left_camera/cov_scale: 2.0
+# makes the visualized area around an object brighter
+front_left_camera/score_scale: 100000.0
+
+velodyne/point_cloud_topic: '/wamv/sensors/lidars/lidar_wamv/points'
+velodyne/frame_id: 'lidar_wamv_link'

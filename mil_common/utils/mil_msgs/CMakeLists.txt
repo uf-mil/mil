@@ -35,6 +35,13 @@ add_message_files(FILES
   IncrementalLinearVelocityStamped.msg
   GaussianDistribution.msg
   GaussianDistribution2D.msg
+  GaussianDistributionStamped.msg
+  GaussianDistribution2DStamped.msg
+  GaussianDistributionArrayStamped.msg
+  GaussianDistribution2DArrayStamped.msg
+  WorldModel.msg
+  WorldModelStamped.msg
+  PoseWithCovarianceArray.msg
 )
 
 add_service_files(FILES
