@@ -41,7 +41,6 @@ add_message_files(FILES
   GaussianDistribution2DArrayStamped.msg
   WorldModel.msg
   WorldModelStamped.msg
-  PoseWithCovarianceArray.msg
 )
 
 add_service_files(FILES
