@@ -1,0 +1,18 @@
+digraph unified_perception {
+
+sensor[label="Sensor(s) (Camera / Lidar / Imaging Sonar / Passive Sonar)"];
+p_node[label="Low level Perception ROS Node(s)"];
+up_server[label="Unified Perception Server"];
+hl_node [label="High Level Perception ROS Node(s)"];
+mission [label="Mission Server (making decisions based on the world model)"];
+sensor -> p_node [label="Unfiltered Data"];
+p_node -> up_server [label="Gaussian Distribution(s)"];
+sensor -> up_server [label="Unfiltered Data"];
+up_server -> hl_node [label="Gaussian Distributions(Data) / World Model"];
+up_server -> mission [label="Gaussian Distributions(Data) / World Model"];
+hl_node -> mission [label="High Level Perception Information"];
+
+
+
+
+}

@@ -42,7 +42,9 @@ class SensorSpace():
   def apply_distributions(self, min_score, distributions):
     dists = {}
     for name, dist in distributions.items():
-      dists[name] = self.project_from_world_frame(dist)
+      projected_dist = self.project_from_world_frame(dist)
+      if projected_dist is not None:
+        dists[name] = projected_dist
     score = self.evaluate_distributions(dists)
     # call extract_interesting_region in a new thread on each msg in the message list
     threads = []

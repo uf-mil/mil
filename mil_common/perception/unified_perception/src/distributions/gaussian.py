@@ -3,19 +3,21 @@ import numpy
 import rospy
 from rospy.numpy_msg import numpy_msg
 import tf
-import tf_conversions
+import tf2_ros
 import numpy as np
 from numpy.linalg import inv
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from visualization_msgs.msg import Marker
 from mil_msgs.msg import GaussianDistribution, GaussianDistribution2D
+from scipy.stats import multivariate_normal
+
 
 
 class Gaussian:
   def __init__(self, n, mu, cov, frame_id, classification=''):
     self.frame = frame_id
     self.n = n
-    self.classification = classification
+    self.classification = classification[:]
     if mu.shape == (n,1):
       self.mu = mu.reshape((n,))
     elif mu.shape == (n,):
@@ -29,18 +31,25 @@ class Gaussian:
       self.cov = cov
     else:
       raise Exception('Indicated size of ' + str(n) + ', but cov is of shape ' + str(cov.shape))
+    self.pdf_gen = multivariate_normal(self.mu, self.cov.T)
 
 
-  def transform_to_frame(self, frame, listener, time=rospy.Time(), timeout=rospy.Duration(1.0)):
+  def transform_to_frame(self, frame, listener, time, timeout=rospy.Duration(100)):
     got_transform = False
-    while(not got_transform):
-      try:
-        (trans, quat) = listener.lookupTransform(self.frame,
+    start = rospy.Time.now()
+    #while not got_transform and rospy.Time.now()-start < timeout:
+    #  try:
+    listener.waitForTransform(self.frame, frame, time, timeout = timeout)
+    (trans, quat) = listener.lookupTransform(self.frame,
                                                  frame,
                                                  time)
-      except tf.ExtrapolationException as e:
-        continue
-      got_transform = True
+    #  except tf2_ros.TransformException as e:
+    #    continue
+    #  got_transform = True
+    #if not got_transform:
+    #    (trans, quat) = listener.lookupTransform(self.frame,
+    #                                             frame,
+    #                                             time)
     # transform mu into the new frame
     # math reference: https://math.stackexchange.com/questions/40164/how-do-you-rotate-a-vector-by-a-unit-quaternion
     new_mu = self.mu - trans
@@ -54,12 +63,12 @@ class Gaussian:
     # roatate the convariance to match the new frame
     # math reference: https://robotics.stackexchange.com/questions/2556/how-to-rotate-covariance
     R = tf.transformations.quaternion_matrix(quat)[:3,:3]
+    new_cov = np.matmul(np.matmul(R.T, self.cov.copy()), R)
+    return (Gaussian(len(new_mu), new_mu, new_cov, frame,
+                     classification=self.classification), trans, quat)
 
-    new_cov = np.abs(R * self.cov * R.T)
-    return (Gaussian(len(new_mu), new_mu, new_cov, frame), trans, quat)
 
-
-  def to_rviz_marker(self):
+  def to_rviz_marker(self, color=(0.5, 0.0, 1.0, 0.0)):
     '''makes into Pose with Covariance where the orientation is straight up
     '''
     m = Marker()
@@ -110,9 +119,11 @@ class Gaussian:
     # math reference: https://math.stackexchange.com/questions/157172/product-of-two-multivariate-gaussians-distributions
     cov = (self.cov, rhs.cov)
     mu = (self.mu, rhs.mu)
-    new_cov = inv((inv(cov[0]) + inv(cov[1])))
-    new_mu = np.matmul(new_cov, (np.matmul(inv(cov[0]), mu[0]) + np.matmul(inv(cov[1]), mu[1])))
-    return Gaussian(self.n, new_mu, new_cov, self.frame)
+    new_cov = np.matmul(np.matmul(cov[0], np.linalg.inv(cov[0] + cov[1])), cov[1])
+    new_mu = np.matmul(np.matmul(cov[1], np.linalg.inv(cov[0] + cov[1])), mu[0]) + \
+             np.matmul(np.matmul(cov[0], np.linalg.inv(cov[0] + cov[1])), mu[1])
+
+    return Gaussian(self.n, new_mu, new_cov, self.frame, classification=self.classification)
 
 
   def to_msg(self):
@@ -132,3 +143,21 @@ class Gaussian:
       return gd
     else:
       raise Exception(str(n) + ' dimentional gaussians have no corresponding ros msg specified')
+
+
+  def pdf(self, *args, **kwargs):
+    return self.pdf_gen.pdf(*args, **kwargs)
+
+
+  def bhattacharyya_distance(self, g):
+    # math reference: https://en.wikipedia.org/wiki/Bhattacharyya_distance#Bhattacharyya_coefficient
+    if self.frame != g.frame:
+      raise Exception('in order to take a meaningful Bhattacharyya distance, ' +
+                      'the two gaussians must be the same')
+    cov = (self.cov + g.cov)/(2)
+    D = (1/8.0)*np.matmul((self.mu - g.mu).T, np.matmul(np.linalg.inv(cov), (self.mu-g.mu))) + \
+        (1/2.0)*np.log(np.linalg.det(cov) /
+                       np.sqrt(np.linalg.det(self.cov)*np.linalg.det(g.cov)))
+    return D
+
+

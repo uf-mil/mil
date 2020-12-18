@@ -46,12 +46,12 @@ class Camera(SensorSpace):
       g = Gaussian(len(msg.distribution.mu), msg.distribution.mu,
                    msg.distribution.cov, msg.header.frame_id,
                    classification=msg.distribution.classification)
-      g_wf, t, q = g.transform_to_frame(self.world_frame, self.listener)
+      g_wf, t, q = g.transform_to_frame(self.world_frame, self.listener, msg.header.stamp)
       return g_wf
     else:
       raise Exception(self.name + ' was given ' + str(type(msg)) + ', which is not supported')
 
-  def apply_score_to(self, m, new_msgs, idx, (score, mus), min_score):
+  def apply_score_to(self, m, new_msgs, idx, score, min_score):
     '''
       msg is a message from the msg_buffer
       mutex is msg's associated mutex
@@ -59,17 +59,12 @@ class Camera(SensorSpace):
       min_score is the cutoff for when the score is so low, that the data there should be removed
       (in this case it means blacked out
     '''
-    #TODO
     img = self.cv_bridge.imgmsg_to_cv2(m, desired_encoding='passthrough')
-    #new_img = np.zeros(img.shape).copy()
 
     new_img = img.copy()
     for i in xrange(3):
       new_img[:,:,i] = np.multiply(img[:,:,i],
                         np.clip((score*self.score_scale).astype(np.float), 0, 1))
-
-    #for i in mus:
-    #  cv2.circle(new_img, tuple(i.astype(np.int)), 10, (0,0,255), -1)
 
 
     new_msg = self.cv_bridge.cv2_to_imgmsg(new_img)
@@ -91,6 +86,8 @@ class Camera(SensorSpace):
     # TODO: test
     # NOTE: gaussian distributions are the only ones that are supported right now
     g = dist.transform_to_frame(self.optical_frame, self.listener, time=rospy.Time.now())[0]
+    if g.mu[2] < 0:
+      return
     # project mu onto the camera pixel coordinates
     mu_pix = np.array(self.model.project3dToPixel(g.mu))
     # project cov from optical frame onto the 2d camera space
@@ -105,7 +102,6 @@ class Camera(SensorSpace):
     J_f = J_f_intr * J_f_persp * R_cw
     cov_pix = J_f * g.cov * J_f.T
     cov_pix = np.abs(cov_pix) * self.cov_scale
-    #print 'cov_pix:\n', cov_pix
     # 2D gaussian dist which can be multiplied with other distributions returned by this function
     # return the projected distrubution
     return Gaussian(2, mu_pix, cov_pix, self.optical_frame)
@@ -117,8 +113,6 @@ class Camera(SensorSpace):
     score = np.zeros((height, width))
     x, y = np.mgrid[0:height:1, 0:width:1]
     pos = np.dstack((y,x))
-    mus = [dist.mu for dist in dists.values()]
     for dist in dists.values():
-      rv = multivariate_normal(dist.mu, dist.cov.T)
-      score += rv.pdf(pos)
-    return (score, mus);
+      score += dist.pdf(pos)
+    return score;

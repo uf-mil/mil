@@ -1,0 +1,5 @@
+digraph typical_implimentation {
+"Sensor (Camera / Lidar / Imaging Sonar / Passive Sonar)" ->
+"Perception ROS Node (low level perception)" ->
+"Mission (actions / high level perception)";
+}

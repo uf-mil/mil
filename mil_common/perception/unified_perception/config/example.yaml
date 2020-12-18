@@ -1,7 +1,9 @@
 # the minimum value of the sum of pdfs that is needed for a region to be considered interesting
-min_score: 0.5
-quantum: .1
+min_score: 0.005
+quantum: .05
 cov_growth_rate: 1.1
+max_cov: 5000
+min_bhattacharyya_distance: 1
 world_frame_id: 'enu'
 sensors:
     front_left_camera:
@@ -9,16 +11,15 @@ sensors:
         visualization:
             topic: 'debug/front_left_camera'
             msg_type: 'numpy_msg(sensor_msgs.msg.Image)'
-#   velodyne:
-#       sensor_space: 'lidar.Lidar'
-#       visualization:
-#           topic: 'debug/point_cloud'
-#           msg_type: 'numpy_msg(sensor_msgs.msg.PointCloud2)'
+    velodyne:
+        sensor_space: 'lidar.Lidar'
+        visualization:
+            topic: 'debug/point_cloud'
+            msg_type: 'numpy_msg(sensor_msgs.msg.PointCloud2)'
 
 distributions:
     topics:
-        {'mil_msgs.msg.GaussianDistributionStamped': 'gaussians',
-         'mil_msgs.msg.GaussianDistribution2DStamped': 'gaussians_2d'}
+        {'mil_msgs.msg.GaussianDistributionStamped': 'gaussians'}
 
     visualization:
         Gaussian:
@@ -43,3 +44,5 @@ front_left_camera/score_scale: 100000.0
 
 velodyne/point_cloud_topic: '/wamv/sensors/lidars/lidar_wamv/points'
 velodyne/frame_id: 'lidar_wamv_link'
+velodyne/safety_radius: 10
+velodyne/odom_topic: '/odom'
