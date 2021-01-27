@@ -41,6 +41,7 @@ source $MIL_WS/src/mil/IndyAV/scripts/bash_aliases.sh
 # Repo aliases
 alias mil="cd $MIL_REPO"
 alias cm="catkin_make -C $MIL_WS"
+alias cm_arm="catkin_make -C $MIL_WS -DCATKIN_BLACKLIST_PACKAGES='sub8_gazebo;sub8_simulation;navigator_2dsim;navigator_gazebo;vrx;vrx_docker;indyav_gazebo;navigator_judgespanel;mil_gazebo;rviz_satellite'"
 
 # General ROS aliases
 ros_env() {

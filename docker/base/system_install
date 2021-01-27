@@ -1,6 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
+if [[ $(arch) == armv* ]]; then
+  echo "WARNING: Installing for ARM! Certain Packages will not be installed due to lack of ARM support:
+  ROS:
+    Gazebo
+  "
+fi
+
 mil_system_install()
 {
   sudo apt install -y $@
@@ -21,24 +28,40 @@ mil_system_install --no-install-recommends \
   mercurial \
   ruby \
   wget \
-  expect
+  expect \
+  curl
 
 # ROS apt source
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-# Install Gazebo apt source
-sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -sc) main" > /etc/apt/sources.list.d/gazebo-stable.list' \
 
-# Pull ROS apt key
-sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
-# Pull gazebo apt key
-sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key D2486D2DD83DB69272AFE98867170598AF249743
+if [[ $(arch) == armv* ]]; then
+  # not precisely sure, but think it has to do with android network proxy stuff
+  curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
 
-# Pull Gazebo apt key
-wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+else
+
+  # Pull ROS apt key
+  sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+
+  # Install Gazebo apt source
+  sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -sc) main" > /etc/apt/sources.list.d/gazebo-stable.list'
+  # Pull gazebo apt key
+  sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key D2486D2DD83DB69272AFE98867170598AF249743
+  # Pull Gazebo apt key
+  wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+fi
+
 # Update apt again and install ros
 sudo apt update
 
-mil_system_install ros-melodic-desktop-full
+if [[ $(arch) == armv* ]]; then
+  # no GUI's / sims for arm
+  mil_system_install \
+    ros-melodic-desktop \
+    ros-melodic-image-geometry
+else
+  mil_system_install ros-melodic-desktop-full
+fi
 # Install additional dependencies not bundled by default with ros
 # Please put each on a new line for readability
 mil_system_install \
@@ -49,8 +72,6 @@ mil_system_install \
   ros-melodic-usb-cam \
   ros-melodic-joy \
   ros-melodic-spacenav-node \
-  ros-melodic-velodyne-simulator \
-  ros-melodic-hector-gazebo-plugins \
   ros-melodic-joy \
   ros-melodic-joy-teleop \
   ros-melodic-key-teleop \
@@ -61,6 +82,15 @@ mil_system_install \
   ros-melodic-ros-controllers \
   python-pip \
   clang-format-3.9
+
+if [[ $(arch) != armv* ]]; then
+  mil_system_install \
+    ros-melodic-velodyne-simulator \
+    ros-melodic-hector-gazebo-plugins
+else
+  mil_system_install gfortran
+fi
+
 sudo pip install \
   tqdm \
   scipy \
@@ -70,12 +100,16 @@ sudo pip install \
 # Documentation dependencies
 mil_system_install  python3-pip
 
-sudo pip3 install -q \
+if [[ $(arch) == armv* ]]; then
+  sudo pip3 install  \
+    Cython
+fi
+sudo pip3 install \
   sphinx \
   recommonmark \
   sphinx_rtd_theme \
-  numpy \
-  matplotlib
+  matplotlib \
+  numpy
 
 # Initialize rosdep
 sudo pip install -U rosdep
