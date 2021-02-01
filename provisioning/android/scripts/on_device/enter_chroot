@@ -1,0 +1,28 @@
+#!/system/bin/sh
+set -euo pipefail
+
+source /data/data/com.termux/files/home/.termux/boot/prefix.sh
+
+ROOTFS=$PREFIX/ubuntu
+
+if [ ! -d $ROOTFS/etc ]; then
+  echo "Mounting ubuntu chroot..."
+  mount -o loop $PREFIX/img.ubuntu-armhf.root $ROOTFS
+  mount -t proc proc $ROOTFS/proc
+  mount -t sysfs sysfs $ROOTFS/sys
+  mount --bind /dev $ROOTFS/dev
+  mount -t devpts devpts $ROOTFS/dev/pts
+fi
+
+echo "Setting environment vars"
+export TERM=linux
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+export USER=spaceswan
+export SHELL=/bin/bash
+export HOME=/home/spaceswan
+export LANG=en_US.UTF-8
+export TMPDIR=/tmp
+
+CMD=${CMD:-"sudo -u $USER -i"}
+
+/system/bin/chroot $ROOTFS $CMD

@@ -1,0 +1,19 @@
+#!/bin/bash
+set -euo pipefail
+
+SWAP_SIZE_GB=${SWAP_SIZE_GB:-""}
+
+if [ -z "$SWAP_SIZE_GB" ]; then
+  echo "WARNING: SWAP_SIZE_GB not defined, defaulting to 4"
+  SWAP_SIZE_GB="4"
+fi
+
+BS="1024"
+
+COUNT=`python3 -c "print(int(int(1073741824 / $BS) * $SWAP_SIZE_GB))"`
+
+adb shell su -c "dd if=/dev/zero of=/data/swapfile bs=$BS count=$COUNT"
+
+adb shell su -c "mkswap /data/swapfile"
+
+adb shell su -c "swapon /data/swapfile"

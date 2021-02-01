@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# android tools
+sudo apt install android-tools-adb android-tools-fastboot
+
+sudo apt-get install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
+
+# image building tool
+sudo apt-get install debootstrap

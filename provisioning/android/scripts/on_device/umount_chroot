@@ -1,0 +1,13 @@
+#!/system/bin/sh
+set -euo pipefail
+
+source /data/data/com.termux/files/home/.termux/boot/prefix.sh
+
+ROOTFS=$PREFIX/ubuntu
+
+echo "Mounting ubuntu chroot..."
+umount $ROOTFS/proc
+umount $ROOTFS/sys
+umount $ROOTFS/dev/pts
+umount $ROOTFS/dev
+umount $ROOTFS

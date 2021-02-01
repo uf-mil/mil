@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SDCARD=${SDCARD:-""}
+
+if [ -z "$SDCARD" ]; then
+  echo "ERROR: SDCARD not defined. Set as the mount point for the sdcard"
+  exit 1
+fi
+
+SDCARD_SIZE_GB=${SDCARD_SIZE_GB:-""}
+
+if [ -z "$SDCARD_SIZE_GB" ]; then
+  echo "Warning: Assuming SDCARD_SIZE_GB is 3.5GB"
+  SDCARD_SIZE_GB="3.5"
+fi
+
+BLOCK="8k"
+BYTES_PER_BLOCK="8192"
+BYTES_PER_GB="1073741824"
+
+COUNT=`python3 -c "print( int($BYTES_PER_GB // $BYTES_PER_BLOCK * $SDCARD_SIZE_GB ) )"`
+
+mkdir -p $SDCARD/ubuntu
+
+IMG=$SDCARD/ubuntu/img.ubuntu-armhf.root
+
+echo "allocating $SDCARD_SIZE_GB GB on sdcard. This may take a while."
+dd if=/dev/zero of=$IMG bs=$BLOCK count=$COUNT status=progress
+echo "finished allocating space on the SDCARD!"
+
+sudo mkfs.ext4 -L chroot -c $IMG
+sudo tune2fs -c 0 $IMG
+
+mkdir -p $SDCARD/ubuntu/ubuntu
+
+sudo mount -o loop $IMG $SDCARD/ubuntu/ubuntu
+
+sudo debootstrap --arch armhf --foreign bionic $SDCARD/ubuntu/ubuntu http://ports.ubuntu.com/
+
+sudo umount $SDCARD/ubuntu/ubuntu
+echo "unmounting!"

@@ -1,0 +1,18 @@
+#!/system/bin/sh
+set -euo pipefail
+
+source /data/data/com.termux/files/home/.termux/boot/prefix.sh
+
+ROOTFS=$PREFIX/ubuntu
+
+echo $ROOTFS
+
+echo "Setting environment vars"
+export TERM=linux
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+export USER=root
+export SHELL=/bin/bash
+export HOME=/root
+export TMPDIR=/tmp
+
+/system/bin/chroot $ROOTFS /bin/bash

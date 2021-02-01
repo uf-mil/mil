@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SDCARD=${SDCARD:-""}
+
+if [ -z $SDCARD ]; then
+  echo "Error: SDCARD ID Not specified."
+  exit 1
+fi
+
+PREFIX=$(mktemp)
+
+echo "export PREFIX=/storage/$SDCARD/ubuntu" >> $PREFIX
+
+ANDROID_PROVISIONING=$(realpath $(dirname $BASH_SOURCE))
+
+adb push $ANDROID_PROVISIONING/scripts/on_device/enter_chroot /storage/$SDCARD/ubuntu
+adb push $ANDROID_PROVISIONING/scripts/on_device/open_ubuntu_session /storage/$SDCARD/ubuntu
+adb push $ANDROID_PROVISIONING/scripts/on_device/finish_chroot_configure /storage/$SDCARD/ubuntu
+adb push $ANDROID_PROVISIONING/scripts/on_device/umount_chroot /storage/$SDCARD/ubuntu
+adb push $ANDROID_PROVISIONING/scripts/on_device/sources.list /storage/$SDCARD/ubuntu
+
+adb push $ANDROID_PROVISIONING/scripts/on_device/start-ubuntu /data/local/tmp/
+adb push $PREFIX /data/local/tmp/prefix.sh
+
+adb shell su -c "mkdir -p /data/data/com.termux/files/home/.termux/boot/"
+adb shell su -c "cp /data/local/tmp/start-ubuntu /data/data/com.termux/files/home/.termux/boot/"
+adb shell su -c "cp /data/local/tmp/prefix.sh /data/data/com.termux/files/home/.termux/boot/"
+
+TERMUX_OWN=`adb shell su -c "stat -c '%U' /data/data/com.termux"`
+
+adb shell su -c "chown $TERMUX_OWN:$TERMUX_OWN /data/data/com.termux/files/home/.termux/boot/start-ubuntu"
+adb shell su -c "chown $TERMUX_OWN:$TERMUX_OWN /data/data/com.termux/files/home/.termux/boot/prefix.sh"
+
+adb shell su -c "chmod +x /data/data/com.termux/files/home/.termux/boot/start-ubuntu"
+adb shell su -c "chmod +x /data/data/com.termux/files/home/.termux/boot/prefix.sh"
+
+adb shell su -c "sh /storage/$SDCARD/ubuntu/finish_chroot_configure"
