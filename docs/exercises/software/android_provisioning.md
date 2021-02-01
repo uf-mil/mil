@@ -28,6 +28,10 @@ Also, if we ever did want a robot with a human interface of some kind, a touch s
 
 ## Procedure
 
+* navigate to the android provisiong directory
+
+`mil && cd provisioning/android`
+
 * run the install script for the linux computer and follow its instructions
 
 `./scripts/install`

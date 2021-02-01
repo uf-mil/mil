@@ -55,7 +55,7 @@ Unfortunately, while Android does use a slightly modified linux kernel, it has a
 
 `chroot` allows us to virtualize the ubnutu file system on the sdcard of the android device, which allows ROS to run on andorid device without re-virtualizing the android kernel.
 
-In order to provision your device, vist the `$MIL_REPO/provisioning/android` and follow the instruction it its README.
+In order to provision your device, vist the see the [android provisioning page](android_provisioning.md) if you haven't already and follow the instruction it its README.
 
 (Also, send a message in slack on the software channel to let us know what andorid device you completed it on so that we can add it to the validated list.)
 

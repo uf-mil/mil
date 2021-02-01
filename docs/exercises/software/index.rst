@@ -24,6 +24,18 @@ You will use the ROS command line diagnostic tools to investigate the system and
 
 Then, you will be asked to remove each functional file, write your own version of it, and verify against the rest of the system that already exists.
 
+
+All these exercises use and android phone as the computer at the center of the robot(s).
+
+
+How to setup an android device for ROS useage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+  :maxdepth: 1
+
+  Android Provisioning <android_provisioning>
+
 Exercises
 ---------
 
