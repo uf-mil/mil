@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="video_device" default="/dev/video0"/>
+  <node name="usb_blind_spot_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
+    <param name="video_device" value="$(arg video_device)" />
+    <param name="image_width" value="1280" />
+    <param name="image_height" value="720" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
+  </node>
+  <node name="rotate_img" pkg="mil_blind_spot_camera" type="rotate_img" output="screen">
+    <param name="original_img_topic" value="/usb_blind_spot_cam"/>
+    <param name="rotated_img_topic" value="/rotated_img"/>
+  </node>
+</launch>
