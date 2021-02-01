@@ -20,6 +20,7 @@ Helpful Docs:
 
    Mechanical <docs/mechanical/mechanical>
    Onboarding (Software) <docs/onboarding>
+   Exercises <docs/exercises/index>
    Development <docs/development/index>
    Glossary <docs/glossary>
    Culture <docs/culture>

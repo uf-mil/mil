@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <!-- accecpt an agrument named video_devie -->
+  <!-- start the node block for a usb_cam_node called usb_blind_spot_cam from the usb_cam package -->
+    <!-- Pass the video deivce arg, image width, image_height, pixel format, camera frame id and io method to this node as parameters (Look at the usb_cam-test.launch for a good example)-->
+
+  <!-- start a rotate_img node block from the mil_blind_spot_camera package named rotate_img-->
+    <!-- pass the node a parameter called "original_img_topic" which has the value "/usb_blind_spot_cam"-->
+    <!-- pass the node another parameter called "rotated_img_topic" which has the value "/rotated_img"-->
+</launch>

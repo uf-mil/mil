@@ -6,6 +6,7 @@
 
 # initialize the ROS node
 
+# get the name for the output topic for the rotated img which is a private parameter
 # get the publisher to the rotated image topic with queue_size of 1
 
 # define the image message callback function
@@ -16,6 +17,7 @@ def img_cb(img_msg):
     # note: it is crucial that the new image message has the same encoding as the img_msg
     # publish the rotated ros msg image
 
-# get the sub scriber from the original img topic
+# get the name for the input topic for the original img which is a private parameter
+# get the subscriber from the original img topic
 
 # rospy spin
