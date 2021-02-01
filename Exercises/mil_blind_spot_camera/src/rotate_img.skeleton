@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+# import the appropriate libraries up here
+# NOTE: it is highly recommended that numpy_msg is used to improver performance
+
+# get the cv2 bridge
+
+# initialize the ROS node
+
+# get the publisher to the rotated image topic with queue_size of 1
+
+# define the image message callback function
+def img_cb(img_msg):
+    # convert the message to a cv2 image usung the CvBridge
+    # rotate the image with cv2
+    # convert the rotated cv2 message back into a ros message using the CvBridge
+    # note: it is crucial that the new image message has the same encoding as the img_msg
+    # publish the rotated ros msg image
+
+# get the sub scriber from the original img topic
+
+# rospy spin
