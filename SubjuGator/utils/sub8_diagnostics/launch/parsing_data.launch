@@ -1,0 +1,6 @@
+<launch>
+	<param name="csv_path" value="../mil_ws/src/mil/SubjuGator/utils/sub8_diagnostics/src/" />
+
+	<node name="parse_odom_node" pkg="sub8_diagnostics" type="parse_odom_node" />
+	<node name="parse_wrench_node" pkg="sub8_diagnostics" type="parse_wrench_node" />
+</launch>
