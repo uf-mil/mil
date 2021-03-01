@@ -23,6 +23,23 @@ In this exercise, you will use a usb camera, an inexpensive android phone, and R
 +------------------------+-------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
+### List of Verified Android Phones and Notes
+
+Verified Android Phones That Work:
+* Motorola Moto G6
+
+Verified Android Phones That Do Not Work:
+* Samsung Galaxy Note 4 (USA Model)
+* Motorola Moto G
+
+Phone Requirements:
+* The phone chosen must be able to be rooted. In order to root an Android phone, it must be able to be OEM unlocked.
+* Must have an MicroSD slot.
+* At least 4GB of internal storage for allocating extra swap space.
+
+Notes:
+* Many newer Samsung phones have a locked bootloader for the USA models. This means that the phone cannot be rooted because there is no OEM unlock option available.
+
 ## Learning Goals For This Exercise
 
 * How to use a remote linux computer (in the form of an android phone with a ubuntu virtual file system running ROS) via ssh and git.
