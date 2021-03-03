@@ -5,7 +5,8 @@
     <rosparam command="delete" />
     <rosparam>
     # Path of serial device
-    port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A900KV22-if00-port0
+    # previous port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A900KV22-if00-port0
+    port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A800GHCF-if00-port0
     # Baudrate of device, should leave as is
     baudrate: 115200
     # The CAN device id of the usb-can board
