@@ -65,7 +65,8 @@ sudo pip install \
   tqdm \
   scipy \
   sklearn \
-  pandas
+  pandas \
+  PyYaml==5.3.1 # the new version causes stuff to crash
 
 # Documentation dependencies
 mil_system_install  python3-pip
