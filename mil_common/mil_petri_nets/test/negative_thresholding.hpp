@@ -1,4 +1,5 @@
 #pragma once
+#include <ros/ros.h>
 #include <stdlib.h> /* srand, rand */
 #include <time.h>   /* time */
 #include <mil_petri_nets/petri_net.hpp>
