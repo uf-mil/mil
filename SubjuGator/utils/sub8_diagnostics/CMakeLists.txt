@@ -30,5 +30,8 @@ add_executable(parse_wrench_node src/parse_wrench.cpp)
 add_dependencies(parse_wrench_node ${parse_wrench_node_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(parse_wrench_node ${catkin_LIBRARIES})
 
+add_executable(dynamic_test src/dynamic_wrench.cpp)
+add_dependencies(dynamic_test ${dynamic_test_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(dynamic_test ${catkin_LIBRARIES})
 
 catkin_python_setup()
