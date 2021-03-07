@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   nav_msgs
   geometry_msgs
+  mil_msgs
 )
 
 # Any tools used to diagnose the core functionality of the sub should be put here
@@ -33,5 +34,14 @@ target_link_libraries(parse_wrench_node ${catkin_LIBRARIES})
 add_executable(dynamic_test src/dynamic_wrench.cpp)
 add_dependencies(dynamic_test ${dynamic_test_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(dynamic_test ${catkin_LIBRARIES})
+
+add_executable(dynamic_move src/dynamic_move.cpp)
+add_dependencies(dynamic_move ${dynamic_move_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(dynamic_move ${catkin_LIBRARIES})
+
+add_executable(dynamic_yaw src/dynamic_yaw.cpp)
+add_dependencies(dynamic_yaw ${dynamic_yaw_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(dynamic_yaw ${catkin_LIBRARIES})
+
 
 catkin_python_setup()

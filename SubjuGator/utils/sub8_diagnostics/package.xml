@@ -24,6 +24,10 @@
   <build_depend>geometry_msgs</build_depend>
   <build_export_depend>geometry_msgs</build_export_depend>
   <exec_depend>geometry_msgs</exec_depend>
+
+  <build_depend>mil_msgs</build_depend>
+  <build_export_depend>mil_msgs</build_export_depend>
+  <exec_depend>mil_msgs</exec_depend>
   
   <build_depend>mil_tools</build_depend>
   <exec_depend>mil_tools</exec_depend>
