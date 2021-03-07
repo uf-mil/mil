@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<pnml>
+	<net>
+		<place id="Input1">
+			<file>Input1.exe</file>
+			<datatype>int</datatype>
+			<tokens>2</tokens>
+		</place>
+
+		<place id="Input2">
+			<file>Input2.exe</file>
+			<datatype>float</datatype>
+			<tokens>1</tokens>
+		</place>
+
+		<place id="Output">
+			<file>Output.exe</file>
+			<datatype>String</datatype>
+			<tokens>0</tokens>
+		</place>
+
+		<transition id="T0">
+			<file>T0.exe</file>
+		</transition>
+
+		<arc source="Input1" target="T0">
+			<threshold>2</threshold>
+		</arc>
+
+		<arc source="Input2" target="T0">
+			<threshold>1</threshold>
+		</arc>
+
+		<arc source="T0" target="Output">
+			<threshold>3</threshold>
+		</arc>
+
+	</net>
+</pnml>

@@ -202,14 +202,17 @@ void PetriNet::AsDot(std::ostream& _out) const
       sub_nets.at(ns) += "\"" + transition.first + "\"->\"" + place.first + "\";\n";
     }
   }
-  _out << sub_nets.at("/Return/");
-  _out << "}\n";
+	std::string subnet1 = sub_nets.at("/Return/");
   sub_nets.erase("/Return/");
+	int i = 0;
   for (auto& subgraph : sub_nets)
   {
-    subgraph.second += "}\n";
+    if(i != sub_nets.size() - 1)
+			subgraph.second += "}\n";
     _out << subgraph.second;
+		i++;
   }
+	_out << subnet1 + "}\n}\n";
   _out << "}\n";
 }
 
