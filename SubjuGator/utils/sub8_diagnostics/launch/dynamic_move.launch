@@ -1,5 +1,5 @@
 <launch>
-	<param name="acceleration" value="10" />
+	<param name="acceleration" value="0.1" />
   <param name="move_time" value="10" />
   <param name ="positionx" value="10" />
 

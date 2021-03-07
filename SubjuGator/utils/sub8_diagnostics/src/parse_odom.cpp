@@ -9,6 +9,7 @@ class DataParser {
         ros::Subscriber sub;
 	std::ofstream dataFile;
 	std::string filepath;
+	std::string file_name;
 
         public:
         DataParser(ros::NodeHandle *nh) {
@@ -17,9 +18,10 @@ class DataParser {
                         &DataParser::odomCallback, this);
 
 		nh->getParam("/csv_path", filepath);
+		nh->getParam("/file_name_odom", file_name);
 
 		//Setup file for data
-   		dataFile.open(filepath + "odom.csv",
+   		dataFile.open(filepath + file_name,
 			       	std::ofstream::out | std::ofstream::trunc);
     		dataFile << "Time,PosX,PosY,PosZ,OriX,OriY,OriZ,OriW,LinX,LinY,LinZ,AngX,AngY,AngZ\n";
         }

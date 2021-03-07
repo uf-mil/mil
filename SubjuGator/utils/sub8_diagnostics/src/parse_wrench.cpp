@@ -9,6 +9,7 @@ class DataParser {
         ros::Subscriber sub;
 	std::ofstream dataFile;
 	std::string filepath;
+	std::string filename;
 
         public:
         DataParser(ros::NodeHandle *nh) {
@@ -17,9 +18,10 @@ class DataParser {
                         &DataParser::wrenchCallback, this);
 
 		nh->getParam("/csv_path", filepath);
+		nh->getParam("/file_name_wrench", filename);
 
 		//Setup file for data
-   		dataFile.open(filepath + "wrench.csv",
+   		dataFile.open(filepath + filename,
 			       	std::ofstream::out | std::ofstream::trunc);
     		dataFile << "Time,ForceX,ForceY,ForceZ,TorqueX,TorqueY,TorqueZ\n";
         }
