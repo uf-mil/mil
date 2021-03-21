@@ -118,7 +118,8 @@ struct Node
 
   bool set_disabled(SetDisabledRequest &request, SetDisabledResponse &response)
   {
-    disabled = request.disabled;
+    //disabled = request.disabled;
+		disabled = true;
     if (disabled)
     {
       c3trajectory.reset();

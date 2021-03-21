@@ -4,50 +4,56 @@
 #include <math.h>
 #include <cmath>
 
-bool switch_ = true;
-double w = 1;
-double z = 0;
-double acceleration = 15;
-
-void callback(const nav_msgs::Odometry& msg){
- 	//ROS_INFO_STREAM("w is " << w);
-  //ROS_INFO_STREAM("z is " << z);
-  //ROS_INFO_STREAM("posew is " << msg.pose.pose.orientation.w);
-  //ROS_INFO_STREAM("posez is " << msg.pose.pose.orientation.z);
-	if(round(w) == 1 && std::abs(msg.pose.pose.orientation.w) > 0.95){
-		switch_ = true;
-		w = 0;
+class Dynamic_Yaw {
+private:
+	ros::Subscriber sub;
+	ros::Publisher pub;
+	int acceleration;
+	int z;
+	int w;
+	bool switch_;
+public:
+	Dynamic_Yaw(ros::NodeHandle *nh){
+		pub = nh->advertise<mil_msgs::MoveToActionGoal>("/moveto/goal", 10);
+		sub = nh->subscribe("/odom", 1000, &Dynamic_Yaw::yaw_callback, this);
 		z = 1;
-    ROS_INFO("w is true");
-	} else if (round(z) == 1 && std::abs(msg.pose.pose.orientation.z) > 0.95){
+		w = 0;
+		acceleration = 10;
 		switch_ = true;
-		z = 0;
-		w = 1;
-    ROS_INFO("z is true");
+		ROS_INFO_STREAM("initialized");
 	}
-}
+	
+	void yaw_callback(const nav_msgs::Odometry::ConstPtr msg){
+		ROS_INFO_STREAM("callback received");
+  	if(round(w) == 1 && std::abs(msg->pose.pose.orientation.w) > 0.90){
+    	switch_ = true;
+    	w = 0;
+    	z = 1;
+  	} else if (round(z) == 1 && std::abs(msg->pose.pose.orientation.z) > 0.90){
+    	switch_ = true;
+    	z = 0;
+    	w = 1;
+  	}
+		
+		if(switch_ == true){
+      ROS_INFO_STREAM("hello" << acceleration << z << w);
+      mil_msgs::MoveToActionGoal msg;
+
+      msg.goal.posetwist.pose.orientation.z = z;
+      msg.goal.posetwist.pose.orientation.w = w;
+      msg.goal.posetwist.acceleration.angular.z = acceleration;
+      pub.publish(msg);
+      switch_ = false;
+    }
+
+	}
+
+};
 
 int main (int argc, char **argv){
   ros::init(argc, argv, "dynamic_yaw");
   ros::NodeHandle nh;
-  ros::Publisher pub = nh.advertise<mil_msgs::MoveToActionGoal>("/moveto/goal", 10);
-	ROS_INFO("Initialized");
-
-	ros::Subscriber sub = nh.subscribe("/odom", 1000, callback);
-  double move_time = 5;
-
-	while(ros::ok()){
-  	if(switch_ == true){
-			ROS_INFO_STREAM("acceleration is " << acceleration);
-			mil_msgs::MoveToActionGoal msg;
-    	msg.goal.posetwist.pose.orientation.z = 1;
-			msg.goal.posetwist.pose.orientation.w = 0;
-    	msg.goal.posetwist.acceleration.angular.z = acceleration;
-			pub.publish(msg);
-			acceleration = -1*acceleration;
-			switch_ = false;
-		}
-		ros::spinOnce();
-	}
+	Dynamic_Yaw dy = Dynamic_Yaw(&nh);
+  ros::spin();
 }
 

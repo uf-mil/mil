@@ -2,5 +2,5 @@
 	<param name="acceleration" value="20" />
   <param name ="move_time" value="10" />
 
-	<node name="dynamic_test" pkg="sub8_diagnostics" type="dynamic_test" />
+	<node name="dynamic_yaw" pkg="sub8_diagnostics" type="dynamic_yaw" />
 </launch>
