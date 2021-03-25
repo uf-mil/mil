@@ -24,7 +24,6 @@ public:
 	}
 	
 	void yaw_callback(const nav_msgs::Odometry::ConstPtr msg){
-		ROS_INFO_STREAM("callback received");
   	if(round(w) == 1 && std::abs(msg->pose.pose.orientation.w) > 0.90){
     	switch_ = true;
     	w = 0;
@@ -36,7 +35,6 @@ public:
   	}
 		
 		if(switch_ == true){
-      ROS_INFO_STREAM("hello" << acceleration << z << w);
       mil_msgs::MoveToActionGoal msg;
 
       msg.goal.posetwist.pose.orientation.z = z;
