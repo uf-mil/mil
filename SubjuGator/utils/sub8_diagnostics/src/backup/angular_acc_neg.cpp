@@ -1,16 +1,15 @@
 #include <ros/ros.h>
 #include <geometry_msgs/WrenchStamped.h>
 
-
 int main (int argc, char **argv){
-	ros::init(argc, argv, "linear_acc");
+	ros::init(argc, argv, "angular_acc");
 	ros::NodeHandle nh;
 	ros::Publisher pub = nh.advertise<geometry_msgs::WrenchStamped>("/wrench", 10);
-	double force;
-	double maxForce;
+	double torque = 0;
+	double maxTorque;
 	double move_rate;
 	nh.getParam("/move_rate", move_rate);
-	nh.getParam("/maxForce", maxForce);
+	nh.getParam("/maxTorque", maxTorque);
 	double old_secs = ros::Time::now().toSec();
 	double secs = 0;
 	
@@ -18,16 +17,15 @@ int main (int argc, char **argv){
 		geometry_msgs::WrenchStamped msg;
 		secs = ros::Time::now().toSec();
 		
-		if(force > maxForce){
+		if(torque < maxTorque){
 			break;
 		}
 		if(secs > (old_secs + move_rate)){
-			force += 1;
+			torque -= 1.0;
 			old_secs = secs;
 		}
 		
-		msg.wrench.force.x = force;
+		msg.wrench.torque.z = torque;
 		pub.publish(msg);
-
 	}
 }

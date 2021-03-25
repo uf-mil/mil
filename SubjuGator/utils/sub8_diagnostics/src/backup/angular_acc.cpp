@@ -3,7 +3,7 @@
 
 
 int main (int argc, char **argv){
-	ros::init(argc, argv, "linear_acc");
+	ros::init(argc, argv, "angular_acc");
 	ros::NodeHandle nh;
 	ros::Publisher pub = nh.advertise<geometry_msgs::WrenchStamped>("/wrench", 10);
 	double torque;
