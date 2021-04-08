@@ -1,12 +1,12 @@
 <launch>
 <!--
     <node pkg="roboteq_driver" type="driver_node" name="grinch_winch">
-      <param name="port" value="/dev/serial/by-id/1"/>
+      <param name="port" value="/dev/pts/9"/>
       <param name="value" value="115200" />
     </node>
 -->
     <node pkg="roboteq_driver" type="driver_node" name="grinch_spin">
-      <param name="port" value="/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if01-port0"/>
+      <param name="port" value="/dev/pts/8"/>
       <param name="value" value="115200" />
     </node>
 

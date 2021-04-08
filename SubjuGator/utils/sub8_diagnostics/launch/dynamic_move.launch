@@ -1,7 +1,6 @@
 <launch>
-	<param name="acceleration" value="0.1" />
-  <param name="move_time" value="10" />
-  <param name ="positionx" value="10" />
+	<param name="move_rate" value="0.5" />
+  <param name ="maxForce" value="100" />
 
 	<node name="dynamic_move" pkg="sub8_diagnostics" type="dynamic_move" />
 </launch>

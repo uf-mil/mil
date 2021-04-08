@@ -86,10 +86,12 @@ class Kill(HandlerBase):
 
         # Battery too low
         if sub_alarms["bus-voltage"].raised and sub_alarms["bus-voltage"].severity == 5:
+            rospy.logwarn('Batteries are pretty low')
             return True
         ignore.append("bus-voltage")
 
         if sub_alarms["odom-kill"].raised and sub_alarms["odom-kill"].severity == 5:
+            rospy.logwarn('We lost odom my dude!')
             return True
         ignore.append("odom-kill")
 

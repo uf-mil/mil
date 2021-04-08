@@ -31,11 +31,11 @@ add_executable(parse_wrench_node src/deprecated/parsing/parse_wrench.cpp)
 add_dependencies(parse_wrench_node ${parse_wrench_node_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(parse_wrench_node ${catkin_LIBRARIES})
 
-add_executable(dynamic_move src/deprecated/dynamic_move.cpp)
+add_executable(dynamic_move src/dynamic/dynamic_move.cpp)
 add_dependencies(dynamic_move ${dynamic_move_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(dynamic_move ${catkin_LIBRARIES})
 
-add_executable(dynamic_yaw src/deprecated/dynamic_yaw.cpp)
+add_executable(dynamic_yaw src/dynamic/dynamic_yaw.cpp)
 add_dependencies(dynamic_yaw ${dynamic_yaw_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(dynamic_yaw ${catkin_LIBRARIES})
 

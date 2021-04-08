@@ -1,0 +1,1 @@
+Make sure to change the topic adaptive controller publishes to in roscd sub8_controller. For proper functioning of these nodes, change it to /adaptive_controller_custom. For normal usage, keep it as /wrench.
