@@ -28,5 +28,6 @@ int main (int argc, char **argv){
 		
 		msg.wrench.force.x = force;
 		pub.publish(msg);
+
 	}
 }

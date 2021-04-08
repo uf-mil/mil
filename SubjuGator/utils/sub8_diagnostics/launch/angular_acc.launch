@@ -1,6 +1,6 @@
 <launch>
 	<param name="move_rate" value="0.5" />
-  <param name ="maxTorque" value="20" />
+  	<param name ="maxTorque" value="20" />
 
 	<node name="angular_acc" pkg="sub8_diagnostics" type="angular_acc" />
 </launch>
