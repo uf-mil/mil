@@ -1,7 +1,7 @@
 #include <geometry_msgs/WrenchStamped.h>
 #include <ros/ros.h>
 
-class Dynamic_Move
+class Dynamic_Move_Neg
 {
 private:
   ros::Subscriber sub;
@@ -13,7 +13,7 @@ private:
   double secs;
 
 public:
-  Dynamic_Move(ros::NodeHandle *nh)
+  Dynamic_Move_Neg(ros::NodeHandle *nh)
   {
     force = 0;
     nh->getParam("/maxForce", maxForce);
@@ -21,7 +21,7 @@ public:
     old_secs = 0;
     secs = 0;
     pub = nh->advertise<geometry_msgs::WrenchStamped>("/wrench", 10);
-    sub = nh->subscribe("/adaptive_controller_custom", 1000, &Dynamic_Move::move_callback, this);
+    sub = nh->subscribe("/adaptive_controller_custom", 1000, &Dynamic_Move_Neg::move_callback, this);
   }
 
   void move_callback(const geometry_msgs::WrenchStamped::ConstPtr msg_)
@@ -29,7 +29,7 @@ public:
     geometry_msgs::WrenchStamped msg;
     secs = ros::Time::now().toSec();
 
-    if (force > maxForce)
+    if (force < maxForce)
     {
       msg.wrench.force.x = 0;
       msg.wrench.force.y = msg_->wrench.force.y;
@@ -43,7 +43,7 @@ public:
     {
       if (secs > (old_secs + move_rate))
       {
-        force += 1;
+        force -= 1;
         old_secs = secs;
       }
 
@@ -60,8 +60,8 @@ public:
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "dynamic_move");
+  ros::init(argc, argv, "dynamic_move_neg");
   ros::NodeHandle nh;
-  Dynamic_Move dm = Dynamic_Move(&nh);
+  Dynamic_Move_Neg dm = Dynamic_Move_Neg(&nh);
   ros::spin();
 }

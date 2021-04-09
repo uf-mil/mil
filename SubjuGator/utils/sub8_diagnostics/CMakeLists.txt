@@ -39,20 +39,13 @@ add_executable(dynamic_yaw src/dynamic/dynamic_yaw.cpp)
 add_dependencies(dynamic_yaw ${dynamic_yaw_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(dynamic_yaw ${catkin_LIBRARIES})
 
-add_executable(linear_acc src/backup/linear_acc.cpp)
-add_dependencies(linear_acc ${linear_acc_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(linear_acc ${catkin_LIBRARIES})
+add_executable(dynamic_move_neg src/dynamic/dynamic_move_neg.cpp)
+add_dependencies(dynamic_move_neg ${dynamic_move_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(dynamic_move_neg ${catkin_LIBRARIES})
 
-add_executable(angular_acc src/backup/angular_acc.cpp)
-add_dependencies(angular_acc ${angular_acc_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(angular_acc ${catkin_LIBRARIES})
+add_executable(dynamic_yaw_neg src/dynamic/dynamic_yaw_neg.cpp)
+add_dependencies(dynamic_yaw_neg ${dynamic_yaw_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(dynamic_yaw_neg ${catkin_LIBRARIES})
 
-add_executable(linear_acc_neg src/backup/linear_acc_neg.cpp)
-add_dependencies(linear_acc_neg ${linear_acc_neg_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(linear_acc_neg ${catkin_LIBRARIES})
-
-add_executable(angular_acc_neg src/backup/angular_acc_neg.cpp)
-add_dependencies(angular_acc_neg ${angular_acc_neg_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(angular_acc_neg ${catkin_LIBRARIES})
 
 catkin_python_setup()
