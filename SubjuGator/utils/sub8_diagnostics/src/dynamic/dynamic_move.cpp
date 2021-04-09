@@ -31,6 +31,7 @@ public:
 
     if (force > maxForce)
     {
+      msg.header.stamp = ros::Time::now();
       msg.wrench.force.x = 0;
       msg.wrench.force.y = msg_->wrench.force.y;
       msg.wrench.force.z = msg_->wrench.force.z;
@@ -47,6 +48,7 @@ public:
         old_secs = secs;
       }
 
+      msg.header.stamp = ros::Time::now();
       msg.wrench.force.x = force;
       msg.wrench.force.y = msg_->wrench.force.y;
       msg.wrench.force.z = msg_->wrench.force.z;
