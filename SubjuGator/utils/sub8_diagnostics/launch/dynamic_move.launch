@@ -1,6 +1,6 @@
 <launch>
-	<param name="move_rate" value="10" />
-  <param name ="maxForce" value="80" />
+	<param name="move_rate" value="20" />
+  <param name ="maxForce" value="50" />
 
 	<node name="dynamic_move" pkg="sub8_diagnostics" type="dynamic_move" />
 </launch>
