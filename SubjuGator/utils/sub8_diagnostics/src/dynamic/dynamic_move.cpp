@@ -29,27 +29,15 @@ public:
     geometry_msgs::WrenchStamped msg;
     secs = ros::Time::now().toSec();
 
-    if (force > maxForce)
+    if (secs - move_rate > old_secs)
     {
-      msg.header.stamp = ros::Time::now();
-      msg.wrench.force.x = 0;
-      msg.wrench.force.y = msg_->wrench.force.y;
-      msg.wrench.force.z = msg_->wrench.force.z;
-      msg.wrench.torque.x = msg_->wrench.torque.x;
-      msg.wrench.torque.y = msg_->wrench.torque.y;
-      msg.wrench.torque.z = msg_->wrench.torque.z;
-      pub.publish(msg);
+			maxForce = -maxForce;
+			old_secs = secs;
     }
     else
     {
-      if (secs > (old_secs + move_rate))
-      {
-        force += 1;
-        old_secs = secs;
-      }
-
       msg.header.stamp = ros::Time::now();
-      msg.wrench.force.x = force;
+      msg.wrench.force.x = maxForce;
       msg.wrench.force.y = msg_->wrench.force.y;
       msg.wrench.force.z = msg_->wrench.force.z;
       msg.wrench.torque.x = msg_->wrench.torque.x;

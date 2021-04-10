@@ -39,17 +39,9 @@ add_executable(dynamic_yaw src/dynamic/dynamic_yaw.cpp)
 add_dependencies(dynamic_yaw ${dynamic_yaw_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(dynamic_yaw ${catkin_LIBRARIES})
 
-add_executable(dynamic_move_neg src/dynamic/dynamic_move_neg.cpp)
-add_dependencies(dynamic_move_neg ${dynamic_move_neg_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(dynamic_move_neg ${catkin_LIBRARIES})
-
-add_executable(dynamic_yaw_neg src/dynamic/dynamic_yaw_neg.cpp)
-add_dependencies(dynamic_yaw_neg ${dynamic_yaw_neg_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(dynamic_yaw_neg ${catkin_LIBRARIES})
-
-add_executable(dynamic_right src/dynamic/dynamic_right.cpp)
-add_dependencies(dynamic_right ${dynamic_right_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(dynamic_right ${catkin_LIBRARIES})
+add_executable(dynamic_down src/dynamic/dynamic_down.cpp)
+add_dependencies(dynamic_down ${dynamic_down_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(dynamic_down ${catkin_LIBRARIES})
 
 add_executable(dynamic_left src/dynamic/dynamic_left.cpp)
 add_dependencies(dynamic_left ${dynamic_left_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
