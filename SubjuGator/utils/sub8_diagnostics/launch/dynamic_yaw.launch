@@ -1,6 +1,6 @@
 <launch>
-	<param name="move_rate" value="0.5" />
-  <param name ="maxForce" value="100" />
+	<param name="move_rate" value="10" />
+  <param name ="maxForce" value="50" />
 
 	<node name="dynamic_yaw" pkg="sub8_diagnostics" type="dynamic_yaw" />
 </launch>

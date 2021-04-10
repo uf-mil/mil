@@ -1,6 +1,0 @@
-<launch>
-	<param name="move_rate" value="0.5" />
-  <param name ="maxForce" value="-100" />
-
-	<node name="dynamic_right" pkg="sub8_diagnostics" type="dynamic_right" />
-</launch>
