@@ -33,32 +33,44 @@ class UnifiedPerceptionServer:
     self.inited = False
     self.id = 0
     rospy.init_node('unified_perception_server')
+
     # create a sensor space instance for each sensor
     self.sensors = {}
+
+    # Get params
     self.min_score = rospy.get_param('min_score')
     self.world_frame = rospy.get_param('world_frame_id')
     sensors = rospy.get_param('sensors')
+
     self.debug_pubs = {'sensors' : {}, 'distributions': {}}
+    
+    
     for name, values in sensors.items():
       self.sensors[name] = SensorSpaceFactory(values['sensor_space'])(name)
       self.debug_pubs['sensors'][name] = LazyPublisher(values['visualization']['topic'],
                                        eval(values['visualization']['msg_type']),
                                        queue_size=1)
+    
     self.distributions = {}
     distributions = rospy.get_param('distributions')
+    
     self.subs = [rospy.Subscriber(j, numpy_msg(eval(i)), self.distribution_cb, queue_size=10)
                  for i, j in distributions['topics'].items()]
     self.distribution_debug_types = {}
     for dist_type, vis in distributions['visualization'].items():
       self.debug_pubs['distributions'][str(eval(dist_type))] = LazyPublisher(vis['topic'],
                                                       eval(vis['vis_msg_type']), queue_size=1)
+    
     self.world_model_pub = rospy.Publisher(rospy.get_param('world_model_topic'),
                                            WorldModelStamped, queue_size=4)
+    
     self.timer = rospy.Timer(rospy.Duration(rospy.get_param('quantum')), self.quantum_cb)
     _msg_type_to_world_field = \
       rospy.get_param('sensor_msg_type_to_world_model_field')
+    
     self.msg_type_to_world_field = {str(eval(i)): j
                                     for i, j in _msg_type_to_world_field.items()}
+    
     self.cov_growth_rate = rospy.get_param('cov_growth_rate')
     self.max_cov = rospy.get_param('max_cov')
     self.min_bhattacharyya_distance = float(rospy.get_param("min_bhattacharyya_distance"))
@@ -70,6 +82,7 @@ class UnifiedPerceptionServer:
       return
     # project from sensor space to the world space
     dist = self.sensors[msg.distribution.sensor_name].project_to_world_frame(msg)
+    
     # add to the distributions dict
     if msg.distribution.id in self.distributions and msg.distribution.id != '':
       self.distributions[msg.distribution.id] *= dist
@@ -86,9 +99,11 @@ class UnifiedPerceptionServer:
         self.id += 1
     return
 
+
   def quantum_cb(self, event):
     if self.inited != True:
       return
+    
     # apply distributions to the data in the buffers
     threads = []
     for sensor in self.sensors.values():
@@ -97,6 +112,7 @@ class UnifiedPerceptionServer:
       threads[-1].start()
     for t in threads:
       t.join()
+    
     # may need to remove old distributions that are not valid anymore
     world_model = WorldModel()
     for name, sensor in self.sensors.items():
@@ -109,6 +125,7 @@ class UnifiedPerceptionServer:
         eval('world_model.' + field).append(i)
         self.debug_pubs['sensors'][name].publish(i)
       sensor.clear_edited_msg_buffer()
+    
     # publish that data along with the distributions as the world model
     wms = WorldModelStamped()
     wms.world_model = world_model
