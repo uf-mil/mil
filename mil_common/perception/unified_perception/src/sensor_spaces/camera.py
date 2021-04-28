@@ -23,7 +23,7 @@ from distributions.gaussian import Gaussian
 
 class Camera(SensorSpace):
   def __init__(self, name):
-    topic = rospy.get_param(name+'/image_topic')
+    topic = rospy.get_param(name+'/image_topic') 
     super(Camera, self).__init__(name, topic, Image)
     # subscribe to the camera topic as well as the camera info topic
     self.info_topic = rospy.get_param(self.name+'/info_topic')
@@ -115,4 +115,4 @@ class Camera(SensorSpace):
     pos = np.dstack((y,x))
     for dist in dists.values():
       score += dist.pdf(pos)
-    return score;
+    return score
