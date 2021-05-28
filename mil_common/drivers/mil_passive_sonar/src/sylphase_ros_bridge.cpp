@@ -34,6 +34,7 @@ private:
   std::string ip_;
   int port_;
   double seconds_per_message_;
+  bool is_little_endian_;
 };
 
 void SylphaseSonarToRosNode::run()
@@ -67,6 +68,7 @@ SylphaseSonarToRosNode::SylphaseSonarToRosNode(ros::NodeHandle nh, ros::NodeHand
   port_ = private_nh.param<int>("port", 10001);
   frame_id_ = private_nh.param<std::string>("frame", "hydrophones");
   seconds_per_message_ = private_nh.param<double>("seconds_to_capture", 0.1);
+  is_little_endian_ = private_nh.param<bool>("is_little_endian", true);
 }
 
 boost::asio::ip::tcp::socket SylphaseSonarToRosNode::connect()
@@ -103,11 +105,16 @@ void SylphaseSonarToRosNode::read_messages(boost::asio::ip::tcp::socket& socket)
     // If the buffer is now full, ship the message off
     if (!boost::asio::buffer_size(buffer))
     {
-      // Received packets are Big-Endian, convert to system
-      for (size_t i = 0; i < msg.hydrophone_samples.data.size(); ++i)
+      //check if packets are Big-Endian
+      if(!is_little_endian_)
       {
-        msg.hydrophone_samples.data[i] = ntohs(msg.hydrophone_samples.data[i]);
+        // Received packets are Big-Endian, convert to system
+        for (size_t i = 0; i < msg.hydrophone_samples.data.size(); ++i)
+        {
+          msg.hydrophone_samples.data[i] = ntohs(msg.hydrophone_samples.data[i]);
+        }
       }
+      
       ++msg.header.seq;
       pub_.publish(msg);
 
