@@ -9,6 +9,7 @@
     <node pkg="mil_passive_sonar" type="sylphase_sonar_ros_bridge" name="sylphase_sonar_ros_bridge" respawn="true">
       <param name="port" value="$(arg port)" />
       <param name="seconds_to_capture" value="0.1" />
+      <param name="is_little_endian" value="false" />
     </node>
   </group>
 
