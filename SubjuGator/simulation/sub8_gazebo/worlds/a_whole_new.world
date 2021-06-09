@@ -135,13 +135,12 @@
       </link>
     </model>
 
-    <!--
+
     <include>
       <name>transdec_pinger</name>
       <uri>model://pinger</uri>
-      <pose>15 0 -2 0 0 0 </pose>
+      <pose>5 5 -2 0 0 0 </pose>
     </include>
-    -->
 
     <scene>
       <sky>

@@ -41,10 +41,11 @@ class Autonomous(SubjuGator):
 
         try:
             # Run start gate mission
-            yield self.run_mission(StartGate(), 400)
+            #yield self.run_mission(StartGate(), 400)
 
             # Go to pinger and do corresponding mission
             completed = yield self.run_mission(Pinger(), 400)
+            '''
             if not completed:  # if we timeout
                 pass
             else:
@@ -74,7 +75,7 @@ class Autonomous(SubjuGator):
             yield self.run_mission(VampireSlayer(), 400)
             fprint("Garlic drop?")
             yield self.rub_mission(BallDrop(), 400)
-
+            '''
         except Exception as e:
             fprint("Error in Chain 1 missions!", msg_color="red")
             print e

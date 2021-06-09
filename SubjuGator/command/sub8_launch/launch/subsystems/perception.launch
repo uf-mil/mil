@@ -1,7 +1,8 @@
 <launch>
   <arg name="tensorflow" default="False" />
   <arg name="torp" default="False" />
-  <arg name="threed" default="True" />
+  <arg name="threed" default="False" />
+  <arg name="badge" default="True" />
   <!-- roslaunch sub8_launch perception.launch color_calibration:=gazebo_color_calibration.yaml -->
   <arg name="color_calibration" default="default_color_calibration.yaml" />
 
@@ -17,5 +18,9 @@
     <node if="$(arg tensorflow)" pkg="sub8_perception" type="object_detection.py" name="object_detection" output="screen">
       <rosparam file="$(find sub8_launch)/config/path_localizer.yaml" command="load" />
     </node>
+
+    <node if="$(arg badge)" pkg="sub8_perception" type="badge_detection.py" name="badge_detection" output="screen">
+    </node>
+
   </group>
 </launch>

@@ -72,7 +72,7 @@ class Move(SubjuGator):
                     state_set_pub = yield self.nh.advertise('gazebo/set_model_state', ModelState)
                     config_file = os.path.join(rospack.get_path(
                         'sub8_gazebo'), 'config', 'teleport_locs.yaml')
-                    f = yaml.load(open(config_file, 'r'))
+                    f = yaml.full_load(open(config_file, 'r'))
                     if len(arguments) > 1:
                         # Command only takes in one string so to prevent this
                         # command from flowing over into movement we break
