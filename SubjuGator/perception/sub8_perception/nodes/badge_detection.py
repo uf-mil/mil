@@ -19,7 +19,7 @@ from mil_ros_tools import Image_Subscriber, Image_Publisher
 from cv_bridge import CvBridge
 from mil_misc_tools import FprintFactory
 from visualization_msgs.msg import Marker
-from sub8_msgs.msg import ThrusterCmd
+from sub8_msgs.msg import PathPoint
 
 
 
@@ -49,7 +49,7 @@ class Badge_Detection:
         self.camera_model.fromCameraInfo(self.camera_info)
 
         # Publisher for BadgeTakedown Mission
-        self.move_info_pub = rospy.Publisher("/move_to_badge", ThrusterCmd, queue_size=10)
+        self.move_info_pub = rospy.Publisher("/move_to_badge", PathPoint, queue_size=10)
 
     def image_cb(self, image):
         '''
@@ -65,12 +65,22 @@ class Badge_Detection:
             vector = self.camera_model.projectPixelTo3dRay(center)
 
 
-        msg = ThrusterCmd()
+        msg = PathPoint()
         #we will insert the command into msg.name
         #we will insert the movement into msg.thrust
         #we will use move_info_pub.publish(msg)
-        msg.name = "FORWARD"
-        msg.thrust = 1.0
+
+        #0.0 is we don't see the badge
+        #1.0 we have a vector
+        #2.0 we've arrived
+
+
+        if vector is not None:
+            msg.position = vector
+            msg.thrust = 1.0
+        else:
+            msg.thrust = 0.0
+
         self.move_info_pub.publish(msg)
 
         return None
