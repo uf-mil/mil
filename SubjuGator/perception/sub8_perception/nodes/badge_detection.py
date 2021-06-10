@@ -35,8 +35,8 @@ class Badge_Detection:
         self.print_info = FprintFactory(title="MISSION").fprint
 
         #Image Subscriber and Camera Information
-        self.lower = rospy.get_param('~lower_color_threshold', [15, 50, 100])
-        self.upper = rospy.get_param('~upper_color-threshold', [30, 255, 180])
+        self.lower = rospy.get_param('~lower_color_threshold_badge', [15, 50, 100])
+        self.upper = rospy.get_param('~upper_color_threshold_badge', [30, 255, 180])
         self.min_radius = rospy.get_param('~min_radius', 10)
         self.camera = rospy.get_param('~camera_topic', '/camera/front/left/image_rect_color')
         self.image_sub = Image_Subscriber(self.camera, self.image_cb)
