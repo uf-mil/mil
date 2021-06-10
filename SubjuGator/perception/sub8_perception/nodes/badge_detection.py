@@ -59,8 +59,10 @@ class Badge_Detection:
 
         image = self.process(image)
         center = self.findCenter(image)
-        
-        vector = self.camera_model.projectPixelTo3dRay(center)
+        vector = None
+       
+        if center is not None:
+            vector = self.camera_model.projectPixelTo3dRay(center)
 
 
         msg = ThrusterCmd()
@@ -74,50 +76,50 @@ class Badge_Detection:
         return None
 
 
-def process(self, image):
-    clahe = cv2.createCLAHE(5., (4, 4))
-    lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
-    l, a, b = cb2.split(lab)
-    l2 = clahe.apply(l)
+    def process(self, image):
+        clahe = cv2.createCLAHE(5., (4, 4))
+        lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        l2 = clahe.apply(l)
 
-    lab = cv2.merge((l2, a, b))
-    image = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+        lab = cv2.merge((l2, a, b))
+        image = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
 
-    return image
+        return image
 
 
-def findCenter(self, image):
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    def findCenter(self, image):
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    
+        lower = np.array(self.lower, dtype="uint8")
+        upper = np.array(self.upper, dtype="uint8")
 
-    lower = np.array(self.lower, dtype="uint8")
-    upper = np.array(self.upper, dtype="uint8")
+        mask = cv2.inRange(hsv, lower, upper)
+        mask = cv2.erode(mask, None, iterations=2)
+        mask = cv2.dilate(mask, None, iterations=2)
 
-    mask = cv2.inRange(hsv, lower, upper)
-    mask = cv2.erode(mask, None, iterations=2)
-    mask = cv2.dilate(mask, None, iterations=2)
+        contours = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours = imutils.grab_contours(contours)
+        center = None
+        found = False
+        center = None
 
-    contours = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    contours = imutils.grab_contours(contours)
-    center = None
-    found = False
-    center = None
+        if len(contours) > 0:
+            c = max(contours, key=cv2.contourArea)
+            ((x,y),radius) = cv2.minEnclosingCircle(c)
+            M = cv2.moments(c)
+            Center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-    if len(contours) > 0:
-        c = max(contours, key=cv2.contourArea)
-        ((x,y),radius) = cv2.minEnclosingCircle(c)
-        M = cv2.moments(c)
-        Center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+            if radius > 10:
+                #cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 0))
+                #cv2.circle(frame, center, 5, (255, 0, 0), -1)
+                found = True
+                center = Center
 
-        if radius > 10:
-            #cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 0))
-            #cv2.circle(frame, center, 5, (255, 0, 0), -1)
-            found = True
-            center = Center
-
-    if found and center is not None:
-        return center
-    else:
-        return None
+        if found and center is not None:
+            return center
+        else:
+            return None
         
 
 def main(args):
