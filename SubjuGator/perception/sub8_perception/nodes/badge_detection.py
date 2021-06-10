@@ -38,7 +38,8 @@ class Badge_Detection:
         self.lower = rospy.get_param('~lower_color_threshold_badge', [15, 50, 100])
         self.upper = rospy.get_param('~upper_color_threshold_badge', [30, 255, 180])
         self.min_radius = rospy.get_param('~min_radius', 10)
-        self.camera = rospy.get_param('~camera_topic', '/camera/front/left/image_rect_color')
+        #self.camera = rospy.get_param('~camera_topic', '/camera/front/left/image_rect_color')
+        self.camera = rospy.get_param('~camera_topic', '/usb_cam/image_raw')
         self.image_sub = Image_Subscriber(self.camera, self.image_cb)
         
         #or maybe use self.image_sub = yield self.nh.subscribe(
@@ -58,11 +59,13 @@ class Badge_Detection:
         '''
 
         image = self.process(image)
-        center = self.findCenter(image)
+        center, big = self.findCenter(image, self.camera_info.width, self.camera_info.height)
         vector = None
+
+        #print(self.camera_info)
        
         if center is not None:
-            vector = self.camera_model.projectPixelTo3dRay(center)
+            vector = self.camera_model.projectPixelTo3dRay((center[0], center[1]))
 
 
         msg = PathPoint()
@@ -76,10 +79,14 @@ class Badge_Detection:
 
 
         if vector is not None:
-            msg.position = vector
-            msg.thrust = 1.0
+            msg.position.x = vector[0]
+            msg.position.y = vector[1]
+            msg.position.z = vector[2]
+            msg.yaw = 1.0
+            if big is True:
+                msg.yaw = 2.0
         else:
-            msg.thrust = 0.0
+            msg.yaw = 0.0
 
         self.move_info_pub.publish(msg)
 
@@ -98,7 +105,7 @@ class Badge_Detection:
         return image
 
 
-    def findCenter(self, image):
+    def findCenter(self, image, width, height):
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     
         lower = np.array(self.lower, dtype="uint8")
@@ -113,6 +120,7 @@ class Badge_Detection:
         center = None
         found = False
         center = None
+        big = False
 
         if len(contours) > 0:
             c = max(contours, key=cv2.contourArea)
@@ -120,16 +128,18 @@ class Badge_Detection:
             M = cv2.moments(c)
             Center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-            if radius > 10:
-                #cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 0))
-                #cv2.circle(frame, center, 5, (255, 0, 0), -1)
+            if radius > 40:
+                cv2.circle(image, (int(x), int(y)), int(radius), (0, 255, 0))
+                cv2.circle(image, center, 5, (255, 0, 0), -1)
                 found = True
                 center = Center
+                if ((radius / int(width)) > .4):
+                    big = True
 
         if found and center is not None:
-            return center
+            return center, big
         else:
-            return None
+            return None, None
         
 
 def main(args):
