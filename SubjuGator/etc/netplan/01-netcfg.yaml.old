@@ -4,11 +4,11 @@ network:
   version: 2
   renderer: networkd
   ethernets:
-    enp6s0:
+    eno1:
       dhcp4: no
-    enx0050b61edace:
+    enx000acd337bbe:
       dhcp4: no
-    enp0s31f6:
+    enx000acd337bbf:
       dhcp4: no
   bridges:
     br0:
@@ -24,6 +24,6 @@ network:
           - 192.168.37.32
 
       interfaces:
-        - enp6s0
-        - enx0050b61edace
-        - enp0s31f6
+        - eno1
+        - enx000acd337bbe
+        - enx000acd337bbf
