@@ -287,7 +287,7 @@ private:
     if (good.size() >= 3)
     {
       last_good_dvl = msg.header.stamp;
-      //std::cout << "got dvl" << std::endl;
+      // std::cout << "got dvl" << std::endl;
     }
     else
     {
