@@ -36,7 +36,7 @@ class Pinger(SubjuGator):
 
         fprint('Getting Guess Locations')
 
-        use_prediction = True
+        use_prediction = False
 
         try:
             save_pois = rospy.ServiceProxy(
