@@ -38,8 +38,8 @@ class Badge_Detection:
         self.lower = rospy.get_param('~lower_color_threshold_badge', [15, 50, 100])
         self.upper = rospy.get_param('~upper_color_threshold_badge', [30, 255, 180])
         self.min_radius = rospy.get_param('~min_radius', 10)
-        #self.camera = rospy.get_param('~camera_topic', '/camera/front/left/image_rect_color')
-        self.camera = rospy.get_param('~camera_topic', '/usb_cam/image_raw')
+        self.camera = rospy.get_param('~camera_topic', '/camera/front/left/image_rect_color')
+        #self.camera = rospy.get_param('~camera_topic', '/usb_cam/image_raw')
         self.image_sub = Image_Subscriber(self.camera, self.image_cb)
         
         #or maybe use self.image_sub = yield self.nh.subscribe(
@@ -86,6 +86,9 @@ class Badge_Detection:
             if big is True:
                 msg.yaw = 2.0
         else:
+            msg.position.x = 0.0
+            msg.position.y = 0.0
+            msg.position.z = 0.0
             msg.yaw = 0.0
 
         self.move_info_pub.publish(msg)

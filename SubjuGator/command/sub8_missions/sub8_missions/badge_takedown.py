@@ -15,6 +15,10 @@ class BadgeTakedown(SubjuGator):
     @util.cancellableInlineCallbacks
     def run(self, args):
       done = False
+      
+      self.send_feedback("Waiting for odom...")
+      yield self.tx_pose()
+      self.send_feedback("Odom Found...")
 
       forward = self.move.forward(SIDE_LENGTH).zero_roll_and_pitch()
       right = forward.right(SIDE_LENGTH).zero_roll_and_pitch()
@@ -29,7 +33,7 @@ class BadgeTakedown(SubjuGator):
 
         #we do not see the badge
         if move_info.yaw == 0.0:
-          yield self.move.yaw_right_deg(10.0).go(speed=SPEED_LIMIT)
+          yield self.move.yaw_right_deg(20.0).go(speed=SPEED_LIMIT)
 
         #we have a vector
         elif move_info.yaw == 1.0:
