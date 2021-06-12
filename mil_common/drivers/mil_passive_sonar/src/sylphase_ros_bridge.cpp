@@ -105,8 +105,8 @@ void SylphaseSonarToRosNode::read_messages(boost::asio::ip::tcp::socket& socket)
     // If the buffer is now full, ship the message off
     if (!boost::asio::buffer_size(buffer))
     {
-      //check if packets are Big-Endian
-      if(!is_little_endian_)
+      // check if packets are Big-Endian
+      if (!is_little_endian_)
       {
         // Received packets are Big-Endian, convert to system
         for (size_t i = 0; i < msg.hydrophone_samples.data.size(); ++i)
@@ -114,7 +114,7 @@ void SylphaseSonarToRosNode::read_messages(boost::asio::ip::tcp::socket& socket)
           msg.hydrophone_samples.data[i] = ntohs(msg.hydrophone_samples.data[i]);
         }
       }
-      
+
       ++msg.header.seq;
       pub_.publish(msg);
 
