@@ -31,6 +31,25 @@ class BadgeTakedown(SubjuGator):
         #listen to topic move where it tells us to move
         move_info = yield move_info_sub.get_next_message()
 
+        #We've found it so move
+        if move_info.yaw == 0.0:
+            yield self.move.forward(.5).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
+        #It's past the threshold so stop
+        elif move_info.yaw = 2.0:
+            fprint("We have arrived")
+            done = True
+        #-1.0 means turn left
+        elif move_info.yaw = -1.0:
+            yield self.move.yaw_left_deg(20.0).go(speed=SPEED_LIMIT)
+        #1.0 means turn right
+        elif move_info.yaw = 1.0:
+            yield self.move.yaw_right_deg(20.0).go(speed=SPEED_LIMIT)
+        #-2.0 means not in frame
+        elif move_info.yaw = -2.0:
+            yield self.move.yaw_right_deg(20.0).go(speed=SPEED_LIMIT)
+
+
+        """
         #we do not see the badge
         if move_info.yaw == 0.0:
           yield self.move.yaw_right_deg(20.0).go(speed=SPEED_LIMIT)
@@ -53,5 +72,5 @@ class BadgeTakedown(SubjuGator):
           yield self.actuators.sheet_torpedo2()
           done = True
         '''
-
+        """
       fprint("Done!")

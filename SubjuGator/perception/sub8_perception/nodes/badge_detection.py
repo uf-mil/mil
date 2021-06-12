@@ -59,14 +59,14 @@ class Badge_Detection:
         '''
 
         image = self.process(image)
-        center, big = self.findCenter(image, self.camera_info.width, self.camera_info.height)
+        center, big, direction = self.findCenter(image, self.camera_info.width, self.camera_info.height)
         vector = None
 
         #print(self.camera_info)
        
-        if center is not None:
-            vector = self.camera_model.projectPixelTo3dRay((center[0], center[1]))
-
+#        if center is not None:
+#            vector = self.camera_model.projectPixelTo3dRay((center[0], center[1]))
+        
 
         msg = PathPoint()
         #we will insert the command into msg.name
@@ -77,7 +77,14 @@ class Badge_Detection:
         #1.0 we have a vector
         #2.0 we've arrived
 
+        if direction is 0:
+            msg.yaw = 0.0
+            if big is True:
+                msg.yaw = 2.0
+        else:
+            msg.yaw = direction
 
+        """
         if vector is not None:
             msg.position.x = vector[0]
             msg.position.y = vector[1]
@@ -90,7 +97,7 @@ class Badge_Detection:
             msg.position.y = 0.0
             msg.position.z = 0.0
             msg.yaw = 0.0
-
+        """
         self.move_info_pub.publish(msg)
 
         return None
@@ -122,8 +129,11 @@ class Badge_Detection:
         contours = imutils.grab_contours(contours)
         center = None
         found = False
-        center = None
+        center = (0,0)
         big = False
+        rotateDir = 0
+        print(width)
+        print(height)
 
         if len(contours) > 0:
             c = max(contours, key=cv2.contourArea)
@@ -136,13 +146,23 @@ class Badge_Detection:
                 cv2.circle(image, center, 5, (255, 0, 0), -1)
                 found = True
                 center = Center
+                center_varL = (width / 2.0) * .9
+                center_varR = (width / 2.0) * 1.1
+                if center[0] < center_varL:
+                    rotateDir = -1
+                elif center[0] > center_varR:
+                    rotateDir = 1
+                else:
+                    rotateDir = 0
                 if ((radius / int(width)) > .4):
                     big = True
 
-        if found and center is not None:
-            return center, big
+        print(center[0])
+
+        if found and center is not (0,0):
+            return center, big, rotateDir
         else:
-            return None, None
+            return None, None, -2 
         
 
 def main(args):
