@@ -33,44 +33,27 @@ class BadgeTakedown(SubjuGator):
 
         #We've found it so move
         if move_info.yaw == 0.0:
-            yield self.move.forward(.5).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
-        #It's past the threshold so stop
-        elif move_info.yaw = 2.0:
+            yield self.move.forward(0.5).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
+        #It's past the threshold so stop (this will only be used in the case that we do not want to shoot torpedo)
+        elif move_info.yaw == 3.0:
             fprint("We have arrived")
             done = True
         #-1.0 means turn left
-        elif move_info.yaw = -1.0:
+        elif move_info.yaw == -1.0:
             yield self.move.yaw_left_deg(20.0).go(speed=SPEED_LIMIT)
         #1.0 means turn right
-        elif move_info.yaw = 1.0:
+        elif move_info.yaw == 1.0:
             yield self.move.yaw_right_deg(20.0).go(speed=SPEED_LIMIT)
         #-2.0 means not in frame
-        elif move_info.yaw = -2.0:
+        elif move_info.yaw == -2.0:
             yield self.move.yaw_right_deg(20.0).go(speed=SPEED_LIMIT)
 
-
-        """
-        #we do not see the badge
-        if move_info.yaw == 0.0:
-          yield self.move.yaw_right_deg(20.0).go(speed=SPEED_LIMIT)
-
-        #we have a vector
-        elif move_info.yaw == 1.0:
-           pose = move_info.position
-           vec = [pose.x, pose.y, pose.z]
-           yield self.move.relative(vec).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
-
-        elif move_info.yaw == 2.0:
-          fprint("We have arrived")
-          done = True
-
-        '''
         #we have eyes on the target
-        elif move_info.yaw == 2.0
-          fprint("FIRE")
-          yield self.actuators.shoot_torpedo1()
-          yield self.actuators.sheet_torpedo2()
-          done = True
-        '''
-        """
+        elif move_info.yaw == 2.0:
+            fprint("FIRE")
+            yield self.actuators.shoot_torpedo1()
+            yield self.nh.sleep(1)
+            yield self.actuators.sheet_torpedo2()
+            done = True
+
       fprint("Done!")

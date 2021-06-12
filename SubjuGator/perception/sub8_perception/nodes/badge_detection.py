@@ -62,16 +62,7 @@ class Badge_Detection:
         center, big, direction = self.findCenter(image, self.camera_info.width, self.camera_info.height)
         vector = None
 
-        #print(self.camera_info)
-       
-#        if center is not None:
-#            vector = self.camera_model.projectPixelTo3dRay((center[0], center[1]))
-        
-
         msg = PathPoint()
-        #we will insert the command into msg.name
-        #we will insert the movement into msg.thrust
-        #we will use move_info_pub.publish(msg)
 
         #0.0 is we don't see the badge
         #1.0 we have a vector
@@ -84,20 +75,6 @@ class Badge_Detection:
         else:
             msg.yaw = direction
 
-        """
-        if vector is not None:
-            msg.position.x = vector[0]
-            msg.position.y = vector[1]
-            msg.position.z = vector[2]
-            msg.yaw = 1.0
-            if big is True:
-                msg.yaw = 2.0
-        else:
-            msg.position.x = 0.0
-            msg.position.y = 0.0
-            msg.position.z = 0.0
-            msg.yaw = 0.0
-        """
         self.move_info_pub.publish(msg)
 
         return None
@@ -132,8 +109,6 @@ class Badge_Detection:
         center = (0,0)
         big = False
         rotateDir = 0
-        print(width)
-        print(height)
 
         if len(contours) > 0:
             c = max(contours, key=cv2.contourArea)
@@ -141,6 +116,7 @@ class Badge_Detection:
             M = cv2.moments(c)
             Center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
+            #print("Radius: " + str(radius))
             if radius > 40:
                 cv2.circle(image, (int(x), int(y)), int(radius), (0, 255, 0))
                 cv2.circle(image, center, 5, (255, 0, 0), -1)
@@ -154,10 +130,10 @@ class Badge_Detection:
                     rotateDir = 1
                 else:
                     rotateDir = 0
-                if ((radius / int(width)) > .4):
+                if (radius > 400):
                     big = True
 
-        print(center[0])
+        #print(center[0])
 
         if found and center is not (0,0):
             return center, big, rotateDir
