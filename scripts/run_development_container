@@ -67,9 +67,6 @@ docker run -it \
     $VIM_CONFIG \
     --net host \
     $ROS_ENV \
-    --env="DISPLAY" \
-    --env="QT_X11_NO_MITSHM=1" \
-    --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
     $NAME \
     --rm \
     uf-mil:dev \

@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   nav_msgs
   tf
+  rostest
 )
 
 ## System dependencies are found with CMake's conventions
@@ -117,7 +118,6 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -134,7 +134,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(ground_truth_tf src/ground_truth_tf.cpp)
+add_executable(dumb_truth_tf src/dumb_truth_tf.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -144,10 +144,10 @@ add_executable(ground_truth_tf src/ground_truth_tf.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(ground_truth_tf ${catkin_EXPORTED_TARGETS})
+add_dependencies(dumb_truth_tf ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(ground_truth_tf
+target_link_libraries(dumb_truth_tf
    ${catkin_LIBRARIES}
  )
 
@@ -155,6 +155,13 @@ target_link_libraries(ground_truth_tf
 #############
 ## Testing ##
 #############
+
+if(CATKIN_ENABLE_TESTING)
+  foreach(T
+      test/test_sylphase.test)
+     add_rostest(${T})
+  endforeach()
+endif()
 
 ## Add gtest based cpp test target and link libraries
 # catkin_add_gtest(${PROJECT_NAME}-test test/test_indyav_localization.cpp)

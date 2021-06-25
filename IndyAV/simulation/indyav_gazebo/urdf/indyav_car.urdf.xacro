@@ -2,8 +2,9 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="indyav_car">
   <xacro:include filename="$(find indyav_gazebo)/xacro/go_kart.xacro"/>
   <xacro:include filename="$(find indyav_gazebo)/xacro/wheels.xacro"/>
-  <xacro:include filename="$(find wamv_gazebo)/urdf/sensors/wamv_p3d.xacro"/>
-
+  <xacro:include filename="$(find indyav_gazebo)/xacro/axles.xacro"/>
+  <xacro:include filename="$(find navigator_gazebo)/urdf/sylphase.xacro" />
+  
   <link name="base_link">
     <xacro:body_inertial/>
     <visual>
@@ -14,29 +15,33 @@
     </collision>
   </link>
 
-  <!-- TODO: replace this with a sylphase img gps -->
-  <xacro:property name="namespace" value="indyav_car"/>
-  <xacro:property name="sensor_namespace" value="sensors"/>
-  <xacro:wamv_p3d/>
+  <xacro:front_axle name="front_left_axle"  xyz="0.52 0.47 -0.2"/>
+  <xacro:front_axle name="front_right_axle"  xyz="0.52 -0.47 -0.2"/>
 
-  <xacro:back_wheel name="back_left_wheel"  xyz="-1   0.4 -0.2"/>
-  <xacro:back_wheel name="back_right_wheel"  xyz="-1 -0.4 -0.2"/>
+  <xacro:front_wheel name="front_left_wheel" xyz="0 0 0" parent_link="front_left_axle_link"/>
+  <xacro:front_wheel name="front_right_wheel" xyz="0 0 0" parent_link="front_right_axle_link"/>
+  
+  <xacro:back_axle name="back_axle" xyz="-0.52 0 -0.2"/>
+
+  <xacro:back_wheel name="back_left_wheel"  xyz="0 0.4825 0" parent_link="back_axle_link"/>
+  <xacro:back_wheel name="back_right_wheel"  xyz="0 -0.4825 0" parent_link="back_axle_link"/>
+  
   <gazebo>
     <plugin name="back_wheel_plugin" filename="libbackwheel_plugin.so">
       <wheels>
-        <wheel_0> back_right_wheel_link </wheel_0>
-        <wheel_1> back_left_wheel_link </wheel_1>
+        <wheel_0> back_axle_link_to_back_right_wheel_link_joint </wheel_0>
+        <wheel_1> back_axle_link_to_back_left_wheel_link_joint </wheel_1>
       </wheels>
-      <max_thrust>1000</max_thrust>
+      <back_axle_joint> base_link_to_back_axle_link_joint </back_axle_joint>
+      <max_wheel_rotational_vel>1000</max_wheel_rotational_vel>
       <max_velocity>20</max_velocity>
       <topic_name> throttle </topic_name>
     </plugin>
   </gazebo>
-
-  <xacro:front_wheel name="front_left_wheel"  xyz="1 0.4 -0.2"/>
-  <xacro:front_wheel name="front_right_wheel"  xyz="1 -0.4 -0.2"/>
+  
+  <xacro:sylphase name="ins"
+                  xyz="-0.585 0.0 0.0" rpy="0 0 0" />
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"/>
   </gazebo>
-
 </robot>

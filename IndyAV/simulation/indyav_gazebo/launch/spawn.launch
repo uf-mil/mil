@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <node
-    name="spawn_indyav" pkg="gazebo_ros" type="spawn_model"
+  <arg name="start_yaw_deg" default="0.0"/>
+  <arg name="start_yaw_rad" value="$(eval start_yaw_deg * pi / 180.0)"/>
+  <node name="spawn_indyav" pkg="gazebo_ros" type="spawn_model"
     args="-urdf -param robot_description
-      -x 0. -y 0. -z 1.0 -model indyav_car"
+      -x 0. -y 0. -z 1.0 -R 0. -P 0. -Y $(arg start_yaw_rad)
+      -model indyav_car"
     output="screen" />
 </launch>

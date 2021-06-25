@@ -6,12 +6,14 @@
   <maintainer email="marshallrawson@ufl.edu">Marshall Rawson</maintainer>
   <license>MIT</license>
   <build_depend>roslaunch</build_depend>
+  <depend> tf </depend>
   <exec_depend>mil_tools</exec_depend>
   <exec_depend>indyav_path</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>joint_state_publisher</exec_depend>
   <exec_depend>indyav_localization</exec_depend>
   <exec_depend>indyav_control</exec_depend>
+  <exec_depend>joy</exec_depend>
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>indyav_gazebo</exec_depend>
   <buildtool_depend>catkin</buildtool_depend>

@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
   <param name="use_sim_time" value="true"/>
+  <arg name="use_sim_time" value="true"/>
   <param name="simulate" value="true"/>
   <arg name="gui" default="false"/>
+  <arg name="world_name" default="new_smyrna"/>
+  <arg name="world_file" default="$(find indyav_gazebo)/worlds/$(arg world_name).world"/>
 
-  <!-- TODO create a race track world -->
-  <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false"
-    args="--verbose" output="screen"/>
-  <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" if="$(arg gui)"/>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(arg world_file)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="gui" value="$(arg gui)"/>
+  </include>
 
-  <include file="$(find indyav_gazebo)/launch/spawn.launch"/>
+  <arg if="$(eval world_name == 'new_smyrna')" name="start_yaw_deg" value="-97"/>
+  <include file="$(find indyav_gazebo)/launch/spawn.launch">
+    <arg name="start_yaw_deg" value="$(arg start_yaw_deg)"/>
+  </include>
 </launch>

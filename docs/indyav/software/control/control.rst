@@ -1,6 +1,11 @@
 Control
 =======
 
+.. toctree::
+    :maxdepth: 1
+
+    IndyAV Joydrive <joydrive/joydrive.rst>
+
 Control Packages
 ----------------
 No software developed yet.

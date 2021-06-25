@@ -12,7 +12,7 @@ because of the speed of the vehicle.
    :maxdepth: 1
    :caption: Elements of Autonomony
 
-   Control <control>
+   Control <control/control.rst>
    Localization <localization>
    Perception <perception>
    Planning <planning/planning.rst>
