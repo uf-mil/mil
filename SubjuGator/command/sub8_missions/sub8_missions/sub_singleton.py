@@ -124,7 +124,7 @@ class _VisionProxies(object):
         rospack = rospkg.RosPack()
         config_file = os.path.join(
             rospack.get_path('sub8_missions'), 'sub8_missions', file_name)
-        f = yaml.load(open(config_file, 'r'))
+        f = yaml.full_load(open(config_file, 'r'))
 
         self.proxies = {}
         for name, params in f.items():
