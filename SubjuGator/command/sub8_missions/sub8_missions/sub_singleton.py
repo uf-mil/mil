@@ -163,7 +163,7 @@ class _VisionProxies:
         config_file = os.path.join(
             rospack.get_path("sub8_missions"), "sub8_missions", file_name
         )
-        f = yaml.safe_load(open(config_file))
+        f = yaml.full_load(open(config_file))
 
         self.proxies: dict[str, VisionProxy] = {}
         for name, params in f.items():
