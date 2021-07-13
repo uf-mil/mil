@@ -18,10 +18,13 @@ mil_system_install --no-install-recommends \
   gnupg2 \
   lsb-release \
   python-vcstools \
-  mercurial \
+  python-pip \
   ruby \
   wget \
   expect
+
+# Other dependencies
+sudo sh -c "pip install numpy"
 
 # ROS apt source
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
