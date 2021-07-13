@@ -2,7 +2,9 @@
 <launch>
   <!-- Defines what environment the system is running on, can be 'real', 'gazebo' or 'dynsim' -->
   <arg name="environment" default="real" />
+  <arg name="simulate_cams" default="true" />
   <arg name="use_adaptive_controller" default="True" />
+
   <param name="/environment" value="$(arg environment)" />
   <param name="/is_simulation" value="$(eval environment != 'real')" />
   <rosparam param="/autonomous">False</rosparam>
@@ -20,6 +22,8 @@
 
   <include if="$(eval environment != 'dynsim')" file="$(find sub8_launch)/launch/subsystems/cameras.launch">
     <arg name="environment" value="$(arg environment)" />
+    <arg name="simulate_cams" value="$(arg simulate_cams)" />
+
   </include>
   <include if="$(eval environment != 'dynsim')" file="$(find sub8_launch)/launch/subsystems/odometry.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/thruster_mapper.launch"/>

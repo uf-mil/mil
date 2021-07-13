@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
   <arg name="environment" default="real" />
+  <arg name="simulate_cams" default="true" />
 
   <!-- The Sub8 Stereo Front launch using pointgrey_camera_driver -->
   <group ns="camera/front">
