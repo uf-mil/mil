@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <include file="$(find sub8_launch)/launch/upload_urdf.launch" />
+  <arg name="simulate_cams" default="true" />
+  <include file="$(find sub8_launch)/launch/upload_urdf.launch" >
+    <arg name="simulate_cams" value="$(arg simulate_cams)" />
+  </include>  
   <node pkg="robot_state_publisher" name="robot_state_publisher" type="robot_state_publisher">
     <param name="use_tf_static" value="false" />
   </node>
