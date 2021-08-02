@@ -3,6 +3,8 @@ If you have reached this page, you likely want to get started working in MIL.
 We're quite excited to have you on the team! Here's to a grand future
 of learning and late nights coding. This guide explains the steps
 to take to get started as a developer.
+## Watch the intro video
+Watch the [virtual tour](https://tinyurl.com/mil-kickoff-f20) that we recorded in September 2020!
 
 ## Learn abour our Culture
 MIL does things differently than many other labs or student organizations.
