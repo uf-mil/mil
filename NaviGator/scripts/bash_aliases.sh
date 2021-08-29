@@ -2,7 +2,9 @@
 
 # Directory navigation
 NAV_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
+VRX_DIR="$(realpath $(dirname $BASH_SOURCE)/../simulation/VRX/vrx)"
 alias nav="cd $NAV_DIR"
+alias vrx="cd $VRX_DIR"
 # VRX
 alias vrxviz="rviz -d \$MIL_REPO/NaviGator/vrx.rviz"
 
@@ -30,7 +32,7 @@ complete -F _nthrust_complete nthrust
 
 
 # Tasks
-alias nmove="runtask Move"
+alias nmove="runmission Move"
 
 # Wrench
 _nwrench_complete()
