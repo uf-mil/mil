@@ -105,7 +105,7 @@ class ThrusterMap(object):
               continue
             name = link.name[:find]
             try:
-                trans = buff.lookup_transform('base_link', link.name, rospy.Time(), rospy.Duration(10))
+                trans = buff.lookup_transform('wamv/base_link', link.name, rospy.Time(), rospy.Duration(10))
             except tf2_ros.TransformException as e:
                 raise Exception(e)
             translation = rosmsg_to_numpy(trans.transform.translation)
@@ -149,7 +149,7 @@ class ThrusterMap(object):
                 if joint is None:
                     rospy.logerr('Transmission joint {} not found'.format(transmission.joints[0].name))
                 try:
-                    trans = buff.lookup_transform('base_link', joint.child, rospy.Time(), rospy.Duration(10))
+                    trans = buff.lookup_transform('wamv/base_link', joint.child, rospy.Time(), rospy.Duration(10))
                 except tf2_ros.TransformException as e:
                     raise Exception(e)
                 translation = rosmsg_to_numpy(trans.transform.translation)
