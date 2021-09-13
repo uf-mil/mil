@@ -174,7 +174,7 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
 
   // Get current pose of robot to filter neaby points
   Eigen::Affine3d robot_transform;
-  if (!transform_to_global("base_link", pcloud->header.stamp, robot_transform))
+  if (!transform_to_global("wamv/base_link", pcloud->header.stamp, robot_transform))
     return;
   input_cloud_filter_.set_robot_pose(robot_transform);
 
