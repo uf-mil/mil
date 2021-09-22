@@ -30,7 +30,7 @@ complete -F _nthrust_complete nthrust
 
 
 # Tasks
-alias nmove="runtask Move"
+alias nmove="runmission Move"
 
 # Wrench
 _nwrench_complete()
