@@ -11,8 +11,8 @@
       <max_step_size>0.01</max_step_size>
     </physics>
 
-    <xacro:include filename="$(find vrx_gazebo)/worlds/sandisland.xacro" />
-    <xacro:sandisland />
+    <xacro:include filename="$(find vrx_gazebo)/worlds/xacros/sandisland_minus_scene.xacro" />
+    <xacro:sandisland_minus_scene />
 
     <include>
       <uri>model://robotx_navigation_challenge</uri>
