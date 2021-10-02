@@ -44,8 +44,8 @@
   <node pkg="nodelet" type="nodelet" name="gps_odom" args="load RobotLocalization/NavSatTransformNodelet localization">
     <param name="frequency" value="15"/>
     <param name="magnetic_declination_radians" value="0"/>
-    <param name="broadcast_utm_transform" value="true"/>
-    <param name="broadcast_utm_transform_as_parent_frame" value="false" />
+    <param name="broadcast_cartesian_transform" value="true"/>
+    <param name="broadcast_cartesian_transform_as_parent_frame" value="false" />
     <param name="wait_for_datum" value="false"/>
     <param name="use_odometry_yaw" value="true"/>
 <!--    <rosparam param="datum">[21.3109, -157.8901]</rosparam> -->
