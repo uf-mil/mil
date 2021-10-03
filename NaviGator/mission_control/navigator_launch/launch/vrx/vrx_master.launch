@@ -12,7 +12,7 @@
     <include file="$(find navigator_launch)/launch/vrx/vrx_upload_urdf.launch" />
     <include file="$(find navigator_launch)/launch/vrx/vrx_controller.launch" />
     <include file="$(find navigator_launch)/launch/vrx/vrx_pcodar.launch" />
-    <include file="$(find navigator_launch)/launch/vrx/vrx_bounds.launch" />
+    <!--<include file="$(find navigator_launch)/launch/vrx/vrx_bounds.launch" />-->
     <node name="wrench_arbiter" ns="/wrench" pkg="topic_tools" type="mux"
           args="cmd autonomous autonomous rc emergency keyboard" >
         <remap from="mux" to="/wrench" />
