@@ -59,6 +59,32 @@ calibratecamera()
   rosrun camera_calibration cameracalibrator.py --no-service-check --pattern=chessboard --square=0.063 --size=8x6 --disable_calib_cb_fast_check camera:=$1 image:=$1/image_raw
 }
 
+# Export Display Variable (hack to allow Rendering in docker container)
+# We will see if it causes problems for anyone
+export DISPLAY=:1
+
+# Bash sourcing
+alias srcbrc="source ~/.bashrc"
+
+# file searching alias
+alias search_root='sudo find / \
+	            -not \( -path /run -prune \) \
+		        -not \( -path /proc -prune \) \
+		        -not \( -path /boot -prune \) \
+		        -not \( -path /cdrom -prune \) \
+		        -not \( -path /lost+found -prune \) \
+		        -not \( -path /root -prune \) \
+		        -not \( -path /sbin -prune \) \
+		        -not \( -path /snap -prune \) \
+		        -not \( -path /sys -prune \) \
+		        -not \( -path /tmp -prune \) \
+		        -not \( -path /var -prune \) \
+		        -not \( -path /vmlinuz -prune \) \
+		        -not \( -path /vmlinuz.old -prune \) \
+		        -print | grep -i'
+
+alias search='find . -print | grep -i'
+
 # Bash sourcing
 alias srcbrc="source ~/.bashrc"
 
