@@ -85,9 +85,6 @@ alias search_root='sudo find / \
 
 alias search='find . -print | grep -i'
 
-# Bash sourcing
-alias srcbrc="source ~/.bashrc"
-
 # Gazebo aliases
 alias gazebogui="rosrun gazebo_ros gzclient __name:=gzclient"
 # Simulation
