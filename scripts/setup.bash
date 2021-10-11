@@ -81,9 +81,9 @@ alias search_root='sudo find / \
 		        -not \( -path /var -prune \) \
 		        -not \( -path /vmlinuz -prune \) \
 		        -not \( -path /vmlinuz.old -prune \) \
-		        -name'
+		        -print | grep -i'
 
-alias search='find . -name'
+alias search='find . -print | grep -i'
 
 # Gazebo aliases
 alias gazebogui="rosrun gazebo_ros gzclient __name:=gzclient"
