@@ -107,4 +107,5 @@ class Vrx(Navigator):
             yield self.run_submission('ScanAndDock')
         elif task_name == 'scan':
             yield self.run_submission('DockDriver')
+        msg = yield self.task_info_sub.get_next_message()
         defer.returnValue(msg)
