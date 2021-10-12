@@ -35,9 +35,11 @@ and clone it into the `src` or that workspace.
 
 `mkdir -p ~/catkin_ws/src && cd ~/catkin_ws/src`
 
-Then clone the repo, being sure to pull submodules as well:
+Then clone the repo:
 
-`git clone --recursive https://github.com/uf-mil/mil.git`
+(the `--recurse-submodules` is essential, as that is what pulls the submodules, `-j8` is a speed optimization that downloads up to 8 submodules at a time)
+
+`git clone --recurse-submodules -j8 https://github.com/uf-mil/mil.git`
 
 **Windows**
 Use the [Github Desktop GUI](https://help.github.com/en/desktop/contributing-to-projects/cloning-a-repository-from-github-to-github-desktop)
