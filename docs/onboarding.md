@@ -22,7 +22,7 @@ We are using [this google calendar](https://calendar.google.com/calendar?cid=ajl
 your calendar app of choice.
 
 ## Install the repsitory
-To get started running the code we use for our robots, see the [Development Guide](/docs/development/development_guide).
+To get started running the code we use for our robots, see the [Contributing Guide](/docs/development/contributing) to clone the repo correctly, then the [Development Guide](/docs/development/development_guide) to get started with building the code.
 
 ## Research our highly used libraries and tools
 It is recommended that before you start on a project you gain a basic understanding of [ROS](https://www.ros.org/) through the excellent [tutorials](http://wiki.ros.org/ROS/Tutorials). If you are new to programming (non CS student), there are two free courses about Python for Robotics and Linux for Robotics offered by [The Construct](https://www.theconstructsim.com/intro-to-robot-programming-ros-learning-path/). If you knw other progamming languages but not python, this [Course](https://dabeaz-course.github.io/practical-python/Notes/01_Introduction/01_Python.html) might help. 
