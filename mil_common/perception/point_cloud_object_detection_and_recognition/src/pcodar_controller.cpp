@@ -205,6 +205,8 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
 
   // Associate current clusters with old ones
   ass.associate(*objects_, *filtered_accrued, clusters);
+
+  std::cout << "size: " << (*objects_).objects_.size() << std::endl;
 }
 
 bool Node::bounds_update_cb(const mil_bounds::BoundsConfig& config)
