@@ -20,4 +20,5 @@ ogrid_width_meters : 500
 ogrid_resolution_meters_per_cell : 0.3
 ogrid_inflation_meters : 0.8
 
-classifications: ["buoy", "dock", "stc_platform", "red_totem", "green_totem", "blue_totem", "yellow_totem", "black_totem", "surmark46104", "surmark950400", "surmark950410", "UNKNOWN"]
+#classifications: ["buoy", "dock", "stc_platform", "red_totem", "green_totem", "blue_totem", "yellow_totem", "black_totem", "surmark46104", "surmark950400", "surmark950410", "UNKNOWN"]
+classifications: ["mb_marker_buoy_red", "mb_marker_buoy_green", "mb_marker_buoy_black", "mb_marker_buoy_white", "mb_round_buoy_black", "mb_round_buoy_orange", "UNKNOWN"]

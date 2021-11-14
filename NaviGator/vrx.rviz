@@ -101,6 +101,16 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        wamv/ball_shooter_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wamv/ball_shooter_launcher_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         wamv/base_link:
           Alpha: 1
           Show Axes: false
@@ -111,6 +121,25 @@ Visualization Manager:
           Show Trail: false
           Value: true
         wamv/dummy_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wamv/far_left_camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wamv/far_left_camera_link_optical:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wamv/far_left_camera_post_arm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wamv/far_left_camera_post_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -179,25 +208,6 @@ Visualization Manager:
           Show Trail: false
           Value: true
         wamv/lidar_wamv_post_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wamv/middle_right_camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wamv/middle_right_camera_link_optical:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        wamv/middle_right_camera_post_arm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wamv/middle_right_camera_post_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -252,11 +262,23 @@ Visualization Manager:
           Value: true
         wamv/FR_propeller_link:
           Value: true
+        wamv/ball_shooter_base_link:
+          Value: true
+        wamv/ball_shooter_launcher_link:
+          Value: true
         wamv/base_link:
           Value: true
         wamv/cpu_cases_link:
           Value: true
         wamv/dummy_link:
+          Value: true
+        wamv/far_left_camera_link:
+          Value: true
+        wamv/far_left_camera_link_optical:
+          Value: true
+        wamv/far_left_camera_post_arm_link:
+          Value: true
+        wamv/far_left_camera_post_link:
           Value: true
         wamv/front_left_camera_link:
           Value: true
@@ -285,14 +307,6 @@ Visualization Manager:
         wamv/lidar_wamv_post_arm_link:
           Value: true
         wamv/lidar_wamv_post_link:
-          Value: true
-        wamv/middle_right_camera_link:
-          Value: true
-        wamv/middle_right_camera_link_optical:
-          Value: true
-        wamv/middle_right_camera_post_arm_link:
-          Value: true
-        wamv/middle_right_camera_post_link:
           Value: true
         wamv/right_battery_link:
           Value: true
@@ -324,10 +338,18 @@ Visualization Manager:
             wamv/FR_engine_link:
               wamv/FR_propeller_link:
                 {}
+            wamv/ball_shooter_base_link:
+              wamv/ball_shooter_launcher_link:
+                {}
             wamv/cpu_cases_link:
               {}
             wamv/dummy_link:
               {}
+            wamv/far_left_camera_post_link:
+              wamv/far_left_camera_post_arm_link:
+                wamv/far_left_camera_link:
+                  wamv/far_left_camera_link_optical:
+                    {}
             wamv/front_left_camera_post_link:
               wamv/front_left_camera_post_arm_link:
                 wamv/front_left_camera_link:
@@ -350,11 +372,6 @@ Visualization Manager:
               wamv/lidar_wamv_post_arm_link:
                 wamv/lidar_wamv_link:
                   wamv/wamv/lidar_wamv_link:
-                    {}
-            wamv/middle_right_camera_post_link:
-              wamv/middle_right_camera_post_arm_link:
-                wamv/middle_right_camera_link:
-                  wamv/middle_right_camera_link_optical:
                     {}
             wamv/right_battery_link:
               {}
@@ -466,13 +483,13 @@ Visualization Manager:
       Unreliable: false
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /bounds_server/visualization
       Name: Bounds
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
-      Value: false
+      Value: true
     - Alpha: 0.699999988079071
       Class: rviz/Map
       Color Scheme: map
