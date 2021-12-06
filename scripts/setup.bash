@@ -41,6 +41,7 @@ source $MIL_WS/src/mil/IndyAV/scripts/bash_aliases.sh
 # Repo aliases
 alias mil="cd $MIL_REPO"
 alias cm="catkin_make -C $MIL_WS"
+alias vrx="cd $MIL_REPO/NaviGator/simulation/VRX/vrx"
 
 # General ROS aliases
 ros_env() {
