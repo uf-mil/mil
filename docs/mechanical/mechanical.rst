@@ -9,3 +9,4 @@ Various docs for the Mechanical team.
    Resources <resourcesM>
    Onboarding <onboardingM>
    Maintenance <maintenanceM>
+   Drone Project <drone_docM>

@@ -16,3 +16,8 @@ If you have reached this page, you likely want to get started working in MIL. We
 #### Join our GRABCAD
 * Ask any member you know about joining Grabcad, the cloud based folder where we store all our files (CAD)
 
+### Start to get familiar with our technical projects
+* Subjugator 8 (WIP)
+* Subjugator 9 (WIP)
+* Navigator (WIP)
+* [Drone](/docs/mechanical/drone_docsM.md) 
