@@ -20,4 +20,4 @@ If you have reached this page, you likely want to get started working in MIL. We
 * Subjugator 8 (WIP)
 * Subjugator 9 (WIP)
 * Navigator (WIP)
-* [Drone](/docs/mechanical/drone_docsM.md) 
+* [Drone](/docs/mechanical/drone_docM.md) 
