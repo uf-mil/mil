@@ -7,7 +7,9 @@ This page describes the recommended process of setting up your new ubuntu system
 
 **It is recommended that you [dual boot Ubuntu 18.04](https://help.ubuntu.com/community/WindowsDualBoot) for development**
 
-Virtual Machines will be able to run our software, but it may be too slow (see [hardware](#hardware))
+Virtual Machines will be able to run our software, but it may be too slow (see [hardware](#hardware)).
+
+For instructions on installing Ubuntu 18.04 on an Apple computer with an M-series processor, please see [these instructions](/docs/development/apple_mseries_ubuntu_setup.md).
 
 ### Hardware
 
