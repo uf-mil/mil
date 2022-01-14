@@ -1,4 +1,4 @@
-# Development Guide
+# Development Guide (Deprecated - Please refer to [Getting Started](getting_started))
 This page describes the recommended process of building and running code in this repository.
 
 **Note, this guide assumes you have already cloned the repository as described in the** [Contributing Guide](contributing)

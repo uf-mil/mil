@@ -2,7 +2,29 @@
 This page provides general info about developing for [VRX](https://github.com/osrf/vrx), a simulated competition based on the real-life RobotX challenge.
 MIL participates both in VRX and RobotX. Most code for this is hosted under NaviGator/.
 
-*NOTE: Please go through the [development guide](/docs/development/development_guide) before going through this tutorial. We will assume you are currently in the development container running a tmux session.*
+*NOTE: Please go through the [getting started guide](/docs/development/getting_started) before going through this tutorial.
+
+*NOTE: Currently we are working on the VRX 2022 competition through the vrx_2022 branch. If you want to go to this branch:
+`git checkout vrx_2022`
+
+`git submodule update --init --recursive`
+
+`rm ~/catkin_ws/devel/share/navigator_gazebo/urdf/navigator_vrx.urdf && cm`
+
+If you want to go back to master branch:
+
+`git checkout master`
+
+`git submodule update --init --recursive`
+
+`vrx && rm -rf vrx_gazebo/models/dock_2022*`
+
+Delete any other files that appear when you do `git status`.
+
+`rm ~/catkin_ws/devel/share/navigator_gazebo/urdf/navigator_vrx.urdf && cm`
+
+
+
 
 ## Verifying that the VRX Environment is Functional / Playing Around in VRX
 
@@ -26,7 +48,7 @@ To do this, run
 
 `roslaunch navigator_launch vrx.launch run_task:=True world:=<worldfile> --screen`
 
-Where `<worldfile>` is the name of a world under [vrx_gazebo/worlds](https://bitbucket.org/osrf/vrx/src/default/vrx_gazebo/worlds/).
+Where `<worldfile>` is the name of a world under [~/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/worlds].
 
 For example, run `roslaunch navigator_launch vrx.launch run_task:=True world:=stationkeeping_task --screen` to test
 out the station keeping scenario.
