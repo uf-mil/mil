@@ -33,6 +33,7 @@ add_message_files(
 add_service_files(
   DIRECTORY srv
   FILES
+  AcousticBeacon.srv
   ShooterManual.srv
   VisionRequest.srv
   GetDockShape.srv
