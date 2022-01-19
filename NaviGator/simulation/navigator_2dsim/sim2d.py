@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+"""
+A module sporting a simple 2D simulation of the kinematics of NaviGator.
+"""
+from typing import Tuple
+
 import rospy
 import numpy as np
-
-from typing import Tuple
 
 import tf.transformations as trns
 from mil_tools import numpy_to_quaternion
@@ -14,8 +17,8 @@ class Navsim:
     """
     A simple 2D simulation of the kinematics of NaviGator.
     """
-    def __init__(self, 
-                 pose_zero: np.ndarray = np.array([0, 0, 0]), 
+    def __init__(self,
+                 pose_zero: np.ndarray = np.array([0, 0, 0]),
                  twist_zero: np.ndarray = np.array([0, 0, 0])
                 ):
 
@@ -39,7 +42,8 @@ class Navsim:
 
         # Subscribe to thrusters so we can simulate their forces
         for i, motor in enumerate(self.thrust_map.names):
-            rospy.Subscriber('/{}_motor/cmd'.format(motor), Command, self.thruster_cb, queue_size=3, callback_args=i)
+            rospy.Subscriber('/{}_motor/cmd'.format(motor), Command, self.thruster_cb,
+                             queue_size=3, callback_args=i)
 
         # Start timer to run simulator
         rospy.Timer(rospy.Duration(self.update_period), self.timer_cb)
@@ -90,7 +94,8 @@ class Navsim:
     def state_deriv(self, wrench: np.float64, R: np.ndarray) -> Tuple[np.ndarray, float]:
         posedot = R.dot(self.twist)
         twistdot = (1 / self.inertia) * (wrench - self.drag *
-                                         np.sign(self.twist) * self.twist * self.twist + R.T.dot(self.wind))
+                                         np.sign(self.twist) * self.twist
+                                         * self.twist + R.T.dot(self.wind))
         return posedot, twistdot
 
     def publish_odom(self) -> None:
@@ -100,7 +105,7 @@ class Navsim:
         odom = self.pack_odom(self.pose, self.twist)
         self.odom_publisher.publish(odom)
 
-    def pack_odom(self, pose, twist):
+    def pack_odom(self, pose: np.ndarray, twist: np.ndarray) -> Odometry:
         """
         Converts pose and twist into an Odometry message
         """
@@ -109,6 +114,7 @@ class Navsim:
         msg.header.frame_id = self.world_frame
         msg.child_frame_id = self.body_frame
         msg.pose.pose.position.x, msg.pose.pose.position.y = pose[0], pose[1]
+
         quat = trns.quaternion_from_euler(0, 0, pose[2])
         msg.pose.pose.orientation = numpy_to_quaternion(quat)
         msg.twist.twist.linear.x, msg.twist.twist.linear.y = twist[0:2]
