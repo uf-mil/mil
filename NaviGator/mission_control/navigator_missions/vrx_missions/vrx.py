@@ -34,6 +34,8 @@ class Vrx(Navigator):
         Vrx.wayfinding_min_errors = Vrx.nh.subscribe("/vrx/wayfinding/min_errors", Float64MultiArray)
         Vrx.wayfinding_mean_error = Vrx.nh.subscribe("/vrx/wayfinding/mean_error", Float64)
         Vrx.perception_landmark = Vrx.nh.advertise("/vrx/perception/landmark", GeoPoseStamped)
+
+        Vrx.animal_landmarks = Vrx.nh.subscribe("/vrx/wildlife/animals/poses", GeoPath)
         #Vrx.scan_dock_placard_symbol = Vrx.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
 
         Vrx.front_left_camera_info_sub = None 
@@ -103,6 +105,8 @@ class Vrx(Navigator):
             yield self.run_submission('VrxNavigation')
         elif task_name == 'perception':
             yield self.run_submission('VrxPerception')
+        elif task_name == 'wildlife':
+            yield self.run_submission('VrxSpiral')
         elif task_name == 'scan_and_dock':
             yield self.run_submission('ScanAndDock')
         elif task_name == 'scan':
