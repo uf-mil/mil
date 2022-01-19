@@ -1,25 +1,28 @@
-#!/usr/bin/env python
-from __future__ import division
-import numpy as np
+#!/usr/bin/env python3
 import rospy
+import numpy as np
+
 import tf.transformations as trns
 from mil_tools import numpy_to_quaternion
 from nav_msgs.msg import Odometry
 from roboteq_msgs.msg import Command
 from navigator_thrust_mapper import ThrusterMap
 
-
-class Navsim():
-    '''
+class Navsim:
+    """
     A simple 2D simulation of the kinematics of NaviGator.
-    '''
-    def __init__(self, pose0=np.array([0, 0, 0]), twist0=np.array([0, 0, 0])):
+    """
+    def __init__(self, 
+                 pose_zero: np.array = np.array([0, 0, 0]), 
+                 twist_zero: np.array = np.array([0, 0, 0])
+                ):
+
         # Used to publish current state
         self.odom_publisher = rospy.Publisher("/odom", Odometry, queue_size=1)
 
         # Set initial state from constructor
-        self.pose = np.float64(pose0)
-        self.twist = np.float64(twist0)
+        self.pose = np.float64(pose_zero)
+        self.twist = np.float64(twist_zero)
         self.wrench = np.float64([0, 0, 0])
         self.thrusts = np.zeros(4, dtype=np.float64)
 
@@ -104,8 +107,7 @@ class Navsim():
         msg.twist.twist.angular.z = twist[2]
         return msg
 
-
 if __name__ == '__main__':
     rospy.init_node('navigator_sim2D')
-    navsim = Navsim(pose0=np.array([0, 0, np.pi / 2]))
+    navsim = Navsim(pose_zero = np.array([0, 0, np.pi / 2]))
     rospy.spin()
