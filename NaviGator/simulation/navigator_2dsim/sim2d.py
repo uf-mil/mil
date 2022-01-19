@@ -24,7 +24,7 @@ class Navsim:
         self.pose = np.float64(pose_zero)
         self.twist = np.float64(twist_zero)
         self.wrench = np.float64([0, 0, 0])
-        self.thrusts = np.zeros(4, dtype=np.float64)
+        self.thrusts = np.zeros(4, dtype = np.float64)
 
         # Get other contants from ROS params
         self.get_params()
@@ -42,34 +42,38 @@ class Navsim:
         # Start timer to run simulator
         rospy.Timer(rospy.Duration(self.update_period), self.timer_cb)
 
-    def get_params(self):
-        '''
+    def get_params(self) -> None:
+        """
         Load important configurable constants from ROS params
-        '''
+        """
         mass = rospy.get_param('~mass')
+        drag = rospy.get_param('~drag')
         rotational_inertia = rospy.get_param('~rotational_inertia')
+        wind = rospy.get_param('~wind', [0, 0, 0])
+
         self.inertia = np.float64([mass, mass, rotational_inertia])
-        self.drag = np.float64(rospy.get_param('~drag'))
-        self.wind = np.float64(rospy.get_param('~wind', [0, 0, 0]))
+        self.drag = np.float64(drag)
+        self.wind = np.float64(wind)
+
         self.update_period = rospy.get_param('~update_period', 0.1)
         self.world_frame = rospy.get_param('~world_frame', 'enu')
         self.body_frame = rospy.get_param('~body_frame', 'base_link')
 
-    def thruster_cb(self, msg, index):
+    def thruster_cb(self, msg: Command, index: int) -> None:
         self.thrusts[index] = msg.setpoint
         self.wrench = self.thrust_map.thrusts_to_wrench(self.thrusts)
 
-    def timer_cb(self, timer_event):
-        '''
-        Each time timer triggers, update state and publish odometry
-        '''
+    def timer_cb(self, _: rospy.timer.TimerEvent) -> None:
+        """
+        Each time timer triggers, update state and publish odometry.
+        """
         self.step(self.update_period, self.wrench)
         self.publish_odom()
 
     def step(self, dt, wrench):
-        '''
+        """
         Simulate new pose and twist given a time delta and a force/torque applied to NaviGator
-        '''
+        """
         s = np.sin(self.pose[2])
         c = np.cos(self.pose[2])
         # Rotation Matrix converts body to world by default
@@ -86,9 +90,9 @@ class Navsim:
         return posedot, twistdot
 
     def publish_odom(self):
-        '''
+        """
         Publish to odometry with latest pose and twist
-        '''
+        """
         odom = self.pack_odom(self.pose, self.twist)
         self.odom_publisher.publish(odom)
 
