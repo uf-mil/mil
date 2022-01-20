@@ -1,7 +1,3 @@
-geometry_msgs/Point position
-geometry_msgs/Quaternion orientation
-float32 range
-float32 bearing
-float32 elevation
 ---
-geometry_msgs/Point acoustic_beacon_position
+geometry_msgs/Point beacon_position
+std_msgs/Bool setValue
