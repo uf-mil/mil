@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+#this is a cameron problem https://answers.ros.org/question/326226/importerror-dynamic-module-does-not-define-module-export-function-pyinit__tf2/
 import rospy
 from usv_msgs.msg import RangeBearing
 from nav_msgs.msg import Odometry
@@ -6,6 +7,7 @@ from geometry_msgs.msg import Point
 from geometry_msgs.msg import Quaternion
 from navigator_msgs.srv import AcousticBeacon, AcousticBeaconResponse
 import math
+import tf
 
 #Defines a service that returns the position of the acoustic beacon from odom and the range_bearing topic
 class AcousticBeaconLocator():
@@ -44,7 +46,8 @@ class AcousticBeaconLocator():
             gps.setValue.data = False
             return gps
         gps.setValue.data = True
-        yaw = math.atan2(2.0*(self.orientation.y*self.orientation.z + self.orientation.w*self.orientation.x), self.orientation.w*self.orientation.w - self.orientation.x*self.orientation.x - self.orientation.y*self.orientation.y + self.orientation.z*self.orientation.z)
+        orientation_list = [self.orientation.x, self.orientation.y, self.orientation.z, self.orientation.w]
+        (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(orientation_list)
         
         f = self.range * math.cos(self.elevation)
         theta = yaw - self.bearing
