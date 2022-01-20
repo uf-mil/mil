@@ -53,6 +53,9 @@ class AcousticBeaconLocator():
         theta = yaw - self.bearing
         gps.beacon_position.x = f * math.cos(theta)
         gps.beacon_position.y = f * math.sin(theta)
+        
+        gps.beacon_position.x += self.pos.x
+        gps.beacon_position.y += self.pos.y
 
         return gps
 
