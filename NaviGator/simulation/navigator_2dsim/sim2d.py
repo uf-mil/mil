@@ -17,6 +17,7 @@ class Navsim:
     """
     A simple 2D simulation of the kinematics of NaviGator.
     """
+
     def __init__(self,
                  pose_zero: np.ndarray = np.array([0, 0, 0]),
                  twist_zero: np.ndarray = np.array([0, 0, 0])
@@ -42,7 +43,7 @@ class Navsim:
 
         # Subscribe to thrusters so we can simulate their forces
         for i, motor in enumerate(self.thrust_map.names):
-            rospy.Subscriber('/{}_motor/cmd'.format(motor), Command, self.thruster_cb,
+            rospy.Subscriber(f'/{motor}_motor/cmd', Command, self.thruster_cb,
                              queue_size=3, callback_args=i)
 
         # Start timer to run simulator
@@ -76,7 +77,7 @@ class Navsim:
         self.step(self.update_period, self.wrench)
         self.publish_odom()
 
-    def step(self, dt: float, wrench) -> None:
+    def step(self, time_delta: float, wrench) -> None:
         """
         Simulate new pose and twist given a time delta and a force/torque applied to NaviGator
         """
@@ -84,18 +85,18 @@ class Navsim:
         cos_result = np.cos(self.pose[2])
 
         # Rotation Matrix converts body to world by default
-        R = np.array([[cos_result, -sin_result, 0], [sin_result, cos_result, 0], [0, 0, 1]])
+        rotation = np.array([[cos_result, -sin_result, 0], [sin_result, cos_result, 0], [0, 0, 1]])
         wrench = np.array(wrench)
-        posedot, twistdot = self.state_deriv(np.float64(wrench), R)
+        posedot, twistdot = self.state_deriv(np.float64(wrench), rotation)
 
-        self.pose = self.pose + posedot * dt + 0.5 * R.dot(twistdot) * dt**2
-        self.twist = self.twist + twistdot * dt
+        self.pose = self.pose + posedot * time_delta + 0.5 * rotation.dot(twistdot) * time_delta**2
+        self.twist = self.twist + twistdot * time_delta
 
-    def state_deriv(self, wrench: np.float64, R: np.ndarray) -> Tuple[np.ndarray, float]:
-        posedot = R.dot(self.twist)
+    def state_deriv(self, wrench: np.float64, rotation: np.ndarray) -> Tuple[np.ndarray, float]:
+        posedot = rotation.dot(self.twist)
         twistdot = (1 / self.inertia) * (wrench - self.drag *
                                          np.sign(self.twist) * self.twist
-                                         * self.twist + R.T.dot(self.wind))
+                                         * self.twist + rotation.T.dot(self.wind))
         return posedot, twistdot
 
     def publish_odom(self) -> None:
