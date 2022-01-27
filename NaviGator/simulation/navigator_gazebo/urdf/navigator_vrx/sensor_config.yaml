@@ -22,3 +22,12 @@ lidar:
     - name: lidar_wamv
       type: 32_beam
       P: ${radians(8)}
+wamv_ball_shooter:
+    - name: ball_shooter
+      x: 0.54
+      y: 0.30
+      z: 1.30
+      pitch: -1.04
+#wamv_pinger:
+#    - name: pinger
+#      position: '1 0 -1'
