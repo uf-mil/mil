@@ -3,8 +3,11 @@ project(navigator_gazebo)
 
 find_package(catkin
     REQUIRED COMPONENTS
+    navigator_msgs
+    geometry_msgs
     std_msgs
     nav_msgs
+    usv_msgs
     rospy
     gazebo_ros
     roscpp
