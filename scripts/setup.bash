@@ -86,3 +86,7 @@ alias search='find . -print | grep -i'
 alias gazebogui="rosrun gazebo_ros gzclient __name:=gzclient"
 # Simulation
 alias killgazebo="killall -9 gzserver && killall -9 gzclient"
+
+# Swtich git branches alias
+alias master2vrx=$MIL_REPO/scripts/master_to_vrx.sh
+alias vrx2master=$MIL_REPO/scripts/vrx_to_master.sh
