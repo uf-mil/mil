@@ -5,7 +5,7 @@ export MIL_CONFIG_DIR=$HOME/.mil
 export MIL_WS="$(realpath $(dirname $BASH_SOURCE)/../../..)"
 MIL_REPO="$MIL_WS/src/mil"
 
-catkin_make -C $MIL_WS
+git submodule update --init --recursive
 
 #removes all dock_2022 files in vrx_gazebo
 if find ~/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models -type d -name 'dock_2022*' -exec false {} +
@@ -15,6 +15,7 @@ else
 	find ~/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models -type d -name 'dock_2022*' -prune -print -printf "dock_2022 files removed\n" -exec rm -rf {} +
 fi
 
+catkin_make -C $MIL_WS
+
 git checkout master
-git submodule update --init --recursive
 echo "script complete"

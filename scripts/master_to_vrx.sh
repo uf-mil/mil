@@ -8,6 +8,8 @@ export MIL_CONFIG_DIR=$HOME/.mil
 export MIL_WS="$(realpath $(dirname $BASH_SOURCE)/../../..)"
 MIL_REPO="$MIL_WS/src/mil"
 
+git submodule update --init --recursive
+
 catkin_make -C $MIL_WS
 
 #removes the navigator_vrx.urdf file in navigator_gazebo
@@ -20,6 +22,5 @@ else
 fi
 
 git checkout vrx_2022
-git submodule update --init --recursive
 
 echo "script complete"
