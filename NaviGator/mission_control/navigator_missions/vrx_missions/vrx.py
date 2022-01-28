@@ -4,6 +4,7 @@ import txros
 import numpy as np
 from twisted.internet import defer
 from robot_localization.srv import FromLL, FromLLRequest, ToLL, ToLLRequest
+from navigator_msgs.srv import AcousticBeacon, AcousticBeaconResponse
 from vrx_gazebo.msg import Task
 from vrx_gazebo.srv import ColorSequence
 from geographic_msgs.msg import GeoPoseStamped, GeoPath
@@ -36,6 +37,7 @@ class Vrx(Navigator):
         Vrx.perception_landmark = Vrx.nh.advertise("/vrx/perception/landmark", GeoPoseStamped)
 
         Vrx.animal_landmarks = Vrx.nh.subscribe("/vrx/wildlife/animals/poses", GeoPath)
+        Vrx.beacon_landmark = Vrx.nh.get_service_client("beaconLocator", AcousticBeacon)
         #Vrx.scan_dock_placard_symbol = Vrx.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
 
         Vrx.front_left_camera_info_sub = None 
@@ -97,17 +99,17 @@ class Vrx(Navigator):
         yield self._pcodar_set_params.wait_for_service()
         msg = yield self.task_info_sub.get_next_message()
         task_name = msg.name
-        if task_name == 'stationkeeping':
+        if task_name == 'station_keeping':
             yield self.run_submission('VrxStationKeeping')
         elif task_name == 'wayfinding':
             yield self.run_submission('VrxWayfinding')
-        elif task_name == 'navigation_course':
-            yield self.run_submission('VrxNavigation')
+        elif task_name == 'gymkhana':
+            yield self.run_submission('VrxBeacon')
         elif task_name == 'perception':
             yield self.run_submission('VrxPerception')
         elif task_name == 'wildlife':
             yield self.run_submission('VrxSpiral')
-        elif task_name == 'scan_and_dock':
+        elif task_name == 'scan_dock_deliver':
             yield self.run_submission('ScanAndDock')
         elif task_name == 'scan':
             yield self.run_submission('DockDriver')
