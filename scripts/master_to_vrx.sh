@@ -8,7 +8,7 @@ export MIL_CONFIG_DIR=$HOME/.mil
 export MIL_WS="$(realpath $(dirname $BASH_SOURCE)/../../..)"
 MIL_REPO="$MIL_WS/src/mil"
 
-#catkin_make -C $MIL_WS
+catkin_make -C $MIL_WS
 
 #removes the navigator_vrx.urdf file in navigator_gazebo
 FILE=~/catkin_ws/devel/share/navigator_gazebo/urdf/navigator_vrx.urdf

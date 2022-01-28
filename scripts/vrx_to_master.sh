@@ -5,7 +5,7 @@ export MIL_CONFIG_DIR=$HOME/.mil
 export MIL_WS="$(realpath $(dirname $BASH_SOURCE)/../../..)"
 MIL_REPO="$MIL_WS/src/mil"
 
-#catkin_make -C $MIL_WS
+catkin_make -C $MIL_WS
 
 #removes all dock_2022 files in vrx_gazebo
 if find ~/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models -type d -name 'dock_2022*' -exec false {} +
