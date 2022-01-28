@@ -67,6 +67,8 @@ sudo pip install \
   sklearn \
   pandas
 
+sudo pip2 install tsp_solver2
+
 # Documentation dependencies
 mil_system_install  python3-pip python-setuptools
 

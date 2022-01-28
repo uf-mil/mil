@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import division
+from dis import dis
 import txros
 import numpy as np
 from twisted.internet import defer
@@ -23,6 +24,14 @@ class VrxSpiral(Vrx):
 
         position = self.pose[0]
 
+
+        #fill up animal array
+        animals_list = []
+        for geo_pose in path_msg.poses:
+            animals_list.append(geo_pose.header.frame_id)
+
+        print(animals_list)
+
         #initialize distance matrix
         poses = poses + [position]
         array_size = len(poses)
@@ -37,7 +46,6 @@ class VrxSpiral(Vrx):
         #solve tsp algorithm (ensure start point is where boat is located) & remove current position from pose list
         path = solve_tsp(dist_matrix, endpoints=(start_pose_index,None))
         poses = poses[:start_pose_index]
-        print(poses)
         path = path[1:]
         print(path)
 
@@ -47,9 +55,42 @@ class VrxSpiral(Vrx):
         #do movements
         for index in path:
             self.send_feedback('Going to {}'.format(poses[index]))
-            yield self.move.set_position(poses[index][0]).set_orientation(poses[index][1]).go(blind=True)
 
-        #for pose in poses:
-        #    self.send_feedback('Going to {}'.format(pose))
-        #    yield self.move.set_position(pose[0]).set_orientation(pose[1]).go(blind=True)
-        #    #res = yield self.move.spiral_point([2, 2], 'ccw', 1, meters_per_rev=2).go()
+            current_animal = animals_list[index]
+
+            if current_animal != "crocodile":
+                print("Going clockwise around platypus")
+
+                #Re-evaluate exact position where platypus is
+                path_msg = yield self.get_latching_msg(self.animal_landmarks)
+                animal_pose = yield self.geo_pose_to_enu_pose(path_msg.poses[index].pose)
+                animal_pose[0][0] = animal_pose[0][0] - 4
+                yield self.move.set_position(animal_pose[0]).set_orientation([0,0,0,1]).go(blind=True)
+
+                for i in range(4):
+                    ##Re-evaluate exact position where platypus is
+                    path_msg = yield self.get_latching_msg(self.animal_landmarks)
+                    animal_pose = yield self.geo_pose_to_enu_pose(path_msg.poses[index].pose)
+                    x = animal_pose[0][0]
+                    y = animal_pose[0][1]
+
+                    distance_from_animal = np.linalg.norm(animal_pose[0] - self.pose[0])
+                    print(str(distance_from_animal))
+                    increase_radius = 0
+
+                    if (distance_from_animal) < 4:
+                        increase_radius = 4
+                        yield self.move.backward(increase_radius, 'm').go() 
+                        #'change correction direction to be a vector pointing towards the animal
+                    if (distance_from_animal) > 8:
+                        increase_radius = 2
+                        yield self.move.forward(increase_radius, 'm').go()
+
+                    if current_animal == "platypus":
+                        yield self.move.spiral_point([x, y], 'cw', 0.25).go()
+                    if current_animal == "turtle":
+                        yield self.move.spiral_point([x, y], 'ccw', 0.25).go()
+            elif current_animal == "crocodile":
+                print("Avoiding crocodile")
+
+            #res = yield p.forward(2, 'm').down(1, 'ft').yaw_left(50, 'deg').go()
