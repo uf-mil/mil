@@ -108,7 +108,7 @@ class Vrx(Navigator):
         elif task_name == 'perception':
             yield self.run_submission('VrxPerception')
         elif task_name == 'wildlife':
-            yield self.run_submission('VrxSpiral')
+            yield self.run_submission('VrxOctogon')
         elif task_name == 'scan_dock_deliver':
             yield self.run_submission('ScanAndDock')
         elif task_name == 'scan':
