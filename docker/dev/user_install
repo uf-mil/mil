@@ -30,22 +30,35 @@ mil_user_install_dependencies()
 
 # Add line to user's bashrc which source the repo's setup files
 # This allows us to update aliases, environment variables, etc
-mil_user_setup_bashrc()
+mil_user_setup_rc()
 {
-  # Line(s) added to ~/.bashrc
+  # Line(s) added to ~/.bashrc or ~/.zshrc
   # Note that for backwards compatiblity this should not be changed
   # unless you have a very good reason.
   BASH_RC_LINES=". $MIL_REPO_DIR/scripts/setup.bash"
-
-  # Add the line(s) to bashrc if not already present
-  if grep -Fq "$BASH_RC_LINES" ~/.bashrc
+  if [[ "$SHELL" == "/usr/bin/zsh" ]]
   then
-    echo "milrc is already sourced in ~/.bashrc, skipping"
+    # User is using zsh
+    if grep -Fq "$BASH_RC_LINES" ~/.zshrc
+    then
+        echo "milrc is already sourced in ~/.zshrc, skipping"
+    else
+        echo "Adding source of milrc to ~/.zshrc"
+        echo "" >> ~/.zshrc
+        echo "# Setup enviroment for MIL developement" >> ~/.zshrc
+        echo "$BASH_RC_LINES" >> ~/.zshrc
+    fi
   else
-    echo "Adding source of milrc to ~/.bashrc"
-    echo "" >> ~/.bashrc
-    echo "# Setup enviroment for MIL developement" >> ~/.bashrc
-    echo "$BASH_RC_LINES" >> ~/.bashrc
+    # User is using zsh
+    if grep -Fq "$BASH_RC_LINES" ~/.bashrc
+    then
+        echo "milrc is already sourced in ~/.bashrc, skipping"
+    else
+        echo "Adding source of milrc to ~/.bashrc"
+        echo "" >> ~/.bashrc
+        echo "# Setup enviroment for MIL developement" >> ~/.bashrc
+        echo "$BASH_RC_LINES" >> ~/.bashrc
+    fi
   fi
 }
 
@@ -59,8 +72,12 @@ mil_user_setup_init_catkin()
 }
 
 mil_user_install_dependencies
-mil_user_setup_bashrc
+mil_user_setup_rc
 set +u
-. /opt/ros/melodic/setup.bash
+if [ "$SHELL" = "/usr/bin/zsh" ]; then
+  . /opt/ros/noetic/setup.zsh
+else
+  . /opt/ros/noetic/setup.bash
+fi
 set -u
 mil_user_setup_init_catkin
