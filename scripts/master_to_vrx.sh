@@ -2,7 +2,7 @@
 #switches from the master branch to the vrx_2022 branch and compiles
 
 #There is an error in this file. Adds a second parameter to the file yaml.load (,Loader=yaml.Loader)
-#sed -i 's/values_dict = yaml.load(value)/values_dict = yaml.load(value, Loader-yaml.Loader)/g' /opt/ros/melodic/lib/dynamic_reconfigure/dynparam
+#sed -i 's/values_dict = yaml.load(value)/values_dict = yaml.load(value, Loader=yaml.Loader)/g' /opt/ros/melodic/lib/dynamic_reconfigure/dynparam
 
 export MIL_CONFIG_DIR=$HOME/.mil
 export MIL_WS="$(realpath $(dirname $BASH_SOURCE)/../../..)"
