@@ -52,7 +52,7 @@ class MRAC_Controller:
 
         # REFERENCE MODEL (note that this is not the adaptively estimated TRUE model; rather,
         #                     these parameters will govern the trajectory we want to achieve).
-        self.mass_ref = rospy.get_param('~mass', 500)  # kg, determined to be larger than boat in practice due to water mass
+        self.mass_ref = rospy.get_param('~mass', 500)  # kg, determined to be larger than boat in practice due to water mass  ## might change to lowe number (350kg)
         self.inertia_ref = rospy.get_param('~izz', 400)  # kg*m^2, determined to be larger than boat in practice due to water mass
         self.thrust_max = 220  # N
 
