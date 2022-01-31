@@ -1,12 +1,19 @@
 #!/bin/bash
 export MIL_CONFIG_DIR=$HOME/.mil
 mkdir -p $MIL_CONFIG_DIR
-export MIL_WS="$(realpath $(dirname $BASH_SOURCE)/../../..)"
+export MIL_WS="$HOME/catkin_ws"
 MIL_REPO="$MIL_WS/src/mil"
 
 # Source ROS and local catkin
-source /opt/ros/melodic/setup.bash
-source $MIL_WS/devel/setup.bash
+if [[ "$SHELL" == "/usr/bin/zsh" ]]
+then
+    source /opt/ros/noetic/setup.zsh
+    source $MIL_WS/devel/setup.zsh
+else
+    source /opt/ros/noetic/setup.bash
+    source $MIL_WS/devel/setup.bash
+fi
+
 
 # Script tools
 # Helper for autocompleting given a list of choices for the first argument

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Directory navigation
-NAV_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
+NAV_DIR="$HOME/catkin_ws/src/mil/NaviGator"
 alias nav="cd $NAV_DIR"
 # VRX
 alias vrxviz="rviz -d \$MIL_REPO/NaviGator/vrx.rviz"

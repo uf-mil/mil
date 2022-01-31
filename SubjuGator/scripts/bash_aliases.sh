@@ -8,7 +8,7 @@
 
 # Directory navigation
 
-CATKIN_DIR="$(realpath $(dirname $BASH_SOURCE)/../../../../)"
+CATKIN_DIR="$HOME/catkin_ws"
 
 alias sub="cd \$CATKIN_DIR/src/mil/SubjuGator"
 
