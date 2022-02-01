@@ -48,7 +48,7 @@ Then clone the repo:
 
 **Navigate to the root of the repository now.**
 
-If you have followed the intructions from the [Contributing Guide](contributing) exactly, you can get there by running
+If you have followed the instructions exactly, you can get there by running
 
 `cd ~/catkin_ws/src/mil`
 
