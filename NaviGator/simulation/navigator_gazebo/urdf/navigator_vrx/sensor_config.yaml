@@ -28,6 +28,6 @@ wamv_ball_shooter:
       y: 0.30
       z: 1.30
       pitch: -1.04
-#wamv_pinger:
-#    - name: pinger
-#      position: '1 0 -1'
+wamv_pinger:
+    - name: pinger
+      position: '1 0 -1'
