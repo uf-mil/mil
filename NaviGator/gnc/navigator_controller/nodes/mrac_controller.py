@@ -52,7 +52,7 @@ class MRAC_Controller:
 
         # REFERENCE MODEL (note that this is not the adaptively estimated TRUE model; rather,
         #                     these parameters will govern the trajectory we want to achieve).
-        self.mass_ref = rospy.get_param('~mass', 500)  # kg, determined to be larger than boat in practice due to water mass
+        self.mass_ref = rospy.get_param('~mass', 500)  # kg, determined to be larger than boat in practice due to water mass  ## might change to lowe number (350kg)
         self.inertia_ref = rospy.get_param('~izz', 400)  # kg*m^2, determined to be larger than boat in practice due to water mass
         self.thrust_max = 220  # N
 
@@ -287,7 +287,7 @@ class MRAC_Controller:
 
         # Give wrench to ROS
         wrench_msg = WrenchStamped()
-        wrench_msg.header.frame_id = "/base_link"
+        wrench_msg.header.frame_id = "wamv/base_link"
         wrench_msg.wrench.force.x = wrench_body[0]
         wrench_msg.wrench.force.y = wrench_body[1]
         wrench_msg.wrench.torque.z = wrench_body[2]
@@ -307,7 +307,7 @@ class MRAC_Controller:
 
         # Publish adaptation (Y*theta) for plotting
         adaptation_msg = WrenchStamped()
-        adaptation_msg.header.frame_id = "/base_link"
+        adaptation_msg.header.frame_id = "wamv/base_link"
         adaptation_msg.wrench.force.x = (self.dist_est + self.drag_effort)[0]
         adaptation_msg.wrench.force.y = (self.dist_est + self.drag_effort)[1]
         adaptation_msg.wrench.torque.z = (self.dist_est + self.drag_effort)[2]

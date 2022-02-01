@@ -4,6 +4,10 @@ from vrx import Vrx
 from vrx_navigation import VrxNavigation
 from vrx_wayfinding import VrxWayfinding
 from vrx_station_keeping import VrxStationKeeping
+from vrx_spiral import VrxSpiral
+from vrx_beacon import VrxBeacon
+from vrx_octogon import VrxOctogon
+from vrx_square import VrxSquare
 from vrx_perception import VrxPerception
 from scan_the_code import ScanTheCode
 from dock import Dock

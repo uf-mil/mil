@@ -13,12 +13,7 @@ the end goal. The move_helper node (built into the NaviGator GUI) uses this.
 
 If you are using the NN_controller, you will need the package in your
 catkin_ws as it is an external dependency. The package can be found here
-https://github.com/jnez71/neural_control.git
-
-Both the MRAC controller and NN controller will begin as PD  controllers
-(i.e. no learning) until you manually publish to the topic /mrac_learn or
-/nnc_learn respectively. The message type is std_msgs/Bool and you simply
-write true to start learning or false to stop learning.
+https://github.com/jnez71/adaptive_control
 
 The rest of the documentation for these controllers is found in their class
 module source code.

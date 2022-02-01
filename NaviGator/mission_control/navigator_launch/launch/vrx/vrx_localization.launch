@@ -12,7 +12,7 @@
     <param name="two_d_mode" value="false"/>
     <param name="map_frame" value="map"/>
     <param name="odom_frame" value="enu"/>
-    <param name="base_link_frame" value="base_link"/>
+    <param name="base_link_frame" value="wamv/base_link"/>
     <param name="world_frame" value="enu"/>
     <param name="publish_tf" value="true"/>
     <param name="frequency" value="15"/>

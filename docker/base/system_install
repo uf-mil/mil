@@ -67,7 +67,7 @@ mil_system_install \
   ros-noetic-ros-controllers \
 
 # Documentation dependencies
-mil_system_install  python3-pip
+mil_system_install  python3-pip python-setuptools
 
 # Install Python 3 ROS node dependencies
 sudo pip3 install -q \

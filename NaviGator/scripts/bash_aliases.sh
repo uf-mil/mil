@@ -2,7 +2,9 @@
 
 # Directory navigation
 NAV_DIR="$HOME/catkin_ws/src/mil/NaviGator"
+VRX_DIR="$HOME/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx"
 alias nav="cd $NAV_DIR"
+alias vrx="cd $VRX_DIR"
 # VRX
 alias vrxviz="rviz -d \$MIL_REPO/NaviGator/vrx.rviz"
 
