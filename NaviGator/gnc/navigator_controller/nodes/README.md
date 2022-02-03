@@ -57,9 +57,8 @@ Use get_command to receive the necessary wrench for this instant.
 That is, get_command publishes a ROS wrench message, and is fed
 the current odometry and timestamp.
 
-The controller subscribes to the topic /mrac_learn (ROS std bool
-message) to either start/continue learning (True) or hault
-learning (False). It initializes to False.
+You can make it to not learn and only use a PD controller by setting 
+self.only_PD to True.
 
 ################################################# INTERNAL SEMANTICS
 

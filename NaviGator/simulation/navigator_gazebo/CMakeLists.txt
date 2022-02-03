@@ -3,8 +3,11 @@ project(navigator_gazebo)
 
 find_package(catkin
     REQUIRED COMPONENTS
+    navigator_msgs
+    geometry_msgs
     std_msgs
     nav_msgs
+    usv_msgs
     rospy
     gazebo_ros
     roscpp
@@ -82,7 +85,7 @@ add_custom_command(
   COMMAND . ${CATKIN_DEVEL_PREFIX}/setup.sh && roslaunch vrx_gazebo generate_wamv.launch thruster_yaml:=${CMAKE_CURRENT_SOURCE_DIR}/urdf/navigator_vrx/thruster_config.yaml component_yaml:=${CMAKE_CURRENT_SOURCE_DIR}/urdf/navigator_vrx/sensor_config.yaml wamv_target:=${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/urdf/navigator_vrx.urdf
   DEPENDS urdf/navigator_vrx/thruster_config.yaml urdf/navigator_vrx/sensor_config.yaml
   DEPENDS ${CATKIN_DEVEL_PREFIX}/setup.sh
-  BYPRODUCTS urdf/navigator_vrx/thruster_config.xacro urdf/navigator_vrx/thruster_config.xacro
+  BYPRODUCTS urdf/navigator_vrx/thruster_config.xacro urdf/navigator_vrx/sensor_config.xacro
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMENT "xacro: generating ${output} from yamls"
 )

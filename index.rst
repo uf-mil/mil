@@ -8,7 +8,7 @@ If you are interested in getting involved in MIL *software* team please
 read the :doc:`Onboarding Guide <docs/onboarding>`.
 
 If you are interested in getting involved in MIL *mechanical* team please
-read the :doc:`Mechanical Onboarding Guide <docs/mechanical/onboardingM>`.
+read the :doc:`Mechanical Onboarding Guide <docs/mechanical/onboarding>`.
 
 
 ..  _MIL repo: https://github.com/uf-mil/mil
