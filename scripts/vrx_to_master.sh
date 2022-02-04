@@ -1,5 +1,5 @@
 #!/bin/bash
-#switches from the vrx_2022 branch to the master branch and compiles
+#switches from the vrx_2022 branch to the master branch and compiles.
 
 export MIL_CONFIG_DIR=$HOME/.mil
 export MIL_WS="$(realpath $(dirname $BASH_SOURCE)/../../..)"
