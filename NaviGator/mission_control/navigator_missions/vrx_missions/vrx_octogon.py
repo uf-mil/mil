@@ -113,23 +113,47 @@ class VrxOctogon(Vrx):
                 if current_animal == "platypus":
                     start_circle_ori = self.start_angle(start_circle_pos, animal_pose[0], interior_angle)
                 if current_animal == "turtle":
-                    start_circle_ori = self.start_angle(start_circle_pos, animal_pose[0], -1 * interior_angle)
+                    start_circle_ori = self.start_angle(start_circle_pos, animal_pose[0], -interior_angle)
 
                 yield self.move.set_position(start_circle_pos).set_orientation(start_circle_ori).go(blind=True)
 
+                #calculate vector defining square
+                square_vec = np.array([ start_circle_pos[0] - animal_pose[0][0], start_circle_pos[1] - animal_pose[0][1], 0 ])
+                z_vec = np.array([0,0,1])
+
                 print("arrived in circle")
-                '''
                 for i in range(granularity):
                     #Move around animals
-                    if current_animal == "platypus":
-                        goal_pose = self.local_to_enu( side_length , -1 * exterior_angle )
-                    if current_animal == "turtle":
-                        goal_pose = self.local_to_enu( side_length , exterior_angle )
-                    
-                    yield self.move.set_position(goal_pose[0]).set_orientation(goal_pose[1]).go(blind=True)
-                '''
 
-                
+                    print("square_vec: " + str(square_vec) + "\n\n\n\n")
+                    print(math.pi/2)
+
+                    #add 90deg to square_vec
+                    if current_animal == "platypus":
+                        #square_vec[0] = square_vec[0] * math.cos( -math.pi/2 ) - square_vec[1] * math.sin( -math.pi/2 )
+                        #square_vec[1] = square_vec[0] * math.sin( -math.pi/2 ) + square_vec[1] * math.cos( -math.pi/2 )
+                        square_vec = np.cross(square_vec, z_vec)
+                    if current_animal == "turtle":
+                        #square_vec[0] = square_vec[0] * math.cos( math.pi/2 ) - square_vec[1] * math.sin( math.pi/2 )
+                        #square_vec[1] = square_vec[0] * math.sin( math.pi/2 ) + square_vec[1] * math.cos( math.pi/2 )
+                        square_vec = np.cross(z_vec, square_vec)
+
+                    print("square_vec: " + str(square_vec) + "\n\n\n\n")
+
+                    #calculate new goal position
+                    animal_pose = yield self.geo_pose_to_enu_pose(path_msg.poses[index].pose)
+                    goal_pos = [ animal_pose[0][0] + square_vec[0], animal_pose[0][1] + square_vec[1], 0 ]
+
+                    #calculate new goal orientation
+                    r,p,y = tf.transformations.euler_from_quaternion(self.pose[1])
+                    if current_animal == "platypus":
+                        goal_ori = tf.transformations.quaternion_from_euler(0,0,y - math.pi/2)
+                    if current_animal == "turtle":
+                        goal_ori = tf.transformations.quaternion_from_euler(0,0,y + math.pi/2)
+
+                    yield self.move.set_position(goal_pos).set_orientation(goal_ori).go(blind=True)
+
+                '''
                 for i in range(4):
                     ##Re-evaluate exact position where platypus is
                     path_msg = yield self.get_latching_msg(self.animal_landmarks)
@@ -142,9 +166,10 @@ class VrxOctogon(Vrx):
                     increase_radius = 0
 
                     if current_animal == "platypus":
-                        yield self.move.spiral_point([x, y], 'ccw', 0.25).go()
-                    if current_animal == "turtle":
                         yield self.move.spiral_point([x, y], 'cw', 0.25).go()
+                    if current_animal == "turtle":
+                        yield self.move.spiral_point([x, y], 'ccw', 0.25).go()
+                '''
                 
             elif current_animal == "crocodile":
                 print("Avoiding crocodile")
