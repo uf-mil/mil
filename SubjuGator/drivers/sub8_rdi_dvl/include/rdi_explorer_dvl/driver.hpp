@@ -32,7 +32,7 @@ private:
 
   const std::string port;
   const int baudrate;
-  boost::asio::io_service io;
+  boost::asio::io_context io;
   boost::asio::serial_port p;
 
   /*

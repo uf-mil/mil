@@ -122,7 +122,7 @@ public:
 
   void copyImgTo(cv::Mat dest) const
   {
-    dest = image.clone();
+    dest = image().clone();
   }
 
   bool isCameraGeometryKnown() const
