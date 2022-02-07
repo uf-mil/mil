@@ -14,7 +14,7 @@
       <arg name="gui" value="false"/>
       <arg name="urdf" value="$(find navigator_gazebo)/urdf/navigator_vrx.urdf"/>
       <arg name="world" value="$(find vrx_gazebo)/worlds/$(arg world).world" />
-      <arg name="extra_gazebo_args" default=""/>
+      <arg name="extra_gazebo_args" default="--verbose"/>
     </include>
 
 </launch>
