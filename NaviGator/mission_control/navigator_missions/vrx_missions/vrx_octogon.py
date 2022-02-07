@@ -25,6 +25,11 @@ class VrxOctogon(Vrx):
         dist_to_point = hypot - radius
         return [ start_pos[0] + dist_to_point * math.cos(theta), start_pos[1] + dist_to_point * math.sin(theta), 0]
 
+    def point_at_goal(self, goal_pos):
+        vect = [ goal_pos[0] - self.pose[0][0], goal_pos[1] - self.pose[0][1]]
+        theta = math.atan2(vect[1], vect[0])
+        return tf.transformations.quaternion_from_euler(0,0,theta)
+
     def start_angle(self, boat_pos, animal_pos, interior_angle):
         #given the boat position when starting the circle and animal pose, 
         #we can calculate the start orientation needed given
@@ -91,10 +96,9 @@ class VrxOctogon(Vrx):
 
         #calculate parameters
         granularity = 4
-        radius = 5
-        interior_angle = math.radians( (granularity - 2) * 180.0 / granularity )
-        exterior_angle = math.radians( 180 - ( (granularity - 2) * 180.0 / granularity ) )
-        side_length = 2 * radius * math.cos(interior_angle/2.0)
+        radius = 6
+        interior_angle = math.radians( 90 )
+        z_vec = np.array([0,0,1])
 
         #do movements
         for index in path:
@@ -104,7 +108,7 @@ class VrxOctogon(Vrx):
 
             if current_animal != "crocodile":
 
-                #Re-evaluate exact position where platypus is
+                #Re-evaluate exact position where next animal is
                 path_msg = yield self.get_latching_msg(self.animal_landmarks)
                 animal_pose = yield self.geo_pose_to_enu_pose(path_msg.poses[index].pose)
 
@@ -113,43 +117,94 @@ class VrxOctogon(Vrx):
                 if current_animal == "platypus":
                     start_circle_ori = self.start_angle(start_circle_pos, animal_pose[0], interior_angle)
                 if current_animal == "turtle":
-                    start_circle_ori = self.start_angle(start_circle_pos, animal_pose[0], -1 * interior_angle)
+                    start_circle_ori = self.start_angle(start_circle_pos, animal_pose[0], -interior_angle)
 
+                #first point at goal
+                orientation_fix = self.point_at_goal(start_circle_pos)
+                yield self.move.set_orientation(orientation_fix).go(blind=True)
+
+                #move towards goal
                 yield self.move.set_position(start_circle_pos).set_orientation(start_circle_ori).go(blind=True)
 
-                print("arrived in circle")
+                #calculate vector defining square
+                square_vec = np.array([ start_circle_pos[0] - animal_pose[0][0], start_circle_pos[1] - animal_pose[0][1], 0 ])
+
                 '''
+                print("arrived in circle")
                 for i in range(granularity):
                     #Move around animals
-                    if current_animal == "platypus":
-                        goal_pose = self.local_to_enu( side_length , -1 * exterior_angle )
-                    if current_animal == "turtle":
-                        goal_pose = self.local_to_enu( side_length , exterior_angle )
-                    
-                    yield self.move.set_position(goal_pose[0]).set_orientation(goal_pose[1]).go(blind=True)
-                '''
 
-                
-                for i in range(4):
-                    ##Re-evaluate exact position where platypus is
-                    path_msg = yield self.get_latching_msg(self.animal_landmarks)
+                    #add 90deg to square_vec
+                    if current_animal == "platypus":
+                        square_vec = np.cross(square_vec, z_vec)
+                    if current_animal == "turtle":
+                        square_vec = np.cross(z_vec, square_vec)
+
+                    #calculate new goal position
                     animal_pose = yield self.geo_pose_to_enu_pose(path_msg.poses[index].pose)
-                    x = animal_pose[0][0]
-                    y = animal_pose[0][1]
+                    goal_pos = [ animal_pose[0][0] + square_vec[0], animal_pose[0][1] + square_vec[1], 0 ]
 
-                    distance_from_animal = np.linalg.norm(animal_pose[0] - self.pose[0])
-                    print(str(distance_from_animal))
-                    increase_radius = 0
-
+                    #calculate new goal orientation
+                    r,p,y = tf.transformations.euler_from_quaternion(self.pose[1])
                     if current_animal == "platypus":
-                        yield self.move.spiral_point([x, y], 'ccw', 0.25).go()
+                        goal_ori = tf.transformations.quaternion_from_euler(0,0,y - math.pi/2)
                     if current_animal == "turtle":
-                        yield self.move.spiral_point([x, y], 'cw', 0.25).go()
+                        goal_ori = tf.transformations.quaternion_from_euler(0,0,y + math.pi/2)
+
+                    yield self.move.set_position(goal_pos).set_orientation(goal_ori).go(blind=True)
+                '''
                 
             elif current_animal == "crocodile":
                 print("Avoiding crocodile")
+                
+                #we will check if the crocodile lies within either of two rectangles where the touching points
+                #of the rectangles are the current pos and goal pos.
+                #based on where the crocodile is will determine our action for how to get to the goal pos.
 
-            #res = yield p.forward(2, 'm').down(1, 'ft').yaw_left(50, 'deg').go()
+                #get animal msgs
+                path_msg = yield self.get_latching_msg(self.animal_landmarks)
+                animal_pose = yield self.geo_pose_to_enu_pose(path_msg.poses[index+1].pose)
+                animal_pose_croc = yield self.geo_pose_to_enu_pose(path_msg.poses[index].pose)
+
+                start_circle_pos = self.closest_point_on_radius(self.pose[0], animal_pose[0], radius)
+
+                if current_animal == "platypus":
+                    start_circle_ori = self.start_angle(start_circle_pos, animal_pose[0], interior_angle)
+                if current_animal == "turtle":
+                    start_circle_ori = self.start_angle(start_circle_pos, animal_pose[0], -interior_angle)
+
+                #define left and right rectangles
+                rectangle_width = 15
+                vect = start_circle_pos - self.pose[0]
+                flipped_vect = self.pose[0] - start_circle_pos
+                norm_vect = vect / np.linalg.norm(vect)
+                flipped_norm_vect = flipped_vect / np.linalg.norm(flipped_vect)
+                p1_l = np.cross(z_vec, norm_vect) * rectangle_width + self.pose[0]
+                p2_l = start_circle_pos
+                p1_r = self.pose[0]
+                p2_r = np.cross(z_vec, flipped_norm_vect) * rectangle_width + start_circle_pos
+                x_croc = animal_pose_croc[0][0]
+                y_croc = animal_pose_croc[0][1]
+
+                #first point at goal
+                orientation_fix = self.point_at_goal(start_circle_pos)
+
+                #check if croc is in left box
+                if x_croc > p1_l[0] and x_croc < p2_l[0] and y_croc > p1_l[1] and y_croc < p2_l[1]:
+                    #calculate pitstop point
+                    print("WARNING: Crocodile is in left rectangle")
+                    pitstop_pos = p2_r + 0.5 * flipped_vect
+                    yield self.move.set_position(pitstop_pos).set_orientation(orientation_fix).go(blind=True)
+
+                #check if croc is in right box
+                elif x_croc > p1_r[0] and x_croc < p2_r[0] and y_croc > p1_r[1] and y_croc < p2_r[1]:
+                    #calculate pitstop point
+                    print("WARNING: Crocodile is in right rectangle")
+                    pitstop_pos = p1_l + 0.5 * vect
+                    yield self.move.set_position(pitstop_pos).set_orientation(orientation_fix).go(blind=True)
+
+
+
 
 
 

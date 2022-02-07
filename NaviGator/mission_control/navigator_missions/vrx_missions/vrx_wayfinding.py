@@ -6,13 +6,20 @@ from twisted.internet import defer
 from vrx import Vrx
 from mil_tools import rosmsg_to_numpy
 from tsp_solver.greedy import solve_tsp
+import math
+import tf
 
-___author___ = "Alex Perez and Kevin Allen"
+___author___ = "Alex Perez"
 
 
 class VrxWayfinding(Vrx):
     def __init__(self, *args, **kwargs):
         super(VrxWayfinding, self).__init__(*args, **kwargs)
+
+    def point_at_goal(self, goal_pos):
+        vect = [ goal_pos[0] - self.pose[0][0], goal_pos[1] - self.pose[0][1]]
+        theta = math.atan2(vect[1], vect[0])
+        return tf.transformations.quaternion_from_euler(0,0,theta)
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
@@ -45,5 +52,7 @@ class VrxWayfinding(Vrx):
         #do movements
         for index in path:
             self.send_feedback('Going to {}'.format(poses[index]))
+            orientation_fix = self.point_at_goal(poses[index][0])
+            yield self.move.set_orientation(orientation_fix).go(blind=True)
             yield self.move.set_position(poses[index][0]).set_orientation(poses[index][1]).go(blind=True)
 
