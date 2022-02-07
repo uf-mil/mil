@@ -32,7 +32,7 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
 find_package(PCL 1.2 REQUIRED)
 
 # OPENCV stuff
-find_package(OpenCV 3.0 REQUIRED)
+find_package(OpenCV 4.0 REQUIRED)
 
 
 catkin_package(INCLUDE_DIRS include

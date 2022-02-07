@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.3)
 project(indyav_gazebo)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
@@ -104,7 +104,7 @@ add_custom_target(new_smyrna
 )
 xacro_add_files(
   worlds/new_smyrna.world.xacro
-  INORDER INSTALL DESTINATION ${CMAKE_CURRENT_DEVEL_DIR}/worlds
+  INSTALL DESTINATION ${CMAKE_CURRENT_DEVEL_DIR}/worlds
   DEPENDS new_smyrna
 )
 
@@ -112,7 +112,7 @@ xacro_add_files(
 # add car urdf
 xacro_add_files(
   urdf/indyav_car.urdf.xacro
-  INORDER INSTALL DESTINATION urdf
+  INSTALL DESTINATION urdf
   TARGET xacro_urdf
 )
 

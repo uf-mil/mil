@@ -72,7 +72,7 @@ catkin_package(
 # Generate NaviGator's URDF
 xacro_add_files(
   urdf/navigator.urdf.xacro
-  INORDER INSTALL DESTINATION urdf
+  INSTALL DESTINATION urdf
   TARGET xacro_urdf
 )
 
@@ -93,7 +93,7 @@ add_custom_command(
 # Generate world files from xacro and install
 xacro_add_files(
   worlds/course.world.xacro
-  INORDER INSTALL DESTINATION worlds
+  INSTALL DESTINATION worlds
   TARGET xacro_worlds
 )
 

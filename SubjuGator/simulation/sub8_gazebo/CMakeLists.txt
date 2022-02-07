@@ -114,6 +114,6 @@ catkin_package(
 xacro_add_files(
   urdf/sub8.urdf.xacro
   urdf/sub8_no_cams.urdf.xacro
-  INORDER INSTALL DESTINATION urdf
+  INSTALL DESTINATION urdf
   TARGET xacro_urdf
 )
