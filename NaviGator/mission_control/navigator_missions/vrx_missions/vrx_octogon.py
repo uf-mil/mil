@@ -101,16 +101,16 @@ class VrxOctogon(Vrx):
         z_vec = np.array([0,0,1])
 
         #do movements
-        for index in path:
-            self.send_feedback('Going to {}'.format(poses[index]))
+        for i in range(len(path)):
+            self.send_feedback('Going to {}'.format(poses[path[i]]))
 
-            current_animal = animals_list[index]
+            current_animal = animals_list[path[i]]
 
             if current_animal != "crocodile":
 
                 #Re-evaluate exact position where next animal is
                 path_msg = yield self.get_latching_msg(self.animal_landmarks)
-                animal_pose = yield self.geo_pose_to_enu_pose(path_msg.poses[index].pose)
+                animal_pose = yield self.geo_pose_to_enu_pose(path_msg.poses[path[i]].pose)
 
                 start_circle_pos = self.closest_point_on_radius(self.pose[0], animal_pose[0], radius)
 
@@ -141,7 +141,7 @@ class VrxOctogon(Vrx):
                         square_vec = np.cross(z_vec, square_vec)
 
                     #calculate new goal position
-                    animal_pose = yield self.geo_pose_to_enu_pose(path_msg.poses[index].pose)
+                    animal_pose = yield self.geo_pose_to_enu_pose(path_msg.poses[path[i]].pose)
                     goal_pos = [ animal_pose[0][0] + square_vec[0], animal_pose[0][1] + square_vec[1], 0 ]
 
                     #calculate new goal orientation
@@ -163,8 +163,8 @@ class VrxOctogon(Vrx):
 
                 #get animal msgs
                 path_msg = yield self.get_latching_msg(self.animal_landmarks)
-                animal_pose = yield self.geo_pose_to_enu_pose(path_msg.poses[index+1].pose)
-                animal_pose_croc = yield self.geo_pose_to_enu_pose(path_msg.poses[index].pose)
+                animal_pose = yield self.geo_pose_to_enu_pose(path_msg.poses[path[i+1]].pose)
+                animal_pose_croc = yield self.geo_pose_to_enu_pose(path_msg.poses[path[i]].pose)
 
                 start_circle_pos = self.closest_point_on_radius(self.pose[0], animal_pose[0], radius)
 
@@ -186,18 +186,48 @@ class VrxOctogon(Vrx):
                 x_croc = animal_pose_croc[0][0]
                 y_croc = animal_pose_croc[0][1]
 
+                print(p1_l)
+                print(p2_l)
+                print(p1_r)
+                print(p2_r)
+                print(x_croc)
+                print(y_croc)
+
                 #first point at goal
                 orientation_fix = self.point_at_goal(start_circle_pos)
 
-                #check if croc is in left box
-                if x_croc > p1_l[0] and x_croc < p2_l[0] and y_croc > p1_l[1] and y_croc < p2_l[1]:
+                #determine if croc is in left rect
+                AM = animal_pose_croc[0] - p1_r
+                AB = p1_l - p1_r
+                AD = p2_l - p1_r
+
+                print(AM)
+                print(AB)
+                print(AD)
+
+                AMAB = np.dot(AM, AB)
+                ABAB = np.dot(AB, AB)
+                AMAD = np.dot(AM, AD)
+                ADAD = np.dot(AD, AD)
+
+                if (0 < AMAB < ABAB) and (0 < AMAD < ADAD):
                     #calculate pitstop point
                     print("WARNING: Crocodile is in left rectangle")
                     pitstop_pos = p2_r + 0.5 * flipped_vect
                     yield self.move.set_position(pitstop_pos).set_orientation(orientation_fix).go(blind=True)
+                    continue
 
-                #check if croc is in right box
-                elif x_croc > p1_r[0] and x_croc < p2_r[0] and y_croc > p1_r[1] and y_croc < p2_r[1]:
+                #determine if croc is in right rect
+                AM = animal_pose_croc[0][0] - p2_l
+                AB = p1_r - p2_l
+                AD = p2_r - p2_l
+
+                AMAB = np.dot(AM, AB)
+                ABAB = np.dot(AB, AB)
+                AMAD = np.dot(AM, AD)
+                ADAD = np.dot(AD, AD)
+
+                if (0 < AMAB < ABAB) and (0 < AMAD < ADAD):
                     #calculate pitstop point
                     print("WARNING: Crocodile is in right rectangle")
                     pitstop_pos = p1_l + 0.5 * vect
