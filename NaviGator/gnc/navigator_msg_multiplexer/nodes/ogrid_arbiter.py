@@ -147,7 +147,7 @@ class OGrid:
     def subscriber_callback(self, ogrid: OccupancyGrid):
         """
         The callback function for the topic subscriber. The callback
-        will update the class with the last message stamp time and 
+        will update the class with the last message stamp time and
         most recent occupany grid.
         """
         self.last_message_stamp = ogrid.header.stamp
@@ -191,7 +191,7 @@ class OGridServer:
         """
         Sets the odom variable to a numpy array, and returns it.
 
-        Used by the subscriber to /odom as a callback in order to parse 
+        Used by the subscriber to /odom as a callback in order to parse
         and store received messages.
         """
         return setattr(self, 'odom', mil_tools.pose_to_numpy(msg.pose.pose))
@@ -261,7 +261,7 @@ class OGridServer:
         topics = config['topics'].replace(' ', '').split(',')
         replace_topics = config['replace_topics'].replace(' ', '').split(',')
 
-        # Update OGrids with new configuration changes 
+        # Update OGrids with new configuration changes
         new_grids = {}
         for topic in topics:
             new_grids[topic] = OGrid(topic) if topic not in self.ogrids else self.ogrids[topic]
@@ -296,13 +296,14 @@ class OGridServer:
         # Return dynamic configuration with no changes
         return config
 
-    def create_grid(self, map_size):
+    def create_grid(self, map_size: Tuple[int, int]) -> OccupancyGrid:
         """
-        Creates blank ogrids for everyone for the low low price of $9.95!
+        Generates a blank ogrid for the low price of $9.95!
 
-        `map_size` should be in the form of (h, w)
+        Args:
+            map_size: Tuple[int, int] - The size of the map
+            to generate in the ogrid.
         """
-
         ogrid = OccupancyGrid()
         ogrid.header.stamp = rospy.Time.now()
         ogrid.header.frame_id = self.frame_id
@@ -316,11 +317,17 @@ class OGridServer:
         # TODO: Make sure this produces the correct sized ogrid
         ogrid.data = np.full((map_size[1], map_size[0]), -1).flatten()
 
-        # fprint('Created Occupancy Map', msg_color='blue')
         return ogrid
 
-    def publish(self, *args):
-        # fprint("Merging Maps", newline=2)
+    def publish(self, timer_event):
+        """
+        Publishes the final ogrid to the ROS topic. Called by
+        a rospy.Timer set to a specific rate.
+
+        Args:
+            timer_event: The TimerEvent sent by the rospy Timer
+            upon each call by the timer.
+        """
         global_ogrid = deepcopy(self.global_ogrid)
         np_grid = numpyify(global_ogrid)
 
@@ -333,8 +340,8 @@ class OGridServer:
         g_y_min = index_limits[0][1]
         g_y_max = index_limits[1][1]
 
-        to_add = [o for o in self.ogrids.itervalues() if not o.replace]
-        to_replace = [o for o in self.ogrids.itervalues() if o.replace]
+        to_add = [o for o in self.ogrids.values() if not o.replace]
+        to_replace = [o for o in self.ogrids.values() if o.replace]
 
         for ogrids in [to_add, to_replace]:
             for ogrid in ogrids:
@@ -350,7 +357,7 @@ class OGridServer:
                 if l_h > g_h or l_w > g_w:
                     fprint("Proactively preventing errors in ogrid size.", msg_color="red")
                     new_size = max(l_w, g_w, l_h, g_h)
-                    self.global_ogrid = self.create_grid([new_size, new_size])
+                    self.global_ogrid = self.create_grid((new_size, new_size))
 
                 # Local Ogrid (get everything in global frame though)
                 corners = get_enu_corners(ogrid.nav_ogrid)
@@ -392,9 +399,10 @@ class OGridServer:
                         np_grid[start_y:end_y, start_x:end_x] = to_add
                     else:
                         np_grid[start_y:end_y, start_x:end_x] += to_add
+
                 except Exception as e:
                     fprint("Exception caught, probably a dimension mismatch:", msg_color='red')
-                    print e
+                    print(e)
                     fprint("w: {}, h: {}".format(global_ogrid.info.width, global_ogrid.info.height), msg_color='red')
 
         if self.draw_bounds and self.enforce_bounds:
@@ -413,6 +421,7 @@ class OGridServer:
         np_grid = np.clip(np_grid, self.ogrid_min_value, 100)
         global_ogrid.data = np_grid.flatten().astype(np.int8)
 
+        # Publish the ogrid to the topic
         self.publisher.publish(global_ogrid)
 
     def plow_snow(self, np_grid, ogrid):
