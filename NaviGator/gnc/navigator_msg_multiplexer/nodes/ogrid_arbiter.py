@@ -2,6 +2,7 @@
 from __future__ import division
 
 import rospy
+import genpy
 import tf.transformations as trns
 import mil_tools
 from mil_misc_tools.text_effects import fprint as _fprint
@@ -18,7 +19,7 @@ from nav_msgs.msg import OccupancyGrid, Odometry
 
 from navigator_path_planner import params
 
-from typing import Tuple
+from typing import Tuple, Optional
 
 # Wow what a concept
 fprint = lambda *args, **kwargs: _fprint(title="OGRID_ARB", *args, **kwargs)
@@ -113,32 +114,42 @@ class OGrid:
     is likely used to store an occupancy grid in a dynamic context,
     such as when dynamic reconfigure is updated.
     """
-    def __init__(self, topic, replace = False, frame_id = 'enu'):
+
+    last_message_stamp: Optional[genpy.Time]
+    topic: str
+    nav_ogrid: Optional[OccupancyGrid]
+    np_map: Optional[np.ndarray]
+    replace: bool
+    subscriber: rospy.Subscriber
+
+    def __init__(self, topic: str, replace: bool = False, frame_id: str = 'enu'):
         # Assert that the topic is valid
         self.last_message_stamp = None
         self.topic = topic
-
         self.nav_ogrid = None           # Last recieved OccupancyGrid message
         self.np_map = None              # Numpy version of last recieved OccupancyGrid message
         self.replace = replace
-
         self.subscriber = rospy.Subscriber(topic, OccupancyGrid, self.cb, queue_size=1)
 
     @property
-    def callback_delta(self) -> int:
+    def callback_delta(self) -> float:
         """
         The difference between the time of the last message
         and now, in seconds.
 
         Returns:
-            An integer representing the number of seconds.
+            A float representing the number of seconds.
         """
         if self.last_message_stamp is None:
             return 0
         return (rospy.Time.now() - self.last_message_stamp).to_sec()
 
-    def cb(self, ogrid):
-        # Fetches the currently available map
+    def cb(self, ogrid: OccupancyGrid):
+        """
+        The callback function for the topic subscriber. The callback
+        will update the class with the last message stamp time and 
+        most recent occupany grid.
+        """
         self.last_message_stamp = ogrid.header.stamp
         self.nav_ogrid = ogrid
         self.np_map = numpyify(ogrid)
