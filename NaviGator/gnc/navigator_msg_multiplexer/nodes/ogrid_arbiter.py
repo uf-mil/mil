@@ -19,7 +19,7 @@ from nav_msgs.msg import OccupancyGrid, Odometry
 
 from navigator_path_planner import params
 
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Dict, List
 
 # Wow what a concept
 fprint = lambda *args, **kwargs: _fprint(title="OGRID_ARB", *args, **kwargs)
@@ -129,7 +129,7 @@ class OGrid:
         self.nav_ogrid = None           # Last recieved OccupancyGrid message
         self.np_map = None              # Numpy version of last recieved OccupancyGrid message
         self.replace = replace
-        self.subscriber = rospy.Subscriber(topic, OccupancyGrid, self.cb, queue_size=1)
+        self.subscriber = rospy.Subscriber(topic, OccupancyGrid, self.subscriber_callback, queue_size=1)
 
     @property
     def callback_delta(self) -> float:
@@ -144,7 +144,7 @@ class OGrid:
             return 0
         return (rospy.Time.now() - self.last_message_stamp).to_sec()
 
-    def cb(self, ogrid: OccupancyGrid):
+    def subscriber_callback(self, ogrid: OccupancyGrid):
         """
         The callback function for the topic subscriber. The callback
         will update the class with the last message stamp time and 
@@ -155,7 +155,8 @@ class OGrid:
         self.np_map = numpyify(ogrid)
 
 class OGridServer:
-    def __init__(self, frame_id='enu', map_size=500, resolution=0.3, rate=1):
+
+    def __init__(self, frame_id: str = 'enu', map_size: int = 500, resolution: float = 0.3, rate: int = 1):
         self.frame_id = frame_id
         self.ogrids = {}
         self.odom = None
@@ -173,20 +174,27 @@ class OGridServer:
         # Default to centering the ogrid
         position = np.array([-(map_size * resolution) / 2, -(map_size * resolution) / 2, 0])
         quaternion = np.array([0, 0, 0, 1])
-        self.origin = mil_tools.numpy_quat_pair_to_pose(position, quaternion)
 
+        self.origin = mil_tools.numpy_quat_pair_to_pose(position, quaternion)
         self.global_ogrid = self.create_grid((map_size, map_size))
 
-        def set_odom(msg):
-            return setattr(self, 'odom', mil_tools.pose_to_numpy(msg.pose.pose))
-        rospy.Subscriber('/odom', Odometry, set_odom)
-        self.publisher = rospy.Publisher('/ogrid_master', OccupancyGrid, queue_size=1)
+        rospy.Subscriber('/odom', Odometry, self.set_odom)
+        self.publisher = rospy.Publisher('/ogrid_master', OccupancyGrid, queue_size = 1)
 
-        self.ogrid_server = Server(OgridConfig, self.dynamic_cb)
-        self.dynam_client = Client("bounds_server", config_callback=self.bounds_cb)
+        self.ogrid_server = Server(OgridConfig, self.dynamic_config_callback)
+        self.dynam_client = Client("bounds_server", config_callback = self.bounds_cb)
 
         rospy.Service("~center_ogrid", Trigger, self.center_ogrid)
         rospy.Timer(rospy.Duration(1.0 / rate), self.publish)
+
+    def set_odom(self, msg: Odometry) -> np.ndarray:
+        """
+        Sets the odom variable to a numpy array, and returns it.
+
+        Used by the subscriber to /odom as a callback in order to parse 
+        and store received messages.
+        """
+        return setattr(self, 'odom', mil_tools.pose_to_numpy(msg.pose.pose))
 
     def center_ogrid(self, srv):
         '''
@@ -195,6 +203,7 @@ class OGridServer:
         '''
         if self.odom is None:
             return {'success': False, 'message': 'odom not recieved'}
+
         dim = -(self.map_size[0] * self.resolution) / 2
         new_org = self.odom[0] + np.array([dim, dim, 0])
         config = {}
@@ -217,15 +226,28 @@ class OGridServer:
                            [config['x1'], config['y1'], 1]]
         self.enforce_bounds = config['enforce']
 
-    def dynamic_cb(self, config, level):
+    def dynamic_config_callback(self, config: dict, _) -> dict:
+        """
+        Accepts changes in the ogrid dynamic configuration.
+
+        Args:
+            config: dict - The new configuration setup.
+            level (not used) - The result of the level operation completed
+            on all parameters by Dynamic Reconfigure.
+
+        Returns:
+            The updated dict containing no changes to the configuration.
+        """
         fprint("OGRID DYNAMIC CONFIG UPDATE!", msg_color='blue')
+
+        # Receive and parse topic list
         topics = config['topics'].replace(' ', '').split(',')
         replace_topics = config['replace_topics'].replace(' ', '').split(',')
-        new_grids = {}
 
+        # Update OGrids with new configuration changes 
+        new_grids = {}
         for topic in topics:
             new_grids[topic] = OGrid(topic) if topic not in self.ogrids else self.ogrids[topic]
-
         for topic in replace_topics:
             new_grids[topic] = OGrid(topic, replace=True) if topic not in self.ogrids else self.ogrids[topic]
 
@@ -246,12 +268,15 @@ class OGridServer:
             position = np.array([config['origin_x'], config['origin_y'], 0])
             quaternion = np.array([0, 0, 0, 1])
             self.origin = mil_tools.numpy_quat_pair_to_pose(position, quaternion)
+
         else:
             position = np.array([-(map_size[1] * self.resolution) / 2, -(map_size[0] * self.resolution) / 2, 0])
             quaternion = np.array([0, 0, 0, 1])
             self.origin = mil_tools.numpy_quat_pair_to_pose(position, quaternion)
 
         self.global_ogrid = self.create_grid(map_size)
+
+        # Return dynamic configuration with no changes
         return config
 
     def create_grid(self, map_size):
