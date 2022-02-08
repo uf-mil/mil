@@ -69,7 +69,7 @@ void PCODARGazebo::UpdateEntity(gazebo::physics::EntityPtr _entity)
 
   // Get pose and bounding box for object
   ignition::math::Pose3d pose = _entity->WorldPose();
-  ignition::math::Box box = _entity->BoundingBox();
+  ignition::math::AxisAlignedBox box = _entity->BoundingBox();
   // Move pcdoar pose origin to center of bounding box
   pose.Set(box.Center(), pose.Rot());
 
