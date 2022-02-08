@@ -196,29 +196,46 @@ class OGridServer:
         """
         return setattr(self, 'odom', mil_tools.pose_to_numpy(msg.pose.pose))
 
-    def center_ogrid(self, srv):
-        '''
-        When Trigger service is called, set center
-        of ogrid to current odometry position.
-        '''
+    def center_ogrid(self, _) -> dict:
+        """
+        Serves as the callback to the center_ogrid service,
+        and returns whether the operation was successful. A
+        complete operation sets the center of the ogrid to the
+        current odometry position.
+
+        If no odometry position is found, then success is returned
+        as False.
+
+        Returns:
+            A dict containing values that will be fed into a
+            complete trigger response.
+        """
         if self.odom is None:
             return {'success': False, 'message': 'odom not recieved'}
 
         dim = -(self.map_size[0] * self.resolution) / 2
         new_org = self.odom[0] + np.array([dim, dim, 0])
+
+        # Update the dynamic configuration
         config = {}
         config['origin_x'] = float(new_org[0])
         config['origin_y'] = float(new_org[1])
         config['set_origin'] = True
         self.ogrid_server.update_configuration(config)
+
         return {'success': True}
 
-    def bounds_cb(self, config):
-        '''
+    def bounds_cb(self, config: dict) -> None:
+        """
         Update bounds which may be drawn in ogrid when
         dynamic reconfigure updates.
-        '''
+
+        Args:
+            config: dict - The update changes from dynamic
+            reconfigure to be handled.
+        """
         rospy.loginfo('BOUNDS UPDATEDED')
+
         self.enu_bounds = [[config['x1'], config['y1'], 1],
                            [config['x2'], config['y2'], 1],
                            [config['x3'], config['y3'], 1],
