@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/python3
 from __future__ import division
 
 import rospy
@@ -23,10 +23,17 @@ from navigator_path_planner import params
 fprint = lambda *args, **kwargs: _fprint(title="OGRID_ARB", *args, **kwargs)
 
 
-def make_ogrid_transform(ogrid):
+def make_ogrid_transform(ogrid: OccupancyGrid) -> np.array:
     """
     Returns a matrix that transforms a point in ENU to this ogrid.
     Invert the result to get ogrid -> ENU.
+
+    Args:
+        ogrid: OccupancyGrid - The occupancy grid to make a transform of.
+
+    Returns:
+        A numpy array (np.array) representing an ogrid
+        with a transformed ENU.
     """
     resolution = ogrid.info.resolution
     origin = mil_tools.pose_to_numpy(ogrid.info.origin)[0]
@@ -37,11 +44,18 @@ def make_ogrid_transform(ogrid):
                   [0, 0, 1]])
     return t
 
+def numpyify(ogrid: OccupancyGrid) -> np.array:
+    """
+    Converts an occupancy grid to a pure numpy array.
 
-def numpyify(ogrid):
-    # Could be a lambda
+    Args:
+        ogrid: OccupancyGrid - The occupancy grid to convert.
+
+    Returns:
+        A numpy array (np.array) representing the original
+        ogrid.
+    """
     return np.array(ogrid.data).reshape(ogrid.info.height, ogrid.info.width)
-
 
 def transform_enu_to_ogrid(enu_points, grid):
     """
@@ -57,7 +71,6 @@ def transform_enu_to_ogrid(enu_points, grid):
     t = make_ogrid_transform(grid)
     return t.dot(np.array(enu_points).T).T
 
-
 def transform_ogrid_to_enu(grid_points, grid):
     """
     Converts an ogrid cell into the enu frame.
@@ -72,11 +85,9 @@ def transform_ogrid_to_enu(grid_points, grid):
     t = np.linalg.inv(make_ogrid_transform(grid))
     return t.dot(np.array(grid_points).T).T
 
-
 def transform_between_ogrids(grid1_points, grid1, grid2):
     enu = transform_ogrid_to_enu(grid1_points, grid1)
     return transform_enu_to_ogrid(enu, grid2)
-
 
 def get_enu_corners(grid):
     """
@@ -86,7 +97,6 @@ def get_enu_corners(grid):
     _min = grid_to_enu.dot([0, 0, 1])
     _max = grid_to_enu.dot([grid.info.height, grid.info.width, 1])
     return (_min, _max)
-
 
 class OGrid:
     def __init__(self, topic, replace=False, frame_id='enu'):
@@ -111,7 +121,6 @@ class OGrid:
         self.last_message_stamp = ogrid.header.stamp
         self.nav_ogrid = ogrid
         self.np_map = numpyify(ogrid)
-
 
 class OGridServer:
     def __init__(self, frame_id='enu', map_size=500, resolution=0.3, rate=1):
@@ -369,7 +378,6 @@ class OGridServer:
 
         # fprint("Plowed snow!")
         return np_grid
-
 
 if __name__ == '__main__':
     rospy.init_node('ogrid_server', anonymous=False)
