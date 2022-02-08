@@ -18,6 +18,7 @@ from nav_msgs.msg import OccupancyGrid, Odometry
 
 from navigator_path_planner import params
 
+from typing import Tuple
 
 # Wow what a concept
 fprint = lambda *args, **kwargs: _fprint(title="OGRID_ARB", *args, **kwargs)
@@ -89,17 +90,30 @@ def transform_between_ogrids(grid1_points, grid1, grid2):
     enu = transform_ogrid_to_enu(grid1_points, grid1)
     return transform_enu_to_ogrid(enu, grid2)
 
-def get_enu_corners(grid):
+def get_enu_corners(grid) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Returns the bottom left and top right (?) points in the ENU frame
+    Returns the bottom left and top right (?) points in the ENU frame.
+
+    Args:
+        grid: OccupancyGrid - The occupancy grid holding the
+        ENU frame.
+
+    Returns:
+        A tuple holding the bottom left and the top right points
+        in the ENU frame.
     """
     grid_to_enu = np.linalg.inv(make_ogrid_transform(grid))
-    _min = grid_to_enu.dot([0, 0, 1])
-    _max = grid_to_enu.dot([grid.info.height, grid.info.width, 1])
-    return (_min, _max)
+    min = grid_to_enu.dot([0, 0, 1])
+    max = grid_to_enu.dot([grid.info.height, grid.info.width, 1])
+    return (min, max)
 
 class OGrid:
-    def __init__(self, topic, replace=False, frame_id='enu'):
+    """
+    Represents a class holding an occupancy grid. The class
+    is likely used to store an occupancy grid in a dynamic context,
+    such as when dynamic reconfigure is updated.
+    """
+    def __init__(self, topic, replace = False, frame_id = 'enu'):
         # Assert that the topic is valid
         self.last_message_stamp = None
         self.topic = topic
@@ -111,7 +125,14 @@ class OGrid:
         self.subscriber = rospy.Subscriber(topic, OccupancyGrid, self.cb, queue_size=1)
 
     @property
-    def callback_delta(self):
+    def callback_delta(self) -> int:
+        """
+        The difference between the time of the last message
+        and now, in seconds.
+
+        Returns:
+            An integer representing the number of seconds.
+        """
         if self.last_message_stamp is None:
             return 0
         return (rospy.Time.now() - self.last_message_stamp).to_sec()
