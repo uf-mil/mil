@@ -59,7 +59,7 @@ def numpyify(ogrid: OccupancyGrid) -> np.array:
     """
     return np.array(ogrid.data).reshape(ogrid.info.height, ogrid.info.width)
 
-def transform_enu_to_ogrid(enu_points: List[List[int]], grid: OccupancyGrid) -> np.ndarray:
+def transform_enu_to_ogrid(enu_points: List[int], grid: OccupancyGrid) -> np.ndarray:
     """
     Converts an ENU point into the global ogrid's frame.
 
@@ -79,7 +79,7 @@ def transform_enu_to_ogrid(enu_points: List[List[int]], grid: OccupancyGrid) -> 
     t = make_ogrid_transform(grid)
     return t.dot(np.array(enu_points_np).T).T
 
-def transform_ogrid_to_enu(grid_points: List[List[int]], grid: OccupancyGrid) -> np.ndarray:
+def transform_ogrid_to_enu(grid_points: List[int], grid: OccupancyGrid) -> np.ndarray:
     """
     Converts an ogrid cell into the ENU frame.
 
@@ -99,7 +99,7 @@ def transform_ogrid_to_enu(grid_points: List[List[int]], grid: OccupancyGrid) ->
     t = np.linalg.inv(make_ogrid_transform(grid))
     return t.dot(np.array(grid_points_np).T).T
 
-def transform_between_ogrids(grid1_points: List[List[int]], grid1: OccupancyGrid, grid2: OccupancyGrid) -> np.ndarray:
+def transform_between_ogrids(grid1_points: List[int], grid1: OccupancyGrid, grid2: OccupancyGrid) -> np.ndarray:
     """
     ???
 
@@ -457,9 +457,16 @@ class OGridServer:
 
     def plow_snow(self, np_grid: np.ndarray, ogrid: OccupancyGrid) -> np.ndarray:
         """
-        Remove region around the boat so we never touch an occupied cell (making lqrrt not break
-        if something touches us).
+        Remove region around the boat so we never touch an occupied cell
+        (making lqrrt not break if something touches us). If the boat's location
+        is not known, then the np_grid argument is returned.
 
+        Args:
+            np_grid: np.ndarray - ???
+            ogrid: OccupancyGrid - ???
+
+        Returns:
+            np.ndarray - ???
         """
         if self.odom is None:
             return np_grid
@@ -488,7 +495,7 @@ class OGridServer:
         h = boat_height / ogrid.info.resolution
 
         box = cv2.boxPoints(((x, y), (w, h), np.degrees(theta)))
-        box = np.intp(box)
+        box = np.int0(box)
         cv2.drawContours(np_grid, [box], 0, 40, -1)
 
         return np_grid
