@@ -79,21 +79,38 @@ def transform_enu_to_ogrid(enu_points: List[List[int]], grid: OccupancyGrid) -> 
     t = make_ogrid_transform(grid)
     return t.dot(np.array(enu_points_np).T).T
 
-def transform_ogrid_to_enu(grid_points, grid):
+def transform_ogrid_to_enu(grid_points: List[List[int]], grid: OccupancyGrid) -> np.ndarray:
     """
-    Converts an ogrid cell into the enu frame.
-    `grid_points` should be a list of points in the ogrid frame that will be converted
-        into the ENU frame
-    """
-    grid_points = np.array(grid_points)
+    Converts an ogrid cell into the ENU frame.
 
-    if grid_points.size > 3:
-        grid_points[:, 2] = 1
+    Args:
+        grid_points: List[List[int]] - A list of ogrid points that
+        will be converted to the ENU frame.
+        grid: OccupancyGrid - The occupancy grid representing the ENU frame.
+
+    Returns:
+        np.ndarray - ???
+    """
+    grid_points_np = np.array(grid_points)
+
+    if grid_points_np.size > 3:
+        grid_points_np[:, 2] = 1
 
     t = np.linalg.inv(make_ogrid_transform(grid))
-    return t.dot(np.array(grid_points).T).T
+    return t.dot(np.array(grid_points_np).T).T
 
-def transform_between_ogrids(grid1_points, grid1, grid2):
+def transform_between_ogrids(grid1_points: List[List[int]], grid1: OccupancyGrid, grid2: OccupancyGrid) -> np.ndarray:
+    """
+    ???
+
+    Args:
+        grid1_points: List[List[int]] - ???
+        grid1: OccupancyGrid - ???
+        grid2: OccupancyGrid - ???
+
+    Returns:
+        np.ndarray - ???
+    """
     enu = transform_ogrid_to_enu(grid1_points, grid1)
     return transform_enu_to_ogrid(enu, grid2)
 
@@ -201,6 +218,12 @@ class OGridServer:
 
         Used by the subscriber to /odom as a callback in order to parse
         and store received messages.
+
+        Args:
+            msg: Odometry - The message from the /odom topic
+
+        Returns:
+            np.ndarray - The converted pose in a numpy array.
         """
         return setattr(self, 'odom', mil_tools.pose_to_numpy(msg.pose.pose))
 
