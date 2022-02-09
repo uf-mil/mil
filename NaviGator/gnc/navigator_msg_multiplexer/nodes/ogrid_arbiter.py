@@ -59,19 +59,25 @@ def numpyify(ogrid: OccupancyGrid) -> np.array:
     """
     return np.array(ogrid.data).reshape(ogrid.info.height, ogrid.info.width)
 
-def transform_enu_to_ogrid(enu_points, grid):
+def transform_enu_to_ogrid(enu_points: List[List[int]], grid: OccupancyGrid) -> np.ndarray:
     """
-    Converts an enu point into the global ogrid's frame.
-    `enu_points` should be a list of points in the ENU frame that will be converted
-        into the grid frame
-    """
-    enu_points = np.array(enu_points)
+    Converts an ENU point into the global ogrid's frame.
 
-    if enu_points.size > 3:
-        enu_points[:, 2] = 1
+    Args:
+        enu_points: List[List[int]] - A list of ENU points
+        to add to the global ogrid frame.
+        grid: OccupancyGrid - The global occupancy grid.
+
+    Returns:
+        np.ndarray - ???
+    """
+    enu_points_np = np.array(enu_points)
+
+    if enu_points_np.size > 3:
+        enu_points_np[:, 2] = 1
 
     t = make_ogrid_transform(grid)
-    return t.dot(np.array(enu_points).T).T
+    return t.dot(np.array(enu_points_np).T).T
 
 def transform_ogrid_to_enu(grid_points, grid):
     """
@@ -155,6 +161,8 @@ class OGrid:
         self.np_map = numpyify(ogrid)
 
 class OGridServer:
+
+    odom: Optional[Tuple[np.ndarray, np.ndarray]]
 
     def __init__(self, frame_id: str = 'enu', map_size: int = 500, resolution: float = 0.3, rate: int = 1):
         self.frame_id = frame_id
@@ -424,21 +432,22 @@ class OGridServer:
         # Publish the ogrid to the topic
         self.publisher.publish(global_ogrid)
 
-    def plow_snow(self, np_grid, ogrid):
-        """Remove region around the boat so we never touch an occupied cell (making lqrrt not break
+    def plow_snow(self, np_grid: np.ndarray, ogrid: OccupancyGrid) -> np.ndarray:
+        """
+        Remove region around the boat so we never touch an occupied cell (making lqrrt not break
         if something touches us).
 
         """
         if self.odom is None:
             return np_grid
 
-        p, q = self.odom
+        position, orientation = self.odom
 
-        yaw_rot = trns.euler_from_quaternion(q)[2]  # rads
+        yaw_rot = trns.euler_from_quaternion(orientation)[2]  # rads
         boat_width = params.boat_length + params.boat_buffer + self.plow_factor  # m
         boat_height = params.boat_width + params.boat_buffer + self.plow_factor  # m
 
-        x, y, _ = transform_enu_to_ogrid([p[0], p[1], 1], ogrid)
+        x, y, _ = transform_enu_to_ogrid([position[0], position[1], 1], ogrid)
         theta = yaw_rot
         w = boat_width / ogrid.info.resolution
         h = boat_height / ogrid.info.resolution
@@ -451,15 +460,14 @@ class OGridServer:
         boat_width = params.boat_length + params.boat_buffer
         boat_height = params.boat_width + params.boat_buffer
 
-        x, y, _ = transform_enu_to_ogrid([p[0], p[1], 1], ogrid)
+        x, y, _ = transform_enu_to_ogrid([position[0], position[1], 1], ogrid)
         w = boat_width / ogrid.info.resolution
         h = boat_height / ogrid.info.resolution
 
         box = cv2.boxPoints(((x, y), (w, h), np.degrees(theta)))
-        box = np.int0(box)
+        box = np.intp(box)
         cv2.drawContours(np_grid, [box], 0, 40, -1)
 
-        # fprint("Plowed snow!")
         return np_grid
 
 if __name__ == '__main__':
