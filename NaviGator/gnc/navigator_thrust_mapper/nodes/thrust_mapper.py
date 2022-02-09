@@ -5,18 +5,17 @@ from geometry_msgs.msg import WrenchStamped
 from roboteq_msgs.msg import Command
 from std_msgs.msg import Float32
 from ros_alarms import AlarmListener
+from ros_alarms.msg import Alarm
 from navigator_thrust_mapper import ThrusterMap
 from sensor_msgs.msg import JointState
-
 
 class ThrusterMapperNode(object):
     """
     Node to publish individual thruster commands from the body frame wrench.
     See thruster_map.py for more details on this process as this is simply the ROS wrapper.
     """
-
     def __init__(self):
-        self.is_vrx = rospy.get_param("/is_vrx", False)
+        self.is_vrx = rospy.get_param("/is_vrx", default = False)
 
         # Used for mapping wrench to individual thrusts
         urdf = rospy.get_param("/robot_description", default=None)
@@ -30,7 +29,7 @@ class ThrusterMapperNode(object):
         # To track kill state so no thrust is sent when killed (kill board hardware also ensures this)
         self.kill = False
         if not self.is_vrx:
-            self.kill_listener = AlarmListener("kill", self.kill_cb)
+            self.kill_listener = AlarmListener("kill", self.kill_callback)
             self.kill_listener.wait_for_server()
 
         # Start off with no wrench
@@ -66,18 +65,31 @@ class ThrusterMapperNode(object):
 
         rospy.Subscriber("/wrench/cmd", WrenchStamped, self.wrench_cb)
 
-    def kill_cb(self, alarm):
+    def kill_callback(self, alarm: Alarm) -> None:
+        """
+        Serves as the callback for the ROS 'kill' alarm.
+
+        Args:
+            alarm: Alarm - The alarm message that triggered
+            the callback
+        """
         self.kill = alarm.raised
 
-    def wrench_cb(self, msg):
+    def wrench_cb(self, msg: WrenchStamped) -> None:
         """
-        Store last commanded wrench for later mapping to thrusts
+        Store last commanded wrench for later mapping to thrusts.
+
+        Operates as the callback function for the subscriber of the /wrench/cmd topic.
+
+        Args:
+            msg: WrenchStamped - The messaged passed to the
+            callback from the topic.
         """
         force = msg.wrench.force
         torque = msg.wrench.torque
         self.wrench = np.array((force.x, force.y, torque.z))
 
-    def publish_thrusts(self):
+    def publish_thrusts(self) -> None:
         """
         Use the mapper to find the individual thrusts needed to acheive the current body wrench.
         If killed, publish 0 to all thrusters just to be safe.
@@ -98,7 +110,6 @@ class ThrusterMapperNode(object):
         else:
             for i in range(len(self.publishers)):
                 self.publishers[i].publish(commands[i].setpoint)
-
 
 if __name__ == "__main__":
     rospy.init_node("thrust_mapper")
