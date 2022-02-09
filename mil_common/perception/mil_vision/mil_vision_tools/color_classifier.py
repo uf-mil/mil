@@ -141,7 +141,7 @@ class ContourClassifier(object):
         Return features and classes from specified training file
         '''
         training_file = _get_param(training_file, self.training_file)
-        df = pandas.DataFrame.from_csv(training_file)
+        df = pandas.read_csv(training_file)
         classes = df.values[:, 0]
         features = df.values[:, 1:]
         return features, classes
