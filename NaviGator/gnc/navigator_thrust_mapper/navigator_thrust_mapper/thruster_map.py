@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import numpy as np
 import rospy
 from urdf_parser_py.urdf import URDF
@@ -6,6 +6,7 @@ import tf2_ros
 from tf.transformations import euler_from_quaternion
 from mil_tools import rosmsg_to_numpy
 
+from typing import List, Tuple, Callable, Optional
 
 def vrx_force_to_command_scalar(force):
 
@@ -51,24 +52,28 @@ class ThrusterMap(object):
 
     def __init__(
         self,
-        names,
-        positions,
-        angles,
-        force_to_command,
-        force_limit,
-        com=np.zeros(2),
-        joints=None,
+        names: List[str],
+        positions: List[Tuple[float, float]],
+        angles: List[float],
+        force_to_command: Callable,
+        force_limit: Tuple[float, float],
+        com: np.ndarray = np.zeros(2),
+        joints: Optional[List[str]] = None,
     ):
         """
-        Creates a ThurserMapper instance
-        param positions: list of X Y positions for each thuster [(x, y), (x,y), ...],
-                         in order of ThurserMap.THRUSTERS, meters
-        param angles: list of angles for each thruster [theta, theta, ...] in order of ThurserMap.THRUSTERS, radians
-        param force_to_command: function to convert a vector of forces to the same size vector in command units (actuator specific)
-        param force_limit: (MAX_FORWARD, MAX_REVERSE) maximum force in either direction that should be commanded to a thruster, in newtons
-        param com: offset of boat's true center of mass to the frame thruster positions are given (base_link)
-                   defaults to (0, 0, 0) incase we don't know com
+        Creates a ThrusterMapper instance.
 
+        Args:
+            positions: List[Tuple[float, float]] - List of x, y positions for each
+              thuster [(x, y), (x,y), ...], in order of ThurserMap.THRUSTERS, meters
+            angles: list of angles for each thruster [theta, theta, ...]
+              in order of ThurserMap.THRUSTERS, radians
+            force_to_command: function to convert a vector of forces to the same size
+              vector in command units (actuator specific)
+            force_limit: (MAX_FORWARD, MAX_REVERSE) maximum force in either direction
+              that should be commanded to a thruster, in newtons
+            com: offset of boat's true center of mass to the frame thruster positions
+              are given (base_link) defaults to (0, 0, 0) incase we don't know com
 
         The mapping from body wrench to individual thrusts or visa versa is a simple least square solver.
         Bibliography:
@@ -108,7 +113,7 @@ class ThrusterMap(object):
         )  # Magical numpy psuedoinverse
 
     @classmethod
-    def from_vrx_urdf(cls, urdf_string):
+    def from_vrx_urdf(cls, urdf_string: str):
         urdf = URDF.from_xml_string(urdf_string)
         buff = tf2_ros.Buffer()
         listener = tf2_ros.TransformListener(buff)  # noqa
@@ -135,7 +140,7 @@ class ThrusterMap(object):
         return cls(names, positions, angles, vrx_force_to_command, (250.0, -100.0))
 
     @classmethod
-    def from_urdf(cls, urdf_string, transmission_suffix="_thruster_transmission"):
+    def from_urdf(cls, urdf_string: str, transmission_suffix: str = "_thruster_transmission"):
         """
         Load from an URDF string. Expects each thruster to be connected a transmission ending in the specified suffix.
         A transform between the propeller joint and base_link must be available
