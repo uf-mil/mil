@@ -231,7 +231,7 @@ class ThrusterMap(object):
             np.linalg.lstsq(self.thruster_matrix_inv, thrusts)[0]
         )
 
-    def wrench_to_thrusts(self, wrench):
+    def wrench_to_thrusts(self, wrench: np.ndarray):
         """
         Given a wrench (force/torque applied to boat) returns a set of thruster
         efforts that will achieve this wrench or the closest to it possible while
@@ -254,7 +254,9 @@ class ThrusterMap(object):
 
     def effort_to_force(self, effort):
         """
-        Maps a list of thrusts in effort units to the corosponding force in newtons
+        This command is currently unimplemented and will raise an immediate error.
+
+        Maps a list of thrusts in effort units to the corosponding force in newtons.
         """
         raise Exception(
             "Unimplemented. Please file an issue if you encounter this error"
