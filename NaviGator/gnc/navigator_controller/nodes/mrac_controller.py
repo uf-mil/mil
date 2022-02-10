@@ -12,15 +12,10 @@ from std_msgs.msg import Header
 from mil_msgs.msg import PoseTwistStamped
 from std_msgs.msg import String, Float64MultiArray
 
-
 class MRAC_Controller:
     LEARN_WRENCHES = ["/wrench/autonomous", "autonomous"]
 
     def __init__(self):
-        """
-        Set-up.
-
-        """
         # TUNABLES
         # Proportional gains, body frame
         self.kp_body = np.diag(rospy.get_param("~kp", [1000.0, 1000.0, 5600.0]))
@@ -149,10 +144,17 @@ class MRAC_Controller:
 
         rospy.spin()
 
-    def set_traj(self, msg):
+    def set_traj(self, msg: PoseTwistStamped) -> None:
         """
         Sets instantaneous reference state.
         Convert twist to world frame for controller math.
+
+        Serves as the callback function for the subscriber to the /trajectory
+        topic.
+
+        Args:
+            msg: PoseTwistStamped - The message to the callback by
+              the subscriber.
         """
         self.p_ref = np.array(
             [msg.posetwist.pose.position.x, msg.posetwist.pose.position.y]
@@ -206,10 +208,16 @@ class MRAC_Controller:
             )
         )[2]
 
-    def set_traj_from_odom_msg(self, msg):
+    def set_traj_from_odom_msg(self, msg: Odometry) -> None:
         """
         Sets instantaneous reference state.
         Convert twist to world frame for controller math.
+
+        Serves as the callback for the subscriber to the /trajectory/cmd
+        topic.
+
+        Args:
+            msg: Odometry - The Odometry message from the topic.
         """
         self.p_ref = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y])
         self.q_ref = np.array(
@@ -245,7 +253,7 @@ class MRAC_Controller:
         self.a_ref = np.array([0, 0])
         self.aa_ref = 0
 
-    def set_waypoint(self, msg):
+    def set_waypoint(self, msg) -> None:
         """
         Sets desired waypoint ("GO HERE AND STAY").
         Resets reference model to current state (i.e. resets trajectory generation).
@@ -267,13 +275,16 @@ class MRAC_Controller:
         self.a_ref = np.array([0, 0])
         self.aa_ref = 0
 
-    def get_command(self, msg):
+    def get_command(self, msg: Odometry) -> None:
         """
         Publishes the wrench for this instant.
         (Note: this is called get_command because it used to be used for
         getting the actual thruster values, but now it is only being
         used for getting the wrench which is then later mapped elsewhere).
 
+        Args:
+            msg: Odometry - The message passed to the callback by the
+              subscriber.
         """
         if self.p_ref is None:
             return  # C3 is killed
@@ -506,9 +517,16 @@ class MRAC_Controller:
         self.v_ref = self.v_ref + (self.a_ref * self.timestep)
         self.w_ref = self.w_ref + (self.aa_ref * self.timestep)
 
-    def set_learning(self, str_msg):
+    def set_learning(self, str_msg: String) -> None:
         """
-        Sets learning status based on current wrench
+        Sets learning status based on current wrench.
+
+        Serves as the callback for the subscriber to the
+        /wrench/selected node.
+
+        Args:
+            str_msg: String - The message passed to the callback
+              by the subscriber.
         """
         learn = str_msg.data in self.LEARN_WRENCHES
         if learn == self.learn:
