@@ -58,7 +58,6 @@ class VrxClassifier(object):
     BLACK_OBJECT_VOLUMES = [0.3, 0.6, 1.9]
     BLACK_OBJECT_AREA = [0., 0.5, 0., 0.]
     TOTEM_MIN_HEIGHT = 0.9
-    start = 106 
 
     CLASSES = ["mb_marker_buoy_red", "mb_marker_buoy_green", "mb_marker_buoy_black", "mb_marker_buoy_white", "mb_round_buoy_black", "mb_round_buoy_orange"]
 
@@ -238,10 +237,6 @@ class VrxClassifier(object):
             x,y,w,h = cv2.boundingRect(contour)
             image = img[y:y+h,x:x+w]
             image = image[:,:,::-1]
-            saved = Image.fromarray(image)
-            num = str(self.start)+".png"
-            saved.save("/home/andrew/Desktop/images/"+num)
-            self.start += 1
             resized = cv2.resize(image, (100,100))
             arr = np.array(resized, dtype=np.float32)
             arr = np.expand_dims(arr, axis=0)
