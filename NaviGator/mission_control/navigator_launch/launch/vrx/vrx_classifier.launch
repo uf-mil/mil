@@ -7,6 +7,7 @@
     <node pkg="navigator_vision" type="vrx_classifier.py" name="vrx_classifier" output="screen">
         <param name="debug" value="True" />
         <param name="image_topic" value="/wamv/sensors/cameras/front_left_camera/image_raw" />
+	<param name="model_location" value="config/model" />
         <param name="train" value="$(arg train)" />
     </node>
 </launch>

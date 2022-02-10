@@ -68,6 +68,8 @@ sudo pip install \
   pandas
 
 sudo pip2 install tsp_solver2
+sudo pip2 install tensorflow
+sudo pip2 install PIL
 
 # Documentation dependencies
 mil_system_install  python3-pip python-setuptools
