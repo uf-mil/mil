@@ -454,10 +454,9 @@ class MRAC_Controller:
         except BaseException:
             traceback.print_exc()
 
-    def increment_reference(self):
+    def increment_reference(self) -> None:
         """
         Steps the model reference (trajectory to track) by one self.timestep.
-
         """
         # Frame management quantities
         R_ref = trns.quaternion_matrix(self.q_ref)[:3, :3]
@@ -544,7 +543,6 @@ class MRAC_Controller:
         Virtual thruster mapper used by the model reference.
         Math-wise, it is the same as the thruster mapper used by
         the actual boat.
-
         """
         # Get minimum energy mapping using pseudoinverse
         command = npl.pinv(B).dot(wrench)
@@ -556,10 +554,7 @@ class MRAC_Controller:
 
         return command
 
-
 # ROS
 if __name__ == "__main__":
-
     rospy.init_node("controller")
-
     controller = MRAC_Controller()
