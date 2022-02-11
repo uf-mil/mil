@@ -1,0 +1,3 @@
+string target_animal
+---
+bool movement_complete

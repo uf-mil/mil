@@ -125,25 +125,6 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        wamv/far_left_camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wamv/far_left_camera_link_optical:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        wamv/far_left_camera_post_arm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wamv/far_left_camera_post_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         wamv/front_left_camera_link:
           Alpha: 1
           Show Axes: false
@@ -208,6 +189,30 @@ Visualization Manager:
           Show Trail: false
           Value: true
         wamv/lidar_wamv_post_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wamv/middle_right_camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wamv/middle_right_camera_link_optical:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wamv/middle_right_camera_post_arm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wamv/middle_right_camera_post_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wamv/pinger:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -272,14 +277,6 @@ Visualization Manager:
           Value: true
         wamv/dummy_link:
           Value: true
-        wamv/far_left_camera_link:
-          Value: true
-        wamv/far_left_camera_link_optical:
-          Value: true
-        wamv/far_left_camera_post_arm_link:
-          Value: true
-        wamv/far_left_camera_post_link:
-          Value: true
         wamv/front_left_camera_link:
           Value: true
         wamv/front_left_camera_link_optical:
@@ -307,6 +304,16 @@ Visualization Manager:
         wamv/lidar_wamv_post_arm_link:
           Value: true
         wamv/lidar_wamv_post_link:
+          Value: true
+        wamv/middle_right_camera_link:
+          Value: true
+        wamv/middle_right_camera_link_optical:
+          Value: true
+        wamv/middle_right_camera_post_arm_link:
+          Value: true
+        wamv/middle_right_camera_post_link:
+          Value: true
+        wamv/pinger:
           Value: true
         wamv/right_battery_link:
           Value: true
@@ -345,11 +352,6 @@ Visualization Manager:
               {}
             wamv/dummy_link:
               {}
-            wamv/far_left_camera_post_link:
-              wamv/far_left_camera_post_arm_link:
-                wamv/far_left_camera_link:
-                  wamv/far_left_camera_link_optical:
-                    {}
             wamv/front_left_camera_post_link:
               wamv/front_left_camera_post_arm_link:
                 wamv/front_left_camera_link:
@@ -373,6 +375,13 @@ Visualization Manager:
                 wamv/lidar_wamv_link:
                   wamv/wamv/lidar_wamv_link:
                     {}
+            wamv/middle_right_camera_post_link:
+              wamv/middle_right_camera_post_arm_link:
+                wamv/middle_right_camera_link:
+                  wamv/middle_right_camera_link_optical:
+                    {}
+            wamv/pinger:
+              {}
             wamv/right_battery_link:
               {}
       Update Interval: 0
@@ -479,7 +488,41 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /trajectory/cmd
+      Topic: /trajectory/lqrrt
+      Unreliable: false
+      Value: true
+    - Angle Tolerance: 0.10000000149011612
+      Class: rviz/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: true
+      Keep: 100
+      Name: Long Trajectory
+      Position Tolerance: 0.10000000149011612
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.10000000149011612
+        Color: 0; 100; 255
+        Head Length: 0.30000001192092896
+        Head Radius: 0.10000000149011612
+        Shaft Length: 1
+        Shaft Radius: 0.05000000074505806
+        Value: Arrow
+      Topic: ""
       Unreliable: false
       Value: true
     - Class: rviz/Marker
@@ -552,10 +595,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.40479668974876404
+      Pitch: 0.574796736240387
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.580416679382324
+      Yaw: 3.930418014526367
     Saved: ~
 Window Geometry:
   Displays:

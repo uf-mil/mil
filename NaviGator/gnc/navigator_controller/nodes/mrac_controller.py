@@ -49,6 +49,11 @@ class MRAC_Controller:
         # Use external trajectory generator instead of internal reference generator
         # Subscribes to /trajectory if using external, else just takes /waypoint for the end goal
         self.use_external_tgen = True
+        #experimental
+        self.kp_body_orig = self.kp_body
+        self.kd_body_orig = self.kd_body
+        self.heavy_pid = False
+        self.old_p_ref = None
 
         # REFERENCE MODEL (note that this is not the adaptively estimated TRUE model; rather,
         #                     these parameters will govern the trajectory we want to achieve).
@@ -110,8 +115,9 @@ class MRAC_Controller:
         # Subscribers
         if self.use_lqrrt:
             rospy.Subscriber("/trajectory/cmd", Odometry, self.set_traj_from_odom_msg)
+            rospy.Subscriber("/trajectory_long/cmd", Odometry, self.set_waypoint)
         else:
-            rospy.Subscriber("/trajectory", PoseTwistStamped, self.set_traj)
+            rospy.Subscriber("/trajectory_long/cmd", Odometry, self.set_waypoint)
 
         rospy.Subscriber("/odom", Odometry, self.get_command)
         rospy.Subscriber("/wrench/selected", String, self.set_learning)
@@ -149,9 +155,20 @@ class MRAC_Controller:
         Sets instantaneous reference state.
         Convert twist to world frame for controller math.
         '''
+        if self.p_ref is not None and self.old_p_ref is not None and \
+            self.old_p_ref[0] == msg.pose.pose.position.x and \
+            self.old_q_ref[0] == msg.pose.pose.orientation.x:
+            return
+
+        print("what")
         self.p_ref = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y])
         self.q_ref = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
                                msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+
+        self.old_p_ref = self.p_ref
+        self.old_q_ref = self.q_ref
+
+        
 
         R = trns.quaternion_matrix(self.q_ref)[:3, :3]
 
@@ -167,16 +184,23 @@ class MRAC_Controller:
         Sets desired waypoint ("GO HERE AND STAY").
         Resets reference model to current state (i.e. resets trajectory generation).
         '''
-        self.p_des = np.array([msg.pose.position.x, msg.pose.position.y])
-        self.q_des = np.array([msg.pose.orientation.x, msg.pose.orientation.y,
-                               msg.pose.orientation.z, msg.pose.orientation.w])
-        self.traversal = npl.norm(self.p_des - self.position)
-        self.p_ref = self.position
-        self.v_ref = self.lin_vel
-        self.q_ref = self.orientation
-        self.w_ref = self.ang_vel
+        print("helloooo")
+        self.p_ref = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y])
+        self.q_ref = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
+                               msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+
+        R = trns.quaternion_matrix(self.q_ref)[:3, :3]
+
+        self.v_ref = R.dot(np.array([msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.linear.z]))[:2]
+        self.w_ref = R.dot(
+            np.array([msg.twist.twist.angular.x, msg.twist.twist.angular.y, msg.twist.twist.angular.z]))[2]
+
         self.a_ref = np.array([0, 0])
         self.aa_ref = 0
+        self.heavy_pid = True
+        self.kp_body = np.diag([1500., 1500., 5600.])
+        self.kd_body = np.diag([2000., 2000., 5000.])
+
 
     def get_command(self, msg):
         '''
@@ -225,6 +249,13 @@ class MRAC_Controller:
             self.q_ref, trns.quaternion_inverse(self.orientation)))[2]
         v_err = self.v_ref - self.lin_vel
         w_err = self.w_ref - self.ang_vel
+
+        #Adjust kp_body and kd_body based on p_err if heavy_pid was set
+        if (self.heavy_pid == True) and (abs(p_err[0]) < 0.5) and (abs(p_err[1]) < 0.5):
+            self.kp_body = self.kp_body_orig
+            self.kd_body = self.kd_body_orig
+            self.heavy_pid = False
+            self.movement_finished = True
 
         # Combine error components into error vectors
         err = np.concatenate((p_err, [y_err]))

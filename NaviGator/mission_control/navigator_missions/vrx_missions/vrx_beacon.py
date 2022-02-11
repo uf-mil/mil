@@ -5,8 +5,7 @@ import numpy as np
 from twisted.internet import defer
 from vrx import Vrx
 from mil_tools import rosmsg_to_numpy
-from tsp_solver.greedy import solve_tsp
-from navigator_msgs.srv import AcousticBeacon, AcousticBeaconRequest, AcousticBeaconResponse
+from navigator_msgs.srv import AcousticBeaconRequest
 
 ___author___ = "Alex Perez"
 

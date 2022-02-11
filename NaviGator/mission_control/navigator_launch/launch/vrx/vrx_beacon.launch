@@ -1,3 +1,0 @@
-<launch>
-	<node pkg="navigator_gazebo" type="acoustic_beacon.py" name="acoustic_beacon" />
-</launch>

@@ -34,6 +34,8 @@ add_service_files(
   DIRECTORY srv
   FILES
   AcousticBeacon.srv
+  ChooseAnimal.srv
+  MoveToWaypoint.srv
   ShooterManual.srv
   VisionRequest.srv
   GetDockShape.srv
