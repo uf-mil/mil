@@ -2,11 +2,11 @@
 # !/bin/bash
 
 
-echo What keyword would you like to delete?
+echo Enter keyword to delete
 read word < /dev/tty
 pgrep -f "$word" > ptkword.txt
 
-echo Would you like to kill all processes? [Y/N]
+echo Kill all processes that contain: "$word" ? [Y/N]
 read killall < /dev/tty
 
 
@@ -21,9 +21,10 @@ sleep 1
 pgrep -f "$word" > ptkword.txt
 
 while read p; do
-        echo Do you want to delete $p ? [Y/N]
+
+	pname=$(ps -p $p -o comm=)
+        echo Delete $pname ? [Y/N]
         read answer < /dev/tty
-        echo you responded $answer
 
         case "$answer" in
          y|Y ) kill -9 $p;;
