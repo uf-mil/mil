@@ -35,7 +35,7 @@ class VrxOctogon(Vrx):
         #we can calculate the start orientation needed given
         #the number of moves we plan to use to complete the movement around the animal
         vector = [ animal_pos[0] - boat_pos[0], animal_pos[1] - boat_pos[1] ]
-        theta = math.atan(vector[1] / vector[0]) + interior_angle/2
+        theta = math.atan(vector[1] / vector[0]) + interior_angle
         start_orientation = tf.transformations.quaternion_from_euler(0,0,theta)
         return start_orientation
 
@@ -129,9 +129,8 @@ class VrxOctogon(Vrx):
                 #calculate vector defining square
                 square_vec = np.array([ start_circle_pos[0] - animal_pose[0][0], start_circle_pos[1] - animal_pose[0][1], 0 ])
 
-                '''
                 print("arrived in circle")
-                for i in range(granularity):
+                for j in range(granularity):
                     #Move around animals
 
                     #add 90deg to square_vec
@@ -152,7 +151,6 @@ class VrxOctogon(Vrx):
                         goal_ori = tf.transformations.quaternion_from_euler(0,0,y + math.pi/2)
 
                     yield self.move.set_position(goal_pos).set_orientation(goal_ori).go(blind=True)
-                '''
                 
             elif current_animal == "crocodile":
                 print("Avoiding crocodile")
