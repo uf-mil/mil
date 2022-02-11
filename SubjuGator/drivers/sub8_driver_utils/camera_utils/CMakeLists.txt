@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(camera_utils)
 
 # This builds a utility to reset the camera bus using the DC1394 camera libraries
