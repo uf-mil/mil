@@ -15,4 +15,5 @@ Various docs related to how to develop MIL software
    Installing NVIDIA Drivers for RTX 2080 <installing_drivers.md>
    Installing Ubuntu 18.04 on an M-series Apple computer <apple_mseries_ubuntu_setup.md>
    Network with Vehicles and Simulation Servers <../infra/network.md>
+   Developing with Submodules <submodule.md>
    Development Guide (Deprecated) <development_guide>
