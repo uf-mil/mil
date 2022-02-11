@@ -172,7 +172,10 @@ class VrxClassifier(object):
 #            rospy.loginfo('Updating object {} to {}'.format(object_id, most_likely_name))
 #            if not self.is_training:
 #                self.database_client(ObjectDBQueryRequest(cmd=cmd))
+        cmd = '{}={}'.format(object_id, self.CLASSES[prediction])
+        self.database_client(ObjectDBQueryRequest(cmd=cmd))
         rospy.loginfo('Object {} {} classified as {}'.format(object_id, object_msg.labeled_classification, self.CLASSES[prediction]))
+        object_msg.labeled_classification = self.CLASSES[prediction]
         
         return self.CLASSES[prediction]
 
