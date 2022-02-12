@@ -49,21 +49,20 @@ else:
 class LQRRT_Node(object):
     def __init__(
         self,
-        odom_topic,
-        ref_topic,
-        move_topic,
-        path_topic,
-        tree_topic,
-        goal_topic,
-        focus_topic,
-        effort_topic,
-        ogrid_topic,
-        ogrid_threshold,
+        odom_topic: str,
+        ref_topic: str,
+        move_topic: str,
+        path_topic: str,
+        tree_topic: str,
+        goal_topic: str,
+        focus_topic: str,
+        effort_topic: str,
+        ogrid_topic: str,
+        ogrid_threshold: float,
     ):
         """
         Initialize with topic names and ogrid threshold as applicable.
         Defaults are generated at the ROS params level.
-
         """
         # One-time initializations
         self.revisit_period = 0.05  # s
@@ -116,10 +115,9 @@ class LQRRT_Node(object):
         rospy.Timer(rospy.Duration(self.revisit_period), self.publish_ref)
         rospy.Timer(rospy.Duration(self.revisit_period), self.action_check)
 
-    def reset(self):
+    def reset(self) -> None:
         """
         Resets variables that should definitely be cleared before a new action begins.
-
         """
         # Internal plan
         self.goal = None
@@ -163,11 +161,9 @@ class LQRRT_Node(object):
             behavior.planner.unkill()
 
     # ACTION
-
     def move_cb(self, msg):
         """
         Callback for the Move action.
-
         """
         # Start clean
         self.done = False
@@ -600,7 +596,6 @@ class LQRRT_Node(object):
         return clean_update
 
     # DECISIONS
-
     def select_behavior(self):
         """
         Chooses the behavior for the current move.
