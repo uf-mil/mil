@@ -62,7 +62,12 @@ class CircleAnimal():
         #create goal pose and vector used for creating circle poses
         radius = 6
         granularity = 8
-        start_circle_pos = self.closest_point_on_radius(self.boat_pos, self.animal_pos, radius)
+        
+        if self.target_animal != "crocodile":
+                start_circle_pos = self.closest_point_on_radius(self.boat_pos, self.animal_pos, radius)
+        if self.target_animal == "crocodile":
+            start_circle_pos = self.closest_point_on_radius(self.boat_pos, self.animal_pos, 15)
+
         start_circle_ori = self.point_at_goal(start_circle_pos, self.animal_pos)
         vect = np.array([ start_circle_pos[0] - self.animal_pos[0], start_circle_pos[1] - self.animal_pos[1]])
 
@@ -85,16 +90,25 @@ class CircleAnimal():
                 rate.sleep()
 
             #update trajectory point
-            start_circle_pos = self.closest_point_on_radius(self.boat_pos, self.animal_pos, radius)
+            if self.target_animal != "crocodile":
+                start_circle_pos = self.closest_point_on_radius(self.boat_pos, self.animal_pos, radius)
+            if self.target_animal == "crocodile":
+                start_circle_pos = self.closest_point_on_radius(self.boat_pos, self.animal_pos, 15)
+            
             start_circle_ori = self.point_at_goal(start_circle_pos, self.animal_pos)
 
-        for i in range(granularity+1):
+        if self.target_animal == "crocodile":
+            steps = granularity / 4
+        else:
+            steps = granularity
+
+        for i in range(steps+1):
             print(i)
             #calculate new position by rotating vector
 
-            if self.target_animal == "platypus":
+            if req.circle_direction == "cw":
                 vect = self.rotate_vector(vect, math.radians(-360/granularity) )
-            elif self.target_animal == "turtle":
+            elif req.circle_direction == "ccw":
                 vect = self.rotate_vector(vect, math.radians(360/granularity) )
 
             new_pos = self.animal_pos[0:2] + vect

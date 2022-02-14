@@ -18,6 +18,12 @@ from threading import Lock
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from std_srvs.srv import SetBool
 import pandas
+import tensorflow as tf
+from tensorflow.keras import layers, models
+from tensorflow import keras
+from PIL import Image
+from rospkg import RosPack
+import os
 
 lock = Lock()
 
@@ -53,8 +59,10 @@ class VrxClassifier(object):
     BLACK_OBJECT_AREA = [0., 0.5, 0., 0.]
     TOTEM_MIN_HEIGHT = 0.9
 
+    CLASSES = ["mb_marker_buoy_red", "mb_marker_buoy_green", "mb_marker_buoy_black", "mb_marker_buoy_white", "mb_round_buoy_black", "mb_round_buoy_orange"]
+
     def __init__(self):
-        self.enabled = False
+        self.enabled = False 
         # Maps ID to running class probabilities
         self.object_map = {}
         # Maps ID to mean volume, used to discriminate buoys / black totem
@@ -101,9 +109,13 @@ class VrxClassifier(object):
         self.is_training = rospy.get_param('~train', False)
         self.debug = rospy.get_param('~debug', True)
         self.image_topic = rospy.get_param('~image_topic', '/camera/starboard/image_rect_color')
+        self.model_loc = rospy.get_param('~model_location','config/model')
         self.update_period = rospy.Duration(1.0 / rospy.get_param('~update_hz', 1))
         self.classifier = VrxColorClassifier()
         self.classifier.train_from_csv()
+        rospack = RosPack()
+        self.model_loc = os.path.join(rospack.get_path('navigator_vision'), self.model_loc)
+        self.model = keras.models.load_model(self.model_loc)
 
     def get_box_roi(self, corners):
         roi = roi_enclosing_points(self.camera_model, corners, border=(-10, 0))
@@ -124,50 +136,48 @@ class VrxClassifier(object):
         box_corners = self.get_bbox(p, q_mat, obj_msg)
         return self.get_box_roi(box_corners)
 
-    def update_object(self, object_msg, class_probabilities):
+    def update_object(self, object_msg, prediction):
         object_id = object_msg.id
 
-        # Update the total class probabilities
-        if object_id in self.object_map:
-            self.object_map[object_id] += class_probabilities
-        else:
-            self.object_map[object_id] = class_probabilities
-        total_probabilities = self.object_map[object_id]
-
         # Guess the type of object based 
-        most_likely_index = np.argmax(total_probabilities)
-        most_likely_name = self.classifier.CLASSES[most_likely_index]
-        # Unforuntely this doesn't really work'
-        if most_likely_name in self.BLACK_OBJECT_CLASSES:
-            object_scale = rosmsg_to_numpy(object_msg.scale)
-            object_volume = object_scale.dot(object_scale) 
-            object_area = object_scale[:2].dot(object_scale[:2])
-            height = object_scale[2]
-            if object_id in self.volume_means:
-                self.volume_means[object_id].add_value(object_volume)
-                self.area_means[object_id].add_value(object_area)
-            else:
-                self.volume_means[object_id] = RunningMean(object_volume)
-                self.area_means[object_id] = RunningMean(object_area)
-            running_mean_volume = self.volume_means[object_id].mean
-            running_mean_area = self.area_means[object_id].mean
-           
-            if height > self.TOTEM_MIN_HEIGHT:
-                black_guess = 'black_totem'
-            else:
-                black_guess_index = np.argmin(np.abs(self.BLACK_OBJECT_VOLUMES - running_mean_volume))
-                black_guess = self.POSSIBLE_BLACK_OBJECTS[black_guess_index]
-            most_likely_name = black_guess
-            rospy.loginfo('{} current/running volume={}/{} area={}/{} height={}-> {}'.format(object_id, object_volume, running_mean_volume, object_area, running_mean_area, height, black_guess))
-        obj_title = object_msg.labeled_classification
-        probability = class_probabilities[most_likely_index]
-        rospy.loginfo('Object {} {} classified as {} ({}%)'.format(object_id, object_msg.labeled_classification, most_likely_name, probability * 100.))
-        if obj_title != most_likely_name:
-            cmd = '{}={}'.format(object_id, most_likely_name)
-            rospy.loginfo('Updating object {} to {}'.format(object_id, most_likely_name))
-            if not self.is_training:
-                self.database_client(ObjectDBQueryRequest(cmd=cmd))
-        return most_likely_name
+#        most_likely_index = np.argmax(total_probabilities)
+#        most_likely_name = self.classifier.CLASSES[most_likely_index]
+#        # Unforuntely this doesn't really work'
+#        if most_likely_name in self.BLACK_OBJECT_CLASSES:
+#            object_scale = rosmsg_to_numpy(object_msg.scale)
+#            object_volume = object_scale.dot(object_scale) 
+#            object_area = object_scale[:2].dot(object_scale[:2])
+#            height = object_scale[2]
+#            if object_id in self.volume_means:
+#                self.volume_means[object_id].add_value(object_volume)
+#                self.area_means[object_id].add_value(object_area)
+#            else:
+#                self.volume_means[object_id] = RunningMean(object_volume)
+#                self.area_means[object_id] = RunningMean(object_area)
+#            running_mean_volume = self.volume_means[object_id].mean
+#            running_mean_area = self.area_means[object_id].mean
+#           
+#            if height > self.TOTEM_MIN_HEIGHT:
+#                black_guess = 'black_totem'
+#            else:
+#                black_guess_index = np.argmin(np.abs(self.BLACK_OBJECT_VOLUMES - running_mean_volume))
+#                black_guess = self.POSSIBLE_BLACK_OBJECTS[black_guess_index]
+#            most_likely_name = black_guess
+#            rospy.loginfo('{} current/running volume={}/{} area={}/{} height={}-> {}'.format(object_id, object_volume, running_mean_volume, object_area, running_mean_area, height, black_guess))
+#        obj_title = object_msg.labeled_classification
+#        probability = class_probabilities[most_likely_index]
+#        rospy.loginfo('Object {} {} classified as {} ({}%)'.format(object_id, object_msg.labeled_classification, most_likely_name, probability * 100.))
+#        if obj_title != most_likely_name:
+#            cmd = '{}={}'.format(object_id, most_likely_name)
+#            rospy.loginfo('Updating object {} to {}'.format(object_id, most_likely_name))
+#            if not self.is_training:
+#                self.database_client(ObjectDBQueryRequest(cmd=cmd))
+        cmd = '{}={}'.format(object_id, self.CLASSES[prediction])
+        self.database_client(ObjectDBQueryRequest(cmd=cmd))
+        rospy.loginfo('Object {} {} classified as {}'.format(object_id, object_msg.labeled_classification, self.CLASSES[prediction]))
+        object_msg.labeled_classification = self.CLASSES[prediction]
+        
+        return self.CLASSES[prediction]
 
     @thread_lock(lock)
     def img_cb(self, img):
@@ -226,43 +236,57 @@ class VrxClassifier(object):
                 continue
             # Form a contour from the ROI
             contour = np.array(rois[i], dtype=int)
-            # Create image mask from the contour
-            mask = contour_mask(contour, img_shape=img.shape)
+            #extract image from contour
+            x,y,w,h = cv2.boundingRect(contour)
+            image = img[y:y+h,x:x+w]
+            image = image[:,:,::-1]
+            resized = cv2.resize(image, (100,100))
+            arr = np.array(resized, dtype=np.float32)
+            arr = np.expand_dims(arr, axis=0)
 
             # get the color mean features
-            features = np.array(self.classifier.get_features(img, mask)).reshape(1, 9)
+            #features = np.array(self.classifier.get_features(img, mask)).reshape(1, 9)
             # Predict class probabilites based on color means
-            class_probabilities = self.classifier.feature_probabilities(features)[0]
+            #class_probabilities = self.classifier.feature_probabilities(features)[0]
+            prediction = self.model.predict(arr)[0]
             # Use this and previous probabilities to guess at which object this is
-            guess = self.update_object(object_msg, class_probabilities)
+            highest = prediction[0]
+            loc = 0
+            for i, a in enumerate(prediction):
+                if a >= highest:
+                    highest = a
+                    loc = i
+            self.update_object(object_msg, loc)
             # If training, save this
             if self.is_training and obj_title != 'UNKNOWN':
                 classification_index = self.classifier.CLASSES.index(obj_title)
                 training.append(np.append(classification_index, features))
 
             # Draw debug info
+            mask = contour_mask(contour, img_shape=img.shape)
             colorful = cv2.bitwise_or(img, img, mask=mask)
             debug = cv2.bitwise_or(debug, colorful)
             scale = 3
             thickness = 2
-            center = np.array(pixel_centers[index], dtype=int)
-            text = str(object_id)
+            center = np.array(pixel_centers[index], dtype=int) - 50
+            text = self.CLASSES[loc][9:]
             putText_ul(debug, text, center, fontScale=scale, thickness=thickness)
 
-        if self.is_training and len(training) != 0:
-           training = np.array(training)
-           try:
-               previous_data = pandas.DataFrame.from_csv(self.classifier.training_file).values
-               data = np.vstack((previous_data, training))
-           except Exception as e:
-               data = training
-           self.classifier.save_csv(data[:, 1:], data[:, 0])
-           rospy.signal_shutdown('fdfd')
-           raise Exception('did something, kev')
+        #if self.is_training and len(training) != 0:
+        #   training = np.array(training)
+        #   try:
+        #       previous_data = pandas.DataFrame.from_csv(self.classifier.training_file).values
+        #       data = np.vstack((previous_data, training))
+        #   except Exception as e:
+        #       data = training
+        #   self.classifier.save_csv(data[:, 1:], data[:, 0])
+        #   rospy.signal_shutdown('fdfd')
+        #   raise Exception('did something, kev')
 
         self.image_mux[0] = img
         self.image_mux[1] = debug 
         self.debug_pub.publish(self.image_mux())
+        self.last_objects = None
         return
 
 

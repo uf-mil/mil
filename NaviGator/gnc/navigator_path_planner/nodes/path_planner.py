@@ -864,12 +864,13 @@ class LQRRT_Node(object):
         raise ValueError("Indeterminant behavior configuration.")
 
     # VERIFICATIONS
-
-    def is_feasible(self, x, u):
+    def is_feasible(self, x, u) -> bool:
         """
         Given a state x and effort u, returns a bool
         that is only True if that (x, u) is feasible.
 
+        Returns:
+            bool - Whether the state is feasible.
         """
         # If there's no ogrid yet or it's a blind move, anywhere is valid
         if self.ogrid is None or self.blind:
@@ -1285,12 +1286,10 @@ class LQRRT_Node(object):
             return bpts
 
     # PUBDUBS
-
     def set_goal(self, x):
         """
         Gives a goal state x out to everyone who needs it and echos
         it as a PoseStamped message.
-
         """
         self.goal = np.copy(x)
         for behavior in self.behaviors_list:
@@ -1463,10 +1462,20 @@ class LQRRT_Node(object):
             ]
         )
 
-    def pack_pose(self, state):
+    def pack_pose(self, state) -> Pose:
         """
-        Converts the positional part of a state vector into a Pose message.
+        Converts the positional part of a state vector 
+        into a Pose message.
 
+        For a timestamped message, use pack_posestamped.
+
+        Args:
+            state: List[int] - The current state of the robot. state[0]
+              and state[1] represent x + y orientations. state[2]
+              represents the orientation of the bot.
+
+        Returns:
+            Pose - The Pose message.
         """
         msg = Pose()
         msg.position.x, msg.position.y = state[:2]
@@ -1474,11 +1483,20 @@ class LQRRT_Node(object):
         msg.orientation = numpy_to_quaternion(quat)
         return msg
 
-    def pack_posestamped(self, state, stamp):
+    def pack_posestamped(self, state: List[int], stamp: rospy.Time) -> PoseStamped:
         """
-        Converts the positional part of a state vector into
-        a PoseStamped message with a given header timestamp.
+        Converts the positional part of a state vector into a PoseStamped 
+        message with a given header timestamp. For a non-stamped message, use
+        pack_pose.
 
+        Args:
+            state: List[int] - The current state of the robot. state[0]
+              and state[1] represent x + y orientations. state[2]
+              represents the orientation of the bot.
+            stamp: rospy.Time - The time that the bot's state existed as so.
+
+        Returns:
+            PoseStamped - The PoseStamped message.
         """
         msg = PoseStamped()
         msg.header.stamp = stamp

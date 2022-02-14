@@ -66,6 +66,11 @@ mil_system_install \
   ros-noetic-ros-control \
   ros-noetic-ros-controllers \
 
+pip3 install --upgrade pip 
+pip3 install tsp_solver2
+pip3 install tensorflow==2.1.0
+pip3 install Pillow
+
 # Documentation dependencies
 mil_system_install  python3-pip python-setuptools
 

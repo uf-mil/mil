@@ -74,33 +74,44 @@ class VrxWildlife(Vrx):
         radius = 7
         z_vec = np.array([0,0,1])
 
-        
+        #get croc pose
+        animal_pose_croc = None
+        croc_index = None
+        croc_is_present = False
+
+        #get index of crocodile
+        for i in range(len(path_msg.poses)):
+            if path_msg.poses[i].header.frame_id == "crocodile":
+                croc_is_present = True
+                croc_index = i
 
         #do movements
         for i in range(len(path)):
-            self.send_feedback('Going to {}'.format(poses[path[i]]))
-
             current_animal = animals_list[path[i]]
 
-            if current_animal != "crocodile":
-                
-                req = ChooseAnimalRequest()
-                req.target_animal = current_animal
-                yield self.circle_animal(req)
-                
-            elif current_animal == "crocodile":
-                print("Avoiding crocodile")
-                
+            if current_animal == "crocodile":
+                continue
+
+            #update crocodile pose
+            for geo_pose in path_msg.poses:
+                if geo_pose.header.frame_id == "crocodile":
+                    animal_pose_croc = yield self.geo_pose_to_enu_pose(path_msg.poses[croc_index].pose)
+
+            #get animal msgs
+            path_msg = yield self.get_latching_msg(self.animal_landmarks)
+            animal_pose_next = yield self.geo_pose_to_enu_pose(path_msg.poses[path[i]].pose)
+
+            start_circle_pos = self.closest_point_on_radius(self.pose[0], animal_pose_next[0], radius)
+
+            #first point at goal
+            orientation_fix = self.point_at_goal(start_circle_pos)
+            yield self.move.set_orientation(orientation_fix).go(blind=True)
+
+            req = ChooseAnimalRequest()
+            if(croc_is_present):
                 #we will check if the crocodile lies within either of two rectangles where the touching points
                 #of the rectangles are the current pos and goal pos.
                 #based on where the crocodile is will determine our action for how to get to the goal pos.
-
-                #get animal msgs
-                path_msg = yield self.get_latching_msg(self.animal_landmarks)
-                animal_pose = yield self.geo_pose_to_enu_pose(path_msg.poses[path[i+1]].pose)
-                animal_pose_croc = yield self.geo_pose_to_enu_pose(path_msg.poses[path[i]].pose)
-
-                start_circle_pos = self.closest_point_on_radius(self.pose[0], animal_pose[0], radius)
 
                 #define left and right rectangles
                 rectangle_width = 15
@@ -115,37 +126,26 @@ class VrxWildlife(Vrx):
                 x_croc = animal_pose_croc[0][0]
                 y_croc = animal_pose_croc[0][1]
 
-                print(p1_l)
-                print(p2_l)
-                print(p1_r)
-                print(p2_r)
-                print(x_croc)
-                print(y_croc)
-
-                #first point at goal
-                orientation_fix = self.point_at_goal(start_circle_pos)
-
                 #determine if croc is in left rect
                 AM = animal_pose_croc[0] - p1_r
                 AB = p1_l - p1_r
                 AD = p2_l - p1_r
-
-                print(AM)
-                print(AB)
-                print(AD)
 
                 AMAB = np.dot(AM, AB)
                 ABAB = np.dot(AB, AB)
                 AMAD = np.dot(AM, AD)
                 ADAD = np.dot(AD, AD)
 
+                left_rect = False
                 if (0 < AMAB < ABAB) and (0 < AMAD < ADAD):
                     #calculate pitstop point
                     print("WARNING: Crocodile is in left rectangle")
                     pitstop_pos = p2_r + 0.5 * flipped_vect
-                    yield self.move.yaw_right(45, 'deg').go()
-                    yield self.move.set_position(pitstop_pos).set_orientation(orientation_fix).go(blind=True)
-                    continue
+
+                    req.target_animal = "crocodile"
+                    req.circle_direction = "ccw"
+                    left_rect = True
+                    yield self.circle_animal(req)
 
                 #determine if croc is in right rect
                 AM = animal_pose_croc[0][0] - p2_l
@@ -157,12 +157,22 @@ class VrxWildlife(Vrx):
                 AMAD = np.dot(AM, AD)
                 ADAD = np.dot(AD, AD)
 
-                if (0 < AMAB < ABAB) and (0 < AMAD < ADAD):
+                if not left_rect and (0 < AMAB < ABAB) and (0 < AMAD < ADAD):
                     #calculate pitstop point
                     print("WARNING: Crocodile is in right rectangle")
                     pitstop_pos = p1_l + 0.5 * vect
-                    yield self.move.yaw_left(45, 'deg').go()
-                    yield self.move.set_position(pitstop_pos).set_orientation(orientation_fix).go(blind=True)
+
+                    req.target_animal = "crocodile"
+                    req.circle_direction = "cw"
+                    yield self.circle_animal(req)
+
+            if current_animal == "platypus":
+                req.target_animal = current_animal
+                req.circle_direction = "cw"
+            if current_animal == "turtle":
+                req.target_animal = current_animal
+                req.circle_direction = "ccw"
+            yield self.circle_animal(req)
 
         
 
