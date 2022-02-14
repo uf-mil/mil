@@ -160,7 +160,6 @@ class MRAC_Controller:
             self.old_q_ref[0] == msg.pose.pose.orientation.x:
             return
 
-        print("what")
         self.p_ref = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y])
         self.q_ref = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
                                msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
@@ -184,7 +183,6 @@ class MRAC_Controller:
         Sets desired waypoint ("GO HERE AND STAY").
         Resets reference model to current state (i.e. resets trajectory generation).
         '''
-        print("helloooo")
         self.p_ref = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y])
         self.q_ref = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
                                msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
