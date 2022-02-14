@@ -1470,7 +1470,7 @@ class LQRRT_Node(object):
         For a timestamped message, use pack_posestamped.
 
         Args:
-            state: List[int] - The current state of the robot. state[0]
+            state: List[float] - The current state of the robot. state[0]
               and state[1] represent x + y orientations. state[2]
               represents the orientation of the bot.
 
@@ -1483,14 +1483,14 @@ class LQRRT_Node(object):
         msg.orientation = numpy_to_quaternion(quat)
         return msg
 
-    def pack_posestamped(self, state: List[int], stamp: rospy.Time) -> PoseStamped:
+    def pack_posestamped(self, state: List[float], stamp: rospy.Time) -> PoseStamped:
         """
         Converts the positional part of a state vector into a PoseStamped 
         message with a given header timestamp. For a non-stamped message, use
         pack_pose.
 
         Args:
-            state: List[int] - The current state of the robot. state[0]
+            state: List[float] - The current state of the robot. state[0]
               and state[1] represent x + y orientations. state[2]
               represents the orientation of the bot.
             stamp: rospy.Time - The time that the bot's state existed as so.
@@ -1508,8 +1508,8 @@ class LQRRT_Node(object):
 
     def pack_odom(self, state, stamp):
         """
-        Converts a state vector into an Odometry message
-        with a given header timestamp.
+        Converts a state vector into an Odometry message wit
+        given header timestamp.
 
         """
         msg = Odometry()
@@ -1523,11 +1523,19 @@ class LQRRT_Node(object):
         msg.twist.twist.angular.z = state[5]
         return msg
 
-    def pack_pointstamped(self, point, stamp):
+    def pack_pointstamped(self, point: List[float], stamp: rospy.Time) -> PointStamped:
         """
-        Converts a point vector into a PointStamped
-        message with a given header timestamp.
+        Converts a point vector into a PointStamped message with a
+        given header timestamp.
 
+        Args:
+            point: List[float] - The point vector. point[0] represents
+              the x-component of the point and point[1] represents the
+              y-component of the point.
+            stamp: rospy.Time - The timestamp to attach to the message.
+
+        Returns:
+            PointStamped - The message to pack the point as.
         """
         msg = PointStamped()
         msg.header.stamp = stamp
@@ -1536,11 +1544,19 @@ class LQRRT_Node(object):
         msg.point.z = 0
         return msg
 
-    def pack_wrenchstamped(self, effort, stamp):
+    def pack_wrenchstamped(self, effort: List[float], stamp: rospy.Time) -> WrenchStamped:
         """
         Converts an effort vector into a WrenchStamped message
         with a given header timestamp.
 
+        Args:
+            effort: List[float] - The effort vector. effort[0] represents
+              the x-component of force, effort[1] represents the y-component
+              of force, and effort[2] represents the z-component of torque.
+            stamp: rospy.Time - The timestamp to attach to the message.
+
+        Returns:
+            WrenchStamped - The message to pack the effort as.
         """
         msg = WrenchStamped()
         msg.header.stamp = stamp
@@ -1549,10 +1565,7 @@ class LQRRT_Node(object):
         msg.wrench.torque.z = effort[2]
         return msg
 
-
-# NODE
-
-
+# Setup node
 if __name__ == "__main__":
     rospy.init_node("lqrrt_node")
     print("")
