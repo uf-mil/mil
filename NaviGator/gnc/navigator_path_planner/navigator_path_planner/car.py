@@ -8,6 +8,8 @@ from params import D_neg, D_pos, B, invB, thrust_max, invM, ss_start, velmax_pos
     nstates, ncontrols, unset, horizon, dt, FPR, basic_duration, max_nodes, free_radius
 import lqrrt
 
+from typing import List, Tuple
+
 # DYNAMICS
 
 magic_rudder = 6000
@@ -86,10 +88,9 @@ goal_buffer = [0.5 * free_radius, 0.5 * free_radius, np.inf, np.inf, np.inf, np.
 error_tol = np.copy(goal_buffer) / 10
 
 
-def gen_ss(seed, goal, buff=[ss_start] * 4):
+def gen_ss(seed: np.ndarray, goal: np.ndarray, buff: List[int] = [ss_start] * 4) -> List[Tuple[float, float]]:
     """
     Returns a sample space given a seed state, goal state, and buffer.
-
     """
     return [(min([seed[0], goal[0]]) - buff[0], max([seed[0], goal[0]]) + buff[1]),
             (min([seed[1], goal[1]]) - buff[2], max([seed[1], goal[1]]) + buff[3]),

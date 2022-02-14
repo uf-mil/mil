@@ -35,6 +35,8 @@ from navigator_path_planner.msg import MoveAction, MoveFeedback, MoveResult, Mov
 # Check scipy version for assume_sorted argument in interp1d
 import scipy.interpolate
 
+from typing import List, Tuple, ModuleType
+
 if int(scipy.__version__.split(".")[1]) < 16:
 
     def interp1d(*args, **kwargs):
@@ -106,7 +108,7 @@ class LQRRT_Node(object):
 
         # Actions
         self.move_server = actionlib.SimpleActionServer(
-            move_topic, MoveAction, execute_cb=self.move_cb, auto_start=False
+            move_topic, MoveAction, execute_cb = self.move_cb, auto_start = False
         )
         self.move_server.start()
         rospy.sleep(1)
@@ -161,9 +163,13 @@ class LQRRT_Node(object):
             behavior.planner.unkill()
 
     # ACTION
-    def move_cb(self, msg):
+    def move_cb(self, msg: MoveAction):
         """
-        Callback for the Move action.
+        Callback for the move action.
+
+        Args:
+            msg: MoveAction - The action passed by
+            the action client.
         """
         # Start clean
         self.done = False
@@ -456,12 +462,10 @@ class LQRRT_Node(object):
                 return False
 
     # WHERE IT HAPPENS
-
     def tree_chain(self):
         """
         Plans an lqRRT and sets things up to chain along
         another lqRRT when called again.
-
         """
         # Make sure we are not currently in an update or a collided state
         if self.lock_tree:
@@ -596,10 +600,17 @@ class LQRRT_Node(object):
         return clean_update
 
     # DECISIONS
-    def select_behavior(self):
+    def select_behavior(self) -> ModuleType:
         """
-        Chooses the behavior for the current move.
+        Chooses the behavior for the current move, and returns
+        the associated module containing the implementation of
+        that behavior.
 
+        Returns:
+            ModuleType - A module with the behavior implementation
+
+        Raises:
+            ValueError - No relevant implementation could be found
         """
         # Are we stuck?
         if self.stuck:
@@ -623,11 +634,10 @@ class LQRRT_Node(object):
         # (debug)
         raise ValueError("Indeterminant behavior configuration.")
 
-    def select_exploration(self):
+    def select_exploration(self) -> List[List, List[Tuple[float, float]], np.ndarray, bool]:
         """
         Chooses the goal bias, sample space, guide point, and pruning
         choice for the current move and behavior.
-
         """
         # Escaping means maximal exploration
         if self.behavior is escape:
