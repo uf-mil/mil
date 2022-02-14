@@ -13,7 +13,9 @@
     <include file="$(find navigator_launch)/launch/vrx/vrx_controller.launch" />
     <include file="$(find navigator_launch)/launch/vrx/vrx_pcodar.launch" />
     <include file="$(find navigator_launch)/launch/vrx/vrx_bounds.launch" />
-    <include file="$(find navigator_launch)/launch/vrx/vrx_beacon.launch" />
+    <node pkg="navigator_gazebo" type="acoustic_beacon.py" name="acoustic_beacon" />
+    <node pkg="navigator_gazebo" type="circle_animal.py" name="circle_animal" />
+    <node pkg="navigator_gazebo" type="long_trajectory.py" name="long_trajectory_setter" />
     <node name="wrench_arbiter" ns="/wrench" pkg="topic_tools" type="mux"
           args="cmd autonomous autonomous rc emergency keyboard" >
         <remap from="mux" to="/wrench" />

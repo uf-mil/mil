@@ -1,6 +1,3 @@
-geometry_msgs/PoseStamped   target_p
-geometry_msgs/TwistStamped  target_t
-bool                        station_hold
-float32                     goal_bias
+geometry_msgs/Pose target_p
 ---
-bool                        success
+bool success

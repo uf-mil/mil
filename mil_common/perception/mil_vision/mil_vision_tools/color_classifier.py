@@ -142,7 +142,7 @@ class ContourClassifier(object):
         '''
         training_file = _get_param(training_file, self.training_file)
         df = pandas.read_csv(training_file)
-        classes = df.values[:, 1]
+        classes = df.values[:, 0]
         features = df.values[:, 2:]
         return features, classes
 
