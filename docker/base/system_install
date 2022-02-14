@@ -67,9 +67,10 @@ sudo pip install \
   sklearn \
   pandas
 
-sudo pip2 install tsp_solver2
-sudo pip2 install tensorflow
-sudo pip2 install PIL
+pip install --upgrade pip 
+pip2 install tsp_solver2
+pip2 install tensorflow==2.1.0
+pip2 install Pillow
 
 # Documentation dependencies
 mil_system_install  python3-pip python-setuptools

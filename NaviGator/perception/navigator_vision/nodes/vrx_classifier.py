@@ -286,7 +286,7 @@ class VrxClassifier(object):
         self.image_mux[0] = img
         self.image_mux[1] = debug 
         self.debug_pub.publish(self.image_mux())
-        self.last_objects = []
+        self.last_objects = None
         return
 
 
