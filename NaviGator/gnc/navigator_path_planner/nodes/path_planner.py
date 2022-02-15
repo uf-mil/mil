@@ -1429,21 +1429,32 @@ class LQRRT_Node(object):
                 self.tracking = False
 
     # CONVERTERS
-
-    def unpack_pose(self, msg):
+    def unpack_pose(self, msg: Pose) -> np.ndarray:
         """
         Converts a Pose message into a state vector with zero velocity.
 
+        Args:
+            msg: Pose - The message to unpack.
+
+        Returns:
+            np.ndarray - A state array containing the x-position, y-position,
+              and yaw. The velocities are all zero.
         """
         q = [msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]
         return np.array(
             [msg.position.x, msg.position.y, trns.euler_from_quaternion(q)[2], 0, 0, 0]
         )
 
-    def unpack_odom(self, msg):
+    def unpack_odom(self, msg: Odometry) -> np.ndarray:
         """
         Converts an Odometry message into a state vector.
 
+        Args:
+            msg: Odometry - The Odometry message to unpack.
+
+        Returns:
+            np.ndarray - The new state vector, containing 6
+              float values.
         """
         q = [
             msg.pose.pose.orientation.x,
@@ -1506,11 +1517,23 @@ class LQRRT_Node(object):
         msg.pose.orientation = numpy_to_quaternion(quat)
         return msg
 
-    def pack_odom(self, state, stamp):
+    def pack_odom(self, state: List[float], stamp: rospy.Time) -> Odometry:
         """
-        Converts a state vector into an Odometry message wit
+        Converts a state vector into an Odometry message with
         given header timestamp.
 
+        Args:
+            state: List[float] - A list containing the following values:
+              state[0] - The x-position of the bot
+              state[1] - The y-position of the bot
+              state[2] - The orientation (yaw) of the bot
+              state[3] - The linear speed in the x-direction
+              state[4] - The linear speed in the y-direction
+              state[5] - The angular speed in the z-direction
+            stamp: rospy.Time - The timestamp of the message.
+
+        Returns:
+            Odometry - The packed Odometry message.
         """
         msg = Odometry()
         msg.header.stamp = stamp
