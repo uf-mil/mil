@@ -1407,18 +1407,26 @@ class LQRRT_Node(object):
                 )
             )
 
-    def odom_cb(self, msg):
+    def odom_cb(self, msg: Odometry) -> None:
         """
-        Expects an Odometry message.
-        Stores the current state of the vehicle tracking the plan.
-        Reference frame information is also recorded.
-        Determines if the vehicle is tracking well.
+        Callback to the odometry topic subscriber. Stores the current state of 
+        the tracking vehicle and its reference frame. Sets the class tracking
+        variable to True or False based on if the vehicle is succesfully
+        tracking.
 
+        Args:
+            msg: Odometry - The Odometry message received by the callback.
+
+        Returns:
+            None
         """
+        # Store relevant values
         self.world_frame_id = msg.header.frame_id
         self.body_frame_id = msg.child_frame_id
         self.state = self.unpack_odom(msg)
         last_update_time = self.last_update_time
+
+        # Calculate error between the goal and state and tell if tracking is succesful
         if self.get_ref is not None and last_update_time is not None:
             error = np.abs(
                 self.erf(self.get_ref(self.rostime() - last_update_time), self.state)
