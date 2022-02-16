@@ -1080,6 +1080,7 @@ class LQRRT_Node(object):
     # LIL MATH DOERS
 
     def rotation_move(self, x, h, tol):
+
         """
         Returns a state sequence, total time, success bool and effort
         sequence for a simple rotate in place move. Success is False if
@@ -1286,23 +1287,25 @@ class LQRRT_Node(object):
             return bpts
 
     # PUBDUBS
-    def set_goal(self, x):
+    def set_goal(self, x: np.ndarray) -> None:
         """
-        Gives a goal state x out to everyone who needs it and echos
-        it as a PoseStamped message.
+        Publishes the goal state to the goal publisher.
         """
+        # Create and establish goal
         self.goal = np.copy(x)
         for behavior in self.behaviors_list:
             behavior.planner.set_goal(self.goal)
+
+        # Publish goal to the goal publisher
         self.goal_pub.publish(
             self.pack_posestamped(np.copy(self.goal), rospy.Time.now())
         )
 
-    def publish_ref(self, *args):
+    def publish_ref(self, *args) -> None:
         """
-        Publishes the reference trajectory as an Odometry message,
-        and reference effort as a WrenchStamped message.
-
+        Publishes the reference trajectory as an Odometry message to the ref
+        publisher. Also publishes the reference effort as a WrenchStamped 
+        message to the effort publisher.
         """
         # Make sure a plan exists
         last_update_time = self.last_update_time
@@ -1310,15 +1313,15 @@ class LQRRT_Node(object):
             return
 
         # Time since last update
-        T = self.rostime() - last_update_time
+        time_since = self.rostime() - last_update_time
         stamp = rospy.Time.now()
 
         # Publish interpolated reference
-        self.ref_pub.publish(self.pack_odom(self.get_ref(T), stamp))
+        self.ref_pub.publish(self.pack_odom(self.get_ref(time_since), stamp))
 
         # Not really necessary, but for fun-and-profit also publish the planner's effort wrench
         if self.get_eff is not None:
-            self.eff_pub.publish(self.pack_wrenchstamped(self.get_eff(T), stamp))
+            self.eff_pub.publish(self.pack_wrenchstamped(self.get_eff(time_since), stamp))
 
     def publish_path(self) -> None:
         """
