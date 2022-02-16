@@ -4,7 +4,7 @@ import txros
 import numpy as np
 from twisted.internet import defer
 from vrx import Vrx
-from mil_tools import rosmsg_to_numpy
+from navigator_msgs.srv import MoveToWaypointRequest
 from tsp_solver.greedy import solve_tsp
 import math
 import tf
@@ -12,9 +12,9 @@ import tf
 ___author___ = "Alex Perez"
 
 
-class VrxWayfinding(Vrx):
+class VrxWayfinding2(Vrx):
     def __init__(self, *args, **kwargs):
-        super(VrxWayfinding, self).__init__(*args, **kwargs)
+        super(VrxWayfinding2, self).__init__(*args, **kwargs)
 
     def point_at_goal(self, goal_pos):
         vect = [ goal_pos[0] - self.pose[0][0], goal_pos[1] - self.pose[0][1]]
@@ -52,7 +52,15 @@ class VrxWayfinding(Vrx):
         #do movements
         for index in path:
             self.send_feedback('Going to {}'.format(poses[index]))
-            orientation_fix = self.point_at_goal(poses[index][0])
-            yield self.move.set_orientation(orientation_fix).go(blind=True)
-            yield self.move.set_position(poses[index][0]).set_orientation(poses[index][1]).go(blind=True)
 
+            #Create waypoint message
+            req = MoveToWaypointRequest()
+            goal_pose = poses[index]
+            req.target_p.position.x = goal_pose[0][0]
+            req.target_p.position.y = goal_pose[0][1]
+            req.target_p.position.z = goal_pose[0][2]
+            req.target_p.orientation.x = goal_pose[1][0]
+            req.target_p.orientation.y = goal_pose[1][1]
+            req.target_p.orientation.z = goal_pose[1][2]
+            req.target_p.orientation.w = goal_pose[1][3]
+            yield self.set_long_waypoint(req)

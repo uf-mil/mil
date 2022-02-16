@@ -6,7 +6,7 @@ project(navigator_vision)
 # if needed for specific nodes (cough..cough... PCL)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -pedantic -Wall -std=c++11 ")
 
-find_package(Eigen)
+find_package(Eigen3)
 find_package(catkin
   REQUIRED COMPONENTS
     roscpp

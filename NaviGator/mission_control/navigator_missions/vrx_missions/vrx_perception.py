@@ -38,7 +38,7 @@ class VrxPerception(Vrx):
     @txros.util.cancellableInlineCallbacks
     def announce_object(self, obj_id, classification, position_enu, boat_position_enu):
         if classification == 'UNKNOWN': 
-            self.send_feedback('Ignoing UNKNOWN object {}'.format(obj_id))
+            self.send_feedback('Ignoring UNKNOWN object {}'.format(obj_id))
             defer.returnValue(False)
         if obj_id in self.announced:
             defer.returnValue(False)
@@ -55,7 +55,7 @@ class VrxPerception(Vrx):
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
         p1 = BoolParameter(name='associator_forget_unseen', value=True)
-        p2 = DoubleParameter(name='cluster_tolerance_m', value=0.25)
+        p2 = DoubleParameter(name='cluster_tolerance_m', value=0.5)
         p3 = DoubleParameter(name='associator_max_distance', value=0.25)
         p4 = IntParameter(name='cluster_min_points', value=1)
         p5 = IntParameter(name='persistant_cloud_filter_min_neighbors', value=1)
