@@ -1320,10 +1320,10 @@ class LQRRT_Node(object):
         if self.get_eff is not None:
             self.eff_pub.publish(self.pack_wrenchstamped(self.get_eff(T), stamp))
 
-    def publish_path(self):
+    def publish_path(self) -> None:
         """
         Publishes all tree-node poses along the current path as a PoseArray.
-
+        Publishes to the class' path publisher.
         """
         # Make sure a plan exists
         if self.x_seq is None:
@@ -1333,15 +1333,16 @@ class LQRRT_Node(object):
         pose_list = []
         for x in self.x_seq:
             pose_list.append(self.pack_pose(x))
+
         if len(pose_list):
             msg = PoseArray(poses=pose_list)
             msg.header.frame_id = self.world_frame_id
             self.path_pub.publish(msg)
 
-    def publish_tree(self):
+    def publish_tree(self) -> None:
         """
-        Publishes all tree-node poses as a PoseArray.
-
+        Publishes all tree-node poses as a PoseArray. Publishes to the class'
+        tree publisher.
         """
         # Make sure a plan exists
         if self.tree is None:
@@ -1349,19 +1350,20 @@ class LQRRT_Node(object):
 
         # Construct pose array and publish
         pose_list = []
-        for ID in xrange(self.tree.size):
-            x = self.tree.state[ID]
+        for id in range(self.tree.size):
+            x = self.tree.state[id]
             pose_list.append(self.pack_pose(x))
+
         if len(pose_list):
             msg = PoseArray(poses=pose_list)
             msg.header.frame_id = self.world_frame_id
             self.tree_pub.publish(msg)
 
-    def publish_expl(self):
+    def publish_expl(self) -> None:
         """
-        Publishes sample space as a PolygonStamped and
-        the guide point as a PointStamped.
-
+        Publishes sample space as a PolygonStamped to the sample space
+        publisher and publishes the guide point as a PointStamped to the guide
+        publisher.
         """
         # Make sure a plan exists
         if self.sample_space is None or self.guide is None:
@@ -1377,28 +1379,39 @@ class LQRRT_Node(object):
         ss_msg = PolygonStamped()
         ss_msg.header.frame_id = self.world_frame_id
         ss_msg.polygon.points = point_list
+
+        # Publish to publishers
         self.sampspace_pub.publish(ss_msg)
         self.guide_pub.publish(self.pack_pointstamped(self.guide[:2], rospy.Time.now()))
 
     # SUBSCRUBS
-
-    def ogrid_cb(self, msg):
+    def ogrid_cb(self, msg: OccupancyGrid) -> None:
         """
-        Expects an OccupancyGrid message.
-        Stores the ogrid array and origin vector.
-        Reevaluates the current plan since the ogrid changed.
+        Acts as the callback function to a subscriber to the odom topic. 
+        Expects an OccupancyGrid message. Stores the ogrid array and origin 
+        vector, and then reevaluates the path plan.
 
+        Args:
+            msg: OccupancyGrid - The message passed by the callback.
+
+        Returns:
+            None
         """
+        # Store relevant values
         start = self.rostime()
         self.ogrid = np.array(msg.data).reshape((msg.info.height, msg.info.width))
         self.ogrid_origin = np.array(
             [msg.info.origin.position.x, msg.info.origin.position.y]
         )
         self.ogrid_cpm = 1 / msg.info.resolution
+
+        # Reevaluate plan based on occupancy grid
         try:
             self.reevaluate_plan()
         except BaseException:
             print("\n(WARNING: something went wrong in reevaluate_plan)\n")
+
+        # Check for plan reevaluation taking a long time
         elapsed = abs(self.rostime() - start)
         if elapsed > 1:
             print(
