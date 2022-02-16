@@ -6,9 +6,7 @@ from vrx_wayfinding import VrxWayfinding
 from vrx_wayfinding_2 import VrxWayfinding2
 from vrx_station_keeping import VrxStationKeeping
 from vrx_station_keeping_2 import VrxStationKeeping2
-from vrx_spiral import VrxSpiral
 from vrx_beacon import VrxBeacon
-from vrx_octogon import VrxOctogon
 from vrx_wildlife import VrxWildlife
 from vrx_square import VrxSquare
 from vrx_perception import VrxPerception
