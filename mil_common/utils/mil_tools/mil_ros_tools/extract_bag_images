@@ -284,7 +284,7 @@ if __name__ == "__main__":
 
     # Load config from yaml file specified
     config_file = open(args.config)
-    config = yaml.load(config_file)
+    config = yaml.load(config_file, Loader = yaml.Loader)
     if not isinstance(config, dict):
         raise Exception('yaml config should be in dictionary format. See example')
 
