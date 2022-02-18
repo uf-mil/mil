@@ -1127,13 +1127,21 @@ class LQRRT_Node(object):
             T += self.dt
             i += 1
 
-    def spiral_move(self, x, c, N, direc, mpr):
+    def spiral_move(self, x: List[float], c: List[float], N: int, direc: int, mpr: float):
         """
-        Returns a state sequence, total time, and success bool for a spiral
-        move. Success is False if the move becomes infeasible at any point.
-        Give x (initial state), c (center), N (number of revolutions), direc
-        (+- z axis), and mpr (meters expansion per radian).
+        Generates a movement pattern for a spiral movement.
 
+        Args:
+            x: List[float] - Initial state vector.
+            c: List[float] - Coordinates of initial point.
+            N: int - The number of revolutions to make.
+            direc: int - Whether to move + or - in regards to the z-axis
+            mpr: float - The meters expansion of the spiral per radian
+
+        Returns:
+            Tuple[np.ndarray, float, bool] - The state sequence of the spiral
+              movement, the amount of time (in seconds) required to make the
+              movement, and whether the movement is feasible.
         """
         # Set-up
         if direc < 0:
@@ -1190,25 +1198,37 @@ class LQRRT_Node(object):
 
         return x_seq, t, True
 
-    def erf(self, xgoal, x):
+    def erf(self, goal_state: List[float], state: List[float]) -> np.ndarray:
         """
-        Returns error e given two states xgoal and x.
+        Returns error given two states goal_state and state.
         Angle differences are taken properly on SO2.
 
+        Args:
+            goal_state: List[float] - The goal state
+            state: List[float] - The state to derive the error from
+
+        Returns:
+            np.ndarray - The error between the goal and passed state.
         """
-        e = np.subtract(xgoal, x)
-        e[2] = self.angle_diff(xgoal[2], x[2])
+        e = np.subtract(goal_state, state)
+        e[2] = self.angle_diff(goal_state[2], state[2])
         return e
 
-    def angle_diff(self, agoal, a):
+    def angle_diff(self, angle_goal: float, angle: float) -> float:
         """
         Takes an angle difference properly on SO2.
 
+        Args:
+            angle_goal: float - The goal angle.
+            angle: float - The angle to grab the difference from.
+
+        Returns:
+            float - The difference between the desired and goal angle.
         """
-        c = np.cos(a)
-        s = np.sin(a)
-        cg = np.cos(agoal)
-        sg = np.sin(agoal)
+        c = np.cos(angle)
+        s = np.sin(angle)
+        cg = np.cos(angle_goal)
+        sg = np.sin(angle_goal)
         return np.arctan2(sg * c - cg * s, cg * c + sg * s)
 
     def boundary_analysis(self, img, seed, goal):
@@ -1497,7 +1517,7 @@ class LQRRT_Node(object):
             ]
         )
 
-    def pack_pose(self, state) -> Pose:
+    def pack_pose(self, state: List[float]) -> Pose:
         """
         Converts the positional part of a state vector 
         into a Pose message.
