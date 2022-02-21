@@ -35,7 +35,7 @@ from navigator_path_planner.msg import MoveAction, MoveFeedback, MoveResult, Mov
 # Check scipy version for assume_sorted argument in interp1d
 import scipy.interpolate
 
-from typing import List, Tuple, ModuleType
+from typing import List, Tuple, Optional, ModuleType
 
 if int(scipy.__version__.split(".")[1]) < 16:
 
@@ -60,11 +60,28 @@ class LQRRT_Node(object):
         focus_topic: str,
         effort_topic: str,
         ogrid_topic: str,
-        ogrid_threshold: float,
+        ogrid_threshold: str,
     ):
         """
         Initialize with topic names and ogrid threshold as applicable.
         Defaults are generated at the ROS params level.
+
+        Args:
+            odom_topic: str - The name of the topic supplying Odometry 
+              messages.
+            ref_topic: str - The lqRRT reference topic name.
+            move_topic: str - The name of the topic hosting the SimpleActionServer
+              and topic of where to move to.
+            path_topic: str - The name of the lqRRT path topic name.
+            tree_topic: str - The name of the topic holding the lqRRT tree.
+            goal_topic: str - The name of the topic holding the lqRRT goal.
+            focus_topic: str - The name of the topic holding the lqRRT focus.
+            effort_topic: str - The name of the topic hosting the lqRRT effort
+              wrenches.
+            ogrid_topic: str - The name of the topic holding the occupancy grid.
+            ogrid_threshold: str - An occupancy grid cell which exceeds this
+              value will be marked as filled. The value will be converted to
+              a float in the class.
         """
         # One-time initializations
         self.revisit_period = 0.05  # s
@@ -163,13 +180,15 @@ class LQRRT_Node(object):
             behavior.planner.unkill()
 
     # ACTION
-    def move_cb(self, msg: MoveAction):
+    def move_cb(self, msg: MoveAction) -> Optional[bool]:
         """
         Callback for the move action.
 
         Args:
-            msg: MoveAction - The action passed by
-            the action client.
+            msg: MoveAction - The action passed by the action client.
+        
+        Returns:
+            Optional[bool] - ???
         """
         # Start clean
         self.done = False
