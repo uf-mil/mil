@@ -864,10 +864,13 @@ class LQRRT_Node(object):
         raise ValueError("Indeterminant behavior configuration.")
 
     # VERIFICATIONS
-    def is_feasible(self, x, u) -> bool:
+    def is_feasible(self, x: np.ndarray, u: np.ndarray) -> bool:
         """
-        Given a state x and effort u, returns a bool
-        that is only True if that (x, u) is feasible.
+        Given a state x and effort u, returns whether (x, u) is feasible.
+
+        Args:
+            x: np.ndarray - The state to verify the feasibility of
+            u: np.ndarray - The corresponding effort to verify the feasibility of
 
         Returns:
             bool - Whether the state is feasible.
@@ -893,13 +896,14 @@ class LQRRT_Node(object):
         # Greater than threshold is a hit
         return np.all(grid_values < self.ogrid_threshold)
 
-    def reevaluate_plan(self):
+    def reevaluate_plan(self) -> None:
         """
-        Iterates through the current plan re-checking for
-        feasibility using the newest ogrid data, looking for
-        a clear path if we are escaping, and checking that
-        the goal is still feasible.
+        Iterates through the current plan re-checking for feasibility using 
+          the newest ogrid data, looking for a clear path if we are escaping, 
+          and checking that the goal is still feasible.
 
+        Returns:
+            None
         """
         # Make sure a plan exists and that we aren't currently fixing it
         last_update_time = self.last_update_time
@@ -1023,10 +1027,17 @@ class LQRRT_Node(object):
         # No concerns
         self.time_till_issue = None
 
-    def action_check(self, *args):
+    def action_check(self, _: rospy.timer.TimerEvent) -> None:
         """
-        Manages action preempting.
+        Manages action preempting. Serves as the callback to a Timer operating
+          opereating every self.revisit_period seconds.
 
+        Args:
+            _: TimerEvent - The timer event passed by the timer upon each
+              execution. Not used by the method.
+
+        Returns:
+            None
         """
         if self.preempted or not self.move_server.is_active():
             return
