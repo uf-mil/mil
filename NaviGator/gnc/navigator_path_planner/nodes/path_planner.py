@@ -1078,15 +1078,22 @@ class LQRRT_Node(object):
                 )
 
     # LIL MATH DOERS
-
-    def rotation_move(self, x, h, tol):
-
+    def rotation_move(self, x: List[float], h: float, tol: float):
         """
         Returns a state sequence, total time, success bool and effort
         sequence for a simple rotate in place move. Success is False if
         the move becomes infeasible before the state heading x[2] is within
         the goal heading h+-tol. Give x (start state), and h (goal heading).
 
+        Args:
+            x: List[float] - The current state
+            h: float - The desired heading (similar to x[2])
+            tol: float - The tolerance of the heading
+
+        Returns:
+            Tuple[np.ndarray, float, bool, np.ndarray] - A tuple containing
+              the new state array, the amount of time the movement will take,
+              whether the operation is feasible, and the new effort array.
         """
         # Set-up
         x = np.array(x, dtype=np.float64)
