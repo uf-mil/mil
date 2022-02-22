@@ -4,8 +4,26 @@ Constructs a planner that is good for being kinda like a car-boat thing!
 """
 from __future__ import division
 import numpy as np
-from params import D_neg, D_pos, B, invB, thrust_max, invM, ss_start, velmax_pos, velmax_neg,\
-    nstates, ncontrols, unset, horizon, dt, FPR, basic_duration, max_nodes, free_radius
+from params import (
+    D_neg,
+    D_pos,
+    B,
+    invB,
+    thrust_max,
+    invM,
+    ss_start,
+    velmax_pos,
+    velmax_neg,
+    nstates,
+    ncontrols,
+    unset,
+    horizon,
+    dt,
+    FPR,
+    basic_duration,
+    max_nodes,
+    free_radius,
+)
 import lqrrt
 
 from typing import List, Tuple
@@ -21,11 +39,9 @@ def dynamics(x, u, dt):
 
     """
     # Rotation matrix (orientation, converts body to world)
-    R = np.array([
-        [np.cos(x[2]), -np.sin(x[2]), 0],
-        [np.sin(x[2]), np.cos(x[2]), 0],
-        [0, 0, 1]
-    ])
+    R = np.array(
+        [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]]
+    )
 
     # Construct drag coefficients based on our motion signs
     D = np.copy(D_neg)
@@ -60,6 +76,7 @@ def dynamics(x, u, dt):
 
     return xnext
 
+
 # POLICY
 
 
@@ -73,13 +90,12 @@ def lqr(x, u):
     Returns cost-to-go matrix S and policy matrix K given local state x and effort u.
 
     """
-    R = np.array([
-        [np.cos(x[2]), -np.sin(x[2]), 0],
-        [np.sin(x[2]), np.cos(x[2]), 0],
-        [0, 0, 1]
-    ])
+    R = np.array(
+        [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]]
+    )
     K = np.hstack((kp.dot(R.T), kd))
     return (S, K)
+
 
 # HEURISTICS
 
@@ -88,25 +104,41 @@ goal_buffer = [0.5 * free_radius, 0.5 * free_radius, np.inf, np.inf, np.inf, np.
 error_tol = np.copy(goal_buffer) / 10
 
 
-def gen_ss(seed: np.ndarray, goal: np.ndarray, buff: List[int] = [ss_start] * 4) -> List[Tuple[float, float]]:
+def gen_ss(
+    seed: np.ndarray, goal: np.ndarray, buff: List[int] = [ss_start] * 4
+) -> List[Tuple[float, float]]:
     """
     Returns a sample space given a seed state, goal state, and buffer.
     """
-    return [(min([seed[0], goal[0]]) - buff[0], max([seed[0], goal[0]]) + buff[1]),
-            (min([seed[1], goal[1]]) - buff[2], max([seed[1], goal[1]]) + buff[3]),
-            (-np.pi, np.pi),
-            (0.9 * velmax_pos[0], velmax_pos[0]),
-            (-abs(velmax_neg[1]), velmax_pos[1]),
-            (-abs(velmax_neg[2]), velmax_pos[2])]
+    return [
+        (min([seed[0], goal[0]]) - buff[0], max([seed[0], goal[0]]) + buff[1]),
+        (min([seed[1], goal[1]]) - buff[2], max([seed[1], goal[1]]) + buff[3]),
+        (-np.pi, np.pi),
+        (0.9 * velmax_pos[0], velmax_pos[0]),
+        (-abs(velmax_neg[1]), velmax_pos[1]),
+        (-abs(velmax_neg[2]), velmax_pos[2]),
+    ]
+
 
 # MAIN ATTRIBUTES
 
 
-constraints = lqrrt.Constraints(nstates=nstates, ncontrols=ncontrols,
-                                goal_buffer=goal_buffer, is_feasible=unset)
+constraints = lqrrt.Constraints(
+    nstates=nstates, ncontrols=ncontrols, goal_buffer=goal_buffer, is_feasible=unset
+)
 
-planner = lqrrt.Planner(dynamics, lqr, constraints,
-                        horizon=horizon, dt=dt, FPR=FPR,
-                        error_tol=error_tol, erf=unset,
-                        min_time=basic_duration, max_time=basic_duration, max_nodes=max_nodes,
-                        sys_time=unset, printing=False)
+planner = lqrrt.Planner(
+    dynamics,
+    lqr,
+    constraints,
+    horizon=horizon,
+    dt=dt,
+    FPR=FPR,
+    error_tol=error_tol,
+    erf=unset,
+    min_time=basic_duration,
+    max_time=basic_duration,
+    max_nodes=max_nodes,
+    sys_time=unset,
+    printing=False,
+)

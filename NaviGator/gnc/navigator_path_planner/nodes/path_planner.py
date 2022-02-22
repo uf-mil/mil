@@ -48,6 +48,7 @@ else:
 
 # INITIALIZATIONS
 
+
 class LQRRT_Node(object):
     def __init__(
         self,
@@ -67,7 +68,7 @@ class LQRRT_Node(object):
         Defaults are generated at the ROS params level.
 
         Args:
-            odom_topic: str - The name of the topic supplying Odometry 
+            odom_topic: str - The name of the topic supplying Odometry
               messages.
             ref_topic: str - The lqRRT reference topic name.
             move_topic: str - The name of the topic hosting the SimpleActionServer
@@ -125,7 +126,7 @@ class LQRRT_Node(object):
 
         # Actions
         self.move_server = actionlib.SimpleActionServer(
-            move_topic, MoveAction, execute_cb = self.move_cb, auto_start = False
+            move_topic, MoveAction, execute_cb=self.move_cb, auto_start=False
         )
         self.move_server.start()
         rospy.sleep(1)
@@ -186,7 +187,7 @@ class LQRRT_Node(object):
 
         Args:
             msg: MoveAction - The action passed by the action client.
-        
+
         Returns:
             Optional[bool] - ???
         """
@@ -653,7 +654,9 @@ class LQRRT_Node(object):
         # (debug)
         raise ValueError("Indeterminant behavior configuration.")
 
-    def select_exploration(self) -> List[List, List[Tuple[float, float]], np.ndarray, bool]:
+    def select_exploration(
+        self,
+    ) -> List[List, List[Tuple[float, float]], np.ndarray, bool]:
         """
         Chooses the goal bias, sample space, guide point, and pruning
         choice for the current move and behavior.
@@ -917,8 +920,8 @@ class LQRRT_Node(object):
 
     def reevaluate_plan(self) -> None:
         """
-        Iterates through the current plan re-checking for feasibility using 
-          the newest ogrid data, looking for a clear path if we are escaping, 
+        Iterates through the current plan re-checking for feasibility using
+          the newest ogrid data, looking for a clear path if we are escaping,
           and checking that the goal is still feasible.
 
         Returns:
@@ -1164,7 +1167,9 @@ class LQRRT_Node(object):
             T += self.dt
             i += 1
 
-    def spiral_move(self, x: List[float], c: List[float], N: int, direc: int, mpr: float):
+    def spiral_move(
+        self, x: List[float], c: List[float], N: int, direc: int, mpr: float
+    ):
         """
         Generates a movement pattern for a spiral movement.
 
@@ -1361,7 +1366,7 @@ class LQRRT_Node(object):
     def publish_ref(self, *args) -> None:
         """
         Publishes the reference trajectory as an Odometry message to the ref
-        publisher. Also publishes the reference effort as a WrenchStamped 
+        publisher. Also publishes the reference effort as a WrenchStamped
         message to the effort publisher.
         """
         # Make sure a plan exists
@@ -1378,7 +1383,9 @@ class LQRRT_Node(object):
 
         # Not really necessary, but for fun-and-profit also publish the planner's effort wrench
         if self.get_eff is not None:
-            self.eff_pub.publish(self.pack_wrenchstamped(self.get_eff(time_since), stamp))
+            self.eff_pub.publish(
+                self.pack_wrenchstamped(self.get_eff(time_since), stamp)
+            )
 
     def publish_path(self) -> None:
         """
@@ -1447,8 +1454,8 @@ class LQRRT_Node(object):
     # SUBSCRUBS
     def ogrid_cb(self, msg: OccupancyGrid) -> None:
         """
-        Acts as the callback function to a subscriber to the odom topic. 
-        Expects an OccupancyGrid message. Stores the ogrid array and origin 
+        Acts as the callback function to a subscriber to the odom topic.
+        Expects an OccupancyGrid message. Stores the ogrid array and origin
         vector, and then reevaluates the path plan.
 
         Args:
@@ -1482,7 +1489,7 @@ class LQRRT_Node(object):
 
     def odom_cb(self, msg: Odometry) -> None:
         """
-        Callback to the odometry topic subscriber. Stores the current state of 
+        Callback to the odometry topic subscriber. Stores the current state of
         the tracking vehicle and its reference frame. Sets the class tracking
         variable to True or False based on if the vehicle is succesfully
         tracking.
@@ -1556,7 +1563,7 @@ class LQRRT_Node(object):
 
     def pack_pose(self, state: List[float]) -> Pose:
         """
-        Converts the positional part of a state vector 
+        Converts the positional part of a state vector
         into a Pose message.
 
         For a timestamped message, use pack_posestamped.
@@ -1577,7 +1584,7 @@ class LQRRT_Node(object):
 
     def pack_posestamped(self, state: List[float], stamp: rospy.Time) -> PoseStamped:
         """
-        Converts the positional part of a state vector into a PoseStamped 
+        Converts the positional part of a state vector into a PoseStamped
         message with a given header timestamp. For a non-stamped message, use
         pack_pose.
 
@@ -1648,7 +1655,9 @@ class LQRRT_Node(object):
         msg.point.z = 0
         return msg
 
-    def pack_wrenchstamped(self, effort: List[float], stamp: rospy.Time) -> WrenchStamped:
+    def pack_wrenchstamped(
+        self, effort: List[float], stamp: rospy.Time
+    ) -> WrenchStamped:
         """
         Converts an effort vector into a WrenchStamped message
         with a given header timestamp.
@@ -1668,6 +1677,7 @@ class LQRRT_Node(object):
         msg.wrench.force.x, msg.wrench.force.y = effort[:2]
         msg.wrench.torque.z = effort[2]
         return msg
+
 
 # Setup node
 if __name__ == "__main__":
