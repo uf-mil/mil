@@ -19,3 +19,20 @@ So the migration between ROS Melodic is easy-peasy, right? A few setup scripts h
 * *[Other various changes...](http://wiki.ros.org/noetic/Migration)*
 
 We will work through these changes piece by piece to make sure our systems are up to date.
+
+Let's start with the first major step...
+
+## Migrating Python 2 to Python 3
+
+Python is one of the most common languages found in our codebase. However, the code was written in Python 2, and it now needs to be converted to Python 3, which has a very different syntax style.
+
+Before you start, take a **quick look** over [this porting guide](https://portingguide.readthedocs.io/en/latest/index.html). Start at the `Syntax Changes` section and skim through the end. You don't need to memorize this information, but skimming through the pages will give you a good idea for what changes need to be made.
+
+Then, you can choose a package to convert to Python 3. To do so, go to the GitHub repository and choose and issue with the `2to3` label. Once you've chosen a package to migrate, you can go through a series of steps with each package:
+
+### Step One: Running scripts against the existing code
+
+First, run some helper scripts against the code that already exists in the package. There are some great tools that can help you with this:
+
+* `python-modernize`: A command-line utility that is able to show what code needs to be migrated to Python 3. The utility will show what lines could cause issues if run with Python 3. Remember that a lot of Python is compatible with both versions 2 and 3, only some of it is not. Also note that not everything it flags is an issue, but more on this later.
+* `black`: Another command-line utility useful for making Python look pretty and sweet! It formats the code in such a way that the meaning is preserved but the code is easier to read!
