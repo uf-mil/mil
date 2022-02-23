@@ -50,12 +50,18 @@ class RunningMean(object):
 
 
 class VotingObject(object):
-    def __init__(self, timeStamp, vote):
+    def __init__(self, timeStamp):
         self.timeStamp = timeStamp
-        self.vote = vote
+        self.votes = [0]*6
 
-    def getVote():
-        return self.timeStamp, self.vote
+    def addVote(vote):
+        self.votes[vote] += 1
+
+    def getScore():
+        return self.votes
+
+    def getTime():
+        return self.timeStamp
 
 
 class VrxClassifier(object):
@@ -98,6 +104,8 @@ class VrxClassifier(object):
         self.enabled_srv = rospy.Service('~set_enabled', SetBool, self.set_enable_srv)
         if self.is_training:
             self.enabled = True
+        x = threading.Thread(target=voting_handler, args=(self,))
+        x.start()
 
     @thread_lock(lock)
     def set_enable_srv(self, req):
@@ -183,12 +191,31 @@ class VrxClassifier(object):
 #            rospy.loginfo('Updating object {} to {}'.format(object_id, most_likely_name))
 #            if not self.is_training:
 #                self.database_client(ObjectDBQueryRequest(cmd=cmd))
-        cmd = '{}={}'.format(object_id, self.CLASSES[prediction])
-        self.database_client(ObjectDBQueryRequest(cmd=cmd))
+        #cmd = '{}={}'.format(object_id, self.CLASSES[prediction])
+        #self.database_client(ObjectDBQueryRequest(cmd=cmd))
         rospy.loginfo('Object {} {} classified as {}'.format(object_id, object_msg.labeled_classification, self.CLASSES[prediction]))
         object_msg.labeled_classification = self.CLASSES[prediction]
         
         return self.CLASSES[prediction]
+
+    def getHighestScore(votes):
+        highest = 0
+        for i, j in enumerate(votes):
+            if j > votes[highest]:
+                highest = i
+
+        return highest
+                
+
+    @thread_lock(lock)
+    def voting_handler(self):
+        while true:
+            now = rospy.Time.now()
+            for i, a in enumerate(self.Votes):
+                if now - a.getTime() >= 3:
+                    cmd = '{}={}'.format(i, self.CLASSES[getHighestScore(a.getVotes())])
+                    self.database_client(ObjectDBQueryRequest(cmd=cmd))
+
 
     @thread_lock(lock)
     def img_cb(self, img):
@@ -268,6 +295,10 @@ class VrxClassifier(object):
                     highest = a
                     loc = i
             self.update_object(object_msg, loc)
+            if(self.Votes.count(object_id) == 0):
+                self.Votes.insert(object_id, VotingObject(now))
+            else:
+                self.Votes[object_id].addVote(loc)
             # If training, save this
             if self.is_training and obj_title != 'UNKNOWN':
                 classification_index = self.classifier.CLASSES.index(obj_title)
