@@ -48,6 +48,16 @@ class RunningMean(object):
     def mean(self):
         return self.sum / self.n
 
+
+class VotingObject(object):
+    def __init__(self, timeStamp, vote):
+        self.timeStamp = timeStamp
+        self.vote = vote
+
+    def getVote():
+        return self.timeStamp, self.vote
+
+
 class VrxClassifier(object):
     # Handle buoys / black totem specially, discrminating on volume as they have the same color
     # The black objects that we have trained the color classifier on
@@ -60,6 +70,7 @@ class VrxClassifier(object):
     TOTEM_MIN_HEIGHT = 0.9
 
     CLASSES = ["mb_marker_buoy_red", "mb_marker_buoy_green", "mb_marker_buoy_black", "mb_marker_buoy_white", "mb_round_buoy_black", "mb_round_buoy_orange"]
+    Votes = {}
 
     def __init__(self):
         self.enabled = False 
