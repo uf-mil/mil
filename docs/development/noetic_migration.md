@@ -97,3 +97,7 @@ def postal_valid(s: string) -> bool:
 When a new member sees the method in the first code block, how are they supposed to know what it does? This is what the docstring and typing annotations help with! Now, another member can instantly see the types of parameters the method accepts, what it returns, and what it is supposed to do.
 
 Again, this is totally optional. But, if you complete this step, you will have the opportunity to learn much more about the codebase and how each module works!
+
+### Step Four: Check and verify
+
+Great! By now, the code should be ready to be run in Python 3. For a last step check, run `python-modernize` again and verify that any warnings that appear do not need to be fixed. Finally, run `black` again.
