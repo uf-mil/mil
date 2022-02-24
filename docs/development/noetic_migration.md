@@ -101,3 +101,15 @@ Again, this is totally optional. But, if you complete this step, you will have t
 ### Step Four: Check and verify
 
 Great! By now, the code should be ready to be run in Python 3. For a last step check, run `python-modernize` again and verify that any warnings that appear do not need to be fixed. Finally, run `black` again.
+
+## Updating CMake minimum verison
+
+The CMake minimum version in each package needs to be updated to version `3.0.3`. This has already been completed for all packages and should not need to be completed again.
+
+## Testing the changes
+
+After making some changes to a package, you may have the desire to test the changes that you've made. But wait! You can't.
+
+Many of the packages in our codebase rely on each other like an interlocking Jenga tower. If one block is removed, the tower will frequently fall. Therefore, if you attempt to simulate your changes after making some changes, the simlulation may just fail.
+
+Therefore, make the best changes that you can; changes that you feel confident in. Once all packages have been updated for ROS Noetic, then we can test to see how our all the packages perform. If things are still broken at this point, then we can make further commits to fix what's broken.
