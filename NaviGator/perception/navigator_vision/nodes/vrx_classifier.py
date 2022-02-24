@@ -107,7 +107,6 @@ class VrxClassifier(object):
         if self.is_training:
             self.enabled = True
         self.queue = []
-        self.timers = []
 
     @thread_lock(lock)
     def set_enable_srv(self, req):
@@ -131,7 +130,7 @@ class VrxClassifier(object):
         self.debug = rospy.get_param('~debug', True)
         self.image_topic = rospy.get_param('~image_topic', '/camera/starboard/image_rect_color')
         self.model_loc = rospy.get_param('~model_location','config/model')
-        self.update_period = rospy.Duration(1.0 / rospy.get_param('~update_hz', 1))
+        self.update_period = rospy.Duration(1.0 / rospy.get_param('~update_hz', 5))
         self.classifier = VrxColorClassifier()
         self.classifier.train_from_csv()
         rospack = RosPack()
@@ -207,7 +206,6 @@ class VrxClassifier(object):
         print('Object {} classified as {}'.format(object_id, self.CLASSES[highest]))
         cmd = '{}={}'.format(object_id, self.CLASSES[highest])
         self.database_client(ObjectDBQueryRequest(cmd=cmd))
-        self.timers.pop().shutdown()
 
     @thread_lock(lock)
     def img_cb(self, img):
@@ -290,7 +288,7 @@ class VrxClassifier(object):
             if(object_id not in self.Votes.keys()):
                 self.Votes[object_id] = VotingObject()
                 self.queue.append(object_id)
-                self.timers.append(rospy.Timer(rospy.Duration(3), self.timer_callback))
+                rospy.Timer(rospy.Duration(3), self.timer_callback, True)
             else:
                 self.Votes[object_id].addVote(loc)
             # If training, save this
