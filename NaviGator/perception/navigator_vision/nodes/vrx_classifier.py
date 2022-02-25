@@ -66,6 +66,9 @@ class VotingObject(object):
 
         return highest
 
+    def empty(self):
+        return self.votes.empty()
+
 class VrxClassifier(object):
     # Handle buoys / black totem specially, discrminating on volume as they have the same color
     # The black objects that we have trained the color classifier on
@@ -202,6 +205,8 @@ class VrxClassifier(object):
 #    @thread_lock(lock)
     def timer_callback(self, event):
         object_id = self.queue.pop()
+        if self.Votes[object_id].empty():
+            return
         highest = self.Votes[object_id].getHighestScore()
         print('Object {} classified as {}'.format(object_id, self.CLASSES[highest]))
         cmd = '{}={}'.format(object_id, self.CLASSES[highest])
