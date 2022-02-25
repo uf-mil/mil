@@ -36,10 +36,12 @@ class LabelBoxParser(object):
                     points = LabelBoxParser.label_to_contour(polygon, img.shape[0])
                     cv2.drawContours(img, [points], -1, (255, 255, 255), 3)
         '''
-        nppts = np.zeros((len(points), 2))
-        for i, pt in enumerate(points):
-            nppts[i, 0] = pt['x']
-            nppts[i, 1] = height - pt['y']
+        polygon = points['polygon']
+        nppts = np.zeros((len(polygon), 2))
+
+        for i, pt in enumerate(polygon):
+            nppts[i, 0] = int(pt['x'])
+            nppts[i, 1] = int(pt['y'])
         return np.array(nppts, dtype=int)
 
     def get_labeled_images(self, cb):
@@ -86,11 +88,13 @@ if __name__ == '__main__':
     def cb(label, img):
         for key in label['Label']:
             for polygon in label['Label'][key]:
+
                 points = LabelBoxParser.label_to_contour(polygon, img.shape[0])
+
                 centroid = contour_centroid(points)
                 cv2.circle(img, (centroid[0], centroid[1]), 3, (255, 255, 255))
                 cv2.drawContours(img, [points], -1, (255, 255, 255), 3)
-                putText_ul(img, key, centroid)
+                putText_ul(img, polygon['title'], centroid)
 
         cv2.imshow('test', img)
         cv2.waitKey(0)

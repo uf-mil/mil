@@ -3,7 +3,12 @@ from navigator_missions.move import Move
 from vrx import Vrx
 from vrx_navigation import VrxNavigation
 from vrx_wayfinding import VrxWayfinding
+from vrx_wayfinding_2 import VrxWayfinding2
 from vrx_station_keeping import VrxStationKeeping
+from vrx_station_keeping_2 import VrxStationKeeping2
+from vrx_beacon import VrxBeacon
+from vrx_wildlife import VrxWildlife
+from vrx_square import VrxSquare
 from vrx_perception import VrxPerception
 from scan_the_code import ScanTheCode
 from dock import Dock

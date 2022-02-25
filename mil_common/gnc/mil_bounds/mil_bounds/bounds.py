@@ -38,6 +38,7 @@ class BoundsServer(object):
         marker.scale.x = 0.5
         marker.color.r = 1
         marker.color.a = 1
+        marker.pose.orientation.w = 1
         for i in range(1, 5):
             marker.points.append(Point(*config_to_tuple(config, i)))
         marker.points.append(Point(*config_to_tuple(config, 1)))

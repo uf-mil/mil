@@ -5,13 +5,15 @@ import os
 
 
 class VrxColorClassifier(GaussianColorClassifier):
-    CLASSES = ['buoy', 'red_totem', 'green_totem', 'blue_totem', 'yellow_totem',
-               'black_totem', 'surmark46104', 'surmark950400', 'surmark950410']
+    #CLASSES = ['buoy', 'red_totem', 'green_totem', 'blue_totem', 'yellow_totem',
+    #           'black_totem', 'surmark46104', 'surmark950400', 'surmark950410']
+
+    CLASSES = ["mb_marker_buoy_red", "mb_marker_buoy_green", "mb_marker_buoy_black", "mb_marker_buoy_white", "mb_round_buoy_black", "mb_round_buoy_orange"]
 
     def __init__(self):
         rospack = RosPack()
         path = rospack.get_path('navigator_vision')
-        training_file = os.path.join(path, 'config/vrx/training.csv')
+        training_file = os.path.join(path, 'config/vrx/mean.csv')
         super(VrxColorClassifier, self).__init__(VrxColorClassifier.CLASSES,
                                                     training_file=training_file)
 

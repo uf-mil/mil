@@ -19,11 +19,11 @@ def set_joint_origin_to_zero(root, name):
 
 
 def fix_gps(root):
-    set_joint_origin_to_zero(root, 'gps_wamv_joint')
+    set_joint_origin_to_zero(root, 'wamv/gps_wamv_joint')
 
 
 def fix_imu(root):
-    set_joint_origin_to_zero(root, 'imu_wamv_joint')
+    set_joint_origin_to_zero(root, 'wamv/imu_wamv_joint')
 
 
 def fix_file(filename):

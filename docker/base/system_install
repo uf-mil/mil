@@ -23,9 +23,6 @@ mil_system_install --no-install-recommends \
   wget \
   expect
 
-# Other dependencies
-sudo sh -c "pip install numpy"
-
 # ROS apt source
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 # Install Gazebo apt source
@@ -70,15 +67,21 @@ sudo pip install \
   sklearn \
   pandas
 
+pip install --upgrade pip 
+pip2 install tsp_solver2
+pip2 install tensorflow==2.1.0
+pip2 install Pillow
+
 # Documentation dependencies
-mil_system_install  python3-pip
+mil_system_install  python3-pip python-setuptools
 
 sudo pip3 install -q \
   sphinx \
   recommonmark \
   sphinx_rtd_theme \
   numpy \
-  matplotlib
+  matplotlib \
+  rospkg
 
 # Initialize rosdep
 sudo pip install -U rosdep
