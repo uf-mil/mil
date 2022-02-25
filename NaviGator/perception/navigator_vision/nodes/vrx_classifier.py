@@ -11,6 +11,7 @@ from image_geometry import PinholeCameraModel
 import sensor_msgs.point_cloud2
 from sensor_msgs.msg import PointCloud2
 from mil_msgs.msg import PerceptionObjectArray
+from std_msgs.msg import Int32
 from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from tf.transformations import quaternion_matrix
 from mil_tools import thread_lock
@@ -64,7 +65,6 @@ class VotingObject(object):
                 highest = i
 
         return highest
-
 
 class VrxClassifier(object):
     # Handle buoys / black totem specially, discrminating on volume as they have the same color
@@ -206,6 +206,10 @@ class VrxClassifier(object):
         print('Object {} classified as {}'.format(object_id, self.CLASSES[highest]))
         cmd = '{}={}'.format(object_id, self.CLASSES[highest])
         self.database_client(ObjectDBQueryRequest(cmd=cmd))
+        self.Votes[object_id] = VotingObject()
+        self.queue.append(object_id)
+        rospy.Timer(rospy.Duration(3), self.timer_callback, True)
+
 
     @thread_lock(lock)
     def img_cb(self, img):
