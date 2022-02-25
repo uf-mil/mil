@@ -48,6 +48,24 @@ class RunningMean(object):
     def mean(self):
         return self.sum / self.n
 
+
+class VotingObject(object):
+    def __init__(self):
+        self.votes = [0]*6
+
+    def addVote(self, vote):
+        self.votes[vote] += 1
+
+    @thread_lock(lock)
+    def getHighestScore(self):
+        highest = 0
+        for i, j in enumerate(self.votes):
+            if j > self.votes[highest]:
+                highest = i
+
+        return highest
+
+
 class VrxClassifier(object):
     # Handle buoys / black totem specially, discrminating on volume as they have the same color
     # The black objects that we have trained the color classifier on
@@ -60,6 +78,7 @@ class VrxClassifier(object):
     TOTEM_MIN_HEIGHT = 0.9
 
     CLASSES = ["mb_marker_buoy_red", "mb_marker_buoy_green", "mb_marker_buoy_black", "mb_marker_buoy_white", "mb_round_buoy_black", "mb_round_buoy_orange"]
+    Votes = {}
 
     def __init__(self):
         self.enabled = False 
@@ -87,6 +106,7 @@ class VrxClassifier(object):
         self.enabled_srv = rospy.Service('~set_enabled', SetBool, self.set_enable_srv)
         if self.is_training:
             self.enabled = True
+        self.queue = []
 
     @thread_lock(lock)
     def set_enable_srv(self, req):
@@ -110,7 +130,7 @@ class VrxClassifier(object):
         self.debug = rospy.get_param('~debug', True)
         self.image_topic = rospy.get_param('~image_topic', '/camera/starboard/image_rect_color')
         self.model_loc = rospy.get_param('~model_location','config/model')
-        self.update_period = rospy.Duration(1.0 / rospy.get_param('~update_hz', 1))
+        self.update_period = rospy.Duration(1.0 / rospy.get_param('~update_hz', 5))
         self.classifier = VrxColorClassifier()
         self.classifier.train_from_csv()
         rospack = RosPack()
@@ -172,12 +192,20 @@ class VrxClassifier(object):
 #            rospy.loginfo('Updating object {} to {}'.format(object_id, most_likely_name))
 #            if not self.is_training:
 #                self.database_client(ObjectDBQueryRequest(cmd=cmd))
-        cmd = '{}={}'.format(object_id, self.CLASSES[prediction])
-        self.database_client(ObjectDBQueryRequest(cmd=cmd))
-        rospy.loginfo('Object {} {} classified as {}'.format(object_id, object_msg.labeled_classification, self.CLASSES[prediction]))
+#        cmd = '{}={}'.format(object_id, self.CLASSES[prediction])
+#        self.database_client(ObjectDBQueryRequest(cmd=cmd))
+#        rospy.loginfo('Object {} {} classified as {}'.format(object_id, object_msg.labeled_classification, self.CLASSES[prediction]))
         object_msg.labeled_classification = self.CLASSES[prediction]
         
         return self.CLASSES[prediction]
+
+#    @thread_lock(lock)
+    def timer_callback(self, event):
+        object_id = self.queue.pop()
+        highest = self.Votes[object_id].getHighestScore()
+        print('Object {} classified as {}'.format(object_id, self.CLASSES[highest]))
+        cmd = '{}={}'.format(object_id, self.CLASSES[highest])
+        self.database_client(ObjectDBQueryRequest(cmd=cmd))
 
     @thread_lock(lock)
     def img_cb(self, img):
@@ -257,6 +285,12 @@ class VrxClassifier(object):
                     highest = a
                     loc = i
             self.update_object(object_msg, loc)
+            if(object_id not in self.Votes.keys()):
+                self.Votes[object_id] = VotingObject()
+                self.queue.append(object_id)
+                rospy.Timer(rospy.Duration(3), self.timer_callback, True)
+            else:
+                self.Votes[object_id].addVote(loc)
             # If training, save this
             if self.is_training and obj_title != 'UNKNOWN':
                 classification_index = self.classifier.CLASSES.index(obj_title)

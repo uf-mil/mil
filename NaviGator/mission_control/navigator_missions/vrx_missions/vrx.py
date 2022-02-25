@@ -9,7 +9,7 @@ from vrx_gazebo.msg import Task
 from vrx_gazebo.srv import ColorSequence
 from geographic_msgs.msg import GeoPoseStamped, GeoPath
 from nav_msgs.msg import Odometry
-from std_msgs.msg import Float64, Float64MultiArray, String
+from std_msgs.msg import Float64, Float64MultiArray, String, Int32
 from navigator_missions import Navigator
 from mil_tools import rosmsg_to_numpy, numpy_to_point
 from sensor_msgs.msg import Image, CameraInfo
@@ -42,8 +42,8 @@ class Vrx(Navigator):
         Vrx.beacon_landmark = Vrx.nh.get_service_client("beaconLocator", AcousticBeacon)
         Vrx.circle_animal = Vrx.nh.get_service_client("/choose_animal", ChooseAnimal)
         Vrx.set_long_waypoint = Vrx.nh.get_service_client("/set_long_waypoint", MoveToWaypoint)
-
         Vrx.database_response = Vrx.nh.get_service_client('/database/requests', ObjectDBQuery)
+        Vrx.reset_vote = Vrx.nh.get_service_cient("/vision/voting_reset", Int32)
         #Vrx.scan_dock_placard_symbol = Vrx.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
 
         Vrx.front_left_camera_info_sub = None 
