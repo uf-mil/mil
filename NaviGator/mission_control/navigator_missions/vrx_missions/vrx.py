@@ -43,7 +43,6 @@ class Vrx(Navigator):
         Vrx.circle_animal = Vrx.nh.get_service_client("/choose_animal", ChooseAnimal)
         Vrx.set_long_waypoint = Vrx.nh.get_service_client("/set_long_waypoint", MoveToWaypoint)
         Vrx.database_response = Vrx.nh.get_service_client('/database/requests', ObjectDBQuery)
-        Vrx.reset_vote = Vrx.nh.get_service_cient("/vision/voting_reset", Int32)
         #Vrx.scan_dock_placard_symbol = Vrx.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
 
         Vrx.front_left_camera_info_sub = None 
