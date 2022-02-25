@@ -13,6 +13,7 @@ from std_msgs.msg import Float64, Float64MultiArray, String
 from navigator_missions import Navigator
 from mil_tools import rosmsg_to_numpy, numpy_to_point
 from sensor_msgs.msg import Image, CameraInfo
+from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 
 ___author___ = "Kevin Allen"
 
@@ -41,6 +42,8 @@ class Vrx(Navigator):
         Vrx.beacon_landmark = Vrx.nh.get_service_client("beaconLocator", AcousticBeacon)
         Vrx.circle_animal = Vrx.nh.get_service_client("/choose_animal", ChooseAnimal)
         Vrx.set_long_waypoint = Vrx.nh.get_service_client("/set_long_waypoint", MoveToWaypoint)
+
+        Vrx.database_response = Vrx.nh.get_service_client('/database/requests', ObjectDBQuery)
         #Vrx.scan_dock_placard_symbol = Vrx.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
 
         Vrx.front_left_camera_info_sub = None 
@@ -107,7 +110,7 @@ class Vrx(Navigator):
         elif task_name == 'wayfinding':
             yield self.run_submission('VrxWayfinding2')
         elif task_name == 'gymkhana':
-            yield self.run_submission('VrxBeacon')
+            yield self.run_submission('VrxNavigation2')
         elif task_name == 'perception':
             yield self.run_submission('VrxPerception')
         elif task_name == 'wildlife':

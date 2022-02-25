@@ -72,11 +72,11 @@ class VrxNavigation(Vrx):
 
         def is_done(objects, positions):
             try:
-                left_index = self.get_index_of_type(objects, ('surmark950400', 'green_totem', 'blue_totem'))
-                right_index = self.get_index_of_type(objects, ('red_totem', 'surmark950410'))
+                left_index = self.get_index_of_type(objects, 'mb_marker_buoy_green')
+                right_index = self.get_index_of_type(objects, 'mb_marker_buoy_red')
             except StopIteration:
                 return None
-            end = objects[left_index].labeled_classification == 'blue_totem'
+            end = objects[left_index].labeled_classification == 'mb_marker_buoy_black'
             return positions[left_index], objects[left_index], positions[right_index], objects[right_index], end
 
         left, left_obj, right, right_obj, end = yield self.explore_closest_until(is_done, filter_and_sort)
@@ -153,6 +153,12 @@ class VrxNavigation(Vrx):
                     self.send_feedback('Investingating {}'.format(objects[i].id))
                     investigated.add(objects[i].id)
                     move = self.inspect_object(positions[i])
+                    #Figure out what move is
+                    print("positifasdfasfasdfon[")
+
+                    self.send_feedback('move = {}' .format(move))
+                    self.send_feedback('position['+ str(i) + '] = {}'.format(positions[i]))
+                    #self.send_feedback('move = ', move)
                     move_id_tuple = (move, objects[i].id)
                     break
             if move_id_tuple is None:
@@ -161,8 +167,8 @@ class VrxNavigation(Vrx):
 
     def get_objects_indicies_for_start(self, objects):
         try:
-            white_index = self.get_index_of_type(objects, 'surmark46104')
-            red_index = self.get_index_of_type(objects, ('red_totem', 'surmark950410'))
+            white_index = self.get_index_of_type(objects, 'mb_marker_buoy_white')
+            red_index = self.get_index_of_type(objects, 'mb_marker_buoy_red')
         except StopIteration:
             return None
         return white_index, red_index
@@ -215,6 +221,7 @@ class VrxNavigation(Vrx):
         # Wait a bit for PCDAR to get setup
         yield self.nh.sleep(3.0)
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
+        print("helloooooo")
         yield self.prepare_to_enter()
         yield self.wait_for_task_such_that(lambda task: task.state =='running')
         yield self.move.forward(7.0).go()
