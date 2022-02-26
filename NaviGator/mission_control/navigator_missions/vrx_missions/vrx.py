@@ -9,7 +9,7 @@ from vrx_gazebo.msg import Task
 from vrx_gazebo.srv import ColorSequence
 from geographic_msgs.msg import GeoPoseStamped, GeoPath
 from nav_msgs.msg import Odometry
-from std_msgs.msg import Float64, Float64MultiArray, String
+from std_msgs.msg import Float64, Float64MultiArray, String, Int32
 from navigator_missions import Navigator
 from mil_tools import rosmsg_to_numpy, numpy_to_point
 from sensor_msgs.msg import Image, CameraInfo
