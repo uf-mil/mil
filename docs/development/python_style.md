@@ -6,7 +6,111 @@ Don't feel pressured to know or understand every rule, and totally feel free to 
 Additionally, this guide is not meant to be permanent! If you have a suggestion, feel free to bring it up and change the guide! Have fun!
 
 ### Features
-Explain how to use various Python features here.
+This section explains how to use several of Python's features to your advantage.
+
+#### Naming
+**Naming** describes how variables, methods, classes, etc. are named. 
+
+##### General
+Here is a brief table explaining the general pattern of naming:
+
+<table rules="all" border="1" summary="General Python Naming Patterns"
+       cellspacing="2" cellpadding="2">
+
+  <tr>
+    <th>Type</th>
+    <th>Public</th>
+    <th>Internal</th>
+  </tr>
+
+  <tr>
+    <td>Packages</td>
+    <td><code>lower_with_under</code></td>
+    <td></td>
+  </tr>
+
+  <tr>
+    <td>Modules</td>
+    <td><code>lower_with_under</code></td>
+    <td><code>_lower_with_under</code></td>
+  </tr>
+
+  <tr>
+    <td>Classes</td>
+    <td><code>CapWords</code></td>
+    <td><code>_CapWords</code></td>
+  </tr>
+
+  <tr>
+    <td>Exceptions</td>
+    <td><code>CapWords</code></td>
+    <td></td>
+  </tr>
+
+  <tr>
+    <td>Functions</td>
+    <td><code>lower_with_under()</code></td>
+    <td><code>_lower_with_under()</code></td>
+  </tr>
+
+  <tr>
+    <td>Global/Class Constants</td>
+    <td><code>CAPS_WITH_UNDER</code></td>
+    <td><code>_CAPS_WITH_UNDER</code></td>
+  </tr>
+
+  <tr>
+    <td>Global/Class Variables</td>
+    <td><code>lower_with_under</code></td>
+    <td><code>_lower_with_under</code></td>
+  </tr>
+
+  <tr>
+    <td>Instance Variables</td>
+    <td><code>lower_with_under</code></td>
+    <td><code>_lower_with_under</code> (protected)</td>
+  </tr>
+
+  <tr>
+    <td>Method Names</td>
+    <td><code>lower_with_under()</code></td>
+    <td><code>_lower_with_under()</code> (protected)</td>
+  </tr>
+
+  <tr>
+    <td>Function/Method Parameters</td>
+    <td><code>lower_with_under</code></td>
+    <td></td>
+  </tr>
+
+  <tr>
+    <td>Local Variables</td>
+    <td><code>lower_with_under</code></td>
+    <td></td>
+  </tr>
+
+</table>
+
+##### Names to Avoid
+There are some names we want to avoid! These may be names that are claimed by Python, names that aren't helpful to other readers of your code, or names that are confusing.
+
+Do not use:
+
+* Single character names, except:
+    * In iterators (ex, `for i in range(100):`)
+    * `e` as an exception handler
+    * `f` as a file object
+* `__double_underscore_names__`, because these are reserved by Python!
+* Names that needlessly include a type
+* Names that are offensive (obviously, right?)
+* Names that are meaningless (such as `cool_constant` or `fun_variable`)
+
+##### Mathematical Names
+Sometimes, we will use our code to implement common mathematics or algorithms. In this case, we may want to use short variable names. Here are some things to consider about that:
+
+* Short mathematical names should be generally understood. For example, using `pi` to represent Pi and `v` to represent velocity is generally understood and acceptable. However, using `vd` to represent *velocity x distance* would not be acceptable, as this is not a clear, accepted term.
+* If possible and it makes sense, try using a more descriptive name.
+* Add a short line comment after the first use of the variable if it could help future readers. You may also desire to include units here as well.
 
 ### Linting & CI
 Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
