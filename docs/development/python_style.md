@@ -112,6 +112,9 @@ Sometimes, we will use our code to implement common mathematics or algorithms. I
 * If possible and it makes sense, try using a more descriptive name.
 * Add a short line comment after the first use of the variable if it could help future readers. You may also desire to include units here as well.
 
+##### File Naming
+Files should end with `.py` and should not use dashes (`-`), but rather underscores (`_`). If you do not want the `.py` ending on the Python file and would prefer the file to take the role of an executable, consider making a symbolic link or a shell script wrapper that runs the Python file. (This can be as simple as `exec "$0.py" "$@"`!)
+
 ### Linting & CI
 Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
 
