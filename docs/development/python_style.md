@@ -154,6 +154,10 @@ When attempting to catch exceptions:
 * Keep `try` blocks to a minimum. As `try` blocks grow in size, the probability of *some exception* being raised increases, which may hide the true reasons behind some exceptions. Instead, attempt to keep logic outside of `try` blocks and instead only use `try` to catch code that could directly throw the exception you are trying to catch.
 * Feel free to generate your own exception classes which inherit from built-in exception types. However, in many cases, it makes more sense to only use standard exceptions. For example, there is no need to create a new exception class for catching improper types passed into a method - instead, just use `TypeError`.
 
+When using `assert`:
+
+* Keep its use internal. For example, don't use `assert` to validate human input into a method. Instead, use it to verify to check types or the output of a helper method.
+
 ### Linting & CI
 Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
 
