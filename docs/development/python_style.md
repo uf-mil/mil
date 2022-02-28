@@ -115,6 +115,34 @@ Sometimes, we will use our code to implement common mathematics or algorithms. I
 ##### File Naming
 Files should end with `.py` and should not use dashes (`-`), but rather underscores (`_`). If you do not want the `.py` ending on the Python file and would prefer the file to take the role of an executable, consider making a symbolic link or a shell script wrapper that runs the Python file. (This can be as simple as `exec "$0.py" "$@"`!)
 
+#### Imports
+Imports are a powerful feature of Python. Here is a quick guide for using imports in Python:
+
+```python
+# Entire modules use
+# import x
+import datetime
+
+# Specific modules from parent modules use
+# from x import y
+from dateutil import parser
+
+# Long module names should also use "as" keyword
+from example.package import super_long_subpackage_name as super_long
+
+# Common packages can also use "as"
+import numpy as np
+
+# For relative imports use .
+# For example:
+# Assume this file is in /folder/subfolder where mod2 also lives
+# Bad:
+import mod2
+
+# Good
+from folder.subfolder import mod2
+```
+
 ### Linting & CI
 Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
 
