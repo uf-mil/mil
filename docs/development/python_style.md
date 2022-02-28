@@ -180,6 +180,12 @@ for k, v in dict.iteritems():
     ...
 ```
 
+#### Yielding
+
+Sometimes, it may be desired to have your method **yield** values rather than simply **return** them. Yielding in Python is a powerful feature which delays your method's execution until you need it.
+
+To have a method yield rather than simply return, use the `yield` keyword in the method and mark the method docstring with `Yields:`.
+
 ### Linting & CI
 Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
 
