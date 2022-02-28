@@ -67,7 +67,11 @@ class VotingObject(object):
         return highest
 
     def empty(self):
-        return len(self.votes) == 0
+        length = 0
+        for j in self.votes:
+            if j is not 0:
+                length += 1
+        return length == 0
 
 class VrxClassifier(object):
     # Handle buoys / black totem specially, discrminating on volume as they have the same color

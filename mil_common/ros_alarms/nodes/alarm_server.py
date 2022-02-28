@@ -46,6 +46,9 @@ class AlarmServer(object):
         else:
             self.alarms[alarm.alarm_name] = Alarm.from_msg(alarm)
 
+        if isinstance(alarm,Alarm):
+            alarm = alarm.as_msg()
+
         self._alarm_pub.publish(alarm)
         return True
 
