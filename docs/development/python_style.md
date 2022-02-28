@@ -186,6 +186,14 @@ Sometimes, it may be desired to have your method **yield** values rather than si
 
 To have a method yield rather than simply return, use the `yield` keyword in the method and mark the method docstring with `Yields:`.
 
+#### Lambda Functions
+
+Lambda functions are mini-functions. They are expressed like so: `lambda x, y: x + y`.
+
+If you use lambda functions:
+* Keep them to one line. If they are longer than 80 characters, just use a nested function.
+* Use them sparingly. Using complex, important operations in a lambda functions makes the code harder to debug and harder for other members to understand.
+
 ### Linting & CI
 Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
 
