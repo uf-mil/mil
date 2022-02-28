@@ -158,6 +158,28 @@ When using `assert`:
 
 * Keep its use internal. For example, don't use `assert` to validate human input into a method. Instead, use it to verify to check types or the output of a helper method.
 
+#### Iterators
+
+Iterators provide a powerful way to loop through your code!
+
+* When using list comprehensions, each part of the comprehension (`A for B in C`) should fit on one line. If the list comprehension has more than one `for`, then use a traditional iterator.
+* Attempt to use default iterators when possible:
+```python
+# Yay!
+for key in dict:
+    ...
+
+for k, v in dict.items():
+    ...
+
+# Noooo :(
+for key in dict.keys():
+    ...
+
+for k, v in dict.iteritems():
+    ...
+```
+
 ### Linting & CI
 Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
 
