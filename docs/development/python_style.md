@@ -194,6 +194,27 @@ If you use lambda functions:
 * Keep them to one line. If they are longer than 80 characters, just use a nested function.
 * Use them sparingly. Using complex, important operations in a lambda functions makes the code harder to debug and harder for other members to understand.
 
+#### Conditional Expressions
+
+Conditional expressions are short expressions which use the `if` and `else` keywords. Conditional expressions are powerful tools which can be undertood by new editors of the code.
+
+Remember to keep the result, `if`, and `else` sections of the expression to only one line. For example:
+```python
+# Good
+a = (b if c else d)
+really_long = (evaluating_function(parameter)
+               if really_long_variable_name
+               else other_really_long_var_name
+              )
+
+# Bad
+super_long = (evaluating_function(parameter)
+              if (really_long_variable_name_one
+              and this_iz_cool_func(cats))
+              else 0
+              )
+```
+
 ### Linting & CI
 Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
 
