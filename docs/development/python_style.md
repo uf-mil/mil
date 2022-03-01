@@ -246,6 +246,17 @@ Attempt to use these statements when possible, as they help to make our code loo
 * Be wary when using these types of statements when checking the value of integers. Using something like `if not x / 2` is confusing because both boolean and numerical statements are involved.
 * When using this type of statement to check the size of a Numpy array, use `if (not) array.size` instead of `if array`.
 
+#### Decorators
+
+**D**ecorator = **D**angerous! Sorta. Decorators are powerful for changing the behavior of methods, which can be helpful when operations in the method itself do not suffice.
+
+However, decorators are confusing for new readers of the code, new users to Python, hard to recover from in the case of a raised error, and hard to debug. In the case that a decorator breaks a wrapped function, a MIL member may assume that the function which was operated on by the decorator was at fault, when this may not always be the case.
+
+Therefore, when using decorators, keep in mind:
+* Please test decorators extensively.
+* Every decorator should be extensively documented.
+* Please use decorators judiciously.
+
 ### Linting & CI
 Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
 
