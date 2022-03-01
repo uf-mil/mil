@@ -153,12 +153,6 @@ class VrxNavigation(Vrx):
                     self.send_feedback('Investingating {}'.format(objects[i].id))
                     investigated.add(objects[i].id)
                     move = self.inspect_object(positions[i])
-                    #Figure out what move is
-                    print("positifasdfasfasdfon[")
-
-                    self.send_feedback('move = {}' .format(move))
-                    self.send_feedback('position['+ str(i) + '] = {}'.format(positions[i]))
-                    #self.send_feedback('move = ', move)
                     move_id_tuple = (move, objects[i].id)
                     break
             if move_id_tuple is None:
@@ -221,7 +215,6 @@ class VrxNavigation(Vrx):
         # Wait a bit for PCDAR to get setup
         yield self.nh.sleep(3.0)
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
-        print("helloooooo")
         yield self.prepare_to_enter()
         yield self.wait_for_task_such_that(lambda task: task.state =='running')
         yield self.move.forward(7.0).go()

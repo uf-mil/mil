@@ -11,7 +11,7 @@ from mil_tools import quaternion_matrix
 from navigator_msgs.srv import MoveToWaypointRequest
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest, ObjectDBQueryResponse
 
-___author___ = "Kevin Allen"
+___author___ = "Alex Perez"
 
 
 class VrxNavigation2(Vrx):

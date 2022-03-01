@@ -45,13 +45,11 @@ class VrxNavigation3(Vrx):
     @txros.util.cancellableInlineCallbacks
     def inspect_object(self, position):
         # Go in front of the object, looking directly at it
-        #yield self.move.look_at(position).set_position(position).backward(6.0).go()
 
-        goal_pos = self.closest_point_on_radius(self.pose[0][0], position, 6)
+        goal_pos = self.closest_point_on_radius(self.pose[0], position, 6)
         goal_ori = self.point_at_goal(position)
         req = self.numpy_to_rosmsg(goal_pos, goal_ori)
         yield self.set_long_waypoint(req)
-
         yield self.nh.sleep(5.)
 
     def get_index_of_type(self, objects, classifications):
@@ -259,7 +257,6 @@ class VrxNavigation3(Vrx):
         # Wait a bit for PCDAR to get setup
         yield self.nh.sleep(3.0)
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
-        print("helloooooo")
         yield self.prepare_to_enter()
         yield self.wait_for_task_such_that(lambda task: task.state =='running')
         yield self.move.forward(7.0).go()
