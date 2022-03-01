@@ -224,6 +224,28 @@ Properties should:
 * Not be used when the method invokes a lot of operations. The calling user may not understand this and accidentally invoke a lot of operations that block other processes.
 * Always be marked with the `@property` decorator.
 
+#### Implicit True/False
+
+Python can evaluate a wide variety of statements to `True` and `False`. For example:
+```python
+a = []
+if not a:
+    # If a has no elements
+    do_something()
+
+b = ""
+if b:
+    # If len(b) > 1
+    do_something()
+```
+
+In those statements, `True` and `False` were never explicitly used. However, they were implicitly used.
+
+Attempt to use these statements when possible, as they help to make our code look more crafted and cute. However, keep some things in mind:
+* If you are checking for `None`, just use `if x is None`. If you use `if not x`, then `x = False` will also trigger the conditional statement. This could be a problem when checking to see if a parameter is `None` - if the user passes in `False`, then you're going to have a little problem!
+* Be wary when using these types of statements when checking the value of integers. Using something like `if not x / 2` is confusing because both boolean and numerical statements are involved.
+* When using this type of statement to check the size of a Numpy array, use `if (not) array.size` instead of `if array`.
+
 ### Linting & CI
 Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
 
