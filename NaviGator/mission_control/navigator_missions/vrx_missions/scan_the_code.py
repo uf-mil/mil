@@ -58,7 +58,7 @@ class ScanTheCode(Vrx):
         try:
             pose = yield self.find_stc()
         except Exception as e:
-            sequence = ['red', 'green', 'blue']
+            sequence = ['red', 'green', 'blue', 'yellow']
             yield self.report_sequence(sequence)
             defer.returnValue(sequence)
 
@@ -78,9 +78,9 @@ class ScanTheCode(Vrx):
         contour = np.array(bbox_from_rect(
             rect_from_roi(roi_enclosing_points(self.camera_model, points))), dtype=int)
         try:
-            sequence = yield txros.util.wrap_timeout(self.get_sequence(contour), TIMEOUT_SECONDS, 'Guessing RGB')
+            sequence = yield txros.util.wrap_timeout(self.get_sequence(contour), TIMEOUT_SECONDS, 'Guessing RGBY')
         except txros.util.TimeoutError:
-            sequence = ['red', 'green', 'blue']
+            sequence = ['red', 'green', 'blue', 'yellow']
         print 'Scan The Code Color Sequence', sequence
         self.report_sequence(sequence)
         yield self.send_feedback('Done!')
@@ -89,7 +89,7 @@ class ScanTheCode(Vrx):
     @txros.util.cancellableInlineCallbacks
     def get_sequence(self, contour):
         sequence = []
-        while len(sequence) < 3:
+        while len(sequence) < 4:
             img = yield self.front_left_camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img)
 
@@ -122,7 +122,7 @@ class ScanTheCode(Vrx):
         try:
             yield self.sequence_report(color_sequence)
         except Exception as e: #catch error incase vrx scroing isnt running
-            print e
+            print(e)
 
 
 
@@ -145,7 +145,7 @@ class ScanTheCode(Vrx):
                 _, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
                 # if still no pcodar objects, guess RGB and exit mission
             # go to nearest obj to get better data on that obj
-            print 'going to nearest object'
+            print('going to nearest object')
             yield self.move.set_position(poses[0]).go()
             # get data on closest obj
             msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=1)

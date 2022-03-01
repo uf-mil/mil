@@ -9,7 +9,7 @@ from vrx_gazebo.msg import Task
 from vrx_gazebo.srv import ColorSequence
 from geographic_msgs.msg import GeoPoseStamped, GeoPath
 from nav_msgs.msg import Odometry
-from std_msgs.msg import Float64, Float64MultiArray, String, Int32
+from std_msgs.msg import Float64, Float64MultiArray, String, Int32, Empty
 from navigator_missions import Navigator
 from mil_tools import rosmsg_to_numpy, numpy_to_point
 from sensor_msgs.msg import Image, CameraInfo
@@ -28,7 +28,8 @@ class Vrx(Navigator):
         Vrx.from_lla = Vrx.nh.get_service_client("/fromLL", FromLL)
         Vrx.to_lla = Vrx.nh.get_service_client("/toLL", ToLL)
         Vrx.task_info_sub = Vrx.nh.subscribe("/vrx/task/info", Task)
-        Vrx.scan_dock_color_sequence = Vrx.nh.get_service_client("/vrx/scan_dock/color_sequence", ColorSequence)
+        Vrx.scan_dock_color_sequence = Vrx.nh.get_service_client("/vrx/scan_dock_deliver/color_sequence", ColorSequence)
+        Vrx.fire_ball = Vrx.nh.advertise("/wamv/shooters/ball_shooter/fire", Empty)
         Vrx.station_keep_goal = Vrx.nh.subscribe("/vrx/station_keeping/goal", GeoPoseStamped)
         Vrx.wayfinding_path_sub = Vrx.nh.subscribe("/vrx/wayfinding/waypoints", GeoPath)
         Vrx.station_keeping_pose_error = Vrx.nh.subscribe("/vrx/station_keeping/pose_error", Float64)
@@ -106,15 +107,13 @@ class Vrx(Navigator):
             yield self.run_submission('VrxStationKeeping2')
         elif task_name == 'wayfinding':
             yield self.run_submission('VrxWayfinding2')
-        elif task_name == 'gymkhana':
-            yield self.run_submission('VrxBeacon')
         elif task_name == 'perception':
             yield self.run_submission('VrxPerception')
         elif task_name == 'wildlife':
             yield self.run_submission('VrxWildlife')
+        elif task_name == 'gymkhana':
+            yield self.run_submission('VrxBeacon')
         elif task_name == 'scan_dock_deliver':
             yield self.run_submission('ScanAndDock')
-        elif task_name == 'scan':
-            yield self.run_submission('DockDriver')
         msg = yield self.task_info_sub.get_next_message()
         defer.returnValue(msg)

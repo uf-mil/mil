@@ -71,32 +71,35 @@ class Dock(Vrx):
         bbox_enu = np.dot(rotation[:3,:3],bbox)
         yield self.move.set_position((bbox_enu+position)).look_at(position).go()
         curr_color, masked_image = yield self.get_color()
-        if curr_color!=self.color:
-            # Dock at the other side of the dock, no further perception
-            yield self.move.backward(5).go()
-            yield self.move.set_position((-bbox_enu+position)).look_at(position).go()
-            yield self.dock()
-        else:
-            if self.get_shape(masked_image) == self.shape:
-                print 'shapes match'
-                yield self.dock()
-            else:
-                # go to other one
+        
+        #ensure docking logic is correct
+        for i in range(3):
+            if curr_color!=self.color:
+                # check next dock station
                 yield self.move.backward(5).go()
                 yield self.move.set_position((-bbox_enu+position)).look_at(position).go()
-                curr_color, _ = yield self.get_color()
-
-                task_info = yield self.task_info_sub.get_next_message()
-                if curr_color!=self.color and task_info.remaining_time.secs >= 60:
-                    # if we got the right color on the other side and the wrong color on this side, 
-                    # go dock in the other side
-                    yield self.move.backward(5).go()
-                    yield self.move.set_position((bbox_enu+position)).look_at(position).go()
+                continue
+            else:
+                if self.get_shape(masked_image) == self.shape:
+                    print('shapes match')
                     yield self.dock()
                 else:
-                    # this side is the right color
-                    # Dock at the other side of the dock, no further perception
-                    yield self.dock()
+                    # go to other one
+                    yield self.move.backward(5).go()
+                    yield self.move.set_position((-bbox_enu+position)).look_at(position).go()
+                    curr_color, _ = yield self.get_color()
+
+                    task_info = yield self.task_info_sub.get_next_message()
+                    if curr_color!=self.color and task_info.remaining_time.secs >= 60:
+                        # if we got the right color on the other side and the wrong color on this side, 
+                        # go dock in the other side
+                        yield self.move.backward(5).go()
+                        yield self.move.set_position((bbox_enu+position)).look_at(position).go()
+                        yield self.dock()
+                    else:
+                        # this side is the right color
+                        # Dock at the other side of the dock, no further perception
+                        yield self.dock()
         yield self.send_feedback('Done!')
 
 
