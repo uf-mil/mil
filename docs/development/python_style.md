@@ -257,6 +257,39 @@ Therefore, when using decorators, keep in mind:
 * Every decorator should be extensively documented.
 * Please use decorators judiciously.
 
+### Typing
+**Please, whenever possible, add type annotations to your code.** Typing is a powerful feature of Python that helps others read and understand your code.
+
+Type annotations take on the following format:
+```python
+def sum(a: int, b: int) -> int:
+    return a + b
+```
+
+The `int` keyword after the `a` and `b` parameters of the method signals that the method accepts two integers. The `-> int` at the end of the function signature signals that the method then returns an `int`.
+
+Other common built-in type annotations you might see include `float`, `dict`, `bool`, or `None`. Sometimes, though type annotations can be a little more complex. How do you write the type of a parameter that is optional? Or how you do you write the type annotation of a method that can return a `List` or a `dict`? Or how about a method that returns another method?? (Method inception!)
+
+This is where the built-in `typing` module comes in. This handly module contains all sorts of classes to represent types throughout your code. Let's have a look.
+
+```python
+from typing import List, Union, Optional, Callable
+
+def crazy_func(a: int, b: Union[List[float], dict], c: Optional[dict] = None) -> Callable:
+    # Do some crazy stuff
+    return d
+```
+
+What the heck is that method even saying?
+1. First, `a` accepts type `int`.
+2. Second, `b` accepts either (this is what the `Union` class represents) a list of `float`s or a `dict`.
+3. `c` *can* accept a `dict`, but it doesn't have to - supplying this parameter is `Optional`.
+4. The function returns another method, known to `typing` as a `Callable`.
+
+Note that if your type annotations are overly long, it may be a good idea to split up your method into a series of shorter methods.
+
+### Docstrings
+
 ### Linting & CI
 Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
 
