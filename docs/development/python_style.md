@@ -215,6 +215,15 @@ super_long = (evaluating_function(parameter)
               )
 ```
 
+#### Properties
+
+Properties are a powerful feature of Python which allow traditional class methods to be hidden as attributes. Sneaky! This adds the benefit of masking getters and setters as traditional properties, but can accidentally mask complexion in the code that should not be hidden.
+
+Properties should:
+* Not be used for very simple operations (such as just returning a value)
+* Not be used when the method invokes a lot of operations. The calling user may not understand this and accidentally invoke a lot of operations that block other processes.
+* Always be marked with the `@property` decorator.
+
 ### Linting & CI
 Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
 
