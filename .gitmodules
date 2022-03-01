@@ -1,9 +1,6 @@
 [submodule "gnc/lqRRT"]
 	path = NaviGator/gnc/navigator_path_planner/lqRRT
 	url = https://github.com/uf-mil/lqRRT
-[submodule "txros"]
-	path = mil_common/txros
-	url = https://github.com/txros/txros.git
 [submodule "drivers/pointgrey_camera_driver"]
 	path = mil_common/drivers/pointgrey_camera_driver
 	url = https://github.com/uf-mil/pointgrey_camera_driver
@@ -23,3 +20,6 @@
 [submodule "NaviGator/simulation/VRX/vrx-docker"]
 	path = NaviGator/simulation/VRX/vrx-docker
 	url = https://github.com/osrf/vrx-docker.git
+[submodule "mil_common/txros"]
+	path = mil_common/txros
+	url = https://github.com/uf-mil/txros.git
