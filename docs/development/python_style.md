@@ -268,6 +268,10 @@ dr_seuss = ("Say! I like green eggs and ham!"
 There are some exceptions:
 * URLs in comments. Don't split these up.
 
+#### Blank Line Separators
+
+Use blank lines to separate different parts of your module. Use two lines to seprate top-level elements of any file (whether they are classes or methods) and one line to separate other distinct elements of the file.
+
 ### Typing
 **Please, whenever possible, add type annotations to your code.** Typing is a powerful feature of Python that helps others read and understand your code.
 
