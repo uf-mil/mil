@@ -257,6 +257,17 @@ Therefore, when using decorators, keep in mind:
 * Every decorator should be extensively documented.
 * Please use decorators judiciously.
 
+##### Line Length
+
+Please keep lines to 80 characters or less. This can be seen in vim by using the option `colorcolumn=80`. If you have long strings, then use parentheses to implicitly connect multiple strings together:
+```python
+dr_seuss = ("Say! I like green eggs and ham!"
+            "I like them! I do, Sam-I-Am!")
+```
+
+There are some exceptions:
+* URLs in comments. Don't split these up.
+
 ### Typing
 **Please, whenever possible, add type annotations to your code.** Typing is a powerful feature of Python that helps others read and understand your code.
 
