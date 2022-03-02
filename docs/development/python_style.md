@@ -323,6 +323,10 @@ Getters and setters should only be used when changing a single property causes s
 
 Getters and setters should be named in a way that clearly demonstrates which property is being set. For example, `get_weather()` and `set_weather()`.
 
+#### Function Length
+
+A function should roughly be **30 lines**. This is not a hard rule, but is a general rule to keep in mind when writing and reading functions. If you see a function longer than this, feel free to break it up if it makes sense.
+
 ### Typing
 **Please, whenever possible, add type annotations to your code.** Typing is a powerful feature of Python that helps others read and understand your code.
 
