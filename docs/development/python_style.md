@@ -370,6 +370,40 @@ Note that if your type annotations are overly long, it may be a good idea to spl
 
 ### Docstrings
 
+Docstrings stand for doctor strings, strings that can only be created by medical professionals. Just kidding! Docstrings stand for strings that document particular aspects of one's code. Docstrings can be used to document modules, methods, and classes!
+
+#### General Docstrings
+
+For all docstrings, use narrative text. It doesn't have to be your best literary work, but please make descriptions in your docstrings readable.
+
+#### Modules
+
+Each module should have a docstring placed in its `__init__.py` file, at the top of the file. This docstring should explain what the module does. First, a one-line sentence should be added to explain briefly what the module does. Then, below this sentence, evaluate more on what the module does. Then, below the longer description, add one or two brief examples of the module's use case.
+
+```python
+# calculator/__init__.py
+"""
+Provides several calculation methods to add, subtract, multiply, and divide 
+integers.
+
+Each calculation method is structured into a separate method. Some methods can
+also accept any amount of arguments, while others only accept two arguments.
+Some methods also support different methods of calculation or provide
+optimizations to speed up performance.
+
+Example 1:
+    
+    calc = Calculator()
+    calc.add(4, 3) # 7
+
+    calc.subtract_many(4, 3, 5) # 4 - 3 - 5 = -4
+"""
+```
+
+#### Classes
+
+#### Methods
+
 ### Linting & CI
 Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
 
