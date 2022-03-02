@@ -306,6 +306,15 @@ print(f"The {rand} number is less than 1.")
 print(f"This number is less than one: {rand}")
 ```
 
+#### TODO Comments
+
+TODO comments are a great way to mark a piece of code as not currently finished. To use TODO comments, simply create a comment that starts with `TODO`, has your name, and what still needs to be done. Simple!
+```python
+# TODO (Dr. Schwartz) - Finish method to add c in final sum
+def sum(a: int, b: int, c: int):
+    return a + b
+```
+
 ### Typing
 **Please, whenever possible, add type annotations to your code.** Typing is a powerful feature of Python that helps others read and understand your code.
 
