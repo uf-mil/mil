@@ -206,7 +206,7 @@ If you use lambda functions:
 
 #### Conditional Expressions
 
-Conditional expressions are short expressions which use the `if` and `else` keywords. Conditional expressions are powerful tools which can be undertood by new editors of the code.
+Conditional expressions are short expressions which use the `if` and `else` keywords. Conditional expressions are powerful tools which can be understood by new editors of the code.
 
 Remember to keep the result, `if`, and `else` sections of the expression to only one line. For example:
 ```python
@@ -280,7 +280,7 @@ There are some exceptions:
 
 #### Blank Line Separators
 
-Use blank lines to separate different parts of your module. Use two lines to seprate top-level elements of any file (whether they are classes or methods) and one line to separate other distinct elements of the file.
+Use blank lines to separate different parts of your module. Use two lines to separate top-level elements of any file (whether they are classes or methods) and one line to separate other distinct elements of the file.
 
 #### Whitespace
 
@@ -289,7 +289,7 @@ Whitespace (not to be confused with greenspace, redspace, or rainbowspace!) can 
 When using whitespace:
 * Do not use whitespace in front of a comma or colon.
 * Always surround comparison operators (`==`, `!=`, `<`) with a whitespace character. 
-* Do not put a whitespace character before a an index slice (such as `x [1]`) or function call (such as `fun (20)`).
+* Do not put a whitespace character before an index slice (such as `x [1]`) or function call (such as `fun (20)`).
 * Do not include whitespace inside brackets including parentheses, brackets, or braces. For example, use `(x + 1)`, not `( x + 1 )` or `{'schwartz': True}`, not `{ 'schwartz': True }`.
 * In function calls, do not use whitespace when passing a default parameter, unless a type annotation is present. For example, do not use `test(a, b: float=0.0)`, instead use `test(a, b: float = 0.0)`.
 
@@ -350,7 +350,7 @@ The `int` keyword after the `a` and `b` parameters of the method signals that th
 
 Other common built-in type annotations you might see include `float`, `dict`, `bool`, or `None`. Sometimes, though type annotations can be a little more complex. How do you write the type of a parameter that is optional? Or how you do you write the type annotation of a method that can return a `List` or a `dict`? Or how about a method that returns another method?? (Method inception!)
 
-This is where the built-in `typing` module comes in. This handly module contains all sorts of classes to represent types throughout your code. Let's have a look.
+This is where the built-in `typing` module comes in. This handy module contains all sorts of classes to represent types throughout your code. Let's have a look.
 
 ```python
 from typing import List, Union, Optional, Callable
@@ -429,7 +429,7 @@ Just like modules and classes, methods should also have docstrings! Begin method
 
 1. `Args:` - The arguments accepted by the function. List each argument name, its type annotation, and what it is in English. If multiple positional arguments (such as `*args`) or multiple keyword arguments (such as `**kwargs`) are accepted by the method, write these in the docstring as well.
 2. `Returns:` - The type annotation of the method's returned value, as well as an explanation of what is returned in English.
-3. `Raises:` - Any exceptions that are raised by the method. List the type of exception raised and what condition will cause the exception to be rasied (in English).
+3. `Raises:` - Any exceptions that are raised by the method. List the type of exception raised and what condition will cause the exception to be raised (in English).
 
 ```python
 # calculator/history.py
@@ -466,7 +466,9 @@ class CalculatorHistory:
 ```
 
 ### Linting & CI
-Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
+We are currently in the process of setting up linting and CI for our Python systems.
 
 ### Other Tools
-Link to some other helpful tools that members can use to make formatting and checking easier.
+Other tools that can make working with Python easier in our codebase include
+code completion and checking systems. You can install these in popular editors
+such as VSCode or Vim.
