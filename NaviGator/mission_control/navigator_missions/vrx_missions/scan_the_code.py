@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from turtle import width
 import txros
 import numpy as np
 from vrx import Vrx
@@ -23,9 +24,9 @@ LED_PANNEL_MIN = 0.6
 STC_HEIGHT = 2.3
 STC_WIDTH = 2
 
-CAMERA_LINK_OPTICAL = 'front_left_camera_link_optical'
+CAMERA_LINK_OPTICAL = 'wamv/front_left_camera_link_optical'
 
-COLOR_SEQUENCE_SERVICE = '/vrx/scan_dock/color_sequence'
+COLOR_SEQUENCE_SERVICE = '/vrx/scan_dock_deliver/color_sequence'
 
 TIMEOUT_SECONDS = 30
 
@@ -58,7 +59,7 @@ class ScanTheCode(Vrx):
         try:
             pose = yield self.find_stc()
         except Exception as e:
-            sequence = ['red', 'green', 'blue', 'yellow']
+            sequence = ['red', 'green', 'blue']
             yield self.report_sequence(sequence)
             defer.returnValue(sequence)
 
@@ -77,10 +78,15 @@ class ScanTheCode(Vrx):
 
         contour = np.array(bbox_from_rect(
             rect_from_roi(roi_enclosing_points(self.camera_model, points))), dtype=int)
+
+        #hacky fix
+        #contour[0][0] = contour[0][0] + 20
+        #contour[3][0] = contour[3][0] + 20
+        
         try:
-            sequence = yield txros.util.wrap_timeout(self.get_sequence(contour), TIMEOUT_SECONDS, 'Guessing RGBY')
+            sequence = yield txros.util.wrap_timeout(self.get_sequence(contour), TIMEOUT_SECONDS, 'Guessing RGB')
         except txros.util.TimeoutError:
-            sequence = ['red', 'green', 'blue', 'yellow']
+            sequence = ['red', 'green', 'blue']
         print 'Scan The Code Color Sequence', sequence
         self.report_sequence(sequence)
         yield self.send_feedback('Done!')
@@ -89,23 +95,47 @@ class ScanTheCode(Vrx):
     @txros.util.cancellableInlineCallbacks
     def get_sequence(self, contour):
         sequence = []
-        while len(sequence) < 4:
+        while len(sequence) < 3:
+
             img = yield self.front_left_camera_sub.get_next_message()
+
             img = self.bridge.imgmsg_to_cv2(img)
 
             mask = contour_mask(contour, img_shape=img.shape)
 
             img = img[:,:,[2,1,0]]
-            mask_msg = self.bridge.cv2_to_imgmsg(bitwise_and(img, img, mask = mask))
+
+            img = bitwise_and(img, img, mask = mask)
+
+            center_pixel_col = contour[3][0] + 15
+            center_pixel_row = (contour[3][1] + contour[0][1]) / 2
+
+            b_comp = img[center_pixel_row][center_pixel_col][0]
+            g_comp = img[center_pixel_row][center_pixel_col][1]
+            r_comp = img[center_pixel_row][center_pixel_col][2]
+
+            #target cell for debugging purposes
+            for i in range(len(img)):
+                img[i][center_pixel_col] = [255,255,255]
+            for i in range(len(img[0])):
+                img[center_pixel_row][i] = [255,255,255]
+
+            mask_msg = self.bridge.cv2_to_imgmsg(img, "bgr8")
 
             self.image_debug_pub.publish(mask_msg)
-            features = np.array(self.classifier.get_features(img, mask)).reshape(1, 9)
-            #print features
-            class_probabilities = self.classifier.feature_probabilities(features)[0]
-            most_likely_index = np.argmax(class_probabilities)
-            most_likely_name = self.classifier.CLASSES[most_likely_index]
-            probability = class_probabilities[most_likely_index]
-            #print most_likely_name
+
+            most_likely_name = "off"
+            if r_comp > 128 and b_comp < 128 and g_comp < 128:
+                most_likely_name = "red"
+            elif r_comp < 128 and b_comp > 128 and g_comp < 128:
+                most_likely_name = "blue"
+            elif r_comp < 128 and b_comp < 128 and g_comp > 128:
+                most_likely_name = "green"
+            elif r_comp > 128 and b_comp < 128 and g_comp > 128:
+                most_likely_name = "yellow"
+            elif r_comp < 128 and b_comp < 128 and g_comp < 128:
+                most_likely_name = "off"
+
             if most_likely_name == 'off':
                 sequence = []
             elif sequence == [] or most_likely_name != sequence[-1]:
@@ -129,17 +159,21 @@ class ScanTheCode(Vrx):
     @txros.util.cancellableInlineCallbacks
     def find_stc(self):
         pose = None
+        print("entering find_stc")
         # see if we already got scan the code tower
         try:
             _, poses = yield self.get_sorted_objects(name='stc_platform', n=1)
             pose = poses[0]
         # incase stc platform not already identified
         except Exception as e:
+            print("could not find stc_platform")
             # get all pcodar objects
             try:
+                print("check for any objects")
                 _, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
             # if no pcodar objects, drive forward
             except Exception as e:
+                print("literally no objects?")
                 yield self.move.forward(50).go()
                 # get all pcodar objects
                 _, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
@@ -161,6 +195,8 @@ class ScanTheCode(Vrx):
             else: # if about same size as stc, lable it stc
                 yield self.pcodar_label(msgs[0].id, 'stc_platform')
                 pose = poses[0]
+
+        print("leaving find_stc")
         defer.returnValue(pose)
 
 def z_filter(db_obj_msg):

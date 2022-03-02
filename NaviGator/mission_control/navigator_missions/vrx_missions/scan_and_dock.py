@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import txros
+import rospy
 import numpy as np
 from vrx import Vrx
 from vrx_gazebo.srv import ColorSequenceRequest, ColorSequence
 from std_msgs.msg import String
+from nav_msgs.msg import Odometry
 
 
 class ScanAndDock(Vrx):

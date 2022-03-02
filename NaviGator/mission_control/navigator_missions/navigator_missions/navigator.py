@@ -105,7 +105,6 @@ class Navigator(BaseMission):
     def _init_vrx(cls):
         cls.killed = False
         cls.odom_loss = False
-        cls.tf_listener = tf.TransformListener(cls.nh)
         cls.set_vrx_classifier_enabled = cls.nh.get_service_client('/vrx_classifier/set_enabled', SetBool)
 
     @classmethod
