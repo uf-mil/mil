@@ -272,6 +272,17 @@ There are some exceptions:
 
 Use blank lines to separate different parts of your module. Use two lines to seprate top-level elements of any file (whether they are classes or methods) and one line to separate other distinct elements of the file.
 
+#### Whitespace
+
+Whitespace (not to be confused with greenspace, redspace, or rainbowspace!) can be incorrectly used in files to give the appearance of weird formatting.
+
+When using whitespace:
+* Do not use whitespace in front of a comma or colon.
+* Always surround comparison operators (`==`, `!=`, `<`) with a whitespace character. 
+* Do not put a whitespace character before a an index slice (such as `x [1]`) or function call (such as `fun (20)`).
+* Do not include whitespace inside brackets including parentheses, brackets, or braces. For example, use `(x + 1)`, not `( x + 1 )` or `{'schwartz': True}`, not `{ 'schwartz': True }`.
+* In function calls, do not use whitespace when passing a default parameter, unless a type annotation is present. For example, do not use `test(a, b: float=0.0)`, instead use `test(a, b: float = 0.0)`.
+
 ### Typing
 **Please, whenever possible, add type annotations to your code.** Typing is a powerful feature of Python that helps others read and understand your code.
 
