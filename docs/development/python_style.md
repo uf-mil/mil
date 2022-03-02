@@ -5,6 +5,16 @@ Don't feel pressured to know or understand every rule, and totally feel free to 
 
 Additionally, this guide is not meant to be permanent! If you have a suggestion, feel free to bring it up and change the guide! Have fun!
 
+### The Power to Change Things
+
+Before we dive into the Python, a brief word about our code and your ability to change things.
+
+These guidelines are not a hard rule. These guidelines are not permanent, nor should they be. These guidelines were not created by anyone smarter than you.
+
+Therefore, you always have the power to change them. Likewise, if you see code that breaks these guidelines, feel free to change it. If you have suggestions for the guidelines, you should suggest them.
+
+Your innovation and willingness to break and bend the rules that currently exists is what can keep our code powerful, clean, and beautiful.
+
 ### Features
 This section explains how to use several of Python's features to your advantage.
 
