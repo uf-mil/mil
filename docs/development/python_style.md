@@ -402,7 +402,68 @@ Example 1:
 
 #### Classes
 
+Every class should also have a docstring. Begin the docstring by briefly elaborating on the purpose of the class before explaining more below, in a similar fashion to the module docstring. Then, add any public attributes provided by the class that are useful to the caller.
+
+```python
+# calculator/history.py
+class CalculatorHistory:
+    """
+    Stores the history of completed operations on the calculator.
+
+    Beyond storing the operations completed, the class also provides methods
+    for completing statistics on the operations completed. Individual entries
+    can be viewed or deleted from the history.
+
+    Attributes:
+        history_length: int - The number of entries in the current history.
+        oldest_entry: datetime.datetime - The time that the oldest entry in the
+          history was executed.
+    """
+    def __init__(self):
+        ...
+```
+
 #### Methods
+
+Just like modules and classes, methods should also have docstrings! Begin method docstrings with a brief explanation, followed by a longer, more detailed explanation if needed. Then, add the following three sections of the docstring:
+
+1. `Args:` - The arguments accepted by the function. List each argument name, its type annotation, and what it is in English. If multiple positional arguments (such as `*args`) or multiple keyword arguments (such as `**kwargs`) are accepted by the method, write these in the docstring as well.
+2. `Returns:` - The type annotation of the method's returned value, as well as an explanation of what is returned in English.
+3. `Raises:` - Any exceptions that are raised by the method. List the type of exception raised and what condition will cause the exception to be rasied (in English).
+
+```python
+# calculator/history.py
+class CalculatorHistory:
+    ...
+
+    def retrieve_entries(self,
+                         history_file: str,
+                         *entries_indexes: int,
+                         /,
+                         return_only_since: Optional[datetime.datetime] = None
+    ) -> List[HistoryEntry]:
+        """
+        Retrieves a series of entries in the calculator history.
+
+        Used to obtain a set of individual entries. For a general range of
+        entries, use retrieve_range() instead.
+
+        Args:
+            history_file: str - The name of the history file to retrieve the
+              entries from.
+            *entries_indexes: int - A list of indexes to retrieve entries at.
+            return_only_since: Optional[datetime.datetime] - If specified,
+              then only return entries from a particular point.
+
+        Returns:
+            List[HistoryEntry] - A list of the history entries that match
+              the specified indices.
+
+        Raises:
+            IndexError - The desired index does not exist in the history
+              record.
+        """
+```
 
 ### Linting & CI
 Explain the process of Python linting, what is used, and what happens to one's code upon the linter striking it.
