@@ -22,9 +22,3 @@ We follow the [ROS style guide](http://wiki.ros.org/CppStyleGuide)
 
 ### Autoformating
 TODO
-
-## Python
-We follow the [ROS style guide](http://wiki.ros.org/PyStyleGuide)
-
-### Autoformating
-TODO
