@@ -315,6 +315,14 @@ def sum(a: int, b: int, c: int):
     return a + b
 ```
 
+#### Getters and Setters
+
+Getters and setters serve as dedicated methods for getting and setting a property of a class. These are similar to `@property` methods, but these are explicit methods which are not hidden as properties.
+
+Getters and setters should only be used when changing a single property causes significant overhead or recalculation of other properties. Otherwise, simply set the property as public or use a small `@property` method.
+
+Getters and setters should be named in a way that clearly demonstrates which property is being set. For example, `get_weather()` and `set_weather()`.
+
 ### Typing
 **Please, whenever possible, add type annotations to your code.** Typing is a powerful feature of Python that helps others read and understand your code.
 
