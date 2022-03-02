@@ -283,6 +283,29 @@ When using whitespace:
 * Do not include whitespace inside brackets including parentheses, brackets, or braces. For example, use `(x + 1)`, not `( x + 1 )` or `{'schwartz': True}`, not `{ 'schwartz': True }`.
 * In function calls, do not use whitespace when passing a default parameter, unless a type annotation is present. For example, do not use `test(a, b: float=0.0)`, instead use `test(a, b: float = 0.0)`.
 
+#### String Formatting
+
+Many times you will want to format strings in a certain way: to add variables into the string, to make the string look pretty, or to use the string in a certain context, such as an enumerated iterator (`for i, v in enumerate(list): print(i + v)`).
+
+In general: Just use f-strings! f-strings are a special type of string and can be made by prepending the first single/double quote of a string with `f`. This special string allows you to add in expressions into the string by using a pair of curly braces:
+```python
+ultimate_answer = 42
+print(f"The ultimate answer is {ultimate_answer}.")
+
+print(f"The ultimate answer is not {ultimate_answer // 2}!")
+```
+
+When formatting a string that will be printed for logging/debugging, attempt to use a common starting term such that the string can be found with a search tool, such as `grep` or the terminal's search functionality. Additionally, make clear what sections of the logged method are interpolated or calculated.
+```python
+# Please no!
+import random
+rand = random.random()
+print(f"The {rand} number is less than 1.")
+
+# Now, you can search for "This number is less than one" and find all matching instances!
+print(f"This number is less than one: {rand}")
+```
+
 ### Typing
 **Please, whenever possible, add type annotations to your code.** Typing is a powerful feature of Python that helps others read and understand your code.
 
