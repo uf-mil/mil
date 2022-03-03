@@ -9,15 +9,19 @@ import matplotlib.pyplot as plt
 
 DEBUG = 0
 
+
+# this is apparently how you comment in python
+
+# This appears to be the main algorithm. 
+#   Takes in samples, the rate of samples, the velocity of sound in water, and two distance parameters
 def run(samples, sample_rate, v_sound, dist_h, dist_h4):
     # Perform algorithm
     if DEBUG: plt.cla()
     if DEBUG: plt.subplot(2, 2, 1)
     if DEBUG: map(plt.plot, samples)
-    samples = zero_mean(samples)
-    freq, amplitude, samples_fft = compute_freq(
-        samples, sample_rate, numpy.array([5e3, 40e3]), plot=True)
-    fft_sharpness = amplitude**2 / numpy.sum(samples_fft)
+    samples = zero_mean(samples) #  Zero the measurements to ensure accurate data
+    freq, amplitude, samples_fft = compute_freq(samples, sample_rate, numpy.array([5e3, 40e3]), plot=True) # Calculate the frequency and amplitude of recieved signal (if any)
+    fft_sharpness = amplitude**2 / numpy.sum(samples_fft) # From the amplitude and the number of samples, calulate the sharpness of the fft.
     if DEBUG: plt.subplot(2, 2, 2)
     if DEBUG: map(plt.plot, samples_fft)
     upsamples, upsample_rate = preprocess(samples, sample_rate, 3e6)
@@ -52,22 +56,24 @@ def run(samples, sample_rate, v_sound, dist_h, dist_h4):
         template_pos=template_pos,
         template_width=template_width)
 
-
+#   This method seems to be a "zeroing" function, like tare on a scale, it is essentially a self-calibration function to help figure out where the zero mark is in the readings.
 def zero_mean(samples):
     """Zero means data by assuming that the first 32 samples are zeros"""
     return samples - numpy.mean(samples[:, 0:32], 1)[:, numpy.newaxis]
 
-
+# """Rescapes samples so each individual channel lies between -1 and 1"""
 def normalize(samples):
     """Rescapes samples so each individual channel lies between -1 and 1"""
     return samples / numpy.amax(numpy.abs(samples), 1)[:, numpy.newaxis]
 
-
+#   This method takes in the samples to be analyzed, the sampling rate, the acceptable frequency range, and returns the frequency of the pings, the amplitude thereof, and the samples fast
+#   fourier transform.
 def compute_freq(samples, sample_rate, freq_range, plot=False):
     """Checks whether samples are likely a solid ping and returns the frequency."""
+    #"""Checks whether samples are likely a solid ping and returns the frequency."""
     samples_window = samples * numpy.hamming(samples.shape[1])
 
-    # Compute fft, find peaks in desired range
+    # Compute fast fourier transform, find peaks in desired range
     fft_length = samples.shape[1]
     samples_fft = numpy.absolute(
         numpy.fft.fft(samples_window, fft_length,
@@ -86,15 +92,15 @@ def compute_freq(samples, sample_rate, freq_range, plot=False):
     amplitude = math.sqrt(numpy.mean(samples_fft[:, int(round(peak))]))
     return freq, amplitude, samples_fft
 
-
+#   Converts the bin(ary) data to frequency by dividing the input sample rate by two, quantity then divided by (fft_length/2), all multiplied by bin(ary)
 def bin_to_freq(bin, sample_rate, fft_length):
     return (sample_rate / 2) / (fft_length / 2) * bin
 
-
+#   Appears to be the inverse of bin_t_freq, takes in a frequency and returns the frequency multiplied by (fft_length/2)/(sample_rate /2)
 def freq_to_bin(freq, sample_rate, fft_length):
     return freq * ((fft_length / 2) / (sample_rate / 2))
 
-
+# """Upsamples data to have approx. desired_sample_rate."""
 def preprocess(samples, sample_rate, desired_sample_rate):
     """Upsamples data to have approx. desired_sample_rate."""
     samples = bandpass(samples, sample_rate)
@@ -107,7 +113,7 @@ def preprocess(samples, sample_rate, desired_sample_rate):
         upsamples[i, :] = util.resample(samples[i, :], upfact, 1)
     return upsamples, sample_rate * upfact
 
-
+# """Applies a 20-30khz bandpass FIR filter"""
 def bandpass(samples, sample_rate):
     """Applies a 20-30khz bandpass FIR filter"""
     # 25-40KHz is the range of the pinger for the roboboat competition
