@@ -8,10 +8,14 @@ from mil_tools import numpy_to_pointcloud2 as np2pc2
 from mil_vision_tools.cv_tools import rect_from_roi, roi_enclosing_points, contour_mask
 from image_geometry import PinholeCameraModel
 from operator import attrgetter
+from std_msgs.msg import Empty
 from std_srvs.srv import SetBoolRequest
 from navigator_vision import VrxStcColorClassifier
 from cv_bridge import CvBridge
 import cv2
+import os
+from tf import transformations
+from rospkg import RosPack
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from dynamic_reconfigure.msg import DoubleParameter
 from mil_tools import pose_to_numpy, rosmsg_to_numpy
@@ -21,7 +25,7 @@ from sensor_msgs.msg import Image, CameraInfo
 PANNEL_MAX  = 0
 PANNEL_MIN = 2
 
-CAMERA_LINK_OPTICAL = 'front_left_camera_link_optical'
+CAMERA_LINK_OPTICAL = 'wamv/front_left_camera_link_optical'
 
 COLOR_SEQUENCE_SERVICE = '/vrx/scan_dock/color_sequence'
 
@@ -34,6 +38,7 @@ class Dock(Vrx):
         self.classifier = VrxStcColorClassifier()
         self.classifier.train_from_csv()
         self.camera_model = PinholeCameraModel()
+        self.rospack = RosPack()
 
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
@@ -46,62 +51,179 @@ class Dock(Vrx):
         self.color = args[0]
         self.shape = args[1]
 
+        print("entered docking task", self.color, self.shape)
+
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
         info = yield self.front_left_camera_info_sub.get_next_message()
         self.camera_model.fromCameraInfo(info)
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = 'cluster_tolerance_m'
-        pcodar_cluster_tol.value = 20
+        pcodar_cluster_tol.value = 10
 
         yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
         self.nh.sleep(5)
 
-        pose = yield self.find_dock()
-        yield self.move.look_at(pose).set_position(pose).backward(20).go()
-        # get updated points now that we a closer
-        dock, pose = yield self.get_sorted_objects(name='dock', n=1)
+        pos = yield self.find_dock()
+
+        print("going towards dock")
+        yield self.move.look_at(pos).set_position(pos).backward(20).go()
+
+        # get a vector to the longer side of the dock
+        dock, pos = yield self.get_sorted_objects(name='dock', n=1)
         dock = dock[0]
         position, quat = pose_to_numpy(dock.pose)
         rotation = quaternion_matrix(quat)
         bbox = rosmsg_to_numpy(dock.scale)
         bbox[2] = 0
-        min_dim = np.argmin(bbox[:2])
-        bbox[min_dim] = 0
+        max_dim = np.argmax(bbox[:2])
+        bbox[max_dim] = 0
         bbox_enu = np.dot(rotation[:3,:3],bbox)
-        yield self.move.set_position((bbox_enu+position)).look_at(position).go()
-        curr_color, masked_image = yield self.get_color()
-        
-        #ensure docking logic is correct
-        for i in range(3):
-            if curr_color!=self.color:
-                # check next dock station
-                yield self.move.backward(5).go()
-                yield self.move.set_position((-bbox_enu+position)).look_at(position).go()
-                continue
-            else:
-                if self.get_shape(masked_image) == self.shape:
-                    print('shapes match')
-                    yield self.dock()
-                else:
-                    # go to other one
-                    yield self.move.backward(5).go()
-                    yield self.move.set_position((-bbox_enu+position)).look_at(position).go()
-                    curr_color, _ = yield self.get_color()
+        #this black magic uses the property that a rotation matrix is just a 
+        #rotated cartesian frame and only gets the vector that points towards
+        #the longest side since the vector pointing that way will be at the 
+        #same index as the scale for the smaller side. This is genius!
+        # - Andrew Knee
 
-                    task_info = yield self.task_info_sub.get_next_message()
-                    if curr_color!=self.color and task_info.remaining_time.secs >= 60:
-                        # if we got the right color on the other side and the wrong color on this side, 
-                        # go dock in the other side
-                        yield self.move.backward(5).go()
-                        yield self.move.set_position((bbox_enu+position)).look_at(position).go()
-                        yield self.dock()
-                    else:
-                        # this side is the right color
-                        # Dock at the other side of the dock, no further perception
-                        yield self.dock()
+        #move to first attempt
+        print("moving in front of dock")
+        goal_pos = None
+        curr_pose = yield self.tx_pose
+        side_a_bool = False
+        side_b_bool = False
+        side_a = bbox_enu+position
+        side_b = -bbox_enu+position
+
+        if np.linalg.norm(side_a - curr_pose[0]) < np.linalg.norm(side_b - curr_pose[0]):
+            goal_pos = side_a
+            side_a_bool = True
+        else:
+            goal_pos = side_b
+            side_b_bool = True
+
+        yield self.move.set_position(goal_pos).look_at(position).go()
+
+        target_symbol = self.color + "_" + self.shape
+        symbol_position = yield self.get_symbol_position(target_symbol)
+        print("The correct docking location is ", symbol_position)
+
+        ###
+        rot = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
+
+        side_vect = 0.85 * bbox_enu
+        if side_a_bool:
+            left_position = np.dot(rot, side_vect) + side_a
+            right_position = np.dot(rot, -side_vect) + side_a
+        else:
+            left_position = np.dot(rot, side_vect) + side_b
+            right_position = np.dot(rot, -side_vect) + side_b
+
+        dock_point_left = np.dot(rot, side_vect) + position
+        dock_point_right = np.dot(rot, -side_vect) + position
+        ###        
+
+        #position boat in front of correct symbol
+        if symbol_position == "left":
+            yield self.move.set_position(left_position).look_at(dock_point_left).go(move_type="skid")
+            position = dock_point_left
+        elif symbol_position == "right":
+            yield self.move.set_position(right_position).look_at(dock_point_right).go(move_type="skid")
+            position = dock_point_right
+
+        #enter dock
+        yield self.move.forward(7).go(blind=True, move_type="skid")
+
+        #fire ball
+        self.fire_ball.publish(Empty())
+        yield self.nh.sleep(2)
+        self.fire_ball.publish(Empty())
+        yield self.nh.sleep(2)
+        self.fire_ball.publish(Empty())
+        yield self.nh.sleep(2)
+        self.fire_ball.publish(Empty())
+        yield self.nh.sleep(4)
+
+        #Exit dock
+        yield self.move.backward(7).go(blind=True, move_type="skid")
+
+
+        #for i in range(3):
+        #    if curr_color!=self.color:
+        #        # check next dock station
+        #        yield self.move.backward(5).go()
+        #        yield self.move.set_position((-bbox_enu+position)).look_at(position).go()
+        #        continue
+        #    else:
+        #        if self.get_shape(masked_image) == self.shape:
+        #            print('shapes match')
+        #            yield self.dock()
+        #        else:
+        #            # go to other one
+        #            yield self.move.backward(5).go()
+        #            yield self.move.set_position((-bbox_enu+position)).look_at(position).go()
+        #            curr_color, _ = yield self.get_color()
+#
+        #            task_info = yield self.task_info_sub.get_next_message()
+        #            if curr_color!=self.color and task_info.remaining_time.secs >= 60:
+        #                # if we got the right color on the other side and the wrong color on this side, 
+        #                # go dock in the other side
+        #                yield self.move.backward(5).go()
+        #                yield self.move.set_position((bbox_enu+position)).look_at(position).go()
+        #                yield self.dock()
+        #            else:
+        #                # this side is the right color
+        #                # Dock at the other side of the dock, no further perception
+        #                yield self.dock()
         yield self.send_feedback('Done!')
 
+
+    @txros.util.cancellableInlineCallbacks
+    def get_symbol_position(self, target_symbol):
+
+        #voting system for ten pictures [left, center, right]
+        vote = [0,0,0]
+        method = eval('cv2.TM_CCOEFF_NORMED')
+        path = self.rospack.get_path('navigator_vision')
+        symbol_file = os.path.join(path, 'datasets/dock_target_images/' + target_symbol + ".png")
+        symbol = cv2.imread(symbol_file)
+        _,w,h = symbol.shape[::-1]
+
+        #loop through ten pictures
+        for i in range(10):
+
+            img = yield self.front_left_camera_sub.get_next_message()
+
+            img = self.bridge.imgmsg_to_cv2(img)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            _,width,_ = img.shape[::-1]
+
+            res = cv2.matchTemplate(img,symbol,method)
+            _, _, min_loc, max_loc = cv2.minMaxLoc(res)
+
+            top_left = max_loc
+            bottom_right = (top_left[0] + w, top_left[1] + h)
+            cv2.rectangle(img,top_left, bottom_right, 255, 2)
+            masked_msg = self.bridge.cv2_to_imgmsg(img, "bgr8")
+            self.image_debug_pub.publish(masked_msg)
+
+            if min_loc[0] < width/3.0:
+                vote[0] = vote[0] + 1
+            elif width/3.0 < min_loc[0] < 2*width/3.0:
+                vote[1] = vote[1] + 1
+            else:
+                vote[2] = vote[2] + 1 
+
+        most_likely_index = np.argmax(vote)
+
+        symbol_position = "left"
+        if most_likely_index == 0:
+            symbol_position = "left"
+        elif most_likely_index == 1:
+            symbol_position = "center"
+        elif most_likely_index == 2:
+            symbol_position = "right"
+
+        defer.returnValue(symbol_position)
 
     @txros.util.cancellableInlineCallbacks
     def dock(self):
@@ -134,12 +256,12 @@ class Dock(Vrx):
         approx_area.sort(key=lambda tup: tup[1],reverse = True)
         for i in approx_area:
             if (len(i[0]) == 12):
-                print 'detected as cruciform'
+                print('detected as cruciform')
                 return 'cruciform'
             if (len(i[0]) == 3):
-                print 'detected as triangle'
-                return 'triangle'
-        print 'deteched as circle'
+                print('detected as triangle')
+                return('triangle')
+        print('deteched as circle')
         return 'circle'
 
 
@@ -166,7 +288,9 @@ class Dock(Vrx):
 
     @txros.util.cancellableInlineCallbacks
     def get_placard_point(self):
+        print("entered get_placard_point")
         dock_query = yield self.get_sorted_objects(name='dock', n=1)
+        print("got dock query")
         dock = dock_query[0][0]
         tf = yield self.tf_listener.get_transform(CAMERA_LINK_OPTICAL, 'enu')
         points = z_filter(dock)
@@ -185,13 +309,15 @@ class Dock(Vrx):
 
     @txros.util.cancellableInlineCallbacks
     def get_color(self):
+        print("entered get color")
         avg_point = yield self.get_placard_point()
+        print("placard point")
         yield self.move.set_position(avg_point).backward(11.5).look_at(avg_point).go()
-
+        print("moving vehicle")
         points = yield self.get_placard_points()
+        print("placard points")
         msg = np2pc2(points, self.nh.get_time(), 'enu')
         self.debug_points_pub.publish(msg)
-
 
         contour = np.array(bbox_from_rect(
                            rect_from_roi(
@@ -200,6 +326,7 @@ class Dock(Vrx):
         sequence = []
         masked_img = None
         while len(sequence) < 20:
+            print("whaa")
             img = yield self.front_left_camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img)
 
@@ -208,7 +335,7 @@ class Dock(Vrx):
             img = img[:,:,[2,1,0]]
 
             masked_img = cv2.bitwise_and(img, img, mask = mask)
-            masked_msg = self.bridge.cv2_to_imgmsg(masked_img)
+            masked_msg = self.bridge.cv2_to_imgmsg(masked_img, "bgr8")
             self.image_debug_pub.publish(masked_msg)
 
             features = np.array(self.classifier.get_features(img, mask)).reshape(1, 9)
@@ -219,7 +346,7 @@ class Dock(Vrx):
             #print most_likely_name
             sequence.append(most_likely_name)
         mode = max(set(sequence), key=sequence.count)
-        print 'detected as ', mode
+        print('detected as ', mode)
         defer.returnValue((mode, masked_img))
 
 def vec3_to_np(vec):

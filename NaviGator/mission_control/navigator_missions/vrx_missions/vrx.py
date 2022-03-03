@@ -2,9 +2,10 @@
 from __future__ import division
 import txros
 import numpy as np
+import math
 from twisted.internet import defer
 from robot_localization.srv import FromLL, FromLLRequest, ToLL, ToLLRequest
-from navigator_msgs.srv import AcousticBeacon, ChooseAnimal, MoveToWaypoint
+from navigator_msgs.srv import AcousticBeacon, ChooseAnimal, MoveToWaypoint, MoveToWaypointRequest
 from vrx_gazebo.msg import Task
 from vrx_gazebo.srv import ColorSequence
 from geographic_msgs.msg import GeoPoseStamped, GeoPath
@@ -95,6 +96,25 @@ class Vrx(Navigator):
             msg = yield self.task_info_sub.get_next_message()
             if f(msg):
                 defer.returnValue(None)
+
+    @txros.util.cancellableInlineCallbacks
+    def point_at_goal(self, goal_pos):
+        vect = [ goal_pos[0] - self.pose[0][0], goal_pos[1] - self.pose[0][1]]
+        theta = math.atan2(vect[1], vect[0])
+        orientation_fix = tf.transformations.quaternion_from_euler(0,0,theta)
+        yield self.move.set_orientation(orientation_fix).go(blind=True)
+
+    @txros.util.cancellableInlineCallbacks
+    def send_trajectory_without_path(self, goal_pose):
+        req = MoveToWaypointRequest()
+        req.target_p.position.x = goal_pose[0][0]
+        req.target_p.position.y = goal_pose[0][1]
+        req.target_p.position.z = goal_pose[0][2]
+        req.target_p.orientation.x = goal_pose[1][0]
+        req.target_p.orientation.y = goal_pose[1][1]
+        req.target_p.orientation.z = goal_pose[1][2]
+        req.target_p.orientation.w = goal_pose[1][3]
+        yield self.set_long_waypoint(req)
 
     @txros.util.cancellableInlineCallbacks
     def get_closest(self):

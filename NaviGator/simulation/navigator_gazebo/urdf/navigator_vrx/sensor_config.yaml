@@ -25,9 +25,10 @@ lidar:
 wamv_ball_shooter:
     - name: ball_shooter
       x: 0.54
-      y: 0.30
+      y: -0.34
       z: 1.30
-      pitch: -1.04
+      pitch: -0.80
+      yaw: -0.20
 wamv_pinger:
     - name: pinger
       position: '1 0 -1'
