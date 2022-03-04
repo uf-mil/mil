@@ -1,22 +1,23 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import serial
 
 
 def hexify(buff):
-    '''
+    """
     Print a string displaying the bytes in hex format
     example: hexify(my_packet) -> c0:14:09:48:45:4c:4c:4f:c1
-    '''
-    return ':'.join(b.encode('hex') for b in buff)
+    """
+    return ":".join(b.encode("hex") for b in buff)
 
 
 class NoopSerial(serial.Serial):
-    '''
+    """
     Inherits from serial.Serial, doing nothing for each function.
     Allows super classes to implement custom behavior for simulating
     serial devices.
-    '''
-    port = 'noop-serial'
+    """
+
+    port = "noop-serial"
 
     def __init__(*args, **kwargs):
         pass
@@ -64,7 +65,7 @@ class NoopSerial(serial.Serial):
 
 
 class SimulatedSerial(NoopSerial):
-    '''
+    """
     Simulates a serial device, storing a buffer to be read in a program like a normal OS serial device.
 
     Intended to be extended by other classes, which should override the write function to recieve writes to
@@ -72,17 +73,17 @@ class SimulatedSerial(NoopSerial):
     on reads to the simulated device.
 
     Note: NoopSerial and SimulatedSerial are generic and are candidates for mil_common.
-    '''
+    """
 
     def __init__(self, *args, **kwargs):
-        self.buffer = ''
+        self.buffer = ""
 
     @property
     def in_waiting(self):
         return len(self.buffer)
 
     def reset_input_buffer(self):
-        self.buffer = ''
+        self.buffer = ""
 
     def read(self, length):
         b, self.buffer = self.buffer[0:length], self.buffer[length:]

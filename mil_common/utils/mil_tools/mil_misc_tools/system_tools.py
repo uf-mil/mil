@@ -10,7 +10,7 @@ def slugify(value):
     and converts spaces to hyphens.
     From: https://stackoverflow.com/questions/295135/turn-a-string-into-a-valid-filename
     """
-    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
-    value = unicode(re.sub('[^\w\s-]', '_', value).strip().lower())
-    value = unicode(re.sub('[-\s]+', '-', value))
+    value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore")
+    value = unicode(re.sub("[^\w\s-]", "_", value).strip().lower())
+    value = unicode(re.sub("[-\s]+", "-", value))
     return value
