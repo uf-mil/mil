@@ -220,6 +220,19 @@ class VrxClassifier(object):
         rospy.Timer(rospy.Duration(3), self.timer_callback, True)
 
 
+    def betterBox(self, x, y, w, h, image):
+        width = len(image[0])
+        height = len(image)
+        center_x = (2*x + w) / 2
+        center_y = (2*y + h) / 2
+        const = 0.3
+        if w < (const * h):
+            print("updated size")
+            #x = x - 30 if x - 30 >= 0 else 0
+            w = int(h * (const+0.1)) if (h * (const+0.1)) + x <= width else width - x
+        return x,y,w,h
+
+
     @thread_lock(lock)
     def img_cb(self, img):
         if not self.enabled:
@@ -279,7 +292,10 @@ class VrxClassifier(object):
             contour = np.array(rois[i], dtype=int)
             #extract image from contour
             x,y,w,h = cv2.boundingRect(contour)
+            x,y,w,h = self.betterBox(x,y,w,h,img)
             image = img[y:y+h,x:x+w]
+            contour = [[x,y],[x+w,y],[x+w,y+h],[x,y+h]]
+            contour = np.array(contour)
             image = image[:,:,::-1]
             resized = cv2.resize(image, (100,100))
             arr = np.array(resized, dtype=np.float32)
