@@ -227,7 +227,6 @@ class VrxClassifier(object):
         center_y = (2*y + h) / 2
         const = 0.3
         if w < (const * h):
-            print("updated size")
             #x = x - 30 if x - 30 >= 0 else 0
             w = int(h * (const+0.1)) if (h * (const+0.1)) + x <= width else width - x
         return x,y,w,h
