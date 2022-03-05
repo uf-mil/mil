@@ -13,7 +13,7 @@ dictitems:
       parent: 0
       state: true
       type: ''
-      x1: -50
+      x1: -25
       x2: 150
       x3: 150
       x4: -50
@@ -26,7 +26,7 @@ dictitems:
       z3: 0
       z4: 0
     state: []
-  x1: -50
+  x1: -25
   x2: 150
   x3: 150
   x4: -50
