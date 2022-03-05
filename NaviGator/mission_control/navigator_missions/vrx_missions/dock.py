@@ -342,10 +342,14 @@ class Dock(Vrx):
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]
         cv2.fillPoly(mask, cnts, (255,255,255))
 
-        center_pixel_col, center_pixel_row,_,_ = cv2.boundingRect(cnts[0])
+        #guess location of center of black square in case we can't find it
+        center_pixel_col = 450
+        center_pixel_row = 400
+
         for c in cnts:
             x,y,w,h = cv2.boundingRect(c)
-            if w > 115 and h > 115:
+            print("width and height: ", w,h)
+            if w > 95 and h > 95:
                 print(x)
                 print(y)
                 print(w)
@@ -365,9 +369,9 @@ class Dock(Vrx):
         symbol_position = [center_pixel_row, center_pixel_col]
 
         cv2.rectangle(mask,(x,y), (x + w, y + h), 255, 2)
-        mask[center_pixel_row][center_pixel_col] = 0
-        masked_msg = self.bridge.cv2_to_imgmsg(mask, "mono8")
-        self.image_debug_pub.publish(masked_msg)
+        cv2.rectangle(mask,(425,390), (525,470), 150, 2)
+        mask_msg = self.bridge.cv2_to_imgmsg(mask, "mono8")
+        self.image_debug_pub.publish(mask_msg)
 
         defer.returnValue(symbol_position)
 
@@ -387,15 +391,18 @@ class Dock(Vrx):
 
             print(square_pix)
 
-            min_x = 400
-            max_x = 500
+            min_x = 425
+            max_x = 525
             mid_x = (min_x + max_x) / 2
-            min_y = 375
-            max_y = 500
+            min_y = 390
+            max_y = 470
             
             print(square_pix)
 
-            pixel_to_meter = 1000.0 #calculated from pixel size of small square and 0.25m
+            #calculated from pixel size of small square and 0.25m
+            #Note this is only valid given the distance of the boat
+            #relative to the dock images at this moment in the course
+            pixel_to_meter = 360.0
 
             #if target is too far left, adjust left (otherwise ball will pull right)
             #   Note: if ball is missing right, shift range right
