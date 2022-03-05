@@ -46,6 +46,7 @@ class ScanTheCode(Vrx):
         self.sequence_report = self.nh.get_service_client(COLOR_SEQUENCE_SERVICE, ColorSequence)
 
         self.init_front_left_camera()
+        self.init_front_right_camera()
 
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
         info = yield self.front_left_camera_info_sub.get_next_message()
@@ -53,7 +54,7 @@ class ScanTheCode(Vrx):
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = 'cluster_tolerance_m'
-        pcodar_cluster_tol.value = 10
+        pcodar_cluster_tol.value = 15
 
         yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
         try:
@@ -166,6 +167,8 @@ class ScanTheCode(Vrx):
                 sequence = []
             elif sequence == [] or most_likely_name != sequence[-1]:
                 sequence.append(most_likely_name)
+
+            print(sequence)
         defer.returnValue(sequence)
 
     @txros.util.cancellableInlineCallbacks
@@ -195,33 +198,40 @@ class ScanTheCode(Vrx):
             # get all pcodar objects
             try:
                 print("check for any objects")
-                msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=1)
+                msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
             # if no pcodar objects, drive forward
             except Exception as e:
                 print("literally no objects?")
                 yield self.move.forward(25).go()
                 # get first pcodar objects
-                msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=1)
+                msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
                 # if still no pcodar objects, guess RGB and exit mission
             # go to nearest obj to get better data on that obj
             
             print('going to nearest small object')
 
-            # get data on closest obj
-            print( poses[0] )
-            print( np.linalg.norm(rosmsg_to_numpy(msgs[0].scale)) )
-            if np.linalg.norm(rosmsg_to_numpy(msgs[0].scale)) > 4.0:
-                # much bigger than scale of stc
-                # then we found the dock
-                yield self.pcodar_label(msgs[0].id, 'dock')
+            # determine the dock and stc_buoy based on cluster size
+            dock_pose = None
+            for i in range(len(msgs)):
+                #Sometimes the dock is perceived as multiple objects
+                #Ignore any objects that are the dock
+                #I haven't found an overlap for a cluster tolerance that
+                #keeps the entire dock together 100% of the time
+                #while not including the stc buoy if it is too close
+                if dock_pose is not None and \
+                    np.linalg.norm(dock_pose[0] - poses[i][0]) < 10:
+                    continue
 
-                # get other things
-                # if no other things, throw error and exit mission
-                yield self.pcodar_label(msgs[1].id, 'stc_platform')
-                pose = poses[1]
-            else: # if about same size as stc, lable it stc
-                yield self.pcodar_label(msgs[0].id, 'stc_platform')
-                pose = poses[0]              
+                if np.linalg.norm(rosmsg_to_numpy(msgs[i].scale)) > 4.0:
+                    # much bigger than scale of stc
+                    # then we found the dock
+                    yield self.pcodar_label(msgs[i].id, 'dock')
+                    dock_pose = poses[i]
+
+                else: # if about same size as stc, lable it stc
+                    yield self.pcodar_label(msgs[i].id, 'stc_platform')
+                    pose = poses[i]
+                    break
 
         print("leaving find_stc")
         defer.returnValue(pose)

@@ -50,6 +50,8 @@ class Vrx(Navigator):
 
         Vrx.front_left_camera_info_sub = None 
         Vrx.front_left_camera_sub = None
+        Vrx.front_right_camera_info_sub = None 
+        Vrx.front_right_camera_sub = None
 
 
         Vrx._vrx_init = True
@@ -67,6 +69,16 @@ class Vrx(Navigator):
         if Vrx.front_left_camera_info_sub is None:
             Vrx.front_left_camera_info_sub = Vrx.nh.subscribe(
                 "/wamv/sensors/cameras/front_left_camera/camera_info", CameraInfo)
+
+    @staticmethod
+    def init_front_right_camera():
+        if Vrx.front_right_camera_sub is None:
+            Vrx.front_right_camera_sub = Vrx.nh.subscribe(
+                "/wamv/sensors/cameras/front_right_camera/image_raw", Image)
+
+        if Vrx.front_right_camera_info_sub is None:
+            Vrx.front_right_camera_info_sub = Vrx.nh.subscribe(
+                "/wamv/sensors/cameras/front_right_camera/camera_info", CameraInfo)
 
 
     @txros.util.cancellableInlineCallbacks
