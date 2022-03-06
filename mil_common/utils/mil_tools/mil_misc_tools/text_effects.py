@@ -21,8 +21,8 @@ class Colors:
         return self.reset
 
 
-class Printer(object):
-    def __init__(self, string="", autospace=False):
+class Printer:
+    def __init__(self, string: Optional[str] = "", autospace: bool = False):
         self._autospace = autospace
         self._string = string
 
@@ -58,7 +58,7 @@ class Printer(object):
     __str__ = __repr__
 
     def __add__(self, other):
-        extra_space = " " if self._autospace and self._string is not "" else ""
+        extra_space = " " if self._autospace and self._string != "" else ""
         return Printer(self._string + extra_space + str(other), self._autospace)
 
     @property
@@ -106,7 +106,7 @@ class Printer(object):
         self._autospace = True
 
 
-class FprintFactory(object):
+class FprintFactory:
     def __init__(
         self,
         title: Optional[str] = None,
