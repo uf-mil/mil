@@ -1,7 +1,7 @@
 import txros
 from twisted.internet import defer
 from ros_alarms import TxAlarmListener, TxAlarmBroadcaster
-from mil_misc_tools import text_effects
+from mil_misc_tools import text_effects, PrintColors
 import genpy
 
 # Import missions here
@@ -23,7 +23,7 @@ def run_mission(sub, mission, timeout):
             m.cancel()
             defer.returnValue(True)
         yield sub.nh.sleep(0.5)
-    fprint('MISSION TIMEOUT', msg_color='red')
+    fprint('MISSION TIMEOUT', msg_color=PrintColors.RED)
     m.cancel()
     defer.returnValue(False)
 
@@ -49,7 +49,7 @@ def do_mission(sub):
                     pass
 
     except Exception as e:
-        fprint("Error in Chain 1 missions!", msg_color="red")
+        fprint("Error in Chain 1 missions!", msg_color=PrintColors.RED)
         print e
 
     # Create a mission kill alarm and kill in the final area
@@ -67,7 +67,7 @@ def _check_for_run(sub, nh, alarm):
         fprint('Running Missions')
         yield do_mission(sub)
     else:
-        fprint("Network loss deteceted but NOT starting mission.", msg_color='red')
+        fprint("Network loss deteceted but NOT starting mission.", msg_color=PrintColors.RED)
 
 
 @txros.util.cancellableInlineCallbacks

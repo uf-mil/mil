@@ -1,7 +1,7 @@
 import txros
 from twisted.internet import defer
 from ros_alarms import TxAlarmListener, TxAlarmBroadcaster
-from mil_misc_tools import text_effects
+from mil_misc_tools import text_effects, PrintColors
 import genpy
 from .sub_singleton import SubjuGator
 
@@ -76,7 +76,7 @@ class Autonomous(SubjuGator):
             yield self.rub_mission(BallDrop(), 400)
 
         except Exception as e:
-            fprint("Error in Chain 1 missions!", msg_color="red")
+            fprint("Error in Chain 1 missions!", msg_color=PrintColors.RED)
             print e
 
         # Create a mission kill alarm and kill in the final area

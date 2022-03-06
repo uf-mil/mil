@@ -1,10 +1,10 @@
 from txros import util
 import numpy as np
 import mil_ros_tools
-from mil_misc_tools import text_effects
+from mil_misc_tools import text_effects, PrintColors
 from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 
-fprint = text_effects.FprintFactory(title="PINGER", msg_color="cyan").fprint
+fprint = text_effects.FprintFactory(title="PINGER", msg_color=PrintColors.CYAN).fprint
 
 SPEED = 0.2
 DOWN_SPEED = 0.1

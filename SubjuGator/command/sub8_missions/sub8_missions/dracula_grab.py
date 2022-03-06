@@ -6,7 +6,7 @@ from image_geometry import PinholeCameraModel
 import mil_ros_tools
 from twisted.internet import defer
 from geometry_msgs.msg import Point
-from mil_misc_tools import text_effects
+from mil_misc_tools import text_effects, PrintColors
 from std_srvs.srv import SetBool, SetBoolRequest
 
 from sub8_msgs.srv import GuessRequest, GuessRequestRequest
@@ -15,7 +15,7 @@ import mil_ros_tools
 import rospy
 from std_srvs.srv import Trigger
 
-fprint = text_effects.FprintFactory(title="DRACULA_GRAB", msg_color="cyan").fprint
+fprint = text_effects.FprintFactory(title="DRACULA_GRAB", msg_color=PrintColors.CYAN).fprint
 
 SPEED = 0.25
 FAST_SPEED = 1

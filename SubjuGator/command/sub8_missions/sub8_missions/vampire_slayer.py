@@ -8,7 +8,7 @@ from twisted.internet import defer
 import visualization_msgs.msg as visualization_msgs
 from geometry_msgs.msg import Point, Vector3
 from visualization_msgs.msg import Marker
-from mil_misc_tools import text_effects
+from mil_misc_tools import text_effects, PrintColors
 from std_srvs.srv import SetBool, SetBoolRequest
 from visualization_msgs.msg import Marker, MarkerArray
 from mil_misc_tools import FprintFactory
@@ -18,7 +18,7 @@ from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 
 import mil_ros_tools
 
-fprint = text_effects.FprintFactory(title="VAMPIRES", msg_color="cyan").fprint
+fprint = text_effects.FprintFactory(title="VAMPIRES", msg_color=PrintColors.CYAN).fprint
 
 pub_cam_ray = None
 

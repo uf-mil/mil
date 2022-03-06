@@ -2,7 +2,7 @@ from txros import util
 import rospy
 import numpy as np
 import mil_ros_tools
-from mil_misc_tools import text_effects
+from mil_misc_tools import text_effects, PrintColors
 from mil_passive_sonar.msg import ProcessedPing
 # from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 from std_srvs.srv import Trigger
@@ -13,7 +13,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3
 from .sub_singleton import SubjuGator
 
-fprint = text_effects.FprintFactory(title="PINGER", msg_color="cyan").fprint
+fprint = text_effects.FprintFactory(title="PINGER", msg_color=PrintColors.CYAN).fprint
 
 SPEED = 0.75
 FREQUENCY = 37000

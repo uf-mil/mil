@@ -1,3 +1,17 @@
+from enum import Enums
+
+class PrintColors(Enums):
+    """
+    enum class for to contain the colours
+    """
+    RED = "red"
+    GREEN = "GREEN"
+    YELLOW = "yellow"
+    BLUE = "blue"
+    PURPLE = "perple"
+    CYAN = "cyan"
+    WHITE = "white"
+
 class Colors():
     red = '\033[31m'
     green = '\033[32m'

@@ -1,7 +1,7 @@
 from txros import util
 import numpy as np
 from mil_ros_tools import rosmsg_to_numpy
-from mil_misc_tools import FprintFactory
+from mil_misc_tools import FprintFactory, PrintColors
 
 MISSION = "BUMP BUOYS"
 
@@ -39,9 +39,9 @@ class BumpBuoysMission(object):
     def __init__(self, sub):
         self.sub = sub
         self.print_info = FprintFactory(title=MISSION).fprint
-        self.print_bad = FprintFactory(title=MISSION, msg_color="red").fprint
-        self.print_good = FprintFactory(title=MISSION, msg_color="green").fprint
-        self.buoys = {'red': Buoy(), 'green': Buoy(), 'yellow': Buoy()}
+        self.print_bad = FprintFactory(title=MISSION, msg_color=PrintColors.RED).fprint
+        self.print_good = FprintFactory(title=MISSION, msg_color=PrintColors.GREEN).fprint
+        self.buoys = {PrintColors.RED: Buoy(), PrintColors.GREEN: Buoy(), PrintColors.YELLOW: Buoy()}
         self.pattern_done = False
         self.generate_pattern()
 

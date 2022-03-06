@@ -2,7 +2,7 @@ from __future__ import division
 import rospy
 import numpy as np
 from txros import util
-from mil_misc_tools import FprintFactory
+from mil_misc_tools import FprintFactory, PrintColors
 from std_msgs.msg import String
 
 MISSION = 'Path Marker Challenge'
@@ -27,7 +27,7 @@ class PathFollower(object):
     def __init__(self, sub):
         self.sub = sub
         self.print_info = FprintFactory(title=MISSION).fprint
-        self.print_bad = FprintFactory(title=MISSION, msg_color="red").fprint
+        self.print_bad = FprintFactory(title=MISSION, msg_color=PrintColors.RED).fprint
         self.print_good = FprintFactory(
             title=MISSION, msg_color="green").fprint
         self.pattern_done = False

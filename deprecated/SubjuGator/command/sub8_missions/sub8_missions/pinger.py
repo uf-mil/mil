@@ -1,7 +1,7 @@
 from txros import util
 import numpy as np
 import mil_ros_tools
-from mil_misc_tools import text_effects
+from mil_misc_tools import text_effects, PrintColors
 from sub8_hydrophones.msg import ProcessedPing
 from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 from twisted.internet import defer
@@ -10,7 +10,7 @@ import visualization_msgs.msg as visualization_msgs
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3
 
-fprint = text_effects.FprintFactory(title="PINGER", msg_color="cyan").fprint
+fprint = text_effects.FprintFactory(title="PINGER", msg_color=PrintColors.CYAN).fprint
 
 SPEED = 0.1
 FREQUENCY = 30000

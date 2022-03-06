@@ -1,10 +1,10 @@
 from txros import util
-from mil_misc_tools import text_effects
+from mil_misc_tools import text_effects, PrintColors
 from .sub_singleton import SubjuGator
 
 SPEED_LIMIT = 0.5  # m/s
 
-fprint = text_effects.FprintFactory(title="STRIPPER", msg_color="cyan").fprint
+fprint = text_effects.FprintFactory(title="STRIPPER", msg_color=PrintColors.CYAN).fprint
 
 
 class Strip(SubjuGator):

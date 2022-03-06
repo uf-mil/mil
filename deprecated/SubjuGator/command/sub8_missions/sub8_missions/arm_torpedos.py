@@ -6,7 +6,7 @@ from mil_ros_tools import rosmsg_to_numpy
 import visualization_msgs.msg as visualization_msgs
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3
-from mil_misc_tools import FprintFactory
+from mil_misc_tools import FprintFactory, PrintColors
 
 MISSION = 'Torpedo Challenge'
 
@@ -42,7 +42,7 @@ class FireTorpedos(object):
     def __init__(self, sub):
         self.sub = sub
         self.print_info = FprintFactory(title=MISSION).fprint
-        self.print_bad = FprintFactory(title=MISSION, msg_color="red").fprint
+        self.print_bad = FprintFactory(title=MISSION, msg_color=PrintColors.RED).fprint
         self.print_good = FprintFactory(
             title=MISSION, msg_color="green").fprint
         self.tf_listener = tf.TransformListener()

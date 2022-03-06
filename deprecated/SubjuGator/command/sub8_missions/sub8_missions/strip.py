@@ -1,9 +1,9 @@
 from txros import util
-from mil_misc_tools import text_effects
+from mil_misc_tools import text_effects, PrintColors
 
 SPEED_LIMIT = 0.15  # m/s
 
-fprint = text_effects.FprintFactory(title="STRIPPER", msg_color="cyan").fprint
+fprint = text_effects.FprintFactory(title="STRIPPER", msg_color=PrintColors.CYAN).fprint
 
 
 @util.cancellableInlineCallbacks
