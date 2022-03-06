@@ -3,22 +3,28 @@ import cv2
 import numpy as np
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
+from txros import NodeHandle
 import rospy
 import sys
+
+from typing import Optional
+
 ___author___ = "Tess Bianchi"
 
 
 class CvDebug(object):
     """Class that contains methods that assist with debugging with images."""
 
-    def __init__(self, nh=None, w=1000, h=800, total=8, win_name="debug", wait=True):
+    def __init__(self, nh: Optional[NodeHandle] = None, w: int = 1000, h: int = 800, total: int = 8, win_name: str = "debug", wait: bool = True):
         """
         Initialize the Debug class.
 
-        @param w = The width of the image that smaller images are added to
-        @param h = The height of the image that smaller images are added to
-        @param win_name = the name of the window that is shown in opencv
-        @param wait = whether or not to wait after showing the image
+        Args:
+            nh: NodeHandle - The node handle for the image stream
+            w: int - The width of the image that smaller images are added to
+            h: int - The height of the image that smaller images are added to
+            win_name: str - the name of the window that is shown in opencv
+            wait: bool - whether or not to wait after showing the image
         """
         self.width = w
         self.height = h
@@ -44,7 +50,7 @@ class CvDebug(object):
         else:
             self.pub = nh.advertise("/debug/image", Image)
 
-    def add_image(self, img, name, wait=33, topic="image"):
+    def add_image(self, img, name: str, wait: int = 33, topic: str = "image") -> None:
         """
         Add an image to show to either with a topic or using cv2.imshow.
 
@@ -53,7 +59,7 @@ class CvDebug(object):
         @param wait = the amount of wait time for the imshow image
         """
         color = "bgr8"
-        print img.shape
+        print(img.shape)
         if len(img.shape) == 2 or img.shape[2] == 1:
             color = "mono8"
 
@@ -72,7 +78,7 @@ class CvDebug(object):
         h, w = img.shape[0], img.shape[1]
         if name not in self.name_to_starting:
             if self.num_imgs == self.total:
-                print "Too many images"
+                print("Too many images")
                 return
             self.name_to_starting[name] = (self.curr_w, self.curr_h)
             self.num_imgs += 1
@@ -94,12 +100,12 @@ class CvDebug(object):
         else:
             self.pub.publish(self.bridge.cv2_to_imgmsg(self.img, color))
 
-    def _add_new_topic(self, img, name, wait, topic):
+    def _add_new_topic(self, img, name: str, wait: int, topic: str) -> None:
         color = "bgr8"
         if len(img.shape) == 2 or img.shape[2] == 1:
             color = "mono8"
         pub = None
-        if topic in self.topic_to_pub.keys():
+        if topic in list(self.topic_to_pub.keys()):
             pub = self.topic_to_pub[topic]
         elif self.nh is None:
             pub = rospy.Publisher("/debug/" + topic, Image, queue_size=10)
