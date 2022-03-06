@@ -1,17 +1,20 @@
-class Colors():
-    red = '\033[31m'
-    green = '\033[32m'
-    yellow = '\033[33m'
-    blue = '\033[34m'
-    purple = '\033[35m'
-    cyan = '\033[36m'
-    white = '\033[37m'
+from typing import Optional, Callable
 
-    underline = '\033[2m'
-    bold = '\033[1m'
-    negative = '\033[3m'
 
-    reset = '\033[0m'
+class Colors:
+    red = "\033[31m"
+    green = "\033[32m"
+    yellow = "\033[33m"
+    blue = "\033[34m"
+    purple = "\033[35m"
+    cyan = "\033[36m"
+    white = "\033[37m"
+
+    underline = "\033[2m"
+    bold = "\033[1m"
+    negative = "\033[3m"
+
+    reset = "\033[0m"
 
     def __getattr__(self, arg):
         # If we get a non existent color, return the reset color
@@ -28,37 +31,34 @@ class Printer(object):
 
         # Colors
         self.red = lambda text: self + (Colors.red + str(text) + Colors.reset)
-        self.green = lambda text: self + \
-            (Colors.green + str(text) + Colors.reset)
-        self.yellow = lambda text: self + \
-            (Colors.yellow + str(text) + Colors.reset)
-        self.blue = lambda text: self + \
-            (Colors.blue + str(text) + Colors.reset)
-        self.purple = lambda text: self + \
-            (Colors.purple + str(text) + Colors.reset)
-        self.cyan = lambda text: self + \
-            (Colors.cyna + str(text) + Colors.reset)
-        self.white = lambda text: self + \
-            (Colors.white + str(text) + Colors.reset)
+        self.green = lambda text: self + (Colors.green + str(text) + Colors.reset)
+        self.yellow = lambda text: self + (Colors.yellow + str(text) + Colors.reset)
+        self.blue = lambda text: self + (Colors.blue + str(text) + Colors.reset)
+        self.purple = lambda text: self + (Colors.purple + str(text) + Colors.reset)
+        self.cyan = lambda text: self + (Colors.cyan + str(text) + Colors.reset)
+        self.white = lambda text: self + (Colors.white + str(text) + Colors.reset)
 
         # Text effects
         self.underline = lambda text: Printer(
-            self._string + Colors.underline + str(text) + Colors.reset)
+            self._string + Colors.underline + str(text) + Colors.reset
+        )
         self.bold = lambda text: Printer(
-            self._string + Colors.bold + str(text) + Colors.reset)
+            self._string + Colors.bold + str(text) + Colors.reset
+        )
         self.negative = lambda text: Printer(
-            self._string + Colors.negative + str(text) + Colors.reset)
+            self._string + Colors.negative + str(text) + Colors.reset
+        )
 
         # For passing in custom formatting
-        self.custom = lambda text, effect: self + \
-            (effect + str(text) + Colors.reset)
+        self.custom = lambda text, effect: self + (effect + str(text) + Colors.reset)
 
     def __repr__(self):
         return self._string + Colors.reset
+
     __str__ = __repr__
 
     def __add__(self, other):
-        extra_space = ' ' if self._autospace and self._string is not '' else ''
+        extra_space = " " if self._autospace and self._string is not "" else ""
         return Printer(self._string + extra_space + str(other), self._autospace)
 
     @property
@@ -94,10 +94,10 @@ class Printer(object):
         return Printer(self._string + Colors.reset)
 
     def space(self, count=1):
-        return Printer(self._string + ' ' * count)
+        return Printer(self._string + " " * count)
 
     def newline(self, count=1):
-        return Printer(self._string + '\n' * count)
+        return Printer(self._string + "\n" * count)
 
     def enable_autospaces(self):
         self._autospace = False
@@ -107,25 +107,38 @@ class Printer(object):
 
 
 class FprintFactory(object):
-    def __init__(self, title=None, time=None, msg_color=None, auto_bold=True, newline=1):
+    def __init__(
+        self,
+        title: Optional[str] = None,
+        time: Optional[Callable] = None,
+        msg_color: Optional[str] = None,
+        auto_bold: bool = True,
+        newline: int = 1,
+    ):
         assert time is None or callable(
-            time), "`time` should be `None` for no printing or a function that generates a timestamp."
+            time
+        ), "`time` should be `None` for no printing or a function that generates a timestamp."
         assert msg_color is None or isinstance(
-            msg_color, str), "`msg_color` should be `None` for default printing or a string color."
+            msg_color, str
+        ), "`msg_color` should be `None` for default printing or a string color."
         assert isinstance(
-            auto_bold, bool), "`auto_bold` should be true or false if messages should be printed\
+            auto_bold, bool
+        ), "`auto_bold` should be true or false if messages should be printed\
                                as bold by default or not"
         assert newline is None or isinstance(
-            newline, int), "`newline` should be the number of newlines after the text (default 1)"
+            newline, int
+        ), "`newline` should be the number of newlines after the text (default 1)"
 
         # All these can be overwritten if not specified here
-        self.title = title          # Title to print with each message
+        self.title = title  # Title to print with each message
         # Either `None` for no printing or a function that generates a
         # timestamp
         self.time = time
-        self.msg_color = msg_color  # Either `None` for deafult printing or a string color
+        self.msg_color = (
+            msg_color  # Either `None` for deafult printing or a string color
+        )
         self.auto_bold = auto_bold  # Should each message be bolded by default
-        self.newline = newline      # The number of newlines characters to add to the end
+        self.newline = newline  # The number of newlines characters to add to the end
 
         self.printer = Printer()
 
@@ -155,9 +168,9 @@ class FprintFactory(object):
             message = message.text(text)
 
         if newline == 1:
-            print message
+            print(message)
         else:
-            print message.newline(newline - 1)
+            print(message.newline(newline - 1))
 
 
 # Standard instantiation
