@@ -9,8 +9,9 @@ from matplotlib.figure import Figure
 import matplotlib
 import threading
 
+
 class Plotter:
-    '''Publishes several plots of 2d data over rostopic via Image msgs
+    """Publishes several plots of 2d data over rostopic via Image msgs
     Basic Usage Example:
         #  Import
         from mil_ros_tools import Plotter
@@ -55,46 +56,46 @@ class Plotter:
 
     Features:
         Can be enables/disabled via the <topic_name>_enable service call
-    '''
+    """
 
     def __init__(self, topic_name, w=20, h=20, dpi=150):
-        matplotlib.rcParams.update({'font.size': 22})
+        matplotlib.rcParams.update({"font.size": 22})
         self.pub = rospy.Publisher(topic_name, Image, queue_size=1)
         self.bridge = CvBridge()
-        self.fig = Figure(figsize=(w,h), dpi=dpi)
+        self.fig = Figure(figsize=(w, h), dpi=dpi)
         self.canvas = FigureCanvasAgg(self.fig)
         self.enabled = True
         self.thread = None
 
-        rospy.Service(('%s_enable'%topic_name), SetBool, self.enable_disable)
-
+        rospy.Service(("%s_enable" % topic_name), SetBool, self.enable_disable)
 
     def enable_disable(self, req):
         self.enabled = req.data
         return SetBoolResponse(success=True)
 
-
     def is_go(self):
-        return self.enabled and\
-               self.pub.get_num_connections() > 0 and\
-               (self.thread is None or not self.thread.is_alive())
-
+        return (
+            self.enabled
+            and self.pub.get_num_connections() > 0
+            and (self.thread is None or not self.thread.is_alive())
+        )
 
     def publish_plots(self, plots, titles=[], v_lines=[]):
         if self.is_go():
-            self.thread = threading.Thread(target=self.publish_plots_, args=(plots,titles, v_lines))
+            self.thread = threading.Thread(
+                target=self.publish_plots_, args=(plots, titles, v_lines)
+            )
             self.thread.daemon = True
             self.thread.start()
 
-
     def publish_plots_(self, plots, titles=[], v_lines=[]):
 
-        num_of_plots = plots.shape[0]/2
+        num_of_plots = plots.shape[0] / 2
 
-        for i in xrange(1, num_of_plots+1):
+        for i in range(1, num_of_plots + 1):
             self.fig.add_subplot(num_of_plots, 1, i)
         for i, ax in enumerate(self.fig.axes):
-            ax.plot(plots[i*2,:], plots[i*2+1,:])
+            ax.plot(plots[i * 2, :], plots[i * 2 + 1, :])
             if i < len(titles):
                 ax.set_title(titles[i])
             if i < len(v_lines):
@@ -105,17 +106,18 @@ class Plotter:
         self.fig.clf()
         img = np.fromstring(s, np.uint8).reshape(w, h, 4)
 
-        img = np.roll(img, 3, axis = 2)
-        for ax in self.fig.axes: ax.cla()
+        img = np.roll(img, 3, axis=2)
+        for ax in self.fig.axes:
+            ax.cla()
 
         # make ros msg of the img
-        msg = self.bridge.cv2_to_imgmsg(img, encoding='passthrough')
+        msg = self.bridge.cv2_to_imgmsg(img, encoding="passthrough")
         # publish the image
         self.pub.publish(msg)
 
 
 def interweave(x, data):
-    '''Helper function of place a single x axis in every other row of a data matrix
+    """Helper function of place a single x axis in every other row of a data matrix
 
     x  must be a numpy array of shape (samples,)
 
@@ -126,13 +128,9 @@ def interweave(x, data):
             even numbered rows are x, odd rows are the data
 
     see mil_passive_sonar triggering for an example
-    '''
+    """
     plots = [None] * data.shape[0]
-    for i in xrange(data.shape[0]):
-        plots[i] = np.vstack((x, data[i,:]))
+    for i in range(data.shape[0]):
+        plots[i] = np.vstack((x, data[i, :]))
     plots = np.vstack(tuple(plots))
     return plots
-
-
-
-

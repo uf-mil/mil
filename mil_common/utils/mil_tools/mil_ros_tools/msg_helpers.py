@@ -8,7 +8,8 @@ import rospy
 
 
 def rosmsg_to_numpy(rosmsg, keys=None):
-    '''Convert an arbitrary ROS msg to a numpy array
+    """
+    Convert an arbitrary ROS msg to a numpy array
     With no additional arguments, it will by default handle:
         Point2D, Point3D, Vector3D, Quaternion and any lists of these (like Polygon)
 
@@ -31,7 +32,7 @@ def rosmsg_to_numpy(rosmsg, keys=None):
     Note:
         - This function is designed to handle the most common use cases (vectors, points and quaternions)
             without requiring any additional arguments.
-    '''
+    """
 
     # Recurse for lists like geometry_msgs/Polygon, Pointclou
     if type(rosmsg) == list:
@@ -41,7 +42,7 @@ def rosmsg_to_numpy(rosmsg, keys=None):
         return np.array(output_array).astype(np.float32)
 
     if keys is None:
-        keys = ['x', 'y', 'z', 'w']
+        keys = ["x", "y", "z", "w"]
         output_array = []
         for key in keys:
             # This is not necessarily the fastest way to do this
@@ -49,8 +50,11 @@ def rosmsg_to_numpy(rosmsg, keys=None):
                 output_array.append(getattr(rosmsg, key))
             else:
                 break
-        assert len(output_array) is not 0, "Input type {} has none of these attributes {}.".format(
-            type(rosmsg).__name__, keys)
+        assert (
+            len(output_array) is not 0
+        ), "Input type {} has none of these attributes {}.".format(
+            type(rosmsg).__name__, keys
+        )
         return np.array(output_array).astype(np.float32)
 
     else:
@@ -62,19 +66,21 @@ def rosmsg_to_numpy(rosmsg, keys=None):
 
 
 def pose_to_numpy(pose):
-    '''TODO: Unit-test
+    """
     returns (position, orientation)
-    '''
+    """
+    # TODO Add unit tests
     position = rosmsg_to_numpy(pose.position)
     orientation = rosmsg_to_numpy(pose.orientation)
     return position, orientation
 
 
 def twist_to_numpy(twist):
-    '''TODO: Unit-test
+    """
     Convert a twist message into a tuple of numpy arrays
     returns (linear, angular)
-    '''
+    """
+    # TODO Add unit tests
     linear = rosmsg_to_numpy(twist.linear)
     angular = rosmsg_to_numpy(twist.angular)
     return linear, angular
@@ -87,10 +93,11 @@ def posetwist_to_numpy(posetwist):
 
 
 def odometry_to_numpy(odom):
-    '''TODO: Unit-test
+    """
     Convert an odometry message into a tuple of numpy arrays
     returns (pose, twist, pose_covariance, twist_covariance)
-    '''
+    """
+    # TODO Add unit tests
     pose = pose_to_numpy(odom.pose.pose)
     pose_covariance = np.array(odom.pose.covariance).reshape(6, 6)
 
@@ -124,20 +131,24 @@ def numpy_to_quaternion(np_quaternion):
 
 
 def numpy_to_twist(linear_vel, angular_vel):
-    '''TODO: Unit-test
-    '''
-    return geometry_msgs.Twist(linear=geometry_msgs.Vector3(*linear_vel), angular=geometry_msgs.Vector3(*angular_vel))
+    # TODO Add unit tests
+    return geometry_msgs.Twist(
+        linear=geometry_msgs.Vector3(*linear_vel),
+        angular=geometry_msgs.Vector3(*angular_vel),
+    )
 
 
 def numpy_to_wrench(forcetorque):
     return geometry_msgs.Wrench(
         force=geometry_msgs.Vector3(*forcetorque[:3]),
-        torque=geometry_msgs.Vector3(*forcetorque[3:])
+        torque=geometry_msgs.Vector3(*forcetorque[3:]),
     )
 
 
 def numpy_matrix_to_quaternion(np_matrix):
-    '''Given a 3x3 rotation matrix, return its geometry_msgs Quaternion'''
+    """
+    Given a 3x3 rotation matrix, return its geometry_msgs Quaternion
+    """
     assert np_matrix.shape == (3, 3), "Must submit 3x3 rotation matrix"
     pose_mat = np.eye(4)
     pose_mat[:3, :3] = np_matrix
@@ -146,7 +157,9 @@ def numpy_matrix_to_quaternion(np_matrix):
 
 
 def numpy_pair_to_pose(np_translation, np_rotation_matrix):
-    '''Convert a R, t pair to a geometry_msgs Pose'''
+    """
+    Convert a R, t pair to a geometry_msgs Pose
+    """
     orientation = numpy_matrix_to_quaternion(np_rotation_matrix)
     position = numpy_to_point(np_translation)
     return geometry_msgs.Pose(position=position, orientation=orientation)
@@ -183,41 +196,38 @@ def numpy_to_colorRGBA(color):
     return std_msgs.ColorRGBA(*color)
 
 
-def make_header(frame='/body', stamp=None):
+def make_header(frame="/body", stamp=None):
     if stamp is None:
         try:
             stamp = rospy.Time.now()
         except rospy.ROSInitException:
             stamp = rospy.Time(0)
 
-    header = std_msgs.Header(
-        stamp=stamp,
-        frame_id=frame
-    )
+    header = std_msgs.Header(stamp=stamp, frame_id=frame)
     return header
 
 
-def make_wrench_stamped(force, torque, frame='/body'):
-    '''Make a WrenchStamped message without all the fuss
-        Frame defaults to body
-    '''
+def make_wrench_stamped(force, torque, frame="/body"):
+    """
+    Make a WrenchStamped message without all the fuss
+    Frame defaults to body
+    """
     wrench = geometry_msgs.WrenchStamped(
         header=make_header(frame),
         wrench=geometry_msgs.Wrench(
-            force=geometry_msgs.Vector3(*force),
-            torque=geometry_msgs.Vector3(*torque)
-        )
+            force=geometry_msgs.Vector3(*force), torque=geometry_msgs.Vector3(*torque)
+        ),
     )
     return wrench
 
 
-def make_pose_stamped(position, orientation, frame='/body'):
+def make_pose_stamped(position, orientation, frame="/body"):
     wrench = geometry_msgs.WrenchStamped(
         header=make_header(frame),
         pose=geometry_msgs.Pose(
             force=geometry_msgs.Vector3(*position),
-            orientation=geometry_msgs.Quaternion(*orientation)
-        )
+            orientation=geometry_msgs.Quaternion(*orientation),
+        ),
     )
     return wrench
 
