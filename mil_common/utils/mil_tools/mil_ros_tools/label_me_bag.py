@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Converts bags to labelme images, or labelme annotations to bags.
@@ -102,7 +102,7 @@ class BagToLabelMe(object):
 
     def _print(self, string, *args):
         if self.verbose:
-            print string.format(*args)
+            print(string.format(*args))
 
     def _name_encode(self, string):
         '''
@@ -159,7 +159,7 @@ class BagToLabelMe(object):
             paths[t] = path
 
         # Load start, stop, and frequency from config or defaults
-        _, _, first_time = bag.read_messages().next()
+        _, _, first_time = next(bag.read_messages())
         start = first_time + rospy.Duration(config.start) if config.start else first_time
         stop = first_time + rospy.Duration(config.stop) if config.stop else None
         interval = rospy.Duration(1.0 / config.freq) if config.freq else rospy.Duration(0)
@@ -212,7 +212,7 @@ class BagToLabelMe(object):
                 labels[topic][stamp] = msg
 
         # Go through bag, on any matched images and labels, write labels
-        for topic, msg, t in inbag.read_messages(topics=labels.keys()):
+        for topic, msg, t in inbag.read_messages(topics=list(labels.keys())):
             if msg._type == 'sensor_msgs/Image' and str(msg.header.stamp) in labels[topic]:
                 label = labels[topic][str(msg.header.stamp)]
                 label.header = msg.header
@@ -236,10 +236,10 @@ class BagToLabelMe(object):
             total_xml_count += x
             total_img_count += i
         if total_img_count == 0:
-            print "{}/{} TOTAL images labeled (0%)".format(total_xml_count, total_img_count)
+            print("{}/{} TOTAL images labeled (0%)".format(total_xml_count, total_img_count))
         else:
-            print "{}/{} TOTAL images labeled ({:.1%})".format(total_xml_count, total_img_count,
-                                                               total_xml_count / total_img_count)
+            print("{}/{} TOTAL images labeled ({:.1%})".format(total_xml_count, total_img_count,
+                                                               total_xml_count / total_img_count))
 
     def _completion_bag(self, bag):
         """
