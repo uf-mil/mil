@@ -1,17 +1,18 @@
 from __future__ import division
 import numpy as np
 import tf.transformations as trans
-from msg_helpers import numpy_quat_pair_to_pose
+from .msg_helpers import numpy_quat_pair_to_pose
 from geometry_msgs.msg import Quaternion
+from typing import List
 
 
-def rotate_vect_by_quat(v, q):
-    '''
+def rotate_vect_by_quat(v: List[float], q: List[float]):
+    """
     Rotate a vector by a quaterion.
     v' = q*vq
 
-    q should be [x,y,z,w] (standard ros convention)
-    '''
+    q should be [x, y, z, w] (standard ros convention)
+    """
     cq = np.array([-q[0], -q[1], -q[2], q[3]])
     cq_v = trans.quaternion_multiply(cq, v)
     v = trans.quaternion_multiply(cq_v, q)
@@ -20,19 +21,20 @@ def rotate_vect_by_quat(v, q):
 
 
 def make_rotation(vector_a, vector_b):
-    '''Determine a 3D rotation that rotates A onto B
-        In other words, we want a matrix R that aligns a with b
+    """
+    Determine a 3D rotation that rotates A onto B
+    In other words, we want a matrix R that aligns a with b
 
-        >> R = make_rotation(a, b)
-        >> p = R.dot(a)
-        >> np.cross(p, a)
-        >>>  array([0.0, 0.0, 0.0])
+    >> R = make_rotation(a, b)
+    >> p = R.dot(a)
+    >> np.cross(p, a)
+    >>>  array([0.0, 0.0, 0.0])
 
-        [1] Calculate Rotation Matrix to align Vector A to Vector B in 3d?
-            http://math.stackexchange.com/questions/180418
-        [2] N. Ho, Finding Optimal Rotation...Between Corresponding 3D Points
-            http://nghiaho.com/?page_id=671
-    '''
+    [1] Calculate Rotation Matrix to align Vector A to Vector B in 3d?
+        http://math.stackexchange.com/questions/180418
+    [2] N. Ho, Finding Optimal Rotation...Between Corresponding 3D Points
+        http://nghiaho.com/?page_id=671
+    """
     unit_a = normalize(vector_a)
     unit_b = normalize(vector_b)
 
@@ -52,7 +54,7 @@ def make_rotation(vector_a, vector_b):
         R[2, 2] *= -1
         return R
 
-    normalization = (1 - c) / (s ** 2)
+    normalization = (1 - c) / (s**2)
 
     R = np.eye(3) + skew_cross + (skew_squared * normalization)
 
@@ -64,15 +66,19 @@ def make_rotation(vector_a, vector_b):
 
 
 def skew_symmetric_cross(a):
-    '''Return the skew symmetric matrix representation of a vector
-        [1] https://en.wikipedia.org/wiki/Cross_product#Skew-symmetric_matrix
-    '''
+    """
+    Return the skew symmetric matrix representation of a vector
+    [1] https://en.wikipedia.org/wiki/Cross_product#Skew-symmetric_matrix
+    """
     assert len(a) == 3, "a must be in R3"
-    skew_symm = np.array([
-        [+0.00, -a[2], +a[1]],
-        [+a[2], +0.00, -a[0]],
-        [-a[1], +a[0], +0.00],
-    ], dtype=np.float32)
+    skew_symm = np.array(
+        [
+            [+0.00, -a[2], +a[1]],
+            [+a[2], +0.00, -a[0]],
+            [-a[1], +a[0], +0.00],
+        ],
+        dtype=np.float32,
+    )
     return skew_symm
 
 
@@ -85,7 +91,9 @@ def normalize(vector):
 
 
 def compose_transformation(R, t):
-    '''Compose a transformation from a rotation matrix and a translation matrix'''
+    """
+    Compose a transformation from a rotation matrix and a translation matrix
+    """
     transformation = np.zeros((4, 4))
     transformation[:3, :3] = R
     transformation[3, :3] = t
@@ -100,12 +108,13 @@ def project_pt_to_plane(point, plane_normal):
 
 
 def clip_norm(vector, lower_bound, upper_bound):
-    '''Return a vector pointing the same direction as $vector,
-        with maximum norm $bound
-        if norm(vector) < bound, return vector unchanged
+    """
+    Return a vector pointing the same direction as $vector,
+    with maximum norm $bound
+    if norm(vector) < bound, return vector unchanged
 
-        Like np.clip, but for vector norms
-    '''
+    Like np.clip, but for vector norms
+    """
     norm = np.linalg.norm(vector)
     if lower_bound < norm < upper_bound:
         return np.copy(vector)
@@ -122,20 +131,21 @@ def quaternion_matrix(q):
 
 
 def quat_to_euler(q):
-    ''' Approximate a quaternion as a euler rotation vector'''
-
+    """
+    Approximate a quaternion as a euler rotation vector
+    """
     euler_rot_vec = trans.euler_from_quaternion([q.x, q.y, q.z, q.w])
     final = np.array(([euler_rot_vec[0], euler_rot_vec[1], euler_rot_vec[2]]))
     return final
 
 
 def quat_to_rotvec(q):
-    '''
+    """
     Convert a quaternion to a rotation vector
-    '''
+    """
     # For unit quaternion, return 0 0 0
     if np.all(np.isclose(q[0:3], 0)):
-        return np.array([0., 0., 0.])
+        return np.array([0.0, 0.0, 0.0])
     if q[3] < 0:
         q = -q
     q = trans.unit_vector(q)
@@ -146,14 +156,17 @@ def quat_to_rotvec(q):
 
 
 def euler_to_quat(rotvec):
-    ''' convert a euler rotation vector into a ROS quaternion '''
-
+    """
+    Convert a euler rotation vector into a ROS quaternion
+    """
     quat = trans.quaternion_from_euler(rotvec[0], rotvec[1], rotvec[2])
     return Quaternion(quat[0], quat[1], quat[2], quat[3])
 
 
 def random_pose(_min, _max):
-    ''' Gives a random pose in the xyz range `_min` to `_max` '''
+    """
+    Gives a random pose in the xyz range `_min` to `_max`
+    """
     pos = np.random.uniform(low=_min, high=_max, size=3)
     quat = trans.random_quaternion()
     return numpy_quat_pair_to_pose(pos, quat)
