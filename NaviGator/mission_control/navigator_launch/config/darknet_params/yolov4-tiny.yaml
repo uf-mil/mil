@@ -1,0 +1,16 @@
+yolo_model:
+
+  config_file:
+    name: yolov4-tiny.cfg
+  weight_file:
+    name: yolov4-tiny.weights
+  threshold:
+    value: 0.3
+  detection_classes:
+    names:
+      - mb_marker_buoy_black    
+      - mb_marker_buoy_green     
+      - mb_marker_buoy_red 
+      - mb_marker_buoy_white
+      - mb_round_buoy_black
+      - mb_round_buoy_orange
