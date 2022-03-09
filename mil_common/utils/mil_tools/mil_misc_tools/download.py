@@ -44,7 +44,7 @@ def download_and_unzip(url, output_dir):
         file_like = zip_.open(file_path)
 
         f = open(os.path.join(output_dir, file_name), "w")
-        f.write(file_like.read())
+        f.write(file_like.read().decode('utf-8'))
         f.close()
 
 
