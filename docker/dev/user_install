@@ -64,3 +64,5 @@ set +u
 . /opt/ros/melodic/setup.bash
 set -u
 mil_user_setup_init_catkin
+
+sudo cp /dynparam /opt/ros/melodic/lib/dynamic_reconfigure/dynparam

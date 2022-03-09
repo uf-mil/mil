@@ -14,8 +14,8 @@ ADD --chown=mil-dev:mil-dev user_install /tmp/user_install
 RUN chmod +x /tmp/user_install && /tmp/user_install
 RUN mkdir -p /home/mil-dev/catkin_ws/src/mil
 
-ADD dynparam /tmp/dynparam
-RUN sudo cp /tmp/dynparam /opt/ros/melodic/lib/dynamic_reconfigure/dynparam
+#ADD dynparam /tmp/dynparam
+#RUN sudo cp /tmp/dynparam /opt/ros/melodic/lib/dynamic_reconfigure/dynparam
 
 # Use an interactive bash terminal as the shell
 # This allows the user to start the container running a ROS command, etc
