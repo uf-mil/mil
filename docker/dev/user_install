@@ -26,9 +26,6 @@ mil_user_install_dependencies()
     net-tools \
     cifs-utils \
     nmap
-
-  #Change dynparam to our version of dynparam until dynamic_reconfigure fixes bug
-  sudo cp $MIL_REPO_DIR/scripts/dynparam /opt/ros/melodic/lib/dynamic_reconfigure/dynparam
 }
 
 # Add line to user's bashrc which source the repo's setup files
