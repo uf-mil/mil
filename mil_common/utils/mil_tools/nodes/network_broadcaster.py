@@ -1,22 +1,27 @@
-#!/usr/bin/env python
-from __future__ import division
-import rospy
-from std_msgs.msg import Header
-
-'''
+#!/usr/bin/env python3
+"""
 Publishes a Header message with the current time stamp
 at a fixed interval. Useful for monitoring network loss
 or for a safety network heartbeat.
-'''
-
+"""
+import rospy
+from std_msgs.msg import Header
 
 class NetworkBroadcaster(object):
+    """
+    Serves as the main class broadcasting information through the network.
 
+    Attributes:
+        msg: Header - The Header message which is recurrently published
+        num_connections: int - The number of nodes connected to the publisher
+        pub: Publisher - The Publisher publishing information, with a queue
+          size of 1
+    """
     def __init__(self):
-        hz = rospy.get_param('~hz', 20)
-        topic = rospy.get_param('~topic', 'network')
+        hz = rospy.get_param("~hz", 20)
+        topic = rospy.get_param("~topic", "network")
 
-        rospy.loginfo('NETWORK BROADCASTER: publishing to {} at {}hz'.format(topic, hz))
+        rospy.loginfo("NETWORK BROADCASTER: publishing to {} at {}hz".format(topic, hz))
         self.msg = Header()
         self.msg.seq = 0
         self.num_connections = -1
@@ -27,9 +32,11 @@ class NetworkBroadcaster(object):
         connections = self.pub.get_num_connections()
         if connections != self.num_connections:
             if connections == 0:
-                rospy.loginfo('NETWORK BROADCASTER: no connections')
+                rospy.loginfo("NETWORK BROADCASTER: no connections")
             else:
-                rospy.loginfo('NETWORK BROADCASTER: connected to {} nodes'.format(connections))
+                rospy.loginfo(
+                    "NETWORK BROADCASTER: connected to {} nodes".format(connections)
+                )
             self.num_connections = connections
         self.msg.stamp = rospy.Time.now()
         self.pub.publish(self.msg)
