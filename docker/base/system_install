@@ -9,8 +9,7 @@ mil_system_install()
 # Update apt
 sudo apt update
 
-export MIL_WS="$(realpath $(dirname $BASH_SOURCE)/../../..)"
-sudo cp $MIL_WS/src/mil/scripts/dynparam /opt/ros/melodic/lib/dynamic_reconfigure/dynparam
+sudo cp ~/catkin_ws/src/mil/scripts/dynparam /opt/ros/melodic/lib/dynamic_reconfigure/dynparam
 
 # System dependencies
 mil_system_install apt-utils
