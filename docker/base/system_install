@@ -9,6 +9,8 @@ mil_system_install()
 # Update apt
 sudo apt update
 
+sudo cp dynparam /opt/ros/melodic/lib/dynamic_reconfigure/dynparam
+
 # System dependencies
 mil_system_install apt-utils
 mil_system_install --no-install-recommends \
