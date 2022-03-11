@@ -1,5 +1,5 @@
 FROM uf-mil:base
-ARG BRANCH=dynparam_fix2
+ARG BRANCH=master
 ARG GIT_URL=https://github.com/uf-mil/mil.git
 
 # Create a mil-vrx-trial user and make them a sudoer
