@@ -41,3 +41,4 @@ set +u
 . /opt/ros/melodic/setup.bash
 set -u
 mil_user_setup_build_repo
+sudo cp dynparam /opt/ros/melodic/lib/dynamic_reconfigure/dynparam
