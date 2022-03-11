@@ -11,6 +11,8 @@ RUN useradd --uid 1000 --create-home --shell /bin/bash mil-vrx-trial \
 USER mil-vrx-trial
 WORKDIR /home/mil-vrx-trial
 
+ADD dynparam /tmp/dynparam
+
 ADD --chown=mil-vrx-trial:mil-vrx-trial vrx_trial_install /tmp/vrx_trial_install
 RUN chmod +x /tmp/vrx_trial_install && /tmp/vrx_trial_install ${BRANCH} ${GIT_URL}
 RUN mkdir -p /home/mil-vrx-trial/catkin_ws/src/mil
