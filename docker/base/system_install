@@ -21,6 +21,7 @@ mil_system_install --no-install-recommends \
   python-pip \
   ruby \
   wget \
+  vim \
   expect
 
 # ROS apt source
@@ -86,3 +87,4 @@ sudo pip3 install -q \
 # Initialize rosdep
 sudo pip install -U rosdep
 sudo rosdep init
+rosdep update
