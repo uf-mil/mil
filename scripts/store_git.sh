@@ -55,4 +55,89 @@ This script will help you:
 1. Store your Git name/email if not already set
 2. Download libcrypt, a secure library for storing Git credentials
 3. Help you create a personal access token for Git authentication
+
 EOF
+
+read -r -p "$(color $Gre)Ready to start? [y/N] " response
+case "$response" in
+    [yY][eE][sS]|[yY]) 
+        ;;
+    *)
+        exit 1
+        ;;
+esac
+
+clear
+#GitName="$(git config --global user.name)"
+GitName=""
+GitEmail="$(git config --global user.email)"
+GitFixNeeded=0
+
+if [ "$GitName" != "" ]
+then
+cat << EOF
+$(hash_header)
+$(color $Yel)You appear to have your Git name/email setup. Are the following
+values correct? The name should be your first name, followed by your last name. 
+The email shown below should be linked to your GitHub account.
+
+    $(color $Pur)Name: ${GitName}
+    Email: ${GitEmail}
+
+EOF
+read -r -p "$(color $Gre)Are the values correct? [y/N] " response
+case "$response" in
+    [yY][eE][sS]|[yY]) 
+        ;;
+    *)
+        clear
+        echo $(hash_header)
+        GitFixNeeded=1
+        ;;
+esac
+else
+cat << EOF
+$(hash_header)
+$(color $Yel)You do not have your Git name/email set up. These values are used
+to link your commits to you and your GitHub account.
+
+EOF
+GitFixNeeded=1
+fi
+
+if [ $GitFixNeeded = 1 ]
+then
+cat << EOF
+$(color $Yel)Enter your Git credentials below.
+
+EOF
+
+Done=1
+while [ $Done = 1 ]
+do
+    read -r -p "$(color $Gre)Enter your name (First Last): " GitNameResponse
+    read -r -p "$(color $Gre)Enter your email: " GitEmailResponse
+
+cat << EOF
+$(color $Yel)Please verify that the values below are correct for your name
+and email.
+
+    Name: ${GitNameResponse}
+    Email: ${GitEmailResponse}
+
+EOF
+read -r -p "$(color $Gre)Are the values correct? [y/N] " GitNameVerifyResponse
+case "$GitNameVerifyResponse" in
+    [yY][eE][sS]|[yY]) 
+        clear
+        echo $(hash_header)
+        echo $(color $Gre)The values have been saved. Proceeding to the next step in 5 seconds.
+        sleep 5;
+        Done=0
+        ;;
+    *)
+        ;;
+esac
+done
+
+fi
