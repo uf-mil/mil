@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from turtle import width
 import txros
 import numpy as np
 from vrx import Vrx
@@ -23,9 +24,9 @@ LED_PANNEL_MIN = 0.6
 STC_HEIGHT = 2.3
 STC_WIDTH = 2
 
-CAMERA_LINK_OPTICAL = 'front_left_camera_link_optical'
+CAMERA_LINK_OPTICAL = 'wamv/front_left_camera_link_optical'
 
-COLOR_SEQUENCE_SERVICE = '/vrx/scan_dock/color_sequence'
+COLOR_SEQUENCE_SERVICE = '/vrx/scan_dock_deliver/color_sequence'
 
 TIMEOUT_SECONDS = 30
 
@@ -45,6 +46,7 @@ class ScanTheCode(Vrx):
         self.sequence_report = self.nh.get_service_client(COLOR_SEQUENCE_SERVICE, ColorSequence)
 
         self.init_front_left_camera()
+        self.init_front_right_camera()
 
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
         info = yield self.front_left_camera_info_sub.get_next_message()
@@ -52,11 +54,11 @@ class ScanTheCode(Vrx):
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = 'cluster_tolerance_m'
-        pcodar_cluster_tol.value = 20
+        pcodar_cluster_tol.value = 15
 
         yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
         try:
-            pose = yield self.find_stc()
+            pose = yield self.find_stc2()
         except Exception as e:
             sequence = ['red', 'green', 'blue']
             yield self.report_sequence(sequence)
@@ -64,52 +66,109 @@ class ScanTheCode(Vrx):
 
         yield self.move.look_at(pose).set_position(pose).backward(5).go()
         yield self.nh.sleep(5)
-        # get updated points and tf now that we a closer
-        stc_query = yield self.get_sorted_objects(name='stc_platform', n=1)
-        stc = stc_query[0][0]
-        tf = yield self.tf_listener.get_transform(CAMERA_LINK_OPTICAL, 'enu')
-        points = z_filter(stc)
-
-        msg = np2pc2(points, self.nh.get_time(), 'enu')
-        self.debug_points_pub.publish(msg)
-
-        points = np.array([tf.transform_point(points[i]) for i in range(len(points))])
-
-        contour = np.array(bbox_from_rect(
-            rect_from_roi(roi_enclosing_points(self.camera_model, points))), dtype=int)
+        
         try:
-            sequence = yield txros.util.wrap_timeout(self.get_sequence(contour), TIMEOUT_SECONDS, 'Guessing RGB')
+            sequence = yield txros.util.wrap_timeout(self.get_sequence(), TIMEOUT_SECONDS, 'Guessing RGB')
         except txros.util.TimeoutError:
             sequence = ['red', 'green', 'blue']
-        print 'Scan The Code Color Sequence', sequence
+        print('Scan The Code Color Sequence', sequence)
         self.report_sequence(sequence)
         yield self.send_feedback('Done!')
         defer.returnValue(sequence)
 
     @txros.util.cancellableInlineCallbacks
-    def get_sequence(self, contour):
+    def get_sequence(self):
         sequence = []
         while len(sequence) < 3:
+
+            #update contour
+            stc_query = yield self.get_sorted_objects(name='stc_platform', n=1)
+            stc = stc_query[0][0]
+            tf = yield self.tf_listener.get_transform(CAMERA_LINK_OPTICAL, 'enu')
+            points = z_filter(stc)
+
+            msg = np2pc2(points, self.nh.get_time(), 'enu')
+            self.debug_points_pub.publish(msg)
+
+            points = np.array([tf.transform_point(points[i]) for i in range(len(points))])
+
+            contour = np.array(bbox_from_rect(
+                rect_from_roi(roi_enclosing_points(self.camera_model, points))), dtype=int)
+            ###
+
             img = yield self.front_left_camera_sub.get_next_message()
+
             img = self.bridge.imgmsg_to_cv2(img)
 
             mask = contour_mask(contour, img_shape=img.shape)
 
             img = img[:,:,[2,1,0]]
-            mask_msg = self.bridge.cv2_to_imgmsg(bitwise_and(img, img, mask = mask))
+
+            img = bitwise_and(img, img, mask = mask)
+        
+            #general location that allows 
+            bl_pixel_col = (contour[2][0] + contour[0][0]) / 2 - 0
+            bl_pixel_row = (contour[2][1] + contour[0][1]) / 2 + 15
+            tr_pixel_col = (contour[2][0] + contour[0][0]) / 2 + 30
+            tr_pixel_row = (contour[2][1] + contour[0][1]) / 2 - 15
+
+            cen_pixel_col = (contour[2][0] + contour[0][0]) / 2 + 15
+            cen_pixel_row = (contour[2][1] + contour[0][1]) / 2
+
+            #bl br tr tl cen
+            b_comp = [0,0,0,0,0]
+            g_comp = [0,0,0,0,0]
+            r_comp = [0,0,0,0,0]
+
+            b_comp[0] = img[bl_pixel_row][bl_pixel_col][0]
+            g_comp[0] = img[bl_pixel_row][bl_pixel_col][1]
+            r_comp[0] = img[bl_pixel_row][bl_pixel_col][2]
+            b_comp[1] = img[bl_pixel_row][tr_pixel_col][0]
+            g_comp[1] = img[bl_pixel_row][tr_pixel_col][1]
+            r_comp[1] = img[bl_pixel_row][tr_pixel_col][2]
+            b_comp[2] = img[tr_pixel_row][tr_pixel_col][0]
+            g_comp[2] = img[tr_pixel_row][tr_pixel_col][1]
+            r_comp[2] = img[tr_pixel_row][tr_pixel_col][2]
+            b_comp[3] = img[tr_pixel_row][bl_pixel_col][0]
+            g_comp[3] = img[tr_pixel_row][bl_pixel_col][1]
+            r_comp[3] = img[tr_pixel_row][bl_pixel_col][2]
+            b_comp[4] = img[cen_pixel_row][cen_pixel_col][0]
+            g_comp[4] = img[cen_pixel_row][cen_pixel_col][1]
+            r_comp[4] = img[cen_pixel_row][cen_pixel_col][2]
+
+            #target cell for debugging purposes
+            for i in range(len(img)):
+                img[i][bl_pixel_col] = [255,255,255]
+            for i in range(len(img[0])):
+                img[bl_pixel_row][i] = [255,255,255]
+            for i in range(len(img)):
+                img[i][tr_pixel_col] = [255,255,255]
+            for i in range(len(img[0])):
+                img[tr_pixel_row][i] = [255,255,255]
+
+            img[cen_pixel_row][cen_pixel_col] = [255,255,255]
+
+            mask_msg = self.bridge.cv2_to_imgmsg(img, "bgr8")
 
             self.image_debug_pub.publish(mask_msg)
-            features = np.array(self.classifier.get_features(img, mask)).reshape(1, 9)
-            #print features
-            class_probabilities = self.classifier.feature_probabilities(features)[0]
-            most_likely_index = np.argmax(class_probabilities)
-            most_likely_name = self.classifier.CLASSES[most_likely_index]
-            probability = class_probabilities[most_likely_index]
-            #print most_likely_name
+
+            most_likely_name = "off"
+            for i in range(len(b_comp)):
+                if r_comp[i] > 20 and b_comp[i] < 5 and g_comp[i] < 5:
+                    most_likely_name = "red"
+                elif r_comp[i] < 5 and b_comp[i] > 20 and g_comp[i] < 5:
+                    most_likely_name = "blue"
+                elif r_comp[i] < 5 and b_comp[i] < 5 and g_comp[i] > 20:
+                    most_likely_name = "green"
+                elif r_comp[i] > 20 and b_comp[i] < 5 and g_comp[i] > 20:
+                    most_likely_name = "yellow"
+
             if most_likely_name == 'off':
                 sequence = []
             elif sequence == [] or most_likely_name != sequence[-1]:
                 sequence.append(most_likely_name)
+
+            print(sequence)
         defer.returnValue(sequence)
 
     @txros.util.cancellableInlineCallbacks
@@ -122,30 +181,85 @@ class ScanTheCode(Vrx):
         try:
             yield self.sequence_report(color_sequence)
         except Exception as e: #catch error incase vrx scroing isnt running
-            print e
-
+            print(e)
 
 
     @txros.util.cancellableInlineCallbacks
-    def find_stc(self):
+    def find_stc2(self):
         pose = None
+        print("entering find_stc")
         # see if we already got scan the code tower
         try:
             _, poses = yield self.get_sorted_objects(name='stc_platform', n=1)
             pose = poses[0]
         # incase stc platform not already identified
         except Exception as e:
+            print("could not find stc_platform")
             # get all pcodar objects
             try:
+                print("check for any objects")
+                msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
+            # if no pcodar objects, drive forward
+            except Exception as e:
+                print("literally no objects?")
+                yield self.move.forward(25).go()
+                # get first pcodar objects
+                msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
+                # if still no pcodar objects, guess RGB and exit mission
+            # go to nearest obj to get better data on that obj
+            
+            print('going to nearest small object')
+
+            # determine the dock and stc_buoy based on cluster size
+            dock_pose = None
+            for i in range(len(msgs)):
+                #Sometimes the dock is perceived as multiple objects
+                #Ignore any objects that are the dock
+                #I haven't found an overlap for a cluster tolerance that
+                #keeps the entire dock together 100% of the time
+                #while not including the stc buoy if it is too close
+                if dock_pose is not None and \
+                    np.linalg.norm(dock_pose[0] - poses[i][0]) < 10:
+                    continue
+
+                if np.linalg.norm(rosmsg_to_numpy(msgs[i].scale)) > 4.0:
+                    # much bigger than scale of stc
+                    # then we found the dock
+                    yield self.pcodar_label(msgs[i].id, 'dock')
+                    dock_pose = poses[i]
+
+                else: # if about same size as stc, lable it stc
+                    yield self.pcodar_label(msgs[i].id, 'stc_platform')
+                    pose = poses[i]
+                    break
+
+        print("leaving find_stc")
+        defer.returnValue(pose)
+
+    @txros.util.cancellableInlineCallbacks
+    def find_stc(self):
+        pose = None
+        print("entering find_stc")
+        # see if we already got scan the code tower
+        try:
+            _, poses = yield self.get_sorted_objects(name='stc_platform', n=1)
+            pose = poses[0]
+        # incase stc platform not already identified
+        except Exception as e:
+            print("could not find stc_platform")
+            # get all pcodar objects
+            try:
+                print("check for any objects")
                 _, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
             # if no pcodar objects, drive forward
             except Exception as e:
+                print("literally no objects?")
                 yield self.move.forward(50).go()
                 # get all pcodar objects
                 _, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
                 # if still no pcodar objects, guess RGB and exit mission
             # go to nearest obj to get better data on that obj
-            print 'going to nearest object'
+            print('going to nearest object')
             yield self.move.set_position(poses[0]).go()
             # get data on closest obj
             msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=1)
@@ -161,6 +275,8 @@ class ScanTheCode(Vrx):
             else: # if about same size as stc, lable it stc
                 yield self.pcodar_label(msgs[0].id, 'stc_platform')
                 pose = poses[0]
+
+        print("leaving find_stc")
         defer.returnValue(pose)
 
 def z_filter(db_obj_msg):

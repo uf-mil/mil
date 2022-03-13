@@ -2,17 +2,19 @@
 from __future__ import division
 import txros
 import numpy as np
+import math
 from twisted.internet import defer
 from robot_localization.srv import FromLL, FromLLRequest, ToLL, ToLLRequest
-from navigator_msgs.srv import AcousticBeacon, ChooseAnimal, MoveToWaypoint
+from navigator_msgs.srv import AcousticBeacon, ChooseAnimal, MoveToWaypoint, MoveToWaypointRequest
 from vrx_gazebo.msg import Task
 from vrx_gazebo.srv import ColorSequence
 from geographic_msgs.msg import GeoPoseStamped, GeoPath
 from nav_msgs.msg import Odometry
-from std_msgs.msg import Float64, Float64MultiArray, String, Int32
+from std_msgs.msg import Float64, Float64MultiArray, String, Int32, Empty
 from navigator_missions import Navigator
 from mil_tools import rosmsg_to_numpy, numpy_to_point
 from sensor_msgs.msg import Image, CameraInfo
+from txros import action, util, tf, NodeHandle
 
 ___author___ = "Kevin Allen"
 
@@ -28,7 +30,8 @@ class Vrx(Navigator):
         Vrx.from_lla = Vrx.nh.get_service_client("/fromLL", FromLL)
         Vrx.to_lla = Vrx.nh.get_service_client("/toLL", ToLL)
         Vrx.task_info_sub = Vrx.nh.subscribe("/vrx/task/info", Task)
-        Vrx.scan_dock_color_sequence = Vrx.nh.get_service_client("/vrx/scan_dock/color_sequence", ColorSequence)
+        Vrx.scan_dock_color_sequence = Vrx.nh.get_service_client("/vrx/scan_dock_deliver/color_sequence", ColorSequence)
+        Vrx.fire_ball = Vrx.nh.advertise("/wamv/shooters/ball_shooter/fire", Empty)
         Vrx.station_keep_goal = Vrx.nh.subscribe("/vrx/station_keeping/goal", GeoPoseStamped)
         Vrx.wayfinding_path_sub = Vrx.nh.subscribe("/vrx/wayfinding/waypoints", GeoPath)
         Vrx.station_keeping_pose_error = Vrx.nh.subscribe("/vrx/station_keeping/pose_error", Float64)
@@ -41,10 +44,14 @@ class Vrx(Navigator):
         Vrx.beacon_landmark = Vrx.nh.get_service_client("beaconLocator", AcousticBeacon)
         Vrx.circle_animal = Vrx.nh.get_service_client("/choose_animal", ChooseAnimal)
         Vrx.set_long_waypoint = Vrx.nh.get_service_client("/set_long_waypoint", MoveToWaypoint)
+
+        Vrx.tf_listener = tf.TransformListener(Vrx.nh)
         #Vrx.scan_dock_placard_symbol = Vrx.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
 
         Vrx.front_left_camera_info_sub = None 
         Vrx.front_left_camera_sub = None
+        Vrx.front_right_camera_info_sub = None 
+        Vrx.front_right_camera_sub = None
 
 
         Vrx._vrx_init = True
@@ -62,6 +69,16 @@ class Vrx(Navigator):
         if Vrx.front_left_camera_info_sub is None:
             Vrx.front_left_camera_info_sub = Vrx.nh.subscribe(
                 "/wamv/sensors/cameras/front_left_camera/camera_info", CameraInfo)
+
+    @staticmethod
+    def init_front_right_camera():
+        if Vrx.front_right_camera_sub is None:
+            Vrx.front_right_camera_sub = Vrx.nh.subscribe(
+                "/wamv/sensors/cameras/front_right_camera/image_raw", Image)
+
+        if Vrx.front_right_camera_info_sub is None:
+            Vrx.front_right_camera_info_sub = Vrx.nh.subscribe(
+                "/wamv/sensors/cameras/front_right_camera/camera_info", CameraInfo)
 
 
     @txros.util.cancellableInlineCallbacks
@@ -93,6 +110,25 @@ class Vrx(Navigator):
                 defer.returnValue(None)
 
     @txros.util.cancellableInlineCallbacks
+    def point_at_goal(self, goal_pos):
+        vect = [ goal_pos[0] - self.pose[0][0], goal_pos[1] - self.pose[0][1]]
+        theta = math.atan2(vect[1], vect[0])
+        orientation_fix = tf.transformations.quaternion_from_euler(0,0,theta)
+        yield self.move.set_orientation(orientation_fix).go(blind=True)
+
+    @txros.util.cancellableInlineCallbacks
+    def send_trajectory_without_path(self, goal_pose):
+        req = MoveToWaypointRequest()
+        req.target_p.position.x = goal_pose[0][0]
+        req.target_p.position.y = goal_pose[0][1]
+        req.target_p.position.z = goal_pose[0][2]
+        req.target_p.orientation.x = goal_pose[1][0]
+        req.target_p.orientation.y = goal_pose[1][1]
+        req.target_p.orientation.z = goal_pose[1][2]
+        req.target_p.orientation.w = goal_pose[1][3]
+        yield self.set_long_waypoint(req)
+
+    @txros.util.cancellableInlineCallbacks
     def get_closest(self):
         ret = yield self.get_sorted_objects('all')
 
@@ -106,15 +142,13 @@ class Vrx(Navigator):
             yield self.run_submission('VrxStationKeeping2')
         elif task_name == 'wayfinding':
             yield self.run_submission('VrxWayfinding2')
-        elif task_name == 'gymkhana':
-            yield self.run_submission('VrxBeacon')
         elif task_name == 'perception':
             yield self.run_submission('VrxPerception')
         elif task_name == 'wildlife':
             yield self.run_submission('VrxWildlife')
+        elif task_name == 'gymkhana':
+            yield self.run_submission('VrxBeacon')
         elif task_name == 'scan_dock_deliver':
             yield self.run_submission('ScanAndDock')
-        elif task_name == 'scan':
-            yield self.run_submission('DockDriver')
         msg = yield self.task_info_sub.get_next_message()
         defer.returnValue(msg)
