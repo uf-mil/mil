@@ -12,9 +12,11 @@ import sensor_msgs.point_cloud2
 from sensor_msgs.msg import PointCloud2
 from mil_msgs.msg import PerceptionObjectArray
 from std_msgs.msg import Int32
+from darknet_ros_msgs.msg import BoundingBoxes
 from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from tf.transformations import quaternion_matrix
 from mil_tools import thread_lock
+import math
 from threading import Lock
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from std_srvs.srv import SetBool
@@ -25,6 +27,7 @@ from tensorflow import keras
 from PIL import Image
 from rospkg import RosPack
 import os
+from bisect import bisect_left
 
 lock = Lock()
 
@@ -110,6 +113,7 @@ class VrxClassifier(object):
         self.last_objects = None
         self.last_update_time = rospy.Time.now()
         self.objects_sub = rospy.Subscriber('/pcodar/objects', PerceptionObjectArray, self.process_objects, queue_size=2)
+        self.boxes_sub = rospy.Subscriber('/darknet_ros/bounding_boxes', BoundingBoxes, self.process_boxes)
         self.enabled_srv = rospy.Service('~set_enabled', SetBool, self.set_enable_srv)
         if self.is_training:
             self.enabled = True
@@ -127,6 +131,73 @@ class VrxClassifier(object):
     @thread_lock(lock)
     def process_objects(self, msg):
         self.last_objects = msg
+
+    def in_rect(self, point, bbox):
+        if point[0] >= bbox.xmin and point[1] >= bbox.ymin and point[0] <= bbox.xmax and point[1] <= bbox.ymax:
+            return True
+        else:
+            return False
+
+    def distance(self, first, second):
+        x_diff = second[0] - first[0]
+        y_diff = second[1] - first[1]
+        return math.sqrt(x_diff * x_diff + y_diff * y_diff)
+
+    @thread_lock(lock)
+    def process_boxes(self, msg):
+        if not self.enabled:
+            return
+        if self.camera_model is None:
+            return
+        if self.last_objects is None or len(self.last_objects.objects) == 0:
+            return
+        now = rospy.Time.now()
+        if now - self.last_update_time < self.update_period:
+            return
+        self.last_update_time = now
+        # Get Transform from ENU to optical at the time of this image
+        transform = self.tf_buffer.lookup_transform(
+            self.sub.last_image_header.frame_id,
+            "enu",
+            self.sub.last_image_header.stamp,
+            timeout=rospy.Duration(1))
+        translation = rosmsg_to_numpy(transform.transform.translation)
+        rotation = rosmsg_to_numpy(transform.transform.rotation)
+        rotation_mat = quaternion_matrix(rotation)[:3, :3]
+
+        # Transform the center of each object into optical frame
+        positions_camera = [translation + rotation_mat.dot(rosmsg_to_numpy(obj.pose.position))
+                            for obj in self.last_objects.objects]
+        pixel_centers = [self.camera_model.project3dToPixel(point) for point in positions_camera]
+        distances = np.linalg.norm(positions_camera, axis=1)
+        CUTOFF_METERS = 30
+
+        # Get a list of indicies of objects who are sufficiently close and can be seen by camera
+        met_criteria = []
+        for i in xrange(len(self.last_objects.objects)):
+            distance = distances[i]
+            if self.in_frame(pixel_centers[i]) and distance < CUTOFF_METERS and positions_camera[i][2] > 0:
+                met_criteria.append(i)
+        # print 'Keeping {} of {}'.format(len(met_criteria), len(self.last_objects.objects))
+
+        for i in met_criteria:
+            boxes = []
+            for a in msg.bounding_boxes:
+                if self.in_rect(pixel_centers[i], a):
+                    boxes.append(a)
+            if len(boxes) > 0:
+                closest = boxes[0]
+                first_center = [(closest.xmax - closest.xmin) / 2.0, (closest.ymax - closest.ymin) / 2.0]
+                for a in boxes[1:]:
+                    center = [(a.xmax - a.xmin) / 2.0, (a.ymax - a.ymin) / 2.0]
+                    if self.distance(pixel_centers[i], center) < self.distance(pixel_centers[i], first_center):
+                        closest = a
+                        first_center = center
+                print('Object {} classified as {}'.format(self.last_objects.objects[i].id, closest.Class))
+                cmd = '{}={}'.format(self.last_objects.objects[i].id, closest.Class)
+                self.database_client(ObjectDBQueryRequest(cmd=cmd))
+
+
 
     def get_params(self):
         '''
@@ -222,6 +293,7 @@ class VrxClassifier(object):
 
     @thread_lock(lock)
     def img_cb(self, img):
+        return
         if not self.enabled:
             return
         if self.camera_model is None:
