@@ -35,6 +35,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
+    'sphinx.ext.intersphinx',
     'recommonmark',
     'sphinx.ext.graphviz',
 ]
@@ -42,7 +43,7 @@ extensions = [
 intersphinx_mapping = {
   'py': ('https://docs.python.org/3', None),
   'aio': ('https://docs.aiohttp.org/en/stable/', None),
-  'req': ('https://docs.python-requests.org/en/latest/', None)
+  'req': ('https://docs.python-requests.org/en/latest/', None),
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -152,7 +153,7 @@ html_logo = "branding/mil.svg"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+html_static_path = ['docs/_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -169,7 +170,11 @@ html_logo = "branding/mil.svg"
 
 # Custom sidebar templates, maps document names to template names.
 #html_sidebars = {}
-
+html_sidebars = {
+    '**': [
+        'localtoc.html',
+    ]
+}
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
 #html_additional_pages = {}
