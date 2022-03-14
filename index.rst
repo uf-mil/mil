@@ -32,4 +32,5 @@ Helpful Docs:
    Technical Design <docs/design/design>
    Testing Procedure <docs/testingprocedures.md>
    Infrastructure <docs/infra/index>
+   Reference <docs/reference>
    View Github Readme <README>
