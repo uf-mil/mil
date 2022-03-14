@@ -107,6 +107,19 @@ class Printer:
 
 
 class FprintFactory:
+    """
+    Factory method for producing a printer with the specified characteristics.
+
+    Args:
+        title (Optional[:class:`str`]) - The title to produce with each printed
+          message.
+        time (Optional[Callable]) - A method for getting the time to produce
+          with each method. If ``None``, then no time is sent with a message.
+        msg_color (Optional[str]) - The color of each message. If ``None``,
+          defaults to white.
+        auto_bold (bool) - Automatically bolds each method. Defaults to ``True``.
+        newline (int) - The number of newlines to print after each method.
+    """
     def __init__(
         self,
         title: Optional[str] = None,
@@ -143,6 +156,9 @@ class FprintFactory:
         self.printer = Printer()
 
     def fprint(self, text, **kwargs):
+        """
+        Prints some text with the specified characteristics.
+        """
         title = kwargs.get("title", self.title)
         time = kwargs.get("time", self.time)
         msg_color = kwargs.get("msg_color", self.msg_color)
