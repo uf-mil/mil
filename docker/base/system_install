@@ -82,7 +82,8 @@ sudo pip3 install -q \
   sphinx_rtd_theme \
   numpy \
   matplotlib \
-  rospkg
+  rospkg \
+  pyyaml
 
 # Initialize rosdep
 sudo pip install -U rosdep
