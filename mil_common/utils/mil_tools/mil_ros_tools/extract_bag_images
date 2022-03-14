@@ -300,3 +300,4 @@ if __name__ == "__main__":
     # Contruct a project from the config and extract images
     project = BagImageExtractorProject.from_dict(config)
     project.extract_images(verbose=args.verbose)
+

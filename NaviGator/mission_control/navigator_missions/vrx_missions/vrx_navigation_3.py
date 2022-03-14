@@ -6,19 +6,50 @@ from twisted.internet import defer
 from vrx import Vrx
 from mil_tools import rosmsg_to_numpy
 from std_srvs.srv import SetBoolRequest
+from navigator_msgs.srv import MoveToWaypointRequest
 from mil_tools import quaternion_matrix
+import math
+import tf
 
-___author___ = "Kevin Allen"
+___author___ = "Alex Perez and Enemias Itzep"
 
 
-class VrxNavigation(Vrx):
+class VrxNavigation3(Vrx):
     def __init__(self, *args, **kwargs):
-        super(VrxNavigation, self).__init__(*args, **kwargs)
+        super(VrxNavigation3, self).__init__(*args, **kwargs)
+
+    def point_at_goal(self, goal_pos):
+        vect = [ goal_pos[0] - self.pose[0][0], goal_pos[1] - self.pose[0][1]]
+        theta = math.atan2(vect[1], vect[0])
+        return tf.transformations.quaternion_from_euler(0,0,theta)
+
+    def closest_point_on_radius(self, start_pos, end_pos, radius):
+        #given two points, this finds the closest point to the end_pose given a radius around the end_pose
+        vector = [ end_pos[0] - start_pos[0], end_pos[1] - start_pos[1] ]
+        theta = math.atan2(vector[1], vector[0])
+        hypot = math.sqrt( (vector[0] ** 2) + (vector[1] ** 2) )
+        dist_to_point = hypot - radius
+        return [ start_pos[0] + dist_to_point * math.cos(theta), start_pos[1] + dist_to_point * math.sin(theta), 0]
+
+    def numpy_to_rosmsg(self, goal_pos, goal_ori):
+        req = MoveToWaypointRequest()
+        req.target_p.position.x = goal_pos[0]
+        req.target_p.position.y = goal_pos[1]
+        req.target_p.position.z = goal_pos[2]
+        req.target_p.orientation.x = goal_ori[0]
+        req.target_p.orientation.y = goal_ori[1]
+        req.target_p.orientation.z = goal_ori[2]
+        req.target_p.orientation.w = goal_ori[3]
+        return req
 
     @txros.util.cancellableInlineCallbacks
     def inspect_object(self, position):
         # Go in front of the object, looking directly at it
-        yield self.move.look_at(position).set_position(position).backward(6.0).go()
+
+        goal_pos = self.closest_point_on_radius(self.pose[0], position, 6)
+        goal_ori = self.point_at_goal(position)
+        req = self.numpy_to_rosmsg(goal_pos, goal_ori)
+        yield self.set_long_waypoint(req)
         yield self.nh.sleep(5.)
 
     def get_index_of_type(self, objects, classifications):
@@ -49,9 +80,20 @@ class VrxNavigation(Vrx):
         center, vec = gate
         before_position = center - (vec * BEFORE)
         after_position = center + (vec * AFTER)
-        yield self.move.set_position(before_position).look_at(center).go()
+
+        req = MoveToWaypointRequest()
+        goal_pose = before_position
+        req.target_p.position.x = before_position[0]
+        req.target_p.position.y = before_position[1]
+        req.target_p.position.z = before_position[2]
+        yield self.set_long_waypoint(req)
+
         if AFTER > 0:
-            yield self.move.look_at(after_position).set_position(after_position).go()
+            goal_pose = after_position
+            req.target_p.position.x = after_position[0]
+            req.target_p.position.y = after_position[1]
+            req.target_p.position.z = after_position[2]
+            yield self.set_long_waypoint(req)
 
     @txros.util.cancellableInlineCallbacks
     def do_next_gate(self):

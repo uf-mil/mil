@@ -2,6 +2,8 @@ from navigator_missions import Navigator
 from navigator_missions.move import Move
 from vrx import Vrx
 from vrx_navigation import VrxNavigation
+from vrx_navigation_2 import VrxNavigation2
+from vrx_navigation_3 import VrxNavigation3
 from vrx_wayfinding import VrxWayfinding
 from vrx_wayfinding_2 import VrxWayfinding2
 from vrx_station_keeping import VrxStationKeeping

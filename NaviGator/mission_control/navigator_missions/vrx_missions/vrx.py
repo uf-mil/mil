@@ -16,6 +16,7 @@ from navigator_missions import Navigator
 from mil_tools import rosmsg_to_numpy, numpy_to_point
 from sensor_msgs.msg import Image, CameraInfo
 from txros import action, util, tf, NodeHandle
+from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 
 ___author___ = "Kevin Allen"
 
@@ -46,8 +47,8 @@ class Vrx(Navigator):
         Vrx.circle_animal = Vrx.nh.get_service_client("/choose_animal", ChooseAnimal)
         Vrx.set_long_waypoint = Vrx.nh.get_service_client("/set_long_waypoint", MoveToWaypoint)
         Vrx.darknet_objects = Vrx.nh.subscribe("/darknet_ros/bounding_boxes", BoundingBoxes)
-
         Vrx.tf_listener = tf.TransformListener(Vrx.nh)
+        Vrx.database_response = Vrx.nh.get_service_client('/database/requests', ObjectDBQuery)
         #Vrx.scan_dock_placard_symbol = Vrx.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
 
         Vrx.front_left_camera_info_sub = None 
@@ -144,12 +145,12 @@ class Vrx(Navigator):
             yield self.run_submission('VrxStationKeeping2')
         elif task_name == 'wayfinding':
             yield self.run_submission('VrxWayfinding2')
+        elif task_name == 'gymkhana':
+            yield self.run_submission('VrxNavigation')
         elif task_name == 'perception':
             yield self.run_submission('VrxPerception')
         elif task_name == 'wildlife':
             yield self.run_submission('VrxWildlife')
-        elif task_name == 'gymkhana':
-            yield self.run_submission('VrxBeacon')
         elif task_name == 'scan_dock_deliver':
             yield self.run_submission('ScanAndDock')
         msg = yield self.task_info_sub.get_next_message()
