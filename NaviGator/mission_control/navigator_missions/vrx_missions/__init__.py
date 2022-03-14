@@ -1,6 +1,7 @@
 from navigator_missions import Navigator
 from navigator_missions.move import Move
 from vrx import Vrx
+from gymkhana import Gymkhana
 from vrx_navigation import VrxNavigation
 from vrx_navigation_2 import VrxNavigation2
 from vrx_navigation_3 import VrxNavigation3
