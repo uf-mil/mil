@@ -21,6 +21,7 @@ color() {
 # header display functions
 hash_header() { echo "########################################"; }
 
+# Display header
 clear
 cat << EOF
 $(color $Pur)
@@ -67,11 +68,17 @@ case "$response" in
         ;;
 esac
 
+###################
+# Git setup
+###################
+
+# Check whether git name and email are configured
 clear
 GitName="$(git config --global user.name)"
 GitEmail="$(git config --global user.email)"
 GitFixNeeded=0
 
+# Configure both if needed
 if [ "$GitName" != "" ]
 then
 cat << EOF
