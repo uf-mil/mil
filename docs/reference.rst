@@ -39,7 +39,20 @@ mil_tools
 ^^^^^^^^^
 .. currentmodule:: mil_tools
 
+Utility Functions
+~~~~~~~~~~~~~~~~~
+.. autofunction:: mil_tools.system_tools.slugify
+
+Classes
+~~~~~~~
+
 .. autoclass:: FprintFactory
+    :members:
+
+.. autoclass:: NoopSerial
+    :members:
+
+.. autoclass:: SimulatedSerial
     :members:
 
 txros

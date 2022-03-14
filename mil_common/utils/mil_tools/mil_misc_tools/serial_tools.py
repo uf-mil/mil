@@ -12,7 +12,7 @@ def hexify(buff):
 
 class NoopSerial(serial.Serial):
     """
-    Inherits from serial.Serial, doing nothing for each function.
+    Inherits from :class:`serial.Serial`, doing nothing for each function.
     Allows super classes to implement custom behavior for simulating
     serial devices.
     """
@@ -72,9 +72,8 @@ class SimulatedSerial(NoopSerial):
     the simulated device. These classes simply append to the buffer string which will be returned
     on reads to the simulated device.
 
-    Note: NoopSerial and SimulatedSerial are generic and are candidates for mil_common.
+    Note: :class:`NoopSerial` and :class:`SimulatedSerial` are generic and are candidates for mil_common.
     """
-
     def __init__(self, *args, **kwargs):
         self.buffer = ""
 
