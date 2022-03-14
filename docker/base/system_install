@@ -19,10 +19,12 @@ mil_system_install --no-install-recommends \
   gnupg2 \
   lsb-release \
   python2 \
-  python3-vcstool \
   ruby \
   wget \
   expect
+
+# Attempt to install vcstool using apt-get or pip if apt-get does not work
+sudo apt install -y python3-vcstool || sudo pip3 install -U vcstool
 
 # Install Python 2 pip
 sudo add-apt-repository universe
@@ -66,10 +68,13 @@ mil_system_install \
   ros-noetic-ros-control \
   ros-noetic-ros-controllers \
 
-pip3 install --upgrade pip 
-pip3 install tsp_solver2
-pip3 install tensorflow==2.1.0
-pip3 install Pillow
+# Install recent pip packages being used
+sudo pip3 install --upgrade pip \
+    tsp_solver2 \
+    tensorflow==2.8.0 \
+    Pillow \
+    black \
+    modernize
 
 # Documentation dependencies
 mil_system_install  python3-pip python-setuptools

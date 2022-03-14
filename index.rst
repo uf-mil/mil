@@ -16,7 +16,7 @@ read the :doc:`Mechanical Onboarding Guide <docs/mechanical/onboarding>`.
 Helpful Docs:
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    Mechanical <docs/mechanical/mechanical>
    Onboarding (Software) <docs/onboarding>
@@ -32,4 +32,5 @@ Helpful Docs:
    Technical Design <docs/design/design>
    Testing Procedure <docs/testingprocedures.md>
    Infrastructure <docs/infra/index>
+   Reference <docs/reference>
    View Github Readme <README>
