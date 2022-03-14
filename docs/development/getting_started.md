@@ -65,6 +65,13 @@ Exit the terminal and enter it again.
 
 *NOTE: now the MIL aliases will work on your machine. You can type* `mil` *to take you to the root of the repo anytime*
 
+### Configuring Git
+
+If you have not configured Git to use your name/email on your new Ubuntu setup, you can use the script below to set up your Git configuration! It will help you register your name and email with Git and authenticate so that you can push to the repository.
+
+```
+$ ./scripts/store_git.sh
+```
 
 ### Starting a tmux session in the development container
 When using ROS and Gazebo, many terminals are required. [tmux](https://www.hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/) is a program which allows one terminal to be split into many terminals each called a panel. We highly recommend its use when runnning code, esspecially when working in a docker container.
