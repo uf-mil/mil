@@ -72,10 +72,11 @@ class VrxNavigation(Vrx):
 
         def is_done(objects, positions):
             try:
-                left_index = self.get_index_of_type(objects, 'mb_marker_buoy_green')
+                left_index = self.get_index_of_type(objects, ('mb_marker_buoy_green', 'mb_marker_buoy_black'))
                 right_index = self.get_index_of_type(objects, 'mb_marker_buoy_red')
             except StopIteration:
                 return None
+
             end = objects[left_index].labeled_classification == 'mb_marker_buoy_black'
             return positions[left_index], objects[left_index], positions[right_index], objects[right_index], end
 
