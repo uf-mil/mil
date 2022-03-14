@@ -2,6 +2,8 @@ FROM uf-mil:base
 ARG BRANCH=master
 ARG GIT_URL=https://github.com/uf-mil/mil.git
 
+RUN sudo apt-get update
+
 # Create a mil-vrx-trial user and make them a sudoer
 RUN useradd --uid 1000 --create-home --shell /bin/bash mil-vrx-trial \
   && echo "" >> /etc/sudoers \
