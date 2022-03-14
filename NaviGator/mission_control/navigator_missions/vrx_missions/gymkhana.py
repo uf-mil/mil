@@ -20,4 +20,5 @@ class Gymkhana(Vrx):
 
         yield self.run_submission('VrxNavigation')
         yield self.run_submission('VrxBeacon')
+        yield self.run_submission('VrxBeacon')
         yield self.send_feedback('Done!')
