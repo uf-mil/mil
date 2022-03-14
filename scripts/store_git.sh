@@ -68,8 +68,7 @@ case "$response" in
 esac
 
 clear
-#GitName="$(git config --global user.name)"
-GitName=""
+GitName="$(git config --global user.name)"
 GitEmail="$(git config --global user.email)"
 GitFixNeeded=0
 
@@ -141,3 +140,81 @@ esac
 done
 
 fi
+
+#####################
+# gh setup
+#####################
+
+GhInstalled=$(gh --version)
+if [ $GhInstalled != 0 ]
+then
+cat << EOF
+$(hash_header)
+$(color $Yel)We will now setup your device authentication with GitHub using the GitHub CLI.
+You do not appear to have the CLI installed.
+EOF
+
+read -r -p "$(color $Gre)May we install it? [y/N] " response
+case "$response" in
+    [yY][eE][sS]|[yY]) 
+        ;;
+    *)
+        exit 1
+        ;;
+esac
+
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+sudo apt update
+sudo apt install gh
+
+GhInstalledAgain=$(gh --version)
+if [ $GhInstalledAgain != 0 ]
+then
+
+cat << EOF
+$(hash_header)
+$(color $Red)There was an issue with the installation. The GitHub CLI could not be installed.
+Please report this as an error.
+EOF
+exit 1;
+
+else
+
+clear
+cat << EOF
+$(hash_header)
+$(color $Yel)The GitHub CLI was successfully installed. We are now going to
+authenticate you using the CLI.
+EOF
+
+fi
+fi
+
+clear
+cat << EOF
+$(hash_header)
+$(color $Yel)You will now generate a personal access token (PAT).
+
+Follow the steps below:
+1. Sign into https://github.com.
+2. In the top right corner, click on your profile, and then Settings.
+3. On the left sidebar, click Developer Settings.
+4. On the left sidebar again, click on Personal Access Tokens.
+5. Near the top, click Generate Token and enter your password again.
+6. Set the Note to explain what the token is being used for (such as your VM)
+   and set the expiration time to whatever you would like. Whenever the token
+   expires, you will need to run this script again and re-authenticate.
+7. Select all checkboxes under the Permissions section of your new token.
+8. Click Generate Token and copy the new token.
+   $(color $Red)Do not refresh the page or the token will disappear!
+EOF
+
+read -r -p "$(color $Gre)Enter the PAT (it should start with ghp_): " GitPAT
+cat <<< GitPAT | gh auth login --with-token
+
+clear
+cat << EOF
+$(hash_header)
+$(color $Yel)You should now be authenticated with Git and GitHub!
+EOF
