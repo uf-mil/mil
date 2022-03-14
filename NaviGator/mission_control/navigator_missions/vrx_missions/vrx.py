@@ -9,6 +9,7 @@ from navigator_msgs.srv import AcousticBeacon, ChooseAnimal, MoveToWaypoint, Mov
 from vrx_gazebo.msg import Task
 from vrx_gazebo.srv import ColorSequence
 from geographic_msgs.msg import GeoPoseStamped, GeoPath
+from darknet_ros_msgs.msg import BoundingBoxes
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Float64, Float64MultiArray, String, Int32, Empty
 from navigator_missions import Navigator
@@ -44,6 +45,7 @@ class Vrx(Navigator):
         Vrx.beacon_landmark = Vrx.nh.get_service_client("beaconLocator", AcousticBeacon)
         Vrx.circle_animal = Vrx.nh.get_service_client("/choose_animal", ChooseAnimal)
         Vrx.set_long_waypoint = Vrx.nh.get_service_client("/set_long_waypoint", MoveToWaypoint)
+        Vrx.darknet_objects = Vrx.nh.subscribe("/darknet_ros/bounding_boxes", BoundingBoxes)
 
         Vrx.tf_listener = tf.TransformListener(Vrx.nh)
         #Vrx.scan_dock_placard_symbol = Vrx.nh.subscribe("/vrx/scan_dock/placard_symbol", String)

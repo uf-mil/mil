@@ -81,75 +81,58 @@ class ScanTheCode(Vrx):
         sequence = []
         while len(sequence) < 3:
 
-            #update contour
-            stc_query = yield self.get_sorted_objects(name='stc_platform', n=1)
-            stc = stc_query[0][0]
-            tf = yield self.tf_listener.get_transform(CAMERA_LINK_OPTICAL, 'enu')
-            points = z_filter(stc)
-
-            msg = np2pc2(points, self.nh.get_time(), 'enu')
-            self.debug_points_pub.publish(msg)
-
-            points = np.array([tf.transform_point(points[i]) for i in range(len(points))])
-
-            contour = np.array(bbox_from_rect(
-                rect_from_roi(roi_enclosing_points(self.camera_model, points))), dtype=int)
-            ###
-
             img = yield self.front_left_camera_sub.get_next_message()
+            bounding_box_msg = yield self.darknet_objects.get_next_message()
 
             img = self.bridge.imgmsg_to_cv2(img)
+            img2 = img.copy()
 
-            mask = contour_mask(contour, img_shape=img.shape)
+            xmin = bounding_box_msg.bounding_boxes[0].xmin
+            xmax = bounding_box_msg.bounding_boxes[0].xmax
+            ymin = bounding_box_msg.bounding_boxes[0].ymin
+            ymax = bounding_box_msg.bounding_boxes[0].ymax
 
-            img = img[:,:,[2,1,0]]
-
-            img = bitwise_and(img, img, mask = mask)
+            cen_pixel_col = (xmin + xmax) / 2
+            cen_pixel_row = (ymin + ymax) / 2
         
             #general location that allows 
-            bl_pixel_col = (contour[2][0] + contour[0][0]) / 2 - 0
-            bl_pixel_row = (contour[2][1] + contour[0][1]) / 2 + 15
-            tr_pixel_col = (contour[2][0] + contour[0][0]) / 2 + 30
-            tr_pixel_row = (contour[2][1] + contour[0][1]) / 2 - 15
-
-            cen_pixel_col = (contour[2][0] + contour[0][0]) / 2 + 15
-            cen_pixel_row = (contour[2][1] + contour[0][1]) / 2
+            bl_pixel_col = cen_pixel_col - 15
+            bl_pixel_row = cen_pixel_row + 15
+            tr_pixel_col = cen_pixel_col + 15
+            tr_pixel_row = cen_pixel_row - 15
 
             #bl br tr tl cen
             b_comp = [0,0,0,0,0]
             g_comp = [0,0,0,0,0]
             r_comp = [0,0,0,0,0]
 
-            b_comp[0] = img[bl_pixel_row][bl_pixel_col][0]
+            b_comp[0] = img[bl_pixel_row][bl_pixel_col][2]
             g_comp[0] = img[bl_pixel_row][bl_pixel_col][1]
-            r_comp[0] = img[bl_pixel_row][bl_pixel_col][2]
-            b_comp[1] = img[bl_pixel_row][tr_pixel_col][0]
+            r_comp[0] = img[bl_pixel_row][bl_pixel_col][0]
+            b_comp[1] = img[bl_pixel_row][tr_pixel_col][2]
             g_comp[1] = img[bl_pixel_row][tr_pixel_col][1]
-            r_comp[1] = img[bl_pixel_row][tr_pixel_col][2]
-            b_comp[2] = img[tr_pixel_row][tr_pixel_col][0]
+            r_comp[1] = img[bl_pixel_row][tr_pixel_col][0]
+            b_comp[2] = img[tr_pixel_row][tr_pixel_col][2]
             g_comp[2] = img[tr_pixel_row][tr_pixel_col][1]
-            r_comp[2] = img[tr_pixel_row][tr_pixel_col][2]
-            b_comp[3] = img[tr_pixel_row][bl_pixel_col][0]
+            r_comp[2] = img[tr_pixel_row][tr_pixel_col][0]
+            b_comp[3] = img[tr_pixel_row][bl_pixel_col][2]
             g_comp[3] = img[tr_pixel_row][bl_pixel_col][1]
-            r_comp[3] = img[tr_pixel_row][bl_pixel_col][2]
-            b_comp[4] = img[cen_pixel_row][cen_pixel_col][0]
+            r_comp[3] = img[tr_pixel_row][bl_pixel_col][0]
+            b_comp[4] = img[cen_pixel_row][cen_pixel_col][2]
             g_comp[4] = img[cen_pixel_row][cen_pixel_col][1]
-            r_comp[4] = img[cen_pixel_row][cen_pixel_col][2]
+            r_comp[4] = img[cen_pixel_row][cen_pixel_col][0]
 
             #target cell for debugging purposes
-            for i in range(len(img)):
-                img[i][bl_pixel_col] = [255,255,255]
-            for i in range(len(img[0])):
-                img[bl_pixel_row][i] = [255,255,255]
-            for i in range(len(img)):
-                img[i][tr_pixel_col] = [255,255,255]
-            for i in range(len(img[0])):
-                img[tr_pixel_row][i] = [255,255,255]
-
-            img[cen_pixel_row][cen_pixel_col] = [255,255,255]
-
-            mask_msg = self.bridge.cv2_to_imgmsg(img, "bgr8")
-
+            for i in range(len(img2)):
+                img2[i][bl_pixel_col] = [255,255,255]
+            for i in range(len(img2[0])):
+                img2[bl_pixel_row][i] = [255,255,255]
+            for i in range(len(img2)):
+                img2[i][tr_pixel_col] = [255,255,255]
+            for i in range(len(img2[0])):
+                img2[tr_pixel_row][i] = [255,255,255]
+            img2[cen_pixel_row][cen_pixel_col] = [255,255,255]
+            mask_msg = self.bridge.cv2_to_imgmsg(img2, "rgb8")
             self.image_debug_pub.publish(mask_msg)
 
             most_likely_name = "off"
