@@ -7,6 +7,7 @@ cvbridge, and to avoid reinstantiating a CvBrige for each use.
 import rospy
 import numpy as np
 from os import path
+import cv2
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, CameraInfo
 from mil_ros_tools import wait_for_param

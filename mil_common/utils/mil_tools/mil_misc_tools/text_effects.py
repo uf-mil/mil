@@ -111,14 +111,14 @@ class FprintFactory:
     Factory method for producing a printer with the specified characteristics.
 
     Args:
-        title (Optional[:class:`str`]) - The title to produce with each printed
-          message.
-        time (Optional[Callable]) - A method for getting the time to produce
-          with each method. If ``None``, then no time is sent with a message.
-        msg_color (Optional[str]) - The color of each message. If ``None``,
-          defaults to white.
-        auto_bold (bool) - Automatically bolds each method. Defaults to ``True``.
-        newline (int) - The number of newlines to print after each method.
+        title (Optional[str]): The title to produce with each printed
+            message.
+        time (Optional[Callable]): A method for getting the time to produce
+            with each method. If ``None``, then no time is sent with a message.
+        msg_color (Optional[str]): The color of each message. If ``None``, 
+            defaults to white.
+        auto_bold (bool): Automatically bolds each method. Defaults to ``True``.
+        newline (int): The number of newlines to print after each method.
     """
     def __init__(
         self,
@@ -155,9 +155,15 @@ class FprintFactory:
 
         self.printer = Printer()
 
-    def fprint(self, text, **kwargs):
+    def fprint(self, text: str, **kwargs):
         """
-        Prints some text with the specified characteristics.
+        Prints some text with the specified characteristics. Characteristics
+        can be passed through the kwargs argument or through the class' constructor.
+
+        Args:
+            text (str): The text to format and then print
+            kwargs: Any characteristics to print with the text. All keyword arguments
+              are the same as the arguments specified in the constructor.
         """
         title = kwargs.get("title", self.title)
         time = kwargs.get("time", self.time)

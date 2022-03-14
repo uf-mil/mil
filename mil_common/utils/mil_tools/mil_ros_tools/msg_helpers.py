@@ -51,7 +51,7 @@ def rosmsg_to_numpy(rosmsg, keys=None):
             else:
                 break
         assert (
-            len(output_array) is not 0
+            len(output_array) != 0
         ), "Input type {} has none of these attributes {}.".format(
             type(rosmsg).__name__, keys
         )

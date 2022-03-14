@@ -35,6 +35,13 @@ Messages
 MIL Common
 ----------
 
+mil_tools
+^^^^^^^^^
+.. currentmodule:: mil_tools
+
+.. autoclass:: FprintFactory
+    :members:
+
 txros
 ^^^^^
 .. currentmodule:: txros
