@@ -53,7 +53,7 @@ quickly and securely.
 
 This script will help you:
 1. Store your Git name/email if not already set
-2. Download libcrypt, a secure library for storing Git credentials
+2. Download gh, the CLI interface to GitHub
 3. Help you create a personal access token for Git authentication
 
 EOF
@@ -196,19 +196,20 @@ cat << EOF
 $(hash_header)
 $(color $Yel)You will now generate a personal access token (PAT).
 
-Follow the steps below:
-1. Sign into https://github.com.
-2. In the top right corner, click on your profile, and then Settings.
-3. On the left sidebar, click Developer Settings.
-4. On the left sidebar again, click on Personal Access Tokens.
-5. Near the top, click Generate Token and enter your password again.
-6. Set the Note to explain what the token is being used for (such as your VM)
-   and set the expiration time to whatever you would like. Whenever the token
-   expires, you will need to run this script again and re-authenticate.
-7. Select all checkboxes under the Permissions section of your new token.
-8. Click Generate Token and copy the new token.
-   $(color $Red)Do not refresh the page or the token will disappear!
+A web browser will open that allows you to create a new token. You should just
+need to click Generate Token at the bottom of the dialog, after signing in.
+
 EOF
+
+read -r -p "$(color $Gre)Open the browser? [y/N] " response
+case "$response" in
+    [yY][eE][sS]|[yY])
+        xdg-open "https://github.com/settings/tokens/new?scopes=repo,admin:public_key,gist,read:org&description=MIL+token"
+        ;;
+    *)
+        exit 1
+        ;;
+esac
 
 read -r -p "$(color $Gre)Enter the PAT (it should start with ghp_): " response
 echo "$response" > token.txt
