@@ -1,12 +1,9 @@
-#!/usr/env python3
+#!/usr/bin/env python3
 import sys
 import tty
 import termios
 
 __author__ = "David Soto"
-
-# Adapted from
-# http://stackoverflow.com/questions/510357/python-read-a-single-character-from-the-user/21659588#21659588
 
 
 def get_ch():
@@ -15,9 +12,11 @@ def get_ch():
     and CTRL-E and raises exceptions.
 
     Raises:
-        KeyboardInterrupt - The user presses CTRL-C
-        EOFError - The user presses CTRL-D character (the EOF characetr)
+        KeyboardInterrupt: The user presses ``CTRL-C``
+        EOFError: The user presses ``CTRL-D`` character (the ``EOF`` characetr)
     """
+    # Adapted from
+    # http://stackoverflow.com/questions/510357/python-read-a-single-character-from-the-user/21659588#21659588
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     try:

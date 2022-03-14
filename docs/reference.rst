@@ -43,6 +43,8 @@ Utility Functions
 ~~~~~~~~~~~~~~~~~
 .. autofunction:: mil_tools.system_tools.slugify
 
+.. autofunction:: mil_tools.terminal_input.get_ch
+
 Classes
 ~~~~~~~
 
