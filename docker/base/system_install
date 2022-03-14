@@ -67,11 +67,11 @@ sudo pip install \
   scipy \
   sklearn \
   pandas \
-  pyyaml
 
 pip install --upgrade pip
 pip2 install tsp_solver2
 pip2 install Pillow
+pip2 install pyyaml
 
 # Documentation dependencies
 mil_system_install  python3-pip python-setuptools
