@@ -145,9 +145,9 @@ fi
 # gh setup
 #####################
 
-GhInstalled=$(gh --version)
-if [ $GhInstalled != 0 ]
+if ! type "gh" > /dev/null
 then
+clear
 cat << EOF
 $(hash_header)
 $(color $Yel)We will now setup your device authentication with GitHub using the GitHub CLI.
@@ -210,8 +210,10 @@ Follow the steps below:
    $(color $Red)Do not refresh the page or the token will disappear!
 EOF
 
-read -r -p "$(color $Gre)Enter the PAT (it should start with ghp_): " GitPAT
-cat <<< GitPAT | gh auth login --with-token
+read -r -p "$(color $Gre)Enter the PAT (it should start with ghp_): " response
+echo "$response" > token.txt
+gh auth login --with-token < token.txt
+rm token.txt
 
 clear
 cat << EOF
