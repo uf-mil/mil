@@ -57,6 +57,7 @@ class VrxClassifier(object):
         self.get_params()
         self.last_panel_points_msg = None
         self.database_client = rospy.ServiceProxy('/database/requests', ObjectDBQuery)
+        self.sub = Image_Subscriber(self.image_topic, self.image_cb)
         self.camera_info = self.sub.wait_for_camera_info()
         self.camera_model = PinholeCameraModel()
         self.camera_model.fromCameraInfo(self.camera_info)
@@ -77,6 +78,9 @@ class VrxClassifier(object):
     def set_enable_srv(self, req):
         self.enabled = req.data
         return {'success': True}
+
+    def image_cb(self, msg):
+        return
 
     def in_frame(self, pixel):
         # TODO: < or <= ???
