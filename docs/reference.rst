@@ -81,6 +81,12 @@ Classes
 .. autoclass:: ThrowingArgumentParser
     :members:
 
+.. autoclass:: BagCrawler
+    :members:
+
+.. autoclass:: CvDebug
+    :members:
+
 txros
 ^^^^^
 .. currentmodule:: txros

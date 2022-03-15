@@ -12,19 +12,33 @@ from typing import Optional
 ___author___ = "Tess Bianchi"
 
 
-class CvDebug(object):
-    """Class that contains methods that assist with debugging with images."""
+class CvDebug:
+    """
+    Class that contains methods that assist with debugging with images.
+
+    Attributes:
+        width (int): The width of the debug image
+        height (int): The height of the debug image
+        nh (Optional[NodeHandle]): The node handle for the image stream. If ``None``, then images are displayed through the OpenCV GUI.
+        total (int): ???
+        hor_num (float): ???
+        max_width (float): ???
+        max_height (float): ???
+        wait (bool): Whether or not to wait after showing the image. Set in the constructor.
+        win_name (str): The name of the OpenCV GUI image display window. Defaults to ``"debug"``.
+
+    """
 
     def __init__(self, nh: Optional[NodeHandle] = None, w: int = 1000, h: int = 800, total: int = 8, win_name: str = "debug", wait: bool = True):
         """
         Initialize the Debug class.
 
         Args:
-            nh: NodeHandle - The node handle for the image stream
-            w: int - The width of the image that smaller images are added to
-            h: int - The height of the image that smaller images are added to
-            win_name: str - the name of the window that is shown in opencv
-            wait: bool - whether or not to wait after showing the image
+            nh (NodeHandle): The node handle for the image stream
+            w (int): The width of the image that smaller images are added to
+            h (int): The height of the image that smaller images are added to
+            win_name (str): the name of the window that is shown in opencv
+            wait (bool): whether or not to wait after showing the image
         """
         self.width = w
         self.height = h
@@ -52,11 +66,13 @@ class CvDebug(object):
 
     def add_image(self, img, name: str, wait: int = 33, topic: str = "image") -> None:
         """
-        Add an image to show to either with a topic or using cv2.imshow.
+        Add an image to show to either with a topic or using :meth:`cv2.imshow`.
 
-        @param name = a unique key name for the image, use the same name if you
-                      want to switch out this image for another
-        @param wait = the amount of wait time for the imshow image
+        Args:
+            name (str): A unique key name for the image, use the same name if you
+                want to switch out this image for another.
+            wait (int): The amount of wait time for the imshow image.
+            topic (str): The name of the topic to publish the image to.
         """
         color = "bgr8"
         print(img.shape)

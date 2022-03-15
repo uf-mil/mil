@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 """
 This file wis written by the team at UF MIL for the 2016 robosub competition.
 
@@ -12,7 +12,16 @@ from typing import Optional, List
 from sensor_msgs.msg import Image
 
 
-class BagCrawler(object):
+class BagCrawler:
+    """
+    Crawls a bag file and displays each image message of a camera through
+    OpenCV.
+
+    Attributes:
+        bag_path (str): The path to the bag file.
+        bag (rosbag.Bag): The bag object representing a bag file at the file location.
+    """
+
     def __init__(self, bag_path: str):
         self.bag_path = bag_path
         self.bag = rosbag.Bag(self.bag_path)
@@ -23,7 +32,7 @@ class BagCrawler(object):
         Converts an Image message to a cv2 compatible image.
 
         Args:
-            msg: sensor_msgs.msg.Image - The Image message.
+            msg (sensor_msgs.msg.Image): The Image message.
         """
         img = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
         return img
@@ -34,12 +43,12 @@ class BagCrawler(object):
         file. Additionally, a tqdm progress bar is displayed.
 
         Args:
-            topic: Optional[str] - ???
-            is_image: bool - ???
-            max_msgs: float - The maximum number of messages to return.
+            topic (Optional[str]): ???
+            is_image (bool): ???
+            max_msgs (float): The maximum number of messages to return.
 
         Yields:
-            genpy.Message - A message in the bag file.
+            genpy.Message: A message in the bag file.
         """
         num_seen = 0
         num_msgs = 0
@@ -60,15 +69,17 @@ class BagCrawler(object):
     @property
     def image_topics(self, cam: str = "right") -> List[str]:
         """
-        NOTE: This function may not function properly. If the method works,
-        please remove this message.
+        .. warning::
+
+            This function may not function properly. If the method works,
+            please remove this message.
 
         Finds all topics that use the sensor_msgs/Image type and exist on a
         specific camera.
 
         Args:
-            cam: str - The camera to find image topics on. Should either be
-              'left' or 'right'.
+            cam (str): The camera to find image topics on. Should either be
+                'left' or 'right'.
         """
         all_topics = list(self.bag.get_type_and_topic_info()[1].keys())
         all_types = list(self.bag.get_type_and_topic_info()[1].values())
@@ -86,15 +97,17 @@ class BagCrawler(object):
     @property
     def image_info_topics(self, cam: str = "right") -> List[str]:
         """
-        NOTE: This function may not function properly. If the method works,
-        please remove this message.
+        .. warning::
+
+            This function may not function properly. If the method works,
+            please remove this message.
 
         Finds all topics that use the sensor_msgs/CameraInfo type and exist on a
         specific camera.
 
         Args:
-            cam: str - The camera to find image topics on. Should either be
-              'left' or 'right'.
+            cam (str): The camera to find image topics on. Should either be
+                'left' or 'right'.
         """
         all_topics = list(self.bag.get_type_and_topic_info()[1].keys())
         all_types = list(self.bag.get_type_and_topic_info()[1].values())
