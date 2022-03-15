@@ -49,43 +49,63 @@ Exceptions
 
         :rtype: :class:`str`
 
-MIL Common
-----------
+Mathematics 
+-------------------
 
-mil_tools
-^^^^^^^^^
+Quaternion Helpers
+^^^^^^^^^^^^^^^^^^
 .. currentmodule:: mil_tools
-
-Utility Functions
-~~~~~~~~~~~~~~~~~
-.. autofunction:: mil_tools.slugify
-
-.. autofunction:: mil_tools.get_ch
-
-.. autofunction:: mil_tools.download
-
-.. autofunction:: mil_tools.download_and_unzip
 
 .. autofunction:: mil_tools.rotate_vect_by_quat
 
 .. autofunction:: mil_tools.skew_symmetric_cross
 
+.. autofunction:: mil_tools.deskew
+
 .. autofunction:: mil_tools.normalize
 
+.. autofunction:: mil_tools.make_rotation
+
+User Input/Output
+-----------------
+.. currentmodule:: mil_tools
+
+Utility Functions
+^^^^^^^^^^^^^^^^^
+
+.. autofunction:: mil_tools.get_ch
+
 Classes
-~~~~~~~
+^^^^^^^
 
 .. autoclass:: FprintFactory
     :members:
 
-.. autoclass:: NoopSerial
-    :members:
+File Input/Output
+-----------------
+.. currentmodule:: mil_tools
 
-.. autoclass:: SimulatedSerial
-    :members:
+Utility Functions
+^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ThrowingArgumentParser
-    :members:
+.. autofunction:: mil_tools.download
+
+.. autofunction:: mil_tools.download_and_unzip
+
+Sanitization
+------------
+.. currentmodule:: mil_tools
+
+Utility Functions
+^^^^^^^^^^^^^^^^^
+
+.. autofunction:: mil_tools.slugify
+
+Images
+------
+
+Classes
+^^^^^^^
 
 .. autoclass:: BagCrawler
     :members:
@@ -93,9 +113,25 @@ Classes
 .. autoclass:: CvDebug
     :members:
 
+Serial
+------
+
+Classes
+^^^^^^^
+
+.. autoclass:: NoopSerial
+    :members:
+
+.. autoclass:: SimulatedSerial
+    :members:
+
 txros
-^^^^^
+-----
+
 .. currentmodule:: txros
+
+Classes
+^^^^^^^
 
 .. autoclass:: Goal
     :members:

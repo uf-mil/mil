@@ -26,21 +26,23 @@ def rotate_vect_by_quat(v: List[float], q: List[float]) -> np.ndarray:
     return np.array(v)[:3]
 
 
-def make_rotation(vector_a, vector_b):
+def make_rotation(vector_a: List[float], vector_b: List[float]) -> npt.NDArray:
     """
-    Determine a 3D rotation that rotates A onto B
-    In other words, we want a matrix R that aligns a with b
+    Determine a 3D rotation that rotates A onto B. In other words, we want a 
+    matrix R that aligns A with B.
+    
+    .. code-block:: python3
 
-    >> R = make_rotation(a, b)
-    >> p = R.dot(a)
-    >> np.cross(p, a)
-    >>>  array([0.0, 0.0, 0.0])
+        >>> R = make_rotation(a, b)
+        >>> p = R.dot(a)
+        >>> np.cross(p, a)
+        array([0.0, 0.0, 0.0])
 
-    [1] Calculate Rotation Matrix to align Vector A to Vector B in 3d?
-        http://math.stackexchange.com/questions/180418
-    [2] N. Ho, Finding Optimal Rotation...Between Corresponding 3D Points
-        http://nghiaho.com/?page_id=671
     """
+    # [1] Calculate Rotation Matrix to align Vector A to Vector B in 3d?
+    #     http://math.stackexchange.com/questions/180418
+    # [2] N. Ho, Finding Optimal Rotation...Between Corresponding 3D Points
+    #     http://nghiaho.com/?page_id=671
     unit_a = normalize(vector_a)
     unit_b = normalize(vector_b)
 
@@ -71,7 +73,7 @@ def make_rotation(vector_a, vector_b):
     return R
 
 
-def skew_symmetric_cross(a: List[float]) -> np.ndarray:
+def skew_symmetric_cross(vector: List[float]) -> np.ndarray:
     """
     Returns the skew symmetric matrix representation of a vector.
 
@@ -83,20 +85,30 @@ def skew_symmetric_cross(a: List[float]) -> np.ndarray:
         np.ndarray: The skew-symmetric cross product matrix of the vector.
     """
     # [1] https://en.wikipedia.org/wiki/Cross_product#Skew-symmetric_matrix
-    assert len(a) == 3, "a must be in R3"
+    assert len(vector) == 3, "a must be in R3"
     skew_symm = np.array(
         [
-            [+0.00, -a[2], +a[1]],
-            [+a[2], +0.00, -a[0]],
-            [-a[1], +a[0], +0.00],
+            [+0.00, -vector[2], +vector[1]],
+            [+vector[2], +0.00, -vector[0]],
+            [-vector[1], +vector[0], +0.00],
         ],
         dtype=np.float32,
     )
     return skew_symm
 
 
-def deskew(A):
-    return np.array([A[2, 1], A[0, 2], A[1, 0]], dtype=np.float32)
+def deskew(matrix: npt.NDArray) -> np.ndarray:
+    """
+    Finds the original vector from its skew-symmetric cross product. Finds the
+    reverse of :meth:`mil_tools.skew_symmetric_cross`.
+
+    Args:
+        matrix (List[float]): The matrix to find the original vector from.
+
+    Return:
+        numpy.typing.NDArray: The original vector.
+    """
+    return np.array([matrix[2, 1], matrix[0, 2], matrix[1, 0]], dtype=np.float32)
 
 
 def normalize(vector) -> npt.NDArray:
