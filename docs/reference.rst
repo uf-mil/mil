@@ -70,6 +70,8 @@ Utility Functions
 
 .. autofunction:: mil_tools.skew_symmetric_cross
 
+.. autofunction:: mil_tools.normalize
+
 Classes
 ~~~~~~~
 

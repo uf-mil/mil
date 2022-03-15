@@ -4,6 +4,7 @@ import tf.transformations as trans
 from .msg_helpers import numpy_quat_pair_to_pose
 from geometry_msgs.msg import Quaternion
 from typing import List
+import numpy.typing as npt
 
 
 def rotate_vect_by_quat(v: List[float], q: List[float]) -> np.ndarray:
@@ -98,7 +99,16 @@ def deskew(A):
     return np.array([A[2, 1], A[0, 2], A[1, 0]], dtype=np.float32)
 
 
-def normalize(vector):
+def normalize(vector) -> npt.NDArray:
+    """
+    Normalizes a vector by dividing a non-zero vector by the vector norm.
+
+    Args:
+        vector (numpy.typing.ArrayLike): An array to compute the normal vector of.
+
+    Returns:
+        numpy.typing.NDArray: The normalized vector.
+    """
     return vector / np.linalg.norm(vector)
 
 
