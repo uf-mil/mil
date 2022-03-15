@@ -32,6 +32,34 @@ Messages
         A constant of the message type used to indicate a goal which succeeded. 
         Truly set to 2.
 
+.. class:: geometry_msgs.msg._Quaternion.Quaternion
+
+    A message type representing a quaternion.
+
+    .. attribute:: w
+    
+        The first element of the quaternion.
+
+        :rtype: Union[:class:`float`, :class:`int`]
+
+    .. attribute:: x
+    
+        The second element of the quaternion.
+
+        :rtype: Union[:class:`float`, :class:`int`]
+
+    .. attribute:: y
+    
+        The third element of the quaternion.
+
+        :rtype: Union[:class:`float`, :class:`int`]
+
+    .. attribute:: z
+    
+        The fourth element of the quaternion.
+
+        :rtype: Union[:class:`float`, :class:`int`]
+
 Exceptions
 ----------
 
@@ -52,8 +80,6 @@ Exceptions
 Mathematics 
 -------------------
 
-Quaternion Helpers
-^^^^^^^^^^^^^^^^^^
 .. currentmodule:: mil_tools
 
 .. autofunction:: mil_tools.rotate_vect_by_quat
@@ -64,7 +90,13 @@ Quaternion Helpers
 
 .. autofunction:: mil_tools.normalize
 
+.. autofunction:: mil_tools.compose_transformation
+
 .. autofunction:: mil_tools.make_rotation
+
+.. autofunction:: mil_tools.quat_to_rotvec
+
+.. autofunction:: mil_tools.euler_to_quat
 
 User Input/Output
 -----------------

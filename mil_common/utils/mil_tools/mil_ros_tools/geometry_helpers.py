@@ -124,18 +124,29 @@ def normalize(vector) -> npt.NDArray:
     return vector / np.linalg.norm(vector)
 
 
-def compose_transformation(R, t):
+def compose_transformation(rotation: npt.NDArray, translation: npt.NDArray) -> np.ndarray:
     """
-    Compose a transformation from a rotation matrix and a translation matrix
+    Compose a transformation from a rotation matrix and a translation matrix.
+
+    Args:
+        rotation (np.ndarray): The rotation to add to the final transformation matrix.
+        translation (np.ndarray): The translation to add to the final 
+            transformation matrix.
+
+    Returns:
+        np.ndarray: The transformation matrix.
     """
     transformation = np.zeros((4, 4))
-    transformation[:3, :3] = R
-    transformation[3, :3] = t
+    transformation[:3, :3] = rotation
+    transformation[3, :3] = translation
     transformation[3, 3] = 1.0
     return transformation
 
 
 def project_pt_to_plane(point, plane_normal):
+    """
+    Not currently used anywhere throughout repository.
+    """
     dist = np.dot(plane_normal, point)
     projected = point - (dist * plane_normal)
     return projected
@@ -143,6 +154,8 @@ def project_pt_to_plane(point, plane_normal):
 
 def clip_norm(vector, lower_bound, upper_bound):
     """
+    Not currently used anywhere throughout repository.
+    
     Return a vector pointing the same direction as $vector,
     with maximum norm $bound
     if norm(vector) < bound, return vector unchanged
@@ -173,25 +186,38 @@ def quat_to_euler(q):
     return final
 
 
-def quat_to_rotvec(q):
+def quat_to_rotvec(quat: List[float]) -> np.ndarray:
     """
-    Convert a quaternion to a rotation vector
+    Convert a quaternion to a rotation vector.
+
+    Args:
+        quat (List[float]): An array representing the quaternion.
+
+    Returns:
+        np.ndarray: The new rotation vector.
     """
     # For unit quaternion, return 0 0 0
-    if np.all(np.isclose(q[0:3], 0)):
+    if np.all(np.isclose(quat[0:3], 0)):
         return np.array([0.0, 0.0, 0.0])
-    if q[3] < 0:
-        q = -q
-    q = trans.unit_vector(q)
-    angle = np.arccos(q[3]) * 2
-    norm = np.linalg.norm(q)
-    axis = q[0:3] / norm
+    if quat[3] < 0:
+        quat = -quat
+    quat = trans.unit_vector(quat)
+    angle = np.arccos(quat[3]) * 2
+    norm = np.linalg.norm(quat)
+    axis = quat[0:3] / norm
     return axis * angle
 
 
-def euler_to_quat(rotvec):
+def euler_to_quat(rotvec: List[float]) -> Quaternion:
     """
-    Convert a euler rotation vector into a ROS quaternion
+    Convert a euler rotation vector into a ROS Quaternion message.
+
+    Args:
+        rotvec (List[float]): The rotation vector to form into the Quaternion
+            message.
+
+    Returns:
+        Quaternion: The newly constructed Quaternion message.
     """
     quat = trans.quaternion_from_euler(rotvec[0], rotvec[1], rotvec[2])
     return Quaternion(quat[0], quat[1], quat[2], quat[3])
