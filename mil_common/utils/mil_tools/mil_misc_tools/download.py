@@ -20,16 +20,16 @@ We're using this because I don't want to track 20MB files in Git.
 """
 
 
-def download_and_unzip(url, output_dir):
+def download_and_unzip(url: str, output_dir: str):
     """
     Downloads a zip file at a particular URL and unzips it to a directory.
 
     Args:
-        url: str - The URL to obtain the zip file from.
-        output_dir: str - The location of where to write the zip contents to.
+        url (str): The URL to obtain the zip file from.
+        output_dir (str): The location of where to write the zip contents to.
 
     Raises:
-        IOError - The file at the URL could not be found/loaded.
+        IOError: The file at the URL could not be found/loaded.
     """
     try:
         html = download(url)
@@ -54,12 +54,12 @@ def download(url: str, output_filename: Optional[str] = None) -> str:
     specified, the filename is written to with the URL contents.
 
     Args:
-        url: str - The URL to obtain contents from.
-        output_filename: str - The filename of the output file to write the
+        url (str): The URL to obtain contents from.
+        output_filename (str): The filename of the output file to write the
           contents.
 
     Returns:
-        str - The HTML contents of the URL.
+        str: The HTML contents of the URL.
     """
     response = urllib.request.urlopen(url)
     html = response.read()

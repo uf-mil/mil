@@ -8,8 +8,8 @@ __author__ = "David Soto"
 
 def get_ch():
     """
-    Gets a single character from stdin. Doesn't echo to screen. Catches CTRL-C 
-    and CTRL-E and raises exceptions.
+    Gets a single character from stdin. Doesn't echo to screen. Catches ``CTRL-C`` 
+    and ``CTRL-E`` and raises exceptions.
 
     Raises:
         KeyboardInterrupt: The user presses ``CTRL-C``
