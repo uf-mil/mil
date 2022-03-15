@@ -6,12 +6,17 @@ from geometry_msgs.msg import Quaternion
 from typing import List
 
 
-def rotate_vect_by_quat(v: List[float], q: List[float]):
+def rotate_vect_by_quat(v: List[float], q: List[float]) -> np.ndarray:
     """
-    Rotate a vector by a quaterion.
-    v' = q*vq
+    Rotates a vector by a quaterion using ``v' = q*vq``. Both ``v`` and ``q``
+    should be a list of 4 floats representing [x, y, z, w].
 
-    q should be [x, y, z, w] (standard ros convention)
+    Args:
+        v (List[float]): The vector to perform the multiplication on.
+        q (List[float]): The quaternion to mulitply the vector by.
+
+    Returns:
+        np.ndarray: The numpy array representing the new calculated quaternion.
     """
     cq = np.array([-q[0], -q[1], -q[2], q[3]])
     cq_v = trans.quaternion_multiply(cq, v)
@@ -65,11 +70,18 @@ def make_rotation(vector_a, vector_b):
     return R
 
 
-def skew_symmetric_cross(a):
+def skew_symmetric_cross(a: List[float]) -> np.ndarray:
     """
-    Return the skew symmetric matrix representation of a vector
-    [1] https://en.wikipedia.org/wiki/Cross_product#Skew-symmetric_matrix
+    Returns the skew symmetric matrix representation of a vector.
+
+    Args:
+        a (List[float]): The vector to find the skew symmetric matrix 
+            representation of.
+
+    Returns:
+        np.ndarray: The skew-symmetric cross product matrix of the vector.
     """
+    # [1] https://en.wikipedia.org/wiki/Cross_product#Skew-symmetric_matrix
     assert len(a) == 3, "a must be in R3"
     skew_symm = np.array(
         [

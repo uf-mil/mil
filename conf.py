@@ -44,6 +44,7 @@ intersphinx_mapping = {
   'py': ('https://docs.python.org/3', None),
   'aio': ('https://docs.aiohttp.org/en/stable/', None),
   'req': ('https://docs.python-requests.org/en/latest/', None),
+  'numpy': ('https://numpy.org/doc/stable/', None)
 }
 
 # Add any paths that contain templates here, relative to this directory.

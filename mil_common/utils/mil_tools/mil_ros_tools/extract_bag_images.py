@@ -27,8 +27,12 @@ from genpy import Time
 from typing import Optional
 
 
-class BagImageExtractorSource(object):
-    """Provides functionality to extract a set of images from a single bag file according to the configuration."""
+class BagImageExtractorSource:
+    """
+    Provides functionality to extract a set of images from a single bag file according to the configuration.
+
+    Used primarily by :class:`BagImageExtractorProject`.
+    """
 
     MONO = "mono"
     COLOR = "color"
@@ -37,25 +41,27 @@ class BagImageExtractorSource(object):
     RAW = "raw"
 
     def __init__(
-        self, filename: str, topic: str, start: Optional[Time] = None, stop: Optional[Time] = None, freq: Optional[int] = None, encoding: Optional[str] = None
+        self, filename: str, topic: str, start: Optional[Time] = None, stop: Optional[Time] = None, freq: Optional[int] = None, encoding: Optional['BagImageExtractorSource'] = None
     ):
         """
         Args:
-            filename: Name of bag file. Can be an absolute path, or will be 
-              resolved relative to specified dir when
-        	topic: Topic in the bag file with the images you wish to extract
-        	start: Time relative to start of bag to begin extracting images from.
-              If None, extraction will start at beginning of bag
-        	stop: time relative to start of bag to stop extracting images from.
-              If None, extraction wil end at end of bag.
-        	freq: Number of images to extract for each second of bag time.
-              If None, include all images
-        	encoding: Specifies if color conversion or distortion rectification should be applied.
-              If None, images will be saved in the same format they are in the specified topic.
-              If 'mono', image will be converted to grayscale from color or bayer image
-              If 'color', image will be converted to color from bayer.
-              If 'rect', image will be converted to grayscale and rectified using camera info
-              If 'rect_color', image will be converted to color and rectified using camera info
+            filename (str): Name of bag file. Can be an absolute path, or 
+                will be resolved relative to specified dir when
+        	topic (str): Topic in the bag file with the images you wish to extract
+        	start (Optional[genpy.Time]): Time relative to start of bag to 
+                begin extracting images from. If None, extraction will start at beginning of bag
+        	stop (Optional[genpy.Time]): time relative to start of bag to stop 
+                extracting images from. If None, extraction wil end at end of bag.
+        	freq (Optional[int]): Number of images to extract for each second 
+                of bag time. If None, include all images.
+        	encoding (Optional[BagImageExtractorSource]): Specifies if color conversion 
+                or distortion rectification should be applied. If None, images 
+                will be saved in the same format they are in the specified topic.
+                If 'mono', image will be converted to grayscale from color 
+                or bayer image. If 'color', image will be converted to color from bayer.
+                If 'rect', image will be converted to grayscale and rectified 
+                using camera info. If 'rect_color', image will be converted to 
+                color and rectified using camera info
         """
         self.filename = filename
         self.topic = topic

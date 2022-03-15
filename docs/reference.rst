@@ -66,6 +66,10 @@ Utility Functions
 
 .. autofunction:: mil_tools.download_and_unzip
 
+.. autofunction:: mil_tools.rotate_vect_by_quat
+
+.. autofunction:: mil_tools.skew_symmetric_cross
+
 Classes
 ~~~~~~~
 
