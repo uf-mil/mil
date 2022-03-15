@@ -32,6 +32,23 @@ Messages
         A constant of the message type used to indicate a goal which succeeded. 
         Truly set to 2.
 
+Exceptions
+----------
+
+.. currentmodule:: mil_tools
+
+.. autoclass:: ArgumentParserException
+    :members:
+
+    An error was encountered while parsing arguments. Commonly extended by
+    :class:`ThrowingArgumentParser`.
+
+    .. attribute:: message
+    
+        The message associated with the error.
+
+        :rtype: :class:`str`
+
 MIL Common
 ----------
 
@@ -55,6 +72,9 @@ Classes
     :members:
 
 .. autoclass:: SimulatedSerial
+    :members:
+
+.. autoclass:: ThrowingArgumentParser
     :members:
 
 txros

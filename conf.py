@@ -173,6 +173,7 @@ html_static_path = ['docs/_static']
 html_sidebars = {
     '**': [
         'localtoc.html',
+        'searchbox.html'
     ]
 }
 # Additional templates that should be rendered to pages, maps page names to
