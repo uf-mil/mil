@@ -90,12 +90,8 @@ alias search='find . -print | grep -i'
 
 # Gazebo aliases
 alias gazebogui="rosrun gazebo_ros gzclient __name:=gzclient"
-# Simulation
+
+# Process killing aliases
 alias killgazebo="killall -9 gzserver && killall -9 gzclient"
-
-# Aliases for switching between branches
-alias master2vrx="$MIL_REPO/scripts/master_to_vrx.sh"
-alias vrx2master="$MIL_REPO/scripts/vrx_to_master.sh"
-
 alias killros="$MIL_REPO/scripts/kill_ros.sh"
 alias killprocess="$MIL_REPO/scripts/kill_process.sh"
