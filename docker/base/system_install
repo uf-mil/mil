@@ -21,7 +21,6 @@ mil_system_install --no-install-recommends \
   python2 \
   ruby \
   wget \
-  vim \
   expect
 
 # Attempt to install vcstool using apt-get or pip if apt-get does not work
@@ -52,36 +51,30 @@ mil_system_install ros-noetic-desktop-full
 # Install additional dependencies not bundled by default with ros
 # Please put each on a new line for readability
 mil_system_install \
-  ros-melodic-serial \
-  ros-melodic-tf2-sensor-msgs \
-  ros-melodic-geographic-msgs \
-  ros-melodic-velodyne \
-  ros-melodic-usb-cam \
-  ros-melodic-joy \
-  ros-melodic-spacenav-node \
-  ros-melodic-velodyne-simulator \
-  ros-melodic-hector-gazebo-plugins \
-  ros-melodic-joy \
-  ros-melodic-joy-teleop \
-  ros-melodic-key-teleop \
-  ros-melodic-robot-localization \
-  ros-melodic-teleop-tools \
-  ros-melodic-teleop-twist-keyboard \
-  ros-melodic-ros-control \
-  ros-melodic-ros-controllers \
-  python-pip \
-  clang-format-3.9
-sudo pip install \
-  tqdm \
-  scipy \
-  sklearn \
-  pandas \
+  ros-noetic-serial \
+  ros-noetic-tf2-sensor-msgs \
+  ros-noetic-geographic-msgs \
+  ros-noetic-velodyne \
+  ros-noetic-usb-cam \
+  ros-noetic-joy \
+  ros-noetic-spacenav-node \
+  ros-noetic-velodyne-simulator \
+  ros-noetic-hector-gazebo-plugins \
+  ros-noetic-joy-teleop \
+  ros-noetic-key-teleop \
+  ros-noetic-robot-localization \
+  ros-noetic-teleop-tools \
+  ros-noetic-teleop-twist-keyboard \
+  ros-noetic-ros-control \
+  ros-noetic-ros-controllers \
 
-pip install --upgrade pip
-pip2 install tsp_solver2
-pip2 install Pillow
-pip2 install pyyaml
-
+# Install recent pip packages being used
+sudo pip3 install --upgrade pip \
+    tsp_solver2 \
+    tensorflow==2.8.0 \
+    Pillow \
+    black \
+    modernize
 
 # Documentation dependencies
 mil_system_install  python3-pip python-setuptools
@@ -93,10 +86,12 @@ sudo pip3 install -q \
   sphinx_rtd_theme \
   numpy \
   matplotlib \
-  rospkg \
-  pyyaml
+  tqdm \
+  scipy \
+  sklearn \
+  pandas
 
 # Initialize rosdep
 sudo apt-get install python3-rosdep
 sudo rosdep init
-rosdep update
+sudo rosdep update

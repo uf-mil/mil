@@ -5,7 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /TF1/Frames1
-        - /Long Trajectory1/Status1
       Splitter Ratio: 0.5
     Tree Height: 292
   - Class: rviz/Selection
@@ -523,7 +522,7 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /trajectory_long/cmd
+      Topic: ""
       Unreliable: false
       Value: true
     - Class: rviz/Marker
@@ -581,25 +580,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 23.06357765197754
+      Distance: 33.505435943603516
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -5.852004528045654
-        Y: -3.0535435676574707
-        Z: 12.914435386657715
+        X: -2.575706958770752
+        Y: 2.717686653137207
+        Z: 10.313796043395996
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5702038407325745
+      Pitch: 0.574796736240387
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.965423822402954
+      Yaw: 3.930418014526367
     Saved: ~
 Window Geometry:
   Displays:

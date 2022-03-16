@@ -27,6 +27,12 @@ class VrxWildlife(Vrx):
         dist_to_point = hypot - radius
         return [ start_pos[0] + dist_to_point * math.cos(theta), start_pos[1] + dist_to_point * math.sin(theta), 0]
 
+    def point_at_goal(self, goal_pos):
+        vect = [ goal_pos[0] - self.pose[0][0], goal_pos[1] - self.pose[0][1]]
+        theta = math.atan2(vect[1], vect[0])
+        return tf.transformations.quaternion_from_euler(0,0,theta)
+
+
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
         self.send_feedback('Waiting for task to start')
@@ -98,7 +104,8 @@ class VrxWildlife(Vrx):
             start_circle_pos = self.closest_point_on_radius(self.pose[0], animal_pose_next[0], radius)
 
             #first point at goal
-            yield self.point_at_goal(start_circle_pos)
+            orientation_fix = self.point_at_goal(start_circle_pos)
+            yield self.move.set_orientation(orientation_fix).go(blind=True)
 
             req = ChooseAnimalRequest()
             if(croc_is_present):

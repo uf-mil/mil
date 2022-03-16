@@ -132,9 +132,6 @@ class BagImageExtractorSource(object):
         elif self.encoding == ImageProc.RECT_COLOR:
             img = self.image_set.rect_color
 
-        if self.encoding == ImageProc.RAW:
-            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        
         # If color, convert to bgr
         if self.encoding == ImageProc.COLOR or self.encoding == ImageProc.RECT_COLOR:
             img = cvtColor2(img, self.image_set.color_encoding, 'bgr8')
@@ -300,4 +297,3 @@ if __name__ == "__main__":
     # Contruct a project from the config and extract images
     project = BagImageExtractorProject.from_dict(config)
     project.extract_images(verbose=args.verbose)
-

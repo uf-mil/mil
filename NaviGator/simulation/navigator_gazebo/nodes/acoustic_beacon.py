@@ -50,9 +50,7 @@ class AcousticBeaconLocator():
         (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(orientation_list)
         
         f = self.range * math.cos(self.elevation)
-        theta = yaw - (-self.bearing) #temporary line until VRX fixes Range,Bearing standard
-
-
+        theta = yaw - self.bearing
         gps.beacon_position.x = f * math.cos(theta)
         gps.beacon_position.y = f * math.sin(theta)
         
