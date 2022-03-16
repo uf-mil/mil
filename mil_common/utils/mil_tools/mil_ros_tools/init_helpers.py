@@ -1,15 +1,25 @@
 import rospy
 import rostest
 import time
+from typing import Optional, Any
 
 
-def wait_for_param(param_name, timeout=None, poll_rate=0.1):
+def wait_for_param(param_name: str, timeout: Optional[float] = None, poll_rate: float = 0.1) -> Optional[Any]:
     """
-    Blocking wait for a parameter named $parameter_name to exist
-        Poll at frequency $poll_rate
-        Once the parameter exists, return get and return it.
+    Blocking wait for a parameter named to exist. Polls at the frequency of poll_rate.
+    Once the parameter exists, return get and return it.
 
-    This function intentionally leaves failure logging duties to the developer
+    This function intentionally leaves failure logging duties to the developer.
+
+    Args:
+        param_name (str): The name of the parameter to watch.
+        timeout (Optional[float]): The number of seconds to wait for the
+            parameter to exist.
+        poll_rate (float): The Hz rate to poll at.
+
+    Returns:
+        Optional[Any]: If found, the value of the parameter. Returns ``None`` if 
+            the parameter never came to exist.
     """
     start_time = time.time()
     rate = rospy.Rate(poll_rate)
@@ -28,11 +38,16 @@ def wait_for_param(param_name, timeout=None, poll_rate=0.1):
         rate.sleep()
 
 
-def wait_for_subscriber(node_name, topic, timeout=5.0):
+def wait_for_subscriber(node_name: str, topic: str, timeout: float = 5.0) -> bool:
     """
-    Blocks until $node_name subscribes to $topic
-    Useful mostly in integration tests --
-        I would counsel against use elsewhere
+    Blocks until a node with the name node_name subscribes to a topic. Useful
+    in integration tests.
+
+    Args:
+        node_name (str): The node name to check the subscription status of. If
+            a local node name, then the name is resolved to be the global name.
+        topic (str): The topic to check whether the node is subscribed to. If a
+            local topic name, then the name is resolved to be the global name.
     """
     end_time = time.time() + timeout
 
