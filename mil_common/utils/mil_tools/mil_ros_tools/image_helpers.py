@@ -13,7 +13,7 @@ from sensor_msgs.msg import Image, CameraInfo
 from mil_ros_tools import wait_for_param
 import message_filters
 from image_geometry import PinholeCameraModel
-from typing import List
+from typing import List, Optional, Callable, Tuple
 
 
 def get_parameter_range(parameter_root: str):
@@ -205,40 +205,67 @@ class Image_Subscriber:
             rospy.logerr(e)
 
 
-class StereoImageSubscriber(object):
+class StereoImageSubscriber:
     """
     Abstraction to subscribe to two image topics (ex: left and right camera) and
     receive callbacks for synchronized images (already converted to numpy arrays).
     Also contains a helper function to block until the camera info messages for both
     cameras are received.
-    """
 
+    Attributes:
+        bridge (CvBridge): The bridge between ROS and OpenCV. Created when the
+            class is instantiated.
+        encoding (str): The encoding between ROS and OpenCV.
+        callback (Callable): The callback function which executes each time a new
+            left and right image is received. The method should accept a parameter
+            for the left image and a parameter for the right image, both of which
+            are :class:`Image` types.
+        camera_info_left (Optional[CameraInfo]): The camera info for the left
+            image. Upon instantiation, set to ``None`` and updated only after receiving
+            camera info data.
+        camera_info_right (Optional[CameraInfo]): The camera info for the right
+            image. Upon instantiation, set to ``None`` and updated only after receiving
+            camera info data.
+        last_image_left (Optional[Image]): The last image received from the left 
+            camera. This value is set to ``None`` upon class instantiation and
+            should be updated by :attr:`StereoImageSubscriber.callback`.
+        last_image_right (Optional[Image]): The last image received from the right
+            camera. This value is set to ``None`` upon class instantiation and
+            should be updated by :attr:`StereoImageSubscriber.callback`.
+        last_image_left_time (Optional[genpy.Time]): The timestamp when the last
+            left image was received. Set to ``None`` upon class instantiation.
+        last_image_right_time (Optional[genpy.Time]): The timestamp when the last
+            left image was received. Set to ``None`` upon class instantiation.
+    """
     def __init__(
         self,
-        left_image_topic,
-        right_image_topic,
-        callback=None,
-        slop=None,
-        encoding="bgr8",
-        queue_size=10,
+        left_image_topic: str,
+        right_image_topic: str,
+        callback: Optional[Callable] = None,
+        slop: Optional[Callable] = None,
+        encoding: str = "bgr8",
+        queue_size: int = 10,
     ):
         """
         Contruct a StereoImageSubscriber
 
-        @param left_image_topic: ROS topic to subscribe for the left camera
-                                 ex: /camera/front/left/image_rect_color
-        @param right_image_topic: ROS topic to subscribe to for the right camera
-                                 ex: /camera/front/right/image_rect_color
-        @param callback: Function with signature foo(left_img, right_img) to call when a synchronized pair is ready.
-               If left as None, the latest synced images are stored as self.last_image_left and self.last_image_right
-        @param slop: Maximum time in seconds between left and right images to be considered synced.
-               If left as None, will only consider synced if left and right images have exact same header time.
-        @param encoding: String to pass to CvBridge to encode ROS image message to numpy array
-        @param queue_size: Integer, the number of images to store in a buffer for each camera to find synced images
+        left_image_topic (str): ROS topic to subscribe for the left camera. 
+            For example, ``/camera/front/left/image_rect_color``.
+        right_image_topic (str): ROS topic to subscribe to for the right 
+            camera. For example, ``/camera/front/right/image_rect_color``.
+        callback (Optional[Callable]): Function with signature ``foo(left_img, right_img)`` 
+            to call when a synchronized pair is ready. If left as ``None``, 
+            the latest synced images are stored as self.last_image_left 
+            and self.last_image_right.
+        slop (Optional[int]): Maximum time in seconds between left and right 
+            images to be considered synced. If left as None, will only 
+            consider synced if left and right images have exact same header time.
+        encoding (str): String to pass to CvBridge to encode ROS image message 
+            to numpy array
+        queue_size (int): Integer, the number of images to store in a buffer 
+            for each camera to find synced images.
         """
-        if (
-            callback is None
-        ):  # Set default callback to just set image_left and image_right
+        if callback is None:  # Set default callback to just set image_left and image_right
 
             def callback(image_left, image_right):
                 setattr(self, "last_image_left", image_left)
@@ -283,15 +310,21 @@ class StereoImageSubscriber(object):
             )
         self._image_sub.registerCallback(self._image_callback)
 
-    def wait_for_camera_info(self, timeout=10, unregister=True):
+    def wait_for_camera_info(self, timeout: int = 10, unregister: bool = True) -> Tuple[CameraInfo, CameraInfo]:
         """
         Blocks until camera info has been received.
 
-        @param timeout: Time in seconds to wait before throwing exception if camera info is not received
-        @param unregister: Boolean, if True will unsubscribe to camera info after receiving initial info message,
-               so self.camera_info_left and self.camera_info_right will not be updated
-        @return: Tuple(camera_info_left, camera_info_right) camera info for each camera if received before timeout
-        @raise Exception: if camera info for both cameras is not received within timeout
+        Args:
+            timeout (int): Time in seconds to wait before throwing exception if camera info is not received
+            unregister (bool): Whether to unsubscribe from the camera info topics
+                after receiving the first message so that :attr:`~StereoImageSubscriber.camera_info_left`
+                and :attr:`~StereoImageSubscriber.camera_info_right` will not be updated.
+
+        Returns:
+            Tuple[CameraInfo, CameraInfo]: A tuple containing the camera info for the left and right cameras, respectively. 
+
+        Raises:
+            Exception: if camera info for both cameras is not received within timeout
         """
         timeout = rospy.Time.now() + rospy.Duration(timeout)
         while (rospy.Time.now() < timeout) and (not rospy.is_shutdown()):
@@ -308,15 +341,15 @@ class StereoImageSubscriber(object):
             return self.camera_info_left, self.camera_info_right
         raise Exception("Camera info not found.")
 
-    def _image_callback(self, left_img, right_img):
+    def _image_callback(self, left_img: Image, right_img: Image):
         """
-        Internal wrapper around image callback. Updates
-        latest timestamps and converts ROS image messages
-        to numpy arrays (for use with OpenCV, etc) before
-        calling user defined callback.
+        Internal wrapper around image callback. Updates latest timestamps and 
+        converts ROS image messages to numpy arrays (for use with OpenCV, etc) 
+        before calling user defined callback.
 
-        @param left_img: the synchronized image from the left camera
-        @param right_img: the synchronized image from the right camera
+        Args:
+            left_img (Image): The synchronized image from the left camera
+            right_img (Image): The synchronized image from the right camera
         """
         try:
             self.last_image_time_left = left_img.header.stamp

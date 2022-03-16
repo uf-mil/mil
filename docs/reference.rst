@@ -151,6 +151,9 @@ Classes
 .. autoclass:: Image_Subscriber
     :members:
 
+.. autoclass:: StereoImageSubscriber
+    :members:
+
 Serial
 ------
 
