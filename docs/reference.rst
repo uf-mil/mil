@@ -145,6 +145,12 @@ Classes
 .. autoclass:: CvDebug
     :members:
 
+.. autoclass:: Image_Publisher
+    :members:
+
+.. autoclass:: Image_Subscriber
+    :members:
+
 Serial
 ------
 

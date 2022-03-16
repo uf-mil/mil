@@ -13,12 +13,12 @@ from sensor_msgs.msg import Image, CameraInfo
 from mil_ros_tools import wait_for_param
 import message_filters
 from image_geometry import PinholeCameraModel
+from typing import List
 
 
-def get_parameter_range(parameter_root):
+def get_parameter_range(parameter_root: str):
     """
-    ex: parameter_root='/vision/buoy/red'
-    this will then fetch /vision/buoy/red/hsv_low and hsv_high
+    Fetches the {parameter_root}/hsv_low and {parameter_root}/hsv_high parameters.
     """
     low_param, high_param = parameter_root + "/hsv_low", parameter_root + "/hsv_high"
 
@@ -35,28 +35,48 @@ def get_parameter_range(parameter_root):
     return np.array([low, high]).transpose()
 
 
-def make_image_msg(cv_image, encoding="bgr8"):
-    """Take a cv image, and produce a ROS image message"""
+def make_image_msg(cv_image: List[float], encoding: str = "bgr8"):
+    """
+    Take a CV image, and produce a ROS image message.
+    """
     bridge = CvBridge()
     image_message = bridge.cv2_to_imgmsg(cv_image, encoding)
     return image_message
 
 
-def get_image_msg(ros_image, encoding="bgr8"):
-    """Take a ros image message, and yield an opencv image"""
+def get_image_msg(ros_image: Image, encoding: str = "bgr8"):
+    """
+    Take a ros image message, and return an OpenCV image.
+    """
     bridge = CvBridge()
     cv_image = bridge.imgmsg_to_cv2(ros_image, desired_encoding=encoding)
     return cv_image
 
 
-class Image_Publisher(object):
-    def __init__(self, topic, encoding="bgr8", queue_size=1):
-        """Create an essentially normal publisher, that will publish images without conversion hassle"""
+class Image_Publisher:
+    """
+    Publishes OpenCV image mats directly to a ROS topic, avoiding the need for
+    continual conversion.
+
+    Attributes:
+        bridge (CvBridge): The ROS bridge to OpenCV. Created upon instantiation.
+        encoding (str): The encoding of the images. Supplied upon creation.
+            Defaults to ``bgr8``.
+        im_pub (rospy.Publisher): The ROS publisher responsible for publishing
+            images to a ROS topic. The topic name and queue size are supplied
+            through the constructor.
+    """
+
+    def __init__(self, topic: str, encoding: str = "bgr8", queue_size: int = 1):
         self.bridge = CvBridge()
         self.encoding = encoding
         self.im_pub = rospy.Publisher(topic, Image, queue_size=queue_size)
 
-    def publish(self, cv_image):
+    def publish(self, cv_image: List[float]):
+        """
+        Publishes an OpenCV image mat to the ROS topic. :class:`CvBridgeError`
+        exceptions are caught and logged.
+        """
         try:
             image_message = self.bridge.cv2_to_imgmsg(cv_image, self.encoding)
             self.im_pub.publish(image_message)
@@ -65,12 +85,28 @@ class Image_Publisher(object):
             rospy.logerr(e)
 
 
-class Image_Subscriber(object):
+class Image_Subscriber:
+    """
+    Calls callback on each image every time a new image is published on a certain
+    topic. This behaves like a conventional subscriber, except handling the 
+    additional image conversion.
+
+    Attributes:
+        encoding (str): The encoding used to convert between OpenCV and ROS image
+            types.
+        camera_info (CameraInfo): The information about the camera related to the topic.
+        last_image_header (Header): The header of the last image received.
+        last_image_time (genpy.Time): The time of the last image received.
+        im_sub (rospy.Subscriber): The subscriber to the image topic. The topic
+            name and queue size are received through the constructor.
+        info_sub (rospy.Susbcriber): The subscriber to the camera info topic.
+            The topic nmae is derived from the root of the supplied topic and the
+            queue size is derived from the constructor.
+        bridge (CvBridge): The bridge between OpenCV and ROS.
+        callback (Callable): The callback function to call upon receiving each
+            image.
+    """
     def __init__(self, topic, callback=None, encoding="bgr8", queue_size=1):
-        """Calls $callback on each image every time a new image is published on $topic
-        Assumes topic of type "sensor_msgs/Image"
-        This behaves like a conventional subscriber, except handling the additional image conversion
-        """
         if callback is None:
 
             def callback(im):
@@ -93,10 +129,16 @@ class Image_Subscriber(object):
         self.bridge = CvBridge()
         self.callback = callback
 
-    def wait_for_camera_info(self, timeout=10):
+    def wait_for_camera_info(self, timeout: int = 10):
         """
-        Blocks until camera info has been received.
-        Note: 'timeout' is in seconds.
+        Blocks until camera info has been received for a number of seconds.
+
+        Args:
+            timeout (int): The amount of seconds to wait for camera info. 
+                Defaults to 10 seconds.
+
+        Raises:
+            Exception: No camera info was found after the timeout had finished.
         """
         rospy.logwarn(
             "Blocking -- waiting at most %d seconds for camera info." % timeout
@@ -116,17 +158,43 @@ class Image_Subscriber(object):
         raise Exception("Camera info not found.")
 
     def wait_for_camera_model(self, **kwargs):
+        """
+        Waits for the camera model information.
+
+        Returns:
+            PinholeCameraModel: The camera model.
+        """
         info_msg = self.wait_for_camera_info(**kwargs)
         model = PinholeCameraModel()
         model.fromCameraInfo(info_msg)
         return model
 
-    def info_cb(self, msg):
-        """The path trick here is a hack"""
+    def info_cb(self, msg: CameraInfo):
+        """
+        Serves as the callback to a ROS subscriber subscribed to a camera info
+        topic.
+
+        This callback only executes once, as calling this method unregisters the
+        subscriber.
+
+        Args:
+            msg (CameraInfo): The message containing information about the camera.
+        """
         self.info_sub.unregister()
         self.camera_info = msg
 
-    def convert(self, data):
+    def convert(self, data: Image):
+        """
+        Serves as the callback method to the image topic subscriber. Receives data
+        in the form of Image messages, and stores the time and header of the last
+        image received.
+
+        Upon receiving the image, this method converts the image to be in the
+        OpenCV format and calls the class' :meth:`~Image_Subscriber.callback` method.
+
+        Args:
+            data (Image): The message type representing an image in ROS.
+        """
         self.last_image_header = data.header
         self.last_image_time = data.header.stamp
         try:
