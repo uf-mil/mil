@@ -126,6 +126,38 @@ Geometry
 
         :type: ~geometry_msgs.msg._Quaternion.Quaternion
 
+.. class:: geometry_msgs.msg._PoseWithCovariance.PoseWithCovariance
+
+    A ROS message type representing an object's pose, along with a covariance.
+
+    .. attribute:: pose
+
+        The object's pose.
+
+        :type: ~geometry_msgs.msg._Pose.Pose
+
+    .. attribute:: covariance
+
+        The object's covariance. Consists of a list of 36 values.
+
+        :type: List[float]
+
+.. class:: geometry_msgs.msg._Accel.Accel
+
+    A ROS message type representing an object's acceleration.
+
+    .. attribute:: linear
+
+        The linear acceleration of the twist.
+
+        :type: ~geometry_msgs.msg._Vector3.Vector3
+
+    .. attribute:: angular
+
+        The angular acceleration of the twist.
+
+        :type: ~geometry_msgs.msg._Vector3.Vector3
+
 .. class:: geometry_msgs.msg._Twist.Twist
 
     A ROS message type representing an object's twist.
@@ -141,6 +173,101 @@ Geometry
         The angular direction of the twist.
 
         :type: ~geometry_msgs.msg._Vector3.Vector3
+
+.. class:: geometry_msgs.msg._TwistWithCovariance.TwistWithCovariance
+
+    A ROS message type representing an object's twist, along with a covariance.
+
+    .. attribute:: twist
+
+        The object's twist.
+
+        :type: ~geometry_msgs.msg._Twist.Twist
+
+    .. attribute:: covariance
+
+        The object's covariance. Consists of a list of 36 values.
+
+        :type: List[float]
+
+.. class:: geometry_msgs.msg._Twist.PoseTwist
+
+    A ROS message type representing an object's pose and twist.
+
+    .. attribute:: pose
+
+        The pose of the object.
+
+        :type: ~geometry_msgs.msg._Pose.Pose
+
+    .. attribute:: twist
+
+        The twist of the object.
+
+        :type: ~geometry_msgs.msg._Twist.Twist
+
+    .. attribute:: acceleration
+
+        The acceleration of the object.
+
+        :type: ~geometry_msgs.msg._Accel.Accel
+
+Navigation Messages
+^^^^^^^^^^^^^^^^^^^
+.. class:: nav_msgs.msg._Odometry.Odometry
+
+    A ROS message type representing an object's odometry.
+
+    .. attribute:: header
+
+        The message header.
+
+        :type: ~std_msgs.msg._Header.Header
+
+    .. attribute:: child_frame_id
+
+        The child frame ID, used to determine the frame of the robot's twist.
+
+        :type: ~geometry_msgs.msg._Twist.Twist
+
+    .. attribute:: pose
+
+        The pose (along with covariance) determined within the frame of :attr:`~std_msgs.msg._Header.Header.frame_id`.
+
+        :type: ~geometry_msgs.msg._PoseWithCovariance.PoseWithCovariance
+
+    .. attribute:: twist
+
+        The twist (along with covariance) determined within the frame of :attr:`~nav_msgs.msg._Odometry.Odometry.child_frame_id`.
+
+        :type: ~geometry_msgs.msg._TwistWithCovariance.TwistWithCovariance
+
+Standard Messages
+^^^^^^^^^^^^^^^^^
+
+.. class:: std_msgs.msg._Header.Header
+
+    A ROS message type representing the header of a message. Used throughout a
+    variety of messages.
+
+    .. attribute:: seq
+
+        The sequence ID of the header. A consecutively increasing ID.
+
+        :type: int
+
+    .. attribute:: time
+
+        The time of the message.
+
+        :type: genpy.rostime.Time
+
+    .. attribute:: frame_id
+
+        The frame that this object is associated with.
+
+        :type: str
+
 
 Exceptions
 ----------
