@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from ros_alarms import HandlerBase, AlarmBroadcaster
 from std_msgs.msg import Float32
 import rospy

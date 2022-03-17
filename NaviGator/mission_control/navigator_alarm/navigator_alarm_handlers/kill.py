@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
 import rospy
 from ros_alarms import HandlerBase, Alarm
 from actionlib import SimpleActionClient, TerminalState

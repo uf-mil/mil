@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
 import rospy
 from nav_msgs.msg import Odometry
 from ros_alarms import AlarmBroadcaster, HandlerBase, HeartbeatMonitor

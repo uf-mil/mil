@@ -1,6 +1,8 @@
+from __future__ import absolute_import
 from ros_alarms import HandlerBase, AlarmBroadcaster
 from roboteq_msgs.msg import Status
 import rospy
+import six
 
 
 class ThrusterFault(HandlerBase):
@@ -36,7 +38,7 @@ class ThrusterFault(HandlerBase):
     # Return a list that decodes the binary to strings
     def _get_fault_codes(self, fault_id):
         get_fault_codes = []
-        for key, value in self.fault_codes.iteritems():
+        for key, value in six.iteritems(self.fault_codes):
             # Fault message is the sum of binary strings
             decode = fault_id & key
             if decode != 0:
@@ -71,7 +73,7 @@ class ThrusterFault(HandlerBase):
                 parameters=dict(
                     [
                         (t, self._get_fault_codes(k))
-                        for t, k in self._raised_alarms.iteritems()
+                        for t, k in six.iteritems(self._raised_alarms)
                     ]
                 ),
             )

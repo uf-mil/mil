@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
 import rospy
 from actionlib import TerminalState
 from mil_missions_core import MissionClient
