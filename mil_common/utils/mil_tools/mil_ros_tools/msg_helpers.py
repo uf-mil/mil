@@ -181,12 +181,12 @@ def wrench_to_numpy(wrench: geometry_msgs.Wrench):
     return force, torque
 
 
-def numpy_to_point(vector: List[float]) -> geometry_msgs.Point:
+def numpy_to_point(vector: np.ndarray) -> geometry_msgs.Point:
     """
     Turns a List[:class:`float`] into a :class:`Point` message.
 
     Args:
-        vector (List[float]): The vector to convert
+        vector (np.ndarray): The vector to convert
 
     Returns:
         geometry_msgs.Point: The constructed message.
@@ -198,12 +198,12 @@ def numpy_to_point(vector: List[float]) -> geometry_msgs.Point:
     return geometry_msgs.Point(*np_vector)
 
 
-def numpy_to_point2d(vector: List[float]) -> Point2D: 
+def numpy_to_point2d(vector: np.ndarray) -> Point2D: 
     """
-    Turns a List[:class:`float`] into a :class:`Point2D` message.
+    Turns a :class:`np.ndarray` into a :class:`Point2D` message.
 
     Args:
-        vector (List[float]): The vector to convert. Should have two values, the
+        vector (np.ndarray): The vector to convert. Should have two values, the
             first of which represents x and the other y.
 
     Returns:
@@ -213,12 +213,12 @@ def numpy_to_point2d(vector: List[float]) -> Point2D:
     return Point2D(*np_vector)
 
 
-def numpy_to_quaternion(np_quaternion: List[float]) -> geometry_msgs.Quaternion:
+def numpy_to_quaternion(np_quaternion: np.ndarray) -> geometry_msgs.Quaternion:
     """
     Turns a List[:class:`float`] into a :class:`Quaternion` message.
 
     Args:
-        vector (List[float]): The vector to convert. Should have four values,
+        np_quaternion (np.ndarray): The vector to convert. Should have four values,
             representing ``x``, ``y``, ``z``, and ``w``.
 
     Returns:
@@ -227,14 +227,14 @@ def numpy_to_quaternion(np_quaternion: List[float]) -> geometry_msgs.Quaternion:
     return geometry_msgs.Quaternion(*np_quaternion)
 
 
-def numpy_to_twist(linear_vel: List[float], angular_vel: List[float]) -> geometry_msgs.Twist:
+def numpy_to_twist(linear_vel: np.ndarray, angular_vel: np.ndarray) -> geometry_msgs.Twist:
     """
-    Turns two List[:class:`float`] into a :class:`Twist` message.
+    Turns two :class:`np.ndarray`s into a :class:`Twist` message.
 
     Args:
-        linear_vel (List[float]): The vector to convert. Values should represent
+        linear_vel (np.ndarray): The vector to convert. Values should represent
             the individual components of ``x``, ``y``, and ``z``.
-        angular_vel (List[float]): The vector to convert. Values should represent
+        angular_vel (np.ndarray): The vector to convert. Values should represent
             the individual components of ``x``, ``y``, and ``z``.
 
     Returns:
@@ -247,12 +247,12 @@ def numpy_to_twist(linear_vel: List[float], angular_vel: List[float]) -> geometr
     )
 
 
-def numpy_to_wrench(forcetorque):
+def numpy_to_wrench(forcetorque: np.ndarray):
     """
-    Turns a List[:class:`float`] into a :class:`Wrench` message.
+    Turns a np.ndarray into a :class:`Wrench` message.
 
     Args:
-        forcetorque (List[float]): The vector to convert. Values should represent
+        forcetorque (np.ndarray): The vector to convert. Values should represent
             the individual components of ``force.x``, ``force.y``, ``force.z``,
             ``torque.x``, ``torque.y``, and ``torque.z``.
 
@@ -265,9 +265,16 @@ def numpy_to_wrench(forcetorque):
     )
 
 
-def numpy_matrix_to_quaternion(np_matrix):
+def numpy_matrix_to_quaternion(np_matrix: np.ndarray):
     """
-    Given a 3x3 rotation matrix, return its geometry_msgs Quaternion
+    Given a 3x3 rotation matrix, convert to a quaternion, and return the quaternion
+    as a ROS message.
+
+    Args:
+        np_matrix (np.ndarray): The 3x3 rotation matrix.
+
+    Returns:
+        Quaternion: The constructed message.
     """
     assert np_matrix.shape == (3, 3), "Must submit 3x3 rotation matrix"
     pose_mat = np.eye(4)
@@ -276,16 +283,36 @@ def numpy_matrix_to_quaternion(np_matrix):
     return geometry_msgs.Quaternion(*np_quaternion)
 
 
-def numpy_pair_to_pose(np_translation, np_rotation_matrix):
+def numpy_pair_to_pose(np_translation: np.ndarray, np_rotation_matrix: np.ndarray) -> geometry_msgs.Pose:
     """
-    Convert a R, t pair to a geometry_msgs Pose
+    Convert a rotation matrix and point pair to a Pose message.
+
+    Args:
+        np_translation (np.ndarray): An array of 2 or 3 points representing the
+            object's position.
+        np_rotation_matrix (np.ndarray): A 3x3 rotation matrix.
+
+    Returns:
+        geometry_msgs.Pose: The Pose message with the position and orientation.
     """
     orientation = numpy_matrix_to_quaternion(np_rotation_matrix)
     position = numpy_to_point(np_translation)
     return geometry_msgs.Pose(position=position, orientation=orientation)
 
 
-def numpy_quat_pair_to_pose(np_translation, np_quaternion):
+def numpy_quat_pair_to_pose(np_translation: np.ndarray, np_quaternion: np.ndarray) -> geometry_msgs.Pose:
+    """
+    Convert a quaternion array and point array pair to a Pose message.
+
+    Args:
+        np_translation (np.ndarray): An array of 2 or 3 points representing the
+            object's position.
+        np_quaternion (np.ndarray): An array with 4 points, representing ``x``,
+            ``y``, ``z``, and ``w`` of a quaternion describing the object.
+
+    Returns:
+        geometry_msgs.Pose: The Pose message with the position and orientation.
+    """
     orientation = numpy_to_quaternion(np_quaternion)
     position = numpy_to_point(np_translation)
     return geometry_msgs.Pose(position=position, orientation=orientation)
