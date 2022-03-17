@@ -98,6 +98,18 @@ Mathematics
 
 .. autofunction:: mil_tools.euler_to_quat
 
+Message Handlers
+----------------
+.. currentmodule:: mil_tools
+
+.. autofunction:: pose_to_numpy
+
+.. autofunction:: twist_to_numpy
+
+.. autofunction:: posetwist_to_numpy
+
+.. autofunction:: odometry_to_numpy
+
 User Input/Output
 -----------------
 .. currentmodule:: mil_tools

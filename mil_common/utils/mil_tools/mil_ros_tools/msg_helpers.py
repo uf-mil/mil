@@ -3,12 +3,16 @@ from tf import transformations
 import geometry_msgs.msg as geometry_msgs
 import std_msgs.msg as std_msgs
 import nav_msgs.msg as nav_msgs
-from mil_msgs.msg import Point2D
+from mil_msgs.msg import Point2D, PoseTwist
 import rospy
 
 
 def rosmsg_to_numpy(rosmsg, keys=None):
     """
+    ===============
+    NOTE: This method should be removed. Please see issue #469 on the GitHub
+    repository.
+    ===============
     Convert an arbitrary ROS msg to a numpy array
     With no additional arguments, it will by default handle:
         Point2D, Point3D, Vector3D, Quaternion and any lists of these (like Polygon)
@@ -65,9 +69,20 @@ def rosmsg_to_numpy(rosmsg, keys=None):
         return output_array
 
 
-def pose_to_numpy(pose):
+def pose_to_numpy(pose: geometry_msgs.Pose):
     """
-    returns (position, orientation)
+    Turns a :class:`Pose` message into a tuple of position and orientation.
+
+    .. warning ::
+
+        This method relies on a method (:meth:`mil_ros_tools.rosmsg_to_numpy`)
+        which will be deprecated in the future. This method will need to be updated.
+
+    Args:
+        pose (Pose): The pose message.
+
+    Returns:
+        Tuple[float, float]: The tuple of position and orientation.
     """
     # TODO Add unit tests
     position = rosmsg_to_numpy(pose.position)
@@ -75,10 +90,20 @@ def pose_to_numpy(pose):
     return position, orientation
 
 
-def twist_to_numpy(twist):
+def twist_to_numpy(twist: geometry_msgs.Twist):
     """
-    Convert a twist message into a tuple of numpy arrays
-    returns (linear, angular)
+    Turns a :class:`Twist` message into a tuple of linear and angular speeds.
+
+    .. warning ::
+
+        This method relies on a method (:meth:`mil_ros_tools.rosmsg_to_numpy`)
+        which will be deprecated in the future. This method will need to be updated.
+
+    Args:
+        twist (Twist): The twist message.
+
+    Returns:
+        Tuple[List[float], List[float]]: The tuple of linear and angular speeds.
     """
     # TODO Add unit tests
     linear = rosmsg_to_numpy(twist.linear)
@@ -86,13 +111,27 @@ def twist_to_numpy(twist):
     return linear, angular
 
 
-def posetwist_to_numpy(posetwist):
+def posetwist_to_numpy(posetwist: PoseTwist):
+    """
+    Turns a :class:`PoseTwist` message into pose position, pose orientation, twist linear, and twist angular.
+
+    .. warning ::
+
+        This method relies on a method (:meth:`mil_ros_tools.rosmsg_to_numpy`)
+        which will be deprecated in the future. This method will need to be updated.
+
+    Args:
+        twist (PoseTwist): The pose + twist message.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: The tuple of linear and angular speeds.
+    """
     pose = pose_to_numpy(posetwist.pose)
     twist = twist_to_numpy(posetwist.twist)
     return pose, twist
 
 
-def odometry_to_numpy(odom):
+def odometry_to_numpy(odom: nav_msgs.Odometry):
     """
     Convert an odometry message into a tuple of numpy arrays
     returns (pose, twist, pose_covariance, twist_covariance)
