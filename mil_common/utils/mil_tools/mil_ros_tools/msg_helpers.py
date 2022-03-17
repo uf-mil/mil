@@ -5,6 +5,7 @@ import std_msgs.msg as std_msgs
 import nav_msgs.msg as nav_msgs
 from mil_msgs.msg import Point2D, PoseTwist
 import rospy
+from typing import Tuple
 
 
 def rosmsg_to_numpy(rosmsg, keys=None):
@@ -69,7 +70,7 @@ def rosmsg_to_numpy(rosmsg, keys=None):
         return output_array
 
 
-def pose_to_numpy(pose: geometry_msgs.Pose):
+def pose_to_numpy(pose: geometry_msgs.Pose) -> Tuple[float, float]:
     """
     Turns a :class:`Pose` message into a tuple of position and orientation.
 
@@ -124,7 +125,7 @@ def posetwist_to_numpy(posetwist: PoseTwist):
         twist (PoseTwist): The pose + twist message.
 
     Returns:
-        Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: The tuple of linear and angular speeds.
+        Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]: The tuple of linear and angular speeds.
     """
     pose = pose_to_numpy(posetwist.pose)
     twist = twist_to_numpy(posetwist.twist)
@@ -133,8 +134,21 @@ def posetwist_to_numpy(posetwist: PoseTwist):
 
 def odometry_to_numpy(odom: nav_msgs.Odometry):
     """
-    Convert an odometry message into a tuple of numpy arrays
-    returns (pose, twist, pose_covariance, twist_covariance)
+    Turns a :class:`Odometry` message into its pose, twist, pose covariance,
+    and twist covariance.
+
+    .. warning ::
+
+        This method relies on a method (:meth:`mil_ros_tools.rosmsg_to_numpy`)
+        which will be deprecated in the future. This method will need to be updated.
+
+    Args:
+        odom (Odometry): The odometry message.
+
+    Returns:
+        Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray], 
+            np.ndarray, np.ndarray]: The tuple of pose, twist, pose covariance,
+            and twist covariance.
     """
     # TODO Add unit tests
     pose = pose_to_numpy(odom.pose.pose)
@@ -146,7 +160,22 @@ def odometry_to_numpy(odom: nav_msgs.Odometry):
     return pose, twist, pose_covariance, twist_covariance
 
 
-def wrench_to_numpy(wrench):
+def wrench_to_numpy(wrench: geometry_msgs.Wrench):
+    """
+    Turns a :class:`Wrench` message into its force and torque, represented as
+    numpy arrays.
+
+    .. warning ::
+
+        This method relies on a method (:meth:`mil_ros_tools.rosmsg_to_numpy`)
+        which will be deprecated in the future. This method will need to be updated.
+
+    Args:
+        wrench (Wrench): The wrench message.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: The tuple of force and torque.
+    """
     force = rosmsg_to_numpy(wrench.force)
     torque = rosmsg_to_numpy(wrench.torque)
     return force, torque

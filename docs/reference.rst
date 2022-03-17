@@ -4,6 +4,9 @@ Reference
 Messages
 --------
 
+actionlib
+^^^^^^^^^
+
 .. class:: actionlib_msgs.msg._GoalStatus.GoalStatus
 
     Message type indicating the status of a goal in an actions server. Used by
@@ -32,6 +35,9 @@ Messages
         A constant of the message type used to indicate a goal which succeeded. 
         Truly set to 2.
 
+Geometry
+^^^^^^^^
+
 .. class:: geometry_msgs.msg._Quaternion.Quaternion
 
     A message type representing a quaternion.
@@ -59,6 +65,82 @@ Messages
         The fourth element of the quaternion.
 
         :rtype: Union[:class:`float`, :class:`int`]
+
+.. class:: geometry_msgs.msg._Pose.Point
+
+    A ROS message type representing a single point.
+
+    .. attribute:: x
+
+        The x-value of the point.
+
+        :type: :class:`float`
+
+    .. attribute:: y
+
+        The y-value of the point.
+
+        :type: :class:`float`
+
+    .. attribute:: z
+
+        The z-value of the point.
+
+        :type: :class:`float`
+
+.. class:: geometry_msgs.msg._Vector3.Vector3
+
+    A ROS message type representing a three-dimensional vector.
+
+    .. attribute:: x
+
+        The x-value of the vector.
+
+        :type: :class:`float`
+
+    .. attribute:: y
+
+        The y-value of the vector.
+
+        :type: :class:`float`
+
+    .. attribute:: z
+
+        The z-value of the vector.
+
+        :type: :class:`float`
+
+.. class:: geometry_msgs.msg._Pose.Pose
+
+    A ROS message type representing an object's pose.
+
+    .. attribute:: position
+
+        The position of the pose.
+
+        :type: ~geometry_msgs.msg._Pose.Point
+
+    .. attribute:: orientation
+
+        The orientation of the pose.
+
+        :type: ~geometry_msgs.msg._Quaternion.Quaternion
+
+.. class:: geometry_msgs.msg._Twist.Twist
+
+    A ROS message type representing an object's twist.
+
+    .. attribute:: linear
+
+        The linear direction of the twist.
+
+        :type: ~geometry_msgs.msg._Vector3.Vector3
+
+    .. attribute:: angular
+
+        The angular direction of the twist.
+
+        :type: ~geometry_msgs.msg._Vector3.Vector3
 
 Exceptions
 ----------
@@ -109,6 +191,8 @@ Message Handlers
 .. autofunction:: posetwist_to_numpy
 
 .. autofunction:: odometry_to_numpy
+
+.. autofunction:: wrench_to_numpy
 
 User Input/Output
 -----------------
