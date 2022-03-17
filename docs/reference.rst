@@ -321,6 +321,16 @@ Message Handlers
 
 .. autofunction:: wrench_to_numpy
 
+.. autofunction:: numpy_to_point
+
+.. autofunction:: numpy_to_point2d
+
+.. autofunction:: numpy_to_quaternion
+
+.. autofunction:: numpy_to_twist
+
+.. autofunction:: numpy_to_wrench
+
 User Input/Output
 -----------------
 .. currentmodule:: mil_tools

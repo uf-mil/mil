@@ -5,7 +5,7 @@ import std_msgs.msg as std_msgs
 import nav_msgs.msg as nav_msgs
 from mil_msgs.msg import Point2D, PoseTwist
 import rospy
-from typing import Tuple
+from typing import Tuple, List
 
 
 def rosmsg_to_numpy(rosmsg, keys=None):
@@ -181,7 +181,16 @@ def wrench_to_numpy(wrench: geometry_msgs.Wrench):
     return force, torque
 
 
-def numpy_to_point(vector):
+def numpy_to_point(vector: List[float]) -> geometry_msgs.Point:
+    """
+    Turns a List[:class:`float`] into a :class:`Point` message.
+
+    Args:
+        vector (List[float]): The vector to convert
+
+    Returns:
+        geometry_msgs.Point: The constructed message.
+    """
     np_vector = np.array(vector)
     if np_vector.size == 2:
         np_vector = np.append(np_vector, 0)  # Assume user is give 2d point
@@ -189,16 +198,48 @@ def numpy_to_point(vector):
     return geometry_msgs.Point(*np_vector)
 
 
-def numpy_to_point2d(vector):
+def numpy_to_point2d(vector: List[float]) -> Point2D: 
+    """
+    Turns a List[:class:`float`] into a :class:`Point2D` message.
+
+    Args:
+        vector (List[float]): The vector to convert. Should have two values, the
+            first of which represents x and the other y.
+
+    Returns:
+        Point2D: The constructed message.
+    """
     np_vector = np.array(vector)
     return Point2D(*np_vector)
 
 
-def numpy_to_quaternion(np_quaternion):
+def numpy_to_quaternion(np_quaternion: List[float]) -> geometry_msgs.Quaternion:
+    """
+    Turns a List[:class:`float`] into a :class:`Quaternion` message.
+
+    Args:
+        vector (List[float]): The vector to convert. Should have four values,
+            representing ``x``, ``y``, ``z``, and ``w``.
+
+    Returns:
+        Quaternion: The constructed message.
+    """
     return geometry_msgs.Quaternion(*np_quaternion)
 
 
-def numpy_to_twist(linear_vel, angular_vel):
+def numpy_to_twist(linear_vel: List[float], angular_vel: List[float]) -> geometry_msgs.Twist:
+    """
+    Turns two List[:class:`float`] into a :class:`Twist` message.
+
+    Args:
+        linear_vel (List[float]): The vector to convert. Values should represent
+            the individual components of ``x``, ``y``, and ``z``.
+        angular_vel (List[float]): The vector to convert. Values should represent
+            the individual components of ``x``, ``y``, and ``z``.
+
+    Returns:
+        Twist: The constructed message.
+    """
     # TODO Add unit tests
     return geometry_msgs.Twist(
         linear=geometry_msgs.Vector3(*linear_vel),
@@ -207,6 +248,17 @@ def numpy_to_twist(linear_vel, angular_vel):
 
 
 def numpy_to_wrench(forcetorque):
+    """
+    Turns a List[:class:`float`] into a :class:`Wrench` message.
+
+    Args:
+        forcetorque (List[float]): The vector to convert. Values should represent
+            the individual components of ``force.x``, ``force.y``, ``force.z``,
+            ``torque.x``, ``torque.y``, and ``torque.z``.
+
+    Returns:
+        Wrench: The constructed message.
+    """
     return geometry_msgs.Wrench(
         force=geometry_msgs.Vector3(*forcetorque[:3]),
         torque=geometry_msgs.Vector3(*forcetorque[3:]),
