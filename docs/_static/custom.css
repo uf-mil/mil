@@ -179,8 +179,8 @@ img[src$="snake_dark.svg"]  {
   display: inherit;
 }
 
-body,
-div.body {
+body:not(.sig),
+div.body:not(.sig) {
   font-family: var(--font-family);
   font-size: 16px;
   margin: 0;
