@@ -1,7 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Opens a neat window for drawing occupancy grids!
-
 """
 import rospy
 import cv2
@@ -15,7 +14,7 @@ from nav_msgs.msg import OccupancyGrid, MapMetaData
 rospy.init_node("ogrid_draw_node", anonymous=True)
 
 
-class DrawGrid(object):
+class DrawGrid:
     def __init__(self, height, width, image_path):
         self.height, self.width = height, width
 
@@ -24,18 +23,17 @@ class DrawGrid(object):
         if image_path:
             self.make_image(image_path)
 
-        cv2.namedWindow('Draw OccupancyGrid')
-        cv2.setMouseCallback('Draw OccupancyGrid', self.do_draw)
+        cv2.namedWindow("Draw OccupancyGrid")
+        cv2.setMouseCallback("Draw OccupancyGrid", self.do_draw)
         self.drawing = 0
 
     def make_image(self, image_path):
         img = cv2.imread(image_path, 0)
         if img is None:
-            print "Image not found at '{}'".format(image_path)
+            print("Image not found at '{}'".format(image_path))
             return
 
-        img = cv2.resize(img, (self.width, self.height),
-                         interpolation=cv2.INTER_CUBIC)
+        img = cv2.resize(img, (self.width, self.height), interpolation=cv2.INTER_CUBIC)
         _, img = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY_INV)
         self.img = np.clip(img, -1, 100)
 
@@ -55,16 +53,21 @@ class DrawGrid(object):
             cv2.circle(self.img, (x, y), 5, draw_vals[self.drawing], -1)
 
 
-class OGridPub(object):
+class OGridPub:
+    """
+    Class which allows for the drawing of an occupancy grid. Opens an OpenCV
+    window to draw the grid.
+
+    """
+
     def __init__(self, image_path=None):
         height = int(rospy.get_param("~grid_height", 800))
         width = int(rospy.get_param("~grid_width", 800))
-        resolution = rospy.get_param("~grid_resolution", .3)
+        resolution = rospy.get_param("~grid_resolution", 0.3)
         ogrid_topic = rospy.get_param("~grid_topic", "/ogrid")
 
         self.grid_drawer = DrawGrid(height, width, image_path)
-        self.ogrid_pub = rospy.Publisher(
-            ogrid_topic, OccupancyGrid, queue_size=1)
+        self.ogrid_pub = rospy.Publisher(ogrid_topic, OccupancyGrid, queue_size=1)
 
         m = MapMetaData()
         m.resolution = resolution
@@ -82,11 +85,10 @@ class OGridPub(object):
         grid = self.grid_drawer.img
 
         ogrid = OccupancyGrid()
-        ogrid.header.frame_id = '/enu'
+        ogrid.header.frame_id = "/enu"
         ogrid.header.stamp = rospy.Time.now()
         ogrid.info = self.map_meta_data
-        ogrid.data = np.subtract(
-            np.flipud(grid).flatten(), 1).astype(np.int8).tolist()
+        ogrid.data = np.subtract(np.flipud(grid).flatten(), 1).astype(np.int8).tolist()
 
         self.ogrid_pub.publish(ogrid)
 
@@ -96,12 +98,17 @@ if __name__ == "__main__":
     desc_msg = "If you pass -i <path to image>, the ogrid will be created based on thresholded black and white image."
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
-    parser.add_argument('-i', '--image', action='store', type=str,
-                        help="Path to an image to use as an ogrid.")
+    parser.add_argument(
+        "-i",
+        "--image",
+        action="store",
+        type=str,
+        help="Path to an image to use as an ogrid.",
+    )
 
     # Roslaunch passes in some args we don't want to deal with (there may be a
     # better way than this)
-    if '-i' in sys.argv:
+    if "-i" in sys.argv:
         args = parser.parse_args(sys.argv[1:])
         im_path = args.image
     else:

@@ -33,4 +33,5 @@ Helpful Docs:
    Testing Procedure <docs/testingprocedures.md>
    Infrastructure <docs/infra/index>
    Reference <docs/reference>
+   Scripts <docs/scripts>
    View Github Readme <README>
