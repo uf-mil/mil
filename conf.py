@@ -39,7 +39,8 @@ extensions = [
     'sphinx.ext.intersphinx',
     'recommonmark',
     'sphinx.ext.graphviz',
-    'attributetable'
+    'attributetable',
+    'builder'
 ]
 
 intersphinx_mapping = {
@@ -160,7 +161,7 @@ html_favicon = "branding/mil.svg"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['docs/_static']
 
-html_js_files = ["sidebar.js"]
+html_js_files = ["custom.js", "sidebar.js"]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
