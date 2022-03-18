@@ -212,6 +212,16 @@ Geometry
 
         :type: ~geometry_msgs.msg._Accel.Accel
 
+.. class:: geometry_msgs.msg._Polygon.Polygon
+
+    A ROS message type representing a polygon.
+
+    .. attribute:: points
+
+        The points constructing the polygon.
+
+        :type: List[~geometry_msgs.msg._Point.Point]
+
 Navigation Messages
 ^^^^^^^^^^^^^^^^^^^
 .. class:: nav_msgs.msg._Odometry.Odometry
@@ -268,6 +278,33 @@ Standard Messages
 
         :type: str
 
+.. class:: std_msgs.msg._ColorRGBA.ColorRGBA
+
+    A ROS message type representing a color with RGB and an alpha channel.
+
+    .. attribute:: r
+
+        The red value of the color.
+
+        :type: float
+
+    .. attribute:: g
+
+        The green value of the color.
+
+        :type: float
+
+    .. attribute:: b
+
+        The blue value of the color.
+
+        :type: float
+
+    .. attribute:: a
+
+        The alpha value of the color.
+
+        :type: float
 
 Exceptions
 ----------
@@ -330,6 +367,22 @@ Message Handlers
 .. autofunction:: numpy_to_twist
 
 .. autofunction:: numpy_to_wrench
+
+.. autofunction:: numpy_matrix_to_quaternion
+
+.. autofunction:: numpy_pair_to_pose
+
+.. autofunction:: numpy_quat_pair_to_pose
+
+.. autofunction:: numpy_to_points
+
+.. autofunction:: numpy_to_polygon
+
+.. autofunction:: numpy_to_vector3
+
+.. autofunction:: numpy_to_pose2D
+
+.. autofunction:: numpy_to_colorRGBA
 
 User Input/Output
 -----------------

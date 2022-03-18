@@ -318,32 +318,93 @@ def numpy_quat_pair_to_pose(np_translation: np.ndarray, np_quaternion: np.ndarra
     return geometry_msgs.Pose(position=position, orientation=orientation)
 
 
-def numpy_to_points(points):
+def numpy_to_points(points: List[np.ndarray]) -> List[geometry_msgs.Point]:
+    """
+    Convert a list of :class:`np.ndarray`s into :class:`Point` messages.
+
+    Args:
+        points (List[np.ndarray]): The points that will be converted to messages.
+
+    Returns:
+        List[Point]: The resulting point messages.
+    """
     ret = []
     for point in points:
         ret.append(numpy_to_point(point))
     return ret
 
 
-def numpy_to_polygon(polygon):
+def numpy_to_polygon(polygon: List[np.ndarray]) -> geometry_msgs.Polygon:
+    """
+    Convert a list of :class:`np.ndarray`s (representing :class:`Point`s) into a
+    :class:`Polygon` message.
+
+    Args:
+        points (List[np.ndarray]): The points that will be added to the polygon.
+
+    Returns:
+        Polygon: The resulting message.
+    """
     points = numpy_to_points(polygon)
     return geometry_msgs.Polygon(points=points)
 
 
-def numpy_to_vector3(vec):
+def numpy_to_vector3(vec: np.ndarray) -> geometry_msgs.Vector3:
+    """
+    Convert a :class:`np.ndarray` of :class:`float`s with length 3 into a :class:`Vector3`
+    message.
+
+    Args:
+        vec (np.ndarray): A numpy array with ``x``, ``y``, and ``z``.
+
+    Returns:
+        Vector3: The Vector3 message.
+    """
     assert len(vec) == 3
     return geometry_msgs.Vector3(*vec)
 
 
-def numpy_to_pose2D(pose):
+def numpy_to_pose2D(pose: np.ndarray) -> geometry_msgs.Pose2D:
+    """
+    Convert a :class:`np.ndarray` of :class:`float`s with length 3 into a :class:`Pose2D`
+    message.
+
+    Args:
+        pose (np.ndarray): A numpy array with ``x``, ``y``, and ``theta``.
+
+    Returns:
+        Pose2D: The Pose2D message.
+    """
     return geometry_msgs.Pose2D(*pose)
 
 
-def numpy_to_colorRGBA(color):
+def numpy_to_colorRGBA(color: np.ndarray) -> std_msgs.ColorRGBA:
+    """
+    Convert a :class:`np.ndarray` of :class:`float`s with length 4 into a :class:`ColorRGBA`
+    message.
+
+    Args:
+        color (np.ndarray): A numpy array with ``r``, ``g``, ``b``, and ``a``.
+
+    Returns:
+        ColorRGBA: The ColorRGBA message.
+    """
     return std_msgs.ColorRGBA(*color)
 
 
-def make_header(frame="/body", stamp=None):
+def make_header(frame="/body", stamp=None) -> std_msgs.Header:
+    """
+    Creates a message header.
+
+    Args:
+        frame (str): The name of the frame to attach to the header. Defaults to
+            ``/body``.
+        stamp (Optional[rospy.rostime.Time]): The timestamp to attach to the header
+            of the message. If ``None``, then the current time is used.
+
+    Returns:
+        Header: The constructed header.
+    """
     if stamp is None:
         try:
             stamp = rospy.Time.now()
@@ -354,10 +415,19 @@ def make_header(frame="/body", stamp=None):
     return header
 
 
-def make_wrench_stamped(force, torque, frame="/body"):
+def make_wrench_stamped(force: List[float], torque: List[float], frame: str = "/body"):
     """
-    Make a WrenchStamped message without all the fuss
-    Frame defaults to body
+    Makes a WrenchStamped message.
+
+    Args:
+        force (List[float]): An array representing the force components. The list
+            should contain ``force.x``, ``force.y``, ``force.z``.
+        torque (List[float]): An array representing the torque components. The list
+            should contain ``torque.x``, ``torque.y``, and ``torque.z``.
+        frame (str): The frame to attach to the header. Defaults to ``/body``.
+
+    Returns:
+        WrenchStamped: The constructed message.
     """
     wrench = geometry_msgs.WrenchStamped(
         header=make_header(frame),
