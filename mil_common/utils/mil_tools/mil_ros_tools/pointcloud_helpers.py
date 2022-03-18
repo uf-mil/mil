@@ -1,7 +1,7 @@
 from __future__ import division
 import numpy as np
 from sensor_msgs.msg import PointCloud2, PointField
-from genpy import Time
+from genpy.rostime import Time
 from typing import Optional
 
 
@@ -12,14 +12,13 @@ def numpy_to_pointcloud2(
     Create a sensor_msgs.PointCloud2 from an array of points.
 
     Args:
-        points: np.ndarray - The array of points.
-        stamp: Optional[Time] - An optional timestamp for the message header.
-        frame_id: Optional[str] - An optional string desciribing the frame
+        points (np.ndarray): The array of points.
+        stamp (Optional[genpy.rostime.Time]): An optional timestamp for the message header.
+        frame_id (Optional[str]): An optional string desciribing the frame
           associated with the point cloud.
 
     Returns:
-        sensor_msgs.msg.PointCloud2 - A PointCloud2 message with the provided
-          information.
+        PointCloud2: A PointCloud2 message with the provided information.
     """
     msg = PointCloud2()
     if stamp:

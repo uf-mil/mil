@@ -46,25 +46,25 @@ Geometry
     
         The first element of the quaternion.
 
-        :rtype: Union[:class:`float`, :class:`int`]
+        :rtype: float
 
     .. attribute:: x
     
         The second element of the quaternion.
 
-        :rtype: Union[:class:`float`, :class:`int`]
+        :rtype: float
 
     .. attribute:: y
     
         The third element of the quaternion.
 
-        :rtype: Union[:class:`float`, :class:`int`]
+        :rtype: float
 
     .. attribute:: z
     
         The fourth element of the quaternion.
 
-        :rtype: Union[:class:`float`, :class:`int`]
+        :rtype: float
 
 .. class:: geometry_msgs.msg._Pose.Point
 
@@ -360,6 +360,153 @@ Standard Messages
 
         :type: float
 
+Sensor Messages
+^^^^^^^^^^^^^^^
+
+.. class:: sensor_msgs.msg._PointField.PointField
+
+    A ROS message type to represent a field in a point cloud.
+
+    .. attribute:: INT8
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``1`` in the message definition.
+
+        :type: int
+
+    .. attribute:: UINT8
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``2`` in the message definition.
+
+        :type: int
+
+    .. attribute:: INT16
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``3`` in the message definition.
+
+        :type: int
+
+    .. attribute:: UINT16
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``4`` in the message definition.
+
+        :type: int
+
+    .. attribute:: INT32
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``5`` in the message definition.
+
+        :type: int
+
+    .. attribute:: UINT32
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``6`` in the message definition.
+
+        :type: int
+
+    .. attribute:: FLOAT32
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``7`` in the message definition.
+
+        :type: int
+
+    .. attribute:: FLOAT64
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``8`` in the message definition.
+
+        :type: int
+
+    .. attribute:: name
+
+        The name of the field.
+
+        :type: str
+
+    .. attribute:: offset
+
+        The offset from the start of the point struct.
+
+        :type: int
+
+    .. attribute:: datatype
+
+        The datatype, represented by using one of the attributes above.
+
+        :type: int
+
+    .. attribute:: count
+
+        The number of elements in the field.
+
+        :type: int
+
+.. class:: sensor_msgs.msg._PointCloud2.PointCloud2
+
+    A ROS message type indicating a point cloud.
+
+    .. attribute:: header
+
+        The message header.
+
+        :type: Header
+
+    .. attribute:: height
+
+        The height of the point cloud. If the cloud is unordered, then ``1``.
+
+        :type: int
+
+    .. attribute:: width
+
+        The width of the point cloud. If the cloud is unordered, then this value
+        is set to the length of the point cloud.
+
+        :type: int
+
+    .. attribute:: fields
+
+        The fields in the point cloud.
+
+        :type: List[PointField]
+
+    .. attribute:: is_bigendian
+
+        Whether the field is big endian.
+
+        :type: bool
+
+    .. attribute:: point_step
+
+        The length of a point in bytes.
+
+        :type: int
+
+    .. attribute:: row_step
+
+        The length of a row in bytes.
+
+        :type: int
+
+    .. attribute:: data
+
+        The actual data inside the point cloud. The size of the array is :attr:`~sensor_msgs.msg._PointCloud2.PointCloud2.row_step`
+        multiplied by :attr:`~sensor_msgs.msg._PointCloud2.PointCloud2.height`.
+
+        :type: List[int]
+
+    .. attribute:: is_dense
+
+        ``True`` if there are no invalid points.
+
+        :type: bool
+
 Services
 --------
 
@@ -472,6 +619,8 @@ Message Handlers
 .. autofunction:: numpy_to_pose2D
 
 .. autofunction:: numpy_to_colorRGBA
+
+.. autofunction:: numpy_to_pointcloud2
 
 .. autofunction:: make_header
 

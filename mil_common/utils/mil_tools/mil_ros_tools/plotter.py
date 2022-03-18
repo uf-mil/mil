@@ -41,6 +41,7 @@ class Plotter:
     Attributes:
         pub (rospy.Publisher): The ROS publisher node. The topic name is passed
             in upon construction and the queue size is 1.
+        thread (threading.Thread): The thread used to publish data and plots on.
     """
     # Limitations:
     #     can only stack plots vertially
@@ -94,6 +95,9 @@ class Plotter:
         )
 
     def publish_plots(self, plots, titles=[], v_lines=[]):
+        """
+        Starts as new thread to publish the data on a plot.
+        """
         if self.is_go():
             self.thread = threading.Thread(
                 target=self.publish_plots_, args=(plots, titles, v_lines)
@@ -129,18 +133,17 @@ class Plotter:
         self.pub.publish(msg)
 
 
-def interweave(x, data):
-    """Helper function of place a single x axis in every other row of a data matrix
+def interweave(x: np.ndarray, data: np.ndarray):
+    """
+    Helper function of place a single x axis in every other row of a data matrix.
 
-    x  must be a numpy array of shape (samples,)
+    Args:
+        x (np.ndarray): An array of shape (samples,)
+        data (np.ndarray): An array of shape (channels, samples)
 
-    data  must be a numpy ndarray of shape (channels, samples)
-
-    returns:
-        numpy ndarray of shape (channles*2, samples) where
-            even numbered rows are x, odd rows are the data
-
-    see mil_passive_sonar triggering for an example
+    Returns:
+        np.ndarray: Array of shape (channles*2, samples) where even numbered 
+            rows are x, odd rows are the data.
     """
     plots = [None] * data.shape[0]
     for i in range(data.shape[0]):
