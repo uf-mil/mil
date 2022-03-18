@@ -741,3 +741,13 @@ Utility Functions
 .. autofunction:: draw_ray_3d
 
 .. autofunction:: make_ray
+
+Threads
+-------
+
+.. currentmodule:: mil_tools
+
+Utility Functions
+^^^^^^^^^^^^^^^^^
+
+.. autofunction:: thread_lock

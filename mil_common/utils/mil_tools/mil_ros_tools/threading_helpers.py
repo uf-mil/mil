@@ -3,16 +3,17 @@ from typing import Callable
 
 def thread_lock(lock: Lock):
     """
-    Use an existing thread lock to thread-lock a function
-    This prevents the function from being executed by multiple threads at once
+    A decortor for using an existing thread lock to thread-lock a function.
+    This prevents the function from being executed by multiple threads at once.
 
-    Example:
-    import threading
-    lock = threading.Lock()
+    .. code-block:: python3
 
-    @thread_lock(lock)
-    def my_function(a, b, c):
-        print(a, b, c)
+        import threading
+        lock = threading.Lock()
+
+        @thread_lock(lock)
+        def my_function(a, b, c):
+            print(a, b, c)
     """
 
     def lock_thread(function_to_lock: Callable):
