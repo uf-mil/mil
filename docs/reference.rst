@@ -727,3 +727,17 @@ Classes
         The string version of the goal's status.
 
         :rtype: :class:`str`
+
+rviz
+----
+
+.. currentmodule:: mil_tools
+
+Utility Functions
+^^^^^^^^^^^^^^^^^
+
+.. autofunction:: draw_sphere
+
+.. autofunction:: draw_ray_3d
+
+.. autofunction:: make_ray
