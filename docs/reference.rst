@@ -126,6 +126,28 @@ Geometry
 
         :type: ~geometry_msgs.msg._Quaternion.Quaternion
 
+.. class:: geometry_msgs.msg._Pose2D.Pose2D
+
+    A ROS message type representing an object's pose in two dimensions.
+
+    .. attribute:: x
+
+        The x-value of the pose.
+
+        :type: float
+
+    .. attribute:: y
+
+        The y-value of the pose.
+
+        :type: float
+
+    .. attribute:: theta
+
+        The theta value of the pose.
+
+        :type: float
+
 .. class:: geometry_msgs.msg._PoseWithCovariance.PoseWithCovariance
 
     A ROS message type representing an object's pose, along with a covariance.
@@ -221,6 +243,38 @@ Geometry
         The points constructing the polygon.
 
         :type: List[~geometry_msgs.msg._Point.Point]
+        
+.. class:: geometry_msgs.msg._Wrench.Wrench
+
+    A ROS message type representing the wrench of an object.
+
+    .. attribute:: force
+
+        The force associated with the object.
+
+        :type: ~geometry_msgs.msg._Vector3.Vector3
+
+    .. attribute:: torque
+
+        The torque associated with the object.
+
+        :type: ~geometry_msgs.msg._Vector3.Vector3
+
+.. class:: geometry_msgs.msg._WrenchStamped.WrenchStamped
+
+    A ROS message type representing the wrench of an object with an associated header.
+
+    .. attribute:: header
+
+        The header associated with the message.
+
+        :type: ~std_msgs.msg._Header.Header
+
+    .. attribute:: wrench
+
+        The wrench associated with the object.
+
+        :type: ~geometry_msgs.msg._Wrench.Wrench
 
 Navigation Messages
 ^^^^^^^^^^^^^^^^^^^
@@ -383,6 +437,12 @@ Message Handlers
 .. autofunction:: numpy_to_pose2D
 
 .. autofunction:: numpy_to_colorRGBA
+
+.. autofunction:: make_header
+
+.. autofunction:: make_wrench_stamped
+
+.. autofunction:: make_pose_stamped
 
 User Input/Output
 -----------------

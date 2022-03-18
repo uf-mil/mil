@@ -438,7 +438,21 @@ def make_wrench_stamped(force: List[float], torque: List[float], frame: str = "/
     return wrench
 
 
-def make_pose_stamped(position, orientation, frame="/body"):
+def make_pose_stamped(position: List[float], orientation: List[float], frame: str = "/body") -> geometry_msgs.WrenchStamped:
+    """
+    Makes a PoseStamped message.
+
+    Args:
+        position (List[float]): An array representing the force components. The list
+            should contain ``position.x``, ``position.y``, ``position.z``.
+        orientation (List[float]): An array representing the torque components. The list
+            should contain ``orientation.x``, ``orientation.y``, ``orientation.z``,
+            and ``orientation.w``.
+        frame (str): The frame to attach to the header. Defaults to ``/body``.
+
+    Returns:
+        WrenchStamped: The constructed message.
+    """
     wrench = geometry_msgs.WrenchStamped(
         header=make_header(frame),
         pose=geometry_msgs.Pose(
