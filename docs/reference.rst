@@ -613,6 +613,8 @@ Services
 SetBool
 ^^^^^^^
 
+.. attributetable:: std_srvs.srv._SetBool.SetBoolRequest
+
 .. class:: std_srvs.srv._SetBool.SetBoolRequest
 
     The request type for the ``SetBool`` service. Requests for some boolean value
@@ -624,6 +626,8 @@ SetBool
         to be ``False``.
 
         :type: bool
+
+.. attributetable:: std_srvs.srv._SetBool.SetBoolResponse
 
 .. class:: std_srvs.srv._SetBool.SetBoolResponse
 
@@ -646,6 +650,8 @@ Exceptions
 ----------
 
 .. currentmodule:: mil_tools
+
+.. attributetable:: ArgumentParserException
 
 .. autoclass:: ArgumentParserException
     :members:
@@ -740,6 +746,8 @@ Utility Functions
 Classes
 ^^^^^^^
 
+.. attributetable:: FprintFactory
+
 .. autoclass:: FprintFactory
     :members:
 
@@ -769,20 +777,29 @@ Images
 Classes
 ^^^^^^^
 
+.. attributetable:: BagCrawler
+
 .. autoclass:: BagCrawler
     :members:
+
+.. attributetable:: CvDebug
 
 .. autoclass:: CvDebug
     :members:
 
+.. attributetable:: Image_Publisher
+
 .. autoclass:: Image_Publisher
     :members:
+
+.. attributetable:: Image_Subscriber
 
 .. autoclass:: Image_Subscriber
     :members:
 
 StereoImageSubscriber
 ~~~~~~~~~~~~~~~~~~~~~
+
 .. attributetable:: StereoImageSubscriber
 
 .. autoclass:: StereoImageSubscriber
@@ -790,6 +807,8 @@ StereoImageSubscriber
 
 Plotter
 ~~~~~~~
+
+.. attributetable:: Plotter
 
 .. autoclass:: Plotter
     :members:
@@ -800,8 +819,12 @@ Serial
 Classes
 ^^^^^^^
 
+.. attributetable:: NoopSerial
+
 .. autoclass:: NoopSerial
     :members:
+
+.. attributetable:: SimulatedSerial
 
 .. autoclass:: SimulatedSerial
     :members:
@@ -813,6 +836,8 @@ txros
 
 Classes
 ^^^^^^^
+
+.. attributetable:: Goal
 
 .. autoclass:: Goal
     :members:
@@ -852,11 +877,17 @@ Utility Functions
 Classes
 ^^^^^^^
 
+.. attributetable:: mil_ros_tools.vector_to_marker.VectorToMarker
+
 .. autoclass:: mil_ros_tools.vector_to_marker.VectorToMarker
     :members:
 
+.. attributetable:: nodes.clicked_point_recorder.ClickedPointRecorder
+
 .. autoclass:: nodes.clicked_point_recorder.ClickedPointRecorder
     :members:
+
+.. attributetable:: nodes.network_broadcaster.NetworkBroadcaster
 
 .. autoclass:: nodes.network_broadcaster.NetworkBroadcaster
     :members:
