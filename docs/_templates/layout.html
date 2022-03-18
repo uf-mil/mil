@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!-- Some pieces of this template were used from https://github.com/Rapptz/discord.py/blob/master/docs/_templates/layout.html -->
+<html>
+    <head>
+        <!-- HTML meta -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale: 1.0">
+        <title>{{ title|striptags|e }}{{ titlesuffix }}</title>
+        <link rel="stylesheet" href="{{ pathto('_static/custom.css', 1)|e }}" type="text/css" />
+    </head>
+    <body>
+        <div class="main-grid">
+            <header class="grid-item">
+                <nav>
+                    <a class="main-header">Machine Intelligence Lab</a>
+                </nav>
+            </header>
+            <aside class="grid-item">
+                <div id="sidebar">
+                    {%- include "localtoc.html" %}
+                </div>
+            </aside>
+            <main class="grid-item" role="main">
+                {% block body %} {% endblock %}
+            </main>
+        </div>
+    </body>
+</html>
