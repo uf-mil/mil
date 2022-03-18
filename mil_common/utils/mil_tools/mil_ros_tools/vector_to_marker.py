@@ -5,21 +5,33 @@ from visualization_msgs.msg import Marker
 from mil_tools import rosmsg_to_numpy, numpy_to_point, numpy_to_colorRGBA
 import numpy as np
 import argparse
+from typing import List, Optional
 
 __author__ = "Kevin Allen"
 
 
-class VectorToMarker(object):
+class VectorToMarker:
     """
-    Node to subscribe to a Vector3Stamped topic and publish
-    a rviz marker with the same content. Used to get around
-    the fact that rviz cannot display Vector3Stamped messages
-    @param vector_topic: topic of vecto3stamped to subscribe to
-    @param marker_topic: topic of marker to publish
-    @param length: length to scale vector to, if None, leave original scale
+    Node to subscribe to a Vector3Stamped topic and publish a rviz marker 
+    with the same content. Used to get around the fact that rviz cannot display 
+    Vector3Stamped messages.
+
+    Can be used from the command line through :mod:`argparse` support.
+
+    Args:
+        vector_topic (str): Topic of vector3stamped to subscribe to.
+        marker_topic (str): Topic of marker to publish.
+        length (float): Length to scale vector to. If ``None``, leave original scale.
+        color (List[float]): The color of the marker. The list should contain the ``r``,
+            ``g``, ``b``, and ``a`` values of the color.
+
+    Attributes:
+        length (Optional[float]): The length to scale the marker to upon receival.
+        pub (rospy.Publisher): The publisher responsible for publishing the :class:`Marker`
+            messages.
     """
 
-    def __init__(self, vector_topic, marker_topic, length=1.0, color=[0, 0, 1, 1]):
+    def __init__(self, vector_topic: str, marker_topic: str, length: Optional[float] = 1.0, color: List[float] = [0, 0, 1, 1]):
         self.length = length
         self.pub = rospy.Publisher(marker_topic, Marker, queue_size=1)
         self.color = numpy_to_colorRGBA(color)

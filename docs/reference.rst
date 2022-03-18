@@ -742,6 +742,12 @@ Utility Functions
 
 .. autofunction:: make_ray
 
+Classes
+^^^^^^^
+
+.. autoclass:: mil_ros_tools.vector_to_marker.VectorToMarker
+    :members:
+
 Threads
 -------
 
