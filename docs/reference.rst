@@ -363,6 +363,8 @@ Standard Messages
 Sensor Messages
 ^^^^^^^^^^^^^^^
 
+.. attributetable:: sensor_msgs.msg._PointField.PointField
+
 .. class:: sensor_msgs.msg._PointField.PointField
 
     A ROS message type to represent a field in a point cloud.
@@ -681,8 +683,15 @@ Classes
 .. autoclass:: Image_Subscriber
     :members:
 
+StereoImageSubscriber
+~~~~~~~~~~~~~~~~~~~~~
+.. attributetable:: StereoImageSubscriber
+
 .. autoclass:: StereoImageSubscriber
     :members:
+
+Plotter
+~~~~~~~
 
 .. autoclass:: Plotter
     :members:
