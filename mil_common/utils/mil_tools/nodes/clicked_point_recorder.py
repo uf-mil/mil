@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-"""
-Listens to RVIZ clicked points, storing points in a csv file
-
-Usage: rosrun mil_tools clicked_point_recorder.py
-"""
 
 import rospy
 import datetime
@@ -13,6 +8,10 @@ from typing import Dict, Union
 
 
 class ClickedPointRecorder:
+    """
+    Listens to RVIZ clicked points, storing points in a CSV file. Support for running
+    through `rosrun`.
+    """
     def __init__(self):
         self.points = []
         self.point_sub = rospy.Subscriber("/clicked_point", PointStamped, self.point_cb)
@@ -23,7 +22,10 @@ class ClickedPointRecorder:
         dict are obtained from the PointStamped message accepted.
 
         Args:
-            point: PointStamped - The point message to accept.
+            point (PointStamped): The point message to accept.
+
+        Returns:
+            Dict[str, Union[str, int, float]]: Dictionary representing point and stamp.
         """
         return {
             "seq": point.header.seq,
@@ -56,7 +58,7 @@ class ClickedPointRecorder:
         messages and adds the messages to the internal points array.
 
         Args:
-            point: PointStamped - The message
+            point (PointStamped): The message input to the callabck.
         """
         rospy.loginfo("Received new point: {}".format(point))
         self.points.append(point)

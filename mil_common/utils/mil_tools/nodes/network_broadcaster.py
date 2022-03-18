@@ -7,15 +7,17 @@ or for a safety network heartbeat.
 import rospy
 from std_msgs.msg import Header
 
-class NetworkBroadcaster(object):
+class NetworkBroadcaster:
     """
-    Serves as the main class broadcasting information through the network.
+    Serves as the main class broadcasting information through the network. Useful
+    for monitoring network loss or for a safety network heartbeat. Can be run through
+    `rosrun`.
 
     Attributes:
-        msg: Header - The Header message which is recurrently published
-        num_connections: int - The number of nodes connected to the publisher
-        pub: Publisher - The Publisher publishing information, with a queue
-          size of 1
+        msg (Header): The Header message which is recurrently published
+        num_connections (int): The number of nodes connected to the publisher
+        pub (rospy.Publisher): The Publisher publishing information, with a queue
+          size of 1.
     """
     def __init__(self):
         hz = rospy.get_param("~hz", 20)

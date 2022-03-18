@@ -748,6 +748,12 @@ Classes
 .. autoclass:: mil_ros_tools.vector_to_marker.VectorToMarker
     :members:
 
+.. autoclass:: nodes.clicked_point_recorder.ClickedPointRecorder
+    :members:
+
+.. autoclass:: nodes.network_broadcaster.NetworkBroadcaster
+    :members:
+
 Threads
 -------
 
