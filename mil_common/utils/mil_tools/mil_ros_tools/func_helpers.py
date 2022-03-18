@@ -1,4 +1,4 @@
-class Cache(object):
+class Cache:
     """No support for **kwargs**"""
 
     def __init__(self, func):
@@ -16,24 +16,24 @@ class Cache(object):
 
 @Cache
 def add(a, b):
-    print 'adding', a, b
+    print("adding", a, b)
     return a + b
 
 
 @Cache
 def gooberstein(data):
-    print "Being called"
+    print("Being called")
     return data + "balls"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    print add(1, 2)
-    print add(1, 2)
+    print(add(1, 2))
+    print(add(1, 2))
 
-    print add(2, 3)
-    print add(2, 3)
+    print(add(2, 3))
+    print(add(2, 3))
 
-    print gooberstein("hello")
-    print gooberstein("hello")
-    print gooberstein("hello")
+    print(gooberstein("hello"))
+    print(gooberstein("hello"))
+    print(gooberstein("hello"))
