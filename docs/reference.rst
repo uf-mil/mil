@@ -360,6 +360,41 @@ Standard Messages
 
         :type: float
 
+Services
+--------
+
+SetBool
+^^^^^^^
+
+.. class:: std_srvs.srv._SetBool.SetBoolRequest
+
+    The request type for the ``SetBool`` service. Requests for some boolean value
+    to be set.
+
+    .. attribute:: data
+
+        What to set the boolean as. For example ``data=False`` sets the boolean
+        to be ``False``.
+
+        :type: bool
+
+.. class:: std_srvs.srv._SetBool.SetBoolResponse
+
+    The response type for the ``SetBool`` service. Responds to the set boolean value
+    request.
+
+    .. attribute:: success
+
+        Whether the boolean value was succesfully set.
+
+        :type: bool
+
+    .. attribute:: message
+
+        Any message included in the response.
+
+        :type: str
+
 Exceptions
 ----------
 
@@ -498,6 +533,9 @@ Classes
     :members:
 
 .. autoclass:: StereoImageSubscriber
+    :members:
+
+.. autoclass:: Plotter
     :members:
 
 Serial

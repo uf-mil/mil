@@ -1,7 +1,7 @@
 import rospy
 import numpy as np
 from sensor_msgs.msg import Image
-from std_srvs.srv import SetBool, SetBoolResponse
+from std_srvs.srv import SetBool, SetBoolResponse, SetBoolRequest
 import cv2
 from cv_bridge import CvBridge
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -11,54 +11,50 @@ import threading
 
 
 class Plotter:
-    """Publishes several plots of 2d data over rostopic via Image msgs
-    Basic Usage Example:
-        #  Import
-        from mil_ros_tools import Plotter
-        import numpy as np
-        import rospy
-
-        #  ROS node
-        rospy.init_node('my_node')
-
-        #  Create
-        my_plotter = Plotter('my_plotter_topic')
-
-        #  Publish some plots
-        titles = ['random data', 'sin wave']
-
-        data_size = 100
-        y1 = np.random.rand(data_size)
-        x1 = np.arange(0, y1.shape[0])
-
-        x2 = np.linspace(0, 5, data_size)
-        y2 = np.sin(x2)
-
-        plots = np.vstack((x1, y1, x2, y2))
-        my_plotter.publish_plots(plots, titles)
-
-    For another usage example see `mil_passive_sonar triggering`
-
-    Limitations:
-        can only stack plots vertially
-
-        all plots must have same number of points
-
-        cannot name axes
-
-        Publishing happens in another thread,
-            if publish_plots is called before a previous publish plots call finishes,
-            the most recent publish plots call will be ignored
-
-        cannot plot mutiple data sets on top of  each other in the same plot
-
-        cannot change color of plots
-
-    Features:
-        Can be enables/disabled via the <topic_name>_enable service call
     """
+    Publishes several plots of 2D data over rostopic via :class:`Image` messages.
 
-    def __init__(self, topic_name, w=20, h=20, dpi=150):
+    Basic Usage Example:
+
+    .. code-block:: python3
+
+        >>> #  Import
+        >>> from mil_ros_tools import Plotter
+        >>> import numpy as np
+        >>> import rospy
+        >>> #  ROS node
+        >>> rospy.init_node('my_node')
+        >>> #  Create
+        >>> my_plotter = Plotter('my_plotter_topic')
+        >>> #  Publish some plots
+        >>> titles = ['random data', 'sin wave']
+        >>> data_size = 100
+        >>> y1 = np.random.rand(data_size)
+        >>> x1 = np.arange(0, y1.shape[0])
+        >>> x2 = np.linspace(0, 5, data_size)
+        >>> y2 = np.sin(x2)
+        >>> plots = np.vstack((x1, y1, x2, y2))
+        >>> my_plotter.publish_plots(plots, titles)
+
+    For another usage example see `mil_passive_sonar triggering`.
+
+    Attributes:
+        pub (rospy.Publisher): The ROS publisher node. The topic name is passed
+            in upon construction and the queue size is 1.
+    """
+    # Limitations:
+    #     can only stack plots vertially
+    #     all plots must have same number of points
+    #     cannot name axes
+    #     Publishing happens in another thread,
+    #         if publish_plots is called before a previous publish plots call finishes,
+    #         the most recent publish plots call will be ignored
+    #     cannot plot mutiple data sets on top of  each other in the same plot
+    #     cannot change color of plots
+    # Features:
+    #     Can be enables/disabled via the <topic_name>_enable service call
+
+    def __init__(self, topic_name: str, w: int = 20, h: int = 20, dpi: int = 150):
         matplotlib.rcParams.update({"font.size": 22})
         self.pub = rospy.Publisher(topic_name, Image, queue_size=1)
         self.bridge = CvBridge()
@@ -69,11 +65,28 @@ class Plotter:
 
         rospy.Service(("%s_enable" % topic_name), SetBool, self.enable_disable)
 
-    def enable_disable(self, req):
+    def enable_disable(self, req: SetBoolRequest):
+        """
+        Serves as a callback for the service responsible for enabling and disabling the 
+        plotter.
+
+        Args:
+            req (SetBoolRequest): The message received by the service.
+
+        Returns:
+            SetBoolResponse: The response sent back by the service.
+        """
         self.enabled = req.data
         return SetBoolResponse(success=True)
 
-    def is_go(self):
+    def is_go(self) -> bool:
+        """
+        Whether to run the plotter. ``True`` if the plotter is enabled, there is
+        more than one connection connected to the publisher and the thread is ``None``.
+
+        Returns:
+            bool: Whether to run the plotter.
+        """
         return (
             self.enabled
             and self.pub.get_num_connections() > 0
