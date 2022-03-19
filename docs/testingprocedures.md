@@ -1,4 +1,4 @@
-# Testing Procedures:
+# Testing Procedures
 
 ## Before leaving
 
