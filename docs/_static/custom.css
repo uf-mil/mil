@@ -1337,7 +1337,7 @@ div.code-block-caption {
 }
 
 /* MIL svg */
-#mil-svg {
+.mil-svg {
     /*  */
     height: 2em;
     width: auto;
