@@ -34,12 +34,12 @@ Historically however, thanks to:
   --grey-8: #2a2a2e;
   --black: #0c0c0d;
 
-  --blue-1: #25b4d1;
-  --blue-2: #1f95ad;
-  --blue-3: #1b798c;
-  --blue-4: #155f6e;
-  --blue-5: #10444f;
-  --blue-6: #0a2a30;
+  --blue-1: #005bff;
+  --blue-2: #0049c6;
+  --blue-3: #003fa8;
+  --blue-4: #003588;
+  --blue-5: #002d6f;
+  --blue-6: #002657;
 
   --settings: var(--grey-1);
   --settings-hover: var(--grey-1-8);
@@ -258,7 +258,7 @@ header.grid-item {
 
 header > nav {
   background-color: var(--sub-header-background);
-  padding: 0.8em;
+  padding: 0.4em;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
@@ -1212,7 +1212,8 @@ div.code-block-caption {
   }
 
   header {
-    background-color: var(--black);
+    background: rgb(205,140,0);
+    background: linear-gradient(90deg, rgba(205,140,0,1) 0%, rgba(250,70,22,1) 100%); 
   }
 
   header > nav {
@@ -1333,4 +1334,12 @@ div.code-block-caption {
     margin-left: auto;
     margin-right: auto;
   }
+}
+
+/* MIL svg */
+#mil-svg {
+    /*  */
+    height: 2em;
+    width: auto;
+    filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(81deg) brightness(113%) contrast(101%);
 }
