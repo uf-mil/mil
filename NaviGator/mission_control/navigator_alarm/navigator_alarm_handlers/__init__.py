@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from navigator_alarm_handlers.kill import Kill
 from navigator_alarm_handlers.odom_kill import OdomKill
 from navigator_alarm_handlers.network_loss import NetworkLoss

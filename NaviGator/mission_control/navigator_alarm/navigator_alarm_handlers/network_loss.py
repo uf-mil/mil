@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from ros_alarms import HandlerBase, HeartbeatMonitor
 from std_msgs.msg import Header
 
