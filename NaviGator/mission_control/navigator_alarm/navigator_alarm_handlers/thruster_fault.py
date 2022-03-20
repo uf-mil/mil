@@ -38,7 +38,7 @@ class ThrusterFault(HandlerBase):
     # Return a list that decodes the binary to strings
     def _get_fault_codes(self, fault_id):
         get_fault_codes = []
-        for key, value in six.iteritems(self.fault_codes):
+        for key, value in self.fault_codes.items():
             # Fault message is the sum of binary strings
             decode = fault_id & key
             if decode != 0:
