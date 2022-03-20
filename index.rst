@@ -1,6 +1,8 @@
 Machine Intelligence Lab
 ===============================
 
+.. image:: docs/images/collage.png
+
 Welcome to the documentation site for the Machine Intelligence Lab at the University of Florida, a robotics lab in Gainesville, Florida. Our lab has built `several robotic systems <https://mil.ufl.edu/projects/>`_ since its inception several decades ago. Our current projects include:
 
 * **SubjuGator:** An autonomous, underwater submarine-like vehicle. Three-time champion of the AUSVI/ONR underwater competition. (`Website <https://subjugator.org>`_)
