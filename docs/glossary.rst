@@ -2,9 +2,6 @@ Glossary
 ========
 This page lists common words / acronyms uses in MIL and robotics more generally. This should help get past some of our jargon.
 
-Some are technical while others are just insides jokes.
-
-
 .. glossary::
   :sorted:
 
@@ -32,7 +29,11 @@ Some are technical while others are just insides jokes.
     systems to measure the linear velocity of the robot.
 
   RobotX
-    The :term:`AUVSI`-run competition which :term:`NaviGator` competes in
+    The :term:`AUVSI`-run competition which :term:`NaviGator` competes in.
+
+  VRX
+    A competition named Virtual :term:`RobotX`. Similar to RobotX, but no physical
+    components or travel are involved.
 
   NaviGator
     An autonomous boat developed by MIL.
@@ -47,10 +48,6 @@ Some are technical while others are just insides jokes.
   Shuttle
     A powerful computer in MIL used to run simulation tasks. Has been mostly replaced
     by :term:`Zobelisk`
-
-  Kevbot
-    A funny name for the help page in these docs, named so because it was written
-    by Kevin (kev-the-dev) to try to automate helping new programmers
 
   node
     A program running on a robot. Usually performs a very specific purpose
@@ -77,14 +74,6 @@ Some are technical while others are just insides jokes.
 
   Food train
     An spontaneous event where people working in MIL go out somewhere to eat
-
-  Langford
-    (verb) Doing someone else's work before they complete it and without them knowing you were doing so
-
-  Feasible
-     A solution, though possibly not the best solution, to a problem.
-     In MIL, is used as a joke for a solution that technically meets
-     the criteria but does so in an unexpected or naive way
 
   POE
      Power-Over-Ethernet, a variety of protocols to provide
