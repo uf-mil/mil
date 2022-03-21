@@ -5,7 +5,7 @@ let bottomHeightThreshold, sections;
 let hamburgerToggle;
 let mobileSearch;
 let sidebar;
-let toTop;
+// let toTop;
 
 class Modal {
   constructor(element) {
@@ -50,9 +50,9 @@ class SearchBar {
 
 }
 
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+// function scrollToTop() {
+//   window.scrollTo({ top: 0, behavior: 'smooth' });
+// }
 
 document.addEventListener('DOMContentLoaded', () => {
   mobileSearch = new SearchBar();
@@ -82,9 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
     parent.insertBefore(table, element.nextSibling);
   });
 
-  window.addEventListener('scroll', () => {
-    toTop.hidden = !(window.scrollY > 0);
-  });
+  // window.addEventListener('scroll', () => {
+  //   toTop.hidden = !(window.scrollY > 0);
+  // });
 
   // Scroll to section in globaltoc
   let firstHeading = document.querySelector("h1");
