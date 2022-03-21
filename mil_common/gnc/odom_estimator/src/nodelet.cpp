@@ -130,8 +130,8 @@ private:
         std::cout << "mag missing" << std::endl;
         return;
       }
-      if (last_good_dvl && *last_good_dvl > msg.header.stamp - ros::Duration(1.5) &&
-          *last_good_dvl < msg.header.stamp + ros::Duration(1.5))
+      if (last_good_dvl && (*last_good_dvl).toSec() > msg.header.stamp.toSec() - 1.5 &&
+          (*last_good_dvl).toSec() < msg.header.stamp.toSec() + 1.5 )
       {
         state = init_state(msg, *last_mag, Vec<3>(start_x_ecef, start_y_ecef, start_z_ecef), Vec<3>::Zero(),
                            last_rel_pos_ecef_);
