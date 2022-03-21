@@ -48,9 +48,10 @@ Software Reference
     docs/navigator/vrx
     docs/development/help
     docs/development/index
+    docs/development/sdk
 
 * **All Repository Source Documentation:** :doc:`Reference <docs/reference>`
-* **Practices:** :doc:`Our Development Practices <docs/development/index>` / :doc:`Scripts <docs/scripts>`
+* **Practices:** :doc:`Our Development Practices <docs/development/index>` / :doc:`Scripts <docs/scripts>` / :doc:`SDKs <docs/development/sdk>`
 * **Project Procedures:** :doc:`SubjuGator <docs/subjugator/index>` / :doc:`VRX <docs/navigator/vrx>`
 * **Getting Help:** :doc:`Development Help <docs/development/help>`
 
