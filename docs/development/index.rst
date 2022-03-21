@@ -8,7 +8,6 @@ Various docs related to how to develop MIL software
    Getting Started <getting_started>
    Contributing Changes <contributing>
    Adding Documentation <adding_documentation>
-   Documentation Examples <examples/index>
    Debugging <help>
    Using The Development Server<using_the_dev_server>
    Bash and C++ Style Guide <cpp_bash_style.md>
