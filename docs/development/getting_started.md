@@ -1,34 +1,65 @@
 # Getting Started
-This page describes the recommended process of setting up your new ubuntu system with the repository and its dependencies.
+
+This page describes the recommended process of setting up a new Ubuntu system
+to work with the MIL repository and its dependencies. Ubuntu is an operating system
+(similar to OS X or Windows) that MIL (and other robotics labs) choose to use
+because of its familiarity with ROS.
 
 ## System Requirements
 
-### Operating System
+To use Ubuntu in MIL, you have two options:
 
-**It is recommended that you [dual boot Ubuntu 18.04](https://help.ubuntu.com/community/WindowsDualBoot) for development**
+1. Use a **virtual machine**. A virtual machine uses your current operating system
+to virtually host another operating system (in this case, Ubuntu). This will
+likely cause your Ubuntu system to run slow (in some cases, it might be unusable)
+and may cause you to experience issues with certain programs.
+2. **Dual-boot your computer.** Dual booting will allocate a piece of your computer's
+storage to a new operating system, which will be installed on your computer directly.
+This dual-booted solution will not run on top of your current operating system, but
+will instead run by directly using your computer's resources.
 
-Virtual Machines will be able to run our software, but it may be too slow (see [hardware](#hardware)).
-
-For instructions on installing Ubuntu 18.04 on an Apple computer with an M-series processor, please see [these instructions](/docs/development/apple_mseries_ubuntu_setup.md).
+Dual-booting your computer is highly recommended over using a virtual machine.
+However, if you **have an M-series (ARM) Mac computer**, you will need to use a 
+virtual machine. Intel-based Macs may also experience some issues with dual-booting
+Ubuntu.
 
 ### Hardware
 
 Autonomous robotics is computationally expensive, especially when running simulations.
-If you can, use a powerful computer. We recommend you have at least 8GB RAM and a modern i5 or better CPU. Many tasks such as simulation and computer vision will run faster on a system with a GPU.
+
+If you can, use a powerful computer. We recommend you have at least 8GB RAM dedicated to your solution 
+and a modern i5 or better CPU. Many tasks such as simulation and computer vision 
+will run faster on a system with a GPU.
+
+## Installing Ubuntu
+
+To install Ubuntu, please see here:
+
+* **Dual-booting a Windows computer**: Instructions...
+* **Using UTM on a Mac**: Instructions...
+* **Using Parallels on MacOS**: Instructions...
 
 ## Starting from a clean slate
 
-First, we will want to check if there are any updates. Sometimes this is already done for you assuming you connected to internet during the ubuntu system setup guide.
+First, we will want to check if there are any updates. Sometimes this is already 
+done for you.
 
-`sudo apt update`
+To do this, we use a command-line tool on Ubuntu named ``apt``. This tool allows
+for the management of packages in Ubuntu.
 
-`sudo apt upgrade`
+(To access the Terminal on Ubuntu, click the 9 dots in the bottom left corner
+and find the Terminal app. You can later install a different terminal emulator,
+if you'd like.)
+
+    $ sudo apt update
+    $ sudo apt upgrade
 
 ## Install git
 
-To contribute changes, you will need to have a git client installed. This program will be used to track and upload your changes.
+To contribute changes, you will need to have [git](https://www.git-scm.com) installed. This program will 
+be used to track and upload any changes that you make to the repository.
 
-`sudo apt install git`
+    $ sudo apt install git
 
 ## Cloning the repository
 
