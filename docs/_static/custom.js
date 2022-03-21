@@ -85,6 +85,13 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('scroll', () => {
     toTop.hidden = !(window.scrollY > 0);
   });
+
+  // Scroll to section in globaltoc
+  let firstHeading = document.querySelector("h1");
+  let sidebar = document.querySelector("#sidebar");
+  var xpath = `/html/body/div/aside/.//a[text()="${firstHeading.innerText}"]`;
+  var matchingElement = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+  matchingElement.scrollIntoView();
 });
 
 document.addEventListener('keydown', (event) => {

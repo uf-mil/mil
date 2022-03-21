@@ -1326,7 +1326,7 @@ div.code-block-caption {
   }
 
   .py-attribute-table-column:not(:first-child) {
-    margin-top: unset;
+   margin-top: unset;
   }
 
   main img {
@@ -1342,4 +1342,10 @@ div.code-block-caption {
     height: 2em;
     width: auto;
     filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(81deg) brightness(113%) contrast(101%);
+}
+
+img[src*="_images/collage.png"] {
+    max-width: none !important;
+    border: 2px solid #e4680b;
+    margin-bottom: 1.5em;
 }

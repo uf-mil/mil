@@ -16,31 +16,10 @@ New Members
 
     docs/onboarding
     docs/mechanical/mechanical
-
-* **Interested software members**: Please read the :doc:`Software Onboarding Guide <docs/onboarding>`.
-* **Interested electrical members**: Please join our `Slack workspace <https://uf-mil.slack.com>`_.
-* **Interested mechanical members**: Please read the :doc:`Mechanical Onboarding Guide <docs/mechanical/onboarding>`.
-
-Relevant Links
---------------
-.. toctree::
-    :hidden:
-
     docs/branding
     docs/glossary
     docs/culture
     docs/design/design
-
-* **Websites:** `MIL Website <https://mil.ufl.edu>`_ / `NaviGator <https://navigator.org>`_ / `SubjuGator <https://subjugatoruf.org>`_
-* **Source:** `GitHub <https://github.com/uf-mil/mil>`_
-* **Branding:** :doc:`Branding <docs/branding>`
-* **Culture:** :doc:`Glossary <docs/glossary>` / :doc:`Culture <docs/culture>` / :doc:`Technical Design <docs/design/design>`
-
-Software Reference
-------------------
-.. toctree::
-    :hidden:
-
     docs/reference
     docs/scripts
     docs/projects
@@ -50,6 +29,19 @@ Software Reference
     docs/development/index
     docs/development/sdk
 
+* **Interested software members**: Please read the :doc:`Software Onboarding Guide <docs/onboarding>`.
+* **Interested electrical members**: Please join our `Slack workspace <https://uf-mil.slack.com>`_.
+* **Interested mechanical members**: Please read the :doc:`Mechanical Onboarding Guide <docs/mechanical/onboarding>`.
+
+Relevant Links
+--------------
+* **Websites:** `MIL Website <https://mil.ufl.edu>`_ / `NaviGator <https://navigator.org>`_ / `SubjuGator <https://subjugatoruf.org>`_
+* **Source:** `GitHub <https://github.com/uf-mil/mil>`_
+* **Branding:** :doc:`Branding <docs/branding>`
+* **Culture:** :doc:`Glossary <docs/glossary>` / :doc:`Culture <docs/culture>` / :doc:`Technical Design <docs/design/design>`
+
+Software Reference
+------------------
 * **All Repository Source Documentation:** :doc:`Reference <docs/reference>`
 * **Practices:** :doc:`Our Development Practices <docs/development/index>` / :doc:`Scripts <docs/scripts>` / :doc:`SDKs <docs/development/sdk>`
 * **Project Procedures:** :doc:`SubjuGator <docs/subjugator/index>` / :doc:`VRX <docs/navigator/vrx>`
