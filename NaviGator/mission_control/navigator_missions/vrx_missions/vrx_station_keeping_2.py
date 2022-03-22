@@ -21,13 +21,5 @@ class VrxStationKeeping2(Vrx):
         goal_pose = yield self.geo_pose_to_enu_pose(goal_msg.pose)
         self.send_feedback('Going to {}'.format(goal_pose))
 
-        #Create waypoint message
-        req = MoveToWaypointRequest()
-        req.target_p.position.x = goal_pose[0][0]
-        req.target_p.position.y = goal_pose[0][1]
-        req.target_p.position.z = goal_pose[0][2]
-        req.target_p.orientation.x = goal_pose[1][0]
-        req.target_p.orientation.y = goal_pose[1][1]
-        req.target_p.orientation.z = goal_pose[1][2]
-        req.target_p.orientation.w = goal_pose[1][3]
-        yield self.set_long_waypoint(req)
+        #Go to goal
+        yield self.send_trajectory_without_path(self.gps_waypoint_fix(goal_pose))

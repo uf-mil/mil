@@ -249,7 +249,7 @@ class MRAC_Controller:
         w_err = self.w_ref - self.ang_vel
 
         #Adjust kp_body and kd_body based on p_err if heavy_pid was set
-        if (self.heavy_pid == True) and (abs(p_err[0]) < 0.5) and (abs(p_err[1]) < 0.5):
+        if (self.heavy_pid == True) and (abs(p_err[0]) < 0.25) and (abs(p_err[1]) < 0.25):
             self.kp_body = self.kp_body_orig
             self.kd_body = self.kd_body_orig
             self.heavy_pid = False
