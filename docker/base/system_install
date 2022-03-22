@@ -18,6 +18,8 @@ mil_system_install --no-install-recommends \
   dirmngr \
   gnupg2 \
   lsb-release \
+  python3 \
+  python3-pip \
   python2 \
   ruby \
   wget \
