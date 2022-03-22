@@ -646,6 +646,45 @@ SetBool
 
         :type: str
 
+KeyboardControl
+^^^^^^^^^^^^^^^
+
+.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
+
+.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
+
+    The request class for the ``navigator_msgs/KeyboardControl`` service.
+
+    .. attribute:: uuid
+
+        The UUID of the request.
+
+        :type: str
+
+    .. attribute:: keycode
+
+        The keycode of the key that was pressed.
+
+        :type: int
+
+.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
+
+.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
+
+    The response class for the ``navigator_msgs/KeyboardControl`` service.
+
+    .. attribute:: generated_uuid
+
+        The generated UUID in the response class.
+
+        :type: str
+
+    .. attribute:: is_locked
+
+        Whether the keyboard interface is locked.
+
+        :type: bool
+
 Exceptions
 ----------
 

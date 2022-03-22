@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Keyboard Client: The keyboard client connects to the keyboard server in order
@@ -8,9 +8,6 @@ calls. Curses is used to display a basic UI in the terminal that gives the user
 useful feedback and captures key presses to be sent to the server.
 """
 
-
-from __future__ import division
-
 import curses
 
 from navigator_msgs.srv import KeyboardControl
@@ -18,10 +15,6 @@ import rospy
 
 
 __author__ = "Anthony Olive"
-__maintainer__ = "Anthony Olive"
-__email__ = "anthony@iris-systems.net"
-__copyright__ = "Copyright 2016, MIL"
-__license__ = "MIT"
 
 
 rospy.init_node("keyboard_client", anonymous=True)

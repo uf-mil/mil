@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Keyboard Server: The keyboard server enables a client to control NaviGator
@@ -18,16 +18,12 @@ import rospy
 
 
 __author__ = "Anthony Olive"
-__maintainer__ = "Anthony Olive"
-__email__ = "anthony@iris-systems.net"
-__copyright__ = "Copyright 2016, MIL"
-__license__ = "MIT"
 
 
 rospy.init_node("keyboard_server")
 
 
-class KeyboardServer(object):
+class KeyboardServer:
     def __init__(self):
         self.force_scale = rospy.get_param("/joystick_wrench/force_scale", 600)
         self.torque_scale = rospy.get_param("/joystick_wrench/torque_scale", 500)
