@@ -64,7 +64,7 @@ class CircleAnimal():
         granularity = 8
         
         if self.target_animal != "crocodile":
-                start_circle_pos = self.closest_point_on_radius(self.boat_pos, self.animal_pos, radius)
+            start_circle_pos = self.closest_point_on_radius(self.boat_pos, self.animal_pos, radius)
         if self.target_animal == "crocodile":
             start_circle_pos = self.closest_point_on_radius(self.boat_pos, self.animal_pos, 15)
 

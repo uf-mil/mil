@@ -28,4 +28,7 @@ class VrxBeacon(Vrx):
 
         self.send_feedback('Going to {}'.format(position))
 
-        yield self.move.set_position(position).set_orientation([0,0,0,1]).go()
+        goal_pose = [position,[0,0,0,1]]
+        corrected_pose = self.gps_waypoint_fix(goal_pose)
+
+        yield self.move.set_position(corrected_pose[0]).set_orientation(corrected_pose[1]).go()

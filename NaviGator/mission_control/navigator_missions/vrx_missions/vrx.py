@@ -135,6 +135,17 @@ class Vrx(Navigator):
     def get_closest(self):
         ret = yield self.get_sorted_objects('all')
 
+    def gps_waypoint_fix(self, goal_pose):
+        '''Corrects the wayfinding goal pose by the offset of the gps'''
+        gps_offset = -0.85
+        (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(goal_pose[1])
+        dx = gps_offset * math.cos(yaw)
+        dy = gps_offset * math.sin(yaw)
+        corrected_goal_pose = goal_pose
+        corrected_goal_pose[0][0] = goal_pose[0][0] + dx
+        corrected_goal_pose[0][1] = goal_pose[0][1] + dy
+        return corrected_goal_pose
+
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
         yield self.set_vrx_classifier_enabled.wait_for_service()
