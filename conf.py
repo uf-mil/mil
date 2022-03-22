@@ -22,6 +22,7 @@ from sphinx.ext import graphviz
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('..'))
+sys.path.append(os.path.abspath('docs/extensions'))
 
 # -- General configuration ------------------------------------------------
 
@@ -38,6 +39,8 @@ extensions = [
     'sphinx.ext.intersphinx',
     'recommonmark',
     'sphinx.ext.graphviz',
+    'attributetable',
+    'builder'
 ]
 
 intersphinx_mapping = {
@@ -48,7 +51,7 @@ intersphinx_mapping = {
 }
 
 # Add any paths that contain templates here, relative to this directory.
-# templates_path = ['_templates']
+templates_path = ['docs/_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -91,7 +94,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # For now, excluding the core code directories
-exclude_patterns = ['_build', 'NaviGator/**', 'SubjuGator', 'mil_common', 'deprecated']
+exclude_patterns = ['_build', 'NaviGator/**', 'SubjuGator', 'mil_common', 'deprecated', 'README.md']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -130,7 +133,9 @@ html_theme = "alabaster"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {
+    'fixed_sidebar': True
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -149,12 +154,14 @@ html_logo = "branding/mil.svg"
 # The name of an image file (relative to this directory) to use as a favicon of
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-#html_favicon = None
+html_favicon = "branding/mil.svg"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['docs/_static']
+
+html_js_files = ["custom.js", "sidebar.js"]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied

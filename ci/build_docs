@@ -8,5 +8,5 @@ MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
 BUILD_DIR=$HOME/.mil/docs
 mkdir -p $BUILD_DIR/doctrees
 mkdir -p $BUILD_DIR/html
-sphinx-build -b html -d $BUILD_DIR/doctrees  "-W" $MIL_DIR $BUILD_DIR/html
+sphinx-build -E -b html -d $BUILD_DIR/doctrees  "-W" $MIL_DIR $BUILD_DIR/html
 echo "Docs available at file://$BUILD_DIR/html/index.html"

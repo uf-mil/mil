@@ -7,6 +7,11 @@ Messages
 actionlib
 ^^^^^^^^^
 
+GoalStatus
+~~~~~~~~~~
+
+.. attributetable:: actionlib_msgs.msg._GoalStatus.GoalStatus
+
 .. class:: actionlib_msgs.msg._GoalStatus.GoalStatus
 
     Message type indicating the status of a goal in an actions server. Used by
@@ -35,8 +40,13 @@ actionlib
         A constant of the message type used to indicate a goal which succeeded. 
         Truly set to 2.
 
-Geometry
-^^^^^^^^
+Geometry Messages
+^^^^^^^^^^^^^^^^^
+
+Quaternion
+~~~~~~~~~~
+
+.. attributetable:: geometry_msgs.msg._Quaternion.Quaternion
 
 .. class:: geometry_msgs.msg._Quaternion.Quaternion
 
@@ -66,7 +76,12 @@ Geometry
 
         :rtype: float
 
-.. class:: geometry_msgs.msg._Pose.Point
+Point
+~~~~~
+
+.. attributetable:: geometry_msgs.msg._Point.Point
+
+.. class:: geometry_msgs.msg._Point.Point
 
     A ROS message type representing a single point.
 
@@ -87,6 +102,11 @@ Geometry
         The z-value of the point.
 
         :type: :class:`float`
+
+Vector3
+~~~~~~~
+
+.. attributetable:: geometry_msgs.msg._Vector3.Vector3
 
 .. class:: geometry_msgs.msg._Vector3.Vector3
 
@@ -110,6 +130,11 @@ Geometry
 
         :type: :class:`float`
 
+Pose
+~~~~
+
+.. attributetable:: geometry_msgs.msg._Pose.Pose
+
 .. class:: geometry_msgs.msg._Pose.Pose
 
     A ROS message type representing an object's pose.
@@ -125,6 +150,11 @@ Geometry
         The orientation of the pose.
 
         :type: ~geometry_msgs.msg._Quaternion.Quaternion
+
+Pose2D
+~~~~~~
+
+.. attributetable:: geometry_msgs.msg._Pose2D.Pose2D
 
 .. class:: geometry_msgs.msg._Pose2D.Pose2D
 
@@ -148,6 +178,11 @@ Geometry
 
         :type: float
 
+PoseWithCovariance
+~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: geometry_msgs.msg._PoseWithCovariance.PoseWithCovariance
+
 .. class:: geometry_msgs.msg._PoseWithCovariance.PoseWithCovariance
 
     A ROS message type representing an object's pose, along with a covariance.
@@ -163,6 +198,11 @@ Geometry
         The object's covariance. Consists of a list of 36 values.
 
         :type: List[float]
+
+Accel
+~~~~~
+
+.. attributetable:: geometry_msgs.msg._Accel.Accel
 
 .. class:: geometry_msgs.msg._Accel.Accel
 
@@ -180,6 +220,11 @@ Geometry
 
         :type: ~geometry_msgs.msg._Vector3.Vector3
 
+Twist
+~~~~~
+
+.. attributetable:: geometry_msgs.msg._Twist.Twist
+   
 .. class:: geometry_msgs.msg._Twist.Twist
 
     A ROS message type representing an object's twist.
@@ -195,6 +240,11 @@ Geometry
         The angular direction of the twist.
 
         :type: ~geometry_msgs.msg._Vector3.Vector3
+
+TwistWithCovariance
+~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: geometry_msgs.msg._TwistWithCovariance.TwistWithCovariance
 
 .. class:: geometry_msgs.msg._TwistWithCovariance.TwistWithCovariance
 
@@ -212,7 +262,72 @@ Geometry
 
         :type: List[float]
 
-.. class:: geometry_msgs.msg._Twist.PoseTwist
+Polygon
+~~~~~~~
+
+.. attributetable:: geometry_msgs.msg._Polygon.Polygon
+
+.. class:: geometry_msgs.msg._Polygon.Polygon
+
+    A ROS message type representing a polygon.
+
+    .. attribute:: points
+
+        The points constructing the polygon.
+
+        :type: List[~geometry_msgs.msg._Point.Point]
+
+Wrench
+~~~~~~
+        
+.. attributetable:: geometry_msgs.msg._Wrench.Wrench
+
+.. class:: geometry_msgs.msg._Wrench.Wrench
+
+    A ROS message type representing the wrench of an object.
+
+    .. attribute:: force
+
+        The force associated with the object.
+
+        :type: ~geometry_msgs.msg._Vector3.Vector3
+
+    .. attribute:: torque
+
+        The torque associated with the object.
+
+        :type: ~geometry_msgs.msg._Vector3.Vector3
+
+WrenchStamped
+~~~~~~~~~~~~~
+
+.. attributetable:: geometry_msgs.msg._WrenchStamped.WrenchStamped
+
+.. class:: geometry_msgs.msg._WrenchStamped.WrenchStamped
+
+    A ROS message type representing the wrench of an object with an associated header.
+
+    .. attribute:: header
+
+        The header associated with the message.
+
+        :type: ~std_msgs.msg._Header.Header
+
+    .. attribute:: wrench
+
+        The wrench associated with the object.
+
+        :type: ~geometry_msgs.msg._Wrench.Wrench
+
+MIL Messages
+^^^^^^^^^^^^
+
+PoseTwist
+~~~~~~~~~
+
+.. attributetable:: mil_msgs.msg._PoseTwist.PoseTwist
+
+.. class:: mil_msgs.msg._PoseTwist.PoseTwist
 
     A ROS message type representing an object's pose and twist.
 
@@ -234,50 +349,15 @@ Geometry
 
         :type: ~geometry_msgs.msg._Accel.Accel
 
-.. class:: geometry_msgs.msg._Polygon.Polygon
-
-    A ROS message type representing a polygon.
-
-    .. attribute:: points
-
-        The points constructing the polygon.
-
-        :type: List[~geometry_msgs.msg._Point.Point]
-        
-.. class:: geometry_msgs.msg._Wrench.Wrench
-
-    A ROS message type representing the wrench of an object.
-
-    .. attribute:: force
-
-        The force associated with the object.
-
-        :type: ~geometry_msgs.msg._Vector3.Vector3
-
-    .. attribute:: torque
-
-        The torque associated with the object.
-
-        :type: ~geometry_msgs.msg._Vector3.Vector3
-
-.. class:: geometry_msgs.msg._WrenchStamped.WrenchStamped
-
-    A ROS message type representing the wrench of an object with an associated header.
-
-    .. attribute:: header
-
-        The header associated with the message.
-
-        :type: ~std_msgs.msg._Header.Header
-
-    .. attribute:: wrench
-
-        The wrench associated with the object.
-
-        :type: ~geometry_msgs.msg._Wrench.Wrench
 
 Navigation Messages
 ^^^^^^^^^^^^^^^^^^^
+
+Odometry
+~~~~~~~~
+
+.. attributetable:: nav_msgs.msg._Odometry.Odometry
+
 .. class:: nav_msgs.msg._Odometry.Odometry
 
     A ROS message type representing an object's odometry.
@@ -309,6 +389,11 @@ Navigation Messages
 Standard Messages
 ^^^^^^^^^^^^^^^^^
 
+Header
+~~~~~~
+
+.. attributetable:: std_msgs.msg._Header.Header
+
 .. class:: std_msgs.msg._Header.Header
 
     A ROS message type representing the header of a message. Used throughout a
@@ -331,6 +416,11 @@ Standard Messages
         The frame that this object is associated with.
 
         :type: str
+
+ColorRGBA
+~~~~~~~~~
+
+.. attributetable:: std_msgs.msg._ColorRGBA.ColorRGBA
 
 .. class:: std_msgs.msg._ColorRGBA.ColorRGBA
 
@@ -362,6 +452,11 @@ Standard Messages
 
 Sensor Messages
 ^^^^^^^^^^^^^^^
+
+PointField
+~~~~~~~~~~
+
+.. attributetable:: sensor_msgs.msg._PointField.PointField
 
 .. class:: sensor_msgs.msg._PointField.PointField
 
@@ -447,6 +542,11 @@ Sensor Messages
 
         :type: int
 
+PointCloud2
+~~~~~~~~~~~
+
+.. attributetable:: sensor_msgs.msg._PointCloud2.PointCloud2
+
 .. class:: sensor_msgs.msg._PointCloud2.PointCloud2
 
     A ROS message type indicating a point cloud.
@@ -513,6 +613,8 @@ Services
 SetBool
 ^^^^^^^
 
+.. attributetable:: std_srvs.srv._SetBool.SetBoolRequest
+
 .. class:: std_srvs.srv._SetBool.SetBoolRequest
 
     The request type for the ``SetBool`` service. Requests for some boolean value
@@ -524,6 +626,8 @@ SetBool
         to be ``False``.
 
         :type: bool
+
+.. attributetable:: std_srvs.srv._SetBool.SetBoolResponse
 
 .. class:: std_srvs.srv._SetBool.SetBoolResponse
 
@@ -546,6 +650,8 @@ Exceptions
 ----------
 
 .. currentmodule:: mil_tools
+
+.. attributetable:: ArgumentParserException
 
 .. autoclass:: ArgumentParserException
     :members:
@@ -640,6 +746,8 @@ Utility Functions
 Classes
 ^^^^^^^
 
+.. attributetable:: FprintFactory
+
 .. autoclass:: FprintFactory
     :members:
 
@@ -669,20 +777,38 @@ Images
 Classes
 ^^^^^^^
 
+.. attributetable:: BagCrawler
+
 .. autoclass:: BagCrawler
     :members:
+
+.. attributetable:: CvDebug
 
 .. autoclass:: CvDebug
     :members:
 
+.. attributetable:: Image_Publisher
+
 .. autoclass:: Image_Publisher
     :members:
+
+.. attributetable:: Image_Subscriber
 
 .. autoclass:: Image_Subscriber
     :members:
 
+StereoImageSubscriber
+~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: StereoImageSubscriber
+
 .. autoclass:: StereoImageSubscriber
     :members:
+
+Plotter
+~~~~~~~
+
+.. attributetable:: Plotter
 
 .. autoclass:: Plotter
     :members:
@@ -693,8 +819,12 @@ Serial
 Classes
 ^^^^^^^
 
+.. attributetable:: NoopSerial
+
 .. autoclass:: NoopSerial
     :members:
+
+.. attributetable:: SimulatedSerial
 
 .. autoclass:: SimulatedSerial
     :members:
@@ -706,6 +836,8 @@ txros
 
 Classes
 ^^^^^^^
+
+.. attributetable:: Goal
 
 .. autoclass:: Goal
     :members:
@@ -745,11 +877,17 @@ Utility Functions
 Classes
 ^^^^^^^
 
+.. attributetable:: mil_ros_tools.vector_to_marker.VectorToMarker
+
 .. autoclass:: mil_ros_tools.vector_to_marker.VectorToMarker
     :members:
 
+.. attributetable:: nodes.clicked_point_recorder.ClickedPointRecorder
+
 .. autoclass:: nodes.clicked_point_recorder.ClickedPointRecorder
     :members:
+
+.. attributetable:: nodes.network_broadcaster.NetworkBroadcaster
 
 .. autoclass:: nodes.network_broadcaster.NetworkBroadcaster
     :members:

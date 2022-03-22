@@ -1,34 +1,74 @@
 # Getting Started
-This page describes the recommended process of setting up your new ubuntu system with the repository and its dependencies.
+
+This page describes the recommended process of setting up a new Ubuntu system
+to work with the MIL repository and its dependencies. Ubuntu is an operating system
+(similar to OS X or Windows) that MIL (and other robotics labs) choose to use
+because of its familiarity with ROS.
 
 ## System Requirements
 
-### Operating System
+To use Ubuntu in MIL, you have two options:
 
-**It is recommended that you [dual boot Ubuntu 18.04](https://help.ubuntu.com/community/WindowsDualBoot) for development**
+1. Use a **virtual machine**. A virtual machine uses your current operating system
+to virtually host another operating system (in this case, Ubuntu). This will
+likely cause your Ubuntu system to run slow (in some cases, it might be unusable)
+and may cause you to experience issues with certain programs.
+2. **Dual-boot your computer.** Dual booting will allocate a piece of your computer's
+storage to a new operating system, which will be installed on your computer directly.
+This dual-booted solution will not run on top of your current operating system, but
+will instead run by directly using your computer's resources.
 
-Virtual Machines will be able to run our software, but it may be too slow (see [hardware](#hardware)).
-
-For instructions on installing Ubuntu 18.04 on an Apple computer with an M-series processor, please see [these instructions](/docs/development/apple_mseries_ubuntu_setup.md).
+Dual-booting your computer is highly recommended over using a virtual machine.
+However, if you **have an M-series (ARM) Mac computer**, you will need to use a 
+virtual machine. Intel-based Macs may also experience some issues with dual-booting
+Ubuntu.
 
 ### Hardware
 
 Autonomous robotics is computationally expensive, especially when running simulations.
-If you can, use a powerful computer. We recommend you have at least 8GB RAM and a modern i5 or better CPU. Many tasks such as simulation and computer vision will run faster on a system with a GPU.
+
+If you can, use a powerful computer. We recommend you have at least 8GB RAM dedicated to your solution 
+and a modern i5 or better CPU. Many tasks such as simulation and computer vision 
+will run faster on a system with a GPU.
+
+## Installing Ubuntu
+
+To install Ubuntu, please see here:
+
+* **Dual-booting a Windows computer**: Dual-booting on windows is the best option
+to install Ubuntu on a Windows computer. To complete the process, [look here](https://help.ubuntu.com/community/WindowsDualBoot).
+* **Using a virtual machine on Windows:** You could also use a virtual machine
+software on Windows to run Ubuntu. These softwares include VirtualBox or VMWare.
+Choose which virtualization software works best for you and find a tutorial on how
+to install Ubuntu.
+* **Using Parallels on MacOS**: Parallels is a favorited virtual machine software
+available on MacOS. It is not free, although there is a student discount available.
+To see how to install Ubuntu on MacOS with parallels, see [here](https://peterwitham.com/videos/how-to-install-ubuntu-20-04-lts-on-parallels-for-mac/).
+* **Using UTM on a Mac**: UTM is a virtual machine software that is compatible with
+MacOS. The software is free, unlike Parallels, but requires more setup by the user.
+For instructions on installing Ubuntu with UTM, [see here](https://mac.getutm.app/gallery/ubuntu-20-04).
 
 ## Starting from a clean slate
 
-First, we will want to check if there are any updates. Sometimes this is already done for you assuming you connected to internet during the ubuntu system setup guide.
+First, we will want to check if there are any updates. Sometimes this is already 
+done for you.
 
-`sudo apt update`
+To do this, we use a command-line tool on Ubuntu named ``apt``. This tool allows
+for the management of packages in Ubuntu.
 
-`sudo apt upgrade`
+(To access the Terminal on Ubuntu, click the 9 dots in the bottom left corner
+and find the Terminal app. You can later install a different terminal emulator,
+if you'd like.)
+
+    $ sudo apt update
+    $ sudo apt upgrade
 
 ## Install git
 
-To contribute changes, you will need to have a git client installed. This program will be used to track and upload your changes.
+To contribute changes, you will need to have [git](https://www.git-scm.com) installed. This program will 
+be used to track and upload any changes that you make to the repository.
 
-`sudo apt install git`
+    $ sudo apt install git
 
 ## Cloning the repository
 
@@ -38,67 +78,60 @@ First clone the upstream (MIL's fork) version of the repo.
 It is recommended that you first create a catkin workspace
 and clone it into the `src` or that workspace.
 
-`mkdir -p ~/catkin_ws/src && cd ~/catkin_ws/src`
+    $ mkdir -p ~/catkin_ws/src && cd ~/catkin_ws/src
 
-Then clone the repo:
+Then, clone the repository (the `--recurse-submodules` is essential, as that is what pulls the submodules, `-j8` is a speed optimization that downloads up to 8 submodules at a time). Cloning the repository allows you to have a local copy of the code on your computer.
 
-(the `--recurse-submodules` is essential, as that is what pulls the submodules, `-j8` is a speed optimization that downloads up to 8 submodules at a time)
+    $ git clone --recurse-submodules -j8 https://github.com/uf-mil/mil.git
 
-`git clone --recurse-submodules -j8 https://github.com/uf-mil/mil.git`
+Navigate to the root of the repository now. If you have followed the 
+instructions exactly, you can get there through:
 
-**Navigate to the root of the repository now.**
-
-If you have followed the instructions exactly, you can get there by running
-
-`cd ~/catkin_ws/src/mil`
+    $ cd ~/catkin_ws/src/mil
 
 ### Run the setup scripts
 
-If you are running Ubuntu 18.04 and prefer to simply run code directly on your "host"
+If you are running Ubuntu, and prefer to simply run code directly on your "host"
 operating system without using Docker, you can run the following scripts from the root of the repository
 
-`./scripts/system_install`
-
-`./scripts/user_install`
+    $ ./scripts/system_install
+    $ ./scripts/user_install
+    $ exec bash # or exec zsh if you have set up zsh
 
 Exit the terminal and enter it again.
 
-*NOTE: now the MIL aliases will work on your machine. You can type* `mil` *to take you to the root of the repo anytime*
-
-
-### Starting a tmux session in the development container
-When using ROS and Gazebo, many terminals are required. [tmux](https://www.hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/) is a program which allows one terminal to be split into many terminals each called a panel. We highly recommend its use when runnning code, esspecially when working in a docker container.
-
-1. Start a tmux session from the container (allows you to have multiple terminals within the container) `tmux new`
-1. Split the tmux session horizontally with `Control+B` then `"`.
-1. Split the tmux session vertically with `Control+B` then `%`.
-1. You can switch between the terminals with `Control+B` then up arrow / down arrow
-
 ## Build the repository
-Now that you have everything set up, try compiling the code. The user_install script should have done this already, but this is how you will compile in the future.
+Now that you have everything set up, try compiling the code. The `user_install` script should have done this already, but this is how you will compile in the future.
 
-We have a convenient alias for this, run `cm`
+To build our tools, we use a tool that ROS provides us named `catkin_make`. This searches through all of our packages and compiles them together. If you want to run this tool from anywhere in the directory, use `cm`.
 
-If something goes wrong, try the suggestions in [Getting Help](help)
+    $ cm
 
-## (Optional) Install proprietary software
-MIL uses a few proprietary packages which cannot be distributed with the repo.
-You are able to compile the repo and run simulations without them, but
-they must be installed on the actual robots.
+If something goes wrong, try the suggestions in [Getting Help](help).
 
-* `./scripts/install_bvtsdk` - installs the BlueView Imaging Sonar SDK
-* `./scripts/install_flycap`- installs the Pointgrey Flycapture SDK
+## Viewing simulation
+Now that you've built the repository, check to make sure that the simulation works
+on your computer. To do this, we will use a tool called `roslaunch`, which launches
+up a simulation of our submarine.
 
-These scripts will prompt you for an encryption password. Ask a MIL leader for this.
+For this, you will need multiple terminal windows! To create a new window in the
+default terminal, use `Ctrl + Shift + t`.
 
-## (Optional) Install UDEV rules
-If you plan on running certain MIL sensors from your local machine
-or are setting up the install on a robot, you must give your user
-access to certain USB devices through UDEV.
+In window one, write:
 
-`./scripts/install_udev_rules`
+    $ roslaunch sub8_launch gazebo_launch
 
-## Run some code
-Now that the repository is built, try running something!
+In window two, write:
 
-For example, [SubjuGator](/docs/subjugator/index)
+    $ gazebogui
+
+The first command launches the server-side version of Gazebo, while the second command
+launches the Gazebo GUI - aka, the thing you will actually interact with! If all
+goes according to plan, you should see our robot in its own little world!
+
+## What's next?
+If the `catkin_make` didn't fail on your computer, you're all good to go! 
+Congratulations, and welcome to MIL!
+
+The next step is to get assigned a task and to dive in. You should have the setup
+to do so now!

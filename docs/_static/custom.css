@@ -34,18 +34,18 @@ Historically however, thanks to:
   --grey-8: #2a2a2e;
   --black: #0c0c0d;
 
-  --green-1: #25d125;
-  --green-2: #21b821;
-  --green-3: #1d961d;
-  --green-4: #167d16;
-  --green-5: #005400;
-  --green-6: #004003;
+  --blue-1: #005bff;
+  --blue-2: #0049c6;
+  --blue-3: #003fa8;
+  --blue-4: #003588;
+  --blue-5: #002d6f;
+  --blue-6: #002657;
 
   --settings: var(--grey-1);
   --settings-hover: var(--grey-1-8);
   --main-background: var(--grey-1);
-  --link-text: var(--green-2);
-  --link-hover-text: var(--green-6);
+  --link-text: var(--blue-2);
+  --link-hover-text: var(--blue-6);
   --main-text: var(--black);
   --mobile-nav-background: var(--black);
   --mobile-nav-text: var(--white);
@@ -58,7 +58,7 @@ Historically however, thanks to:
   --sub-header-background: var(--grey-6);
   --search-border: var(--grey-4);
   --search-text: var(--white);
-  --search-focus: var(--green-1);
+  --search-focus: var(--blue-1);
   --search-button: var(--grey-1);
   --search-button-hover: var(--grey-1-8);
   --footer-text: var(--grey-5);
@@ -72,7 +72,7 @@ Historically however, thanks to:
   --header-link: var(--grey-6);
   --header-link-hover-text: var(--white);
   --admonition-background: var(--grey-2);
-  --note-background: var(--green-1);
+  --note-background: var(--blue-1);
   --note-text: var(--white);
   --warning-background: #ffe900;
   --warning-text: var(--black);
@@ -102,9 +102,9 @@ Historically however, thanks to:
   --attribute-table-title: var(--grey-6);
   --attribute-table-entry-border: var(--grey-3);
   --attribute-table-entry-text: var(--grey-5);
-  --attribute-table-entry-hover-border: var(--green-2);
+  --attribute-table-entry-hover-border: var(--blue-2);
   --attribute-table-entry-hover-background: var(--grey-2);
-  --attribute-table-entry-hover-text: var(--green-2);
+  --attribute-table-entry-hover-text: var(--blue-2);
   --attribute-table-badge: var(--grey-7);
   --highlighted-text: rgb(252, 233, 103);
 }
@@ -115,8 +115,8 @@ Historically however, thanks to:
 
 :root[data-theme="dark"] {
   --main-background: var(--grey-7);
-  --link-text: var(--green-1);
-  --link-hover-text: var(--green-2);
+  --link-text: var(--blue-1);
+  --link-hover-text: var(--blue-2);
   --main-text: var(--white);
   --sub-header-background: var(--grey-8);
   --search-border: var(--grey-5);
@@ -135,7 +135,7 @@ Historically however, thanks to:
   --header-link: var(--grey-2);
   --header-link-hover-text: var(--grey-6);
   --admonition-background: var(--grey-8);
-  --note-background: var(--green-3);
+  --note-background: var(--blue-3);
   --note-text: var(--white);
   --warning-background: #d7b600;
   --warning-text: var(--black);
@@ -162,9 +162,9 @@ Historically however, thanks to:
   --attribute-table-title: var(--grey-3);
   --attribute-table-entry-border: var(--grey-5);
   --attribute-table-entry-text: var(--grey-3);
-  --attribute-table-entry-hover-border: var(--green-1);
+  --attribute-table-entry-hover-border: var(--blue-1);
   --attribute-table-entry-hover-background: var(--grey-6);
-  --attribute-table-entry-hover-text: var(--green-1);
+  --attribute-table-entry-hover-text: var(--blue-1);
   --attribute-table-badge: var(--grey-4);
   --highlighted-text: rgba(250, 166, 26, 0.2);
 }
@@ -179,8 +179,8 @@ img[src$="snake_dark.svg"]  {
   display: inherit;
 }
 
-body,
-div.body {
+body:not(.sig),
+div.body:not(.sig) {
   font-family: var(--font-family);
   font-size: 16px;
   margin: 0;
@@ -258,7 +258,7 @@ header.grid-item {
 
 header > nav {
   background-color: var(--sub-header-background);
-  padding: 0.8em;
+  padding: 0.4em;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
@@ -1212,7 +1212,8 @@ div.code-block-caption {
   }
 
   header {
-    background-color: var(--black);
+    background: rgb(205,140,0);
+    background: linear-gradient(90deg, rgba(205,140,0,1) 0%, rgba(250,70,22,1) 100%); 
   }
 
   header > nav {
@@ -1325,7 +1326,7 @@ div.code-block-caption {
   }
 
   .py-attribute-table-column:not(:first-child) {
-    margin-top: unset;
+   margin-top: unset;
   }
 
   main img {
@@ -1333,4 +1334,18 @@ div.code-block-caption {
     margin-left: auto;
     margin-right: auto;
   }
+}
+
+/* MIL svg */
+.mil-svg {
+    /*  */
+    height: 2em;
+    width: auto;
+    filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(81deg) brightness(113%) contrast(101%);
+}
+
+img[src*="_images/collage.png"] {
+    max-width: none !important;
+    border: 2px solid #e4680b;
+    margin-bottom: 1.5em;
 }

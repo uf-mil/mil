@@ -1,37 +1,56 @@
+.. image:: docs/images/collage.png
+
 Machine Intelligence Lab
 ===============================
 
-Welcome to the documentation for the Machine Intelligence Lab at the University of Florida.
-This site hosts all documentation for the `MIL repo`_.
+Welcome to the documentation site for the Machine Intelligence Lab at the University of Florida, a robotics lab in Gainesville, Florida. Our lab has built `several robotic systems <https://mil.ufl.edu/projects/>`_ since its inception several decades ago. Our current projects include:
 
-If you are interested in getting involved in MIL *software* team please
-read the :doc:`Onboarding Guide <docs/onboarding>`.
+* **SubjuGator:** An autonomous, underwater submarine-like vehicle. Three-time champion of the AUSVI/ONR underwater competition. (`Website <https://subjugator.org>`_)
+* **NaviGator:** An autonomous surface vehicle (ASV) which has competed in several maritime competitions. Won the 2016 Maritime RobotX Challenge, and received fourth in the 2018 Maritime RobotX Challenge. (`Website <https://subjugator.org>`_)
+* **Virtual RobotX:** An new extension of the NaviGator project supporting virtual robotics.
 
-If you are interested in getting involved in MIL *mechanical* team please
-read the :doc:`Mechanical Onboarding Guide <docs/mechanical/onboarding>`.
-
-
-..  _MIL repo: https://github.com/uf-mil/mil
-
-Helpful Docs:
-
+New Members
+-----------
 .. toctree::
-   :maxdepth: 2
+    :hidden:
 
-   Mechanical <docs/mechanical/mechanical>
-   Onboarding (Software) <docs/onboarding>
-   Development <docs/development/index>
-   Glossary <docs/glossary>
-   Culture <docs/culture>
-   Getting Help <docs/development/help>
-   Branding <docs/branding>
-   Projects <docs/projects>
-     SubjuGator <docs/subjugator/index>
-     VRX <docs/navigator/vrx>
-     Indy AV <docs/indyav/index>
-   Technical Design <docs/design/design>
-   Testing Procedure <docs/testingprocedures.md>
-   Infrastructure <docs/infra/index>
-   Reference <docs/reference>
-   Scripts <docs/scripts>
-   View Github Readme <README>
+    docs/onboarding
+    docs/mechanical/mechanical
+    docs/branding
+    docs/glossary
+    docs/culture
+    docs/design/design
+    docs/reference
+    docs/scripts
+    docs/projects
+    docs/subjugator/index
+    docs/navigator/vrx
+    docs/development/help
+    docs/development/index
+    docs/development/sdk
+
+* **Interested software members**: Please read the :doc:`Software Onboarding Guide <docs/onboarding>`.
+* **Interested electrical members**: Please join our `Slack workspace <https://uf-mil.slack.com>`_.
+* **Interested mechanical members**: Please read the :doc:`Mechanical Onboarding Guide <docs/mechanical/onboarding>`.
+
+Relevant Links
+--------------
+* **Websites:** `MIL Website <https://mil.ufl.edu>`_ / `NaviGator <https://navigator.org>`_ / `SubjuGator <https://subjugatoruf.org>`_
+* **Source:** `GitHub <https://github.com/uf-mil/mil>`_
+* **Branding:** :doc:`Branding <docs/branding>`
+* **Culture:** :doc:`Glossary <docs/glossary>` / :doc:`Culture <docs/culture>` / :doc:`Technical Design <docs/design/design>`
+
+Software Reference
+------------------
+* **All Repository Source Documentation:** :doc:`Reference <docs/reference>`
+* **Practices:** :doc:`Our Development Practices <docs/development/index>` / :doc:`Scripts <docs/scripts>` / :doc:`SDKs <docs/development/sdk>`
+* **Project Procedures:** :doc:`SubjuGator <docs/subjugator/index>` / :doc:`VRX <docs/navigator/vrx>`
+* **Getting Help:** :doc:`Development Help <docs/development/help>`
+
+Meta
+----
+.. toctree::
+    :maxdepth: 1
+
+    docs/infra/index
+    docs/testingprocedures.md
