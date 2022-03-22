@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Keyboard Client: The keyboard client connects to the keyboard server in order
@@ -8,20 +8,14 @@ calls. Curses is used to display a basic UI in the terminal that gives the user
 useful feedback and captures key presses to be sent to the server.
 """
 
-
-from __future__ import division
-
 import curses
 
 from navigator_msgs.srv import KeyboardControl
 import rospy
+from typing import Optional
 
 
 __author__ = "Anthony Olive"
-__maintainer__ = "Anthony Olive"
-__email__ = "anthony@iris-systems.net"
-__copyright__ = "Copyright 2016, MIL"
-__license__ = "MIT"
 
 
 rospy.init_node("keyboard_client", anonymous=True)
@@ -61,7 +55,7 @@ class KeyboardClient:
             "Yaw Clockwise:        arrow down ",
         ]
 
-    def read_key(self):
+    def read_key(self) -> Optional[int]:
         """
         Reads the newest key from the buffer and discards all old keys that
         were not read.
@@ -82,7 +76,7 @@ class KeyboardClient:
 
         return keycode if keycode != -1 else None
 
-    def send_key(self, event):
+    def send_key(self, _: rospy.timer.TimerEvent) -> None:
         """
         Sends the key to the keyboard server and stores the returned locked
         status and generated UUID (if one was received).
@@ -102,7 +96,7 @@ class KeyboardClient:
 
         self.refresh_status_text()
 
-    def refresh_status_text(self):
+    def refresh_status_text(self) -> None:
         """
         Updates the status bar text, which consists of the UUID and the current
         locked state, and a help menu of which key is used for what.
@@ -130,13 +124,13 @@ class KeyboardClient:
                     self.screen.addstr(y, x, self.help_menu[index])
                     index += 1
 
-    def flash(self):
+    def flash(self) -> None:
         """
         Flashes the color of the screen to white for a short time.
         """
         curses.flash()
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Clears all text on the screen.
         """

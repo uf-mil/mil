@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Keyboard Server: The keyboard server enables a client to control NaviGator
@@ -12,22 +12,18 @@ executed.
 import curses
 import uuid
 
-from navigator_msgs.srv import KeyboardControl
+from navigator_msgs.srv import KeyboardControl, KeyboardControlRequest
 from remote_control_lib import RemoteControl
 import rospy
 
 
 __author__ = "Anthony Olive"
-__maintainer__ = "Anthony Olive"
-__email__ = "anthony@iris-systems.net"
-__copyright__ = "Copyright 2016, MIL"
-__license__ = "MIT"
 
 
 rospy.init_node("keyboard_server")
 
 
-class KeyboardServer(object):
+class KeyboardServer:
     def __init__(self):
         self.force_scale = rospy.get_param("/joystick_wrench/force_scale", 600)
         self.torque_scale = rospy.get_param("/joystick_wrench/torque_scale", 500)
@@ -71,11 +67,14 @@ class KeyboardServer(object):
             curses.KEY_RIGHT,
         ]
 
-    def key_recieved(self, req):
+    def key_recieved(self, req: KeyboardControlRequest):
         """
         This function handles the process of locking control of the service to
         one client. If an 'L' is received, a UUID is generated for the client
         and control of the service is locked to it.
+
+        Args:
+            req (KeyboardControlRequest): The request received from the service.
         """
 
         # If the key pressed was L, locks control of the service to the clinet's UUID
@@ -97,9 +96,12 @@ class KeyboardServer(object):
         else:
             return {"generated_uuid": "", "is_locked": False}
 
-    def execute_key(self, key):
+    def execute_key(self, key: int):
         """
         Executes a remote control action based on the key that was received.
+
+        Args:
+            key (int): The keycode that is received.
         """
         if key in self.key_mappings:
             self.key_mappings[key]()

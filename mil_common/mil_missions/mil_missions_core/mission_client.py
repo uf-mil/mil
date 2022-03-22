@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from actionlib import SimpleActionClient
 from mil_missions.msg import DoMissionAction, DoMissionGoal
