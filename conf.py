@@ -55,6 +55,12 @@ intersphinx_mapping = {
   'numpy': ('https://numpy.org/doc/stable/', None)
 }
 
+# RTD
+read_the_docs_build = os.environ.get('READTHEDOCS') == "True"
+if read_the_docs_build:
+    # Source the ROS file on RTD
+    subprocess.call('source /opt/ros/noetic/setup.bash', shell = True)
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['docs/_templates']
 
