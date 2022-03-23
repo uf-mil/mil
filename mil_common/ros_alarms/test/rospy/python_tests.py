@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 import rostest
 import unittest
@@ -7,23 +7,22 @@ import sys
 
 from ros_alarms import AlarmBroadcaster, AlarmListener
 
-PKG = 'ros_alarms'
-NAME = 'server_tester'
+PKG = "ros_alarms"
+NAME = "server_tester"
 
 
 class ClientTester(unittest.TestCase):
-
     def __init__(self, *args):
         rospy.init_node(NAME, anonymous=True)
         super(ClientTester, self).__init__(*args)
 
-    ''' Tests alarm client operations
+    """ Tests alarm client operations
     Creates some listeners and some broadcasters and tests various raising and clearing conditoins
     Also tests various combination of parameters
-    '''
+    """
 
     def test_broadcaster_and_listener(self):
-        ''' Simple broadcaster and listener tests, with arguments '''
+        """Simple broadcaster and listener tests, with arguments"""
         ab_a = AlarmBroadcaster("alarm_a")
         al_a = AlarmListener("alarm_a")
 
@@ -44,8 +43,8 @@ class ClientTester(unittest.TestCase):
 
         # Some args to pass in
         _severity = 3
-        _blank_params = ''
-        _full_params = {'test': 1, 'test2': 2}
+        _blank_params = ""
+        _full_params = {"test": 1, "test2": 2}
         _problem_desc = "This is a test"
 
         # Raise them all, with some arguments
@@ -80,7 +79,7 @@ class ClientTester(unittest.TestCase):
         self.assertEqual(al_c.get_alarm().parameters, _blank_params)
 
     def test_stress(self):
-        ''' Stress test the server, lots of raises and clears '''
+        """Stress test the server, lots of raises and clears"""
         ab_a = AlarmBroadcaster("alarm_a")
         al_a = AlarmListener("alarm_a")
         ab_b = AlarmBroadcaster("alarm_b")
@@ -88,8 +87,14 @@ class ClientTester(unittest.TestCase):
         al_c = AlarmListener("alarm_c")
         ab_c = AlarmBroadcaster("alarm_c")
 
-        actions = [ab_a.raise_alarm, ab_b.raise_alarm, ab_c.raise_alarm,
-                   ab_a.clear_alarm, ab_b.clear_alarm, ab_c.clear_alarm]
+        actions = [
+            ab_a.raise_alarm,
+            ab_b.raise_alarm,
+            ab_c.raise_alarm,
+            ab_a.clear_alarm,
+            ab_b.clear_alarm,
+            ab_c.clear_alarm,
+        ]
 
         for i in range(100):
             random.choice(actions)()

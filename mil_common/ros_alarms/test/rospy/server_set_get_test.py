@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 import numpy as np
 import random
@@ -8,7 +8,7 @@ from ros_alarms.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
 # Dummy params to pass in
 parameters = {"testing": True, "not_real": 3, "a_list": [1, 2, 3]}
 # Names to pick from for setting and getting
-names = list(np.random.randint(50, size=20).astype('str'))
+names = list(np.random.randint(50, size=20).astype("str"))
 raised = []
 cleared = []
 
@@ -26,7 +26,11 @@ def raise_some(setter, count=20):
             continue
 
         setter(a)
-        rospy.loginfo("{} '{}' alarm".format('Raised' if a.alarm.raised else 'Cleared', a.alarm.alarm_name))
+        rospy.loginfo(
+            "{} '{}' alarm".format(
+                "Raised" if a.alarm.raised else "Cleared", a.alarm.alarm_name
+            )
+        )
         if a.alarm.raised:
             raised.append(a.alarm.alarm_name)
         else:
@@ -41,9 +45,9 @@ def check_some(getter, count=50):
         rospy.loginfo("Checking '{}' alarm".format(a.alarm_name))
 
         resp = getter(a)
-        print "raised", resp.alarm.raised
-        print "in_raised: ", a.alarm_name in raised
-        print "in_cleared: ", a.alarm_name in cleared
+        print("raised", resp.alarm.raised)
+        print("in_raised: ", a.alarm_name in raised)
+        print("in_cleared: ", a.alarm_name in cleared)
         found = False
         if a.alarm_name in raised:
             found = True
@@ -62,13 +66,13 @@ if __name__ == "__main__":
     setter = rospy.ServiceProxy("/alarm/set", AlarmSet)
     getter = rospy.ServiceProxy("/alarm/get", AlarmGet)
 
-    print "Waiting for service"
+    print("Waiting for service")
     rospy.wait_for_service("/alarm/set")
     rospy.wait_for_service("/alarm/get")
 
-    print "Running tests"
+    print("Running tests")
 
     raise_some(setter)
-    print "raised ", raised
-    print "cleared ", cleared
+    print("raised ", raised)
+    print("cleared ", cleared)
     check_some(getter)
