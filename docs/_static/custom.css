@@ -1052,6 +1052,10 @@ dl.classmethod > dt,
 dl.method > dt,
 dl.property > dt,
 dl.class > dt,
+dl.struct > dt,
+dl.var > dt,
+dl.enumerator > dt,
+dl.enum-class > dt,
 dl.exception > dt {
   background-color: var(--api-entry-background);
   padding: 1px 10px;
