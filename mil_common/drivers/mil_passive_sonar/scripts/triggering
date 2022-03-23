@@ -128,6 +128,7 @@ class HydrophoneTrigger:
 
 
     def hydrophones_cb(self, msg):
+        print("hello jessica")
         # Record start time of cb to make sure we are running in real time
         start_cb = rospy.get_rostime()
         if type(msg) == numpy_msg(Ping):
@@ -213,6 +214,7 @@ class HydrophoneTrigger:
                 ping.hydrophone_samples.data = ping_data.flatten()
                 ping.trigger_time = -1 * (trigger_time -\
                                  ((2*trigger_time - self.trigger_window_past + self.trigger_window_future) / 2))
+                print("i'm not being called")
                 self.pub.publish(ping)
 
                 trigger_time_samples = (triggered_at_sample / float(self.rate)) + self.time

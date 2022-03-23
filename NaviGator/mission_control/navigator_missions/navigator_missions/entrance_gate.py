@@ -31,7 +31,7 @@ class EntranceGate(Navigator):
 
         parser = ThrowingArgumentParser(description='Start Gate Mission',
                                         usage='''Default parameters: \'runtask EntranceGate
-                                         --scandist 10 --speed 0.75 --scantime 10 --traversaldist 7\'''')
+                                         --scandist 10 --speed 0.75 --scantime 10 --traversaldist 7\ ''')
         parser.add_argument('-r', '--drift', action='store_true',
                             help='''setting results in a scan by listening at two points (two points scan mode,
                             not setting results in a scan by traversing the gates (pass scan mode)''')

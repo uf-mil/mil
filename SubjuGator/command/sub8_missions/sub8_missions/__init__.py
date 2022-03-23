@@ -4,6 +4,7 @@ from .square import Square
 from .start_gate import StartGate
 from .start_gate_guess import StartGateGuess
 from .pinger import Pinger
+from .pinger2 import Pinger2
 from .surface import Surface
 from .vampire_slayer import VampireSlayer
 from .autonomous import Autonomous

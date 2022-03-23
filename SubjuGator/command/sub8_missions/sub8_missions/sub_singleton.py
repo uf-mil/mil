@@ -4,7 +4,7 @@ from __future__ import division
 import genpy
 from txros import action, util, tf, serviceclient
 import rospkg
-
+from mil_passive_sonar import TxHydrophonesClient
 from mil_msgs.msg import MoveToAction, PoseTwistStamped, RangeStamped
 import pose_editor
 import mil_ros_tools
@@ -51,6 +51,8 @@ class VisionProxy(object):
                                                      SetBool)
         self._set_geometry_service = nh.get_service_client(
             service_root + "/set_geometry", SetGeometry)
+
+        self.hydrophones = TxHydrophonesClient(self.nh)
 
     def start(self):
         '''Allow user to start the vision processing backend
