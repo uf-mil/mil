@@ -1,21 +1,26 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from ros_alarms import AlarmBroadcaster, AlarmListener
 import argparse
 
-parser = argparse.ArgumentParser(description='Reports the status of an alarm')
-parser.add_argument("alarm_name", help='the name of the alarm to report on')
+parser = argparse.ArgumentParser(description="Reports the status of an alarm")
+parser.add_argument("alarm_name", help="the name of the alarm to report on")
 args = parser.parse_args()
 
+
 def print_alarm(alarm):
-    rospy.loginfo("Alarm: {} ({}) ({})".format(alarm.alarm_name, 'raised' if alarm.raised else 'clear', 
-                                               alarm.severity))
+    rospy.loginfo(
+        "Alarm: {} ({}) ({})".format(
+            alarm.alarm_name, "raised" if alarm.raised else "clear", alarm.severity
+        )
+    )
     for name, value in alarm.parameters.items():
         rospy.loginfo("\t{} = {}".format(name, value))
+
 
 rospy.init_node("alarm_report", anonymous=True)
 al = AlarmListener(args.alarm_name)
 al.wait_for_server()
 alarm = al.get_alarm()
 print_alarm(alarm)
-rospy.sleep(.1)
+rospy.sleep(0.1)
