@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
 <!-- Example of ROS localization using the example wamv with sensors -->
 <launch>
-  <remap from="/odometry/filtered" to="/odom"/>
+  <remap from="/odometry/filtered" to="/odom_gps"/>
+
+  <node pkg="navigator_controller" type="gps_to_baselink_odom.py" name="gps_to_baselink_odom"/>
 
   <node pkg="nodelet" type="nodelet" name="localization"  args="manager"/>
 

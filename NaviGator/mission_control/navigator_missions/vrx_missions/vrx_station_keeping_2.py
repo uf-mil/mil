@@ -22,4 +22,4 @@ class VrxStationKeeping2(Vrx):
         self.send_feedback('Going to {}'.format(goal_pose))
 
         #Go to goal
-        yield self.send_trajectory_without_path(self.gps_waypoint_fix(goal_pose))
+        yield self.send_trajectory_without_path(goal_pose)

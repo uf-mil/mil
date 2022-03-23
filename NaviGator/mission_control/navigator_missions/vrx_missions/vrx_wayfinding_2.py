@@ -49,4 +49,4 @@ class VrxWayfinding2(Vrx):
             self.send_feedback('Going to {}'.format(poses[index]))
 
             #Go to goal
-            yield self.send_trajectory_without_path(self.gps_waypoint_fix(poses[index]))
+            yield self.send_trajectory_without_path(poses[index])
