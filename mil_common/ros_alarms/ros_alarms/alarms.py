@@ -1,4 +1,3 @@
-from __future__ import division
 import rospy
 
 from ros_alarms.msg import Alarm as AlarmMsg

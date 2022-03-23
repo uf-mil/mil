@@ -1,4 +1,4 @@
-class HandlerBase(object):
+class HandlerBase:
 
     """
     Listens for an alarm with this `alarm_name`.
