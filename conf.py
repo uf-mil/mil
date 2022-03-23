@@ -14,6 +14,7 @@
 
 import sys
 import os
+import subprocess
 import recommonmark
 from recommonmark.transform import AutoStructify
 from sphinx.ext import graphviz
@@ -315,6 +316,15 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# Setup for RTD
+read_the_docs_build = os.environ.get('READTHEDOCS') == 'True'
+if read_the_docs_build:
+    # Configure ENV to be able to install ros-noetic
+    subprocess.call(r'sudo sh -c \'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list\'', shell = True)
+    subprocess.call(r'sudo apt install curl')
+    subprocess.call(r'curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -')
+    subprocess.call(r'sudo apt install ros-noetic-desktop-full')
 
 # At the bottom of conf.py
 def setup(app):
