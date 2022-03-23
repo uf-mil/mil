@@ -37,7 +37,9 @@ public:
     raise();
   }
 
-  // Publishes current state of the AlarmProxy to the server
+  /** 
+   * Publishes current state of the AlarmProxy to the server
+   */
   bool publish();
 
   // Handle to update the AlarmProxy (if this is an externally managed AlPxy, then modifying

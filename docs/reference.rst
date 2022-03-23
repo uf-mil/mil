@@ -942,9 +942,28 @@ Utility Functions
 .. autofunction:: thread_lock
 
 Remote Control
-^^^^^^^^^^^^^^
+--------------
 
 .. attributetable:: remote_control_lib.RemoteControl
 
 .. autoclass:: remote_control_lib.RemoteControl
     :members:
+
+Alarms
+------
+
+AlarmProxy
+^^^^^^^^^^
+.. doxygenstruct:: ros_alarms::AlarmProxy
+
+AlarmBroadcaster
+^^^^^^^^^^^^^^^^
+.. doxygenclass:: ros_alarms::AlarmBroadcaster
+
+AlarmListener
+^^^^^^^^^^^^^
+.. doxygenclass:: ros_alarms::AlarmListener
+
+ListenerCb
+^^^^^^^^^^
+.. doxygenstruct:: ros_alarms::ListenerCb
