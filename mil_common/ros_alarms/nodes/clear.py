@@ -1,12 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from ros_alarms import AlarmBroadcaster
 import argparse
 
-parser = argparse.ArgumentParser(description='Clears an alarm')
-parser.add_argument("alarm_name", help='the name of the alarm to clear')
-parser.add_argument("--parameters", nargs='+', default="",
-                    help="parameters to pass to the alarm in the form of: \nparam1:=val1 param2:=val2")
+parser = argparse.ArgumentParser(description="Clears an alarm")
+parser.add_argument("alarm_name", help="the name of the alarm to clear")
+parser.add_argument(
+    "--parameters",
+    nargs="+",
+    default="",
+    help="parameters to pass to the alarm in the form of: \nparam1:=val1 param2:=val2",
+)
 args = parser.parse_args()
 
 rospy.init_node("alarm_clear", anonymous=True)
@@ -28,4 +32,3 @@ else:
 ab.wait_for_server()
 ab.clear_alarm(parameters=params)
 rospy.loginfo("Alarm cleared!")
-

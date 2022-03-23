@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from ros_alarms import HandlerBase
 
@@ -9,8 +9,7 @@ from ros_alarms import Alarm
 import inspect
 
 
-class AlarmServer(object):
-
+class AlarmServer:
     def __init__(self):
         # Maps alarm name to Alarm objects
         self.alarms = {}
@@ -22,7 +21,9 @@ class AlarmServer(object):
         msg = "Expecting at most the following alarms: {}"
         rospy.loginfo(msg.format(rospy.get_param("/known_alarms", [])))
 
-        self._alarm_pub = rospy.Publisher("/alarm/updates", AlarmMsg, latch=True, queue_size=100)
+        self._alarm_pub = rospy.Publisher(
+            "/alarm/updates", AlarmMsg, latch=True, queue_size=100
+        )
 
         self._create_meta_alarms()
         self._create_alarm_handlers()
@@ -33,9 +34,9 @@ class AlarmServer(object):
         rospy.Service("/alarm/get", AlarmGet, self._on_get_alarm)
 
     def set_alarm(self, alarm):
-        ''' Sets or updates the alarm
+        """Sets or updates the alarm
         Updating the alarm triggers all of the alarms callbacks
-        '''
+        """
         if alarm.alarm_name in self.handlers:
             res = self.handlers[alarm.alarm_name].on_set(alarm)
             if res is False:
@@ -46,7 +47,7 @@ class AlarmServer(object):
         else:
             self.alarms[alarm.alarm_name] = Alarm.from_msg(alarm)
 
-        if isinstance(alarm,Alarm):
+        if isinstance(alarm, Alarm):
             alarm = alarm.as_msg()
 
         self._alarm_pub.publish(alarm)
@@ -57,25 +58,29 @@ class AlarmServer(object):
         return True
 
     def _on_get_alarm(self, srv):
-        ''' Either returns the alarm request if it exists or a blank alarm '''
+        """Either returns the alarm request if it exists or a blank alarm"""
         rospy.logdebug("Got request for alarm: {}".format(srv.alarm_name))
-        return self.alarms.get(srv.alarm_name, Alarm.blank(srv.alarm_name)).as_srv_resp()
+        return self.alarms.get(
+            srv.alarm_name, Alarm.blank(srv.alarm_name)
+        ).as_srv_resp()
 
     def make_tagged_alarm(self, name):
-        '''
+        """
         Makes a blank alarm with the node_name of the alarm_server so that users know it is the
         initial state
-        '''
+        """
         alarm = Alarm.blank(name)
-        alarm.node_name = 'alarm_server'
+        alarm.node_name = "alarm_server"
         return alarm
 
     def _handle_meta_alarm(self, meta_alarm, sub_alarms):
-        '''
+        """
         Calls the meta_predicate callback for an alarm handler when one of its metal alarms has changed.
         Then, updates the status of the parent alarm, if nessesary.
-        '''
-        alarms = {name: alarm for name, alarm in self.alarms.items() if name in sub_alarms}
+        """
+        alarms = {
+            name: alarm for name, alarm in self.alarms.items() if name in sub_alarms
+        }
         meta = self.alarms[meta_alarm]
 
         # Check the predicate, this should return either an alarm object or a boolean for if should be raised
@@ -93,20 +98,24 @@ class AlarmServer(object):
             alarm = meta.as_msg()
             alarm.raised = bool(raised_status)
             if alarm.raised:  # If it is raised, set problem description
-                alarm.problem_description = 'Raised by meta alarm'
+                alarm.problem_description = "Raised by meta alarm"
         else:
-            rospy.logwarn('Meta alarm callback for {} failed to return an Alarm or boolean'.format(meta_alarm))
+            rospy.logwarn(
+                "Meta alarm callback for {} failed to return an Alarm or boolean".format(
+                    meta_alarm
+                )
+            )
             return
         self.set_alarm(alarm)
 
     def _create_alarm_handlers(self):
-        '''
+        """
         Alarm handlers are classes imported by the alarm server and run code upon a change of state
         of their respective alarms.
 
         Handlers should be in a python module (directory with an __init__.py) and in the python path.
         They will be loaded from the module specified with the ~handler_module param to the alarm server.
-        '''
+        """
 
         # If the param exists, load it here
         handler_module = rospy.get_param("~handler_module", None)
@@ -118,9 +127,14 @@ class AlarmServer(object):
 
         # Import the module where the handlers are stored
         alarm_handlers = __import__(handler_module, fromlist=[""])
-        for handler in [cls for name, cls in inspect.getmembers(alarm_handlers)
-                        if inspect.isclass(cls) and issubclass(cls, HandlerBase) and
-                        hasattr(cls, "alarm_name") and name is not "HandlerBase"]:
+        for handler in [
+            cls
+            for name, cls in inspect.getmembers(alarm_handlers)
+            if inspect.isclass(cls)
+            and issubclass(cls, HandlerBase)
+            and hasattr(cls, "alarm_name")
+            and name is not "HandlerBase"
+        ]:
 
             # Have to instantiate so the class exists exists
             h = handler()
@@ -128,12 +142,16 @@ class AlarmServer(object):
             alarm_name = handler.alarm_name
 
             # Set initial state if necessary (could have already been added while creating metas)
-            if hasattr(h, 'initial_alarm'):
+            if hasattr(h, "initial_alarm"):
                 if alarm_name in self.alarms:
                     self.alarms[alarm_name].update(h.initial_alarm)
                 else:
-                    self.alarms[alarm_name] = h.initial_alarm  # Update even if already added to server
-            elif alarm_name not in self.alarms:  # Add default initial if not there already
+                    self.alarms[
+                        alarm_name
+                    ] = h.initial_alarm  # Update even if already added to server
+            elif (
+                alarm_name not in self.alarms
+            ):  # Add default initial if not there already
                 self.alarms[alarm_name] = self.make_tagged_alarm(alarm_name)
             else:
                 pass
@@ -147,7 +165,7 @@ class AlarmServer(object):
             rospy.loginfo("Loaded handler: {}".format(h.alarm_name))
 
     def _create_meta_alarms(self, namespace="meta_alarms/"):
-        ''' Adds meta alarms to the alarm server
+        """Adds meta alarms to the alarm server
         Meta alarms are special in that they are not directly raised or cleared but are instead triggered
         by a change of state of their child alarms.
 
@@ -156,7 +174,7 @@ class AlarmServer(object):
 
         Users can also provide more complex triggering mechanisms by providing an alarm handler class with
         a 'meta_predicate' method.
-        '''
+        """
 
         meta_alarms_dict = rospy.get_param(namespace, {})
         for meta, alarms in meta_alarms_dict.iteritems():
@@ -165,10 +183,10 @@ class AlarmServer(object):
                 self.alarms[meta] = self.make_tagged_alarm(meta)
 
             def default(meta, alarms):
-                '''
+                """
                 If no predicate for a meta-alarm is provided, then the meta-alarm will be raised
                 if any of the child alarms are raised
-                '''
+                """
                 return any(alarms.items())
 
             self.meta_alarms[meta] = default
