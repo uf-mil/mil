@@ -1,0 +1,14 @@
+# Version
+version: 2
+
+# Build setup
+build:
+  os: ubuntu-20.04
+  tools:
+    python: "3.8"
+  apt_packages:
+    - ros-noetic-desktop-full
+
+# The great sphinx B)
+sphinx:
+  configuration: conf.py

@@ -24,6 +24,10 @@ from sphinx.ext import graphviz
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.append(os.path.abspath('docs/extensions'))
 
+# MIL Paths
+sys.path.append(os.path.abspath('mil_common/utils/mil_tools')) # mil_tools pkg
+sys.path.append(os.path.abspath('NaviGator/utils/remote_control/navigator_keyboard_control')) # navigator_keyboard_control pkg
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
