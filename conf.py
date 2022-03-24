@@ -28,6 +28,7 @@ sys.path.append(os.path.abspath('docs/extensions'))
 # MIL Paths
 sys.path.append(os.path.abspath('mil_common/utils/mil_tools')) # mil_tools pkg
 sys.path.append(os.path.abspath('NaviGator/utils/remote_control/navigator_keyboard_control')) # navigator_keyboard_control pkg
+sys.path.append(os.path.abspath('mil_common/txros/txros')) # txros pkg
 
 # -- General configuration ------------------------------------------------
 
@@ -60,6 +61,8 @@ read_the_docs_build = os.environ.get('READTHEDOCS') == "True"
 if read_the_docs_build:
     # Source the ROS file on RTD
     subprocess.call('source /opt/ros/noetic/setup.bash', shell = True)
+
+autodoc_mock_imports = ["rospy", "actionlib", "actionlib_msgs"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['docs/_templates']
