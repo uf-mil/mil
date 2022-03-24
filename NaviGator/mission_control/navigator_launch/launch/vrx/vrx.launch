@@ -4,16 +4,23 @@
 -->
 <launch>
     <arg name="run_task" default="False" />
+    <arg name="use_mil_world" default="False"/>
     <arg name="world" default="example_course" />
     <arg name="extra_gazebo_args" default=""/>
 
     <include file="$(find navigator_launch)/launch/vrx/vrx_master.launch">
         <arg name="run_task" value="$(arg run_task)"/>
     </include>
-    <include file="$(find vrx_gazebo)/launch/vrx.launch">
+    <include if="$(eval use_mil_world == False)" file="$(find vrx_gazebo)/launch/vrx.launch">
       <arg name="gui" value="false"/>
       <arg name="urdf" value="$(find navigator_gazebo)/urdf/navigator_vrx.urdf"/>
       <arg name="world" value="$(find vrx_gazebo)/worlds/$(arg world).world" />
+      <arg name="extra_gazebo_args" default="--verbose"/>
+    </include>
+    <include if="$(eval use_mil_world == True)" file="$(find vrx_gazebo)/launch/vrx.launch">
+      <arg name="gui" value="false"/>
+      <arg name="urdf" value="$(find navigator_gazebo)/urdf/navigator_vrx.urdf"/>
+      <arg name="world" value="$(find navigator_gazebo)/worlds/$(arg world).world" />
       <arg name="extra_gazebo_args" default="--verbose"/>
     </include>
 
