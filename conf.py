@@ -62,7 +62,25 @@ if read_the_docs_build:
     # Source the ROS file on RTD
     subprocess.call('source /opt/ros/noetic/setup.bash', shell = True)
 
-autodoc_mock_imports = ["rospy", "actionlib", "actionlib_msgs"]
+autodoc_mock_imports = [
+        "rospy", 
+        "actionlib", 
+        "actionlib_msgs", 
+        "rostest", 
+        "cv_bridge",
+        "sensor_msgs",
+        "message_filters",
+        "image_geometry",
+        "genpy",
+        "tf",
+        "geometry_msgs",
+        "std_msgs",
+        "nav_msgs",
+        "mil_msgs",
+        "visualization_msgs",
+        "rosbag",
+        "std_srvs"
+        ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['docs/_templates']
