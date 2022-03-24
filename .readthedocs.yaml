@@ -10,6 +10,12 @@ build:
     - curl
     - ros-desktop-full
 
+# big ol' python!
+python:
+  system_packages: true
+  install:
+    - requirements: requirements-rtd.txt
+
 # The great sphinx B)
 sphinx:
   configuration: conf.py
