@@ -20,7 +20,9 @@ jobs:
     
     # Environment variables
     env:
+      ROS_CI_DESKTOP: "`lsb_release -cs`"  # e.g. [trusty|xenial|...]
       ROS_DISTRO: noetic
+      DEBIAN_FRONTEND: noninteractive
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
