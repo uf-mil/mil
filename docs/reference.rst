@@ -40,6 +40,54 @@ GoalStatus
         A constant of the message type used to indicate a goal which succeeded. 
         Truly set to 2.
 
+Alarms
+^^^^^^
+
+Alarm
+~~~~~
+
+.. attributetable:: ros_alarms.msg._Alarm.Alarm
+
+.. class:: ros_alarms.msg._Alarm.Alarm
+
+    A message representing a ROS Alarm.
+
+    .. attribute:: alarm_name
+
+        The name of the alarm.
+
+        :type: str
+
+    .. attribute:: raised
+
+        Whether the alarm was raised.
+
+        :type: bool
+
+    .. attribute:: node_name
+
+        The node name associated with the alarm.
+
+        :type: str
+
+    .. attribute:: problem_description
+
+        The problem description associated with the alarm.
+
+        :type: str
+
+    .. attribute:: parameters
+
+        The JSON parameters associated with the alarm.
+
+        :type: str
+
+    .. attribute:: severity
+
+        The severity of the alarm.
+
+        :type: int
+
 Geometry Messages
 ^^^^^^^^^^^^^^^^^
 
