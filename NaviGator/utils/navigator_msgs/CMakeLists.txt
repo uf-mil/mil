@@ -27,6 +27,7 @@ add_message_files(
   Host.msg
   Hosts.msg
   ColoramaDebug.msg
+  ScaleObject.msg
   ScanTheCode.msg
 )
 
@@ -34,6 +35,7 @@ add_service_files(
   DIRECTORY srv
   FILES
   AcousticBeacon.srv
+  AverageScale.srv
   ChooseAnimal.srv
   MoveToWaypoint.srv
   ShooterManual.srv
