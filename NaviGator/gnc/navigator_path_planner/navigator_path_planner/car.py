@@ -4,7 +4,7 @@ Constructs a planner that is good for being kinda like a car-boat thing!
 """
 from __future__ import division
 import numpy as np
-from params import (
+from .params import (
     D_neg,
     D_pos,
     B,

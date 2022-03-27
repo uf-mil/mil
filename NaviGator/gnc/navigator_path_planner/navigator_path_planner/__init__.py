@@ -1,4 +1,4 @@
-import car
-import boat
-import escape
-import params
+from . import car
+from . import boat
+from . import escape
+from . import params
