@@ -14,6 +14,7 @@
 
 import sys
 import os
+import os.path
 import recommonmark
 from recommonmark.transform import AutoStructify
 from sphinx.ext import graphviz
@@ -40,7 +41,8 @@ extensions = [
     'recommonmark',
     'sphinx.ext.graphviz',
     'attributetable',
-    'builder'
+    'builder',
+    'breathe'
 ]
 
 intersphinx_mapping = {
@@ -49,6 +51,12 @@ intersphinx_mapping = {
   'req': ('https://docs.python-requests.org/en/latest/', None),
   'numpy': ('https://numpy.org/doc/stable/', None)
 }
+
+breathe_projects = {'mil': os.path.expanduser('~/.mil/doxygen/xml')}
+
+breathe_default_project = 'mil'
+breathe_implementation_filename_extensions = ['.c', '.cc', '.cpp']
+breathe_default_members = ('members', 'undoc-members')
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['docs/_templates']
