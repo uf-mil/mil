@@ -14,6 +14,7 @@
 
 import sys
 import os
+import os.path
 import recommonmark
 from recommonmark.transform import AutoStructify
 from sphinx.ext import graphviz
@@ -51,7 +52,7 @@ intersphinx_mapping = {
   'numpy': ('https://numpy.org/doc/stable/', None)
 }
 
-breathe_projects = {'mil': 'docs/xml'}
+breathe_projects = {'mil': os.path.expanduser('~/.mil/doxygen/xml')}
 
 breathe_default_project = 'mil'
 breathe_implementation_filename_extensions = ['.c', '.cc', '.cpp']
