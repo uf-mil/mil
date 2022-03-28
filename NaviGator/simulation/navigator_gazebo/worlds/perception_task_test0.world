@@ -178,7 +178,7 @@
 
       <fog>
         <type> linear</type>
-        <color> 0.8 0.8 0.7 1 </color>
+        <color> 0.8 0.8 0.8 1 </color>
         <density> 0.04 </density>
       </fog>
       <ambient>

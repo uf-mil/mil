@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
-  <!-- COORDINATE: {'constant': 0, 'environment': 1} -->
+  <!-- COORDINATE: {'constant': 0, 'environment': 0} -->
   <world name="robotx_example_course">
     <!-- Estimated latitude/longitude of sydneyregatta
 	 from satellite imagery -->
@@ -81,11 +81,11 @@
         <cell_count>50 50</cell_count>
         <wave>
           <model>PMS</model>
-          <period>8.0</period>
+          <period>5.0</period>
           <number>3</number>
           <scale>2.5</scale>
-          <gain>0.35</gain>
-          <direction>0.5 -1.0</direction>
+          <gain>0.1</gain>
+          <direction>1.0 0.5</direction>
           <angle>0.4</angle>
           <tau>2.0</tau>
           <amplitude>0.0</amplitude>
@@ -102,11 +102,11 @@
             <reflectOpacity>0.2</reflectOpacity>
             <wave>
               <model>PMS</model>
-              <period>8.0</period>
+              <period>5.0</period>
               <number>3</number>
               <scale>2.5</scale>
-              <gain>0.35</gain>
-              <direction>0.5 -1.0</direction>
+              <gain>0.1</gain>
+              <direction>1.0 0.5</direction>
               <angle>0.4</angle>
               <tau>2.0</tau>
               <amplitude>0.0</amplitude>
@@ -153,13 +153,13 @@
       <wind_obj>
         <name>wamv</name>
         <link_name>wamv/base_link</link_name>
-        <coeff_vector> .5 .5 .33</coeff_vector>
+        <coeff_vector>.5 .5 .33</coeff_vector>
       </wind_obj>
       <!-- Wind -->
       <wind_direction>240</wind_direction>
       <!-- in degrees -->
       <wind_mean_velocity>0.0</wind_mean_velocity>
-      <var_wind_gain_constants>0.0</var_wind_gain_constants>
+      <var_wind_gain_constants>0</var_wind_gain_constants>
       <var_wind_time_constants>2</var_wind_time_constants>
       <random_seed>10</random_seed>
       <!-- set to zero/empty to randomize -->
@@ -175,29 +175,28 @@
       </sky>
       <grid>0</grid>
       <origin_visual>0</origin_visual>
-      <ambient>  
-0.92 0.92 0.92 1    
+
+      <fog>
+      <type> linear </type>
+      <start> 0 </start>
+      <end> 10 </end>
+      <color> 0.8 0.7 0.8 1 </color>
+      <density> 0.1 </density>
+      </fog>
+      <ambient>
+        
+0.96 0.96 0.96 1    
       </ambient>
     </scene>
     <include>
-      <name>orange_round</name>
+      <name>red_0</name>
       <pose>-200 100 1 0 0 0</pose>
-      <uri>model://mb_round_buoy_orange</uri>
+      <uri>model://mb_marker_buoy_red</uri>
     </include>
     <include>
       <name>green_0</name>
       <pose>-200 102 1 0 0 0</pose>
       <uri>model://mb_marker_buoy_green</uri>
-    </include>
-    <include>
-      <name>black_round_0</name>
-      <pose>-200 106 1 0 0 0</pose>
-      <uri>model://mb_round_buoy_black</uri>
-    </include>
-    <include>
-      <name>black_round_1</name>
-      <pose>-200 112 1 0 0 0</pose>
-      <uri>model://mb_round_buoy_black</uri>
     </include>
     <include>
       <name>white_0</name>
@@ -224,51 +223,21 @@
       <object_sequence>
         <object>
           <time>5.0</time>
-          <type>mb_round_buoy_orange</type>
-          <name>orange_round</name>
+          <type>mb_marker_buoy_red</type>
+          <name>red_0</name>
           <pose>7.8 2.1 0.7 0 0 0</pose>
         </object>
         <object>
-          <time>5.0</time>
-          <type>mb_marker_buoy_green</type>
-          <name>green_0</name>
-          <pose>7.8 -2.1 0.7 0 0 0</pose>
-        </object>
-        <object>
           <time>15.0</time>
           <type>mb_marker_buoy_green</type>
           <name>green_0</name>
-          <pose>8.3 1.5 0.7 0 0 0</pose>
-        </object>
-        <object>
-          <time>15.0</time>
-          <type>mb_round_buoy_orange</type>
-          <name>orange_round</name>
-          <pose>6.0 -1.0 0.7 0 0 0</pose>
+          <pose>8.3 0.1 0.7 0 0 0</pose>
         </object>
         <object>
           <time>25.0</time>
-          <type>mb_round_buoy_black</type>
-          <name>black_round_0</name>
-          <pose>4.9 1.32 0.2 0 0 0</pose>
-        </object>
-        <object>
-          <time>25.0</time>
-          <type>mb_round_buoy_black</type>
-          <name>black_round_1</name>
-          <pose>4.7 0.7 0.2 0 0 0</pose>
-        </object>
-        <object>
-          <time>35.0</time>
           <type>mb_marker_buoy_white</type>
           <name>white_0</name>
-          <pose>4.1 -2.2 0.2 0 0 0</pose>
-        </object>
-        <object>
-          <time>35.0</time>
-          <type>mb_round_buoy_black</type>
-          <name>black_round_0</name>
-          <pose>6.1 0.2 0.2 0 0 0</pose>
+          <pose>4.9 -2.32 0.2 0 0 0</pose>
         </object>
       </object_sequence>
     </plugin>
