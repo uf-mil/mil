@@ -16,29 +16,71 @@
 
 namespace ros_alarms
 {
+/**
+ * A callback associated with the Alarm Listener class. Helps to manage callbacks
+ * by regulating their execution based on the current severity level and desired calling
+ * behavior.
+ */
 template <typename callable_t = std::function<void(AlarmProxy)>>
 struct ListenerCb
 {
+  /**
+   * An enumerator representing when to run the callback.
+   */
   enum class CallScenario
   {
+    /**
+     * Run the callback only if the alarm has been raised.
+     */
     raise,
+
+    /**
+     * Run the callback only if the alarm has been cleared.
+     */
     clear,
+
+    /**
+     * Run the callback under any condition.
+     */
     always
   };
 
+  /**
+   * The specific callback function.
+   */
   callable_t cb_func;   // object needs to have a call operator
+
+  /**
+   * The highest severity under which the callback can be called.
+   */
   int severity_hi = 5;  // highest priority
+
+  /**
+   * The lowest severity under which the callback can be called.
+   */
   int severity_lo = 0;  // lowest priority
+
+  /**
+   * The scenario under which the callback is executed.
+   */
   CallScenario call_scenario = CallScenario::always;
 
-  // Compares alarm severity against the action_required range for this callback
+  /**
+   * Checks the severity of the alarm to determine whether the callback should
+   * be executed. The severity should be between the lowest and highest severity
+   * levels.
+   *
+   * @return Whether to execute the callback based on severity.
+   */
   bool severity_check(int severity)
   {
     return severity <= severity_hi && severity >= severity_lo;
   }
 
-  // Checks msg to see if its raised status and severity require calling
-  // the associated callbacks and calls them if necessary
+  /**
+   * Overloads the ``()`` operator to execute the callback function only if the
+   * specified conditions are met.
+   */
   void operator()(ros_alarms::Alarm msg)
   {
     // Only call if alarm status matches the call_scenario
@@ -56,63 +98,132 @@ struct ListenerCb
   }
 };
 
+/**
+ * Listens to a specific ROS alarm using AlarmProxy.
+ */
 template <typename callable_t = std::function<void(AlarmProxy)>>
 class AlarmListener
 {
   using CallScenario = typename ListenerCb<callable_t>::CallScenario;
 
 public:
+  /**
+   * Default constructor.
+   *
+   * @param nh The node handle.
+   * @param alarm_name The name of the alarm connected to the listener.
+   */
   AlarmListener(ros::NodeHandle &nh, std::string alarm_name);
 
-  // Return status of listener
+  /**
+   * Return the status of the listener.
+   *
+   * @return Whether the listener is operating OK.
+   */
   bool ok() const
   {
     return __ok;
   }
+
+  /**
+   * Get the number of publishers connected to the ROS node.
+   *
+   * @return The number of connections.
+   */
   int getNumConnections()
   {
     return __update_subscriber.getNumPublishers();
   }
 
   // Returns true if a connection was detected before timing out, else false
+  /**
+   * Waits for a connection to be established, and returns true if a connection
+   * was established.
+   *
+   * @param timeout The amount of time (in seconds) before the function exits and
+   * returns false. Default time is -1 seconds, in which the function will never
+   * return false.
+   *
+   * @return Whether a connection was established.
+   */
   bool waitForConnection(ros::Duration timeout = { -1.0 });
 
-  // Start and stop spinner (start processing subscriber callbacks)
+  /**
+   * Starts the async spinner.
+   */
   void start()
   {
     __async_spinner.start();
   }
+
+  /**
+   * Stops the async spinner.
+   */
   void stop()
   {
     __async_spinner.stop();
   }
 
   // Functions that return the status of the alarm at time of last update
+  
+  /**
+   * Returns a cached value of whether the alarm has been raised. Avoids querying
+   * the server by using the cache.
+   *
+   * @return Whether the alarm has been raised, according to the cache.
+   */
   bool isRaised() const
   {
     return __last_alarm.raised;
   }
+  
+  /**
+   * Returns a cached value of whether the alarm is cleared. Does not query the alarm
+   * server.
+   *
+   * @return Whether the alarm is cleared, according to the cache.
+   */
   bool isCleared() const
   {
     return !isRaised();
   }
 
   // Functions that query the server before returning the latest status of the alarm
+  /**
+   * Queries the alarm server to see if an alarm with this name has been raised.
+   *
+   * @return Whether the found alarm was raised.
+   */
   bool queryRaised()
   {
     getAlarm();
     return __last_alarm.raised;
   }
+
+  /**
+   * Queries the alarm server to see if this alarm has been cleared.
+   *
+   * @return Whether this alarm was cleared, according to the alarm server.
+   */
   bool queryCleared()
   {
     getAlarm();
     return !isRaised();
   }
 
-  // Queries server and parses response into an AlarmProxy
+  /**
+   * Queries the alarm server for an alarm of the given name.
+   *
+   * @return The found alarm with the given name.
+   */
   AlarmProxy getAlarm();
 
-  // Returns AlarmProxy for last alarm of this name published to '/alarm/updates'
+  /**
+   * Returns the most recently cached alarm returned from the alarm server. Avoids
+   * a query by using a cache.
+   *
+   * @return The most recently cached alarm.
+   */
   AlarmProxy getCachedAlarm()
   {
     return __last_alarm;
@@ -176,7 +287,12 @@ public:
     return ros::Time::now() - __last_update;
   }
 
-  // Waits for an update to the alarm via '/alarm/udates' with timeout
+  /**
+   * Returns true if a new update occurs before the function times out. If the function
+   * times out, returns false.
+   *
+   * @return Whether the update occurred.
+   */
   bool waitForUpdate(ros::Duration timeout = ros::Duration(-1.0)) const;
 
   /**

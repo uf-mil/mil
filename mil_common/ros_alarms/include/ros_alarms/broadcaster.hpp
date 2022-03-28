@@ -10,6 +10,9 @@
 
 namespace ros_alarms
 {
+/**
+ * Facilitates operations on an alarm, such as raising or clearing an alarm.
+ */
 class AlarmBroadcaster
 {
 public:

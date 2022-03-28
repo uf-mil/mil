@@ -12,6 +12,10 @@
 
 namespace ros_alarms
 {
+/**
+ * Representation of a ROS alarm. Used by several other classes to faciliate proper
+ * interactions between components.
+ */
 struct AlarmProxy
 {
   /**
