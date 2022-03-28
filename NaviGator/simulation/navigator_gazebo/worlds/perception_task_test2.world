@@ -184,8 +184,7 @@
       <density> 0.1 </density>
       </fog>
       <ambient>
-        
-0.96 0.96 0.96 1    
+0.96 0.26 0.96 1    
       </ambient>
     </scene>
     <include>
@@ -225,13 +224,13 @@
           <time>5.0</time>
           <type>mb_marker_buoy_red</type>
           <name>red_0</name>
-          <pose>7.8 2.1 0.7 0 0 0</pose>
+          <pose>7.8 2.3 0.7 0 0 0</pose>
         </object>
         <object>
           <time>15.0</time>
           <type>mb_marker_buoy_green</type>
           <name>green_0</name>
-          <pose>8.3 0.1 0.7 0 0 0</pose>
+          <pose>8.3 0.3 0.7 0 0 0</pose>
         </object>
         <object>
           <time>25.0</time>
