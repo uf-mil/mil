@@ -118,28 +118,59 @@ public:
     return __last_alarm;
   }
 
-  // Registers a callback to be invoked on both raise and clear
+  /**
+   * Registers a callback to be invoked on both raise and clear.
+   *
+   * @param cb The callback function.
+   */
   void addCb(callable_t cb);
 
-  // Registers a raise callback to be called for any severity level
+  /**
+   * Registers a callback to be invoked for any severity level.
+   *
+   * @param cb The callback function.
+   */
   void addRaiseCb(callable_t cb);
 
-  // Registers a raise callback to be called for a single severity level
+  /**
+   * Registers a callback to be invoked for a single severity level.
+   *
+   * @param cb The callback function.
+   * @param severity The severity level to execute the callback for.
+   */
   void addRaiseCb(callable_t cb, int severity);
 
-  // Registers a callback to be invoked at alarm raise for a range of severities
+  /**
+   * Registers a callback to be invoked for a range of severity levels.
+   *
+   * @param cb The callback function.
+   * @param severity_lo The lowest severity level to execute the callback for.
+   * @param severity_hi The highest severity level to execute the callback for.
+   */
   void addRaiseCb(callable_t cb, int severity_lo, int severity_hi);
 
-  // Registers a callback to be invoked when alarm is cleared
+  /**
+   * Registers a callback to be invoked when an alarm is cleared.
+   *
+   * @param cb The callback function.
+   */
   void addClearCb(callable_t cb);
 
-  // Returns the last time the alarm was updated
+  /**
+   * Returns the last time the alarm was updated.
+   *
+   * @return The most recent update time.
+   */
   ros::Time getLastUpdateTime() const
   {
     return __last_update;
   }
 
-  // Returns the time since last update
+  /**
+   * Returns the amount of time since the alarm was updated.
+   *
+   * @return The length of time since the alarm was updated.
+   */
   ros::Duration getTimeSinceUpdate() const
   {
     return ros::Time::now() - __last_update;
@@ -148,6 +179,9 @@ public:
   // Waits for an update to the alarm via '/alarm/udates' with timeout
   bool waitForUpdate(ros::Duration timeout = ros::Duration(-1.0)) const;
 
+  /**
+   * Clears all callback associated with the listener.
+   */
   void clearCallbacks()
   {
     __callbacks.clear();
@@ -214,6 +248,13 @@ catch (std::exception &e)
   ROS_ERROR("%s", msg.str().c_str());
 }
 
+/**
+ * Waits for a connection to connect to the subscriber as a publisher.
+ *
+ * @param timeout The amount of time before the function returns ``false``.
+ *
+ * @return Whether a connection has been established.
+ */
 template <typename callable_t>
 bool AlarmListener<callable_t>::waitForConnection(ros::Duration timeout)
 {
