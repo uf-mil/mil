@@ -5,5 +5,5 @@
     </node>
     <rosparam param="/pcodar" file="$(find navigator_launch)/config/pcodar_vrx.yaml" />
 
-    <node name="pcodar_average_scales" pkg="navigator_gazebo" type="pcodar_average_scales.py" />
+    <node name="pcodar_average_scales" pkg="navigator_gazebo" type="two_closest_cones.py" />
 </launch>

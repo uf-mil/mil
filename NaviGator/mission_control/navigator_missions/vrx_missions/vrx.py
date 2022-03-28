@@ -17,7 +17,7 @@ from mil_tools import rosmsg_to_numpy, numpy_to_point
 from sensor_msgs.msg import Image, CameraInfo
 from txros import action, util, tf, NodeHandle
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
-from navigator_msgs.srv import AverageScale
+from navigator_msgs.srv import TwoClosestCones
 
 ___author___ = "Kevin Allen"
 
@@ -50,7 +50,7 @@ class Vrx(Navigator):
         Vrx.darknet_objects = Vrx.nh.subscribe("/darknet_ros/bounding_boxes", BoundingBoxes)
         Vrx.tf_listener = tf.TransformListener(Vrx.nh)
         Vrx.database_response = Vrx.nh.get_service_client('/database/requests', ObjectDBQuery)
-        Vrx.pcodar_scales = Vrx.nh.get_service_client('/pcodar_average_scale_service', AverageScale)
+        Vrx.get_two_closest_cones = Vrx.nh.get_service_client('/get_two_closest_cones', TwoClosestCones)
         #Vrx.scan_dock_placard_symbol = Vrx.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
 
         Vrx.front_left_camera_info_sub = None 
