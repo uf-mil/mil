@@ -764,7 +764,7 @@ AlarmGet
 
         The response data about the requested alarm.
 
-        :type: Alarm
+        :type: ~ros_alarms.msg._Alarm.Alarm
 
 AlarmSet
 ^^^^^^^^
@@ -779,7 +779,7 @@ AlarmSet
 
         The alarm to set.
 
-        :type: Alarm
+        :type: ~ros_alarms.msg._Alarm.Alarm
 
 .. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetResponse
 
@@ -1060,29 +1060,45 @@ Remote Control
 Alarms
 ------
 
-AlarmProxy
-^^^^^^^^^^
-.. doxygenstruct:: ros_alarms::AlarmProxy
+Python
+^^^^^^
 
-AlarmBroadcaster
-^^^^^^^^^^^^^^^^
-.. doxygenclass:: ros_alarms::AlarmBroadcaster
+Alarm
+~~~~~
+.. currentmodule:: ros_alarms
 
-AlarmListener
-^^^^^^^^^^^^^
-.. doxygenclass:: ros_alarms::AlarmListener
+.. attributetable:: ros_alarms.Alarm
 
-ListenerCb
-^^^^^^^^^^
-.. doxygenstruct:: ros_alarms::ListenerCb
-
-HeartbeatMonitor
-^^^^^^^^^^^^^^^^
-.. doxygenclass:: ros_alarms::HeartbeatMonitor
+.. autoclass:: ros_alarms.Alarm
+    :members:
 
 AlarmServer
-^^^^^^^^^^^
+~~~~~~~~~~~
 .. currentmodule:: mil_common.ros_alarms
 
 .. autoclass:: ros_alarms.nodes.alarm_server.AlarmServer
     :members:
+   
+C++
+^^^
+
+AlarmProxy
+~~~~~~~~~~
+.. doxygenstruct:: ros_alarms::AlarmProxy
+
+AlarmBroadcaster
+~~~~~~~~~~~~~~~~
+.. doxygenclass:: ros_alarms::AlarmBroadcaster
+
+AlarmListener
+~~~~~~~~~~~~~
+.. doxygenclass:: ros_alarms::AlarmListener
+
+ListenerCb
+~~~~~~~~~~
+.. doxygenstruct:: ros_alarms::ListenerCb
+
+HeartbeatMonitor
+~~~~~~~~~~~~~~~~
+.. doxygenclass:: ros_alarms::HeartbeatMonitor
+

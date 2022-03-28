@@ -11,9 +11,10 @@ from ros_alarms.srv import (
 
 import json
 import traceback
+from typing import Callable, Tuple
 
 
-def parse_json_str(json_str):
+def parse_json_str(json_str: str) -> dict:
     parameters = ""
     try:
         parameters = "" if json_str is "" else json.loads(json_str)
@@ -73,15 +74,53 @@ def wait_for_service(
         service.wait_for_service(timeout)
 
 
-class Alarm(object):
+class Alarm:
+    """
+    Pythonic representation of a ROS alarm.
+
+    Attributes:
+        alarm_name (str): The name of this specific alarm.
+        raised (bool): Whether the alarm ahs been raised.
+        node_name (str): The name of the node attached to the alarm. Defaults to
+            ``unknown``.
+        problem_description (str): A description of the problem related to the alarm.
+            Defaults to an empty string.
+        parameters (dict): The JSON parameters associated with the alarm. Defaults
+            to an empty dict.
+        severity (int): The severity associated with a raised alarm. Defaults to ``0``.
+        stamp (rospy.Time): The time of the most recent update. Defaults to now if
+            ROS has been initialized, otherwise zero.
+        raised_cbs (List[Tuple[int, Callable]): A list of callbacks to execute
+            when the alarm is raised. Each callback should be associated with
+            the severity required to execute the callback through a tuple.
+        cleared_cbs (List[Tuple[int, Callable]): A list of callbacks to execute
+            when the alarm is cleared. Each callback should be associated with
+            the severity required to execute the callback through a tuple.
+    """
     @classmethod
-    def blank(cls, name):
-        """Generate a general blank alarm that is cleared with a low severity"""
+    def blank(cls, name: str) -> 'Alarm':
+        """
+        Generate a general blank alarm that is cleared with a low severity.
+
+        Args:
+            name (str): The name for the blank alarm.
+
+        Returns:
+            ros_alarms.Alarm: The constructed alarm.
+        """
         return cls(name, raised=False, severity=0)
 
     @classmethod
-    def from_msg(cls, msg):
-        """Generate an alarm object from an Alarm message"""
+    def from_msg(cls, msg: AlarmMsg) -> 'Alarm':
+        """
+        Generate an alarm object from an Alarm message.
+
+        Args:
+            msg (AlarmMsg): The message to generate the object from.
+
+        Returns:
+            Alarm: The constructed alarm.
+        """
         node_name = "unknown" if msg.node_name is "" else msg.node_name
         parameters = parse_json_str(msg.parameters)
 
@@ -96,12 +135,12 @@ class Alarm(object):
 
     def __init__(
         self,
-        alarm_name,
-        raised,
-        node_name="unknown",
-        problem_description="",
-        parameters={},
-        severity=0,
+        alarm_name: str,
+        raised: bool,
+        node_name: str = "unknown",
+        problem_description: str = "",
+        parameters: dict = {},
+        severity: int = 0,
     ):
         self.alarm_name = alarm_name
         self.raised = raised
@@ -136,17 +175,23 @@ class Alarm(object):
 
     def add_callback(
         self,
-        funct,
-        call_when_raised=True,
-        call_when_cleared=True,
-        severity_required=(0, 5),
+        funct: Callable,
+        call_when_raised: bool = True,
+        call_when_cleared: bool = True,
+        severity_required: Tuple[int, int] = (0, 5),
     ):
-        """Deals with adding handler function callbacks
-        The user can specify if the function should be run on a raise or clear
-        This will call the function when added if that condition is met.
+        """
+        Adds a callback function to the alarm.
 
-        Each callback can have a severity level associated with it such that different callbacks can
-            be triggered for different levels or ranges of severity.
+        Args:
+            funct (Callable): The callback to add.
+            call_when_raised (bool): Whether to call the callback when the alarm
+                is raised. Defaults to ``True``.
+            call_when_cleared (bool): Whether to call the callback when the alarm
+                is cleared. Defaults to ``True``.
+            severity_required (Tuple[int, int]): The severity required to run the
+                callback. The tuple represents the minimum and maximum severities
+                under which to execute the callback. Defaults to ``(0, 5)``.
         """
         if call_when_raised:
             self.raised_cbs.append((severity_required, funct))
@@ -174,9 +219,13 @@ class Alarm(object):
                         )
                     )
 
-    def update(self, srv):
-        """Updates this alarm with a new AlarmSet request.
-        Also will call any required callbacks.
+    def update(self, srv: 'Alarm'):
+        """
+        Updates this alarm with a new AlarmSet request. Also will call any 
+        required callbacks.
+
+        Args:
+            srv (ros_alarms.Alarm): The request to set the alarm.
         """
         self.stamp = rospy.Time.now()
 
@@ -210,8 +259,13 @@ class Alarm(object):
                     _make_callback_error_string(self.alarm_name, traceback.format_exc())
                 )
 
-    def as_msg(self):
-        """Get this alarm as an Alarm message"""
+    def as_msg(self) -> AlarmMsg:
+        """
+        Get this alarm as an Alarm message.
+
+        Returns:
+            AlarmMsg: The constructed message.
+        """
         alarm = AlarmMsg()
         alarm.alarm_name = self.alarm_name
         alarm.raised = self.raised
@@ -221,15 +275,20 @@ class Alarm(object):
         alarm.severity = self.severity
         return alarm
 
-    def as_srv_resp(self):
-        """Get this alarm as an AlarmGet response"""
+    def as_srv_resp(self) -> AlarmGetResponse:
+        """
+        Get this alarm as an AlarmGet response.
+
+        Returns:
+            AlarmGetResponse: The constructed service response.
+        """
         resp = AlarmGetResponse()
         resp.header.stamp = self.stamp
         resp.alarm = self.as_msg()
         return resp
 
 
-class AlarmBroadcaster(object):
+class AlarmBroadcaster:
     def __init__(self, name, node_name=None, nowarn=False):
         self._alarm_name = name
         _check_for_valid_name(self._alarm_name, nowarn)
