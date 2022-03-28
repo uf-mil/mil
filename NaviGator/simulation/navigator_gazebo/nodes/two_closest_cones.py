@@ -29,12 +29,18 @@ class PcodarAverageScales():
         self.scale_y_count = []
         self.scale_z_avg = []
         self.scale_z_count = []
+        self.max_z = []
+        self.min_z = []
         self.pos = None
         self.ori = None
         self.odomSet = False
         self.scalesSet = False
         self.closest_two_dists = [None,None]
         self.closest_two_indicies = [None,None]
+        self.closest_two_buoys = [None,None]
+        self.buoys_passed = []
+        self.average_thres = 0.4
+        self.max_thres = 0.85
 
     def odometrySubscriber(self, msg):
         pose = msg.pose.pose
@@ -43,10 +49,18 @@ class PcodarAverageScales():
 
     def pcodarSubscriber(self, msg):
 
+        self.new_closest_two_indicies = [None,None]
+        self.new_closest_two_dists = [None,None]
+        self.new_closest_two_buoys = [None,None]
+
         if not self.odomSet:
             return
 
         self.scalesSet = True
+
+        #for some reason any new clusters are added to front of list
+        objects_list = msg.objects
+        objects_list = (msg.objects).reverse()
 
         for i,object in enumerate(msg.objects):
 
@@ -65,24 +79,37 @@ class PcodarAverageScales():
                 self.scale_y_count.append(0)
                 self.scale_z_avg.append(0)
                 self.scale_z_count.append(0)
+                self.max_z.append(0)
+                self.min_z.append(10)
 
             self.scale_x_count[i] += 1
             self.scale_y_count[i] += 1
             self.scale_z_count[i] += 1
 
-            '''
+            
             #select highest
-            if self.scale_x_avg[i] < scale_x:
-                self.scale_x_avg[i] = scale_x
-            if self.scale_y_avg[i] < scale_y:
-                self.scale_y_avg[i] = scale_y
-            if self.scale_z_avg[i] < scale_z:
-                self.scale_z_avg[i] = scale_z
-            '''
+            if self.max_z[i] < scale_z:
+                self.max_z[i] = scale_z
+
+            #select highest
+            if self.min_z[i] > scale_z:
+                self.min_z[i] = scale_z
 
             self.scale_x_avg[i] = (self.scale_x_avg[i]*(self.scale_x_count[i]-1) + scale_x) / (self.scale_x_count[i])
             self.scale_y_avg[i] = (self.scale_y_avg[i]*(self.scale_y_count[i]-1) + scale_y) / (self.scale_y_count[i])
             self.scale_z_avg[i] = (self.scale_z_avg[i]*(self.scale_z_count[i]-1) + scale_z) / (self.scale_z_count[i])
+
+
+            if self.max_z[i] > self.max_thres and self.scale_z_avg[i] > self.average_thres:
+                print(i, self.scale_z_avg[i], self.max_z[i], self.min_z[i],dist, "cone")
+            elif self.max_z[i] < self.max_thres and self.scale_z_avg[i] < self.average_thres:
+                print(i, self.scale_z_avg[i], self.max_z[i], self.min_z[i],dist, "ball")
+            else:
+                #big waves usually cause discrepancies
+                if self.scale_z_avg[i] > 0.6:
+                    print(i, self.scale_z_avg[i], self.max_z[i], self.min_z[i],dist, "cones")
+                else:
+                    print(i, self.scale_z_avg[i], self.max_z[i], self.min_z[i],dist, "balls")
 
             #check:
             # buoy is in front of boat
@@ -99,39 +126,62 @@ class PcodarAverageScales():
                 #print("\n")
                 continue
 
-            if (self.closest_two_dists[0] is None or dist < self.closest_two_dists[0]) and \
-                (self.closest_two_indicies[0] != i):
-                
-                temp = self.closest_two_indicies[0]
-                self.closest_two_dists[0] = dist
-                self.closest_two_indicies[0] = i
+            #print(i)
+            #print(dist)
 
-                self.closest_two_indicies[1] = temp
-                continue
-            
-            if (self.closest_two_dists[1] is None or dist < self.closest_two_dists[1]) and \
-                (self.closest_two_indicies[0] != i):
+            if (self.new_closest_two_dists[0] is None or dist < self.new_closest_two_dists[0]) and \
+                (self.new_closest_two_indicies[0] != i) and (i not in self.buoys_passed):
                 
-                self.closest_two_dists[1] = dist
-                self.closest_two_indicies[1] = i
+                temp_index = self.new_closest_two_indicies[0]
+                temp_buoy = self.new_closest_two_buoys[0]
+                temp_dist = self.new_closest_two_dists[0]
+
+
+                self.new_closest_two_dists[0] = dist
+                self.new_closest_two_buoys[0] = object.pose.position
+                self.new_closest_two_indicies[0] = i
+
+                self.new_closest_two_indicies[1] = temp_index
+                self.new_closest_two_buoys[1] = temp_buoy
+                self.new_closest_two_dists[1] = temp_dist
                 continue
             
+            if (self.new_closest_two_dists[1] is None or dist < self.new_closest_two_dists[1]) and \
+                (self.new_closest_two_indicies[0] != i) and (i not in self.buoys_passed):
+                
+                self.new_closest_two_dists[1] = dist
+                self.new_closest_two_buoys[1] = object.pose.position
+                self.new_closest_two_indicies[1] = i
+                continue
+        
+        self.closest_two_buoys = self.new_closest_two_buoys
+        self.closest_two_dists = self.new_closest_two_dists
+        self.closest_two_indicies = self.new_closest_two_indicies
+        print("\n")
 
     #If odom and range_bearing haven't published yet then return default values of 0
     def handler(self, req):
         #[x, y, z]
         cones = TwoClosestConesResponse()
-        
+
         if not(self.scalesSet and self.odomSet) or \
             self.closest_two_indicies[0] is None or \
             self.closest_two_indicies[1] is None:
+            
+            cones.no_more_buoys = True
             return cones
 
         print(self.closest_two_indicies)
         print(self.closest_two_dists)
+        print(self.closest_two_buoys)
         print("\n")
-        cones.object_index1 = self.closest_two_indicies[0]
-        cones.object_index2 = self.closest_two_indicies[1]
+
+        cones.no_more_buoys = False
+        cones.object1 = self.closest_two_buoys[0]
+        cones.object2 = self.closest_two_buoys[1]
+
+        self.buoys_passed.append(self.closest_two_indicies[0])
+        self.buoys_passed.append(self.closest_two_indicies[1])
         
         return cones
 
@@ -149,6 +199,7 @@ class PcodarAverageScales():
         if abs(theta - yaw) < math.pi/2 or abs(theta+(2*math.pi) - yaw) < math.pi/2:
             return True
         else:
+            #print(buoy_pos)
             return False
 
 if __name__ == '__main__':

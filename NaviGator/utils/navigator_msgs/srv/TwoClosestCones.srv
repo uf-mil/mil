@@ -1,3 +1,4 @@
 ---
-int32 object_index1
-int32 object_index2
+bool no_more_buoys
+geometry_msgs/Point object1
+geometry_msgs/Point object2

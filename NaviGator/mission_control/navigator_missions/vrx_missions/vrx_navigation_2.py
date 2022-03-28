@@ -68,19 +68,15 @@ class VrxNavigation2(Vrx):
     @txros.util.cancellableInlineCallbacks
     def go_through_next_two_buoys(self):
 
-        buoys = self.get_two_closest_cones(TwoClosestConesRequest())
+        buoys = yield self.get_two_closest_cones(TwoClosestConesRequest())
 
-        #get total list of objects from lidar
-        service_request = ObjectDBQueryRequest()
-        service_request.name = "all"
-        objects_msg = yield self.database_response(service_request)
-        objects = objects_msg.objects
+        self.task_done = buoys.no_more_buoys
 
-        self.next_buoy1 = objects[buoys.object_index1]
-        self.next_buoy2 = objects[buoys.object_index2]
+        if self.task_done:
+            return
 
-        pos1 = rosmsg_to_numpy(self.next_buoy1.pose.position)
-        pos2 = rosmsg_to_numpy(self.next_buoy2.pose.position)
+        pos1 = rosmsg_to_numpy(buoys.object1)
+        pos2 = rosmsg_to_numpy(buoys.object2)
         gate = self.get_gate(pos1, pos2, (yield self.tx_pose)[0])
         yield self.go_thru_gate(gate)
 
@@ -89,6 +85,7 @@ class VrxNavigation2(Vrx):
     def run(self, parameters):
 
         self.objects_passed = set()
+        self.task_done = False
 
         # Wait a bit for PCDAR to get setup
         yield self.nh.sleep(10.0)
@@ -97,7 +94,7 @@ class VrxNavigation2(Vrx):
 
         yield self.move.forward(5).go()
 
-        for i in range(3):
+        while(not self.task_done):
             yield self.go_through_next_two_buoys()
 
         #yield self.prepare_to_enter()
