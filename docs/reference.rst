@@ -1015,3 +1015,7 @@ AlarmListener
 ListenerCb
 ^^^^^^^^^^
 .. doxygenstruct:: ros_alarms::ListenerCb
+
+HeartbeatMonitor
+^^^^^^^^^^^^^^^^
+.. doxygenclass:: ros_alarms::HeartbeatMonitor

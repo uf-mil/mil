@@ -15,5 +15,5 @@ doxygen $MIL_DIR/docs/Doxyfile
 cd -
 
 # Then Sphinx build
-sphinx-build -E -b html -d $BUILD_DIR/doctrees  "-W" $MIL_DIR $BUILD_DIR/html
+sphinx-build -E -b html -d $BUILD_DIR/doctrees $MIL_DIR $BUILD_DIR/html
 echo "Docs available at file://$BUILD_DIR/html/index.html"
