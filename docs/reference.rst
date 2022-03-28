@@ -733,6 +733,66 @@ KeyboardControl
 
         :type: bool
 
+AlarmGet
+^^^^^^^^
+
+.. attributetable:: ros_alarms.srv._AlarmGet.AlarmGetRequest
+
+.. class:: ros_alarms.srv._AlarmGet.AlarmGetRequest
+
+   The request class for the ``ros_alarms/AlarmGet`` service.
+
+   .. attribute:: alarm_name
+
+        The name of the alarm to request data about.
+
+        :type: str
+
+.. attributetable:: ros_alarms.srv._AlarmGet.AlarmGetResponse
+
+.. class:: ros_alarms.srv._AlarmGet.AlarmGetResponse
+
+   The repsonse class for the ``ros_alarms/AlarmGet`` service.
+
+   .. attribute:: header
+
+        The header for the response.
+
+        :type: Header
+
+   .. attribute:: alarm
+
+        The response data about the requested alarm.
+
+        :type: Alarm
+
+AlarmSet
+^^^^^^^^
+
+.. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetRequest
+
+.. class:: ros_alarms.srv._AlarmSet.AlarmSetRequest
+
+   The request class for the ``ros_alarms/AlarmSet`` service.
+
+   .. attribute:: alarm
+
+        The alarm to set.
+
+        :type: Alarm
+
+.. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetResponse
+
+.. class:: ros_alarms.srv._AlarmSet.AlarmSetResponse
+
+   The repsonse class for the ``ros_alarms/AlarmSet`` service.
+
+   .. attribute:: succeed
+
+        Whether the request succeeded.
+
+        :type: bool
+
 Exceptions
 ----------
 
@@ -1019,3 +1079,10 @@ ListenerCb
 HeartbeatMonitor
 ^^^^^^^^^^^^^^^^
 .. doxygenclass:: ros_alarms::HeartbeatMonitor
+
+AlarmServer
+^^^^^^^^^^^
+.. currentmodule:: mil_common.ros_alarms
+
+.. autoclass:: ros_alarms.nodes.alarm_server.AlarmServer
+    :members:

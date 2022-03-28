@@ -3,13 +3,24 @@ import rospy
 from ros_alarms import HandlerBase
 
 from ros_alarms.msg import Alarm as AlarmMsg
-from ros_alarms.srv import AlarmGet, AlarmSet
+from ros_alarms.srv import AlarmGet, AlarmSet, AlarmSetRequest, AlarmGetRequest, AlarmGetResponse
 from ros_alarms import Alarm
 
 import inspect
+from typing import Union
 
 
 class AlarmServer:
+    """
+    Server responsible for maintaining the status of alarms between all processes.
+
+    Attributes:
+        alarms (Dict[str, ros_alarms.Alarm]): A map from the alarm names to to the Alarm objects.
+        handlers (Dict[str, HandlerBase]): A map from the alarm names to their appropriate
+            handlers.
+        meta_alarms (Dict[str, ros_alarms.Alarm]): A map from the meta alarm names to the Alarm
+            objects.
+    """
     def __init__(self):
         # Maps alarm name to Alarm objects
         self.alarms = {}
@@ -33,9 +44,20 @@ class AlarmServer:
         rospy.Service("/alarm/set", AlarmSet, self._on_set_alarm)
         rospy.Service("/alarm/get", AlarmGet, self._on_get_alarm)
 
-    def set_alarm(self, alarm):
-        """Sets or updates the alarm
-        Updating the alarm triggers all of the alarms callbacks
+    def set_alarm(self, alarm: Union[Alarm, AlarmMsg]) -> bool:
+        """
+        Sets or updates the alarm. 
+
+        Updating the alarm triggers all of the alarms callbacks, if any are set.
+        The alarm becomes registered within the server and a message representing
+        the alarm is published to the alarm publishing topic.
+
+        Args:
+            alarm (Union[ros_alarms.Alarm, ros_alarms.msg.Alarm]): The alarm to
+                set in the server.
+
+        Returns:
+            bool: Whether the operation succeeded.
         """
         if alarm.alarm_name in self.handlers:
             res = self.handlers[alarm.alarm_name].on_set(alarm)
@@ -53,21 +75,23 @@ class AlarmServer:
         self._alarm_pub.publish(alarm)
         return True
 
-    def _on_set_alarm(self, srv):
+    def _on_set_alarm(self, srv: AlarmSetRequest) -> bool:
         self.set_alarm(srv.alarm)
         return True
 
-    def _on_get_alarm(self, srv):
-        """Either returns the alarm request if it exists or a blank alarm"""
+    def _on_get_alarm(self, srv: AlarmGetRequest) -> AlarmGetResponse:
+        """
+        Either returns the alarm request if it exists or a blank alarm.
+        """
         rospy.logdebug("Got request for alarm: {}".format(srv.alarm_name))
         return self.alarms.get(
             srv.alarm_name, Alarm.blank(srv.alarm_name)
         ).as_srv_resp()
 
-    def make_tagged_alarm(self, name):
+    def make_tagged_alarm(self, name: str) -> Alarm:
         """
-        Makes a blank alarm with the node_name of the alarm_server so that users know it is the
-        initial state
+        Makes a blank alarm with the node_name of the alarm_server so that users 
+        know it is the initial state.
         """
         alarm = Alarm.blank(name)
         alarm.node_name = "alarm_server"

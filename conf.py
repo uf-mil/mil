@@ -25,6 +25,11 @@ from sphinx.ext import graphviz
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.append(os.path.abspath('docs/extensions'))
 
+# Node extensions
+sys.path.append(os.path.abspath('mil_common'))
+sys.path.append(os.path.abspath('mil_common/ros_alarms'))
+sys.path.append(os.path.abspath('mil_common/ros_alarms/nodes'))
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
