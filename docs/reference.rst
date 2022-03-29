@@ -516,6 +516,32 @@ MoveActionFeedback
 
         :type: MoveFeedback
 
+MoveActionGoal
+~~~~~~~~~~~~~~
+.. attributetable:: navigator_path_planner.msg._MoveActionGoal.MoveActionGoal
+
+.. class:: navigator_path_planner.msg._MoveActionGoal.MoveActionGoal
+
+    A custom message representing the goal of an object's action movement.
+
+    .. attribute:: header
+    
+        The header for the message.
+
+        :type: Header
+
+    .. attribute:: goal_id
+    
+        The ID of the goal.
+
+        :type: GoalID
+
+    .. attribute:: goal
+    
+        The goal to move to.
+
+        :type: MoveGoal
+
 MoveFeedback
 ~~~~~~~~~~~~~~~~~~
 .. attributetable:: navigator_path_planner.msg._MoveFeedback.MoveFeedback
@@ -553,6 +579,92 @@ MoveFeedback
         ???
 
         :type: float
+
+MoveGoal
+~~~~~~~~
+.. attributetable:: navigator_path_planner.msg._MoveGoal.MoveGoal
+
+.. class:: navigator_path_planner.msg._MoveGoal.MoveGoal
+
+    A custom message representing the goal of an object's movement.
+
+    .. attribute:: HOLD
+
+        A constant string representing to hold the object's movement. Actually
+        equally to ``hold``.
+
+        :type: str
+
+    .. attribute:: DRIVE
+
+        A constant string representing to using driving movement. Actually
+        equally to ``drive``.
+
+        :type: str
+
+    .. attribute:: DRIVE_SMOOTH
+
+        A constant string representing to using a smooth driving movement. Actually
+        equally to ``drive!``.
+
+        :type: str
+
+    .. attribute:: SKID
+
+        A constant string representing a skidding movement. Actually
+        equally to ``skid``.
+
+        :type: str
+
+    .. attribute:: SPIRAL
+
+        A constant string representing a spiral movement. Actually
+        equally to ``spiral``.
+
+        :type: str
+
+    .. attribute:: BYPASS
+
+        A constant string representing a spiral movement. Actually
+        equally to ``bypass``.
+
+        :type: str
+
+    .. attribute:: move_type
+
+        The type of movement desired, often one of the values above.
+
+        :type: str
+
+    .. attribute:: goal
+
+        The goal to move to.
+
+        :type: Pose
+
+    .. attribute:: focus
+
+        The focal point.
+
+        :type: Point
+
+    .. attribute:: initial_plan_time
+
+        The initial time at which the movement was planned.
+
+        :type: float
+
+    .. attribute:: blind
+
+        ???
+
+        :type: bool
+
+    .. attribute:: speed_factor
+
+        ???
+
+        :type: List[float]
 
 Standard Messages
 ^^^^^^^^^^^^^^^^^
