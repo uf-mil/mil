@@ -1107,6 +1107,16 @@ HeartbeatMonitor
 
 .. autoclass:: ros_alarms.HeartbeatMonitor
     :members:
+
+HandlerBase
+~~~~~~~~~~~
+.. currentmodule:: ros_alarms
+
+.. attributetable:: ros_alarms.HandlerBase
+
+.. autoclass:: ros_alarms.HandlerBase
+    :members:
+
    
 C++
 ^^^
