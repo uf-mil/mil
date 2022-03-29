@@ -1141,8 +1141,8 @@ HeartbeatMonitor
 ~~~~~~~~~~~~~~~~
 .. doxygenclass:: ros_alarms::HeartbeatMonitor
 
-lqRRT
---------
+Path Planning
+-------------
 
 Constraints
 ^^^^^^^^^^^
@@ -1172,4 +1172,13 @@ Tree
 .. attributetable:: lqrrt.Tree
 
 .. autoclass:: lqrrt.Tree
+    :members:
+
+Node
+^^^^
+.. currentmodule:: lqrrt
+
+.. attributetable:: navigator_path_planner.nodes.path_planner.LQRRT_Node
+
+.. autoclass:: navigator_path_planner.nodes.path_planner.LQRRT_Node
     :members:

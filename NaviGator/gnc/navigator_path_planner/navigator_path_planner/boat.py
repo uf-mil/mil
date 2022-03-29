@@ -24,6 +24,7 @@ from .params import (
     max_nodes,
 )
 import lqrrt
+from typing import List
 
 # DYNAMICS
 
@@ -31,10 +32,9 @@ magic_rudder = 8000
 focus = None
 
 
-def dynamics(x, u, dt):
+def dynamics(x: np.ndarray, u: np.ndarray, dt):
     """
     Returns next state given last state x, wrench u, and timestep dt.
-
     """
     # Rotation matrix (orientation, converts body to world)
     R = np.array(
@@ -71,19 +71,16 @@ def dynamics(x, u, dt):
 
     return xnext
 
-
 # POLICY
-
 
 kp = np.diag([250, 250, 2500])
 kd = np.diag([5, 5, 0.001])
 S = np.diag([1, 1, 1, 1, 1, 1])
 
 
-def lqr(x, u):
+def lqr(x: np.ndarray, u: np.ndarray):
     """
     Returns cost-to-go matrix S and policy matrix K given local state x and effort u.
-
     """
     R = np.array(
         [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]]
@@ -99,7 +96,7 @@ goal_buffer = [real_tol[0], real_tol[1], real_tol[2], 10, 10, 6]
 error_tol = np.copy(goal_buffer)
 
 
-def gen_ss(seed, goal, buff=[ss_start] * 4):
+def gen_ss(seed: np.ndarray, goal: np.ndarray, buff: List[float] = [ss_start] * 4):
     """
     Returns a sample space given a seed state, goal state, and buffer.
 
