@@ -3,20 +3,22 @@ from ros_alarms.msg import Alarm as AlarmMsg
 
 from typing import Union, Optional
 
+
 class HandlerBase:
     """
-    Listens for an alarm with this `alarm_name`. When that alarm is raised, 
-    self.raised will be called. When that alarm is cleared, self.cleared will 
+    Listens for an alarm with this `alarm_name`. When that alarm is raised,
+    self.raised will be called. When that alarm is cleared, self.cleared will
     be called. See the comments below for self.meta_predicate.
 
     All alarm handlers must inherit from this base class in order to be registered.
     """
+
     alarm_name = "generic-name"
     severity_required = (0, 5)
     alarm_server = None
 
     @classmethod
-    def _init(cls, alarm_server: 'AlarmServer'):
+    def _init(cls, alarm_server: "AlarmServer"):
         """
         Called by the alarm server to give each handler a reference to the alarm server,
         so it can efficiently get and set alarms.
@@ -53,7 +55,7 @@ class HandlerBase:
         By default, defers to the raised and cleared functions below.
 
         Args:
-            new_alarm (ros_alarms.msg._Alarm.Alarm): Alarm message that is 
+            new_alarm (ros_alarms.msg._Alarm.Alarm): Alarm message that is
                 requested to have this alarm change to.
 
         Returns:
@@ -71,7 +73,7 @@ class HandlerBase:
         If it returns False, this request is denied. Otherwise, the alarm is raised.
 
         Args:
-            alarm (ros_alarms.msg._Alarm.Alarm): The new alarm a node had requested to replace the 
+            alarm (ros_alarms.msg._Alarm.Alarm): The new alarm a node had requested to replace the
                 current with.
         """
         return
@@ -82,7 +84,7 @@ class HandlerBase:
         If it returns False, this request is denied. Otherwise, the alarm is raised
 
         Args:
-            alarm (ros_alarms.msg._Alarm.Alarm): The new alarm a node had requested to replace the 
+            alarm (ros_alarms.msg._Alarm.Alarm): The new alarm a node had requested to replace the
                 current with.
         """
         return

@@ -97,8 +97,9 @@ class Alarm:
             when the alarm is cleared. Each callback should be associated with
             the severity required to execute the callback through a tuple.
     """
+
     @classmethod
-    def blank(cls, name: str) -> 'Alarm':
+    def blank(cls, name: str) -> "Alarm":
         """
         Generate a general blank alarm that is cleared with a low severity.
 
@@ -111,7 +112,7 @@ class Alarm:
         return cls(name, raised=False, severity=0)
 
     @classmethod
-    def from_msg(cls, msg: AlarmMsg) -> 'Alarm':
+    def from_msg(cls, msg: AlarmMsg) -> "Alarm":
         """
         Generate an alarm object from an Alarm message.
 
@@ -219,9 +220,9 @@ class Alarm:
                         )
                     )
 
-    def update(self, srv: 'Alarm'):
+    def update(self, srv: "Alarm"):
         """
-        Updates this alarm with a new AlarmSet request. Also will call any 
+        Updates this alarm with a new AlarmSet request. Also will call any
         required callbacks.
 
         Args:
@@ -293,7 +294,10 @@ class AlarmBroadcaster:
     Broadcasts information about an alarm, and allows for the raising and clearing
     of the alarm.
     """
-    def __init__(self, name: str, node_name: Optional[str] = None, nowarn: bool = False):
+
+    def __init__(
+        self, name: str, node_name: Optional[str] = None, nowarn: bool = False
+    ):
         """
         Args:
             name (str): The name of the related alarm.
@@ -310,10 +314,10 @@ class AlarmBroadcaster:
 
     def wait_for_server(self, timeout=None):
         """
-        Wait for node to connect to alarm server. Waits timeout seconds (or forever 
-            if ``timeout`` is ``None``) to connect then fetches the current alarm 
+        Wait for node to connect to alarm server. Waits timeout seconds (or forever
+            if ``timeout`` is ``None``) to connect then fetches the current alarm
             and calls callbacks as needed.
-        
+
         .. warning::
 
             User should always call this method before calling other methods.
@@ -357,13 +361,13 @@ class AlarmBroadcaster:
             kwargs: The associated keyword arguments, as described below.
 
         Keyword Arguments:
-            node_name (str): String that holds the name of the node making the 
+            node_name (str): String that holds the name of the node making the
                 request.
-            problem_description (str): String with a description of the problem 
+            problem_description (str): String with a description of the problem
                 (defaults to empty string).
-            parameters (dict): JSON dumpable dictionary with optional parameters 
+            parameters (dict): JSON dumpable dictionary with optional parameters
                 that describe the alarm.
-            severity (int): Integer in [0, 5] that indicates the severity of 
+            severity (int): Integer in [0, 5] that indicates the severity of
                 the alarm. (5 is most severe)
 
         Returns:
@@ -383,13 +387,13 @@ class AlarmBroadcaster:
             kwargs: The associated keyword arguments, as described below.
 
         Keyword Arguments:
-            node_name (str): String that holds the name of the node making the 
+            node_name (str): String that holds the name of the node making the
                 request.
-            problem_description (str): String with a description of the problem 
+            problem_description (str): String with a description of the problem
                 (defaults to empty string).
-            parameters (dict): JSON dumpable dictionary with optional parameters 
+            parameters (dict): JSON dumpable dictionary with optional parameters
                 that describe the alarm.
-            severity (int): Integer in [0, 5] that indicates the severity of 
+            severity (int): Integer in [0, 5] that indicates the severity of
                 the alarm. (5 is most severe)
 
         Returns:
@@ -406,7 +410,14 @@ class AlarmListener:
     """
     Listens to an alarm.
     """
-    def __init__(self, name: str, callback_funct: Optional[Callable] = None, nowarn: bool = False, **kwargs):
+
+    def __init__(
+        self,
+        name: str,
+        callback_funct: Optional[Callable] = None,
+        nowarn: bool = False,
+        **kwargs
+    ):
         """
         Args:
             name (str): The alarm name.
@@ -430,10 +441,10 @@ class AlarmListener:
 
     def wait_for_server(self, timeout: Optional[float] = None):
         """
-        Wait for node to connect to alarm server. Waits timeout seconds (or forever 
-            if ``timeout`` is ``None``) to connect then fetches the current alarm 
+        Wait for node to connect to alarm server. Waits timeout seconds (or forever
+            if ``timeout`` is ``None``) to connect then fetches the current alarm
             and calls callbacks as needed.
-        
+
         .. warning::
 
             User should always call this method before calling other methods.
@@ -473,7 +484,7 @@ class AlarmListener:
     def is_cleared(self, fetch: bool = True) -> bool:
         """
         Returns whether this alarm is cleared or not.
-        
+
         Args:
             fetch (bool): Whether to fetch the alarm from the server. If ``False``,
                 then uses the most recently cached alarm. Defaults to ``True``.
@@ -609,6 +620,7 @@ class HeartbeatMonitor(AlarmBroadcaster):
 
     All of this class' methods and attribues are internal.
     """
+
     def __init__(
         self,
         alarm_name: str,

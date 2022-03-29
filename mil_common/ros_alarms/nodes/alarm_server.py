@@ -3,7 +3,13 @@ import rospy
 from ros_alarms import HandlerBase
 
 from ros_alarms.msg import Alarm as AlarmMsg
-from ros_alarms.srv import AlarmGet, AlarmSet, AlarmSetRequest, AlarmGetRequest, AlarmGetResponse
+from ros_alarms.srv import (
+    AlarmGet,
+    AlarmSet,
+    AlarmSetRequest,
+    AlarmGetRequest,
+    AlarmGetResponse,
+)
 from ros_alarms import Alarm
 
 import inspect
@@ -21,6 +27,7 @@ class AlarmServer:
         meta_alarms (Dict[str, ros_alarms.Alarm]): A map from the meta alarm names to the Alarm
             objects.
     """
+
     def __init__(self):
         # Maps alarm name to Alarm objects
         self.alarms = {}
@@ -46,7 +53,7 @@ class AlarmServer:
 
     def set_alarm(self, alarm: Union[Alarm, AlarmMsg]) -> bool:
         """
-        Sets or updates the alarm. 
+        Sets or updates the alarm.
 
         Updating the alarm triggers all of the alarms callbacks, if any are set.
         The alarm becomes registered within the server and a message representing
@@ -90,7 +97,7 @@ class AlarmServer:
 
     def make_tagged_alarm(self, name: str) -> Alarm:
         """
-        Makes a blank alarm with the node_name of the alarm_server so that users 
+        Makes a blank alarm with the node_name of the alarm_server so that users
         know it is the initial state.
         """
         alarm = Alarm.blank(name)
@@ -201,7 +208,7 @@ class AlarmServer:
         """
 
         meta_alarms_dict = rospy.get_param(namespace, {})
-        for meta, alarms in meta_alarms_dict.iteritems():
+        for meta, alarms in meta_alarms_dict.items():
             # Add the meta alarm
             if meta not in self.alarms:
                 self.alarms[meta] = self.make_tagged_alarm(meta)
