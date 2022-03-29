@@ -1,13 +1,4 @@
-#!/usr/bin/env python
-"""
-Example of a ROS node that uses lqRRT for a big boat.
-
-This node subscribes to the current boat state (Odometry message),
-and the world-frame ogrid (OccupancyGrid message). It publishes the
-REFerence trajectory that moves to the goal, as an Odometry message.
-It provides an action for moving said reference to that goal (Move.action).
-
-"""
+#!/usr/bin/env python3
 from __future__ import division
 import numpy as np
 import numpy.linalg as npl
@@ -35,7 +26,8 @@ from navigator_path_planner.msg import MoveAction, MoveFeedback, MoveResult, Mov
 # Check scipy version for assume_sorted argument in interp1d
 import scipy.interpolate
 
-from typing import List, Tuple, Optional, ModuleType
+from typing import List, Tuple, Optional
+from types import ModuleType
 
 if int(scipy.__version__.split(".")[1]) < 16:
 
@@ -49,7 +41,29 @@ else:
 # INITIALIZATIONS
 
 
-class LQRRT_Node(object):
+class LQRRT_Node:
+    """
+    Example of a ROS node that uses lqRRT for a big boat.
+
+    This node subscribes to the current boat state (Odometry message),
+    and the world-frame ogrid (OccupancyGrid message). It publishes the
+    REFerence trajectory that moves to the goal, as an Odometry message.
+    It provides an action for moving said reference to that goal (Move.action).
+
+    Attributes:
+        revisit_period (float): When to refresh the core of the planner.
+        ref_pub (rospy.Publisher): The publisher serving the lqRRT reference
+            topic name.
+        path_pub (rospy.Publisher): Publisher responsible for publishing a PoseArray
+            to the provided path topic.
+        tree_pub (rospy.Publisher): Publisher responsible for publishing a PoseArray
+            to the provided tree topic.
+        unreachable (bool): Whether the planner sees a goal as being unreachable.
+            Defaults to ``false``.
+        done (bool): Whether the planner has finished its movement. Defaults to ``false``.
+        move_type (MoveAction): How the boat is planning to move towards its goal.
+    """
+
     def __init__(
         self,
         odom_topic: str,
@@ -68,19 +82,19 @@ class LQRRT_Node(object):
         Defaults are generated at the ROS params level.
 
         Args:
-            odom_topic: str - The name of the topic supplying Odometry
+            odom_topic (str): The name of the topic supplying Odometry
               messages.
-            ref_topic: str - The lqRRT reference topic name.
-            move_topic: str - The name of the topic hosting the SimpleActionServer
+            ref_topic (str): The lqRRT reference topic name.
+            move_topic (str): The name of the topic hosting the SimpleActionServer
               and topic of where to move to.
-            path_topic: str - The name of the lqRRT path topic name.
-            tree_topic: str - The name of the topic holding the lqRRT tree.
-            goal_topic: str - The name of the topic holding the lqRRT goal.
-            focus_topic: str - The name of the topic holding the lqRRT focus.
-            effort_topic: str - The name of the topic hosting the lqRRT effort
+            path_topic (str): The name of the lqRRT path topic name.
+            tree_topic (str): The name of the topic holding the lqRRT tree.
+            goal_topic (str): The name of the topic holding the lqRRT goal.
+            focus_topic (str): The name of the topic holding the lqRRT focus.
+            effort_topic (str): The name of the topic hosting the lqRRT effort
               wrenches.
-            ogrid_topic: str - The name of the topic holding the occupancy grid.
-            ogrid_threshold: str - An occupancy grid cell which exceeds this
+            ogrid_topic (str): The name of the topic holding the occupancy grid.
+            ogrid_threshold (str): An occupancy grid cell which exceeds this
               value will be marked as filled. The value will be converted to
               a float in the class.
         """
@@ -186,10 +200,10 @@ class LQRRT_Node(object):
         Callback for the move action.
 
         Args:
-            msg: MoveAction - The action passed by the action client.
+            msg (MoveAction): The action passed by the action client.
 
         Returns:
-            Optional[bool] - ???
+            Optional[bool]: ???
         """
         # Start clean
         self.done = False
@@ -484,8 +498,8 @@ class LQRRT_Node(object):
     # WHERE IT HAPPENS
     def tree_chain(self):
         """
-        Plans an lqRRT and sets things up to chain along
-        another lqRRT when called again.
+        Plans an lqRRT and sets things up to chain along another lqRRT when
+        called again.
         """
         # Make sure we are not currently in an update or a collided state
         if self.lock_tree:
@@ -627,10 +641,10 @@ class LQRRT_Node(object):
         that behavior.
 
         Returns:
-            ModuleType - A module with the behavior implementation
+            ModuleType: A module with the behavior implementation
 
         Raises:
-            ValueError - No relevant implementation could be found
+            ValueError: No relevant implementation could be found
         """
         # Are we stuck?
         if self.stuck:
@@ -656,7 +670,7 @@ class LQRRT_Node(object):
 
     def select_exploration(
         self,
-    ) -> List[List, List[Tuple[float, float]], np.ndarray, bool]:
+    ) -> List:
         """
         Chooses the goal bias, sample space, guide point, and pruning
         choice for the current move and behavior.
@@ -891,11 +905,11 @@ class LQRRT_Node(object):
         Given a state x and effort u, returns whether (x, u) is feasible.
 
         Args:
-            x: np.ndarray - The state to verify the feasibility of
-            u: np.ndarray - The corresponding effort to verify the feasibility of
+            x (np.ndarray): The state to verify the feasibility of
+            u (np.ndarray): The corresponding effort to verify the feasibility of
 
         Returns:
-            bool - Whether the state is feasible.
+            bool: Whether the state is feasible.
         """
         # If there's no ogrid yet or it's a blind move, anywhere is valid
         if self.ogrid is None or self.blind:
@@ -923,9 +937,6 @@ class LQRRT_Node(object):
         Iterates through the current plan re-checking for feasibility using
           the newest ogrid data, looking for a clear path if we are escaping,
           and checking that the goal is still feasible.
-
-        Returns:
-            None
         """
         # Make sure a plan exists and that we aren't currently fixing it
         last_update_time = self.last_update_time
@@ -1053,13 +1064,6 @@ class LQRRT_Node(object):
         """
         Manages action preempting. Serves as the callback to a Timer operating
           opereating every self.revisit_period seconds.
-
-        Args:
-            _: TimerEvent - The timer event passed by the timer upon each
-              execution. Not used by the method.
-
-        Returns:
-            None
         """
         if self.preempted or not self.move_server.is_active():
             return
@@ -1119,12 +1123,12 @@ class LQRRT_Node(object):
         the goal heading h+-tol. Give x (start state), and h (goal heading).
 
         Args:
-            x: List[float] - The current state
-            h: float - The desired heading (similar to x[2])
-            tol: float - The tolerance of the heading
+            x (List[float]): The current state
+            h (float): The desired heading (similar to x[2])
+            tol (float): The tolerance of the heading
 
         Returns:
-            Tuple[np.ndarray, float, bool, np.ndarray] - A tuple containing
+            Tuple[np.ndarray, float, bool, np.ndarray]: A tuple containing
               the new state array, the amount of time the movement will take,
               whether the operation is feasible, and the new effort array.
         """
@@ -1174,14 +1178,14 @@ class LQRRT_Node(object):
         Generates a movement pattern for a spiral movement.
 
         Args:
-            x: List[float] - Initial state vector.
-            c: List[float] - Coordinates of initial point.
-            N: int - The number of revolutions to make.
-            direc: int - Whether to move + or - in regards to the z-axis
-            mpr: float - The meters expansion of the spiral per radian
+            x (List[float]): Initial state vector.
+            c (List[float]): Coordinates of initial point.
+            N (int): The number of revolutions to make.
+            direc (int): Whether to move + or - in regards to the z-axis
+            mpr (float): The meters expansion of the spiral per radian
 
         Returns:
-            Tuple[np.ndarray, float, bool] - The state sequence of the spiral
+            Tuple[np.ndarray, float, bool]: The state sequence of the spiral
               movement, the amount of time (in seconds) required to make the
               movement, and whether the movement is feasible.
         """
@@ -1246,11 +1250,11 @@ class LQRRT_Node(object):
         Angle differences are taken properly on SO2.
 
         Args:
-            goal_state: List[float] - The goal state
-            state: List[float] - The state to derive the error from
+            goal_state (List[float]): The goal state
+            state (List[float]): The state to derive the error from
 
         Returns:
-            np.ndarray - The error between the goal and passed state.
+            np.ndarray: The error between the goal and passed state.
         """
         e = np.subtract(goal_state, state)
         e[2] = self.angle_diff(goal_state[2], state[2])
@@ -1261,11 +1265,11 @@ class LQRRT_Node(object):
         Takes an angle difference properly on SO2.
 
         Args:
-            angle_goal: float - The goal angle.
-            angle: float - The angle to grab the difference from.
+            angle_goal (float): The goal angle.
+            angle (float): The angle to grab the difference from.
 
         Returns:
-            float - The difference between the desired and goal angle.
+            float: The difference between the desired and goal angle.
         """
         c = np.cos(angle)
         s = np.sin(angle)
@@ -1280,7 +1284,6 @@ class LQRRT_Node(object):
         'connected' or if they are terminally isolated, returns 'isolated'. Make sure
         seed and goal are intups and in the same pixel coordinates as img, and that
         occupied pixels have value 255 in img.
-
         """
         # Set-up
         img = np.copy(img)
@@ -1459,10 +1462,7 @@ class LQRRT_Node(object):
         vector, and then reevaluates the path plan.
 
         Args:
-            msg: OccupancyGrid - The message passed by the callback.
-
-        Returns:
-            None
+            msg (OccupancyGrid): The message passed by the callback.
         """
         # Store relevant values
         start = self.rostime()
@@ -1495,10 +1495,7 @@ class LQRRT_Node(object):
         tracking.
 
         Args:
-            msg: Odometry - The Odometry message received by the callback.
-
-        Returns:
-            None
+            msg (Odometry): The Odometry message received by the callback.
         """
         # Store relevant values
         self.world_frame_id = msg.header.frame_id
@@ -1522,10 +1519,10 @@ class LQRRT_Node(object):
         Converts a Pose message into a state vector with zero velocity.
 
         Args:
-            msg: Pose - The message to unpack.
+            msg (Pose): The message to unpack.
 
         Returns:
-            np.ndarray - A state array containing the x-position, y-position,
+            np.ndarray: A state array containing the x-position, y-position,
               and yaw. The velocities are all zero.
         """
         q = [msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]
@@ -1538,10 +1535,10 @@ class LQRRT_Node(object):
         Converts an Odometry message into a state vector.
 
         Args:
-            msg: Odometry - The Odometry message to unpack.
+            msg (Odometry): The Odometry message to unpack.
 
         Returns:
-            np.ndarray - The new state vector, containing 6
+            np.ndarray: The new state vector, containing 6
               float values.
         """
         q = [
@@ -1569,12 +1566,12 @@ class LQRRT_Node(object):
         For a timestamped message, use pack_posestamped.
 
         Args:
-            state: List[float] - The current state of the robot. state[0]
+            state (List[float]): The current state of the robot. state[0]
               and state[1] represent x + y orientations. state[2]
               represents the orientation of the bot.
 
         Returns:
-            Pose - The Pose message.
+            Pose: The Pose message.
         """
         msg = Pose()
         msg.position.x, msg.position.y = state[:2]
@@ -1589,13 +1586,13 @@ class LQRRT_Node(object):
         pack_pose.
 
         Args:
-            state: List[float] - The current state of the robot. state[0]
+            state (List[float]): The current state of the robot. state[0]
               and state[1] represent x + y orientations. state[2]
               represents the orientation of the bot.
-            stamp: rospy.Time - The time that the bot's state existed as so.
+            stamp (rospy.Time): The time that the bot's state existed as so.
 
         Returns:
-            PoseStamped - The PoseStamped message.
+            PoseStamped: The PoseStamped message.
         """
         msg = PoseStamped()
         msg.header.stamp = stamp
@@ -1611,17 +1608,17 @@ class LQRRT_Node(object):
         given header timestamp.
 
         Args:
-            state: List[float] - A list containing the following values:
+            state (List[float]): A list containing the following values:
               state[0] - The x-position of the bot
               state[1] - The y-position of the bot
               state[2] - The orientation (yaw) of the bot
               state[3] - The linear speed in the x-direction
               state[4] - The linear speed in the y-direction
               state[5] - The angular speed in the z-direction
-            stamp: rospy.Time - The timestamp of the message.
+            stamp (rospy.Time): The timestamp of the message.
 
         Returns:
-            Odometry - The packed Odometry message.
+            Odometry: The packed Odometry message.
         """
         msg = Odometry()
         msg.header.stamp = stamp
@@ -1640,13 +1637,13 @@ class LQRRT_Node(object):
         given header timestamp.
 
         Args:
-            point: List[float] - The point vector. point[0] represents
+            point (List[float]): The point vector. point[0] represents
               the x-component of the point and point[1] represents the
               y-component of the point.
-            stamp: rospy.Time - The timestamp to attach to the message.
+            stamp (rospy.Time): The timestamp to attach to the message.
 
         Returns:
-            PointStamped - The message to pack the point as.
+            PointStamped: The message to pack the point as.
         """
         msg = PointStamped()
         msg.header.stamp = stamp
@@ -1663,13 +1660,13 @@ class LQRRT_Node(object):
         with a given header timestamp.
 
         Args:
-            effort: List[float] - The effort vector. effort[0] represents
+            effort (List[float]): The effort vector. effort[0] represents
               the x-component of force, effort[1] represents the y-component
               of force, and effort[2] represents the z-component of torque.
-            stamp: rospy.Time - The timestamp to attach to the message.
+            stamp (rospy.Time): The timestamp to attach to the message.
 
         Returns:
-            WrenchStamped - The message to pack the effort as.
+            WrenchStamped: The message to pack the effort as.
         """
         msg = WrenchStamped()
         msg.header.stamp = stamp

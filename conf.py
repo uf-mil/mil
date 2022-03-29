@@ -30,6 +30,11 @@ sys.path.append(os.path.abspath('mil_common'))
 sys.path.append(os.path.abspath('mil_common/ros_alarms'))
 sys.path.append(os.path.abspath('mil_common/ros_alarms/nodes'))
 
+sys.path.append(os.path.abspath('NaviGator'))
+sys.path.append(os.path.abspath('NaviGator/gnc'))
+sys.path.append(os.path.abspath('NaviGator/gnc/navigator_path_planner'))
+sys.path.append(os.path.abspath('NaviGator/gnc/navigator_path_planner/nodes'))
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.

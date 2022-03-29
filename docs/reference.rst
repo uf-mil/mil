@@ -434,6 +434,252 @@ Odometry
 
         :type: ~geometry_msgs.msg._TwistWithCovariance.TwistWithCovariance
 
+Path Planner
+^^^^^^^^^^^^
+
+MoveAction
+~~~~~~~~~~
+
+.. attributetable:: navigator_path_planner.msg._MoveAction.MoveAction
+
+.. class:: navigator_path_planner.msg._MoveAction.MoveAction
+
+    A custom message representing the general movement of an entire system.
+
+    .. attribute:: action_goal
+    
+        The goal for an action's movement.
+
+        :type: MoveActionGoal
+
+    .. attribute:: action_result
+    
+        The result of a move action's result.
+
+        :type: MoveActionResult
+
+    .. attribute:: action_feedback
+    
+        The feedback for an action movement.
+
+        :type: MoveActionFeedback
+
+MoveActionResult
+~~~~~~~~~~~~~~~~
+.. attributetable:: navigator_path_planner.msg._MoveActionResult.MoveActionResult
+
+.. class:: navigator_path_planner.msg._MoveActionResult.MoveActionResult
+
+    A custom message representing the result of a system's movement.
+
+    .. attribute:: header
+    
+        The header for the message.
+
+        :type: Header
+
+    .. attribute:: status
+    
+        The status of the system in its movement.
+
+        :type: GoalStatus
+
+    .. attribute:: result
+    
+        The result of the movement
+
+        :type: MoveResult
+
+MoveActionFeedback
+~~~~~~~~~~~~~~~~~~
+.. attributetable:: navigator_path_planner.msg._MoveActionFeedback.MoveActionFeedback
+
+.. class:: navigator_path_planner.msg._MoveActionFeedback.MoveActionFeedback
+
+    A custom message representing the feedback of a system's movement.
+
+    .. attribute:: header
+    
+        The header for the message.
+
+        :type: Header
+
+    .. attribute:: status
+    
+        The status of the system in its movement.
+
+        :type: GoalStatus
+
+    .. attribute:: feedback
+    
+        The feedback of the movement.
+
+        :type: MoveFeedback
+
+MoveActionGoal
+~~~~~~~~~~~~~~
+.. attributetable:: navigator_path_planner.msg._MoveActionGoal.MoveActionGoal
+
+.. class:: navigator_path_planner.msg._MoveActionGoal.MoveActionGoal
+
+    A custom message representing the goal of an object's action movement.
+
+    .. attribute:: header
+    
+        The header for the message.
+
+        :type: Header
+
+    .. attribute:: goal_id
+    
+        The ID of the goal.
+
+        :type: GoalID
+
+    .. attribute:: goal
+    
+        The goal to move to.
+
+        :type: MoveGoal
+
+MoveFeedback
+~~~~~~~~~~~~~~~~~~
+.. attributetable:: navigator_path_planner.msg._MoveFeedback.MoveFeedback
+
+.. class:: navigator_path_planner.msg._MoveFeedback.MoveFeedback
+
+    A custom message representing the feedback of a system's movement.
+
+    .. attribute:: behavior
+
+        A description of the behavior.
+
+        :type: str
+
+    .. attribute:: tree_size
+    
+        The size of the lqRRT tree.
+
+        :type: int
+
+    .. attribute:: tracking
+    
+        ???
+
+        :type: bool
+
+    .. attribute:: distance
+    
+        ???
+
+        :type: List[float]
+
+    .. attribute:: time_till_next_branch
+    
+        ???
+
+        :type: float
+
+MoveGoal
+~~~~~~~~
+.. attributetable:: navigator_path_planner.msg._MoveGoal.MoveGoal
+
+.. class:: navigator_path_planner.msg._MoveGoal.MoveGoal
+
+    A custom message representing the goal of an object's movement.
+
+    .. attribute:: HOLD
+
+        A constant string representing to hold the object's movement. Actually
+        equally to ``hold``.
+
+        :type: str
+
+    .. attribute:: DRIVE
+
+        A constant string representing to using driving movement. Actually
+        equally to ``drive``.
+
+        :type: str
+
+    .. attribute:: DRIVE_SMOOTH
+
+        A constant string representing to using a smooth driving movement. Actually
+        equally to ``drive!``.
+
+        :type: str
+
+    .. attribute:: SKID
+
+        A constant string representing a skidding movement. Actually
+        equally to ``skid``.
+
+        :type: str
+
+    .. attribute:: SPIRAL
+
+        A constant string representing a spiral movement. Actually
+        equally to ``spiral``.
+
+        :type: str
+
+    .. attribute:: BYPASS
+
+        A constant string representing a spiral movement. Actually
+        equally to ``bypass``.
+
+        :type: str
+
+    .. attribute:: move_type
+
+        The type of movement desired, often one of the values above.
+
+        :type: str
+
+    .. attribute:: goal
+
+        The goal to move to.
+
+        :type: Pose
+
+    .. attribute:: focus
+
+        The focal point.
+
+        :type: Point
+
+    .. attribute:: initial_plan_time
+
+        The initial time at which the movement was planned.
+
+        :type: float
+
+    .. attribute:: blind
+
+        ???
+
+        :type: bool
+
+    .. attribute:: speed_factor
+
+        ???
+
+        :type: List[float]
+
+MoveResult
+~~~~~~~~~~
+.. attributetable:: navigator_path_planner.msg._MoveResult.MoveResult
+
+.. class:: navigator_path_planner.msg._MoveResult.MoveResult
+
+    A custom message representing the goal of an object's movement.
+
+    .. attribute:: failure_reason
+
+        The reason for the movement failing, if any.
+
+        :type: str
+
 Standard Messages
 ^^^^^^^^^^^^^^^^^
 
@@ -1141,3 +1387,44 @@ HeartbeatMonitor
 ~~~~~~~~~~~~~~~~
 .. doxygenclass:: ros_alarms::HeartbeatMonitor
 
+Path Planning
+-------------
+
+Constraints
+^^^^^^^^^^^
+
+.. currentmodule:: lqrrt
+
+.. attributetable:: lqrrt.Constraints
+
+.. autoclass:: lqrrt.Constraints
+    :members:
+
+Planner
+^^^^^^^
+
+.. currentmodule:: lqrrt
+
+.. attributetable:: lqrrt.Planner
+
+.. autoclass:: lqrrt.Planner
+    :members:
+   
+Tree
+^^^^
+
+.. currentmodule:: lqrrt
+
+.. attributetable:: lqrrt.Tree
+
+.. autoclass:: lqrrt.Tree
+    :members:
+
+Node
+^^^^
+.. currentmodule:: lqrrt
+
+.. attributetable:: navigator_path_planner.nodes.path_planner.LQRRT_Node
+
+.. autoclass:: navigator_path_planner.nodes.path_planner.LQRRT_Node
+    :members:

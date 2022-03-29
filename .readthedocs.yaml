@@ -1,0 +1,25 @@
+# Version
+version: 2
+
+# Build setup
+build:
+  os: ubuntu-20.04
+  tools:
+    python: "3.8"
+  apt_packages:
+    - curl
+    - ros-desktop-full
+
+# big ol' python!
+python:
+  system_packages: true
+  install:
+    - requirements: requirements-rtd.txt
+
+# The great sphinx B)
+sphinx:
+  configuration: conf.py
+
+# Here come the submodules...
+submodules:
+  recursive: true
