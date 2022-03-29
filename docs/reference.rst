@@ -1141,3 +1141,35 @@ HeartbeatMonitor
 ~~~~~~~~~~~~~~~~
 .. doxygenclass:: ros_alarms::HeartbeatMonitor
 
+lqRRT
+--------
+
+Constraints
+^^^^^^^^^^^
+
+.. currentmodule:: lqrrt
+
+.. attributetable:: lqrrt.Constraints
+
+.. autoclass:: lqrrt.Constraints
+    :members:
+
+Planner
+^^^^^^^
+
+.. currentmodule:: lqrrt
+
+.. attributetable:: lqrrt.Planner
+
+.. autoclass:: lqrrt.Planner
+    :members:
+   
+Tree
+^^^^
+
+.. currentmodule:: lqrrt
+
+.. attributetable:: lqrrt.Tree
+
+.. autoclass:: lqrrt.Tree
+    :members:

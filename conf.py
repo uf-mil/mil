@@ -14,11 +14,7 @@
 
 import sys
 import os
-<<<<<<< HEAD
-import subprocess
-=======
 import os.path
->>>>>>> cf41a126fe7882ea83cd7904fd71382e228917d3
 import recommonmark
 from recommonmark.transform import AutoStructify
 from sphinx.ext import graphviz
@@ -29,17 +25,10 @@ from sphinx.ext import graphviz
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.append(os.path.abspath('docs/extensions'))
 
-<<<<<<< HEAD
-# MIL Paths
-sys.path.append(os.path.abspath('mil_common/utils/mil_tools')) # mil_tools pkg
-sys.path.append(os.path.abspath('NaviGator/utils/remote_control/navigator_keyboard_control')) # navigator_keyboard_control pkg
-sys.path.append(os.path.abspath('mil_common/txros/txros')) # txros pkg
-=======
 # Node extensions
 sys.path.append(os.path.abspath('mil_common'))
 sys.path.append(os.path.abspath('mil_common/ros_alarms'))
 sys.path.append(os.path.abspath('mil_common/ros_alarms/nodes'))
->>>>>>> cf41a126fe7882ea83cd7904fd71382e228917d3
 
 # -- General configuration ------------------------------------------------
 
