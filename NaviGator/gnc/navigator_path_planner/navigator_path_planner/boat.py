@@ -71,6 +71,7 @@ def dynamics(x: np.ndarray, u: np.ndarray, dt):
 
     return xnext
 
+
 # POLICY
 
 kp = np.diag([250, 250, 2500])

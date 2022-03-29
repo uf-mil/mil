@@ -52,7 +52,7 @@ class LQRRT_Node:
 
     Attributes:
         revisit_period (float): When to refresh the core of the planner.
-        ref_pub (rospy.Publisher): The publisher serving the lqRRT reference 
+        ref_pub (rospy.Publisher): The publisher serving the lqRRT reference
             topic name.
         path_pub (rospy.Publisher): Publisher responsible for publishing a PoseArray
             to the provided path topic.
@@ -63,6 +63,7 @@ class LQRRT_Node:
         done (bool): Whether the planner has finished its movement. Defaults to ``false``.
         move_type (MoveAction): How the boat is planning to move towards its goal.
     """
+
     def __init__(
         self,
         odom_topic: str,

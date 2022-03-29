@@ -666,6 +666,20 @@ MoveGoal
 
         :type: List[float]
 
+MoveResult
+~~~~~~~~~~
+.. attributetable:: navigator_path_planner.msg._MoveResult.MoveResult
+
+.. class:: navigator_path_planner.msg._MoveResult.MoveResult
+
+    A custom message representing the goal of an object's movement.
+
+    .. attribute:: failure_reason
+
+        The reason for the movement failing, if any.
+
+        :type: str
+
 Standard Messages
 ^^^^^^^^^^^^^^^^^
 
