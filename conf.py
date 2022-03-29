@@ -25,6 +25,11 @@ from sphinx.ext import graphviz
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.append(os.path.abspath('docs/extensions'))
 
+# Node extensions
+sys.path.append(os.path.abspath('mil_common'))
+sys.path.append(os.path.abspath('mil_common/ros_alarms'))
+sys.path.append(os.path.abspath('mil_common/ros_alarms/nodes'))
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -57,6 +62,9 @@ breathe_projects = {'mil': os.path.expanduser('~/.mil/doxygen/xml')}
 breathe_default_project = 'mil'
 breathe_implementation_filename_extensions = ['.c', '.cc', '.cpp']
 breathe_default_members = ('members', 'undoc-members')
+
+# Document __init__ methods of classes
+autoclass_content = "both"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['docs/_templates']

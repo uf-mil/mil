@@ -19,37 +19,104 @@
 
 namespace ros_alarms
 {
+/**
+ * Class responsible for monitoring a heartbeat connection mantained through
+ * successive messages sent on a heartbeat topic. Absence of messages after some
+ * amount of time will cause the class to raise an alarm through an AlarmProxy.
+ */
 template <typename msg_t = std_msgs::Header>
 class HeartbeatMonitor
 {
 public:
+  /**
+   * Constructor with required data.
+   *
+   * @param nh The node handler.
+   * @param alarm_name The name of the alarm connected to the monitor.
+   * @param heartbeat_topic The name of the topic to monitor for heartbeat messages.
+   * @param predicate Functor responsible for checking to see if a received message
+   * is valid. By default, always returns true.
+   * @param time_to_raise A duration representing the amount of time in which a heartbeat
+   * must be received or the alarm is raised. Defaults to 0.1 seconds.
+   * @param time_to_clear A duration representing the amount of time in which the monitor
+   * must be in recovery mode before the alarm is cleared. Defaults to 0.1 seconds.
+   * @param period The amount of time to wait to check for another heartbeat. Defaults
+   * to 0.02 seconds.
+   */
   HeartbeatMonitor(ros::NodeHandle nh, std::string alarm_name, std::string heartbeat_topic,
                    std::function<bool(msg_t)> predicate = [](msg_t) { return true; },
                    ros::Duration time_to_raise = ros::Duration(0.1), ros::Duration time_to_clear = ros::Duration(0.1),
                    ros::Duration period = ros::Duration(0.02));
   // TODO: find out why a period < 0.02 causes callbacks not to be called
+  
+  /**
+   * @return The name of the alarm connected through AlarmProxy.
+   */
   std::string alarm_name() const
   {
     return __alarm_proxy.alarm_name;
   }
+
+  /**
+   * @return The heartbeat topic name.
+   */
   std::string heartbeat_name() const
   {
     return __heartbeat_topic;
   }
+  
+  /**
+   * Returns whether the connection is alive and healthy! A healthy connection indicates
+   * that the connection established to the heartbeat is still running and sending
+   * acknowledgement requests.
+   *
+   * @return The state of the connection.
+   */
   bool healthy() const
   {
     return __healthy;
   }
+  
+  /**
+   * Get the time of the last heartbeat.
+   *
+   * @return The found time.
+   */
   ros::Time getLastBeatTime() const
   {
     return __last_beat;
   }
+
+  /**
+   * Number of connections connected to the heartbeat listener.
+   *
+   * @return The number of established connections.
+   */
   int getNumConnections() const
   {
     return __heartbeat_listener.getNumPublishers();
   }
+
+  /**
+   * Waits for a connection to be established on the heartbeat listener. If no connection
+   * is established before the timeout has run out, then false is returned and the
+   * function exits.
+   *
+   * @param timeout The amount of time to wait before exiting the function and returning
+   * false.
+   *
+   * @return Whether a connection was established in time.
+   */
   bool waitForConnection(ros::Duration timeout = { -1.0 }) const;  // waits forever by default
+
+  /**
+   * Start the async spinner responsible for monitoring the heartbeat.
+   */
   void startMonitoring();
+
+  /**
+   * Stop the async spinner responsible for monitoring the heartbeat.
+   */
   void stopMonitoring()
   {
     __async_spinner.stop();

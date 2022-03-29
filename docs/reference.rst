@@ -40,6 +40,54 @@ GoalStatus
         A constant of the message type used to indicate a goal which succeeded. 
         Truly set to 2.
 
+Alarms
+^^^^^^
+
+Alarm
+~~~~~
+
+.. attributetable:: ros_alarms.msg._Alarm.Alarm
+
+.. class:: ros_alarms.msg._Alarm.Alarm
+
+    A message representing a ROS Alarm.
+
+    .. attribute:: alarm_name
+
+        The name of the alarm.
+
+        :type: str
+
+    .. attribute:: raised
+
+        Whether the alarm was raised.
+
+        :type: bool
+
+    .. attribute:: node_name
+
+        The node name associated with the alarm.
+
+        :type: str
+
+    .. attribute:: problem_description
+
+        The problem description associated with the alarm.
+
+        :type: str
+
+    .. attribute:: parameters
+
+        The JSON parameters associated with the alarm.
+
+        :type: str
+
+    .. attribute:: severity
+
+        The severity of the alarm.
+
+        :type: int
+
 Geometry Messages
 ^^^^^^^^^^^^^^^^^
 
@@ -685,6 +733,66 @@ KeyboardControl
 
         :type: bool
 
+AlarmGet
+^^^^^^^^
+
+.. attributetable:: ros_alarms.srv._AlarmGet.AlarmGetRequest
+
+.. class:: ros_alarms.srv._AlarmGet.AlarmGetRequest
+
+   The request class for the ``ros_alarms/AlarmGet`` service.
+
+   .. attribute:: alarm_name
+
+        The name of the alarm to request data about.
+
+        :type: str
+
+.. attributetable:: ros_alarms.srv._AlarmGet.AlarmGetResponse
+
+.. class:: ros_alarms.srv._AlarmGet.AlarmGetResponse
+
+   The repsonse class for the ``ros_alarms/AlarmGet`` service.
+
+   .. attribute:: header
+
+        The header for the response.
+
+        :type: Header
+
+   .. attribute:: alarm
+
+        The response data about the requested alarm.
+
+        :type: ~ros_alarms.msg._Alarm.Alarm
+
+AlarmSet
+^^^^^^^^
+
+.. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetRequest
+
+.. class:: ros_alarms.srv._AlarmSet.AlarmSetRequest
+
+   The request class for the ``ros_alarms/AlarmSet`` service.
+
+   .. attribute:: alarm
+
+        The alarm to set.
+
+        :type: ~ros_alarms.msg._Alarm.Alarm
+
+.. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetResponse
+
+.. class:: ros_alarms.srv._AlarmSet.AlarmSetResponse
+
+   The repsonse class for the ``ros_alarms/AlarmSet`` service.
+
+   .. attribute:: succeed
+
+        Whether the request succeeded.
+
+        :type: bool
+
 Exceptions
 ----------
 
@@ -952,18 +1060,84 @@ Remote Control
 Alarms
 ------
 
+Python
+^^^^^^
+
+Alarm
+~~~~~
+.. currentmodule:: ros_alarms
+
+.. attributetable:: ros_alarms.Alarm
+
+.. autoclass:: ros_alarms.Alarm
+    :members:
+
+AlarmServer
+~~~~~~~~~~~
+.. currentmodule:: mil_common.ros_alarms
+
+.. attributetable:: ros_alarms.nodes.alarm_server.AlarmServer
+
+.. autoclass:: ros_alarms.nodes.alarm_server.AlarmServer
+    :members:
+
+AlarmBroadcaster
+~~~~~~~~~~~~~~~~
+.. currentmodule:: ros_alarms
+
+.. attributetable:: ros_alarms.AlarmBroadcaster
+
+.. autoclass:: ros_alarms.AlarmBroadcaster
+    :members:
+
+AlarmListener
+~~~~~~~~~~~~~
+.. currentmodule:: ros_alarms
+
+.. attributetable:: ros_alarms.AlarmListener
+
+.. autoclass:: ros_alarms.AlarmListener
+    :members:
+
+HeartbeatMonitor
+~~~~~~~~~~~~~~~~
+.. currentmodule:: ros_alarms
+
+.. attributetable:: ros_alarms.HeartbeatMonitor
+
+.. autoclass:: ros_alarms.HeartbeatMonitor
+    :members:
+
+HandlerBase
+~~~~~~~~~~~
+.. currentmodule:: ros_alarms
+
+.. attributetable:: ros_alarms.HandlerBase
+
+.. autoclass:: ros_alarms.HandlerBase
+    :members:
+
+   
+C++
+^^^
+
 AlarmProxy
-^^^^^^^^^^
+~~~~~~~~~~
 .. doxygenstruct:: ros_alarms::AlarmProxy
 
 AlarmBroadcaster
-^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~
 .. doxygenclass:: ros_alarms::AlarmBroadcaster
 
 AlarmListener
-^^^^^^^^^^^^^
+~~~~~~~~~~~~~
 .. doxygenclass:: ros_alarms::AlarmListener
 
 ListenerCb
-^^^^^^^^^^
+~~~~~~~~~~
 .. doxygenstruct:: ros_alarms::ListenerCb
+
+HeartbeatMonitor
+~~~~~~~~~~~~~~~~
+.. doxygenclass:: ros_alarms::HeartbeatMonitor
+
