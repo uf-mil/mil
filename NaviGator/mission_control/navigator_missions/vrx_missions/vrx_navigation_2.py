@@ -72,9 +72,13 @@ class VrxNavigation2(Vrx):
 
         self.task_done = buoys.no_more_buoys
 
+        print(buoys)
+
         if self.task_done:
             return
 
+        self.index1 = buoys.index1
+        self.index2 = buoys.index2
         pos1 = rosmsg_to_numpy(buoys.object1)
         pos2 = rosmsg_to_numpy(buoys.object2)
         gate = self.get_gate(pos1, pos2, (yield self.tx_pose)[0])
@@ -86,23 +90,21 @@ class VrxNavigation2(Vrx):
 
         self.objects_passed = set()
         self.task_done = False
+        self.index1 = None
+        self.index2 = None
+        gates_passed = 0
 
         # Wait a bit for PCDAR to get setup
         yield self.nh.sleep(10.0)
+        yield self.move.set_orientation([0,0,0.7068,0.7073]).go()
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
         yield self.nh.sleep(4)
 
-        yield self.move.forward(5).go()
+        #yield self.move.forward(5).go()
 
-        while(not self.task_done):
+        while(not self.task_done or gates_passed == 5):
             yield self.go_through_next_two_buoys()
+            gates_passed += 1
 
-        #yield self.prepare_to_enter()
-        #yield self.wait_for_task_such_that(lambda task: task.state =='running')
-        #yield self.move.forward(7.0).go()
-        #while not (yield self.do_next_gate()):
-        #    pass
-        #self.send_feedback('This is the last gate! Going through!')
-        #yield self.move.forward(10).go()
-        #yield self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
+        yield self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
 
