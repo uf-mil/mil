@@ -15,3 +15,10 @@ To control the robot using the keyboard, use the ``KeyboardClient`` and ``Keyboa
 classes inside of the ``navigator_keyboard_control`` package.
 
 The two nodes within the package can be run through ``rosrun``.
+
+Alarms
+------
+* **Clear an alarm:** ``roscd ros_alarms && rosrun nodes/clear.py``
+* **Monitor an alarm:** ``roscd ros_alarms && rosrun nodes/monitor.py``
+* **Raise an alarm:** ``roscd ros_alarms && rosrun nodes/raise.py``
+* **Reports the status of an alarm:** ``roscd ros_alarms && rosrun nodes/report.py``

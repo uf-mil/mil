@@ -550,10 +550,12 @@ code.descname {
 	font-family: unset;
 }
 
+/* Removing blue color on cpp type
 .sig.c   .k, .sig.c   .kt,
 .sig.cpp .k, .sig.cpp .kt {
 	color: #0033B3;
 }
+*/
 
 .sig.c   .m,
 .sig.cpp .m {

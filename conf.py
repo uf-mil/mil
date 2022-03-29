@@ -14,7 +14,11 @@
 
 import sys
 import os
+<<<<<<< HEAD
 import subprocess
+=======
+import os.path
+>>>>>>> cf41a126fe7882ea83cd7904fd71382e228917d3
 import recommonmark
 from recommonmark.transform import AutoStructify
 from sphinx.ext import graphviz
@@ -25,10 +29,17 @@ from sphinx.ext import graphviz
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.append(os.path.abspath('docs/extensions'))
 
+<<<<<<< HEAD
 # MIL Paths
 sys.path.append(os.path.abspath('mil_common/utils/mil_tools')) # mil_tools pkg
 sys.path.append(os.path.abspath('NaviGator/utils/remote_control/navigator_keyboard_control')) # navigator_keyboard_control pkg
 sys.path.append(os.path.abspath('mil_common/txros/txros')) # txros pkg
+=======
+# Node extensions
+sys.path.append(os.path.abspath('mil_common'))
+sys.path.append(os.path.abspath('mil_common/ros_alarms'))
+sys.path.append(os.path.abspath('mil_common/ros_alarms/nodes'))
+>>>>>>> cf41a126fe7882ea83cd7904fd71382e228917d3
 
 # -- General configuration ------------------------------------------------
 
@@ -46,7 +57,8 @@ extensions = [
     'recommonmark',
     'sphinx.ext.graphviz',
     'attributetable',
-    'builder'
+    'builder',
+    'breathe'
 ]
 
 intersphinx_mapping = {
@@ -56,31 +68,14 @@ intersphinx_mapping = {
   'numpy': ('https://numpy.org/doc/stable/', None)
 }
 
-# RTD
-read_the_docs_build = os.environ.get('READTHEDOCS') == "True"
-if read_the_docs_build:
-    # Source the ROS file on RTD
-    subprocess.call('source /opt/ros/noetic/setup.bash', shell = True)
+breathe_projects = {'mil': os.path.expanduser('~/.mil/doxygen/xml')}
 
-autodoc_mock_imports = [
-        "rospy", 
-        "actionlib", 
-        "actionlib_msgs", 
-        "rostest", 
-        "cv_bridge",
-        "sensor_msgs",
-        "message_filters",
-        "image_geometry",
-        "genpy",
-        "tf",
-        "geometry_msgs",
-        "std_msgs",
-        "nav_msgs",
-        "mil_msgs",
-        "visualization_msgs",
-        "rosbag",
-        "std_srvs"
-        ]
+breathe_default_project = 'mil'
+breathe_implementation_filename_extensions = ['.c', '.cc', '.cpp']
+breathe_default_members = ('members', 'undoc-members')
+
+# Document __init__ methods of classes
+autoclass_content = "both"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['docs/_templates']
