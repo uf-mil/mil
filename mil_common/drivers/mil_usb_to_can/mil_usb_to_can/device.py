@@ -1,13 +1,10 @@
 #!/usr/bin/python3
-from __future__ import print_function
 import rospy
 import struct
 import random
 import string
 from .application_packet import ApplicationPacket
 from rospy_tutorials.srv import AddTwoInts
-from six.moves import range
-
 
 class CANDeviceHandle(object):
     """

@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import struct
-from six.moves import range
 
 # from mil_tools import hexify
 
