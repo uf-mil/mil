@@ -189,17 +189,17 @@
     </scene>
     <include>
       <name>red_0</name>
-      <pose>-200 100 1 0 0 0</pose>
+      <pose>-210 113 1 0 0 0</pose>
       <uri>model://mb_marker_buoy_red</uri>
     </include>
     <include>
       <name>green_0</name>
-      <pose>-200 102 1 0 0 0</pose>
+      <pose>-204 122 1 0 0 0</pose>
       <uri>model://mb_marker_buoy_green</uri>
     </include>
     <include>
       <name>white_0</name>
-      <pose>-200 104 1 0 0 0</pose>
+      <pose>-205 109 1 0 0 0</pose>
       <uri>model://mb_marker_buoy_white</uri>
     </include>
     <plugin filename="libperception_scoring_plugin.so" name="perception_scoring_plugin">
@@ -224,19 +224,19 @@
           <time>5.0</time>
           <type>mb_marker_buoy_red</type>
           <name>red_0</name>
-          <pose>7.8 2.3 0.7 0 0 0</pose>
+          <pose>9.3 3.9 0.7 0 0 0</pose>
         </object>
         <object>
           <time>15.0</time>
           <type>mb_marker_buoy_green</type>
           <name>green_0</name>
-          <pose>8.3 0.3 0.7 0 0 0</pose>
+          <pose>15.3 2.0 0.7 0 0 0</pose>
         </object>
         <object>
           <time>25.0</time>
           <type>mb_marker_buoy_white</type>
           <name>white_0</name>
-          <pose>4.9 -2.32 0.2 0 0 0</pose>
+          <pose>5.9 -1.92 0.2 0 0 0</pose>
         </object>
       </object_sequence>
     </plugin>

@@ -181,27 +181,27 @@
     </scene>
     <include>
       <name>orange_round</name>
-      <pose>-200 100 1 0 0 0</pose>
+      <pose>-200 148 1 0 0 0</pose>
       <uri>model://mb_round_buoy_orange</uri>
     </include>
     <include>
       <name>green_0</name>
-      <pose>-200 102 1 0 0 0</pose>
+      <pose>-200 128 1 0 0 0</pose>
       <uri>model://mb_marker_buoy_green</uri>
     </include>
     <include>
       <name>black_round_0</name>
-      <pose>-200 116 1 0 0 0</pose>
+      <pose>-200 115 1 0 0 0</pose>
       <uri>model://mb_round_buoy_black</uri>
     </include>
     <include>
       <name>black_round_1</name>
-      <pose>-200 122 1 0 0 0</pose>
+      <pose>-200 129 1 0 0 0</pose>
       <uri>model://mb_round_buoy_black</uri>
     </include>
     <include>
       <name>white_0</name>
-      <pose>-200 114 1 0 0 0</pose>
+      <pose>-200 143 1 0 0 0</pose>
       <uri>model://mb_marker_buoy_white</uri>
     </include>
     <plugin filename="libperception_scoring_plugin.so" name="perception_scoring_plugin">
@@ -226,37 +226,37 @@
           <time>5.0</time>
           <type>mb_round_buoy_orange</type>
           <name>orange_round</name>
-          <pose>7.8 2.1 0.9 0 0 0</pose>
+          <pose>7.8 3.5 0.7 0 0 0</pose>
         </object>
         <object>
           <time>5.0</time>
           <type>mb_marker_buoy_green</type>
           <name>green_0</name>
-          <pose>7.8 -2.1 1.7 0 0 0</pose>
+          <pose>6.4 -2.9 0.7 0 0 0</pose>
         </object>
         <object>
           <time>15.0</time>
           <type>mb_marker_buoy_green</type>
           <name>green_0</name>
-          <pose>8.3 1.5 1 0 0 0</pose>
+          <pose>4.3 2.5 1 0 0 0</pose>
         </object>
         <object>
           <time>15.0</time>
           <type>mb_round_buoy_orange</type>
           <name>orange_round</name>
-          <pose>6.0 -1.0 0.7 0 0 0</pose>
+          <pose>7.0 -2.0 1 0 0 0</pose>
         </object>
         <object>
           <time>25.0</time>
           <type>mb_round_buoy_black</type>
           <name>black_round_0</name>
-          <pose>4.9 1.32 0.2 0 0 0</pose>
+          <pose>4.9 0.42 0.45 0 0 0</pose>
         </object>
         <object>
           <time>25.0</time>
           <type>mb_round_buoy_black</type>
           <name>black_round_1</name>
-          <pose>4.7 1.7 0.2 0 0 0</pose>
+          <pose>3.7 1.9 0.45 0 0 0</pose>
         </object>
         <object>
           <time>35.0</time>
@@ -268,7 +268,7 @@
           <time>35.0</time>
           <type>mb_round_buoy_black</type>
           <name>black_round_0</name>
-          <pose>6.1 1.2 0.2 0 0 0</pose>
+          <pose>2.1 -0.2 0.2 0 0 0</pose>
         </object>
       </object_sequence>
     </plugin>
