@@ -63,6 +63,9 @@ breathe_default_project = 'mil'
 breathe_implementation_filename_extensions = ['.c', '.cc', '.cpp']
 breathe_default_members = ('members', 'undoc-members')
 
+# Document __init__ methods of classes
+autoclass_content = "both"
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['docs/_templates']
 

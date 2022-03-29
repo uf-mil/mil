@@ -11,7 +11,7 @@ from ros_alarms.srv import (
 
 import json
 import traceback
-from typing import Callable, Tuple
+from typing import Callable, Tuple, Optional
 
 
 def parse_json_str(json_str: str) -> dict:
@@ -289,7 +289,17 @@ class Alarm:
 
 
 class AlarmBroadcaster:
-    def __init__(self, name, node_name=None, nowarn=False):
+    """
+    Broadcasts information about an alarm, and allows for the raising and clearing
+    of the alarm.
+    """
+    def __init__(self, name: str, node_name: Optional[str] = None, nowarn: bool = False):
+        """
+        Args:
+            name (str): The name of the related alarm.
+            node_name (Optional[str]): The name of the node alarm.
+            nowarn (bool): Whether to disable warning for the class' operations.
+        """
         self._alarm_name = name
         _check_for_valid_name(self._alarm_name, nowarn)
         _check_for_alarm(self._alarm_name, nowarn)
@@ -299,10 +309,18 @@ class AlarmBroadcaster:
         self._alarm_set = rospy.ServiceProxy("/alarm/set", AlarmSet)
 
     def wait_for_server(self, timeout=None):
-        """Wait for node to connect to alarm server.
-        Waits timeout seconds (or forever if timeout is None) to connect then
-        fetches the current alarm and calls callbacks as needed.
-        Note: User should always call wait_for_server before calling other methods
+        """
+        Wait for node to connect to alarm server. Waits timeout seconds (or forever 
+            if ``timeout`` is ``None``) to connect then fetches the current alarm 
+            and calls callbacks as needed.
+        
+        .. warning::
+
+            User should always call this method before calling other methods.
+
+        Args:
+            timeout (Optional[float]): The amount of seconds to wait before timing
+                out.
         """
         if timeout is not None and timeout < 1.5:
             self._alarm_set.wait_for_service(timeout=timeout)
@@ -332,12 +350,24 @@ class AlarmBroadcaster:
         return request
 
     def raise_alarm(self, **kwargs):
-        """Raises this alarm
-        @param node_name String that holds the name of the node making the request (optional)
-        @param problem_description String with a description of the problem (defaults to empty string)
-        @param parameters JSON dumpable dictionary with optional parameters that describe the alarm
-        @parma severity Integer in [0, 5] that indicates the severity of the alarm. (5 is most severe)
-        @return boolean, True if alarm successfully raised
+        """
+        Raises the alarm.
+
+        Args:
+            kwargs: The associated keyword arguments, as described below.
+
+        Keyword Arguments:
+            node_name (str): String that holds the name of the node making the 
+                request.
+            problem_description (str): String with a description of the problem 
+                (defaults to empty string).
+            parameters (dict): JSON dumpable dictionary with optional parameters 
+                that describe the alarm.
+            severity (int): Integer in [0, 5] that indicates the severity of 
+                the alarm. (5 is most severe)
+
+        Returns:
+            bool: Whether the alarm was successfully raised.
         """
         try:
             return self._alarm_set(self._generate_request(True, **kwargs)).succeed
@@ -346,12 +376,24 @@ class AlarmBroadcaster:
             return False
 
     def clear_alarm(self, **kwargs):
-        """Clears this alarm
-        @param node_name String that holds the name of the node making the request (optional)
-        @param problem_description String with a description of the problem (defaults to empty string)
-        @param parameters JSON dumpable dictionary with optional parameters that describe the alarm
-        @parma severity Integer in [0, 5] that indicates the severity of the alarm. (5 is most severe)
-        @return boolean, True if alarm successfully cleared
+        """
+        Clears the alarm.
+
+        Args:
+            kwargs: The associated keyword arguments, as described below.
+
+        Keyword Arguments:
+            node_name (str): String that holds the name of the node making the 
+                request.
+            problem_description (str): String with a description of the problem 
+                (defaults to empty string).
+            parameters (dict): JSON dumpable dictionary with optional parameters 
+                that describe the alarm.
+            severity (int): Integer in [0, 5] that indicates the severity of 
+                the alarm. (5 is most severe)
+
+        Returns:
+            bool: Whether the alarm was successfully cleared.
         """
         try:
             return self._alarm_set(self._generate_request(False, **kwargs)).succeed
@@ -360,8 +402,17 @@ class AlarmBroadcaster:
             return False
 
 
-class AlarmListener(object):
-    def __init__(self, name, callback_funct=None, nowarn=False, **kwargs):
+class AlarmListener:
+    """
+    Listens to an alarm.
+    """
+    def __init__(self, name: str, callback_funct: Optional[Callable] = None, nowarn: bool = False, **kwargs):
+        """
+        Args:
+            name (str): The alarm name.
+            callback_funct (Optional[Callable]): The callback function.
+            nowarn (bool): Whether to enable warnings about the class. Defaults to ``False``.
+        """
         self._alarm_name = name
         self._last_alarm = None
         _check_for_valid_name(self._alarm_name, nowarn)
@@ -377,11 +428,19 @@ class AlarmListener(object):
         if callback_funct is not None:
             self.add_callback(callback_funct, **kwargs)
 
-    def wait_for_server(self, timeout=None):
-        """Wait for node to connect to alarm server.
-        Waits timeout seconds (or forever if timeout is None) to connect then
-        fetches the current alarm and calls callbacks as needed.
-        Note: User should always call wait_for_server before calling other methods
+    def wait_for_server(self, timeout: Optional[float] = None):
+        """
+        Wait for node to connect to alarm server. Waits timeout seconds (or forever 
+            if ``timeout`` is ``None``) to connect then fetches the current alarm 
+            and calls callbacks as needed.
+        
+        .. warning::
+
+            User should always call this method before calling other methods.
+
+        Args:
+            timeout (Optional[float]): The amount of seconds to wait before timing
+                out.
         """
         if timeout is not None and timeout < 1.5:
             self._alarm_get.wait_for_service(timeout=timeout)
@@ -395,21 +454,48 @@ class AlarmListener(object):
         rospy.logdebug("alarm server connected")
         self.get_alarm()  # Now that we have service, update callbacks
 
-    def is_raised(self, fetch=True):
-        """Returns whether this alarm is raised or not"""
+    def is_raised(self, fetch: bool = True):
+        """
+        Returns whether this alarm is raised or not.
+
+        Args:
+            fetch (bool): Whether to fetch the alarm from the server. If ``False``,
+                then uses the most recently cached alarm. Defaults to ``True``.
+
+        Returns:
+            bool: Whether the alarm is raised.
+        """
         alarm = self.get_alarm(fetch=fetch)
         if alarm is None:
             return False
         return alarm.raised
 
-    def is_cleared(self, fetch=True):
-        """Returns whether this alarm is cleared or not"""
+    def is_cleared(self, fetch: bool = True) -> bool:
+        """
+        Returns whether this alarm is cleared or not.
+        
+        Args:
+            fetch (bool): Whether to fetch the alarm from the server. If ``False``,
+                then uses the most recently cached alarm. Defaults to ``True``.
+
+        Returns:
+            bool: Whether the alarm is cleared.
+        """
         return not self.is_raised(fetch=fetch)
 
-    def get_alarm(self, fetch=True):
-        """Returns the alarm message
-        Also worth noting, the alarm this returns has it's `parameter` field
-            converted to a dictionary
+    def get_alarm(self, fetch: bool = True) -> Optional[AlarmGetResponse]:
+        """
+        Returns the alarm message.
+
+        Also worth noting, the alarm this method returns has it's ``parameters`` field
+            converted to a dictionary.
+
+        Args:
+            fetch (bool): Whether to fetch the alarm from the server. If ``False``,
+                then uses the most recently cached alarm. Defaults to ``True``.
+
+        Returns:
+            AlarmGetResponse: The response message, with its updated ``parameters`` field.
         """
         if not fetch:
             return self._last_alarm
@@ -434,16 +520,23 @@ class AlarmListener(object):
 
     def add_callback(
         self,
-        funct,
-        call_when_raised=True,
-        call_when_cleared=True,
-        severity_required=(0, 5),
+        funct: Callable,
+        call_when_raised: bool = True,
+        call_when_cleared: bool = True,
+        severity_required: Tuple[int, int] = (0, 5),
     ):
-        """Deals with adding function callbacks
-        The user can specify if the function should be run on a raise or clear of this alarm.
+        """
+        Adds a callback function to the alarm.
 
-        Each callback can have a severity level associated with it such that different callbacks can
-            be triggered for different levels of severity.
+        Args:
+            funct (Callable): The callback to add.
+            call_when_raised (bool): Whether to call the callback when the alarm
+                is raised. Defaults to ``True``.
+            call_when_cleared (bool): Whether to call the callback when the alarm
+                is cleared. Defaults to ``True``.
+            severity_required (Tuple[int, int]): The severity required to run the
+                callback. The tuple represents the minimum and maximum severities
+                under which to execute the callback. Defaults to ``(0, 5)``.
         """
         alarm = self._last_alarm
         if call_when_raised:
@@ -479,7 +572,9 @@ class AlarmListener(object):
                     )
 
     def clear_callbacks(self):
-        """Clears all callbacks"""
+        """
+        Clears all callbacks.
+        """
         self._raised_cbs = []
         self._cleared_cbs = []
 
@@ -506,21 +601,24 @@ class AlarmListener(object):
 
 
 class HeartbeatMonitor(AlarmBroadcaster):
+    """
+    Used to trigger an alarm if a message on the topic ``topic_name`` isn't published
+    at least every ``prd`` seconds.
+
+    An alarm won't be triggered if no messages are initally received.
+
+    All of this class' methods and attribues are internal.
+    """
     def __init__(
         self,
-        alarm_name,
-        topic_name,
+        alarm_name: str,
+        topic_name: str,
         msg_class,
-        prd=0.2,
-        predicate=None,
-        nowarn=False,
+        prd: float = 0.2,
+        predicate: Optional[Callable] = None,
+        nowarn: bool = False,
         **kwargs
     ):
-        """Used to trigger an alarm if a message on the topic `topic_name` isn't published
-            atleast every `prd` seconds.
-
-        An alarm won't be triggered if no messages are initally received
-        """
         self._predicate = predicate if predicate is not None else lambda *args: True
         self._last_msg_time = None
         self._prd = rospy.Duration(prd)
