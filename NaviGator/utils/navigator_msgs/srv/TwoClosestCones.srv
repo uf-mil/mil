@@ -1,0 +1,4 @@
+---
+bool no_more_buoys
+geometry_msgs/Point object1
+geometry_msgs/Point object2

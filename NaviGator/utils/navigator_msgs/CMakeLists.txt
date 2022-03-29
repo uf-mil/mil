@@ -56,6 +56,7 @@ add_service_files(
   MessageDetectDeliver.srv
   MessageExtranceExitGate.srv
   MessageIdentifySymbolsDock.srv
+  TwoClosestCones.srv
 )
 
 add_action_files(
