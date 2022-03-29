@@ -434,6 +434,126 @@ Odometry
 
         :type: ~geometry_msgs.msg._TwistWithCovariance.TwistWithCovariance
 
+Path Planner
+^^^^^^^^^^^^
+
+MoveAction
+~~~~~~~~~~
+
+.. attributetable:: navigator_path_planner.msg._MoveAction.MoveAction
+
+.. class:: navigator_path_planner.msg._MoveAction.MoveAction
+
+    A custom message representing the general movement of an entire system.
+
+    .. attribute:: action_goal
+    
+        The goal for an action's movement.
+
+        :type: MoveActionGoal
+
+    .. attribute:: action_result
+    
+        The result of a move action's result.
+
+        :type: MoveActionResult
+
+    .. attribute:: action_feedback
+    
+        The feedback for an action movement.
+
+        :type: MoveActionFeedback
+
+MoveActionResult
+~~~~~~~~~~~~~~~~
+.. attributetable:: navigator_path_planner.msg._MoveActionResult.MoveActionResult
+
+.. class:: navigator_path_planner.msg._MoveActionResult.MoveActionResult
+
+    A custom message representing the result of a system's movement.
+
+    .. attribute:: header
+    
+        The header for the message.
+
+        :type: Header
+
+    .. attribute:: status
+    
+        The status of the system in its movement.
+
+        :type: GoalStatus
+
+    .. attribute:: result
+    
+        The result of the movement
+
+        :type: MoveResult
+
+MoveActionFeedback
+~~~~~~~~~~~~~~~~~~
+.. attributetable:: navigator_path_planner.msg._MoveActionFeedback.MoveActionFeedback
+
+.. class:: navigator_path_planner.msg._MoveActionFeedback.MoveActionFeedback
+
+    A custom message representing the feedback of a system's movement.
+
+    .. attribute:: header
+    
+        The header for the message.
+
+        :type: Header
+
+    .. attribute:: status
+    
+        The status of the system in its movement.
+
+        :type: GoalStatus
+
+    .. attribute:: feedback
+    
+        The feedback of the movement.
+
+        :type: MoveFeedback
+
+MoveFeedback
+~~~~~~~~~~~~~~~~~~
+.. attributetable:: navigator_path_planner.msg._MoveFeedback.MoveFeedback
+
+.. class:: navigator_path_planner.msg._MoveFeedback.MoveFeedback
+
+    A custom message representing the feedback of a system's movement.
+
+    .. attribute:: behavior
+
+        A description of the behavior.
+
+        :type: str
+
+    .. attribute:: tree_size
+    
+        The size of the lqRRT tree.
+
+        :type: int
+
+    .. attribute:: tracking
+    
+        ???
+
+        :type: bool
+
+    .. attribute:: distance
+    
+        ???
+
+        :type: List[float]
+
+    .. attribute:: time_till_next_branch
+    
+        ???
+
+        :type: float
+
 Standard Messages
 ^^^^^^^^^^^^^^^^^
 

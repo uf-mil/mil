@@ -1,13 +1,4 @@
 #!/usr/bin/env python3
-"""
-Example of a ROS node that uses lqRRT for a big boat.
-
-This node subscribes to the current boat state (Odometry message),
-and the world-frame ogrid (OccupancyGrid message). It publishes the
-REFerence trajectory that moves to the goal, as an Odometry message.
-It provides an action for moving said reference to that goal (Move.action).
-
-"""
 from __future__ import division
 import numpy as np
 import numpy.linalg as npl
@@ -50,7 +41,28 @@ else:
 # INITIALIZATIONS
 
 
-class LQRRT_Node(object):
+class LQRRT_Node:
+    """
+    Example of a ROS node that uses lqRRT for a big boat.
+
+    This node subscribes to the current boat state (Odometry message),
+    and the world-frame ogrid (OccupancyGrid message). It publishes the
+    REFerence trajectory that moves to the goal, as an Odometry message.
+    It provides an action for moving said reference to that goal (Move.action).
+
+    Attributes:
+        revisit_period (float): When to refresh the core of the planner.
+        ref_pub (rospy.Publisher): The publisher serving the lqRRT reference 
+            topic name.
+        path_pub (rospy.Publisher): Publisher responsible for publishing a PoseArray
+            to the provided path topic.
+        tree_pub (rospy.Publisher): Publisher responsible for publishing a PoseArray
+            to the provided tree topic.
+        unreachable (bool): Whether the planner sees a goal as being unreachable.
+            Defaults to ``false``.
+        done (bool): Whether the planner has finished its movement. Defaults to ``false``.
+        move_type (MoveAction): How the boat is planning to move towards its goal.
+    """
     def __init__(
         self,
         odom_topic: str,
