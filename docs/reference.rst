@@ -1657,6 +1657,135 @@ CameraToLidarTransform
 
         :type: str
 
+ChooseAnimal
+^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._ChooseAnimal.ChooseAnimalRequest
+
+.. class:: navigator_msgs.srv._ChooseAnimal.ChooseAnimalRequest
+
+   The request class for the ``navigator_msgs/ChooseAnimal`` service.
+
+   .. attribute:: target_animal
+
+        The target animal to circle around. Should be ``platyus``, ``crocodile``,
+        or ``turtle``.
+
+        :type: str
+
+   .. attribute:: circle_direction
+
+        The direction to circle in. Should be ``clockwise`` or ``anti-clockwise``.
+
+        :type: str
+
+.. attributetable:: navigator_msgs.srv._ChooseAnimal.ChooseAnimalResponse
+
+.. class:: navigator_msgs.srv._ChooseAnimal.ChooseAnimalResponse
+
+   The repsonse class for the ``navigator_msgs/ChooseAnimal`` service.
+
+   .. attribute:: movement_complete
+
+        Whether the movement was completed.
+
+        :type: bool
+
+ColorRequest
+^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._ColorRequest.ColorRequestRequest
+
+.. class:: navigator_msgs.srv._ColorRequest.ColorRequestRequest
+
+   The request class for the ``navigator_msgs/ColorRequest`` service.
+
+   .. attribute:: color
+
+        The color used to find objects with.
+
+        :type: str
+
+.. attributetable:: navigator_msgs.srv._ColorRequest.ColorRequestResponse
+
+.. class:: navigator_msgs.srv._ColorRequest.ColorRequestResponse
+
+   The repsonse class for the ``navigator_msgs/ColorRequest`` service.
+
+   .. attribute:: found
+    
+        Whether objects were found.
+
+        :type: bool
+
+   .. attribute:: ids
+    
+        The IDs of objects that were found.
+
+        :type: List[int]
+
+CoordinateConversion
+^^^^^^^^^^^^^^^^^^^^
+
+.. attributetable:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionRequest
+
+.. class:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionRequest
+
+   The request class for the ``navigator_msgs/CoordinateConversion`` service.
+
+   .. attribute:: LLA
+
+        The longitude, latitude, altitude coordinate frame. Constant string equal
+        to ``lla``.
+
+        :type: str
+
+   .. attribute:: ENU
+
+        The east, north, up frame. Constant string equal to ``enu``.
+
+        :type: str
+
+   .. attribute:: ECEF
+
+        The Earth-centered, Earth-fixed frame. Constant string equal to ``ecef``.
+
+        :type: str
+
+   .. attribute:: frame
+
+        The current frame of the relative objects.
+
+        :type: str
+
+   .. attribute:: to_frame
+
+        The frame of objects to convert objects to.
+
+        :type: str
+
+   .. attribute:: points
+
+        The points to convert between the different frames.
+
+        :type: List[Point]
+
+.. attributetable:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionResponse
+
+.. class:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionResponse
+
+   The repsonse class for the ``navigator_msgs/CoordinateConversion`` service.
+
+   .. attribute:: converted
+    
+        The list of converted points.
+
+        :type: List[Point]
+
+   .. attribute:: message
+    
+        If an error occurred, the message of what went wrong.
+
+        :type: str
+
 Exceptions
 ----------
 

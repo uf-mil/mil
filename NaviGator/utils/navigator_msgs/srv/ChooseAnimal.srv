@@ -1,4 +1,4 @@
-string target_animal
-string circle_direction
+string target_animal # platypus, crocodile, turtle
+string circle_direction # clockwise, anti-clockwise
 ---
 bool movement_complete
