@@ -397,7 +397,6 @@ PoseTwist
 
         :type: ~geometry_msgs.msg._Accel.Accel
 
-
 Navigation Messages
 ^^^^^^^^^^^^^^^^^^^
 
@@ -453,120 +452,273 @@ Acceleration
 
         :type: Vector3
 
-DockShape
-~~~~~~~~~
+KillStatus
+~~~~~~~~~~
 
-.. attributetable:: navigator_msgs.msg._DockShape.DockShape
+.. attributetable:: navigator_msgs.msg._KillStatus.KillStatus
 
-.. class:: navigator_msgs.msg._DockShape.DockShape
+.. class:: navigator_msgs.msg._KillStatus.KillStatus
 
-    .. attribute:: Shape
+    A custom message to represent information about a kill induced on the robot.
 
-        The shape of the dock. Likely either :attr:`DockShape.CROSS`, :attr:`DockShape.CIRCLE`,
-        or :attr:`DockShape.TRIANGLE`.
+    .. attribute:: overall
 
-        :type: str
+        :type: bool
 
-    .. attribute:: CROSS
+    .. attribute:: pf
 
-        The dock holds the cross shape.
+        :type: bool
 
-        :type: str
+    .. attribute:: pa
 
-    .. attribute:: CIRCLE
+        :type: bool
 
-        The dock holds the circle shape.
+    .. attribute:: sf
 
-        :type: str
+        :type: bool
 
-    .. attribute:: TRIANGLE
+    .. attribute:: sa
 
-        The dock holds the triangle shape.
+        :type: bool
 
-        :type: str
+    .. attribute:: remote
 
-    .. attribute:: Color
+        :type: bool
 
-        The color of the dock. Likely either :attr:`DockShape.RED`, :attr:`DockShape.BLUE`,
-        or :attr:`DockShape.GREEN`.
+    .. attribute:: computer
 
-        :type: str
+        :type: bool
 
-    .. attribute:: RED
+    .. attribute:: remote_conn
 
-        The dock shape is red.
+        :type: bool
 
-        :type: str
+PerceptionObject
+~~~~~~~~~~~~~~~~
 
-    .. attribute:: BLUE
+.. attributetable:: navigator_msgs.msg._PerceptionObject.PerceptionObject
 
-        The dock shape is blue.
+.. class:: navigator_msgs.msg._PerceptionObject.PerceptionObject
 
-        :type: str
-
-    .. attribute:: GREEN
-
-        The dock shape is green.
-
-        :type: str
-
-    .. attribute:: CenterX
-
-        The x-dimension of the center of the dock shape.
-
-        :type: int
-
-    .. attribute:: CenterY
-
-        The y-dimension of the center of the dock shape.
-
-        :type: int
-
-    .. attribute.. img_width
-
-        The width of the image showing the dock and its shape.        
-
-        :type: int
+    A custom message definition to represent an object found by the perception
+    system.
 
     .. attribute:: header
-
+    
         The message header.
 
         :type: Header
 
+    .. attribute:: name
+    
+        The name of the object.
+
+        :type: str
+
+    .. attribute:: DETECT_DELIVER_PLATFORM
+    
+        The constant string field representing the platform to detect and deliver.
+        Actual string value is ``shooter``.
+
+        :type: str
+
+    .. attribute:: IDENTIFY_AND_DOCK
+    
+        The constant string field representing the dock in the Identify and Dock mission.
+        Actual string value is ``dock``.
+
+        :type: str
+
+    .. attribute:: SCAN_THE_CODE
+    
+        The constant string field representing the Scan the Code totem. Actual 
+        string value is ``scan_the_code``.
+
+        :type: str
+
+    .. attribute:: TOTEM
+    
+        The constant string field representing the totem in the Find Totems mission.
+        Actual string value is ``totem``.
+
+        :type: str
+
+    .. attribute:: START_GATE_BUOY
+    
+        The constant string field representing the buoy of the start gate.
+        Actual string value is ``start_gate``.
+
+        :type: str
+
+    .. attribute:: BUOY
+    
+        The constant string field representing a buoy.
+        Actual string value is ``buoy``.
+
+        :type: str
+
+    .. attribute:: UNKNOWN
+    
+        The constant string field representing an unknown object.
+        Actual string value is ``unknown``.
+
+        :type: str
+
+    .. attribute:: ALL
+    
+        The constant string field representing all objects found.
+        Actual string value is ``all``.
+
+        :type: str
+
+    .. attribute:: FAKE_SHOOTER
+    
+        The constant string field representing a fake shooter.
+        Actual string value is ``Shooter``.
+
+        :type: str
+
+    .. attribute:: FAKE_IDENTIFY_AND_DOCK
+    
+        The constant string field representing a fake dock in the Identify and Dock mission.
+        Actual string value is ``Dock``.
+
+        :type: str
+
+    .. attribute:: FAKE_SCAN_THE_CODE
+    
+        The constant string field representing a fake Scan the Code totem in the
+        Scan the Code mission. Actual string value is ``Dock``.
+
+        :type: str
+
+    .. attribute:: GATE1
+    
+        The constant string field representing the first gate.
+        Actual string value is ``Gate_1``.
+
+        :type: str
+
+    .. attribute:: GATE2
+    
+        The constant string field representing the first gate.
+        Actual string value is ``Gate_2``.
+
+        :type: str
+
+    .. attribute:: GATE3
+    
+        The constant string field representing the first gate.
+        Actual string value is ``Gate_3``.
+
+        :type: str
+
+    .. attribute:: BUOY_FIELD
+    
+        The constant string field representing a field of buoys.
+        Actual string value is ``BuoyField``.
+
+        :type: str
+
+    .. attribute:: FIND_THE_BREAK
+    
+        The constant string field representing ???.
+        Actual string value is ``FindBreak``.
+
+        :type: str
+
+    .. attribute:: CORAL_SURVEY
+    
+        The constant string field representing ???.
+        Actual string value is ``CoralSurvey``.
+
+        :type: str
+
+    .. attribute:: ACOUSTIC_PINGER
+    
+        The constant string field representing an acoustic pinger.
+        Actual string value is ``AcousticPinger``.
+
+        :type: str
+
+    .. attribute:: EMPTY_SPACE
+    
+        The constant string field representing empty space.
+        Actual string value is ``EmptySpace``.
+
+        :type: str
+
+    .. attribute:: position
+
+        Estimated position of the object.
+
+        :type: Point
+
+    .. attribute:: id
+
+        The ID of the object.
+
+        :type: int
+
+    .. attribute:: confidence
+
+        The confidence of the object detection, from 0 to 255.
+
+        :type: int
+
+    .. attribute:: size
+
+        The size of the object in all dimensions.
+
+        :type: Vector3
+
     .. attribute:: points
 
-        ???
+        The points (in the ENU frame) that belong to the buoy.
 
-        :type: List[~geometry_msgs.msg._Point.Point]
+        :type: List[Point32]
 
-    .. attribute:: color_confidence
+    .. attribute:: intensity
 
-        The relative confidence that the color prediction is correct.
+        The intensity of each point in the ENU frame.
 
-        :type: float
+        :type: List[int]
 
-    .. attribute:: shape_confidence
+    .. attribute:: pclInliers
 
-        The relative confidence that the shape prediction is correct.
+        The inliners for the PCL plane fitting algorithm.
 
-        :type: float
+        :type: int
 
-DockShapes
-~~~~~~~~~~
+    .. attribute:: normal
 
-.. attributetable:: navigator_msgs.msg._DockShapes.DockShapes
+        Unit vector for normal to one of the vertical planes of the object.
 
-.. class:: navigator_msgs.msg._DockShapes.DockShapes
+        :type: Vector3
 
-    A custom message definition to represent the presence of multiple dock shapes
-    found by the vision system.
+    .. attribute:: color
 
-    .. attribute:: list
+        Average color of the buoy.
 
-        The list of shapes found.
+        :type: ColorRGBA
 
-        :type: List[DockShape]
+PerceptionObjectArray
+~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._PerceptionObjectArray.PerceptionObjectArray
+
+.. class:: navigator_msgs.msg._PerceptionObjectArray.PerceptionObjectArray
+
+    A custom message definition to represent an array of perception objects.
+
+    .. attribute:: objects
+
+        The objects in the array.
+
+        :type: List[PerceptionObject]
+
+Networking Messages
+^^^^^^^^^^^^^^^^^^^
 
 Host
 ~~~~
@@ -619,47 +771,6 @@ Hosts
         The hosts belonging to the group.
 
         :type: List[~navigator_msgs.msg._Host.Host]
-
-KillStatus
-~~~~~~~~~~
-
-.. attributetable:: navigator_msgs.msg._KillStatus.KillStatus
-
-.. class:: navigator_msgs.msg._KillStatus.KillStatus
-
-    A custom message to represent information about a kill induced on the robot.
-
-    .. attribute:: overall
-
-        :type: bool
-
-    .. attribute:: pf
-
-        :type: bool
-
-    .. attribute:: pa
-
-        :type: bool
-
-    .. attribute:: sf
-
-        :type: bool
-
-    .. attribute:: sa
-
-        :type: bool
-
-    .. attribute:: remote
-
-        :type: bool
-
-    .. attribute:: computer
-
-        :type: bool
-
-    .. attribute:: remote_conn
-
-        :type: bool
 
 Path Planner
 ^^^^^^^^^^^^
@@ -1127,6 +1238,143 @@ PointCloud2
         ``True`` if there are no invalid points.
 
         :type: bool
+
+VRX Messages
+^^^^^^^^^^^^
+
+DockShape
+~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._DockShape.DockShape
+
+.. class:: navigator_msgs.msg._DockShape.DockShape
+
+    .. attribute:: Shape
+
+        The shape of the dock. Likely either :attr:`DockShape.CROSS`, :attr:`DockShape.CIRCLE`,
+        or :attr:`DockShape.TRIANGLE`.
+
+        :type: str
+
+    .. attribute:: CROSS
+
+        The dock holds the cross shape.
+
+        :type: str
+
+    .. attribute:: CIRCLE
+
+        The dock holds the circle shape.
+
+        :type: str
+
+    .. attribute:: TRIANGLE
+
+        The dock holds the triangle shape.
+
+        :type: str
+
+    .. attribute:: Color
+
+        The color of the dock. Likely either :attr:`DockShape.RED`, :attr:`DockShape.BLUE`,
+        or :attr:`DockShape.GREEN`.
+
+        :type: str
+
+    .. attribute:: RED
+
+        The dock shape is red.
+
+        :type: str
+
+    .. attribute:: BLUE
+
+        The dock shape is blue.
+
+        :type: str
+
+    .. attribute:: GREEN
+
+        The dock shape is green.
+
+        :type: str
+
+    .. attribute:: CenterX
+
+        The x-dimension of the center of the dock shape.
+
+        :type: int
+
+    .. attribute:: CenterY
+
+        The y-dimension of the center of the dock shape.
+
+        :type: int
+
+    .. attribute.. img_width
+
+        The width of the image showing the dock and its shape.        
+
+        :type: int
+
+    .. attribute:: header
+
+        The message header.
+
+        :type: Header
+
+    .. attribute:: points
+
+        ???
+
+        :type: List[~geometry_msgs.msg._Point.Point]
+
+    .. attribute:: color_confidence
+
+        The relative confidence that the color prediction is correct.
+
+        :type: float
+
+    .. attribute:: shape_confidence
+
+        The relative confidence that the shape prediction is correct.
+
+        :type: float
+
+DockShapes
+~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._DockShapes.DockShapes
+
+.. class:: navigator_msgs.msg._DockShapes.DockShapes
+
+    A custom message definition to represent the presence of multiple dock shapes
+    found by the vision system.
+
+    .. attribute:: list
+
+        The list of shapes found.
+
+        :type: List[DockShape]
+
+
+ScanTheCode
+~~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._ScanTheCode.ScanTheCode
+
+.. class:: navigator_msgs.msg._ScanTheCode.ScanTheCode
+
+    A custom message definition to represent the color pattern show by a Scan The
+    Code totem.
+
+    .. attribute:: string_pattern
+
+        The pattern shown. ``R`` stands for red, ``B`` stands for blue, and ``G``
+        stands for green.
+
+        :type: str
+
 
 Services
 --------
