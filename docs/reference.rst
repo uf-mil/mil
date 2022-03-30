@@ -568,6 +568,99 @@ DockShapes
 
         :type: List[DockShape]
 
+Host
+~~~~
+
+.. attributetable:: navigator_msgs.msg._Host.Host
+
+.. class:: navigator_msgs.msg._Host.Host
+
+    A custom message definition responsible for associating a hostname and IP
+    address with a status.
+
+    .. attribute:: hostname
+
+        The name of the host.
+
+        :type: str
+
+    .. attribute:: ip
+
+        The IP address of the host.
+
+        :type: str
+
+    .. attribute:: status
+
+        The status of the host.
+
+        :type: str
+
+Hosts
+~~~~~
+
+.. attributetable:: navigator_msgs.msg._Hosts.Hosts
+
+.. class:: navigator_msgs.msg._Hosts.Hosts
+
+    A custom message definition representing a group of hosts together.
+
+    .. attribute:: hostnames
+
+        A custom, constant string representing a group of hostnames. The string is
+        equal to:
+
+            mil-nav-wamv mil-nav-ubnt-wamv mil-nav-ubnt-shore mil-com-velodyne-vlp16 mil-com-sick-lms111
+
+        :type: str
+
+    .. attribute:: hosts
+    
+        The hosts belonging to the group.
+
+        :type: List[~navigator_msgs.msg._Host.Host]
+
+KillStatus
+~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._KillStatus.KillStatus
+
+.. class:: navigator_msgs.msg._KillStatus.KillStatus
+
+    A custom message to represent information about a kill induced on the robot.
+
+    .. attribute:: overall
+
+        :type: bool
+
+    .. attribute:: pf
+
+        :type: bool
+
+    .. attribute:: pa
+
+        :type: bool
+
+    .. attribute:: sf
+
+        :type: bool
+
+    .. attribute:: sa
+
+        :type: bool
+
+    .. attribute:: remote
+
+        :type: bool
+
+    .. attribute:: computer
+
+        :type: bool
+
+    .. attribute:: remote_conn
+
+        :type: bool
+
 Path Planner
 ^^^^^^^^^^^^
 
