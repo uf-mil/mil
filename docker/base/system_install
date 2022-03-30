@@ -9,6 +9,13 @@ mil_system_install()
 # Update apt
 sudo apt update
 
+# Installation for virtual machines
+# Installs the apt-add-repository command
+RUN sudo apt-get install software-properties-common -y
+
+# Installs keyboard config without prompting for input
+RUN sudo DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration -y # Weird bug
+
 # System dependencies
 mil_system_install apt-utils
 mil_system_install --no-install-recommends \
@@ -73,7 +80,6 @@ mil_system_install \
 # Install recent pip packages being used
 sudo pip3 install --upgrade pip \
     tsp_solver2 \
-    tensorflow==2.8.0 \
     Pillow \
     black \
     modernize
