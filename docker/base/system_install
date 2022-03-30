@@ -101,5 +101,8 @@ sudo pip3 install -q \
 
 # Initialize rosdep
 sudo apt-get install python3-rosdep
+
+# Update rosdep
+sudo rm -rf /etc/ros/rosdep/sources.list.d/* # Delete this file first - if not deleted, error could be thrown
 sudo rosdep init
 sudo rosdep update
