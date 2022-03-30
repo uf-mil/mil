@@ -1514,6 +1514,149 @@ AlarmSet
 
         :type: bool
 
+AcousticBeacon
+^^^^^^^^^^^^^^
+
+.. attributetable:: navigator_msgs.srv._AcousticBeacon.AcousticBeaconRequest
+
+.. class:: navigator_msgs.srv._AcousticBeacon.AcousticBeaconRequest
+
+   The request class for the ``navigator_msgs/AcousticBeacon`` service. The class
+   contains no settable attributes.
+
+.. attributetable:: navigator_msgs.srv._AcousticBeacon.AcousticBeaconResponse
+
+.. class:: navigator_msgs.srv._AcousticBeacon.AcousticBeaconResponse
+
+   The repsonse class for the ``navigator_msgs/AcousticBeacon`` service.
+
+   .. attribute:: beacon_position
+
+        The position of the acoustic beacon.
+
+        :type: Point
+
+   .. attribute:: setValue
+
+        Whether the position data of the beacon is reliable enough to be used.
+
+        :type: bool
+
+CameraDBQuery
+^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryRequest
+
+.. class:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryRequest
+
+   The request class for the ``navigator_msgs/CameraDBQuery`` service.
+
+   .. attribute:: name
+
+        The name of the object to query.
+
+        :type: str
+
+   .. attribute:: id
+
+        The ID of the object to query.
+
+        :type: int
+
+.. attributetable:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryResponse
+
+.. class:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryResponse
+
+   The repsonse class for the ``navigator_msgs/CameraDBQuery`` service.
+
+   .. attribute:: found
+
+        Whether the object is found.
+
+        :type: bool
+
+CameraToLidarTransform
+^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformRequest
+
+.. class:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformRequest
+
+   The request class for the ``navigator_msgs/CameraToLidarTransform`` service.
+
+   .. attribute:: header
+
+        The stamp the point was seen for tf.
+
+        :type: Header
+
+   .. attribute:: point
+
+        The x-dimension and y-dimension of the point in the camera. The z-dimension
+        is ignored.
+
+        :type: Point
+
+   .. attribute:: tolerance
+
+        The number of pixels the projected 3D Lidar point can be from the target point
+        to be included in the response.
+
+        :type: int
+
+.. attributetable:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformResponse
+
+.. class:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformResponse
+
+   The repsonse class for the ``navigator_msgs/CameraToLidarTransform`` service.
+
+   .. attribute:: success
+
+        True if at least one point is found within LIDAR and transformed.
+
+        :type: bool
+
+   .. attribute:: transformed
+
+        If success is true, then the list of transformed points.
+
+        :type: List[Point]
+
+   .. attribute:: closest
+
+        3D point that is closest to the target point when transformed and projected
+
+        :type: Point
+
+   .. attribute:: normal
+
+        The normal unit vector in the camera frame estimated from the transformed points.
+
+        :type: Vector3
+
+   .. attribute:: distance
+
+        The mean z-dimension of the transformed points.
+
+        :type: float
+
+   .. attribute:: error
+
+        If success is false, then what went wrong.
+
+        :type: str
+
+   .. attribute:: CLOUD_NOT_FOUND
+
+        The pointcloud was not found. Constant string actually equal to ``pointcloud
+        not found``.
+
+        :type: str
+
+   .. attribute:: NO_POINTS
+
+        No points were found. Constant string actually equal to ``no points``.
+
+        :type: str
+
 Exceptions
 ----------
 
