@@ -434,6 +434,140 @@ Odometry
 
         :type: ~geometry_msgs.msg._TwistWithCovariance.TwistWithCovariance
 
+Acceleration
+~~~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._Acceleration.Acceleration
+
+.. class:: navigator_msgs.msg._Acceleration.Acceleration
+
+    .. attribute:: linear
+
+        The linear component of the acceleration.
+
+        :type: Vector3
+
+    .. attribute:: angular
+
+        The angular component of the acceleration.
+
+        :type: Vector3
+
+DockShape
+~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._DockShape.DockShape
+
+.. class:: navigator_msgs.msg._DockShape.DockShape
+
+    .. attribute:: Shape
+
+        The shape of the dock. Likely either :attr:`DockShape.CROSS`, :attr:`DockShape.CIRCLE`,
+        or :attr:`DockShape.TRIANGLE`.
+
+        :type: str
+
+    .. attribute:: CROSS
+
+        The dock holds the cross shape.
+
+        :type: str
+
+    .. attribute:: CIRCLE
+
+        The dock holds the circle shape.
+
+        :type: str
+
+    .. attribute:: TRIANGLE
+
+        The dock holds the triangle shape.
+
+        :type: str
+
+    .. attribute:: Color
+
+        The color of the dock. Likely either :attr:`DockShape.RED`, :attr:`DockShape.BLUE`,
+        or :attr:`DockShape.GREEN`.
+
+        :type: str
+
+    .. attribute:: RED
+
+        The dock shape is red.
+
+        :type: str
+
+    .. attribute:: BLUE
+
+        The dock shape is blue.
+
+        :type: str
+
+    .. attribute:: GREEN
+
+        The dock shape is green.
+
+        :type: str
+
+    .. attribute:: CenterX
+
+        The x-dimension of the center of the dock shape.
+
+        :type: int
+
+    .. attribute:: CenterY
+
+        The y-dimension of the center of the dock shape.
+
+        :type: int
+
+    .. attribute.. img_width
+
+        The width of the image showing the dock and its shape.        
+
+        :type: int
+
+    .. attribute:: header
+
+        The message header.
+
+        :type: Header
+
+    .. attribute:: points
+
+        ???
+
+        :type: List[~geometry_msgs.msg._Point.Point]
+
+    .. attribute:: color_confidence
+
+        The relative confidence that the color prediction is correct.
+
+        :type: float
+
+    .. attribute:: shape_confidence
+
+        The relative confidence that the shape prediction is correct.
+
+        :type: float
+
+DockShapes
+~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._DockShapes.DockShapes
+
+.. class:: navigator_msgs.msg._DockShapes.DockShapes
+
+    A custom message definition to represent the presence of multiple dock shapes
+    found by the vision system.
+
+    .. attribute:: list
+
+        The list of shapes found.
+
+        :type: List[DockShape]
+
 Path Planner
 ^^^^^^^^^^^^
 
