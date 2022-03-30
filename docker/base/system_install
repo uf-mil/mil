@@ -11,10 +11,10 @@ sudo apt update
 
 # Installation for virtual machines
 # Installs the apt-add-repository command
-RUN sudo apt-get install software-properties-common -y
+sudo apt-get install software-properties-common -y
 
 # Installs keyboard config without prompting for input
-RUN sudo DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration -y # Weird bug
+sudo DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration -y # Weird bug
 
 # System dependencies
 mil_system_install apt-utils
