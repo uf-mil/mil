@@ -23,7 +23,7 @@ jobs:
         run: |
           ls -l $GITHUB_WORKSPACE
           mkdir -p ~/tmp_catkin_ws/catkin_ws/src
-          ln -s $GITHUB_WORKSPACE ~/tmp_catkin_ws/catkin_ws/src/mil
+          ln -s $GITHUB_WORKSPACE ~/tmp_catkin_ws/catkin_ws/src
           cd ~/tmp_catkin_ws/catkin_ws/src/mil/docker/noetic
           mkdir html_output
 
