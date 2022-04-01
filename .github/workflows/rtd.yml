@@ -34,14 +34,14 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
             image: example/docker-ros-test:latest
-            options: -v html_output:/root/.mil/docs/html
+            options: -v $PWD/html_output:/root/.mil/docs/html
             run: |
               ./scripts/build_docs
 
       - uses: actions/upload-artifact@v2
         with:
           name: html-output-for-${{ github.sha }}
-          path: html_output
+          path: $PWD/html_output
 
       - name: Trigger RTDs build
         uses: dfm/rtds-action@v1
