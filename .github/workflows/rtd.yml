@@ -34,7 +34,7 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
             image: example/docker-ros-test:latest
-            options: -v $(pwd)/html_output:/root/.mil/docs/html
+            options: -v html_output:/root/.mil/docs/html
             run: |
               ./scripts/build_docs
 
