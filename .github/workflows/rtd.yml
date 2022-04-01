@@ -21,7 +21,7 @@ jobs:
       - name: Set up repository
         run: |
           rm -rf ~/tmp_catkin_ws/catkin_ws/src/mil
-          mkdir -p ~/tmp_catkin_ws/src/mil/mil/mil/mil
+          mkdir -p ~/tmp_catkin_ws/src/mil
       
       - uses: actions/checkout@v2
         with:
