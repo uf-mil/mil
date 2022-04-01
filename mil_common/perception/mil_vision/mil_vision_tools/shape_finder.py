@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import numpy as np
 from geometry_msgs.msg import Polygon
 from mil_ros_tools.msg_helpers import rosmsg_to_numpy, numpy_to_polygon
@@ -8,17 +8,17 @@ __author__ = "Kevin Allen"
 
 
 class RectFinder(object):
-    '''
+    """
     Keeps a model of a rectangle in meters, providing utility functions
     to find 2D and 3D pose estimations of rectangles matching this model
     found in a computer vision program.
 
     See github.com/uf-mil/SubjuGator/blob/master/perception/sub8_perception/nodes/path_marker_finder.py
     for an example of this used in a real time computer vision application.
-    '''
+    """
 
     def __init__(self, length=1.0, width=1.0):
-        '''
+        """
         Initializes the internal model of the rectangle.
         Also see RectFinder.from_polygon for creating this from a ROS message
 
@@ -27,29 +27,41 @@ class RectFinder(object):
 
         If width > length, the two will be reversed so that length is
         always the longer side.
-        '''
+        """
         # Ensure length >= width
         self.width, self.length = tuple(np.sort([length, width]))
-        self.model_3D = np.array([[self.length / 2.0, -self.width / 2.0, 0],
-                                  [self.length / 2.0, self.width / 2.0, 0],
-                                  [-self.length / 2.0, self.width / 2.0, 0],
-                                  [-self.length / 2.0, -self.width / 2.0, 0]], dtype=np.float)
+        self.model_3D = np.array(
+            [
+                [self.length / 2.0, -self.width / 2.0, 0],
+                [self.length / 2.0, self.width / 2.0, 0],
+                [-self.length / 2.0, self.width / 2.0, 0],
+                [-self.length / 2.0, -self.width / 2.0, 0],
+            ],
+            dtype=np.float,
+        )
 
-        scale = 10000 / self.length  # Scale 2D model to maintain precision when converting to int
-        self.model_2D = np.array([[[0, 0]],
-                                  [[self.width * scale, 0]],
-                                  [[self.width * scale, self.length * scale]],
-                                  [[0, self.length * scale]]], dtype=np.int)
+        scale = (
+            10000 / self.length
+        )  # Scale 2D model to maintain precision when converting to int
+        self.model_2D = np.array(
+            [
+                [[0, 0]],
+                [[self.width * scale, 0]],
+                [[self.width * scale, self.length * scale]],
+                [[0, self.length * scale]],
+            ],
+            dtype=np.int,
+        )
 
     @classmethod
     def from_polygon(cls, polygon):
-        '''
+        """
         Creates a RectFinder from a geometry_msgs/Polygon message.
 
         The length of the Rect becomes the range of x/y (whichever larger)
 
         The width of the Rect becomes the range of x/y (whichever shorter)
-        '''
+        """
         assert isinstance(polygon, Polygon)
         arr = rosmsg_to_numpy(polygon.points)
         # If it contains just one point, treat the x/y and length/width
@@ -59,15 +71,15 @@ class RectFinder(object):
             return cls(np.ptp(arr[:, 0]), np.ptp(arr[:, 1]))
 
     def to_polygon(self):
-        '''
+        """
         Returns a geometry_msgs/Polygon representing the four corners
         of the rectangle where all z = 0
-        '''
+        """
         return numpy_to_polygon(self.model_3D)
 
     @staticmethod
     def sort_corners(rect, debug_image=None):
-        '''
+        """
         Given a contour of 4 points, returns the same 4 points sorted in a known way.
         Used so that indicies of contour line up to that in model for cv2.solvePnp
 
@@ -79,7 +91,7 @@ class RectFinder(object):
         p[3] = Bottom left corner      3--2
 
         Credit to David Soto for this implementation.
-        '''
+        """
         # Work with both (n, 1, 2) and (n, 2) shaped contour representations
         if rect.shape != (rect.shape[0], 2):
             M = cv2.moments(rect)
@@ -87,8 +99,7 @@ class RectFinder(object):
         else:
             temp = rect.reshape(rect.shape[0], 1, 2)
             M = cv2.moments(temp)
-        centroid = np.array(
-            (int(M['m10'] / M['m00']), int(M['m01'] / M['m00'])))
+        centroid = np.array((int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])))
         vectors = rect - centroid
         atan = np.arctan2(vectors[:, 1], vectors[:, 0])
         atan_indicies = np.argsort(atan)
@@ -102,21 +113,29 @@ class RectFinder(object):
             for i, pixel in enumerate(rect):
                 center = (int(pixel[0]), int(pixel[1]))
                 cv2.circle(debug_image, center, 5, (0, 255, 0), -1)
-                cv2.putText(debug_image, str(i), center,
-                            cv2.FONT_HERSHEY_SCRIPT_COMPLEX, 1, (0, 0, 255))
+                cv2.putText(
+                    debug_image,
+                    str(i),
+                    center,
+                    cv2.FONT_HERSHEY_SCRIPT_COMPLEX,
+                    1,
+                    (0, 0, 255),
+                )
         return rect
 
     def verify_contour(self, contour):
-        '''
+        """
         Returns a numerical comparison between a contour and the perfect
         model of the rectangle. A perfectly matched contour returns 0.0.
 
         Useful for filtering contours.
-        '''
+        """
         return cv2.matchShapes(contour, self.model_2D, 3, 0.0)
 
-    def get_corners(self, contour, debug_image=None, epsilon_range=(0.01, 0.1), epsilon_step=0.01):
-        '''
+    def get_corners(
+        self, contour, debug_image=None, epsilon_range=(0.01, 0.1), epsilon_step=0.01
+    ):
+        """
         Attempts to find the 4 corners of a contour representing a quadrilateral.
 
         If the corners are found, it returns these 4 points sorted as described
@@ -129,7 +148,7 @@ class RectFinder(object):
         @param epsilon_step  how much to increment epsilon each time while iterating through epsilon_range
 
         Credit David Soto for idea to iterate through multiple epsilon values
-        '''
+        """
         arclength = cv2.arcLength(contour, True)
         epsilon = epsilon_range[0]
         while epsilon <= epsilon_range[1]:
@@ -139,8 +158,10 @@ class RectFinder(object):
             epsilon += epsilon_step
         return None
 
-    def get_pose_3D(self, corners, intrinsics=None, dist_coeffs=None, cam=None, rectified=False):
-        '''
+    def get_pose_3D(
+        self, corners, intrinsics=None, dist_coeffs=None, cam=None, rectified=False
+    ):
+        """
         Uses the model of the object, the corresponding pixels in the image, and camera
         intrinsics to estimate a 3D pose of the object.
 
@@ -158,7 +179,7 @@ class RectFinder(object):
         @return tuple (tvec, rvec) representing the translation and rotation vector
         between the camera and the object in meters/radians. Use cv2.Rodrigues to convert
         rvec to a 3x3 rotation matrix.
-        '''
+        """
         corners = np.array(corners, dtype=np.float)
         # Use camera intrinsics and knowledge of marker's real demensions to
         # get a pose estimate in camera frame
@@ -170,19 +191,18 @@ class RectFinder(object):
                 dist_coeffs = cam.distortionCoeffs()
         assert intrinsics is not None
         assert dist_coeffs is not None
-        _, rvec, tvec = cv2.solvePnP(
-            self.model_3D, corners, intrinsics, dist_coeffs)
+        _, rvec, tvec = cv2.solvePnP(self.model_3D, corners, intrinsics, dist_coeffs)
         return (tvec, rvec)
 
     def get_pose_2D(self, corners):
-        '''
+        """
         Finds the 2D center of the rectangle and a unit direction vector along the length
         of the rectangle in pixels
 
         @param corners 4x2 numpy array from get_corners representing the 4 sorted corners in the image
 
         @return a tuple (center, vecter)
-        '''
+        """
         top_center = (corners[1] + corners[0]) / 2.0
         bot_center = (corners[2] + corners[3]) / 2.0
         vector = top_center - bot_center
@@ -193,7 +213,7 @@ class RectFinder(object):
         return (center, vector)
 
     def draw_model(self, size=(500, 500), border=25):
-        '''
+        """
         Returns a 1 channel image displaying the internal model of the rectangle.
         Useful for visually checking that your model is reasonable. Also useful
         to see what orientation of a contour will be considered 0 rotation in get_pose_3D.
@@ -203,7 +223,7 @@ class RectFinder(object):
 
         @return A one channel image with shape specified by size param with internal model
                 drawn in white surrounded by a black border
-        '''
+        """
         size = np.array(size)
         scale = float(min(size)) / np.max(self.model_2D)
         model = np.array(border + (scale * self.model_2D), dtype=np.int)
@@ -213,7 +233,7 @@ class RectFinder(object):
 
 
 class EllipseFinder(RectFinder):
-    '''
+    """
     Class to test contours in images for being close to an ellipse
     matching a given model. Uses RectFinder on well matched
     contours to get 3D pose estimates.
@@ -222,11 +242,12 @@ class EllipseFinder(RectFinder):
     will be evaluated based on their similarity to an ellipse, not a rectangle.
     The get_corners function will return the corners of the least area rotated
     rectangle around the ellipse contour, so 3D pose estimation will still work.
-    '''
+    """
+
     def __init__(self, length=1.0, width=1.0):
-        '''
+        """
         Create internal model for an ellipse.
-        '''
+        """
         super(EllipseFinder, self).__init__(length, width)
 
         # Correct 2D model to be an oval to that verify_contour works
@@ -234,23 +255,28 @@ class EllipseFinder(RectFinder):
         self.model_2D = np.zeros((50, 1, 2), dtype=np.int)
         # Approximate an ellipse with 50 points, so that verify_contour is reasonable fast still
         for idx, theta in enumerate(np.linspace(0.0, 2.0 * np.pi, num=50)):
-            self.model_2D[idx][0][0] = self.length * 0.5 * scale + self.length * 0.5 * scale * np.cos(theta)
-            self.model_2D[idx][0][1] = self.width * 0.5 * scale + self.width * 0.5 * scale * np.sin(theta)
+            self.model_2D[idx][0][
+                0
+            ] = self.length * 0.5 * scale + self.length * 0.5 * scale * np.cos(theta)
+            self.model_2D[idx][0][
+                1
+            ] = self.width * 0.5 * scale + self.width * 0.5 * scale * np.sin(theta)
 
     def get_corners(self, contour, debug_image=None):
-        '''
+        """
         Override get corner function for Ellipses to approximate an ellipse
         instead of a four sided polygon around the contour.
-        '''
+        """
         ellipse = cv2.fitEllipse(contour)
         points = np.array(cv2.boxPoints(ellipse), dtype=np.int32).reshape(4, 1, 2)
         return self.sort_corners(points, debug_image=debug_image)
 
 
 class CircleFinder(EllipseFinder):
-    '''
+    """
     Cute abstraction for circles, which are just ellipses with the same
     length and width. See EllipseFinder for usage.
-    '''
+    """
+
     def __init__(self, radius, _=None):
         super(CircleFinder, self).__init__(radius, radius)
