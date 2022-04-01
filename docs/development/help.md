@@ -1,6 +1,6 @@
-# Getting Help (kevbot)
-Programming is hard, and programming at the level needed for autonomous systems is even harder.
-Every developer write bugs, encounters confusing errors, and gets stuck
+# Getting Help
+Programming is hard, and programming at the level needed for autonomous systems 
+is even harder. Every developer write bugs, encounters confusing errors, and gets stuck
 in countless other ways. With time you'll learn not just how to write better code,
 but also how to effectively get help when you're stuck.
 
@@ -25,7 +25,6 @@ Ask yourself the following questions:
 * Could you be trying to use something that is outdated / deprecated?
 * Have you tried simply rebooting your system or running it again?
 
-
 ## Search these docs
 You may have noticed that these docs have a search bar. If you want
 to learn about a topic, try putting in some keywords related to your topic
@@ -33,22 +32,22 @@ or finding a docs page in the table of contents.
 
 You may find the [Glossary](/docs/glossary) especially useful.
 
-## Search the code (Grep)
+## Search the code with `grep`
 Perhaps the most useful command for a programmer is `grep`. Grep can search
 quickly through files for a particular pattern or string. `git grep` is an
 even faster way to search everything in a git repository (such as the MIL repo).
 
 For example, if you see an error `DVL: error on write`,
 you can run
-```
-kallen@kevtop:~/catkin_ws/src/mil$ git grep "DVL: error on write"
-SubjuGator/drivers/sub8_rdi_dvl/include/rdi_explorer_dvl/driver.hpp:      ROS_ERROR_THROTTLE(0.5, "DVL: error on write: %s; dropping heartbeat", exc.what());
-```
+
+    ~/catkin_ws/src/mil$ git grep "DVL: error on write"
+    SubjuGator/drivers/sub8_rdi_dvl/include/rdi_explorer_dvl/driver.hpp: \
+        ROS_ERROR_THROTTLE(0.5, "DVL: error on write: %s; dropping heartbeat", exc.what());
+
 And see the exact source file where this error comes from.
 
 Likewise, if you want to learn how to use a function,
 you can search the code for examples of it being used.
-
 
 ## Search the internet
 If your problem is not MIL-specific (issue with Linux, ROS, C++, etc),
@@ -70,15 +69,11 @@ In order for people to be able to understand your issue, please include:
 * What steps you have already taken to debug
 * The exact code in question (push it to a github branch if it is your changes)
 
-
 ### File an issue
 If you believe you have discovered an issue with something that should be working,
 it may be appropriate to file an issue [on Github](https://github.com/uf-mil/mil/issues).
-
 
 ### Ask on slack / in-person
 If your issue regards code that you are developing or might be specific
 to your use case, come by office hours or ask around in the #software channel
 on slack.
-
-

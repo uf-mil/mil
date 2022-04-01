@@ -1,4 +1,4 @@
-from exceptions import TimeoutException, SubmissionException, ParametersException
+from .exceptions import TimeoutException, SubmissionException, ParametersException
 from twisted.internet import defer
 from twisted.python import failure
 from txros import util
@@ -84,7 +84,7 @@ def MakeChainWithTimeout(base):
                             raise SubmissionException(mission['mission'], final.getErrorMessage())
                     else:
                         self.send_feedback('{} SUCCEEDED: {}'.format(mission['mission'], final))
-                        print 'NO FAIL BRO'
+                        print('NO FAIL BRO')
                 df = self.run_submission_with_timeout(mission['mission'], mission['timeout'], mission['parameters'])
                 df.addBoth(cb)
                 yield df

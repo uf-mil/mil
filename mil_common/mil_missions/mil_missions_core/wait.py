@@ -1,6 +1,6 @@
 from txros import util
 from twisted.internet import defer
-from exceptions import ParametersException
+from .exceptions import ParametersException
 
 
 def MakeWait(base):

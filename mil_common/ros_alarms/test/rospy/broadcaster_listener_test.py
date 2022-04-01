@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from ros_alarms import AlarmListener, AlarmBroadcaster
 
@@ -9,7 +9,7 @@ if __name__ == "__main__":
     ab = AlarmBroadcaster("test_alarm")
     al = AlarmListener("test_alarm")
 
-    print "Inited"
+    print("Inited")
     assert al.is_cleared()
 
     ab.raise_alarm()
@@ -22,4 +22,4 @@ if __name__ == "__main__":
     rospy.sleep(0.5)
     ab.raise_alarm(parameters={"int": 4, "list": [1, 2, 3], "str": "stringing"})
 
-    print "All checks passed"
+    print("All checks passed")
