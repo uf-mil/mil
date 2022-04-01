@@ -32,7 +32,7 @@ jobs:
           
       - name: Run Docker container
         run: |
-          docker run -ti -v $(pwd)/html_output:/root/.mil/docs/html $(docker ps -a | sed -n '2 p' | awk '{print $1}') /bin/bash
+          docker run -v $(pwd)/html_output:/root/.mil/docs/html $(docker ps -a | sed -n '2 p' | awk '{print $1}') /bin/bash
           ls html_output
 
       - uses: actions/upload-artifact@v2
