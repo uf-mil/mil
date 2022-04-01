@@ -31,9 +31,12 @@ jobs:
           docker build -t example/docker-ros-test:latest .
           
       - name: Run Docker container
-        run: |
-          docker run -v $(pwd)/html_output:/root/.mil/docs/html $(docker ps -a | sed -n '2 p' | awk '{print $1}') /bin/bash
-          ls html_output
+        uses: addnab/docker-run-action@v3
+        with:
+            image: example/docker-ros-test:latest
+            options: -v $(pwd)/html_output:/root/.mil/docs/html
+            run: |
+              ./scripts/build_docs
 
       - uses: actions/upload-artifact@v2
         with:
