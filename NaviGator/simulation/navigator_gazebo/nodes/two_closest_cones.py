@@ -176,8 +176,6 @@ class PcodarAverageScales():
             self.last_gate = True
 
         cones.no_more_buoys = False
-        cones.index1 = index1
-        cones.index2 = index2
         cones.object1 = self.closest_two_buoys[0]
         cones.object2 = self.closest_two_buoys[1]
 

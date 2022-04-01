@@ -77,8 +77,6 @@ class VrxNavigation2(Vrx):
         if self.task_done:
             return
 
-        self.index1 = buoys.index1
-        self.index2 = buoys.index2
         pos1 = rosmsg_to_numpy(buoys.object1)
         pos2 = rosmsg_to_numpy(buoys.object2)
         gate = self.get_gate(pos1, pos2, (yield self.tx_pose)[0])
@@ -90,8 +88,6 @@ class VrxNavigation2(Vrx):
 
         self.objects_passed = set()
         self.task_done = False
-        self.index1 = None
-        self.index2 = None
         gates_passed = 0
 
         # Wait a bit for PCDAR to get setup
