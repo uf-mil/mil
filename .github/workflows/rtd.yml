@@ -22,8 +22,9 @@ jobs:
       - name: List and set up directory
         run: |
           ls -l $GITHUB_WORKSPACE
+          rm -rf ~/tmp_catkin_ws/catkin_ws/src
           mkdir -p ~/tmp_catkin_ws/catkin_ws/src
-          ln -s $GITHUB_WORKSPACE ~/tmp_catkin_ws/catkin_ws/src
+          ln -s $GITHUB_WORKSPACE ~/tmp_catkin_ws/catkin_ws/src/mil
           cd ~/tmp_catkin_ws/catkin_ws/src/mil/docker/noetic
           mkdir html_output
 
