@@ -1,29 +1,16 @@
 # This is a basic workflow to help you get started with Actions
-
 name: ReadTheDocs build support
 
 # Controls when the workflow will run
-on:
-  # Triggers the workflow on push or pull request events but only for the master branch
-  push:
-  pull_request:
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+on: [push, release]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
+    runs-on: self-hosted
     
-    # Environment variables
-    env:
-      ROS_CI_DESKTOP: "`lsb_release -cs`"  # e.g. [trusty|xenial|...]
-      ROS_DISTRO: noetic
-      DEBIAN_FRONTEND: noninteractive
-
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -31,40 +18,32 @@ jobs:
         with:
           submodules: recursive
           
-
       # Runs a single command using the runners shell
-      - name: List directory
-        run: ls -l $GITHUB_WORKSPACE
-
-      - name: Install ROS
+      - name: List and set up directory
         run: |
-          sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"
-          sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
-          sudo apt-get update -qq
-          sudo apt-get install dpkg
-          sudo apt-get install -y python3-catkin-pkg
-          sudo apt-get install -y python3-catkin-tools
-          sudo apt-get install -y python3-osrf-pycommon
-          sudo apt-get install -y python3-rosdep
-          sudo apt-get install -y python3-wstool
-          sudo apt-get install -y ros-cmake-modules
-          sudo apt-get install -y ros-$ROS_DISTRO-catkin
-          source /opt/ros/$ROS_DISTRO/setup.bash
-          
-      - name: Install dependencies
-        run: |
-          sudo ./scripts/system_install
-          sudo ./scripts/user_install
-          
-      - name: Make directory structure
-        run: |
+          ls -l $GITHUB_WORKSPACE
           mkdir -p ~/catkin_ws/src
           ln -s $GITHUB_WORKSPACE ~/catkin_ws/src/mil
-          cd ~/catkin_ws
-          
-      - name: Run catkin_make and source
+          cd ~/catkin_ws/src/mil/docker/noetic
+          mkdir html_output
+
+      - name: Build Docker container
         run: |
-          source /opt/ros/$ROS_DISTRO/setup.bash
-          cd ~/catkin_ws
-          catkin_make
-          source devel/setup.bash
+          docker build -t example/docker-ros-test:latest .
+          
+      - name: Run Docker container
+        run: |
+          docker run -ti -v $(pwd)/html_output:/root/.mil/docs/html $(docker ps -a | sed -n '2 p' | awk '{print $1}') /bin/bash
+          ls html_output
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: html-output-for-${{ github.sha }}
+          path: html_output
+
+      - name: Trigger RTDs build
+        uses: dfm/rtds-action@v1
+        with:
+          webhook_url: ${{ secrets.RTDS_WEBHOOK_URL }}
+          webhook_token: ${{ secrets.RTDS_WEBHOOK_TOKEN }}
+          commit_ref: ${{ github.ref }}
