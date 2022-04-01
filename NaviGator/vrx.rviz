@@ -5,7 +5,10 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /TF1/Frames1
-        - /Long Trajectory1/Status1
+        - /Long Trajectory1/Shape1
+        - /Long Trajectory1/Covariance1
+        - /Long Trajectory1/Covariance1/Position1
+        - /Long Trajectory1/Covariance1/Orientation1
       Splitter Ratio: 0.5
     Tree Height: 292
   - Class: rviz/Selection
@@ -510,7 +513,7 @@ Visualization Manager:
           Value: true
         Value: true
       Enabled: true
-      Keep: 100
+      Keep: 1
       Name: Long Trajectory
       Position Tolerance: 0.10000000149011612
       Shape:
@@ -596,10 +599,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5702038407325745
+      Pitch: 0.5852038264274597
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.965423822402954
+      Yaw: 3.8054237365722656
     Saved: ~
 Window Geometry:
   Displays:
