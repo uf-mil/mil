@@ -4,6 +4,10 @@ name: ReadTheDocs build support
 # Controls when the workflow will run
 on: [push, release]
 
+# Environment variables
+env:
+  GITHUB_WORKSPACE: ~/tmp_catkin_ws/catkin_ws/src/mil
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -14,6 +18,11 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: Set up repository
+        run: |
+          rm -rf ~/tmp_catkin_ws/catkin_ws/src/mil
+          mkdir -p ~/tmp_catkin_ws/src/mil/mil/mil/mil
+      
       - uses: actions/checkout@v2
         with:
           submodules: recursive
@@ -22,9 +31,6 @@ jobs:
       - name: List and set up directory
         run: |
           ls -l $GITHUB_WORKSPACE
-          rm -rf ~/tmp_catkin_ws/catkin_ws/src
-          mkdir -p ~/tmp_catkin_ws/catkin_ws/src
-          ln -s $GITHUB_WORKSPACE ~/tmp_catkin_ws/catkin_ws/src/mil
           cd ~/tmp_catkin_ws/catkin_ws/src/mil/docker/noetic
           mkdir html_output
 
