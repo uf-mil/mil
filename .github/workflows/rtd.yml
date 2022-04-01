@@ -27,6 +27,7 @@ jobs:
 
       - name: Build Docker container
         run: |
+          cd $GITHUB_WORKSPACE/docker/noetic
           docker build -t example/docker-ros-test:latest .
           
       - name: Run Docker container
