@@ -28,7 +28,7 @@ jobs:
       - name: Build Docker container
         run: |
           cd $GITHUB_WORKSPACE/docker/noetic
-          docker build -t example/docker-ros-test:latest .
+          docker build --no-cache -t example/docker-ros-test:latest .
           
       - name: Run Docker container
         uses: addnab/docker-run-action@v3
@@ -42,10 +42,3 @@ jobs:
         with:
           name: html-output-for-${{ github.sha }}
           path: ${{ github.workspace }}/docker/noetic/html_output
-
-      - name: Trigger RTDs build
-        uses: dfm/rtds-action@v1
-        with:
-          webhook_url: ${{ secrets.RTDS_WEBHOOK_URL }}
-          webhook_token: ${{ secrets.RTDS_WEBHOOK_TOKEN }}
-          commit_ref: ${{ github.ref }}
