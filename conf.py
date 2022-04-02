@@ -52,7 +52,7 @@ extensions = [
     'sphinx.ext.graphviz',
     'attributetable',
     'builder',
-    'breathe'
+    'breathe',
 ]
 
 intersphinx_mapping = {
