@@ -16,7 +16,8 @@ class ScanAndDock(Vrx):
 
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
-        yield self.nh.sleep(5)
+        yield self.nh.sleep(10)
+        yield self.wait_for_task_such_that(lambda task: task.state in ['ready', 'running'])
 
         sequence = yield self.run_submission('ScanTheCode')
         color_to_shape = {'red': 'circle', 'green' : 'triangle', 'blue' : 'cross', 'yellow' : 'rectangle'}
