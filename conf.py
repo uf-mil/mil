@@ -53,7 +53,6 @@ extensions = [
     'attributetable',
     'builder',
     'breathe',
-    'rtds_action'
 ]
 
 intersphinx_mapping = {
