@@ -1991,6 +1991,213 @@ GetDockShape
 
         :type: str
 
+GetDockShapes
+^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._GetDockShapes.GetDockShapesRequest
+
+.. class:: navigator_msgs.srv._GetDockShapes.GetDockShapesRequest
+
+   The request class for the ``navigator_msgs/GetDockShapes`` service.
+
+   .. attribute:: Shape
+
+        The shape to the get the associated dock of. Likely one of the associated shape
+        enumerations.
+
+        :type: str
+
+   .. attribute:: CROSS
+
+        Constant string attribute used to represent a cross shape on a dock. True value
+        is set to ``CROSS``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+
+        :type: str
+
+   .. attribute:: TRIANGLE
+
+        Constant string attribute used to represent a triangle shape on a dock. True value
+        is set to ``TRIANGLE``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+
+        :type: str
+
+   .. attribute:: CIRCLE
+
+        Constant string attribute used to represent a circle shape on a dock. True value
+        is set to ``CIRCLE``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+
+        :type: str
+
+   .. attribute:: Color
+
+        The color to the get the associated dock of. Likely one of the associated color
+        enumerations.
+
+        :type: str
+
+   .. attribute:: RED
+
+        Constant string attribute used to represent a red shape on a dock. True value
+        is set to ``RED``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+
+        :type: str
+
+   .. attribute:: BLUE
+
+        Constant string attribute used to represent a triangle shape on a dock. True value
+        is set to ``BLUE``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+
+        :type: str
+
+   .. attribute:: GREEN
+
+        Constant string attribute used to represent a circle shape on a dock. True value
+        is set to ``GREEN``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+
+        :type: str
+
+   .. attribute:: ANY
+
+        Constant string attribute used to represent any value for a specific field - ie, a
+        dock with any shape or color representation. Actual value is ``ANY``.
+
+        :type: str
+
+.. attributetable:: navigator_msgs.srv._GetDockShapes.GetDockShapesResponse
+
+.. class:: navigator_msgs.srv._GetDockShapes.GetDockShapesResponse
+
+   The repsonse class for the ``navigator_msgs/GetDockShapes`` service.
+
+   .. attribute:: shapes
+
+        The relevant dock shapes that were found.
+
+        :type: List[DockShape]
+
+   .. attribute:: found
+    
+        If one or more suitable shapes was returned, then true.
+
+        :type: bool
+
+   .. attribute:: error
+    
+        If :attr:`~navigator_msgs.srv._GetDockShapes.GetDockShapesResponse.found`
+        was false, then an explanation of why.
+
+        :type: str
+
+   .. attribute:: INVALID_REQUEST
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``INVALID_REQUEST``.
+
+        :type: str
+
+   .. attribute:: NODE_DISABLED
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``NODE_DISABLED``.
+
+        :type: str
+
+   .. attribute:: TOO_SMALL_SAMPLE
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``TOO_SMALL_SAMPLE``.
+
+        :type: str
+
+   .. attribute:: SHAPE_NOT_FOUND
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``SHAPE_NOT_FOUND``.
+
+        :type: str
+
+KeyboardControl
+^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
+
+.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
+
+   The request class for the ``navigator_msgs/KeyboardControl`` service.
+
+   .. attribute:: uuid
+
+        A unique ID to represent the process (?).
+
+        :type: str
+
+   .. attribute:: keycode
+
+        The keycode that was pressed.
+
+        :type: int
+
+.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
+
+.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
+
+   The repsonse class for the ``navigator_msgs/KeyboardControl`` service.
+
+   .. attribute:: generated_uuid
+
+        A response unique ID that was generated in response to the request.
+
+        :type: str
+
+   .. attribute:: is_locked
+    
+        Whether the client which sent the keycode has "locked control" of the keyboard
+        server, and is therefore blocking other keyboard input.
+
+        :type: bool
+
+MessageDetectDeliver
+^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._MessageDetectDeliver.MessageDetectDeliverRequest
+
+.. class:: navigator_msgs.srv._MessageDetectDeliver.MessageDetectDeliverRequest
+
+   The request class for the ``navigator_msgs/MessageDetectDeliver`` service.
+
+   .. attribute:: shape_color
+
+        The color of the requested shape.
+
+        :type: str
+
+   .. attribute:: shape
+
+        The type of requested shape.
+
+        :type: str
+
+.. attributetable:: navigator_msgs.srv._MessageDetectDeliver.MessageDetectDeliverResponse
+
+.. class:: navigator_msgs.srv._MessageDetectDeliver.MessageDetectDeliverResponse
+
+   The repsonse class for the ``navigator_msgs/MessageDetectDeliver`` service.
+
+   .. attribute:: message
+
+        A message in response to the process.
+
+        :type: str
+
 Exceptions
 ----------
 
