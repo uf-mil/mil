@@ -1786,6 +1786,211 @@ CoordinateConversion
 
         :type: str
 
+FindPinger
+^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._FindPinger.FindPingerRequest
+
+.. class:: navigator_msgs.srv._FindPinger.FindPingerRequest
+
+   The request class for the ``navigator_msgs/FindPinger`` service. The request
+   has no individual attributes.
+
+.. attributetable:: navigator_msgs.srv._FindPinger.FindPingerResponse
+
+.. class:: navigator_msgs.srv._FindPinger.FindPingerResponse
+
+   The repsonse class for the ``navigator_msgs/FindPinger`` service.
+
+   .. attribute:: pinger_position
+    
+        The position of the pinger.
+
+        :type: Point
+
+   .. attribute:: num_samples
+    
+        ???
+
+        :type: int
+
+GetDockBays
+^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._GetDockBays.GetDockBaysRequest
+
+.. class:: navigator_msgs.srv._GetDockBays.GetDockBaysRequest
+
+   The request class for the ``navigator_msgs/GetDockBays`` service. The request
+   has no individual attributes.
+
+.. attributetable:: navigator_msgs.srv._GetDockBays.GetDockBaysResponse
+
+.. class:: navigator_msgs.srv._GetDockBays.GetDockBaysResponse
+
+   The repsonse class for the ``navigator_msgs/GetDockBays`` service.
+
+   .. attribute:: bays
+    
+        The positions of the three dock bays in the ENU frame. The first element is
+        the position of the left dock, the second element is the position of the center dock,
+        the third element is the position of the right dock.
+
+        :type: List[Point]
+
+   .. attribute:: normal
+    
+        The normal vector pointing away from the plane of dock back.
+
+        :type: Vector3
+
+   .. attribute:: success
+    
+        Whether the position of the docks could be found.
+
+        :type: bool
+
+   .. attribute:: error
+    
+        If :attr:`~navigator_msgs.srv._GetDockBays.GetDockBays.success` is ``False``,
+        then a message describing what went wrong.
+
+        :type: str
+
+GetDockShape
+^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._GetDockShape.GetDockShapeRequest
+
+.. class:: navigator_msgs.srv._GetDockShape.GetDockShapeRequest
+
+   The request class for the ``navigator_msgs/GetDockShape`` service.
+
+   .. attribute:: Shape
+
+        The shape to the get the associated dock of. Likely one of the associated shape
+        enumerations.
+
+        :type: str
+
+   .. attribute:: CROSS
+
+        Constant string attribute used to represent a cross shape on a dock. True value
+        is set to ``CROSS``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+
+        :type: str
+
+   .. attribute:: TRIANGLE
+
+        Constant string attribute used to represent a triangle shape on a dock. True value
+        is set to ``TRIANGLE``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+
+        :type: str
+
+   .. attribute:: CIRCLE
+
+        Constant string attribute used to represent a circle shape on a dock. True value
+        is set to ``CIRCLE``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+
+        :type: str
+
+   .. attribute:: Color
+
+        The color to the get the associated dock of. Likely one of the associated color
+        enumerations.
+
+        :type: str
+
+   .. attribute:: RED
+
+        Constant string attribute used to represent a red shape on a dock. True value
+        is set to ``RED``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+
+        :type: str
+
+   .. attribute:: BLUE
+
+        Constant string attribute used to represent a triangle shape on a dock. True value
+        is set to ``BLUE``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+
+        :type: str
+
+   .. attribute:: GREEN
+
+        Constant string attribute used to represent a circle shape on a dock. True value
+        is set to ``GREEN``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+
+        :type: str
+
+   .. attribute:: ANY
+
+        Constant string attribute used to represent any value for a specific field - ie, a
+        dock with any shape or color representation. Actual value is ``ANY``.
+
+        :type: str
+
+.. attributetable:: navigator_msgs.srv._GetDockShape.GetDockShapeResponse
+
+.. class:: navigator_msgs.srv._GetDockShape.GetDockShapeResponse
+
+   The repsonse class for the ``navigator_msgs/GetDockShape`` service.
+
+   .. attribute:: symbol
+
+        The associated shape and color of the returned dock.
+
+        :type: DockShape
+
+   .. attribute:: found
+    
+        Whether a viable dock was found.
+
+        :type: bool
+
+   .. attribute:: error
+    
+        If :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeResponse.found` was false,
+        then a description of what went wrong. May be equal to one of this class' enumerations.
+
+        :type: str
+
+   .. attribute:: INVALID_REQUEST
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``INVALID_REQUEST``.
+
+        :type: str
+
+   .. attribute:: NODE_DISABLED
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``NODE_DISABLED``.
+
+        :type: str
+
+   .. attribute:: TOO_SMALL_SAMPLE
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``TOO_SMALL_SAMPLE``.
+
+        :type: str
+
+   .. attribute:: SHAPE_NOT_FOUND
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``SHAPE_NOT_FOUND``.
+
+        :type: str
+
 Exceptions
 ----------
 
