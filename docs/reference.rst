@@ -2271,6 +2271,136 @@ ObjectDBQuery
 
         :type: List[PerceptionObject]
 
+ScanTheCodeMission
+^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionRequest
+
+.. class:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionRequest
+
+   The request class for the ``navigator_msgs/ScanTheCodeMission`` service.
+
+   .. attribute:: object
+
+        The perception object to look for.
+
+        :type: PerceptionObject
+
+.. attributetable:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionResponse
+
+.. class:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionResponse
+
+   The repsonse class for the ``navigator_msgs/ScanTheCodeMission`` service.
+
+   .. attribute:: observing
+
+        ???
+
+        :type: bool
+
+   .. attribute:: found
+
+        Whether the buoy was found.
+
+        :type: bool
+
+   .. attribute:: colors
+
+        The colors shown by the buoy.
+
+        :type: List[str]
+
+SetFrequency
+^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._SetFrequencyMission.SetFrequencyMissionRequest
+
+.. class:: navigator_msgs.srv._SetFrequencyMission.SetFrequencyMissionRequest
+
+   The request class for the ``navigator_msgs/SetFrequencyMission`` service.
+
+   .. attribute:: frequency
+
+        The frequency to set.
+
+        :type: int
+
+.. attributetable:: navigator_msgs.srv._SetFrequencyMission.SetFrequencyMissionResponse
+
+.. class:: navigator_msgs.srv._SetFrequencyMission.SetFrequencyMissionResponse
+
+   The repsonse class for the ``navigator_msgs/SetFrequencyMission`` service. The
+   class no public attributes.
+
+SetROI
+^^^^^^
+.. attributetable:: navigator_msgs.srv._SetROI.SetROIRequest
+
+.. class:: navigator_msgs.srv._SetROI.SetROIRequest
+
+   The request class for the ``navigator_msgs/SetROI`` service.
+
+   .. attribute:: roi
+
+        The region of interest to set.
+
+        :type: RegionOfInterest
+
+.. attributetable:: navigator_msgs.srv._SetROI.SetROIResponse
+
+.. class:: navigator_msgs.srv._SetROI.SetROIResponse
+
+   The repsonse class for the ``navigator_msgs/SetROI`` service.
+
+   .. attribute:: success
+
+        Whether the set operation was successful.
+
+        :type: bool
+
+   .. attribute:: error
+
+        If the operation failed, then a description of what went wrong.
+
+        :type: str
+
+   .. attribute:: OUTSIDE_OF_FRAME
+
+        A string constant to represent that the region of interest is outside the
+        observable frame. Constant string actually equally to ``OUTSIDE_OF_FRAME``.
+
+        :type: str
+
+ShooterManual
+^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._ShooterManual.ShooterManualRequest
+
+.. class:: navigator_msgs.srv._ShooterManual.ShooterManualRequest
+
+   The request class for the ``navigator_msgs/ShooterManual`` service.
+
+   .. attribute:: feeder
+
+        ???
+
+        :type: float
+
+   .. attribute:: shooter
+
+        ???
+
+        :type: float
+
+.. attributetable:: navigator_msgs.srv._ShooterManual.ShooterManualResponse
+
+.. class:: navigator_msgs.srv._ShooterManual.ShooterManualResponse
+
+   The repsonse class for the ``navigator_msgs/ShooterManual`` service.
+
+   .. attribute:: success
+
+        Whether the shooter operation was successful.
+
+        :type: bool
+
 Exceptions
 ----------
 
