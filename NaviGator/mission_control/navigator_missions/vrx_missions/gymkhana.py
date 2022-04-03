@@ -14,7 +14,7 @@ class Gymkhana(Vrx):
     def run(self, args):
         yield self.nh.sleep(5)
 
-        yield self.run_submission('VrxNavigation2')
+        yield self.run_submission('VrxNavigation')
         yield self.run_submission('VrxBeacon')
         yield self.run_submission('VrxBeacon')
         yield self.send_feedback('Done!')
