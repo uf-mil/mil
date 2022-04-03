@@ -1379,104 +1379,11 @@ ScanTheCode
 Services
 --------
 
-SetBool
-^^^^^^^
-
-.. attributetable:: std_srvs.srv._SetBool.SetBoolRequest
-
-.. class:: std_srvs.srv._SetBool.SetBoolRequest
-
-    The request type for the ``SetBool`` service. Requests for some boolean value
-    to be set.
-
-    .. attribute:: data
-
-        What to set the boolean as. For example ``data=False`` sets the boolean
-        to be ``False``.
-
-        :type: bool
-
-.. attributetable:: std_srvs.srv._SetBool.SetBoolResponse
-
-.. class:: std_srvs.srv._SetBool.SetBoolResponse
-
-    The response type for the ``SetBool`` service. Responds to the set boolean value
-    request.
-
-    .. attribute:: success
-
-        Whether the boolean value was succesfully set.
-
-        :type: bool
-
-    .. attribute:: message
-
-        Any message included in the response.
-
-        :type: str
-
-AlarmGet
-^^^^^^^^
-
-.. attributetable:: ros_alarms.srv._AlarmGet.AlarmGetRequest
-
-.. class:: ros_alarms.srv._AlarmGet.AlarmGetRequest
-
-   The request class for the ``ros_alarms/AlarmGet`` service.
-
-   .. attribute:: alarm_name
-
-        The name of the alarm to request data about.
-
-        :type: str
-
-.. attributetable:: ros_alarms.srv._AlarmGet.AlarmGetResponse
-
-.. class:: ros_alarms.srv._AlarmGet.AlarmGetResponse
-
-   The repsonse class for the ``ros_alarms/AlarmGet`` service.
-
-   .. attribute:: header
-
-        The header for the response.
-
-        :type: Header
-
-   .. attribute:: alarm
-
-        The response data about the requested alarm.
-
-        :type: ~ros_alarms.msg._Alarm.Alarm
-
-AlarmSet
-^^^^^^^^
-
-.. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetRequest
-
-.. class:: ros_alarms.srv._AlarmSet.AlarmSetRequest
-
-   The request class for the ``ros_alarms/AlarmSet`` service.
-
-   .. attribute:: alarm
-
-        The alarm to set.
-
-        :type: ~ros_alarms.msg._Alarm.Alarm
-
-.. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetResponse
-
-.. class:: ros_alarms.srv._AlarmSet.AlarmSetResponse
-
-   The repsonse class for the ``ros_alarms/AlarmSet`` service.
-
-   .. attribute:: succeed
-
-        Whether the request succeeded.
-
-        :type: bool
+Mission Systems
+^^^^^^^^^^^^^^^
 
 AcousticBeacon
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 
 .. attributetable:: navigator_msgs.srv._AcousticBeacon.AcousticBeaconRequest
 
@@ -1503,123 +1410,8 @@ AcousticBeacon
 
         :type: bool
 
-CameraDBQuery
-^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryRequest
-
-.. class:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryRequest
-
-   The request class for the ``navigator_msgs/CameraDBQuery`` service.
-
-   .. attribute:: name
-
-        The name of the object to query.
-
-        :type: str
-
-   .. attribute:: id
-
-        The ID of the object to query.
-
-        :type: int
-
-.. attributetable:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryResponse
-
-.. class:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryResponse
-
-   The repsonse class for the ``navigator_msgs/CameraDBQuery`` service.
-
-   .. attribute:: found
-
-        Whether the object is found.
-
-        :type: bool
-
-CameraToLidarTransform
-^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformRequest
-
-.. class:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformRequest
-
-   The request class for the ``navigator_msgs/CameraToLidarTransform`` service.
-
-   .. attribute:: header
-
-        The stamp the point was seen for tf.
-
-        :type: Header
-
-   .. attribute:: point
-
-        The x-dimension and y-dimension of the point in the camera. The z-dimension
-        is ignored.
-
-        :type: Point
-
-   .. attribute:: tolerance
-
-        The number of pixels the projected 3D Lidar point can be from the target point
-        to be included in the response.
-
-        :type: int
-
-.. attributetable:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformResponse
-
-.. class:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformResponse
-
-   The repsonse class for the ``navigator_msgs/CameraToLidarTransform`` service.
-
-   .. attribute:: success
-
-        True if at least one point is found within LIDAR and transformed.
-
-        :type: bool
-
-   .. attribute:: transformed
-
-        If success is true, then the list of transformed points.
-
-        :type: List[Point]
-
-   .. attribute:: closest
-
-        3D point that is closest to the target point when transformed and projected
-
-        :type: Point
-
-   .. attribute:: normal
-
-        The normal unit vector in the camera frame estimated from the transformed points.
-
-        :type: Vector3
-
-   .. attribute:: distance
-
-        The mean z-dimension of the transformed points.
-
-        :type: float
-
-   .. attribute:: error
-
-        If success is false, then what went wrong.
-
-        :type: str
-
-   .. attribute:: CLOUD_NOT_FOUND
-
-        The pointcloud was not found. Constant string actually equal to ``pointcloud
-        not found``.
-
-        :type: str
-
-   .. attribute:: NO_POINTS
-
-        No points were found. Constant string actually equal to ``no points``.
-
-        :type: str
-
 ChooseAnimal
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 .. attributetable:: navigator_msgs.srv._ChooseAnimal.ChooseAnimalRequest
 
 .. class:: navigator_msgs.srv._ChooseAnimal.ChooseAnimalRequest
@@ -1652,7 +1444,7 @@ ChooseAnimal
         :type: bool
 
 ColorRequest
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 .. attributetable:: navigator_msgs.srv._ColorRequest.ColorRequestRequest
 
 .. class:: navigator_msgs.srv._ColorRequest.ColorRequestRequest
@@ -1683,72 +1475,8 @@ ColorRequest
 
         :type: List[int]
 
-CoordinateConversion
-^^^^^^^^^^^^^^^^^^^^
-
-.. attributetable:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionRequest
-
-.. class:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionRequest
-
-   The request class for the ``navigator_msgs/CoordinateConversion`` service.
-
-   .. attribute:: LLA
-
-        The longitude, latitude, altitude coordinate frame. Constant string equal
-        to ``lla``.
-
-        :type: str
-
-   .. attribute:: ENU
-
-        The east, north, up frame. Constant string equal to ``enu``.
-
-        :type: str
-
-   .. attribute:: ECEF
-
-        The Earth-centered, Earth-fixed frame. Constant string equal to ``ecef``.
-
-        :type: str
-
-   .. attribute:: frame
-
-        The current frame of the relative objects.
-
-        :type: str
-
-   .. attribute:: to_frame
-
-        The frame of objects to convert objects to.
-
-        :type: str
-
-   .. attribute:: points
-
-        The points to convert between the different frames.
-
-        :type: List[Point]
-
-.. attributetable:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionResponse
-
-.. class:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionResponse
-
-   The repsonse class for the ``navigator_msgs/CoordinateConversion`` service.
-
-   .. attribute:: converted
-    
-        The list of converted points.
-
-        :type: List[Point]
-
-   .. attribute:: message
-    
-        If an error occurred, the message of what went wrong.
-
-        :type: str
-
 FindPinger
-^^^^^^^^^^
+~~~~~~~~~~
 .. attributetable:: navigator_msgs.srv._FindPinger.FindPingerRequest
 
 .. class:: navigator_msgs.srv._FindPinger.FindPingerRequest
@@ -1775,7 +1503,7 @@ FindPinger
         :type: int
 
 GetDockBays
-^^^^^^^^^^^
+~~~~~~~~~~~
 .. attributetable:: navigator_msgs.srv._GetDockBays.GetDockBaysRequest
 
 .. class:: navigator_msgs.srv._GetDockBays.GetDockBaysRequest
@@ -1817,7 +1545,7 @@ GetDockBays
         :type: str
 
 GetDockShape
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 .. attributetable:: navigator_msgs.srv._GetDockShape.GetDockShapeRequest
 
 .. class:: navigator_msgs.srv._GetDockShape.GetDockShapeRequest
@@ -1953,7 +1681,7 @@ GetDockShape
         :type: str
 
 GetDockShapes
-^^^^^^^^^^^^^
+~~~~~~~~~~~~~
 .. attributetable:: navigator_msgs.srv._GetDockShapes.GetDockShapesRequest
 
 .. class:: navigator_msgs.srv._GetDockShapes.GetDockShapesRequest
@@ -2088,47 +1816,8 @@ GetDockShapes
 
         :type: str
 
-KeyboardControl
-^^^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
-
-.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
-
-   The request class for the ``navigator_msgs/KeyboardControl`` service.
-
-   .. attribute:: uuid
-
-        A unique ID to represent the process (?).
-
-        :type: str
-
-   .. attribute:: keycode
-
-        The keycode that was pressed.
-
-        :type: int
-
-.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
-
-.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
-
-   The repsonse class for the ``navigator_msgs/KeyboardControl`` service.
-
-   .. attribute:: generated_uuid
-
-        A response unique ID that was generated in response to the request.
-
-        :type: str
-
-   .. attribute:: is_locked
-    
-        Whether the client which sent the keycode has "locked control" of the keyboard
-        server, and is therefore blocking other keyboard input.
-
-        :type: bool
-
 MessageDetectDeliver
-^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~
 .. attributetable:: navigator_msgs.srv._MessageDetectDeliver.MessageDetectDeliverRequest
 
 .. class:: navigator_msgs.srv._MessageDetectDeliver.MessageDetectDeliverRequest
@@ -2160,7 +1849,7 @@ MessageDetectDeliver
         :type: str
 
 MessageExtranceExitGate
-^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~
 .. attributetable:: navigator_msgs.srv._MessageExtranceExitGate.MessageExtranceExitGateRequest
 
 .. class:: navigator_msgs.srv._MessageExtranceExitGate.MessageExtranceExitGateRequest
@@ -2205,8 +1894,200 @@ MessageExtranceExitGate
 
         :type: str
 
+ScanTheCodeMission
+~~~~~~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionRequest
+
+.. class:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionRequest
+
+   The request class for the ``navigator_msgs/ScanTheCodeMission`` service.
+
+   .. attribute:: object
+
+        The perception object to look for.
+
+        :type: PerceptionObject
+
+.. attributetable:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionResponse
+
+.. class:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionResponse
+
+   The repsonse class for the ``navigator_msgs/ScanTheCodeMission`` service.
+
+   .. attribute:: observing
+
+        ???
+
+        :type: bool
+
+   .. attribute:: found
+
+        Whether the buoy was found.
+
+        :type: bool
+
+   .. attribute:: colors
+
+        The colors shown by the buoy.
+
+        :type: List[str]
+
+ShooterManual
+~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._ShooterManual.ShooterManualRequest
+
+.. class:: navigator_msgs.srv._ShooterManual.ShooterManualRequest
+
+   The request class for the ``navigator_msgs/ShooterManual`` service.
+
+   .. attribute:: feeder
+
+        ???
+
+        :type: float
+
+   .. attribute:: shooter
+
+        ???
+
+        :type: float
+
+.. attributetable:: navigator_msgs.srv._ShooterManual.ShooterManualResponse
+
+.. class:: navigator_msgs.srv._ShooterManual.ShooterManualResponse
+
+   The repsonse class for the ``navigator_msgs/ShooterManual`` service.
+
+   .. attribute:: success
+
+        Whether the shooter operation was successful.
+
+        :type: bool
+
+StartGate
+~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._StartGate.StartGateRequest
+
+.. class:: navigator_msgs.srv._StartGate.StartGateRequest
+
+   The request class for the ``navigator_msgs/StartGate`` service. The request
+   class no public attributes.
+
+.. attributetable:: navigator_msgs.srv._StartGate.StartGateResponse
+
+.. class:: navigator_msgs.srv._StartGate.StartGateResponse
+
+   The repsonse class for the ``navigator_msgs/StartGate`` service.
+
+   .. attribute:: target
+
+        The target of the mission's start gate.
+
+        :type: PoseStamped
+
+   .. attribute:: success
+
+        Whether the start gate operation was successful.
+
+        :type: bool
+
+Subsystems
+^^^^^^^^^^
+
+AlarmGet
+~~~~~~~~
+
+.. attributetable:: ros_alarms.srv._AlarmGet.AlarmGetRequest
+
+.. class:: ros_alarms.srv._AlarmGet.AlarmGetRequest
+
+   The request class for the ``ros_alarms/AlarmGet`` service.
+
+   .. attribute:: alarm_name
+
+        The name of the alarm to request data about.
+
+        :type: str
+
+.. attributetable:: ros_alarms.srv._AlarmGet.AlarmGetResponse
+
+.. class:: ros_alarms.srv._AlarmGet.AlarmGetResponse
+
+   The repsonse class for the ``ros_alarms/AlarmGet`` service.
+
+   .. attribute:: header
+
+        The header for the response.
+
+        :type: Header
+
+   .. attribute:: alarm
+
+        The response data about the requested alarm.
+
+        :type: ~ros_alarms.msg._Alarm.Alarm
+
+AlarmSet
+~~~~~~~~
+
+.. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetRequest
+
+.. class:: ros_alarms.srv._AlarmSet.AlarmSetRequest
+
+   The request class for the ``ros_alarms/AlarmSet`` service.
+
+   .. attribute:: alarm
+
+        The alarm to set.
+
+        :type: ~ros_alarms.msg._Alarm.Alarm
+
+.. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetResponse
+
+.. class:: ros_alarms.srv._AlarmSet.AlarmSetResponse
+
+   The repsonse class for the ``ros_alarms/AlarmSet`` service.
+
+   .. attribute:: succeed
+
+        Whether the request succeeded.
+
+        :type: bool
+
+CameraDBQuery
+~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryRequest
+
+.. class:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryRequest
+
+   The request class for the ``navigator_msgs/CameraDBQuery`` service.
+
+   .. attribute:: name
+
+        The name of the object to query.
+
+        :type: str
+
+   .. attribute:: id
+
+        The ID of the object to query.
+
+        :type: int
+
+.. attributetable:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryResponse
+
+.. class:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryResponse
+
+   The repsonse class for the ``navigator_msgs/CameraDBQuery`` service.
+
+   .. attribute:: found
+
+        Whether the object is found.
+
+        :type: bool
+
 MoveToWaypoint
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 .. attributetable:: navigator_msgs.srv._MoveToWaypoint.MoveToWaypointRequest
 
 .. class:: navigator_msgs.srv._MoveToWaypoint.MoveToWaypointRequest
@@ -2232,7 +2113,7 @@ MoveToWaypoint
         :type: bool
 
 ObjectDBQuery
-^^^^^^^^^^^^^
+~~~~~~~~~~~~~
 .. attributetable:: navigator_msgs.srv._ObjectDBQuery.ObjectDBQueryRequest
 
 .. class:: navigator_msgs.srv._ObjectDBQuery.ObjectDBQueryRequest
@@ -2271,46 +2152,8 @@ ObjectDBQuery
 
         :type: List[PerceptionObject]
 
-ScanTheCodeMission
-^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionRequest
-
-.. class:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionRequest
-
-   The request class for the ``navigator_msgs/ScanTheCodeMission`` service.
-
-   .. attribute:: object
-
-        The perception object to look for.
-
-        :type: PerceptionObject
-
-.. attributetable:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionResponse
-
-.. class:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionResponse
-
-   The repsonse class for the ``navigator_msgs/ScanTheCodeMission`` service.
-
-   .. attribute:: observing
-
-        ???
-
-        :type: bool
-
-   .. attribute:: found
-
-        Whether the buoy was found.
-
-        :type: bool
-
-   .. attribute:: colors
-
-        The colors shown by the buoy.
-
-        :type: List[str]
-
 SetFrequency
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 .. attributetable:: navigator_msgs.srv._SetFrequency.SetFrequencyRequest
 
 .. class:: navigator_msgs.srv._SetFrequency.SetFrequencyRequest
@@ -2331,7 +2174,7 @@ SetFrequency
    class no public attributes.
 
 SetROI
-^^^^^^
+~~~~~~
 .. attributetable:: navigator_msgs.srv._SetROI.SetROIRequest
 
 .. class:: navigator_msgs.srv._SetROI.SetROIRequest
@@ -2369,67 +2212,8 @@ SetROI
 
         :type: str
 
-ShooterManual
-^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv._ShooterManual.ShooterManualRequest
-
-.. class:: navigator_msgs.srv._ShooterManual.ShooterManualRequest
-
-   The request class for the ``navigator_msgs/ShooterManual`` service.
-
-   .. attribute:: feeder
-
-        ???
-
-        :type: float
-
-   .. attribute:: shooter
-
-        ???
-
-        :type: float
-
-.. attributetable:: navigator_msgs.srv._ShooterManual.ShooterManualResponse
-
-.. class:: navigator_msgs.srv._ShooterManual.ShooterManualResponse
-
-   The repsonse class for the ``navigator_msgs/ShooterManual`` service.
-
-   .. attribute:: success
-
-        Whether the shooter operation was successful.
-
-        :type: bool
-
-StartGate
-^^^^^^^^^
-.. attributetable:: navigator_msgs.srv._StartGate.StartGateRequest
-
-.. class:: navigator_msgs.srv._StartGate.StartGateRequest
-
-   The request class for the ``navigator_msgs/StartGate`` service. The request
-   class no public attributes.
-
-.. attributetable:: navigator_msgs.srv._StartGate.StartGateResponse
-
-.. class:: navigator_msgs.srv._StartGate.StartGateResponse
-
-   The repsonse class for the ``navigator_msgs/StartGate`` service.
-
-   .. attribute:: target
-
-        The target of the mission's start gate.
-
-        :type: PoseStamped
-
-   .. attribute:: success
-
-        Whether the start gate operation was successful.
-
-        :type: bool
-
 StereoShapeDetector
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 .. attributetable:: navigator_msgs.srv._StereoShapeDetector.StereoShapeDetectorRequest
 
 .. class:: navigator_msgs.srv._StereoShapeDetector.StereoShapeDetectorRequest
@@ -2479,7 +2263,7 @@ StereoShapeDetector
         :type: bool
 
 VisionRequest
-^^^^^^^^^^^^^
+~~~~~~~~~~~~~
 .. attributetable:: navigator_msgs.srv._VisionRequest.VisionRequestRequest
 
 .. class:: navigator_msgs.srv._VisionRequest.VisionRequestRequest
@@ -2513,6 +2297,227 @@ VisionRequest
    .. attribute:: found
    
         Whether the vision object was found.
+
+        :type: bool
+
+Standard Messages
+^^^^^^^^^^^^^^^^^
+
+SetBool
+~~~~~~~
+
+.. attributetable:: std_srvs.srv._SetBool.SetBoolRequest
+
+.. class:: std_srvs.srv._SetBool.SetBoolRequest
+
+    The request type for the ``SetBool`` service. Requests for some boolean value
+    to be set.
+
+.. attributetable:: std_srvs.srv._SetBool.SetBoolResponse
+
+.. class:: std_srvs.srv._SetBool.SetBoolResponse
+
+    The response type for the ``SetBool`` service. Responds to the set boolean value
+    request.
+
+    .. attribute:: success
+
+        Whether the boolean value was succesfully set.
+
+        :type: bool
+
+    .. attribute:: message
+
+        Any message included in the response.
+
+        :type: str
+
+Conversions
+^^^^^^^^^^^
+
+CameraToLidarTransform
+~~~~~~~~~~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformRequest
+
+.. class:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformRequest
+
+   The request class for the ``navigator_msgs/CameraToLidarTransform`` service.
+
+   .. attribute:: header
+
+        The stamp the point was seen for tf.
+
+        :type: Header
+
+   .. attribute:: point
+
+        The x-dimension and y-dimension of the point in the camera. The z-dimension
+        is ignored.
+
+        :type: Point
+
+   .. attribute:: tolerance
+
+        The number of pixels the projected 3D Lidar point can be from the target point
+        to be included in the response.
+
+        :type: int
+
+.. attributetable:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformResponse
+
+.. class:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformResponse
+
+   The repsonse class for the ``navigator_msgs/CameraToLidarTransform`` service.
+
+   .. attribute:: success
+
+        True if at least one point is found within LIDAR and transformed.
+
+        :type: bool
+
+   .. attribute:: transformed
+
+        If success is true, then the list of transformed points.
+
+        :type: List[Point]
+
+   .. attribute:: closest
+
+        3D point that is closest to the target point when transformed and projected
+
+        :type: Point
+
+   .. attribute:: normal
+
+        The normal unit vector in the camera frame estimated from the transformed points.
+
+        :type: Vector3
+
+   .. attribute:: distance
+
+        The mean z-dimension of the transformed points.
+
+        :type: float
+
+   .. attribute:: error
+
+        If success is false, then what went wrong.
+
+        :type: str
+
+   .. attribute:: CLOUD_NOT_FOUND
+
+        The pointcloud was not found. Constant string actually equal to ``pointcloud
+        not found``.
+
+        :type: str
+
+   .. attribute:: NO_POINTS
+
+        No points were found. Constant string actually equal to ``no points``.
+
+        :type: str
+
+CoordinateConversion
+~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionRequest
+
+.. class:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionRequest
+
+   The request class for the ``navigator_msgs/CoordinateConversion`` service.
+
+   .. attribute:: LLA
+
+        The longitude, latitude, altitude coordinate frame. Constant string equal
+        to ``lla``.
+
+        :type: str
+
+   .. attribute:: ENU
+
+        The east, north, up frame. Constant string equal to ``enu``.
+
+        :type: str
+
+   .. attribute:: ECEF
+
+        The Earth-centered, Earth-fixed frame. Constant string equal to ``ecef``.
+
+        :type: str
+
+   .. attribute:: frame
+
+        The current frame of the relative objects.
+
+        :type: str
+
+   .. attribute:: to_frame
+
+        The frame of objects to convert objects to.
+
+        :type: str
+
+   .. attribute:: points
+
+        The points to convert between the different frames.
+
+        :type: List[Point]
+
+.. attributetable:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionResponse
+
+.. class:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionResponse
+
+   The repsonse class for the ``navigator_msgs/CoordinateConversion`` service.
+
+   .. attribute:: converted
+    
+        The list of converted points.
+
+        :type: List[Point]
+
+   .. attribute:: message
+    
+        If an error occurred, the message of what went wrong.
+
+        :type: str
+
+KeyboardControl
+^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
+
+.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
+
+   The request class for the ``navigator_msgs/KeyboardControl`` service.
+
+   .. attribute:: uuid
+
+        A unique ID to represent the process (?).
+
+        :type: str
+
+   .. attribute:: keycode
+
+        The keycode that was pressed.
+
+        :type: int
+
+.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
+
+.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
+
+   The repsonse class for the ``navigator_msgs/KeyboardControl`` service.
+
+   .. attribute:: generated_uuid
+
+        A response unique ID that was generated in response to the request.
+
+        :type: str
+
+   .. attribute:: is_locked
+    
+        Whether the client which sent the keycode has "locked control" of the keyboard
+        server, and is therefore blocking other keyboard input.
 
         :type: bool
 
