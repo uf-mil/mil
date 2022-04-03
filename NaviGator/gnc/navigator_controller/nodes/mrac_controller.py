@@ -9,7 +9,7 @@ import rospy
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, WrenchStamped, PoseStamped, Quaternion, Pose
 from std_msgs.msg import Header
-from mil_msgs.msg import PoseTwistStamped
+from vrx_gazebo.msg import Task
 from std_msgs.msg import String, Float64MultiArray
 
 
@@ -30,6 +30,15 @@ class MRAC_Controller:
         self.ki = np.array(rospy.get_param('~ki', [0.1, 0.1, 0.1]))
         # Drag adaptation rates, world frame
         self.kg = np.array(rospy.get_param('~kg',[5.0, 5.0, 5.0, 5.0, 5.0]))
+        # X error threshold for long trajectory to be satisfied
+        self.x_thresh = rospy.get_param('x_thresh', 0.5)
+        # Y error threshold for long trajectory to be satisfied
+        self.y_thresh = rospy.get_param('y_thresh', 0.5)
+        # Yaw error threshold for long trajectory to be satisfied
+        self.yaw_thresh = rospy.get_param('yaw_thresh', 0.02)
+        self.task_info_sub = rospy.Subscriber("/vrx/task/info", Task, self.taskinfoSubscriber)
+        self.thresholds_changed = False
+
         # Initial disturbance estimate
         self.dist_est = np.array([0, 0, 0])
         # Initial drag estimate
@@ -128,6 +137,13 @@ class MRAC_Controller:
         self.theta_pub = rospy.Publisher("~theta", Float64MultiArray, queue_size=0)
 
         rospy.spin()
+
+    def taskinfoSubscriber(self, msg):
+        if not self.thresholds_changed and msg.name == "wayfinding":
+            self.x_thresh = 0.15
+            self.y_thresh = 0.15
+            self.yaw_thresh = 0.005
+            self.thresholds_changed = True
 
     def set_traj(self, msg):
         '''
@@ -249,7 +265,9 @@ class MRAC_Controller:
         w_err = self.w_ref - self.ang_vel
 
         #Adjust kp_body and kd_body based on p_err if heavy_pid was set
-        if (self.heavy_pid == True) and (abs(p_err[0]) < 0.25) and (abs(p_err[1]) < 0.25):
+        #TODO: Determine what threshold for switching to stationkeeping needs to be
+        if (self.heavy_pid == True) and (abs(p_err[0]) < self.x_thresh) and (abs(p_err[1]) < self.y_thresh) and (abs(y_err) < self.yaw_thresh):
+            print("threshold hit")
             self.kp_body = self.kp_body_orig
             self.kd_body = self.kd_body_orig
             self.heavy_pid = False
