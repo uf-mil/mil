@@ -17,6 +17,7 @@ jobs:
       - name: Remove old contents
         run: |
           echo ${{ secrets.ZOBELISK_PASSWORD }} | sudo -S rm -rf ~/actions-runner/_work/mil/mil
+          mkdir ~/actions-runner/_work/mil/mil
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
