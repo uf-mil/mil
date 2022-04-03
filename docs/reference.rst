@@ -1415,45 +1415,6 @@ SetBool
 
         :type: str
 
-KeyboardControl
-^^^^^^^^^^^^^^^
-
-.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
-
-.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
-
-    The request class for the ``navigator_msgs/KeyboardControl`` service.
-
-    .. attribute:: uuid
-
-        The UUID of the request.
-
-        :type: str
-
-    .. attribute:: keycode
-
-        The keycode of the key that was pressed.
-
-        :type: int
-
-.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
-
-.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
-
-    The response class for the ``navigator_msgs/KeyboardControl`` service.
-
-    .. attribute:: generated_uuid
-
-        The generated UUID in the response class.
-
-        :type: str
-
-    .. attribute:: is_locked
-
-        Whether the keyboard interface is locked.
-
-        :type: bool
-
 AlarmGet
 ^^^^^^^^
 
@@ -2197,6 +2158,118 @@ MessageDetectDeliver
         A message in response to the process.
 
         :type: str
+
+MessageExtranceExitGate
+^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._MessageExtranceExitGate.MessageExtranceExitGateRequest
+
+.. class:: navigator_msgs.srv._MessageExtranceExitGate.MessageExtranceExitGateRequest
+
+   The request class for the ``navigator_msgs/MessageExtranceExitGate`` service.
+
+   .. attribute:: entrance_gate
+
+        The entrance gate relevant to the task.
+
+        :type: int
+
+   .. attribute:: exit_gate
+
+        The exit gate relevant to the task.
+
+        :type: int
+
+   .. attribute:: light_buoy_active
+
+        Whether the task's light buoy is active.
+
+        :type: bool
+
+   .. attribute:: light_pattern
+
+        The light pattern shown by the buoy. An empty string if the buoy is not active.
+        In the pattern, ``R`` represents red, ``B`` represents blue, and ``G`` represents
+        green.
+
+        :type: str
+
+.. attributetable:: navigator_msgs.srv._MessageExtranceExitGate.MessageExtranceExitGateResponse
+
+.. class:: navigator_msgs.srv._MessageExtranceExitGate.MessageExtranceExitGateResponse
+
+   The repsonse class for the ``navigator_msgs/MessageExtranceExitGate`` service.
+
+   .. attribute:: message
+
+        A message in response to the process.
+
+        :type: str
+
+MoveToWaypoint
+^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._MoveToWaypoint.MoveToWaypointRequest
+
+.. class:: navigator_msgs.srv._MoveToWaypoint.MoveToWaypointRequest
+
+   The request class for the ``navigator_msgs/MoveToWaypoint`` service.
+
+   .. attribute:: target_p
+
+        The target pose to head toward.
+
+        :type: Pose
+
+.. attributetable:: navigator_msgs.srv._MoveToWaypoint.MoveToWaypointResponse
+
+.. class:: navigator_msgs.srv._MoveToWaypoint.MoveToWaypointResponse
+
+   The repsonse class for the ``navigator_msgs/MoveToWaypoint`` service.
+
+   .. attribute:: success
+
+        Whether the movement was successful.
+
+        :type: bool
+
+ObjectDBQuery
+^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._ObjectDBQuery.ObjectDBQueryRequest
+
+.. class:: navigator_msgs.srv._ObjectDBQuery.ObjectDBQueryRequest
+
+   The request class for the ``navigator_msgs/ObjectDBQuery`` service.
+
+   .. attribute:: name
+
+        The name of the object to find in the database.
+
+        :type: str
+
+   .. attribute:: cmd
+
+        The command to run in the database. The command should be formatted as
+        ``ID=YYY``, where ``ID`` is the property ID of the object to change, and
+        ``YYY`` is the value to set.
+
+        :type: str
+
+.. attributetable:: navigator_msgs.srv._ObjectDBQuery.ObjectDBQueryResponse
+
+.. class:: navigator_msgs.srv._ObjectDBQuery.ObjectDBQueryResponse
+
+   The repsonse class for the ``navigator_msgs/ObjectDBQuery`` service.
+
+   .. attribute:: found
+
+        Whether the requested object was found.
+
+        :type: bool
+
+   .. attribute:: objects
+
+        A list of all objects found.
+
+        :type: List[PerceptionObject]
 
 Exceptions
 ----------
