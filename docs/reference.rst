@@ -2311,11 +2311,11 @@ ScanTheCodeMission
 
 SetFrequency
 ^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv._SetFrequencyMission.SetFrequencyMissionRequest
+.. attributetable:: navigator_msgs.srv._SetFrequency.SetFrequencyRequest
 
-.. class:: navigator_msgs.srv._SetFrequencyMission.SetFrequencyMissionRequest
+.. class:: navigator_msgs.srv._SetFrequency.SetFrequencyRequest
 
-   The request class for the ``navigator_msgs/SetFrequencyMission`` service.
+   The request class for the ``navigator_msgs/SetFrequency`` service.
 
    .. attribute:: frequency
 
@@ -2323,11 +2323,11 @@ SetFrequency
 
         :type: int
 
-.. attributetable:: navigator_msgs.srv._SetFrequencyMission.SetFrequencyMissionResponse
+.. attributetable:: navigator_msgs.srv._SetFrequency.SetFrequencyResponse
 
-.. class:: navigator_msgs.srv._SetFrequencyMission.SetFrequencyMissionResponse
+.. class:: navigator_msgs.srv._SetFrequency.SetFrequencyResponse
 
-   The repsonse class for the ``navigator_msgs/SetFrequencyMission`` service. The
+   The repsonse class for the ``navigator_msgs/SetFrequency`` service. The
    class no public attributes.
 
 SetROI
@@ -2398,6 +2398,121 @@ ShooterManual
    .. attribute:: success
 
         Whether the shooter operation was successful.
+
+        :type: bool
+
+StartGate
+^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._StartGate.StartGateRequest
+
+.. class:: navigator_msgs.srv._StartGate.StartGateRequest
+
+   The request class for the ``navigator_msgs/StartGate`` service. The request
+   class no public attributes.
+
+.. attributetable:: navigator_msgs.srv._StartGate.StartGateResponse
+
+.. class:: navigator_msgs.srv._StartGate.StartGateResponse
+
+   The repsonse class for the ``navigator_msgs/StartGate`` service.
+
+   .. attribute:: target
+
+        The target of the mission's start gate.
+
+        :type: PoseStamped
+
+   .. attribute:: success
+
+        Whether the start gate operation was successful.
+
+        :type: bool
+
+StereoShapeDetector
+^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._StereoShapeDetector.StereoShapeDetectorRequest
+
+.. class:: navigator_msgs.srv._StereoShapeDetector.StereoShapeDetectorRequest
+
+   The request class for the ``navigator_msgs/StereoShapeDetector`` service.
+
+   .. attribute:: detection_switch
+
+        ???
+
+        :type: bool
+        
+   .. attribute:: shape
+
+        ???
+
+        :type: str
+
+   .. attribute:: processing_type
+
+        ???
+
+        :type: str
+
+   .. attribute:: num_points
+
+        The number of points relevant to the detector.
+
+        :type: int
+
+   .. attribute:: model_params
+
+        ???
+
+        :type: List[float]
+
+.. attributetable:: navigator_msgs.srv._StereoShapeDetector.StereoShapeDetectorResponse
+
+.. class:: navigator_msgs.srv._StereoShapeDetector.StereoShapeDetectorResponse
+
+   The repsonse class for the ``navigator_msgs/StereoShapeDetector`` service.
+
+   .. attribute:: success
+
+        Whether the detector was succesful in detecting!
+
+        :type: bool
+
+VisionRequest
+^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._VisionRequest.VisionRequestRequest
+
+.. class:: navigator_msgs.srv._VisionRequest.VisionRequestRequest
+
+   The request class for the ``navigator_msgs/VisionRequest`` service.
+
+   .. attribute:: target_name
+
+        The target to look for in the vision system.
+
+        :type: str
+        
+.. attributetable:: navigator_msgs.srv._VisionRequest.VisionRequestResponse
+
+.. class:: navigator_msgs.srv._VisionRequest.VisionRequestResponse
+
+   The repsonse class for the ``navigator_msgs/VisionRequest`` service.
+
+   .. attribute:: pose
+
+        Where the object is at, in the vision system.
+
+        :type: PoseStamped
+
+   .. attribute:: covariance_diagonal
+
+        The covariance in the vision target.
+
+        :type: Vector3
+
+   .. attribute:: found
+   
+        Whether the vision object was found.
 
         :type: bool
 
