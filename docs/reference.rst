@@ -397,7 +397,6 @@ PoseTwist
 
         :type: ~geometry_msgs.msg._Accel.Accel
 
-
 Navigation Messages
 ^^^^^^^^^^^^^^^^^^^
 
@@ -433,6 +432,1851 @@ Odometry
         The twist (along with covariance) determined within the frame of :attr:`~nav_msgs.msg._Odometry.Odometry.child_frame_id`.
 
         :type: ~geometry_msgs.msg._TwistWithCovariance.TwistWithCovariance
+
+Acceleration
+~~~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._Acceleration.Acceleration
+
+.. class:: navigator_msgs.msg._Acceleration.Acceleration
+
+    .. attribute:: linear
+
+        The linear component of the acceleration.
+
+        :type: Vector3
+
+    .. attribute:: angular
+
+        The angular component of the acceleration.
+
+        :type: Vector3
+
+KillStatus
+~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._KillStatus.KillStatus
+
+.. class:: navigator_msgs.msg._KillStatus.KillStatus
+
+    A custom message to represent information about a kill induced on the robot.
+
+    .. attribute:: overall
+
+        :type: bool
+
+    .. attribute:: pf
+
+        :type: bool
+
+    .. attribute:: pa
+
+        :type: bool
+
+    .. attribute:: sf
+
+        :type: bool
+
+    .. attribute:: sa
+
+        :type: bool
+
+    .. attribute:: remote
+
+        :type: bool
+
+    .. attribute:: computer
+
+        :type: bool
+
+    .. attribute:: remote_conn
+
+        :type: bool
+
+PerceptionObject
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._PerceptionObject.PerceptionObject
+
+.. class:: navigator_msgs.msg._PerceptionObject.PerceptionObject
+
+    A custom message definition to represent an object found by the perception
+    system.
+
+    .. attribute:: header
+    
+        The message header.
+
+        :type: Header
+
+    .. attribute:: name
+    
+        The name of the object.
+
+        :type: str
+
+    .. attribute:: DETECT_DELIVER_PLATFORM
+    
+        The constant string field representing the platform to detect and deliver.
+        Actual string value is ``shooter``.
+
+        :type: str
+
+    .. attribute:: IDENTIFY_AND_DOCK
+    
+        The constant string field representing the dock in the Identify and Dock mission.
+        Actual string value is ``dock``.
+
+        :type: str
+
+    .. attribute:: SCAN_THE_CODE
+    
+        The constant string field representing the Scan the Code totem. Actual 
+        string value is ``scan_the_code``.
+
+        :type: str
+
+    .. attribute:: TOTEM
+    
+        The constant string field representing the totem in the Find Totems mission.
+        Actual string value is ``totem``.
+
+        :type: str
+
+    .. attribute:: START_GATE_BUOY
+    
+        The constant string field representing the buoy of the start gate.
+        Actual string value is ``start_gate``.
+
+        :type: str
+
+    .. attribute:: BUOY
+    
+        The constant string field representing a buoy.
+        Actual string value is ``buoy``.
+
+        :type: str
+
+    .. attribute:: UNKNOWN
+    
+        The constant string field representing an unknown object.
+        Actual string value is ``unknown``.
+
+        :type: str
+
+    .. attribute:: ALL
+    
+        The constant string field representing all objects found.
+        Actual string value is ``all``.
+
+        :type: str
+
+    .. attribute:: FAKE_SHOOTER
+    
+        The constant string field representing a fake shooter.
+        Actual string value is ``Shooter``.
+
+        :type: str
+
+    .. attribute:: FAKE_IDENTIFY_AND_DOCK
+    
+        The constant string field representing a fake dock in the Identify and Dock mission.
+        Actual string value is ``Dock``.
+
+        :type: str
+
+    .. attribute:: FAKE_SCAN_THE_CODE
+    
+        The constant string field representing a fake Scan the Code totem in the
+        Scan the Code mission. Actual string value is ``Dock``.
+
+        :type: str
+
+    .. attribute:: GATE1
+    
+        The constant string field representing the first gate.
+        Actual string value is ``Gate_1``.
+
+        :type: str
+
+    .. attribute:: GATE2
+    
+        The constant string field representing the first gate.
+        Actual string value is ``Gate_2``.
+
+        :type: str
+
+    .. attribute:: GATE3
+    
+        The constant string field representing the first gate.
+        Actual string value is ``Gate_3``.
+
+        :type: str
+
+    .. attribute:: BUOY_FIELD
+    
+        The constant string field representing a field of buoys.
+        Actual string value is ``BuoyField``.
+
+        :type: str
+
+    .. attribute:: FIND_THE_BREAK
+    
+        The constant string field representing ???.
+        Actual string value is ``FindBreak``.
+
+        :type: str
+
+    .. attribute:: CORAL_SURVEY
+    
+        The constant string field representing ???.
+        Actual string value is ``CoralSurvey``.
+
+        :type: str
+
+    .. attribute:: ACOUSTIC_PINGER
+    
+        The constant string field representing an acoustic pinger.
+        Actual string value is ``AcousticPinger``.
+
+        :type: str
+
+    .. attribute:: EMPTY_SPACE
+    
+        The constant string field representing empty space.
+        Actual string value is ``EmptySpace``.
+
+        :type: str
+
+    .. attribute:: position
+
+        Estimated position of the object.
+
+        :type: Point
+
+    .. attribute:: id
+
+        The ID of the object.
+
+        :type: int
+
+    .. attribute:: confidence
+
+        The confidence of the object detection, from 0 to 255.
+
+        :type: int
+
+    .. attribute:: size
+
+        The size of the object in all dimensions.
+
+        :type: Vector3
+
+    .. attribute:: points
+
+        The points (in the ENU frame) that belong to the buoy.
+
+        :type: List[Point32]
+
+    .. attribute:: intensity
+
+        The intensity of each point in the ENU frame.
+
+        :type: List[int]
+
+    .. attribute:: pclInliers
+
+        The inliners for the PCL plane fitting algorithm.
+
+        :type: int
+
+    .. attribute:: normal
+
+        Unit vector for normal to one of the vertical planes of the object.
+
+        :type: Vector3
+
+    .. attribute:: color
+
+        Average color of the buoy.
+
+        :type: ColorRGBA
+
+PerceptionObjectArray
+~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._PerceptionObjectArray.PerceptionObjectArray
+
+.. class:: navigator_msgs.msg._PerceptionObjectArray.PerceptionObjectArray
+
+    A custom message definition to represent an array of perception objects.
+
+    .. attribute:: objects
+
+        The objects in the array.
+
+        :type: List[PerceptionObject]
+
+Networking Messages
+^^^^^^^^^^^^^^^^^^^
+
+Host
+~~~~
+
+.. attributetable:: navigator_msgs.msg._Host.Host
+
+.. class:: navigator_msgs.msg._Host.Host
+
+    A custom message definition responsible for associating a hostname and IP
+    address with a status.
+
+    .. attribute:: hostname
+
+        The name of the host.
+
+        :type: str
+
+    .. attribute:: ip
+
+        The IP address of the host.
+
+        :type: str
+
+    .. attribute:: status
+
+        The status of the host.
+
+        :type: str
+
+Hosts
+~~~~~
+
+.. attributetable:: navigator_msgs.msg._Hosts.Hosts
+
+.. class:: navigator_msgs.msg._Hosts.Hosts
+
+    A custom message definition representing a group of hosts together.
+
+    .. attribute:: hostnames
+
+        A custom, constant string representing a group of hostnames. The string is
+        equal to:
+
+            mil-nav-wamv mil-nav-ubnt-wamv mil-nav-ubnt-shore mil-com-velodyne-vlp16 mil-com-sick-lms111
+
+        :type: str
+
+    .. attribute:: hosts
+    
+        The hosts belonging to the group.
+
+        :type: List[~navigator_msgs.msg._Host.Host]
+
+Standard Messages
+^^^^^^^^^^^^^^^^^
+
+Header
+~~~~~~
+
+.. attributetable:: std_msgs.msg._Header.Header
+
+.. class:: std_msgs.msg._Header.Header
+
+    A ROS message type representing the header of a message. Used throughout a
+    variety of messages.
+
+    .. attribute:: seq
+
+        The sequence ID of the header. A consecutively increasing ID.
+
+        :type: int
+
+    .. attribute:: time
+
+        The time of the message.
+
+        :type: genpy.rostime.Time
+
+    .. attribute:: frame_id
+
+        The frame that this object is associated with.
+
+        :type: str
+
+ColorRGBA
+~~~~~~~~~
+
+.. attributetable:: std_msgs.msg._ColorRGBA.ColorRGBA
+
+.. class:: std_msgs.msg._ColorRGBA.ColorRGBA
+
+    A ROS message type representing a color with RGB and an alpha channel.
+
+    .. attribute:: r
+
+        The red value of the color.
+
+        :type: float
+
+    .. attribute:: g
+
+        The green value of the color.
+
+        :type: float
+
+    .. attribute:: b
+
+        The blue value of the color.
+
+        :type: float
+
+    .. attribute:: a
+
+        The alpha value of the color.
+
+        :type: float
+
+Sensor Messages
+^^^^^^^^^^^^^^^
+
+PointField
+~~~~~~~~~~
+
+.. attributetable:: sensor_msgs.msg._PointField.PointField
+
+.. class:: sensor_msgs.msg._PointField.PointField
+
+    A ROS message type to represent a field in a point cloud.
+
+    .. attribute:: INT8
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``1`` in the message definition.
+
+        :type: int
+
+    .. attribute:: UINT8
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``2`` in the message definition.
+
+        :type: int
+
+    .. attribute:: INT16
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``3`` in the message definition.
+
+        :type: int
+
+    .. attribute:: UINT16
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``4`` in the message definition.
+
+        :type: int
+
+    .. attribute:: INT32
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``5`` in the message definition.
+
+        :type: int
+
+    .. attribute:: UINT32
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``6`` in the message definition.
+
+        :type: int
+
+    .. attribute:: FLOAT32
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``7`` in the message definition.
+
+        :type: int
+
+    .. attribute:: FLOAT64
+
+        Constant of the data type that can be used to represent the data type of a
+        value in the field. Set to ``8`` in the message definition.
+
+        :type: int
+
+    .. attribute:: name
+
+        The name of the field.
+
+        :type: str
+
+    .. attribute:: offset
+
+        The offset from the start of the point struct.
+
+        :type: int
+
+    .. attribute:: datatype
+
+        The datatype, represented by using one of the attributes above.
+
+        :type: int
+
+    .. attribute:: count
+
+        The number of elements in the field.
+
+        :type: int
+
+PointCloud2
+~~~~~~~~~~~
+
+.. attributetable:: sensor_msgs.msg._PointCloud2.PointCloud2
+
+.. class:: sensor_msgs.msg._PointCloud2.PointCloud2
+
+    A ROS message type indicating a point cloud.
+
+    .. attribute:: header
+
+        The message header.
+
+        :type: Header
+
+    .. attribute:: height
+
+        The height of the point cloud. If the cloud is unordered, then ``1``.
+
+        :type: int
+
+    .. attribute:: width
+
+        The width of the point cloud. If the cloud is unordered, then this value
+        is set to the length of the point cloud.
+
+        :type: int
+
+    .. attribute:: fields
+
+        The fields in the point cloud.
+
+        :type: List[PointField]
+
+    .. attribute:: is_bigendian
+
+        Whether the field is big endian.
+
+        :type: bool
+
+    .. attribute:: point_step
+
+        The length of a point in bytes.
+
+        :type: int
+
+    .. attribute:: row_step
+
+        The length of a row in bytes.
+
+        :type: int
+
+    .. attribute:: data
+
+        The actual data inside the point cloud. The size of the array is :attr:`~sensor_msgs.msg._PointCloud2.PointCloud2.row_step`
+        multiplied by :attr:`~sensor_msgs.msg._PointCloud2.PointCloud2.height`.
+
+        :type: List[int]
+
+    .. attribute:: is_dense
+
+        ``True`` if there are no invalid points.
+
+        :type: bool
+
+VRX Messages
+^^^^^^^^^^^^
+
+DockShape
+~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._DockShape.DockShape
+
+.. class:: navigator_msgs.msg._DockShape.DockShape
+
+    .. attribute:: Shape
+
+        The shape of the dock. Likely either :attr:`DockShape.CROSS`, :attr:`DockShape.CIRCLE`,
+        or :attr:`DockShape.TRIANGLE`.
+
+        :type: str
+
+    .. attribute:: CROSS
+
+        The dock holds the cross shape.
+
+        :type: str
+
+    .. attribute:: CIRCLE
+
+        The dock holds the circle shape.
+
+        :type: str
+
+    .. attribute:: TRIANGLE
+
+        The dock holds the triangle shape.
+
+        :type: str
+
+    .. attribute:: Color
+
+        The color of the dock. Likely either :attr:`DockShape.RED`, :attr:`DockShape.BLUE`,
+        or :attr:`DockShape.GREEN`.
+
+        :type: str
+
+    .. attribute:: RED
+
+        The dock shape is red.
+
+        :type: str
+
+    .. attribute:: BLUE
+
+        The dock shape is blue.
+
+        :type: str
+
+    .. attribute:: GREEN
+
+        The dock shape is green.
+
+        :type: str
+
+    .. attribute:: CenterX
+
+        The x-dimension of the center of the dock shape.
+
+        :type: int
+
+    .. attribute:: CenterY
+
+        The y-dimension of the center of the dock shape.
+
+        :type: int
+
+    .. attribute.. img_width
+
+        The width of the image showing the dock and its shape.        
+
+        :type: int
+
+    .. attribute:: header
+
+        The message header.
+
+        :type: Header
+
+    .. attribute:: points
+
+        ???
+
+        :type: List[~geometry_msgs.msg._Point.Point]
+
+    .. attribute:: color_confidence
+
+        The relative confidence that the color prediction is correct.
+
+        :type: float
+
+    .. attribute:: shape_confidence
+
+        The relative confidence that the shape prediction is correct.
+
+        :type: float
+
+DockShapes
+~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._DockShapes.DockShapes
+
+.. class:: navigator_msgs.msg._DockShapes.DockShapes
+
+    A custom message definition to represent the presence of multiple dock shapes
+    found by the vision system.
+
+    .. attribute:: list
+
+        The list of shapes found.
+
+        :type: List[DockShape]
+
+
+ScanTheCode
+~~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.msg._ScanTheCode.ScanTheCode
+
+.. class:: navigator_msgs.msg._ScanTheCode.ScanTheCode
+
+    A custom message definition to represent the color pattern show by a Scan The
+    Code totem.
+
+    .. attribute:: string_pattern
+
+        The pattern shown. ``R`` stands for red, ``B`` stands for blue, and ``G``
+        stands for green.
+
+        :type: str
+
+
+Services
+--------
+
+Mission Systems
+^^^^^^^^^^^^^^^
+
+AcousticBeacon
+~~~~~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.srv._AcousticBeacon.AcousticBeaconRequest
+
+.. class:: navigator_msgs.srv._AcousticBeacon.AcousticBeaconRequest
+
+   The request class for the ``navigator_msgs/AcousticBeacon`` service. The class
+   contains no settable attributes.
+
+.. attributetable:: navigator_msgs.srv._AcousticBeacon.AcousticBeaconResponse
+
+.. class:: navigator_msgs.srv._AcousticBeacon.AcousticBeaconResponse
+
+   The repsonse class for the ``navigator_msgs/AcousticBeacon`` service.
+
+   .. attribute:: beacon_position
+
+        The position of the acoustic beacon.
+
+        :type: Point
+
+   .. attribute:: setValue
+
+        Whether the position data of the beacon is reliable enough to be used.
+
+        :type: bool
+
+ChooseAnimal
+~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._ChooseAnimal.ChooseAnimalRequest
+
+.. class:: navigator_msgs.srv._ChooseAnimal.ChooseAnimalRequest
+
+   The request class for the ``navigator_msgs/ChooseAnimal`` service.
+
+   .. attribute:: target_animal
+
+        The target animal to circle around. Should be ``platyus``, ``crocodile``,
+        or ``turtle``.
+
+        :type: str
+
+   .. attribute:: circle_direction
+
+        The direction to circle in. Should be ``clockwise`` or ``anti-clockwise``.
+
+        :type: str
+
+.. attributetable:: navigator_msgs.srv._ChooseAnimal.ChooseAnimalResponse
+
+.. class:: navigator_msgs.srv._ChooseAnimal.ChooseAnimalResponse
+
+   The repsonse class for the ``navigator_msgs/ChooseAnimal`` service.
+
+   .. attribute:: movement_complete
+
+        Whether the movement was completed.
+
+        :type: bool
+
+ColorRequest
+~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._ColorRequest.ColorRequestRequest
+
+.. class:: navigator_msgs.srv._ColorRequest.ColorRequestRequest
+
+   The request class for the ``navigator_msgs/ColorRequest`` service.
+
+   .. attribute:: color
+
+        The color used to find objects with.
+
+        :type: str
+
+.. attributetable:: navigator_msgs.srv._ColorRequest.ColorRequestResponse
+
+.. class:: navigator_msgs.srv._ColorRequest.ColorRequestResponse
+
+   The repsonse class for the ``navigator_msgs/ColorRequest`` service.
+
+   .. attribute:: found
+    
+        Whether objects were found.
+
+        :type: bool
+
+   .. attribute:: ids
+    
+        The IDs of objects that were found.
+
+        :type: List[int]
+
+FindPinger
+~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._FindPinger.FindPingerRequest
+
+.. class:: navigator_msgs.srv._FindPinger.FindPingerRequest
+
+   The request class for the ``navigator_msgs/FindPinger`` service. The request
+   has no individual attributes.
+
+.. attributetable:: navigator_msgs.srv._FindPinger.FindPingerResponse
+
+.. class:: navigator_msgs.srv._FindPinger.FindPingerResponse
+
+   The repsonse class for the ``navigator_msgs/FindPinger`` service.
+
+   .. attribute:: pinger_position
+    
+        The position of the pinger.
+
+        :type: Point
+
+   .. attribute:: num_samples
+    
+        ???
+
+        :type: int
+
+GetDockBays
+~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._GetDockBays.GetDockBaysRequest
+
+.. class:: navigator_msgs.srv._GetDockBays.GetDockBaysRequest
+
+   The request class for the ``navigator_msgs/GetDockBays`` service. The request
+   has no individual attributes.
+
+.. attributetable:: navigator_msgs.srv._GetDockBays.GetDockBaysResponse
+
+.. class:: navigator_msgs.srv._GetDockBays.GetDockBaysResponse
+
+   The repsonse class for the ``navigator_msgs/GetDockBays`` service.
+
+   .. attribute:: bays
+    
+        The positions of the three dock bays in the ENU frame. The first element is
+        the position of the left dock, the second element is the position of the center dock,
+        the third element is the position of the right dock.
+
+        :type: List[Point]
+
+   .. attribute:: normal
+    
+        The normal vector pointing away from the plane of dock back.
+
+        :type: Vector3
+
+   .. attribute:: success
+    
+        Whether the position of the docks could be found.
+
+        :type: bool
+
+   .. attribute:: error
+    
+        If :attr:`~navigator_msgs.srv._GetDockBays.GetDockBays.success` is ``False``,
+        then a message describing what went wrong.
+
+        :type: str
+
+GetDockShape
+~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._GetDockShape.GetDockShapeRequest
+
+.. class:: navigator_msgs.srv._GetDockShape.GetDockShapeRequest
+
+   The request class for the ``navigator_msgs/GetDockShape`` service.
+
+   .. attribute:: Shape
+
+        The shape to the get the associated dock of. Likely one of the associated shape
+        enumerations.
+
+        :type: str
+
+   .. attribute:: CROSS
+
+        Constant string attribute used to represent a cross shape on a dock. True value
+        is set to ``CROSS``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+
+        :type: str
+
+   .. attribute:: TRIANGLE
+
+        Constant string attribute used to represent a triangle shape on a dock. True value
+        is set to ``TRIANGLE``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+
+        :type: str
+
+   .. attribute:: CIRCLE
+
+        Constant string attribute used to represent a circle shape on a dock. True value
+        is set to ``CIRCLE``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+
+        :type: str
+
+   .. attribute:: Color
+
+        The color to the get the associated dock of. Likely one of the associated color
+        enumerations.
+
+        :type: str
+
+   .. attribute:: RED
+
+        Constant string attribute used to represent a red shape on a dock. True value
+        is set to ``RED``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+
+        :type: str
+
+   .. attribute:: BLUE
+
+        Constant string attribute used to represent a triangle shape on a dock. True value
+        is set to ``BLUE``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+
+        :type: str
+
+   .. attribute:: GREEN
+
+        Constant string attribute used to represent a circle shape on a dock. True value
+        is set to ``GREEN``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+
+        :type: str
+
+   .. attribute:: ANY
+
+        Constant string attribute used to represent any value for a specific field - ie, a
+        dock with any shape or color representation. Actual value is ``ANY``.
+
+        :type: str
+
+.. attributetable:: navigator_msgs.srv._GetDockShape.GetDockShapeResponse
+
+.. class:: navigator_msgs.srv._GetDockShape.GetDockShapeResponse
+
+   The repsonse class for the ``navigator_msgs/GetDockShape`` service.
+
+   .. attribute:: symbol
+
+        The associated shape and color of the returned dock.
+
+        :type: DockShape
+
+   .. attribute:: found
+    
+        Whether a viable dock was found.
+
+        :type: bool
+
+   .. attribute:: error
+    
+        If :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeResponse.found` was false,
+        then a description of what went wrong. May be equal to one of this class' enumerations.
+
+        :type: str
+
+   .. attribute:: INVALID_REQUEST
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``INVALID_REQUEST``.
+
+        :type: str
+
+   .. attribute:: NODE_DISABLED
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``NODE_DISABLED``.
+
+        :type: str
+
+   .. attribute:: TOO_SMALL_SAMPLE
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``TOO_SMALL_SAMPLE``.
+
+        :type: str
+
+   .. attribute:: SHAPE_NOT_FOUND
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``SHAPE_NOT_FOUND``.
+
+        :type: str
+
+GetDockShapes
+~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._GetDockShapes.GetDockShapesRequest
+
+.. class:: navigator_msgs.srv._GetDockShapes.GetDockShapesRequest
+
+   The request class for the ``navigator_msgs/GetDockShapes`` service.
+
+   .. attribute:: Shape
+
+        The shape to the get the associated dock of. Likely one of the associated shape
+        enumerations.
+
+        :type: str
+
+   .. attribute:: CROSS
+
+        Constant string attribute used to represent a cross shape on a dock. True value
+        is set to ``CROSS``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+
+        :type: str
+
+   .. attribute:: TRIANGLE
+
+        Constant string attribute used to represent a triangle shape on a dock. True value
+        is set to ``TRIANGLE``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+
+        :type: str
+
+   .. attribute:: CIRCLE
+
+        Constant string attribute used to represent a circle shape on a dock. True value
+        is set to ``CIRCLE``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+
+        :type: str
+
+   .. attribute:: Color
+
+        The color to the get the associated dock of. Likely one of the associated color
+        enumerations.
+
+        :type: str
+
+   .. attribute:: RED
+
+        Constant string attribute used to represent a red shape on a dock. True value
+        is set to ``RED``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+
+        :type: str
+
+   .. attribute:: BLUE
+
+        Constant string attribute used to represent a triangle shape on a dock. True value
+        is set to ``BLUE``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+
+        :type: str
+
+   .. attribute:: GREEN
+
+        Constant string attribute used to represent a circle shape on a dock. True value
+        is set to ``GREEN``.
+
+        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+
+        :type: str
+
+   .. attribute:: ANY
+
+        Constant string attribute used to represent any value for a specific field - ie, a
+        dock with any shape or color representation. Actual value is ``ANY``.
+
+        :type: str
+
+.. attributetable:: navigator_msgs.srv._GetDockShapes.GetDockShapesResponse
+
+.. class:: navigator_msgs.srv._GetDockShapes.GetDockShapesResponse
+
+   The repsonse class for the ``navigator_msgs/GetDockShapes`` service.
+
+   .. attribute:: shapes
+
+        The relevant dock shapes that were found.
+
+        :type: List[DockShape]
+
+   .. attribute:: found
+    
+        If one or more suitable shapes was returned, then true.
+
+        :type: bool
+
+   .. attribute:: error
+    
+        If :attr:`~navigator_msgs.srv._GetDockShapes.GetDockShapesResponse.found`
+        was false, then an explanation of why.
+
+        :type: str
+
+   .. attribute:: INVALID_REQUEST
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``INVALID_REQUEST``.
+
+        :type: str
+
+   .. attribute:: NODE_DISABLED
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``NODE_DISABLED``.
+
+        :type: str
+
+   .. attribute:: TOO_SMALL_SAMPLE
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``TOO_SMALL_SAMPLE``.
+
+        :type: str
+
+   .. attribute:: SHAPE_NOT_FOUND
+
+        An enumeration to describe a request that was invalid in some way. Actual
+        string value is ``SHAPE_NOT_FOUND``.
+
+        :type: str
+
+MessageDetectDeliver
+~~~~~~~~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._MessageDetectDeliver.MessageDetectDeliverRequest
+
+.. class:: navigator_msgs.srv._MessageDetectDeliver.MessageDetectDeliverRequest
+
+   The request class for the ``navigator_msgs/MessageDetectDeliver`` service.
+
+   .. attribute:: shape_color
+
+        The color of the requested shape.
+
+        :type: str
+
+   .. attribute:: shape
+
+        The type of requested shape.
+
+        :type: str
+
+.. attributetable:: navigator_msgs.srv._MessageDetectDeliver.MessageDetectDeliverResponse
+
+.. class:: navigator_msgs.srv._MessageDetectDeliver.MessageDetectDeliverResponse
+
+   The repsonse class for the ``navigator_msgs/MessageDetectDeliver`` service.
+
+   .. attribute:: message
+
+        A message in response to the process.
+
+        :type: str
+
+MessageExtranceExitGate
+~~~~~~~~~~~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._MessageExtranceExitGate.MessageExtranceExitGateRequest
+
+.. class:: navigator_msgs.srv._MessageExtranceExitGate.MessageExtranceExitGateRequest
+
+   The request class for the ``navigator_msgs/MessageExtranceExitGate`` service.
+
+   .. attribute:: entrance_gate
+
+        The entrance gate relevant to the task.
+
+        :type: int
+
+   .. attribute:: exit_gate
+
+        The exit gate relevant to the task.
+
+        :type: int
+
+   .. attribute:: light_buoy_active
+
+        Whether the task's light buoy is active.
+
+        :type: bool
+
+   .. attribute:: light_pattern
+
+        The light pattern shown by the buoy. An empty string if the buoy is not active.
+        In the pattern, ``R`` represents red, ``B`` represents blue, and ``G`` represents
+        green.
+
+        :type: str
+
+.. attributetable:: navigator_msgs.srv._MessageExtranceExitGate.MessageExtranceExitGateResponse
+
+.. class:: navigator_msgs.srv._MessageExtranceExitGate.MessageExtranceExitGateResponse
+
+   The repsonse class for the ``navigator_msgs/MessageExtranceExitGate`` service.
+
+   .. attribute:: message
+
+        A message in response to the process.
+
+        :type: str
+
+ScanTheCodeMission
+~~~~~~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionRequest
+
+.. class:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionRequest
+
+   The request class for the ``navigator_msgs/ScanTheCodeMission`` service.
+
+   .. attribute:: object
+
+        The perception object to look for.
+
+        :type: PerceptionObject
+
+.. attributetable:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionResponse
+
+.. class:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionResponse
+
+   The repsonse class for the ``navigator_msgs/ScanTheCodeMission`` service.
+
+   .. attribute:: observing
+
+        ???
+
+        :type: bool
+
+   .. attribute:: found
+
+        Whether the buoy was found.
+
+        :type: bool
+
+   .. attribute:: colors
+
+        The colors shown by the buoy.
+
+        :type: List[str]
+
+ShooterManual
+~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._ShooterManual.ShooterManualRequest
+
+.. class:: navigator_msgs.srv._ShooterManual.ShooterManualRequest
+
+   The request class for the ``navigator_msgs/ShooterManual`` service.
+
+   .. attribute:: feeder
+
+        ???
+
+        :type: float
+
+   .. attribute:: shooter
+
+        ???
+
+        :type: float
+
+.. attributetable:: navigator_msgs.srv._ShooterManual.ShooterManualResponse
+
+.. class:: navigator_msgs.srv._ShooterManual.ShooterManualResponse
+
+   The repsonse class for the ``navigator_msgs/ShooterManual`` service.
+
+   .. attribute:: success
+
+        Whether the shooter operation was successful.
+
+        :type: bool
+
+StartGate
+~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._StartGate.StartGateRequest
+
+.. class:: navigator_msgs.srv._StartGate.StartGateRequest
+
+   The request class for the ``navigator_msgs/StartGate`` service. The request
+   class no public attributes.
+
+.. attributetable:: navigator_msgs.srv._StartGate.StartGateResponse
+
+.. class:: navigator_msgs.srv._StartGate.StartGateResponse
+
+   The repsonse class for the ``navigator_msgs/StartGate`` service.
+
+   .. attribute:: target
+
+        The target of the mission's start gate.
+
+        :type: PoseStamped
+
+   .. attribute:: success
+
+        Whether the start gate operation was successful.
+
+        :type: bool
+
+Subsystems
+^^^^^^^^^^
+
+AlarmGet
+~~~~~~~~
+
+.. attributetable:: ros_alarms.srv._AlarmGet.AlarmGetRequest
+
+.. class:: ros_alarms.srv._AlarmGet.AlarmGetRequest
+
+   The request class for the ``ros_alarms/AlarmGet`` service.
+
+   .. attribute:: alarm_name
+
+        The name of the alarm to request data about.
+
+        :type: str
+
+.. attributetable:: ros_alarms.srv._AlarmGet.AlarmGetResponse
+
+.. class:: ros_alarms.srv._AlarmGet.AlarmGetResponse
+
+   The repsonse class for the ``ros_alarms/AlarmGet`` service.
+
+   .. attribute:: header
+
+        The header for the response.
+
+        :type: Header
+
+   .. attribute:: alarm
+
+        The response data about the requested alarm.
+
+        :type: ~ros_alarms.msg._Alarm.Alarm
+
+AlarmSet
+~~~~~~~~
+
+.. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetRequest
+
+.. class:: ros_alarms.srv._AlarmSet.AlarmSetRequest
+
+   The request class for the ``ros_alarms/AlarmSet`` service.
+
+   .. attribute:: alarm
+
+        The alarm to set.
+
+        :type: ~ros_alarms.msg._Alarm.Alarm
+
+.. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetResponse
+
+.. class:: ros_alarms.srv._AlarmSet.AlarmSetResponse
+
+   The repsonse class for the ``ros_alarms/AlarmSet`` service.
+
+   .. attribute:: succeed
+
+        Whether the request succeeded.
+
+        :type: bool
+
+CameraDBQuery
+~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryRequest
+
+.. class:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryRequest
+
+   The request class for the ``navigator_msgs/CameraDBQuery`` service.
+
+   .. attribute:: name
+
+        The name of the object to query.
+
+        :type: str
+
+   .. attribute:: id
+
+        The ID of the object to query.
+
+        :type: int
+
+.. attributetable:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryResponse
+
+.. class:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryResponse
+
+   The repsonse class for the ``navigator_msgs/CameraDBQuery`` service.
+
+   .. attribute:: found
+
+        Whether the object is found.
+
+        :type: bool
+
+MoveToWaypoint
+~~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._MoveToWaypoint.MoveToWaypointRequest
+
+.. class:: navigator_msgs.srv._MoveToWaypoint.MoveToWaypointRequest
+
+   The request class for the ``navigator_msgs/MoveToWaypoint`` service.
+
+   .. attribute:: target_p
+
+        The target pose to head toward.
+
+        :type: Pose
+
+.. attributetable:: navigator_msgs.srv._MoveToWaypoint.MoveToWaypointResponse
+
+.. class:: navigator_msgs.srv._MoveToWaypoint.MoveToWaypointResponse
+
+   The repsonse class for the ``navigator_msgs/MoveToWaypoint`` service.
+
+   .. attribute:: success
+
+        Whether the movement was successful.
+
+        :type: bool
+
+ObjectDBQuery
+~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._ObjectDBQuery.ObjectDBQueryRequest
+
+.. class:: navigator_msgs.srv._ObjectDBQuery.ObjectDBQueryRequest
+
+   The request class for the ``navigator_msgs/ObjectDBQuery`` service.
+
+   .. attribute:: name
+
+        The name of the object to find in the database.
+
+        :type: str
+
+   .. attribute:: cmd
+
+        The command to run in the database. The command should be formatted as
+        ``ID=YYY``, where ``ID`` is the property ID of the object to change, and
+        ``YYY`` is the value to set.
+
+        :type: str
+
+.. attributetable:: navigator_msgs.srv._ObjectDBQuery.ObjectDBQueryResponse
+
+.. class:: navigator_msgs.srv._ObjectDBQuery.ObjectDBQueryResponse
+
+   The repsonse class for the ``navigator_msgs/ObjectDBQuery`` service.
+
+   .. attribute:: found
+
+        Whether the requested object was found.
+
+        :type: bool
+
+   .. attribute:: objects
+
+        A list of all objects found.
+
+        :type: List[PerceptionObject]
+
+SetFrequency
+~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._SetFrequency.SetFrequencyRequest
+
+.. class:: navigator_msgs.srv._SetFrequency.SetFrequencyRequest
+
+   The request class for the ``navigator_msgs/SetFrequency`` service.
+
+   .. attribute:: frequency
+
+        The frequency to set.
+
+        :type: int
+
+.. attributetable:: navigator_msgs.srv._SetFrequency.SetFrequencyResponse
+
+.. class:: navigator_msgs.srv._SetFrequency.SetFrequencyResponse
+
+   The repsonse class for the ``navigator_msgs/SetFrequency`` service. The
+   class no public attributes.
+
+SetROI
+~~~~~~
+.. attributetable:: navigator_msgs.srv._SetROI.SetROIRequest
+
+.. class:: navigator_msgs.srv._SetROI.SetROIRequest
+
+   The request class for the ``navigator_msgs/SetROI`` service.
+
+   .. attribute:: roi
+
+        The region of interest to set.
+
+        :type: RegionOfInterest
+
+.. attributetable:: navigator_msgs.srv._SetROI.SetROIResponse
+
+.. class:: navigator_msgs.srv._SetROI.SetROIResponse
+
+   The repsonse class for the ``navigator_msgs/SetROI`` service.
+
+   .. attribute:: success
+
+        Whether the set operation was successful.
+
+        :type: bool
+
+   .. attribute:: error
+
+        If the operation failed, then a description of what went wrong.
+
+        :type: str
+
+   .. attribute:: OUTSIDE_OF_FRAME
+
+        A string constant to represent that the region of interest is outside the
+        observable frame. Constant string actually equally to ``OUTSIDE_OF_FRAME``.
+
+        :type: str
+
+StereoShapeDetector
+~~~~~~~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._StereoShapeDetector.StereoShapeDetectorRequest
+
+.. class:: navigator_msgs.srv._StereoShapeDetector.StereoShapeDetectorRequest
+
+   The request class for the ``navigator_msgs/StereoShapeDetector`` service.
+
+   .. attribute:: detection_switch
+
+        ???
+
+        :type: bool
+        
+   .. attribute:: shape
+
+        ???
+
+        :type: str
+
+   .. attribute:: processing_type
+
+        ???
+
+        :type: str
+
+   .. attribute:: num_points
+
+        The number of points relevant to the detector.
+
+        :type: int
+
+   .. attribute:: model_params
+
+        ???
+
+        :type: List[float]
+
+.. attributetable:: navigator_msgs.srv._StereoShapeDetector.StereoShapeDetectorResponse
+
+.. class:: navigator_msgs.srv._StereoShapeDetector.StereoShapeDetectorResponse
+
+   The repsonse class for the ``navigator_msgs/StereoShapeDetector`` service.
+
+   .. attribute:: success
+
+        Whether the detector was succesful in detecting!
+
+        :type: bool
+
+VisionRequest
+~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._VisionRequest.VisionRequestRequest
+
+.. class:: navigator_msgs.srv._VisionRequest.VisionRequestRequest
+
+   The request class for the ``navigator_msgs/VisionRequest`` service.
+
+   .. attribute:: target_name
+
+        The target to look for in the vision system.
+
+        :type: str
+        
+.. attributetable:: navigator_msgs.srv._VisionRequest.VisionRequestResponse
+
+.. class:: navigator_msgs.srv._VisionRequest.VisionRequestResponse
+
+   The repsonse class for the ``navigator_msgs/VisionRequest`` service.
+
+   .. attribute:: pose
+
+        Where the object is at, in the vision system.
+
+        :type: PoseStamped
+
+   .. attribute:: covariance_diagonal
+
+        The covariance in the vision target.
+
+        :type: Vector3
+
+   .. attribute:: found
+   
+        Whether the vision object was found.
+
+        :type: bool
+
+Standard Messages
+^^^^^^^^^^^^^^^^^
+
+SetBool
+~~~~~~~
+
+.. attributetable:: std_srvs.srv._SetBool.SetBoolRequest
+
+.. class:: std_srvs.srv._SetBool.SetBoolRequest
+
+    The request type for the ``SetBool`` service. Requests for some boolean value
+    to be set.
+
+.. attributetable:: std_srvs.srv._SetBool.SetBoolResponse
+
+.. class:: std_srvs.srv._SetBool.SetBoolResponse
+
+    The response type for the ``SetBool`` service. Responds to the set boolean value
+    request.
+
+    .. attribute:: success
+
+        Whether the boolean value was succesfully set.
+
+        :type: bool
+
+    .. attribute:: message
+
+        Any message included in the response.
+
+        :type: str
+
+Conversions
+^^^^^^^^^^^
+
+CameraToLidarTransform
+~~~~~~~~~~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformRequest
+
+.. class:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformRequest
+
+   The request class for the ``navigator_msgs/CameraToLidarTransform`` service.
+
+   .. attribute:: header
+
+        The stamp the point was seen for tf.
+
+        :type: Header
+
+   .. attribute:: point
+
+        The x-dimension and y-dimension of the point in the camera. The z-dimension
+        is ignored.
+
+        :type: Point
+
+   .. attribute:: tolerance
+
+        The number of pixels the projected 3D Lidar point can be from the target point
+        to be included in the response.
+
+        :type: int
+
+.. attributetable:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformResponse
+
+.. class:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformResponse
+
+   The repsonse class for the ``navigator_msgs/CameraToLidarTransform`` service.
+
+   .. attribute:: success
+
+        True if at least one point is found within LIDAR and transformed.
+
+        :type: bool
+
+   .. attribute:: transformed
+
+        If success is true, then the list of transformed points.
+
+        :type: List[Point]
+
+   .. attribute:: closest
+
+        3D point that is closest to the target point when transformed and projected
+
+        :type: Point
+
+   .. attribute:: normal
+
+        The normal unit vector in the camera frame estimated from the transformed points.
+
+        :type: Vector3
+
+   .. attribute:: distance
+
+        The mean z-dimension of the transformed points.
+
+        :type: float
+
+   .. attribute:: error
+
+        If success is false, then what went wrong.
+
+        :type: str
+
+   .. attribute:: CLOUD_NOT_FOUND
+
+        The pointcloud was not found. Constant string actually equal to ``pointcloud
+        not found``.
+
+        :type: str
+
+   .. attribute:: NO_POINTS
+
+        No points were found. Constant string actually equal to ``no points``.
+
+        :type: str
+
+CoordinateConversion
+~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionRequest
+
+.. class:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionRequest
+
+   The request class for the ``navigator_msgs/CoordinateConversion`` service.
+
+   .. attribute:: LLA
+
+        The longitude, latitude, altitude coordinate frame. Constant string equal
+        to ``lla``.
+
+        :type: str
+
+   .. attribute:: ENU
+
+        The east, north, up frame. Constant string equal to ``enu``.
+
+        :type: str
+
+   .. attribute:: ECEF
+
+        The Earth-centered, Earth-fixed frame. Constant string equal to ``ecef``.
+
+        :type: str
+
+   .. attribute:: frame
+
+        The current frame of the relative objects.
+
+        :type: str
+
+   .. attribute:: to_frame
+
+        The frame of objects to convert objects to.
+
+        :type: str
+
+   .. attribute:: points
+
+        The points to convert between the different frames.
+
+        :type: List[Point]
+
+.. attributetable:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionResponse
+
+.. class:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionResponse
+
+   The repsonse class for the ``navigator_msgs/CoordinateConversion`` service.
+
+   .. attribute:: converted
+    
+        The list of converted points.
+
+        :type: List[Point]
+
+   .. attribute:: message
+    
+        If an error occurred, the message of what went wrong.
+
+        :type: str
+
+KeyboardControl
+^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
+
+.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
+
+   The request class for the ``navigator_msgs/KeyboardControl`` service.
+
+   .. attribute:: uuid
+
+        A unique ID to represent the process (?).
+
+        :type: str
+
+   .. attribute:: keycode
+
+        The keycode that was pressed.
+
+        :type: int
+
+.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
+
+.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
+
+   The repsonse class for the ``navigator_msgs/KeyboardControl`` service.
+
+   .. attribute:: generated_uuid
+
+        A response unique ID that was generated in response to the request.
+
+        :type: str
+
+   .. attribute:: is_locked
+    
+        Whether the client which sent the keycode has "locked control" of the keyboard
+        server, and is therefore blocking other keyboard input.
+
+        :type: bool
+
+Actions
+-------
 
 Path Planner
 ^^^^^^^^^^^^
@@ -680,366 +2524,196 @@ MoveResult
 
         :type: str
 
-Standard Messages
-^^^^^^^^^^^^^^^^^
+Shooter
+^^^^^^^
 
-Header
-~~~~~~
+ShooterDoAction
+~~~~~~~~~~~~~~~
 
-.. attributetable:: std_msgs.msg._Header.Header
+.. attributetable:: navigator_msgs.msg._ShooterDoAction.ShooterDoAction
 
-.. class:: std_msgs.msg._Header.Header
+.. class:: navigator_msgs.msg._ShooterDoAction.ShooterDoAction
 
-    A ROS message type representing the header of a message. Used throughout a
-    variety of messages.
+    A custom message representing the general movement of an entire system.
 
-    .. attribute:: seq
+    .. attribute:: action_goal
+    
+        The goal for an action's movement.
 
-        The sequence ID of the header. A consecutively increasing ID.
+        :type: ShooterDoActionGoal
 
-        :type: int
+    .. attribute:: action_result
+    
+        The result of a move action's result.
 
-    .. attribute:: time
+        :type: ShooterDoActionResult
 
-        The time of the message.
+    .. attribute:: action_feedback
+    
+        The feedback for an action movement.
 
-        :type: genpy.rostime.Time
+        :type: ShooterDoActionFeedback
 
-    .. attribute:: frame_id
+ShooterDoActionResult
+~~~~~~~~~~~~~~~~~~~~~
 
-        The frame that this object is associated with.
+.. attributetable:: navigator_msgs.msg._ShooterDoActionResult.ShooterDoActionResult
 
-        :type: str
+.. class:: navigator_msgs.msg._ShooterDoActionResult.ShooterDoActionResult
 
-ColorRGBA
-~~~~~~~~~
-
-.. attributetable:: std_msgs.msg._ColorRGBA.ColorRGBA
-
-.. class:: std_msgs.msg._ColorRGBA.ColorRGBA
-
-    A ROS message type representing a color with RGB and an alpha channel.
-
-    .. attribute:: r
-
-        The red value of the color.
-
-        :type: float
-
-    .. attribute:: g
-
-        The green value of the color.
-
-        :type: float
-
-    .. attribute:: b
-
-        The blue value of the color.
-
-        :type: float
-
-    .. attribute:: a
-
-        The alpha value of the color.
-
-        :type: float
-
-Sensor Messages
-^^^^^^^^^^^^^^^
-
-PointField
-~~~~~~~~~~
-
-.. attributetable:: sensor_msgs.msg._PointField.PointField
-
-.. class:: sensor_msgs.msg._PointField.PointField
-
-    A ROS message type to represent a field in a point cloud.
-
-    .. attribute:: INT8
-
-        Constant of the data type that can be used to represent the data type of a
-        value in the field. Set to ``1`` in the message definition.
-
-        :type: int
-
-    .. attribute:: UINT8
-
-        Constant of the data type that can be used to represent the data type of a
-        value in the field. Set to ``2`` in the message definition.
-
-        :type: int
-
-    .. attribute:: INT16
-
-        Constant of the data type that can be used to represent the data type of a
-        value in the field. Set to ``3`` in the message definition.
-
-        :type: int
-
-    .. attribute:: UINT16
-
-        Constant of the data type that can be used to represent the data type of a
-        value in the field. Set to ``4`` in the message definition.
-
-        :type: int
-
-    .. attribute:: INT32
-
-        Constant of the data type that can be used to represent the data type of a
-        value in the field. Set to ``5`` in the message definition.
-
-        :type: int
-
-    .. attribute:: UINT32
-
-        Constant of the data type that can be used to represent the data type of a
-        value in the field. Set to ``6`` in the message definition.
-
-        :type: int
-
-    .. attribute:: FLOAT32
-
-        Constant of the data type that can be used to represent the data type of a
-        value in the field. Set to ``7`` in the message definition.
-
-        :type: int
-
-    .. attribute:: FLOAT64
-
-        Constant of the data type that can be used to represent the data type of a
-        value in the field. Set to ``8`` in the message definition.
-
-        :type: int
-
-    .. attribute:: name
-
-        The name of the field.
-
-        :type: str
-
-    .. attribute:: offset
-
-        The offset from the start of the point struct.
-
-        :type: int
-
-    .. attribute:: datatype
-
-        The datatype, represented by using one of the attributes above.
-
-        :type: int
-
-    .. attribute:: count
-
-        The number of elements in the field.
-
-        :type: int
-
-PointCloud2
-~~~~~~~~~~~
-
-.. attributetable:: sensor_msgs.msg._PointCloud2.PointCloud2
-
-.. class:: sensor_msgs.msg._PointCloud2.PointCloud2
-
-    A ROS message type indicating a point cloud.
+    A custom message representing the result of a system's movement.
 
     .. attribute:: header
-
-        The message header.
+    
+        The header for the message.
 
         :type: Header
 
-    .. attribute:: height
+    .. attribute:: status
+    
+        The status of the system in its movement.
 
-        The height of the point cloud. If the cloud is unordered, then ``1``.
+        :type: GoalStatus
 
-        :type: int
+    .. attribute:: result
+    
+        The result of the movement
 
-    .. attribute:: width
+        :type: ShooterDoResult
 
-        The width of the point cloud. If the cloud is unordered, then this value
-        is set to the length of the point cloud.
+ShooterDoActionFeedback
+~~~~~~~~~~~~~~~~~~~~~~~
 
-        :type: int
+.. attributetable:: navigator_msgs.msg._ShooterDoActionFeedback.ShooterDoActionFeedback
 
-    .. attribute:: fields
+.. class:: navigator_msgs.msg._ShooterDoActionFeedback.ShooterDoActionFeedback
 
-        The fields in the point cloud.
+    A custom message representing the feedback of a system's movement.
 
-        :type: List[PointField]
+    .. attribute:: header
+    
+        The header for the message.
 
-    .. attribute:: is_bigendian
+        :type: Header
 
-        Whether the field is big endian.
+    .. attribute:: status
+    
+        The status of the system in its movement.
 
-        :type: bool
+        :type: GoalStatus
 
-    .. attribute:: point_step
+    .. attribute:: feedback
+    
+        The feedback of the movement.
 
-        The length of a point in bytes.
+        :type: ShooterDoFeedback
 
-        :type: int
+ShooterDoActionGoal
+~~~~~~~~~~~~~~~~~~~
 
-    .. attribute:: row_step
+.. attributetable:: navigator_msgs.msg._ShooterDoActionGoal.ShooterDoActionGoal
 
-        The length of a row in bytes.
+.. class:: navigator_msgs.msg._ShooterDoActionGoal.ShooterDoActionGoal
 
-        :type: int
+    A custom message representing the goal of an object's action movement.
 
-    .. attribute:: data
+    .. attribute:: header
+    
+        The header for the message.
 
-        The actual data inside the point cloud. The size of the array is :attr:`~sensor_msgs.msg._PointCloud2.PointCloud2.row_step`
-        multiplied by :attr:`~sensor_msgs.msg._PointCloud2.PointCloud2.height`.
+        :type: Header
 
-        :type: List[int]
+    .. attribute:: goal_id
+    
+        The ID of the goal.
 
-    .. attribute:: is_dense
+        :type: GoalID
 
-        ``True`` if there are no invalid points.
+    .. attribute:: goal
+    
+        The goal to move to.
 
-        :type: bool
+        :type: ShooterDoGoal
 
-Services
---------
+ShooterDoFeedback
+~~~~~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.msg._ShooterDoFeedback.ShooterDoFeedback
 
-SetBool
-^^^^^^^
+.. class:: navigator_msgs.msg._ShooterDoFeedback.ShooterDoFeedback
 
-.. attributetable:: std_srvs.srv._SetBool.SetBoolRequest
+    A custom message representing the feedback of a system's movement.
 
-.. class:: std_srvs.srv._SetBool.SetBoolRequest
+    .. attribute:: time_remaining
 
-    The request type for the ``SetBool`` service. Requests for some boolean value
-    to be set.
+        The amount of time remaining.
 
-    .. attribute:: data
+        :type: rospy.Duration
 
-        What to set the boolean as. For example ``data=False`` sets the boolean
-        to be ``False``.
+ShooterDoGoal
+~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.msg._ShooterDoGoal.ShooterDoGoal
 
-        :type: bool
+.. class:: navigator_msgs.msg._ShooterDoGoal.ShooterDoGoal
 
-.. attributetable:: std_srvs.srv._SetBool.SetBoolResponse
+    A custom message representing the goal of an object's ShooterDoment. The class
+    has no public attributes.
 
-.. class:: std_srvs.srv._SetBool.SetBoolResponse
+ShooterDoResult
+~~~~~~~~~~~~~~~
+.. attributetable:: navigator_msgs.msg._ShooterDoResult.ShooterDoResult
 
-    The response type for the ``SetBool`` service. Responds to the set boolean value
-    request.
+.. class:: navigator_msgs.msg._ShooterDoResult.ShooterDoResult
+
+    A custom message representing the goal of an object's ShooterDoment.
+
+    .. attribute:: ALREADY_RUNNING
+
+        A constant string value to enumerate an error that the shooter is already running.
+        Constant value set to the name of the variable.
+
+        :type: str
+
+    .. attribute:: NOT_LOADED
+
+        A constant string value to enumerate an error that the shooter is not loaded.
+        Constant value set to the name of the variable.
+
+        :type: str
+
+    .. attribute:: ALREADY_LOADAED
+
+        A constant string value to enumerate an error that the shooter is already loaded.
+        Constant value set to the name of the variable.
+
+        :type: str
+
+    .. attribute:: MANUAL_CONTROL_USED
+
+        A constant string value to enumerate an error that the shooter is being controlled manually.
+        Constant value set to the name of the variable.
+
+        :type: str
+
+    .. attribute:: KILLED
+
+        A constant string value to enumerate an error that the shooter process was killed.
+        Constant value set to the name of the variable.
+
+        :type: str
 
     .. attribute:: success
 
-        Whether the boolean value was succesfully set.
+        A constant string value to enumerate an error that the shooter process was successful.
 
         :type: bool
 
-    .. attribute:: message
+    .. attribute:: error
 
-        Any message included in the response.
-
-        :type: str
-
-KeyboardControl
-^^^^^^^^^^^^^^^
-
-.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
-
-.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
-
-    The request class for the ``navigator_msgs/KeyboardControl`` service.
-
-    .. attribute:: uuid
-
-        The UUID of the request.
+        If success was not had, then what went wrong.
 
         :type: str
-
-    .. attribute:: keycode
-
-        The keycode of the key that was pressed.
-
-        :type: int
-
-.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
-
-.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
-
-    The response class for the ``navigator_msgs/KeyboardControl`` service.
-
-    .. attribute:: generated_uuid
-
-        The generated UUID in the response class.
-
-        :type: str
-
-    .. attribute:: is_locked
-
-        Whether the keyboard interface is locked.
-
-        :type: bool
-
-AlarmGet
-^^^^^^^^
-
-.. attributetable:: ros_alarms.srv._AlarmGet.AlarmGetRequest
-
-.. class:: ros_alarms.srv._AlarmGet.AlarmGetRequest
-
-   The request class for the ``ros_alarms/AlarmGet`` service.
-
-   .. attribute:: alarm_name
-
-        The name of the alarm to request data about.
-
-        :type: str
-
-.. attributetable:: ros_alarms.srv._AlarmGet.AlarmGetResponse
-
-.. class:: ros_alarms.srv._AlarmGet.AlarmGetResponse
-
-   The repsonse class for the ``ros_alarms/AlarmGet`` service.
-
-   .. attribute:: header
-
-        The header for the response.
-
-        :type: Header
-
-   .. attribute:: alarm
-
-        The response data about the requested alarm.
-
-        :type: ~ros_alarms.msg._Alarm.Alarm
-
-AlarmSet
-^^^^^^^^
-
-.. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetRequest
-
-.. class:: ros_alarms.srv._AlarmSet.AlarmSetRequest
-
-   The request class for the ``ros_alarms/AlarmSet`` service.
-
-   .. attribute:: alarm
-
-        The alarm to set.
-
-        :type: ~ros_alarms.msg._Alarm.Alarm
-
-.. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetResponse
-
-.. class:: ros_alarms.srv._AlarmSet.AlarmSetResponse
-
-   The repsonse class for the ``ros_alarms/AlarmSet`` service.
-
-   .. attribute:: succeed
-
-        Whether the request succeeded.
-
-        :type: bool
-
-Exceptions
+        
+Exceptons
 ----------
 
 .. currentmodule:: mil_tools
