@@ -3102,3 +3102,13 @@ Node
 
 .. autoclass:: navigator_path_planner.nodes.path_planner.LQRRT_Node
     :members:
+
+Battery Monitor
+^^^^^^^^^^^^^^^
+
+.. currentmodule:: navigator_battery_monitor
+
+.. attributetable:: nodes.navigator_battery_monitor.BatteryMonitor
+
+.. autoclass:: nodes.navigator_battery_monitor.BatteryMonitor
+    :members:
