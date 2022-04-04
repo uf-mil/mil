@@ -265,7 +265,6 @@ class MRAC_Controller:
         w_err = self.w_ref - self.ang_vel
 
         #Adjust kp_body and kd_body based on p_err if heavy_pid was set
-        #TODO: Determine what threshold for switching to stationkeeping needs to be
         if (self.heavy_pid == True) and (abs(p_err[0]) < self.x_thresh) and (abs(p_err[1]) < self.y_thresh) and (abs(y_err) < self.yaw_thresh):
             print("threshold hit")
             self.kp_body = self.kp_body_orig
