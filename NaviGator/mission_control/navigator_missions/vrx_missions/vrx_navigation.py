@@ -110,6 +110,7 @@ class VrxNavigation(Vrx):
                     service_req = None
                     objects_msg = result
                     if self.object_classified(objects_msg.objects, move_id_tuple[1]):
+
                         self.send_feedback('{} identified. Canceling investigation'.format(move_id_tuple[1]))
                         yield dl.cancel()
                         yield move_id_tuple[0].cancel()
