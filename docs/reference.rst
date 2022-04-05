@@ -993,6 +993,236 @@ PointCloud2
 
         :type: bool
 
+Motor Feedback
+^^^^^^^^^^^^^^
+.. attributetable:: roboteq_msgs.msg._Feedback.Feedback
+
+.. class:: roboteq_msgs.msg._Feedback.Feedback
+
+    A third-party ROS message type for getting feedback from motor controllers.
+
+    .. attribute:: header
+
+        The header of the message.
+
+        :type: Header
+
+    .. attribute:: motor_current
+
+        Current flowing through the motors.
+
+        :type: float
+
+    .. attribute:: motor_power
+
+        Relative motor power, as a proportion of the full motor power.
+        Lives in a range from -1 to 1.
+
+        :type: float
+
+    .. attribute:: commanded_velocity
+
+        The velocity commanded of the motor. Output is in ``rad/s``.
+
+        :type: float
+
+    .. attribute:: measured_velocity
+
+        The true velocity of the motor. Output is in ``rad/s``.
+
+        :type: float
+
+    .. attribute:: measured_position
+
+        The position of the motor, in ``rad``. Wraps around -6/6M.
+
+        :type: float
+
+    .. attribute:: supply_voltage
+
+        The voltage supplied to the motor, in volts.
+
+        :type: float
+
+    .. attribute:: supply_current
+
+        The current supplied to the motor, in amps.
+
+        :type: float
+
+    .. attribute:: motor_temperature
+
+        The temperature of the motor, in Celsius.
+
+        :type: float
+
+    .. attribute:: channel_temperature
+
+        The temperature of the FETs, as reported by the controller. Units are in
+        Celsius.
+
+        :type: float
+
+Motor Status
+^^^^^^^^^^^^^^
+.. attributetable:: roboteq_msgs.msg._Status.Status
+
+.. class:: roboteq_msgs.msg._Status.Status
+
+    A third-party ROS message type for getting status from motor controllers.
+
+    .. attribute:: header
+
+        The header of the message.
+
+        :type: Header
+
+    .. attribute:: fault
+
+        A representation of any fault that occurred in the motor. Likely one of the
+        enumerated fault types of this class.
+ 
+        :type: int
+
+    .. attribute:: FAULT_OVERHEAT
+
+        Constant attribute used to represent that the motor experienced a fault
+        as a result of overheating.
+
+        :type: int
+        :value: 1
+
+    .. attribute:: FAULT_OVERVOLTAGE
+
+        Constant attribute used to represent that the motor experienced a fault
+        as a result of too much voltage.
+
+        :type: int
+        :value: 2
+
+    .. attribute:: FAULT_UNDERVOLTAGE
+
+        Constant attribute used to represent that the motor experienced a fault
+        as a result of too little voltage.
+
+        :type: int
+        :value: 4
+
+    .. attribute:: FAULT_SHORT_CIRCUIT
+
+        Constant attribute used to represent that the motor experienced a fault
+        as a result of a short circuit.
+
+        :type: int
+        :value: 8
+
+    .. attribute:: FAULT_EMERGENCY_STOP
+
+        Constant attribute used to represent that the motor experienced a fault
+        as a result of an emergency stop.
+
+        :type: int
+        :value: 16
+
+    .. attribute:: FAULT_SEPEX_EXCITATION_FAULT
+
+        Constant attribute used to represent that the motor experienced a fault
+        as a result of an excitation error.
+
+        :type: int
+        :value: 32
+
+    .. attribute:: FAULT_MOSFET_FAILURE
+
+        Constant attribute used to represent that the motor experienced a fault
+        as a result of a failure in the MOSFET system.
+
+        :type: int
+        :value: 64
+
+    .. attribute:: FAULT_STARTUP_CONFIG_FAULT
+
+        Constant attribute used to represent that the motor experienced a fault
+        as a result of a failure in the startup configuration.
+
+        :type: int
+        :value: 128
+
+    .. attribute:: status
+
+        The status of the motor. Likely set to a combination of the class' enumerated
+        types.
+
+        :type: int
+
+    .. attribute:: STATUS_SERIAL_MODE
+
+        Constant attribute used to represent that the motor is in serial mode.
+
+        :type: int
+        :value: 1
+
+    .. attribute:: STATUS_PULSE_MODE
+
+        Constant attribute used to represent that the motor is in pulse mode.
+
+        :type: int
+        :value: 2
+
+    .. attribute:: STATUS_ANALOG_MODE
+
+        Constant attribute used to represent that the motor is in analog mode.
+
+        :type: int
+        :value: 4
+
+    .. attribute:: STATUS_POWER_STAGE_OFF
+
+        Constant attribute used to represent that the power stage of the motor is
+        off.
+
+        :type: int
+        :value: 8
+
+    .. attribute:: STATUS_STALL_DETECTED
+
+        Constant attribute used to represent that a stall was detected.
+
+        :type: int
+        :value: 16
+
+    .. attribute:: STATUS_AT_LIMIT
+
+        Constant attribute used to represent that the motor is at its limit.
+
+        :type: int
+        :value: 32
+
+    .. attribute:: STATUS_MICROBASIC_SCRIPT_RUNNING
+
+        Constant attribute used to represent that the microbasic script is running.
+
+        :type: int
+        :value: 128
+
+    .. attribute:: ic_temperature
+
+        The temperature of the main logic chip, in Celsius.
+
+        :type: float
+
+    .. attribute:: internal_voltage
+
+        The internal voltage, in volts.
+
+        :type: float
+
+    .. attribute:: adc_voltage
+
+        The voltage of the analog-to-digital converter, in volts.
+
+        :type: float
+
 VRX Messages
 ^^^^^^^^^^^^
 
