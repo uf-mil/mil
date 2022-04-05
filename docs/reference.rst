@@ -994,7 +994,7 @@ PointCloud2
         :type: bool
 
 Motor Feedback
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 .. attributetable:: roboteq_msgs.msg._Feedback.Feedback
 
 .. class:: roboteq_msgs.msg._Feedback.Feedback
@@ -1064,7 +1064,7 @@ Motor Feedback
         :type: float
 
 Motor Status
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~
 .. attributetable:: roboteq_msgs.msg._Status.Status
 
 .. class:: roboteq_msgs.msg._Status.Status
@@ -3334,7 +3334,7 @@ Node
     :members:
 
 Battery Monitor
-^^^^^^^^^^^^^^^
+---------------
 
 .. currentmodule:: navigator_battery_monitor
 
