@@ -177,14 +177,14 @@
         <type> linear </type>
         <start> 0 </start>
         <end> 10 </end>
-        <color> 0.8 0.8 0.8 1 </color>
-        <density> 0 </density>
+        <color> 0.9 0.9 0.9 1 </color>
+        <density> 0.1 </density>
       </fog>
       <grid>0</grid>
       <origin_visual>0</origin_visual>
       <ambient>
         
-0.5 0.2 0.3 1   
+0.3 0.6 1 0.7    
       </ambient>
     </scene>
     <include>
@@ -286,9 +286,9 @@
       <!-- Color sequence checker -->
       <robot_namespace>vrx</robot_namespace>
       <color_sequence_service>scan_dock_deliver/color_sequence</color_sequence_service>
-      <color_1>yellow</color_1>
-      <color_2>blue</color_2>
-      <color_3>green</color_3>
+      <color_1>blue</color_1>
+      <color_2>green</color_2>
+      <color_3>yellow</color_3>
       <!-- Dock checkers -->
       <dock_bonus_points>15</dock_bonus_points>
       <correct_dock_bonus_points>5</correct_dock_bonus_points>
