@@ -3342,3 +3342,13 @@ Battery Monitor
 
 .. autoclass:: nodes.navigator_battery_monitor.BatteryMonitor
     :members:
+
+Passive Sonar
+-------------
+
+.. currentmodule:: mil_passive_sonar
+
+.. attributetable:: TxHydrophonesClient
+
+.. autoclass:: TxHydrophonesClient
+    :members:
