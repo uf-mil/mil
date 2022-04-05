@@ -3361,3 +3361,7 @@ StreamedBandpass
 
 .. autoclass:: mil_passive_sonar.streamed_bandpass.StreamedBandpass
     :members:
+
+SylphaseSonarToRosNode
+^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenclass:: SylphaseSonarToRosNode
