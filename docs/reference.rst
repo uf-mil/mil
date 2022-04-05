@@ -3348,7 +3348,16 @@ Passive Sonar
 
 .. currentmodule:: mil_passive_sonar
 
+TxHydrophonesClient
+^^^^^^^^^^^^^^^^^^^
 .. attributetable:: TxHydrophonesClient
 
 .. autoclass:: TxHydrophonesClient
+    :members:
+
+StreamedBandpass
+^^^^^^^^^^^^^^^^
+.. attributetable:: mil_passive_sonar.streamed_bandpass.StreamedBandpass
+
+.. autoclass:: mil_passive_sonar.streamed_bandpass.StreamedBandpass
     :members:
