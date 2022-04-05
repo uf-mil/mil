@@ -70,6 +70,7 @@ class VrxClassifier(object):
         self.objects_sub = rospy.Subscriber('/pcodar/objects', PerceptionObjectArray, self.process_objects, queue_size=2)
         self.boxes_sub = rospy.Subscriber('/darknet_ros/bounding_boxes', BoundingBoxes, self.process_boxes)
         self.enabled_srv = rospy.Service('~set_enabled', SetBool, self.set_enable_srv)
+        self.last_image = None
         if self.is_training:
             self.enabled = True
         self.queue = []
@@ -80,6 +81,7 @@ class VrxClassifier(object):
         return {'success': True}
 
     def image_cb(self, msg):
+        self.last_image = msg
         return
 
     def in_frame(self, pixel):
@@ -140,19 +142,36 @@ class VrxClassifier(object):
 
         for i in met_criteria:
             boxes = []
+            print(pixel_centers[i])
             for a in msg.bounding_boxes:
                 if self.in_rect(pixel_centers[i], a):
                     boxes.append(a)
             if len(boxes) > 0:
                 closest = boxes[0]
-                first_center = [(closest.xmax - closest.xmin) / 2.0, (closest.ymax - closest.ymin) / 2.0]
+                first_center = [(closest.xmax + closest.xmin) / 2.0, (closest.ymax + closest.ymin) / 2.0]
                 for a in boxes[1:]:
-                    center = [(a.xmax - a.xmin) / 2.0, (a.ymax - a.ymin) / 2.0]
+                    center = [(a.xmax + a.xmin) / 2.0, (a.ymax + a.ymin) / 2.0]
                     if self.distance(pixel_centers[i], center) < self.distance(pixel_centers[i], first_center):
                         closest = a
                         first_center = center
-                print('Object {} classified as {}'.format(self.last_objects.objects[i].id, closest.Class))
-                cmd = '{}={}'.format(self.last_objects.objects[i].id, closest.Class)
+                print(self.distance(pixel_centers[i], first_center))
+                if self.distance(pixel_centers[i], first_center) > 0:
+                    print('Object {} did not have close enough bounding box, using estimation instead'.format(self.last_objects.objects[i].id))
+                else:
+                    print(first_center)
+                    print('Object {} classified as {}'.format(self.last_objects.objects[i].id, closest.Class))
+                    cmd = '{}={}'.format(self.last_objects.objects[i].id, closest.Class)
+                    self.database_client(ObjectDBQueryRequest(cmd=cmd))
+                    continue
+            height = self.last_objects.objects[i].scale.z
+            color = self.last_image[int(pixel_centers[i][0]), int(pixel_centers[i][1]),:]
+            if height > 0.45:
+                print('Object {} classified as {}'.format(self.last_objects.objects[i].id, "mb_marker_buoy_white"))
+                cmd = '{}={}'.format(self.last_objects.objects[i].id, "mb_marker_buoy_white")
+                self.database_client(ObjectDBQueryRequest(cmd=cmd))
+            else:
+                print('Object {} classified as {}'.format(self.last_objects.objects[i].id, "mb_round_buoy_black"))
+                cmd = '{}={}'.format(self.last_objects.objects[i].id, "mb_round_buoy_black")
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
 
 
