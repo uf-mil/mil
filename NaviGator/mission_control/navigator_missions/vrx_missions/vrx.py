@@ -146,7 +146,7 @@ class Vrx(Navigator):
         if task_name == 'station_keeping':
             yield self.run_submission('VrxStationKeeping2')
         elif task_name == 'wayfinding':
-            yield self.run_submission('VrxWayfinding')
+            yield self.run_submission('VrxWayfinding2')
         elif task_name == 'gymkhana':
             yield self.run_submission('Gymkhana')
         elif task_name == 'perception':
