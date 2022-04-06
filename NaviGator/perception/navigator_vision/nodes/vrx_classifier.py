@@ -130,7 +130,7 @@ class VrxClassifier(object):
                             for obj in self.last_objects.objects]
         pixel_centers = [self.camera_model.project3dToPixel(point) for point in positions_camera]
         distances = np.linalg.norm(positions_camera, axis=1)
-        CUTOFF_METERS = 30
+        CUTOFF_METERS = 20
 
         # Get a list of indicies of objects who are sufficiently close and can be seen by camera
         met_criteria = []
@@ -142,11 +142,11 @@ class VrxClassifier(object):
 
         for i in met_criteria:
             boxes = []
-            print(pixel_centers[i])
             for a in msg.bounding_boxes:
-                if self.in_rect(pixel_centers[i], a):
-                    boxes.append(a)
+                #if self.in_rect(pixel_centers[i], a):
+                boxes.append(a)
             if len(boxes) > 0:
+                print('found bounding boxes')
                 closest = boxes[0]
                 first_center = [(closest.xmax + closest.xmin) / 2.0, (closest.ymax + closest.ymin) / 2.0]
                 for a in boxes[1:]:
@@ -154,18 +154,22 @@ class VrxClassifier(object):
                     if self.distance(pixel_centers[i], center) < self.distance(pixel_centers[i], first_center):
                         closest = a
                         first_center = center
-                print(self.distance(pixel_centers[i], first_center))
-                if self.distance(pixel_centers[i], first_center) > 0:
-                    print('Object {} did not have close enough bounding box, using estimation instead'.format(self.last_objects.objects[i].id))
+                distance = self.distance(pixel_centers[i], first_center)
+                if distance > 150:
+                    print('Object {} did not have close enough bounding box with distance {} , using estimation instead'.format(self.last_objects.objects[i].id, distance))
                 else:
                     print(first_center)
+                    print(closest.Class)
                     print('Object {} classified as {}'.format(self.last_objects.objects[i].id, closest.Class))
                     cmd = '{}={}'.format(self.last_objects.objects[i].id, closest.Class)
                     self.database_client(ObjectDBQueryRequest(cmd=cmd))
                     continue
             height = self.last_objects.objects[i].scale.z
+            if pixel_centers[i][0] > 1280 or pixel_centers[i][0] > 720:
+                return
             color = self.last_image[int(pixel_centers[i][0]), int(pixel_centers[i][1]),:]
             if height > 0.45:
+                print('Reclassified as white')
                 print('Object {} classified as {}'.format(self.last_objects.objects[i].id, "mb_marker_buoy_white"))
                 cmd = '{}={}'.format(self.last_objects.objects[i].id, "mb_marker_buoy_white")
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
