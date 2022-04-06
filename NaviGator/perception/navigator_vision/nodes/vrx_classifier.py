@@ -171,6 +171,8 @@ class VrxClassifier(object):
                     cmd = '{}={}'.format(self.last_objects.objects[i].id, closest.Class)
                     self.database_client(ObjectDBQueryRequest(cmd=cmd))
                     continue
+            if not self.is_perception_task:
+                continue
             height = self.last_objects.objects[i].scale.z
             if pixel_centers[i][0] > 1280 or pixel_centers[i][0] > 720:
                 return
