@@ -16,6 +16,7 @@ from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from tf.transformations import quaternion_matrix
 from mil_tools import thread_lock
 import math
+from vrx_gazebo.msg import Task
 from threading import Lock
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from std_srvs.srv import SetBool
@@ -57,6 +58,8 @@ class VrxClassifier(object):
         self.get_params()
         self.last_panel_points_msg = None
         self.database_client = rospy.ServiceProxy('/database/requests', ObjectDBQuery)
+        self.task_info_sub = rospy.Subscriber("/vrx/task/info", Task, self.taskinfoSubscriber)
+        self.is_perception_task = False
         self.sub = Image_Subscriber(self.image_topic, self.image_cb)
         self.camera_info = self.sub.wait_for_camera_info()
         self.camera_model = PinholeCameraModel()
@@ -81,6 +84,10 @@ class VrxClassifier(object):
 
     def image_cb(self, msg):
         return
+
+    def taskinfoSubscriber(self, msg):
+        if not self.is_perception_task and msg.name == "perception":
+            self.is_perception_task = True
 
     def in_frame(self, pixel):
         # TODO: < or <= ???
