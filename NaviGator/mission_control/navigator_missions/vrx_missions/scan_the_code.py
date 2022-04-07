@@ -54,7 +54,7 @@ class ScanTheCode(Vrx):
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = 'cluster_tolerance_m'
-        pcodar_cluster_tol.value = 15
+        pcodar_cluster_tol.value = 5
 
         yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
         try:
@@ -135,18 +135,22 @@ class ScanTheCode(Vrx):
             mask_msg = self.bridge.cv2_to_imgmsg(img2, "rgb8")
             self.image_debug_pub.publish(mask_msg)
 
-            most_likely_name = "off"
+            most_likely_name = "none"
             for i in range(len(b_comp)):
-                if r_comp[i] > 20 and b_comp[i] < 5 and g_comp[i] < 5:
+                if r_comp[i] > 2*b_comp[i] and r_comp[i] > 2*g_comp[i]:
                     most_likely_name = "red"
-                elif r_comp[i] < 5 and b_comp[i] > 20 and g_comp[i] < 5:
+                elif b_comp[i] > 2*r_comp[i] and b_comp[i] > 2*g_comp[i]:
                     most_likely_name = "blue"
-                elif r_comp[i] < 5 and b_comp[i] < 5 and g_comp[i] > 20:
+                elif g_comp[i] > 2*r_comp[i] and g_comp[i] > 2*b_comp[i]:
                     most_likely_name = "green"
-                elif r_comp[i] > 20 and b_comp[i] < 5 and g_comp[i] > 20:
+                elif r_comp[i] > 2*b_comp[i] and g_comp[i] > 2*b_comp[i]:
                     most_likely_name = "yellow"
+                elif r_comp[i] < 20 and g_comp[i] < 20 and b_comp[i] < 20:
+                    most_likely_name = "black"
 
-            if most_likely_name == 'off':
+            if most_likely_name == "none":
+                continue
+            if most_likely_name == "black":
                 sequence = []
             elif sequence == [] or most_likely_name != sequence[-1]:
                 sequence.append(most_likely_name)
@@ -201,9 +205,9 @@ class ScanTheCode(Vrx):
                 #I haven't found an overlap for a cluster tolerance that
                 #keeps the entire dock together 100% of the time
                 #while not including the stc buoy if it is too close
-                if dock_pose is not None and \
-                    np.linalg.norm(dock_pose[0] - poses[i][0]) < 10:
-                    continue
+                #if dock_pose is not None and \
+                #    np.linalg.norm(dock_pose[0] - poses[i][0]) < 10:
+                #    continue
 
                 if np.linalg.norm(rosmsg_to_numpy(msgs[i].scale)) > 4.0:
                     # much bigger than scale of stc

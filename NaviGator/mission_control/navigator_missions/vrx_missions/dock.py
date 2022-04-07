@@ -61,7 +61,7 @@ class Dock(Vrx):
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = 'cluster_tolerance_m'
-        pcodar_cluster_tol.value = 10
+        pcodar_cluster_tol.value = 7
 
         yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
         self.nh.sleep(5)
@@ -70,6 +70,15 @@ class Dock(Vrx):
 
         print("going towards dock")
         yield self.move.look_at(pos).set_position(pos).backward(20).go()
+
+        #Decrease cluster tolerance as we approach dock since lidar points are more dense
+        #This helps scenario where stc buoy is really close to dock
+        pcodar_cluster_tol = DoubleParameter()
+        pcodar_cluster_tol.name = 'cluster_tolerance_m'
+        pcodar_cluster_tol.value = 4
+
+        yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
+        self.nh.sleep(5)
 
         # get a vector to the longer side of the dock
         dock, pos = yield self.get_sorted_objects(name='dock', n=1)
@@ -111,6 +120,23 @@ class Dock(Vrx):
 
         target_symbol = self.color + "_" + self.shape
         symbol_position = yield self.get_symbol_position(target_symbol)
+
+        #if there are no symbols detected, try going to other side of dock
+        if symbol_position == "none":
+            if side_a_bool:
+                print("switching to side_b")
+                goal_pos = side_b
+                side_a_bool = False
+                side_b_bool = True
+            if side_b_bool:
+                print("switching to side_a")
+                goal_pos = side_a
+                side_b_bool = False
+                side_a_bool = True
+
+            yield self.move.set_position(goal_pos).look_at(position).go()
+            symbol_position = yield self.get_symbol_position(target_symbol)
+
         print("The correct docking location is ", symbol_position)
 
         ###
@@ -209,10 +235,10 @@ class Dock(Vrx):
                 #check color inside guess
                 #if color is what we are looking for, count as a vote
                 accept_vote = False
-                if (target_color == "red" and r_comp > 20 and b_comp < 5 and g_comp < 5) or \
-                   (target_color == "blue" and r_comp < 5 and b_comp > 20 and g_comp < 5) or \
-                   (target_color == "green" and r_comp < 5 and b_comp < 5 and g_comp > 20) or \
-                   (target_color == "yellow" and r_comp > 20 and b_comp < 5 and g_comp > 20):
+                if (target_color == "red" and r_comp > 2*b_comp and r_comp > 2*g_comp) or \
+                   (target_color == "blue" and b_comp > 2*r_comp and b_comp > 2*g_comp) or \
+                   (target_color == "green" and g_comp > 2*r_comp and g_comp > 2*b_comp) or \
+                   (target_color == "yellow" and r_comp > 2*b_comp and g_comp > 2*b_comp):
                     accept_vote = True
 
                 cv2.rectangle(img,top_left, bottom_right, 255, 2)
@@ -232,7 +258,10 @@ class Dock(Vrx):
             if vote[most_likely_index] > 5:
                 break
 
-        symbol_position = "left"
+        symbol_position = "none"
+        if vote[0] <= 5 and vote[1] <= 5 and vote[2] <= 5:
+            defer.returnValue(symbol_position)
+
         if most_likely_index == 0:
             symbol_position = "left"
         elif most_likely_index == 1:
