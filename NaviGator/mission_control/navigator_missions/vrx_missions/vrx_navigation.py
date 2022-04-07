@@ -8,7 +8,7 @@ from mil_tools import rosmsg_to_numpy
 from std_srvs.srv import SetBoolRequest
 from mil_tools import quaternion_matrix
 
-___author___ = "Kevin Allen"
+___author___ = "Kevin Allen and Alex Perez"
 
 
 class VrxNavigation(Vrx):
@@ -60,9 +60,11 @@ class VrxNavigation(Vrx):
         q_mat = quaternion_matrix(pose[1])
 
         def filter_and_sort(objects, positions):
+            #filter out buoys more than filter_distance behind boat
+            filter_distance = 1
             positions_local = np.array([(q_mat.T.dot(position - p)) for position in positions])
             positions_local_x = np.array(positions_local[:, 0])
-            forward_indicies = np.argwhere(positions_local_x > 1.0).flatten()
+            forward_indicies = np.argwhere(positions_local_x > filter_distance).flatten()
             forward_indicies = np.array([i for i in forward_indicies if objects[i].id not in self.objects_passed])
             distances = np.linalg.norm(positions_local[forward_indicies], axis=1)
             indicies =  forward_indicies[np.argsort(distances).flatten()].tolist()
@@ -81,7 +83,7 @@ class VrxNavigation(Vrx):
             return positions[left_index], objects[left_index], positions[right_index], objects[right_index], end
 
         left, left_obj, right, right_obj, end = yield self.explore_closest_until(is_done, filter_and_sort)
-        self.send_feedback('Going through gate of objects {} and {}'.format(left_obj.id, right_obj.id))
+        self.send_feedback('Going through gate of objects {} and {}'.format(left_obj.labeled_classification, right_obj.labeled_classification))
         gate = self.get_gate(left, right, p)
         yield self.go_thru_gate(gate)
         self.objects_passed.add(left_obj.id)
@@ -95,6 +97,10 @@ class VrxNavigation(Vrx):
         @object_filter func filters and sorts
         '''
         move_id_tuple = None
+        previous_index = None
+        previous_cone = None
+        init_boat_pos = self.pose[0]
+        cone_buoys_investigated = 0 # max will be 2
         service_req = None
         dl = None
         investigated = set()
@@ -103,19 +109,35 @@ class VrxNavigation(Vrx):
                 if service_req is None:
                     service_req = self.database_query(name='all')
                 dl = defer.DeferredList([service_req, move_id_tuple[0]], fireOnOneCallback=True)
+                
                 result, index = yield dl
 
-                # Database query sucseeded
+                # Database query succeeded
                 if index == 0:
                     service_req = None
                     objects_msg = result
-                    if self.object_classified(objects_msg.objects, move_id_tuple[1]):
+                    classification_index = self.object_classified(objects_msg.objects, move_id_tuple[1])
+                    if classification_index != -1:
 
                         self.send_feedback('{} identified. Canceling investigation'.format(move_id_tuple[1]))
                         yield dl.cancel()
                         yield move_id_tuple[0].cancel()
-                        # yield self.move.forward(0).go()
+                        yield self.nh.sleep(1.)
+
+                        if "marker" in objects_msg.objects[classification_index].labeled_classification:
+                            previous_cone = previous_index
+                            print("updating initial boat pos...")
+                            init_boat_pos = rosmsg_to_numpy(objects_msg.objects[classification_index].pose.position)
+                            print(init_boat_pos)
+                            cone_buoys_investigated += 1
+
+                            if "red" in objects_msg.objects[classification_index].labeled_classification and cone_buoys_investigated < 2:
+                                yield self.move.left(3).yaw_left(30, "deg").go()
+                            elif cone_buoys_investigated < 2:
+                                yield self.move.right(3).yaw_right(30, "deg").go()
+
                         move_id_tuple = None
+
                 # Move succeeded:
                 else:
                     self.send_feedback('Investigated {}'.format(move_id_tuple[1]))
@@ -123,6 +145,7 @@ class VrxNavigation(Vrx):
             else:
                 objects_msg = yield self.database_query(name='all')
             objects = objects_msg.objects
+            #print(len(objects))
             positions = np.array([rosmsg_to_numpy(obj.pose.position) for obj in objects])
             if len(objects) == 0:
                 indicies = []
@@ -132,7 +155,9 @@ class VrxNavigation(Vrx):
                 self.send_feedback('No objects')
                 continue
             objects = [objects[i] for i in indicies]
+            #print(len(objects))
             positions = positions[indicies]
+
             # Exit if done
             ret = is_done(objects, positions)
             if ret is not None:
@@ -140,23 +165,71 @@ class VrxNavigation(Vrx):
                     self.send_feedback('Condition met. Canceling investigation')
                     yield dl.cancel()
                     yield move_id_tuple[0].cancel()
-                    # yield self.move.forward(0).go()
                     move_id_tuple = None
+
                 defer.returnValue(ret)
 
             if move_id_tuple is not None:
                 continue
 
             self.send_feedback('ALREADY INVEST {}'.format(investigated))
+            
+            #### The following is the logic for how we decide what buoy to investigate next ####
+            potential_candidate = None
+            shortest_distance = 1000
 
-            # Explore the next one
+            #check if there are any buoys that have "marker" in the name that haven't been investigated
+            #obtain the closest one to the previous gate and deem that the next buoy to investigate
             for i in xrange(len(objects)):
-                if objects[i].labeled_classification == 'UNKNOWN' and objects[i].id not in investigated:
-                    self.send_feedback('Investingating {}'.format(objects[i].id))
-                    investigated.add(objects[i].id)
-                    move = self.inspect_object(positions[i])
-                    move_id_tuple = (move, objects[i].id)
-                    break
+                
+                if "marker" in objects[i].labeled_classification and objects[i].id not in investigated:
+                    distance = np.linalg.norm(positions[i] - init_boat_pos)
+                    if distance < shortest_distance:
+                        shortest_distance = distance
+                        print(shortest_distance)
+                        print(positions[i])
+                        print("POTENTIAL CANDIDATE: IDENTIFIED THROUGH MARKER THAT HAS NOT BEEN INVESTIGATED")
+                        potential_candidate = i
+
+            #if there no known cone buoys that haven't been investigated, check if we have already investigated one
+            #and find closest one within 25 meters (max width of a gate).
+            if cone_buoys_investigated > 0 and potential_candidate is None:
+                for i in xrange(len(objects)):
+                    print(positions[i])
+                    if objects[i].id not in investigated and "round" not in objects[i].labeled_classification:
+                        distance = np.linalg.norm(positions[i] - init_boat_pos)
+                        if distance < shortest_distance and distance <= 25:
+                            shortest_distance = distance
+                            print(shortest_distance)
+                            print(positions[i])
+                            print("POTENTIAL CANDIDATE: IDENTIFIED BY FINDING CLOSEST CONE TO ALREADY INVESTIGATED CONE (<25m)")
+                            potential_candidate = i
+
+            #if that doesn't produce any results, literally just go to closest buoy
+            if potential_candidate is None:
+                for i in xrange(len(objects)):
+            
+                    if objects[i].id not in investigated and "round" not in objects[i].labeled_classification:
+                        distance = np.linalg.norm(positions[i] - init_boat_pos)
+                        if distance < shortest_distance:
+                            shortest_distance = distance
+                            print(shortest_distance)
+                            print(positions[i])
+                            print("POTENTIAL CANDIDATE: IDENTIFIED BY FINDING CLOSEST CONE TO INIT BOAT POS")
+                            potential_candidate = i
+                            print(positions[i])
+
+            #explore the closest buoy to potential candidate
+            if potential_candidate is not None:
+                
+                #if there exists a closest buoy, go to it
+                self.send_feedback('Investigating {}'.format(objects[potential_candidate].id))
+                investigated.add(objects[potential_candidate].id)
+                move = self.inspect_object(positions[potential_candidate])
+                move_id_tuple = (move, objects[potential_candidate].id)
+                previous_index = potential_candidate
+                print("USING POTENTIAL CANDIDATE")
+
             if move_id_tuple is None:
                 self.send_feedback('!!!! NO MORE TO EXPLORE')
                 raise Exception('no more to explore')
@@ -176,13 +249,11 @@ class VrxNavigation(Vrx):
         @obj_id id of object
         @return True of object with obj_id is classified
         '''
-        for obj in objects:
+        for i,obj in enumerate(objects):
             if obj.id == obj_id:
-                if obj.labeled_classification == 'UNKNOWN':
-                    return False
-                else:
-                    return True
-        return False
+                if obj.labeled_classification != "UNKNOWN":
+                    return i
+        return -1
 
     @txros.util.cancellableInlineCallbacks
     def prepare_to_enter(self):
@@ -204,7 +275,7 @@ class VrxNavigation(Vrx):
         self.objects_passed.add(white.id)
         self.objects_passed.add(red.id)
         gate = self.get_gate(white_position, red_position, robot_position)
-        self.send_feedback('Going through start gate formed by {} and {}'.format(white.id, red.id))
+        self.send_feedback('Going through start gate formed by {} and {}'.format(white.labeled_classification, red.labeled_classification))
         yield self.go_thru_gate(gate, AFTER=-2)
 
     @txros.util.cancellableInlineCallbacks
@@ -222,7 +293,6 @@ class VrxNavigation(Vrx):
         yield self.move.forward(7.0).go()
         while not (yield self.do_next_gate()):
             pass
-        self.send_feedback('This is the last gate! Going through!')
-        yield self.move.forward(10).go()
+        self.send_feedback('Exiting last gate!! Go NaviGator')
         yield self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
 
