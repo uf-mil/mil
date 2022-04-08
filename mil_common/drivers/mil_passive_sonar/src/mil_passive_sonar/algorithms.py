@@ -115,16 +115,40 @@ def compute_freq(samples: numpy.ndarray, sample_rate: int, freq_range, plot: boo
     return freq, amplitude, samples_fft
 
 
-def bin_to_freq(bin, sample_rate, fft_length):
+def bin_to_freq(bin: int, sample_rate: int, fft_length: int) -> float:
+    """
+    Converts a bin to a frequency bin.
+
+    Args:
+        bin (int): The bin number.
+        sample_rate (int): The rate of samples. The number of samples per second.
+        fft_length (int): The length of the transform; the number of bins.
+    """
     return (sample_rate / 2) / (fft_length / 2) * bin
 
 
-def freq_to_bin(freq, sample_rate, fft_length):
+def freq_to_bin(freq: int, sample_rate: int, fft_length: int) -> float:
+    """
+    Converts a frequency pattern to the number of bins in the transform.
+
+    Args:
+        freq (int): ???
+        sample_rate (int): The rate of samples. The number of samples per second.
+        fft_length (int): The length of the transform.
+    """
     return freq * ((fft_length / 2) / (sample_rate / 2))
 
 
-def preprocess(samples, sample_rate, desired_sample_rate):
-    """Upsamples data to have approx. desired_sample_rate."""
+def preprocess(samples: numpy.ndarray, sample_rate: int, desired_sample_rate: int):
+    """
+    Upsamples data to have approx. desired_sample_rate.
+
+    Args:
+        samples (np.ndarray): The relevant samples to preprocess.
+        sample_rate (int): The rate to record samples at. Equal to the number of
+            samples per second.
+        desired_sample_rate (int): The desired sample rate.
+    """
     samples = bandpass(samples, sample_rate)
     samples = normalize(samples)
 
@@ -136,8 +160,14 @@ def preprocess(samples, sample_rate, desired_sample_rate):
     return upsamples, sample_rate * upfact
 
 
-def bandpass(samples, sample_rate):
-    """Applies a 20-30khz bandpass FIR filter"""
+def bandpass(samples: numpy.ndarray, sample_rate: int):
+    """
+    Applies a 20-30khz bandpass FIR filter.
+
+    Args:
+        samples (np.ndarray): The list of samples.
+        sample_rate (int): The rate of sampling. The number of samples per second.
+    """
     # 25-40KHz is the range of the pinger for the roboboat competition
     fir = scipy.signal.firwin(
         128,

@@ -3532,6 +3532,14 @@ Utility Functions
 
 .. autofunction:: algorithms.compute_freq
 
+.. autofunction:: algorithms.bin_to_freq
+
+.. autofunction:: algorithms.freq_to_bin
+
+.. autofunction:: algorithms.preprocess
+
+.. autofunction:: algorithms.bandpass
+
 TxHydrophonesClient
 ^^^^^^^^^^^^^^^^^^^
 .. attributetable:: TxHydrophonesClient
