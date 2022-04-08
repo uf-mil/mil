@@ -178,10 +178,18 @@ def bandpass(samples: numpy.ndarray, sample_rate: int):
     return scipy.signal.lfilter(fir, 1, samples)
 
 
-def compute_deltas(samples, sample_rate, max_delay, template_duration, plot=False):
+def compute_deltas(samples: numpy.ndarray, sample_rate: int, max_delay: float, template_duration: float, plot: bool = False):
     """
     Computes N-1 position deltas for N channels, by making a template
     for the first channel and matching to all subsequent channels.
+
+    Args:
+        samples (np.ndarray): The samples relevant to the system.
+        sample_rate (int): The rate at which samples are recorded, in the number
+            of samples per second.
+        max_delay (float): ???
+        template_duration (float): ???
+        plot (bool): Whether to plot and show the data.
     """
     template_width = int(round(template_duration * sample_rate))
     template, template_pos = make_template(samples[0, :], template_width)
@@ -213,19 +221,29 @@ def compute_deltas(samples, sample_rate, max_delay, template_duration, plot=Fals
     return deltas, errors, template_pos, template_width
 
 
-def make_template(channel, width):
+def make_template(channel: numpy.ndarray, width: int):
     """
     Returns a template of the specified width, with its 25% position being at
     where the lower-level driver triggered.
+
+    Args:
+        channel (np.ndarray): ???
+        width (int): ???
     """
     pos = int(round(channel.shape[0] * 0.35 / (0.35 + 0.25) - width * 0.25))
     return channel[pos : pos + width], pos
 
 
-def match_template(channel, start, stop, template):
+def match_template(channel: numpy.ndarray, start: int, stop: int, template: numpy.ndarray):
     """
     Matches template to channel, returning the point where the start
     of the template should be placed.
+
+    Args:
+        channel (np.ndarray): ???
+        start (int): The start of the template in the channel
+        stop (int): The end of the template in the channel
+        template (np.ndarray): The template to match the channel to
     """
     assert start >= 0
     start = max(start, 0)
@@ -241,11 +259,16 @@ def match_template(channel, start, stop, template):
     return start + min_pt, err[int(round(min_pt))]
 
 
-def calculate_error(channel, start, stop, template):
+def calculate_error(channel: numpy.ndarray, start: int, stop: int, template: numpy.ndarray):
     """
     Slides the template along channel from start to stop, giving the
-    error of the template and channel at each
-    location.
+    error of the template and channel at each location.
+
+    Args:
+        channel (np.ndarray): ???
+        start (int): The start of the template in the channel
+        stop (int): The end of the template in the channel
+        template (np.ndarray): The template to match the channel to
     """
     width = template.shape[0]
     res = numpy.zeros(stop - start)
@@ -257,10 +280,13 @@ def calculate_error(channel, start, stop, template):
     return res
 
 
-def find_minimum(data):
+def find_minimum(data: numpy.ndarray):
     """
     Finds the sub-sample position of the minimum in a continuous signal,
     by first finding the lowest absolute value, then doing quadratic interpolation.
+
+    Args:
+        data (np.ndarray): The relevant signal.
     """
     pos = numpy.argmin(data)
     if pos == 0 or pos == len(data) - 1:
@@ -271,12 +297,21 @@ def find_minimum(data):
     return pos
 
 
-def compute_pos_4hyd(deltas, sample_rate, v_sound, dist_h, dist_h4):
+def compute_pos_4hyd(deltas: numpy.ndarray, sample_rate: int, v_sound: int, dist_h: float, dist_h4: float):
     """
     Solves the 4 hydrophone case (3 deltas) for heading, declination,
     and sph_dist using a bunch of trig. Future work would be to phrase
     this as a NLLSQ problem or something, and adapt it to more
     hydrophones.
+
+    Args:
+        samples (np.ndarray): The samples relevant to the system.
+        sample_rate (int): The rate at which samples are recorded, in the number
+            of samples per second.
+        v_sound (int): The velocity of sound in the environment, in ``m/s``. In fresh water,
+            this should be ~1497 m/s.
+        dist_h (float): ???
+        dist_h4 (float): ???
     """
     assert len(deltas) == 3
 

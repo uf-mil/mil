@@ -3524,21 +3524,33 @@ Passive Sonar
 Utility Functions
 ^^^^^^^^^^^^^^^^^
 
-.. autofunction:: algorithms.run
+.. autofunction:: mil_passive_sonar.algorithms.run
 
-.. autofunction:: algorithms.zero_mean
+.. autofunction:: mil_passive_sonar.algorithms.zero_mean
 
-.. autofunction:: algorithms.normalize
+.. autofunction:: mil_passive_sonar.algorithms.normalize
 
-.. autofunction:: algorithms.compute_freq
+.. autofunction:: mil_passive_sonar.algorithms.compute_freq
 
-.. autofunction:: algorithms.bin_to_freq
+.. autofunction:: mil_passive_sonar.algorithms.bin_to_freq
 
-.. autofunction:: algorithms.freq_to_bin
+.. autofunction:: mil_passive_sonar.algorithms.freq_to_bin
 
-.. autofunction:: algorithms.preprocess
+.. autofunction:: mil_passive_sonar.algorithms.preprocess
 
-.. autofunction:: algorithms.bandpass
+.. autofunction:: mil_passive_sonar.algorithms.bandpass
+
+.. autofunction:: mil_passive_sonar.algorithms.compute_deltas
+
+.. autofunction:: mil_passive_sonar.algorithms.make_template
+
+.. autofunction:: mil_passive_sonar.algorithms.match_template
+
+.. autofunction:: mil_passive_sonar.algorithms.calculate_error
+
+.. autofunction:: mil_passive_sonar.algorithms.find_minimum
+
+.. autofunction:: mil_passive_sonar.algorithms.compute_pos_4hyd
 
 TxHydrophonesClient
 ^^^^^^^^^^^^^^^^^^^
