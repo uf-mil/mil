@@ -17,6 +17,7 @@ class TxHydrophonesClient:
         dir_callback (Optional[Callable]): The method that is called when a ping
             is received.
     """
+
     def __init__(self, nh: NodeHandle):
         """
         Construct a client.
@@ -82,7 +83,7 @@ class TxHydrophonesClient:
     def heading_cb(self, heading_msg: Vector3Stamped):
         """
         Callback for pings recieved.
-        
+
         Args:
             heading_msg (Vector3Stamped): The passed-in message representing the
                 heading.

@@ -3,10 +3,11 @@ import scipy
 from scipy.signal import fftconvolve
 from typing import Optional
 
+
 class StreamedBandpass:
     """
-    Class for bandpass filtering sequential batches of data. Takes care of the 
-        overlap-adding that needs to be done when filtering sequential batches 
+    Class for bandpass filtering sequential batches of data. Takes care of the
+        overlap-adding that needs to be done when filtering sequential batches
         of data indivudually.
 
     Attributes:
@@ -19,7 +20,15 @@ class StreamedBandpass:
         h (Optional[np.ndarray]): The Remez exchange algorithm, if defined. Constructed
             when the filter is made.
     """
-    def __init__(self, lower: float, upper: float, trans_width: float, order: float, rate: Optional[float] = None):
+
+    def __init__(
+        self,
+        lower: float,
+        upper: float,
+        trans_width: float,
+        order: float,
+        rate: Optional[float] = None,
+    ):
         """
         Constructs the class using the variables provided. Checks if the class is
         ready to make a filter, and if so, the filter is constructed.

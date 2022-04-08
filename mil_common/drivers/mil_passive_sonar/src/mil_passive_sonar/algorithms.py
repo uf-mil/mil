@@ -10,7 +10,13 @@ import matplotlib.pyplot as plt
 DEBUG = 0
 
 
-def run(samples: numpy.ndarray, sample_rate: int, v_sound: int, dist_h: float, dist_h4: float):
+def run(
+    samples: numpy.ndarray,
+    sample_rate: int,
+    v_sound: int,
+    dist_h: float,
+    dist_h4: float,
+):
     """
     The traditional passive sonar algorithm.
 
@@ -89,7 +95,9 @@ def normalize(samples: numpy.ndarray):
     return samples / numpy.amax(numpy.abs(samples), 1)[:, numpy.newaxis]
 
 
-def compute_freq(samples: numpy.ndarray, sample_rate: int, freq_range, plot: bool = False):
+def compute_freq(
+    samples: numpy.ndarray, sample_rate: int, freq_range, plot: bool = False
+):
     """
     Checks whether samples are likely a solid ping and returns the frequency.
     """
@@ -178,7 +186,13 @@ def bandpass(samples: numpy.ndarray, sample_rate: int):
     return scipy.signal.lfilter(fir, 1, samples)
 
 
-def compute_deltas(samples: numpy.ndarray, sample_rate: int, max_delay: float, template_duration: float, plot: bool = False):
+def compute_deltas(
+    samples: numpy.ndarray,
+    sample_rate: int,
+    max_delay: float,
+    template_duration: float,
+    plot: bool = False,
+):
     """
     Computes N-1 position deltas for N channels, by making a template
     for the first channel and matching to all subsequent channels.
@@ -234,7 +248,9 @@ def make_template(channel: numpy.ndarray, width: int):
     return channel[pos : pos + width], pos
 
 
-def match_template(channel: numpy.ndarray, start: int, stop: int, template: numpy.ndarray):
+def match_template(
+    channel: numpy.ndarray, start: int, stop: int, template: numpy.ndarray
+):
     """
     Matches template to channel, returning the point where the start
     of the template should be placed.
@@ -259,7 +275,9 @@ def match_template(channel: numpy.ndarray, start: int, stop: int, template: nump
     return start + min_pt, err[int(round(min_pt))]
 
 
-def calculate_error(channel: numpy.ndarray, start: int, stop: int, template: numpy.ndarray):
+def calculate_error(
+    channel: numpy.ndarray, start: int, stop: int, template: numpy.ndarray
+):
     """
     Slides the template along channel from start to stop, giving the
     error of the template and channel at each location.
@@ -297,7 +315,9 @@ def find_minimum(data: numpy.ndarray):
     return pos
 
 
-def compute_pos_4hyd(deltas: numpy.ndarray, sample_rate: int, v_sound: int, dist_h: float, dist_h4: float):
+def compute_pos_4hyd(
+    deltas: numpy.ndarray, sample_rate: int, v_sound: int, dist_h: float, dist_h4: float
+):
     """
     Solves the 4 hydrophone case (3 deltas) for heading, declination,
     and sph_dist using a bunch of trig. Future work would be to phrase
