@@ -10,7 +10,19 @@ import matplotlib.pyplot as plt
 DEBUG = 0
 
 
-def run(samples, sample_rate, v_sound, dist_h, dist_h4):
+def run(samples: numpy.ndarray, sample_rate: int, v_sound: int, dist_h: float, dist_h4: float):
+    """
+    The traditional passive sonar algorithm.
+
+    Args:
+        samples (np.ndarray): The samples relevant to the system.
+        sample_rate (int): The rate at which samples are recorded, in the number
+            of samples per second.
+        v_sound (int): The velocity of sound in the environment, in ``m/s``. In fresh water,
+            this should be ~1497 m/s.
+        dist_h (float): ???
+        dist_h4 (float): ???
+    """
     # Perform algorithm
     if DEBUG:
         plt.cla()
@@ -18,6 +30,7 @@ def run(samples, sample_rate, v_sound, dist_h, dist_h4):
         plt.subplot(2, 2, 1)
     if DEBUG:
         list(map(plt.plot, samples))
+
     samples = zero_mean(samples)
     freq, amplitude, samples_fft = compute_freq(
         samples, sample_rate, numpy.array([5e3, 40e3]), plot=True
@@ -62,18 +75,24 @@ def run(samples, sample_rate, v_sound, dist_h, dist_h4):
     )
 
 
-def zero_mean(samples):
-    """Zero means data by assuming that the first 32 samples are zeros"""
+def zero_mean(samples: numpy.ndarray):
+    """
+    Zero means data by assuming that the first 32 samples are zeros.
+    """
     return samples - numpy.mean(samples[:, 0:32], 1)[:, numpy.newaxis]
 
 
-def normalize(samples):
-    """Rescapes samples so each individual channel lies between -1 and 1"""
+def normalize(samples: numpy.ndarray):
+    """
+    Rescapes samples so each individual channel lies between -1 and 1.
+    """
     return samples / numpy.amax(numpy.abs(samples), 1)[:, numpy.newaxis]
 
 
-def compute_freq(samples, sample_rate, freq_range, plot=False):
-    """Checks whether samples are likely a solid ping and returns the frequency."""
+def compute_freq(samples: numpy.ndarray, sample_rate: int, freq_range, plot: bool = False):
+    """
+    Checks whether samples are likely a solid ping and returns the frequency.
+    """
     samples_window = samples * numpy.hamming(samples.shape[1])
 
     # Compute fft, find peaks in desired range

@@ -3521,6 +3521,17 @@ Passive Sonar
 
 .. currentmodule:: mil_passive_sonar
 
+Utility Functions
+^^^^^^^^^^^^^^^^^
+
+.. autofunction:: algorithms.run
+
+.. autofunction:: algorithms.zero_mean
+
+.. autofunction:: algorithms.normalize
+
+.. autofunction:: algorithms.compute_freq
+
 TxHydrophonesClient
 ^^^^^^^^^^^^^^^^^^^
 .. attributetable:: TxHydrophonesClient
