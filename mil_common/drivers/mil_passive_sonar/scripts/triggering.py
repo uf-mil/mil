@@ -3,28 +3,47 @@ import rospy
 import numpy as np
 from rospy.numpy_msg import numpy_msg
 from std_msgs.msg import Header
-from std_srvs.srv import SetBool, SetBoolResponse
-from std_srvs.srv import Trigger, TriggerResponse
+from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
+from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
 from mil_passive_sonar.msg import HydrophoneSamplesStamped, Triggered, Ping
 from mil_passive_sonar import util
 from mil_passive_sonar.streamed_bandpass import StreamedBandpass
 from mil_ros_tools import Plotter, interweave
 
 from scipy.ndimage.filters import maximum_filter1d
+from typing import Union
 
 
 class HydrophoneTrigger:
+    """
+    ROS Node meant to trigger only when a ping happens in our target frequency range.
+
+    Subscribes to raw hydrophone samples on ``/samples``.
+
+    Publishes samples (of gradient) from right around the triggering on ``/pings`` 
+    when a ping is detected and found to be in the target frequency range.
+
+    Optionally, you can publish a plot of the frequency response of the filter on `/filter_debug`  
+    by service calling `/filter_debug_trigger`.
+
+    Attributes:
+        general_lower (int): The lower bound of the frequency range. Set to the
+            frequency of the lowest frequency pinger - 10 kHz.
+        general_upper (int): The upper bound of the frequency range. Set to the
+            frequency of the lowest frequency pinger - 10 kHz.
+        time (float): The amount of time that has passed since recording started,
+            according to the messages received.
+        window_time (float): The maximum number of seconds to wait for another ping.
+        pub (rospy.Publisher): A publisher for the ``/pings`` topic. Publishes
+            :class:`Triggered` messages.
+        sub (Optional[rospy.Subscriber]): A subscriber to the ``/samples`` topic. Receives
+            either a :class:`~mil_passive_sonar.msg._Ping.Ping` or 
+            :class:`~mil_passive_sonar.msg._HydrophoneSamplesStamped.HydrophoneSamplesStamped` message,
+            and sends the message to :meth:`.hydrophones_cb`.
+        trigger_debug (Plotter): A plotter responsible for publishing debug data
+            about the triggering behavior of the system.
+    """
     def __init__(self):
-        """ROS Node meant to trigger only when a ping happens in our target frequency range
-
-        Subscribes to raw hydrophone samples on `samples`
-
-        publishes samples(of gradient) from right around the triggering on `pings` when a ping is detected
-            and found to be in the target frequency range
-
-        publish a plot of the frequency response of the filter on `/filter_debug`  by service calling `/filter_debug_trigger`
-
-        """
 
         # Attriburtes about our general frequency range (all pinger live here)
         #  Frequency range garunteed to be relatively quiet except for the pingers (in Hz)
@@ -99,19 +118,46 @@ class HydrophoneTrigger:
         #  how far before the triggering time to make lower bound of samples at triggering in sec
         self.trigger_window_past = 1.0 * (self.dist_h / self.v_sound)
 
-    def reset(self, req):
+    def reset(self, req: TriggerRequest) -> TriggerResponse:
+        """
+        Resets the system using the :meth`.get_params` method.
+
+        Args:
+            req (TriggerRequest): The request received.
+
+        Returns:
+            TriggerResponse: Whether the reset request was successful.
+        """
         res = TriggerResponse()
         res.success = True
         self.get_params()
         return res
 
-    def enable(self, req):
+    def enable(self, req: SetBoolRequest) -> SetBoolResponse:
+        """
+        Enables the system; can be called through a :class:`SetBoolRequest` request.
+
+        Args:
+            req (SetBoolRequest): The service request.
+
+        Returns:
+            SetBoolResponse: The response to the service request.
+        """
         self.enabled = req.data
         res = SetBoolResponse()
         res.success = True
         return res
 
-    def filter_response(self, req):
+    def filter_response(self, req: TriggerRequest) -> TriggerResponse:
+        """
+        Filters the debug service. Serves as a callback to the service.
+
+        Args:
+            req (TriggerRequest): The trigger request.
+
+        Returns:
+            TriggerResponse: The response to the request.
+        """
         res = TriggerResponse()
         if self.bandpass_filter.h is None:
             res.message = "filter has not yet been created (created on the first callback after target being set)"
@@ -126,7 +172,15 @@ class HydrophoneTrigger:
         res.success = True
         return res
 
-    def hydrophones_cb(self, msg):
+    def hydrophones_cb(self, msg: Union[Ping, HydrophoneSamplesStamped]) -> None:
+        """
+        The callback to the hydrophone samples topic. Can receive either a :class:`~mil_passive_sonar.msg._Ping.Ping`
+        or :class:`~mil_passive_sonar.msg._HydrophoneSamplesStamped.HydrophoneSamplesStamped` message.
+
+        Args:
+            msg (Union[Ping, HydrophoneSamplesStamped]): The message that can be
+                received by the callback.
+        """
         # Record start time of cb to make sure we are running in real time
         start_cb = rospy.get_rostime()
         if type(msg) == numpy_msg(Ping):

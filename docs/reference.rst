@@ -3566,6 +3566,13 @@ StreamedBandpass
 .. autoclass:: mil_passive_sonar.streamed_bandpass.StreamedBandpass
     :members:
 
+HydrophoneTrigger
+^^^^^^^^^^^^^^^^^
+.. attributetable:: mil_passive_sonar.scripts.triggering.HydrophoneTrigger
+
+.. autoclass:: mil_passive_sonar.scripts.triggering.HydrophoneTrigger
+    :members:
+
 SylphaseSonarToRosNode
 ^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenclass:: SylphaseSonarToRosNode
