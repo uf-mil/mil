@@ -6,7 +6,10 @@
 #include <ros/ros.h>
 #include <boost/asio.hpp>
 
-/// Class representing the node. Could easily be made into a Nodelet
+/**
+ * ROS node which reads in the TCP stream produced by the Sylphase passive sonar
+ * board. Publishes the data to a topic as a message.
+ */
 class SylphaseSonarToRosNode
 {
 public:
@@ -17,7 +20,6 @@ public:
 
   SylphaseSonarToRosNode(ros::NodeHandle nh, ros::NodeHandle private_nh);
 
-  /// Wait forever streaming messages
   void run();
 
 private:
@@ -36,6 +38,13 @@ private:
   double seconds_per_message_;
 };
 
+/**
+ * Attempts to read messages forever from the TCP socket. Messages are published
+ * as a HydrophoneSamples type.
+ *
+ * If an error is encountered, then waits 5 seconds and then tries to connect
+ * to the socket again.
+ */
 void SylphaseSonarToRosNode::run()
 {
   while (ros::ok())
@@ -59,6 +68,10 @@ void SylphaseSonarToRosNode::run()
   }
 }
 
+/**
+ * Constructor with a node handle and private node handle. Upon construction,
+ * gets the IP, port, the frame of reference, and the number of seconds to capture.
+ */
 SylphaseSonarToRosNode::SylphaseSonarToRosNode(ros::NodeHandle nh, ros::NodeHandle private_nh)
   : nh_(nh), private_nh_(private_nh)
 {

@@ -771,6 +771,180 @@ Hosts
         The hosts belonging to the group.
 
         :type: List[~navigator_msgs.msg._Host.Host]
+        
+Passive Sonar Messages
+^^^^^^^^^^^^^^^^^^^^^^
+
+HydrophoneSamples
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: mil_passive_sonar.msg._HydrophoneSamples.HydrophoneSamples
+
+.. class:: mil_passive_sonar.msg._HydrophoneSamples.HydrophoneSamples
+    
+    A custom message definition to represent data coming from the hydrophones.
+
+    .. attribute:: channels
+
+        The number of channels supported by the hydrophones.
+
+        :type: int
+
+    .. attribute:: samples
+
+        The number of samples on each channel.
+
+        :type: int
+
+    .. attribute:: sample_rate
+
+        The rate at which samples are recorded, per channel. Equal to the number
+        of samples per second.
+
+        :type: int
+
+    .. attribute:: data
+
+        The data recorded from the hydrophones. Each "word" in the data is a piece
+        of data from one hydrophone, such as ``H0 H1 H2 H3 H0 H1 ...``.
+
+        :type: List[int]
+
+HydrophoneSamplesStamped
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: mil_passive_sonar.msg._HydrophoneSamplesStamped.HydrophoneSamplesStamped
+
+.. class:: mil_passive_sonar.msg._HydrophoneSamplesStamped.HydrophoneSamplesStamped
+    
+    A custom message definition to represent time-stamped data coming from the hydrophones.
+
+    .. attribute:: header
+
+        The message header.
+
+        :type: Header
+
+    .. attribute:: hydrophone_samples
+
+        The hydrophone samples received.
+
+        :type: HydrophoneSamples
+
+Ping
+~~~~
+
+.. attributetable:: mil_passive_sonar.msg._Ping.Ping
+
+.. class:: mil_passive_sonar.msg._Ping.Ping
+    
+    A custom message definition to represent a ping from channels of data.
+
+    .. danger::
+
+        This class is deprecated, and has been replaced by 
+        :class:`~mil_passive_sonar.msg._HydrophoneSamples.HydrophoneSamples` and 
+        :class:`~mil_passive_sonar.msg._HydrophoneSamplesStamped.HydrophoneSamplesStamped`.
+        Support for this message type throughout the repository still exists,
+        although it may be removed in the future.
+
+    .. attribute:: header
+
+        The message header.
+
+        :type: Header
+
+    .. attribute:: channels
+
+        The number of channels supported by the hydrophones.
+
+        :type: int
+
+    .. attribute:: samples
+
+        The number of samples on each channel.
+
+        :type: int
+
+    .. attribute:: sample_rate
+
+        The rate at which samples are recorded, per channel. Equal to the number
+        of samples per second.
+
+        :type: int
+
+    .. attribute:: data
+
+        The data recorded from the hydrophones. Each "word" in the data is a piece
+        of data from one hydrophone, such as ``H0 H1 H2 H3 H0 H1 ...``.
+
+        :type: List[int]
+
+ProcessedPing
+~~~~~~~~~~~~~
+
+.. attributetable:: mil_passive_sonar.msg._ProcessedPing.ProcessedPing
+
+.. class:: mil_passive_sonar.msg._ProcessedPing.ProcessedPing
+    
+    A custom message definition to represent a ping from channels of data.
+
+    .. attribute:: header
+
+        The message header.
+
+        :type: Header
+
+    .. attribute:: position
+
+        The position of the processed ping.
+
+        :type: Point
+
+    .. attribute:: freq
+
+        The frequency of the processed ping.
+
+        :type: float
+
+    .. attribute:: amplitude
+
+        The amplitude of the processed ping.
+
+        :type: float
+
+    .. attribute:: valid
+
+        Whether the processed ping is valid.
+
+        :type: bool
+
+Triggered
+~~~~~~~~~
+
+.. attributetable:: mil_passive_sonar.msg._Triggered.Triggered
+
+.. class:: mil_passive_sonar.msg._Triggered.Triggered
+    
+    A custom message definition to represent ???.
+
+    .. attribute:: header
+
+        The message header.
+
+        :type: Header
+
+    .. attribute:: hydrophone_samples
+
+        ???
+
+        :type: HydrophoneSamples
+
+    .. attribute:: trigger_time
+
+        The time at which the ping was detected.
+
+        :type: float
 
 Standard Messages
 ^^^^^^^^^^^^^^^^^
@@ -1358,7 +1532,6 @@ ScanTheCode
         stands for green.
 
         :type: str
-
 
 Services
 --------
@@ -3342,3 +3515,71 @@ Battery Monitor
 
 .. autoclass:: nodes.navigator_battery_monitor.BatteryMonitor
     :members:
+
+Passive Sonar
+-------------
+
+.. currentmodule:: mil_passive_sonar
+
+Utility Functions
+^^^^^^^^^^^^^^^^^
+
+.. autofunction:: mil_passive_sonar.algorithms.run
+
+.. autofunction:: mil_passive_sonar.algorithms.zero_mean
+
+.. autofunction:: mil_passive_sonar.algorithms.normalize
+
+.. autofunction:: mil_passive_sonar.algorithms.compute_freq
+
+.. autofunction:: mil_passive_sonar.algorithms.bin_to_freq
+
+.. autofunction:: mil_passive_sonar.algorithms.freq_to_bin
+
+.. autofunction:: mil_passive_sonar.algorithms.preprocess
+
+.. autofunction:: mil_passive_sonar.algorithms.bandpass
+
+.. autofunction:: mil_passive_sonar.algorithms.compute_deltas
+
+.. autofunction:: mil_passive_sonar.algorithms.make_template
+
+.. autofunction:: mil_passive_sonar.algorithms.match_template
+
+.. autofunction:: mil_passive_sonar.algorithms.calculate_error
+
+.. autofunction:: mil_passive_sonar.algorithms.find_minimum
+
+.. autofunction:: mil_passive_sonar.algorithms.compute_pos_4hyd
+
+TxHydrophonesClient
+^^^^^^^^^^^^^^^^^^^
+.. attributetable:: TxHydrophonesClient
+
+.. autoclass:: TxHydrophonesClient
+    :members:
+
+StreamedBandpass
+^^^^^^^^^^^^^^^^
+.. attributetable:: mil_passive_sonar.streamed_bandpass.StreamedBandpass
+
+.. autoclass:: mil_passive_sonar.streamed_bandpass.StreamedBandpass
+    :members:
+
+HydrophoneTrigger
+^^^^^^^^^^^^^^^^^
+.. attributetable:: mil_passive_sonar.scripts.triggering.HydrophoneTrigger
+
+.. autoclass:: mil_passive_sonar.scripts.triggering.HydrophoneTrigger
+    :members:
+
+PingLocator
+^^^^^^^^^^^
+.. attributetable:: mil_passive_sonar.scripts.ping_locator.PingLocator
+
+.. autoclass:: mil_passive_sonar.scripts.ping_locator.PingLocator
+    :members:
+
+SylphaseSonarToRosNode
+^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenclass:: SylphaseSonarToRosNode
