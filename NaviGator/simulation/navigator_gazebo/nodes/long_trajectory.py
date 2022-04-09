@@ -6,6 +6,8 @@ from navigator_msgs.srv import MoveToWaypoint, MoveToWaypointResponse
 from mil_tools import rosmsg_to_numpy
 from robot_localization.srv import FromLL
 import numpy as np
+from vrx_gazebo.msg import Task
+import tf.transformations as trns
 import math
 
 #Defines a service that returns the position of the acoustic beacon from odom and the range_bearing topic
@@ -16,9 +18,24 @@ class LongTrajectory():
         self.pub = rospy.Publisher('/trajectory_long/cmd', Odometry, queue_size=10)
         self.serv = rospy.Service('/set_long_waypoint', MoveToWaypoint, self.handler)
         self.from_lla = rospy.ServiceProxy("/fromLL", FromLL)
+        self.task_info_sub = rospy.Subscriber("/vrx/task/info", Task, self.taskinfoSubscriber)
         self.boat_pos = np.array([])
         self.boat_ori = np.array([])
+        # X error threshold for long trajectory to be satisfied
+        self.x_thresh = rospy.get_param('x_thresh', 0.5)
+        # Y error threshold for long trajectory to be satisfied
+        self.y_thresh = rospy.get_param('y_thresh', 0.5)
+        # Yaw error threshold for long trajectory to be satisfied
+        self.yaw_thresh = rospy.get_param('yaw_thresh', 0.02)
+        self.thresholds_changed = False
         rospy.spin()
+
+    def taskinfoSubscriber(self, msg):
+        if not self.thresholds_changed and msg.name == "wayfinding":
+            self.x_thresh = 0.15
+            self.y_thresh = 0.15
+            self.yaw_thresh = 0.005
+            self.thresholds_changed = True
 
     #Requires both odom and range_bearing to be publishing data
     def odometrySubscriber(self, msg):
@@ -54,7 +71,31 @@ class LongTrajectory():
         self.pub.publish(traj)
 
         #go to waypoint
-        while ( (abs(self.boat_pos[0] - pos.x) > 0.5) ) or ( (abs(self.boat_pos[1] - pos.y) > 0.5) ):
+        #TODO: Account for orientation to determine when we are finished
+
+        x_err = 100
+        y_err = 100
+        yaw_err = 100
+        start_force_end = False
+        start_force_end_time = None
+        self.orientation = np.array([ori.x, ori.y, ori.z, ori.w])
+
+        while ( (x_err > self.x_thresh) or (y_err > self.y_thresh) or (yaw_err > self.yaw_thresh) ):
+
+            yaw_err = trns.euler_from_quaternion(trns.quaternion_multiply(
+                self.boat_ori, trns.quaternion_inverse(self.orientation)))[2]
+            x_err = abs(self.boat_pos[0] - pos.x)
+            y_err = abs(self.boat_pos[1] - pos.y)
+
+            if (x_err < 1) and (y_err < 1) and (yaw_err < 0.02) and not start_force_end:
+                start_force_end = True
+                start_force_end_time = rospy.get_rostime()
+
+
+            if start_force_end and ((rospy.get_rostime() - start_force_end_time).to_sec() > 10):
+                #Exit out of while loop after 10 seconds of being in same point
+                break
+
             rate.sleep()
 
 

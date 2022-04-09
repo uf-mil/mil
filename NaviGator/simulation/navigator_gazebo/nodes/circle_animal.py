@@ -64,12 +64,39 @@ class CircleAnimal():
         granularity = 8
         
         if self.target_animal != "crocodile":
-                start_circle_pos = self.closest_point_on_radius(self.boat_pos, self.animal_pos, radius)
+            start_circle_pos = self.closest_point_on_radius(self.boat_pos, self.animal_pos, radius)
         if self.target_animal == "crocodile":
             start_circle_pos = self.closest_point_on_radius(self.boat_pos, self.animal_pos, 15)
 
+
         start_circle_ori = self.point_at_goal(start_circle_pos, self.animal_pos)
+        start_boat_pos = self.boat_pos
+        mid_point = (start_circle_pos + self.boat_pos) / 2
         vect = np.array([ start_circle_pos[0] - self.animal_pos[0], start_circle_pos[1] - self.animal_pos[1]])
+        start_circle_vector = self.animal_pos - start_circle_pos
+
+        #go half way to animal
+        while ( (abs(self.boat_pos[0] - mid_point[0]) > 0.5) ) or ( (abs(self.boat_pos[1] - mid_point[1]) > 0.5) ):
+            self.new_animal_pose = False
+
+            #create boat trajectory
+            traj.header.frame_id = "enu"
+            traj.child_frame_id = "wamv/base_link"
+            traj.pose.pose.position.x = mid_point[0]
+            traj.pose.pose.position.y = mid_point[1]
+            traj.pose.pose.orientation.x = start_circle_ori[0]
+            traj.pose.pose.orientation.y = start_circle_ori[1]
+            traj.pose.pose.orientation.z = start_circle_ori[2]
+            traj.pose.pose.orientation.w = start_circle_ori[3]
+            self.pub.publish(traj)
+
+            while(not self.new_animal_pose):
+                rate.sleep()
+
+            #update trajectory point
+            mid_point = (start_circle_pos + start_boat_pos) / 2
+            
+            start_circle_ori = self.point_at_goal(start_circle_pos, self.animal_pos)
 
         #go to animal
         while ( (abs(self.boat_pos[0] - start_circle_pos[0]) > 0.5) ) or ( (abs(self.boat_pos[1] - start_circle_pos[1]) > 0.5) ):
@@ -90,10 +117,7 @@ class CircleAnimal():
                 rate.sleep()
 
             #update trajectory point
-            if self.target_animal != "crocodile":
-                start_circle_pos = self.closest_point_on_radius(self.boat_pos, self.animal_pos, radius)
-            if self.target_animal == "crocodile":
-                start_circle_pos = self.closest_point_on_radius(self.boat_pos, self.animal_pos, 15)
+            start_circle_pos = self.animal_pos - start_circle_vector
             
             start_circle_ori = self.point_at_goal(start_circle_pos, self.animal_pos)
 
@@ -102,6 +126,7 @@ class CircleAnimal():
         else:
             steps = granularity
 
+        #go around animal
         for i in range(steps+1):
             print(i)
             #calculate new position by rotating vector

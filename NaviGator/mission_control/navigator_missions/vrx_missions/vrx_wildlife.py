@@ -27,12 +27,6 @@ class VrxWildlife(Vrx):
         dist_to_point = hypot - radius
         return [ start_pos[0] + dist_to_point * math.cos(theta), start_pos[1] + dist_to_point * math.sin(theta), 0]
 
-    def point_at_goal(self, goal_pos):
-        vect = [ goal_pos[0] - self.pose[0][0], goal_pos[1] - self.pose[0][1]]
-        theta = math.atan2(vect[1], vect[0])
-        return tf.transformations.quaternion_from_euler(0,0,theta)
-
-
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
         self.send_feedback('Waiting for task to start')
@@ -104,8 +98,7 @@ class VrxWildlife(Vrx):
             start_circle_pos = self.closest_point_on_radius(self.pose[0], animal_pose_next[0], radius)
 
             #first point at goal
-            orientation_fix = self.point_at_goal(start_circle_pos)
-            yield self.move.set_orientation(orientation_fix).go(blind=True)
+            yield self.point_at_goal(start_circle_pos)
 
             req = ChooseAnimalRequest()
             if(croc_is_present):
@@ -119,15 +112,13 @@ class VrxWildlife(Vrx):
                 flipped_vect = self.pose[0] - start_circle_pos
                 norm_vect = vect / np.linalg.norm(vect)
                 flipped_norm_vect = flipped_vect / np.linalg.norm(flipped_vect)
-                p1_l = np.cross(z_vec, norm_vect) * rectangle_width + self.pose[0]
-                p2_l = start_circle_pos
-                p1_r = self.pose[0]
-                p2_r = np.cross(z_vec, flipped_norm_vect) * rectangle_width + start_circle_pos
-                x_croc = animal_pose_croc[0][0]
-                y_croc = animal_pose_croc[0][1]
+                p1_l = (np.cross(z_vec, norm_vect) * rectangle_width + self.pose[0])[0:2]
+                p2_l = start_circle_pos[0:2]
+                p1_r = self.pose[0][0:2]
+                p2_r = (np.cross(z_vec, flipped_norm_vect) * rectangle_width + start_circle_pos)[0:2]
 
                 #determine if croc is in left rect
-                AM = animal_pose_croc[0] - p1_r
+                AM = animal_pose_croc[0][0:2] - p1_r
                 AB = p1_l - p1_r
                 AD = p2_l - p1_r
 
@@ -140,7 +131,6 @@ class VrxWildlife(Vrx):
                 if (0 < AMAB < ABAB) and (0 < AMAD < ADAD):
                     #calculate pitstop point
                     print("WARNING: Crocodile is in left rectangle")
-                    pitstop_pos = p2_r + 0.5 * flipped_vect
 
                     req.target_animal = "crocodile"
                     req.circle_direction = "ccw"
@@ -148,7 +138,7 @@ class VrxWildlife(Vrx):
                     yield self.circle_animal(req)
 
                 #determine if croc is in right rect
-                AM = animal_pose_croc[0][0] - p2_l
+                AM = animal_pose_croc[0][0:2] - p2_l
                 AB = p1_r - p2_l
                 AD = p2_r - p2_l
 
@@ -160,7 +150,6 @@ class VrxWildlife(Vrx):
                 if not left_rect and (0 < AMAB < ABAB) and (0 < AMAD < ADAD):
                     #calculate pitstop point
                     print("WARNING: Crocodile is in right rectangle")
-                    pitstop_pos = p1_l + 0.5 * vect
 
                     req.target_animal = "crocodile"
                     req.circle_direction = "cw"

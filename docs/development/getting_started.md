@@ -100,14 +100,17 @@ operating system without using Docker, you can run the following scripts from th
 
 Exit the terminal and enter it again.
 
-## Build the repository
-Now that you have everything set up, try compiling the code. The `user_install` script should have done this already, but this is how you will compile in the future.
-
 To build our tools, we use a tool that ROS provides us named `catkin_make`. This searches through all of our packages and compiles them together. If you want to run this tool from anywhere in the directory, use `cm`.
 
     $ cm
 
 If something goes wrong, try the suggestions in [Getting Help](help).
+
+### Configuring Git
+
+If you have not configured Git to use your name/email on your new Ubuntu setup, you can use the script below to set up your Git configuration! It will help you register your name and email with Git and authenticate so that you can push to the repository.
+
+    $ ./scripts/store_git.sh
 
 ## Viewing simulation
 Now that you've built the repository, check to make sure that the simulation works

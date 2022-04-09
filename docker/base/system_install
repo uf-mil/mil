@@ -30,6 +30,7 @@ mil_system_install --no-install-recommends \
   python2 \
   ruby \
   wget \
+  vim \
   expect
 
 # Attempt to install vcstool using apt-get or pip if apt-get does not work
@@ -82,7 +83,8 @@ sudo pip3 install --upgrade pip \
     tsp_solver2 \
     Pillow \
     black \
-    modernize
+    modernize \
+    pyyaml
 
 # Documentation dependencies
 mil_system_install  python3-pip python-setuptools

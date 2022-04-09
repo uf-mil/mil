@@ -72,11 +72,12 @@ class VrxNavigation(Vrx):
 
         def is_done(objects, positions):
             try:
-                left_index = self.get_index_of_type(objects, ('surmark950400', 'green_totem', 'blue_totem'))
-                right_index = self.get_index_of_type(objects, ('red_totem', 'surmark950410'))
+                left_index = self.get_index_of_type(objects, ('mb_marker_buoy_green', 'mb_marker_buoy_black'))
+                right_index = self.get_index_of_type(objects, 'mb_marker_buoy_red')
             except StopIteration:
                 return None
-            end = objects[left_index].labeled_classification == 'blue_totem'
+
+            end = objects[left_index].labeled_classification == 'mb_marker_buoy_black'
             return positions[left_index], objects[left_index], positions[right_index], objects[right_index], end
 
         left, left_obj, right, right_obj, end = yield self.explore_closest_until(is_done, filter_and_sort)
@@ -109,6 +110,7 @@ class VrxNavigation(Vrx):
                     service_req = None
                     objects_msg = result
                     if self.object_classified(objects_msg.objects, move_id_tuple[1]):
+
                         self.send_feedback('{} identified. Canceling investigation'.format(move_id_tuple[1]))
                         yield dl.cancel()
                         yield move_id_tuple[0].cancel()
@@ -161,8 +163,8 @@ class VrxNavigation(Vrx):
 
     def get_objects_indicies_for_start(self, objects):
         try:
-            white_index = self.get_index_of_type(objects, 'surmark46104')
-            red_index = self.get_index_of_type(objects, ('red_totem', 'surmark950410'))
+            white_index = self.get_index_of_type(objects, 'mb_marker_buoy_white')
+            red_index = self.get_index_of_type(objects, 'mb_marker_buoy_red')
         except StopIteration:
             return None
         return white_index, red_index

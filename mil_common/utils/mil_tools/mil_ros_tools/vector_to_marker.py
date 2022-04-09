@@ -43,6 +43,10 @@ class VectorToMarker:
         marker.header = vec.header
         marker.type = 0
         marker.color = self.color
+        marker.pose.orientation.x = 0
+        marker.pose.orientation.y = 0
+        marker.pose.orientation.z = 0
+        marker.pose.orientation.w = 1
         marker.scale.x = 0.1
         marker.scale.y = 0.15
         marker.scale.z = 0.5

@@ -28,4 +28,5 @@ class VrxBeacon(Vrx):
 
         self.send_feedback('Going to {}'.format(position))
 
-        yield self.move.set_position(position).go(blind=True)
+        goal_pose = [position,[0,0,0,1]]
+        yield self.move.set_position(goal_pose[0]).set_orientation(goal_pose[1]).go()
