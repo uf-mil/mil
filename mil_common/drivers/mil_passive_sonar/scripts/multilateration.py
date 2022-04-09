@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from __future__ import division
 
@@ -16,31 +16,32 @@ from mil_passive_sonar.srv import FindPinger, FindPingerResponse
 from std_srvs.srv import SetBool, SetBoolResponse, Trigger, TriggerResponse
 
 
-class MultilaterationNode(object):
-    '''
+class MultilaterationNode:
+    """
     Node which observes the heading to the pinger from various observation points
     and predicts the absolute position from this data.
-    '''
+    """
+
     def __init__(self):
         self.tfBuffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
-        buffer_len = rospy.get_param('~buffer_size', default=15)
-        self.minimum_delta_dist = rospy.get_param('~min_delta', default=0.2)
-        self.filter_dist = rospy.get_param('~filter_dist', default=5)
-        self.filter_count = rospy.get_param('~filter_count', default=4)
-        self.buffer_min = rospy.get_param('~buffer_min', default=10)
+        buffer_len = rospy.get_param("~buffer_size", default=15)
+        self.minimum_delta_dist = rospy.get_param("~min_delta", default=0.2)
+        self.filter_dist = rospy.get_param("~filter_dist", default=5)
+        self.filter_count = rospy.get_param("~filter_count", default=4)
+        self.buffer_min = rospy.get_param("~buffer_min", default=10)
         self.vec_samples = deque(maxlen=buffer_len)
         self.enabled = False
         self.last_pos = None
-        self.global_frame = rospy.get_param('~global_frame', default='enu')
-        self.heading_sub = rospy.Subscriber('/hydrophones/direction',
-                Vector3Stamped, self.heading_cb, queue_size=10)
-        self.position_pub = rospy.Publisher('/hydrophones/position',
-                PointStamped, queue_size=1)
-        self.enable_srv = rospy.Service('~enable', SetBool,
-                self.enable_cb)
-        self.reset_srv = rospy.Service('~reset', Trigger,
-                                       self.reset_cb)
+        self.global_frame = rospy.get_param("~global_frame", default="enu")
+        self.heading_sub = rospy.Subscriber(
+            "/hydrophones/direction", Vector3Stamped, self.heading_cb, queue_size=10
+        )
+        self.position_pub = rospy.Publisher(
+            "/hydrophones/position", PointStamped, queue_size=1
+        )
+        self.enable_srv = rospy.Service("~enable", SetBool, self.enable_cb)
+        self.reset_srv = rospy.Service("~reset", Trigger, self.reset_cb)
 
     def enable_cb(self, req):
         self.enabled = req.data
@@ -48,28 +49,34 @@ class MultilaterationNode(object):
 
     def reset_cb(self, req):
         self.vec_samples.clear()
-        return {'success': True}
+        return {"success": True}
 
     def heading_cb(self, p_message):
         if not self.enabled:
             return
         try:
             # Transform ping into gloabl frame
-            transformed_vec = self.tfBuffer.transform(p_message,
-                    self.global_frame, rospy.Duration(2))
-            transformed_origin = self.tfBuffer.lookup_transform(self.global_frame,
-                    p_message.header.frame_id, p_message.header.stamp,
-                    rospy.Duration(2))
+            transformed_vec = self.tfBuffer.transform(
+                p_message, self.global_frame, rospy.Duration(2)
+            )
+            transformed_origin = self.tfBuffer.lookup_transform(
+                self.global_frame,
+                p_message.header.frame_id,
+                p_message.header.stamp,
+                rospy.Duration(2),
+            )
             vec = rosmsg_to_numpy(transformed_vec.vector)
             vec = vec / np.linalg.norm(vec)
-            origin = \
-                rosmsg_to_numpy(transformed_origin.transform.translation)
-        except tf2_ros.TransformException, e:
-            rospy.logwarn('TF Exception: {}'.format(e))
+            origin = rosmsg_to_numpy(transformed_origin.transform.translation)
+        except tf2_ros.TransformException as e:
+            rospy.logwarn("TF Exception: {}".format(e))
             return
 
         # Check if two samples were taken too close to each other
-        if self.last_pos is not None and np.linalg.norm(self.last_pos - origin) < self.minimum_delta_dist:
+        if (
+            self.last_pos is not None
+            and np.linalg.norm(self.last_pos - origin) < self.minimum_delta_dist
+        ):
             rospy.loginfo("Observation too close to previous, ignoring")
             return
         self.last_pos = origin
@@ -83,14 +90,19 @@ class MultilaterationNode(object):
 
     def publish_position(self):
         # Setup lines from samples
-        line_array = np.array([(np.array(p[0][0:2]), np.array(p[1][0:2])) for p in self.vec_samples])
+        line_array = np.array(
+            [(np.array(p[0][0:2]), np.array(p[1][0:2])) for p in self.vec_samples]
+        )
 
         # Calculate least squares intersection
         where = self.ls_line_intersection2d(line_array)
 
         # If no point could be determined, don't publish
         if where is None:
-            rospy.logwarn_throttle(10.0, 'Could not determine point; likely because too many lobs were filtered out due to intersections close to their origins')
+            rospy.logwarn_throttle(
+                10.0,
+                "Could not determine point; likely because too many lobs were filtered out due to intersections close to their origins",
+            )
             return
 
         # Publish point
@@ -122,8 +134,11 @@ class MultilaterationNode(object):
 
                 # Calculate the intersection of the two lines
                 # https://stackoverflow.com/a/47823499
-                t, s = np.linalg.solve(np.array([line1[1]-line1[0], line2[0]-line2[1]]).T, line2[0]-line1[0])
-                intersection = (1-t)*line1[0] + t*line1[1]
+                t, s = np.linalg.solve(
+                    np.array([line1[1] - line1[0], line2[0] - line2[1]]).T,
+                    line2[0] - line1[0],
+                )
+                intersection = (1 - t) * line1[0] + t * line1[1]
 
                 # Calculate the distance to the boat's position from the intersection
                 distance1 = np.linalg.norm(intersection - boat_pos1)
@@ -134,15 +149,18 @@ class MultilaterationNode(object):
                     line_intersections += 1
 
             if line_intersections < self.filter_count:
-                line_array = np.vstack([line_array, np.array([line1[0][0], line1[0][1], line1[1][0], line1[1][1]])])
-
+                line_array = np.vstack(
+                    [
+                        line_array,
+                        np.array([line1[0][0], line1[0][1], line1[1][0], line1[1][1]]),
+                    ]
+                )
 
         line_array = line_array[1:]
 
         # If we don't have at least 3 lines left, return no results
         if len(line_array) < 3:
             return None
-
 
         # https://en.wikipedia.org/wiki/Line-line_intersection#In_two_dimensions_2
 
@@ -152,9 +170,13 @@ class MultilaterationNode(object):
 
         begin_pts = line_array[:, :2]
         diffs = line_array[:, 2:4] - begin_pts
-        norms = np.apply_along_axis(line_segment_norm, 1, line_array).reshape(diffs.shape[0], 1)
+        norms = np.apply_along_axis(line_segment_norm, 1, line_array).reshape(
+            diffs.shape[0], 1
+        )
         rot_left_90 = np.array([[0, -1], [1, 0]])
-        perp_unit_vecs = np.apply_along_axis(lambda unit_diffs: rot_left_90.dot(unit_diffs), 1, diffs / norms)
+        perp_unit_vecs = np.apply_along_axis(
+            lambda unit_diffs: rot_left_90.dot(unit_diffs), 1, diffs / norms
+        )
         A_sum = np.zeros((2, 2))
         Ap_sum = np.zeros((2, 1))
 
@@ -169,7 +191,7 @@ class MultilaterationNode(object):
         return np.linalg.inv(A_sum).dot(Ap_sum)
 
 
-if __name__ == '__main__':
-    rospy.init_node('multilateration')
+if __name__ == "__main__":
+    rospy.init_node("multilateration")
     MultilaterationNode()
     rospy.spin()
