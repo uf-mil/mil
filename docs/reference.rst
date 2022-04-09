@@ -3573,6 +3573,13 @@ HydrophoneTrigger
 .. autoclass:: mil_passive_sonar.scripts.triggering.HydrophoneTrigger
     :members:
 
+PingLocator
+^^^^^^^^^^^
+.. attributetable:: mil_passive_sonar.scripts.ping_locator.PingLocator
+
+.. autoclass:: mil_passive_sonar.scripts.ping_locator.PingLocator
+    :members:
+
 SylphaseSonarToRosNode
 ^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenclass:: SylphaseSonarToRosNode

@@ -97,7 +97,7 @@ def find_freq(data, rate):
     """
 
     zero_crossings = numpy.zeros((5, data.shape[1]))
-    for i in xrange(data.shape[1]):
+    for i in range(data.shape[1]):
         _zero_crossings = numpy.where(numpy.diff(numpy.sign(data[:, i]), axis=0))[0]
         if _zero_crossings.shape[0] < 5:
             raise Exception("not enough zero crossings to determine frequency")

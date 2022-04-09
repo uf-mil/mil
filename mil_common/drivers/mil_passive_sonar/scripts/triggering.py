@@ -303,7 +303,7 @@ class HydrophoneTrigger:
                 if self.sample_at_trigger_debug.is_go():
                     plot_time = time[start_sample:end_sample]
                     plots = interweave(plot_time, ping_samples.transpose())
-                    titles = ["h%i" % i for i in xrange(4)]
+                    titles = ["h%i" % i for i in range(4)]
                     vline = [trigger_time_samples]
                     self.sample_at_trigger_debug.publish_plots(plots, titles, vline)
 

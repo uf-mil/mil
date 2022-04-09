@@ -2,7 +2,7 @@
 import rospy
 import numpy as np
 from rospy.numpy_msg import numpy_msg
-from std_srvs.srv import SetBool, SetBoolResponse
+from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 from std_msgs.msg import Header
 from geometry_msgs.msg import Vector3Stamped
 from mil_passive_sonar.msg import Triggered
@@ -14,10 +14,10 @@ from scipy.signal import correlate, decimate, resample
 
 
 class PingLocator:
-    """Subscribers to `/pings`
-
-    publishes vector to the pinger on /direction"""
-
+    """
+    Subscribers to ``/pings``, and publishes vector to the pinger on ``/direction``.
+    Creates a node named ``ping_locator``.
+    """
     def __init__(self):
         rospy.init_node("ping_locator")
         self.sub = rospy.Subscriber("pings", numpy_msg(Triggered), self.ping_cb)
@@ -33,13 +33,30 @@ class PingLocator:
         self.dist_h = rospy.get_param("dist_h")
         self.v_sound = rospy.get_param("v_sound")
 
-    def enable(self, req):
+    def enable(self, req: SetBoolRequest) -> SetBoolResponse:
+        """
+        Sets the locator to enabled. Doesn't immediately do anything.
+
+        Args:
+            req (SetBoolRequest): The service request.
+
+        Returns:
+            SetBoolResponse: The service response.
+        """
         self.enabled = req.data
         res = SetBoolResponse()
         res.success = True
         return res
 
-    def ping_cb(self, msg):
+    def ping_cb(self, msg) -> None:
+        """
+        Callback called with each new ping. With each call, creates a 
+        :class:`~geometry_msgs.msg._Vector3Stamped.Vector3Stamped` message containing
+        the direction of the pinger.
+
+        Args:
+            msg (Triggered): The received message, with numpy formatting.
+        """
         data = msg.hydrophone_samples.data
         data.resize((msg.hydrophone_samples.samples, msg.hydrophone_samples.channels))
         rate = msg.hydrophone_samples.sample_rate
@@ -47,7 +64,7 @@ class PingLocator:
         cross_corr = np.array(
             [
                 correlate(data[:, 0], data[:, i], mode="same")
-                for i in xrange(0, data.shape[1])
+                for i in range(0, data.shape[1])
             ]
         ).transpose()
 
@@ -57,7 +74,7 @@ class PingLocator:
         deltas = np.zeros((4,))
 
         maxes = np.array(
-            [np.argmax(cross_corr[:, i]) for i in xrange(cross_corr.shape[1])]
+            [np.argmax(cross_corr[:, i]) for i in range(cross_corr.shape[1])]
         )
 
         if (maxes == cross_corr.shape[0] - 1).any() or (maxes == 0).any():
@@ -70,13 +87,13 @@ class PingLocator:
         deltas -= deltas[0]
 
         plots = interweave(time, cross_corr.transpose())
-        titles = ["h0 cross h%d" % i for i in xrange(data.shape[0])]
+        titles = ["h0 cross h%d" % i for i in range(data.shape[0])]
         self.debug.publish_plots(plots, titles, time[maxes])
 
         plots = interweave(time, data.transpose())
-        titles = ["h%d" % i for i in xrange(data.shape[0])]
+        titles = ["h%d" % i for i in range(data.shape[0])]
         vlines = np.array(
-            [-1 * deltas[i] + msg.trigger_time for i in xrange(deltas.shape[0])]
+            [-1 * deltas[i] + msg.trigger_time for i in range(deltas.shape[0])]
         )
         self.debug_samples.publish_plots(plots, titles, vlines)
 
