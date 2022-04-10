@@ -173,13 +173,6 @@
           <speed>12</speed>
         </clouds>
       </sky>
-      <fog>
-        <type> linear </type>
-        <start> 0 </start>
-        <end> 10 </end>
-        <color> 0.8 0.8 0.8 1 </color>
-        <density> 0 </density>
-      </fog>
       <grid>0</grid>
       <origin_visual>0</origin_visual>
       <ambient>
