@@ -304,9 +304,9 @@ class Dock(Vrx):
 
         if foggy:
             print("using foggy threshold")
-            value = 130
+            value = 140
         else:
-            value = 30
+            value = 25
 
         #set bounds for finding only black objects
         lower = np.array([0, 0, 0], dtype="uint8")
@@ -336,21 +336,20 @@ class Dock(Vrx):
                 indices_to_delete.append(i)
                 continue
 
-            x,y,w,h = cv2.boundingRect(v)
             print("width and height: ", w,h)
-            if w >= 90 and h >= 90:
-                print(x)
-                print(y)
-                print(w)
-                print(h)
-                center_pixel_row = y
-                center_pixel_col = x
-                break
+            print(x)
+            print(y)
+            print(w)
+            print(h)
+            center_pixel_row = y
+            center_pixel_col = x
 
         for index in indices_to_delete[::-1]:
             cnts.pop(index)
 
         print("The new size of cnts is: ", len(cnts))
+        if len(cnts) == 0:
+            defer.returnValue(None)
         
         #get the center pixel of the black square
         #center_pixel_row and center_pixel_col are defined as
@@ -367,7 +366,7 @@ class Dock(Vrx):
 
         symbol_position = [center_pixel_row, center_pixel_col]
 
-        cv2.rectangle(mask,(x,y), (x + w, y + h), 255, 2)
+        cv2.rectangle(mask,(x,y), (x + w, y + h), 125, 2)
         cv2.rectangle(mask,(425,400), (525,480), 150, 2)
 
         mask_msg = self.bridge.cv2_to_imgmsg(mask, "mono8")
@@ -391,6 +390,10 @@ class Dock(Vrx):
             #specific yaw and pitch and determing where the box needed
             #to be for the ball to go in the box
 
+            if square_pix is None:
+                print("square pix is none")
+                continue
+
             print(square_pix)
 
             min_x = 425
@@ -398,8 +401,6 @@ class Dock(Vrx):
             mid_x = (min_x + max_x) / 2
             min_y = 400
             max_y = 480
-            
-            print(square_pix)
 
             #calculated from pixel size of small square and 0.25m
             #Note this is only valid given the distance of the boat
@@ -423,13 +424,16 @@ class Dock(Vrx):
                 print("Adjustment: ", adjustment)
                 yield self.move.right(adjustment).go(blind=True, move_type="skid")
 
-            yield self.nh.sleep(0.5)
+            yield self.nh.sleep(1)
 
         #loop here to double check that box is still in place in case of crazy waves
         #   if undershooting, shift range right, if overshooting, shift range left
-        square_pix = yield self.get_black_square_center()
         while True:
-            square_pix = yield self.get_black_square_center()
+            square_pix = yield self.get_black_square_center(foggy=foggy)
+            if square_pix is None:
+                print("square pix is none")
+                continue
+
             print(square_pix)
             if square_pix[0] < min_y or square_pix[1] < min_x:
                 print("Aim is too low/right")

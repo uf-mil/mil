@@ -54,7 +54,7 @@ class ScanTheCode(Vrx):
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = 'cluster_tolerance_m'
-        pcodar_cluster_tol.value = 5
+        pcodar_cluster_tol.value = 6
 
         yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
         try:
