@@ -147,6 +147,10 @@ class VrxClassifier(object):
                 met_criteria.append(i)
         # print 'Keeping {} of {}'.format(len(met_criteria), len(self.last_objects.objects))
 
+        pixel_cutoff = 50 if self.is_perception_task else 150
+
+        object_ids = {}
+
         for i in met_criteria:
             boxes = []
             for a in msg.bounding_boxes:
@@ -162,7 +166,7 @@ class VrxClassifier(object):
                         closest = a
                         first_center = center
                 distance = self.distance(pixel_centers[i], first_center)
-                if distance > 150:
+                if distance > pixel_cutoff:
                     print('Object {} did not have close enough bounding box with distance {} , using estimation instead'.format(self.last_objects.objects[i].id, distance))
                 else:
                     print(first_center)
@@ -170,6 +174,7 @@ class VrxClassifier(object):
                     print('Object {} classified as {}'.format(self.last_objects.objects[i].id, closest.Class))
                     cmd = '{}={}'.format(self.last_objects.objects[i].id, closest.Class)
                     self.database_client(ObjectDBQueryRequest(cmd=cmd))
+                    object_ids[self.last_objects.objects[i].id] = [first_center, pixel_centers[i], closest.Class]
                     continue
             if not self.is_perception_task:
                 continue
@@ -178,14 +183,38 @@ class VrxClassifier(object):
                 return
             color = self.last_image[int(pixel_centers[i][0]), int(pixel_centers[i][1]),:]
             if height > 0.45:
+                object_ids[self.last_objects.objects[i].id] = [None, pixel_centers[i], "mb_marker_buoy_white"]
                 print('Reclassified as white')
                 print('Object {} classified as {}'.format(self.last_objects.objects[i].id, "mb_marker_buoy_white"))
                 cmd = '{}={}'.format(self.last_objects.objects[i].id, "mb_marker_buoy_white")
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
             else:
+                object_ids[self.last_objects.objects[i].id] = [None, pixel_centers[i], "mb_round_buoy_black"]
                 print('Object {} classified as {}'.format(self.last_objects.objects[i].id, "mb_round_buoy_black"))
                 cmd = '{}={}'.format(self.last_objects.objects[i].id, "mb_round_buoy_black")
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
+        #used_boxes is a dictionary with the pair of coordinates for the bounding box center as
+        #the key and the id for the classified object as the value
+        used_boxes = {}
+
+        #object_ids has object id as key and the value is a triple of
+        #(bounding box coordinates, object coordinates, object class)
+        for classified in object_ids:
+            #center := bounding box coordinates
+            center = object_ids[classified][0]
+            if center is not None:
+                center = tuple(center)
+            if center is not None and center in used_boxes:
+                if self.distance(center, object_ids[classified][1]) < self.distance(center, object_ids[used_boxes[center]][1]):
+                    id = used_boxes[center]
+                    used_boxes[center] = classified
+                    cmd = '{}={}'.format(classified, object_ids[id][2])
+                    self.database_client(ObjectDBQueryRequest(cmd=cmd))
+                    cmd = '{}={}'.format(id, "UNKNOWN")
+                    self.database_client(ObjectDBQueryRequest(cmd=cmd))
+                    object_ids[classified][2] = object_ids[id][2]
+            elif center is not None:
+                used_boxes[center] = classified
 
 
 
