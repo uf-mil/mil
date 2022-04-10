@@ -43,7 +43,7 @@ class Dock(Vrx):
 
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
-        self.debug_points_pub = self.nh.advertise('/dock_pannel_points', PointCloud2)
+
         self.bridge = CvBridge()
 
         self.image_debug_pub = self.nh.advertise('/dock_mask_debug', Image)
@@ -61,11 +61,11 @@ class Dock(Vrx):
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = 'cluster_tolerance_m'
-        pcodar_cluster_tol.value = 7
-
+        pcodar_cluster_tol.value = 10
         yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
         self.nh.sleep(5)
 
+        #find dock approach it
         pos = yield self.find_dock()
 
         print("going towards dock")
@@ -76,7 +76,6 @@ class Dock(Vrx):
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = 'cluster_tolerance_m'
         pcodar_cluster_tol.value = 4
-
         yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
         self.nh.sleep(5)
 
@@ -118,11 +117,14 @@ class Dock(Vrx):
 
         yield self.move.set_position(goal_pos).look_at(position).go()
 
-        target_symbol = self.color + "_" + self.shape
-        symbol_position = yield self.get_symbol_position(target_symbol)
+        #at this moment, we are directly facing the middle of a long side of the dock
+        #check if the dock is the correct side.
+        yield self.nh.sleep(1)
+        pixel_diff = yield self.dock_checks()
 
-        #if there are no symbols detected, try going to other side of dock
-        if symbol_position == "none":
+        #if we are on the wrong side, try going to other side of dock
+        if pixel_diff is None:
+            yield self.move.backward(7).go(blind=True, move_type="skid")
             if side_a_bool:
                 print("switching to side_b")
                 goal_pos = side_b
@@ -135,55 +137,63 @@ class Dock(Vrx):
                 side_a_bool = True
 
             yield self.move.set_position(goal_pos).look_at(position).go()
-            symbol_position = yield self.get_symbol_position(target_symbol)
+            yield self.nh.sleep(1)
+            pixel_diff = yield self.dock_checks()
+            
+            if pixel_diff is None:
+                print("Could not find any viable options for docking")
+                defer.returnValue(None)
 
-        print("The correct docking location is ", symbol_position)
+        #do we see any symbols?
+        target_symbol = self.color + "_" + self.shape
+        symbol_position = yield self.get_symbol_position(target_symbol)
 
-        ###
+        #define how far left and right we want to do
         rot = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
 
         side_vect = 0.80 * bbox_enu
         if side_a_bool:
             print("creating side a left and right position")
-            left_position = np.dot(rot, -side_vect) + side_a
-            right_position = np.dot(rot, side_vect) + side_a
-            dock_point_left = np.dot(rot, -side_vect) + position
-            dock_point_right = np.dot(rot, side_vect) + position
+            self.left_position = np.dot(rot, -side_vect) + side_a
+            self.right_position = np.dot(rot, side_vect) + side_a
+            self.dock_point_left = np.dot(rot, -side_vect) + position
+            self.dock_point_right = np.dot(rot, side_vect) + position
         else:
             print("creating side b left and right position")
-            left_position = np.dot(rot, side_vect) + side_b
-            right_position = np.dot(rot, -side_vect) + side_b
-            dock_point_left = np.dot(rot, side_vect) + position
-            dock_point_right = np.dot(rot, -side_vect) + position
-        ###        
+            self.left_position = np.dot(rot, side_vect) + side_b
+            self.right_position = np.dot(rot, -side_vect) + side_b
+            self.dock_point_left = np.dot(rot, side_vect) + position
+            self.dock_point_right = np.dot(rot, -side_vect) + position
+
+
+        #if there are symbols, do docking procedure by going to corresponding symbol
+        print("The correct docking location is ", symbol_position)
 
         #position boat in front of correct symbol
         if symbol_position == "left":
-            yield self.move.set_position(left_position).look_at(dock_point_left).go(blind=True, move_type="skid")
-            position = dock_point_left
+            yield self.move.set_position(self.left_position).look_at(self.dock_point_left).go(blind=True, move_type="skid")
+            position = self.dock_point_left
         elif symbol_position == "right":
-            yield self.move.set_position(right_position).look_at(dock_point_right).go(blind=True, move_type="skid")
-            position = dock_point_right
+            yield self.move.set_position(self.right_position).look_at(self.dock_point_right).go(blind=True, move_type="skid")
+            position = self.dock_point_right
 
         #enter dock
         yield self.nh.sleep(1)
-        yield self.prepare_for_docking()
-        yield self.move.forward(6.5).go(blind=True, move_type="skid")
+        
+        if symbol_position == "foggy":
+            print("It seems to be a little foggy")
+            yield self.dock_fire_undock(foggy=True)
+        else:
+            yield self.dock_fire_undock(foggy=False)
 
-        #fire ball
-        yield self.nh.sleep(1)
-        for i in range(4):
-            yield self.aim_and_fire()
+        defer.returnValue(True)
 
-        #Exit dock
-        yield self.move.backward(7).go(blind=True, move_type="skid")
-
-        yield self.send_feedback('Done!')
-
-
+    #This function is used to see if we see the target symbol in the current image
     @txros.util.cancellableInlineCallbacks
     def get_symbol_position(self, target_symbol):
         
+        print("entering get symbol position function")
+
         target_color,_ = target_symbol.split('_')
 
         #method = eval('cv2.TM_CCOEFF_NORMED')
@@ -198,6 +208,8 @@ class Dock(Vrx):
 
             #voting system for ten pictures [left, center, right]
             vote = [0,0,0]
+            foggy_count = 0
+            foggy = False
 
             #loop through ten pictures
             for i in range(10):
@@ -241,6 +253,9 @@ class Dock(Vrx):
                    (target_color == "yellow" and r_comp > 2*b_comp and g_comp > 2*b_comp):
                     accept_vote = True
 
+                if (abs(r_comp-b_comp) < 20 and abs(r_comp-g_comp) < 20 and abs(b_comp-g_comp) < 20 and r_comp > 160):
+                    foggy_count += 1
+
                 cv2.rectangle(img,top_left, bottom_right, 255, 2)
                 masked_msg = self.bridge.cv2_to_imgmsg(img, "bgr8")
                 self.image_debug_pub.publish(masked_msg)
@@ -253,12 +268,19 @@ class Dock(Vrx):
                     else:
                         vote[2] = vote[2] + 1 
 
+            if foggy_count > 5:
+                foggy = True
+                break
+
             #check if we have enough up votes on the maximum choice
             most_likely_index = np.argmax(vote)
             if vote[most_likely_index] > 5:
                 break
 
-        symbol_position = "none"
+        if foggy:
+            defer.returnValue("foggy")
+
+        symbol_position = None
         if vote[0] <= 5 and vote[1] <= 5 and vote[2] <= 5:
             defer.returnValue(symbol_position)
 
@@ -271,6 +293,288 @@ class Dock(Vrx):
 
         defer.returnValue(symbol_position)
 
+    #This function is used to help aim_and_fire you know... aim
+    @txros.util.cancellableInlineCallbacks
+    def get_black_square_center(self, foggy=False):
+
+        img = yield self.front_right_camera_sub.get_next_message()
+        img = self.bridge.imgmsg_to_cv2(img)
+        image = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+        _,width,height = image.shape[::-1]
+
+        if foggy:
+            print("using foggy threshold")
+            value = 130
+        else:
+            value = 30
+
+        #set bounds for finding only black objects
+        lower = np.array([0, 0, 0], dtype="uint8")
+        upper = np.array([255, 10, value], dtype="uint8")
+        mask = cv2.inRange(image, lower, upper)
+
+        cnts = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+
+        #guess location of center of black square in case we can't find it
+        center_pixel_col = 450
+        center_pixel_row = 400
+        h = 75
+        w = 75
+
+        #delete contours that don't meet criteria of big black square
+        indices_to_delete = []
+        for i,v in enumerate(cnts):
+            x,y,w,h = cv2.boundingRect(v)
+
+            if abs(w-h) > 40:
+                #print("removing due to difference")
+                indices_to_delete.append(i)
+                continue
+            if (w < 90) or (h < 90):
+                #print("removing due to size")
+                indices_to_delete.append(i)
+                continue
+
+            x,y,w,h = cv2.boundingRect(v)
+            print("width and height: ", w,h)
+            if w >= 90 and h >= 90:
+                print(x)
+                print(y)
+                print(w)
+                print(h)
+                center_pixel_row = y
+                center_pixel_col = x
+                break
+
+        for index in indices_to_delete[::-1]:
+            cnts.pop(index)
+
+        print("The new size of cnts is: ", len(cnts))
+        
+        #get the center pixel of the black square
+        #center_pixel_row and center_pixel_col are defined as
+        #the top left corner of the contour
+        if center_pixel_row + h / 2 < height:
+            center_pixel_row = center_pixel_row + h / 2
+        else:
+            center_pixel_row = height - 1
+
+        if center_pixel_col + w / 2 < width:
+            center_pixel_col = center_pixel_col + w / 2
+        else:
+            center_pixel_col = width - 1
+
+        symbol_position = [center_pixel_row, center_pixel_col]
+
+        cv2.rectangle(mask,(x,y), (x + w, y + h), 255, 2)
+        cv2.rectangle(mask,(425,400), (525,480), 150, 2)
+
+        mask_msg = self.bridge.cv2_to_imgmsg(mask, "mono8")
+        self.image_debug_pub.publish(mask_msg)
+
+        defer.returnValue(symbol_position)
+
+    #this function moves the boat until it is aiming at the big black square
+    #once the boat is lined up, it fires the balls
+    @txros.util.cancellableInlineCallbacks
+    def aim_and_fire(self, foggy=False):
+
+        for i in range(3):
+
+            #obtain the pixel position of the small black square
+            square_pix = yield self.get_black_square_center(foggy=foggy)
+
+            #ensure boat is lined up to be able to hit the target
+            #by making sure the black box is in correct part of image
+            #values were obtained by setting the ball shooter at a
+            #specific yaw and pitch and determing where the box needed
+            #to be for the ball to go in the box
+
+            print(square_pix)
+
+            min_x = 425
+            max_x = 525
+            mid_x = (min_x + max_x) / 2
+            min_y = 400
+            max_y = 480
+            
+            print(square_pix)
+
+            #calculated from pixel size of small square and 0.25m
+            #Note this is only valid given the distance of the boat
+            #relative to the dock images at this moment in the course
+            pixel_to_meter = 350.0
+
+            #if target is too far left, adjust left (otherwise ball will pull right)
+            #   Note: if ball is missing right, shift range right
+            #if target is too far right, adjust right (otherwise ball will pull left)
+            #   Note: if ball is missing left, shift range left
+            if square_pix[1] < min_x:
+                print("adjusting left")
+                print(square_pix)
+                adjustment = (mid_x - square_pix[1]) / pixel_to_meter
+                print("Adjustment: ", adjustment)
+                yield self.move.left(adjustment).go(blind=True, move_type="skid")
+            elif square_pix[1] > max_x:
+                print("adjusting right")
+                print(square_pix)
+                adjustment = (square_pix[1] - mid_x) / pixel_to_meter
+                print("Adjustment: ", adjustment)
+                yield self.move.right(adjustment).go(blind=True, move_type="skid")
+
+            yield self.nh.sleep(0.5)
+
+        #loop here to double check that box is still in place in case of crazy waves
+        #   if undershooting, shift range right, if overshooting, shift range left
+        square_pix = yield self.get_black_square_center()
+        while True:
+            square_pix = yield self.get_black_square_center()
+            print(square_pix)
+            if square_pix[0] < min_y or square_pix[1] < min_x:
+                print("Aim is too low/right")
+            elif square_pix[0] > max_y or square_pix[1] > max_x:
+                print("Aim is too high/left")
+            else:
+                break
+
+        self.fire_ball.publish(Empty())
+
+    #This function will tell us if we are on the correct side of the dock.
+    #It will also tell us (assuming we are on the correct side of the dock)
+    #how many pixels (left or right) the center of the docking area is.
+    @txros.util.cancellableInlineCallbacks
+    def dock_checks(self):
+
+        #obtain one image
+        img = yield self.front_left_camera_sub.get_next_message()
+        img = self.bridge.imgmsg_to_cv2(img)
+        hsv_img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+        _,width,height = hsv_img.shape[::-1]
+
+        #mask for only blue (to get only the water for the most part)
+        lower = np.array([100, 50, 50], dtype="uint8")
+        upper = np.array([125, 255,255], dtype="uint8")
+        mask = cv2.inRange(hsv_img, lower, upper)
+
+        base_of_dock = None
+        left_wall = None
+        right_wall = None
+
+        #find base of dock starting from the bottom center of image to ensure we are facing correct side of dock
+        for i in range(height):
+            if mask[(height-i-1), (width/2)] == 0:
+                print("we found the base of the dock")
+                base_of_dock = height-i-1
+                break
+
+        #if we hit something not blue before reaching halfway through the image, we are on the wrong side
+        if base_of_dock > height/2:
+            print("we are on wrong side")
+            defer.returnValue(None)
+        
+        #find left wall of docking area
+        for i in range(width/2):
+            
+            #look to left of pixel until we hit black
+            if mask[(base_of_dock + 20), (width/2 - i)] == 0:
+                left_wall = width/2 - i
+                print("Left pixel of docking area is: ", left_wall)
+                break
+
+            if i == width/2 - 1:
+                print("there is no left side of docking area")
+                defer.returnValue(None)
+
+        #find right wall of docking area
+        for i in range(width/2):
+            
+            #look to right of pixel until we hit black
+            if mask[(base_of_dock + 20), (width/2 + i)] == 0 and i != 0:
+                right_wall = width/2 + i
+                print("Right pixel of docking area is: ", right_wall)
+                break
+
+            if i == width/2 - 1:
+                print("there is no right side of docking area")
+                defer.returnValue(None)
+
+        midpoint = (left_wall + right_wall) / 2
+
+        #helpful for debugging to ensure we truly found the center of teh docking area
+        for i in range(height):
+            mask[i, midpoint] = 0
+
+        #send out debugging image
+        mask_msg = self.bridge.cv2_to_imgmsg(mask, "mono8")
+        self.image_debug_pub.publish(mask_msg)
+
+        #return that we are on the correct side and the difference in pixels between
+        #midpoint of docking area and center of image
+        print("This is the pixel diff: ", width/2 - midpoint)
+        defer.returnValue(width/2 - midpoint)
+
+    #This function is used to:
+    #   - center the boat before docking (or at least try to)
+    #   - dock the boat
+    #   - shoot the balls at the black square
+    #   - undock
+    @txros.util.cancellableInlineCallbacks
+    def dock_fire_undock(self, foggy=False):
+        
+        pixel_diff = yield self.dock_checks()
+
+        if pixel_diff is None:
+            print("something is wrong")
+            defer.returnValue(False)
+
+        #magic number that determines how far left or right we should move so that we can center
+        #calculated from average pixel width of docking area / width of docking area in meters
+        pixel_to_meter = 80.0 # (340/4)
+        adjustment = pixel_diff / pixel_to_meter
+
+        if adjustment > 0:
+            print("adjusting left", adjustment)
+            self.nh.sleep(1)
+            yield self.move.left(adjustment).go(blind=True, move_type="skid")
+        elif pixel_diff < 0:
+            print("adjusting right", adjustment)
+            self.nh.sleep(1)
+            yield self.move.right(abs(adjustment)).go(blind=True, move_type="skid")
+
+        #dock the boat
+        yield self.move.forward(7).go(blind=True, move_type="skid")
+
+        #fire ball
+        print("Aim and Fire!")
+        yield self.nh.sleep(1)
+        for i in range(4):
+            yield self.aim_and_fire(foggy=foggy)
+
+        #Exit dock
+        yield self.move.backward(7).go(blind=True, move_type="skid")
+
+        yield self.send_feedback('Done!')
+
+        defer.returnValue(True)
+
+    #This function is used to find the position of the dock at the beginning of this mission
+    @txros.util.cancellableInlineCallbacks
+    def find_dock(self):
+
+        msgs = None
+        while msgs is None:
+            try:
+                msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
+            except Exception as e:
+                yield self.move.forward(10).go()
+        yield self.pcodar_label(msgs[0].id, 'dock')
+        # if no pcodar objects, throw error, exit mission
+        pose = poses[0]
+
+        defer.returnValue(pose)
+
+    #Potentially deprecated
     @txros.util.cancellableInlineCallbacks
     def prepare_for_docking(self):
         #This function looks at the two squares in front of the boat
@@ -330,7 +634,7 @@ class Dock(Vrx):
         if len(cnts) == 2:
             
             masked_msg = self.bridge.cv2_to_imgmsg(mask, "mono8")
-            self.image_debug_pub.publish(masked_msg)
+            #self.image_debug_pub.publish(masked_msg)
 
             #assume there are only two contours (hopefully, otherwise, make contour and mask tighter)
             big_square_x,_,w,h = cv2.boundingRect(cnts[0])
@@ -353,258 +657,3 @@ class Dock(Vrx):
             elif middle_of_squares_x < middle_of_image:
                 print("adjusting left")
                 yield self.move.left(adjustment).go(blind=True, move_type="skid")
-
-    @txros.util.cancellableInlineCallbacks
-    def get_black_square_center(self):
-
-        img = yield self.front_right_camera_sub.get_next_message()
-        img = self.bridge.imgmsg_to_cv2(img)
-        image = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        _,width,height = image.shape[::-1]
-
-        #set bounds for finding only black objects
-        lower = np.array([0, 0, 0], dtype="uint8")
-        upper = np.array([20, 20, 20], dtype="uint8")
-        mask = cv2.inRange(image, lower, upper)
-
-        cnts = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-        cv2.fillPoly(mask, cnts, (255,255,255))
-
-        #guess location of center of black square in case we can't find it
-        center_pixel_col = 450
-        center_pixel_row = 400
-
-        for c in cnts:
-            x,y,w,h = cv2.boundingRect(c)
-            print("width and height: ", w,h)
-            if w > 95 and h > 95:
-                print(x)
-                print(y)
-                print(w)
-                print(h)
-                center_pixel_row = y
-                center_pixel_col = x
-                break
-            else:
-                continue
-                
-        #get the center pixel of the black square
-        if center_pixel_row + h / 2 < height:
-            center_pixel_row = center_pixel_row + h / 2
-        if center_pixel_col + w / 2 < width:
-            center_pixel_col = center_pixel_col + w / 2
-
-        symbol_position = [center_pixel_row, center_pixel_col]
-
-        cv2.rectangle(mask,(x,y), (x + w, y + h), 255, 2)
-        cv2.rectangle(mask,(425,390), (525,470), 150, 2)
-        mask_msg = self.bridge.cv2_to_imgmsg(mask, "mono8")
-        self.image_debug_pub.publish(mask_msg)
-
-        defer.returnValue(symbol_position)
-
-    @txros.util.cancellableInlineCallbacks
-    def aim_and_fire(self):
-
-        for i in range(3):
-
-            #obtain the pixel position of the small black square
-            square_pix = yield self.get_black_square_center()
-
-            #ensure boat is lined up to be able to hit the target
-            #by making sure the black box is in correct part of image
-            #values were obtained by setting the ball shooter at a
-            #specific yaw and pitch and determing where the box needed
-            #to be for the ball to go in the box
-
-            print(square_pix)
-
-            min_x = 425
-            max_x = 525
-            mid_x = (min_x + max_x) / 2
-            min_y = 390
-            max_y = 470
-            
-            print(square_pix)
-
-            #calculated from pixel size of small square and 0.25m
-            #Note this is only valid given the distance of the boat
-            #relative to the dock images at this moment in the course
-            pixel_to_meter = 360.0
-
-            #if target is too far left, adjust left (otherwise ball will pull right)
-            #   Note: if ball is missing right, shift range right
-            #if target is too far right, adjust right (otherwise ball will pull left)
-            #   Note: if ball is missing left, shift range left
-            if square_pix[1] < min_x:
-                print("adjusting left")
-                print(square_pix)
-                adjustment = (mid_x - square_pix[1]) / pixel_to_meter
-                print("Adjustment: ", adjustment)
-                yield self.move.left(adjustment).go(blind=True, move_type="skid")
-            elif square_pix[1] > max_x:
-                print("adjusting right")
-                print(square_pix)
-                adjustment = (square_pix[1] - mid_x) / pixel_to_meter
-                print("Adjustment: ", adjustment)
-                yield self.move.right(adjustment).go(blind=True, move_type="skid")
-
-            yield self.nh.sleep(0.5)
-
-        #loop here to double check that box is still in place in case of crazy waves
-        #   if undershooting, shift range right, if overshooting, shift range left
-        square_pix = yield self.get_black_square_center()
-        while True:
-            square_pix = yield self.get_black_square_center()
-            print(square_pix)
-            if square_pix[0] < min_y or square_pix[1] < min_x:
-                print("Aim is too low/right")
-            elif square_pix[0] > max_y or square_pix[1] > max_x:
-                print("Aim is too high/left")
-            else:
-                break
-
-        self.fire_ball.publish(Empty())
-
-    @txros.util.cancellableInlineCallbacks
-    def dock(self):
-        avg_point = yield self.get_placard_point()
-        yield self.move.set_position(avg_point).backward(5).look_at(avg_point).go(blind=True)
-        yield self.nh.sleep(11)
-        for i in range(15):
-            yield self.move.backward(1).look_at(avg_point).go(blind=True)
-
-    def get_shape(self, masked_img):
-        gray = cv2.cvtColor(masked_img, cv2.COLOR_RGB2GRAY)
-        gray = cv2.bilateralFilter(gray, 11, 17, 17)
-        edged = cv2.Canny(gray, 30, 200)
-
-        _, contours, _ = cv2.findContours(edged, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        masked_img = np.zeros(masked_img.shape)
-
-        cv2.drawContours(masked_img, contours, -1, 255, 3)
-
-        masked_msg = self.bridge.cv2_to_imgmsg(masked_img)
-        self.image_debug_pub.publish(masked_msg)
-
-        approx_area = []
-        for contour in contours:
-            approx = cv2.approxPolyDP(contour,0.01*cv2.arcLength(contour,True),True)
-            area = cv2.contourArea(contour)
-            print len(approx), area
-            approx_area.append((approx,area))
-
-        approx_area.sort(key=lambda tup: tup[1],reverse = True)
-        for i in approx_area:
-            if (len(i[0]) == 12):
-                print('detected as cruciform')
-                return 'cruciform'
-            if (len(i[0]) == 3):
-                print('detected as triangle')
-                return('triangle')
-        print('deteched as circle')
-        return 'circle'
-
-
-
-    @txros.util.cancellableInlineCallbacks
-    def find_dock(self):
-        # see if we already got scan the code tower
-        try:
-            _, poses = yield self.get_sorted_objects(name='dock', n=1)
-            pose = poses[0]
-        # incase stc platform not already identified
-        except Exception as e:
-            # get all pcodar objects
-            msgs = None
-            while msgs is None:
-                try:
-                    msgs, poses = yield self.get_sorted_objects(name='UNKNOWN', n=-1)
-                except Exception as e:
-                    yield self.move.forward(10).go()
-            yield self.pcodar_label(msgs[0].id, 'dock')
-            # if no pcodar objects, throw error, exit mission
-            pose = poses[0]
-        defer.returnValue(pose)
-
-    @txros.util.cancellableInlineCallbacks
-    def get_placard_point(self):
-        print("entered get_placard_point")
-        dock_query = yield self.get_sorted_objects(name='dock', n=1)
-        print("got dock query")
-        dock = dock_query[0][0]
-        tf = yield self.tf_listener.get_transform(CAMERA_LINK_OPTICAL, 'enu')
-        points = z_filter(dock)
-        points = np.array([points[i] for i in range(len(points))])
-        avg_point = sum(points)/len(points)
-        defer.returnValue(avg_point)
-
-    @txros.util.cancellableInlineCallbacks
-    def get_placard_points(self):
-        dock_query = yield self.get_sorted_objects(name='dock', n=1)
-        dock = dock_query[0][0]
-        tf = yield self.tf_listener.get_transform(CAMERA_LINK_OPTICAL, 'enu')
-        points = z_filter(dock)
-        points = np.array([tf.transform_point(points[i]) for i in range(len(points))])
-        defer.returnValue(points)
-
-    @txros.util.cancellableInlineCallbacks
-    def get_color(self):
-        print("entered get color")
-        avg_point = yield self.get_placard_point()
-        print("placard point")
-        yield self.move.set_position(avg_point).backward(11.5).look_at(avg_point).go()
-        print("moving vehicle")
-        points = yield self.get_placard_points()
-        print("placard points")
-        msg = np2pc2(points, self.nh.get_time(), 'enu')
-        self.debug_points_pub.publish(msg)
-
-        contour = np.array(bbox_from_rect(
-                           rect_from_roi(
-                           roi_enclosing_points(self.camera_model, points))), dtype=int)
-
-        sequence = []
-        masked_img = None
-        while len(sequence) < 20:
-            print("whaa")
-            img = yield self.front_left_camera_sub.get_next_message()
-            img = self.bridge.imgmsg_to_cv2(img)
-
-            mask = contour_mask(contour, img_shape=img.shape)
-
-            img = img[:,:,[2,1,0]]
-
-            masked_img = cv2.bitwise_and(img, img, mask = mask)
-            masked_msg = self.bridge.cv2_to_imgmsg(masked_img, "bgr8")
-            self.image_debug_pub.publish(masked_msg)
-
-            features = np.array(self.classifier.get_features(img, mask)).reshape(1, 9)
-            #print features
-            class_probabilities = self.classifier.feature_probabilities(features)[0]
-            most_likely_index = np.argmax(class_probabilities)
-            most_likely_name = self.classifier.CLASSES[most_likely_index]
-            #print most_likely_name
-            sequence.append(most_likely_name)
-        mode = max(set(sequence), key=sequence.count)
-        print('detected as ', mode)
-        defer.returnValue((mode, masked_img))
-
-def vec3_to_np(vec):
-    return np.array([vec.x, vec.y, vec.z])
-
-def z_filter(db_obj_msg):
-    # do a z filter for the led points
-    top = max(db_obj_msg.points, key=attrgetter('z')).z
-    points = np.array([[i.x, i.y, i.z] for i in db_obj_msg.points 
-                        if i.z < top-PANNEL_MAX and i.z > top-PANNEL_MIN])
-    return points
-
-
-def bbox_from_rect(rect):
-    bbox = np.array([[rect[0][0], rect[0][1]],
-                     [rect[1][0], rect[0][1]],
-                     [rect[1][0], rect[1][1]],
-                     [rect[0][0], rect[1][1]]])
-    return bbox
