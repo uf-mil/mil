@@ -137,7 +137,7 @@ class VrxClassifier(object):
                             for obj in self.last_objects.objects]
         pixel_centers = [self.camera_model.project3dToPixel(point) for point in positions_camera]
         distances = np.linalg.norm(positions_camera, axis=1)
-        CUTOFF_METERS = 20
+        CUTOFF_METERS = 30
 
         # Get a list of indicies of objects who are sufficiently close and can be seen by camera
         met_criteria = []
@@ -147,10 +147,39 @@ class VrxClassifier(object):
                 met_criteria.append(i)
         # print 'Keeping {} of {}'.format(len(met_criteria), len(self.last_objects.objects))
 
-        pixel_cutoff = 50 if self.is_perception_task else 150
+        pixel_cutoff = 50 if self.is_perception_task else 110
+        calculate_center = lambda bbox: [(bbox.xmax + bbox.xmin) / 2.0, (bbox.ymax + bbox.ymin) / 2.0]
+        abs = lambda x : x if x > 0 else x * -1
 
         object_ids = {}
+        boxes = {}
+        classifications = {}
+        for a in msg.bounding_boxes:
+            center = calculate_center(a)
+            boxes[tuple(center)] = None
+            classifications[tuple(center)] = a.Class
 
+        #boxes(tuple of center) = id
+        #loop through each of the bounding boxes and find the lidar object that is closest
+        for a in boxes:
+            closest = met_criteria[0]
+            print("Met criteria length is {}".format(len(met_criteria)))
+            boxes[a] = self.last_objects.objects[closest].id
+            for i in met_criteria[1:]:
+                print(self.distance(a, pixel_centers[i]) - self.distance(a, pixel_centers[closest]))
+                if abs(self.distance(a, pixel_centers[i]) - self.distance(a, pixel_centers[closest])) < 200 and distances[i] < distances[closest]:
+                    print("Better one found")
+                    closest = i
+                    boxes[a] = self.last_objects.objects[i].id
+                    print('Better lidar object is {}'.format(boxes[a]))
+
+        for a in boxes:
+            print('Object {} classified as {}'.format(boxes[a], classifications[a]))
+            cmd = '{}={}'.format(boxes[a], classifications[a])
+            self.database_client(ObjectDBQueryRequest(cmd=cmd))
+
+
+        """
         for i in met_criteria:
             boxes = []
             for a in msg.bounding_boxes:
@@ -169,12 +198,11 @@ class VrxClassifier(object):
                 if distance > pixel_cutoff:
                     print('Object {} did not have close enough bounding box with distance {} , using estimation instead'.format(self.last_objects.objects[i].id, distance))
                 else:
-                    print(first_center)
-                    print(closest.Class)
+                    print(distance)
                     print('Object {} classified as {}'.format(self.last_objects.objects[i].id, closest.Class))
                     cmd = '{}={}'.format(self.last_objects.objects[i].id, closest.Class)
                     self.database_client(ObjectDBQueryRequest(cmd=cmd))
-                    object_ids[self.last_objects.objects[i].id] = [first_center, pixel_centers[i], closest.Class]
+                    object_ids[self.last_objects.objects[i].id] = [first_center, pixel_centers[i], closest.Class, distances[i]]
                     continue
             if not self.is_perception_task:
                 continue
@@ -205,7 +233,11 @@ class VrxClassifier(object):
             if center is not None:
                 center = tuple(center)
             if center is not None and center in used_boxes:
-                if self.distance(center, object_ids[classified][1]) < self.distance(center, object_ids[used_boxes[center]][1]):
+                dist_to_object = self.distance(center, object_ids[classified][1])
+                dist_to_stored = self.distance(center, object_ids[used_boxes[center]][1])
+                print(dist_to_object)
+                print(dist_to_stored)
+                if dist_to_object < dist_to_stored and object_ids[classified][3] < object_ids[used_boxes[center]][3]:
                     id = used_boxes[center]
                     used_boxes[center] = classified
                     cmd = '{}={}'.format(classified, object_ids[id][2])
@@ -214,8 +246,7 @@ class VrxClassifier(object):
                     self.database_client(ObjectDBQueryRequest(cmd=cmd))
                     object_ids[classified][2] = object_ids[id][2]
             elif center is not None:
-                used_boxes[center] = classified
-
+                used_boxes[center] = classified"""
 
 
     def get_params(self):
