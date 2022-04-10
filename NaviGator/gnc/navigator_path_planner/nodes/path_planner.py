@@ -205,11 +205,11 @@ class LQRRT_Node(object):
                 return False
 
         # Make sure we are not already in a collided state
-        if not self.is_feasible(self.state, np.zeros(3)) and not self.blind:
-            print("\nCan't move. Already collided.\n")
-            self.move_server.set_aborted(MoveResult('collided'))
-            self.done = True
-            return False
+        #if not self.is_feasible(self.state, np.zeros(3)) and not self.blind:
+        #    print("\nCan't move. Already collided.\n")
+        #    self.move_server.set_aborted(MoveResult('collided'))
+        #    self.done = True
+        #    return False
 
         # Check given focus
         if self.move_type == MoveGoal.SKID:

@@ -13,7 +13,7 @@ from operator import attrgetter
 from std_srvs.srv import SetBoolRequest
 from navigator_vision import VrxStcColorClassifier
 from cv_bridge import CvBridge
-from cv2 import bitwise_and
+import cv2
 from vrx_gazebo.srv import ColorSequenceRequest, ColorSequence
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from dynamic_reconfigure.msg import DoubleParameter
@@ -54,7 +54,7 @@ class ScanTheCode(Vrx):
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = 'cluster_tolerance_m'
-        pcodar_cluster_tol.value = 15
+        pcodar_cluster_tol.value = 6
 
         yield self.pcodar_set_params(doubles = [pcodar_cluster_tol])
         try:
@@ -87,6 +87,7 @@ class ScanTheCode(Vrx):
             img = self.bridge.imgmsg_to_cv2(img)
             img2 = img.copy()
 
+            _,width,height = img.shape[::-1]
             xmin = bounding_box_msg.bounding_boxes[0].xmin
             xmax = bounding_box_msg.bounding_boxes[0].xmax
             ymin = bounding_box_msg.bounding_boxes[0].ymin
@@ -95,6 +96,10 @@ class ScanTheCode(Vrx):
             cen_pixel_col = (xmin + xmax) / 2
             cen_pixel_row = (ymin + ymax) / 2
         
+            if cen_pixel_col > 2*width/3 or cen_pixel_col < width/3:
+                print("too far left or right")
+                continue
+
             #general location that allows 
             bl_pixel_col = cen_pixel_col - 15
             bl_pixel_row = cen_pixel_row + 15
@@ -106,21 +111,21 @@ class ScanTheCode(Vrx):
             g_comp = [0,0,0,0,0]
             r_comp = [0,0,0,0,0]
 
-            b_comp[0] = img[bl_pixel_row][bl_pixel_col][2]
-            g_comp[0] = img[bl_pixel_row][bl_pixel_col][1]
-            r_comp[0] = img[bl_pixel_row][bl_pixel_col][0]
-            b_comp[1] = img[bl_pixel_row][tr_pixel_col][2]
-            g_comp[1] = img[bl_pixel_row][tr_pixel_col][1]
-            r_comp[1] = img[bl_pixel_row][tr_pixel_col][0]
-            b_comp[2] = img[tr_pixel_row][tr_pixel_col][2]
-            g_comp[2] = img[tr_pixel_row][tr_pixel_col][1]
-            r_comp[2] = img[tr_pixel_row][tr_pixel_col][0]
-            b_comp[3] = img[tr_pixel_row][bl_pixel_col][2]
-            g_comp[3] = img[tr_pixel_row][bl_pixel_col][1]
-            r_comp[3] = img[tr_pixel_row][bl_pixel_col][0]
-            b_comp[4] = img[cen_pixel_row][cen_pixel_col][2]
-            g_comp[4] = img[cen_pixel_row][cen_pixel_col][1]
-            r_comp[4] = img[cen_pixel_row][cen_pixel_col][0]
+            b_comp[0] = int(img[bl_pixel_row][bl_pixel_col][2])
+            g_comp[0] = int(img[bl_pixel_row][bl_pixel_col][1])
+            r_comp[0] = int(img[bl_pixel_row][bl_pixel_col][0])
+            b_comp[1] = int(img[bl_pixel_row][tr_pixel_col][2])
+            g_comp[1] = int(img[bl_pixel_row][tr_pixel_col][1])
+            r_comp[1] = int(img[bl_pixel_row][tr_pixel_col][0])
+            b_comp[2] = int(img[tr_pixel_row][tr_pixel_col][2])
+            g_comp[2] = int(img[tr_pixel_row][tr_pixel_col][1])
+            r_comp[2] = int(img[tr_pixel_row][tr_pixel_col][0])
+            b_comp[3] = int(img[tr_pixel_row][bl_pixel_col][2])
+            g_comp[3] = int(img[tr_pixel_row][bl_pixel_col][1])
+            r_comp[3] = int(img[tr_pixel_row][bl_pixel_col][0])
+            b_comp[4] = int(img[cen_pixel_row][cen_pixel_col][2])
+            g_comp[4] = int(img[cen_pixel_row][cen_pixel_col][1])
+            r_comp[4] = int(img[cen_pixel_row][cen_pixel_col][0])
 
             #target cell for debugging purposes
             for i in range(len(img2)):
@@ -135,18 +140,27 @@ class ScanTheCode(Vrx):
             mask_msg = self.bridge.cv2_to_imgmsg(img2, "rgb8")
             self.image_debug_pub.publish(mask_msg)
 
-            most_likely_name = "off"
-            for i in range(len(b_comp)):
-                if r_comp[i] > 20 and b_comp[i] < 5 and g_comp[i] < 5:
-                    most_likely_name = "red"
-                elif r_comp[i] < 5 and b_comp[i] > 20 and g_comp[i] < 5:
-                    most_likely_name = "blue"
-                elif r_comp[i] < 5 and b_comp[i] < 5 and g_comp[i] > 20:
-                    most_likely_name = "green"
-                elif r_comp[i] > 20 and b_comp[i] < 5 and g_comp[i] > 20:
-                    most_likely_name = "yellow"
+            most_likely_name = "none"
 
-            if most_likely_name == 'off':
+            for i in range(len(b_comp)):
+                if r_comp[i] > 2*b_comp[i] and r_comp[i] > 2*g_comp[i]:
+                    most_likely_name = "red"
+                    break
+                elif b_comp[i] > 2*r_comp[i] and b_comp[i] > 2*g_comp[i]:
+                    most_likely_name = "blue"
+                    break
+                elif g_comp[i] > 2*r_comp[i] and g_comp[i] > 2*b_comp[i]:
+                    most_likely_name = "green"
+                    break
+                elif r_comp[i] > 2*b_comp[i] and g_comp[i] > 2*b_comp[i]:
+                    most_likely_name = "yellow"
+                    break
+                elif ( (abs(r_comp[i]-b_comp[i]) < 20) and (abs(r_comp[i]-g_comp[i]) < 20) and (abs(b_comp[i]-g_comp[i]) < 20) and (r_comp[i] < 125) ):
+                    most_likely_name = "black"
+
+            if most_likely_name == "none":
+                continue
+            if most_likely_name == "black":
                 sequence = []
             elif sequence == [] or most_likely_name != sequence[-1]:
                 sequence.append(most_likely_name)
@@ -201,9 +215,9 @@ class ScanTheCode(Vrx):
                 #I haven't found an overlap for a cluster tolerance that
                 #keeps the entire dock together 100% of the time
                 #while not including the stc buoy if it is too close
-                if dock_pose is not None and \
-                    np.linalg.norm(dock_pose[0] - poses[i][0]) < 10:
-                    continue
+                #if dock_pose is not None and \
+                #    np.linalg.norm(dock_pose[0] - poses[i][0]) < 10:
+                #    continue
 
                 if np.linalg.norm(rosmsg_to_numpy(msgs[i].scale)) > 4.0:
                     # much bigger than scale of stc
