@@ -151,6 +151,7 @@ class VrxClassifier(object):
         calculate_center = lambda bbox: [(bbox.xmax + bbox.xmin) / 2.0, (bbox.ymax + bbox.ymin) / 2.0]
         abs = lambda x : x if x > 0 else x * -1
 
+        """
         object_ids = {}
         boxes = {}
         classifications = {}
@@ -176,8 +177,50 @@ class VrxClassifier(object):
         for a in boxes:
             print('Object {} classified as {}'.format(boxes[a], classifications[a]))
             cmd = '{}={}'.format(boxes[a], classifications[a])
-            self.database_client(ObjectDBQueryRequest(cmd=cmd))
+            self.database_client(ObjectDBQueryRequest(cmd=cmd))"""
 
+        classified = set()
+
+        #for each bounding box,check which buoy is closest to boat within pixel range of bounding box
+        for a in msg.bounding_boxes:
+            buoys = []
+
+            for i in met_criteria:
+                if self.in_rect(pixel_centers[i], a):
+                    buoys.append(i)
+                
+            if len(buoys) > 0:
+                closest_to_box = buoys[0]
+                closest_to_boat = buoys[0]
+
+                for i in buoys[1:]:
+                    if distances[i] < distances[closest_to_boat]:
+                        closest_to_box = i
+                        closest_to_boat = i
+
+                classified.add(self.last_objects.objects[closest_to_box].id)
+                print('Object {} classified as {}'.format(self.last_objects.objects[closest_to_box].id, a.Class))
+                cmd = '{}={}'.format(self.last_objects.objects[closest_to_box].id, a.Class)
+                self.database_client(ObjectDBQueryRequest(cmd=cmd))
+
+        if not self.is_perception_task:
+            return
+
+        for a in met_criteria:
+            if self.last_objects.objects[a].id in classified:
+                continue
+            height = self.last_objects.objects[a].scale.z
+            #if pixel_centers[i][0] > 1280 or pixel_centers[i][0] > 720:
+            #    return
+            if height > 0.45:
+                print('Reclassified as white')
+                print('Object {} classified as {}'.format(self.last_objects.objects[a].id, "mb_marker_buoy_white"))
+                cmd = '{}={}'.format(self.last_objects.objects[a].id, "mb_marker_buoy_white")
+                self.database_client(ObjectDBQueryRequest(cmd=cmd))
+            else:
+                print('Object {} classified as {}'.format(self.last_objects.objects[a].id, "mb_round_buoy_black"))
+                cmd = '{}={}'.format(self.last_objects.objects[a].id, "mb_round_buoy_black")
+                self.database_client(ObjectDBQueryRequest(cmd=cmd))
 
         """
         for i in met_criteria:
