@@ -167,8 +167,8 @@ class VrxClassifier(object):
             boxes[a] = self.last_objects.objects[closest].id
             for i in met_criteria[1:]:
                 print(self.distance(a, pixel_centers[i]) - self.distance(a, pixel_centers[closest]))
-                if abs(self.distance(a, pixel_centers[i]) - self.distance(a, pixel_centers[closest])) < 200 and distances[i] < distances[closest]:
-                    print("Better one found")
+                print(abs(distances[i] - distances[closest]))
+                if self.distance(a, pixel_centers[i]) < self.distance(a, pixel_centers[closest]) and distances[i] < distances[closest]:
                     closest = i
                     boxes[a] = self.last_objects.objects[i].id
                     print('Better lidar object is {}'.format(boxes[a]))
