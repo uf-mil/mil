@@ -55,7 +55,7 @@ class VrxPerception(Vrx):
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
         p1 = BoolParameter(name='associator_forget_unseen', value=True)
-        p2 = DoubleParameter(name='cluster_tolerance_m', value=0.5)
+        p2 = DoubleParameter(name='cluster_tolerance_m', value=0.3)
         p3 = DoubleParameter(name='associator_max_distance', value=0.25)
         p4 = IntParameter(name='cluster_min_points', value=1)
         p5 = IntParameter(name='persistant_cloud_filter_min_neighbors', value=1)
