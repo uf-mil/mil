@@ -138,21 +138,27 @@ class VrxClassifier(object):
                 met_criteria.append(i)
         # print 'Keeping {} of {}'.format(len(met_criteria), len(self.last_objects.objects))
 
-        for i in met_criteria:
-            boxes = []
-            for a in msg.bounding_boxes:
+        #for each bounding box,check which buoy is closest to boat within pixel range of bounding box
+        for a in msg.bounding_boxes:
+            buoys = []
+
+            for i in met_criteria:
                 if self.in_rect(pixel_centers[i], a):
-                    boxes.append(a)
-            if len(boxes) > 0:
-                closest = boxes[0]
-                first_center = [(closest.xmax - closest.xmin) / 2.0, (closest.ymax - closest.ymin) / 2.0]
-                for a in boxes[1:]:
-                    center = [(a.xmax - a.xmin) / 2.0, (a.ymax - a.ymin) / 2.0]
-                    if self.distance(pixel_centers[i], center) < self.distance(pixel_centers[i], first_center):
-                        closest = a
-                        first_center = center
-                print('Object {} classified as {}'.format(self.last_objects.objects[i].id, closest.Class))
-                cmd = '{}={}'.format(self.last_objects.objects[i].id, closest.Class)
+                    buoys.append(i)
+                
+            if len(buoys) > 0:
+                closest_to_box = buoys[0]
+                closest_to_boat = buoys[0]
+
+                for i in buoys[1:]:
+
+                    if distances[i] < distances[closest_to_boat]:
+
+                        closest_to_box = i
+                        closest_to_boat = i
+
+                print('Object {} classified as {}'.format(self.last_objects.objects[closest_to_box].id, a.Class))
+                cmd = '{}={}'.format(self.last_objects.objects[closest_to_box].id, a.Class)
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
 
 
