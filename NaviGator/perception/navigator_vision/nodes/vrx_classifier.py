@@ -151,34 +151,6 @@ class VrxClassifier(object):
         calculate_center = lambda bbox: [(bbox.xmax + bbox.xmin) / 2.0, (bbox.ymax + bbox.ymin) / 2.0]
         abs = lambda x : x if x > 0 else x * -1
 
-        """
-        object_ids = {}
-        boxes = {}
-        classifications = {}
-        for a in msg.bounding_boxes:
-            center = calculate_center(a)
-            boxes[tuple(center)] = None
-            classifications[tuple(center)] = a.Class
-
-        #boxes(tuple of center) = id
-        #loop through each of the bounding boxes and find the lidar object that is closest
-        for a in boxes:
-            closest = met_criteria[0]
-            print("Met criteria length is {}".format(len(met_criteria)))
-            boxes[a] = self.last_objects.objects[closest].id
-            for i in met_criteria[1:]:
-                print(self.distance(a, pixel_centers[i]) - self.distance(a, pixel_centers[closest]))
-                print(abs(distances[i] - distances[closest]))
-                if self.distance(a, pixel_centers[i]) < self.distance(a, pixel_centers[closest]) and distances[i] < distances[closest]:
-                    closest = i
-                    boxes[a] = self.last_objects.objects[i].id
-                    print('Better lidar object is {}'.format(boxes[a]))
-
-        for a in boxes:
-            print('Object {} classified as {}'.format(boxes[a], classifications[a]))
-            cmd = '{}={}'.format(boxes[a], classifications[a])
-            self.database_client(ObjectDBQueryRequest(cmd=cmd))"""
-
         classified = set()
 
         #for each bounding box,check which buoy is closest to boat within pixel range of bounding box
@@ -222,74 +194,6 @@ class VrxClassifier(object):
                 cmd = '{}={}'.format(self.last_objects.objects[a].id, "mb_round_buoy_black")
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
 
-        """
-        for i in met_criteria:
-            boxes = []
-            for a in msg.bounding_boxes:
-                #if self.in_rect(pixel_centers[i], a):
-                boxes.append(a)
-            if len(boxes) > 0:
-                print('found bounding boxes')
-                closest = boxes[0]
-                first_center = [(closest.xmax + closest.xmin) / 2.0, (closest.ymax + closest.ymin) / 2.0]
-                for a in boxes[1:]:
-                    center = [(a.xmax + a.xmin) / 2.0, (a.ymax + a.ymin) / 2.0]
-                    if self.distance(pixel_centers[i], center) < self.distance(pixel_centers[i], first_center):
-                        closest = a
-                        first_center = center
-                distance = self.distance(pixel_centers[i], first_center)
-                if distance > pixel_cutoff:
-                    print('Object {} did not have close enough bounding box with distance {} , using estimation instead'.format(self.last_objects.objects[i].id, distance))
-                else:
-                    print(distance)
-                    print('Object {} classified as {}'.format(self.last_objects.objects[i].id, closest.Class))
-                    cmd = '{}={}'.format(self.last_objects.objects[i].id, closest.Class)
-                    self.database_client(ObjectDBQueryRequest(cmd=cmd))
-                    object_ids[self.last_objects.objects[i].id] = [first_center, pixel_centers[i], closest.Class, distances[i]]
-                    continue
-            if not self.is_perception_task:
-                continue
-            height = self.last_objects.objects[i].scale.z
-            if pixel_centers[i][0] > 1280 or pixel_centers[i][0] > 720:
-                return
-            color = self.last_image[int(pixel_centers[i][0]), int(pixel_centers[i][1]),:]
-            if height > 0.45:
-                object_ids[self.last_objects.objects[i].id] = [None, pixel_centers[i], "mb_marker_buoy_white"]
-                print('Reclassified as white')
-                print('Object {} classified as {}'.format(self.last_objects.objects[i].id, "mb_marker_buoy_white"))
-                cmd = '{}={}'.format(self.last_objects.objects[i].id, "mb_marker_buoy_white")
-                self.database_client(ObjectDBQueryRequest(cmd=cmd))
-            else:
-                object_ids[self.last_objects.objects[i].id] = [None, pixel_centers[i], "mb_round_buoy_black"]
-                print('Object {} classified as {}'.format(self.last_objects.objects[i].id, "mb_round_buoy_black"))
-                cmd = '{}={}'.format(self.last_objects.objects[i].id, "mb_round_buoy_black")
-                self.database_client(ObjectDBQueryRequest(cmd=cmd))
-        #used_boxes is a dictionary with the pair of coordinates for the bounding box center as
-        #the key and the id for the classified object as the value
-        used_boxes = {}
-
-        #object_ids has object id as key and the value is a triple of
-        #(bounding box coordinates, object coordinates, object class)
-        for classified in object_ids:
-            #center := bounding box coordinates
-            center = object_ids[classified][0]
-            if center is not None:
-                center = tuple(center)
-            if center is not None and center in used_boxes:
-                dist_to_object = self.distance(center, object_ids[classified][1])
-                dist_to_stored = self.distance(center, object_ids[used_boxes[center]][1])
-                print(dist_to_object)
-                print(dist_to_stored)
-                if dist_to_object < dist_to_stored and object_ids[classified][3] < object_ids[used_boxes[center]][3]:
-                    id = used_boxes[center]
-                    used_boxes[center] = classified
-                    cmd = '{}={}'.format(classified, object_ids[id][2])
-                    self.database_client(ObjectDBQueryRequest(cmd=cmd))
-                    cmd = '{}={}'.format(id, "UNKNOWN")
-                    self.database_client(ObjectDBQueryRequest(cmd=cmd))
-                    object_ids[classified][2] = object_ids[id][2]
-            elif center is not None:
-                used_boxes[center] = classified"""
 
 
     def get_params(self):
