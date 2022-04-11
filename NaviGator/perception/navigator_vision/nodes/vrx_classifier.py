@@ -147,10 +147,6 @@ class VrxClassifier(object):
                 met_criteria.append(i)
         # print 'Keeping {} of {}'.format(len(met_criteria), len(self.last_objects.objects))
 
-        pixel_cutoff = 50 if self.is_perception_task else 110
-        calculate_center = lambda bbox: [(bbox.xmax + bbox.xmin) / 2.0, (bbox.ymax + bbox.ymin) / 2.0]
-        abs = lambda x : x if x > 0 else x * -1
-
         classified = set()
 
         #for each bounding box,check which buoy is closest to boat within pixel range of bounding box
