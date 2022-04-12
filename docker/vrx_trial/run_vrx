@@ -8,8 +8,6 @@ set +u
 . $HOME/catkin_ws/devel/setup.bash
 set -u
 
-
-sudo rosdep init
 rosdep update
 
 # Launch vrx_master to complete vrx task
