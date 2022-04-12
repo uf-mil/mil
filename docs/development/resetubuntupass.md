@@ -2,6 +2,7 @@ Forgot your password (AGAIN)?
 DOn't worry, we got you ;)
 
 Follow the steps for reseting your Ubuntu Password:
+
     1. Boot up your device / VM
 
     2. Go into the boot menu by either
