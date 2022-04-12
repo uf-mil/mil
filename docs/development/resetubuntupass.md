@@ -9,6 +9,7 @@ Follow the steps for reseting your Ubuntu Password:
     B. Pressing "ESC"
 
     This will get you into the GRUB menu
+    
 ![image text](https://i.stack.imgur.com/MQv6f.png)
 
 3. Navigate to the 2nd option from the top (Top most Recovery Boot Option) and then hit "ENTER"
