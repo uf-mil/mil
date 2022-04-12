@@ -139,6 +139,9 @@ class VrxClassifier(object):
         distances = np.linalg.norm(positions_camera, axis=1)
         CUTOFF_METERS = 30
 
+        if self.is_perception_task:
+            CUTOFF_METERS = 100
+
         # Get a list of indicies of objects who are sufficiently close and can be seen by camera
         met_criteria = []
         for i in xrange(len(self.last_objects.objects)):

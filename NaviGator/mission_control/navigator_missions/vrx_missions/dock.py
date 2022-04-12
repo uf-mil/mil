@@ -553,7 +553,12 @@ class Dock(Vrx):
         print("Aim and Fire!")
         yield self.nh.sleep(1)
         for i in range(4):
-            yield self.aim_and_fire(foggy=foggy)
+            try:
+                yield txros.util.wrap_timeout(self.aim_and_fire(foggy=foggy), 15, 'Trying to shoot')
+            except txros.util.TimeoutError:
+                print("Let's just take the shot anyways")
+                self.fire_ball.publish(Empty())
+
 
         #Exit dock
         yield self.move.backward(7).go(blind=True, move_type="skid")
