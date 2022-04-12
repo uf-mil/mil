@@ -61,7 +61,7 @@ class VrxNavigation(Vrx):
 
         def filter_and_sort(objects, positions):
             #filter out buoys more than filter_distance behind boat
-            filter_distance = 1
+            filter_distance = -5
             positions_local = np.array([(q_mat.T.dot(position - p)) for position in positions])
             positions_local_x = np.array(positions_local[:, 0])
             forward_indicies = np.argwhere(positions_local_x > filter_distance).flatten()
