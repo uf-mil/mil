@@ -14,6 +14,7 @@ Follow the steps for reseting your Ubuntu Password:
 
 3. Navigate to the 2nd option from the top (Top most Recovery Boot Option) and then hit "ENTER"
     This will get you to the Recovery Menu
+
 ![image text](https://i.stack.imgur.com/RRKur.png)
 
 4. Now, the root prompt shows up like: root@ubuntu:~#
