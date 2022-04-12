@@ -8,6 +8,10 @@ set +u
 . $HOME/catkin_ws/devel/setup.bash
 set -u
 
+
+sudo rosdep init
+rosdep update
+
 # Launch vrx_master to complete vrx task
 echo "Running UF VRX Code"
-roslaunch navigator_launch vrx_master.launch run_task:=True
+roslaunch navigator_launch vrx_master.launch run_task:=True --screen
