@@ -88,8 +88,7 @@ class VrxClassifier(object):
         return
 
     def taskinfoSubscriber(self, msg):
-        if not self.is_perception_task and msg.name == "perception":
-            self.is_perception_task = True
+        self.is_perception_task = msg.name == "perception"
 
     def in_frame(self, pixel):
         # TODO: < or <= ???
