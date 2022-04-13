@@ -16,6 +16,7 @@ Various docs related to how to develop MIL software
    Migrating to ROS Noetic <noetic_migration.md>
    Installing NVIDIA Drivers for RTX 2080 <installing_drivers.md>
    Installing Ubuntu 18.04 on an M-series Apple computer <apple_mseries_ubuntu_setup.md>
+   Resetting Ubuntu Administrative Password <resetubuntupass.md>
    Network with Vehicles and Simulation Servers <../infra/network.md>
    Developing with Submodules <submodule.md>
    Development Guide (Deprecated) <development_guide>
