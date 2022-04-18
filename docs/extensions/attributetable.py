@@ -60,14 +60,14 @@ def visit_attributetable_node(self, node):
     Returns the starting HTML for the attribute table.
     """
     class_ = node["python-class"] if "python-class" in node else node["cpp-full-name"]
-    self.body.append(f'<div class="py-attribute-table" data-move-to-id="{class_}">')
+    self.body.append(f'<div class="attribute-table" data-move-to-id="{class_}">')
 
 
 def visit_attributetablecolumn_node(self, node):
     """
     Returns the starting HTML for a column of the attribute table. Just a div!
     """
-    self.body.append(self.starttag(node, "div", CLASS="py-attribute-table-column"))
+    self.body.append(self.starttag(node, "div", CLASS="attribute-table-column"))
 
 
 def visit_attributetabletitle_node(self, node):
@@ -82,7 +82,7 @@ def visit_attributetablebadge_node(self, node):
     Returns the starting HTML for a badge in the attribute table. Just a div!
     """
     attributes = {
-        "class": "py-attribute-table-badge",
+        "class": "attribute-table-badge",
         "title": node["badge-type"],
     }
     self.body.append(self.starttag(node, "span", **attributes))
@@ -92,7 +92,7 @@ def visit_attributetable_item_node(self, node):
     """
     Returns the starting HTML for an entry in the attribute table. Just a div!
     """
-    self.body.append(self.starttag(node, "li", CLASS="py-attribute-table-entry"))
+    self.body.append(self.starttag(node, "li", CLASS="attribute-table-entry"))
 
 
 def depart_attributetable_node(self, node):
@@ -158,8 +158,8 @@ class PyAttributeTable(SphinxDirective):
     def run(self):
         """If you're curious on the HTML this is meant to generate:
 
-        <div class="py-attribute-table">
-            <div class="py-attribute-table-column">
+        <div class="attribute-table">
+            <div class="attribute-table-column">
                 <span>_('Attributes')</span>
                 <ul>
                     <li>
@@ -167,7 +167,7 @@ class PyAttributeTable(SphinxDirective):
                     </li>
                 </ul>
             </div>
-            <div class="py-attribute-table-column">
+            <div class="attribute-table-column">
                 <span>_('Methods')</span>
                 <ul>
                     <li>
