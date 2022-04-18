@@ -10,9 +10,9 @@ mkdir -p $BUILD_DIR/doctrees
 mkdir -p $BUILD_DIR/html
 
 # First run doxygen
-cd $HOME/.mil
-doxygen $MIL_DIR/docs/Doxyfile
-cd -
+# cd $HOME/.mil
+# doxygen $MIL_DIR/docs/Doxyfile
+# cd -
 
 # Then Sphinx build
 sphinx-build -E -b html -d $BUILD_DIR/doctrees $MIL_DIR $BUILD_DIR/html
