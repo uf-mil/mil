@@ -14,17 +14,8 @@ from sphinx import addnodes
 from sphinx.locale import _
 from sphinx.util.docutils import SphinxDirective
 
-from breathe.parser import DoxygenParserFactory
-from breathe.project import ProjectInfoFactory, ProjectError
-from breathe.finder.factory import FinderFactory
-from breathe.renderer.filter import Filter, FilterFactory
-from breathe.file_state_cache import MTimeError
-from breathe.project import ProjectInfo
-
 from docutils.parsers.rst.directives import unchanged_required, unchanged, flag  # type: ignore
 from typing import List
-
-import rich
 
 
 class attributetable(nodes.General, nodes.Element):
@@ -210,8 +201,6 @@ class CppAttributeTable(SphinxDirective):
             namespace = self.env.temp_data.get("autodoc:module")
             if not namespace:
                 namespace = self.env.ref_context.get("cpp:namespace")
-        # if namespace is None:
-        #     raise RuntimeError(f"namespace somehow None for {content} in {self.env.docname}.")
 
         return namespace, name
 
@@ -396,7 +385,7 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
             )
 
         # Turn table into node
-        table["python-class"] = ids[target]
+        table["cpp-full-name"] = ids[target]
 
         if not table:
             node.replace_self([])
