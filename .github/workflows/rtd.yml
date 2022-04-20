@@ -42,7 +42,7 @@ jobs:
             image: example/docker-ros-test:latest
             options: -v ${{ github.workspace }}/docker/noetic/html_output:/root/.mil/docs/html
             run: |
-              ./scripts/build_docs
+              ./scripts/build_docs -D
 
       - uses: actions/upload-artifact@v2
         with:
