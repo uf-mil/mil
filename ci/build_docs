@@ -1,5 +1,4 @@
 #!/bin/bash
-set -euo pipefail
 
 # Get root directory of MIL repo
 MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
@@ -9,10 +8,12 @@ BUILD_DIR=$HOME/.mil/docs
 mkdir -p $BUILD_DIR/doctrees
 mkdir -p $BUILD_DIR/html
 
-# First run doxygen
-cd $HOME/.mil
-doxygen $MIL_DIR/docs/Doxyfile
-cd -
+if [ "$1" == "-D" ]; then 
+    #Doxygen
+    cd $HOME/.mil
+    doxygen $MIL_DIR/docs/Doxyfile
+    cd -
+fi
 
 # Then Sphinx build
 sphinx-build -E -b html -d $BUILD_DIR/doctrees $MIL_DIR $BUILD_DIR/html
