@@ -933,7 +933,7 @@ a.reference.rfc > strong {
 }
 
 /* attribute tables */
-.py-attribute-table {
+.attribute-table {
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
@@ -941,23 +941,23 @@ a.reference.rfc > strong {
   padding-top: 16px;
 }
 
-.py-attribute-table-column {
+.attribute-table-column {
   flex: 1 1 auto;
 }
 
-.py-attribute-table-column > span {
+.attribute-table-column > span {
   font-weight: bold;
   color: var(--attribute-table-title);
 }
 
-main .py-attribute-table-column > ul {
+main .attribute-table-column > ul {
   list-style: none;
   margin: 4px 0px;
   padding-left: 0;
   font-size: 0.95em;
 }
 
-.py-attribute-table-entry {
+.attribute-table-entry {
   margin: 0;
   padding: 2px 0;
   padding-left: 0.2em;
@@ -966,24 +966,24 @@ main .py-attribute-table-column > ul {
   line-height: 1.2em !important;
 }
 
-.py-attribute-table-entry > a {
+.attribute-table-entry > a {
   padding-left: 0.5em;
   color: var(--attribute-table-entry-text);
   flex-grow: 1;
 }
 
-.py-attribute-table-entry > a:hover {
+.attribute-table-entry > a:hover {
   color: var(--attribute-table-entry-hover-text);
   text-decoration: none;
 }
 
-.py-attribute-table-entry:hover {
+.attribute-table-entry:hover {
   background-color: var(--attribute-table-entry-hover-background);
   border-left: 2px solid var(--attribute-table-entry-hover-border);
   text-decoration: none;
 }
 
-.py-attribute-table-badge {
+.attribute-table-badge {
   flex-basis: 3em;
   text-align: right;
   font-size: 0.9em;
@@ -1329,7 +1329,7 @@ div.code-block-caption {
     width: 20%;
   }
 
-  .py-attribute-table-column:not(:first-child) {
+  .attribute-table-column:not(:first-child) {
    margin-top: unset;
   }
 

@@ -9,9 +9,13 @@ import re
 from collections import OrderedDict, namedtuple
 
 from docutils import nodes
+from docutils.nodes import Node
 from sphinx import addnodes
 from sphinx.locale import _
 from sphinx.util.docutils import SphinxDirective
+
+from docutils.parsers.rst.directives import unchanged_required, unchanged, flag  # type: ignore
+from typing import List
 
 
 class attributetable(nodes.General, nodes.Element):
@@ -30,6 +34,10 @@ class attributetableplaceholder(nodes.General, nodes.Element):
     pass
 
 
+class cppattributetableplaceholder(nodes.General, nodes.Element):
+    pass
+
+
 class attributetablebadge(nodes.TextElement):
     pass
 
@@ -39,47 +47,77 @@ class attributetable_item(nodes.Part, nodes.Element):
 
 
 def visit_attributetable_node(self, node):
-    class_ = node["python-class"]
-    self.body.append(f'<div class="py-attribute-table" data-move-to-id="{class_}">')
+    """
+    Returns the starting HTML for the attribute table.
+    """
+    class_ = node["python-class"] if "python-class" in node else node["cpp-full-name"]
+    self.body.append(f'<div class="attribute-table" data-move-to-id="{class_}">')
 
 
 def visit_attributetablecolumn_node(self, node):
-    self.body.append(self.starttag(node, "div", CLASS="py-attribute-table-column"))
+    """
+    Returns the starting HTML for a column of the attribute table. Just a div!
+    """
+    self.body.append(self.starttag(node, "div", CLASS="attribute-table-column"))
 
 
 def visit_attributetabletitle_node(self, node):
+    """
+    Returns the starting HTML for a title in the attribute table. Just a div!
+    """
     self.body.append(self.starttag(node, "span"))
 
 
 def visit_attributetablebadge_node(self, node):
+    """
+    Returns the starting HTML for a badge in the attribute table. Just a div!
+    """
     attributes = {
-        "class": "py-attribute-table-badge",
+        "class": "attribute-table-badge",
         "title": node["badge-type"],
     }
     self.body.append(self.starttag(node, "span", **attributes))
 
 
 def visit_attributetable_item_node(self, node):
-    self.body.append(self.starttag(node, "li", CLASS="py-attribute-table-entry"))
+    """
+    Returns the starting HTML for an entry in the attribute table. Just a div!
+    """
+    self.body.append(self.starttag(node, "li", CLASS="attribute-table-entry"))
 
 
 def depart_attributetable_node(self, node):
+    """
+    Returns the ending HTML for the attribute table.
+    """
     self.body.append("</div>")
 
 
 def depart_attributetablecolumn_node(self, node):
+    """
+    Returns the ending HTML for a column in the attribute table.
+    """
     self.body.append("</div>")
 
 
 def depart_attributetabletitle_node(self, node):
+    """
+    Returns the ending HTML for a title in the attribute table.
+    """
     self.body.append("</span>")
 
 
 def depart_attributetablebadge_node(self, node):
+    """
+    Returns the ending HTML for a badge in the attribute table.
+    """
     self.body.append("</span>")
 
 
 def depart_attributetable_item_node(self, node):
+    """
+    Returns the ending HTML for an item in the attribute table.
+    """
     self.body.append("</li>")
 
 
@@ -102,15 +140,17 @@ class PyAttributeTable(SphinxDirective):
             if not modulename:
                 modulename = self.env.ref_context.get("py:module")
         if modulename is None:
-            raise RuntimeError(f"modulename somehow None for {content} in {self.env.docname}.")
+            raise RuntimeError(
+                f"modulename somehow None for {content} in {self.env.docname}."
+            )
 
         return modulename, name
 
     def run(self):
         """If you're curious on the HTML this is meant to generate:
 
-        <div class="py-attribute-table">
-            <div class="py-attribute-table-column">
+        <div class="attribute-table">
+            <div class="attribute-table-column">
                 <span>_('Attributes')</span>
                 <ul>
                     <li>
@@ -118,7 +158,7 @@ class PyAttributeTable(SphinxDirective):
                     </li>
                 </ul>
             </div>
-            <div class="py-attribute-table-column">
+            <div class="attribute-table-column">
                 <span>_('Methods')</span>
                 <ul>
                     <li>
@@ -143,12 +183,72 @@ class PyAttributeTable(SphinxDirective):
         return [node]
 
 
+_cpp_name_parser_regex = re.compile(r"(?P<namespace>[\w.]+::)?(?P<name>\w+)")
+
+
+class CppAttributeTable(SphinxDirective):
+    has_content = False
+    required_arguments = 1
+    optional_arguments = 0
+    final_argument_whitespace = False
+    option_spec = {}
+
+    def parse_name(self, content):
+        path, name = _cpp_name_parser_regex.match(content).groups()
+        if path:
+            namespace = path.rstrip("::")
+        else:
+            namespace = self.env.temp_data.get("autodoc:module")
+            if not namespace:
+                namespace = self.env.ref_context.get("cpp:namespace")
+
+        return namespace, name
+
+    def run(self):
+        """If you're curious on the HTML this is meant to generate:
+
+        <div class="cpp-attribute-table">
+            <div class="cpp-attribute-table-column">
+                <span>_('Attributes')</span>
+                <ul>
+                    <li>
+                        <a href="...">
+                    </li>
+                </ul>
+            </div>
+            <div class="cpp-attribute-table-column">
+                <span>_('Methods')</span>
+                <ul>
+                    <li>
+                        <a href="..."></a>
+                        <span class="cpp-attribute-badge" title="decorator">D</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        However, since this requires the tree to be complete
+        and parsed, it'll need to be done at a different stage and then
+        replaced.
+        """
+        content = self.arguments[0].strip()
+        node = cppattributetableplaceholder("")
+        namespace, name = self.parse_name(content)
+        node["cpp-doc"] = self.env.docname
+        node["cpp-namespace"] = namespace
+        node["cpp-class"] = name
+        node["cpp-full-name"] = content
+        return [node]
+
+
 def build_lookup_table(env):
-    # Given an environment, load up a lookup table of
-    # full-class-name: objects
+    # Given an environment, load up a lookup table of {full-class-name: objects}
     result = {}
+    # Only for domains beginning with py
     domain = env.domains["py"]
 
+    # Do not include domains containing these keywords - any of these domains
+    # will never be in an attribute table
     ignored = {
         "data",
         "exception",
@@ -160,34 +260,162 @@ def build_lookup_table(env):
         if objtype in ignored:
             continue
 
+        # Split the full name by the last dot (ie, into the class and attribute)
         classname, _, child = fullname.rpartition(".")
         try:
             result[classname].append(child)
         except KeyError:
             result[classname] = [child]
 
+    # Return dict of objects as described above
     return result
 
 
 TableElement = namedtuple("TableElement", "fullname label badge")
 
 
-def process_attributetable(app, doctree, fromdocname):
-    env = app.builder.env
+def _parse_cpp_function_sig_children(children: List[Node]):
+    # Remove unnecessary keywords
+    to_remove = [" ", "const"]
+    children[:] = [child for child in children if child not in to_remove]
 
+    return children[-2]
+
+
+def _parse_cpp_attribute_sig_children(children: List[Node]):
+    if "=" in children:
+        equal_sign = children.index("=")
+        children = children[:equal_sign]
+
+    children[:] = [child for child in children if child not in [" ", ""]]
+    return children[-1]
+
+
+def process_cppattributetable(app, doctree: Node, fromdocname):
+    # Setup parser used by Doxygen to parse XML
+    assert app.env is not None
+
+    # Begin dict for class' objects
+    classes = (
+        {}
+    )  # {'namespace::ClassName': OrderedDict((_('Attributes'), []), (_('Functions'), [])), 'ClassNameTwo': ...}
+    ids = {}
+
+    # Find all relevant C++ functions and attributes
+    current_section = None
+    for node in doctree.traverse(siblings=True):
+        if hasattr(node, "attributes"):
+            if all([c in node.attributes["classes"] for c in ["cpp", "class"]]) or all(
+                c in node.attributes["classes"] for c in ["cpp", "struct"]
+            ):
+                # Store current C++ struct or class section as namespace::ClassName or ClassName
+                current_section = node.children[0].astext()
+                current_section = re.sub(r"^.*(class )", "", current_section)
+                current_section = re.sub(r"^.*(struct )", "", current_section)
+
+                # Store goto IDs for the current section
+                ids[current_section] = node.children[0].attributes["ids"][0]
+
+                # Store basic ordered dict for attributes and functions
+                classes[current_section] = OrderedDict(
+                    [
+                        (_("Attributes"), []),
+                        (_("Functions"), []),
+                    ]
+                )
+
+            elif all([c in node.attributes["classes"] for c in ["cpp", "function"]]):
+                # Get the signature line of the function, where its name is stored
+                try:
+                    descriptions = [n.astext() for n in node[0][0].children if isinstance(n, Node)]
+                except IndexError:
+                    continue
+
+                # If we found a name
+                if descriptions:
+                    # Get the ID to link to
+                    fullname = (
+                        node.children[0].children[0].children[0].attributes["ids"][0]
+                    )
+
+                    # Parse the function signature into just its name
+                    parsed = _parse_cpp_function_sig_children(descriptions)
+
+                    # Assign the actual table element for the func
+                    badge = attributetablebadge("func", "func")
+                    badge["badge-type"] = _("function")
+                    if current_section:
+                        classes[current_section][_("Functions")].append(
+                            TableElement(fullname=fullname, label=parsed, badge=badge)
+                        )
+
+            elif all([c in node.attributes["classes"] for c in ["cpp", "var"]]):
+                # Try to get signature lines for C++ variables
+                try:
+                    descriptions = [n.astext() for n in node.children[0][0] if isinstance(n, Node)]
+                except IndexError:
+                    continue
+
+                if descriptions:
+                    # Parse C++ attribute signature to get only attribute name
+                    parsed = _parse_cpp_attribute_sig_children(descriptions)
+
+                    # Get the ID to link to
+                    fullname = (
+                        node.children[0].children[0].children[0].attributes["ids"][0]
+                    )
+
+                    # Make table element
+                    if current_section:
+                        classes[current_section][_("Attributes")].append(
+                            TableElement(fullname=fullname, label=parsed, badge=None)
+                        )
+
+    # For each C++ attribute table requested
+    for node in doctree.traverse(cppattributetableplaceholder):
+        target = node["cpp-full-name"]
+
+        # Turn the table elements in a node
+        table = attributetable("")
+        for label, subitems in classes[target].items():
+            if not subitems:
+                continue
+            table.append(
+                class_results_to_node(label, sorted(subitems, key=lambda c: c.label))
+            )
+
+        # Turn table into node
+        table["cpp-full-name"] = ids[target]
+
+        if not table:
+            node.replace_self([])
+        else:
+            node.replace_self([table])
+
+
+def process_attributetable(app, doctree, fromdocname):
+    # Build lookup table of module names and attributes
+    env = app.builder.env
     lookup = build_lookup_table(env)
+
+    # For each node in the doctree
     for node in doctree.traverse(attributetableplaceholder):
+        # Info about each node
         modulename, classname, fullname = (
             node["python-module"],
             node["python-class"],
             node["python-full-name"],
         )
+
+        # Get class results
         groups = get_class_results(lookup, modulename, classname, fullname)
         table = attributetable("")
         for label, subitems in groups.items():
             if not subitems:
                 continue
-            table.append(class_results_to_node(label, sorted(subitems, key=lambda c: c.label)))
+            table.append(
+                class_results_to_node(label, sorted(subitems, key=lambda c: c.label))
+            )
 
         table["python-class"] = fullname
 
@@ -197,10 +425,12 @@ def process_attributetable(app, doctree, fromdocname):
             node.replace_self([table])
 
 
-def get_class_results(lookup, modulename, name, fullname):
+def get_class_results(lookup: dict, modulename: str, name: str, fullname: str):
+    # Import checked module
     module = importlib.import_module(modulename)
     cls = getattr(module, name)
 
+    # Begin dict for class' objects
     groups = OrderedDict(
         [
             (_("Attributes"), []),
@@ -208,11 +438,14 @@ def get_class_results(lookup, modulename, name, fullname):
         ]
     )
 
+    # If the class has members, let's get them! If not, it has no members, and
+    # we can return nothing!
     try:
         members = lookup[fullname]
     except KeyError:
         return groups
 
+    # For each member of the module
     for attr in members:
         attrlookup = f"{fullname}.{attr}"
         key = _("Attributes")
@@ -220,22 +453,31 @@ def get_class_results(lookup, modulename, name, fullname):
         label = attr
         value = None
 
+        # Search up the class' inheritance tree for the implementation of the
+        # desired attribute, and break when we find it!
         for base in cls.__mro__:
             value = base.__dict__.get(attr)
             if value is not None:
                 break
 
+        # If we found the value, let's document it!
         if value is not None:
             doc = value.__doc__ or ""
+
+            # Handle async functions; give them async badge and move them to Methods
             if inspect.iscoroutinefunction(value) or doc.startswith("|coro|"):
                 key = _("Methods")
                 badge = attributetablebadge("async", "async")
                 badge["badge-type"] = _("coroutine")
+
+            # Handle class methods; give them the cls badge and move them to Methods
             elif isinstance(value, classmethod):
                 key = _("Methods")
                 label = f"{name}.{attr}"
                 badge = attributetablebadge("cls", "cls")
                 badge["badge-type"] = _("classmethod")
+
+            # Handle all other methods, including decorators
             elif inspect.isfunction(value):
                 if doc.startswith(("A decorator", "A shortcut decorator")):
                     # finicky but surprisingly consistent
@@ -247,8 +489,10 @@ def get_class_results(lookup, modulename, name, fullname):
                     badge = attributetablebadge("def", "def")
                     badge["badge-type"] = _("method")
 
+        # Finally, with all of the compiled info, store it in the class' table
         groups[key].append(TableElement(fullname=attrlookup, label=label, badge=badge))
 
+    # Return the class' info table
     return groups
 
 
@@ -275,7 +519,10 @@ def class_results_to_node(key, elements):
 
 def setup(app):
     app.add_directive("attributetable", PyAttributeTable)
-    app.add_node(attributetable, html=(visit_attributetable_node, depart_attributetable_node))
+    app.add_directive("cppattributetable", CppAttributeTable)
+    app.add_node(
+        attributetable, html=(visit_attributetable_node, depart_attributetable_node)
+    )
     app.add_node(
         attributetablecolumn,
         html=(visit_attributetablecolumn_node, depart_attributetablecolumn_node),
@@ -293,4 +540,6 @@ def setup(app):
         html=(visit_attributetable_item_node, depart_attributetable_item_node),
     )
     app.add_node(attributetableplaceholder)
+    app.add_node(cppattributetableplaceholder)
     app.connect("doctree-resolved", process_attributetable)
+    app.connect("doctree-resolved", process_cppattributetable)

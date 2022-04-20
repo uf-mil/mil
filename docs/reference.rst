@@ -3446,22 +3446,32 @@ C++
 
 AlarmProxy
 ~~~~~~~~~~
+.. cppattributetable:: ros_alarms::AlarmProxy
+
 .. doxygenstruct:: ros_alarms::AlarmProxy
 
 AlarmBroadcaster
 ~~~~~~~~~~~~~~~~
+.. cppattributetable:: ros_alarms::AlarmBroadcaster
+
 .. doxygenclass:: ros_alarms::AlarmBroadcaster
 
 AlarmListener
 ~~~~~~~~~~~~~
+.. cppattributetable:: ros_alarms::AlarmListener
+
 .. doxygenclass:: ros_alarms::AlarmListener
 
 ListenerCb
 ~~~~~~~~~~
+.. cppattributetable:: ros_alarms::ListenerCb
+
 .. doxygenstruct:: ros_alarms::ListenerCb
 
 HeartbeatMonitor
 ~~~~~~~~~~~~~~~~
+.. cppattributetable:: ros_alarms::HeartbeatMonitor
+
 .. doxygenclass:: ros_alarms::HeartbeatMonitor
 
 Path Planning
@@ -3582,4 +3592,6 @@ PingLocator
 
 SylphaseSonarToRosNode
 ^^^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: SylphaseSonarToRosNode
+
 .. doxygenclass:: SylphaseSonarToRosNode
