@@ -6,7 +6,7 @@
   <arg name="simulate_cams" default="true" />
   <param name="/environment" value="$(arg environment)" />
   <param name="/is_simulation" value="$(eval environment != 'real')" />
-  <rosparam param="/autonomous">False</rosparam>
+  <rosparam param="/autonomous">True</rosparam>
 
   <include file="$(find sub8_launch)/launch/tf.launch" >
     <arg name="simulate_cams" value="$(arg simulate_cams)" />
