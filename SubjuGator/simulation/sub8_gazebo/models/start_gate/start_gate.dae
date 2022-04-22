@@ -190,7 +190,7 @@
   </library_lights>
   <library_images>
     <image id="start_gate_texture_png" name="start_gate_texture_png">
-      <init_from>start_gate_texture.png</init_from>
+      <init_from>start_gate_texture_2.png</init_from>
     </image>
   </library_images>
   <library_effects>
