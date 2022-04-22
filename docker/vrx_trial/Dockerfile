@@ -1,6 +1,20 @@
-FROM nvidia/cuda:9.1-base-ubuntu16.04
-FROM uf-mil:base
-#FROM nvidia/cuda:11.6.2-base-ubuntu18.04
+#Use nvidia/cude 10.2 as docker base to enable usage of GPU for darknet
+#Note: setup environment was taken from base dockerfile
+FROM nvidia/cuda:10.2-devel-ubuntu18.04
+# setup timezone
+RUN echo 'Etc/UTC' > /etc/timezone && \
+    ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime
+
+# setup environment
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
+RUN apt update && apt install -y sudo && apt clean
+
+ADD system_install /tmp/system_install
+RUN chmod +x /tmp/system_install && /tmp/system_install
+
+#select branch
 ARG BRANCH=master
 ARG GIT_URL=https://github.com/uf-mil/mil.git
 
@@ -17,10 +31,6 @@ WORKDIR /home/mil-vrx-trial
 
 ADD dynparam /tmp/dynparam
 RUN sudo cp /tmp/dynparam /opt/ros/melodic/lib/dynamic_reconfigure/dynparam
-
-#ADD /usr/local/cuda /usr/local/cuda
-#ADD /usr/local/cuda-10.2 /usr/local/cuda-10.2
-#ADD /usr/local/cudnn /usr/local/cudnn
 
 ADD --chown=mil-vrx-trial:mil-vrx-trial vrx_trial_install /tmp/vrx_trial_install
 RUN chmod +x /tmp/vrx_trial_install && /tmp/vrx_trial_install ${BRANCH} ${GIT_URL}

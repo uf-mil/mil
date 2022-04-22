@@ -63,6 +63,7 @@ fi
 
 docker run -it \
     -v $(realpath $(dirname $BASH_SOURCE)/../):/home/mil-dev/catkin_ws/src/mil/ \
+    --env="DISPLAY" \
     $BUILD_VOLUME_FLAGS \
     $VIM_CONFIG \
     --net host \

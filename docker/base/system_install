@@ -62,7 +62,8 @@ mil_system_install \
   ros-melodic-ros-controllers \
   python-pip \
   clang-format-3.9
-sudo pip install \
+
+pip install \
   tqdm \
   scipy \
   sklearn \
@@ -71,7 +72,7 @@ sudo pip install \
 pip install --upgrade pip
 pip2 install tsp_solver2
 pip2 install Pillow
-pip2 install pyyaml
+pip2 install pyyaml==3.12
 
 # Documentation dependencies
 mil_system_install  python3-pip python-setuptools
@@ -83,7 +84,8 @@ sudo pip3 install -q \
   numpy \
   matplotlib \
   rospkg \
-  pyyaml
+  pyyaml==3.12 \
+  wheel
 
 # Initialize rosdep
 sudo pip install -U rosdep
