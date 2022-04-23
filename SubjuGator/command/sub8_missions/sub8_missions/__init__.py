@@ -15,3 +15,4 @@ from .ball_drop import BallDrop
 from .arm_torpedos import FireTorpedos
 from .dracula_grab import DraculaGrabber
 from .start_gate_guess import StartGateGuess
+from .prequal_mission import PrequalMission
