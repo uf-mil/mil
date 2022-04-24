@@ -11,10 +11,13 @@ class NetworkLoss(HandlerBase):
         hm (ros_alarms.HeartbeatMonitor): The heartbeat monitor to monitor the
           network.
     """
-    alarm_name = 'network-loss'
+
+    alarm_name = "network-loss"
 
     def __init__(self):
-        self.hm = HeartbeatMonitor(self.alarm_name, "/network", Header, prd=0.8, node_name="network_loss_kill")
+        self.hm = HeartbeatMonitor(
+            self.alarm_name, "/network", Header, prd=0.8, node_name="network_loss_kill"
+        )
 
     def raised(self, alarm) -> None:
         """

@@ -8,6 +8,7 @@ class NetworkBroadcaster:
     Class to push header messages to the network topic. Heartbeat monitors check
     for recurring messages in other classes.
     """
+
     def __init__(self):
         self.pub = rospy.Publisher("/network", Header, queue_size=1)
 
@@ -17,6 +18,7 @@ class NetworkBroadcaster:
         h = Header()
         h.stamp = rospy.Time.now()
         self.pub.publish(h)
+
 
 if __name__ == "__main__":
     rospy.init_node("network_broadcaster")
