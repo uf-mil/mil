@@ -1,10 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from std_msgs.msg import Header
 
 
-class NetworkBroadcaster(object):
-
+class NetworkBroadcaster:
+    """
+    Class to push header messages to the network topic. Heartbeat monitors check
+    for recurring messages in other classes.
+    """
     def __init__(self):
         self.pub = rospy.Publisher("/network", Header, queue_size=1)
 

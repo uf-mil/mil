@@ -1,9 +1,20 @@
 import rospy
-from ros_alarms import AlarmBroadcaster, HandlerBase
+from ros_alarms import Alarm, AlarmBroadcaster, HandlerBase
 from mil_msgs.msg import RangeStamped
 
 
 class HeightOverBottom(HandlerBase):
+    """
+    Alarm (inheriting from :class:`ros_alarms.HandlerBase`) which monitors the height of the
+    sub in the water. If too low, then an alarm is triggered. When the sub rises
+    above the limit again, the alarm is cleared.
+
+    The height to kill at is obtained from Dynamic Reconfigure, or is assumed to be
+    ``0.4``. The height of the sub is checked at 2Hz.
+
+    Attributes:
+        alarm_name (str): The name of the alarm. Set to ``height-over-bottom``.
+    """
     alarm_name = "height-over-bottom"
 
     def __init__(self):
@@ -37,8 +48,21 @@ class HeightOverBottom(HandlerBase):
     def _update_height(self, *args):
         self._height_to_kill = rospy.get_param("/height_over_bottom", 0.4)
 
-    def raised(self, alarm):
+    def raised(self, alarm: Alarm) -> None:
+        """
+        Triggers when the alarm is raised. Sets the state of the alarm monitor to
+        represent that the alarm was killed.
+
+        Parameters:
+            alarm (ros_alarms.Alarm): The alarm which was raised.
+        """
         self._killed = True
 
-    def cleared(self, alarm):
+    def cleared(self, alarm: Alarm) -> None:
+        """
+        Triggers when the alarm is cleared. Sets the state of the alarm monitor to
+
+        Parameters:
+            alarm (ros_alarms.Alarm): The alarm which was cleared.
+        """
         self._killed = False

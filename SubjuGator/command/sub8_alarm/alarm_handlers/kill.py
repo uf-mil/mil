@@ -8,6 +8,19 @@ from threading import Condition
 
 
 class Kill(HandlerBase):
+    """
+    Generic kill used to represent the state of an alarm. Uses a threading condition
+    to manage access
+
+    Attributes:
+        alarm_name (str): The name of the alarm. Set to ``kill``.
+        condition (threading.Condition): The threading condition used to manage
+          the shared access to the motherboard.
+        HARDWARE_KILL_GRACE_PERIOD_SECONDS (int): The number of seconds to wait
+          for the hardware kill to be removed after asking for it to be removed.
+          If the kill has not been removed within this amount of time, the motherboard
+          kill is reinstated. Set to ``6 seconds``.
+    """
     alarm_name = 'kill'
     HARDWARE_KILL_GRACE_PERIOD_SECONDS = 6.0
 
@@ -29,13 +42,27 @@ class Kill(HandlerBase):
         self.set_mobo_kill(True) # Tell HW that we started off as killed
 
     def set_mobo_kill(self, *args, **kwargs):
+        """
+        Sets a motherboard kill.
+
+        Raises:
+            rospy.ServiceException: Error in sending a motherboard kill.
+        """
         try:
             return self._set_mobo_kill(*args, **kwargs)
         except rospy.ServiceException as e:
             rospy.logwarn('Error sending motherboard kill: {}'.format(e))
             return None
 
-    def raised(self, alarm):
+    def raised(self, alarm: Alarm) -> None:
+        """
+        Called when the alarm is raised. Sets the motherboard kill and attempts to
+        dump the related logging info to a bag file, using the :attr:`~.condition`.
+        At the end of the use of the condition, the condition is notified.
+
+        Parameters:
+            alarm (ros_alarms.Alarm): The alarm which was raised.
+        """
         with self.condition:
             # Send kill command to kill board when alarm is raised
             self.set_mobo_kill(True)
@@ -45,7 +72,15 @@ class Kill(HandlerBase):
             self.first = False
             self.condition.notify()
 
-    def cleared(self, alarm):
+    def cleared(self, alarm: Alarm):
+        """
+        Called when the alarm is cleared. Attempts to use `~.condition` to unset
+        the motherboard kill. If the motherboard kill can't be deactivated, then
+        it is reinstated and a warning is logged.
+
+        Parameters:
+            alarm (ros_alarms.Alarm): The alarm which was cleared.
+        """
         with self.condition:
             self.set_mobo_kill(False)
             if self.get_alarm('hw-kill').raised:
@@ -63,7 +98,9 @@ class Kill(HandlerBase):
             rospy.logwarn('KILL BAG {}, status: {}'.format(TerminalState.to_string(status), result.status))
 
     def bagger_dump(self):
-        """Call online_bagger/dump service"""
+        """
+        Bags the related log information to a list of relevant topics.
+        """
         if self.first:
             return
         if 'BAG_ALWAYS' not in os.environ or 'bag_kill' not in os.environ:

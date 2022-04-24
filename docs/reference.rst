@@ -3474,6 +3474,58 @@ HeartbeatMonitor
 
 .. doxygenclass:: ros_alarms::HeartbeatMonitor
 
+Subjugator-specific
+^^^^^^^^^^^^^^^^^^^
+
+BusVoltage
+~~~~~~~~~~
+.. attributetable:: alarm_handlers.BusVoltage
+
+.. autoclass:: alarm_handlers.BusVoltage
+    :members:
+
+HeightOverBottom
+~~~~~~~~~~~~~~~~
+.. attributetable:: alarm_handlers.HeightOverBottom
+
+.. autoclass:: alarm_handlers.HeightOverBottom
+    :members:
+
+HwKill
+~~~~~~
+.. attributetable:: alarm_handlers.HwKill
+
+.. autoclass:: alarm_handlers.HwKill
+    :members:
+
+Kill
+~~~~
+.. attributetable:: alarm_handlers.Kill
+
+.. autoclass:: alarm_handlers.Kill
+    :members:
+
+NetworkLoss
+~~~~~~~~~~~
+.. attributetable:: alarm_handlers.NetworkLoss
+
+.. autoclass:: alarm_handlers.NetworkLoss
+    :members:
+
+OdomKill
+~~~~~~~~
+.. attributetable:: alarm_handlers.OdomKill
+
+.. autoclass:: alarm_handlers.OdomKill
+    :members:
+
+ThrusterOut
+~~~~~~~~~~~~
+.. attributetable:: alarm_handlers.ThrusterOut
+
+.. autoclass:: alarm_handlers.ThrusterOut
+    :members:
+
 Path Planning
 -------------
 
