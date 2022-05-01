@@ -77,7 +77,7 @@ breathe_default_members = ('members', 'undoc-members')
 
 # Document __init__ methods of classes
 autoclass_content = "both"
-autodoc_inherit_docstrings = True
+autodoc_inherit_docstrings = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['docs/_templates']
