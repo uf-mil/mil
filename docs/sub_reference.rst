@@ -46,9 +46,37 @@ SetValve
 
         :type: bool
 
+Exceptions
+----------
+.. autoclass:: sub8_actuator_board.InvalidAddressException
+
 Actuator Board
 --------------
+
+ActuatorBoard
+^^^^^^^^^^^^^
 .. attributetable:: sub8_actuator_board.ActuatorBoard
 
 .. autoclass:: sub8_actuator_board.ActuatorBoard
+    :members:
+
+ActuatorBoardSimulation
+^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub8_actuator_board.ActuatorBoardSimulation
+
+.. autoclass:: sub8_actuator_board.ActuatorBoardSimulation
+    :members:
+
+CommandMessage
+^^^^^^^^^^^^^^
+.. attributetable:: sub8_actuator_board.CommandMessage
+
+.. autoclass:: sub8_actuator_board.CommandMessage
+    :members:
+
+FeedbackMessage
+^^^^^^^^^^^^^^^
+.. attributetable:: sub8_actuator_board.FeedbackMessage
+
+.. autoclass:: sub8_actuator_board.FeedbackMessage
     :members:

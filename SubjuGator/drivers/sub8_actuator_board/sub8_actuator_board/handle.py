@@ -13,6 +13,7 @@ class ActuatorBoard(CANDeviceHandle):
     Device handle for the actuator board. Because this class implements a CAN device,
     it inherits from the :class:`CANDeviceHandle` class.
     """
+
     def __init__(self, *args, **kwargs):
         super(ActuatorBoard, self).__init__(*args, **kwargs)
         self._service = rospy.Service("/set_valve", SetValve, self.set_valve)
