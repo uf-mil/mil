@@ -17,7 +17,6 @@ New Members
     docs/welcome
 
     docs/design/design
-    docs/projects
 
     docs/mechanical/index
     docs/electrical/index
@@ -60,3 +59,4 @@ Meta
 
     docs/infra/index
     docs/testingprocedures.md
+    docs/deprecated
