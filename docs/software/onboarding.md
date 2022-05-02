@@ -1,19 +1,3 @@
-# Onboarding
-If you have reached this page, you likely want to get started working in MIL.
-We're quite excited to have you on the team! Here's to a grand future
-of learning and late nights coding. This guide explains the steps
-to take to get started as a developer.
-## Watch the intro video
-Watch the [virtual tour](https://tinyurl.com/mil-kickoff-f20) that we recorded in September 2020!
-
-## Learn abour our Culture
-MIL does things differently than many other labs or student organizations.
-Before you get started, read about our [culture](/docs/culture).
-
-## Join Slack and say hello
-We use Slack as our primary communication platform. Our slack is [uf-mil.slack.com](https://uf-mil.slack.com). Ask someone in MIL to invite you or email kmallen@ufl.edu.
-Once you're on slack, be sure to join the [#software](https://uf-mil.slack.com/messages/C6UQUU78Q) channel and introduce yourself.
-
 ## Join the Github organization
 In order to contribute code, you need to be in the [uf-mil Github organization](https://github.com/uf-mil). First create an acount if you do not have one, then ask someone in MIL / on slack to invite you.
 

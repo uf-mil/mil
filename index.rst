@@ -14,21 +14,25 @@ New Members
 .. toctree::
     :hidden:
 
-    docs/onboarding
-    docs/mechanical/mechanical
-    docs/branding
-    docs/glossary
-    docs/culture
+    docs/welcome
+
     docs/design/design
+    docs/projects
+
+    docs/mechanical/mechanical
+
     docs/reference
     docs/sub_reference
     docs/scripts
-    docs/projects
     docs/subjugator/index
     docs/navigator/vrx
     docs/development/help
     docs/development/index
     docs/development/sdk
+
+    docs/culture
+    docs/branding
+    docs/glossary
 
 * **Interested software members**: Please read the :doc:`Software Onboarding Guide <docs/onboarding>`.
 * **Interested electrical members**: Please join our `Slack workspace <https://uf-mil.slack.com>`_.
