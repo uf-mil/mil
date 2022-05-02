@@ -9,6 +9,10 @@ Welcome to the documentation site for the Machine Intelligence Lab at the Univer
 * **NaviGator:** An autonomous surface vehicle (ASV) which has competed in several maritime competitions. Won the 2016 Maritime RobotX Challenge, and received fourth in the 2018 Maritime RobotX Challenge. (`Website <https://subjugator.org>`_)
 * **Virtual RobotX:** An new extension of the NaviGator project supporting virtual robotics.
 
+Our first meeting of the Fall 2021 season was recorded, and can be found `here <https://mil.ufl.edu/videos/MIL_Kick_Off_Fall_2021.mp4>`_.
+The meeting introduced MIL and featured a tour of our lab. It's a great introduction
+to what we do; we encourage you to watch!
+
 New Members
 -----------
 .. toctree::

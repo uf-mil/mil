@@ -56,6 +56,14 @@ lab director, Dr. Eric Schwartz).
 Well - we hope that was a great introduction to what we do! We hope that you're feeling
 excited to jump right in - if not, no worries, we're here to help you!
 
+:::{note}
+Our first meeting of the Fall 2021 semester was recorded. The meeting includes a brief
+overview of MIL (similar to the above) and a tour of the lab. We encourage you to
+watch, but it's not required to get started.
+
+You can find the recording [here](https://mil.ufl.edu/videos/MIL_Kick_Off_Fall_2021.mp4).
+:::
+
 The next step is to look into joining a specific team:
 - Click here to embark on the [Mechanical Team onboarding](/docs/mechanical/onboarding).
 - Click here to embark on the [Electrical Team](/docs/electrical/onboarding).
