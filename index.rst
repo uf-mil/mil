@@ -21,6 +21,7 @@ New Members
     docs/culture
     docs/design/design
     docs/reference
+    docs/sub_reference
     docs/scripts
     docs/projects
     docs/subjugator/index
