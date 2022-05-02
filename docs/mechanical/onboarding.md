@@ -35,12 +35,21 @@ When you are first getting started, you may also want to find a task that is goo
 for new members. To do this, also select for the `good first issue` using the `Label`
 dropdown, like you did to choose the `mechanical` label.
 
+When you find a task, make sure to make yourself assigned to it. You can do this
+in the GitHub UI: click on a task, and on the righthand sidebar, click `Assignees`
+and find your username. This will let the other mechanical members and leaders know
+that you are working on that task.
+
 ## Join our GrabCAD
 You should also ask a leader about joining the mechanical GrabCAD, which is where
 we store all of our CAD files.
 
 ## Start to get familiar with our technical projects
+Below are some of our current projects:
 * Subjugator 8
 * Subjugator 9 (WIP)
 * NaviGator
 * [Drone](/docs/mechanical/drone_doc.md) 
+
+For good mechanical resources, check out the [Resources](/docs/mechanical/resources.md)
+ page.
