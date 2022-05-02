@@ -19,7 +19,8 @@ New Members
     docs/design/design
     docs/projects
 
-    docs/mechanical/mechanical
+    docs/mechanical/index
+    docs/electrical/index
 
     docs/reference
     docs/sub_reference
