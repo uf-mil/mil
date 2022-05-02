@@ -25,7 +25,7 @@ New Members
     docs/sub_reference
     docs/scripts
     docs/subjugator/index
-    docs/navigator/vrx
+    docs/navigator/index
     docs/development/help
     docs/development/index
     docs/development/sdk
