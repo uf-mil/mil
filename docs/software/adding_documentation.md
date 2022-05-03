@@ -1,8 +1,8 @@
-# Adding/Modifying Documentation
-We aim to have all MIL documentation (software, mechanical, electrical, etc) hosted 
-within the main [MIL git repository](https://github.com/uf-mil/mil). Please 
-follow these instructions to add new documentation or update/correct existing 
-documentation.
+# Updating Documentation
+So, you'd like to update this documentation? That's fantastic! Documentation will help
+countless numbers of MIL generations to understand what you've built. If you only build
+a system, but don't document it, future generations may not even know what to do with
+what you've built!
 
 ## Docstrings vs. Explicit Documentation
 There are two main types of document in our repository: docstrings and explicit 
@@ -14,48 +14,100 @@ documentation is documentation created by members by using files under the `docs
 folder.
 
 ## Docstrings
+Docstrings are a powerful method of documentation. The documentation is clearly outlined
+in the code, allowing developers to grasp what classes and methods do as they're working
+on them. Plus, these docstrings get concatenated together to form the HTML reference
+docs. (Hint: These are what make up most of the [Software Reference page](/docs/reference.rst)!)
 
-### Adding a new docstring
+### Adding a docstring (Python)
 To add a new docstring to the reference documentation, add a docstring inside of the code.
 
 Let's look at an example:
 
-    # From: https://stackoverflow.com/a/11832677
+    def download_and_unzip(url, output_dir):
+        try:
+            html = download(url)
+        except:
+            raise IOError("Could not load file at {}".format(url))
 
-    import re
-    def postal_valid(s):
-        spaceless = s.replace(' ','')
-        if not re.match(r"[a-zA-Z][0-9]+[a-zA-Z][0-9]+[a-zA-Z][0-9]+",spaceless):
-           return False
-        return spaceless.upper() 
+        fake_file = StringIO.StringIO(html)
 
-Hmm, this method could use a docstring! To add a docstring to a Python object, use
-a block string. For more information, check out the Python Style Guide.
+        zip_ = zipfile.ZipFile(fake_file, "r")
+        for file_path in zip_.namelist():
+            _, file_name = os.path.split(file_path)
+            file_like = zip_.open(file_path)
 
-    # From: https://stackoverflow.com/a/11832677
+            f = open(os.path.join(output_dir, file_name), "w")
+            f.write(file_like.read().decode('utf-8'))
+            f.close()
 
-    import re
-    def postal_valid(s: str) -> bool:
+Can you tell what this method does? You could maybe look at some of the lines and
+guess as to what it's doing - but this isn't ideal. Without a docstring, this is
+how you (and all of the other software MILers) have to understand this code! Let's
+fix that by adding a docstring.
+
+    def download_and_unzip(url: str, output_dir: str) -> None:
         """
-        Validates a postal code.
+        Downloads a zip file at a particular URL and unzips it to a directory.
 
         Args:
-            s (str): The zip code to be validated.
+            url (str): The URL to obtain the zip file from.
+            output_dir (str): The location of where to write the zip contents to.
 
-        Returns:
-            bool: Whether the postal code is valid.
+        Raises:
+            IOError: The file at the URL could not be found/loaded.
         """
-        spaceless = s.replace(' ','')
-        if not re.match(r"[a-zA-Z][0-9]+[a-zA-Z][0-9]+[a-zA-Z][0-9]+",spaceless):
-           return False
-        return spaceless.upper() 
+        try:
+            html = download(url)
+        except:
+            raise IOError("Could not load file at {}".format(url))
+
+        fake_file = StringIO.StringIO(html)
+
+        zip_ = zipfile.ZipFile(fake_file, "r")
+        for file_path in zip_.namelist():
+            _, file_name = os.path.split(file_path)
+            file_like = zip_.open(file_path)
+
+            f = open(os.path.join(output_dir, file_name), "w")
+            f.write(file_like.read().decode('utf-8'))
+            f.close()
+
+Wow! Look how much clearer that is. You know what the type of each argument is, and
+what it represents. You can see any errors that the function might raise, as well, along
+with what it returns (`None`). And, this is available in the code and on the docs website!
 
 So, you're all good, right? Not yet! You need to make sure that the function's
 docstring will be shown on the reference page. In `reference.rst`, you need to
 add either an `.. autofunction:: ` or `.. autoclass:: ` directive. (Check out
 the document to see examples!)
 
-Then, when you build the docs, the docstring will be added to the docs.
+Then, when you build the docs, the docstring will be added to the docs. For more information
+on docstrings in Python, consult the [Python style guide](/docs/software/python_style).
+
+### Adding a docstring (C++)
+To add new docstrings for C++ code, you should add the docstrings in the necessary
+header files.
+
+Find the appropriate function or class, and add a docstring comment before its
+declaration. You can use JavaDoc-like syntax to add annotations.
+
+For example:
+
+    /**
+     * Waits for a connection to be established on the heartbeat listener. If no connection
+     * is established before the timeout has run out, then false is returned and the
+     * function exits.
+     *
+     * @param timeout The amount of time to wait before exiting the function and returning
+     * false.
+     *
+     * @return Whether a connection was established in time.
+     */
+    bool waitForConnection(ros::Duration timeout = { -1.0 }) const;  // waits forever by default
+
+This docstring includes a general description of the function, along with what parameter
+it's poised to accept. Additionally, what the function returns is documented. Great!
 
 ## Explicit Documentation
 
