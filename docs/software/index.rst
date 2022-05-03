@@ -1,6 +1,6 @@
-Development
+Software
 =====================
-Various docs related to how to develop MIL software
+Various documentation related to practices followed by the MIL Software team.
 
 .. toctree::
    :maxdepth: 1
@@ -18,3 +18,4 @@ Various docs related to how to develop MIL software
    Network with Vehicles and Simulation Servers <../infra/network.md>
    Developing with Submodules <submodule.md>
    Development Guide (Deprecated) <development_guide>
+   Helpful Scripts <scripts>

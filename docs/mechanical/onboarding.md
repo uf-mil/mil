@@ -49,7 +49,7 @@ Below are some of our current projects:
 * Subjugator 8
 * Subjugator 9 (WIP)
 * NaviGator
-* [Drone](/docs/mechanical/drone_doc.md) 
+* [Drone](/docs/navigator/drone.md) 
 
 For good mechanical resources, check out the [Resources](/docs/mechanical/resources.md)
  page.
