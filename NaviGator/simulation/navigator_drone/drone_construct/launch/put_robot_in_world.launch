@@ -1,0 +1,24 @@
+<launch>
+    <!-- Spawn simulated quadrotor uav -->
+    <arg name="sdf_robot_file" value="$(find sjtu_drone)/models/sjtu_drone/sjtu_drone.sdf"/>
+    <arg name="robot_name" value="sjtu_drone" />
+    <arg name="x" default="0.0" />
+    <arg name="y" default="0.0" />
+    <arg name="z" default="0.0" />
+    <arg name="roll" default="0.0"/>
+    <arg name="pitch" default="0.0"/>
+    <arg name="yaw" default="0.0"/>
+
+
+    <include file="$(find spawn_robot_tools_pkg)/launch/spawn_sdf.launch">
+        <arg name="sdf_robot_file" value="$(arg sdf_robot_file)"/>
+        <arg name="robot_name" default="$(arg robot_name)" />
+        <arg name="x" value="$(arg x)" />
+        <arg name="y" value="$(arg y)" />
+        <arg name="z" value="$(arg z)" />
+        <arg name="roll" value="$(arg roll)"/>
+        <arg name="pitch" value="$(arg pitch)"/>
+        <arg name="yaw" value="$(arg yaw)" />
+    </include>
+
+</launch>

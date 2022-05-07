@@ -1,0 +1,7 @@
+#!/bin/sh
+#find where the 'sjtu_drone' is
+pack_path=$(rospack find sjtu_drone)
+
+#enable gazebo to find the model files
+export GAZEBO_MODEL_PATH=$pack_path/models:$GAZEBO_MODEL_PATH
+$pack_path/bin/spawn_drone

@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>drone_construct</name>
+  <version>0.0.0</version>
+  <description>The drone_construct package</description>
+
+  <maintainer email="user@todo.todo">user</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>spawn_robot_tools_pkg</build_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>spawn_robot_tools_pkg</run_depend>
+
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>

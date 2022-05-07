@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/cvpr-ros-internal/!svn/ver/563/trunk/cvg_simulator/cvg_sim_gazebo/meshes/quadrotor
+END
+quadrotor_2.dae
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/cvpr-ros-internal/!svn/ver/563/trunk/cvg_simulator/cvg_sim_gazebo/meshes/quadrotor/quadrotor_2.dae
+END
+quadrotor_base.stl
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/cvpr-ros-internal/!svn/ver/563/trunk/cvg_simulator/cvg_sim_gazebo/meshes/quadrotor/quadrotor_base.stl
+END
+quadrotor_2.stl
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/cvpr-ros-internal/!svn/ver/563/trunk/cvg_simulator/cvg_sim_gazebo/meshes/quadrotor/quadrotor_2.stl
+END
+quadrotor_base.dae
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/cvpr-ros-internal/!svn/ver/563/trunk/cvg_simulator/cvg_sim_gazebo/meshes/quadrotor/quadrotor_base.dae
+END

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/drone_keyboard">
+        <file>drone_keyboard.png</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,34 @@
+<launch>
+ <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="false"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+ <arg name="verbose" default="true"/>
+  <arg name="world_name" default="$(find sjtu_drone)/worlds/contest.world"/>
+ 
+  <!-- start gzserver and load the map -->
+ <!--
+  <node name="gazebo" pkg="sjtu_drone" type="start_gzserver" args="$(arg world_name)" respawn="false"/>
+-->
+ <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(arg world_name)"/>
+        <arg name="debug" value="$(arg debug)" />
+        <arg name="gui" value="$(arg gui)" />
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+        <arg name="verbose" value="$(arg paused)"/>
+        <arg name="headless" value="$(arg headless)"/>
+    </include>
+
+
+  <!-- Spawn simulated quadrotor uav -->
+  <node name="spawn_model" pkg="sjtu_drone" type="spawn_model" respawn="false"/>
+
+
+   <!-- start keyboard control ui
+   <node name="drone_keyboard" pkg="sjtu_drone" type="drone_keyboard" /> 
+   -->
+   
+</launch>
