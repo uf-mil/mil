@@ -1,4 +1,10 @@
 # Continuous Integration
+
+:::{warning}
+These docs need to be updated to show the interactions of CI with GitHub Actions,
+the CI process that we are moving towards.
+:::
+
 MIL uses [BuildKite](https://buildkite.com/uf-mil) as our continuous integration system. This sytem
 automaticly tests pull requests to ensure they build, pass unit/integration tests, and satisfy formating requriements.
 
