@@ -1,7 +1,6 @@
 Passive sonar
 =============
 
-
 How to Use
 ----------
 

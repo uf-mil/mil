@@ -20,8 +20,6 @@ New Members
 
     docs/welcome
 
-    docs/design/design
-
     docs/mechanical/index
     docs/electrical/index
     docs/software/index
@@ -31,6 +29,7 @@ New Members
     docs/reference
     docs/subjugator/reference
     docs/navigator/reference
+    docs/design/design
     docs/infra/index
 
     docs/culture
