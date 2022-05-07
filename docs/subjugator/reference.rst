@@ -1,5 +1,5 @@
-Subjugator Reference
-====================
+Subjugator Software Reference
+=============================
 
 Below is the reference documentation for the code on our submarine robot, SubjuGator.
 The following systems are relevant only to this robot, and no other robot. However,

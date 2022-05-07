@@ -1,6 +1,6 @@
-Development
+Software
 =====================
-Various docs related to how to develop MIL software
+Various documentation related to practices followed by the MIL Software team.
 
 .. toctree::
    :maxdepth: 1
@@ -9,7 +9,7 @@ Various docs related to how to develop MIL software
    Contributing Changes <contributing>
    Adding Documentation <adding_documentation>
    help
-   Using The Development Server<using_the_dev_server>
+   zobelisk
    Bash and C++ Style Guide <cpp_bash_style.md>
    Python Style Guide <python_style.md>
    Migrating to ROS Noetic <noetic_migration.md>
@@ -17,4 +17,5 @@ Various docs related to how to develop MIL software
    Installing Ubuntu 18.04 on an M-series Apple computer <apple_mseries_ubuntu_setup.md>
    Network with Vehicles and Simulation Servers <../infra/network.md>
    Developing with Submodules <submodule.md>
-   Development Guide (Deprecated) <development_guide>
+   Optional Extensions <extension_support.md>
+   Helpful Scripts <scripts>

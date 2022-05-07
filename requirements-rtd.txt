@@ -10,3 +10,4 @@ scipy
 sklearn
 pandas
 rtds_action
+myst-parser

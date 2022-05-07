@@ -9,29 +9,34 @@ Welcome to the documentation site for the Machine Intelligence Lab at the Univer
 * **NaviGator:** An autonomous surface vehicle (ASV) which has competed in several maritime competitions. Won the 2016 Maritime RobotX Challenge, and received fourth in the 2018 Maritime RobotX Challenge. (`Website <https://subjugator.org>`_)
 * **Virtual RobotX:** An new extension of the NaviGator project supporting virtual robotics.
 
+Our first meeting of the Fall 2021 season was recorded, and can be found `here <https://mil.ufl.edu/videos/MIL_Kick_Off_Fall_2021.mp4>`_.
+The meeting introduced MIL and featured a tour of our lab. It's a great introduction
+to what we do; we encourage you to watch!
+
 New Members
 -----------
 .. toctree::
     :hidden:
 
-    docs/onboarding
-    docs/mechanical/mechanical
-    docs/branding
-    docs/glossary
-    docs/culture
-    docs/design/design
-    docs/reference
-    docs/sub_reference
-    docs/scripts
-    docs/projects
-    docs/subjugator/index
-    docs/navigator/vrx
-    docs/development/help
-    docs/development/index
-    docs/development/sdk
+    docs/welcome
 
-* **Interested software members**: Please read the :doc:`Software Onboarding Guide <docs/onboarding>`.
-* **Interested electrical members**: Please join our `Slack workspace <https://uf-mil.slack.com>`_.
+    docs/mechanical/index
+    docs/electrical/index
+    docs/software/index
+
+    docs/subjugator/index
+    docs/navigator/index
+    docs/reference
+    docs/subjugator/reference
+    docs/navigator/reference
+    docs/design/design
+    docs/infra/index
+
+    docs/culture
+    docs/branding
+
+* **Interested software members**: Please read the :doc:`Software Onboarding Guide <docs/software/onboarding>`.
+* **Interested electrical members**: Please read the :doc:`Electrical Onboarding Guide <docs/electrical/onboarding>`
 * **Interested mechanical members**: Please read the :doc:`Mechanical Onboarding Guide <docs/mechanical/onboarding>`.
 
 Relevant Links
@@ -44,14 +49,15 @@ Relevant Links
 Software Reference
 ------------------
 * **All Repository Source Documentation:** :doc:`Reference <docs/reference>`
-* **Practices:** :doc:`Our Development Practices <docs/development/index>` / :doc:`Scripts <docs/scripts>` / :doc:`SDKs <docs/development/sdk>`
+* **Practices:** :doc:`Our Development Practices <docs/software/index>` / :doc:`Scripts <docs/software/scripts>` / :doc:`SDKs <docs/software/sdk>`
 * **Project Procedures:** :doc:`SubjuGator <docs/subjugator/index>` / :doc:`VRX <docs/navigator/vrx>`
-* **Getting Help:** :doc:`Development Help <docs/development/help>`
+* **Getting Help:** :doc:`Development Help <docs/software/help>`
 
 Meta
 ----
 .. toctree::
     :maxdepth: 1
 
-    docs/infra/index
+    docs/glossary
     docs/testingprocedures.md
+    docs/deprecated

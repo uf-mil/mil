@@ -1263,6 +1263,7 @@ div.code-block-caption {
     max-height: calc(100vh - 2em);
     overflow-y: auto;
     margin: 1em;
+    padding-left: 0.5em;
   }
 
   #sidebar a {
