@@ -41,6 +41,13 @@ Historically however, thanks to:
   --blue-5: #002d6f;
   --blue-6: #002657;
 
+  --orange-1: #fa4616;
+  --orange-2: #ff3c08;
+  --orange-3: #e63000;
+  --orange-4: #bd2700;
+  --orange-5: #911e00;
+  --orange-6: #571200;
+
   --settings: var(--grey-1);
   --settings-hover: var(--grey-1-8);
   --main-background: var(--grey-1);
@@ -115,8 +122,8 @@ Historically however, thanks to:
 
 :root[data-theme="dark"] {
   --main-background: var(--grey-7);
-  --link-text: var(--blue-1);
-  --link-hover-text: var(--blue-2);
+  --link-text: var(--orange-1);
+  --link-hover-text: var(--orange-2);
   --main-text: var(--white);
   --sub-header-background: var(--grey-8);
   --search-border: var(--grey-5);
@@ -162,9 +169,9 @@ Historically however, thanks to:
   --attribute-table-title: var(--grey-3);
   --attribute-table-entry-border: var(--grey-5);
   --attribute-table-entry-text: var(--grey-3);
-  --attribute-table-entry-hover-border: var(--blue-1);
+  --attribute-table-entry-hover-border: var(--orange-1);
   --attribute-table-entry-hover-background: var(--grey-6);
-  --attribute-table-entry-hover-text: var(--blue-1);
+  --attribute-table-entry-hover-text: var(--orange-1);
   --attribute-table-badge: var(--grey-4);
   --highlighted-text: rgba(250, 166, 26, 0.2);
 }
@@ -1347,6 +1354,20 @@ div.code-block-caption {
     height: 2em;
     width: auto;
     filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(81deg) brightness(113%) contrast(101%);
+}
+
+#mil-light-dark-icon {
+    text-align: center;
+    margin-right: 0.25em;
+}
+
+#mil-light-dark-icon:hover {
+    cursor: pointer;
+}
+
+#mil-light-dark-icon > span {
+    color: white;
+    font-size: 2em;
 }
 
 img[src*="_images/collage.png"] {
