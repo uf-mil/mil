@@ -15,9 +15,6 @@
 import sys
 import os
 import os.path
-import recommonmark
-from recommonmark.transform import AutoStructify
-from sphinx.ext import graphviz
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -347,5 +344,4 @@ texinfo_documents = [
 
 # At the bottom of conf.py
 def setup(app):
-    # app.add_config_value('recommonmark_config', {'enable_math': True, 'enable_inline_math': True}, True)
-    app.add_transform(AutoStructify)
+    pass
