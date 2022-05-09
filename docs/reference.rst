@@ -3135,6 +3135,13 @@ Exceptons
 
         :rtype: :class:`str`
 
+.. currentmodule:: mil_usb_to_can
+
+.. attributetable:: ApplicationPacketWrongIdentifierException
+
+.. autoclass:: ApplicationPacketWrongIdentifierException
+    :members:
+
 Mathematics 
 -------------------
 
@@ -3647,3 +3654,20 @@ SylphaseSonarToRosNode
 .. cppattributetable:: SylphaseSonarToRosNode
 
 .. doxygenclass:: SylphaseSonarToRosNode
+
+CAN Communication
+-----------------
+
+ApplicationPacket
+^^^^^^^^^^^^^^^^^
+.. attributetable:: mil_usb_to_can.ApplicationPacket
+
+.. autoclass:: mil_usb_to_can.ApplicationPacket
+    :members:
+
+USBtoCANBoard
+^^^^^^^^^^^^^
+.. attributetable:: mil_usb_to_can.USBtoCANBoard
+
+.. autoclass:: mil_usb_to_can.USBtoCANBoard
+    :members:

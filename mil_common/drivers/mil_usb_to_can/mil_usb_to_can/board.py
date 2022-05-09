@@ -1,24 +1,27 @@
 #!/usr/bin/env python3
 import serial
-from .utils import ReceivePacket, CommandPacket
+from .utils import Packet, ReceivePacket, CommandPacket
 from .simulation import SimulatedUSBtoCAN
 from threading import Lock
 
 # from mil_tools import hexify
+from typing import Optional
 
-
-class USBtoCANBoard(object):
+class USBtoCANBoard:
     """
     ROS-independent wrapper which provides an interface to connect to the USB to CAN board
     via a serial (or simulated serial) device. Provides thread-safe funtionality.
-    """
 
-    def __init__(self, port, baud=9600, simulated=False, **kwargs):
+    Attributes:
+        lock (threading.Lock): The thread lock.
+        ser (Union[:class:`SimulatedUSBtoCAN`, :class:`serial.Serial`]): The serial connection.
+    """
+    def __init__(self, port: str, baud: int = 9600, simulated: bool = False, **kwargs):
         """
-        Creates an instance.
-        @param port: path to serial device, such as /dev/ttyUSB0
-        @param baud: baud rate of serial device to connect to
-        @param simulated: If true, use the simulated serial device rather than connecting to the real one
+        Args:
+        	port (str): Path to serial device, such as ``/dev/ttyUSB0``.
+        	baud (int): Baud rate of serial device to connect to. Defaults to 9600.
+        	simulated (bool): If True, use a simulated serial device rather than a real device. Defaults to ``False``. 
         """
         self.lock = Lock()
         if simulated:
@@ -28,22 +31,29 @@ class USBtoCANBoard(object):
         self.ser.flushOutput()
         self.ser.flushInput()
 
-    def read_packet(self):
+    def read_packet(self) -> Optional[Packet]:
         """
-        Read a packet from the board, if available. Returns a ReceivePacket instance if one
-        was succefully read, or None if the in buffer is empty.
+        Read a packet from the board, if available. Returns a :class:`ReceivePacket`
+        instance if one was succefully read, or ``None`` if the in buffer is empty.
+
+        Returns:
+            Optional[:class:`ReceivePacket`]: The packet, if found, otherwise ``None``.
         """
+        # TODO Does this actually return ReceivePacket? Appears it might only be
+        # able to return Packet.
         with self.lock:
             if self.ser.in_waiting == 0:
                 return None
             return ReceivePacket.read_packet(self.ser)
 
-    def send_data(self, data, can_id=0):
+    def send_data(self, data: bytes, can_id: int = 0):
         """
-        Sends data to a CAN device
-        Note: write operation is mutex locked
-        @param device_id: CAN device ID to send data to
-        @param data: bytes/string object of the data to send to the device
+        Sends data to a CAN device using the thread lock. Writes using the :meth:`write`
+        method of the :attr:`.ser` attribute.
+
+        Args:
+        	device_id (int): CAN device ID to send data to.
+        	data (bytes): Data (represented as bytes) to send to the device.
         """
         p = CommandPacket.create_send_packet(data, can_id=can_id)
         with self.lock:
