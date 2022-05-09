@@ -15,9 +15,6 @@
 import sys
 import os
 import os.path
-import recommonmark
-from recommonmark.transform import AutoStructify
-from sphinx.ext import graphviz
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -187,14 +184,14 @@ html_logo = "branding/mil.svg"
 # The name of an image file (relative to this directory) to use as a favicon of
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = "branding/mil.svg"
+html_favicon = "branding/mil_white.svg"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['docs/_static']
 
-html_js_files = ["custom.js", "sidebar.js"]
+html_js_files = ["custom.js", "sidebar.js", "lightdarkmode.js"]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -347,5 +344,4 @@ texinfo_documents = [
 
 # At the bottom of conf.py
 def setup(app):
-    # app.add_config_value('recommonmark_config', {'enable_math': True, 'enable_inline_math': True}, True)
-    app.add_transform(AutoStructify)
+    pass

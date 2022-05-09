@@ -12,9 +12,36 @@
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         {%- block scripts %}
         <script id="documentation_options" data-url_root="{{ pathto('', 1) }}" src="{{ pathto('_static/documentation_options.js', 1) }}"></script>
+        <script src="{{ pathto('searchindex.js', 1) }}" defer></script>
         {%- for js in script_files %}
         {{ js_tag(js) }}
         {%- endfor %}
+        {%- endblock %}
+        {%- if pageurl %}
+        <link rel="canonical" href="{{ pageurl|e }}" />
+        {%- endif %}
+        {%- if favicon %}
+        <link rel="shortcut icon" href="{{ pathto('_static/' + favicon, 1)|e }}"/>
+        {%- endif %}
+        {%- block linktags %}
+        {%- if hasdoc('about') %}
+        <link rel="author" title="{{ _('About these documents') }}" href="{{ pathto('about') }}" />
+        {%- endif %}
+        {%- if hasdoc('genindex') %}
+        <link rel="index" title="{{ _('Index') }}" href="{{ pathto('genindex') }}" />
+        {%- endif %}
+        {%- if hasdoc('search') %}
+        <link rel="search" title="{{ _('Search') }}" href="{{ pathto('search') }}" />
+        {%- endif %}
+        {%- if hasdoc('copyright') %}
+        <link rel="copyright" title="{{ _('Copyright') }}" href="{{ pathto('copyright') }}" />
+        {%- endif %}
+        {%- if next %}
+        <link rel="next" title="{{ next.title|striptags|e }}" href="{{ next.link|e }}" />
+        {%- endif %}
+        {%- if prev %}
+        <link rel="prev" title="{{ prev.title|striptags|e }}" href="{{ prev.link|e }}" />
+        {%- endif %}
         {%- endblock %}
     </head>
     <body>
@@ -22,6 +49,9 @@
             <header class="grid-item">
                 <nav>
                     <a class="main-heading" href="{{ pathto(master_doc)|e }}">Machine Intelligence Lab</a>
+                    <div id="mil-light-dark-icon" onClick="rotateLightDark();">
+                        <span class="material-icons" title=""></span>
+                    </div>
                     <a href="https://github.com/uf-mil/mil" target="_blank"><img class="mil-svg" src="{{ pathto('_static/github.svg', 1)|e }}" /></a>
                     <a href="https://mil.ufl.edu" target="_blank"><img class="mil-svg" src="{{ pathto('_static/mil.svg', 1)|e }}" /></a>
                 </nav>
@@ -31,8 +61,8 @@
                     <span class="material-icons">menu</span>
                 </span>
                 <div id="sidebar">
-                    {%- include "globaltoc.html" %}
                     {%- include "searchbox.html" %}
+                    {%- include "globaltoc.html" %}
                 </div>
             </aside>
             <main class="grid-item" role="main">

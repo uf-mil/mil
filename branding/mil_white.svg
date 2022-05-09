@@ -1,0 +1,11 @@
+<svg width="78" height="78" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <g transform="translate(-340,-437)">
+  <path d="m354 504h50c10.81-0.6142 11-11 11-11v-34c0-11.547-11-11-11-11h-50c-10.626-0.12284-11 10-11 10v36s0.7428 9.9386 11 10z" fill="#fff"/>
+  <g>
+   <path d="m371 457h7v35h-6v-2h4v-13l-11-10-7 22h2v2h-8v-2h5l9-28 10 10v-12h-5z"/>
+   <path d="m387 457h-7v35h6v-2h-4v-13l11-10 7 22h-2v2h8v-2h-5l-9-28-10 10v-12h5z"/>
+   <rect x="352" y="493" width="54" height="2"/>
+  </g>
+  <rect x="347" y="452" width="64" height="48" ry="7" fill="none" stroke="#000" stroke-width="3.9987"/>
+ </g>
+</svg>
