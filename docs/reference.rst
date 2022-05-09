@@ -3671,3 +3671,17 @@ USBtoCANBoard
 
 .. autoclass:: mil_usb_to_can.USBtoCANBoard
     :members:
+
+CANDeviceHandle
+^^^^^^^^^^^^^^^
+.. attributetable:: mil_usb_to_can.CANDeviceHandle
+
+.. autoclass:: mil_usb_to_can.CANDeviceHandle
+    :members:
+
+USBtoCANDriver
+^^^^^^^^^^^^^^
+.. attributetable:: mil_usb_to_can.USBtoCANDriver
+
+.. autoclass:: mil_usb_to_can.USBtoCANDriver
+    :members:

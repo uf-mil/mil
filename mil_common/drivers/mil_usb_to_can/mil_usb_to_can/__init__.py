@@ -11,3 +11,4 @@ from .simulation import (
 )
 from .device import CANDeviceHandle, ExampleEchoDeviceHandle, ExampleAdderDeviceHandle
 from .board import USBtoCANBoard
+from .driver import USBtoCANDriver

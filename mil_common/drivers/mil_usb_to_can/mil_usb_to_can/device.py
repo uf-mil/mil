@@ -1,36 +1,49 @@
 #!/usr/bin/python3
-import rospy
-import struct
 import random
 import string
-from .application_packet import ApplicationPacket
+import struct
+
+import rospy
 from rospy_tutorials.srv import AddTwoInts
 
-class CANDeviceHandle(object):
+from .application_packet import ApplicationPacket
+from .board import USBtoCANBoard
+
+
+class CANDeviceHandle:
     """
-    Helper class to allow developers to write handles for communication with a particular CAN device.
-    See ExampleCANDeviceHandle for an example of implementing one of these.
+    Base class to allow developers to write handles for communication with a
+    particular CAN device.
+
+    For examples of child classes of this class, see the ``device.py`` file in the
+    ``mil_usb_to_can`` package.
     """
 
-    def __init__(self, driver, device_id):
+    def __init__(self, driver: USBtoCANBoard, device_id: int):
         """
-        Creates a CANDeviceHandle.
-        @param driver: a USBtoCANBoard object that will be used for communication with the USB to CAN board
-        @param device_id: the CAN id of the device this class will handle
+        Args:
+                driver (USBtoCANBoard): Driver that is used to communicate with the board.
+                device_id (int): The CAN ID of the device this class will handle. Not currently used.
         """
         self._driver = driver
         self._device_id = device_id
 
-    def on_data(self, data):
+    def on_data(self, data: bytes):
         """
-        Called when data is received from the device this handle is registered for
+        Called when data is received from the device this handle is registered for.
+
+        Args:
+            data (bytes): The data received.
         """
         pass
 
-    def send_data(self, data, can_id=0):
+    def send_data(self, data: bytes, can_id: int = 0):
         """
-        Sends data to the device
-        @param data: the data payload to send to the device (string/bytes object)
+        Sends data to the device.
+
+        Args:
+            data (bytes): The data payload to send to the device.
+            can_id (int): The CAN device ID to send data to. Defaults to 0.
         """
         return self._driver.send_data(data, can_id=can_id)
 
