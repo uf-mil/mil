@@ -1,40 +1,41 @@
 #!/usr/bin/python3
+from __future__ import annotations
+
 from mil_misc_tools.serial_tools import SimulatedSerial
 from .utils import ReceivePacket, CommandPacket
 from .application_packet import ApplicationPacket
 import struct
 
 
-class SimulatedCANDevice(object):
+class SimulatedCANDevice:
     """
-    Simulates a CAN device, with functions to be overrided
-    to handle data requests and sends from motherboard
-    """
+    Simulates a CAN device, with functions to be overrided to handle data requests 
+    and sends from motherboard.
 
-    def __init__(self, sim_board, can_id):
-        """
-        Constructs the simulated device, storing the simulated CAN2USB board it is attached to
-        and its CAN device id.
-        Child classes must call this method when their __init__ is called (see ExampleSimulatedCANDevice below)
-        """
+    Child classes can inherit from this class to implement a simulated CAN device.
+    """
+    def __init__(self, sim_board: SimulatedUSBtoCAN, can_id: int):
         self._sim_board = sim_board
         self._can_id = can_id
 
-    def send_data(self, data):
+    def send_data(self, data: bytes):
         """
-        Send data onto the bus, delivering it to other simulated
-        devices and to the driver node
+        Send data onto the bus, delivering it to other simulated devices and to 
+        the driver node.
         """
         self._sim_board.send_to_bus(self._can_id, data)
 
-    def on_data(self, data, can_id):
+    def on_data(self, data: bytes, can_id: int):
         """
-        Called when the motherboard or another simulated device
-        sends data onto the bus.
-        Intended to be overriden by child classes (see ExampleSimulatedCANDevice below)
-        @param data: the data payload as a string/bytes object
-        NOTE: as the CAN bus is shared, you should inspect the data
-              to make sure it was intended for this device before processing it
+        Called when the motherboard or another simulated device sends data onto the bus.
+
+        .. note::
+
+            Because the CAN bus is shared, you must verify that the received data
+            is appropriate for your device.
+
+        Args:
+            data (bytes): The data payload as a string/bytes object.
         """
         pass
 
@@ -79,12 +80,13 @@ class SimulatedUSBtoCAN(SimulatedSerial):
     Simulates the USB to CAN board. Is supplied with a dictionary of simualted
     CAN devices to simulate the behavior of the whole CAN network.
     """
-
     def __init__(self, devices={0: SimulatedCANDevice}, can_id=-1, *args, **kwargs):
         """
-        @param devices: dictionary {device_id: SimulatedCANDevice} mapping CAN IDs
-                        to SimulatedCANDevice classes that will be used for that ID
-        @param can_id: ID of the CAN2USB device
+        Args:
+        	devices (Dict[int, Any]): Dictionary containing CAN IDs and their associated
+              simulated classes inheriting from :class:`SimulatedCANDevice`. Defaults
+              to ``{0: SimulatedCANDevice}``.
+        	can_id (int): ID of the CAN2USB device. Defaults to -1.
         """
         self._my_id = can_id
         self._devices = dict(
@@ -92,11 +94,15 @@ class SimulatedUSBtoCAN(SimulatedSerial):
         )
         super(SimulatedUSBtoCAN, self).__init__()
 
-    def send_to_bus(self, can_id, data, from_mobo=False):
+    def send_to_bus(self, can_id: int, data: bytes, from_mobo: bool = False):
         """
         Sends data onto the simulated bus from a simulated device
-        @param can_id: ID of sender
-        @param data: data paylod
+
+        Args:
+        	can_id (int): ID of sender.
+            data (bytes): The payload to send.
+            from_mobo (bool): Whether the data is from the motherboard. Defaults to
+              False.
         """
         # If not from the motherboard, store this for future requests from motherboard
         if not from_mobo:
@@ -106,8 +112,10 @@ class SimulatedUSBtoCAN(SimulatedSerial):
             if device_can_id != can_id:
                 device.on_data(data, can_id)
 
-    def write(self, data):
-        # Parse incomming data as a command packet from motherboard
+    def write(self, data: bytes) -> int:
+        """
+        Parse incoming data as a command packet from the motherboard.
+        """
         p = CommandPacket.from_bytes(data)
         self.send_to_bus(p.filter_id, p.data, from_mobo=True)
         return len(data)
