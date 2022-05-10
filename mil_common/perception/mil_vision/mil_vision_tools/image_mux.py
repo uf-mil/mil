@@ -161,5 +161,5 @@ if __name__ == '__main__':
         t[i] = np.array(images[i])
     cv2.imshow('Grid', t.image)
     cv2.imshow('Grid2', t())
-    print 'Press any key in GUI window to exit'
+    print('Press any key in GUI window to exit')
     cv2.waitKey(0)

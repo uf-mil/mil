@@ -3736,3 +3736,13 @@ CommandPacket
 
 .. autoclass:: mil_usb_to_can.CommandPacket
     :members:
+
+Computer Vision
+---------------
+
+ContourClassifier
+^^^^^^^^^^^^^^^^^
+.. attributetable:: mil_vision_tools.ContourClassifier
+
+.. autoclass:: mil_vision_tools.ContourClassifier
+    :members:
