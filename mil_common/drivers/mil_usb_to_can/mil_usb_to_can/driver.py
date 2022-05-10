@@ -1,16 +1,27 @@
 #!/usr/bin/python3
+import importlib
+from typing import Any, Dict, Generator, Optional, Tuple
+
 import rospy
+from serial import SerialException
+
 from .board import USBtoCANBoard
 from .utils import USB2CANException
-from serial import SerialException
-import importlib
 
 
-class USBtoCANDriver(object):
+class USBtoCANDriver:
     """
-    ROS Driver for the USB to CAN board.
-    Allow users to specify a dictionary of device handle classes
-    to be loaded at runtime to handle communication with specific devices.
+    ROS Driver which implements the USB to CAN board. Allow users to specify a dictionary of
+    device handle classes to be loaded at runtime to handle communication with
+    specific devices.
+
+    Attributes:
+        board (USBtoCANBoard): The board the driver is implementing.
+        handles (Dict[int, Any]): The handles served by the driver. Each key represents
+          a unique device ID, and each corresponding value represents an instance of
+          a child class inheriting from :class:`CANDeviceHandle`. Upon initialization,
+          each class is constructed after being parsed from dynamic reconfigure.
+        timer (rospy.Timer): The timer controlling when buffers are processed.
     """
 
     def __init__(self):
@@ -39,7 +50,7 @@ class USBtoCANDriver(object):
             self.board = USBtoCANBoard(port=port, baud=baud, simulated=simulation)
 
         # Add device handles from the modules specified in ROS params
-        self.handles = dict(
+        self.handles: Dict[int, Any] = dict(
             (device_id, cls(self, device_id))
             for device_id, cls in self.parse_module_dictionary(
                 rospy.get_param("~device_handles")
@@ -48,10 +59,13 @@ class USBtoCANDriver(object):
 
         self.timer = rospy.Timer(rospy.Duration(1.0 / 20.0), self.process_in_buffer)
 
-    def read_packet(self):
+    def read_packet(self) -> bool:
         """
-        Attempt to read a packet from the board. Returns True if a message
-        was succesfully parsed
+        Attempt to read a packet from the board. If the packet has an appropriate device
+        handler, then the packet is passed to the ``on_data`` method of that handler.
+
+        Returns:
+            bool: The success in reading a packet.
         """
         try:
             packet = self.board.read_packet()
@@ -70,14 +84,21 @@ class USBtoCANDriver(object):
             )
         return True
 
-    def process_in_buffer(self, *args):
+    def process_in_buffer(self, *args) -> None:
         """
-        Read all available messages in the board's in buffer
+        Read all available packets in the board's in-buffer.
         """
         while self.read_packet():
             pass
 
-    def send_data(self, *args, **kwargs):
+    def send_data(self, *args, **kwargs) -> Optional[Exception]:
+        """
+        Sends data using the :meth:`USBtoCANBoard.send_data` method.
+
+        Returns:
+            Optional[Exception]: If data was sent successfully, nothing is returned.
+            Otherwise, the exception that was raised in sending is returned.
+        """
         try:
             self.board.send_data(*args, **kwargs)
             return None
@@ -86,10 +107,16 @@ class USBtoCANDriver(object):
             return e
 
     @staticmethod
-    def parse_module_dictionary(d):
+    def parse_module_dictionary(
+        d: Dict[str, Any]
+    ) -> Generator[Tuple[int, Any], None, None]:
         """
-        Generator to load classes from module strings specified in a dictionary
-        Yields tulples (device_id, cls) of device_ids and their associeted imported class
+        Generator to load classes from module strings specified in a dictionary.
+        Imports all found classes.
+
+        Yields:
+            Generator[Tuple[int, Any], None, None]: Yields tuples containing the device
+            ID and the associated class.
         """
         for device_id, module_name in d.items():
             device_id = int(device_id)
