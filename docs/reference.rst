@@ -3740,9 +3740,34 @@ CommandPacket
 Computer Vision
 ---------------
 
+Utility Functions
+^^^^^^^^^^^^^^^^^
+.. autofunction:: mil_vision_tools.auto_canny
+
+.. autofunction:: mil_vision_tools.contour_centroid
+
+.. autofunction:: mil_vision_tools.contour_mask
+
+.. autofunction:: mil_vision_tools.putText_ul
+
+.. autofunction:: mil_vision_tools.points_in_image
+
+.. autofunction:: mil_vision_tools.roi_enclosing_points
+
+.. autofunction:: mil_vision_tools.rect_from_roi
+
+.. autofunction:: mil_vision_tools.quaternion_from_rvec
+
 ContourClassifier
 ^^^^^^^^^^^^^^^^^
 .. attributetable:: mil_vision_tools.ContourClassifier
 
 .. autoclass:: mil_vision_tools.ContourClassifier
+    :members:
+
+Threshold
+^^^^^^^^^
+.. attributetable:: mil_vision_tools.Threshold
+
+.. autoclass:: mil_vision_tools.Threshold
     :members:
