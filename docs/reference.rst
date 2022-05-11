@@ -3771,3 +3771,10 @@ Threshold
 
 .. autoclass:: mil_vision_tools.Threshold
     :members:
+
+ImageMux
+^^^^^^^^
+.. attributetable:: mil_vision_tools.ImageMux
+
+.. autoclass:: mil_vision_tools.ImageMux
+    :members:
