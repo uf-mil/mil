@@ -1013,6 +1013,58 @@ ColorRGBA
 Sensor Messages
 ^^^^^^^^^^^^^^^
 
+Image
+^^^^^
+
+.. attributetable:: sensor_msgs.msg._Image.Image
+
+.. class:: sensor_msgs.msg._Image.Image
+
+    A ROS message to represent an image.
+
+    .. attribute:: header
+
+        The header associated with the message.
+
+        :type: Header
+
+    .. attribute:: height
+
+        The height of the image.
+
+        :type: int
+
+    .. attribute:: width
+
+        The width of the image.
+
+        :type: int
+
+    .. attribute:: encoding
+
+        The encoding of the image.
+
+        :type: str
+
+    .. attribute:: is_bigendian
+
+        Whether the image uses the big-endian format to store values.
+
+        :type: bool
+
+    .. attribute:: step
+
+        Full length of a row, in bytes.
+
+        :type: int
+
+    .. attribute:: data
+
+        Actual image data. The size of the list is equal to :attr:`.step` multiplied 
+        by the number of rows.
+
+        :type: List[int]
+
 PointField
 ~~~~~~~~~~
 
@@ -3777,4 +3829,18 @@ ImageMux
 .. attributetable:: mil_vision_tools.ImageMux
 
 .. autoclass:: mil_vision_tools.ImageMux
+    :members:
+
+ImageSet
+^^^^^^^^
+.. attributetable:: mil_vision_tools.ImageSet
+
+.. autoclass:: mil_vision_tools.ImageSet
+    :members:
+
+ImageProc
+^^^^^^^^^
+.. attributetable:: mil_vision_tools.ImageProc
+
+.. autoclass:: mil_vision_tools.ImageProc
     :members:
