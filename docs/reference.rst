@@ -3844,3 +3844,17 @@ ImageProc
 
 .. autoclass:: mil_vision_tools.ImageProc
     :members:
+
+TrackedObject
+^^^^^^^^^^^^^
+.. attributetable:: mil_vision_tools.TrackedObject
+
+.. autoclass:: mil_vision_tools.TrackedObject
+    :members:
+
+ObjectsTracker
+^^^^^^^^^^^^^^
+.. attributetable:: mil_vision_tools.ObjectsTracker
+
+.. autoclass:: mil_vision_tools.ObjectsTracker
+    :members:
