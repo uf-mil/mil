@@ -3858,3 +3858,10 @@ ObjectsTracker
 
 .. autoclass:: mil_vision_tools.ObjectsTracker
     :members:
+
+RectFinder
+^^^^^^^^^^
+.. attributetable:: mil_vision_tools.RectFinder
+
+.. autoclass:: mil_vision_tools.RectFinder
+    :members:
