@@ -108,9 +108,6 @@ void GazeboRosCameraUtils::Load(sensors::SensorPtr _parent,
   if (this->sdf->HasElement("robotNamespace"))
     this->robot_namespace_ = this->sdf->Get<std::string>("robotNamespace") + "/";
 
-  std::cout << "hey" << std::endl;
-  std::cout << this->robot_namespace_ << std::endl;
-
   this->image_topic_name_ = "image_raw";
   if (this->sdf->HasElement("imageTopicName"))
     this->image_topic_name_ = this->sdf->Get<std::string>("imageTopicName");
