@@ -20,7 +20,14 @@ class TrackedObject:
         features (List[Any]): A list of features used by :class:`ObjectsTracker`.
         observations (int): A number of observations executed on the object.
     """
-    def __init__(self, id: int, stamp: rospy.Time, features: List[Any], data: Optional[Any] = None):
+
+    def __init__(
+        self,
+        id: int,
+        stamp: rospy.Time,
+        features: List[Any],
+        data: Optional[Any] = None,
+    ):
         """
         Args:
             id (int): A unique id for this object.
@@ -34,7 +41,9 @@ class TrackedObject:
         self.observations = 0
         self.update(stamp, features, data)
 
-    def update(self, stamp: rospy.Time, features: List[Any], data: Optional[Any] = None) -> None:
+    def update(
+        self, stamp: rospy.Time, features: List[Any], data: Optional[Any] = None
+    ) -> None:
         """
         Update an object's metadata.
 
@@ -82,6 +91,7 @@ class ObjectsTracker:
         max_id (int): The maximum ID being used amongst the objects. This ID is used
             when constructing new objects, after which, it is incremented by one.
     """
+
     __metaclass__ = abc.ABCMeta
 
     objects: List[TrackedObject]
@@ -99,7 +109,9 @@ class ObjectsTracker:
         self.max_id = 0
         self.objects = []
 
-    def add_observation(self, stamp: rospy.Time, features: List[Any], data: Optional[Any] = None) -> TrackedObject:
+    def add_observation(
+        self, stamp: rospy.Time, features: List[Any], data: Optional[Any] = None
+    ) -> TrackedObject:
         """
         Add a new observation to the tracked objects.
 
@@ -136,11 +148,13 @@ class ObjectsTracker:
         """
         if now is None:
             now = rospy.Time.now()
-        self.objects = list(filter(
-            lambda obj: now - obj.stamp < self.expiration_seconds, self.objects
-        ))
+        self.objects = list(
+            filter(lambda obj: now - obj.stamp < self.expiration_seconds, self.objects)
+        )
 
-    def get_persistent_objects(self, min_observations: int = 10, min_age: rospy.Duration = rospy.Duration(0)):
+    def get_persistent_objects(
+        self, min_observations: int = 10, min_age: rospy.Duration = rospy.Duration(0)
+    ):
         """
         Get a list of objects which have persisted sufficiently long.
 
@@ -153,10 +167,12 @@ class ObjectsTracker:
         Returns:
             List[TrackedObject]: List of tracked objects meeting the above criteria.
         """
-        return list(filter(
-            lambda obj: obj.age >= min_age and obj.observations >= min_observations,
-            self.objects,
-        ))
+        return list(
+            filter(
+                lambda obj: obj.age >= min_age and obj.observations >= min_observations,
+                self.objects,
+            )
+        )
 
     @abc.abstractmethod
     def distance(self, a: Any, b: Any) -> float:

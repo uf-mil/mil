@@ -397,6 +397,60 @@ PoseTwist
 
         :type: ~geometry_msgs.msg._Accel.Accel
 
+ObjectInImage
+~~~~~~~~~~~~~
+
+.. attributetable:: mil_msgs.msg._ObjectInImage.ObjectInImage
+
+.. class:: mil_msgs.msg._ObjectInImage.ObjectInImage
+
+    A ROS message type representing the position of an object in an image.
+
+    .. attribute:: name
+
+        The name of the object.
+
+        :type: str
+
+    .. attribute:: points
+
+        The center of the object in the image.
+
+        :type: ~mil_msgs.msg._Point2D.Point2D
+
+    .. attribute:: confidence
+
+        The confidence of the object's position, ranging between 0 and 1.
+
+        :type: float
+
+    .. attribute:: attributes
+
+        ???
+
+        :type: str
+
+Point2D
+~~~~~~~
+
+.. attributetable:: mil_msgs.msg._Point2D.Point2D
+
+.. class:: mil_msgs.msg._Point2D.Point2D
+
+    A ROS message type representing an x and y position in a 2D space.
+
+    .. attribute:: x
+
+        The x-position.
+
+        :type: float
+
+    .. attribute:: y
+
+        The y-position.
+
+        :type: float
+
 Navigation Messages
 ^^^^^^^^^^^^^^^^^^^
 
@@ -1014,7 +1068,7 @@ Sensor Messages
 ^^^^^^^^^^^^^^^
 
 Image
-^^^^^
+~~~~~
 
 .. attributetable:: sensor_msgs.msg._Image.Image
 
@@ -3810,6 +3864,8 @@ Utility Functions
 
 .. autofunction:: mil_vision_tools.quaternion_from_rvec
 
+.. autofunction:: mil_vision_tools.create_object_msg
+
 ContourClassifier
 ^^^^^^^^^^^^^^^^^
 .. attributetable:: mil_vision_tools.ContourClassifier
@@ -3864,4 +3920,11 @@ RectFinder
 .. attributetable:: mil_vision_tools.RectFinder
 
 .. autoclass:: mil_vision_tools.RectFinder
+    :members:
+
+VisionNode
+^^^^^^^^^^
+.. attributetable:: mil_vision_tools.VisionNode
+
+.. autoclass:: mil_vision_tools.VisionNode
     :members:

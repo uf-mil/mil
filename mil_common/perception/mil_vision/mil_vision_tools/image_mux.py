@@ -46,6 +46,7 @@ class ImageMux:
         text_scale (int): Scaling factor for label text. Defaults to 1.
         text_thickness (int): Thickness of the label text. Defaults to 2.
     """
+
     def __init__(
         self,
         size: Tuple[int, int] = (480, 640),

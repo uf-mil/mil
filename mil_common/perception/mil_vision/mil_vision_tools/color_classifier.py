@@ -24,7 +24,7 @@ def _get_param(one, two):
 
 class ContourClassifier:
     """
-    Abstract class to represent a classifier for contours within images. 
+    Abstract class to represent a classifier for contours within images.
 
     See GaussianColorClassifier for an example.
 
@@ -38,7 +38,13 @@ class ContourClassifier:
 
     __metaclass__ = ABCMeta  # Treat
 
-    def __init__(self, classes: List[str], training_file: Optional[str] = None, labelfile: Optional[str] = None, image_dir: Optional[str] = None):
+    def __init__(
+        self,
+        classes: List[str],
+        training_file: Optional[str] = None,
+        labelfile: Optional[str] = None,
+        image_dir: Optional[str] = None,
+    ):
         self.classes = classes
         self.training_file = training_file
         self.labelfile = labelfile
@@ -48,7 +54,7 @@ class ContourClassifier:
     @abstractproperty
     def FEATURES(cls) -> List[str]:
         """
-        For concrete classes, must return a list of strings naming the features 
+        For concrete classes, must return a list of strings naming the features
         returned by get_features.
 
         For example, an example overload might return ``['red_mean', 'blue_mean', 'green_mean']``.
@@ -73,15 +79,15 @@ class ContourClassifier:
     @abstractmethod
     def classify_features(self, features: np.ndarray) -> int:
         """
-        For concrete classes, classify a contour based on it's set of features 
+        For concrete classes, classify a contour based on it's set of features
         returned from get_features.
 
         Args:
-        	features (np.ndarray): a list of numerical features in the order 
+                features (np.ndarray): a list of numerical features in the order
             returned by :meth:`.get_features`.
 
         Returns:
-            The index of the class which is the most probabable classification 
+            The index of the class which is the most probabable classification
             based on the features.
         """
         pass
@@ -103,26 +109,26 @@ class ContourClassifier:
     @abstractmethod
     def train(self, features: np.ndarray, classes: np.ndarray):
         """
-        For concrete classes, train the classifier based on the set of features 
+        For concrete classes, train the classifier based on the set of features
         and their labeled class index.
 
         Args:
-        	features (np.ndarray): Array with shape ``(n_samples, m_features)``, 
-              where each row is a list of features in the order returned from 
+                features (np.ndarray): Array with shape ``(n_samples, m_features)``,
+              where each row is a list of features in the order returned from
               :meth:`.get_features`.
-        	classes (np.ndarray): List with shape ``(n_samples)`` of labeled class index 
+                classes (np.ndarray): List with shape ``(n_samples)`` of labeled class index
               corresponding to each row of features.
         """
         pass
 
     def score(self, features: np.ndarray, classes: np.ndarray) -> float:
         """
-        Returns the classification accuracy based on the set of features and 
+        Returns the classification accuracy based on the set of features and
         labeled class indicies.
 
         Args:
-        	features (np.ndarray): Array of shape ``(n_samples, m_features)``, where each row is a list of features.
-        	classes (np.ndarray): Array of shape ``(n_samples)`` with labeled class indicies.
+                features (np.ndarray): Array of shape ``(n_samples, m_features)``, where each row is a list of features.
+                classes (np.ndarray): Array of shape ``(n_samples)`` with labeled class indicies.
 
         Returns:
             A proportion accuracy correct_classificiations / len(classes).
@@ -137,8 +143,8 @@ class ContourClassifier:
 
     def string_to_class(self, strings: Union[List[str], str]) -> Union[List[int], int]:
         """
-        Maps a single string or list of strings representing a class in the set 
-        of those passed to the contructor to the corresponding integer index 
+        Maps a single string or list of strings representing a class in the set
+        of those passed to the contructor to the corresponding integer index
         representing this class, used in most functions for training / classification.
 
         Args:
@@ -155,7 +161,7 @@ class ContourClassifier:
 
     def class_to_string(self, classes: Union[List[int], int]) -> Union[List[str], str]:
         """
-        Maps a single integer or list of integers representing a class index to 
+        Maps a single integer or list of integers representing a class index to
         the corresponding class string in the set of those passed to the constructor.
 
         Args:
@@ -174,8 +180,8 @@ class ContourClassifier:
         Classify a contour.
 
         Args:
-        	img (np.ndarray): 2D image representation.
-        	mask (np.ndarray): Binary mask image representing the contour.
+                img (np.ndarray): 2D image representation.
+                mask (np.ndarray): Binary mask image representing the contour.
 
         Returns:
             The class index this is most probable given the features in that contour.
@@ -189,8 +195,8 @@ class ContourClassifier:
         given mask coresponding to the class list.
 
         Args:
-        	img (np.ndarray): 2D image representation.
-        	mask (np.ndarray): Binary mask image representing the contour.
+                img (np.ndarray): 2D image representation.
+                mask (np.ndarray): Binary mask image representing the contour.
 
         Returns:
             List[float]: The list of probabilities across the entire image.
@@ -223,7 +229,12 @@ class ContourClassifier:
         features, classes = self.read_from_csv(training_file)
         self.train(features, classes)
 
-    def save_csv(self, features: npt.ArrayLike, classes: npt.ArrayLike, training_file: Optional[str] = None) -> None:
+    def save_csv(
+        self,
+        features: npt.ArrayLike,
+        classes: npt.ArrayLike,
+        training_file: Optional[str] = None,
+    ) -> None:
         """
         Save the features and labeled classes to a csv file
         to be used in later training.
@@ -241,13 +252,15 @@ class ContourClassifier:
         df = pandas.DataFrame(data=data, columns=["Class"] + self.FEATURES)
         df.to_csv(training_file)
 
-    def extract_labels(self, labelfile: Optional[str] = None, image_dir: Optional[str] = None) -> Tuple[np.ndarray, np.ndarray]:
+    def extract_labels(
+        self, labelfile: Optional[str] = None, image_dir: Optional[str] = None
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Extract features and labeled classes from a project labeled on labelbox.io.
 
         Args:
-        	labelfile (Optional[str]): the json file containing the labels for the project
-        	image_dir (Optional[str]): directory where source images for the project can be found
+                labelfile (Optional[str]): the json file containing the labels for the project
+                image_dir (Optional[str]): directory where source images for the project can be found
 
         Raises:
             Exception: No labels were found.
@@ -332,6 +345,7 @@ class GaussianColorClassifier(ContourClassifier):
 
     For more usage info, see the ContourClassifier class.
     """
+
     FEATURES = ["B", "G", "R", "H", "S", "V", "L", "A", "B"]
 
     def __init__(self, classes, **kwargs):

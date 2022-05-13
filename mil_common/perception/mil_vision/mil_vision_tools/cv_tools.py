@@ -35,6 +35,7 @@ class Threshold:
         in_space (str): The OpenCV colorspace to use for the image source.
         thresh_space (str): The OpenCV colorspace to use for the threshold.
     """
+
     conversion_code: Optional[Union[str, int]] = None
 
     def __init__(
@@ -126,7 +127,9 @@ class Threshold:
         return cls(inner[0], inner[1], in_space=in_space, thresh_space=thresh_space)
 
     @classmethod
-    def from_param(cls, param: str, in_space: str = "BGR", thresh_space: Optional[str] = None):
+    def from_param(
+        cls, param: str, in_space: str = "BGR", thresh_space: Optional[str] = None
+    ):
         """
         Loads thresholds from a ROS parameter name. The value of the parameter is
         excepted to be a proper dictionary, on which :meth:`.from_dict` is called.
@@ -236,7 +239,11 @@ def contour_centroid(contour: List[float], M: Optional[Any] = None) -> Tuple[int
     return (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
 
-def contour_mask(contour: np.ndarray, img_shape: Optional[List[int]] = None, mask: Optional[np.ndarray] = None):
+def contour_mask(
+    contour: np.ndarray,
+    img_shape: Optional[List[int]] = None,
+    mask: Optional[np.ndarray] = None,
+):
     """
     Returns an image with the mask of a filled in contour given a image shape.
 
@@ -259,15 +266,15 @@ def contour_mask(contour: np.ndarray, img_shape: Optional[List[int]] = None, mas
 
 
 def putText_ul(
-        img: np.ndarray,
-        text: str,
-        org: np.ndarray,
-        fontFace: int = cv2.FONT_HERSHEY_COMPLEX_SMALL,
-        fontScale: int = 1,
-        color: int = 255,
-        thickness: int = 2,
-        lineType: int = 8,
-        bottomLeftOrigin: bool = False,
+    img: np.ndarray,
+    text: str,
+    org: np.ndarray,
+    fontFace: int = cv2.FONT_HERSHEY_COMPLEX_SMALL,
+    fontScale: int = 1,
+    color: int = 255,
+    thickness: int = 2,
+    lineType: int = 8,
+    bottomLeftOrigin: bool = False,
 ) -> None:
     """
     Puts text on image like cv2.putText but shifts it such that the origin is
@@ -303,15 +310,15 @@ def putText_ul(
     return
 
 
-def points_in_image(camera: 'PinholeCameraModel', points: np.ndarray) -> np.ndarray:
+def points_in_image(camera: "PinholeCameraModel", points: np.ndarray) -> np.ndarray:
     """
     Returns Mx2 np array of image points from projecting given 3D points. Only
     points within image resolution are included in output points, ignoring any
     outside the resolution of the camera.
 
     Args:
-    	camera_mode (PinholeCameraModel): PinholeCameraModel instance of camera.
-    	points (np.ndarray): Nx3 np array of 3 points in camera frame.
+        camera_mode (PinholeCameraModel): PinholeCameraModel instance of camera.
+        points (np.ndarray): Nx3 np array of 3 points in camera frame.
 
     Returns:
         np.ndarray: Mx2 of projected image points which are within camera resolution.
@@ -335,7 +342,9 @@ def points_in_image(camera: 'PinholeCameraModel', points: np.ndarray) -> np.ndar
     return img_points
 
 
-def roi_enclosing_points(camera: 'PinholeCameraModel', points: np.ndarray, border: Tuple[int, int] = (0, 0)) -> Optional[Tuple[slice, slice]]:
+def roi_enclosing_points(
+    camera: "PinholeCameraModel", points: np.ndarray, border: Tuple[int, int] = (0, 0)
+) -> Optional[Tuple[slice, slice]]:
     """
     Gets region of interest in image which encloses the projected 3D points. Output
     is given in slice format, so user can easily slice image.
@@ -347,9 +356,9 @@ def roi_enclosing_points(camera: 'PinholeCameraModel', points: np.ndarray, borde
        >>> cv2.imshow('Object', img_object)
 
     Args:
-    	camera_model (PinholeCameraModel): The model representing the pinhole camera.
+        camera_model (PinholeCameraModel): The model representing the pinhole camera.
         points (np.ndarray): Nx3 np array of 3 points in camera frame.
-    	border (Tuple[int, int]): Extra pixels to add around region of interest.
+        border (Tuple[int, int]): Extra pixels to add around region of interest.
 
     Returns:
         Optional[Tuple[slice, slice]]: Region of interest tuple that can be used
