@@ -56,12 +56,6 @@ target_link_libraries( plugin_ros_init
    ${OGRE_LIBRARY_DIRS}
 )
 
-set_target_properties( plugin_ros_init
-    PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY
-    ${PROJECT_SOURCE_DIR}/plugins
-)
-
 ################## 2. A simple model controller for the quadrotor #############
 add_library( plugin_drone SHARED
     src/plugin_drone.cpp
@@ -73,12 +67,6 @@ add_library( plugin_drone SHARED
 target_link_libraries( plugin_drone
    ${catkin_LIBRARIES}
    ${GAZEBO_LIBRARIES}
-)
-
-set_target_properties( plugin_drone
-    PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY
-    ${PROJECT_SOURCE_DIR}/plugins
 )
 
 ################## 3. A IMU sensor plugin for the quadrotor ####################
@@ -94,12 +82,6 @@ target_link_libraries( plugin_ros_imu
     ${GAZEBO_LIBRARIES}
 )
 
-set_target_properties( plugin_ros_imu
-    PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY
-    ${PROJECT_SOURCE_DIR}/plugins
-)
-
 ################# 4. A  sensor plugin for the camera  #########################
 add_library( plugin_ros_cam SHARED
     src/plugin_ros_cam.cpp
@@ -112,12 +94,6 @@ target_link_libraries( plugin_ros_cam
    ${GAZEBO_LIBRARIES}
    ${OGRE_LIBRARY_DIRS}
    CameraPlugin
-)
-
-set_target_properties( plugin_ros_cam
-    PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY
-    ${PROJECT_SOURCE_DIR}/plugins
 )
 
 
@@ -168,11 +144,7 @@ target_link_libraries( spawn_drone
    ${GAZEBO_LIBRARIES}
    ${Boost_LIBRARIES} ${PROTOBUF_LIBRARIES} pthread
 )
-set_target_properties( spawn_drone
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY
-    ${PROJECT_SOURCE_DIR}/bin
-)
+
 ################## 7. A sonar sensor plugin for the quadrotor ####################
 add_library( plugin_ros_sonar SHARED
     src/plugin_ros_sonar.cpp
@@ -182,12 +154,6 @@ add_library( plugin_ros_sonar SHARED
 target_link_libraries( plugin_ros_sonar
     ${catkin_LIBRARIES}
     ${GAZEBO_LIBRARIES}
-)
-
-set_target_properties( plugin_ros_sonar
-    PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY
-    ${PROJECT_SOURCE_DIR}/plugins
 )
 
 ################## 8. A laser sensor plugin for the quadrotor ####################
@@ -223,7 +189,7 @@ install(DIRECTORY models
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 install(DIRECTORY plugins
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+  DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 install(DIRECTORY scripts
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

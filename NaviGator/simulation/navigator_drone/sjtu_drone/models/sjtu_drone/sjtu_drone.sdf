@@ -5,7 +5,7 @@
 	This might be a bug~
 	-->
     <plugin name='simple_drone' filename='libplugin_drone.so'>
-        <bodyName>base_link</bodyName>
+        <bodyName>drone_link</bodyName>
         <imuTopic>/drone/imu</imuTopic>
         <rollpitchProportionalGain>10.0</rollpitchProportionalGain>
         <rollpitchDifferentialGain>5.0</rollpitchDifferentialGain>
@@ -34,7 +34,7 @@
 
      <!-- pose of the quadrotor in the world frame -->
      <pose>0 0 0.04 0 0 0</pose>
-      <link name='base_link'>
+      <link name='drone_link'>
       <inertial>
         <mass>1.477</mass>
 	<pose>0 0 0 0 0 0</pose>

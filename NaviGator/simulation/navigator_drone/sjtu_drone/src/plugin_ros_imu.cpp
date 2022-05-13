@@ -100,6 +100,10 @@ void GazeboRosIMU::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   else
     robotNamespace = _sdf->GetElement("robotNamespace")->Get<std::string>() + "/";
 
+
+  std::cout << "hey" << std::endl;
+  std::cout << this->robot_namespace_ << std::endl;
+
   if (!_sdf->HasElement("bodyName"))
   {
     link = _model->GetLink();
