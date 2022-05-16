@@ -16,6 +16,7 @@ from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from tf.transformations import quaternion_matrix
 from mil_tools import thread_lock
 import math
+from vrx_gazebo.msg import Task
 from threading import Lock
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from std_srvs.srv import SetBool
@@ -57,6 +58,8 @@ class VrxClassifier(object):
         self.get_params()
         self.last_panel_points_msg = None
         self.database_client = rospy.ServiceProxy('/database/requests', ObjectDBQuery)
+        self.task_info_sub = rospy.Subscriber("/vrx/task/info", Task, self.taskinfoSubscriber)
+        self.is_perception_task = False
         self.sub = Image_Subscriber(self.image_topic, self.image_cb)
         self.camera_info = self.sub.wait_for_camera_info()
         self.camera_model = PinholeCameraModel()
@@ -70,6 +73,7 @@ class VrxClassifier(object):
         self.objects_sub = rospy.Subscriber('/pcodar/objects', PerceptionObjectArray, self.process_objects, queue_size=2)
         self.boxes_sub = rospy.Subscriber('/darknet_ros/bounding_boxes', BoundingBoxes, self.process_boxes)
         self.enabled_srv = rospy.Service('~set_enabled', SetBool, self.set_enable_srv)
+        self.last_image = None
         if self.is_training:
             self.enabled = True
         self.queue = []
@@ -80,7 +84,11 @@ class VrxClassifier(object):
         return {'success': True}
 
     def image_cb(self, msg):
+        self.last_image = msg
         return
+
+    def taskinfoSubscriber(self, msg):
+        self.is_perception_task = msg.name == "perception"
 
     def in_frame(self, pixel):
         # TODO: < or <= ???
@@ -130,6 +138,9 @@ class VrxClassifier(object):
         distances = np.linalg.norm(positions_camera, axis=1)
         CUTOFF_METERS = 30
 
+        if self.is_perception_task:
+            CUTOFF_METERS = 100
+
         # Get a list of indicies of objects who are sufficiently close and can be seen by camera
         met_criteria = []
         for i in xrange(len(self.last_objects.objects)):
@@ -138,21 +149,47 @@ class VrxClassifier(object):
                 met_criteria.append(i)
         # print 'Keeping {} of {}'.format(len(met_criteria), len(self.last_objects.objects))
 
-        for i in met_criteria:
-            boxes = []
-            for a in msg.bounding_boxes:
+        classified = set()
+
+        #for each bounding box,check which buoy is closest to boat within pixel range of bounding box
+        for a in msg.bounding_boxes:
+            buoys = []
+
+            for i in met_criteria:
                 if self.in_rect(pixel_centers[i], a):
-                    boxes.append(a)
-            if len(boxes) > 0:
-                closest = boxes[0]
-                first_center = [(closest.xmax - closest.xmin) / 2.0, (closest.ymax - closest.ymin) / 2.0]
-                for a in boxes[1:]:
-                    center = [(a.xmax - a.xmin) / 2.0, (a.ymax - a.ymin) / 2.0]
-                    if self.distance(pixel_centers[i], center) < self.distance(pixel_centers[i], first_center):
-                        closest = a
-                        first_center = center
-                print('Object {} classified as {}'.format(self.last_objects.objects[i].id, closest.Class))
-                cmd = '{}={}'.format(self.last_objects.objects[i].id, closest.Class)
+                    buoys.append(i)
+                
+            if len(buoys) > 0:
+                closest_to_box = buoys[0]
+                closest_to_boat = buoys[0]
+
+                for i in buoys[1:]:
+                    if distances[i] < distances[closest_to_boat]:
+                        closest_to_box = i
+                        closest_to_boat = i
+
+                classified.add(self.last_objects.objects[closest_to_box].id)
+                print('Object {} classified as {}'.format(self.last_objects.objects[closest_to_box].id, a.Class))
+                cmd = '{}={}'.format(self.last_objects.objects[closest_to_box].id, a.Class)
+                self.database_client(ObjectDBQueryRequest(cmd=cmd))
+
+        if not self.is_perception_task:
+            return
+
+        for a in met_criteria:
+            if self.last_objects.objects[a].id in classified:
+                continue
+            height = self.last_objects.objects[a].scale.z
+            #if pixel_centers[i][0] > 1280 or pixel_centers[i][0] > 720:
+            #    return
+            if height > 0.45:
+                print('Reclassified as white')
+                print('Object {} classified as {}'.format(self.last_objects.objects[a].id, "mb_marker_buoy_white"))
+                cmd = '{}={}'.format(self.last_objects.objects[a].id, "mb_marker_buoy_white")
+                self.database_client(ObjectDBQueryRequest(cmd=cmd))
+            else:
+                print('Object {} classified as {}'.format(self.last_objects.objects[a].id, "mb_round_buoy_black"))
+                cmd = '{}={}'.format(self.last_objects.objects[a].id, "mb_round_buoy_black")
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
 
 
