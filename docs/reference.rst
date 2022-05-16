@@ -3866,6 +3866,10 @@ Utility Functions
 
 .. autofunction:: mil_vision_tools.create_object_msg
 
+Vision Utility Functions
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: mil_vision::kanatani_triangulation
+
 ContourClassifier
 ^^^^^^^^^^^^^^^^^
 .. attributetable:: mil_vision_tools.ContourClassifier
@@ -3928,3 +3932,21 @@ VisionNode
 
 .. autoclass:: mil_vision_tools.VisionNode
     :members:
+
+CameraLidarTransformer
+^^^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: CameraLidarTransformer
+
+.. note::
+
+   Most of the methods/attributes for this class are private, which is why none appear.
+   To have these documented, either make these public or discuss the option of documenting
+   private C++ class members with a software lead.
+
+.. doxygenclass:: CameraLidarTransformer
+
+ClosedCurve
+^^^^^^^^^^^
+.. cppattributetable:: mil_vision::ClosedCurve
+
+.. doxygenclass:: mil_vision::ClosedCurve

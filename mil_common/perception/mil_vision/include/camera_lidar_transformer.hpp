@@ -61,5 +61,9 @@ private:
   image_transport::Publisher points_debug_publisher;
 #endif
 public:
+
+  /**
+   * Default constructor for the transformer between camera and LIDAR data.
+   */
   CameraLidarTransformer();
 };

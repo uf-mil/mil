@@ -1,5 +1,5 @@
 ``odom_estimator``
-==============
+==================
 
 ``odom_estimator`` is an `unscented Kalman filter <https://en.wikipedia.org/wiki/Kalman_filter#Unscented_Kalman_filter>`_ that fuses accelerometer, gyroscope, magnetometer, DVL, and depth sensor measurements into an estimate of a moving platform's pose.
 
