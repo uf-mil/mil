@@ -76,3 +76,33 @@ the functionality. Check out the ISO example above for an example involving find
 an element in an iterator.
 
 Ask yourself how you express _your ideas_ write into the code!
+
+## Version
+All of code should target the C++11 standard. This is typically enforced in each
+package's `CMakeLists.txt` file.
+
+## Style Guide
+This section explains the actual style practices we encourage when writing C++
+code for MIL.
+
+### Naming
+_Source: [ROS C++ style 4](http://wiki.ros.org/CppStyleGuide#Naming)_
+
+Below explains the process of naming various resources around the repository.
+
+#### Files
+When naming your files, use **underscores**, and attempt to be descriptive, but
+not lengthy. Consider if someone new to that package would be able to guess what's
+in that file without opening it, just based on it's name.
+
+For the extensions, use `.cpp` for a C++ file, and use `.h` for a header file.
+There's no reason to use `.cc` or `.cxx` or `.hpp` or any other extension.
+
+#### Classes/Types
+For classes and types, use title case. If the phrase contains an acronym, then feel
+free to only use upper letters for the acronym:
+
+```cpp
+class DrSchwartz;
+class GCPUImplementation;
+```
