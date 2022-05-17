@@ -33,7 +33,7 @@
     </plugin>
 
     <!-- pose of the quadrotor in the world frame -->
-    <pose>0 0 0.04 0 0 0</pose>
+    <pose>-1.35 0 0.04 0 0 3.14</pose>
     <link name='drone_link'>
       <inertial>
         <mass>1.477</mass>
@@ -88,7 +88,7 @@
 
       <sensor type="camera" name="front_camera_link">
         <update_rate>30.0</update_rate>
-
+        <visualize>false</visualize>
         <camera name="front_camera_link">
           <horizontal_fov>1.3962634</horizontal_fov>
           <image>
@@ -106,13 +106,14 @@
             <stddev>0.007</stddev>
           </noise>
         </camera>
+        <pose> 0.2 0.0 0.0 0 0 0 </pose>
         <plugin name="camera_plugin_front" filename="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>0.0</updateRate>
-          <cameraName>front_camera_link</cameraName>
+          <cameraName>drone/front_camera_link</cameraName>
           <imageTopicName>image_raw</imageTopicName>
           <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>front_camera_link_optical</frameName>
+          <frameName>drone/front_camera_link_optical</frameName>
           <hackBaseline>0.07</hackBaseline>
           <distortionK1>0.0</distortionK1>
           <distortionK2>0.0</distortionK2>
@@ -121,60 +122,6 @@
           <distortionT2>0.0</distortionT2>
         </plugin>
       </sensor>
-
-      <!-- front camera -->
-      <!--<sensor name="front_camera" type="camera">
-        <camera>
-          <horizontal_fov>2.09</horizontal_fov>
-          <image>
-            <width>640</width>
-            <height>360</height>
-            <format>R8G8B8</format>
-          </image>
-          <clip>
-            <near>0.1</near>
-            <far>100</far>
-          </clip>
-          <noise>
-            <type>gaussian</type>
-            <mean>0.0</mean>
-            <stddev>0.005</stddev>
-          </noise>
-        </camera>
-        <pose> 0.2 0.0 0.0 0 0 0 </pose>
-        <always_on>1</always_on>
-        <update_rate>60</update_rate>
-        <plugin name='front_camera' filename='libplugin_ros_cam.so'>
-          <imageTopicName>/drone/front_camera/image_raw</imageTopicName>
-        </plugin> 
-      </sensor>-->
-
-      <!-- downward looking camera -->
-      <!--<sensor name="down_camera" type="camera">
-        <camera>
-          <horizontal_fov>1.047</horizontal_fov>
-          <image>
-            <width>640</width>
-            <height>360</height>
-            <format>R8G8B8</format>
-          </image>
-          <clip>
-            <near>0.1</near>
-            <far>100</far>
-          </clip>
-          <noise>
-            <type>gaussian</type>
-            <mean>0.0</mean>
-            <stddev>0.005</stddev>
-          </noise>
-        </camera>
-        <pose> 0.0 0.0 0.0 0 1.570796326794897 0 </pose>
-        <always_on>1</always_on>
-        <update_rate>15</update_rate>
-        <plugin name='down_camera' filename='libplugin_ros_cam.so'>
-          <imageTopicName>/drone/down_camera/image_raw</imageTopicName>
-        </plugin> 
-      </sensor>-->
 
      </link> 
 

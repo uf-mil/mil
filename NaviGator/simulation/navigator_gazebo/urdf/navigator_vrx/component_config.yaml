@@ -7,11 +7,6 @@ wamv_camera:
       x: 0.75
       y: -0.1
       P: ${radians(-30)}
-    - name: middle_right_camera
-      x: 0.75
-      y: -0.3
-      Y: ${radians(-90)}
-      P: ${radians(15)}
 wamv_gps:
     - name: gps_wamv
       x: -0.85
