@@ -106,3 +106,40 @@ free to only use upper letters for the acronym:
 class DrSchwartz;
 class GCPUImplementation;
 ```
+
+#### Functions
+Functions should use camel case. This is like title case, but the first letter is not
+capitalized.
+
+```cpp
+void undoTransformation();
+ExampleClass constructFromMessage();
+```
+
+#### Variables
+Variables (including function arguments) should use snake case. For example:
+```cpp
+int thisIsNotGood; // No!
+int this_is_good; // Yes!
+
+void exampleFunction(bool argOne, std::string awesomePhrase); // No!
+void exampleFunction(bool arg_one, std::string awesome_phrase); // No!
+```
+
+Please remember to also be descriptive with your variable names. There's no need
+to be cryptic or needlessly short with your variable names.
+```cpp
+int x; // What is this supposed to represent?
+int rotations; // Oh, the number of rotations!
+
+bool wsy; // What is this??
+bool was_seen_yesterday; // Ah, that helps much more!
+```
+
+Furthermore:
+* Constants should use all capitals. For example, ``SPEED_OF_LIGHT``.
+* Member variables (of classes, not structs) should have a trailing underscore. For example, ``internal_attribute_``.
+* Global variables should be prepended with ``g_``. For example, ``g_global_attribute``.
+
+#### Namespaces
+Namespaces should use underscores.
