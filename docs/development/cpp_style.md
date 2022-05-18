@@ -86,7 +86,8 @@ This section explains the actual style practices we encourage when writing C++
 code for MIL.
 
 ### Naming
-_Source: [ROS C++ style 4](http://wiki.ros.org/CppStyleGuide#Naming)_
+_Source: [ROS C++ style 4](http://wiki.ros.org/CppStyleGuide#Naming), 
+[Google Style Naming](https://google.github.io/styleguide/cppguide.html#Naming)_
 
 Below explains the process of naming various resources around the repository.
 
@@ -116,6 +117,18 @@ void undoTransformation();
 ExampleClass constructFromMessage();
 ```
 
+One exception to this rule is the naming guidelines for accessors and mutators.
+These can be named similarly to variables:
+```cpp
+class Car {
+public:
+  void set_speed(int speed); // Woah, a setter...
+  int get_speed(); // and a mutator!
+private:
+  int speed_;
+};
+```
+
 #### Variables
 Variables (including function arguments) should use snake case. For example:
 ```cpp
@@ -137,9 +150,18 @@ bool was_seen_yesterday; // Ah, that helps much more!
 ```
 
 Furthermore:
-* Constants should use all capitals. For example, ``SPEED_OF_LIGHT``.
+* Constants should use all capitals. For example, ``SPEED_OF_LIGHT``. This also
+  applies to the values of enumerators.
 * Member variables (of classes, not structs) should have a trailing underscore. For example, ``internal_attribute_``.
 * Global variables should be prepended with ``g_``. For example, ``g_global_attribute``.
 
 #### Namespaces
-Namespaces should use underscores.
+Namespaces should use underscores. Namespaces should never be named ``std``, and
+common namespace names (such as ``util``) should be avoided. Using these namespaces
+can create problems when using fully-qualified lookups in C++. ([What is that?](https://abseil.io/tips/130))
+
+```cpp
+namespace large_hadron_collider {
+  ...
+}
+```
