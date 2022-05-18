@@ -152,7 +152,8 @@ bool was_seen_yesterday; // Ah, that helps much more!
 Furthermore:
 * Constants should use all capitals. For example, ``SPEED_OF_LIGHT``. This also
   applies to the values of enumerators.
-* Member variables (of classes, not structs) should have a trailing underscore. For example, ``internal_attribute_``.
+* Member variables (of classes, not structs) should have a trailing underscore. 
+  For example, ``internal_attribute_``.
 * Global variables should be prepended with ``g_``. For example, ``g_global_attribute``.
 
 #### Namespaces
@@ -165,3 +166,29 @@ namespace large_hadron_collider {
   ...
 }
 ```
+
+### Formatting
+_Source: [ROS C++ style: 6](http://wiki.ros.org/CppStyleGuide#Formatting), 
+[Google Style: Formatting](https://google.github.io/styleguide/cppguide.html#Formatting)_
+
+#### Line Length
+Each of your lines should no more than 120 characters long. Generally, 80-100 characters
+is still acceptable, but if you can avoid it, please do.
+
+One may wonder, why does this matter? Generally, this helps users who have smaller
+screens and users who prefer to work with split screens. Additionally, very long lines
+can be confusing to readers of code who may see a very long line as two split lines.
+
+There are some exceptions to this rule:
+* A comment which contains a long string, such as a URL.
+* A string which can't be wrapped. For example, a string containing a long URL, or
+  a string where the newlines are significant, such as a help message.
+* An include statement.
+* A header guard.
+* A `using` declaration.
+
+If a tool (like `clang-format`) complains about the line length anyways, you will
+need to disable the tool on the lines where it is complaining.
+
+#### Indentation
+Always use spaces, and always use 2 spaces for indentation.
