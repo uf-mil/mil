@@ -192,3 +192,56 @@ need to disable the tool on the lines where it is complaining.
 
 #### Indentation
 Always use spaces, and always use 2 spaces for indentation.
+
+#### Floating Points
+When using floating point numbers in C++, either use an integer to intialize the float,
+or use a radix point with numbers on both sides. If you want to use exponential notation
+with the number, use either an `e` or an `E`.
+
+```cpp
+float f = 1.f; // Nope: Use numbers on both sides of the radix point.
+long double ld = -.5L; // Same as above;
+float f = 1.0f; // Awesome!
+float f2 = 1; // This works great, too!
+long double ld = -0.5L; // Fantastic work!
+
+double huge = 1254e4; // Nope: Where's the radix point?
+double huge_again = 1254.0e4; // Nice!
+```
+
+#### Function Calls
+When using function calls, sometimes you may need to call a function with a ton of
+arguments, which can cause the call to become excessively long.
+
+If you need to break up the function call, you can align the rest of the arguments
+in the function call with the first argument. If you've already indented, then you
+can just use a four space indent to align the arguments.
+
+```cpp
+bool result = funnyFunction(huge_argument_number_one_oh_my_this_is_long,
+                            argument_two, argument_three);
+
+if (...) {
+  if (...) {
+    while (...) {
+      bool result = funnyFunction(huge_argument_number_one_oh_my_this_is_long,
+          argument_two, argument_three);
+    }
+  }
+}
+```
+
+Sometimes, the arguments of function calls might be complex. In this case, feel
+free to put one arugmnet on one line by itself.
+```cpp
+bool result = weirdMathFunction(quat[1] + std::sqrt(quat[2]) & 8, // Crazy Scientist A's matrix determinant formula
+                                argument_two, argument_three);
+```
+
+Sometimes, you may just want specific arguments to exist on specific lines for readability.
+This is totally okay, too!
+```cpp
+int magic[][] = createMagicSquare(x1, x2, x3,
+                                  y1, y2, y3,
+                                  z1, z2, z3);
+```
