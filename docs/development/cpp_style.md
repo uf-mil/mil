@@ -245,3 +245,44 @@ int magic[][] = createMagicSquare(x1, x2, x3,
                                   y1, y2, y3,
                                   z1, z2, z3);
 ```
+
+#### Braces
+When using braces for conditions or control logic, place the braces on a new line.
+In the case that the logic inside a control block is simple (one line or less),
+then the braces can be excluded. An exception to this rule is `switch` statements, discussed
+below.
+
+```cpp
+if (example_term)
+{
+  ...
+}
+
+if (simple_test)
+  simpleCall();
+
+if (this_works_too)
+{
+  simpleCall();
+}
+
+while (condition_is_true) continue;
+```
+
+For cases where braces are excluded, there should be no other conditional statement
+other than the primary statement. For example, a conditional block using no braces
+should only use an `if` statement and should not have an `else if` or `else` clause.
+
+#### Conditionals
+Conditional blocks should always use spaces to break up key terms. For example,
+the `if` keyword and the expression inside of the parentheses following the `if`
+keyword should be separated by a space. This likewise applies to `else if` and `else`.
+
+```cpp
+if (this_is_perfect) {
+  // Great job!
+  ...
+} else if (wow_you_did_it == again) {
+  ...
+}
+```
