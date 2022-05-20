@@ -286,3 +286,94 @@ if (this_is_perfect) {
   ...
 }
 ```
+
+#### Switches
+For `switch` blocks, braces are optional. Attempt to be consistent throughout a particular
+package.
+
+In the case of fallthrough (ie, the exclusion of `break` in a case statement), 
+please add a comment indicating fallthrough. Some tutorials might suggest the use
+of the `[[fallthrough]]` attribute, but unfortunately, this is only allowed in C++17
+and further.
+
+```cpp
+switch (x) {
+  case 1:
+    ...
+    break;
+  case 2:
+    ...
+    break;
+}
+// or
+switch (x) {
+  case 1: {
+    ...
+    break;
+  }
+  case 2: {
+    ...
+    break;
+  }
+  default: {
+    ...
+    break;
+  }
+}
+```
+
+#### Loops
+Loops are similar to conditional statements. Braces can be avoided for very simple
+loops, or they can be kept in.
+
+For loops with no bodies, either use a pair of empty braces or use the `continue`
+statement to indicate that the loop is continually running.
+```cpp
+for (int i = 0; i < 10; i++)
+  sum += i;
+
+while (tired) {
+  drinkCoffee();
+}
+
+while (spin_forever) continue;
+```
+
+#### Pointers and References
+When using pointers and references, place the * or & either before the space, or
+after the space. Keep this syntax the same throughout one file.
+
+In some cases, such as using pointers as a template parameter, you can remove the space
+entirely.
+
+Never declare more than one pointer on a single line, as this expression is often
+misread.
+
+```cpp
+int* x;
+p = &x;
+
+char *c;
+const int& p = &x;
+
+CharClass<char*> example;
+
+int * x; // No!
+const int & a; // Sad face.
+```
+
+#### Preprocessor Directives
+Preprocessor directives always start at the beginning of the line, full stop.
+This may appear to break up indentation - this is fine! The examination of preprocessor
+directives is important, and using significant indentation helps to show this.
+
+You can optionally use spaces after the `#` for nested preprocessor directives.
+
+```cpp
+if (test_condition) {
+  #if LETS_GO_CRAZY
+  startCrazyMode();
+  #endif
+  cleanup();
+}
+```
