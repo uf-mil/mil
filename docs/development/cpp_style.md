@@ -122,8 +122,8 @@ These can be named similarly to variables:
 ```cpp
 class Car {
 public:
-  void set_speed(int speed); // Woah, a setter...
-  int get_speed(); // and a mutator!
+  void set_speed(int speed);  // Woah, a setter...
+  int get_speed();  // and a mutator!
 private:
   int speed_;
 };
@@ -132,21 +132,21 @@ private:
 #### Variables
 Variables (including function arguments) should use snake case. For example:
 ```cpp
-int thisIsNotGood; // No!
-int this_is_good; // Yes!
+int thisIsNotGood;  // No!
+int this_is_good;  // Yes!
 
-void exampleFunction(bool argOne, std::string awesomePhrase); // No!
-void exampleFunction(bool arg_one, std::string awesome_phrase); // No!
+void exampleFunction(bool argOne, std::string awesomePhrase);  // No!
+void exampleFunction(bool arg_one, std::string awesome_phrase);  // No!
 ```
 
 Please remember to also be descriptive with your variable names. There's no need
 to be cryptic or needlessly short with your variable names.
 ```cpp
-int x; // What is this supposed to represent?
-int rotations; // Oh, the number of rotations!
+int x;  // What is this supposed to represent?
+int rotations;  // Oh, the number of rotations!
 
-bool wsy; // What is this??
-bool was_seen_yesterday; // Ah, that helps much more!
+bool wsy;  // What is this??
+bool was_seen_yesterday;  // Ah, that helps much more!
 ```
 
 Furthermore:
@@ -199,14 +199,14 @@ or use a radix point with numbers on both sides. If you want to use exponential 
 with the number, use either an `e` or an `E`.
 
 ```cpp
-float f = 1.f; // Nope: Use numbers on both sides of the radix point.
-long double ld = -.5L; // Same as above;
-float f = 1.0f; // Awesome!
-float f2 = 1; // This works great, too!
-long double ld = -0.5L; // Fantastic work!
+float f = 1.f;  // Nope: Use numbers on both sides of the radix point.
+long double ld = -.5L;  // Same as above;
+float f = 1.0f;  // Awesome!
+float f2 = 1;  // This works great, too!
+long double ld = -0.5L;  // Fantastic work!
 
-double huge = 1254e4; // Nope: Where's the radix point?
-double huge_again = 1254.0e4; // Nice!
+double huge = 1254e4;  // Nope: Where's the radix point?
+double huge_again = 1254.0e4;  // Nice!
 ```
 
 #### Function Calls
@@ -234,7 +234,7 @@ if (...) {
 Sometimes, the arguments of function calls might be complex. In this case, feel
 free to put one arugmnet on one line by itself.
 ```cpp
-bool result = weirdMathFunction(quat[1] + std::sqrt(quat[2]) & 8, // Crazy Scientist A's matrix determinant formula
+bool result = weirdMathFunction(quat[1] + std::sqrt(quat[2]) & 8,  // Crazy Scientist A's matrix determinant formula
                                 argument_two, argument_three);
 ```
 
@@ -358,8 +358,8 @@ const int& p = &x;
 
 CharClass<char*> example;
 
-int * x; // No!
-const int & a; // Sad face.
+int * x;  // No!
+const int & a;  // Sad face.
 ```
 
 #### Preprocessor Directives
@@ -377,3 +377,64 @@ if (test_condition) {
   cleanup();
 }
 ```
+
+#### Class Structure
+When structuring your class definition, use one space to indent the `public`, `protected`,
+and `private` keywords. Then, use the traditional two-space indent for all other
+needed members in the class.
+
+```cpp
+class ExampleClass : public BaseClass {
+ public:
+  ExampleClass();
+  ~ExampleClass() {}
+
+ protected:  // Do not leave a blank line after these keywords
+  someFunction();
+
+ private:
+  int some_var_;
+  char special_char_;
+};
+```
+
+#### Namespaces
+Namespaces do not add an extra level of indentation.
+
+```cpp
+namespace cooking {
+class Pan {
+ public:
+  void pourCupcake(int row, int col);
+  Cupcake retrieveCupcake(int row, int col);
+  
+ private:
+  Cupcake[][] cupcakes_;
+};
+}
+```
+
+#### Horizontal Whitespace
+General rules about horizontal whitespace:
+
+* Comments at the end of a line should be separated from the contents of the line
+  by two spaces.
+* Semicolons should generally not have spaces before them.
+* The colon in a class initializer list should generally have a space around it.
+* Keywords in control blocks (`if`, `for`, `while`, etc) should have a space around them.
+* Semicolons inside a `for` statement generally have a space after them. (Ie, `for (int i = 0; i < 5; i += 2)`)
+* Colons in range-based for loops generally have spaces on both sides.
+* Assignment operators (`x = 0`, `x += 5`)generally have spaces on both sides.
+* Binary operators (`x + y`, `x || y`) traditionally have spaces, but these can be removed in select scenarios.
+* Unary operators (`!x`, `&x`) almost never have spaces between them and their subject.
+
+#### Vertical Whitespace and Blank Lines
+Vertical whitespace is helpful, **sometimes**. Vertical whitespace generally includes
+blank lines.
+
+Use blank lines to separate thoughts inside of a particular scope (class definition,
+function, etc.).
+
+There is no need to start/end a function with a blank line. Adding a blank line
+before a comment can help with readability, as can using a blank line without any
+associated comment to split two different ideas.
