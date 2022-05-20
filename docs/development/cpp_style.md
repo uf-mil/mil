@@ -438,3 +438,23 @@ function, etc.).
 There is no need to start/end a function with a blank line. Adding a blank line
 before a comment can help with readability, as can using a blank line without any
 associated comment to split two different ideas.
+
+### C++ Features
+C++ comes with a lot of cool features, but these features can sometimes cause problems.
+We must be careful about which ones we intend to use.
+
+#### Preprocessor Macros
+Don't use them. Macros are likely going to cause us more trouble than they're worth
+because of their global scope and unfriendly use.
+
+#### Namespaces and `using`
+Namespaces are a great way to separate code. The `using` keyword allows one to use
+code from a separate namespace somewhere else. For example:
+
+```cpp
+using std::list;
+```
+
+When using `using` (did you smile at that? I hope so!), try to keep the statements specific.
+Don't try to use all of `std`, which could pollute a file's namespace. Instead,
+try to use specific things from `std`.
