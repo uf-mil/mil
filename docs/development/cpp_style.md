@@ -458,3 +458,32 @@ using std::list;
 When using `using` (did you smile at that? I hope so!), try to keep the statements specific.
 Don't try to use all of `std`, which could pollute a file's namespace. Instead,
 try to use specific things from `std`.
+
+#### Friends
+Everyone loves having friends, and C++ does, too. Use the `friend` keyword cautiously
+throughout your C++ code. Where it is used, please try to keep the friend to the same
+file so that a user does not have to go look in another file.
+
+It may also be desired to conduct unit tests through the `friend` keyword.
+
+#### Exceptions
+Use exceptions judiciously. Exceptions are great for representing true failures
+in a particular piece of code, and can allow for the abstraction of error handling methods.
+
+However, exceptions can also introduce weird behavior into a piece of code. Exceptions
+can cause functions to return before one thinks they will, and can cause issues if another
+function catches a particular error before another function.
+
+User input at runtime (this is rare when working with autonomous vehicles, yes) should
+never throw an exception. An exception represents a code failure, not the failure
+of one user to input a proper expression into a live piece of code.
+
+#### `const`
+Use `const` wherever it is appropriate. `const` can help the compiler ensure that
+some classes and methods are only mutating a few select values. Remember though
+that `const` can quickly become viral; ie, if you pass a `const` variable to a function,
+that function will need `const` in its prototype.
+
+#### Using `sizeof`
+When using `sizeof`, prefer the use of a variable as the argument, rather than the use
+of a class or type.
