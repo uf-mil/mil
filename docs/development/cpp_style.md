@@ -487,3 +487,26 @@ that function will need `const` in its prototype.
 #### Using `sizeof`
 When using `sizeof`, prefer the use of a variable as the argument, rather than the use
 of a class or type.
+
+### ROS Helpers
+#### Assertions
+When using assertions in a piece of C++ code, please use a function from the family
+of `ROS_ASSERT` functions.
+
+#### Printing
+When printing to the console, please use the `rosconsole` family of functions.
+
+#### Deprecation
+To mark a function as deprecated, add the `ROS_DEPRECATED` attribute to its signature.
+To mark a class as deprecated, mark all of its functions as deprecated.
+
+```cpp
+ROS_DEPRECATED int cardCount();
+
+class MyClass {
+ public:
+  ROS_DEPRECATED MyClass();
+
+  ROS_DEPRECATED void specialFunction();
+};
+```
