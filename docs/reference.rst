@@ -3866,6 +3866,25 @@ Utility Functions
 
 .. autofunction:: mil_vision_tools.create_object_msg
 
+.. TODO Figure out why this signature is causing issues with Sphinx/Breathe/Doxygen
+.. .. doxygenfunction:: mil_vision::pseudoInverse
+
+.. doxygenfunction:: mil_vision::largerContour
+
+.. doxygenfunction:: mil_vision::smooth_histogram
+
+.. doxygenfunction:: mil_vision::generate_gaussian_kernel_1D
+
+.. doxygenfunction:: mil_vision::find_local_maxima
+
+.. doxygenfunction:: mil_vision::find_local_minima
+
+.. doxygenfunction:: mil_vision::select_hist_mode
+
+.. doxygenfunction:: mil_vision::range_from_param
+
+.. doxygenfunction:: mil_vision::inParamRange
+
 C++ Type Aliases
 ^^^^^^^^^^^^^^^^
 .. doxygentypedef:: mil_vision::PCD
@@ -3879,6 +3898,12 @@ C++ Type Aliases
 Vision Utility Functions
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: mil_vision::kanatani_triangulation
+
+.. doxygenfunction:: mil_vision::statistical_image_segmentation
+
+.. doxygenfunction:: mil_vision::triangulate_Linear_LS
+
+.. doxygenfunction:: mil_vision::lindstrom_triangulation
 
 ContourClassifier
 ^^^^^^^^^^^^^^^^^
@@ -3993,7 +4018,8 @@ PointColorStats
 
 PcdColorizer
 ^^^^^^^^^^^^
-.. cppattributetable:: mil_vision::PcdColorizer
+.. TODO GH-612
+.. .. cppattributetable:: mil_vision::PcdColorizer
 
 .. doxygenclass:: mil_vision::PcdColorizer
 
@@ -4002,3 +4028,34 @@ SingleCloudProcessor
 .. cppattributetable:: mil_vision::SingleCloudProcessor
 
 .. doxygenclass:: mil_vision::SingleCloudProcessor
+
+PixelType
+^^^^^^^^^
+.. TODO GH-613
+.. .. cppattributetable:: mil_vision::PixelType
+
+.. doxygenenum:: mil_vision::PixelType
+
+CameraFrame
+^^^^^^^^^^^
+.. cppattributetable:: mil_vision::CameraFrame
+
+.. doxygenclass:: mil_vision::CameraFrame
+
+ImageWithCameraInfo
+^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: mil_vision::ImageWithCameraInfo
+
+.. doxygenstruct:: mil_vision::ImageWithCameraInfo
+
+FrameHistory
+^^^^^^^^^^^^
+.. cppattributetable:: mil_vision::FrameHistory
+
+.. doxygenclass:: mil_vision::FrameHistory
+
+Range
+^^^^^
+.. cppattributetable:: mil_vision::Range
+
+.. doxygenstruct:: mil_vision::Range

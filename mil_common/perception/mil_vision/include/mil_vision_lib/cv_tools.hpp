@@ -114,15 +114,13 @@ Eigen::Vector3d kanatani_triangulation(const cv::Point2d &pt1, const cv::Point2d
 Eigen::Vector3d lindstrom_triangulation(const cv::Point2d &pt1, const cv::Point2d &pt2,
                                         const Eigen::Matrix3d &essential, const Eigen::Matrix3d &R);
 
+/**
+ * Packages corresponding sensor_msgs::ImageConstPtr and 
+ * sensor_msgs::CameraInfoConstPtr into one object. Containers of these objects 
+ * can be sorted by their image_time attribute.
+ */
 struct ImageWithCameraInfo
 {
-  /**
-          Packages corresponding  sensor_msgs::ImageConstPtr and
-     sensor_msgs::CameraInfoConstPtr
-     info_msg
-          into one object. Containers of these objects can be sorted by their
-     image_time attribute
-  */
 public:
   ImageWithCameraInfo()
   {
@@ -137,15 +135,13 @@ public:
   }
 };
 
+/**
+ * Object that subscribes itself to an image topic and stores up to a
+ * user defined number of ImageWithCameraInfo objects. The frame history can then be 
+ * retrieved in whole or just a portion.
+ */
 class FrameHistory
 {
-  /**
-          Object that subscribes itself to an image topic and stores up to a
-     user defined
-          number of ImageWithCameraInfo objects. The frame history can then be
-     retrieved
-          in whole or just a portion.
-  */
 public:
   FrameHistory(std::string img_topic, unsigned int hist_size);
   ~FrameHistory();
@@ -164,8 +160,7 @@ private:
   size_t frame_count;
 };
 
-/// Param Helpers
-
+/// Helper struct to show a range between two numbers.
 struct Range
 {
   cv::Scalar lower;
