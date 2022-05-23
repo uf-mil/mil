@@ -3866,6 +3866,16 @@ Utility Functions
 
 .. autofunction:: mil_vision_tools.create_object_msg
 
+C++ Type Aliases
+^^^^^^^^^^^^^^^^
+.. doxygentypedef:: mil_vision::PCD
+
+.. doxygentypedef:: mil_vision::PCDPtr
+
+.. doxygentypedef:: mil_vision::SPtrVector
+
+.. doxygentypedef:: mil_vision::UPtrVector
+
 Vision Utility Functions
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: mil_vision::kanatani_triangulation
@@ -3980,3 +3990,15 @@ PointColorStats
 .. cppattributetable:: mil_vision::PointColorStats
 
 .. doxygenstruct:: mil_vision::PointColorStats
+
+PcdColorizer
+^^^^^^^^^^^^
+.. cppattributetable:: mil_vision::PcdColorizer
+
+.. doxygenclass:: mil_vision::PcdColorizer
+
+SingleCloudProcessor
+^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: mil_vision::SingleCloudProcessor
+
+.. doxygenclass:: mil_vision::SingleCloudProcessor

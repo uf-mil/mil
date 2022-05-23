@@ -23,8 +23,17 @@ class PcdColorizer
   using CamStream = ROSCameraStream<cv::Vec3b>;
 
 public:
+  /**
+   * Public constructor to initialize a new colorizer.
+   *
+   * @param nh The node handle to initialize the colorizer with.
+   * @param input_pcd_topic The name of the topic serving point clouds.
+   */
   PcdColorizer(ros::NodeHandle nh, std::string input_pcd_topic);
 
+  /**
+   * Returns true if ROS and the class are functioning properly.
+   */
   bool ok() const
   {
     return _ok && ros::ok();

@@ -12,8 +12,23 @@ namespace mil_vision
 class SingleCloudProcessor
 {
 public:
+  /**
+   * Constructs a new cloud processor.
+   *
+   * @param nh The node handle for the class.
+   * @param in_pcd_topic The name of the topic supplying point clouds.
+   * @param hist_size The size of the image history buffer.
+   */
   SingleCloudProcessor(ros::NodeHandle nh, std::string &in_pcd_topic, size_t hist_size);
+
+  /**
+   * Incomplete method. Aside from priting debug statements, does no actions.
+   */
   void operator()(const PCD<pcl::PointXYZ>::ConstPtr &pcd);
+
+  /**
+   * Returns true if ROS and the class are functioning properly.
+   */
   bool ok() const
   {
     return _ok && ros::ok();
