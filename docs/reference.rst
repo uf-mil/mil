@@ -3950,3 +3950,33 @@ ClosedCurve
 .. cppattributetable:: mil_vision::ClosedCurve
 
 .. doxygenclass:: mil_vision::ClosedCurve
+
+ActiveContour
+^^^^^^^^^^^^^
+.. cppattributetable:: mil_vision::ActiveContour
+
+.. doxygenclass:: mil_vision::ActiveContour
+   
+CameraObserver
+^^^^^^^^^^^^^^
+.. cppattributetable:: mil_vision::CameraObserver
+
+.. doxygenclass:: mil_vision::CameraObserver
+
+ColorObservation
+^^^^^^^^^^^^^^^^
+.. cppattributetable:: mil_vision::ColorObservation
+
+.. doxygenstruct:: mil_vision::ColorObservation
+
+UnoccludedPointsImg
+^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: mil_vision::UnoccludedPointsImg
+
+.. doxygenclass:: mil_vision::UnoccludedPointsImg
+
+PointColorStats
+^^^^^^^^^^^^^^^
+.. cppattributetable:: mil_vision::PointColorStats
+
+.. doxygenstruct:: mil_vision::PointColorStats

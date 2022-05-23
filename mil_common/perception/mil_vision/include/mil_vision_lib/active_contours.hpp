@@ -68,6 +68,10 @@ class ActiveContour
   ClosedCurve _contour;
 
 public:
+  /**
+   * Default constructor for the ActiveContour class. Does not appear to have
+   * definition.
+   */
   ActiveContour();
 };
 
