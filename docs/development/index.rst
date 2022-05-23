@@ -11,7 +11,8 @@ Various docs related to how to develop MIL software
    Documentation Examples <examples/index>
    Debugging <help>
    Using The Development Server<using_the_dev_server>
-   Bash and C++ Style Guide <cpp_bash_style.md>
+   Bash Style Guide <bash_style.md>
+   C++ Style Guide <cpp_style.md>
    Python Style Guide <python_style.md>
    Migrating to ROS Noetic <noetic_migration.md>
    Installing NVIDIA Drivers for RTX 2080 <installing_drivers.md>
