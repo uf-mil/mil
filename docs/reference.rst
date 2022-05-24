@@ -3342,8 +3342,8 @@ Utility Functions
 
 .. autofunction:: mil_tools.get_ch
 
-Classes
-^^^^^^^
+FPrintFactory
+^^^^^^^^^^^^^
 
 .. attributetable:: FprintFactory
 
@@ -3373,31 +3373,37 @@ Utility Functions
 Images
 ------
 
-Classes
-^^^^^^^
+BagCrawler
+^^^^^^^^^^
 
 .. attributetable:: BagCrawler
 
 .. autoclass:: BagCrawler
     :members:
 
+CvDebug
+^^^^^^^
 .. attributetable:: CvDebug
 
 .. autoclass:: CvDebug
     :members:
 
+Image_Publisher
+^^^^^^^^^^^^^^^
 .. attributetable:: Image_Publisher
 
 .. autoclass:: Image_Publisher
     :members:
 
+Image_Subscriber
+^^^^^^^^^^^^^^^^
 .. attributetable:: Image_Subscriber
 
 .. autoclass:: Image_Subscriber
     :members:
 
 StereoImageSubscriber
-~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^
 
 .. attributetable:: StereoImageSubscriber
 
@@ -3405,7 +3411,7 @@ StereoImageSubscriber
     :members:
 
 Plotter
-~~~~~~~
+^^^^^^^
 
 .. attributetable:: Plotter
 
@@ -3415,14 +3421,16 @@ Plotter
 Serial
 ------
 
-Classes
-^^^^^^^
+NoopSerial
+^^^^^^^^^^
 
 .. attributetable:: NoopSerial
 
 .. autoclass:: NoopSerial
     :members:
 
+SimulatedSerial
+^^^^^^^^^^^^^^^
 .. attributetable:: SimulatedSerial
 
 .. autoclass:: SimulatedSerial
@@ -3433,8 +3441,8 @@ txros
 
 .. currentmodule:: txros
 
-Classes
-^^^^^^^
+Goal
+^^^^
 
 .. attributetable:: Goal
 
@@ -3473,19 +3481,22 @@ Utility Functions
 
 .. autofunction:: make_ray
 
-Classes
-^^^^^^^
-
+VectorToMarker
+^^^^^^^^^^^^^^
 .. attributetable:: mil_ros_tools.vector_to_marker.VectorToMarker
 
 .. autoclass:: mil_ros_tools.vector_to_marker.VectorToMarker
     :members:
 
+ClickedPointRecorder
+^^^^^^^^^^^^^^^^^^^^
 .. attributetable:: nodes.clicked_point_recorder.ClickedPointRecorder
 
 .. autoclass:: nodes.clicked_point_recorder.ClickedPointRecorder
     :members:
 
+NetworkBroadcaster
+^^^^^^^^^^^^^^^^^^
 .. attributetable:: nodes.network_broadcaster.NetworkBroadcaster
 
 .. autoclass:: nodes.network_broadcaster.NetworkBroadcaster
