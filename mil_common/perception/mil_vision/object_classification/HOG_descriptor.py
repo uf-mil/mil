@@ -1,8 +1,7 @@
 import cv2
 
 
-class HOGDescriptor(object):
-
+class HOGDescriptor:
     def __init__(self):
         self.hog = cv2.HOGDescriptor((8, 8), (8, 8), (4, 4), (8, 8), 9)
 

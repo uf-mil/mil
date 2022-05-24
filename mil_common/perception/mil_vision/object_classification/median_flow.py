@@ -2,17 +2,21 @@ import cv2
 import numpy as np
 from collections import deque
 import itertools
+
 ___author___ = "Tess Bianchi"
 
 
-class MedianFlow(object):
+class MedianFlow:
     TRACKING_LENGTH = 3
 
-    def __init__(self, elimination_amount=.6, winSize=(15, 15), maxLevel=2):
+    def __init__(self, elimination_amount=0.6, winSize=(15, 15), maxLevel=2):
         self.prev_points = None
         self.prev_frame = None
-        self.lk_params = dict(winSize=winSize, maxLevel=maxLevel, criteria=(
-            cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 2, 0.03))
+        self.lk_params = dict(
+            winSize=winSize,
+            maxLevel=maxLevel,
+            criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 2, 0.03),
+        )
         self.tracking_points = deque()
         self.tracking_frames = deque()
         self.bboxs = deque()
@@ -25,15 +29,15 @@ class MedianFlow(object):
         self._amount_mdn_flow_tracked = 0
 
     def init(self, frame, bbox, img=None, num_points=6):
-        '''
+        """
         Arguments: num_points is the square root of the number of that will be initially given to your image
-        '''
+        """
         if frame is None:
             raise TypeError("The frame is invalid")
 
         x, y, w, h = bbox
 
-        if(w <= 0 or h <= 0):
+        if w <= 0 or h <= 0:
             raise ValueError("Invalid bounding box")
 
         self.prev_frame = frame
@@ -64,7 +68,7 @@ class MedianFlow(object):
         best = self.bboxs.popleft()
         best_frame = self.tracking_frames.popleft()
         x, y, w, h = best
-        _roi = best_frame[y:y + h, x:x + w]
+        _roi = best_frame[y : y + h, x : x + w]
         return _roi, best
 
     def _calculate_forward_backward_error(self, prev_frame, prev_points):
@@ -75,7 +79,8 @@ class MedianFlow(object):
         for i in range(self.TRACKING_LENGTH - 1, -1, -1):
             _frame = self.tracking_frames[i]
             _points, status, err = cv2.calcOpticalFlowPyrLK(
-                prev_frame, _frame, prev_points, None, **self.lk_params)
+                prev_frame, _frame, prev_points, None, **self.lk_params
+            )
             prev_frame = _frame
             prev_points = _points
 
@@ -92,7 +97,7 @@ class MedianFlow(object):
             raise TypeError("The frame is invalid")
 
         # Make sure there is enough frames in our list
-        if(len(self.tracking_points) < self.TRACKING_LENGTH):
+        if len(self.tracking_points) < self.TRACKING_LENGTH:
             self.tracking_points.append(points)
             self.tracking_frames.append(frame)
             return points
@@ -104,14 +109,15 @@ class MedianFlow(object):
         # If this is the first time median flow is tracking these points,
         # eliminate the top 60% of the points with the highest fb tracking error
         # 60% is defined in self.elimination_amount)
-        if(self._amount_mdn_flow_tracked == 0):
-            lrgst_ind = np.argsort(
-                diff_norm)[-int(len(diff_norm) * self.elimination_amount):]
+        if self._amount_mdn_flow_tracked == 0:
+            lrgst_ind = np.argsort(diff_norm)[
+                -int(len(diff_norm) * self.elimination_amount) :
+            ]
             msk = np.ones(len(diff_norm), dtype=bool)
             msk[lrgst_ind] = False
         else:
             # Elimate points with a foward-backward error greater than .8
-            high_val = diff_norm > .8
+            high_val = diff_norm > 0.8
             diff = diff.T[0]
             msk = np.ones(len(diff_norm), dtype=bool)
             msk[high_val] = False
@@ -133,7 +139,9 @@ class MedianFlow(object):
         # Determine if this model is still effective
         # If the mean fb error is > 2 and the amount of frames tracked is > 20, then the model has failed.
         # Also if the number of points in the model is <d the model has failed
-        if((cv2.mean(diff)[0] > 2 and self._amount_mdn_flow_tracked > 20) or len(points) < 3):
+        if (cv2.mean(diff)[0] > 2 and self._amount_mdn_flow_tracked > 20) or len(
+            points
+        ) < 3:
             self._is_effective = False
 
         return points
@@ -157,10 +165,11 @@ class MedianFlow(object):
         ratios = []
 
         for i, val in enumerate(prev_comb):
-            if(i >= len(curr_comb)):
+            if i >= len(curr_comb):
                 # This should never happen
                 raise ValueError(
-                    'The previous points and current points are not synchronized')
+                    "The previous points and current points are not synchronized"
+                )
             prev_point_A = prev_comb[i][0]
             prev_point_B = prev_comb[i][1]
             curr_point_A = curr_comb[i][0]
@@ -171,12 +180,11 @@ class MedianFlow(object):
             curr_dist = np.subtract(curr_point_A, curr_point_B)
 
             # Dont want to divide by zero
-            if(np.linalg.norm(prev_dist) == 0):
+            if np.linalg.norm(prev_dist) == 0:
                 continue
 
             # Get the ration of the current distance, to the previous distance
-            ratios.append(np.linalg.norm(curr_dist) /
-                          np.linalg.norm(prev_dist))
+            ratios.append(np.linalg.norm(curr_dist) / np.linalg.norm(prev_dist))
 
         # Choose the median of these distances
         scale = np.median(ratios)
@@ -188,12 +196,12 @@ class MedianFlow(object):
         h_n = h
 
         # If the scale is big or small enough (due to rounding errors)
-        if(self._curr_scale > 1.08 or self._curr_scale < .92):
+        if self._curr_scale > 1.08 or self._curr_scale < 0.92:
             w_n = int(round(w * self._curr_scale))
             h_n = int(round(h * self._curr_scale))
             self._curr_scale = 1
 
-        if(x_n < 0 or y_n < 0 or w_n < 0 or h_n < 0):
+        if x_n < 0 or y_n < 0 or w_n < 0 or h_n < 0:
             raise ValueError("The new bounding box has incorrect values")
 
         self.bbox = (x_n, y_n, w_n, h_n)
@@ -203,7 +211,8 @@ class MedianFlow(object):
             raise TypeError("The frame is invalid")
 
         points, status, err = cv2.calcOpticalFlowPyrLK(
-            self.prev_frame, frame, self.prev_points, None, **self.lk_params)
+            self.prev_frame, frame, self.prev_points, None, **self.lk_params
+        )
         points = self._eliminate_points(points, frame)
         try:
             self._update_bbox(points)
@@ -211,9 +220,9 @@ class MedianFlow(object):
             return None
 
         self.bboxs.append(self.bbox)
-        if(len(self.bboxs) > self.TRACKING_LENGTH):
+        if len(self.bboxs) > self.TRACKING_LENGTH:
             self.bboxs.popleft()
 
         self.prev_points = points
-        self. prev_frame = frame
+        self.prev_frame = frame
         return self.bbox
