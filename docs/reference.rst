@@ -3869,7 +3869,7 @@ Utility Functions
 .. TODO Figure out why this signature is causing issues with Sphinx/Breathe/Doxygen
 .. .. doxygenfunction:: mil_vision::pseudoInverse
 
-.. doxygenfunction:: mil_vision::largerContour
+.. doxygenfunction:: mil_vision::larger_contour
 
 .. doxygenfunction:: mil_vision::smooth_histogram
 
@@ -3879,11 +3879,19 @@ Utility Functions
 
 .. doxygenfunction:: mil_vision::find_local_minima
 
-.. doxygenfunction:: mil_vision::select_hist_mode
+.. doxygenfunction:: mil_vision::select_hist_mode (std::vector< cv::Point > &histogram_modes, unsigned int target)
+
+.. doxygenfunction:: mil_vision::select_hist_mode (std::vector< cv::Point > &histogram_modes, int target)
 
 .. doxygenfunction:: mil_vision::range_from_param
 
 .. doxygenfunction:: mil_vision::inParamRange
+
+.. doxygenfunction:: mil_vision::rotateKernel
+
+.. doxygenfunction:: mil_vision::makeRotInvariant
+
+.. doxygenfunction:: mil_vision::getRadialSymmetryAngle
 
 C++ Type Aliases
 ^^^^^^^^^^^^^^^^
@@ -4059,3 +4067,28 @@ Range
 .. cppattributetable:: mil_vision::Range
 
 .. doxygenstruct:: mil_vision::Range
+
+CameraFrameSequence
+^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: mil_vision::CameraFrameSequence
+
+.. doxygenclass:: mil_vision::CameraFrameSequence
+   
+CameraModel
+^^^^^^^^^^^
+.. cppattributetable:: mil_vision::CameraModel
+
+.. doxygenclass:: mil_vision::CameraModel
+
+ROSCameraStream
+^^^^^^^^^^^^^^^
+.. TODO GH-612
+.. .. cppattributetable:: mil_vision::ROSCameraStream
+
+.. doxygenclass:: mil_vision::ROSCameraStream
+
+PcdSubPubAlgorithm
+^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: mil_vision::PcdSubPubAlgorithm
+
+.. doxygenclass:: mil_vision::PcdSubPubAlgorithm
