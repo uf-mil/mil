@@ -12,15 +12,15 @@ import cv2
 from mil_ros_tools import odometry_to_numpy
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 import numpy as np
+
 ___author___ = "Tess Bianchi"
 
-'''
-Needs to be refactored to be generic and non depend on navigator
-'''
+"""
+Needs to be refactored to be generic and non depend on navigator.
+"""
 
 
 class LidarToImage(object):
-
     def __init__(self, nh, classes=None, dist=50):
         self.MAX_SIZE = 74
         self.IMAGE_SIZE = 100
@@ -43,9 +43,14 @@ class LidarToImage(object):
         cam_info = "/stereo/right/camera_info"
 
         yield self.nh.subscribe(image_sub, Image, self._img_cb)
-        self._database = yield self.nh.get_service_client('/database/requests', ObjectDBQuery)
-        self._odom_sub = yield self.nh.subscribe('/odom', Odometry,
-                                                 lambda odom: setattr(self, 'pose', odometry_to_numpy(odom)[0]))
+        self._database = yield self.nh.get_service_client(
+            "/database/requests", ObjectDBQuery
+        )
+        self._odom_sub = yield self.nh.subscribe(
+            "/odom",
+            Odometry,
+            lambda odom: setattr(self, "pose", odometry_to_numpy(odom)[0]),
+        )
         self.cam_info_sub = yield self.nh.subscribe(cam_info, CameraInfo, self._info_cb)
         self.tf_listener = tf.TransformListener(self.nh)
         defer.returnValue(self)
@@ -55,8 +60,7 @@ class LidarToImage(object):
 
     def _get_2d_points(self, points_3d):
         # xmin, ymin, zmin = self._get_top_left_point(points_3d)
-        points_2d = map(
-            lambda x: self.camera_model.project3dToPixel(x), points_3d)
+        points_2d = map(lambda x: self.camera_model.project3dToPixel(x), points_3d)
         return points_2d
 
     def _get_bounding_rect(self, points_2d, img):
@@ -66,13 +70,13 @@ class LidarToImage(object):
         ymax = -np.inf
         h, w, r = img.shape
         for i, point in enumerate(points_2d):
-            if(point[0] < xmin):
+            if point[0] < xmin:
                 xmin = point[0]
-            if(point[0] > xmax):
+            if point[0] > xmax:
                 xmax = point[0]
-            if(point[1] > ymax):
+            if point[1] > ymax:
                 ymax = point[1]
-            if(point[1] < ymin):
+            if point[1] < ymin:
                 ymin = point[1]
         if xmin < 0:
             xmin = 1
@@ -88,7 +92,7 @@ class LidarToImage(object):
     def get_object_rois(self, name=None):
         req = ObjectDBQueryRequest()
         if name is None:
-            req.name = 'all'
+            req.name = "all"
         else:
             req.name = name
         obj = yield self._database(req)
@@ -103,13 +107,19 @@ class LidarToImage(object):
         o = obj.objects[0]
 
         points_3d = yield self.get_3d_points(o)
-        points_2d_all = map(
-            lambda x: self.camera_model.project3dToPixel(x), points_3d)
+        points_2d_all = map(lambda x: self.camera_model.project3dToPixel(x), points_3d)
         points_2d = self._get_2d_points(points_3d)
         xmin, ymin, xmax, ymax = self._get_bounding_rect(points_2d, img)
         xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
         h, w, r = img.shape
-        if xmin < 0 or xmax < 0 or xmin > w or xmax > w or xmax - xmin == 0 or ymax - ymin == 0:
+        if (
+            xmin < 0
+            or xmax < 0
+            or xmin > w
+            or xmax > w
+            or xmax - xmin == 0
+            or ymax - ymin == 0
+        ):
             defer.returnValue((None, None))
         if ymin < 0:
             ymin = 0
@@ -146,7 +156,7 @@ class LidarToImage(object):
                     min_img = img
             if min_img is not None:
                 defer.returnValue(min_img)
-            yield self.nh.sleep(.3)
+            yield self.nh.sleep(0.3)
 
     def _resize_image(self, img):
         h, w, r = img.shape
@@ -179,7 +189,9 @@ class LidarToImage(object):
 
     @txros.util.cancellableInlineCallbacks
     def get_3d_points(self, perc_obj):
-        trans = yield self.my_tf.get_transform("/stereo_right_cam", "/enu", perc_obj.header.stamp)
+        trans = yield self.my_tf.get_transform(
+            "/stereo_right_cam", "/enu", perc_obj.header.stamp
+        )
 
         stereo_points = []
         for point in perc_obj.points:
@@ -187,7 +199,7 @@ class LidarToImage(object):
         stereo_points = map(lambda x: trans.as_matrix().dot(x), stereo_points)
         points = []
         for p in stereo_points:
-            if p[3] < 1E-15:
+            if p[3] < 1e-15:
                 raise ZeroDivisionError
             p[0] /= p[3]
             p[1] /= p[3]

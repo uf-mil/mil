@@ -47,6 +47,12 @@ public:
     std::vector<uint8_t> route;
   };
 
+  /**
+   * Initializes a new closed curve with a given set of points. No operations are
+   * completed upon initialization; only internal attributes are stored.
+   *
+   * @param points A list of points which comprise the curve.
+   */
   ClosedCurve(std::vector<cv::Point2i> points);
   void applyPerturbation(const std::vector<uint8_t>& perturbation, int idx);
   ClosedCurve perturb(const std::vector<uint8_t>& perturbation, int idx);
@@ -62,6 +68,10 @@ class ActiveContour
   ClosedCurve _contour;
 
 public:
+  /**
+   * Default constructor for the ActiveContour class. Does not appear to have
+   * definition.
+   */
   ActiveContour();
 };
 

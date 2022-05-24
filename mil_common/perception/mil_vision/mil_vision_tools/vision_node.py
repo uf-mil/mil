@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from mil_ros_tools import Image_Subscriber, numpy_to_point2d
 from mil_msgs.msg import ObjectInImage, ObjectsInImage
@@ -7,25 +7,42 @@ from image_geometry import PinholeCameraModel
 import numpy as np
 import abc
 
+from typing import Optional, List
+
 __author__ = "Kevin Allen"
 
 
-def create_object_msg(name, confidence=None, center=None, contour=None, rect=None, attributes=''):
-    '''
-    Helper function to create a mil_msgs/ObjectInImage message.
-    Note: only set one of center, contour, or rect depending on what informaton is needed/available in your application
+def create_object_msg(
+    name: str,
+    confidence: Optional[float] = None,
+    center: Optional[np.ndarray] = None,
+    contour: Optional[np.ndarray] = None,
+    rect: Optional[np.ndarray] = None,
+    attributes: str = "",
+):
+    """
+    Helper function to create a ``mil_msgs/ObjectInImage`` message.
 
-    @param name: string name of the identifed object
-    @param attributes: Attributes string to attach to message, application specific meaning
-    @param confidence: [0.0, 1.0] confidence that name is correct for this object.
-                       Leave as None if confidence is not known.
-    @param center: 2 wide tuple/array-like representing the center pixel of the object
-    @param contour: Nx1x2 or Nx2 numpy array of pixels making up the contour around the object
-    @param rect: a 4 wide tuple/array-like representing the bounding box around the object as
-                 (X, Y, width, height), which is the representation returned by cv2.boundingRect
-    @return: A ObjectInImage message object filled as described above
-    TODO document usage
-    '''
+    Only one of center, contour, or rect should be set, depending on what information
+    is needed/available in your application.
+
+    Args:
+        name (str): Name of the identifed object.
+        attributes (str): Attributes to attach to message, the purpose and value
+            of this attribute will vary by application. Defaults to an empty string.
+        confidence (Optional[float]): Float between 0 and 1 describing the confidence
+            that name is correct for this object. Leave as ``None`` if confidence
+            is not known (will be set to -1).
+        center (Optional[np.ndarray]): ``[x, y]`` of the center point of the object.
+        contour (Optional[np.ndarray]): Nx1x2 or Nx2 numpy array of pixels making up the contour
+            around the object.
+        rect (Optional[np.ndarray]): A 4 wide tuple/array-like representing the
+            bounding box around the object as ``(X, Y, width, height)``,
+            which is the representation returned by cv2.boundingRect.
+
+    Returns:
+        ObjectInImage: Message object filled as described above.
+    """
     # Create message
     msg = ObjectInImage()
 
@@ -35,7 +52,7 @@ def create_object_msg(name, confidence=None, center=None, contour=None, rect=Non
 
     # Fill confidence from argument if given, otherwise use -1
     if confidence is None:
-        msg.confidence = -1.
+        msg.confidence = -1.0
     else:
         msg.confidence = confidence
 
@@ -59,16 +76,22 @@ def create_object_msg(name, confidence=None, center=None, contour=None, rect=Non
     return msg
 
 
-class VisionNode(object):
-    '''
-    Base class to be used unify the interfacing for MIL's computer vision scripts.
+class VisionNode(metaclass=abc.ABCMeta):
+    """
+    ABC class to be used unify the interfacing for MIL's computer vision scripts.
     Handles the bootstrap of image subscription, enable/disable, etc.
-    Provides a callback for new images which is expected to return
-    '''
-    __metaclass__ = abc.ABCMeta
+    Provides a callback for new images which is expected to return.
+
+    Attributes:
+        camera_model (Optional[:class:`PinholeCameraModel`]): Camera model used throughout the
+            class. Initially set to ``None``, but later set to an instance of the pinhole
+            camera model when enabled.
+    """
 
     def __init__(self):
-        self._objects_pub = rospy.Publisher("~identified_objects", ObjectsInImage, queue_size=3)
+        self._objects_pub = rospy.Publisher(
+            "~identified_objects", ObjectsInImage, queue_size=3
+        )
         self._camera_info = None
         self.camera_model = None
         self._enabled = False
@@ -84,7 +107,7 @@ class VisionNode(object):
             self._enable()
         elif not req.data and self._enabled:
             self._disable()
-        return {'success': True}
+        return {"success": True}
 
     def _enable(self):
         if self._camera_info is None:
@@ -104,26 +127,41 @@ class VisionNode(object):
         msg = ObjectsInImage()
         msg.header = self._image_sub.last_image_header
         msg.objects = self.find_objects(img)
-        if not isinstance(msg.objects, list) or (len(msg.objects) and not isinstance(msg.objects[0], ObjectInImage)):
-            rospy.logwarn("find_objects did not return a list of mil_msgs/ObjectInImage message. Ignoring.")
+        if not isinstance(msg.objects, list) or (
+            len(msg.objects) and not isinstance(msg.objects[0], ObjectInImage)
+        ):
+            rospy.logwarn(
+                "find_objects did not return a list of mil_msgs/ObjectInImage message. Ignoring."
+            )
         self._objects_pub.publish(msg)
 
     @abc.abstractmethod
-    def find_objects(self, img):
+    def find_objects(self, img: np.ndarray) -> List[ObjectInImage]:
+        """
+        Given an image as a source, this abstract method should be overriden to return
+        a list of :class:`ObjectInImage`.
+
+        Args:
+            img (np.ndarray): The source image.
+
+        Returns:
+            List[ObjectInImage]: A list of the objects found in the image.
+        """
         pass
 
 
 if __name__ == "__main__":
-    '''
-    When this library is run as an executable, run a demo class
-    '''
+    """
+    When this library is run as an executable, run a demo class.
+    """
     import cv2
     from cv_tools import contour_centroid
 
     class VisionNodeExample(VisionNode):
-        '''
+        """
         Example implementation of a VisionNode, useful only for reference in real applications
-        '''
+        """
+
         def __init__(self):
             # Call base class's init. Important to do this if you override __init__ in child class.
             super(VisionNodeExample, self).__init__()
@@ -132,7 +170,9 @@ if __name__ == "__main__":
             # Get a list of contours in image
             blured = cv2.blur(img, (5, 5))
             edges = cv2.Canny(blured, 100, 200)
-            _, contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            _, contours, _ = cv2.findContours(
+                edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+            )
             contours = np.array(contours)
             objects = []
 
@@ -146,13 +186,21 @@ if __name__ == "__main__":
                         center = contour_centroid(contour)
                     except ZeroDivisionError:
                         continue
-                    objects.append(create_object_msg("contour", center=center, attributes='green'))
+                    objects.append(
+                        create_object_msg("contour", center=center, attributes="green")
+                    )
                 # Demonstration of adding an object where the entire contour outline can be identified
                 if idx % 3 == 1:
-                    objects.append(create_object_msg("contour", contour=contour, confidence=0.5))
+                    objects.append(
+                        create_object_msg("contour", contour=contour, confidence=0.5)
+                    )
                 # Demonstration of adding an object where a bounding rectangle can be identified
                 if idx % 3 == 2:
-                    objects.append(create_object_msg("contour", rect=cv2.boundingRect(contour), confidence=0.8))
+                    objects.append(
+                        create_object_msg(
+                            "contour", rect=cv2.boundingRect(contour), confidence=0.8
+                        )
+                    )
 
             # Log that an image has been received for debugging this demo
             rospy.loginfo("Image")

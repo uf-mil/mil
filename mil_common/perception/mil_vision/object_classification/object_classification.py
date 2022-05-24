@@ -1,15 +1,15 @@
 from mil_ros_tools import CvDebug, BagCrawler
 import numpy as np
-from HOG_descriptor import HOGDescriptor
-from SVM_classifier import SVMClassifier
+from .HOG_descriptor import HOGDescriptor
+from .SVM_classifier import SVMClassifier
 import pickle
 import cv2
 from cv_bridge import CvBridge
+
 ___author___ = "Tess Bianchi"
 
 
 class Config(object):
-
     def __init__(self):
         self.classes = ["totem", "scan_the_code", "nothing", "shooter"]
         self.classifier = SVMClassifier()
@@ -27,26 +27,26 @@ class Config(object):
                 return i
 
     def get_imgs(self, val):
-        roi = pickle.load(open(val, 'rb'))
+        roi = pickle.load(open(val, "rb"))
         imgs = []
         rois_vals = []
         rois = []
-        print roi
+        print(roi)
 
         for b in roi.bag_to_rois.keys():
             frames = roi.bag_to_rois[b]
             bc = BagCrawler(b)
             topic = bc.image_topics[0]
             bc_crawl = bc.crawl(topic)
-            print b
+            print(b)
             for frame in frames:
-                img = bc_crawl.next()
-                img = self.bridge.imgmsg_to_cv2(img, 'bgr8')
+                img = next(bc_crawl)
+                img = self.bridge.imgmsg_to_cv2(img, "bgr8")
                 imgs.append(img)
                 a = []
                 for clss in frame:
                     r = frame[clss]
-                    myroi = img[r[1]:r[1] + r[3], r[0]:r[0] + r[2]]
+                    myroi = img[r[1] : r[1] + r[3], r[0] : r[0] + r[2]]
                     myroi = self._resize_image(myroi)
                     clss = self.to_val(clss)
                     rois.append((myroi, clss))
@@ -85,7 +85,6 @@ class Config(object):
 
 
 class Training(object):
-
     def __init__(self, roi_file, output):
         self.config = Config()
         self.output = output
@@ -101,29 +100,29 @@ class Training(object):
             desc = desc.flatten()
             descs.append(desc)
             classify.append(clss)
-            print clss
+            print(clss)
         descs = np.array(descs)
         classify = np.array(classify)
         counts = dict((x, list(classify).count(x)) for x in set(classify))
         counts = dict((self.config.to_class(k), v) for k, v in counts.items())
-        print counts
+        print(counts)
 
         self.config.classifier.train(descs, classify)
         self.config.classifier.pickle("train.p")
+
 
 # class Classifier(object):
 
 
 class ClassiferTest(object):
-
     def __init__(self, roi_file, class_file):
         self.config = Config()
         self.roi_file = roi_file
-        self.classifier = pickle.load(open(class_file, 'rb'))
+        self.classifier = pickle.load(open(class_file, "rb"))
         self.debug = CvDebug()
 
     def classify(self):
-        print self.roi_file
+        print(self.roi_file)
         imgs, roi_val, rois = self.config.get_imgs(self.roi_file)
         for i, frames in enumerate(roi_val):
             img = imgs[i]
@@ -135,9 +134,19 @@ class ClassiferTest(object):
                 clss, prob = self.classifier.classify(desc)
                 clss = self.config.to_class(clss)
                 cv2.rectangle(
-                    draw, (myroi[0], myroi[1]), (myroi[0] + myroi[2], myroi[1] + myroi[3]), (0, 0, 255))
-                cv2.putText(draw, clss + ": " + str(prob),
-                            (myroi[0], myroi[1]), 1, 1.0, (0, 255, 0))
+                    draw,
+                    (myroi[0], myroi[1]),
+                    (myroi[0] + myroi[2], myroi[1] + myroi[3]),
+                    (0, 0, 255),
+                )
+                cv2.putText(
+                    draw,
+                    clss + ": " + str(prob),
+                    (myroi[0], myroi[1]),
+                    1,
+                    1.0,
+                    (0, 255, 0),
+                )
             # self.debug.add_image(draw, topic="roi")
             cv2.imshow("roi", draw)
             cv2.waitKey(33)
@@ -146,6 +155,6 @@ class ClassiferTest(object):
 if __name__ == "__main__":
     t = Training("roi_competition.p", "train_competition.p")
     t.train()
-    print "done"
+    print("done")
     # c = ClassiferTest("val_roi.p", "train.p")
     # c.classify()
