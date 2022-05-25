@@ -276,6 +276,11 @@ TableElement = namedtuple("TableElement", "fullname label badge")
 
 
 def _parse_cpp_function_sig_children(children: List[Node]):
+    # Remove equal sign and everything after if found
+    if "=" in children:
+        equal_sign = children.index("=")
+        children = children[:equal_sign]
+
     # Remove unnecessary keywords
     to_remove = [" ", "const"]
     children[:] = [child for child in children if child not in to_remove]
@@ -284,10 +289,17 @@ def _parse_cpp_function_sig_children(children: List[Node]):
 
 
 def _parse_cpp_attribute_sig_children(children: List[Node]):
+    # Remove equal sign and everything after if found
     if "=" in children:
         equal_sign = children.index("=")
         children = children[:equal_sign]
 
+    # Remove array formatting
+    if "]" in children:
+        opening_bracket = children.index("[")
+        children = children[:opening_bracket]
+
+    print(children)
     children[:] = [child for child in children if child not in [" ", ""]]
     return children[-1]
 
