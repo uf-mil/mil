@@ -6,6 +6,7 @@ import importlib
 import inspect
 import os
 import re
+import sphinx.errors
 from collections import OrderedDict, namedtuple
 
 from docutils import nodes
@@ -303,10 +304,14 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
 
     # Find all relevant C++ functions and attributes
     current_section = None
+
+    # Throw error if user is attempting to put attribute table for enum class
+
     for node in doctree.traverse(siblings=True):
         if hasattr(node, "attributes"):
-            if all([c in node.attributes["classes"] for c in ["cpp", "class"]]) or all(
-                c in node.attributes["classes"] for c in ["cpp", "struct"]
+            if "cpp" in node.attributes["classes"] and any(
+                c in node.attributes["classes"]
+                for c in ["class", "struct"]
             ):
                 # Store current C++ struct or class section as namespace::ClassName or ClassName
                 current_section = node.children[0].astext()
@@ -327,7 +332,9 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
             elif all([c in node.attributes["classes"] for c in ["cpp", "function"]]):
                 # Get the signature line of the function, where its name is stored
                 try:
-                    descriptions = [n.astext() for n in node[0][0].children if isinstance(n, Node)]
+                    descriptions = [
+                        n.astext() for n in node[0][0].children if isinstance(n, Node)
+                    ]
                 except IndexError:
                     continue
 
@@ -352,7 +359,9 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
             elif all([c in node.attributes["classes"] for c in ["cpp", "var"]]):
                 # Try to get signature lines for C++ variables
                 try:
-                    descriptions = [n.astext() for n in node.children[0][0] if isinstance(n, Node)]
+                    descriptions = [
+                        n.astext() for n in node.children[0][0] if isinstance(n, Node)
+                    ]
                 except IndexError:
                     continue
 
@@ -377,6 +386,18 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
 
         # Turn the table elements in a node
         table = attributetable("")
+
+        # Throw error if not found in list of classes
+        if target not in classes:
+            raise sphinx.errors.ExtensionError(
+                "No C++ class or struct was found matching the "
+                f"{target} target provided. Please ensure that this class is purely "
+                "a C++ class or struct and not any other data structure. Additionally, "
+                "ensure that proper documentation was able to be generated without "
+                "the attribute table being used. If an error occurred, please open "
+                "an issue on our GitHub repo."
+            )
+
         for label, subitems in classes[target].items():
             if not subitems:
                 continue

@@ -4050,9 +4050,6 @@ SingleCloudProcessor
 
 PixelType
 ^^^^^^^^^
-.. TODO GH-613
-.. .. cppattributetable:: mil_vision::PixelType
-
 .. doxygenenum:: mil_vision::PixelType
 
 CameraFrame
