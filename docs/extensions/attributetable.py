@@ -315,8 +315,13 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
             ):
                 # Store current C++ struct or class section as namespace::ClassName or ClassName
                 current_section = node.children[0].astext()
+
+                # Remove class/struct prefix
                 current_section = re.sub(r"^.*(class )", "", current_section)
                 current_section = re.sub(r"^.*(struct )", "", current_section)
+
+                # Remove inheritance string
+                current_section = re.sub(r" : .*$", "", current_section)
 
                 # Store goto IDs for the current section
                 ids[current_section] = node.children[0].attributes["ids"][0]

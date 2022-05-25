@@ -4037,8 +4037,7 @@ PointColorStats
 
 PcdColorizer
 ^^^^^^^^^^^^
-.. TODO GH-612
-.. .. cppattributetable:: mil_vision::PcdColorizer
+.. cppattributetable:: mil_vision::PcdColorizer
 
 .. doxygenclass:: mil_vision::PcdColorizer
 
@@ -4090,8 +4089,7 @@ CameraModel
 
 ROSCameraStream
 ^^^^^^^^^^^^^^^
-.. TODO GH-612
-.. .. cppattributetable:: mil_vision::ROSCameraStream
+.. cppattributetable:: mil_vision::ROSCameraStream
 
 .. doxygenclass:: mil_vision::ROSCameraStream
 
