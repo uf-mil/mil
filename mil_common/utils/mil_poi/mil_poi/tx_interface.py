@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 
-from msg import POIArray
-from twisted.internet import defer
 import txros
 from mil_ros_tools.msg_helpers import rosmsg_to_numpy
+from twisted.internet import defer
+
+from .msg import POIArray
 
 
-class TxPOIClient(object):
+class TxPOIClient:
     """
-    TXros interface for a POI client
-
-    TODO: add service interfaces for adding / moving / deleting POI
+    TXros interface for a POI client. Currently more limited than the regular :class:`POIServer`.
     """
+
+    # TODO: add service interfaces for adding / moving / deleting POI
 
     def __init__(self, nh):
         """

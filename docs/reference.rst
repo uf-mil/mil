@@ -4098,3 +4098,13 @@ PcdSubPubAlgorithm
 .. cppattributetable:: mil_vision::PcdSubPubAlgorithm
 
 .. doxygenclass:: mil_vision::PcdSubPubAlgorithm
+
+POI Handling
+------------
+
+POIServer
+^^^^^^^^^
+.. attributetable:: mil_poi.POIServer
+
+.. autoclass:: mil_poi.POIServer
+    :members:

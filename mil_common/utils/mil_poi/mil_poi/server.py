@@ -1,37 +1,50 @@
 #!/usr/bin/env python3
 
+from threading import Lock
+from typing import Optional
+
 import rospy
-import tf2_ros
 import tf2_geometry_msgs  # noqa
+import tf2_ros
+from geometry_msgs.msg import Point, PointStamped, Pose
+from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 from mil_ros_tools.msg_helpers import numpy_to_point
 from mil_tools import thread_lock
-from interactive_markers.interactive_marker_server import InteractiveMarkerServer
+from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
 from visualization_msgs.msg import (
     InteractiveMarker,
     InteractiveMarkerControl,
     InteractiveMarkerFeedback,
     Marker,
 )
-from geometry_msgs.msg import Pose, PointStamped
-from std_srvs.srv import Trigger
-from msg import POI, POIArray
-from srv import AddPOI, DeletePOI, MovePOI
-from threading import Lock
+
+from mil_poi.msg import POI, POIArray
+from mil_poi.srv import (
+    AddPOI,
+    AddPOIRequest,
+    AddPOIResponse,
+    DeletePOI,
+    DeletePOIRequest,
+    DeletePOIResponse,
+    MovePOI,
+    MovePOIRequest,
+    MovePOIResponse,
+)
 
 # Mutex for POIServer
 lock = Lock()
 
 
-class POIServer(object):
+class POIServer:
     """
     Node to act as a server to hold a list of points of interest which
-    can be modified by services or interactive markers
+    can be modified by services or interactive markers.
+
+    Attributes:
+        marker_scale (float): Radius of interactive markers for POIs. Defaults to ``0.5``.
     """
 
     def __init__(self):
-        """
-        Create a POIServer
-        """
         # TF bootstrap
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
@@ -75,10 +88,18 @@ class POIServer(object):
             "~save_to_param", Trigger, self.save_to_param_cb
         )
 
-    def transform_position(self, ps):
+    def transform_position(self, ps: PointStamped) -> Optional[Point]:
         """
-        Attempty to transform a PointStamped message into the global frame, returning
+        Attempt to transform a PointStamped message into the global frame, returning
         the position of the transformed point or None if transform failed.
+
+        Args:
+            ps (PointStamped): The PointStamped message to be transformed into the
+                global frame.
+
+        Returns:
+            Optional[Point]: The point in the global frame, or ``None`` if the transform
+            experienced an exception.
         """
         # If no frame, assume user wanted it in the global frame
         if ps.header.frame_id == "":
@@ -96,9 +117,13 @@ class POIServer(object):
             )
             return None
 
-    def process_feedback(self, feedback):
+    def process_feedback(self, feedback: InteractiveMarkerFeedback) -> None:
         """
-        Process interactive marker feedback, moving markers internally inresponse to markers moved in RVIZ
+        Process interactive marker feedback, moving markers internally
+        in response to markers moved in Rviz.
+
+        Args:
+            feedback (InteractiveMarkerFeedback): The feedback message.
         """
         # Only look at changes when mouse button is unclicked
         if feedback.event_type != InteractiveMarkerFeedback.MOUSE_UP:
@@ -116,7 +141,18 @@ class POIServer(object):
         self.update_position(feedback.marker_name, feedback.pose.position)
 
     @thread_lock(lock)
-    def save_to_param_cb(self, req):
+    def save_to_param_cb(self, req: TriggerRequest) -> TriggerResponse:
+        """
+        Saves the internal parameters into the parameter server. Returns whether
+        the operation was successful.
+
+        Args:
+            req (TriggerRequest): The service request. Has no notable attributes.
+
+        Returns:
+            TriggerResponse: The response from the service; ie, whether the operation
+            succeeded.
+        """
         rospy.set_param("~global_frame", self.global_frame)
         d = {}
         for poi in self.pois.pois:
@@ -126,11 +162,19 @@ class POIServer(object):
                 float(poi.position.z),
             ]
         rospy.set_param("~initial_pois", d)
-        return {"success": True}
+        return TriggerResponse(success=True)
 
-    def add_poi_cb(self, req):
+    def add_poi_cb(self, req: AddPOIRequest) -> AddPOIResponse:
         """
-        Callback for AddPOI service
+        Callback for the AddPOI service.
+
+        Args:
+            req (AddPOIRequest): The service request. The name and position are used
+                from the request.
+
+        Returns:
+            AddPOIResponse: Whether the operation was succesful, along with a message
+            indicating why.
         """
         name = req.name
         # If frame is empty, just initialize it to zero
@@ -140,39 +184,59 @@ class POIServer(object):
         else:
             position = self.transform_position(req.position)
             if position is None:
-                return {"success": False, "message": "tf error (bad poi)"}
+                return AddPOIResponse(success=False, message="tf error (bad poi)")
         if not self.add_poi(name, position):
-            return {"success": False, "message": "alread exists (bad poi)"}
-        return {"success": True, "message": "good poi"}
+            return AddPOIResponse(success=True, message="alread exists (bad poi)")
+        return AddPOIResponse(success=True, message="good poi")
 
-    def delete_poi_cb(self, req):
+    def delete_poi_cb(self, req: DeletePOIRequest) -> DeletePOIResponse:
         """
-        Callback for DeletePOI service
+        Callback for DeletePOI service. Equivalent to calling :meth:`.remove_poi`.
+
+        Args:
+            req (DeletePOIRequest): The service request. The name is used to determine
+                which POI to remove.
+
+        Returns:
+            DeletePOIResponse: Whether the operation was successful, along with a
+            message indicating why.
         """
         # Return error if marker did not exist
         if not self.remove_poi(req.name):
-            return {"success": False, "message": "does not exist (bad poi)"}
-        return {"success": True, "message": "good poi"}
+            return DeletePOIResponse(success=False, message="does not exist (bad poi)")
+        return DeletePOIResponse(success=True, message="good poi")
 
-    def move_poi_cb(self, req):
+    def move_poi_cb(self, req: MovePOIRequest) -> MovePOIResponse:
         """
-        Callback for MovePOI service
+        Callback for MovePOI service.
+
+        Args:
+            req (MovePOIRequest): The service request.
+
+        Returns:
+            MovePOIResponse: The response from the service.
         """
         name = req.name
         # Transform position into global frame
         position = self.transform_position(req.position)
         if position is None:
-            return {"success": False, "message": "tf error (bad poi)"}
+            return MovePOIResponse(success=False, message="tf error (bad poi)")
         # Return error if marker did not exist
         if not self.update_position(name, position):
-            return {"success": False, "message": "does not exist (bad poi)"}
-        return {"success": True, "message": "good poi"}
+            return MovePOIResponse(success=False, message="does not exist (bad poi)")
+        return MovePOIResponse(success=True, message="good poi")
 
     @thread_lock(lock)
-    def add_poi(self, name, position):
+    def add_poi(self, name: str, position: Point) -> bool:
         """
-        Add a POI, updating clients / rviz when done
-        @return False if POI already exists
+        Add a POI, updating clients and Rviz when done.
+
+        Args:
+            name (str): The name of the POI to add.
+            position (Point): The position of the new POI.
+
+        Returns:
+            bool: ``False`` if a POI with the same name already exists, otherwise ``True``.
         """
         if not self._add_poi(name, position):
             return False
@@ -180,10 +244,15 @@ class POIServer(object):
         return True
 
     @thread_lock(lock)
-    def remove_poi(self, name):
+    def remove_poi(self, name: str) -> bool:
         """
-        Remove a POI, updating clients / rviz when done
-        @return False if POI with name does not exist
+        Remove a POI, updating clients and Rviz when done.
+
+        Args:
+            name (str): The name of the POI to remove.
+
+        Returns:
+            bool: ``False`` if a POI with the provided name does not exist, otherwise ``True``.
         """
         if not self._remove_poi(name):
             return False
@@ -191,28 +260,35 @@ class POIServer(object):
         return True
 
     @thread_lock(lock)
-    def update_position(self, name, position):
+    def update_position(self, name: str, position: Point) -> bool:
         """
-        Update the position of a POI, updating clients / rviz when done
-        @param position: a Point message of the new position in global frame
-        @return False if POI with name does not exist
+        Update the position of a POI, updating clients and Rviz when done.
+
+        Args:
+            name (str): The name of the POI to remove.
+            position (:class:`~geometry_msgs.msg._Point.Point`): A Point message
+                of the new position in global frame.
+
+        Returns:
+            bool: ``False`` if a POI with name does not exist, otherwise ``True``.
         """
         if not self._update_position(name, position):
             return False
         self.update()
         return True
 
-    def update(self):
+    def update(self) -> None:
         """
-        Update interactive markers server and POI publish of changes
+        Update interactive markers server and POI publish of changes.
         """
         self.pois.header.stamp = rospy.Time.now()
         self.pub.publish(self.pois)
         self.interactive_marker_server.applyChanges()
 
-    def _update_position(self, name, position):
+    def _update_position(self, name: str, position: Point) -> bool:
         """
-        Internal implementation of update_position, which is NOT thread safe and does NOT update clients of change
+        Internal implementation of update_position, which is NOT thread safe
+        and does NOT update clients of change.
         """
         # Find poi with specified name
         for poi in self.pois.pois:
@@ -227,9 +303,10 @@ class POIServer(object):
                 return True
         return False
 
-    def _remove_poi(self, name):
+    def _remove_poi(self, name: str) -> bool:
         """
-        Internal implementation of remove_poi, which is NOT thread safe and does NOT update clients of change
+        Internal implementation of remove_poi, which is NOT thread safe and
+        does NOT update clients of change.
         """
         # Return false if marker with that name not added to interactive marker server
         if not self.interactive_marker_server.erase(name):
@@ -241,9 +318,10 @@ class POIServer(object):
                 return True
         return False
 
-    def _add_poi(self, name, position):
+    def _add_poi(self, name: str, position: Point) -> bool:
         """
-        Internal implementation of add_poi, which is NOT thread safe and does NOT update clients of change
+        Internal implementation of add_poi, which is NOT thread safe and does
+        NOT update clients of change.
         """
         if self.interactive_marker_server.get(name) is not None:
             return False
