@@ -299,7 +299,6 @@ def _parse_cpp_attribute_sig_children(children: List[Node]):
         opening_bracket = children.index("[")
         children = children[:opening_bracket]
 
-    print(children)
     children[:] = [child for child in children if child not in [" ", ""]]
     return children[-1]
 

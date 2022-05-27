@@ -151,6 +151,27 @@ Point
 
         :type: :class:`float`
 
+PointStamped
+~~~~~~~~~~~~
+
+.. attributetable:: geometry_msgs.msg._PointStamped.PointStamped
+
+.. class:: geometry_msgs.msg._PointStamped.PointStamped
+
+    A ROS message type representing a single PointStamped.
+
+    .. attribute:: header
+
+        The header associated with the point.
+
+        :type: :class:`Header`
+
+    .. attribute:: position
+
+        The position associated with the point
+
+        :type: :class:`Point`
+
 Vector3
 ~~~~~~~
 
@@ -2784,6 +2805,117 @@ KeyboardControl
 
         :type: bool
 
+POI Handling
+^^^^^^^^^^^^
+
+AddPOI
+~~~~~~
+.. attributetable:: mil_poi.srv._AddPOI.AddPOIRequest
+
+.. class:: mil_poi.srv._AddPOI.AddPOIRequest
+
+   The request class for the ``mil_poi/AddPOI`` service.
+
+   .. attribute:: name
+
+        The name of the POI to add.
+
+        :type: str
+
+   .. attribute:: position
+
+        The position of the new POI.
+
+        :type: PointStamped
+
+.. attributetable:: mil_poi.srv._AddPOI.AddPOIResponse
+
+.. class:: mil_poi.srv._AddPOI.AddPOIResponse
+
+   The repsonse class for the ``mil_poi/AddPOI`` service.
+
+   .. attribute:: success
+
+        Whether the add operation was succesful.
+
+        :type: bool
+
+   .. attribute:: message
+
+        The message associated with the success of the add operation.
+
+        :type: str
+
+MovePOI
+~~~~~~~
+.. attributetable:: mil_poi.srv._MovePOI.MovePOIRequest
+
+.. class:: mil_poi.srv._MovePOI.MovePOIRequest
+
+   The request class for the ``mil_poi/MovePOI`` service.
+
+   .. attribute:: name
+
+        The name of the POI to move.
+
+        :type: str
+
+   .. attribute:: position
+
+        The position of the new POI.
+
+        :type: PointStamped
+
+.. attributetable:: mil_poi.srv._MovePOI.MovePOIResponse
+
+.. class:: mil_poi.srv._MovePOI.MovePOIResponse
+
+   The repsonse class for the ``mil_poi/MovePOI`` service.
+
+   .. attribute:: success
+
+        Whether the move operation was succesful.
+
+        :type: bool
+
+   .. attribute:: message
+
+        The message associated with the success of the move operation.
+
+        :type: str
+
+DeletePOI
+~~~~~~~~~
+.. attributetable:: mil_poi.srv._DeletePOI.DeletePOIRequest
+
+.. class:: mil_poi.srv._DeletePOI.DeletePOIRequest
+
+   The request class for the ``mil_poi/DeletePOI`` service.
+
+   .. attribute:: name
+
+        The name of the POI to delete.
+
+        :type: str
+
+.. attributetable:: mil_poi.srv._DeletePOI.DeletePOIResponse
+
+.. class:: mil_poi.srv._DeletePOI.DeletePOIResponse
+
+   The repsonse class for the ``mil_poi/DeletePOI`` service.
+
+   .. attribute:: success
+
+        Whether the delete operation was succesful.
+
+        :type: bool
+
+   .. attribute:: message
+
+        The message associated with the success of the delete operation.
+
+        :type: str
+
 Actions
 -------
 
@@ -4098,3 +4230,13 @@ PcdSubPubAlgorithm
 .. cppattributetable:: mil_vision::PcdSubPubAlgorithm
 
 .. doxygenclass:: mil_vision::PcdSubPubAlgorithm
+
+POI Handling
+------------
+
+POIServer
+^^^^^^^^^
+.. attributetable:: mil_poi.POIServer
+
+.. autoclass:: mil_poi.POIServer
+    :members:
