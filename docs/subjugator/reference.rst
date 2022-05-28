@@ -5,6 +5,43 @@ Below is the reference documentation for the code on our submarine robot, SubjuG
 The following systems are relevant only to this robot, and no other robot. However,
 hyperlinks may link to systems on other robots.
 
+Messages
+--------
+
+Thrust
+^^^^^^
+.. attributetable:: sub8_msgs.msg._Thrust.Thrust
+
+.. class:: sub8_msgs.msg._Thrust.Thrust
+
+    Message type indicating commands for each thruster.
+
+    .. attribute:: thruster_commands
+
+        The commands for the thrusters.
+
+        :type: List[:class:`~sub8_msgs.msg._ThrusterCmd.ThrusterCmd`]
+
+ThrusterCmd
+^^^^^^^^^^^
+.. attributetable:: sub8_msgs.msg._ThrusterCmd.ThrusterCmd
+
+.. class:: sub8_msgs.msg._ThrusterCmd.ThrusterCmd
+
+    A command for a specific thruster.
+
+    .. attribute:: thrust
+
+        The amount of thrust for the specific thruster.
+
+        :type: :class:`float`
+
+    .. attribute:: name
+
+        The name of the thruster.
+
+        :type: :class:`str`
+
 Services
 --------
 
@@ -79,4 +116,49 @@ FeedbackMessage
 .. attributetable:: sub8_actuator_board.FeedbackMessage
 
 .. autoclass:: sub8_actuator_board.FeedbackMessage
+    :members:
+
+Thrust and Kill Board
+---------------------
+
+ThrusterAndKillBoard
+^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.ThrusterAndKillBoard
+
+.. autoclass:: sub8_thrust_and_kill_board.ThrusterAndKillBoard
+    :members:
+
+KillMessage
+^^^^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.KillMessage
+
+.. autoclass:: sub8_thrust_and_kill_board.KillMessage
+    :members:
+
+HeartbeatMessage
+^^^^^^^^^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.HeartbeatMessage
+
+.. autoclass:: sub8_thrust_and_kill_board.HeartbeatMessage
+    :members:
+
+ThrustPacket
+^^^^^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.ThrustPacket
+
+.. autoclass:: sub8_thrust_and_kill_board.ThrustPacket
+    :members:
+
+ThrusterAndKillBoardSimulation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.ThrusterAndKillBoardSimulation
+
+.. autoclass:: sub8_thrust_and_kill_board.ThrusterAndKillBoardSimulation
+    :members:
+
+Thruster
+^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.Thruster
+
+.. autoclass:: sub8_thrust_and_kill_board.Thruster
     :members:
