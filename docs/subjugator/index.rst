@@ -6,7 +6,7 @@ This page provides general info about developing for
 competition for autonomous submarines. MIL has participated in RoboSub
 for 20+ years. Most code for this is hosted under SubjuGator/.
 
-*NOTE: Please go through the* `getting started guide </docs/development/getting_started>`__ 
+*NOTE: Please go through the* `getting started guide </docs/development/getting_started.md>`__ 
 *before going through this tutorial. We will assume you are currently in the development container
 running a tmux session.*
 
