@@ -148,3 +148,17 @@ ThrustPacket
 
 .. autoclass:: sub8_thrust_and_kill_board.ThrustPacket
     :members:
+
+ThrusterAndKillBoardSimulation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.ThrusterAndKillBoardSimulation
+
+.. autoclass:: sub8_thrust_and_kill_board.ThrusterAndKillBoardSimulation
+    :members:
+
+Thruster
+^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.Thruster
+
+.. autoclass:: sub8_thrust_and_kill_board.Thruster
+    :members:

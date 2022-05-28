@@ -53,7 +53,9 @@ class KillMessage(ApplicationPacket):
     PADDING = 0x00
 
     @classmethod
-    def create_kill_message(cls, command: bool = False, hard: bool = False, asserted: bool = False):
+    def create_kill_message(
+        cls, command: bool = False, hard: bool = False, asserted: bool = False
+    ):
         """
         Creates a kill message containing three bytes of information, specified
         as parameters.

@@ -9,13 +9,21 @@ from .packets import (
     KILL_SEND_ID,
 )
 import rospy
-from std_srvs.srv import SetBool
+from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 
 
 class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
     """
     Serial simulator for the thruster and kill board,
     providing services to simulate physical plug connections/disconnections.
+
+    Inherits from :class:`~mil_usb_to_can.SimulatedCANDevice`.
+
+    Attributes:
+        hard_kill_plug_pulled (bool): Whether the hard kill was set.
+        hard_kill_mobo (bool): Whether the motherboard experienced a hard kill request.
+        soft_kill_plug_pulled (bool): Whether the soft kill was set.
+        soft_kill_mobo (bool): Whether the motherboard experienced a soft kill request.
     """
 
     HEARTBEAT_TIMEOUT_SECONDS = rospy.Duration(1.0)
@@ -41,13 +49,33 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         self.go_button = req.data
         return {"success": True}
 
-    def set_soft_kill(self, req):
-        self.soft_kill_plug_pulled = req.data
-        return {"success": True}
+    def set_soft_kill(self, req: SetBoolRequest) -> SetBoolResponse:
+        """
+        Called by the `/simulate_soft_kill` service to set the soft kill state of the
+        simluated device.
 
-    def set_hard_kill(self, req):
+        Args:
+            req (SetBoolRequest): The request to set the service with.
+
+        Returns:
+            SetBoolResponse: The response to the service that the operation was successful.
+        """
+        self.soft_kill_plug_pulled = req.data
+        return SetBoolResponse(success=True)
+
+    def set_hard_kill(self, req: SetBoolRequest) -> SetBoolResponse:
+        """
+        Called by the `/simulate_hard_kill` service to set the hard kill state of the
+        simluated device.
+
+        Args:
+            req (SetBoolRequest): The request to set the service with.
+
+        Returns:
+            SetBoolResponse: The response to the service that the operation was successful.
+        """
         self.hard_kill_plug_pulled = req.data
-        return {"success": True}
+        return SetBoolResponse(success=True)
 
     @property
     def hard_killed(self) -> bool:
@@ -74,7 +102,7 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         )
 
     @property
-    def soft_killed(self):
+    def soft_killed(self) -> bool:
         """
         Whether the board was soft killed.
 
@@ -85,7 +113,7 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
             self.soft_kill_plug_pulled or self.soft_kill_mobo or self.heartbeat_timedout
         )
 
-    def send_updates(self, *args):
+    def send_updates(self, *args) -> None:
         """
         Sends data about the class in a new status message.
         """
@@ -102,7 +130,11 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         )
         self.send_data(status.to_bytes())
 
-    def on_data(self, data: bytes, can_id: int):
+    def on_data(self, data: bytes, can_id: int) -> None:
+        """
+        Serves as the data handler for the device. Handles :class:`KillMessage`,
+        :class:`ThrustPacket`, and :class:`HeartbeatMessage` types.
+        """
         assert can_id == THRUST_SEND_ID or can_id == KILL_SEND_ID
         if KillMessage.IDENTIFIER == ord(data[0]):
             packet = KillMessage.from_bytes(data)
