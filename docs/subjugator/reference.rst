@@ -127,3 +127,24 @@ ThrusterAndKillBoard
 
 .. autoclass:: sub8_thrust_and_kill_board.ThrusterAndKillBoard
     :members:
+
+KillMessage
+^^^^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.KillMessage
+
+.. autoclass:: sub8_thrust_and_kill_board.KillMessage
+    :members:
+
+HeartbeatMessage
+^^^^^^^^^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.HeartbeatMessage
+
+.. autoclass:: sub8_thrust_and_kill_board.HeartbeatMessage
+    :members:
+
+ThrustPacket
+^^^^^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.ThrustPacket
+
+.. autoclass:: sub8_thrust_and_kill_board.ThrustPacket
+    :members:
