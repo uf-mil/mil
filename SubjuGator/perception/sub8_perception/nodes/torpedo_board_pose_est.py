@@ -12,7 +12,6 @@ import mil_ros_tools
 
 
 class PoseObserver(object):
-
     def __init__(self):
         self.x = 0
         self.y = 0
@@ -29,7 +28,7 @@ class PoseObserver(object):
         self.yList.append(pose[1])
         self.zList.append(pose[2])
         self.yawList.append(pose[3])
-        if(len(self.xList) == self.max_hist_size + 1):
+        if len(self.xList) == self.max_hist_size + 1:
             self.xList.pop()
             self.yList.pop()
             self.zList.pop()
@@ -37,12 +36,12 @@ class PoseObserver(object):
 
     def get_pose_est_msg(self):
         ignore_num = int(len(self.xList) * 0.1)
-        xInliers = sorted(self.xList)[ignore_num: -ignore_num]
-        yInliers = sorted(self.yList)[ignore_num: -ignore_num]
-        zInliers = sorted(self.zList)[ignore_num: -ignore_num]
-        yawInliers = sorted(self.yawList)[ignore_num: -ignore_num]
+        xInliers = sorted(self.xList)[ignore_num:-ignore_num]
+        yInliers = sorted(self.yList)[ignore_num:-ignore_num]
+        zInliers = sorted(self.zList)[ignore_num:-ignore_num]
+        yawInliers = sorted(self.yawList)[ignore_num:-ignore_num]
         pose = Pose()
-        if(len(xInliers) == 0):
+        if len(xInliers) == 0:
             return pose
         pose.position.x = sum(xInliers) / float(len(xInliers))
         pose.position.y = sum(yInliers) / float(len(yInliers))
@@ -54,28 +53,32 @@ class PoseObserver(object):
 
 
 class TBPoseEstimator(object):
-
     def __init__(self):
         self.H = 1.24  # in meters
         self.W = 0.61  # in meters
-        self.corners_from_tb_hom = np.array([
-            [-self.W / 2.0, -self.H / 2.0, 0.0, 1.0],  # TL
-            [self.W / 2.0, -self.H / 2.0, 0.0, 1.0],  # TR
-            [self.W / 2.0, self.H / 2.0, 0.0, 1.0],  # BR
-            [-self.W / 2.0, self.H / 2.0, 0.0, 1.0]],  # BL
-            dtype=np.float32).T
+        self.corners_from_tb_hom = np.array(
+            [
+                [-self.W / 2.0, -self.H / 2.0, 0.0, 1.0],  # TL
+                [self.W / 2.0, -self.H / 2.0, 0.0, 1.0],  # TR
+                [self.W / 2.0, self.H / 2.0, 0.0, 1.0],  # BR
+                [-self.W / 2.0, self.H / 2.0, 0.0, 1.0],
+            ],  # BL
+            dtype=np.float32,
+        ).T
         self.pose_obs = PoseObserver()
         self.pose_est_service = rospy.Service(
-            '/torpedo_board/pose_est_srv',
+            "/torpedo_board/pose_est_srv",
             TorpBoardPoseRequest,
-            self.handle_pose_est_requests)
+            self.handle_pose_est_requests,
+        )
         self.tf_listener = tf.TransformListener()
         self.tf_broadcaster = tf.TransformBroadcaster()
-        self.pose_pub = rospy.Publisher('/torpedo_board/pose', Pose, queue_size=100)
+        self.pose_pub = rospy.Publisher("/torpedo_board/pose", Pose, queue_size=100)
         self.marker_pub = rospy.Publisher(
-            '/torpedo_board/visualization/pose_est',
+            "/torpedo_board/visualization/pose_est",
             visualization_msgs.Marker,
-            queue_size=100)
+            queue_size=100,
+        )
 
     def handle_pose_est_requests(self, req):
         self.current_req = ParsedPoseEstRequest(req)
@@ -84,23 +87,27 @@ class TBPoseEstimator(object):
         return self.minimization_result.success
 
     def minimize_reprojection_error(self):
-        opt = {'disp': False}
+        opt = {"disp": False}
         # Nelder-Mead and Powell seem to be the best methods for this problem
         self.minimization_result = optimize.minimize(
             self.calc_reprojection_error,
             self.current_req.pose,
-            method='Nelder-Mead',
-            options=opt)
+            method="Nelder-Mead",
+            options=opt,
+        )
         if self.minimization_result.success:
             if not rospy.is_shutdown():
                 try:
                     self.tf_listener.waitForTransform(
-                        '/map',
-                        'front_stereo',
+                        "/map",
+                        "front_stereo",
                         self.current_req.stamp,
-                        rospy.Duration(0.1))
-                    (trans, rot) = self.tf_listener.lookupTransform('/map', 'front_stereo', self.current_req.stamp)
-                    yaw = tf.transformations.euler_from_quaternion(rot, 'syxz')[0]
+                        rospy.Duration(0.1),
+                    )
+                    (trans, rot) = self.tf_listener.lookupTransform(
+                        "/map", "front_stereo", self.current_req.stamp
+                    )
+                    yaw = tf.transformations.euler_from_quaternion(rot, "syxz")[0]
                     pose = np.array([trans.x, trans.y, trans.z, yaw])
                     self.pose_obs.push_back(pose)
                 except tf.Exception as e:
@@ -109,7 +116,9 @@ class TBPoseEstimator(object):
                     self.pose_pub.publish(self.pose_obs.get_pose_est_msg())
                     self.visualize_pose_est()
         else:
-            rospy.loginfo("\x1b[31mcost: " + str(self.minimization_result.fun) + "\x1b[0m")
+            rospy.loginfo(
+                "\x1b[31mcost: " + str(self.minimization_result.fun) + "\x1b[0m"
+            )
 
     def calc_reprojection_error(self, pose_tb_from_cam):
         # pose_tb_from_cam = np.array([x, y, z, yaw])
@@ -119,36 +128,46 @@ class TBPoseEstimator(object):
         L_cam_corners = np.divide(L_cam_corners_hom[0:2, :], L_cam_corners_hom[2])
         R_cam_corners = np.divide(R_cam_corners_hom[0:2, :], R_cam_corners_hom[2])
         reprojection_error = 0.0
-        for i in xrange(4):
-            reprojection_error += lin.norm(self.current_req.l_obs_corners[:, i] - L_cam_corners[:, i])
-            reprojection_error += lin.norm(self.current_req.r_obs_corners[:, i] - R_cam_corners[:, i])
+        for i in range(4):
+            reprojection_error += lin.norm(
+                self.current_req.l_obs_corners[:, i] - L_cam_corners[:, i]
+            )
+            reprojection_error += lin.norm(
+                self.current_req.r_obs_corners[:, i] - R_cam_corners[:, i]
+            )
         return reprojection_error
 
     def generate_hom_tb_corners_from_cam(self, pose_tb_from_cam):
         # pose_tb_from_cam --> np.array([x, y, z, yaw])
-        rot_tb_from_cam = tf.transformations.rotation_matrix(pose_tb_from_cam[3], np.array([[0], [1], [0]]))[:3, :3]
-        trans_tb_from_cam = np.array([
-            [pose_tb_from_cam[0]], [pose_tb_from_cam[1]], [-pose_tb_from_cam[2]]])
+        rot_tb_from_cam = tf.transformations.rotation_matrix(
+            pose_tb_from_cam[3], np.array([[0], [1], [0]])
+        )[:3, :3]
+        trans_tb_from_cam = np.array(
+            [[pose_tb_from_cam[0]], [pose_tb_from_cam[1]], [-pose_tb_from_cam[2]]]
+        )
         # TODO: figure out why a negative is needed above, is there a problem with my frames?
         homogenizer = np.array([[0, 0, 0, 1]])
-        tf_cam_from_tb_hom = np.vstack((
-            np.hstack((
-                rot_tb_from_cam.T,
-                -np.dot(rot_tb_from_cam.T, trans_tb_from_cam))),
-            homogenizer))
+        tf_cam_from_tb_hom = np.vstack(
+            (
+                np.hstack(
+                    (rot_tb_from_cam.T, -np.dot(rot_tb_from_cam.T, trans_tb_from_cam))
+                ),
+                homogenizer,
+            )
+        )
         corners_from_cam_hom = np.dot(tf_cam_from_tb_hom, self.corners_from_tb_hom)
         return corners_from_cam_hom
 
     def visualize_pose_est(self):
         marker = visualization_msgs.Marker(
-            ns='torpedo_board/pose_est',
+            ns="torpedo_board/pose_est",
             id=0,
             header=mil_ros_tools.make_header(frame=self.current_req.frame_id),
             type=visualization_msgs.Marker.LINE_STRIP,
             action=visualization_msgs.Marker.ADD,
             color=ColorRGBA(0.0, 1.0, 10, 0.7),
             scale=Vector3(0.05, 0.0, 0.0),
-            lifetime=rospy.Duration()
+            lifetime=rospy.Duration(),
         )
         pts = self.generate_hom_tb_corners_from_cam(self.minimization_result.x)
         marker.points.append(Point(x=pts[0, 0], y=pts[1, 0], z=pts[2, 0]))
@@ -160,34 +179,88 @@ class TBPoseEstimator(object):
 
 
 class ParsedPoseEstRequest(object):
-
     def __init__(self, req):
         self.seq = req.pose_stamped.header.seq
         self.stamp = rospy.Time.from_sec(req.pose_stamped.header.stamp.to_time())
         self.frame_id = req.pose_stamped.header.frame_id
         self.position = req.pose_stamped.pose.position
         self.orientation = req.pose_stamped.pose.orientation
-        quat = np.array([self.orientation.x, self.orientation.y, self.orientation.z, self.orientation.w])
-        self.pose = np.array([self.position.x, self.position.y, self.position.z,
-                              tf.transformations.euler_from_quaternion(quat, 'syxz')[0]])
-        self.left_cam_matx = np.array([
-            [req.l_proj_mat[0], req.l_proj_mat[1], req.l_proj_mat[2], req.l_proj_mat[3]],
-            [req.l_proj_mat[4], req.l_proj_mat[5], req.l_proj_mat[6], req.l_proj_mat[7]],
-            [req.l_proj_mat[8], req.l_proj_mat[9], req.l_proj_mat[10], req.l_proj_mat[11]]])
-        self.right_cam_matx = np.array([
-            [req.r_proj_mat[0], req.r_proj_mat[1], req.r_proj_mat[2], req.r_proj_mat[3]],
-            [req.r_proj_mat[4], req.r_proj_mat[5], req.r_proj_mat[6], req.r_proj_mat[7]],
-            [req.r_proj_mat[8], req.r_proj_mat[9], req.r_proj_mat[10], req.r_proj_mat[11]]])
-        self.l_obs_corners = np.array([
-            [req.l_obs_corners[0].x, req.l_obs_corners[0].y],
-            [req.l_obs_corners[1].x, req.l_obs_corners[1].y],
-            [req.l_obs_corners[2].x, req.l_obs_corners[2].y],
-            [req.l_obs_corners[3].x, req.l_obs_corners[3].y]]).T
-        self.r_obs_corners = np.array([
-            [req.r_obs_corners[0].x, req.r_obs_corners[0].y],
-            [req.r_obs_corners[1].x, req.r_obs_corners[1].y],
-            [req.r_obs_corners[2].x, req.r_obs_corners[2].y],
-            [req.r_obs_corners[3].x, req.r_obs_corners[3].y]]).T
+        quat = np.array(
+            [
+                self.orientation.x,
+                self.orientation.y,
+                self.orientation.z,
+                self.orientation.w,
+            ]
+        )
+        self.pose = np.array(
+            [
+                self.position.x,
+                self.position.y,
+                self.position.z,
+                tf.transformations.euler_from_quaternion(quat, "syxz")[0],
+            ]
+        )
+        self.left_cam_matx = np.array(
+            [
+                [
+                    req.l_proj_mat[0],
+                    req.l_proj_mat[1],
+                    req.l_proj_mat[2],
+                    req.l_proj_mat[3],
+                ],
+                [
+                    req.l_proj_mat[4],
+                    req.l_proj_mat[5],
+                    req.l_proj_mat[6],
+                    req.l_proj_mat[7],
+                ],
+                [
+                    req.l_proj_mat[8],
+                    req.l_proj_mat[9],
+                    req.l_proj_mat[10],
+                    req.l_proj_mat[11],
+                ],
+            ]
+        )
+        self.right_cam_matx = np.array(
+            [
+                [
+                    req.r_proj_mat[0],
+                    req.r_proj_mat[1],
+                    req.r_proj_mat[2],
+                    req.r_proj_mat[3],
+                ],
+                [
+                    req.r_proj_mat[4],
+                    req.r_proj_mat[5],
+                    req.r_proj_mat[6],
+                    req.r_proj_mat[7],
+                ],
+                [
+                    req.r_proj_mat[8],
+                    req.r_proj_mat[9],
+                    req.r_proj_mat[10],
+                    req.r_proj_mat[11],
+                ],
+            ]
+        )
+        self.l_obs_corners = np.array(
+            [
+                [req.l_obs_corners[0].x, req.l_obs_corners[0].y],
+                [req.l_obs_corners[1].x, req.l_obs_corners[1].y],
+                [req.l_obs_corners[2].x, req.l_obs_corners[2].y],
+                [req.l_obs_corners[3].x, req.l_obs_corners[3].y],
+            ]
+        ).T
+        self.r_obs_corners = np.array(
+            [
+                [req.r_obs_corners[0].x, req.r_obs_corners[0].y],
+                [req.r_obs_corners[1].x, req.r_obs_corners[1].y],
+                [req.r_obs_corners[2].x, req.r_obs_corners[2].y],
+                [req.r_obs_corners[3].x, req.r_obs_corners[3].y],
+            ]
+        ).T
 
     def __str__(self):
         # To get rid of color characters: w_on = ""; reset = "\n"
@@ -196,15 +269,30 @@ class ParsedPoseEstRequest(object):
         return "Pose Estimation request:{r}Seq:{w}{}{r}Frame_ID:{}{r}Position:{w}{}{r}Orientation:{w}{}{r}\
                 Left camera projection matrix:{w}{}{r}Right camera projection matrix:{w}{}{r}\
                 Observed Board corners left image:{w}{}{r}Observed Board corners right image:{w}{}{r}".format(
-            self.seq, self.stamp, self.frame_id, self.position, self.orientation, self.last_cam_matx,
-            self.right_cam_matx, self.l_obs_corners, self.r_obs_corners, w=w_on, r=reset)
+            self.seq,
+            self.stamp,
+            self.frame_id,
+            self.position,
+            self.orientation,
+            self.last_cam_matx,
+            self.right_cam_matx,
+            self.l_obs_corners,
+            self.r_obs_corners,
+            w=w_on,
+            r=reset,
+        )
+
 
 # def tf_to_world_frame()
 
 
-if __name__ == '__main__':
-    rospy.init_node('torpedo_board_pose_est')
-    rospy.loginfo('\x1b[1;31mInitializing the Torpedo Board Pose Estimation node\x1b[0m')
-    rospy.loginfo("Awaiting pose estimation requests through:\n\t/torpedo_board_pose_est_srv\n")
+if __name__ == "__main__":
+    rospy.init_node("torpedo_board_pose_est")
+    rospy.loginfo(
+        "\x1b[1;31mInitializing the Torpedo Board Pose Estimation node\x1b[0m"
+    )
+    rospy.loginfo(
+        "Awaiting pose estimation requests through:\n\t/torpedo_board_pose_est_srv\n"
+    )
     TBPoseEstimator()
     rospy.spin()
