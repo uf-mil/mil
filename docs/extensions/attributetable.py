@@ -316,8 +316,7 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
     # Find all relevant C++ functions and attributes
     current_section = None
 
-    # Throw error if user is attempting to put attribute table for enum class
-
+    # Throw error if user is attempting to put attribute table for enum classk
     for node in doctree.traverse(siblings=True):
         if hasattr(node, "attributes"):
             if "cpp" in node.attributes["classes"] and any(
@@ -357,9 +356,13 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
                 # If we found a name
                 if descriptions:
                     # Get the ID to link to
-                    fullname = (
-                        node.children[0].children[0].children[0].attributes["ids"][0]
-                    )
+                    fullname = None
+                    try:
+                        fullname = (
+                            node.children[0].children[0].children[0].attributes["ids"][0]
+                        )
+                    except:
+                        fullname = ""
 
                     # Parse the function signature into just its name
                     parsed = _parse_cpp_function_sig_children(descriptions)
@@ -395,6 +398,10 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
                         classes[current_section][_("Attributes")].append(
                             TableElement(fullname=fullname, label=parsed, badge=None)
                         )
+
+            elif isinstance(node, nodes.section):
+                # Reset current section with each new section
+                current_section = None
 
     # For each C++ attribute table requested
     for node in doctree.traverse(cppattributetableplaceholder):
