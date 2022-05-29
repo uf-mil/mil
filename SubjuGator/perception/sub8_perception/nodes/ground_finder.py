@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 import numpy as np
 import tf
@@ -18,9 +18,16 @@ pc.points = []
 rate = rospy.Rate(1.0)
 while not rospy.is_shutdown():
     try:
-        t = listener.waitForTransform('/map', '/ground', rospy.Time.now(), rospy.Duration(1))
-        (trans, rot) = listener.lookupTransform('/map', '/ground', rospy.Time(0))
-    except (tf.Exception, tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+        t = listener.waitForTransform(
+            "/map", "/ground", rospy.Time.now(), rospy.Duration(1)
+        )
+        (trans, rot) = listener.lookupTransform("/map", "/ground", rospy.Time(0))
+    except (
+        tf.Exception,
+        tf.LookupException,
+        tf.ConnectivityException,
+        tf.ExtrapolationException,
+    ):
         rospy.logwarn("TF waitForTransform timeout")
         continue
 
