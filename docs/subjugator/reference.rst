@@ -184,6 +184,12 @@ Sub8TorpedoBoardDetector
 
 .. doxygenclass:: Sub8TorpedoBoardDetector
 
+TorpedoBoardReprojectionCost
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: TorpedoBoardReprojectionCost
+
+.. doxygenclass:: TorpedoBoardReprojectionCost
+
 Computer Vision
 ---------------
 
@@ -211,9 +217,27 @@ Utility Functions
 
 .. doxygenfunction:: sub::segment_box
 
+.. doxygenfunction:: anisotropic_diffusion
+
+.. doxygenfunction:: best_plane_from_combination
+
+.. doxygenfunction:: calc_plane_coeffs
+
+.. doxygenfunction:: point_to_plane_distance
+
 Type Definitions
 ^^^^^^^^^^^^^^^^
 .. doxygentypedef:: ROSCameraStream_Vec3
+
+.. doxygentypedef:: PointNT
+
+.. doxygentypedef:: PointCloudNT
+
+.. doxygentypedef:: PointXYZT
+
+.. doxygentypedef:: PointCloudT
+
+.. doxygentypedef:: ColorHandlerT
 
 Sub8ObjectFinder
 ^^^^^^^^^^^^^^^^
@@ -226,3 +250,9 @@ StereoBase
 .. cppattributetable:: StereoBase
 
 .. doxygenclass:: StereoBase
+
+RvizVisualizer
+^^^^^^^^^^^^^^
+.. cppattributetable:: sub::RvizVisualizer
+
+.. doxygenclass:: sub::RvizVisualizer
