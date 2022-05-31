@@ -7,6 +7,7 @@ import features
 from sklearn.preprocessing import normalize
 from sklearn.ensemble import GradientBoostingClassifier
 from tqdm import tqdm
+
 """
 TODO
 MUST:
@@ -33,9 +34,9 @@ def observe(image):
 
     kernels_run = features.conv_features(im_gs)
 
-    kernel_observations = np.reshape(
-        kernels_run, (-1, kernels_run.shape[2])
-    ).astype(np.float32)
+    kernel_observations = np.reshape(kernels_run, (-1, kernels_run.shape[2])).astype(
+        np.float32
+    )
 
     all_observations = np.hstack(
         (
@@ -53,8 +54,8 @@ def train_on_pkl(pkl_data, images_to_use=None):
     if images_to_use is None:
         images_to_use = len(pkl_data)
 
-    print 'Generating training data...'
-    with tqdm(total=images_to_use, unit=' images') as bar:
+    print("Generating training data...")
+    with tqdm(total=images_to_use, unit=" images") as bar:
         for u_image, u_targets in pkl_data[:images_to_use]:
             bar.update(1)
             if u_image is None or u_targets is None:
@@ -78,11 +79,10 @@ def train_classifier(x, y, n_trees=5, max_depth=3):
     global bar
 
     iterations = 25
-    print 'Training...'
+    print("Training...")
     bar = tqdm(total=iterations, unit=" estimators")
     boost = GradientBoostingClassifier(
-        n_estimators=iterations, learning_rate=1.0, max_depth=3,
-        loss='exponential'
+        n_estimators=iterations, learning_rate=1.0, max_depth=3, loss="exponential"
     )
 
     boost.fit(normalize(x), y.ravel(), monitor=monitor)
@@ -97,22 +97,25 @@ def monitor(i, self, local_vars):
 
 
 def main():
-    usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")
+    usage_msg = "Pass the path to a bag, and we'll crawl through the images in it"
     desc_msg = "A tool for making manual segmentation fun!"
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
-    parser.add_argument(dest='pkl',
-                        help="The pickle data file to train on")
-    parser.add_argument('--output', type=str, help="Path to a file to output to (and overwrite)",
-                        default='adaboost.pkl')
+    parser.add_argument(dest="pkl", help="The pickle data file to train on")
+    parser.add_argument(
+        "--output",
+        type=str,
+        help="Path to a file to output to (and overwrite)",
+        default="adaboost.pkl",
+    )
 
     args = parser.parse_args(sys.argv[1:])
 
-    print 'Loading pickle...'
+    print("Loading pickle...")
     data = pickle.load(open(args.pkl, "rb"))
     clf = train_on_pkl(data)
-    print 'Saving as {}'.format(args.output)
-    pickle.dump(clf, open(args.output, 'wb'))
+    print("Saving as {}".format(args.output))
+    pickle.dump(clf, open(args.output, "wb"))
     u_image, u_targets = data[-1]
     image = u_image[::2, ::2, :]
     targets = u_targets[::2, ::2]
@@ -122,12 +125,13 @@ def main():
     prediction = clf.predict_proba(some_observations)
     prediction2 = clf.predict(some_observations)
 
-    print prediction.shape
-    print prediction2.shape
+    print(prediction.shape)
+    print(prediction2.shape)
     prediction_image = np.reshape(prediction[:, 0], targets.shape)
     prediction_image2 = np.reshape(prediction2, targets.shape)
 
     import matplotlib.pyplot as plt
+
     plt.figure(1)
     plt.imshow(prediction_image)
     plt.figure(2)

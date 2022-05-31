@@ -25,15 +25,14 @@ def balanced_resample(data, labels):
             labels_buffered = np.hstack([labels_buffered, labels[in_this_label]])
 
         single_data_resampled, single_labels_resampled = utils.resample(
-            data_buffered,
-            labels_buffered,
-            n_samples=int(num_required),
-            replace=True
+            data_buffered, labels_buffered, n_samples=int(num_required), replace=True
         )
         data_resampled.append(single_data_resampled)
         labels_resampled.append(single_labels_resampled)
 
-    return np.vstack(data_resampled).astype(data.dtype), np.hstack(labels_resampled).astype(labels.dtype)
+    return np.vstack(data_resampled).astype(data.dtype), np.hstack(
+        labels_resampled
+    ).astype(labels.dtype)
 
 
 def desample_binary(data, labels, oversample=5):
@@ -43,12 +42,12 @@ def desample_binary(data, labels, oversample=5):
     Assumes majority is False
     """
     need_samples = np.sum(labels == 1)
-    in_majority = (labels == 0)
+    in_majority = labels == 0
     in_minority = np.logical_not(in_majority)
     majority_data_resampled, majority_labels_resampled = utils.resample(
         data[in_majority],
         labels[in_majority],
-        n_samples=min(need_samples * oversample, np.sum(labels == 0))
+        n_samples=min(need_samples * oversample, np.sum(labels == 0)),
     )
 
     data_resampled = np.vstack([data[in_minority], majority_data_resampled])
@@ -81,7 +80,7 @@ def make_dataset(data, size=10):
         labstack, sums = split(u_mask[:400:5, :400:5], size)
         # print labstack.shape
         images.append(imstack)
-        label = (sums > (10))
+        label = sums > (10)
         labels.append(label.astype(np.uint8))
 
     return np.dstack(images), np.hstack(labels)
@@ -91,7 +90,8 @@ def _pct(data, val):
     """Return the percentage of $data equal to $val"""
     return np.sum(data == val).astype(np.float32) / data.shape[0]
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # todo: make this an actual unittest
 
     x = np.random.random((100, 3))
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     assert not np.isclose(_pct(y, 1), 0.5, atol=0.1)
 
     nx, ny = balanced_resample(x, y)
-    print _pct(ny, 0)
+    print(_pct(ny, 0))
     assert np.isclose(_pct(ny, 0), 0.5, atol=0.1)
-    print _pct(ny, 1)
+    print(_pct(ny, 1))
     assert np.isclose(_pct(ny, 1), 0.5, atol=0.1)
