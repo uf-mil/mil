@@ -6,17 +6,17 @@ from diagnostics.gazebo_tests import common
 
 # TODO: Allow generic names
 class Job(common.Job):
-    _job_name = 'test_simple_motion'
+    _job_name = "test_simple_motion"
 
     @txros.util.cancellableInlineCallbacks
     def setup(self):
-        print 'setting up'
+        print("setting up")
         xy = (np.random.random(2) - 0.5) * 20
         yield self.set_model_position(np.hstack([xy, -5]))
 
     @txros.util.cancellableInlineCallbacks
     def run(self, sub):
-        print 'running'
+        print("running")
         distance = 5.0
 
         initial_position = sub.pose.position
@@ -25,14 +25,16 @@ class Job(common.Job):
         yield self.nh.sleep(3.0)
         position_after_waiting = sub.pose.position
 
-        motion_posthoc = (np.linalg.norm(position_after_waiting - position_after_action))
-        distance_to_target = (np.linalg.norm(position_after_waiting - initial_position) - distance)
+        motion_posthoc = np.linalg.norm(position_after_waiting - position_after_action)
+        distance_to_target = (
+            np.linalg.norm(position_after_waiting - initial_position) - distance
+        )
 
         # Pretty generous
         small_posthoc_motion = motion_posthoc < 0.3
         reached_target = distance_to_target < 0.1
 
-        success = (small_posthoc_motion and reached_target)
+        success = small_posthoc_motion and reached_target
         reason = ""
         reason += "\nMoved {}m after reporting completion".format(motion_posthoc)
         reason += "\nEnded {}m away from target".format(distance_to_target)
