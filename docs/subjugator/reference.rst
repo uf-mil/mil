@@ -256,3 +256,17 @@ RvizVisualizer
 .. cppattributetable:: sub::RvizVisualizer
 
 .. doxygenclass:: sub::RvizVisualizer
+   
+OccGridUtils
+^^^^^^^^^^^^
+.. attributetable:: sub8_vision_tools.OccGridUtils
+
+.. autoclass:: sub8_vision_tools.OccGridUtils
+    :members:
+
+Searcher
+^^^^^^^^
+.. attributetable:: sub8_vision_tools.Searcher
+
+.. autoclass:: sub8_vision_tools.Searcher
+    :members:
