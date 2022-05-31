@@ -270,3 +270,12 @@ Searcher
 
 .. autoclass:: sub8_vision_tools.Searcher
     :members:
+
+Simulation
+----------
+BagManager
+^^^^^^^^^^
+.. attributetable:: sub8_gazebo_tools.BagManager
+
+.. autoclass:: sub8_gazebo_tools.BagManager
+    :members:
