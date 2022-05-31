@@ -5,9 +5,19 @@ import rospy
 import tf
 from tf.transformations import quaternion_from_euler
 from std_srvs.srv import SetBool, SetBoolResponse
-from sub8_msgs.srv import VisionRequestResponse, VisionRequest, VisionRequest2D, VisionRequest2DResponse
+from sub8_msgs.srv import (
+    VisionRequestResponse,
+    VisionRequest,
+    VisionRequest2D,
+    VisionRequest2DResponse,
+)
 from geometry_msgs.msg import PointStamped, Point, Vector3Stamped
-from mil_ros_tools import numpy_to_point, Image_Publisher, Image_Subscriber, numpy_to_quaternion
+from mil_ros_tools import (
+    numpy_to_point,
+    Image_Publisher,
+    Image_Subscriber,
+    numpy_to_quaternion,
+)
 from image_geometry import PinholeCameraModel
 from visualization_msgs.msg import Marker
 from mil_msgs.srv import SetGeometry
@@ -17,10 +27,10 @@ __author__ = "Kevin Allen"
 
 
 # Ensure opencv3 is used, needed for KalmanFilter
-assert cv2.__version__[0] == '3'
+assert cv2.__version__[0] == "3"
 
 
-class OrangeRectangleFinder():
+class OrangeRectangleFinder:
     """
     Node which finds orange rectangular objects in image frame.
     This can be used for the path marker challenge and to detect
@@ -44,11 +54,11 @@ class OrangeRectangleFinder():
 
     TODO: Allow for two objects to be identifed at once, both filtered through its own KF
     """
+
     # Coordinate axes for debugging image
-    REFERENCE_POINTS = np.array([[0, 0, 0],
-                                 [0.3, 0, 0],
-                                 [0, 0.3, 0],
-                                 [0, 0, 0.3]], dtype=np.float)
+    REFERENCE_POINTS = np.array(
+        [[0, 0, 0], [0.3, 0, 0], [0, 0.3, 0], [0, 0, 0.3]], dtype=np.float
+    )
 
     def __init__(self):
         self.debug_gui = False
@@ -80,21 +90,25 @@ class OrangeRectangleFinder():
         # Create kalman filter to track 3d position and direction vector for marker in /map frame
         self.state_size = 5  # X, Y, Z, DY, DX
         self.filter = cv2.KalmanFilter(self.state_size, self.state_size)
-        self.filter.transitionMatrix = 1. * np.eye(self.state_size, dtype=np.float32)
-        self.filter.measurementMatrix = 1. * np.eye(self.state_size, dtype=np.float32)
+        self.filter.transitionMatrix = 1.0 * np.eye(self.state_size, dtype=np.float32)
+        self.filter.measurementMatrix = 1.0 * np.eye(self.state_size, dtype=np.float32)
         self.filter.processNoiseCov = 1e-5 * np.eye(self.state_size, dtype=np.float32)
-        self.filter.measurementNoiseCov = 1e-4 * np.eye(self.state_size, dtype=np.float32)
-        self.filter.errorCovPost = 1. * np.eye(self.state_size, dtype=np.float32)
+        self.filter.measurementNoiseCov = 1e-4 * np.eye(
+            self.state_size, dtype=np.float32
+        )
+        self.filter.errorCovPost = 1.0 * np.eye(self.state_size, dtype=np.float32)
 
         self.reset()
-        self.service_set_geometry = rospy.Service('~set_geometry', SetGeometry, self._set_geometry_cb)
+        self.service_set_geometry = rospy.Service(
+            "~set_geometry", SetGeometry, self._set_geometry_cb
+        )
         if self.debug_ros:
             self.debug_pub = Image_Publisher("~debug_image")
-            self.markerPub = rospy.Publisher('~marker', Marker, queue_size=10)
-        self.service2D = rospy.Service('~2D', VisionRequest2D, self._vision_cb_2D)
+            self.markerPub = rospy.Publisher("~marker", Marker, queue_size=10)
+        self.service2D = rospy.Service("~2D", VisionRequest2D, self._vision_cb_2D)
         if self.do_3D:
-            self.service3D = rospy.Service('~pose', VisionRequest, self._vision_cb_3D)
-        self.toggle = rospy.Service('~enable', SetBool, self._enable_cb)
+            self.service3D = rospy.Service("~pose", VisionRequest, self._vision_cb_3D)
+        self.toggle = rospy.Service("~enable", SetBool, self._enable_cb)
 
         self.image_sub = Image_Subscriber(camera, self._img_cb)
         self.camera_info = self.image_sub.wait_for_camera_info()
@@ -105,19 +119,23 @@ class OrangeRectangleFinder():
     def _set_geometry_cb(self, req):
         self.rect_model = RectFinder.from_polygon(req.model)
         self.reset()
-        rospy.loginfo("Resetting rectangle model to LENGTH=%f, WIDTH=%f", self.rect_model.length, self.rect_model.width)
-        return {'success': True}
+        rospy.loginfo(
+            "Resetting rectangle model to LENGTH=%f, WIDTH=%f",
+            self.rect_model.length,
+            self.rect_model.width,
+        )
+        return {"success": True}
 
     def _send_debug_marker(self):
-        '''
+        """
         Sends a rviz marker in the camera frame with the estimated pose of the object.
         This marker is a scaled cube with the demensions of the model.
         Only called if debug_ros param == True
-        '''
+        """
         if self.last3d is None or not self.found:
             return
         m = Marker()
-        m.header.frame_id = '/map'
+        m.header.frame_id = "/map"
         m.header.stamp = self.last_found_time_3D
         m.ns = "orange_rectangle"
         m.id = 0
@@ -152,7 +170,7 @@ class OrangeRectangleFinder():
         dt = (self.image_sub.last_image_time - self.last_found_time_3D).to_sec()
         if dt < 0 or dt > self.timeout_seconds:
             res.found = False
-        elif (self.last3d is None or not self.enabled):
+        elif self.last3d is None or not self.enabled:
             res.found = False
         else:
             res.pose.header.frame_id = "/map"
@@ -164,7 +182,7 @@ class OrangeRectangleFinder():
 
     def _vision_cb_2D(self, req):
         res = VisionRequest2DResponse()
-        if (self.last2d is None or not self.enabled):
+        if self.last2d is None or not self.enabled:
             res.found = False
         else:
             res.header.frame_id = self.cam.tfFrame()
@@ -190,45 +208,52 @@ class OrangeRectangleFinder():
         self._clear_filter(None)
 
     def _clear_filter(self, state):
-        '''
+        """
         Reset filter and found state. This will ensure that the object
         is seen consistently before vision request returns true
-        '''
+        """
         rospy.loginfo("MARKER LOST")
         self.found_count = 0
         self.found = False
         self.last3d = None
-        self.filter.errorCovPre = 1. * np.eye(self.state_size, dtype=np.float32)
+        self.filter.errorCovPre = 1.0 * np.eye(self.state_size, dtype=np.float32)
         if state is not None:
             self.found_count = 1
             state = np.array(state, dtype=np.float32)
             self.filter.statePost = state
 
-    def _update_kf(self, (x, y, z, dy, dx)):
-        '''
+    def _update_kf(self, kf_args):
+        """
         Updates the kalman filter using the pose estimation
         from the most recent frame. Also tracks time since last seen and how
         often is has been seen to set the boolean "found" for the vision request
-        '''
-        if self.last_found_time_3D is None:  # First time found, set initial KF pose to this frame
+        """
+        (x, y, z, dy, dx) = kf_args
+        if (
+            self.last_found_time_3D is None
+        ):  # First time found, set initial KF pose to this frame
             self._clear_filter((x, y, z, dy, dx))
             self.last_found_time_3D = self.image_sub.last_image_time
             return
         dt = (self.image_sub.last_image_time - self.last_found_time_3D).to_sec()
         self.last_found_time_3D = self.image_sub.last_image_time
         if dt < 0 or dt > self.timeout_seconds:
-            rospy.logwarn("Timed out since last saw marker, resetting. DT={}".format(dt))
+            rospy.logwarn(
+                "Timed out since last saw marker, resetting. DT={}".format(dt)
+            )
             self._clear_filter((x, y, z, dy, dx))
             return
 
         self.found_count += 1
-        measurement = 1. * np.array([x, y, z, dy, dx], dtype=np.float32)
+        measurement = 1.0 * np.array([x, y, z, dy, dx], dtype=np.float32)
         self.filter.predict()
         estimated = self.filter.correct(measurement)
         if self.found_count > self.min_found_count:
             angle = np.arctan2(estimated[3], estimated[4])
-            self.last3d = ((estimated[0], estimated[1], estimated[2]),
-                           quaternion_from_euler(0.0, 0.0, angle))
+            self.last3d = (
+                (estimated[0], estimated[1], estimated[2]),
+                quaternion_from_euler(0.0, 0.0, angle),
+            )
             if not self.found:
                 rospy.loginfo("Marker Found")
             self.found = True
@@ -256,50 +281,83 @@ class OrangeRectangleFinder():
 
         # Transform pose estimate to map frame
         try:
-            self.tf_listener.waitForTransform('/map', ps.header.frame_id, ps.header.stamp, rospy.Duration(0.1))
-            map_ps = self.tf_listener.transformPoint('/map', ps)
-            map_vec3 = self.tf_listener.transformVector3('/map', vec3)
+            self.tf_listener.waitForTransform(
+                "/map", ps.header.frame_id, ps.header.stamp, rospy.Duration(0.1)
+            )
+            map_ps = self.tf_listener.transformPoint("/map", ps)
+            map_vec3 = self.tf_listener.transformVector3("/map", vec3)
         except tf.Exception as err:
-            rospy.logwarn("Could not transform {} to /map error={}".format(self.cam.tfFrame(), err))
+            rospy.logwarn(
+                "Could not transform {} to /map error={}".format(
+                    self.cam.tfFrame(), err
+                )
+            )
             return False
         # Try to ensure vector always points the same way, so kf is not thrown off at some angles
         if map_vec3.vector.y < 0.0:
             map_vec3.vector.y = -map_vec3.vector.y
             map_vec3.vector.x = -map_vec3.vector.x
-        measurement = (map_ps.point.x, map_ps.point.y, map_ps.point.z, map_vec3.vector.y, map_vec3.vector.x)
+        measurement = (
+            map_ps.point.x,
+            map_ps.point.y,
+            map_ps.point.z,
+            map_vec3.vector.y,
+            map_vec3.vector.x,
+        )
 
         # Update filter and found state with the pose estimate from this frame
         self._update_kf(measurement)
 
         if self.debug_ros:
             # Draw coordinate axis onto object using pose estimate to project
-            refs, _ = cv2.projectPoints(self.REFERENCE_POINTS, rvec, tvec, self.cam.intrinsicMatrix(), np.zeros((5, 1)))
+            refs, _ = cv2.projectPoints(
+                self.REFERENCE_POINTS,
+                rvec,
+                tvec,
+                self.cam.intrinsicMatrix(),
+                np.zeros((5, 1)),
+            )
             refs = np.array(refs, dtype=np.int)
-            cv2.line(self.last_image, (refs[0][0][0], refs[0][0][1]),
-                     (refs[1][0][0], refs[1][0][1]), (0, 0, 255))  # X axis refs
-            cv2.line(self.last_image, (refs[0][0][0], refs[0][0][1]),
-                     (refs[2][0][0], refs[2][0][1]), (0, 255, 0))  # Y axis ref
-            cv2.line(self.last_image, (refs[0][0][0], refs[0][0][1]),
-                     (refs[3][0][0], refs[3][0][1]), (255, 0, 0))  # Z axis ref
+            cv2.line(
+                self.last_image,
+                (refs[0][0][0], refs[0][0][1]),
+                (refs[1][0][0], refs[1][0][1]),
+                (0, 0, 255),
+            )  # X axis refs
+            cv2.line(
+                self.last_image,
+                (refs[0][0][0], refs[0][0][1]),
+                (refs[2][0][0], refs[2][0][1]),
+                (0, 255, 0),
+            )  # Y axis ref
+            cv2.line(
+                self.last_image,
+                (refs[0][0][0], refs[0][0][1]),
+                (refs[3][0][0], refs[3][0][1]),
+                (255, 0, 0),
+            )  # Z axis ref
             self._send_debug_marker()
         return True
 
     def _is_valid_contour(self, contour):
-        '''
+        """
         Does various tests to filter out contours that are clearly not
         a valid orange rectangle.
         * run approx polygon, check that sides == 4
         * find ratio of length to width, check close to known ratio IRL
-        '''
+        """
         if cv2.contourArea(contour) < self.min_contour_area:
             return False
         match = self.rect_model.verify_contour(contour)
         if match > self.shape_match_thresh:
             return False
         # Checks that contour is 4 sided
-        corners = self.rect_model.get_corners(contour, debug_image=self.last_image,
-                                              epsilon_range=self.epsilon_range,
-                                              epsilon_step=self.epsilon_step)
+        corners = self.rect_model.get_corners(
+            contour,
+            debug_image=self.last_image,
+            epsilon_range=self.epsilon_range,
+            epsilon_step=self.epsilon_step,
+        )
         if corners is None:
             return False
         self.last2d = self.rect_model.get_pose_2D(corners)
@@ -310,14 +368,16 @@ class OrangeRectangleFinder():
         return True
 
     def _get_edges(self):
-        '''
+        """
         Proccesses latest image to find edges by:
         blurring and thresholding for highly saturated orangish objects
         then runs canny on threshold images and returns canny's edges
-        '''
+        """
         blur = cv2.blur(self.last_image, (5, 5))
         hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
-        thresh = cv2.inRange(hsv, (0, self.thresh_saturation_low, 0), (self.thresh_hue_high, 255, 255))
+        thresh = cv2.inRange(
+            hsv, (0, self.thresh_saturation_low, 0), (self.thresh_hue_high, 255, 255)
+        )
         return cv2.Canny(thresh, self.canny_low, self.canny_low * self.canny_ratio)
 
     def _img_cb(self, img):
@@ -342,7 +402,8 @@ class OrangeRectangleFinder():
             cv2.imshow("debug", self.last_image)
             cv2.waitKey(5)
 
-if __name__ == '__main__':
-    rospy.init_node('orange_rectangle_finder')
+
+if __name__ == "__main__":
+    rospy.init_node("orange_rectangle_finder")
     OrangeRectangleFinder()
     rospy.spin()

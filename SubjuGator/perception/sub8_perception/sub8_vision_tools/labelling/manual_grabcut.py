@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import argparse
 import cv2
 import numpy as np
@@ -11,7 +11,7 @@ class Picker(object):
 
     def __init__(self):
         self.brush_size = 5
-        self.draw_opacity = .5
+        self.draw_opacity = 0.5
 
         self.done_drawing = False
         self.out_mask = None
@@ -24,12 +24,12 @@ class Picker(object):
         self.mouse_state = [0, 0]
         self.opacity_change = None
         self.brush_size_change = None
-        self.brush_size_opacity = .4
+        self.brush_size_opacity = 0.4
 
     def update_image(self, image):
-        '''
+        """
         Give a new image to segment.
-        '''
+        """
         self.image = image
 
         self.visualize = np.copy(image)
@@ -48,19 +48,22 @@ class Picker(object):
             self.visualize_draw[self.mask == int(cv2.GC_BGD)] = (0, 0, 200)
 
         self.done_drawing = False
-        display = np.array(np.clip(self.visualize + self.visualize_draw * self.draw_opacity, 0, 255), np.uint8)
+        display = np.array(
+            np.clip(self.visualize + self.visualize_draw * self.draw_opacity, 0, 255),
+            np.uint8,
+        )
         cv2.imshow("segment", display)
         cv2.waitKey(1)
 
     def mouse_cb(self, event, x, y, flags, param):
-        '''
+        """
         Controls:
             L_MSB click to paint green.
             R_MSB click to paint red.
             MIDDLE_MSB to clear paint.
             CTRL then move up and down to change paint opacity.
             SHIFT then move up and down to change brush size.
-        '''
+        """
         if self.done_drawing:
             return
 
@@ -86,52 +89,74 @@ class Picker(object):
 
         elif event == cv2.EVENT_MBUTTONDOWN:
             self.visualize_draw *= 0
-            self.mask = np.ones(self.visualize_draw.shape[:2], dtype=np.uint8) * int(cv2.GC_PR_BGD)
+            self.mask = np.ones(self.visualize_draw.shape[:2], dtype=np.uint8) * int(
+                cv2.GC_PR_BGD
+            )
 
         elif event == cv2.EVENT_MOUSEMOVE:
             if flags == cv2.EVENT_FLAG_CTRLKEY:
                 if self.opacity_change is None:
                     self.opacity_change = y
-                self.draw_opacity = np.clip((self.draw_opacity + (self.opacity_change - y) * .005), 0, 1)
+                self.draw_opacity = np.clip(
+                    (self.draw_opacity + (self.opacity_change - y) * 0.005), 0, 1
+                )
                 self.opacity_change = y
 
             elif flags == cv2.EVENT_FLAG_SHIFTKEY:
                 if self.brush_size_change is None:
                     self.brush_size_change = y
-                self.brush_size = np.clip((self.brush_size + (self.brush_size_change - y)), 0, 99)
+                self.brush_size = np.clip(
+                    (self.brush_size + (self.brush_size_change - y)), 0, 99
+                )
                 self.brush_size_change = y
-                self.brush_size_opacity = .9
+                self.brush_size_opacity = 0.9
 
             elif flags == cv2.EVENT_FLAG_ALTKEY:
-                cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 0, 200), -1)
+                cv2.circle(
+                    self.visualize_draw, (x, y), self.brush_size, (0, 0, 200), -1
+                )
                 cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_BGD), -1)
 
             else:
                 self.opacity_change = None
                 if self.mouse_state[0]:
-                    cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 200, 0), -1)
+                    cv2.circle(
+                        self.visualize_draw, (x, y), self.brush_size, (0, 200, 0), -1
+                    )
                     cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_FGD), -1)
 
                 elif self.mouse_state[1]:
-                    cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 0, 200), -1)
+                    cv2.circle(
+                        self.visualize_draw, (x, y), self.brush_size, (0, 0, 200), -1
+                    )
                     cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_BGD), -1)
 
-        display = np.array(np.clip(self.visualize + self.visualize_draw * self.draw_opacity +
-                                   self.visual_brush_size * self.brush_size_opacity, 0, 255), np.uint8)
+        display = np.array(
+            np.clip(
+                self.visualize
+                + self.visualize_draw * self.draw_opacity
+                + self.visual_brush_size * self.brush_size_opacity,
+                0,
+                255,
+            ),
+            np.uint8,
+        )
 
         cv2.imshow("segment", display)
         self.visual_brush_size *= 0
-        self.brush_size_opacity = .4
+        self.brush_size_opacity = 0.4
 
     def wait_for_key(self, keys):
-        print 'press one of:', keys
-        while(not rospy.is_shutdown()):
+        print("press one of:", keys)
+        while not rospy.is_shutdown():
             key = chr(cv2.waitKey(50) & 0xFF)
             if key in keys:
                 return key
 
     def get_biggest_ctr(self, image):
-        contours, _ = cv2.findContours(np.copy(image), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(
+            np.copy(image), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+        )
         if len(contours) > 0:
             cnt = max(contours, key=cv2.contourArea)
             return cnt
@@ -139,12 +164,12 @@ class Picker(object):
             return None
 
     def segment(self):
-        print 'Keys:'
-        print '\tPress "space" to skip the current image'
-        print '\tPress "q" to quit and save your previous segmentations'
-        print '\tPress w to run segmentation on the image'
-        key = self.wait_for_key(' qnw')
-        if key in [' ', 'q']:
+        print("Keys:")
+        print('\tPress "space" to skip the current image')
+        print('\tPress "q" to quit and save your previous segmentations')
+        print("\tPress w to run segmentation on the image")
+        key = self.wait_for_key(" qnw")
+        if key in [" ", "q"]:
             self.out_mask = None
             self.mask = None
             self.brush_size_change = None
@@ -161,13 +186,7 @@ class Picker(object):
             out_mask = np.zeros(shape=image.shape[:2], dtype=np.uint8)
         else:
             cv2.grabCut(
-                self.image,
-                out_mask,
-                None,
-                bgdModel,
-                fgdModel,
-                1,
-                cv2.GC_INIT_WITH_MASK
+                self.image, out_mask, None, bgdModel, fgdModel, 1, cv2.GC_INIT_WITH_MASK
             )
 
         return_mask = np.zeros(out_mask.shape).astype(np.float64)
@@ -182,16 +201,16 @@ class Picker(object):
 
         self.out_mask = out_mask
         display = display_mask[:, :, np.newaxis] * self.image.astype(np.float64)
-        cv2.imshow('segment', display / np.max(display))
+        cv2.imshow("segment", display / np.max(display))
 
-        cv2.imshow('all', np.logical_not(bgnd).astype(np.uint8) * 255)
-        print 'Keys:'
-        print '\tPress "space" to skip the current segmentation'
-        print '\tPress "q" to quit and save all segmentations including this'
-        print '\tPress w record this segmentation and move on to the next image'
+        cv2.imshow("all", np.logical_not(bgnd).astype(np.uint8) * 255)
+        print("Keys:")
+        print('\tPress "space" to skip the current segmentation')
+        print('\tPress "q" to quit and save all segmentations including this')
+        print("\tPress w record this segmentation and move on to the next image")
 
-        key = self.wait_for_key('qnzw ')
-        if key in [' ', 'q']:
+        key = self.wait_for_key("qnzw ")
+        if key in [" ", "q"]:
             self.out_mask = None
             self.mask = None
             self.brush_size_change = None
@@ -200,42 +219,52 @@ class Picker(object):
         return return_mask, key
 
 
-if __name__ == '__main__':
-    usage_msg = ("Pass the path to a bag or the start of an image sequence, and we'll crawl through the images in it")
+if __name__ == "__main__":
+    usage_msg = "Pass the path to a bag or the start of an image sequence, and we'll crawl through the images in it"
     desc_msg = "A tool for making manual segmentation fun! I am sorry the keyboard shortcuts are nonsense"
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
-    parser.add_argument(dest='file_name',
-                        help="Either the name of the bag or first image in a sequence you'd like to segment.")
-    parser.add_argument('--topic', type=str, help="Name of the topic to use or the usb camera number.")
-    parser.add_argument('--output', type=str, help="Path that the output images should be saved to",
-                        default='segments/')
+    parser.add_argument(
+        dest="file_name",
+        help="Either the name of the bag or first image in a sequence you'd like to segment.",
+    )
+    parser.add_argument(
+        "--topic", type=str, help="Name of the topic to use or the usb camera number."
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        help="Path that the output images should be saved to",
+        default="segments/",
+    )
 
     args = parser.parse_args(sys.argv[1:])
 
-    print "Loading bag..."
+    print("Loading bag...")
     file_name = args.file_name
-    if file_name.split('.')[-1] == 'bag':
+    if file_name.split(".")[-1] == "bag":
         import rospy
         import bag_crawler
+
         bc = bag_crawler.BagCrawler(file_name)
-        print bc.image_topics[0]
+        print(bc.image_topics[0])
     else:
         # Assuming we don't have ros installed, so make our own ros for rospy.is_shutdown()
-        class rospy():
+        class rospy:
             @classmethod
             def is_shutdown(self):
                 return False
 
         import image_crawler
-        if file_name == 'video':
+
+        if file_name == "video":
             bc = image_crawler.VideoCrawler(file_name, args.topic)
         else:
             bc = image_crawler.ImageCrawler(file_name)
 
     if args.topic is not None:
         assert args.topic in bc.image_topics, "{} not in the bag".format(args.topic)
-        print 'Crawling topic {}'.format(args.topic)
+        print("Crawling topic {}".format(args.topic))
         crawl = bc.crawl(topic=args.topic)
     else:
         crawl = bc.crawl(topic=bc.image_topics[0])
@@ -245,23 +274,23 @@ if __name__ == '__main__':
     num_imgs = 0
     for image in crawl:
         num_imgs += 1
-        print 'On image #{}'.format(num_imgs)
+        print("On image #{}".format(num_imgs))
 
         p.update_image(image)
         last_mask, key = p.segment()
 
-        if key == 'q':
+        if key == "q":
             break
-        elif key == ' ' or (last_mask is None) or (key is None):
-            print 'ignoring image'
+        elif key == " " or (last_mask is None) or (key is None):
+            print("ignoring image")
             continue
-        elif key == 'n':
+        elif key == "n":
             # There's not a good way to step a generator backwards - so just skip it.
-            print 'ignoring segment'
+            print("ignoring segment")
             continue
 
-        print '====== Saving ======'
+        print("====== Saving ======")
         name = next(namer)
         cv2.imwrite(args.output + name + ".png", image)
         cv2.imwrite(args.output + name + "_mask.png", last_mask * 255)
-        print
+        print()

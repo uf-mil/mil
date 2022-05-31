@@ -14,26 +14,32 @@ def got_image(img):
 
 
 def process_image(img, image_pub, clf):
-    print "Got image!"
+    print("Got image!")
 
     some_observations = observe(img)
-    print '-------------------------'
-    segmentation = np.array([x for x in [clf.predict(obs) for obs in some_observations]])
+    print("-------------------------")
+    segmentation = np.array(
+        [x for x in [clf.predict(obs) for obs in some_observations]]
+    )
     segmentation_image = np.reshape(segmentation, img[:, :, 2].shape)
 
     image_pub.publish(np.dstack([(segmentation_image * 250).astype(np.uint8)] * 3))
-    print "Pubbing Image"
+    print("Pubbing Image")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     rospy.init_node("Buoy_Test")
 
     parser = argparse.ArgumentParser(usage="", description="")
-    parser.add_argument(dest='classifer', type=str, help="Name of the classifer to use.")
     parser.add_argument(
-        dest='topic',
+        dest="classifer", type=str, help="Name of the classifer to use."
+    )
+    parser.add_argument(
+        dest="topic",
         type=str,
         help="Topic to listen to for image callbacks",
-        default="/camera/front/left/image_rect_color")
+        default="/camera/front/left/image_rect_color",
+    )
 
     args = parser.parse_args(sys.argv[1:])
 
@@ -48,8 +54,8 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
         if last_image is not None and last_image_time is not None:
             process_image(np.copy(last_image), image_pub, clf)
-            print (rospy.Time.now() - last_image_time).to_sec()
+            print((rospy.Time.now() - last_image_time).to_sec())
             print
-        rospy.sleep(.1)
+        rospy.sleep(0.1)
 
     rospy.spin()

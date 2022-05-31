@@ -4,7 +4,7 @@ import os
 # change this to the diretory that has all the training images in it
 base = os.path.dirname(os.path.abspath(__file__))
 folder = base + "/train_vid"
-f = open(base + "/roi", 'w')
+f = open(base + "/roi", "w")
 
 refPt = []
 cropping = False
@@ -38,8 +38,16 @@ for i in os.listdir(os.path.abspath(folder)):
                 break
 
         if len(refPt) == 2:
-            f.write(str(refPt[0][1]) + ", " + str(refPt[1][1]) + ", " + str(
-                refPt[0][0]) + ", " + str(refPt[1][0]) + "\n")
+            f.write(
+                str(refPt[0][1])
+                + ", "
+                + str(refPt[1][1])
+                + ", "
+                + str(refPt[0][0])
+                + ", "
+                + str(refPt[1][0])
+                + "\n"
+            )
             refPt = []
 
 cv2.destroyAllWindows()

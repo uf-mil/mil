@@ -162,3 +162,111 @@ Thruster
 
 .. autoclass:: sub8_thrust_and_kill_board.Thruster
     :members:
+
+Object Detection
+----------------
+
+Sub8BuoyDetector
+^^^^^^^^^^^^^^^^
+.. cppattributetable:: Sub8BuoyDetector
+
+.. doxygenclass:: Sub8BuoyDetector
+
+Sub8StartGateDetector
+^^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: Sub8StartGateDetector
+
+.. doxygenclass:: Sub8StartGateDetector
+
+Sub8TorpedoBoardDetector
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: Sub8TorpedoBoardDetector
+
+.. doxygenclass:: Sub8TorpedoBoardDetector
+
+TorpedoBoardReprojectionCost
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: TorpedoBoardReprojectionCost
+
+.. doxygenclass:: TorpedoBoardReprojectionCost
+
+Computer Vision
+---------------
+
+Utility Functions
+^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: sub::voxel_filter
+
+.. doxygenfunction:: sub::statistical_outlier_filter
+
+.. doxygenfunction:: sub::closest_point_index_rayOMP
+
+.. doxygenfunction:: sub::closest_point_index_ray
+
+.. doxygenfunction:: sub::closest_point_ray
+
+.. doxygenfunction:: sub::project_uv_to_cloud_index
+
+.. doxygenfunction:: sub::project_uv_to_cloud
+
+.. doxygenfunction:: sub::point_to_eigen
+
+.. doxygenfunction:: sub::compute_normals
+
+.. doxygenfunction:: sub::segment_rgb_region_growing
+
+.. doxygenfunction:: sub::segment_box
+
+.. doxygenfunction:: anisotropic_diffusion
+
+.. doxygenfunction:: best_plane_from_combination
+
+.. doxygenfunction:: calc_plane_coeffs
+
+.. doxygenfunction:: point_to_plane_distance
+
+Type Definitions
+^^^^^^^^^^^^^^^^
+.. doxygentypedef:: ROSCameraStream_Vec3
+
+.. doxygentypedef:: PointNT
+
+.. doxygentypedef:: PointCloudNT
+
+.. doxygentypedef:: PointXYZT
+
+.. doxygentypedef:: PointCloudT
+
+.. doxygentypedef:: ColorHandlerT
+
+Sub8ObjectFinder
+^^^^^^^^^^^^^^^^
+.. cppattributetable:: Sub8ObjectFinder
+
+.. doxygenclass:: Sub8ObjectFinder
+
+StereoBase
+^^^^^^^^^^
+.. cppattributetable:: StereoBase
+
+.. doxygenclass:: StereoBase
+
+RvizVisualizer
+^^^^^^^^^^^^^^
+.. cppattributetable:: sub::RvizVisualizer
+
+.. doxygenclass:: sub::RvizVisualizer
+   
+OccGridUtils
+^^^^^^^^^^^^
+.. attributetable:: sub8_vision_tools.OccGridUtils
+
+.. autoclass:: sub8_vision_tools.OccGridUtils
+    :members:
+
+Searcher
+^^^^^^^^
+.. attributetable:: sub8_vision_tools.Searcher
+
+.. autoclass:: sub8_vision_tools.Searcher
+    :members:

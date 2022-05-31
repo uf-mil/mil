@@ -1,5 +1,5 @@
-#!/usr/bin/python
-'''
+#!/usr/bin/python3
+"""
     --> [X] Fast way to draw ROI on image
         --> [X] Save ROI of a bunch of images
         --> [X] Read all the ROI of the image
@@ -43,14 +43,13 @@
 
 
 
-'''
+"""
 import cv2
 import numpy as np
 import os
 
 
 class HOGDetector:
-
     def __init__(self):
         # HOGDescriptor(Size win_size=Size(64, 128), Size block_size=Size(16, 16),
         #               Size block_stride=Size(8, 8), Size cell_size=Size(8, 8),
@@ -59,21 +58,26 @@ class HOGDetector:
         #               int nlevels=DEFAULT_NLEVELS);
         self.hog = cv2.HOGDescriptor((64, 64), (64, 64), (4, 4), (64, 64), 9)
         self.base = os.path.dirname(os.path.abspath(__file__))
-        coef = open(self.base + "/coef", 'r')
+        coef = open(self.base + "/coef", "r")
         l = coef.read()
-        arr = l.split('\n')
+        arr = l.split("\n")
         coef = []
         for a in arr:
             coef.append(float(a))
-        print coef
+        print(coef)
         coef = np.asarray(coef)
         self.hog.setSVMDetector(coef)
 
     def detect(self, img):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        (rects, weights) = self.hog.detectMultiScale(img, winStride=(4, 4),
-                                                     padding=(0, 0), hitThreshold=.15, scale=1.6,
-                                                     useMeanshiftGrouping=True)
+        (rects, weights) = self.hog.detectMultiScale(
+            img,
+            winStride=(4, 4),
+            padding=(0, 0),
+            hitThreshold=0.15,
+            scale=1.6,
+            useMeanshiftGrouping=True,
+        )
         for (x, y, w, h) in rects:
             cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
         return img

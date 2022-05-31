@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import division
 
 import numpy as np
@@ -9,22 +9,23 @@ from std_msgs.msg import ColorRGBA
 import mil_ros_tools
 
 
-class RvizVisualizer(object):
+class RvizVisualizer:
 
-    '''Cute tool for drawing both depth and height-from-bottom in RVIZ
-    '''
+    """Cute tool for drawing both depth and height-from-bottom in RVIZ"""
 
     def __init__(self, topic="visualization/markers"):
         self.rviz_pub = rospy.Publisher(topic, visualization_msgs.Marker, queue_size=3)
 
-    def draw_sphere(self, position, color, scaling=(0.11, 0.11, 0.11), _id=4, frame='/front_stereo'):
+    def draw_sphere(
+        self, position, color, scaling=(0.11, 0.11, 0.11), _id=4, frame="/front_stereo"
+    ):
         pose = Pose(
             position=mil_ros_tools.numpy_to_point(position),
-            orientation=mil_ros_tools.numpy_to_quaternion([0.0, 0.0, 0.0, 1.0])
+            orientation=mil_ros_tools.numpy_to_quaternion([0.0, 0.0, 0.0, 1.0]),
         )
 
         marker = visualization_msgs.Marker(
-            ns='sub',
+            ns="sub",
             id=_id,
             header=mil_ros_tools.make_header(frame=frame),
             type=visualization_msgs.Marker.SPHERE,
@@ -36,8 +37,17 @@ class RvizVisualizer(object):
         )
         self.rviz_pub.publish(marker)
 
-    def draw_ray_3d(self, pix_coords, camera_model, color, frame='/front_stereo', _id=100, length=35, timestamp=None):
-        '''Handle range data grabbed from dvl'''
+    def draw_ray_3d(
+        self,
+        pix_coords,
+        camera_model,
+        color,
+        frame="/front_stereo",
+        _id=100,
+        length=35,
+        timestamp=None,
+    ):
+        """Handle range data grabbed from dvl"""
         # future: should be /base_link/dvl, no?
         marker = self.make_ray(
             base=np.array([0.0, 0.0, 0.0]),
@@ -46,15 +56,25 @@ class RvizVisualizer(object):
             color=color,
             frame=frame,
             timestamp=timestamp,
-            _id=_id
+            _id=_id,
         )
 
         self.rviz_pub.publish(marker)
 
-    def make_ray(self, base, direction, length, color, frame='/base_link', _id=100, timestamp=None, **kwargs):
-        '''Handle the frustration that Rviz cylinders are designated by their center, not base'''
+    def make_ray(
+        self,
+        base,
+        direction,
+        length,
+        color,
+        frame="/base_link",
+        _id=100,
+        timestamp=None,
+        **kwargs
+    ):
+        """Handle the frustration that Rviz cylinders are designated by their center, not base"""
         marker = visualization_msgs.Marker(
-            ns='sub',
+            ns="sub",
             id=_id,
             header=mil_ros_tools.make_header(frame=frame, stamp=timestamp),
             type=visualization_msgs.Marker.LINE_STRIP,
