@@ -87,6 +87,8 @@ Historically however, thanks to:
   --error-text: var(--white);
   --helpful-background: #00c8d7;
   --helpful-text: var(--black);
+  --see-also-background: var(--grey-5);
+  --see-also-text: var(--white);
   --codeblock-background: var(--grey-2);
   --codeblock-border: var(--grey-4);
   --codeblock-text: var(--grey-6);
@@ -150,6 +152,8 @@ Historically however, thanks to:
   --error-text: var(--white);
   --helpful-background: #008ea4;
   --helpful-text: var(--white);
+  --see-also-background: var(--grey-3);
+  --see-also-text: var(--black);
   --codeblock-background: var(--grey-6);
   --codeblock-border: var(--black);
   --codeblock-text: var(--grey-1);
@@ -890,6 +894,20 @@ dl.field-list > dd {
   margin-top: 3px;
   margin-bottom: 10px;
   margin-left: 20px;
+}
+
+/* see also admonitions */
+div.seealso {
+  border-left-color: var(--see-also-background);
+}
+
+div.seealso > p.admonition-title {
+  background-color: var(--see-also-background);
+  color: var(--see-also-text);
+}
+
+div.seealso > p.admonition-title::before {
+  content: '\0f1e1';
 }
 
 /* no disgusting background in the FAQ */
