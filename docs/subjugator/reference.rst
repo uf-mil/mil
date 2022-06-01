@@ -271,6 +271,18 @@ Searcher
 .. autoclass:: sub8_vision_tools.Searcher
     :members:
 
+Classification
+^^^^^^^^^^^^^^
+.. cppattributetable:: Classification
+
+.. doxygenclass:: Classification
+
+OGridGen
+^^^^^^^^
+.. cppattributetable:: OGridGen
+
+.. doxygenclass:: OGridGen
+
 Simulation
 ----------
 BagManager
