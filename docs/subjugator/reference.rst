@@ -282,3 +282,12 @@ OGridGen
 .. cppattributetable:: OGridGen
 
 .. doxygenclass:: OGridGen
+
+Simulation
+----------
+BagManager
+^^^^^^^^^^
+.. attributetable:: sub8_gazebo_tools.BagManager
+
+.. autoclass:: sub8_gazebo_tools.BagManager
+    :members:

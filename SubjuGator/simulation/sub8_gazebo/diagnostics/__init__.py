@@ -1,1 +1,1 @@
-import gazebo_tests
+import diagnostics.gazebo_tests

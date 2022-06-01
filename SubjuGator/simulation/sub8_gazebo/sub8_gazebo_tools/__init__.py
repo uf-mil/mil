@@ -1,1 +1,1 @@
-from bag_manager import BagManager
+from .bag_manager import BagManager
