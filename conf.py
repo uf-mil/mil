@@ -38,6 +38,8 @@ sys.path.append(os.path.abspath('NaviGator/gnc/navigator_path_planner/nodes'))
 sys.path.append(os.path.abspath('NaviGator/utils'))
 sys.path.append(os.path.abspath('NaviGator/utils/navigator_battery_monitor'))
 sys.path.append(os.path.abspath('NaviGator/utils/navigator_battery_monitor/nodes'))
+sys.path.append(os.path.abspath('NaviGator/utils/navigator_robotx_comms'))
+sys.path.append(os.path.abspath('NaviGator/utils/navigator_robotx_comms/nodes'))
 
 # -- General configuration ------------------------------------------------
 
