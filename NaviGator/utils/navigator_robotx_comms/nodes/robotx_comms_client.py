@@ -203,10 +203,10 @@ class RobotXStartServices:
         mission.
 
         Args:
-            data (MessageEntranceExitGateRequest): The request to the service.
+            data (MessageExtranceExitGateRequest): The request to the service.
 
         Returns:
-            MessageEntranceExitGateReponse: The response from the service. The response
+            MessageExtranceExitGateResponse: The response from the service. The response
             contains the message needed to send to AUSVI.
         """
         if self.time_last_entrance_exit is not None:
@@ -253,7 +253,7 @@ class RobotXStartServices:
             data (MessageIdentifySymbolsDockRequest): The request to the service.
 
         Returns:
-            MessageIdentifySymbolsDockReponse: The response from the service. The response
+            MessageIdentifySymbolsDockResponse: The response from the service. The response
             contains the message needed to send to AUSVI.
         """
         if self.time_last_identify_symbols is not None:
