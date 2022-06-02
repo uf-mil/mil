@@ -37,16 +37,19 @@
 
 ## At testing site
 
-* Get wall power to powerstrip
-* Setup and connect to Network Box
-* Roll tether and connect it ot network box **(DO NOT USE POE)**
-* Connect Sub to to tether **(NOT POE)**
-* Connect battery alarm, power on sub
-* SSH into sub
-* Start tmux, write code
-* Grease O-rings with Molykote 55 everytime a pressure vessel is closed
-* Make sure the pneumatic tubes are inserted correctly **(DO NOT FLOOD THE VALVE BOX)**
-* Person getting into the pool must do backflip
-* Deploy sub (check for bubbles, make sure buoyancy is correct)
-* Verify odometry
+* Get wall power to powerstrip.
+* Setup and connect to Network Box.
+* Roll tether and connect it ot network box. **(DO NOT USE POE)**
+* Connect Sub to to tether. **(NOT POE)**
+* Connect battery alarm, power on sub.
+* SSH into sub.
+* Start tmux, write code.
+* Grease O-rings with Molykote 55 everytime a pressure vessel is closed.
+* Make sure ALL pneumatic tubes are inserted correctly. **(DO NOT FLOOD THE VALVE BOX)**
+* Make sure all holes to paintball tank are sealed correctly. **(THIS WILL ALSO RESULT IN FLOODING IF NOT DONE)**
+* Person getting into the pool must do backflip.
+* Deploy sub. (check for bubbles, make sure buoyancy is correct)
+* Verify odometry.
 
+What happens when the valve box isn't closed:
+![What happens when the valve box isn't closed.](/docs/flooded_valve_box.jpg)

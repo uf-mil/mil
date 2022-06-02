@@ -10,7 +10,8 @@ Various documentation related to practices followed by the MIL Software team.
    Adding Documentation <adding_documentation>
    help
    zobelisk
-   Bash and C++ Style Guide <cpp_bash_style.md>
+   Bash Style Guide <bash_style.md>
+   C++ Style Guide <cpp_style.md>
    Python Style Guide <python_style.md>
    Migrating to ROS Noetic <noetic_migration.md>
    Installing NVIDIA Drivers for RTX 2080 <rtx_2080_drivers.md>
