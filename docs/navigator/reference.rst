@@ -42,3 +42,17 @@ RobotXScanCodeMessage
 
 .. autoclass:: navigator_robotx_comms.RobotXScanCodeMessage
     :members:
+
+RobotXStartServices
+^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_robotx_comms.nodes.robotx_comms_client.RobotXStartServices
+
+.. autoclass:: navigator_robotx_comms.nodes.robotx_comms_client.RobotXStartServices
+    :members:
+
+RobotXClient
+^^^^^^^^^^^^
+.. attributetable:: navigator_robotx_comms.nodes.robotx_comms_client.RobotXClient
+
+.. autoclass:: navigator_robotx_comms.nodes.robotx_comms_client.RobotXClient
+    :members:
