@@ -102,6 +102,16 @@ sudo pip3 install -q \
   sklearn \
   pandas
 
+# Link a python executable to Python 2 for temporary backwards compatibility
+if which python > /dev/null 2>&1;
+then
+    echo "Python executable already exists."
+else
+    echo "Attempting to symlink python2 to python..."
+    sudo ln -s /usr/bin/python2 /usr/bin/python
+    echo "Symlinked Python executable! Nice!"
+fi
+
 # Initialize rosdep
 sudo apt-get install python3-rosdep
 
