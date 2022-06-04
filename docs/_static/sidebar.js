@@ -78,17 +78,16 @@ class Sidebar {
   }
 
   checkForScroll(section) {
-    let heading = section.firstElementChild.innerText;
-    var xpath = `/html/body/div/aside/.//a[text()="${heading}"]`;
-    var matchingElement = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-    let rect = matchingElement.getBoundingClientRect();
-    var sidebarXpath = `/html/body/div/aside/div`;
-    var sidebarDiv = document.evaluate(sidebarXpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-    let sidebarHeight = sidebarDiv.clientHeight;
-    if (sidebarHeight - rect.bottom < 100) {
-      sidebarDiv.scrollBy(0, (sidebarHeight - rect.bottom));
-    } else if (rect.bottom < 100) {
-      sidebarDiv.scrollBy(0, -100);
+    if (this.activeLink) {
+      let rect = this.activeLink.getBoundingClientRect();
+      var sidebarXpath = `/html/body/div/aside/div`;
+      var sidebarDiv = document.evaluate(sidebarXpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+      let sidebarHeight = sidebarDiv.clientHeight;
+      if (sidebarHeight - rect.bottom < 100) {
+        sidebarDiv.scrollBy(0, (sidebarHeight - rect.bottom));
+      } else if (rect.bottom < 100) {
+        sidebarDiv.scrollBy(0, -100);
+      }
     }
   }
 
@@ -136,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
   sidebar.createCollapsableSections();
 
   window.addEventListener('scroll', () => {
-    let section = getCurrentSection()
+    let section = getCurrentSection();
     sidebar.setActiveLink(section);
     sidebar.checkForScroll(section);
     sidebar.resize();
