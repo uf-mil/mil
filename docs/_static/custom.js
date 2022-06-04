@@ -81,16 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // insert ourselves after the element
     parent.insertBefore(table, element.nextSibling);
   });
-
-  // window.addEventListener('scroll', () => {
-  //   toTop.hidden = !(window.scrollY > 0);
-  // });
-
-  // Scroll to section in globaltoc
-  let firstHeading = document.querySelector("h1");
-  var xpath = `/html/body/div/aside/.//a[text()="${firstHeading.innerText}"]`;
-  var matchingElement = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-  matchingElement.scrollIntoView();
 });
 
 document.addEventListener('keydown', (event) => {
