@@ -84,9 +84,9 @@ class Sidebar {
       var sidebarDiv = document.evaluate(sidebarXpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
       let sidebarHeight = sidebarDiv.clientHeight;
       if (sidebarHeight - rect.bottom < 100) {
-        sidebarDiv.scrollBy(0, (sidebarHeight - rect.bottom));
+        sidebarDiv.scrollBy(0, -(sidebarHeight - rect.bottom) + 100);
       } else if (rect.bottom < 100) {
-        sidebarDiv.scrollBy(0, -100);
+        sidebarDiv.scrollBy(0, rect.top - 100);
       }
     }
   }
@@ -133,6 +133,11 @@ document.addEventListener('DOMContentLoaded', () => {
   sidebar = new Sidebar(document.getElementById('sidebar'));
   sidebar.resize();
   sidebar.createCollapsableSections();
+
+  // Scroll sidebar to position on initialization
+  let section = getCurrentSection();
+  sidebar.setActiveLink(section);
+  sidebar.checkForScroll(section);
 
   window.addEventListener('scroll', () => {
     let section = getCurrentSection();
