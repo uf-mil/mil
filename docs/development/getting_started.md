@@ -5,6 +5,11 @@ This page describes the recommended process of setting up your new ubuntu system
 
 ### Operating System
 
+**Note: If you plan to help with the Noetic Migration project, you will need
+to install Ubuntu 20!** The Noetic Migration project is an internal project to
+migrate all systems to a newer version of Ubuntu. If you are helping out with
+the project, see [this getting started page instead](https://noetic.cbrxyz.com/docs/software/getting_started.html).
+
 **It is recommended that you [dual boot Ubuntu 18.04](https://help.ubuntu.com/community/WindowsDualBoot) for development**
 
 Virtual Machines will be able to run our software, but it may be too slow (see [hardware](#hardware)).
