@@ -213,10 +213,81 @@
       <pose frame=''>5.055 -1.546 -2.5 0 -0 1.57</pose>
     </model>
 
+    <model name='pathmarkers2018'>
+      <static>1</static>
+      <link name='pathmarkers2018'>
+        <inertial>
+          <mass>0.5</mass>
+          <inertia>
+            <ixx>0</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0</iyy>
+            <iyz>0</iyz>
+            <izz>0</izz>
+          </inertia>
+        </inertial>
+        <velocity_decay>
+          <linear>1e-05</linear>
+          <angular>1e-05</angular>
+        </velocity_decay>
+        <collision name='pathmarkers2018col'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>file://markers/PathMarkers2018s.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <sensor name='contact' type='contact'>
+          <contact>
+            <collision>pathmarkers2018col</collision>
+            <topic>__default_topic__</topic>
+          </contact>
+          <update_rate>50</update_rate>
+          <plugin name='gazebo_ros_bumper_controller' filename='libgazebo_ros_bumper.so'>
+            <alwaysOn>1</alwaysOn>
+            <bumperTopicName>contact_bumper</bumperTopicName>
+          </plugin>
+        </sensor>
+        <visual name='pathmarkers2018vis'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>file://markers/PathMarkers2018s.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose frame=''>-0.11 0.1787 -1.49 0 -0 0</pose>
+    </model>
+
     <include>
       <name>transdec_pinger</name>
       <uri>model://pinger</uri>
       <pose>15 0 -2 0 0 0 </pose>
+    </include>
+
+    <include>
+      <name>transdec_pinger2</name>
+      <uri>model://pinger</uri>
+      <pose>15 15 -2 0 0 0 </pose>
     </include>
 
     <scene>
