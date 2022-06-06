@@ -1,6 +1,6 @@
-## Bash Style Guide (In Progress)
+# Bash Style Guide (In Progress)
 
-### Preample
+## Preample
 All bash scripts should have the following lines at the top of the file:
 ```
 #!/bin/bash

@@ -35,7 +35,7 @@ New Members
     docs/culture
     docs/branding
 
-* **Interested software members**: Please read the :doc:`Software Onboarding Guide <docs/software/onboarding>`.
+* **Interested software members**: Please read the :doc:`Software Getting Started Guide <docs/software/getting_started>`.
 * **Interested electrical members**: Please read the :doc:`Electrical Onboarding Guide <docs/electrical/onboarding>`
 * **Interested mechanical members**: Please read the :doc:`Mechanical Onboarding Guide <docs/mechanical/onboarding>`.
 

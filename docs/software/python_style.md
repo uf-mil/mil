@@ -1,11 +1,11 @@
-## Python Style Guide
+# Python Style Guide
 Welcome to the Python style guide for MIL. This guide is meant to be a relaxed, easy-to-follow guide with some tips on how to make your Python look snazzy! It's based on the [ROS style guide](http://wiki.ros.org/PyStyleGuide) and the [Google Python style guide](https://google.github.io/styleguide/pyguide.html).
 
 Don't feel pressured to know or understand every rule, and totally feel free to skim over the guide at first. This guide can provide some helpful information before you begin to write your Python, but it also serves as an excellent place to determine how to use a particular Python feature in your code.
 
 Additionally, this guide is not meant to be permanent! If you have a suggestion, feel free to bring it up and change the guide! Have fun!
 
-### The Power to Change Things
+## The Power to Change Things
 
 Before we dive into the Python, a brief word about our code and your ability to change things.
 
@@ -15,13 +15,13 @@ Therefore, you always have the power to change them. Likewise, if you see code t
 
 Your innovation and willingness to break and bend the rules that currently exists is what can keep our code powerful, clean, and beautiful.
 
-### Features
+## Features
 This section explains how to use several of Python's features to your advantage.
 
-#### Naming
+### Naming
 **Naming** describes how variables, methods, classes, etc. are named. 
 
-##### General
+#### General
 Here is a brief table explaining the general pattern of naming:
 
 <table rules="all" border="1" summary="General Python Naming Patterns"
@@ -101,7 +101,7 @@ Here is a brief table explaining the general pattern of naming:
 
 </table>
 
-##### Names to Avoid
+#### Names to Avoid
 There are some names we want to avoid! These may be names that are claimed by Python, names that aren't helpful to other readers of your code, or names that are confusing.
 
 Do not use:
@@ -115,17 +115,17 @@ Do not use:
 * Names that are offensive (obviously, right?)
 * Names that are meaningless (such as `cool_constant` or `fun_variable`)
 
-##### Mathematical Names
+#### Mathematical Names
 Sometimes, we will use our code to implement common mathematics or algorithms. In this case, we may want to use short variable names. Here are some things to consider about that:
 
 * Short mathematical names should be generally understood. For example, using `pi` to represent Pi and `v` to represent velocity is generally understood and acceptable. However, using `vd` to represent *velocity x distance* would not be acceptable, as this is not a clear, accepted term.
 * If possible and it makes sense, try using a more descriptive name.
 * Add a short line comment after the first use of the variable if it could help future readers. You may also desire to include units here as well.
 
-##### File Naming
+#### File Naming
 Files should end with `.py` and should not use dashes (`-`), but rather underscores (`_`). If you do not want the `.py` ending on the Python file and would prefer the file to take the role of an executable, consider making a symbolic link or a shell script wrapper that runs the Python file. (This can be as simple as `exec "$0.py" "$@"`!)
 
-#### Imports
+### Imports
 Imports are a powerful feature of Python. Here is a quick guide for using imports in Python:
 
 ```python
@@ -153,7 +153,7 @@ import mod2
 from folder.subfolder import mod2
 ```
 
-#### Exceptions and `assert`
+### Exceptions and `assert`
 
 Exceptions are a handy feature of Python that helps mitigate code that is breaking. `assert` is a helpful keyword in Python that allows one to test whether an internal statement is true, and is often used to test for internal correctness!
 
@@ -168,7 +168,7 @@ When using `assert`:
 
 * Keep its use internal. For example, don't use `assert` to validate human input into a method. Instead, use it to verify to check types or the output of a helper method.
 
-#### Iterators
+### Iterators
 
 Iterators provide a powerful way to loop through your code!
 
@@ -190,13 +190,13 @@ for k, v in dict.iteritems():
     ...
 ```
 
-#### Yielding
+### Yielding
 
 Sometimes, it may be desired to have your method **yield** values rather than simply **return** them. Yielding in Python is a powerful feature which delays your method's execution until you need it.
 
 To have a method yield rather than simply return, use the `yield` keyword in the method and mark the method docstring with `Yields:`.
 
-#### Lambda Functions
+### Lambda Functions
 
 Lambda functions are mini-functions. They are expressed like so: `lambda x, y: x + y`.
 
@@ -204,7 +204,7 @@ If you use lambda functions:
 * Keep them to one line. If they are longer than 80 characters, just use a nested function.
 * Use them sparingly. Using complex, important operations in a lambda functions makes the code harder to debug and harder for other members to understand.
 
-#### Conditional Expressions
+### Conditional Expressions
 
 Conditional expressions are short expressions which use the `if` and `else` keywords. Conditional expressions are powerful tools which can be understood by new editors of the code.
 
@@ -225,7 +225,7 @@ super_long = (evaluating_function(parameter)
               )
 ```
 
-#### Properties
+### Properties
 
 Properties are a powerful feature of Python which allow traditional class methods to be hidden as attributes. Sneaky! This adds the benefit of masking getters and setters as traditional properties, but can accidentally mask complexion in the code that should not be hidden.
 
@@ -234,7 +234,7 @@ Properties should:
 * Not be used when the method invokes a lot of operations. The calling user may not understand this and accidentally invoke a lot of operations that block other processes.
 * Always be marked with the `@property` decorator.
 
-#### Implicit True/False
+### Implicit True/False
 
 Python can evaluate a wide variety of statements to `True` and `False`. For example:
 ```python
@@ -256,7 +256,7 @@ Attempt to use these statements when possible, as they help to make our code loo
 * Be wary when using these types of statements when checking the value of integers. Using something like `if not x / 2` is confusing because both boolean and numerical statements are involved.
 * When using this type of statement to check the size of a Numpy array, use `if (not) array.size` instead of `if array`.
 
-#### Decorators
+### Decorators
 
 **D**ecorator = **D**angerous! Sorta. Decorators are powerful for changing the behavior of methods, which can be helpful when operations in the method itself do not suffice.
 
@@ -267,7 +267,7 @@ Therefore, when using decorators, keep in mind:
 * Every decorator should be extensively documented.
 * Please use decorators judiciously.
 
-##### Line Length
+### Line Length
 
 Please keep lines to 80 characters or less. This can be seen in vim by using the option `colorcolumn=80`. If you have long strings, then use parentheses to implicitly connect multiple strings together:
 ```python
@@ -278,11 +278,11 @@ dr_seuss = ("Say! I like green eggs and ham!"
 There are some exceptions:
 * URLs in comments. Don't split these up.
 
-#### Blank Line Separators
+### Blank Line Separators
 
 Use blank lines to separate different parts of your module. Use two lines to separate top-level elements of any file (whether they are classes or methods) and one line to separate other distinct elements of the file.
 
-#### Whitespace
+### Whitespace
 
 Whitespace (not to be confused with greenspace, redspace, or rainbowspace!) can be incorrectly used in files to give the appearance of weird formatting.
 
@@ -293,7 +293,7 @@ When using whitespace:
 * Do not include whitespace inside brackets including parentheses, brackets, or braces. For example, use `(x + 1)`, not `( x + 1 )` or `{'schwartz': True}`, not `{ 'schwartz': True }`.
 * In function calls, do not use whitespace when passing a default parameter, unless a type annotation is present. For example, do not use `test(a, b: float=0.0)`, instead use `test(a, b: float = 0.0)`.
 
-#### String Formatting
+### String Formatting
 
 Many times you will want to format strings in a certain way: to add variables into the string, to make the string look pretty, or to use the string in a certain context, such as an enumerated iterator (`for i, v in enumerate(list): print(i + v)`).
 
@@ -316,7 +316,7 @@ print(f"The {rand} number is less than 1.")
 print(f"This number is less than one: {rand}")
 ```
 
-#### TODO Comments
+### TODO Comments
 
 TODO comments are a great way to mark a piece of code as not currently finished. To use TODO comments, simply create a comment that starts with `TODO`, has your name, and what still needs to be done. Simple!
 ```python
@@ -325,7 +325,7 @@ def sum(a: int, b: int, c: int):
     return a + b
 ```
 
-#### Getters and Setters
+### Getters and Setters
 
 Getters and setters serve as dedicated methods for getting and setting a property of a class. These are similar to `@property` methods, but these are explicit methods which are not hidden as properties.
 
@@ -333,11 +333,11 @@ Getters and setters should only be used when changing a single property causes s
 
 Getters and setters should be named in a way that clearly demonstrates which property is being set. For example, `get_weather()` and `set_weather()`.
 
-#### Function Length
+### Function Length
 
 A function should roughly be **30 lines**. This is not a hard rule, but is a general rule to keep in mind when writing and reading functions. If you see a function longer than this, feel free to break it up if it makes sense.
 
-### Typing
+## Typing
 **Please, whenever possible, add type annotations to your code.** Typing is a powerful feature of Python that helps others read and understand your code.
 
 Type annotations take on the following format:
@@ -368,15 +368,15 @@ What the heck is that method even saying?
 
 Note that if your type annotations are overly long, it may be a good idea to split up your method into a series of shorter methods.
 
-### Docstrings
+## Docstrings
 
 Docstrings stand for doctor strings, strings that can only be created by medical professionals. Just kidding! Docstrings stand for strings that document particular aspects of one's code. Docstrings can be used to document modules, methods, and classes!
 
-#### General Docstrings
+### General Docstrings
 
 For all docstrings, use narrative text. It doesn't have to be your best literary work, but please make descriptions in your docstrings readable.
 
-#### Modules
+### Modules
 
 Each module should have a docstring placed in its `__init__.py` file, at the top of the file. This docstring should explain what the module does. First, a one-line sentence should be added to explain briefly what the module does. Then, below this sentence, evaluate more on what the module does. Then, below the longer description, add one or two brief examples of the module's use case.
 
@@ -400,7 +400,7 @@ Example 1:
 """
 ```
 
-#### Classes
+### Classes
 
 Every class should also have a docstring. Begin the docstring by briefly elaborating on the purpose of the class before explaining more below, in a similar fashion to the module docstring. Then, add any public attributes provided by the class that are useful to the caller.
 
@@ -423,7 +423,7 @@ class CalculatorHistory:
         ...
 ```
 
-#### Methods
+### Methods
 
 Just like modules and classes, methods should also have docstrings! Begin method docstrings with a brief explanation, followed by a longer, more detailed explanation if needed. Then, add the following three sections of the docstring:
 
@@ -465,10 +465,10 @@ class CalculatorHistory:
         """
 ```
 
-### Linting & CI
+## Linting & CI
 We are currently in the process of setting up linting and CI for our Python systems.
 
-### Other Tools
+## Other Tools
 Other tools that can make working with Python easier in our codebase include
 code completion and checking systems. You can install these in popular editors
 such as VSCode or Vim.

@@ -67,4 +67,4 @@ You can find the recording [here](https://mil.ufl.edu/videos/MIL_Kick_Off_Fall_2
 The next step is to look into joining a specific team:
 - Click here to embark on the [Mechanical Team onboarding](/docs/mechanical/onboarding).
 - Click here to embark on the [Electrical Team](/docs/electrical/onboarding).
-- Click here to embark on the [Software Team](/docs/software/onboarding).
+- Click here to embark on the [Software Team](/docs/software/getting_started).
