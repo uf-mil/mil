@@ -30,7 +30,7 @@ class ContourClassifier:
 
     Attributes:
         classes (List[:class:`str`]): A list of class names (as strings),
-          for example: ``['red', 'white', 'blue']``.
+            for example: ``['red', 'white', 'blue']``.
         training_file (Optional[:class:`str`]): The name of the training file.
         labelfile (Optional[:class:`str`]): The file containing the labels.
         image_dir (Optional[:class:`str`]): The directory containing the images.
@@ -83,8 +83,8 @@ class ContourClassifier:
         returned from get_features.
 
         Args:
-                features (np.ndarray): a list of numerical features in the order
-            returned by :meth:`.get_features`.
+            features (np.ndarray): a list of numerical features in the order
+                returned by :meth:`.get_features`.
 
         Returns:
             The index of the class which is the most probabable classification
@@ -113,11 +113,11 @@ class ContourClassifier:
         and their labeled class index.
 
         Args:
-                features (np.ndarray): Array with shape ``(n_samples, m_features)``,
-              where each row is a list of features in the order returned from
-              :meth:`.get_features`.
-                classes (np.ndarray): List with shape ``(n_samples)`` of labeled class index
-              corresponding to each row of features.
+            features (np.ndarray): Array with shape ``(n_samples, m_features)``,
+                where each row is a list of features in the order returned from
+                :meth:`.get_features`.
+            classes (np.ndarray): List with shape ``(n_samples)`` of labeled class index
+                corresponding to each row of features.
         """
         pass
 
@@ -127,8 +127,8 @@ class ContourClassifier:
         labeled class indicies.
 
         Args:
-                features (np.ndarray): Array of shape ``(n_samples, m_features)``, where each row is a list of features.
-                classes (np.ndarray): Array of shape ``(n_samples)`` with labeled class indicies.
+            features (np.ndarray): Array of shape ``(n_samples, m_features)``, where each row is a list of features.
+            classes (np.ndarray): Array of shape ``(n_samples)`` with labeled class indicies.
 
         Returns:
             A proportion accuracy correct_classificiations / len(classes).
@@ -149,7 +149,7 @@ class ContourClassifier:
 
         Args:
             strings (Union[List[str], str]): The string or list of strings to return
-            the index of.
+                the index of.
 
         Returns:
             Union[List[int], int]: The list of indexes (if multiple strings are passed),
@@ -166,7 +166,7 @@ class ContourClassifier:
 
         Args:
             classes (Union[List[int], int]): The list of indexes to find the associated
-            classes of. Otherwise, the name of one class to find one index of.
+                classes of. Otherwise, the name of one class to find one index of.
 
         Returns:
             Union[List[str], str]: The list of found classes or the one found class.
@@ -180,8 +180,8 @@ class ContourClassifier:
         Classify a contour.
 
         Args:
-                img (np.ndarray): 2D image representation.
-                mask (np.ndarray): Binary mask image representing the contour.
+            img (np.ndarray): 2D image representation.
+            mask (np.ndarray): Binary mask image representing the contour.
 
         Returns:
             The class index this is most probable given the features in that contour.
@@ -195,8 +195,8 @@ class ContourClassifier:
         given mask coresponding to the class list.
 
         Args:
-                img (np.ndarray): 2D image representation.
-                mask (np.ndarray): Binary mask image representing the contour.
+            img (np.ndarray): 2D image representation.
+            mask (np.ndarray): Binary mask image representing the contour.
 
         Returns:
             List[float]: The list of probabilities across the entire image.
@@ -259,8 +259,8 @@ class ContourClassifier:
         Extract features and labeled classes from a project labeled on labelbox.io.
 
         Args:
-                labelfile (Optional[str]): the json file containing the labels for the project
-                image_dir (Optional[str]): directory where source images for the project can be found
+            labelfile (Optional[str]): the json file containing the labels for the project
+            image_dir (Optional[str]): directory where source images for the project can be found
 
         Raises:
             Exception: No labels were found.
