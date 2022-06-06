@@ -9,7 +9,7 @@ import struct
 
 class SimulatedCANDevice:
     """
-    Simulates a CAN device, with functions to be overrided to handle data requests 
+    Simulates a CAN device, with functions to be overrided to handle data requests
     and sends from motherboard.
 
     Child classes can inherit from this class to implement a simulated CAN device.
@@ -20,7 +20,7 @@ class SimulatedCANDevice:
 
     def send_data(self, data: bytes):
         """
-        Send data onto the bus, delivering it to other simulated devices and to 
+        Send data onto the bus, delivering it to other simulated devices and to
         the driver node.
         """
         self._sim_board.send_to_bus(self._can_id, data)
@@ -80,13 +80,12 @@ class SimulatedUSBtoCAN(SimulatedSerial):
     Simulates the USB to CAN board. Is supplied with a dictionary of simualted
     CAN devices to simulate the behavior of the whole CAN network.
     """
-    def __init__(self, devices={0: SimulatedCANDevice}, can_id=-1, *args, **kwargs):
+    def __init__(self, devices={0: SimulatedCANDevice}, can_id=-1):
         """
         Args:
-        	devices (Dict[int, Any]): Dictionary containing CAN IDs and their associated
-              simulated classes inheriting from :class:`SimulatedCANDevice`. Defaults
-              to ``{0: SimulatedCANDevice}``.
-        	can_id (int): ID of the CAN2USB device. Defaults to -1.
+            devices (Dict[:class:`int`, Any]): Dictionary containing CAN IDs and
+                their associated simulated classes inheriting from :class:`SimulatedCANDevice`.
+            can_id (int): ID of the CAN2USB device. Defaults to -1.
         """
         self._my_id = can_id
         self._devices = dict(
@@ -96,13 +95,13 @@ class SimulatedUSBtoCAN(SimulatedSerial):
 
     def send_to_bus(self, can_id: int, data: bytes, from_mobo: bool = False):
         """
-        Sends data onto the simulated bus from a simulated device
+        Sends data onto the simulated bus from a simulated device.
 
         Args:
-        	can_id (int): ID of sender.
+            can_id (int): ID of sender.
             data (bytes): The payload to send.
             from_mobo (bool): Whether the data is from the motherboard. Defaults to
-              False.
+                False.
         """
         # If not from the motherboard, store this for future requests from motherboard
         if not from_mobo:

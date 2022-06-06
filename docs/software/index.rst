@@ -20,4 +20,5 @@ Various documentation related to practices followed by the MIL Software team.
    Network with Vehicles and Simulation Servers <../infra/network.md>
    Developing with Submodules <submodule.md>
    Optional Extensions <extension_support.md>
+   SDKs <sdk.md>
    Helpful Scripts <scripts>

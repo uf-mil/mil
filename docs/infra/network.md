@@ -18,7 +18,7 @@ from your machine to another, such as one of our robots or a simulation server.
 
 This is done using [ROS environment variables](http://wiki.ros.org/ROS/NetworkSetup).
 
-Assuming you have followed the [Development guide](/docs/software/development_guide),
+Assuming you have followed the [Getting Started Guide](/docs/software/getting_started),
 you can use the function `ros_connect` to set this up.
 
 Run `ros_connect -h` for an up to date list of options.
