@@ -1,3 +1,3 @@
-from board import *
-from simulated_board import *
-from constants import Constants
+from .board import *
+from .constants import Constants
+from .simulated_board import *
