@@ -154,44 +154,6 @@
         <kinematic>0</kinematic>
       </link>
     </model>
-    <model name='start_gate'>
-      <static>1</static>
-      <link name='start_gate'>
-        <collision name='start_gatecol'>
-          <pose frame=''>0 0 0 1.57 -0 0</pose>
-          <geometry>
-            <mesh>
-              <uri>file://start_gate/start_gate.dae</uri>
-            </mesh>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision>
-        <visual name='start_gatevis'>
-          <pose frame=''>0 0 0 1.57 -0 0</pose>
-          <geometry>
-            <mesh>
-              <uri>file://start_gate/start_gate.dae</uri>
-            </mesh>
-          </geometry>
-        </visual>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <pose frame=''>5.055 -1.546 -2.5 0 -0 1.57</pose>
-    </model>
     <model name='pathmarkers2018'>
       <static>1</static>
       <link name='pathmarkers2018'>
@@ -609,8 +571,8 @@
     <state world_name='default'>
       <sim_time>0</sim_time>
       <real_time>0</real_time>
-      <wall_time>0</wall_time>
-      <iterations>5114</iterations>
+      <wall_time>0 694175568</wall_time>
+      <iterations>0</iterations>
       <model name='octogon'>
         <pose frame=''>22.9712 -1.43185 0 0 -0 1.5708</pose>
         <scale>1 1 1</scale>
@@ -701,11 +663,11 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='start_gate'>
-        <pose frame=''>5.055 -1.546 -2.5 0 -0 1.57</pose>
+      <model name='start_gate_2022'>
+        <pose frame=''>3.52062 2.82876 -0.12531 0.119618 0.947618 -0.145634</pose>
         <scale>1 1 1</scale>
-        <link name='start_gate'>
-          <pose frame=''>5.055 -1.546 -2.5 0 -0 1.57</pose>
+        <link name='base_link'>
+          <pose frame=''>3.52062 2.82876 -0.12531 0.119618 0.947618 -0.145634</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -742,10 +704,10 @@
         </link>
       </model>
       <model name='water'>
-        <pose frame=''>-0.178477 0.141962 0 3.14159 9.3e-05 3.14159</pose>
+        <pose frame=''>-0.069528 0.449668 0 3.14159 9.3e-05 3.14159</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>-0.178477 0.141962 0 3.14159 9.3e-05 3.14159</pose>
+          <pose frame=''>-0.069528 0.449668 0 3.14159 9.3e-05 3.14159</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -772,7 +734,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>-4.16903 -6.0588 4.74998 -0 0.4898 0.90735</pose>
+        <pose frame=''>-12.7114 1.44508 14.1726 0 0.5818 -0.136649</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
@@ -893,6 +855,57 @@
         <kinematic>0</kinematic>
       </link>
       <pose frame=''>12.3723 -3.83106 0 0 -0 0</pose>
+    </model>
+    <model name='start_gate_2022'>
+      <static>1</static>
+      <link name='base_link'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose frame=''>1.30078 1.35363 2.40887 0 -0 0</pose>
+          <mass>13.5315</mass>
+          <inertia>
+            <ixx>5.04877</ixx>
+            <ixy>0.364288</ixy>
+            <ixz>-0.576968</ixz>
+            <iyy>5.5194</iyy>
+            <iyz>-1.05982</iyz>
+            <izz>1.53641</izz>
+          </inertia>
+        </inertial>
+        <collision name='base_link_collision'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>file://start_gate_2022/start_gate.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='base_link_visual'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>file://start_gate_2022/start_gate.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose frame=''>-0.957126 1.98002 0 0 -0 0</pose>
     </model>
   </world>
 </sdf>
