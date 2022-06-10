@@ -41,6 +41,11 @@ class Sabertooth2x12:
         added on to the end of the packet. All four integers are packed as unsigned
         integers in the resulting packet.
 
+        Args:
+            address (int): ???
+            command (int): The command to send.
+            data (int): The data to put in the packet.
+
         Returns:
             bytes: The constructed packet.
         """
@@ -50,6 +55,10 @@ class Sabertooth2x12:
     def send_packet(self, command: int, data: int) -> None:
         """
         Sends a packet over the serial connection using the class' address.
+
+        Args:
+            command (int): The command to send.
+            data (int): The data to put in the packet.
         """
         packet = self.make_packet(self.address, command, data)
         self.ser.write(packet)
