@@ -4179,3 +4179,13 @@ SimulatedSabertooth2x12
 
 .. autoclass:: sabertooth2x12.SimulatedSabertooth2x12
     :members:
+
+Mission System
+--------------
+
+BaseMission
+^^^^^^^^^^^
+.. attributetable:: mil_missions_core.BaseMission
+
+.. autoclass:: mil_missions_core.BaseMission
+    :members:
