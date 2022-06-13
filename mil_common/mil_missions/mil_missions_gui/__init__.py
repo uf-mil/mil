@@ -1,2 +1,2 @@
-#!/usr/bin/env python
-from dashboard import Dashboard
+#!/usr/bin/env python3
+from .dashboard import Dashboard
