@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
+from typing import Union
+
 from twisted.internet import defer
 
-from typing import Union
 
 class BaseMission:
     """
