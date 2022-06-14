@@ -5,6 +5,7 @@ import rospy
 from actionlib import SimpleActionClient
 
 from mil_missions.msg import DoMissionAction, DoMissionGoal
+from roboteq_msgs.msg import Feedback
 
 
 class MissionClient(SimpleActionClient):
@@ -45,7 +46,7 @@ class MissionClient(SimpleActionClient):
         parameters: str = "",
         done_cb: Optional[Callable[[int, Any], None]] = None,
         active_cb: Optional[Callable[[], None]] = None,
-        feedback_cb: Optional[Callable[[Any], None]] = None,
+        feedback_cb: Optional[Callable[[Feedback], None]] = None,
     ):
         """
         Send a goal to start a new mission with the specified parameters.
