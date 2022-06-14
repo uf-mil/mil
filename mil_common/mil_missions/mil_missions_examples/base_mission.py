@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from mil_missions_core import BaseMission
 
 
@@ -7,4 +7,4 @@ class ExampleBaseMission(BaseMission):
     def _init(cls, mission_runner):
         super(ExampleBaseMission, cls)._init(mission_runner)
         # Establish robot specific subscribers, tools, etc here
-        print 'ExampleBaseMission initialized!'
+        print("ExampleBaseMission initialized!")
