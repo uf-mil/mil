@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from remote_control_lib import RemoteControl
 import rospy
 from sensor_msgs.msg import Joy
@@ -10,11 +10,7 @@ __copyright__ = "Copyright 2016, MIL"
 __license__ = "MIT"
 
 
-rospy.init_node("joystick")
-
-
-class Joystick(object):
-
+class Joystick:
     def __init__(self):
         self.force_scale = rospy.get_param("~force_scale", 600)
         self.torque_scale = rospy.get_param("~torque_scale", 500)
@@ -24,10 +20,10 @@ class Joystick(object):
         rospy.Subscriber("joy", Joy, self.joy_recieved)
 
     def reset(self):
-        '''
+        """
         Used to reset the state of the controller. Sometimes when it
         disconnects then comes back online, the settings are all out of whack.
-        '''
+        """
         self.last_raise_kill = False
         self.last_clear_kill = False
         self.last_station_hold_state = False
@@ -60,7 +56,9 @@ class Joystick(object):
                     self.reset()
 
         else:
-            joy.header.stamp = rospy.Time.now()  # In the sim, stamps weren't working right
+            joy.header.stamp = (
+                rospy.Time.now()
+            )  # In the sim, stamps weren't working right
             self.last_joy = joy
 
     def joy_recieved(self, joy):
@@ -80,7 +78,7 @@ class Joystick(object):
         thruster_deploy = bool(joy.buttons[5])  # RB
 
         if back and not self.last_back:
-            rospy.loginfo('Back pressed. Going inactive')
+            rospy.loginfo("Back pressed. Going inactive")
             self.reset()
             return
 
@@ -149,5 +147,7 @@ class Joystick(object):
 
 
 if __name__ == "__main__":
+    rospy.init_node("joystick")
+
     joystick = Joystick()
     rospy.spin()
