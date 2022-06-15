@@ -279,6 +279,8 @@ There are some exceptions:
 * URLs in comments. Don't split these up.
 
 ### Blank Line Separators
+Please do not use backslashes to shorten lines. There is generally no need for them,
+and they are confusing and hard to format.
 
 Use blank lines to separate different parts of your module. Use two lines to separate top-level elements of any file (whether they are classes or methods) and one line to separate other distinct elements of the file.
 
@@ -415,9 +417,9 @@ class CalculatorHistory:
     can be viewed or deleted from the history.
 
     Attributes:
-        history_length: int - The number of entries in the current history.
-        oldest_entry: datetime.datetime - The time that the oldest entry in the
-          history was executed.
+        history_length (int): The number of entries in the current history.
+        oldest_entry (datetime.datetime): The time that the oldest entry in the
+            history was executed.
     """
     def __init__(self):
         ...
@@ -449,19 +451,19 @@ class CalculatorHistory:
         entries, use retrieve_range() instead.
 
         Args:
-            history_file: str - The name of the history file to retrieve the
-              entries from.
-            *entries_indexes: int - A list of indexes to retrieve entries at.
-            return_only_since: Optional[datetime.datetime] - If specified,
-              then only return entries from a particular point.
+            history_file (str): The name of the history file to retrieve the
+                entries from.
+            *entries_indexes (int): A list of indexes to retrieve entries at.
+            return_only_since (Optional[datetime.datetime]): If specified,
+                then only return entries from a particular point. Keyword-only parameter.
 
         Returns:
-            List[HistoryEntry] - A list of the history entries that match
-              the specified indices.
+            List[HistoryEntry]: A list of the history entries that match
+                the specified indices.
 
         Raises:
-            IndexError - The desired index does not exist in the history
-              record.
+            IndexError: The desired index does not exist in the history
+                record.
         """
 ```
 

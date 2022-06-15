@@ -37,23 +37,109 @@ First, run some helper scripts against the code that already exists in the packa
 * `python-modernize`: A command-line utility that is able to show what code needs to be migrated to Python 3. The utility will show what lines could cause issues if run with Python 3. Remember that a lot of Python is compatible with both versions 2 and 3, only some of it is not. Also note that not everything it flags is an issue, but more on this later.
 * `black`: Another command-line utility useful for making Python look pretty and sweet! It formats the code in such a way that the meaning is preserved but the code is easier to read!
 
-A good practice is to run these two commands before committing, if the `black` command made a significant amount of changes. This way, your changes are separated from the automated changes of the formatter.
+A good practice is to run `black` (and `python-modernize` if you find that it helps
+you) before you begin the process of migration. Then, re-run the command(s) again
+before you commit.
 
 ### Step Two: Migrating the code
 
 Great, the code is now pretty! :D
 
-Look over the changes `python-modernize` suggested, and begin to implement suggestions. For more help with this, look at the section on `python-modernize` below.
+If you ran `python-modernize`, it will have suggested some changes to you, indcated
+by `+` and `-` signs. It may look something like this:
+
+```diff
+RefactoringTool: Refactored old.py
+--- old.py	(original)
++++ old.py	(refactored)
+@@ -1 +1,2 @@
+-print 'this is an example'
++from __future__ import print_function
++print('this is an example')
+RefactoringTool: Files that need to be modified:
+```
+
+This is showing that it's suggesting the removal of the `print 'this is an example'` line,
+the addition of `from __future__ import print_function`, and the addition of
+`print('this is an example')`.
+
+Let's break this down:
+1. `python-modernize` frequently likes to suggest adding `from __future__ import X`.
+The good news is that most of the time, this isn't needed at all. The only exception
+is `from __future__ import annotations`, which you may need to add if it suggests adding it.
+1. It's suggesting the replacement of `print '...'` with `print('...')`, which is
+an awesome idea! You may have noticed this is a required change in the Python 2 to 3
+Porting Guide above.
+
+Great! So now we know what to fix in our file. Here's some more tips about `python-modernize`:
+1. It always starts with a long list of "fixers" telling you what it looked for
+in the file. This is okay; you just need to ignore the list.
+1. Some changes ask you to use `import six.XXX`. Never do this! This is covered more below.
+1. After migrating `print '...'` to `print('...')`, you may notice that `python-modernize`
+wants you to now write `print(('...'))`! Don't do this - only one set of parentheses
+is needed.
+1. Usually, a method beginning with `iter` can have the `iter` prefix removed. For example,
+`for k, v in dict.iteritems()` can be migrated to `for k, v in dict.items()`.
 
 Additionally, change the [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) of the file if that was not a suggested fix by `python-modernize`. You likely only need to replace the `python` with `python3`!
 
+#### Handling `import six.XXX` suggestions
+`six` is a Python 2 to 3 library used to help in the transition between the two
+languages by providing some helper functions and methods that work in both languages.
+
+When the program asks you to import something from `six`, it's asking you to prop
+up our code on these crutches. But, we are MIL, and we don't need any crutches!
+Instead of using `six`, try fixing the root problem. For example:
+
+```diff
+RefactoringTool: Refactored old.py
+--- old.py	(original)
++++ old.py	(refactored)
+@@ -1 +1,2 @@
+-test = range(2)
++from six.moves import range
++test = list(range(2))
+RefactoringTool: Files that need to be modified:
+RefactoringTool: old.py
+```
+
+It's asking us to import `range` from `six.moves`. It's telling us that our `range`
+function is messed up, and that we need to do something about it. You'll also notice
+that it wants us to wrap the `range` in a `list`.
+
+The porting guide linked above can come in real handy here. It explains that in Python 2,
+`range` always produced a `list`, while in Python 3, it produces a `range` object.
+Because we want the same functionality as we had in Python 2, we'll need to manually
+convert the `range` object to a `list`. Once that's done:
+
+```diff
+RefactoringTool: Refactored old.py
+--- old.py	(original)
++++ old.py	(refactored)
+@@ -1 +1,2 @@
++from six.moves import range
+ test = list(range(2))
+RefactoringTool: Files that need to be modified:
+RefactoringTool: old.py
+```
+
+Now the suggestion of wrapping `range` in a `list` is gone, but it's still
+asking us to `import range`. We can just ignore this, because we know that we fixed
+the root problem. Great job!
+
 ### Step Three: Documenting the code (optional!)
 
-An optional step in the migration process is documenting the code as you convert it. Documenting the code helps future members understand the code they are reading.
+An optional step in the migration process is documenting the code as you convert it. 
+Documenting the code helps future members understand the code they are reading.
 
-Documentation comes in many forms! One form is by typing the code, a feature of Python that Python 3 supports. To type the code, add the types that the method accepts as parameters and what types it returns.
+Documentation comes in many forms! One form is by typing the code, a feature of 
+Python that Python 3 supports. To type the code, add the types that the method 
+accepts as parameters and what types it returns.
 
-Another form is by adding docstrings throughout the code, which help to explain what methods do and how they work. These docstrings can be added through a multi-line comment under the method signature. The docstring should include the type and an explanation for each argument and what the method returns.
+Another form is by adding docstrings throughout the code, which help to explain 
+what methods do and how they work. These docstrings can be added through a 
+multi-line comment under the method signature. The docstring should include the 
+type and an explanation for each argument and what the method returns.
 
 For example, the following code block can be annotated with types and docstrings:
 
@@ -73,15 +159,15 @@ def postal_valid(s):
 to
 ```python
 # From https://stackoverflow.com/a/11832677
-def postal_valid(s: string) -> bool:
+def postal_valid(s: str) -> bool:
     """
     Returns whether a postal code is valid.
 
     Args:
-        s: string - The postal code, represented as a string.
+        s (str): The postal code, represented as a string.
 
     Returns:
-        bool - Whether the code is valid.
+        bool: Whether the code is valid.
     """
     no_spaces = s.replace(" ","")
     if len(no_spaces ) > 6: return false
@@ -94,17 +180,34 @@ def postal_valid(s: string) -> bool:
      return no_spaces.upper() #True
 ```
 
-When a new member sees the method in the first code block, how are they supposed to know what it does? This is what the docstring and typing annotations help with! Now, another member can instantly see the types of parameters the method accepts, what it returns, and what it is supposed to do.
+Now that you've added new documentation, let's see it built:
+```sh
+$ mil
+$ ./scripts/build_docs
+```
 
-Again, this is totally optional. But, if you complete this step, you will have the opportunity to learn much more about the codebase and how each module works!
+That last command should build the documentation on your computer and provide you
+with a link - clicking that link should open up an HTML page where you can see
+your beautiful new documentation! How exciting!
+
+When a new member sees the method in the first code block, how are they supposed 
+to know what it does? This is what the docstring and typing annotations help with! 
+Now, another member can instantly see the types of parameters the method accepts, 
+what it returns, and what it is supposed to do.
+
+Again, this is totally optional. But, if you complete this step, you will have 
+the opportunity to learn much more about the codebase and how each module works!
 
 ### Step Four: Check and verify
 
-Great! By now, the code should be ready to be run in Python 3. For a last step check, run `python-modernize` again and verify that any warnings that appear do not need to be fixed. Finally, run `black` again.
+Great! By now, the code should be ready to be run in Python 3. For a last step check, 
+run `python-modernize` again and verify that any warnings that appear do not need 
+to be fixed. Finally, run `black` again.
 
 ## Updating CMake minimum verison
 
-The CMake minimum version in each package needs to be updated to version `3.0.3`. This has already been completed for all packages and should not need to be completed again.
+The CMake minimum version in each package needs to be updated to version `3.0.3`. 
+This has already been completed for all packages and should not need to be completed again.
 
 ## Testing the changes
 
