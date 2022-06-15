@@ -1,2 +1,2 @@
 # flake8: noqa
-from meshes import Transdec, Sub8
+from .meshes import Sub8, Transdec
