@@ -1,17 +1,14 @@
-#!/usr/bin/env python
-
-'''
+#!/usr/bin/env python3
+"""
 Host Monitor: A simple node to monitor and publish the IP address status of the
 core hosts on the platform's network.
-'''
-
+"""
 
 import socket
 import subprocess
 
-from navigator_msgs.msg import Host, Hosts
 import rospy
-
+from navigator_msgs.msg import Host, Hosts
 
 __author__ = "Anthony Olive"
 __maintainer__ = "Anthony Olive"
@@ -23,18 +20,19 @@ __license__ = "MIT"
 rospy.init_node("host_monitor")
 
 
-class HostMonitor():
-
+class HostMonitor:
     def __init__(self):
-        self.pub_hosts = rospy.Publisher("/host_monitor", Hosts, queue_size=1, latch=True)
+        self.pub_hosts = rospy.Publisher(
+            "/host_monitor", Hosts, queue_size=1, latch=True
+        )
         self.hosts = Hosts()
 
-    def check_hosts(self):
-        '''
+    def check_hosts(self) -> None:
+        """
         Resolves the hostnames of the devices on NaviGator to IP addresses on a
         10s timer. If resolution is successful, pings the IP addresses to
         check whether or not they are online.
-        '''
+        """
         self.hosts = Hosts()
         for hostname in self.hosts.hostnames.split():
             host = Host()
@@ -60,10 +58,10 @@ class HostMonitor():
 
             self.hosts.hosts.append(host)
 
-    def publish(self, event):
-        '''
+    def publish(self, _: rospy.timer.TimerEvent) -> None:
+        """
         Publishes the list of hosts and the information gathered about them.
-        '''
+        """
         self.check_hosts()
         self.pub_hosts.publish(self.hosts)
 
