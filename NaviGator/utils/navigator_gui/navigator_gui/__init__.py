@@ -1,3 +1,3 @@
-#!/usr/bin/env python
-from dashboard import Dashboard
-from shooter import Shooter
+#!/usr/bin/env python3
+from .dashboard import Dashboard
+from .shooter import Shooter
