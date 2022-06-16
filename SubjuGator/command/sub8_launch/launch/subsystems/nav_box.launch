@@ -49,7 +49,7 @@
       </rosparam>
     </node>
 
-    <node pkg="mil_tools" type="mag_to_marker" name="magnetometer_vis"
+    <node pkg="mil_tools" type="mag_to_marker.py" name="magnetometer_vis"
           args="/imu/mag /imu/marker -l3" />
   </group>
 
