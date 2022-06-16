@@ -8,6 +8,6 @@
   <node pkg="mil_passive_sonar" type="multilateration" name="multilateration">
     <param name="buffer_size" value="10" />
   </node>
-  <node pkg="mil_tools" type="vector_to_marker" name="hydrophones_visualization"
+  <node pkg="mil_tools" type="vector_to_marker.py" name="hydrophones_visualization"
         args="/hydrophones/direction /hydrophones/direction_marker --length 8" />
 </launch>
