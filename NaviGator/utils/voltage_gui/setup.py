@@ -1,11 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
-d = generate_distutils_setup(
-    packages=['voltage_gui'],
-    package_dir={'': 'src'}
-)
+d = generate_distutils_setup(packages=["voltage_gui"], package_dir={"": "src"})
 
 setup(**d)
