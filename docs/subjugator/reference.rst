@@ -291,3 +291,12 @@ BagManager
 
 .. autoclass:: sub8_gazebo_tools.BagManager
     :members:
+
+6DOF Controller
+---------------
+Controller
+^^^^^^^^^^
+.. attributetable:: rise_6dof.Controller
+
+.. autoclass:: rise_6dof.Controller
+    :members:
