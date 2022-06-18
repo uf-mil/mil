@@ -1,1 +1,1 @@
-from dynamics import SubjuGatorDynamics
+from .dynamics import SubjuGatorDynamics

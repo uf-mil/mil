@@ -300,3 +300,12 @@ Controller
 
 .. autoclass:: rise_6dof.Controller
     :members:
+
+Dynamics
+--------
+SubjuGatorDynamics
+^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub8_system_id.SubjuGatorDynamics
+
+.. autoclass:: sub8_system_id.SubjuGatorDynamics
+    :members:
