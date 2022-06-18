@@ -11,7 +11,6 @@ class SubjuGatorDynamics:
 
     Attributes:
         mass (float): Mass of the sub (in kg).
-        rotational_inertia (np.ndarray): 3x3 rotational inertia matrix.
         volume (float): Volume of sub in m^3.
         drag_coeffs (np.ndarray): A 6x1 numpy array. N/(m/s) drag coeffients
             for X, Y, Z, R, P, Y.
