@@ -10,9 +10,9 @@ Messages
 
 Thrust
 ^^^^^^
-.. attributetable:: sub8_msgs.msg._Thrust.Thrust
+.. attributetable:: sub8_msgs.msg.Thrust
 
-.. class:: sub8_msgs.msg._Thrust.Thrust
+.. class:: sub8_msgs.msg.Thrust
 
     Message type indicating commands for each thruster.
 
@@ -20,13 +20,13 @@ Thrust
 
         The commands for the thrusters.
 
-        :type: List[:class:`~sub8_msgs.msg._ThrusterCmd.ThrusterCmd`]
+        :type: List[:class:`~sub8_msgs.msg.ThrusterCmd`]
 
 ThrusterCmd
 ^^^^^^^^^^^
-.. attributetable:: sub8_msgs.msg._ThrusterCmd.ThrusterCmd
+.. attributetable:: sub8_msgs.msg.ThrusterCmd
 
-.. class:: sub8_msgs.msg._ThrusterCmd.ThrusterCmd
+.. class:: sub8_msgs.msg.ThrusterCmd
 
     A command for a specific thruster.
 
@@ -47,9 +47,9 @@ Services
 
 SetValve
 ^^^^^^^^
-.. attributetable:: sub8_actuator_board.srv._SetValve.SetValveRequest
+.. attributetable:: sub8_actuator_board.srv.SetValveRequest
 
-.. class:: sub8_actuator_board.srv._SetValve.SetValveRequest
+.. class:: sub8_actuator_board.srv.SetValveRequest
 
     The request class for the ``sub8_actuator_board/SetValve`` service.
 
@@ -65,9 +65,9 @@ SetValve
 
         :type: bool
 
-.. attributetable:: sub8_actuator_board.srv._SetValve.SetValveResponse
+.. attributetable:: sub8_actuator_board.srv.SetValveResponse
 
-.. class:: sub8_actuator_board.srv._SetValve.SetValveResponse
+.. class:: sub8_actuator_board.srv.SetValveResponse
 
     The response class for the ``sub8_actuator_board/SetValve`` service.
 

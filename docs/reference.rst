@@ -10,9 +10,9 @@ actionlib
 GoalStatus
 ~~~~~~~~~~
 
-.. attributetable:: actionlib_msgs.msg._GoalStatus.GoalStatus
+.. attributetable:: actionlib_msgs.msg.GoalStatus
 
-.. class:: actionlib_msgs.msg._GoalStatus.GoalStatus
+.. class:: actionlib_msgs.msg.GoalStatus
 
     Message type indicating the status of a goal in an actions server. Used by
     the SimpleActionClient implemented by ROS and txros' layer over it.
@@ -46,9 +46,9 @@ Alarms
 Alarm
 ~~~~~
 
-.. attributetable:: ros_alarms.msg._Alarm.Alarm
+.. attributetable:: ros_alarms.msg.Alarm
 
-.. class:: ros_alarms.msg._Alarm.Alarm
+.. class:: ros_alarms.msg.Alarm
 
     A message representing a ROS Alarm.
 
@@ -94,9 +94,9 @@ Geometry Messages
 Quaternion
 ~~~~~~~~~~
 
-.. attributetable:: geometry_msgs.msg._Quaternion.Quaternion
+.. attributetable:: geometry_msgs.msg.Quaternion
 
-.. class:: geometry_msgs.msg._Quaternion.Quaternion
+.. class:: geometry_msgs.msg.Quaternion
 
     A message type representing a quaternion.
 
@@ -127,9 +127,9 @@ Quaternion
 Point
 ~~~~~
 
-.. attributetable:: geometry_msgs.msg._Point.Point
+.. attributetable:: geometry_msgs.msg.Point
 
-.. class:: geometry_msgs.msg._Point.Point
+.. class:: geometry_msgs.msg.Point
 
     A ROS message type representing a single point.
 
@@ -154,9 +154,9 @@ Point
 PointStamped
 ~~~~~~~~~~~~
 
-.. attributetable:: geometry_msgs.msg._PointStamped.PointStamped
+.. attributetable:: geometry_msgs.msg.PointStamped
 
-.. class:: geometry_msgs.msg._PointStamped.PointStamped
+.. class:: geometry_msgs.msg.PointStamped
 
     A ROS message type representing a single PointStamped.
 
@@ -175,9 +175,9 @@ PointStamped
 Vector3
 ~~~~~~~
 
-.. attributetable:: geometry_msgs.msg._Vector3.Vector3
+.. attributetable:: geometry_msgs.msg.Vector3
 
-.. class:: geometry_msgs.msg._Vector3.Vector3
+.. class:: geometry_msgs.msg.Vector3
 
     A ROS message type representing a three-dimensional vector.
 
@@ -202,9 +202,9 @@ Vector3
 Pose
 ~~~~
 
-.. attributetable:: geometry_msgs.msg._Pose.Pose
+.. attributetable:: geometry_msgs.msg.Pose
 
-.. class:: geometry_msgs.msg._Pose.Pose
+.. class:: geometry_msgs.msg.Pose
 
     A ROS message type representing an object's pose.
 
@@ -212,20 +212,20 @@ Pose
 
         The position of the pose.
 
-        :type: ~geometry_msgs.msg._Pose.Point
+        :type: ~geometry_msgs.msg.Pose
 
     .. attribute:: orientation
 
         The orientation of the pose.
 
-        :type: ~geometry_msgs.msg._Quaternion.Quaternion
+        :type: ~geometry_msgs.msg.Quaternion
 
 Pose2D
 ~~~~~~
 
-.. attributetable:: geometry_msgs.msg._Pose2D.Pose2D
+.. attributetable:: geometry_msgs.msg.Pose2D
 
-.. class:: geometry_msgs.msg._Pose2D.Pose2D
+.. class:: geometry_msgs.msg.Pose2D
 
     A ROS message type representing an object's pose in two dimensions.
 
@@ -250,9 +250,9 @@ Pose2D
 PoseWithCovariance
 ~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: geometry_msgs.msg._PoseWithCovariance.PoseWithCovariance
+.. attributetable:: geometry_msgs.msg.PoseWithCovariance
 
-.. class:: geometry_msgs.msg._PoseWithCovariance.PoseWithCovariance
+.. class:: geometry_msgs.msg.PoseWithCovariance
 
     A ROS message type representing an object's pose, along with a covariance.
 
@@ -260,7 +260,7 @@ PoseWithCovariance
 
         The object's pose.
 
-        :type: ~geometry_msgs.msg._Pose.Pose
+        :type: ~geometry_msgs.msg.Pose
 
     .. attribute:: covariance
 
@@ -271,9 +271,9 @@ PoseWithCovariance
 Accel
 ~~~~~
 
-.. attributetable:: geometry_msgs.msg._Accel.Accel
+.. attributetable:: geometry_msgs.msg.Accel
 
-.. class:: geometry_msgs.msg._Accel.Accel
+.. class:: geometry_msgs.msg.Accel
 
     A ROS message type representing an object's acceleration.
 
@@ -281,20 +281,20 @@ Accel
 
         The linear acceleration of the twist.
 
-        :type: ~geometry_msgs.msg._Vector3.Vector3
+        :type: ~geometry_msgs.msg.Vector3
 
     .. attribute:: angular
 
         The angular acceleration of the twist.
 
-        :type: ~geometry_msgs.msg._Vector3.Vector3
+        :type: ~geometry_msgs.msg.Vector3
 
 Twist
 ~~~~~
 
-.. attributetable:: geometry_msgs.msg._Twist.Twist
+.. attributetable:: geometry_msgs.msg.Twist
    
-.. class:: geometry_msgs.msg._Twist.Twist
+.. class:: geometry_msgs.msg.Twist
 
     A ROS message type representing an object's twist.
 
@@ -302,20 +302,20 @@ Twist
 
         The linear direction of the twist.
 
-        :type: ~geometry_msgs.msg._Vector3.Vector3
+        :type: ~geometry_msgs.msg.Vector3
 
     .. attribute:: angular
 
         The angular direction of the twist.
 
-        :type: ~geometry_msgs.msg._Vector3.Vector3
+        :type: ~geometry_msgs.msg.Vector3
 
 TwistWithCovariance
 ~~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: geometry_msgs.msg._TwistWithCovariance.TwistWithCovariance
+.. attributetable:: geometry_msgs.msg.TwistWithCovariance
 
-.. class:: geometry_msgs.msg._TwistWithCovariance.TwistWithCovariance
+.. class:: geometry_msgs.msg.TwistWithCovariance
 
     A ROS message type representing an object's twist, along with a covariance.
 
@@ -323,7 +323,7 @@ TwistWithCovariance
 
         The object's twist.
 
-        :type: ~geometry_msgs.msg._Twist.Twist
+        :type: ~geometry_msgs.msg.Twist
 
     .. attribute:: covariance
 
@@ -334,9 +334,9 @@ TwistWithCovariance
 Polygon
 ~~~~~~~
 
-.. attributetable:: geometry_msgs.msg._Polygon.Polygon
+.. attributetable:: geometry_msgs.msg.Polygon
 
-.. class:: geometry_msgs.msg._Polygon.Polygon
+.. class:: geometry_msgs.msg.Polygon
 
     A ROS message type representing a polygon.
 
@@ -344,14 +344,14 @@ Polygon
 
         The points constructing the polygon.
 
-        :type: List[~geometry_msgs.msg._Point.Point]
+        :type: List[~geometry_msgs.msg.Point]
 
 Wrench
 ~~~~~~
         
-.. attributetable:: geometry_msgs.msg._Wrench.Wrench
+.. attributetable:: geometry_msgs.msg.Wrench
 
-.. class:: geometry_msgs.msg._Wrench.Wrench
+.. class:: geometry_msgs.msg.Wrench
 
     A ROS message type representing the wrench of an object.
 
@@ -359,20 +359,20 @@ Wrench
 
         The force associated with the object.
 
-        :type: ~geometry_msgs.msg._Vector3.Vector3
+        :type: ~geometry_msgs.msg.Vector3
 
     .. attribute:: torque
 
         The torque associated with the object.
 
-        :type: ~geometry_msgs.msg._Vector3.Vector3
+        :type: ~geometry_msgs.msg.Vector3
 
 WrenchStamped
 ~~~~~~~~~~~~~
 
-.. attributetable:: geometry_msgs.msg._WrenchStamped.WrenchStamped
+.. attributetable:: geometry_msgs.msg.WrenchStamped
 
-.. class:: geometry_msgs.msg._WrenchStamped.WrenchStamped
+.. class:: geometry_msgs.msg.WrenchStamped
 
     A ROS message type representing the wrench of an object with an associated header.
 
@@ -380,13 +380,13 @@ WrenchStamped
 
         The header associated with the message.
 
-        :type: ~std_msgs.msg._Header.Header
+        :type: ~std_msgs.msg.Header
 
     .. attribute:: wrench
 
         The wrench associated with the object.
 
-        :type: ~geometry_msgs.msg._Wrench.Wrench
+        :type: ~geometry_msgs.msg.Wrench
 
 MIL Messages
 ^^^^^^^^^^^^
@@ -394,9 +394,9 @@ MIL Messages
 PoseTwist
 ~~~~~~~~~
 
-.. attributetable:: mil_msgs.msg._PoseTwist.PoseTwist
+.. attributetable:: mil_msgs.msg.PoseTwist
 
-.. class:: mil_msgs.msg._PoseTwist.PoseTwist
+.. class:: mil_msgs.msg.PoseTwist
 
     A ROS message type representing an object's pose and twist.
 
@@ -404,26 +404,26 @@ PoseTwist
 
         The pose of the object.
 
-        :type: ~geometry_msgs.msg._Pose.Pose
+        :type: ~geometry_msgs.msg.Pose
 
     .. attribute:: twist
 
         The twist of the object.
 
-        :type: ~geometry_msgs.msg._Twist.Twist
+        :type: ~geometry_msgs.msg.Twist
 
     .. attribute:: acceleration
 
         The acceleration of the object.
 
-        :type: ~geometry_msgs.msg._Accel.Accel
+        :type: ~geometry_msgs.msg.Accel
 
 ObjectInImage
 ~~~~~~~~~~~~~
 
-.. attributetable:: mil_msgs.msg._ObjectInImage.ObjectInImage
+.. attributetable:: mil_msgs.msg.ObjectInImage
 
-.. class:: mil_msgs.msg._ObjectInImage.ObjectInImage
+.. class:: mil_msgs.msg.ObjectInImage
 
     A ROS message type representing the position of an object in an image.
 
@@ -437,7 +437,7 @@ ObjectInImage
 
         The center of the object in the image.
 
-        :type: ~mil_msgs.msg._Point2D.Point2D
+        :type: ~mil_msgs.msg.Point2D
 
     .. attribute:: confidence
 
@@ -454,9 +454,9 @@ ObjectInImage
 Point2D
 ~~~~~~~
 
-.. attributetable:: mil_msgs.msg._Point2D.Point2D
+.. attributetable:: mil_msgs.msg.Point2D
 
-.. class:: mil_msgs.msg._Point2D.Point2D
+.. class:: mil_msgs.msg.Point2D
 
     A ROS message type representing an x and y position in a 2D space.
 
@@ -478,9 +478,9 @@ Navigation Messages
 Odometry
 ~~~~~~~~
 
-.. attributetable:: nav_msgs.msg._Odometry.Odometry
+.. attributetable:: nav_msgs.msg.Odometry
 
-.. class:: nav_msgs.msg._Odometry.Odometry
+.. class:: nav_msgs.msg.Odometry
 
     A ROS message type representing an object's odometry.
 
@@ -488,32 +488,32 @@ Odometry
 
         The message header.
 
-        :type: ~std_msgs.msg._Header.Header
+        :type: ~std_msgs.msg.Header
 
     .. attribute:: child_frame_id
 
         The child frame ID, used to determine the frame of the robot's twist.
 
-        :type: ~geometry_msgs.msg._Twist.Twist
+        :type: ~geometry_msgs.msg.Twist
 
     .. attribute:: pose
 
-        The pose (along with covariance) determined within the frame of :attr:`~std_msgs.msg._Header.Header.frame_id`.
+        The pose (along with covariance) determined within the frame of :attr:`~std_msgs.msg.Header.frame_id`.
 
-        :type: ~geometry_msgs.msg._PoseWithCovariance.PoseWithCovariance
+        :type: ~geometry_msgs.msg.PoseWithCovariance
 
     .. attribute:: twist
 
-        The twist (along with covariance) determined within the frame of :attr:`~nav_msgs.msg._Odometry.Odometry.child_frame_id`.
+        The twist (along with covariance) determined within the frame of :attr:`~nav_msgs.msg.Odometry.child_frame_id`.
 
-        :type: ~geometry_msgs.msg._TwistWithCovariance.TwistWithCovariance
+        :type: ~geometry_msgs.msg.TwistWithCovariance
 
 Acceleration
 ~~~~~~~~~~~~
 
-.. attributetable:: navigator_msgs.msg._Acceleration.Acceleration
+.. attributetable:: navigator_msgs.msg.Acceleration
 
-.. class:: navigator_msgs.msg._Acceleration.Acceleration
+.. class:: navigator_msgs.msg.Acceleration
 
     .. attribute:: linear
 
@@ -530,9 +530,9 @@ Acceleration
 KillStatus
 ~~~~~~~~~~
 
-.. attributetable:: navigator_msgs.msg._KillStatus.KillStatus
+.. attributetable:: navigator_msgs.msg.KillStatus
 
-.. class:: navigator_msgs.msg._KillStatus.KillStatus
+.. class:: navigator_msgs.msg.KillStatus
 
     A custom message to represent information about a kill induced on the robot.
 
@@ -571,9 +571,9 @@ KillStatus
 PerceptionObject
 ~~~~~~~~~~~~~~~~
 
-.. attributetable:: navigator_msgs.msg._PerceptionObject.PerceptionObject
+.. attributetable:: navigator_msgs.msg.PerceptionObject
 
-.. class:: navigator_msgs.msg._PerceptionObject.PerceptionObject
+.. class:: navigator_msgs.msg.PerceptionObject
 
     A custom message definition to represent an object found by the perception
     system.
@@ -780,9 +780,9 @@ PerceptionObject
 PerceptionObjectArray
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: navigator_msgs.msg._PerceptionObjectArray.PerceptionObjectArray
+.. attributetable:: navigator_msgs.msg.PerceptionObjectArray
 
-.. class:: navigator_msgs.msg._PerceptionObjectArray.PerceptionObjectArray
+.. class:: navigator_msgs.msg.PerceptionObjectArray
 
     A custom message definition to represent an array of perception objects.
 
@@ -798,9 +798,9 @@ Networking Messages
 Host
 ~~~~
 
-.. attributetable:: navigator_msgs.msg._Host.Host
+.. attributetable:: navigator_msgs.msg.Host
 
-.. class:: navigator_msgs.msg._Host.Host
+.. class:: navigator_msgs.msg.Host
 
     A custom message definition responsible for associating a hostname and IP
     address with a status.
@@ -826,9 +826,9 @@ Host
 Hosts
 ~~~~~
 
-.. attributetable:: navigator_msgs.msg._Hosts.Hosts
+.. attributetable:: navigator_msgs.msg.Hosts
 
-.. class:: navigator_msgs.msg._Hosts.Hosts
+.. class:: navigator_msgs.msg.Hosts
 
     A custom message definition representing a group of hosts together.
 
@@ -845,7 +845,7 @@ Hosts
     
         The hosts belonging to the group.
 
-        :type: List[~navigator_msgs.msg._Host.Host]
+        :type: List[~navigator_msgs.msg.Host]
         
 Passive Sonar Messages
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -853,9 +853,9 @@ Passive Sonar Messages
 HydrophoneSamples
 ~~~~~~~~~~~~~~~~~
 
-.. attributetable:: mil_passive_sonar.msg._HydrophoneSamples.HydrophoneSamples
+.. attributetable:: mil_passive_sonar.msg.HydrophoneSamples
 
-.. class:: mil_passive_sonar.msg._HydrophoneSamples.HydrophoneSamples
+.. class:: mil_passive_sonar.msg.HydrophoneSamples
     
     A custom message definition to represent data coming from the hydrophones.
 
@@ -888,9 +888,9 @@ HydrophoneSamples
 HydrophoneSamplesStamped
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: mil_passive_sonar.msg._HydrophoneSamplesStamped.HydrophoneSamplesStamped
+.. attributetable:: mil_passive_sonar.msg.HydrophoneSamplesStamped
 
-.. class:: mil_passive_sonar.msg._HydrophoneSamplesStamped.HydrophoneSamplesStamped
+.. class:: mil_passive_sonar.msg.HydrophoneSamplesStamped
     
     A custom message definition to represent time-stamped data coming from the hydrophones.
 
@@ -909,17 +909,17 @@ HydrophoneSamplesStamped
 Ping
 ~~~~
 
-.. attributetable:: mil_passive_sonar.msg._Ping.Ping
+.. attributetable:: mil_passive_sonar.msg.Ping
 
-.. class:: mil_passive_sonar.msg._Ping.Ping
+.. class:: mil_passive_sonar.msg.Ping
     
     A custom message definition to represent a ping from channels of data.
 
     .. danger::
 
         This class is deprecated, and has been replaced by 
-        :class:`~mil_passive_sonar.msg._HydrophoneSamples.HydrophoneSamples` and 
-        :class:`~mil_passive_sonar.msg._HydrophoneSamplesStamped.HydrophoneSamplesStamped`.
+        :class:`~mil_passive_sonar.msg.HydrophoneSamples` and 
+        :class:`~mil_passive_sonar.msg.HydrophoneSamplesStamped`.
         Support for this message type throughout the repository still exists,
         although it may be removed in the future.
 
@@ -958,9 +958,9 @@ Ping
 ProcessedPing
 ~~~~~~~~~~~~~
 
-.. attributetable:: mil_passive_sonar.msg._ProcessedPing.ProcessedPing
+.. attributetable:: mil_passive_sonar.msg.ProcessedPing
 
-.. class:: mil_passive_sonar.msg._ProcessedPing.ProcessedPing
+.. class:: mil_passive_sonar.msg.ProcessedPing
     
     A custom message definition to represent a ping from channels of data.
 
@@ -997,9 +997,9 @@ ProcessedPing
 Triggered
 ~~~~~~~~~
 
-.. attributetable:: mil_passive_sonar.msg._Triggered.Triggered
+.. attributetable:: mil_passive_sonar.msg.Triggered
 
-.. class:: mil_passive_sonar.msg._Triggered.Triggered
+.. class:: mil_passive_sonar.msg.Triggered
     
     A custom message definition to represent ???.
 
@@ -1027,9 +1027,9 @@ Standard Messages
 Header
 ~~~~~~
 
-.. attributetable:: std_msgs.msg._Header.Header
+.. attributetable:: std_msgs.msg.Header
 
-.. class:: std_msgs.msg._Header.Header
+.. class:: std_msgs.msg.Header
 
     A ROS message type representing the header of a message. Used throughout a
     variety of messages.
@@ -1055,9 +1055,9 @@ Header
 ColorRGBA
 ~~~~~~~~~
 
-.. attributetable:: std_msgs.msg._ColorRGBA.ColorRGBA
+.. attributetable:: std_msgs.msg.ColorRGBA
 
-.. class:: std_msgs.msg._ColorRGBA.ColorRGBA
+.. class:: std_msgs.msg.ColorRGBA
 
     A ROS message type representing a color with RGB and an alpha channel.
 
@@ -1091,9 +1091,9 @@ Sensor Messages
 Image
 ~~~~~
 
-.. attributetable:: sensor_msgs.msg._Image.Image
+.. attributetable:: sensor_msgs.msg.Image
 
-.. class:: sensor_msgs.msg._Image.Image
+.. class:: sensor_msgs.msg.Image
 
     A ROS message to represent an image.
 
@@ -1143,9 +1143,9 @@ Image
 PointField
 ~~~~~~~~~~
 
-.. attributetable:: sensor_msgs.msg._PointField.PointField
+.. attributetable:: sensor_msgs.msg.PointField
 
-.. class:: sensor_msgs.msg._PointField.PointField
+.. class:: sensor_msgs.msg.PointField
 
     A ROS message type to represent a field in a point cloud.
 
@@ -1232,9 +1232,9 @@ PointField
 PointCloud2
 ~~~~~~~~~~~
 
-.. attributetable:: sensor_msgs.msg._PointCloud2.PointCloud2
+.. attributetable:: sensor_msgs.msg.PointCloud2
 
-.. class:: sensor_msgs.msg._PointCloud2.PointCloud2
+.. class:: sensor_msgs.msg.PointCloud2
 
     A ROS message type indicating a point cloud.
 
@@ -1283,8 +1283,8 @@ PointCloud2
 
     .. attribute:: data
 
-        The actual data inside the point cloud. The size of the array is :attr:`~sensor_msgs.msg._PointCloud2.PointCloud2.row_step`
-        multiplied by :attr:`~sensor_msgs.msg._PointCloud2.PointCloud2.height`.
+        The actual data inside the point cloud. The size of the array is :attr:`~sensor_msgs.msg.PointCloud2.row_step`
+        multiplied by :attr:`~sensor_msgs.msg.PointCloud2.height`.
 
         :type: List[int]
 
@@ -1296,9 +1296,9 @@ PointCloud2
 
 Motor Feedback
 ~~~~~~~~~~~~~~
-.. attributetable:: roboteq_msgs.msg._Feedback.Feedback
+.. attributetable:: roboteq_msgs.msg.Feedback
 
-.. class:: roboteq_msgs.msg._Feedback.Feedback
+.. class:: roboteq_msgs.msg.Feedback
 
     A third-party ROS message type for getting feedback from motor controllers.
 
@@ -1366,9 +1366,9 @@ Motor Feedback
 
 Motor Status
 ~~~~~~~~~~~~
-.. attributetable:: roboteq_msgs.msg._Status.Status
+.. attributetable:: roboteq_msgs.msg.Status
 
-.. class:: roboteq_msgs.msg._Status.Status
+.. class:: roboteq_msgs.msg.Status
 
     A third-party ROS message type for getting status from motor controllers.
 
@@ -1530,9 +1530,9 @@ VRX Messages
 DockShape
 ~~~~~~~~~
 
-.. attributetable:: navigator_msgs.msg._DockShape.DockShape
+.. attributetable:: navigator_msgs.msg.DockShape
 
-.. class:: navigator_msgs.msg._DockShape.DockShape
+.. class:: navigator_msgs.msg.DockShape
 
     .. attribute:: Shape
 
@@ -1612,7 +1612,7 @@ DockShape
 
         ???
 
-        :type: List[~geometry_msgs.msg._Point.Point]
+        :type: List[~geometry_msgs.msg.Point]
 
     .. attribute:: color_confidence
 
@@ -1629,9 +1629,9 @@ DockShape
 DockShapes
 ~~~~~~~~~~
 
-.. attributetable:: navigator_msgs.msg._DockShapes.DockShapes
+.. attributetable:: navigator_msgs.msg.DockShapes
 
-.. class:: navigator_msgs.msg._DockShapes.DockShapes
+.. class:: navigator_msgs.msg.DockShapes
 
     A custom message definition to represent the presence of multiple dock shapes
     found by the vision system.
@@ -1646,9 +1646,9 @@ DockShapes
 ScanTheCode
 ~~~~~~~~~~~
 
-.. attributetable:: navigator_msgs.msg._ScanTheCode.ScanTheCode
+.. attributetable:: navigator_msgs.msg.ScanTheCode
 
-.. class:: navigator_msgs.msg._ScanTheCode.ScanTheCode
+.. class:: navigator_msgs.msg.ScanTheCode
 
     A custom message definition to represent the color pattern show by a Scan The
     Code totem.
@@ -1669,16 +1669,16 @@ Mission Systems
 AcousticBeacon
 ~~~~~~~~~~~~~~
 
-.. attributetable:: navigator_msgs.srv._AcousticBeacon.AcousticBeaconRequest
+.. attributetable:: navigator_msgs.srv.AcousticBeaconRequest
 
-.. class:: navigator_msgs.srv._AcousticBeacon.AcousticBeaconRequest
+.. class:: navigator_msgs.srv.AcousticBeaconRequest
 
    The request class for the ``navigator_msgs/AcousticBeacon`` service. The class
    contains no settable attributes.
 
-.. attributetable:: navigator_msgs.srv._AcousticBeacon.AcousticBeaconResponse
+.. attributetable:: navigator_msgs.srv.AcousticBeaconResponse
 
-.. class:: navigator_msgs.srv._AcousticBeacon.AcousticBeaconResponse
+.. class:: navigator_msgs.srv.AcousticBeaconResponse
 
    The repsonse class for the ``navigator_msgs/AcousticBeacon`` service.
 
@@ -1696,9 +1696,9 @@ AcousticBeacon
 
 ChooseAnimal
 ~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._ChooseAnimal.ChooseAnimalRequest
+.. attributetable:: navigator_msgs.srv.ChooseAnimalRequest
 
-.. class:: navigator_msgs.srv._ChooseAnimal.ChooseAnimalRequest
+.. class:: navigator_msgs.srv.ChooseAnimalRequest
 
    The request class for the ``navigator_msgs/ChooseAnimal`` service.
 
@@ -1715,9 +1715,9 @@ ChooseAnimal
 
         :type: str
 
-.. attributetable:: navigator_msgs.srv._ChooseAnimal.ChooseAnimalResponse
+.. attributetable:: navigator_msgs.srv.ChooseAnimalResponse
 
-.. class:: navigator_msgs.srv._ChooseAnimal.ChooseAnimalResponse
+.. class:: navigator_msgs.srv.ChooseAnimalResponse
 
    The repsonse class for the ``navigator_msgs/ChooseAnimal`` service.
 
@@ -1729,9 +1729,9 @@ ChooseAnimal
 
 ColorRequest
 ~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._ColorRequest.ColorRequestRequest
+.. attributetable:: navigator_msgs.srv.ColorRequestRequest
 
-.. class:: navigator_msgs.srv._ColorRequest.ColorRequestRequest
+.. class:: navigator_msgs.srv.ColorRequestRequest
 
    The request class for the ``navigator_msgs/ColorRequest`` service.
 
@@ -1741,9 +1741,9 @@ ColorRequest
 
         :type: str
 
-.. attributetable:: navigator_msgs.srv._ColorRequest.ColorRequestResponse
+.. attributetable:: navigator_msgs.srv.ColorRequestResponse
 
-.. class:: navigator_msgs.srv._ColorRequest.ColorRequestResponse
+.. class:: navigator_msgs.srv.ColorRequestResponse
 
    The repsonse class for the ``navigator_msgs/ColorRequest`` service.
 
@@ -1761,16 +1761,16 @@ ColorRequest
 
 FindPinger
 ~~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._FindPinger.FindPingerRequest
+.. attributetable:: navigator_msgs.srv.FindPingerRequest
 
-.. class:: navigator_msgs.srv._FindPinger.FindPingerRequest
+.. class:: navigator_msgs.srv.FindPingerRequest
 
    The request class for the ``navigator_msgs/FindPinger`` service. The request
    has no individual attributes.
 
-.. attributetable:: navigator_msgs.srv._FindPinger.FindPingerResponse
+.. attributetable:: navigator_msgs.srv.FindPingerResponse
 
-.. class:: navigator_msgs.srv._FindPinger.FindPingerResponse
+.. class:: navigator_msgs.srv.FindPingerResponse
 
    The repsonse class for the ``navigator_msgs/FindPinger`` service.
 
@@ -1788,16 +1788,16 @@ FindPinger
 
 GetDockBays
 ~~~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._GetDockBays.GetDockBaysRequest
+.. attributetable:: navigator_msgs.srv.GetDockBaysRequest
 
-.. class:: navigator_msgs.srv._GetDockBays.GetDockBaysRequest
+.. class:: navigator_msgs.srv.GetDockBaysRequest
 
    The request class for the ``navigator_msgs/GetDockBays`` service. The request
    has no individual attributes.
 
-.. attributetable:: navigator_msgs.srv._GetDockBays.GetDockBaysResponse
+.. attributetable:: navigator_msgs.srv.GetDockBaysResponse
 
-.. class:: navigator_msgs.srv._GetDockBays.GetDockBaysResponse
+.. class:: navigator_msgs.srv.GetDockBaysResponse
 
    The repsonse class for the ``navigator_msgs/GetDockBays`` service.
 
@@ -1823,16 +1823,16 @@ GetDockBays
 
    .. attribute:: error
     
-        If :attr:`~navigator_msgs.srv._GetDockBays.GetDockBays.success` is ``False``,
+        If :attr:`~navigator_msgs.srv.GetDockBays.success` is ``False``,
         then a message describing what went wrong.
 
         :type: str
 
 GetDockShape
 ~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._GetDockShape.GetDockShapeRequest
+.. attributetable:: navigator_msgs.srv.GetDockShapeRequest
 
-.. class:: navigator_msgs.srv._GetDockShape.GetDockShapeRequest
+.. class:: navigator_msgs.srv.GetDockShapeRequest
 
    The request class for the ``navigator_msgs/GetDockShape`` service.
 
@@ -1848,7 +1848,7 @@ GetDockShape
         Constant string attribute used to represent a cross shape on a dock. True value
         is set to ``CROSS``.
 
-        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+        Likely used in the :attr:`~navigator_msgs.srv.GetDockShapeRequest.Shape` attribute.
 
         :type: str
 
@@ -1857,7 +1857,7 @@ GetDockShape
         Constant string attribute used to represent a triangle shape on a dock. True value
         is set to ``TRIANGLE``.
 
-        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+        Likely used in the :attr:`~navigator_msgs.srv.GetDockShapeRequest.Shape` attribute.
 
         :type: str
 
@@ -1866,7 +1866,7 @@ GetDockShape
         Constant string attribute used to represent a circle shape on a dock. True value
         is set to ``CIRCLE``.
 
-        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+        Likely used in the :attr:`~navigator_msgs.srv.GetDockShapeRequest.Shape` attribute.
 
         :type: str
 
@@ -1882,7 +1882,7 @@ GetDockShape
         Constant string attribute used to represent a red shape on a dock. True value
         is set to ``RED``.
 
-        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+        Likely used in the :attr:`~navigator_msgs.srv.GetDockShapeRequest.Color` attribute.
 
         :type: str
 
@@ -1891,7 +1891,7 @@ GetDockShape
         Constant string attribute used to represent a triangle shape on a dock. True value
         is set to ``BLUE``.
 
-        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+        Likely used in the :attr:`~navigator_msgs.srv.GetDockShapeRequest.Color` attribute.
 
         :type: str
 
@@ -1900,7 +1900,7 @@ GetDockShape
         Constant string attribute used to represent a circle shape on a dock. True value
         is set to ``GREEN``.
 
-        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+        Likely used in the :attr:`~navigator_msgs.srv.GetDockShapeRequest.Color` attribute.
 
         :type: str
 
@@ -1911,9 +1911,9 @@ GetDockShape
 
         :type: str
 
-.. attributetable:: navigator_msgs.srv._GetDockShape.GetDockShapeResponse
+.. attributetable:: navigator_msgs.srv.GetDockShapeResponse
 
-.. class:: navigator_msgs.srv._GetDockShape.GetDockShapeResponse
+.. class:: navigator_msgs.srv.GetDockShapeResponse
 
    The repsonse class for the ``navigator_msgs/GetDockShape`` service.
 
@@ -1931,7 +1931,7 @@ GetDockShape
 
    .. attribute:: error
     
-        If :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeResponse.found` was false,
+        If :attr:`~navigator_msgs.srv.GetDockShapeResponse.found` was false,
         then a description of what went wrong. May be equal to one of this class' enumerations.
 
         :type: str
@@ -1966,9 +1966,9 @@ GetDockShape
 
 GetDockShapes
 ~~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._GetDockShapes.GetDockShapesRequest
+.. attributetable:: navigator_msgs.srv.GetDockShapesRequest
 
-.. class:: navigator_msgs.srv._GetDockShapes.GetDockShapesRequest
+.. class:: navigator_msgs.srv.GetDockShapesRequest
 
    The request class for the ``navigator_msgs/GetDockShapes`` service.
 
@@ -1984,7 +1984,7 @@ GetDockShapes
         Constant string attribute used to represent a cross shape on a dock. True value
         is set to ``CROSS``.
 
-        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+        Likely used in the :attr:`~navigator_msgs.srv.GetDockShapeRequest.Shape` attribute.
 
         :type: str
 
@@ -1993,7 +1993,7 @@ GetDockShapes
         Constant string attribute used to represent a triangle shape on a dock. True value
         is set to ``TRIANGLE``.
 
-        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+        Likely used in the :attr:`~navigator_msgs.srv.GetDockShapeRequest.Shape` attribute.
 
         :type: str
 
@@ -2002,7 +2002,7 @@ GetDockShapes
         Constant string attribute used to represent a circle shape on a dock. True value
         is set to ``CIRCLE``.
 
-        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Shape` attribute.
+        Likely used in the :attr:`~navigator_msgs.srv.GetDockShapeRequest.Shape` attribute.
 
         :type: str
 
@@ -2018,7 +2018,7 @@ GetDockShapes
         Constant string attribute used to represent a red shape on a dock. True value
         is set to ``RED``.
 
-        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+        Likely used in the :attr:`~navigator_msgs.srv.GetDockShapeRequest.Color` attribute.
 
         :type: str
 
@@ -2027,7 +2027,7 @@ GetDockShapes
         Constant string attribute used to represent a triangle shape on a dock. True value
         is set to ``BLUE``.
 
-        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+        Likely used in the :attr:`~navigator_msgs.srv.GetDockShapeRequest.Color` attribute.
 
         :type: str
 
@@ -2036,7 +2036,7 @@ GetDockShapes
         Constant string attribute used to represent a circle shape on a dock. True value
         is set to ``GREEN``.
 
-        Likely used in the :attr:`~navigator_msgs.srv._GetDockShape.GetDockShapeRequest.Color` attribute.
+        Likely used in the :attr:`~navigator_msgs.srv.GetDockShapeRequest.Color` attribute.
 
         :type: str
 
@@ -2047,9 +2047,9 @@ GetDockShapes
 
         :type: str
 
-.. attributetable:: navigator_msgs.srv._GetDockShapes.GetDockShapesResponse
+.. attributetable:: navigator_msgs.srv.GetDockShapesResponse
 
-.. class:: navigator_msgs.srv._GetDockShapes.GetDockShapesResponse
+.. class:: navigator_msgs.srv.GetDockShapesResponse
 
    The repsonse class for the ``navigator_msgs/GetDockShapes`` service.
 
@@ -2067,7 +2067,7 @@ GetDockShapes
 
    .. attribute:: error
     
-        If :attr:`~navigator_msgs.srv._GetDockShapes.GetDockShapesResponse.found`
+        If :attr:`~navigator_msgs.srv.GetDockShapesResponse.found`
         was false, then an explanation of why.
 
         :type: str
@@ -2102,9 +2102,9 @@ GetDockShapes
 
 ShooterManual
 ~~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._ShooterManual.ShooterManualRequest
+.. attributetable:: navigator_msgs.srv.ShooterManualRequest
 
-.. class:: navigator_msgs.srv._ShooterManual.ShooterManualRequest
+.. class:: navigator_msgs.srv.ShooterManualRequest
 
    The request class for the ``navigator_msgs/ShooterManual`` service.
 
@@ -2120,9 +2120,9 @@ ShooterManual
 
         :type: float
 
-.. attributetable:: navigator_msgs.srv._ShooterManual.ShooterManualResponse
+.. attributetable:: navigator_msgs.srv.ShooterManualResponse
 
-.. class:: navigator_msgs.srv._ShooterManual.ShooterManualResponse
+.. class:: navigator_msgs.srv.ShooterManualResponse
 
    The repsonse class for the ``navigator_msgs/ShooterManual`` service.
 
@@ -2134,16 +2134,16 @@ ShooterManual
 
 StartGate
 ~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._StartGate.StartGateRequest
+.. attributetable:: navigator_msgs.srv.StartGateRequest
 
-.. class:: navigator_msgs.srv._StartGate.StartGateRequest
+.. class:: navigator_msgs.srv.StartGateRequest
 
    The request class for the ``navigator_msgs/StartGate`` service. The request
    class no public attributes.
 
-.. attributetable:: navigator_msgs.srv._StartGate.StartGateResponse
+.. attributetable:: navigator_msgs.srv.StartGateResponse
 
-.. class:: navigator_msgs.srv._StartGate.StartGateResponse
+.. class:: navigator_msgs.srv.StartGateResponse
 
    The repsonse class for the ``navigator_msgs/StartGate`` service.
 
@@ -2165,9 +2165,9 @@ Subsystems
 AlarmGet
 ~~~~~~~~
 
-.. attributetable:: ros_alarms.srv._AlarmGet.AlarmGetRequest
+.. attributetable:: ros_alarms.srv.AlarmGetRequest
 
-.. class:: ros_alarms.srv._AlarmGet.AlarmGetRequest
+.. class:: ros_alarms.srv.AlarmGetRequest
 
    The request class for the ``ros_alarms/AlarmGet`` service.
 
@@ -2177,9 +2177,9 @@ AlarmGet
 
         :type: str
 
-.. attributetable:: ros_alarms.srv._AlarmGet.AlarmGetResponse
+.. attributetable:: ros_alarms.srv.AlarmGetResponse
 
-.. class:: ros_alarms.srv._AlarmGet.AlarmGetResponse
+.. class:: ros_alarms.srv.AlarmGetResponse
 
    The repsonse class for the ``ros_alarms/AlarmGet`` service.
 
@@ -2193,14 +2193,14 @@ AlarmGet
 
         The response data about the requested alarm.
 
-        :type: ~ros_alarms.msg._Alarm.Alarm
+        :type: ~ros_alarms.msg.Alarm
 
 AlarmSet
 ~~~~~~~~
 
-.. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetRequest
+.. attributetable:: ros_alarms.srv.AlarmSetRequest
 
-.. class:: ros_alarms.srv._AlarmSet.AlarmSetRequest
+.. class:: ros_alarms.srv.AlarmSetRequest
 
    The request class for the ``ros_alarms/AlarmSet`` service.
 
@@ -2208,11 +2208,11 @@ AlarmSet
 
         The alarm to set.
 
-        :type: ~ros_alarms.msg._Alarm.Alarm
+        :type: ~ros_alarms.msg.Alarm
 
-.. attributetable:: ros_alarms.srv._AlarmSet.AlarmSetResponse
+.. attributetable:: ros_alarms.srv.AlarmSetResponse
 
-.. class:: ros_alarms.srv._AlarmSet.AlarmSetResponse
+.. class:: ros_alarms.srv.AlarmSetResponse
 
    The repsonse class for the ``ros_alarms/AlarmSet`` service.
 
@@ -2224,9 +2224,9 @@ AlarmSet
 
 CameraDBQuery
 ~~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryRequest
+.. attributetable:: navigator_msgs.srv.CameraDBQueryRequest
 
-.. class:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryRequest
+.. class:: navigator_msgs.srv.CameraDBQueryRequest
 
    The request class for the ``navigator_msgs/CameraDBQuery`` service.
 
@@ -2242,9 +2242,9 @@ CameraDBQuery
 
         :type: int
 
-.. attributetable:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryResponse
+.. attributetable:: navigator_msgs.srv.CameraDBQueryResponse
 
-.. class:: navigator_msgs.srv._CameraDBQuery.CameraDBQueryResponse
+.. class:: navigator_msgs.srv.CameraDBQueryResponse
 
    The repsonse class for the ``navigator_msgs/CameraDBQuery`` service.
 
@@ -2256,9 +2256,9 @@ CameraDBQuery
 
 MoveToWaypoint
 ~~~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._MoveToWaypoint.MoveToWaypointRequest
+.. attributetable:: navigator_msgs.srv.MoveToWaypointRequest
 
-.. class:: navigator_msgs.srv._MoveToWaypoint.MoveToWaypointRequest
+.. class:: navigator_msgs.srv.MoveToWaypointRequest
 
    The request class for the ``navigator_msgs/MoveToWaypoint`` service.
 
@@ -2268,9 +2268,9 @@ MoveToWaypoint
 
         :type: Pose
 
-.. attributetable:: navigator_msgs.srv._MoveToWaypoint.MoveToWaypointResponse
+.. attributetable:: navigator_msgs.srv.MoveToWaypointResponse
 
-.. class:: navigator_msgs.srv._MoveToWaypoint.MoveToWaypointResponse
+.. class:: navigator_msgs.srv.MoveToWaypointResponse
 
    The repsonse class for the ``navigator_msgs/MoveToWaypoint`` service.
 
@@ -2282,9 +2282,9 @@ MoveToWaypoint
 
 ObjectDBQuery
 ~~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._ObjectDBQuery.ObjectDBQueryRequest
+.. attributetable:: navigator_msgs.srv.ObjectDBQueryRequest
 
-.. class:: navigator_msgs.srv._ObjectDBQuery.ObjectDBQueryRequest
+.. class:: navigator_msgs.srv.ObjectDBQueryRequest
 
    The request class for the ``navigator_msgs/ObjectDBQuery`` service.
 
@@ -2302,9 +2302,9 @@ ObjectDBQuery
 
         :type: str
 
-.. attributetable:: navigator_msgs.srv._ObjectDBQuery.ObjectDBQueryResponse
+.. attributetable:: navigator_msgs.srv.ObjectDBQueryResponse
 
-.. class:: navigator_msgs.srv._ObjectDBQuery.ObjectDBQueryResponse
+.. class:: navigator_msgs.srv.ObjectDBQueryResponse
 
    The repsonse class for the ``navigator_msgs/ObjectDBQuery`` service.
 
@@ -2322,9 +2322,9 @@ ObjectDBQuery
 
 SetFrequency
 ~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._SetFrequency.SetFrequencyRequest
+.. attributetable:: navigator_msgs.srv.SetFrequencyRequest
 
-.. class:: navigator_msgs.srv._SetFrequency.SetFrequencyRequest
+.. class:: navigator_msgs.srv.SetFrequencyRequest
 
    The request class for the ``navigator_msgs/SetFrequency`` service.
 
@@ -2334,18 +2334,18 @@ SetFrequency
 
         :type: int
 
-.. attributetable:: navigator_msgs.srv._SetFrequency.SetFrequencyResponse
+.. attributetable:: navigator_msgs.srv.SetFrequencyResponse
 
-.. class:: navigator_msgs.srv._SetFrequency.SetFrequencyResponse
+.. class:: navigator_msgs.srv.SetFrequencyResponse
 
    The repsonse class for the ``navigator_msgs/SetFrequency`` service. The
    class no public attributes.
 
 SetROI
 ~~~~~~
-.. attributetable:: navigator_msgs.srv._SetROI.SetROIRequest
+.. attributetable:: navigator_msgs.srv.SetROIRequest
 
-.. class:: navigator_msgs.srv._SetROI.SetROIRequest
+.. class:: navigator_msgs.srv.SetROIRequest
 
    The request class for the ``navigator_msgs/SetROI`` service.
 
@@ -2355,9 +2355,9 @@ SetROI
 
         :type: RegionOfInterest
 
-.. attributetable:: navigator_msgs.srv._SetROI.SetROIResponse
+.. attributetable:: navigator_msgs.srv.SetROIResponse
 
-.. class:: navigator_msgs.srv._SetROI.SetROIResponse
+.. class:: navigator_msgs.srv.SetROIResponse
 
    The repsonse class for the ``navigator_msgs/SetROI`` service.
 
@@ -2382,9 +2382,9 @@ SetROI
 
 StereoShapeDetector
 ~~~~~~~~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._StereoShapeDetector.StereoShapeDetectorRequest
+.. attributetable:: navigator_msgs.srv.StereoShapeDetectorRequest
 
-.. class:: navigator_msgs.srv._StereoShapeDetector.StereoShapeDetectorRequest
+.. class:: navigator_msgs.srv.StereoShapeDetectorRequest
 
    The request class for the ``navigator_msgs/StereoShapeDetector`` service.
 
@@ -2418,9 +2418,9 @@ StereoShapeDetector
 
         :type: List[float]
 
-.. attributetable:: navigator_msgs.srv._StereoShapeDetector.StereoShapeDetectorResponse
+.. attributetable:: navigator_msgs.srv.StereoShapeDetectorResponse
 
-.. class:: navigator_msgs.srv._StereoShapeDetector.StereoShapeDetectorResponse
+.. class:: navigator_msgs.srv.StereoShapeDetectorResponse
 
    The repsonse class for the ``navigator_msgs/StereoShapeDetector`` service.
 
@@ -2432,9 +2432,9 @@ StereoShapeDetector
 
 VisionRequest
 ~~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._VisionRequest.VisionRequestRequest
+.. attributetable:: navigator_msgs.srv.VisionRequestRequest
 
-.. class:: navigator_msgs.srv._VisionRequest.VisionRequestRequest
+.. class:: navigator_msgs.srv.VisionRequestRequest
 
    The request class for the ``navigator_msgs/VisionRequest`` service.
 
@@ -2444,9 +2444,9 @@ VisionRequest
 
         :type: str
         
-.. attributetable:: navigator_msgs.srv._VisionRequest.VisionRequestResponse
+.. attributetable:: navigator_msgs.srv.VisionRequestResponse
 
-.. class:: navigator_msgs.srv._VisionRequest.VisionRequestResponse
+.. class:: navigator_msgs.srv.VisionRequestResponse
 
    The repsonse class for the ``navigator_msgs/VisionRequest`` service.
 
@@ -2474,16 +2474,16 @@ Standard Messages
 SetBool
 ~~~~~~~
 
-.. attributetable:: std_srvs.srv._SetBool.SetBoolRequest
+.. attributetable:: std_srvs.srv.SetBoolRequest
 
-.. class:: std_srvs.srv._SetBool.SetBoolRequest
+.. class:: std_srvs.srv.SetBoolRequest
 
     The request type for the ``SetBool`` service. Requests for some boolean value
     to be set.
 
-.. attributetable:: std_srvs.srv._SetBool.SetBoolResponse
+.. attributetable:: std_srvs.srv.SetBoolResponse
 
-.. class:: std_srvs.srv._SetBool.SetBoolResponse
+.. class:: std_srvs.srv.SetBoolResponse
 
     The response type for the ``SetBool`` service. Responds to the set boolean value
     request.
@@ -2505,9 +2505,9 @@ Conversions
 
 CameraToLidarTransform
 ~~~~~~~~~~~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformRequest
+.. attributetable:: navigator_msgs.srv.CameraToLidarTransformRequest
 
-.. class:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformRequest
+.. class:: navigator_msgs.srv.CameraToLidarTransformRequest
 
    The request class for the ``navigator_msgs/CameraToLidarTransform`` service.
 
@@ -2531,9 +2531,9 @@ CameraToLidarTransform
 
         :type: int
 
-.. attributetable:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformResponse
+.. attributetable:: navigator_msgs.srv.CameraToLidarTransformResponse
 
-.. class:: navigator_msgs.srv._CameraToLidarTransform.CameraToLidarTransformResponse
+.. class:: navigator_msgs.srv.CameraToLidarTransformResponse
 
    The repsonse class for the ``navigator_msgs/CameraToLidarTransform`` service.
 
@@ -2589,9 +2589,9 @@ CameraToLidarTransform
 CoordinateConversion
 ~~~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionRequest
+.. attributetable:: navigator_msgs.srv.CoordinateConversionRequest
 
-.. class:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionRequest
+.. class:: navigator_msgs.srv.CoordinateConversionRequest
 
    The request class for the ``navigator_msgs/CoordinateConversion`` service.
 
@@ -2632,9 +2632,9 @@ CoordinateConversion
 
         :type: List[Point]
 
-.. attributetable:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionResponse
+.. attributetable:: navigator_msgs.srv.CoordinateConversionResponse
 
-.. class:: navigator_msgs.srv._CoordinateConversion.CoordinateConversionResponse
+.. class:: navigator_msgs.srv.CoordinateConversionResponse
 
    The repsonse class for the ``navigator_msgs/CoordinateConversion`` service.
 
@@ -2652,9 +2652,9 @@ CoordinateConversion
 
 KeyboardControl
 ^^^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
+.. attributetable:: navigator_msgs.srv.KeyboardControlRequest
 
-.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlRequest
+.. class:: navigator_msgs.srv.KeyboardControlRequest
 
    The request class for the ``navigator_msgs/KeyboardControl`` service.
 
@@ -2670,9 +2670,9 @@ KeyboardControl
 
         :type: int
 
-.. attributetable:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
+.. attributetable:: navigator_msgs.srv.KeyboardControlResponse
 
-.. class:: navigator_msgs.srv._KeyboardControl.KeyboardControlResponse
+.. class:: navigator_msgs.srv.KeyboardControlResponse
 
    The repsonse class for the ``navigator_msgs/KeyboardControl`` service.
 
@@ -2694,9 +2694,9 @@ POI Handling
 
 AddPOI
 ~~~~~~
-.. attributetable:: mil_poi.srv._AddPOI.AddPOIRequest
+.. attributetable:: mil_poi.srv.AddPOIRequest
 
-.. class:: mil_poi.srv._AddPOI.AddPOIRequest
+.. class:: mil_poi.srv.AddPOIRequest
 
    The request class for the ``mil_poi/AddPOI`` service.
 
@@ -2712,9 +2712,9 @@ AddPOI
 
         :type: PointStamped
 
-.. attributetable:: mil_poi.srv._AddPOI.AddPOIResponse
+.. attributetable:: mil_poi.srv.AddPOIResponse
 
-.. class:: mil_poi.srv._AddPOI.AddPOIResponse
+.. class:: mil_poi.srv.AddPOIResponse
 
    The repsonse class for the ``mil_poi/AddPOI`` service.
 
@@ -2732,9 +2732,9 @@ AddPOI
 
 MovePOI
 ~~~~~~~
-.. attributetable:: mil_poi.srv._MovePOI.MovePOIRequest
+.. attributetable:: mil_poi.srv.MovePOIRequest
 
-.. class:: mil_poi.srv._MovePOI.MovePOIRequest
+.. class:: mil_poi.srv.MovePOIRequest
 
    The request class for the ``mil_poi/MovePOI`` service.
 
@@ -2750,9 +2750,9 @@ MovePOI
 
         :type: PointStamped
 
-.. attributetable:: mil_poi.srv._MovePOI.MovePOIResponse
+.. attributetable:: mil_poi.srv.MovePOIResponse
 
-.. class:: mil_poi.srv._MovePOI.MovePOIResponse
+.. class:: mil_poi.srv.MovePOIResponse
 
    The repsonse class for the ``mil_poi/MovePOI`` service.
 
@@ -2770,9 +2770,9 @@ MovePOI
 
 DeletePOI
 ~~~~~~~~~
-.. attributetable:: mil_poi.srv._DeletePOI.DeletePOIRequest
+.. attributetable:: mil_poi.srv.DeletePOIRequest
 
-.. class:: mil_poi.srv._DeletePOI.DeletePOIRequest
+.. class:: mil_poi.srv.DeletePOIRequest
 
    The request class for the ``mil_poi/DeletePOI`` service.
 
@@ -2782,9 +2782,9 @@ DeletePOI
 
         :type: str
 
-.. attributetable:: mil_poi.srv._DeletePOI.DeletePOIResponse
+.. attributetable:: mil_poi.srv.DeletePOIResponse
 
-.. class:: mil_poi.srv._DeletePOI.DeletePOIResponse
+.. class:: mil_poi.srv.DeletePOIResponse
 
    The repsonse class for the ``mil_poi/DeletePOI`` service.
 
@@ -2809,9 +2809,9 @@ Path Planner
 MoveAction
 ~~~~~~~~~~
 
-.. attributetable:: navigator_path_planner.msg._MoveAction.MoveAction
+.. attributetable:: navigator_path_planner.msg.MoveAction
 
-.. class:: navigator_path_planner.msg._MoveAction.MoveAction
+.. class:: navigator_path_planner.msg.MoveAction
 
     A custom message representing the general movement of an entire system.
 
@@ -2835,9 +2835,9 @@ MoveAction
 
 MoveActionResult
 ~~~~~~~~~~~~~~~~
-.. attributetable:: navigator_path_planner.msg._MoveActionResult.MoveActionResult
+.. attributetable:: navigator_path_planner.msg.MoveActionResult
 
-.. class:: navigator_path_planner.msg._MoveActionResult.MoveActionResult
+.. class:: navigator_path_planner.msg.MoveActionResult
 
     A custom message representing the result of a system's movement.
 
@@ -2861,9 +2861,9 @@ MoveActionResult
 
 MoveActionFeedback
 ~~~~~~~~~~~~~~~~~~
-.. attributetable:: navigator_path_planner.msg._MoveActionFeedback.MoveActionFeedback
+.. attributetable:: navigator_path_planner.msg.MoveActionFeedback
 
-.. class:: navigator_path_planner.msg._MoveActionFeedback.MoveActionFeedback
+.. class:: navigator_path_planner.msg.MoveActionFeedback
 
     A custom message representing the feedback of a system's movement.
 
@@ -2887,9 +2887,9 @@ MoveActionFeedback
 
 MoveActionGoal
 ~~~~~~~~~~~~~~
-.. attributetable:: navigator_path_planner.msg._MoveActionGoal.MoveActionGoal
+.. attributetable:: navigator_path_planner.msg.MoveActionGoal
 
-.. class:: navigator_path_planner.msg._MoveActionGoal.MoveActionGoal
+.. class:: navigator_path_planner.msg.MoveActionGoal
 
     A custom message representing the goal of an object's action movement.
 
@@ -2913,9 +2913,9 @@ MoveActionGoal
 
 MoveFeedback
 ~~~~~~~~~~~~~~~~~~
-.. attributetable:: navigator_path_planner.msg._MoveFeedback.MoveFeedback
+.. attributetable:: navigator_path_planner.msg.MoveFeedback
 
-.. class:: navigator_path_planner.msg._MoveFeedback.MoveFeedback
+.. class:: navigator_path_planner.msg.MoveFeedback
 
     A custom message representing the feedback of a system's movement.
 
@@ -2951,9 +2951,9 @@ MoveFeedback
 
 MoveGoal
 ~~~~~~~~
-.. attributetable:: navigator_path_planner.msg._MoveGoal.MoveGoal
+.. attributetable:: navigator_path_planner.msg.MoveGoal
 
-.. class:: navigator_path_planner.msg._MoveGoal.MoveGoal
+.. class:: navigator_path_planner.msg.MoveGoal
 
     A custom message representing the goal of an object's movement.
 
@@ -3037,9 +3037,9 @@ MoveGoal
 
 MoveResult
 ~~~~~~~~~~
-.. attributetable:: navigator_path_planner.msg._MoveResult.MoveResult
+.. attributetable:: navigator_path_planner.msg.MoveResult
 
-.. class:: navigator_path_planner.msg._MoveResult.MoveResult
+.. class:: navigator_path_planner.msg.MoveResult
 
     A custom message representing the goal of an object's movement.
 
@@ -3055,9 +3055,9 @@ Shooter
 ShooterDoAction
 ~~~~~~~~~~~~~~~
 
-.. attributetable:: navigator_msgs.msg._ShooterDoAction.ShooterDoAction
+.. attributetable:: navigator_msgs.msg.ShooterDoAction
 
-.. class:: navigator_msgs.msg._ShooterDoAction.ShooterDoAction
+.. class:: navigator_msgs.msg.ShooterDoAction
 
     A custom message representing the general movement of an entire system.
 
@@ -3082,9 +3082,9 @@ ShooterDoAction
 ShooterDoActionResult
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: navigator_msgs.msg._ShooterDoActionResult.ShooterDoActionResult
+.. attributetable:: navigator_msgs.msg.ShooterDoActionResult
 
-.. class:: navigator_msgs.msg._ShooterDoActionResult.ShooterDoActionResult
+.. class:: navigator_msgs.msg.ShooterDoActionResult
 
     A custom message representing the result of a system's movement.
 
@@ -3109,9 +3109,9 @@ ShooterDoActionResult
 ShooterDoActionFeedback
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: navigator_msgs.msg._ShooterDoActionFeedback.ShooterDoActionFeedback
+.. attributetable:: navigator_msgs.msg.ShooterDoActionFeedback
 
-.. class:: navigator_msgs.msg._ShooterDoActionFeedback.ShooterDoActionFeedback
+.. class:: navigator_msgs.msg.ShooterDoActionFeedback
 
     A custom message representing the feedback of a system's movement.
 
@@ -3136,9 +3136,9 @@ ShooterDoActionFeedback
 ShooterDoActionGoal
 ~~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: navigator_msgs.msg._ShooterDoActionGoal.ShooterDoActionGoal
+.. attributetable:: navigator_msgs.msg.ShooterDoActionGoal
 
-.. class:: navigator_msgs.msg._ShooterDoActionGoal.ShooterDoActionGoal
+.. class:: navigator_msgs.msg.ShooterDoActionGoal
 
     A custom message representing the goal of an object's action movement.
 
@@ -3162,9 +3162,9 @@ ShooterDoActionGoal
 
 ShooterDoFeedback
 ~~~~~~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.msg._ShooterDoFeedback.ShooterDoFeedback
+.. attributetable:: navigator_msgs.msg.ShooterDoFeedback
 
-.. class:: navigator_msgs.msg._ShooterDoFeedback.ShooterDoFeedback
+.. class:: navigator_msgs.msg.ShooterDoFeedback
 
     A custom message representing the feedback of a system's movement.
 
@@ -3176,18 +3176,18 @@ ShooterDoFeedback
 
 ShooterDoGoal
 ~~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.msg._ShooterDoGoal.ShooterDoGoal
+.. attributetable:: navigator_msgs.msg.ShooterDoGoal
 
-.. class:: navigator_msgs.msg._ShooterDoGoal.ShooterDoGoal
+.. class:: navigator_msgs.msg.ShooterDoGoal
 
     A custom message representing the goal of an object's ShooterDoment. The class
     has no public attributes.
 
 ShooterDoResult
 ~~~~~~~~~~~~~~~
-.. attributetable:: navigator_msgs.msg._ShooterDoResult.ShooterDoResult
+.. attributetable:: navigator_msgs.msg.ShooterDoResult
 
-.. class:: navigator_msgs.msg._ShooterDoResult.ShooterDoResult
+.. class:: navigator_msgs.msg.ShooterDoResult
 
     A custom message representing the goal of an object's ShooterDoment.
 

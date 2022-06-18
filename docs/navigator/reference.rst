@@ -8,9 +8,9 @@ Services
 
 MessageDetectDeliver
 ^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv._MessageDetectDeliver.MessageDetectDeliverRequest
+.. attributetable:: navigator_msgs.srv.MessageDetectDeliverRequest
 
-.. class:: navigator_msgs.srv._MessageDetectDeliver.MessageDetectDeliverRequest
+.. class:: navigator_msgs.srv.MessageDetectDeliverRequest
 
    The request class for the ``navigator_msgs/MessageDetectDeliver`` service.
 
@@ -26,9 +26,9 @@ MessageDetectDeliver
 
         :type: str
 
-.. attributetable:: navigator_msgs.srv._MessageDetectDeliver.MessageDetectDeliverResponse
+.. attributetable:: navigator_msgs.srv.MessageDetectDeliverResponse
 
-.. class:: navigator_msgs.srv._MessageDetectDeliver.MessageDetectDeliverResponse
+.. class:: navigator_msgs.srv.MessageDetectDeliverResponse
 
    The repsonse class for the ``navigator_msgs/MessageDetectDeliver`` service.
 
@@ -40,9 +40,9 @@ MessageDetectDeliver
 
 MessageExtranceExitGate
 ^^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv._MessageExtranceExitGate.MessageExtranceExitGateRequest
+.. attributetable:: navigator_msgs.srv.MessageExtranceExitGateRequest
 
-.. class:: navigator_msgs.srv._MessageExtranceExitGate.MessageExtranceExitGateRequest
+.. class:: navigator_msgs.srv.MessageExtranceExitGateRequest
 
    The request class for the ``navigator_msgs/MessageExtranceExitGate`` service.
 
@@ -72,9 +72,9 @@ MessageExtranceExitGate
 
         :type: str
 
-.. attributetable:: navigator_msgs.srv._MessageExtranceExitGate.MessageExtranceExitGateResponse
+.. attributetable:: navigator_msgs.srv.MessageExtranceExitGateResponse
 
-.. class:: navigator_msgs.srv._MessageExtranceExitGate.MessageExtranceExitGateResponse
+.. class:: navigator_msgs.srv.MessageExtranceExitGateResponse
 
    The repsonse class for the ``navigator_msgs/MessageExtranceExitGate`` service.
 
@@ -86,9 +86,9 @@ MessageExtranceExitGate
 
 MessageIdentifySymbolsDock
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv._MessageIdentifySymbolsDock.MessageIdentifySymbolsDockRequest
+.. attributetable:: navigator_msgs.srv.MessageIdentifySymbolsDockRequest
 
-.. class:: navigator_msgs.srv._MessageIdentifySymbolsDock.MessageIdentifySymbolsDockRequest
+.. class:: navigator_msgs.srv.MessageIdentifySymbolsDockRequest
 
    The request class for the ``navigator_msgs/MessageIdentifySymbolsDock`` service.
 
@@ -105,9 +105,9 @@ MessageIdentifySymbolsDock
         :type: str
 
 
-.. attributetable:: navigator_msgs.srv._MessageIdentifySymbolsDock.MessageIdentifySymbolsDockResponse
+.. attributetable:: navigator_msgs.srv.MessageIdentifySymbolsDockResponse
 
-.. class:: navigator_msgs.srv._MessageIdentifySymbolsDock.MessageIdentifySymbolsDockResponse
+.. class:: navigator_msgs.srv.MessageIdentifySymbolsDockResponse
 
    The repsonse class for the ``navigator_msgs/MessageIdentifySymbolsDock`` service.
 
@@ -119,9 +119,9 @@ MessageIdentifySymbolsDock
 
 ScanTheCodeMission
 ^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionRequest
+.. attributetable:: navigator_msgs.srv.ScanTheCodeMissionRequest
 
-.. class:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionRequest
+.. class:: navigator_msgs.srv.ScanTheCodeMissionRequest
 
    The request class for the ``navigator_msgs/ScanTheCodeMission`` service.
 
@@ -131,9 +131,9 @@ ScanTheCodeMission
 
         :type: PerceptionObject
 
-.. attributetable:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionResponse
+.. attributetable:: navigator_msgs.srv.ScanTheCodeMissionResponse
 
-.. class:: navigator_msgs.srv._ScanTheCodeMission.ScanTheCodeMissionResponse
+.. class:: navigator_msgs.srv.ScanTheCodeMissionResponse
 
    The repsonse class for the ``navigator_msgs/ScanTheCodeMission`` service.
 
