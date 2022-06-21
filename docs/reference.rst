@@ -3504,6 +3504,13 @@ ActionClient
 .. autoclass:: txros.ActionClient
     :members:
 
+NodeHandle
+^^^^^^^^^^
+.. attributetable:: txros.NodeHandle
+
+.. autoclass:: txros.NodeHandle
+    :members:
+
 rviz
 ----
 
