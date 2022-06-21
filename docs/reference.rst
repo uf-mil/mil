@@ -3460,9 +3460,9 @@ txros
 Goal
 ^^^^
 
-.. attributetable:: Goal
+.. attributetable:: txros.Goal
 
-.. autoclass:: Goal
+.. autoclass:: txros.Goal
     :members:
 
     .. attribute:: goal
@@ -3482,6 +3482,20 @@ Goal
         The string version of the goal's status.
 
         :rtype: :class:`str`
+
+GoalManager
+^^^^^^^^^^^
+.. attributetable:: txros.GoalManager
+
+.. autoclass:: txros.GoalManager
+    :members:
+
+SimpleActionServer
+^^^^^^^^^^^^^^^^^^
+.. attributetable:: txros.SimpleActionServer
+
+.. autoclass:: txros.SimpleActionServer
+    :members:
 
 rviz
 ----
