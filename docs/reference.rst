@@ -3525,11 +3525,23 @@ Exceptions
 .. autoclass:: txros.Error
     :members:
 
+.. attributetable:: txros.ServiceError
+
+.. autoclass:: txros.ServiceError
+    :members:
+
 Proxy
 ^^^^^
 .. attributetable:: txros.Proxy
 
 .. autoclass:: txros.Proxy
+    :members:
+
+ServiceClient
+^^^^^^^^^^^^^
+.. attributetable:: txros.ServiceClient
+
+.. autoclass:: txros.ServiceClient
     :members:
 
 rviz
