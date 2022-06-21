@@ -3518,6 +3518,20 @@ Publisher
 .. autoclass:: txros.Publisher
     :members:
 
+Exceptions
+^^^^^^^^^^
+.. attributetable:: txros.Error
+
+.. autoclass:: txros.Error
+    :members:
+
+Proxy
+^^^^^
+.. attributetable:: txros.Proxy
+
+.. autoclass:: txros.Proxy
+    :members:
+
 rviz
 ----
 
