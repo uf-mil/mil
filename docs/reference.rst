@@ -3497,6 +3497,13 @@ SimpleActionServer
 .. autoclass:: txros.SimpleActionServer
     :members:
 
+ActionClient
+^^^^^^^^^^^^
+.. attributetable:: txros.ActionClient
+
+.. autoclass:: txros.ActionClient
+    :members:
+
 rviz
 ----
 
