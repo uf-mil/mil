@@ -3511,6 +3511,13 @@ NodeHandle
 .. autoclass:: txros.NodeHandle
     :members:
 
+Publisher
+^^^^^^^^^
+.. attributetable:: txros.Publisher
+
+.. autoclass:: txros.Publisher
+    :members:
+
 rviz
 ----
 
