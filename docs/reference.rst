@@ -3551,6 +3551,13 @@ Service
 .. autoclass:: txros.Service
     :members:
 
+Subscriber
+^^^^^^^^^^
+.. attributetable:: txros.Subscriber
+
+.. autoclass:: txros.Subscriber
+    :members:
+
 rviz
 ----
 
