@@ -268,6 +268,54 @@ PoseWithCovariance
 
         :type: List[float]
 
+Transform
+~~~~~~~~~
+
+.. attributetable:: geometry_msgs.msg.Transform
+
+.. class:: geometry_msgs.msg.Transform
+
+    A ROS message type representing an object's transform.
+
+    .. attribute:: translation
+
+        The translation of the transform.
+
+        :type: ~geometry_msgs.msg.Vector3
+
+    .. attribute:: rotation
+
+        The rotation of the transform.
+
+        :type: ~geometry_msgs.msg.Quaternion
+
+TransformStamped
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: geometry_msgs.msg.TransformStamped
+
+.. class:: geometry_msgs.msg.TransformStamped
+
+    A stamped ROS message type representing an object's transform.
+
+    .. attribute:: header
+
+        The header of the message.
+
+        :type: ~std_msgs.msg.Header
+
+    .. attribute:: child_frame_id
+
+        The ID of the child frame.
+
+        :type: str
+
+    .. attribute:: transform
+
+        The transform in the message.
+
+        :type: ~geometry_msgs.msg.Transform
+
 Accel
 ~~~~~
 
@@ -3529,6 +3577,11 @@ Exceptions
 
 .. autoclass:: txros.ServiceError
     :members:
+   
+.. attributetable:: txros.TooPastError
+
+.. autoclass:: txros.TooPastError
+    :members:
 
 Proxy
 ^^^^^
@@ -3556,6 +3609,27 @@ Subscriber
 .. attributetable:: txros.Subscriber
 
 .. autoclass:: txros.Subscriber
+    :members:
+
+Transform
+^^^^^^^^^^
+.. attributetable:: txros.Transform
+
+.. autoclass:: txros.Transform
+    :members:
+
+TransformBroadcaster
+^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: txros.TransformBroadcaster
+
+.. autoclass:: txros.TransformBroadcaster
+    :members:
+
+TransformListener
+^^^^^^^^^^^^^^^^^
+.. attributetable:: txros.TransformListener
+
+.. autoclass:: txros.TransformListener
     :members:
 
 rviz
