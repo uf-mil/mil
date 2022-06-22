@@ -3544,6 +3544,13 @@ ServiceClient
 .. autoclass:: txros.ServiceClient
     :members:
 
+Service
+^^^^^^^
+.. attributetable:: txros.Service
+
+.. autoclass:: txros.Service
+    :members:
+
 rviz
 ----
 
