@@ -3632,6 +3632,20 @@ TransformListener
 .. autoclass:: txros.TransformListener
     :members:
 
+Event
+^^^^^
+.. attributetable:: txros.Event
+
+.. autoclass:: txros.Event
+    :members:
+
+Variable
+^^^^^^^^
+.. attributetable:: txros.Variable
+
+.. autoclass:: txros.Variable
+    :members:
+
 rviz
 ----
 
