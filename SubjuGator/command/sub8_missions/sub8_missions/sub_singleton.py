@@ -38,9 +38,10 @@ from mil_passive_sonar.msg import ProcessedPing
 
 import numpy as np
 from twisted.internet import defer
+from twisted.python import failure as twisted_failure
 import os
 import yaml
-from typing import Optional, Callable
+from typing import Optional, Callable, Sequence
 
 
 class VisionProxy:
@@ -251,7 +252,7 @@ class _ActuatorProxy:
         return self._actuator_service(SetValveRequest(actuator=id, opened=opened))
 
     @util.cancellableInlineCallbacks
-    def pulse(self, id: int, time: float=0.5):
+    def pulse(self, id: int, time: float = 0.5):
         self.open(id)
         yield self.nh.sleep(time)
         self.close(id)
@@ -307,7 +308,7 @@ class SubjuGator(BaseMission):
         cls.pinger_sub = yield cls.nh.subscribe("/hydrophones/processed", ProcessedPing)
 
     @property
-    def pose(self):
+    def pose(self) -> pose_editor.PoseEditor:
         last_odom_msg = self._odom_sub.get_last_message()
         if self.test_mode:
             last_odom_msg = Odometry()  # All 0's
@@ -316,7 +317,9 @@ class SubjuGator(BaseMission):
 
     @util.cancellableInlineCallbacks
     def tx_pose(self):
-        """Slighty safer to use."""
+        """
+        Slighty safer to use.
+        """
         if self.test_mode:
             yield self.nh.sleep(0.1)
             blank = mil_ros_tools.pose_to_numpy(Odometry().pose.pose)
@@ -327,7 +330,7 @@ class SubjuGator(BaseMission):
         defer.returnValue(pose)
 
     @property
-    def move(self):
+    def move(self) -> _PoseProxy:
         return _PoseProxy(self, self.pose, self.test_mode)
 
     @util.cancellableInlineCallbacks
@@ -336,8 +339,10 @@ class SubjuGator(BaseMission):
         defer.returnValue(msg.range)
 
     @util.cancellableInlineCallbacks
-    def get_in_frame(self, pose_stamped, frame="/map"):
-        """TODO"""
+    def get_in_frame(self, pose_stamped, frame: str = "/map"):
+        """
+        TODO
+        """
         transform = yield self._tf_listener.get_transform(
             frame, pose_stamped.header.frame_id, pose_stamped.header.stamp
         )
@@ -349,11 +354,12 @@ class SubjuGator(BaseMission):
         defer.returnValue([position, orientation])
 
 
-class Searcher(object):
-    def __init__(self, sub, vision_proxy, search_pattern):
+class Searcher:
+    def __init__(self, sub: SubjuGator, vision_proxy: Callable, search_pattern):
         """
-        Give a sub_singleton, the a function to call for the object you're looking for, and a list poses to execute in
-            order to find it (can be a list of relative positions or pose_editor poses).
+        Give a sub_singleton, a function to call for the object you're looking for,
+        and a list poses to execute in order to find it (can be a list of relative
+        positions or pose_editor poses).
         """
         self.sub = sub
         self.vision_proxy = vision_proxy
@@ -362,7 +368,7 @@ class Searcher(object):
         self.object_found = False
         self.response = None
 
-    def catch_error(self, failure):
+    def catch_error(self, failure: twisted_failure.Failure) -> None:
         if failure.check(defer.CancelledError):
             print("SEARCHER - Cancelling defer.")
         else:
@@ -371,7 +377,13 @@ class Searcher(object):
             # Handle error
 
     @util.cancellableInlineCallbacks
-    def start_search(self, timeout=60, loop=True, spotings_req=2, speed=0.1):
+    def start_search(
+        self,
+        timeout: float = 60,
+        loop: bool = True,
+        spotings_req: int = 2,
+        speed: float = 0.1,
+    ):
         print("SEARCHER - Starting.")
         looker = self._run_look(spotings_req).addErrback(self.catch_error)
         searcher = self._run_search_pattern(loop, speed).addErrback(self.catch_error)
@@ -395,10 +407,12 @@ class Searcher(object):
         yield start_pose.go()
 
     @util.cancellableInlineCallbacks
-    def _run_search_pattern(self, loop, speed):
+    def _run_search_pattern(self, loop: bool, speed: float):
         """
         Look around using the search pattern.
-        If `loop` is true, then keep iterating over the list until timeout is reached or we find it.
+
+        If `loop` is true, then keep iterating over the list until timeout is
+        reached or we find it.
         """
         print("SEARCHER - Executing search pattern.")
         if loop:
@@ -422,10 +436,12 @@ class Searcher(object):
                 yield self.sub.nh.sleep(2)
 
     @util.cancellableInlineCallbacks
-    def _run_look(self, spotings_req):
+    def _run_look(self, spotings_req: int):
         """
         Look for the object using the vision proxy.
-        Only return true when we spotted the objects `spotings_req` many times (for false positives).
+
+        Only return true when we spotted the objects `spotings_req` many times
+        (for false positives).
         """
         spotings = 0
         print("SEARCHER - Looking for object.")
@@ -447,16 +463,22 @@ class Searcher(object):
 
 
 class PoseSequenceCommander:
-    def __init__(self, sub):
+    def __init__(self, sub: SubjuGator):
         self.sub = sub
 
     @util.cancellableInlineCallbacks
-    def go_to_sequence_eulers(self, positions, orientations, speed=0.2):
-        """Pass a list of positions and orientations (euler).
+    def go_to_sequence_eulers(
+        self,
+        positions: Sequence[Sequence[float]],
+        orientations: Sequence[Sequence[float]],
+        speed: float = 0.2,
+    ):
+        """
+        Pass a list of positions and orientations (euler).
         Each is realive to the sub's pose folloing the previous
         pose command.
         """
-        for i in xrange(len(positions)):
+        for i in range(len(positions)):
             yield self.sub.move.look_at_without_pitching(
                 np.array(positions[i][0:3])
             ).go(speed)
@@ -471,12 +493,18 @@ class PoseSequenceCommander:
             ).go(speed)
 
     @util.cancellableInlineCallbacks
-    def go_to_sequence_quaternions(self, positions, orientations, speed=0.2):
-        """Pass a list of positions and orientations (quaternion).
+    def go_to_sequence_quaternions(
+        self,
+        positions: Sequence[Sequence[float]],
+        orientations: Sequence[Sequence[float]],
+        speed: float = 0.2,
+    ):
+        """
+        Pass a list of positions and orientations (quaternion).
         Each is realive to the sub's pose folloing the previous
         pose command.
         """
-        for i in xrange(len(positions)):
+        for i in range(len(positions)):
             yield self.sub.move.look_at_without_pitching(
                 np.array(positions[i][0:3])
             ).go(speed)
@@ -494,8 +522,12 @@ class PoseSequenceCommander:
             ).go(speed)
 
 
-class SonarObjects(object):
-    def __init__(self, sub, pattern=None):
+class SonarObjects:
+
+    _clear_pcl: ServiceClient
+    _objects_service: ServiceClient
+
+    def __init__(self, sub: SubjuGator, pattern=None):
         """
         SonarObjects: a helper to search and find objects
 
@@ -521,9 +553,9 @@ class SonarObjects(object):
         print("cleared SonarObject -- thanks TX")
 
     @util.cancellableInlineCallbacks
-    def start_search(self, speed=0.5, clear=False):
+    def start_search(self, speed: float = 0.5, clear: bool = False):
         """
-        Do a search and return all objects
+        Do a search and return all objects.
 
         Parameters:
         speed: how fast sub should move
@@ -545,11 +577,11 @@ class SonarObjects(object):
         self,
         start_point,
         ray,
-        angle_tol=30,
-        distance_tol=10,
-        speed=0.5,
-        clear=False,
-        c_func=None,
+        angle_tol: float = 30,
+        distance_tol: float = 10,
+        speed: float = 0.5,
+        clear: bool = False,
+        c_func: Callable = None,
     ):
         if clear:
             print("SONAR_OBJECTS: clearing pointcloud")
@@ -586,9 +618,11 @@ class SonarObjects(object):
         defer.returnValue(res)
 
     @util.cancellableInlineCallbacks
-    def start_until_found_x(self, speed=0.5, clear=False, object_count=0):
+    def start_until_found_x(
+        self, speed: float = 0.5, clear: bool = False, object_count: int = 0
+    ):
         """
-        Search until a number of objects are found
+        Search until a number of objects are found.
 
         Parameters:
         speed: how fast sub should move
@@ -611,28 +645,28 @@ class SonarObjects(object):
     @util.cancellableInlineCallbacks
     def start_until_found_in_cone(
         self,
-        start_point,
-        speed=0.5,
-        clear=False,
-        object_count=0,
-        ray=np.array([0, 1, 0]),
-        angle_tol=30,
-        distance_tol=12,
+        start_point: np.ndarray,
+        speed: float = 0.5,
+        clear: bool = False,
+        object_count: int = 0,
+        ray: np.ndarray = np.array([0, 1, 0]),
+        angle_tol: float = 30,
+        distance_tol: float = 12,
     ):
         """
         Search until objects are found within a cone-shaped range
 
-        Parameters:
-        start_point: numpy array for the starting point of the direction vector
-        speed: how fast the sub should move
-        clear: should the pointcloud be clear beforehand
-        object_count: how many objects we are looking for
-        ray: the direction vector
-        angle_tol: how far off the direction vector should be allowed
-        distance_tol: how far away are we willing to accept
+        Args:
+            start_point: numpy array for the starting point of the direction vector
+            speed: how fast the sub should move
+            clear: should the pointcloud be clear beforehand
+            object_count: how many objects we are looking for
+            ray: the direction vector
+            angle_tol: how far off the direction vector should be allowed
+            distance_tol: how far away are we willing to accept
 
         Returns:
-        ObjectDBQuery: with objects field filled by good objects
+            ObjectDBQuery: with objects field filled by good objects
         """
         if clear:
             print("SONAR_OBJECTS: clearing pointcloud")
@@ -656,7 +690,13 @@ class SonarObjects(object):
         defer.returnValue(None)
 
     @staticmethod
-    def _get_objects_within_cone(objects, start_point, ray, angle_tol, distance_tol):
+    def _get_objects_within_cone(
+        objects,
+        start_point: np.ndarray,
+        ray: np.ndarray,
+        angle_tol: float,
+        distance_tol: float,
+    ):
         ray = ray / np.linalg.norm(ray)
         out = []
         for o in objects:
@@ -677,14 +717,14 @@ class SonarObjects(object):
         return out
 
     @staticmethod
-    def _sort_by_angle(objects, ray, start_point):
+    def _sort_by_angle(objects, ray: np.ndarray, start_point: np.ndarray):
         """
         _sort_by_angle: returns object list sorted by angle
 
         Parameters:
-        objects:
-        ray: directional unit vector
-        start_point: base point for vector in map
+            objects:
+            ray: directional unit vector
+            start_point: base point for vector in map
         """
         positions = [mil_ros_tools.rosmsg_to_numpy(o.pose.position) for o in objects]
         dots = [(p / np.linalg.norm(p) - start_point).dot(ray) for p in positions]
@@ -692,13 +732,13 @@ class SonarObjects(object):
         return np.array(objects)[idx]
 
     @util.cancellableInlineCallbacks
-    def _run_pattern(self, speed):
+    def _run_pattern(self, speed: float):
         for pose in self.pattern:
             yield pose.go(speed=speed)
 
 
-class SonarPointcloud(object):
-    def __init__(self, sub, pattern=None):
+class SonarPointcloud:
+    def __init__(self, sub: SubjuGator, pattern=None):
         if pattern is None:
             pattern = (
                 [sub.move.zero_roll_and_pitch()]
@@ -710,7 +750,7 @@ class SonarPointcloud(object):
         self.pattern = pattern
 
     @util.cancellableInlineCallbacks
-    def start(self, speed=0.2):
+    def start(self, speed: float = 0.2):
         self._plane_subscriber = yield self.sub.nh.subscribe(
             "/ogrid_pointcloud/point_cloud/plane", PointCloud2
         )
@@ -745,7 +785,7 @@ class SonarPointcloud(object):
         yield
 
     @util.cancellableInlineCallbacks
-    def _run_move_pattern(self, speed):
+    def _run_move_pattern(self, speed: float):
         for pose in self.pattern:
             if type(pose) == list or type(pose) == np.ndarray:
                 yield self.sub.move.relative(np.array(pose)).go(speed=speed)
