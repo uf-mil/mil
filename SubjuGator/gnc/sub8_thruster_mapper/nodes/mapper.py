@@ -198,7 +198,7 @@ class ThrusterMapper:
             fun=objective,
             jac=obj_jacobian,
             x0=np.clip(self.Binv.dot(wrench), self.min_thrusts, self.max_thrusts),
-            bounds=zip(self.min_thrusts, self.max_thrusts),
+            bounds=list(zip(self.min_thrusts, self.max_thrusts)),
             tol=1e-6,
         )
         return minimization.x, minimization.success
