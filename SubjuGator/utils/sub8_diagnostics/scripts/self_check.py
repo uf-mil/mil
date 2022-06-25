@@ -21,10 +21,10 @@ MESSAGE_TIMEOUT = 1  # s
 
 class TemplateChecker(object):
 
-    '''Template for how each checker class should look.
+    """Template for how each checker class should look.
     This provides interface functions for the main function to use. You don't have to
         implement them all in each checker.
-    '''
+    """
 
     def __init__(self, nh, name):
         self.nh = nh
@@ -51,7 +51,7 @@ class TemplateChecker(object):
         if status is not "":
             pass_text += self.p.text(": {}".format(status))
 
-        print pass_text
+        print(pass_text)
 
     def warn_check(self, reason="", name=None):
         # Message that prints when the check has a warning
@@ -62,7 +62,7 @@ class TemplateChecker(object):
         if reason is not "":
             warn_text += self.p.text(": {}".format(reason))
 
-        print warn_text
+        print(warn_text)
 
     def fail_check(self, reason="", name=None):
         # Message that prints when the check fails
@@ -73,7 +73,7 @@ class TemplateChecker(object):
         if reason is not "":
             fail_text += self.p.text(": {}".format(reason))
 
-        print fail_text
+        print(fail_text)
 
     def err_msg(self, error, line_number):
         # If there is an error on runtime, this runs
@@ -81,14 +81,15 @@ class TemplateChecker(object):
         fail_text += self.p.space().bold(self.name).text(": ({})".format(line_number))
         fail_text += self.p.space().text("{}".format(error))
 
-        print fail_text
+        print(fail_text)
 
 
 class ThrusterChecker(TemplateChecker):
-
     @txros.util.cancellableInlineCallbacks
     def tx_init(self):
-        self.thruster_topic = self.nh.subscribe("thrusters/thruster_status", ThrusterStatus)
+        self.thruster_topic = self.nh.subscribe(
+            "thrusters/thruster_status", ThrusterStatus
+        )
 
         thrusters = None
         try:
@@ -99,22 +100,26 @@ class ThrusterChecker(TemplateChecker):
         self.found_thrusters = {}
         for thruster_name in thrusters.keys():
             self.found_thrusters[thruster_name] = False
-        print self.p.bold("  >>>>   ").set_blue.bold("Thruster Check")
+        print(self.p.bold("  >>>>   ").set_blue.bold("Thruster Check"))
 
     @txros.util.cancellableInlineCallbacks
     def do_check(self):
         try:
-            passed = yield txros.util.wrap_timeout(self.get_all_thrusters(), MESSAGE_TIMEOUT)
+            passed = yield txros.util.wrap_timeout(
+                self.get_all_thrusters(), MESSAGE_TIMEOUT
+            )
         except txros.util.TimeoutError:
             lost_thrusters = [x[0] for x in self.found_thrusters.items() if not x[1]]
-            err_msg = ''
+            err_msg = ""
             if not any(self.found_thrusters.values()):
                 self.fail_check("no messages found.")
             elif self.found_thrusters.values().count(False) > 1:
                 err_msg += "more than one failed thruster: {}".format(lost_thrusters)
                 self.fail_check(err_msg)
             elif self.found_thrusters.values().count(False) == 1:
-                err_msg += "one thruster is out ({}), things should still work.".format(lost_thrusters)
+                err_msg += "one thruster is out ({}), things should still work.".format(
+                    lost_thrusters
+                )
                 self.warn_check(err_msg)
             else:
                 self.warn_check("unknown timeout reason.")
@@ -137,22 +142,32 @@ class ThrusterChecker(TemplateChecker):
 
 
 class CameraChecker(TemplateChecker):
-
     @txros.util.cancellableInlineCallbacks
     def tx_init(self):
         self.front_cam_product_id = "1e10:3300"  # should be changed if cameras change
         self.right = self.nh.subscribe("/camera/front/right/image_rect_color", Image)
-        self.right_info = self.nh.subscribe("/camera/front/right/camera_info", CameraInfo)
+        self.right_info = self.nh.subscribe(
+            "/camera/front/right/camera_info", CameraInfo
+        )
         self.left = self.nh.subscribe("/camera/front/left/image_rect_color", Image)
         self.left_info = self.nh.subscribe("/camera/front/left/camera_info", CameraInfo)
-        self.down = self.nh.subscribe("/camera/down/left/image_rect_color", Image)  # TODO
-        self.down_info = self.nh.subscribe("/camera/down/left/camera_info", CameraInfo)  # TODO
+        self.down = self.nh.subscribe(
+            "/camera/down/left/image_rect_color", Image
+        )  # TODO
+        self.down_info = self.nh.subscribe(
+            "/camera/down/left/camera_info", CameraInfo
+        )  # TODO
 
-        self.subs = [("Right Image", self.right.get_next_message()), ("Right Info", self.right_info.get_next_message()),
-                     ("Left Image", self.left.get_next_message()), ("Left Info", self.left_info.get_next_message()),
-                     ("Down Image", self.down.get_next_message()), ("Down Info", self.down_info.get_next_message())]
+        self.subs = [
+            ("Right Image", self.right.get_next_message()),
+            ("Right Info", self.right_info.get_next_message()),
+            ("Left Image", self.left.get_next_message()),
+            ("Left Info", self.left_info.get_next_message()),
+            ("Down Image", self.down.get_next_message()),
+            ("Down Info", self.down_info.get_next_message()),
+        ]
 
-        print self.p.bold("\n  >>>>   ").set_blue.bold("Camera Check")
+        print(self.p.bold("\n  >>>>   ").set_blue.bold("Camera Check"))
         yield self.nh.sleep(0.1)  # Try to get all the images
 
     @txros.util.cancellableInlineCallbacks
@@ -161,9 +176,10 @@ class CameraChecker(TemplateChecker):
         command = "lsusb -d {}".format(self.front_cam_product_id)
         err_str = "{} front camera{} not connected to usb port"
         try:
-            count_front_cam_usb = \
-                subprocess.check_output(["/bin/sh", "-c", command]).count("Point Grey")
-            if(count_front_cam_usb < 2):
+            count_front_cam_usb = subprocess.check_output(
+                ["/bin/sh", "-c", command]
+            ).count("Point Grey")
+            if count_front_cam_usb < 2:
                 self.fail_check(err_str.format("One", ""))
         except subprocess.CalledProcessError:
             self.fail_check(err_str.format("Both", "s"))
@@ -179,7 +195,6 @@ class CameraChecker(TemplateChecker):
 
 
 class StateEstChecker(TemplateChecker):
-
     @txros.util.cancellableInlineCallbacks
     def tx_init(self):
         self.odom = self.nh.subscribe("/odom", Odometry)
@@ -190,12 +205,17 @@ class StateEstChecker(TemplateChecker):
         self.imu = self.nh.subscribe("/imu/data_raw", Imu)
         self.mag = self.nh.subscribe("/imu/mag", MagneticField)
 
-        self.subs = [("Odom", self.odom.get_next_message()), ("TF", self.tf.get_next_message()),
-                     ("DVL", self.dvl.get_next_message()), ("Height", self.height.get_next_message()),
-                     ("Depth", self.depth.get_next_message()), ("IMU", self.imu.get_next_message()),
-                     ("Mag", self.mag.get_next_message())]
+        self.subs = [
+            ("Odom", self.odom.get_next_message()),
+            ("TF", self.tf.get_next_message()),
+            ("DVL", self.dvl.get_next_message()),
+            ("Height", self.height.get_next_message()),
+            ("Depth", self.depth.get_next_message()),
+            ("IMU", self.imu.get_next_message()),
+            ("Mag", self.mag.get_next_message()),
+        ]
 
-        print self.p.bold("\n  >>>>   ").set_blue.bold("State Estimation Check")
+        print(self.p.bold("\n  >>>>   ").set_blue.bold("State Estimation Check"))
         yield self.nh.sleep(0.1)  # Try to get all the subs
 
     @txros.util.cancellableInlineCallbacks
@@ -220,25 +240,27 @@ class StateEstChecker(TemplateChecker):
 
 
 class ShoreControlChecker(TemplateChecker):
-
     @txros.util.cancellableInlineCallbacks
     def tx_init(self):
-        p = self.p.bold(
-            "\n  >>>>").text(
-                "   Press return when ").negative(
-            "shore_control.launch").text(
-                " is running.\n")
+        p = (
+            self.p.bold("\n  >>>>")
+            .text("   Press return when ")
+            .negative("shore_control.launch")
+            .text(" is running.\n")
+        )
         yield txros.util.nonblocking_raw_input(str(p))
 
         self.network = self.nh.subscribe("/network", Header)
         self.spacenav = self.nh.subscribe("/spacenav/joy", Joy)
         self.posegoal = self.nh.subscribe("/posegoal", PoseStamped)
 
-        self.subs = [("Network", self.network.get_next_message()),
-                     ("Spacenav", self.spacenav.get_next_message()),
-                     ("Pose Goal", self.posegoal.get_next_message())]
+        self.subs = [
+            ("Network", self.network.get_next_message()),
+            ("Spacenav", self.spacenav.get_next_message()),
+            ("Pose Goal", self.posegoal.get_next_message()),
+        ]
 
-        print self.p.bold("  >>>>   ").set_blue.bold("Shore Control Check")
+        print(self.p.bold("  >>>>   ").set_blue.bold("Shore Control Check"))
         yield self.nh.sleep(0.1)  # Try to get all the subs
 
     @txros.util.cancellableInlineCallbacks
@@ -256,14 +278,23 @@ class ShoreControlChecker(TemplateChecker):
 @txros.util.cancellableInlineCallbacks
 def main():
     nh = yield txros.NodeHandle.from_argv("startup_checker")
-    check_order = [ThrusterChecker(nh, "Thrusters"), CameraChecker(nh, "Cameras"),
-                   StateEstChecker(nh, "State Estimation"), ShoreControlChecker(nh, "Shore Control")]
+    check_order = [
+        ThrusterChecker(nh, "Thrusters"),
+        CameraChecker(nh, "Cameras"),
+        StateEstChecker(nh, "State Estimation"),
+        ShoreControlChecker(nh, "Shore Control"),
+    ]
 
     p = text_effects.Printer()
-    yield txros.util.nonblocking_raw_input(str(p.bold("\n  >>>>").text("   Press return when ")
-                                                                 .negative("sub8.launch")
-                                                                 .text(" is running.")))
-    print p.newline().set_blue.bold("-------- Running self checks...").newline()
+    yield txros.util.nonblocking_raw_input(
+        str(
+            p.bold("\n  >>>>")
+            .text("   Press return when ")
+            .negative("sub8.launch")
+            .text(" is running.")
+        )
+    )
+    print(p.newline().set_blue.bold("-------- Running self checks...").newline())
 
     for check in check_order:
         try:
@@ -276,9 +307,10 @@ def main():
 
         del check
 
-    print p.newline().set_blue.bold("-------- Finished!").newline()
+    print(p.newline().set_blue.bold("-------- Finished!").newline())
     reactor.stop()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     reactor.callWhenRunning(main)
     reactor.run()

@@ -1,1 +1,1 @@
-from subjugator_exception import SubjuGatorException
+from .subjugator_exception import SubjuGatorException
