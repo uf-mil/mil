@@ -1,3 +1,4 @@
+from __future__ import annotations
 import warnings
 
 import numpy as np
@@ -8,6 +9,7 @@ from mil_msgs.msg import PoseTwistStamped, PoseTwist, MoveToGoal
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose as Pose, Quaternion, Point, Vector3, Twist
 from mil_ros_tools import rosmsg_to_numpy
+from typing import Sequence, Optional
 
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
@@ -16,7 +18,7 @@ EAST, NORTH, WEST, SOUTH = [
 ]
 
 
-def normalized(x):
+def normalized(x: np.ndarray) -> np.ndarray:
     x = np.array(x)
     if max(map(abs, x)) == 0:
         warnings.warn("Normalizing zero-length vector to random unit vector")
@@ -26,7 +28,7 @@ def normalized(x):
     return x
 
 
-def get_perpendicular(a, b=None):
+def get_perpendicular(a: np.ndarray, b: Optional[np.ndarray] = None) -> np.ndarray:
     a = np.array(a)
     if max(map(abs, a)) == 0:
         if b is not None:
@@ -42,7 +44,7 @@ def get_perpendicular(a, b=None):
     return normalized(x)
 
 
-def quat_to_rotvec(q):
+def quat_to_rotvec(q: np.ndarray):
     if q[3] < 0:
         q = -q
     q = transformations.unit_vector(q)
@@ -51,11 +53,11 @@ def quat_to_rotvec(q):
     return axis * angle
 
 
-def rotvec_to_quat(rotvec):
+def rotvec_to_quat(rotvec: np.ndarray) -> np.ndarray:
     return transformations.quaternion_about_axis(np.linalg.norm(rotvec), rotvec)
 
 
-def triad(xxx_todo_changeme, xxx_todo_changeme1):
+def triad(xxx_todo_changeme, xxx_todo_changeme1) -> np.ndarray:
     # returns quaternion that rotates b1 to a1 and b2 near a2
     # can get orientation by passing in (global, local)
     (a1, a2) = xxx_todo_changeme
@@ -117,30 +119,30 @@ def safe_wait_for_message(topic, topic_type):
             print(topic, "wait_for_message timed out!")
 
 
-class PoseEditor(object):
+class PoseEditor:
     @classmethod
-    def from_Odometry_topic(cls, topic="/odom"):
+    def from_Odometry_topic(cls, topic: str = "/odom") -> PoseEditor:
         return cls.from_Odometry(safe_wait_for_message(topic, Odometry))
 
     @classmethod
-    def from_Odometry(cls, msg):
+    def from_Odometry(cls, msg: Odometry) -> PoseEditor:
         return cls.from_Pose(msg.header.frame_id, msg.pose.pose)
 
     @classmethod
-    def from_PoseTwistStamped_topic(cls, topic):
+    def from_PoseTwistStamped_topic(cls, topic: str) -> PoseEditor:
         return cls.from_PoseTwistStamped(safe_wait_for_message(topic, PoseTwistStamped))
 
     @classmethod
-    def from_PoseTwistStamped(cls, msg):
+    def from_PoseTwistStamped(cls, msg: PoseTwistStamped) -> PoseEditor:
         return cls.from_Pose(msg.header.frame_id, msg.posetwist.pose)
 
     @classmethod
-    def from_Pose(cls, frame_id, msg):
+    def from_Pose(cls, frame_id: str, msg: Pose) -> PoseEditor:
         return cls(
             frame_id, rosmsg_to_numpy(msg.position), rosmsg_to_numpy(msg.orientation)
         )
 
-    def __init__(self, frame_id, position, orientation):
+    def __init__(self, frame_id: str, position, orientation):
         self.frame_id = frame_id
         self.position = position
         self.orientation = orientation
@@ -149,7 +151,7 @@ class PoseEditor(object):
         return "p: {}, q: {}".format(self.position, self.orientation)
 
     @property
-    def _rot(self):
+    def _rot(self) -> np.ndarray:
         return transformations.quaternion_matrix(self.orientation)[:3, :3]
 
     @property
@@ -184,55 +186,55 @@ class PoseEditor(object):
         pose.position[2] = old_z
         return pose
 
-    def forward(self, distance):
+    def forward(self, distance: float) -> PoseEditor:
         return self.relative([+distance, 0, 0])
 
-    def backward(self, distance):
+    def backward(self, distance: float) -> PoseEditor:
         return self.relative([-distance, 0, 0])
 
-    def left(self, distance):
+    def left(self, distance: float) -> PoseEditor:
         return self.relative([0, +distance, 0])
 
-    def right(self, distance):
+    def right(self, distance: float) -> PoseEditor:
         return self.relative([0, -distance, 0])
 
-    def strafe_forward(self, distance):
+    def strafe_forward(self, distance: float):
         return self.relative_depth([+distance, 0, 0])
 
-    def strafe_backward(self, distance):
+    def strafe_backward(self, distance: float):
         return self.relative_depth([-distance, 0, 0])
 
-    def strafe_left(self, distance):
+    def strafe_left(self, distance: float):
         return self.relative_depth([0, +distance, 0])
 
-    def strafe_right(self, distance):
+    def strafe_right(self, distance: float):
         return self.relative_depth([0, -distance, 0])
 
-    def body_up(self, distance):
+    def body_up(self, distance: float):
         return self.relative([0, 0, +distance])
 
-    def body_down(self, distance):
+    def body_down(self, distance: float):
         return self.relative([0, 0, -distance])
 
     def absolute(self, abs_pos):
         return type(self)(self.frame_id, self.position + abs_pos, self.orientation)
 
-    def east(self, distance):
+    def east(self, distance: float):
         return self.absolute([+distance, 0, 0])
 
-    def west(self, distance):
+    def west(self, distance: float):
         return self.absolute([-distance, 0, 0])
 
-    def north(self, distance):
+    def north(self, distance: float):
         return self.absolute([0, +distance, 0])
 
-    def south(self, distance):
+    def south(self, distance: float):
         return self.absolute([0, -distance, 0])
 
-    def up(self, distance):
+    def up(self, distance: float):
         return self.absolute([0, 0, +distance])
 
-    def down(self, distance):
+    def down(self, distance: float):
         return self.absolute([0, 0, -distance])
 
     # Orientation
@@ -260,10 +262,10 @@ class PoseEditor(object):
     def turn_vec_towards(self, body_vec, towards_point):
         return self.turn_vec_towards_rel(body_vec, towards_point - self.pos)
 
-    def turn_vec_towards_rel(self, body_vec, towards_rel_point):
+    def turn_vec_towards_rel(self, body_vec, towards_rel_point) -> PoseEditor:
         return self.set_orientation(triad((UP, towards_rel_point), (UP, body_vec)))
 
-    def yaw_left(self, angle):
+    def yaw_left(self, angle: float) -> PoseEditor:
         return self.set_orientation(
             transformations.quaternion_multiply(
                 transformations.quaternion_about_axis(angle, UP),
@@ -271,13 +273,13 @@ class PoseEditor(object):
             )
         )
 
-    def yaw_right(self, angle):
+    def yaw_right(self, angle: float) -> PoseEditor:
         return self.yaw_left(-angle)
 
-    def yaw_left_deg(self, angle_degrees):
+    def yaw_left_deg(self, angle_degrees: float) -> PoseEditor:
         return self.yaw_left(np.radians(angle_degrees))
 
-    def yaw_right_deg(self, angle_degrees):
+    def yaw_right_deg(self, angle_degrees: float) -> PoseEditor:
         return self.yaw_right(np.radians(angle_degrees))
 
     turn_left = yaw_left
@@ -285,13 +287,13 @@ class PoseEditor(object):
     turn_left_deg = yaw_left_deg
     turn_right_deg = yaw_right_deg
 
-    def heading(self, heading):
+    def heading(self, heading: float) -> PoseEditor:
         return self.set_orientation(transformations.quaternion_about_axis(heading, UP))
 
-    def heading_deg(self, heading_deg):
+    def heading_deg(self, heading_deg: float) -> PoseEditor:
         return self.heading(np.radians(heading_deg))
 
-    def roll_right(self, angle):
+    def roll_right(self, angle: float) -> PoseEditor:
         return self.set_orientation(
             transformations.quaternion_multiply(
                 self.orientation,
@@ -299,19 +301,19 @@ class PoseEditor(object):
             )
         )
 
-    def roll_left(self, angle):
+    def roll_left(self, angle: float) -> PoseEditor:
         return self.roll_right(-angle)
 
-    def roll_right_deg(self, angle_degrees):
+    def roll_right_deg(self, angle_degrees: float) -> PoseEditor:
         return self.roll_right(np.radians(angle_degrees))
 
-    def roll_left_deg(self, angle_degrees):
+    def roll_left_deg(self, angle_degrees: float) -> PoseEditor:
         return self.roll_left(np.radians(angle_degrees))
 
-    def zero_roll(self):
+    def zero_roll(self) -> PoseEditor:
         return self.set_orientation(look_at(self.forward_vector))
 
-    def pitch_down(self, angle):
+    def pitch_down(self, angle: float) -> PoseEditor:
         return self.set_orientation(
             transformations.quaternion_multiply(
                 transformations.quaternion_about_axis(
@@ -321,25 +323,27 @@ class PoseEditor(object):
             )
         )
 
-    def pitch_up(self, angle):
+    def pitch_up(self, angle: float) -> PoseEditor:
         return self.pitch_down(-angle)
 
-    def pitch_down_deg(self, angle_degrees):
+    def pitch_down_deg(self, angle_degrees: float) -> PoseEditor:
         return self.pitch_down(np.radians(angle_degrees))
 
-    def pitch_up_deg(self, angle_degrees):
+    def pitch_up_deg(self, angle_degrees: float) -> PoseEditor:
         return self.pitch_up(np.radians(angle_degrees))
 
-    def zero_roll_and_pitch(self):
+    def zero_roll_and_pitch(self) -> PoseEditor:
         return self.set_orientation(look_at_without_pitching(self.forward_vector))
 
-    def as_Pose(self):
+    def as_Pose(self) -> Pose:
         return Pose(
             position=Point(*self.position),
             orientation=Quaternion(*self.orientation),
         )
 
-    def as_PoseTwist(self, linear=[0, 0, 0], angular=[0, 0, 0]):
+    def as_PoseTwist(
+        self, linear: Sequence[int] = [0, 0, 0], angular: Sequence[int] = [0, 0, 0]
+    ):
         return PoseTwist(
             pose=self.as_Pose(),
             twist=Twist(
@@ -348,7 +352,9 @@ class PoseEditor(object):
             ),
         )
 
-    def as_PoseTwistStamped(self, linear=[0, 0, 0], angular=[0, 0, 0]):
+    def as_PoseTwistStamped(
+        self, linear: Sequence[int] = [0, 0, 0], angular: Sequence[int] = [0, 0, 0]
+    ) -> PoseTwistStamped:
         return PoseTwistStamped(
             header=Header(
                 frame_id=self.frame_id,
@@ -356,40 +362,45 @@ class PoseEditor(object):
             posetwist=self.as_PoseTwist(linear, angular),
         )
 
-    def as_MoveToGoal(self, linear=[0, 0, 0], angular=[0, 0, 0], **kwargs):
+    def as_MoveToGoal(
+        self,
+        linear: Sequence[int] = [0, 0, 0],
+        angular: Sequence[int] = [0, 0, 0],
+        **kwargs,
+    ) -> MoveToGoal:
         return MoveToGoal(
             header=Header(
                 frame_id=self.frame_id,
             ),
             posetwist=self.as_PoseTwist(linear, angular),
-            **kwargs
+            **kwargs,
         )
 
     # allow implicit usage in place of a PoseTwistStamped
     @property
-    def header(self):
+    def header(self) -> Header:
         return Header(
             frame_id=self.frame_id,
         )
 
     @property
-    def posetwist(self):
+    def posetwist(self) -> PoseTwist:
         return self.as_PoseTwist()
 
     # and in place of a MoveToGoal
 
     @property
-    def speed(self):
+    def speed(self) -> int:
         return 0
 
     @property
-    def uncoordinated(self):
+    def uncoordinated(self) -> bool:
         return False
 
     @property
-    def linear_tolerance(self):
+    def linear_tolerance(self) -> int:
         return 0
 
     @property
-    def angular_tolerance(self):
+    def angular_tolerance(self) -> int:
         return 0
