@@ -164,8 +164,12 @@ class StatusMessage(KillStatus):
     )
     STRUCT_FORMAT = "=h"
 
-    def __init__(self, *args):
-        super(StatusMessage, self).__init__(*args)
+    def __new__(cls, *args):
+        """
+        Constructs a new namedtuple to derive the class from. This can't be done
+        in __init__ because namedtuples are immutable.
+        """
+        return super(StatusMessage, cls).__new__(cls, *args)
 
     @classmethod
     def from_bytes(cls, data):

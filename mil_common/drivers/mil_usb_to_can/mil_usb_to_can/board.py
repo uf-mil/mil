@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import serial
-from .utils import Packet, ReceivePacket, CommandPacket
-from .simulation import SimulatedUSBtoCAN
+from mil_usb_to_can.utils import Packet, ReceivePacket, CommandPacket # causes error if relative import used - GH-731
+from mil_usb_to_can.simulation import SimulatedUSBtoCAN
 from threading import Lock
 
 # from mil_tools import hexify
@@ -21,7 +21,7 @@ class USBtoCANBoard:
         Args:
         	port (str): Path to serial device, such as ``/dev/ttyUSB0``.
         	baud (int): Baud rate of serial device to connect to. Defaults to 9600.
-        	simulated (bool): If True, use a simulated serial device rather than a real device. Defaults to ``False``. 
+        	simulated (bool): If True, use a simulated serial device rather than a real device. Defaults to ``False``.
         """
         self.lock = Lock()
         if simulated:

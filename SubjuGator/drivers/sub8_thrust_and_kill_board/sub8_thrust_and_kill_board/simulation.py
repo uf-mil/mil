@@ -136,7 +136,8 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         :class:`ThrustPacket`, and :class:`HeartbeatMessage` types.
         """
         assert can_id == THRUST_SEND_ID or can_id == KILL_SEND_ID
-        if KillMessage.IDENTIFIER == ord(data[0]):
+        print(data[0], data)
+        if KillMessage.IDENTIFIER == data[0]:
             packet = KillMessage.from_bytes(data)
             assert packet.is_command
             assert packet.is_hard or packet.is_soft
@@ -145,9 +146,9 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
             elif packet.is_soft:
                 self.soft_kill_mobo = packet.is_asserted
             self.send_updates()
-        elif ThrustPacket.IDENTIFIER == ord(data[0]):
+        elif ThrustPacket.IDENTIFIER == data[0]:
             packet = ThrustPacket.from_bytes(data)
-        elif HeartbeatMessage.IDENTIFIER == ord(data[0]):
+        elif HeartbeatMessage.IDENTIFIER == data[0]:
             packet = HeartbeatMessage.from_bytes(data)
             self._last_heartbeat = rospy.Time.now()
         else:

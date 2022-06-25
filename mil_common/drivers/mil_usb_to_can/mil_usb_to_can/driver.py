@@ -5,8 +5,8 @@ from typing import Any, Dict, Generator, Optional, Tuple
 import rospy
 from serial import SerialException
 
-from .board import USBtoCANBoard
-from .utils import USB2CANException
+from mil_usb_to_can.board import USBtoCANBoard # relative import causes import error with rosrun - GH-731
+from mil_usb_to_can.utils import USB2CANException
 
 
 class USBtoCANDriver:
