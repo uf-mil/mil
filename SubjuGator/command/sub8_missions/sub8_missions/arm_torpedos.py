@@ -1,13 +1,16 @@
 from __future__ import annotations
-from txros import util
+
+from typing import Optional
+
 import numpy as np
-from mil_ros_tools import rosmsg_to_numpy
 import visualization_msgs.msg as visualization_msgs
-from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3
 from mil_misc_tools import FprintFactory
+from mil_ros_tools import rosmsg_to_numpy
+from txros import util
+from visualization_msgs.msg import Marker, MarkerArray
+
 from .sub_singleton import SubjuGator
-from typing import Optional
 
 MISSION = "Torpedo Challenge"
 
@@ -44,8 +47,8 @@ class FireTorpedos(SubjuGator):
     BACKUP_METERS = 3.0
     BLIND = True
 
-    targets: dict[str, Target] # Each of the targets being fired at
-    done: bool # Whether the mission has completed
+    targets: dict[str, Target]  # Each of the targets being fired at
+    done: bool  # Whether the mission has completed
 
     def __init__(self):
         self.print_info = FprintFactory(title=MISSION).fprint

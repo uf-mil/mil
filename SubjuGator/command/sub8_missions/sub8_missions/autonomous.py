@@ -1,18 +1,18 @@
-import txros
-from twisted.internet import defer
-from ros_alarms import TxAlarmListener, TxAlarmBroadcaster
-from mil_misc_tools import text_effects
 import genpy
-from .sub_singleton import SubjuGator
+import txros
+from mil_misc_tools import text_effects
+from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
+from twisted.internet import defer
+
+from .arm_torpedos import FireTorpedos
+from .ball_drop import BallDrop
+from .pinger import Pinger
 
 # Import missions here
 from .start_gate import StartGate
-from .pinger import Pinger
+from .sub_singleton import SubjuGator
 from .surface import Surface
 from .vampire_slayer import VampireSlayer
-from .arm_torpedos import FireTorpedos
-from .ball_drop import BallDrop
-
 
 fprint = text_effects.FprintFactory(title="AUTO_MISSION").fprint
 WAIT_SECONDS = 5.0

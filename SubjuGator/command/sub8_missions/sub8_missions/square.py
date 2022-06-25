@@ -1,5 +1,6 @@
-from .sub_singleton import SubjuGator
 from txros import util
+
+from .sub_singleton import SubjuGator
 
 SIDE_LENGTH = 1  # meters
 SPEED_LIMIT = 0.2  # m/s

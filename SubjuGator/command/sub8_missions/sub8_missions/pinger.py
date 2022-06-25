@@ -1,17 +1,19 @@
-from txros import util
-import rospy
-import numpy as np
+import random
+
 import mil_ros_tools
+import numpy as np
+import rospy
+import visualization_msgs.msg as visualization_msgs
+from geometry_msgs.msg import Point, Vector3
 from mil_misc_tools import text_effects
 from mil_passive_sonar.msg import ProcessedPing
 
 # from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 from std_srvs.srv import Trigger
 from twisted.internet import defer
-import random
-import visualization_msgs.msg as visualization_msgs
+from txros import util
 from visualization_msgs.msg import Marker, MarkerArray
-from geometry_msgs.msg import Point, Vector3
+
 from .sub_singleton import SubjuGator
 
 fprint = text_effects.FprintFactory(title="PINGER", msg_color="cyan").fprint

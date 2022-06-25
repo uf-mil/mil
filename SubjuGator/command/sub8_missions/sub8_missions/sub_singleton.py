@@ -1,47 +1,50 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import genpy
-from txros import (
-    action,
-    util,
-    tf,
-    serviceclient,
-    NodeHandle,
-    ServiceClient,
-    DeferredCancelDeferred,
-)
-import rospkg
 
-from mil_msgs.msg import MoveToAction, PoseTwistStamped, RangeStamped
-import pose_editor
+import os
+from typing import Callable, Optional, Sequence
+
+import genpy
 import mil_ros_tools
-from sub8_msgs.srv import (
-    VisionRequest,
-    VisionRequestRequest,
-    VisionRequest2DRequest,
-    VisionRequest2DResponse,
-    VisionRequest2D,
+import numpy as np
+import pose_editor
+import rospkg
+import sensor_msgs.point_cloud2 as pc2
+import yaml
+from mil_missions_core import BaseMission
+from mil_msgs.msg import MoveToAction, PoseTwistStamped, RangeStamped
+from mil_msgs.srv import (
+    ObjectDBQuery,
+    ObjectDBQueryRequest,
+    SetGeometry,
+    SetGeometryRequest,
 )
-from mil_msgs.srv import SetGeometry, SetGeometryRequest
-from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+from mil_passive_sonar.msg import ProcessedPing
+from nav_msgs.msg import Odometry
+from sensor_msgs.msg import PointCloud2
+from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
 
 # from sub8_msgs.srv import SetValve, SetValveRequest
 from sub8_actuator_board.srv import SetValve, SetValveRequest
-from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
-from nav_msgs.msg import Odometry
-from tf.transformations import quaternion_multiply, quaternion_from_euler
-from sensor_msgs.msg import PointCloud2
-import sensor_msgs.point_cloud2 as pc2
-from mil_missions_core import BaseMission
-
-from mil_passive_sonar.msg import ProcessedPing
-
-import numpy as np
+from sub8_msgs.srv import (
+    VisionRequest,
+    VisionRequest2D,
+    VisionRequest2DRequest,
+    VisionRequest2DResponse,
+    VisionRequestRequest,
+)
+from tf.transformations import quaternion_from_euler, quaternion_multiply
 from twisted.internet import defer
 from twisted.python import failure as twisted_failure
-import os
-import yaml
-from typing import Optional, Callable, Sequence
+from txros import (
+    DeferredCancelDeferred,
+    NodeHandle,
+    ServiceClient,
+    action,
+    serviceclient,
+    tf,
+    util,
+)
 
 
 class VisionProxy:

@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-from .sub_singleton import SubjuGator
-from txros import util
-from geometry_msgs.msg import Pose, Point, Quaternion, Twist
-from gazebo_msgs.msg import ModelState
-from ros_alarms import TxAlarmBroadcaster
+import os
+
 import rospkg
 import yaml
-import os
+from gazebo_msgs.msg import ModelState
+from geometry_msgs.msg import Point, Pose, Quaternion, Twist
 from mil_misc_tools import ThrowingArgumentParser
+from ros_alarms import TxAlarmBroadcaster
+from txros import util
+
+from .sub_singleton import SubjuGator
 
 UNITS = {"m": 1, "ft": 0.3048, "yard": 0.9144, "rad": 1, "deg": 0.0174533}
 SHORTHAND = {
