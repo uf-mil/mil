@@ -1,4 +1,3 @@
-from __future__ import division
 import warnings
 
 import numpy as np
@@ -12,13 +11,15 @@ from mil_ros_tools import rosmsg_to_numpy
 
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
-EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]
+EAST, NORTH, WEST, SOUTH = [
+    transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)
+]
 
 
 def normalized(x):
     x = np.array(x)
     if max(map(abs, x)) == 0:
-        warnings.warn('Normalizing zero-length vector to random unit vector')
+        warnings.warn("Normalizing zero-length vector to random unit vector")
         x = np.random.standard_normal(x.shape)
     x = x / max(map(abs, x))
     x = x / np.linalg.norm(x)
@@ -65,8 +66,8 @@ def triad(xxx_todo_changeme, xxx_todo_changeme1):
     B = np.array([normalized(b1), bb, normalized(np.cross(b1, bb))])
     rot = A.T.dot(B)
     return transformations.quaternion_from_matrix(
-        [(a, b, c, 0) for a, b, c in rot] +
-        [(0, 0, 0, 1)])
+        [(a, b, c, 0) for a, b, c in rot] + [(0, 0, 0, 1)]
+    )
 
 
 def test_triad():
@@ -78,12 +79,17 @@ def test_triad():
     m = transformations.quaternion_matrix(q)[:3, :3]
     q_ = triad((m.dot(a), m.dot(b)), (a, b))
 
-    assert np.linalg.norm(quat_to_rotvec(
-        transformations.quaternion_multiply(
-            q,
-            transformations.quaternion_inverse(q_),
+    assert (
+        np.linalg.norm(
+            quat_to_rotvec(
+                transformations.quaternion_multiply(
+                    q,
+                    transformations.quaternion_inverse(q_),
+                )
+            )
         )
-    )) < 1e-6
+        < 1e-6
+    )
 
 
 def look_at(forward, upish=UP):
@@ -104,17 +110,16 @@ def look_at_camera(forward, upish=UP):
 def safe_wait_for_message(topic, topic_type):
     while True:
         try:
-            return rospy.wait_for_message(topic, topic_type, .5)
+            return rospy.wait_for_message(topic, topic_type, 0.5)
         except rospy.exceptions.ROSException as e:
-            if 'timeout' not in e.message:
+            if "timeout" not in e.message:
                 raise
-            print topic, 'wait_for_message timed out!'
+            print(topic, "wait_for_message timed out!")
 
 
 class PoseEditor(object):
-
     @classmethod
-    def from_Odometry_topic(cls, topic='/odom'):
+    def from_Odometry_topic(cls, topic="/odom"):
         return cls.from_Odometry(safe_wait_for_message(topic, Odometry))
 
     @classmethod
@@ -131,7 +136,9 @@ class PoseEditor(object):
 
     @classmethod
     def from_Pose(cls, frame_id, msg):
-        return cls(frame_id, rosmsg_to_numpy(msg.position), rosmsg_to_numpy(msg.orientation))
+        return cls(
+            frame_id, rosmsg_to_numpy(msg.position), rosmsg_to_numpy(msg.orientation)
+        )
 
     def __init__(self, frame_id, position, orientation):
         self.frame_id = frame_id
@@ -257,10 +264,12 @@ class PoseEditor(object):
         return self.set_orientation(triad((UP, towards_rel_point), (UP, body_vec)))
 
     def yaw_left(self, angle):
-        return self.set_orientation(transformations.quaternion_multiply(
-            transformations.quaternion_about_axis(angle, UP),
-            self.orientation,
-        ))
+        return self.set_orientation(
+            transformations.quaternion_multiply(
+                transformations.quaternion_about_axis(angle, UP),
+                self.orientation,
+            )
+        )
 
     def yaw_right(self, angle):
         return self.yaw_left(-angle)
@@ -277,18 +286,18 @@ class PoseEditor(object):
     turn_right_deg = yaw_right_deg
 
     def heading(self, heading):
-        return self.set_orientation(
-            transformations.quaternion_about_axis(heading, UP)
-        )
+        return self.set_orientation(transformations.quaternion_about_axis(heading, UP))
 
     def heading_deg(self, heading_deg):
         return self.heading(np.radians(heading_deg))
 
     def roll_right(self, angle):
-        return self.set_orientation(transformations.quaternion_multiply(
-            self.orientation,
-            transformations.quaternion_about_axis(angle, [1, 0, 0]),
-        ))
+        return self.set_orientation(
+            transformations.quaternion_multiply(
+                self.orientation,
+                transformations.quaternion_about_axis(angle, [1, 0, 0]),
+            )
+        )
 
     def roll_left(self, angle):
         return self.roll_right(-angle)
@@ -303,10 +312,14 @@ class PoseEditor(object):
         return self.set_orientation(look_at(self.forward_vector))
 
     def pitch_down(self, angle):
-        return self.set_orientation(transformations.quaternion_multiply(
-            transformations.quaternion_about_axis(angle, self.zero_roll().left_vector),
-            self.orientation,
-        ))
+        return self.set_orientation(
+            transformations.quaternion_multiply(
+                transformations.quaternion_about_axis(
+                    angle, self.zero_roll().left_vector
+                ),
+                self.orientation,
+            )
+        )
 
     def pitch_up(self, angle):
         return self.pitch_down(-angle)
@@ -362,6 +375,7 @@ class PoseEditor(object):
     @property
     def posetwist(self):
         return self.as_PoseTwist()
+
     # and in place of a MoveToGoal
 
     @property
