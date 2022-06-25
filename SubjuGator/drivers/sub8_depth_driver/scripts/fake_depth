@@ -15,7 +15,7 @@ while not rospy.is_shutdown():
     pub.publish(DepthStamped(
         header=Header(
             stamp=rospy.Time.now(),
-            frame_id='/map',
+            frame_id='map',
         ),
         depth=0,
     ))

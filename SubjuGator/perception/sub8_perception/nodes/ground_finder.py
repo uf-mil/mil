@@ -19,9 +19,9 @@ rate = rospy.Rate(1.0)
 while not rospy.is_shutdown():
     try:
         t = listener.waitForTransform(
-            "/map", "/ground", rospy.Time.now(), rospy.Duration(1)
+            "map", "/ground", rospy.Time.now(), rospy.Duration(1)
         )
-        (trans, rot) = listener.lookupTransform("/map", "/ground", rospy.Time(0))
+        (trans, rot) = listener.lookupTransform("map", "/ground", rospy.Time(0))
     except (
         tf.Exception,
         tf.LookupException,

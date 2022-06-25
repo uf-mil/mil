@@ -223,7 +223,7 @@ class BuoyFinder:
             return VisionRequestResponse(found=False)
         return VisionRequestResponse(
             pose=PoseStamped(
-                header=Header(stamp=self.last_image_time, frame_id="/map"),
+                header=Header(stamp=self.last_image_time, frame_id="map"),
                 pose=Pose(position=Point(*buoy.est)),
             ),
             found=True,
@@ -319,7 +319,7 @@ class BuoyFinder:
         1) Create mask for buoy's color in colorspace specified in paramaters
         2) Select the largest contour in this mask
         3) Approximate a circle around this contour
-        4) Store the center of this circle and the current tf between /map and camera
+        4) Store the center of this circle and the current tf between map and camera
            as an observation
         5) If observations for this buoy is now >= min_observations, approximate buoy
            position using the least squares tool imported
@@ -364,7 +364,7 @@ class BuoyFinder:
 
         try:
             self.tf_listener.waitForTransform(
-                "/map", self.frame_id, self.last_image_time, rospy.Duration(0.2)
+                "map", self.frame_id, self.last_image_time, rospy.Duration(0.2)
             )
         except tf.Exception as e:
             rospy.logwarn("Could not transform camera to map: {}".format(e))
@@ -375,7 +375,7 @@ class BuoyFinder:
             return False
 
         (t, rot_q) = self.tf_listener.lookupTransform(
-            "/map", self.frame_id, self.last_image_time
+            "map", self.frame_id, self.last_image_time
         )
         R = mil_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
 
@@ -390,7 +390,7 @@ class BuoyFinder:
                     buoy.est,
                     color=buoy.draw_colors,
                     scaling=(0.2286, 0.2286, 0.2286),
-                    frame="/map",
+                    frame="map",
                     _id=buoy.visual_id,
                 )
         else:

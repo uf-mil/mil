@@ -114,7 +114,7 @@ class Sub:
         odom.pose.pose.orientation = numpy_to_quaternion(self.pose[3:])
         odom.twist.twist = numpy_to_twist(self.twist[0:3], self.twist[3:])
         odom.header.stamp = rospy.Time.now()
-        odom.header.frame_id = "/map"
+        odom.header.frame_id = "map"
         odom.child_frame_id = "base_link"
         self.odom_pub.publish(odom)
 

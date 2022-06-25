@@ -119,14 +119,14 @@ class Spacenav:
     def publish_target_pose(self, position: np.ndarray, orientation):
         self.target_pose_pub.publish(
             PoseStamped(
-                header=mil_ros_tools.make_header("/map"),
+                header=mil_ros_tools.make_header("map"),
                 pose=Pose(
                     position=mil_ros_tools.numpy_to_point(position),
                     orientation=mil_ros_tools.numpy_to_quaternion(orientation),
                 ),
             )
         )
-        self.distance_marker.header = mil_ros_tools.make_header("/map")
+        self.distance_marker.header = mil_ros_tools.make_header("map")
         self.distance_marker.text = (
             "XY: "
             + str(self.target_distance)
@@ -165,7 +165,7 @@ class Spacenav:
             position[2] = -0.5
 
         goal = mil_msgs.MoveToGoal(
-            header=mil_ros_tools.make_header("/map"),
+            header=mil_ros_tools.make_header("map"),
             posetwist=mil_msgs.PoseTwist(
                 pose=geom_msgs.Pose(
                     position=mil_ros_tools.numpy_to_point(position),

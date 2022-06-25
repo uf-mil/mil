@@ -120,7 +120,7 @@ class MultiObs:
         # NOTE: returns normal vec encoded into a quaternion message (so not actually a quaternion)
         return VisionRequestResponse(
             pose=PoseStamped(
-                header=Header(stamp=rospy.Time.now(), frame_id="/map"),
+                header=Header(stamp=rospy.Time.now(), frame_id="map"),
                 pose=Pose(
                     position=Point(*((self.est + self.est1 + self.est2) / 3)),
                     orientation=Quaternion(
@@ -185,7 +185,7 @@ class MultiObs:
 
     def marker_msg(self, point, point_name):
         robotMarker = Marker()
-        robotMarker.header.frame_id = "/map"
+        robotMarker.header.frame_id = "map"
         robotMarker.header.stamp = rospy.get_rostime()
         robotMarker.ns = point_name
         robotMarker.id = 0
@@ -225,7 +225,7 @@ class MultiObs:
         # print("p2: ", point2)
         try:
             self.tf_listener.waitForTransform(
-                "/map",
+                "map",
                 "/front_left_cam_optical",
                 self.image_sub.last_image_time - rospy.Time(0.2),
                 rospy.Duration(0.2),
@@ -235,7 +235,7 @@ class MultiObs:
             return False
 
         (t, rot_q) = self.tf_listener.lookupTransform(
-            "/map",
+            "map",
             "/front_left_cam_optical",
             self.image_sub.last_image_time - rospy.Time(0.2),
         )

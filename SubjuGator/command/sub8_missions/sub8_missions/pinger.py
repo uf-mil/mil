@@ -210,7 +210,7 @@ class Pinger(SubjuGator):
 
     @util.cancellableInlineCallbacks
     def transform_to_baselink(self, sub: SubjuGator, pinger_1_req, pinger_2_req):
-        transform = yield sub._tf_listener.get_transform("/base_link", "/map")
+        transform = yield sub._tf_listener.get_transform("/base_link", "map")
         position = yield sub.pose.position
         pinger_guess = [
             transform._q_mat.dot(np.array(x) - position)

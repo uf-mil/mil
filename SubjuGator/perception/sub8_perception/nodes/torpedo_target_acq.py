@@ -133,7 +133,7 @@ class torp_vision:
             return VisionRequestResponse(found=False)
         return VisionRequestResponse(
             pose=PoseStamped(
-                header=Header(stamp=self.last_image_time, frame_id="/map"),
+                header=Header(stamp=self.last_image_time, frame_id="map"),
                 pose=Pose(position=Point(*self.est)),
             ),
             found=True,
@@ -316,7 +316,7 @@ class torp_vision:
         if m_shape == "Target Aquisition Successful":
             try:
                 self.tf_listener.waitForTransform(
-                    "/map",
+                    "map",
                     self.camera_model.tfFrame(),
                     self.last_image_time,
                     rospy.Duration(0.2),
@@ -326,7 +326,7 @@ class torp_vision:
                 return False
 
             (t, rot_q) = self.tf_listener.lookupTransform(
-                "/map", self.camera_model.tfFrame(), self.last_image_time
+                "map", self.camera_model.tfFrame(), self.last_image_time
             )
             R = mil_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
             center = np.array([max_x, max_y])

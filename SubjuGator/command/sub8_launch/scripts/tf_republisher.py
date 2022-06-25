@@ -15,8 +15,8 @@ def got_range(msg):
         listener.clear()
     t = rospy.Time(0)
     try:
-        listener.waitForTransform("/base_link", "/map", t, rospy.Duration(1))
-        trans, rot = listener.lookupTransform("/base_link", "/map", t)
+        listener.waitForTransform("/base_link", "map", t, rospy.Duration(1))
+        trans, rot = listener.lookupTransform("/base_link", "map", t)
         bc.sendTransform(translation, rot, rospy.Time.now(), "/ground", "/dvl")
     except (
         tf.Exception,

@@ -342,7 +342,7 @@ class SubjuGator(BaseMission):
         defer.returnValue(msg.range)
 
     @util.cancellableInlineCallbacks
-    def get_in_frame(self, pose_stamped, frame: str = "/map"):
+    def get_in_frame(self, pose_stamped, frame: str = "map"):
         """
         TODO
         """

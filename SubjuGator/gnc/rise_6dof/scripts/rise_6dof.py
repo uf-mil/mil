@@ -107,7 +107,7 @@ class Node:
                 )
 
             assert self.current.header.frame_id == self.desired.header.frame_id
-            assert self.current.header.frame_id in ["/map", "/odom", "/enu"]
+            assert self.current.header.frame_id in ["map", "/odom", "/enu"]
 
             if not self.is_constant_wrench_valid():
                 self.controller.config = self.processed_config

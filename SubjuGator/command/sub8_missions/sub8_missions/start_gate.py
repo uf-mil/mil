@@ -37,7 +37,7 @@ class StartGate(SubjuGator):
             start = self.move.zero_roll_and_pitch()
             # Pitch up and down to populate pointcloud
             so = SonarObjects(self, [start.pitch_down_deg(7), start] * 5)
-            transform = yield self._tf_listener.get_transform("/map", "/base_link")
+            transform = yield self._tf_listener.get_transform("map", "/base_link")
             # [1, 0, 0] is front vector for self
             ray = transform._q_mat.dot(np.array([1, 0, 0]))
             # Start scan and search

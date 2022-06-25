@@ -47,7 +47,7 @@ def make6DofMarker(
     int_marker = InteractiveMarker()
     int_marker.name = name
     int_marker.description = description
-    int_marker.header.frame_id = "/map"
+    int_marker.header.frame_id = "map"
     int_marker.scale = 1
 
     # insert a box
@@ -80,7 +80,7 @@ def makeMovingMarker(name: str, description: str) -> InteractiveMarker:
     int_marker = InteractiveMarker()
     int_marker.name = name
     int_marker.description = description
-    int_marker.header.frame_id = "/map"
+    int_marker.header.frame_id = "map"
     int_marker.scale = 1
 
     # insert a box
@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
     desired_pub = rospy.Publisher("/desired", PoseTwistStamped)
     desired_posetwist = PoseTwistStamped(
-        header=Header(frame_id="/map", stamp=rospy.Time.now()),
+        header=Header(frame_id="map", stamp=rospy.Time.now()),
         posetwist=PoseTwist(
             pose=Pose(position=Point(0, 0, 0), orientation=Quaternion(0, 0, 0, 1)),
             twist=Twist(linear=Vector3(0, 0, 0), angular=Vector3(0, 0, 0)),
@@ -156,7 +156,7 @@ if __name__ == "__main__":
             else:
                 twist = Twist(linear=Vector3(0, 0, 0), angular=Vector3(0, 0, 0))
             desired_posetwist = PoseTwistStamped(
-                header=Header(frame_id="/map", stamp=rospy.Time.now()),
+                header=Header(frame_id="map", stamp=rospy.Time.now()),
                 posetwist=PoseTwist(
                     pose=feedback.pose,
                     twist=twist,
@@ -223,7 +223,7 @@ if __name__ == "__main__":
 
         current_pub.publish(
             Odometry(
-                header=Header(frame_id="/map"),
+                header=Header(frame_id="map"),
                 pose=PoseWithCovariance(pose=pose),
                 twist=TwistWithCovariance(
                     twist=Twist(
