@@ -1,25 +1,24 @@
-import txros
-from twisted.internet import defer
-from ros_alarms import TxAlarmListener, TxAlarmBroadcaster
-from mil_misc_tools import text_effects
 import genpy
-from .sub_singleton import SubjuGator
+import txros
+from mil_misc_tools import text_effects
+from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
+from twisted.internet import defer
+
+from .arm_torpedos import FireTorpedos
+from .ball_drop import BallDrop
+from .pinger import Pinger
 
 # Import missions here
 from .start_gate import StartGate
-from .pinger import Pinger
+from .sub_singleton import SubjuGator
 from .surface import Surface
 from .vampire_slayer import VampireSlayer
-from .arm_torpedos import FireTorpedos
-from .ball_drop import BallDrop
-
 
 fprint = text_effects.FprintFactory(title="AUTO_MISSION").fprint
 WAIT_SECONDS = 5.0
 
 
 class Autonomous(SubjuGator):
-
     @txros.util.cancellableInlineCallbacks
     def run_mission(self, mission, timeout):
         # timeout in seconds
@@ -31,7 +30,7 @@ class Autonomous(SubjuGator):
                 m.cancel()
                 defer.returnValue(True)
             yield self.nh.sleep(0.5)
-        fprint('MISSION TIMEOUT', msg_color='red')
+        fprint("MISSION TIMEOUT", msg_color="red")
         m.cancel()
         defer.returnValue(False)
 
@@ -48,12 +47,12 @@ class Autonomous(SubjuGator):
             if not completed:  # if we timeout
                 pass
             else:
-                if (yield self.nh.has_param('pinger_where')):
-                    if (yield self.nh.get_param('pinger_where')) == 0:
-                        fprint('Surface Mission')
+                if (yield self.nh.has_param("pinger_where")):
+                    if (yield self.nh.get_param("pinger_where")) == 0:
+                        fprint("Surface Mission")
                         yield self.run_mission(Surface(), 30)
-                    elif (yield self.nh.get_param('pinger_where')) == 1:
-                        fprint('Shooting Mission')
+                    elif (yield self.nh.get_param("pinger_where")) == 1:
+                        fprint("Shooting Mission")
                         yield self.run_mission(FireTorpedos(), 400)
 
             # Go to the other pinger mission and do respective mission
@@ -61,13 +60,13 @@ class Autonomous(SubjuGator):
             if not completed:  # if we timeout
                 pass
             else:
-                if (yield self.nh.has_param('pinger_where')):
-                    if (yield self.nh.get_param('pinger_where')) == 0:
-                        fprint('Surface Mission')
+                if (yield self.nh.has_param("pinger_where")):
+                    if (yield self.nh.get_param("pinger_where")) == 0:
+                        fprint("Surface Mission")
                         yield self.run_mission(Surface(), 30)
 
-                    elif (yield self.nh.get_param('pinger_where')) == 1:
-                        fprint('Shooting Mission')
+                    elif (yield self.nh.get_param("pinger_where")) == 1:
+                        fprint("Shooting Mission")
                         yield self.run_mission(FireTorpedos(), 400)
 
             fprint("Vampire Slayer")
@@ -77,7 +76,7 @@ class Autonomous(SubjuGator):
 
         except Exception as e:
             fprint("Error in Chain 1 missions!", msg_color="red")
-            print e
+            print(e)
 
         # Create a mission kill alarm and kill in the final area
         ab = yield TxAlarmBroadcaster.init(self.nh, "mission-kill")
@@ -85,22 +84,21 @@ class Autonomous(SubjuGator):
         fprint("MISSION COMPLETE", msg_color="green")
 
     @txros.util.cancellableInlineCallbacks
-    def _check_for_run(self, nh, alarm):
-        ''' Waits for the network loss alarm to trigger before '''
+    def _check_for_run(self, nh: txros.NodeHandle, _):
+        """Waits for the network loss alarm to trigger before"""
         if (yield nh.has_param("autonomous")) and (yield nh.get_param("autonomous")):
-            fprint(
-                "Waiting {} seconds before running missions...".format(WAIT_SECONDS))
+            fprint("Waiting {} seconds before running missions...".format(WAIT_SECONDS))
             yield nh.sleep(WAIT_SECONDS)
-            fprint('Running Missions')
+            fprint("Running Missions")
             yield self.do_mission()
         else:
-            fprint(
-                "Network loss deteceted but NOT starting mission.",
-                msg_color='red')
+            fprint("Network loss deteceted but NOT starting mission.", msg_color="red")
 
     @txros.util.cancellableInlineCallbacks
-    def _auto_param_watchdog(self, nh):
-        ''' Watch the `autonomous` param and notify the user when events happen  '''
+    def _auto_param_watchdog(self, nh: txros.NodeHandle):
+        """
+        Watch the `autonomous` param and notify the user when events happen.
+        """
         ready = False
         while True:
             yield nh.sleep(0.1)
@@ -115,7 +113,8 @@ class Autonomous(SubjuGator):
                 ready = True
                 fprint(
                     "Autonomous mission armed. Disconnect now to run.",
-                    msg_color="yellow")
+                    msg_color="yellow",
+                )
 
             elif not (yield nh.get_param("autonomous")) and ready:
                 ready = False
