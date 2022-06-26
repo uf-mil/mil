@@ -27,7 +27,7 @@ class MissionClientCli:
     def list(cls) -> None:
         missions = MissionClient.available_missions()
         if not missions:
-            print("{} param not set. Is mission runner running?".format(cls.LIST_PARAM))
+            print("{} param not set. Is mission runner running?".format(MissionClient.LIST_PARAM))
             return
         print("Available Missions:")
         for mission in missions:

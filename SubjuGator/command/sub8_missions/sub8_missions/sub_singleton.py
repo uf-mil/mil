@@ -7,7 +7,7 @@ from typing import Callable, Optional, Sequence
 import genpy
 import mil_ros_tools
 import numpy as np
-import pose_editor
+from . import pose_editor
 import rospkg
 import sensor_msgs.point_cloud2 as pc2
 import yaml
@@ -42,7 +42,7 @@ from txros import (
     ServiceClient,
     action,
     serviceclient,
-    tf,
+    txros_tf,
     util,
 )
 
@@ -165,7 +165,7 @@ class _VisionProxies:
         config_file = os.path.join(
             rospack.get_path("sub8_missions"), "sub8_missions", file_name
         )
-        f = yaml.load(open(config_file, "r"))
+        f = yaml.safe_load(open(config_file, "r"))
 
         self.proxies: dict[str, VisionProxy] = {}
         for name, params in f.items():
@@ -303,7 +303,7 @@ class SubjuGator(BaseMission):
         cls._trajectory_sub = yield cls.nh.subscribe("trajectory", PoseTwistStamped)
         cls._trajectory_pub = yield cls.nh.advertise("trajectory", PoseTwistStamped)
         cls._dvl_range_sub = yield cls.nh.subscribe("dvl/range", RangeStamped)
-        cls._tf_listener = yield tf.TransformListener(cls.nh)
+        cls._tf_listener = yield txros_tf.TransformListener(cls.nh)
 
         cls.vision_proxies = _VisionProxies(cls.nh, "vision_proxies.yaml")
         cls.actuators = _ActuatorProxy(cls.nh)
@@ -349,7 +349,7 @@ class SubjuGator(BaseMission):
         transform = yield self._tf_listener.get_transform(
             frame, pose_stamped.header.frame_id, pose_stamped.header.stamp
         )
-        tft = tf.Transform.from_Pose_message(pose_stamped.pose)
+        tft = txros_tf.Transform.from_Pose_message(pose_stamped.pose)
         full_transform = transform * tft
         position = np.array(full_transform._p)
         orientation = np.array(full_transform._q)
