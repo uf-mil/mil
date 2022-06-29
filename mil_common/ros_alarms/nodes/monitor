@@ -63,7 +63,7 @@ class AlarmMonitor:
         _, x = self.screen.getmaxyx()
         # If box is too narrow, exclude help string
         if x > len(self.HELP_STR):
-            self.screen.addstr(0, (x - len(self.HELP_STR)) / 2, self.HELP_STR)
+            self.screen.addstr(0, (x - len(self.HELP_STR)) // 2, self.HELP_STR)
             status_window = self.screen.subwin(1, 0)
         else:
             status_window = self.screen.subwin(0, 0)
@@ -88,24 +88,24 @@ class AlarmMonitor:
         # If window is too short to fit status, just display colored box
         if height < 3:
             return
-        center = height / 2
+        center = height // 2
         if width >= len(
             self.alarm_name
         ):  # If box is wide enough, display alarm name in center
             status_window.addstr(
-                center - 1, (width - len(self.alarm_name)) / 2, self.alarm_name
+                center - 1, (width - len(self.alarm_name)) // 2, self.alarm_name
             )
         if width >= len(
             status_str
         ):  # If box is wide enough, display status text in center
-            status_window.addstr(center, (width - len(status_str)) / 2, status_str)
+            status_window.addstr(center, (width - len(status_str)) // 2, status_str)
         if (
             description_str is not None
             and width >= len(description_str)
             and height >= 4
         ):
             status_window.addstr(
-                center + 1, (width - len(description_str)) / 2, description_str
+                center + 1, (width - len(description_str)) // 2, description_str
             )
 
     def _read_key(self):

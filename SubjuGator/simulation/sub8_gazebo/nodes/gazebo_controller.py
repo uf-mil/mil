@@ -114,7 +114,7 @@ class GazeboInterface(object):
 
         msg = self.last_odom
         if self.target in msg.name:
-            header = mil_ros_tools.make_header(frame="/map")
+            header = mil_ros_tools.make_header(frame="map")
 
             target_index = msg.name.index(self.target)
             twist = msg.twist[target_index]

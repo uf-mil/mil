@@ -49,7 +49,7 @@ class Guess:
         spacer = 0
         for i in self.items:
             self.markers.append(InteractiveMarker())
-            self.markers[spacer].header.frame_id = "/map"
+            self.markers[spacer].header.frame_id = "map"
             self.markers[spacer].name = i
             self.markers[spacer].description = i
             self.markers[spacer].controls.append(box_control)

@@ -116,7 +116,7 @@ class OccGridUtils:
         Take the occupancy grid and send it out over ros with timestamps and whatnot.
         """
         t = rospy.Time.now()
-        header = Header(stamp=t, frame_id="/map")
+        header = Header(stamp=t, frame_id="map")
         # Populate occ grid msg
         occ_msg = OccupancyGrid()
         occ_msg.header = header
@@ -298,12 +298,12 @@ class MarkerOccGrid(OccGridUtils):
 
         # Calculate position of marker accounting for camera rotation.
         dir_vector = unit_vector(np.array([self.cam.cx(), self.cam.cy()] - marker[0]))
-        trans, rot = self.tf_listener.lookupTransform("/map", "/downward", timestamp)
+        trans, rot = self.tf_listener.lookupTransform("map", "/downward", timestamp)
         cam_rotation = tf.transformations.euler_from_quaternion(rot)[2] + np.pi / 2
         dir_vector = np.dot(dir_vector, make_2D_rotation(cam_rotation))
         marker_rotation = cam_rotation + marker[1]
 
-        trans, rot = self.tf_listener.lookupTransform("/map", "/base_link", timestamp)
+        trans, rot = self.tf_listener.lookupTransform("map", "/base_link", timestamp)
         if (np.abs(np.array(rot)[:2]) > 0.005).any():
             rospy.logwarn("We're at a weird angle, not adding marker.")
 
@@ -330,9 +330,9 @@ class MarkerOccGrid(OccGridUtils):
             timestamp = rospy.Time()
 
         self.tf_listener.waitForTransform(
-            "/map", "/downward", timestamp, rospy.Duration(5.0)
+            "map", "/downward", timestamp, rospy.Duration(5.0)
         )
-        trans, rot = self.tf_listener.lookupTransform("/map", "/downward", timestamp)
+        trans, rot = self.tf_listener.lookupTransform("map", "/downward", timestamp)
         x_y_position = trans[:2]
         self.tf_listener.waitForTransform(
             "/ground", "/downward", timestamp, rospy.Duration(5.0)
@@ -353,7 +353,7 @@ class MarkerOccGrid(OccGridUtils):
 
         TODO: See if this actually can produce better results.
         """
-        trans, rot = self.tf_listener.lookupTransform("/map", "/base_link", timestamp)
+        trans, rot = self.tf_listener.lookupTransform("map", "/base_link", timestamp)
         euler_rotation = tf.transformations.euler_from_quaternion(rot)
 
         roll_offset = np.abs(np.sin(euler_rotation[0]) * measured_height)

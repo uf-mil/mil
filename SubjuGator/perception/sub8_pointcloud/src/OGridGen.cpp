@@ -123,7 +123,7 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
 {
   try  // TODO: Switch to TF2
   {
-    listener_.lookupTransform("/map", "/blueview", ros::Time(0), transform_);
+    listener_.lookupTransform("map", "/blueview", ros::Time(0), transform_);
   }
   catch (tf::TransformException ex)
   {

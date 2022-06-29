@@ -16,7 +16,7 @@ from tf import transformations
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = [
-    transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)
+    transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in range(4)
 ]
 
 

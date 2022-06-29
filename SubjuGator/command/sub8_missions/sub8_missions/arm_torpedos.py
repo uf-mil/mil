@@ -148,7 +148,7 @@ class FireTorpedos(SubjuGator):
         self.print_info("FIRING {}".format(target))
         target_pose = self.targets[target].position
         yield self.move.go(blind=self.BLIND, speed=0.1)  # Station hold
-        transform = yield self._tf_listener.get_transform("/map", "/base_link")
+        transform = yield self._tf_listener.get_transform("map", "/base_link")
         # target_position = transform._q_mat.dot(
         #         target_pose - transform._p)
 

@@ -208,7 +208,7 @@ class Sub8(Entity):
 
         translation = self.body.getPosition()
 
-        header = mil_ros_tools.make_header(frame="/map")
+        header = mil_ros_tools.make_header(frame="map")
 
         pose = geometry.Pose(
             position=geometry.Point(*translation),

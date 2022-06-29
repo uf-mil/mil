@@ -3,7 +3,10 @@ from __future__ import annotations
 
 import struct
 import serial
-from typing import Optional, Union
+from typing import Optional, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .simulation import SimulatedUSBtoCAN
 
 
 class USB2CANException(Exception):
@@ -52,7 +55,7 @@ class InvalidStartFlagException(InvalidFlagException):
     """
     Exception thrown when the SOF flag is invalid. Inherits from :class:`InvalidFlagException`.
     """
-    def __init__(self, was):
+    def __init__(self, was: bytes):
         super(InvalidStartFlagException, self).__init__("SOF", Packet.SOF, was)
 
 
@@ -60,7 +63,7 @@ class InvalidEndFlagException(InvalidFlagException):
     """
     Exception thrown when the EOF flag is invalid. Inherits from :class:`InvalidFlagException`.
     """
-    def __init__(self, was):
+    def __init__(self, was: bytes):
         super(InvalidEndFlagException, self).__init__("EOF", Packet.EOF, was)
 
 
@@ -144,7 +147,7 @@ class Packet:
         return "Packet(payload={})".format(self.payload)
 
     @classmethod
-    def read_packet(cls, ser: Union[serial.Serial, 'SimulatedUSBtoCAN']) -> Optional[Packet]:
+    def read_packet(cls, ser: Union[serial.Serial, SimulatedUSBtoCAN]) -> Optional[Packet]:
         """
         Read a packet with a known size from a serial device
 
@@ -166,10 +169,10 @@ class Packet:
             sof = ser.read(1)
             if sof is None or len(sof) == 0:
                 return None
-            if ord(sof) == cls.SOF:
+            if sof == cls.SOF:
                 break
-        if ord(sof) != cls.SOF:
-            raise InvalidStartFlagException(ord(sof))
+        if sof != cls.SOF:
+            raise InvalidStartFlagException(sof)
         data = sof
         eof = None
         for _ in range(10):
@@ -177,10 +180,10 @@ class Packet:
             if eof is None or len(eof) == 0:
                 return None
             data += eof
-            if ord(eof) == cls.EOF:
+            if eof == cls.EOF:
                 break
-        if ord(eof) != cls.EOF:
-            raise InvalidEndFlagException(ord(eof))
+        if eof != cls.EOF:
+            raise InvalidEndFlagException(eof)
         # print hexify(data)
         return cls.from_bytes(data)
 
@@ -220,7 +223,7 @@ class ReceivePacket(Packet):
             raise PayloadTooLargeException(len(payload))
         checksum = device_id + len(payload) + cls.SOF + cls.EOF
         for byte in payload:
-            checksum += ord(byte)
+            checksum += byte
         checksum %= 16
         data = struct.pack(
             "BB{}sB".format(len(payload)), device_id, len(payload), payload, checksum
@@ -230,7 +233,7 @@ class ReceivePacket(Packet):
     @classmethod
     def from_bytes(cls, data: bytes) -> ReceivePacket:
         """
-        Creates a receive packet from packed bytes. This strips the checksum from 
+        Creates a receive packet from packed bytes. This strips the checksum from
         the bytes and then unpacks the data to gain the raw payload.
 
         Raises:
@@ -242,10 +245,10 @@ class ReceivePacket(Packet):
         """
         expected_checksum = 0
         for byte in data[:-2]:
-            expected_checksum += ord(byte)
-        expected_checksum += ord(data[-1])
+            expected_checksum += byte
+        expected_checksum += data[-1]
         expected_checksum %= 16
-        real_checksum = ord(data[-2])
+        real_checksum = data[-2]
         if real_checksum != expected_checksum:
             raise ChecksumException(expected_checksum, real_checksum)
         payload = cls.unpack_payload(data)
@@ -299,7 +302,7 @@ class CommandPacket(Packet):
         Returns:
             :class:`int`
         """
-        return struct.unpack("B", self.payload[1])[0]
+        return struct.unpack("B", self.payload[1:1+1])[0] # [1:1+1] range used to ensure bytes, not [1] for int
 
     @property
     def data(self) -> bytes:
@@ -364,21 +367,21 @@ class CommandPacket(Packet):
         return cls.create_command_packet(length_byte, filter_id)
 
     @staticmethod
-    def calculate_checksum(data):
+    def calculate_checksum(data: bytes) -> int:
         checksum = 0
         for byte in data:
-            checksum += ord(byte)
+            checksum += byte
         return checksum % 16
 
     @classmethod
-    def from_bytes(cls, data):
+    def from_bytes(cls, data: bytes):
         checksum_expected = 0
-        checksum_expected += ord(data[0])
-        checksum_expected += ord(data[1]) & 135
+        checksum_expected += data[0]
+        checksum_expected += data[1] & 135
         for byte in data[2:]:
-            checksum_expected += ord(byte)
+            checksum_expected += byte
         checksum_expected %= 16
-        checksum_real = (ord(data[1]) & 120) >> 3
+        checksum_real = (data[1] & 120) >> 3
         if checksum_expected != checksum_real:
             raise ChecksumException(checksum_expected, checksum_real)
         payload = cls.unpack_payload(data)
@@ -386,14 +389,14 @@ class CommandPacket(Packet):
             return None
         return cls(payload)
 
-    def to_bytes(self):
+    def to_bytes(self) -> bytes:
         data = super(CommandPacket, self).to_bytes()
         checksum = 0
         for byte in data:
-            checksum += ord(byte)
+            checksum += byte
         checksum %= 16
-        header_byte = (checksum << 3) | ord(data[1])
-        data = data[:1] + chr(header_byte) + data[2:]
+        header_byte = (checksum << 3) | data[1]
+        data = data[:1] + chr(header_byte).encode() + data[2:]
         return data
 
     def __str__(self):

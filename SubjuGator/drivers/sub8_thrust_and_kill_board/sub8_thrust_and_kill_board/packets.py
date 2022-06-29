@@ -84,7 +84,7 @@ class KillMessage(ApplicationPacket):
         Returns:
             bool: The status of the packet's command/response type.
         """
-        return ord(self.payload[0]) == self.COMMAND
+        return self.payload[0] == self.COMMAND
 
     @property
     def is_response(self) -> bool:
@@ -94,7 +94,7 @@ class KillMessage(ApplicationPacket):
         Returns:
             bool: The status of the packet's command/response type.
         """
-        return ord(self.payload[0]) == self.RESPONSE
+        return self.payload[0] == self.RESPONSE
 
     @property
     def is_hard(self) -> bool:
@@ -104,7 +104,7 @@ class KillMessage(ApplicationPacket):
         Returns:
             bool: The status of the packet's hard/soft kill type.
         """
-        return ord(self.payload[1]) == self.HARD
+        return self.payload[1] == self.HARD
 
     @property
     def is_soft(self) -> bool:
@@ -114,7 +114,7 @@ class KillMessage(ApplicationPacket):
         Returns:
             bool: The status of the packet's hard/soft kill type.
         """
-        return ord(self.payload[1]) == self.SOFT
+        return self.payload[1] == self.SOFT
 
     @property
     def is_asserted(self):
@@ -124,7 +124,7 @@ class KillMessage(ApplicationPacket):
         Returns:
             bool: The status of the packet's asserteed/unasserted type.
         """
-        return ord(self.payload[2]) == self.ASSERTED
+        return self.payload[2] == self.ASSERTED
 
     @property
     def is_unasserted(self):
@@ -134,7 +134,7 @@ class KillMessage(ApplicationPacket):
         Returns:
             bool: The status of the packet's asserteed/unasserted type.
         """
-        return ord(self.payload[2]) == self.UNASSERTED
+        return self.payload[2] == self.UNASSERTED
 
     def __str__(self):
         return "KillMessage(command={}, hard={}, asserted={})".format(
@@ -164,8 +164,12 @@ class StatusMessage(KillStatus):
     )
     STRUCT_FORMAT = "=h"
 
-    def __init__(self, *args):
-        super(StatusMessage, self).__init__(*args)
+    def __new__(cls, *args):
+        """
+        Constructs a new namedtuple to derive the class from. This can't be done
+        in __init__ because namedtuples are immutable.
+        """
+        return super(StatusMessage, cls).__new__(cls, *args)
 
     @classmethod
     def from_bytes(cls, data):

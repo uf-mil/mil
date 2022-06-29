@@ -135,7 +135,7 @@ class OrangeRectangleFinder:
         if self.last3d is None or not self.found:
             return
         m = Marker()
-        m.header.frame_id = "/map"
+        m.header.frame_id = "map"
         m.header.stamp = self.last_found_time_3D
         m.ns = "orange_rectangle"
         m.id = 0
@@ -173,7 +173,7 @@ class OrangeRectangleFinder:
         elif self.last3d is None or not self.enabled:
             res.found = False
         else:
-            res.pose.header.frame_id = "/map"
+            res.pose.header.frame_id = "map"
             res.pose.header.stamp = self.last_found_time_3D
             res.pose.pose.position = numpy_to_point(self.last3d[0])
             res.pose.pose.orientation = numpy_to_quaternion(self.last3d[1])
@@ -282,13 +282,13 @@ class OrangeRectangleFinder:
         # Transform pose estimate to map frame
         try:
             self.tf_listener.waitForTransform(
-                "/map", ps.header.frame_id, ps.header.stamp, rospy.Duration(0.1)
+                "map", ps.header.frame_id, ps.header.stamp, rospy.Duration(0.1)
             )
-            map_ps = self.tf_listener.transformPoint("/map", ps)
-            map_vec3 = self.tf_listener.transformVector3("/map", vec3)
+            map_ps = self.tf_listener.transformPoint("map", ps)
+            map_vec3 = self.tf_listener.transformVector3("map", vec3)
         except tf.Exception as err:
             rospy.logwarn(
-                "Could not transform {} to /map error={}".format(
+                "Could not transform {} to map error={}".format(
                     self.cam.tfFrame(), err
                 )
             )

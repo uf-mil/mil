@@ -50,7 +50,7 @@ class MissionRunner:
                 self.missions[cls.name()] = cls
 
         # Set available missions param with list of all imported missions
-        yield self.nh.set_param("/available_missions", self.missions.keys())
+        yield self.nh.set_param("/available_missions", list(self.missions.keys()))
 
         # Set current mission to None
         self.mission_defer = None

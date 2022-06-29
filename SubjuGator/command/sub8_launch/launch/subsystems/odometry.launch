@@ -3,7 +3,7 @@
    <node pkg="nodelet" type="nodelet" args="standalone odom_estimator/nodelet" name="odom_estimator" respawn="true">
       <rosparam>
         have_gps: false
-        local_frame: /map
+        local_frame: map
         # Handly tool for making these https://www.oc.nps.edu/oc2902w/coord/llhxyz.htm?source=post_page
         # Gainesville
         #start_x_ecef:   738543 
@@ -18,7 +18,7 @@
    </node>
    <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry" respawn="true">
       <rosparam>
-        frame_id: /map
+        frame_id: map
         child_frame_id: /base_link
       </rosparam>
       <remap from="orig_odom" to="imu_odom" />

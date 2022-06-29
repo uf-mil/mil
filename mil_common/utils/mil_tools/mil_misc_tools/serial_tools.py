@@ -73,17 +73,41 @@ class SimulatedSerial(NoopSerial):
     on reads to the simulated device.
 
     Note: :class:`NoopSerial` and :class:`SimulatedSerial` are generic and are candidates for mil_common.
+
+    Args:
+        buffer (bytes): A buffer of bytes waiting to be read from the device.
     """
     def __init__(self, *args, **kwargs):
-        self.buffer = ""
+        self.buffer = b""
 
     @property
     def in_waiting(self):
+        """
+        The number of bytes waiting to be read. This does not modify the buffer in
+        any way; the buffer is only inspected.
+
+        Returns:
+            int: The count of bytes in the buffer.
+        """
         return len(self.buffer)
 
-    def reset_input_buffer(self):
-        self.buffer = ""
+    def reset_input_buffer(self) -> None:
+        """
+        Resets the buffer to contain no content. The buffer is set to an empty
+        byte string.
+        """
+        self.buffer = b""
 
-    def read(self, length):
+    def read(self, length: int) -> bytes:
+        """
+        Reads an amount of bytes from the buffer. All bytes read are removed from the
+        buffer upon reading.
+
+        Args:
+            length (int): The amount of bytes desired to be read.
+
+        Returns:
+            bytes: The bytes originating from the top of the buffer.
+        """
         b, self.buffer = self.buffer[0:length], self.buffer[length:]
         return b
