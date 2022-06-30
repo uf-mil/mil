@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+import os
+
 from mil_vision_tools import GaussianColorClassifier
 from rospkg import RosPack
-import os
 
 
 class VrxColorClassifier(GaussianColorClassifier):
