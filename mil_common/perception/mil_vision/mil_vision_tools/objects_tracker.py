@@ -21,6 +21,8 @@ class TrackedObject:
         observations (int): A number of observations executed on the object.
     """
 
+    data: Optional[np.ndarray]
+
     def __init__(
         self,
         id: int,
@@ -42,7 +44,7 @@ class TrackedObject:
         self.update(stamp, features, data)
 
     def update(
-        self, stamp: rospy.Time, features: List[Any], data: Optional[Any] = None
+        self, stamp: rospy.Time, features: List[Any], data: Optional[np.ndarray] = None
     ) -> None:
         """
         Update an object's metadata.
@@ -154,7 +156,7 @@ class ObjectsTracker:
 
     def get_persistent_objects(
         self, min_observations: int = 10, min_age: rospy.Duration = rospy.Duration(0)
-    ):
+    ) -> list[TrackedObject]:
         """
         Get a list of objects which have persisted sufficiently long.
 
