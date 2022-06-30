@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 import abc
 import numpy as np
 import rospy
