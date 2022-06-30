@@ -88,7 +88,7 @@ sudo pip3 install --ignore-installed --upgrade pip \
     pyyaml
 
 # Documentation dependencies
-mil_system_install  python3-pip python-setuptools
+mil_system_install  python3-pip python3-setuptools
 
 # Install Python 3 ROS node dependencies
 sudo pip3 install -q \
