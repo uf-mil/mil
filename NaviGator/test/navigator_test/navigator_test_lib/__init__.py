@@ -1,2 +1,2 @@
-from spoof import *
-from test_unit import TestUnit
+from .spoof import *
+from .test_unit import TestUnit
