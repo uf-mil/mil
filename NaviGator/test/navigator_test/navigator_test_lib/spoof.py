@@ -1,9 +1,8 @@
-from txros import util
 import genpy
+from txros import util
 
 
-class SpoofPubilsher(object):
-
+class SpoofPubilsher:
     def __init__(self, topic_name, message_type, responses, times):
         self.topic_name = topic_name
         self.responses = responses
@@ -23,15 +22,14 @@ class SpoofPubilsher(object):
                 i += 1
                 started = nh.get_time()
             self.my_pub.publish(self.responses[i % self.total])
-            yield nh.sleep(.3)
+            yield nh.sleep(0.3)
 
     @util.cancellableInlineCallbacks
     def stop(self):
         yield self.my_pub.shutdown()
 
 
-class SpoofService(object):
-
+class SpoofService:
     def __init__(self, service_name, message_type, responses):
         self.service_name = service_name
         self.responses = responses
@@ -42,7 +40,9 @@ class SpoofService(object):
 
     @util.cancellableInlineCallbacks
     def start(self, nh):
-        self.serv = yield nh.advertise_service(self.service_name, self.message_type, self._service_cb)
+        self.serv = yield nh.advertise_service(
+            self.service_name, self.message_type, self._service_cb
+        )
 
     def _service_cb(self, req):
         ans = self.responses[self.count % self.total]
@@ -54,8 +54,7 @@ class SpoofService(object):
         yield self.serv.shutdown()
 
 
-class SpoofGenerator(object):
-
+class SpoofGenerator:
     def spoof_service(self, service_name, message_type, responses):
         return SpoofService(service_name, message_type, responses)
 

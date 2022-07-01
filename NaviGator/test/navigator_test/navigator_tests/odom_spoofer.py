@@ -1,11 +1,10 @@
-from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point
+from nav_msgs.msg import Odometry
+from navigator_test_lib import SpoofGenerator, TestUnit
 from txros import util
-from navigator_test_lib import TestUnit, SpoofGenerator
 
 
 class MissionPlannerTest(TestUnit):
-
     def __init__(self, nh):
         self.nh = nh
         self.results = []
@@ -18,7 +17,9 @@ class MissionPlannerTest(TestUnit):
         self.pub_base_mission = sg.spoof_publisher("/odom", Odometry, [odom], [100000])
         self.pub_base_mission.start(self.nh)
 
-        self.pub_base_mission1 = sg.spoof_publisher("/absodom", Odometry, [odom], [100000])
+        self.pub_base_mission1 = sg.spoof_publisher(
+            "/absodom", Odometry, [odom], [100000]
+        )
         self.pub_base_mission1.start(self.nh)
 
     @util.cancellableInlineCallbacks

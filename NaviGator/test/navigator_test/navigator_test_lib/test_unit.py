@@ -1,7 +1,7 @@
 import abc
 
 
-class TestUnit(object):
+class TestUnit:
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
