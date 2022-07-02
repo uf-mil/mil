@@ -1,6 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from txros import util
-from navigator_missions.navigator import Navigator
+
+from .navigator import Navigator
 
 
 class DiscountDocking(Navigator):
@@ -14,4 +15,4 @@ class DiscountDocking(Navigator):
         yield self.move.backward(5).go()
         yield self.move.backward(5).go()
 
-        self.send_feedback('Done!')
+        self.send_feedback("Done!")

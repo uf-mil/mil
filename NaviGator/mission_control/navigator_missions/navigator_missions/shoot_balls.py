@@ -1,13 +1,14 @@
-#!/usr/bin/env python
-from txros import util
-from navigator_missions.navigator import Navigator
+#!/usr/bin/env python3
 import numpy as np
+from geometry_msgs.msg import Point
+from mil_misc_tools import ThrowingArgumentParser
+from mil_msgs.msg import ObjectsInImage
+from mil_msgs.srv import CameraToLidarTransform, CameraToLidarTransformRequest
 from mil_tools import rosmsg_to_numpy
 from twisted.internet import defer
-from mil_misc_tools import ThrowingArgumentParser
-from mil_msgs.srv import CameraToLidarTransform, CameraToLidarTransformRequest
-from mil_msgs.msg import ObjectsInImage
-from geometry_msgs.msg import Point
+from txros import util
+
+from .navigator import Navigator
 
 
 class ShootBalls(Navigator):

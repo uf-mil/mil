@@ -1,17 +1,19 @@
-#!/usr/bin/env python
-from __future__ import division
-import txros
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import genpy
+import mil_tools
 import numpy as np
 import tf.transformations as trns
-from navigator_msgs.msg import ShooterDoAction
-from navigator_msgs.srv import CameraToLidarTransform, CameraToLidarTransformRequest
+import txros
 from geometry_msgs.msg import Point, PoseStamped
-from twisted.internet import defer
-import mil_tools
 from mil_misc_tools.text_effects import fprint
-from navigator_tools import MissingPerceptionObject
-import genpy
 from navigator import Navigator
+from navigator_msgs.msg import ShooterDoAction
+from navigator_msgs.srv import (CameraToLidarTransform,
+                                CameraToLidarTransformRequest)
+from navigator_tools import MissingPerceptionObject
+from twisted.internet import defer
 
 
 class DetectDeliver(Navigator):
@@ -147,7 +149,8 @@ class DetectDeliver(Navigator):
     def update_shape(self, shape_res, normal_res, tf):
         self.identified_shapes[(shape_res.Shape, shape_res.Color)] = self.get_shape_pos(normal_res, tf)
 
-    def correct_shape(self, (shape, color)):
+    def correct_shape(self, tup):
+        shape, color = tup
         return (self.Color == "ANY" or self.Color == color) and (self.Shape == "ANY" or self.Shape == shape)
 
     @txros.util.cancellableInlineCallbacks
@@ -202,7 +205,7 @@ class DetectDeliver(Navigator):
         defer.returnValue(False)
 
     def select_backup_shape(self):
-        for (shape, color), point_normal in self.identified_shapes.iteritems():
+        for (shape, color), point_normal in self.identified_shapes.items():
             self.shape_pose = point_normal
             if self.Shape == shape or self.Color == color:
                 fprint("Correct shape not found, resorting to shape={} color={}".format(

@@ -1,10 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import division
-import txros
-import numpy as np
+
 import mil_tools
+import numpy as np
+import txros
 from mil_misc_tools.text_effects import fprint
-from navigator import Navigator
+
+from .navigator import Navigator
 
 ___author___ = "Kevin Allen"
 
@@ -48,7 +50,9 @@ class PingerExitMission(Navigator):
     def go_thru_gate(self):
         """Move to the points needed to go through the correct gate"""
         self.get_gate_thru_points()
-        yield self.move.set_position(self.gate_thru_points[0]).look_at(self.gate_thru_points[1]).go()
+        yield self.move.set_position(self.gate_thru_points[0]).look_at(
+            self.gate_thru_points[1]
+        ).go()
         yield self.move.set_position(self.gate_thru_points[1]).go()
         # for p in self.gate_thru_points:
         #    yield self.move.set_position(p).go(initial_plan_time=5)
@@ -65,20 +69,30 @@ class PingerExitMission(Navigator):
     def get_gate_thru_points(self):
         """Set points needed to cross through correct gate"""
         if self.negate:
-            pose1 = self.gate_poses[self.gate_index] - self.GATE_CROSS_METERS * self.g_perp
-            pose2 = self.gate_poses[self.gate_index] + self.GATE_CROSS_METERS * self.g_perp
+            pose1 = (
+                self.gate_poses[self.gate_index] - self.GATE_CROSS_METERS * self.g_perp
+            )
+            pose2 = (
+                self.gate_poses[self.gate_index] + self.GATE_CROSS_METERS * self.g_perp
+            )
         else:
-            pose1 = self.gate_poses[self.gate_index] + self.GATE_CROSS_METERS * self.g_perp
-            pose2 = self.gate_poses[self.gate_index] - self.GATE_CROSS_METERS * self.g_perp
+            pose1 = (
+                self.gate_poses[self.gate_index] + self.GATE_CROSS_METERS * self.g_perp
+            )
+            pose2 = (
+                self.gate_poses[self.gate_index] - self.GATE_CROSS_METERS * self.g_perp
+            )
         self.gate_thru_points = (np.append(pose1, 0), np.append(pose2, 0))
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
-        fprint("PINGER EXIT: Starting", msg_color='green')
-        self.gate_index = yield self.mission_params["acoustic_pinger_active_index"].get()
+        fprint("PINGER EXIT: Starting", msg_color="green")
+        self.gate_index = yield self.mission_params[
+            "acoustic_pinger_active_index"
+        ].get()
         self.gate_index = self.gate_index - 1
         yield self.get_objects()
         yield self.set_side()
         self.get_gate_thru_points()
         yield self.go_thru_gate()
-        fprint("PINGER EXIT: Done", msg_color='green')
+        fprint("PINGER EXIT: Done", msg_color="green")
