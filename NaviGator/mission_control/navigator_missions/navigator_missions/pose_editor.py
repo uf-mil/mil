@@ -1,16 +1,17 @@
-from __future__ import division
+from __future__ import annotations
+
 import warnings
 
-import numpy as np
-from tf import transformations
-from mil_msgs.msg import MoveToGoal, PoseTwist
-from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twist
-from mil_tools import make_header, normalize
-from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
-from navigator_path_planner.msg import MoveGoal
-
 import mil_tools
+import numpy as np
+from geometry_msgs.msg import (Point, Pose, PoseStamped, Quaternion, Twist,
+                               Vector3)
 from mil_misc_tools.text_effects import fprint
+from mil_msgs.msg import MoveToGoal, PoseTwist
+from mil_tools import make_header, normalize
+from navigator_path_planner.msg import MoveGoal
+from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
+from tf import transformations
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]

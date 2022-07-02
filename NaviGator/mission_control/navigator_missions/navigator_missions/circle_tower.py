@@ -1,16 +1,25 @@
-#!/usr/bin/env python
-from txros.util import cancellableInlineCallbacks
+#!/usr/bin/env python3
+from __future__ import annotations
 from twisted.internet import defer
-from navigator import Navigator
+from txros.util import cancellableInlineCallbacks
+
+from .navigator import Navigator
 
 
 class CircleTower(Navigator):
-    '''
+    """
     Simple mission to circle totems once they have been labeled, does not
     have searching funcitonality found
-    '''
+    """
+
     CIRCLE_DISTANCE = 5.0  # Distance around totem to circle
-    DIRECTIONS = {'RED': 'cw', 'GREEN': 'ccw', 'BLUE': 'cw', 'YELLOW': 'ccw', 'WHITE': 'ccw'}
+    DIRECTIONS: dict[str, str] = {
+        "RED": "cw",
+        "GREEN": "ccw",
+        "BLUE": "cw",
+        "YELLOW": "ccw",
+        "WHITE": "ccw",
+    }
 
     @classmethod
     def decode_parameters(cls, parameters):
@@ -24,15 +33,19 @@ class CircleTower(Navigator):
             if self.net_stc_results is not None:
                 for i in range(0, 3):
                     val = self.net_stc_results[i]
-                    if val == 'R':
+                    if val == "R":
                         colors[i] = "RED"
-                    elif val == 'G':
+                    elif val == "G":
                         colors[i] = "GREEN"
-                    elif val == 'B':
+                    elif val == "B":
                         colors[i] = "BLUE"
-                self.send_feedback("Colors specified, running {}".format(" ".join(colors)))
+                self.send_feedback(
+                    "Colors specified, running {}".format(" ".join(colors))
+                )
             else:
-                self.send_feedback("No colors Specified, defaulting to {}".format(" ".join(colors)))
+                self.send_feedback(
+                    "No colors Specified, defaulting to {}".format(" ".join(colors))
+                )
         else:
             # Make sure they are valid colors
             for color in parameters:
@@ -45,9 +58,11 @@ class CircleTower(Navigator):
         # Get each totem's position
         targets = []
         for color in colors:
-            res = yield self.get_sorted_objects("totem_" + color.lower(), n=1, throw=False)
+            res = yield self.get_sorted_objects(
+                "totem_" + color.lower(), n=1, throw=False
+            )
             if res is None:
-                self.send_feedback('Totem {} not found'.format(color))
+                self.send_feedback("Totem {} not found".format(color))
                 continue
             position = res[1][0]
             self.send_feedback("Totem {} found!".format(color))
@@ -65,23 +80,29 @@ class CircleTower(Navigator):
             color = target[1]
             position = target[0]
             direction = self.DIRECTIONS[color]
-            self.send_feedback('Attempting to circle {} {}'.format(color, direction))
-            self.send_feedback('Moving in front of totem')
+            self.send_feedback("Attempting to circle {} {}".format(color, direction))
+            self.send_feedback("Moving in front of totem")
             yield self.nh.sleep(0.1)
 
             # Move close to totem
-            move = self.move.look_at(position).set_position(position).backward(self.CIRCLE_DISTANCE)
+            move = (
+                self.move.look_at(position)
+                .set_position(position)
+                .backward(self.CIRCLE_DISTANCE)
+            )
 
             # Rotate for faster rotate
-            if direction == 'cw':
+            if direction == "cw":
                 move = move.yaw_left(1.57)
             else:
                 move = move.yaw_right(1.57)
             yield move.go()
 
-            self.send_feedback('Circling!')
+            self.send_feedback("Circling!")
             yield self.nh.sleep(0.1)
-            res = yield self.move.circle_point(position, direction=direction, revolutions=1.3).go()
-            self.send_feedback('Done circling')
+            res = yield self.move.circle_point(
+                position, direction=direction, revolutions=1.3
+            ).go()
+            self.send_feedback("Done circling")
             yield self.nh.sleep(0.1)
         defer.returnValue(True)

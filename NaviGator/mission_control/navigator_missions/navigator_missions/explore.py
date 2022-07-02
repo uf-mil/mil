@@ -1,21 +1,25 @@
-#!/usr/bin/env python
-import txros
+#!/usr/bin/env python3
 import mil_tools as nt
+import numpy as np
+import txros
 from mil_misc_tools.text_effects import fprint
+from mil_tools import rosmsg_to_numpy
 from navigator_tools import MissingPerceptionObject
 from twisted.internet import defer
-from mil_tools import rosmsg_to_numpy
-import numpy as np
 
 
-def get_closest_objects(position, objects, max_len=3, max_dist=30):
+def get_closest_objects(position, objects, max_len: int = 3, max_dist: int = 30):
     num = len(objects)
     idx = max_len
     if num < max_len:
         idx = num
-    objects = sorted(objects, key=lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position)))
+    objects = sorted(
+        objects, key=lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position))
+    )
     objects = objects[:idx]
-    dists = map(lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position)), objects)
+    dists = map(
+        lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position)), objects
+    )
     final_objs = []
     for i, d in enumerate(dists):
         if d < max_dist:
@@ -55,7 +59,7 @@ def myfunc(navigator, looking_for, center_marker):
     try:
         center_marker = yield navigator.database_query(object_name=center_marker.name)
         center_marker = center_marker.objects[0]
-        print center_marker.name
+        print(center_marker.name)
     except:
         fprint("A marker has not been set", msg_color="red")
         defer.returnValue(False)
@@ -79,12 +83,15 @@ def myfunc(navigator, looking_for, center_marker):
             yield navigator.database_query(cmd="lock {} {}".format(obj.id, looking_for))
             defer.returnValue(True)
         except MissingPerceptionObject:
-            fprint("The object {} is not in the database".format(looking_for), msg_color="red")
+            fprint(
+                "The object {} is not in the database".format(looking_for),
+                msg_color="red",
+            )
     try:
         objs = yield navigator.database_query(object_name="all")
         objs = get_closest_objects(pos, objs.objects)
     except Exception as e:
-        print e
+        print(e)
         defer.returnValue(False)
 
     # for o in objs:
@@ -110,6 +117,6 @@ def main(navigator, **kwargs):
     # looking_for = "scan_the_code"
 
     navigator.change_wrench("autonomous")
-    yield navigator.nh.sleep(.1)
+    yield navigator.nh.sleep(0.1)
     good = yield myfunc(navigator, looking_for, center_marker)
     defer.returnValue(good)

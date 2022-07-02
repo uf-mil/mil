@@ -1,18 +1,20 @@
-#!/usr/bin/env python
-from navigator import Navigator
+#!/usr/bin/env python3
+import numpy as np
 import txros
-from twisted.internet import defer
 from geometry_msgs.msg import PoseStamped
 from mil_tools import pose_to_numpy
-import numpy as np
+from twisted.internet import defer
+
+from .navigator import Navigator
 
 
 class TrackTarget(Navigator):
-    '''
+    """
     Mission to track the detect deliver target
-    '''
+    """
+
     # Offset from the shooter to the target X, Y, Z in boat's frame conventions
-    OFFSET = np.array([0., 6.5, 0.], dtype=float)
+    OFFSET = np.array([0.0, 6.5, 0.0], dtype=float)
     # Number of shots to fire
     NUMBER_SHOTS = 1
     # Distance from goal pose to fire at
@@ -22,10 +24,14 @@ class TrackTarget(Navigator):
     @txros.util.cancellableInlineCallbacks
     def init(cls):
         # Store pose of shooter for later
-        cls.base_link_to_shooter = -(yield cls.tf_listener.get_transform("base_link", "shooter"))._p
-        cls.base_link_to_shooter[2] = 0.
+        cls.base_link_to_shooter = -(
+            yield cls.tf_listener.get_transform("base_link", "shooter")
+        )._p
+        cls.base_link_to_shooter[2] = 0.0
         # Subscribe to pose
-        cls.target_pose_sub = cls.nh.subscribe("/detect_deliver_target_detector/pose", PoseStamped)
+        cls.target_pose_sub = cls.nh.subscribe(
+            "/detect_deliver_target_detector/pose", PoseStamped
+        )
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
@@ -36,11 +42,21 @@ class TrackTarget(Navigator):
         # Continuously align until all shots are fired
         while fired < self.NUMBER_SHOTS:
             if reload_wait is not None:
-                select = defer.DeferredList([self.target_pose_sub.get_next_message(), self.tx_pose, reload_wait],
-                                            fireOnOneCallback=True, fireOnOneErrback=True)
+                select = defer.DeferredList(
+                    [
+                        self.target_pose_sub.get_next_message(),
+                        self.tx_pose,
+                        reload_wait,
+                    ],
+                    fireOnOneCallback=True,
+                    fireOnOneErrback=True,
+                )
             else:
-                select = defer.DeferredList([self.target_pose_sub.get_next_message(), self.tx_pose],
-                                            fireOnOneCallback=True, fireOnOneErrback=True)
+                select = defer.DeferredList(
+                    [self.target_pose_sub.get_next_message(), self.tx_pose],
+                    fireOnOneCallback=True,
+                    fireOnOneErrback=True,
+                )
             result, index = yield select
 
             # New target pose
@@ -53,9 +69,13 @@ class TrackTarget(Navigator):
                 quat = np.abs(quat)
 
                 # Transform pose to ENU
-                transform = yield self.tf_listener.get_transform("enu", pose.header.frame_id, pose.header.stamp)
-                pos, quat = transform.transform_point(pos), transform.transform_quaternion(quat)
-                pos[2] = 0.
+                transform = yield self.tf_listener.get_transform(
+                    "enu", pose.header.frame_id, pose.header.stamp
+                )
+                pos, quat = transform.transform_point(
+                    pos
+                ), transform.transform_quaternion(quat)
+                pos[2] = 0.0
 
                 # Assemble Move:
                 # Start directly on target but rotated so shooter faces target
@@ -65,7 +85,7 @@ class TrackTarget(Navigator):
                 # Offset to optimize trajectory of launcher
                 move = move.rel_position(self.OFFSET)
                 # Force z=0
-                move.position[2] = 0.
+                move.position[2] = 0.0
                 # Set new goal
                 goal = move.position
                 # Command move to this goal
@@ -77,7 +97,7 @@ class TrackTarget(Navigator):
                 if goal is None:
                     continue
                 # Get distance from boat to goal
-                result[0][2] = 0.
+                result[0][2] = 0.0
                 distance = np.linalg.norm(goal - result[0])
                 yield self.send_feedback("{} from goal".format(distance))
 

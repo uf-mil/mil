@@ -1,20 +1,24 @@
-#!/usr/bin/env python
-from txros import util
-from navigator_missions.navigator import Navigator
+#!/usr/bin/env python3
+import math
+
 import numpy as np
+import tf.transformations as tform
+from mil_misc_tools import ThrowingArgumentParser
+from mil_msgs.msg import ObjectsInImage
 from mil_tools import rosmsg_to_numpy
 from twisted.internet import defer
-import math
-from mil_misc_tools import ThrowingArgumentParser
-import tf.transformations as tform
-from mil_msgs.msg import ObjectsInImage
+from txros import util
+
+from .navigator import Navigator
 
 
 class DetectDeliverFind(Navigator):
     DOCK_SIZE_LONG = 16.0
     DOCK_SIZE_SHORT = 8.0
 
-    CIRCLE_DISTANCE = 8.0 + math.sqrt((DOCK_SIZE_SHORT / 2)**2 + (DOCK_SIZE_LONG / 2)**2)
+    CIRCLE_DISTANCE = 8.0 + math.sqrt(
+        (DOCK_SIZE_SHORT / 2) ** 2 + (DOCK_SIZE_LONG / 2) ** 2
+    )
 
     @classmethod
     def decode_parameters(cls, parameters):
@@ -23,25 +27,51 @@ class DetectDeliverFind(Navigator):
 
     @classmethod
     def init(cls):
-        parser = ThrowingArgumentParser(description='Detect Deliver Find',
-                                        usage='''Default parameters: \'runtask DetectDeliverFind
-                                         \'''')
-        parser.add_argument('-l', '--longscan', action='store_true',
-                            help='set to scan the long side')
-        parser.add_argument('-s', '--shortscan', action='store_true',
-                            help = 'set to scan the short side')
-        parser.add_argument('-o', '--overridescale', action='store_true',
-                            help='''setting causes manual dock size to replace scale, where scale is only
-                                    used to determine which side is longer''')
-        parser.add_argument('-c', '--circle', action='store_true',
-                            help='''setting causes navigator to circle the dock once first in order to help
-                                    PCODAR gather enough information to produce scale and an accurate orientation''')
-        parser.add_argument('-d', '--scandist', type=int, default=6,
-                            help='distance to scan the images from')
-        parser.add_argument('-i', '--lookin', action='store_true',
-                            help='look into the dock at the end instead of being side ways')
-        parser.add_argument('-e', '--enddist', type=int, default=5,
-                            help='the distance to go to as the end point')
+        parser = ThrowingArgumentParser(
+            description="Detect Deliver Find",
+            usage="""Default parameters: \'runtask DetectDeliverFind
+                                         \'""",
+        )
+        parser.add_argument(
+            "-l", "--longscan", action="store_true", help="set to scan the long side"
+        )
+        parser.add_argument(
+            "-s", "--shortscan", action="store_true", help="set to scan the short side"
+        )
+        parser.add_argument(
+            "-o",
+            "--overridescale",
+            action="store_true",
+            help="""setting causes manual dock size to replace scale, where scale is only
+                                    used to determine which side is longer""",
+        )
+        parser.add_argument(
+            "-c",
+            "--circle",
+            action="store_true",
+            help="""setting causes navigator to circle the dock once first in order to help
+                                    PCODAR gather enough information to produce scale and an accurate orientation""",
+        )
+        parser.add_argument(
+            "-d",
+            "--scandist",
+            type=int,
+            default=6,
+            help="distance to scan the images from",
+        )
+        parser.add_argument(
+            "-i",
+            "--lookin",
+            action="store_true",
+            help="look into the dock at the end instead of being side ways",
+        )
+        parser.add_argument(
+            "-e",
+            "--enddist",
+            type=int,
+            default=5,
+            help="the distance to go to as the end point",
+        )
         cls.parser = parser
 
         cls.bboxsub = cls.nh.subscribe("/bbox_pub", ObjectsInImage)
@@ -69,9 +99,13 @@ class DetectDeliverFind(Navigator):
 
         # If extra scanning circle is enabled, circle
         if pre_circle:
-            start_vect = (boat_pose - self.dock_position) / np.linalg.norm(boat_pose - self.dock_position)
+            start_vect = (boat_pose - self.dock_position) / np.linalg.norm(
+                boat_pose - self.dock_position
+            )
             start_pt = self.dock_position + start_vect * self.CIRCLE_DISTANCE
-            yield self.move.set_position(start_pt).look_at(self.dock_position).yaw_right(1.57).go()
+            yield self.move.set_position(start_pt).look_at(
+                self.dock_position
+            ).yaw_right(1.57).go()
             yield self.move.circle_point(self.dock_position).go()
 
         # Find the dock
@@ -100,8 +134,10 @@ class DetectDeliverFind(Navigator):
         correct = False
         correct_scan_idx = -1
         for i in range(closest_scan, len(self.scans)) + range(0, closest_scan):
-            #yield self.move.set_position(self.scans[i][0]).look_at(self.scans[i][1]).go()
-            yield self.move.set_position(self.scans[i][0]).look_at(self.dock_position).go()
+            # yield self.move.set_position(self.scans[i][0]).look_at(self.scans[i][1]).go()
+            yield self.move.set_position(self.scans[i][0]).look_at(
+                self.dock_position
+            ).go()
             correct = yield self.scan_image()
             if correct:
                 correct_scan_idx = i
@@ -109,7 +145,7 @@ class DetectDeliverFind(Navigator):
 
         # No correct scan image found. Exiting.
         if not correct:
-            self.send_feedback('Image not found')
+            self.send_feedback("Image not found")
             return
 
         correct_scan = self.scans[correct_scan_idx]
@@ -117,9 +153,15 @@ class DetectDeliverFind(Navigator):
         # Calculate closer location
         angle = correct_scan[3]
         dist = end_dist
-        pt = np.array([math.cos(angle) * (dist + self.dock_scale[0] / 2) + self.dock_position[0],
-                       math.sin(angle) * (dist + self.dock_scale[1] / 2) + self.dock_position[1],
-                       self.dock_position[2]])
+        pt = np.array(
+            [
+                math.cos(angle) * (dist + self.dock_scale[0] / 2)
+                + self.dock_position[0],
+                math.sin(angle) * (dist + self.dock_scale[1] / 2)
+                + self.dock_position[1],
+                self.dock_position[2],
+            ]
+        )
         if look_in:
             lpt = self.dock_position
         else:
@@ -128,12 +170,12 @@ class DetectDeliverFind(Navigator):
         # Go to closer location
         yield self.move.set_position(pt).look_at(lpt).go(blind=True)
 
-        self.send_feedback('Done! In position to line up for shot.')
+        self.send_feedback("Done! In position to line up for shot.")
 
     @util.cancellableInlineCallbacks
     def find_dock(self, override_scale):
         # Get Dock
-        self.dock = yield self.get_sorted_objects(name='dock', n=1)
+        self.dock = yield self.get_sorted_objects(name="dock", n=1)
         self.dock = self.dock[0][0]
 
         # Get dock parameters
@@ -158,9 +200,15 @@ class DetectDeliverFind(Navigator):
 
         for i in range(0, 4):
             # Calculate scan point and point to look at
-            pt = np.array([math.cos(angle) * (scan_dist + self.dock_scale[0] / 2) + self.dock_position[0],
-                           math.sin(angle) * (scan_dist + self.dock_scale[1] / 2) + self.dock_position[1],
-                           self.dock_position[2]])
+            pt = np.array(
+                [
+                    math.cos(angle) * (scan_dist + self.dock_scale[0] / 2)
+                    + self.dock_position[0],
+                    math.sin(angle) * (scan_dist + self.dock_scale[1] / 2)
+                    + self.dock_position[1],
+                    self.dock_position[2],
+                ]
+            )
             lpt = pt + np.array([math.sin(angle), -math.cos(angle), 0])
 
             # Calculate distance from scan point to dock and boat
@@ -178,7 +226,11 @@ class DetectDeliverFind(Navigator):
     def scan_image(self):
         msgf = yield self.bboxsub.get_next_message()
         for msg in msgf.objects:
-            if not (('circle' in msg.name) or ('triangle' in msg.name) or ('cruciform' in msg.name)):
+            if not (
+                ("circle" in msg.name)
+                or ("triangle" in msg.name)
+                or ("cruciform" in msg.name)
+            ):
                 continue
 
             if self.long_scan:

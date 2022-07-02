@@ -1,17 +1,17 @@
-#!/usr/bin/env python
-from txros import util
-from navigator_missions.navigator import Navigator
+#!/usr/bin/env python3
 import numpy as np
+from geometry_msgs.msg import Point
+from mil_misc_tools import ThrowingArgumentParser
+from mil_msgs.msg import ObjectsInImage
+from mil_msgs.srv import CameraToLidarTransform, CameraToLidarTransformRequest
 from mil_tools import rosmsg_to_numpy
 from twisted.internet import defer
-from mil_misc_tools import ThrowingArgumentParser
-from mil_msgs.srv import CameraToLidarTransform, CameraToLidarTransformRequest
-from mil_msgs.msg import ObjectsInImage
-from geometry_msgs.msg import Point
+from txros import util
+
+from .navigator import Navigator
 
 
 class Docking(Navigator):
-
     @classmethod
     def decode_parameters(cls, parameters):
         argv = parameters.split()
@@ -19,14 +19,18 @@ class Docking(Navigator):
 
     @classmethod
     def init(cls):
-        parser = ThrowingArgumentParser(description='Dock',
-                                        usage='''Default parameters: \'runtask Docking
-                                         \'''')
-        parser.add_argument('-t', '--time', type=int, default=-1)
+        parser = ThrowingArgumentParser(
+            description="Dock",
+            usage="""Default parameters: \'runtask Docking
+                                         \'""",
+        )
+        parser.add_argument("-t", "--time", type=int, default=-1)
         cls.parser = parser
 
         cls.bboxsub = cls.nh.subscribe("/bbox_pub", ObjectsInImage)
-        cls.camera_lidar_tf = cls.nh.get_service_client('/camera_to_lidar/front_right_cam', CameraToLidarTransform)
+        cls.camera_lidar_tf = cls.nh.get_service_client(
+            "/camera_to_lidar/front_right_cam", CameraToLidarTransform
+        )
 
     @util.cancellableInlineCallbacks
     def run(self, args):
@@ -38,7 +42,7 @@ class Docking(Navigator):
         largest_size = 0
         boat_pos = (yield self.tx_pose)[0]
         # Get 10 closest unclassified objects
-        unclass = yield self.get_sorted_objects(name='UNKNOWN', n=10, throw=False)
+        unclass = yield self.get_sorted_objects(name="UNKNOWN", n=10, throw=False)
         for obj in unclass[0]:
             point = rosmsg_to_numpy(obj.pose.position)
             scale = rosmsg_to_numpy(obj.scale)
@@ -54,47 +58,47 @@ class Docking(Navigator):
                 dock_position = point
 
         if dock_position is None:
-            self.send_feedback('Cancelling, failed to find dock position')
+            self.send_feedback("Cancelling, failed to find dock position")
             return
 
-        self.send_feedback('Found dock, looking for image')
+        self.send_feedback("Found dock, looking for image")
 
         # Find the camera input
         center_frame = yield self.get_center_frame()
         symbol = center_frame[2].lower()
 
-        self.send_feedback('Identified {}'.format(symbol))
+        self.send_feedback("Identified {}".format(symbol))
 
         # Find the target point
         target_pt = yield self.get_target_pt(center_frame)
 
-        self.send_feedback('Identified target')
+        self.send_feedback("Identified target")
 
         # Identify the time to wait in the dock
         if wait_time == -1:
-            if 'triangle' in symbol:
+            if "triangle" in symbol:
                 wait_time = 7
-            elif 'circle' in symbol:
+            elif "circle" in symbol:
                 wait_time = 17
             else:  # Cruciform
                 wait_time = 27
 
         # Go to pose
-        self.send_feedback('Moving into dock')
+        self.send_feedback("Moving into dock")
         yield self.move.set_position(target_pt).look_at(dock_position).go(blind=True)
 
         # Sleep the appropriate amount of time
-        self.send_feedback('------------------------------------------------')
-        self.send_feedback('!!!!!!!!!!!!! STATION KEEPING !!!!!!!!!!!!!!!!!!')
+        self.send_feedback("------------------------------------------------")
+        self.send_feedback("!!!!!!!!!!!!! STATION KEEPING !!!!!!!!!!!!!!!!!!")
         yield self.nh.sleep(wait_time)
-        self.send_feedback('!!!!!!!!!!!!!!! EXITING DOCK !!!!!!!!!!!!!!!!!!!')
-        self.send_feedback('------------------------------------------------')
+        self.send_feedback("!!!!!!!!!!!!!!! EXITING DOCK !!!!!!!!!!!!!!!!!!!")
+        self.send_feedback("------------------------------------------------")
 
         # Back out of the dock
         yield self.move.backward(5).go(blind=True)
         yield self.move.backward(5).go(blind=True)
 
-        self.send_feedback('Done with docking!')
+        self.send_feedback("Done with docking!")
 
     @util.cancellableInlineCallbacks
     def get_center_frame(self):
@@ -116,7 +120,9 @@ class Docking(Navigator):
 
         pose_offset = yield self.camera_lidar_tf(msg)
 
-        cam_to_enu = yield self.tf_listener.get_transform('enu', center_frame[1].header.frame_id)
+        cam_to_enu = yield self.tf_listener.get_transform(
+            "enu", center_frame[1].header.frame_id
+        )
         normal = rosmsg_to_numpy(pose_offset.normal)
         normal = cam_to_enu.transform_vector(normal)
         normal = normal[0:2] / np.linalg.norm(normal[0:2])
@@ -132,7 +138,9 @@ class Docking(Navigator):
 
         # Which is closer
         boat_pos = (yield self.tx_pose)[0]
-        if np.linalg.norm(found_pt_1 - boat_pos) > np.linalg.norm(found_pt_2 - boat_pos):
+        if np.linalg.norm(found_pt_1 - boat_pos) > np.linalg.norm(
+            found_pt_2 - boat_pos
+        ):
             found_pt = found_pt_2
         else:
             found_pt = found_pt_1
