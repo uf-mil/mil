@@ -22,7 +22,7 @@ from mil_poi import TxPOIClient
 from nav_msgs.msg import Odometry
 from navigator_path_planner.msg import MoveAction, MoveGoal
 from navigator_tools import MissingPerceptionObject
-from pose_editor import PoseEditor2
+from .pose_editor import PoseEditor2
 from roboteq_msgs.msg import Command
 from ros_alarms import TxAlarmListener
 from std_msgs.msg import Bool

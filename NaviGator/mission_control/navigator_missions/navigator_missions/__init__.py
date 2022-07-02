@@ -6,8 +6,7 @@ ChainWithTimeout = mil_missions_core.MakeChainWithTimeout(Navigator)
 Wait = mil_missions_core.MakeWait(Navigator)
 del mil_missions_core
 
-import pose_editor
-
+from . import pose_editor
 from .back_and_forth import BackAndForth
 from .circle import Circle
 from .circle_tower import CircleTower

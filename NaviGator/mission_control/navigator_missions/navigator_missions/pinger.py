@@ -5,7 +5,7 @@ import mil_tools
 import numpy as np
 import txros
 from mil_misc_tools.text_effects import fprint
-from navigator import Navigator
+from .navigator import Navigator
 from navigator_msgs.srv import (
     FindPinger,
     FindPingerRequest,

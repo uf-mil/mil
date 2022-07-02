@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from detect_deliver_find import DetectDeliverFind
-from track_target import TrackTarget
+from .detect_deliver_find import DetectDeliverFind
+from .track_target import TrackTarget
 from txros import util
 
 from .navigator import Navigator
