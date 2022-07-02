@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+import numpy as np
 import rospy
+from ros_alarms import AlarmListener
 from std_msgs.msg import Float32, String
 from visualization_msgs.msg import Marker
-from ros_alarms import AlarmListener
-import numpy as np
 
 
-class RvizStrings(object):
+class RvizStrings:
     ID = 1337
     NS = "boat_info"
     X_POS = -4.0
@@ -16,11 +16,13 @@ class RvizStrings(object):
         self.kill_alarm = False
         self.voltage = None
         self.wrench = None
-        self.markers_pub = rospy.Publisher('/boat_info', Marker, queue_size=10)
+        self.markers_pub = rospy.Publisher("/boat_info", Marker, queue_size=10)
         rospy.Subscriber("/wrench/selected", String, self.wrench_current_cb)
         rospy.Subscriber("/battery_monitor", Float32, self.battery_monitor_cb)
-        self.kill_listener = AlarmListener('kill', callback_funct=self.kill_alarm_cb)
-        self.station_hold_listner = AlarmListener('station-hold', callback_funct=self.station_alarm_cb)
+        self.kill_listener = AlarmListener("kill", callback_funct=self.kill_alarm_cb)
+        self.station_hold_listner = AlarmListener(
+            "station-hold", callback_funct=self.station_alarm_cb
+        )
 
     def update(self):
         marker = Marker()
@@ -64,6 +66,6 @@ class RvizStrings(object):
 
 
 if __name__ == "__main__":
-    rospy.init_node('info_markers')
+    rospy.init_node("info_markers")
     arb = RvizStrings()
     rospy.spin()
