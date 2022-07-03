@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 import unittest
-import rostest
-import rospy
-from geometry_msgs.msg import PointStamped
-from mil_tools import numpy_to_point
-from mil_bounds import BoundsClient
+
 import numpy as np
+import rospy
+import rostest
+from geometry_msgs.msg import PointStamped
+from mil_bounds import BoundsClient
+from mil_tools import numpy_to_point
 
 
 class BoundsTest(unittest.TestCase):

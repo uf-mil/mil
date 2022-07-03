@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-import rospy
-from visualization_msgs.msg import Marker
-from cfg import BoundsConfig
-from geometry_msgs.msg import Point
-from dynamic_reconfigure.server import Server
-from dynamic_reconfigure.client import Client
 import numpy as np
+import rospy
+from mil_bounds.cfg import BoundsConfig
+from dynamic_reconfigure.client import Client
+from dynamic_reconfigure.server import Server
+from geometry_msgs.msg import Point
+from visualization_msgs.msg import Marker
 
 
 def config_to_tuple(config, index):
@@ -18,7 +18,7 @@ def tuple_to_config(tup, config, index):
     config["z%d" % index] = tup[2]
 
 
-class BoundsServer(object):
+class BoundsServer:
     """
     Runs the dynamic reconfigure server which implements a global 4 sided
     boundry.
