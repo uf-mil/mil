@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-from __future__ import division
-
+#!/usr/bin/env python3
 from inspect import stack
 
 import numpy as np

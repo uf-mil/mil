@@ -1,7 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
-from operator import attrgetter
-from re import T
 
 import cv2
 import numpy as np
