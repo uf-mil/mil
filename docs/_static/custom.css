@@ -63,10 +63,11 @@ Historically however, thanks to:
   --nav-hover-text: var(--grey-6);
   --nav-header-text: var(--black);
   --sub-header-background: var(--grey-6);
+  --search-background: var(--grey-2);
   --search-border: var(--grey-4);
-  --search-text: var(--white);
+  --search-text: var(--grey-6);
   --search-focus: var(--blue-1);
-  --search-button: var(--grey-1);
+  --search-button: var(--grey-6);
   --search-button-hover: var(--grey-1-8);
   --footer-text: var(--grey-5);
   --footer-link: var(--grey-6);
@@ -129,8 +130,13 @@ Historically however, thanks to:
   --link-text: var(--orange-1);
   --link-hover-text: var(--orange-2);
   --main-text: var(--white);
-  --sub-header-background: var(--grey-8);
-  --search-border: var(--grey-5);
+  --sub-header-background: var(--grey-6);
+  --search-background: var(--grey-6);
+  --search-border: var(--grey-4);
+  --search-text: var(--white);
+  --search-focus: var(--blue-1);
+  --search-button: var(--grey-1);
+  --search-button-hover: var(--grey-1-8);
   --nav-background: var(--main-background);
   --nav-text: var(--grey-1);
   --nav-hover-text: var(--grey-2);
@@ -297,7 +303,7 @@ header > nav.mobile-only .search {
 }
 
 header > nav.mobile-only .search-wrapper {
-  background-color: var(--sub-header-background);
+  background-color: var(--search-background);
 }
 
 .main-heading {
@@ -496,7 +502,7 @@ aside .material-icons,
 
 .search-wrapper > input[type=search],
 .search-wrapper > button[type=submit] {
-  background-color: var(--sub-header-background);
+  background-color: var(--search-background);
   border: none;
   color: var(--search-text);
   padding: 0.5em;
