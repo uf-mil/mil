@@ -79,6 +79,8 @@ Historically however, thanks to:
   --header-link: var(--grey-6);
   --header-link-hover-text: var(--white);
   --admonition-background: var(--grey-2);
+  --active-toc-section-background: #cbd4f5;
+  --active-toc-section-text: var(--blue-3);
   --note-background: var(--blue-1);
   --note-text: var(--white);
   --warning-background: #ffe900;
@@ -1304,7 +1306,7 @@ div.code-block-caption {
   .active::before {
     content: "";
     display: inline-block;
-    background-color: var(--active-toc);
+    background-color: var(--active-toc-section-background);
     position: absolute;
     top: 0;
     bottom: 0;
@@ -1312,6 +1314,10 @@ div.code-block-caption {
     width: calc(100% + 0.5em);
     border-radius: 4px;
     z-index: -1;
+  }
+
+  .active a {
+    color: var(--active-toc-section-text) !important;
   }
 
   #sidebar a:hover {

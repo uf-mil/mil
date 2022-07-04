@@ -26,7 +26,7 @@ New Members
 
     docs/subjugator/index
     docs/navigator/index
-    docs/reference
+    docs/reference/index
     docs/subjugator/reference
     docs/navigator/reference
     docs/design/design
@@ -48,7 +48,7 @@ Relevant Links
 
 Software Reference
 ------------------
-* **All Repository Source Documentation:** :doc:`Reference <docs/reference>`
+* **All Repository Source Documentation:** :doc:`Reference <docs/reference/index>`
 * **Practices:** :doc:`Our Development Practices <docs/software/index>` / :doc:`Scripts <docs/software/scripts>` / :doc:`SDKs <docs/software/sdk>`
 * **Project Procedures:** :doc:`SubjuGator <docs/subjugator/index>` / :doc:`VRX <docs/navigator/vrx>`
 * **Getting Help:** :doc:`Development Help <docs/software/help>`

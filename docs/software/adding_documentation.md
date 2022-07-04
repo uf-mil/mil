@@ -17,7 +17,7 @@ folder.
 Docstrings are a powerful method of documentation. The documentation is clearly outlined
 in the code, allowing developers to grasp what classes and methods do as they're working
 on them. Plus, these docstrings get concatenated together to form the HTML reference
-docs. (Hint: These are what make up most of the [Software Reference page](/docs/reference.rst)!)
+docs. (Hint: These are what make up most of the [Software Reference page](/docs/reference/index.rst)!)
 
 ### Adding a docstring (Python)
 To add a new docstring to the reference documentation, add a docstring inside of the code.
