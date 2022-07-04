@@ -1,7 +1,8 @@
 """Model for the ScanTheCode that tracks its own color."""
 import cv2
-from mil_misc_tools.text_effects import fprint
 import numpy as np
+from mil_misc_tools.text_effects import fprint
+
 ___author___ = "Tess Bianchi"
 
 
@@ -40,13 +41,13 @@ class ScanTheCodeModel:
         ymin = 1000
         ymax = 0
         for i, _val in enumerate(self.points):
-            if(_val[0] < xmin):
+            if _val[0] < xmin:
                 xmin = _val[0]
-            if(_val[0] > xmax):
+            if _val[0] > xmax:
                 xmax = _val[0]
-            if(_val[1] < ymin):
+            if _val[1] < ymin:
                 ymin = _val[1]
-            if(_val[1] > ymax):
+            if _val[1] > ymax:
                 ymax = _val[1]
 
         return xmin, ymin, xmax, ymax
@@ -78,21 +79,25 @@ class ScanTheCodeModel:
             elif hue < self.GREEN_THRESH_HIGH and hue > self.GREEN_THRESH_LOW:
                 blue_vote += 1
         m = max(red_vote, black_vote, yellow_vote, green_vote, blue_vote)
-        avgh, avgs, avgv = np.round(h_sum / tot), np.round(s_sum / tot), np.round(v_sum / tot)
+        avgh, avgs, avgv = (
+            np.round(h_sum / tot),
+            np.round(s_sum / tot),
+            np.round(v_sum / tot),
+        )
         fprint("Average H {}".format(avgh), msg_color="green")
         fprint("Average S {}".format(avgs), msg_color="green")
         fprint("Average V {}".format(avgv), msg_color="green")
-        color = 'n'
+        color = "n"
         if blue_vote == m:
-            color = 'b'
+            color = "b"
         if red_vote == m:
-            color = 'r'
+            color = "r"
         if yellow_vote == m:
-            color = 'y'
+            color = "y"
         if green_vote == m:
-            color = 'g'
+            color = "g"
         if black_vote == m:
-            color = 'k'
+            color = "k"
         cv2.putText(draw, color, (20, 20), 1, 2, (255, 0, 0))
         debug.add_image(draw, "adlj", topic="colors")
         return color

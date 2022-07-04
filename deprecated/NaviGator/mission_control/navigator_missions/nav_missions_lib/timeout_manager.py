@@ -2,7 +2,6 @@ import numpy as np
 
 
 class TimeoutManager(object):
-
     @classmethod
     def generate_timeouts(cls, time_left, real_time_left, missions_left):
         if time_left < 0:

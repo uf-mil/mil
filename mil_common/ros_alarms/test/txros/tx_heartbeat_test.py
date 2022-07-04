@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import txros
-from twisted.internet import defer
-from std_msgs.msg import String
 from ros_alarms import TxAlarmListener, TxHeartbeatMonitor
+from std_msgs.msg import String
+from twisted.internet import defer
 
 publish = True
 

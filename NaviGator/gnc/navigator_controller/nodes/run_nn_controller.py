@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import rospy
-from nav_msgs.msg import Odometry
-from mil_msgs.msg import PoseTwistStamped
-from neural_control.nn_controller import NN_controller
 from geometry_msgs.msg import PoseStamped
+from mil_msgs.msg import PoseTwistStamped
+from nav_msgs.msg import Odometry
+from neural_control.nn_controller import NN_controller
+
 
 def odom_callback(odom_msg: Odometry) -> None:
     """
@@ -17,6 +18,7 @@ def odom_callback(odom_msg: Odometry) -> None:
     controller.give_new_state(
         odom_msg.pose.pose, odom_msg.twist.twist, odom_msg.header.stamp.to_sec()
     )
+
 
 def reference_callback(ref_msg: PoseTwistStamped) -> None:
     """
@@ -32,17 +34,18 @@ def reference_callback(ref_msg: PoseTwistStamped) -> None:
     )
     controller.give_new_reference(ref_msg.posetwist.pose, ref_msg.posetwist.twist)
 
+
 controller = NN_controller(
-    dof = 3,
-    kp = [1000, 1000, 5600],
-    kd = [1200, 1200, 6000],
-    kv = 2,
-    kw = 2,
-    N = 10,
-    sig = "tanh",
-    nn_limit = [10**10] * 3,
-    wrench_topic = "/wrench/autonomous",
-    neuralwrench_topic = "/adaptation",
+    dof=3,
+    kp=[1000, 1000, 5600],
+    kd=[1200, 1200, 6000],
+    kv=2,
+    kw=2,
+    N=10,
+    sig="tanh",
+    nn_limit=[10**10] * 3,
+    wrench_topic="/wrench/autonomous",
+    neuralwrench_topic="/adaptation",
 )
 
 rospy.init_node("controller")

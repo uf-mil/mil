@@ -15,11 +15,11 @@
 """Label map utility functions."""
 
 import logging
+import sys
 
+import rospkg
 import tensorflow as tf
 from google.protobuf import text_format
-import rospkg
-import sys
 
 rospack = rospkg.RosPack()
 sys.path.append(

@@ -1,11 +1,12 @@
 from __future__ import division
-from mil_passive_sonar import util
 
-import numpy
-import scipy
 import math
 import sys
+
 import matplotlib.pyplot as plt
+import numpy
+import scipy
+from mil_passive_sonar import util
 
 DEBUG = 0
 

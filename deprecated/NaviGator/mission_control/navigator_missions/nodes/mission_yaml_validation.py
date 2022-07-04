@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-import yaml
 import os
+
 import nav_missions
+import yaml
 from graphviz import Digraph
 from navigator_msgs.msg import PerceptionObject
 

@@ -1,18 +1,19 @@
 #!/usr/bin/python
-from navigator_tools import BagCrawler
 import argparse
-from cv_bridge import CvBridge
-import cv2
-import sys
-import pickle
 import os
+import pickle
+import sys
+
+import cv2
 import numpy as np
+from cv_bridge import CvBridge
 from median_flow import MedianFlow
+from navigator_tools import BagCrawler
+
 ___author___ = "Tess Bianchi"
 
 
-class ROI_Collection_Slow():
-
+class ROI_Collection_Slow:
     def __init__(self):
         self.bag_to_rois = {}
 
@@ -21,16 +22,15 @@ class ROI_Collection_Slow():
 
 
 class ROI_Generator_Slow(object):
-
     def __init__(self):
         self.folder = os.path.dirname(os.path.realpath(__file__))
         self.bridge = CvBridge()
         self.roi_to_tracker = {}
 
     def get_roi(self, name):
-        file = open(self.folder + '/' + name, 'r')
+        file = open(self.folder + "/" + name, "r")
         for line in file:
-            line = line.replace('\n', '')
+            line = line.replace("\n", "")
             if len(line) == 0:
                 continue
             x, y, w, h = line.split(" ")
@@ -45,7 +45,7 @@ class ROI_Generator_Slow(object):
         topic = bc.image_topics[0]
         self.crawl_bu = bc.crawl(topic=topic)
         image = self.crawl_bu.next()
-        self.image = self.bridge.imgmsg_to_cv2(image, 'bgr8')
+        self.image = self.bridge.imgmsg_to_cv2(image, "bgr8")
         self.crawl = bc.crawl(topic=topic)
         self.x, self.y = 0, 0
         self.rsel = True
@@ -53,14 +53,14 @@ class ROI_Generator_Slow(object):
         w, h, r = self.image.shape
         self.button_pressed = False
         if load:
-            self.collection = pickle.load(open(self.folder + '/' + output, "rb"))
+            self.collection = pickle.load(open(self.folder + "/" + output, "rb"))
         else:
             self.collection = ROI_Collection_Slow()
 
         self.collection.bag_to_rois[bag] = []
         self.mycoll = self.collection.bag_to_rois[bag]
 
-        self.window_name = 'segment'
+        self.window_name = "segment"
         cv2.namedWindow(self.window_name)
         cv2.setMouseCallback(self.window_name, self.mouse_roi)
         self.last_rec = None
@@ -90,7 +90,7 @@ class ROI_Generator_Slow(object):
         while self.x is None:
             cv2.waitKey(33)
         image = self.crawl.next()
-        self.image = self.bridge.imgmsg_to_cv2(image, 'bgr8')
+        self.image = self.bridge.imgmsg_to_cv2(image, "bgr8")
         doing = False
         pause = True
         while True:
@@ -98,14 +98,14 @@ class ROI_Generator_Slow(object):
                 continue
             doing = True
             k = chr(cv2.waitKey(50) & 0xFF)
-            if k == 'q':
+            if k == "q":
                 break
-            elif k == ' ':
+            elif k == " ":
                 pause = not pause
             elif not pause and not self.rclk:
                 try:
                     image = self.crawl.next()
-                    self.image = self.bridge.imgmsg_to_cv2(image, 'bgr8')
+                    self.image = self.bridge.imgmsg_to_cv2(image, "bgr8")
                 except StopIteration:
                     break
 
@@ -122,11 +122,11 @@ class ROI_Generator_Slow(object):
                 newrects = {}
                 for r in self.rects:
                     coords = self.rects[r]
-                    name = raw_input('Enter name of {} object: '.format(r))
+                    name = raw_input("Enter name of {} object: ".format(r))
                     if name == "skip":
                         pause = True
                         break
-                    elif name == ' ':
+                    elif name == " ":
                         break
                     else:
                         newrects[name] = coords
@@ -155,16 +155,24 @@ class ROI_Generator_Slow(object):
                 self.roi_to_tracker[name].init(self.image, r)
             return
         if self.rclk:
-            if event == cv2.EVENT_LBUTTONDOWN and flags == 48:  # 16:  # pressing shift, remove box
+            if (
+                event == cv2.EVENT_LBUTTONDOWN and flags == 48
+            ):  # 16:  # pressing shift, remove box
                 if len(self.rects) > 0:
-                    r = min(self.rects.items(), key=lambda rect: np.linalg.norm(
-                        np.array([rect[1][0], rect[1][1]]) - np.array([x, y])))
+                    r = min(
+                        self.rects.items(),
+                        key=lambda rect: np.linalg.norm(
+                            np.array([rect[1][0], rect[1][1]]) - np.array([x, y])
+                        ),
+                    )
                     r = r[0]
                     self.rects.pop(r)
                     self.roi_to_tracker.pop(r)
                     self.sel_rect = None
-            elif event == cv2.EVENT_LBUTTONDOWN and flags == 40:  # 8:  # pressing cntrl, add box
-                name = raw_input('Enter name of object: ')
+            elif (
+                event == cv2.EVENT_LBUTTONDOWN and flags == 40
+            ):  # 8:  # pressing cntrl, add box
+                name = raw_input("Enter name of object: ")
                 if name == "skip":
                     return
                 r = [20, 20, 20, 20]
@@ -177,8 +185,12 @@ class ROI_Generator_Slow(object):
                         self.sel_rect = None
                 else:
                     if len(self.rects) > 0:
-                        self.sel_rect = min(self.rects.items(), key=lambda rect: np.linalg.norm(
-                            np.array([rect[1][0], rect[1][1]]) - np.array([x, y])))
+                        self.sel_rect = min(
+                            self.rects.items(),
+                            key=lambda rect: np.linalg.norm(
+                                np.array([rect[1][0], rect[1][1]]) - np.array([x, y])
+                            ),
+                        )
                         self.sel_rect = self.sel_rect[0]
                         r = self.rects[self.sel_rect]
                         cv2.setTrackbarPos("width", self.window_name, r[2])
@@ -191,11 +203,13 @@ class ROI_Generator_Slow(object):
                     self.rects[self.sel_rect][0:4] = [self.x, self.y, r[2], r[3]]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('bag', type=str, help='The bag you would like to use')
-    parser.add_argument('name', type=str, help='The name of the output file')
-    parser.add_argument('--load', action='store_true', help='The name of the output file')
+    parser.add_argument("bag", type=str, help="The bag you would like to use")
+    parser.add_argument("name", type=str, help="The name of the output file")
+    parser.add_argument(
+        "--load", action="store_true", help="The name of the output file"
+    )
     args = parser.parse_args(sys.argv[1:])
 
     roi = ROI_Generator_Slow()

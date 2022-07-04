@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
-import rospy
+from typing import Union
+
 import numpy as np
-from rospy.numpy_msg import numpy_msg
-from std_msgs.msg import Header
-from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
-from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
-from mil_passive_sonar.msg import HydrophoneSamplesStamped, Triggered, Ping
+import rospy
 from mil_passive_sonar import util
+from mil_passive_sonar.msg import HydrophoneSamplesStamped, Ping, Triggered
 from mil_passive_sonar.streamed_bandpass import StreamedBandpass
 from mil_ros_tools import Plotter, interweave
-
+from rospy.numpy_msg import numpy_msg
 from scipy.ndimage.filters import maximum_filter1d
-from typing import Union
+from std_msgs.msg import Header
+from std_srvs.srv import (
+    SetBool,
+    SetBoolRequest,
+    SetBoolResponse,
+    Trigger,
+    TriggerRequest,
+    TriggerResponse,
+)
 
 
 class HydrophoneTrigger:
@@ -20,10 +26,10 @@ class HydrophoneTrigger:
 
     Subscribes to raw hydrophone samples on ``/samples``.
 
-    Publishes samples (of gradient) from right around the triggering on ``/pings`` 
+    Publishes samples (of gradient) from right around the triggering on ``/pings``
     when a ping is detected and found to be in the target frequency range.
 
-    Optionally, you can publish a plot of the frequency response of the filter on `/filter_debug`  
+    Optionally, you can publish a plot of the frequency response of the filter on `/filter_debug`
     by service calling `/filter_debug_trigger`.
 
     Attributes:
@@ -37,12 +43,13 @@ class HydrophoneTrigger:
         pub (rospy.Publisher): A publisher for the ``/pings`` topic. Publishes
             :class:`Triggered` messages.
         sub (Optional[rospy.Subscriber]): A subscriber to the ``/samples`` topic. Receives
-            either a :class:`~mil_passive_sonar.msg._Ping.Ping` or 
+            either a :class:`~mil_passive_sonar.msg._Ping.Ping` or
             :class:`~mil_passive_sonar.msg._HydrophoneSamplesStamped.HydrophoneSamplesStamped` message,
             and sends the message to :meth:`.hydrophones_cb`.
         trigger_debug (Plotter): A plotter responsible for publishing debug data
             about the triggering behavior of the system.
     """
+
     def __init__(self):
 
         # Attriburtes about our general frequency range (all pinger live here)

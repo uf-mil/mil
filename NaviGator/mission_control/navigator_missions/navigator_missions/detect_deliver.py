@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-from .detect_deliver_find import DetectDeliverFind
-from .track_target import TrackTarget
 from txros import util
 
+from .detect_deliver_find import DetectDeliverFind
 from .navigator import Navigator
+from .track_target import TrackTarget
 
 
 class DetectDeliver(Navigator):

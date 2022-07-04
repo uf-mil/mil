@@ -1,5 +1,5 @@
-import numpy as np
 import cv2
+import numpy as np
 import rospy
 from mil_ros_tools.func_helpers import Cache
 
@@ -51,9 +51,9 @@ def grow_cluster(image, prior_range):
 
 
 if __name__ == "__main__":
-    from sklearn import cluster  # noqa
     import visual_threshold_tools
     from mayavi import mlab
+    from sklearn import cluster  # noqa
 
     img = cv2.imread("/home/sub8/Pictures/Selection_001.png")
     cv2.imshow("ss", img)

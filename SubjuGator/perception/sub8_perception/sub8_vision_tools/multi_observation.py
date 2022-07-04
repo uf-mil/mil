@@ -1,6 +1,7 @@
+import image_geometry
 import numpy as np
 from scipy.optimize import minimize
-import image_geometry
+
 from . import estimation
 
 
@@ -101,8 +102,9 @@ def test():
     TODO:
         Make this an actual unit test
     """
-    import mil_ros_tools
     import time
+
+    import mil_ros_tools
     import rospy
     from mayavi import mlab
 

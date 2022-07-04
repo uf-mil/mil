@@ -7,20 +7,19 @@ functions that are shared by the various remote control devices on NaviGator.
 
 import functools
 import itertools
+from typing import Callable, Optional
 
 import actionlib
 import genpy
-from geometry_msgs.msg import WrenchStamped
-from ros_alarms import AlarmBroadcaster, AlarmListener
-from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
-from topic_tools.srv import MuxSelect
-from navigator_msgs.srv import ShooterManual
 import rospy
-from std_srvs.srv import Trigger, TriggerRequest
-from mil_missions_core import MissionClient
 from actionlib import TerminalState
-from typing import Callable, Optional
-
+from geometry_msgs.msg import WrenchStamped
+from mil_missions_core import MissionClient
+from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
+from navigator_msgs.srv import ShooterManual
+from ros_alarms import AlarmBroadcaster, AlarmListener
+from std_srvs.srv import Trigger, TriggerRequest
+from topic_tools.srv import MuxSelect
 
 __author__ = "Anthony Olive"
 
@@ -30,6 +29,7 @@ class RemoteControl:
     Helper class which assists in allowing the remote execution of several key
     robot services.
     """
+
     def __init__(self, controller_name: str, wrench_pub: Optional[str] = None):
         self.name = controller_name
         self.wrench_choices = itertools.cycle(
@@ -71,6 +71,7 @@ class RemoteControl:
         Simple decorator to check whether or not the remote control device is
         timed out before running the function that was called.
         """
+
         @functools.wraps(function)
         def wrapper(self, *args, **kwargs):
             if not self.is_timed_out:
@@ -139,6 +140,7 @@ class RemoteControl:
         """
         Deploys the thrusters by creating a new task in the task client.
         """
+
         def cb(terminal_state, result):
             if terminal_state == 3:
                 rospy.loginfo("Thrusters Deployed!")
@@ -156,6 +158,7 @@ class RemoteControl:
         """
         Retracts the thrusters by creating a new task in the task client.
         """
+
         def cb(terminal_state, result):
             if terminal_state == 3:
                 rospy.loginfo("Thrusters Retracted!")
@@ -317,7 +320,15 @@ class RemoteControl:
         self.shooter_manual_client(0, float(speed) / -100)
 
     @_timeout_check
-    def publish_wrench(self, x: float, y: float, rotation: float, stamp: Optional[genpy.rostime.Time] = None, *args, **kwargs) -> None:
+    def publish_wrench(
+        self,
+        x: float,
+        y: float,
+        rotation: float,
+        stamp: Optional[genpy.rostime.Time] = None,
+        *args,
+        **kwargs
+    ) -> None:
         """
         Publishes a wrench to the specified node based on force inputs from the
         controller.

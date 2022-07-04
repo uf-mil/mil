@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+import struct
+
 import rospy
 from mil_misc_tools.serial_tools import SimulatedSerial
-import struct
 
 
 class SimulatedSabertooth2x12(SimulatedSerial):
@@ -11,6 +12,7 @@ class SimulatedSabertooth2x12(SimulatedSerial):
 
     Implements :class:`mil_tools.SimulatedSerial`.
     """
+
     def __init__(self, *args, **kwargs):
         super(SimulatedSabertooth2x12, self).__init__()
 
@@ -23,7 +25,7 @@ class SimulatedSabertooth2x12(SimulatedSerial):
             rospy.logerr("wrong packet size")
             return
 
-        data: int # Temporary variable + type overwrite
+        data: int  # Temporary variable + type overwrite
         address, command, data, checksum = struct.unpack("BBBB", data)
         checksum_verify = (address + command + data) & 127
         if checksum_verify != checksum:

@@ -1,33 +1,31 @@
 #!/usr/bin/env python3
 from __future__ import division
+
+from types import ModuleType
+from typing import List, Optional, Tuple
+
+import actionlib
+import cv2  # for occupancy grid analysis
 import numpy as np
 import numpy.linalg as npl
-import cv2  # for occupancy grid analysis
-
 import rospy
-import actionlib
-import tf.transformations as trns
-from mil_tools import numpy_to_quaternion
 
-from nav_msgs.msg import Odometry, OccupancyGrid
+# Check scipy version for assume_sorted argument in interp1d
+import scipy.interpolate
+import tf.transformations as trns
 from geometry_msgs.msg import (
     Point32,
     PointStamped,
+    PolygonStamped,
     Pose,
     PoseArray,
     PoseStamped,
     WrenchStamped,
-    PolygonStamped,
 )
-
-from navigator_path_planner import params, car, boat, escape
-from navigator_path_planner.msg import MoveAction, MoveFeedback, MoveResult, MoveGoal
-
-# Check scipy version for assume_sorted argument in interp1d
-import scipy.interpolate
-
-from typing import List, Tuple, Optional
-from types import ModuleType
+from mil_tools import numpy_to_quaternion
+from nav_msgs.msg import OccupancyGrid, Odometry
+from navigator_path_planner import boat, car, escape, params
+from navigator_path_planner.msg import MoveAction, MoveFeedback, MoveGoal, MoveResult
 
 if int(scipy.__version__.split(".")[1]) < 16:
 
@@ -269,7 +267,7 @@ class LQRRT_Node:
                 return False
 
         # Make sure we are not already in a collided state
-        #if not self.is_feasible(self.state, np.zeros(3)) and not self.blind:
+        # if not self.is_feasible(self.state, np.zeros(3)) and not self.blind:
         #    print("\nCan't move. Already collided.\n")
         #    self.move_server.set_aborted(MoveResult('collided'))
         #    self.done = True

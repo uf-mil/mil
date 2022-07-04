@@ -1,26 +1,26 @@
+from collections import Counter
+
+import cv2
+import numpy as np
+import numpy.ma as ma
 import txros
+from cv_bridge import CvBridge
+from mil_misc_tools.text_effects import CvDebug, fprint
+from sensor_msgs.msg import Image
 from twisted.internet import defer
 from txros import util
-from mil_misc_tools.text_effects import fprint, CvDebug
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
-import numpy as np
-import cv2
-from collections import Counter
-import numpy.ma as ma
 
 # Perception
 # Params : direction
 
 
 class FindTheBreakPerception(object):
-
     def __init__(self, nh):
         """Initialize FindTheBreakPerception class."""
         # PARAMS
         self.diff_thresh = 50
-        self.target_wh_ratio = .2
-        self.max_from_target_ratio = .3
+        self.target_wh_ratio = 0.2
+        self.max_from_target_ratio = 0.3
 
         self.nh = nh
         self.hpipe_position = None
@@ -35,13 +35,15 @@ class FindTheBreakPerception(object):
     @util.cancellableInlineCallbacks
     def init_(self):
         """Initialize the txros aspect of FindTheBreakPerception."""
-        self._image_sub = yield self.nh.subscribe("/camera/down/image_rect_color", Image, lambda x: x)
+        self._image_sub = yield self.nh.subscribe(
+            "/camera/down/image_rect_color", Image, lambda x: x
+        )
 
     @property
     @util.cancellableInlineCallbacks
     def _curr_image(self):
         img_msg = yield txros.util.wrap_timeout(self._image_sub.get_next_message(), 3)
-        defer.returnValue(self.bridge.imgmsg_to_cv2(img_msg, 'bgr8'))
+        defer.returnValue(self.bridge.imgmsg_to_cv2(img_msg, "bgr8"))
 
     def _get_all_pipes(self, frame):
         frame
@@ -50,7 +52,7 @@ class FindTheBreakPerception(object):
             return
 
         # resize image
-        frame = cv2.resize(frame, 0, fx=.2, fy=.2)
+        frame = cv2.resize(frame, 0, fx=0.2, fy=0.2)
         gaussian = cv2.GaussianBlur(frame, (9, 9), 10.0)
         frame = cv2.addWeighted(frame, 1.5, gaussian, -0.5, 0, frame)
 
@@ -124,9 +126,9 @@ class FindTheBreakPerception(object):
             dot = direc.dot(np.array([1, 0]))
             vcost = abs(1 - dot)
             hcost = dot
-            if hcost < .1:
+            if hcost < 0.1:
                 horiz = True
-            elif vcost < .1:
+            elif vcost < 0.1:
                 horiz = False
             else:
                 continue
@@ -142,7 +144,7 @@ class FindTheBreakPerception(object):
             val = max(c, key=lambda x: x[1])
             val = val[1]
             frac = val / myl.size
-            if frac < .8:
+            if frac < 0.8:
                 continue
 
             cv2.drawContours(draw1, [box], 0, (0, 0, 255), 2)
@@ -184,7 +186,8 @@ class FindTheBreakPerception(object):
             hpipes, vpipes = self._get_all_pipes(frame)
             # Look for NEW pipes
             new_hpipes, new_vpipes = self._update_pipes(
-                hpipes, self.old_hpipe_pos), self._update_pipes(vpipes, self.old_vpipe_pos)
+                hpipes, self.old_hpipe_pos
+            ), self._update_pipes(vpipes, self.old_vpipe_pos)
 
             # the second hpipe is found
             if len(new_hpipes) > 0 and self.hpipe_found:

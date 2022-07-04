@@ -1,8 +1,9 @@
 from __future__ import division
+
 import image_geometry
+import mayavi
 import numpy as np
 from scipy import stats
-import mayavi
 
 
 class ProjectionParticleFilter:
@@ -318,8 +319,9 @@ def draw_line(pt_1, pt_2, color=(1.0, 0.0, 0.0)):
 
 def main():
     """Here's some stupid demo code"""
-    import mil_ros_tools
     import time
+
+    import mil_ros_tools
     import rospy
 
     rospy.init_node("test_estimation")

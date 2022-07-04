@@ -21,12 +21,13 @@ to pause the video and update the slider position. While paused,
 you can press s to go frame by frame.
 
 """
-import sys
 import os
-import rospy
+import sys
+
 import cv2
-from sensor_msgs.msg import Image
+import rospy
 from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
 
 
 class RosVideoPlayer:

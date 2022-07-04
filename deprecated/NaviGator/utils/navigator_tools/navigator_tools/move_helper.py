@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 
-import rospy
 import numpy
-from tf import transformations as trns
-from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseStamped, Point
+import rospy
+from geometry_msgs.msg import Point, PoseStamped
 from mil_tools import geometry_helpers as gh
 from mil_tools import numpy_to_quaternion
+from nav_msgs.msg import Odometry
+from tf import transformations as trns
 
-rospy.init_node('move_helper')
+rospy.init_node("move_helper")
 
 
 class move_helper(object):
-
     def __init__(self):
 
         self.odom = Odometry()
@@ -29,11 +28,23 @@ class move_helper(object):
         to_send = PoseStamped()
         to_send.header.frame_id = "/enu"
 
-        R = trns.quaternion_matrix([self.odom.pose.pose.orientation.x, self.odom.pose.pose.orientation.y,
-                                    self.odom.pose.pose.orientation.z, self.odom.pose.pose.orientation.w])[:2, :2]
+        R = trns.quaternion_matrix(
+            [
+                self.odom.pose.pose.orientation.x,
+                self.odom.pose.pose.orientation.y,
+                self.odom.pose.pose.orientation.z,
+                self.odom.pose.pose.orientation.w,
+            ]
+        )[:2, :2]
         theta = gh.quat_to_euler(self.odom.pose.pose.orientation)
 
-        current = numpy.array([self.odom.pose.pose.position.x, self.odom.pose.pose.position.y, numpy.rad2deg(theta[2])])
+        current = numpy.array(
+            [
+                self.odom.pose.pose.position.x,
+                self.odom.pose.pose.position.y,
+                numpy.rad2deg(theta[2]),
+            ]
+        )
         shift = numpy.concatenate((R.dot([msg.x, msg.y]), [msg.z]))
         desired = current + shift
         desired_quaternion = trns.quaternion_from_euler(0, 0, numpy.deg2rad(desired[2]))

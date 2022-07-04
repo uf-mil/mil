@@ -3,10 +3,9 @@ import sys
 import numpy as np
 import rospy
 from std_msgs.msg import String
+from sub8_sim_tools.rendering import World
 from vispy import app, gloo
 from vispy.util.transforms import rotate, translate
-
-from sub8_sim_tools.rendering import World
 
 
 class Canvas(app.Canvas):

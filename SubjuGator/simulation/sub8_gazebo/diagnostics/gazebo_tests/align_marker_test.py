@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import division
 
+import missions
+import numpy as np
 import tf
 import txros
-from mil_ros_tools import msg_helpers
-from gazebo_msgs.srv import DeleteModelRequest, SpawnModelRequest
-import missions
-
-from twisted.internet import defer
-import numpy as np
-
 from diagnostics.gazebo_tests import common
+from gazebo_msgs.srv import DeleteModelRequest, SpawnModelRequest
+from mil_ros_tools import msg_helpers
+from twisted.internet import defer
 
 
 class Job(common.Job):

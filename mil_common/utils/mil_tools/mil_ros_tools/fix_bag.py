@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+
 import rosbag
 import rospy
 from tqdm import tqdm

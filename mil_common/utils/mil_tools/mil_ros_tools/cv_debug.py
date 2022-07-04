@@ -1,13 +1,13 @@
 """Shows images for debugging purposes."""
+import sys
+from typing import Optional
+
 import cv2
 import numpy as np
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
-from txros import NodeHandle
 import rospy
-import sys
-
-from typing import Optional
+from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
+from txros import NodeHandle
 
 ___author___ = "Tess Bianchi"
 
@@ -29,7 +29,15 @@ class CvDebug:
 
     """
 
-    def __init__(self, nh: Optional[NodeHandle] = None, w: int = 1000, h: int = 800, total: int = 8, win_name: str = "debug", wait: bool = True):
+    def __init__(
+        self,
+        nh: Optional[NodeHandle] = None,
+        w: int = 1000,
+        h: int = 800,
+        total: int = 8,
+        win_name: str = "debug",
+        wait: bool = True,
+    ):
         """
         Initialize the Debug class.
 
@@ -106,10 +114,10 @@ class CvDebug:
             if self.num_imgs > self.total / 2:
                 self.name_to_starting[name] = (self.curr_w, self.curr_h)
         my_w, my_h = self.name_to_starting[name]
-        self.img[my_h: my_h + h, my_w: my_w + w] = img
+        self.img[my_h : my_h + h, my_w : my_w + w] = img
         if self.nh is None:
             cv2.imshow("img", self.img)
-            if cv2.waitKey(wait) & 0xFF == ord('q'):
+            if cv2.waitKey(wait) & 0xFF == ord("q"):
                 cv2.destroyAllWindows()
                 sys.exit()
 

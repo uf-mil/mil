@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-import serial
 import struct
+
+import serial
+
 from .simulated import SimulatedSabertooth2x12
 
 
@@ -13,6 +15,7 @@ class Sabertooth2x12:
         sim (bool): Whether the device is simulated. If so, a simulated serial connection
             is constructed, rather than a physical serial connection.
     """
+
     def __init__(
         self, filename: str, address: int = 128, baudrate: int = 9600, sim: bool = False
     ):

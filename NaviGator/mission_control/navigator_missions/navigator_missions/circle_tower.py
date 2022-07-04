@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+
 from twisted.internet import defer
 from txros.util import cancellableInlineCallbacks
 

@@ -12,10 +12,9 @@ executed.
 import curses
 import uuid
 
+import rospy
 from navigator_msgs.srv import KeyboardControl, KeyboardControlRequest
 from remote_control_lib import RemoteControl
-import rospy
-
 
 __author__ = "Anthony Olive"
 

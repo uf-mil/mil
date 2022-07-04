@@ -1,15 +1,16 @@
 #!/usr/bin/python3
-from mil_usb_to_can import SimulatedCANDevice
-from .packets import (
-    ThrustPacket,
-    KillMessage,
-    HeartbeatMessage,
-    StatusMessage,
-    THRUST_SEND_ID,
-    KILL_SEND_ID,
-)
 import rospy
+from mil_usb_to_can import SimulatedCANDevice
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
+
+from .packets import (
+    KILL_SEND_ID,
+    THRUST_SEND_ID,
+    HeartbeatMessage,
+    KillMessage,
+    StatusMessage,
+    ThrustPacket,
+)
 
 
 class ThrusterAndKillBoardSimulation(SimulatedCANDevice):

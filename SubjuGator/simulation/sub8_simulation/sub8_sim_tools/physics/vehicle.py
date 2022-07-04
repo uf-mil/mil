@@ -7,7 +7,6 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 from std_msgs.msg import String
 from sub8_msgs.msg import Thrust, VelocityMeasurement, VelocityMeasurements
-
 from sub8_sim_tools.physics.physics import Entity
 from sub8_simulation.srv import SimSetPose, SimSetPoseResponse
 

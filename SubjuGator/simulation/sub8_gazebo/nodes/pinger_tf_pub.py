@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import division
 
-from gazebo_msgs.srv import GetModelState
 import geometry_msgs.msg
-from mil_ros_tools import msg_helpers
 import numpy as np
 import rospy
-from std_msgs.msg import Header
 import tf
 import tf2_ros
+from gazebo_msgs.srv import GetModelState
+from mil_ros_tools import msg_helpers
+from std_msgs.msg import Header
 
 SUB_MODEL_NAME = "sub8"
 PINGER_MODEL_NAME = "red"  # Pinger model not in Gazebo yet TODO!

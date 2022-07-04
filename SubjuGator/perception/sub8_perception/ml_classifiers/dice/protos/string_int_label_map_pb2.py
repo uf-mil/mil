@@ -5,10 +5,10 @@ import sys
 
 _b = sys.version_info[0] < 3 and (lambda x: x) or (lambda x: x.encode("latin1"))
 from google.protobuf import descriptor as _descriptor  # noqa
+from google.protobuf import descriptor_pb2  # noqa
 from google.protobuf import message as _message  # noqa
 from google.protobuf import reflection as _reflection  # noqa
 from google.protobuf import symbol_database as _symbol_database  # noqa
-from google.protobuf import descriptor_pb2  # noqa
 
 # @@protoc_insertion_point(imports)
 

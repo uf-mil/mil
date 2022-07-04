@@ -1,6 +1,6 @@
 import rospy
-from ros_alarms import Alarm, AlarmBroadcaster, HandlerBase
 from mil_msgs.msg import RangeStamped
+from ros_alarms import Alarm, AlarmBroadcaster, HandlerBase
 
 
 class HeightOverBottom(HandlerBase):

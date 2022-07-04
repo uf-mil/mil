@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-import serial
-from mil_usb_to_can.utils import Packet, ReceivePacket, CommandPacket # causes error if relative import used - GH-731
-from mil_usb_to_can.simulation import SimulatedUSBtoCAN
 from threading import Lock
 
 # from mil_tools import hexify
 from typing import Optional
+
+import serial
+from mil_usb_to_can.simulation import SimulatedUSBtoCAN
+from mil_usb_to_can.utils import (  # causes error if relative import used - GH-731
+    CommandPacket,
+    Packet,
+    ReceivePacket,
+)
+
 
 class USBtoCANBoard:
     """
@@ -16,12 +22,13 @@ class USBtoCANBoard:
         lock (threading.Lock): The thread lock.
         ser (Union[:class:`SimulatedUSBtoCAN`, :class:`serial.Serial`]): The serial connection.
     """
+
     def __init__(self, port: str, baud: int = 9600, simulated: bool = False, **kwargs):
         """
         Args:
-        	port (str): Path to serial device, such as ``/dev/ttyUSB0``.
-        	baud (int): Baud rate of serial device to connect to. Defaults to 9600.
-        	simulated (bool): If True, use a simulated serial device rather than a real device. Defaults to ``False``.
+                port (str): Path to serial device, such as ``/dev/ttyUSB0``.
+                baud (int): Baud rate of serial device to connect to. Defaults to 9600.
+                simulated (bool): If True, use a simulated serial device rather than a real device. Defaults to ``False``.
         """
         self.lock = Lock()
         if simulated:
@@ -52,8 +59,8 @@ class USBtoCANBoard:
         method of the :attr:`.ser` attribute.
 
         Args:
-        	device_id (int): CAN device ID to send data to.
-        	data (bytes): Data (represented as bytes) to send to the device.
+                device_id (int): CAN device ID to send data to.
+                data (bytes): Data (represented as bytes) to send to the device.
         """
         p = CommandPacket.create_send_packet(data, can_id=can_id)
         with self.lock:

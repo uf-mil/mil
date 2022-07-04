@@ -1,6 +1,7 @@
 from threading import Lock
 from typing import Callable
 
+
 def thread_lock(lock: Lock):
     """
     A decortor for using an existing thread lock to thread-lock a function.

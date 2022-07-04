@@ -3,6 +3,7 @@ Parameters that are the same for all behaviors.
 
 """
 from __future__ import division
+
 import numpy as np
 
 # DIMENSIONALITY

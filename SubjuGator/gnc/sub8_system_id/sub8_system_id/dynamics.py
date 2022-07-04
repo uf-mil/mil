@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
+import numpy as np
 import rospy
 from urdf_parser_py.urdf import URDF
-import numpy as np
 
 
 class SubjuGatorDynamics:
@@ -19,6 +19,7 @@ class SubjuGatorDynamics:
         air_density (float): Density of air in kg/m^3.
         G (float): Acceleration due to gravity in negative z of world frame in m/s^2.
     """
+
     def __init__(
         self,
         mass: float,

@@ -5,19 +5,18 @@ of messages for the RobotX Communication Protocol
 """
 
 import math
+from typing import Any, List, Optional, Tuple
 
 import tf.transformations as trans
 from mil_tools import rosmsg_to_numpy
+from nav_msgs.msg import Odometry
 from navigator_msgs.srv import (
+    MessageDetectDeliverRequest,
+    MessageDetectDeliverResponse,
     MessageExtranceExitGateRequest,
     MessageExtranceExitGateResponse,
     MessageIdentifySymbolsDockResponse,
-    MessageDetectDeliverRequest,
-    MessageDetectDeliverResponse,
 )
-from nav_msgs.msg import Odometry
-
-from typing import List, Tuple, Optional, Any
 
 
 class BitwiseXORChecksum:

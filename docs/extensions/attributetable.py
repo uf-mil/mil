@@ -6,17 +6,20 @@ import importlib
 import inspect
 import os
 import re
-import sphinx.errors
 from collections import OrderedDict, namedtuple
+from typing import List
 
+import sphinx.errors
 from docutils import nodes
 from docutils.nodes import Node
+from docutils.parsers.rst.directives import (
+    flag,
+    unchanged,  # type: ignore
+    unchanged_required,
+)
 from sphinx import addnodes
 from sphinx.locale import _
 from sphinx.util.docutils import SphinxDirective
-
-from docutils.parsers.rst.directives import unchanged_required, unchanged, flag  # type: ignore
-from typing import List
 
 
 class attributetable(nodes.General, nodes.Element):
@@ -320,8 +323,7 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
     for node in doctree.traverse(siblings=True):
         if hasattr(node, "attributes"):
             if "cpp" in node.attributes["classes"] and any(
-                c in node.attributes["classes"]
-                for c in ["class", "struct"]
+                c in node.attributes["classes"] for c in ["class", "struct"]
             ):
                 # Store current C++ struct or class section as namespace::ClassName or ClassName
                 current_section = node.children[0].astext()
@@ -359,7 +361,10 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
                     fullname = None
                     try:
                         fullname = (
-                            node.children[0].children[0].children[0].attributes["ids"][0]
+                            node.children[0]
+                            .children[0]
+                            .children[0]
+                            .attributes["ids"][0]
                         )
                     except:
                         fullname = ""

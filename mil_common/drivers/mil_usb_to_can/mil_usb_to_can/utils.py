@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 import struct
+from typing import TYPE_CHECKING, Optional, Union
+
 import serial
-from typing import Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .simulation import SimulatedUSBtoCAN
@@ -13,6 +14,7 @@ class USB2CANException(Exception):
     """
     Base class for exception in USB2CAN board functionality. Inherits from :class:`Exception`.
     """
+
     pass
 
 
@@ -21,6 +23,7 @@ class ChecksumException(USB2CANException):
     Exception thrown when the checksum between motherboard and CANtoUSB board is invalid.
     Inherits from :class:`USB2CANException`.
     """
+
     def __init__(self, calculated, expected):
         super(ChecksumException, self).__init__(
             "Checksum was calculated as {} but reported as {}".format(
@@ -34,6 +37,7 @@ class PayloadTooLargeException(USB2CANException):
     Exception thrown when payload of data sent/received from CAN2USB is too large.
     Inherits from :class:`USB2CANException`.
     """
+
     def __init__(self, length):
         super(PayloadTooLargeException, self).__init__(
             "Payload is {} bytes, which is greater than the maximum of 8".format(length)
@@ -45,6 +49,7 @@ class InvalidFlagException(USB2CANException):
     Exception thrown when a constant flag in the CAN2USB protocol is invalid. Inherits
     from :class:`USB2CANException`.
     """
+
     def __init__(self, description, expected, was):
         super(InvalidFlagException, self).__init__(
             "{} flag should be {} but was {}".format(description, expected, was)
@@ -55,6 +60,7 @@ class InvalidStartFlagException(InvalidFlagException):
     """
     Exception thrown when the SOF flag is invalid. Inherits from :class:`InvalidFlagException`.
     """
+
     def __init__(self, was: bytes):
         super(InvalidStartFlagException, self).__init__("SOF", Packet.SOF, was)
 
@@ -63,6 +69,7 @@ class InvalidEndFlagException(InvalidFlagException):
     """
     Exception thrown when the EOF flag is invalid. Inherits from :class:`InvalidFlagException`.
     """
+
     def __init__(self, was: bytes):
         super(InvalidEndFlagException, self).__init__("EOF", Packet.EOF, was)
 
@@ -75,6 +82,7 @@ class Packet:
         SOF (int): Flag used to mark the beginning of each packet. Equal to `0xC0`.
         EOF (int): Flag used to mark the beginning of each packet. Equal to `0xC1`.
     """
+
     # Flag used to mark beginning of each packet
     SOF = 0xC0
     # Flag used to mark end of each packet
@@ -133,7 +141,7 @@ class Packet:
         Parses a packet from a bytes string into a Packet instance.
 
         Args:
-        	data (bytes): The data to put into a packet.
+                data (bytes): The data to put into a packet.
 
         Returns:
             Optional[Packet]: The packet (if one can be created), otherwise ``None``.
@@ -147,12 +155,14 @@ class Packet:
         return "Packet(payload={})".format(self.payload)
 
     @classmethod
-    def read_packet(cls, ser: Union[serial.Serial, SimulatedUSBtoCAN]) -> Optional[Packet]:
+    def read_packet(
+        cls, ser: Union[serial.Serial, SimulatedUSBtoCAN]
+    ) -> Optional[Packet]:
         """
         Read a packet with a known size from a serial device
 
         Args:
-        	ser (Union[serial.Serial, SimulatedUSBtoCAN]): A instance of a serial device
+                ser (Union[serial.Serial, SimulatedUSBtoCAN]): A instance of a serial device
               to read from.
 
         Raises:
@@ -213,8 +223,8 @@ class ReceivePacket(Packet):
         Creates a command packet to request data from a CAN device.
 
         Args:
-        	filter_id (int): The CAN device ID to request data from.
-        	payload (bytes): The data to send in the packet.
+                filter_id (int): The CAN device ID to request data from.
+                payload (bytes): The data to send in the packet.
 
         Returns:
             ReceivePacket: The packet to request from the CAN device.
@@ -264,6 +274,7 @@ class CommandPacket(Packet):
     Represents a packet to the CAN board from the motherboard.
     This packet can either request data from a device or send data to a device.
     """
+
     @property
     def length_byte(self) -> int:
         """
@@ -302,7 +313,9 @@ class CommandPacket(Packet):
         Returns:
             :class:`int`
         """
-        return struct.unpack("B", self.payload[1:1+1])[0] # [1:1+1] range used to ensure bytes, not [1] for int
+        return struct.unpack("B", self.payload[1 : 1 + 1])[
+            0
+        ]  # [1:1+1] range used to ensure bytes, not [1] for int
 
     @property
     def data(self) -> bytes:
@@ -315,7 +328,9 @@ class CommandPacket(Packet):
         return self.payload[2:]
 
     @classmethod
-    def create_command_packet(cls, length_byte: int, filter_id: int, data: bytes = b"") -> CommandPacket:
+    def create_command_packet(
+        cls, length_byte: int, filter_id: int, data: bytes = b""
+    ) -> CommandPacket:
         """
         Creates a command packet.
 
@@ -325,9 +340,9 @@ class CommandPacket(Packet):
             or :meth:`.create_receive_packet` instead.
 
         Args:
-        	length_byte (int): The first header byte
-        	filter_id (int): The second header byte
-        	data (bytes): Optional data payload when this is a send command. Defaults
+                length_byte (int): The first header byte
+                filter_id (int): The second header byte
+                data (bytes): Optional data payload when this is a send command. Defaults
             to an empty byte string.
         """
         if len(data) > 8:
@@ -341,7 +356,7 @@ class CommandPacket(Packet):
         Creates a command packet to send data to the CAN bus from the motherboard.
 
         Args:
-        	data (bytes): The data payload.
+                data (bytes): The data payload.
 
         Returns:
             CommandPacket: The packet responsible for sending information to the CAN bus
@@ -351,13 +366,15 @@ class CommandPacket(Packet):
         return cls.create_command_packet(length_byte, can_id, data)
 
     @classmethod
-    def create_request_packet(cls, filter_id: int, receive_length: int) -> CommandPacket:
+    def create_request_packet(
+        cls, filter_id: int, receive_length: int
+    ) -> CommandPacket:
         """
         Creates a command packet to request data from a CAN device.
 
         Args:
-        	filter_id (int): The CAN device ID to request data from.
-        	receive_length (int): The number of bytes to request.
+                filter_id (int): The CAN device ID to request data from.
+                receive_length (int): The number of bytes to request.
 
         Returns:
             CommandPacket: The command packet responsibel for requesting data from

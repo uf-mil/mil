@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 import sys
-import rospy
-import nav_msgs.msg as nav_msgs
-import mil_ros_tools
-import tf
-import numpy as np
-
-from visualization_msgs.msg import Marker
-from geometry_msgs.msg import Twist, Pose, PoseStamped
-from sensor_msgs.msg import Joy
-from scipy import linalg
 
 import actionlib
-import mil_msgs.msg as mil_msgs
 import geometry_msgs.msg as geom_msgs
+import mil_msgs.msg as mil_msgs
+import mil_ros_tools
+import nav_msgs.msg as nav_msgs
+import numpy as np
+import rospy
+import tf
+from geometry_msgs.msg import Pose, PoseStamped, Twist
+from scipy import linalg
+from sensor_msgs.msg import Joy
+from visualization_msgs.msg import Marker
 
 
 class Spacenav:

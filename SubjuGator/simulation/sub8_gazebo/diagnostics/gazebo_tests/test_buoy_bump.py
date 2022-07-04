@@ -1,9 +1,9 @@
-import txros
-from twisted.internet import defer
 import numpy as np
+import txros
 from diagnostics.gazebo_tests import common
-from sub8 import pose_editor
 from missions import buoy
+from sub8 import pose_editor
+from twisted.internet import defer
 
 
 # TODO: Allow generic names

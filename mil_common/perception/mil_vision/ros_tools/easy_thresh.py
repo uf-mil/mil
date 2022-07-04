@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 # PYTHON_ARGCOMPLETE_OK
 
-import argcomplete
-import sys
 import argparse
+import sys
+
+import argcomplete
 import rospy
 
 all_topics = rospy.get_published_topics()
@@ -29,14 +30,16 @@ if args.hsv:
     print("Using HSV instead of bgr")
 prefix = "hsv" if args.hsv else "bgr"
 
+import os  # noqa
+
+import cv2  # noqa
+import numpy as np  # noqa
+from mil_ros_tools.image_helpers import Image_Subscriber  # noqa
+from sklearn import cluster  # noqa
+
 # Importing these late so that argcomplete can run quickly
 # NEEDS TO NOT BE DEPENDENT ON sub8 SOON. MOVE THESE FUNCTIONS TO MIL_VISION
 from sub8_vision_tools import visual_threshold_tools  # noqa
-from mil_ros_tools.image_helpers import Image_Subscriber  # noqa
-import cv2  # noqa
-import numpy as np  # noqa
-import os  # noqa
-from sklearn import cluster  # noqa
 
 os.system("export ETS_TOOLKIT=qt4")
 

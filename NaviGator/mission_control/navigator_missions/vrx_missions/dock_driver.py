@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import txros
 import numpy as np
-from vrx import Vrx
+import txros
 from std_msgs.msg import String
+from vrx import Vrx
 
 
 class DockDriver(Vrx):

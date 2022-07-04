@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 import sys
+import time
 import unittest
+
 import numpy as np
-from sub8_msgs.msg import Thrust
-from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse
-from geometry_msgs.msg import WrenchStamped, Wrench, Vector3
-from mil_ros_tools import wait_for_subscriber
 import rospy
 import rostest
-import time
+from geometry_msgs.msg import Vector3, Wrench, WrenchStamped
+from mil_ros_tools import wait_for_subscriber
+from sub8_msgs.msg import Thrust
+from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse
 
 PKG = "sub8_thruster_mapper"
 NAME = "test_map"

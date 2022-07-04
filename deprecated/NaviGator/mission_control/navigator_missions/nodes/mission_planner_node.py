@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import os
-from txros import util
+import sys
+
 import yaml
 from nav_missions_lib import MissionPlanner
 from twisted.internet import reactor
-import sys
+from txros import util
 
 
 @util.cancellableInlineCallbacks

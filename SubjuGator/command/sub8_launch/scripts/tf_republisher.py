@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
+import mil_misc_tools.text_effects as te
 import rospy
 import tf
 from mil_msgs.msg import RangeStamped
-import mil_misc_tools.text_effects as te
 
 
 def got_range(msg):

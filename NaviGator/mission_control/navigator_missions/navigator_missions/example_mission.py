@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import txros
-from .navigator import Navigator
 from twisted.internet import defer
+
+from .navigator import Navigator
 
 
 class ExampleMission(Navigator):

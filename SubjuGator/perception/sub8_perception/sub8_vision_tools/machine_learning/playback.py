@@ -1,12 +1,12 @@
 import argparse
-import cv2
 import pickle
-import numpy as np
 import sys
+
+import cv2
+import numpy as np
 from adaboost import observe
 from mil_ros_tools import BagCrawler
 from sub8_vision_tools import ImageCrawler, VideoCrawler
-
 
 if __name__ == "__main__":
     usage_msg = "Pass the path to a bag, the start of an image sequence,or 'video' \

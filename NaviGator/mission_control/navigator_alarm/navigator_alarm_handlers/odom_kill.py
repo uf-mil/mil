@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
+import numpy as np
 import rospy
+from mil_ros_tools import rosmsg_to_numpy
 from nav_msgs.msg import Odometry
 from ros_alarms import AlarmBroadcaster, HandlerBase, HeartbeatMonitor
-import numpy as np
-from mil_ros_tools import rosmsg_to_numpy
 
 __author__ = "David Soto"
 

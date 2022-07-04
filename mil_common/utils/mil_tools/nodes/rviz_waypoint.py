@@ -2,8 +2,8 @@
 from __future__ import division
 
 import txros
+from geometry_msgs.msg import PointStamped, PoseStamped
 from twisted.internet import defer
-from geometry_msgs.msg import PoseStamped, PointStamped
 
 
 class RvizRepublisher:

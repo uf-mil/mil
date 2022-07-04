@@ -9,10 +9,10 @@ import numpy as np
 import tf.transformations as trns
 import txros
 from nav_msgs.msg import OccupancyGrid
-from .navigator import Navigator
 from twisted.internet import defer
 
 from . import pose_editor
+from .navigator import Navigator
 
 WEST = trns.quaternion_matrix(pose_editor.WEST)
 EAST = trns.quaternion_matrix(pose_editor.EAST)

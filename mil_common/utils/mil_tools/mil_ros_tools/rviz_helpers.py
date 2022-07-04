@@ -1,29 +1,31 @@
 #!/usr/bin/env python3
+from typing import List, Tuple
+
+import mil_ros_tools
 import numpy as np
 import rospy
 import visualization_msgs.msg as visualization_msgs
-
+from geometry_msgs.msg import Point, Pose, Vector3
 from image_geometry import PinholeCameraModel
-from geometry_msgs.msg import Pose, Vector3, Point
 from std_msgs.msg import ColorRGBA
-
-import mil_ros_tools
-
-from typing import List, Tuple
 
 rviz_pub = rospy.Publisher("visualization", visualization_msgs.Marker, queue_size=3)
 
 
 def draw_sphere(
-        position: np.ndarray, color: np.ndarray, scaling: Tuple[float, float, float] = (0.11, 0.11, 0.11), m_id: int = 4, frame: str = "/base_link"
+    position: np.ndarray,
+    color: np.ndarray,
+    scaling: Tuple[float, float, float] = (0.11, 0.11, 0.11),
+    m_id: int = 4,
+    frame: str = "/base_link",
 ) -> None:
     """
     Draws a sphere in Rviz. Creates a new :class:`Marker` message and publishes
     it to Rviz.
 
     Args:
-        position (np.ndarray): A list of :class:`float` that make up the point. 
-        color (np.ndarray): An array representing the color. The array should 
+        position (np.ndarray): A list of :class:`float` that make up the point.
+        color (np.ndarray): An array representing the color. The array should
             contain the ``r``, ``g``, ``b``, and ``a`` values of the color.
         scaling (Tuple[float, float, float]): The size of the sphere, in meters.
         m_id (id): The marker ID. This should be unique.
@@ -49,7 +51,12 @@ def draw_sphere(
 
 
 def draw_ray_3d(
-        pix_coords, camera_model: PinholeCameraModel, color: ColorRGBA, frame: str = "/stereo_front", m_id=0, length=35
+    pix_coords,
+    camera_model: PinholeCameraModel,
+    color: ColorRGBA,
+    frame: str = "/stereo_front",
+    m_id=0,
+    length=35,
 ) -> None:
     """
     Draws a 3D ray in Rviz. Creates a new Marker message and publishes it to the Rviz
@@ -76,7 +83,15 @@ def draw_ray_3d(
     rviz_pub.publish(marker)
 
 
-def make_ray(base: np.ndarray, direction: np.ndarray, length: int, color: List[float], frame: str = "/base_link", m_id: int = 0, **kwargs) -> visualization_msgs.Marker:
+def make_ray(
+    base: np.ndarray,
+    direction: np.ndarray,
+    length: int,
+    color: List[float],
+    frame: str = "/base_link",
+    m_id: int = 0,
+    **kwargs
+) -> visualization_msgs.Marker:
     """
     Makes a ray from a base with a direction. The ray is constructed in the ``wamv``
     namespace and has an infinite lifetime.

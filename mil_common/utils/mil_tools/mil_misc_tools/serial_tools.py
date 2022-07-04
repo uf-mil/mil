@@ -77,6 +77,7 @@ class SimulatedSerial(NoopSerial):
     Args:
         buffer (bytes): A buffer of bytes waiting to be read from the device.
     """
+
     def __init__(self, *args, **kwargs):
         self.buffer = b""
 

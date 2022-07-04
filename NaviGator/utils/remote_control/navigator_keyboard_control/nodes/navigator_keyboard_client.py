@@ -9,11 +9,10 @@ useful feedback and captures key presses to be sent to the server.
 """
 
 import curses
-
-from navigator_msgs.srv import KeyboardControl
-import rospy
 from typing import Optional
 
+import rospy
+from navigator_msgs.srv import KeyboardControl
 
 __author__ = "Anthony Olive"
 

@@ -1,11 +1,12 @@
 #!/usr/bin/python3
-import cv2
-import numpy as np
-import os
 import argparse
+import os
 import sys
-import features
 import time
+
+import cv2
+import features
+import numpy as np
 import tqdm
 
 """

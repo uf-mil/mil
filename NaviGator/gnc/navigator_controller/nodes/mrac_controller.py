@@ -1,16 +1,17 @@
 #!/usr/bin/python
 from __future__ import division
-import numpy as np
-import numpy.linalg as npl
-import tf.transformations as trns
+
 import traceback
 
+import numpy as np
+import numpy.linalg as npl
 import rospy
+import tf.transformations as trns
+from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion, WrenchStamped
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Point, WrenchStamped, PoseStamped, Quaternion, Pose
-from std_msgs.msg import Header
+from std_msgs.msg import Float64MultiArray, Header, String
 from vrx_gazebo.msg import Task
-from std_msgs.msg import String, Float64MultiArray
+
 
 class MRAC_Controller:
     LEARN_WRENCHES = ["/wrench/autonomous", "autonomous"]
@@ -24,14 +25,16 @@ class MRAC_Controller:
         # Disturbance adaptation rates, world frame
         self.ki = np.array(rospy.get_param("~ki", [0.1, 0.1, 0.1]))
         # Drag adaptation rates, world frame
-        self.kg = np.array(rospy.get_param('~kg',[5.0, 5.0, 5.0, 5.0, 5.0]))
+        self.kg = np.array(rospy.get_param("~kg", [5.0, 5.0, 5.0, 5.0, 5.0]))
         # X error threshold for long trajectory to be satisfied
-        self.x_thresh = rospy.get_param('x_thresh', 0.5)
+        self.x_thresh = rospy.get_param("x_thresh", 0.5)
         # Y error threshold for long trajectory to be satisfied
-        self.y_thresh = rospy.get_param('y_thresh', 0.5)
+        self.y_thresh = rospy.get_param("y_thresh", 0.5)
         # Yaw error threshold for long trajectory to be satisfied
-        self.yaw_thresh = rospy.get_param('yaw_thresh', 0.02)
-        self.task_info_sub = rospy.Subscriber("/vrx/task/info", Task, self.taskinfoSubscriber)
+        self.yaw_thresh = rospy.get_param("yaw_thresh", 0.02)
+        self.task_info_sub = rospy.Subscriber(
+            "/vrx/task/info", Task, self.taskinfoSubscriber
+        )
         self.thresholds_changed = False
         # Initial disturbance estimate
         self.dist_est = np.array([0, 0, 0])
@@ -52,7 +55,7 @@ class MRAC_Controller:
         # Use external trajectory generator instead of internal reference generator
         # Subscribes to /trajectory if using external, else just takes /waypoint for the end goal
         self.use_external_tgen = True
-        #experimental
+        # experimental
         self.kp_body_orig = self.kp_body
         self.kd_body_orig = self.kd_body
         self.heavy_pid = False
@@ -240,9 +243,12 @@ class MRAC_Controller:
         Args:
             msg: Odometry - The Odometry message from the topic.
         """
-        if self.p_ref is not None and self.old_p_ref is not None and \
-            self.old_p_ref[0] == msg.pose.pose.position.x and \
-            self.old_q_ref[0] == msg.pose.pose.orientation.x:
+        if (
+            self.p_ref is not None
+            and self.old_p_ref is not None
+            and self.old_p_ref[0] == msg.pose.pose.position.x
+            and self.old_q_ref[0] == msg.pose.pose.orientation.x
+        ):
             return
 
         self.p_ref = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y])
@@ -257,8 +263,6 @@ class MRAC_Controller:
 
         self.old_p_ref = self.p_ref
         self.old_q_ref = self.q_ref
-
-        
 
         R = trns.quaternion_matrix(self.q_ref)[:3, :3]
 
@@ -290,20 +294,41 @@ class MRAC_Controller:
         Resets reference model to current state (i.e. resets trajectory generation).
         """
         self.p_ref = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y])
-        self.q_ref = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
-                               msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+        self.q_ref = np.array(
+            [
+                msg.pose.pose.orientation.x,
+                msg.pose.pose.orientation.y,
+                msg.pose.pose.orientation.z,
+                msg.pose.pose.orientation.w,
+            ]
+        )
 
         R = trns.quaternion_matrix(self.q_ref)[:3, :3]
 
-        self.v_ref = R.dot(np.array([msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.linear.z]))[:2]
+        self.v_ref = R.dot(
+            np.array(
+                [
+                    msg.twist.twist.linear.x,
+                    msg.twist.twist.linear.y,
+                    msg.twist.twist.linear.z,
+                ]
+            )
+        )[:2]
         self.w_ref = R.dot(
-            np.array([msg.twist.twist.angular.x, msg.twist.twist.angular.y, msg.twist.twist.angular.z]))[2]
+            np.array(
+                [
+                    msg.twist.twist.angular.x,
+                    msg.twist.twist.angular.y,
+                    msg.twist.twist.angular.z,
+                ]
+            )
+        )[2]
 
         self.a_ref = np.array([0, 0])
         self.aa_ref = 0
         self.heavy_pid = True
-        self.kp_body = np.diag([1500., 1500., 5600.])
-        self.kd_body = np.diag([2000., 2000., 5000.])
+        self.kp_body = np.diag([1500.0, 1500.0, 5600.0])
+        self.kd_body = np.diag([2000.0, 2000.0, 5000.0])
 
     def get_command(self, msg: Odometry) -> None:
         """
@@ -365,8 +390,13 @@ class MRAC_Controller:
         v_err = self.v_ref - self.lin_vel
         w_err = self.w_ref - self.ang_vel
 
-        #Adjust kp_body and kd_body based on p_err if heavy_pid was set
-        if (self.heavy_pid == True) and (abs(p_err[0]) < self.x_thresh) and (abs(p_err[1]) < self.y_thresh) and (abs(y_err) < self.yaw_thresh):
+        # Adjust kp_body and kd_body based on p_err if heavy_pid was set
+        if (
+            (self.heavy_pid == True)
+            and (abs(p_err[0]) < self.x_thresh)
+            and (abs(p_err[1]) < self.y_thresh)
+            and (abs(y_err) < self.yaw_thresh)
+        ):
             print("threshold hit")
             self.kp_body = self.kp_body_orig
             self.kd_body = self.kd_body_orig
@@ -591,6 +621,7 @@ class MRAC_Controller:
             command = (self.thrust_max / command_max) * command
 
         return command
+
 
 # ROS
 if __name__ == "__main__":

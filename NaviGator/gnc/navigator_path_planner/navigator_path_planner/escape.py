@@ -3,26 +3,28 @@ Constructs a planner that is good for getting out of sticky situations!
 
 """
 from __future__ import division
+
+import lqrrt
 import numpy as np
+
 from .params import (
+    FPR,
+    B,
     D_neg,
     D_pos,
-    B,
-    invB,
-    thrust_max,
-    invM,
-    velmax_pos,
-    velmax_neg,
-    nstates,
-    ncontrols,
-    unset,
-    horizon,
     dt,
-    FPR,
-    max_nodes,
     free_radius,
+    horizon,
+    invB,
+    invM,
+    max_nodes,
+    ncontrols,
+    nstates,
+    thrust_max,
+    unset,
+    velmax_neg,
+    velmax_pos,
 )
-import lqrrt
 
 # DYNAMICS
 

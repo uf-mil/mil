@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 import argparse
+import sys
+
 import cv2
 import numpy as np
-import sys
 from segment_name_gen import name_gen
 
 
@@ -243,8 +244,8 @@ if __name__ == "__main__":
     print("Loading bag...")
     file_name = args.file_name
     if file_name.split(".")[-1] == "bag":
-        import rospy
         import bag_crawler
+        import rospy
 
         bc = bag_crawler.BagCrawler(file_name)
         print(bc.image_topics[0])

@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-from txros import util, NodeHandle
-from txros.serviceclient import ServiceClient
-from twisted.internet import defer
-from geometry_msgs.msg import Vector3Stamped, PointStamped
-from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
 from typing import Callable
 
+from geometry_msgs.msg import PointStamped, Vector3Stamped
+from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
 from twisted.internet import defer
+from txros import NodeHandle, util
+from txros.serviceclient import ServiceClient
 
 
 class TxHydrophonesClient:

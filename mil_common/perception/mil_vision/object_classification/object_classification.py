@@ -1,10 +1,12 @@
-from mil_ros_tools import CvDebug, BagCrawler
+import pickle
+
+import cv2
 import numpy as np
+from cv_bridge import CvBridge
+from mil_ros_tools import BagCrawler, CvDebug
+
 from .HOG_descriptor import HOGDescriptor
 from .SVM_classifier import SVMClassifier
-import pickle
-import cv2
-from cv_bridge import CvBridge
 
 ___author___ = "Tess Bianchi"
 

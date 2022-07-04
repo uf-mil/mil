@@ -13,18 +13,20 @@ Essentialy, the yaml file defines a project, which is a single labeling task or 
 Each project contains n datasets. Each dataset has a list of bags (sources) to get images from and represents a dataset on labelbox.io.
 """
 from __future__ import division
+
 import argparse
-import yaml
 import os
-import rospy
-import rosbag
+from typing import Optional
+
 import cv2
-from image_geometry import PinholeCameraModel
-from mil_vision_tools.image_proc import ImageProc, ImageSet
-from mil_tools import slugify
+import rosbag
+import rospy
+import yaml
 from cv_bridge.boost.cv_bridge_boost import cvtColor2
 from genpy import Time
-from typing import Optional
+from image_geometry import PinholeCameraModel
+from mil_tools import slugify
+from mil_vision_tools.image_proc import ImageProc, ImageSet
 
 
 class BagImageExtractorSource:
@@ -41,26 +43,32 @@ class BagImageExtractorSource:
     RAW = "raw"
 
     def __init__(
-        self, filename: str, topic: str, start: Optional[Time] = None, stop: Optional[Time] = None, freq: Optional[int] = None, encoding: Optional['BagImageExtractorSource'] = None
+        self,
+        filename: str,
+        topic: str,
+        start: Optional[Time] = None,
+        stop: Optional[Time] = None,
+        freq: Optional[int] = None,
+        encoding: Optional["BagImageExtractorSource"] = None,
     ):
         """
         Args:
-            filename (str): Name of bag file. Can be an absolute path, or 
+            filename (str): Name of bag file. Can be an absolute path, or
                 will be resolved relative to specified dir when
-        	topic (str): Topic in the bag file with the images you wish to extract
-        	start (Optional[genpy.Time]): Time relative to start of bag to 
+                topic (str): Topic in the bag file with the images you wish to extract
+                start (Optional[genpy.Time]): Time relative to start of bag to
                 begin extracting images from. If None, extraction will start at beginning of bag
-        	stop (Optional[genpy.Time]): time relative to start of bag to stop 
+                stop (Optional[genpy.Time]): time relative to start of bag to stop
                 extracting images from. If None, extraction wil end at end of bag.
-        	freq (Optional[int]): Number of images to extract for each second 
+                freq (Optional[int]): Number of images to extract for each second
                 of bag time. If None, include all images.
-        	encoding (Optional[BagImageExtractorSource]): Specifies if color conversion 
-                or distortion rectification should be applied. If None, images 
+                encoding (Optional[BagImageExtractorSource]): Specifies if color conversion
+                or distortion rectification should be applied. If None, images
                 will be saved in the same format they are in the specified topic.
-                If 'mono', image will be converted to grayscale from color 
+                If 'mono', image will be converted to grayscale from color
                 or bayer image. If 'color', image will be converted to color from bayer.
-                If 'rect', image will be converted to grayscale and rectified 
-                using camera info. If 'rect_color', image will be converted to 
+                If 'rect', image will be converted to grayscale and rectified
+                using camera info. If 'rect_color', image will be converted to
                 color and rectified using camera info
         """
         self.filename = filename
@@ -77,7 +85,7 @@ class BagImageExtractorSource:
         Returns the flag to pass to mil image proc based on encoding string.
 
         Args:
-          encoding: 
+          encoding:
 
         Returns:
 
@@ -99,7 +107,7 @@ class BagImageExtractorSource:
     def from_dict(cls, d: dict):
         """
         Creates source config from a dictionary, such as from a YAML file.
-        Must at a minimum have a file, and topic. Can also have start, 
+        Must at a minimum have a file, and topic. Can also have start,
         stop, encoding, and freq to change the configuration described in the __init__
         { 'file': 'example.bag', 'topic': '/camera/image_raw', }
 
@@ -163,9 +171,9 @@ class BagImageExtractorSource:
         configured (see __init__)
 
         Args:
-          msg: 
-          time: 
-          image_dir: 
+          msg:
+          time:
+          image_dir:
           prefix:  (Default value = "")
 
         Returns:
@@ -265,7 +273,7 @@ class BagImageExtractorDatasets(object):
         }
 
         Args:
-          d: 
+          d:
 
         Returns:
 
@@ -340,7 +348,7 @@ class BagImageExtractorProject(object):
         """Create a project from a dictionary, like when parsed from YAML file.
 
         Args:
-          d: 
+          d:
 
         Returns:
 

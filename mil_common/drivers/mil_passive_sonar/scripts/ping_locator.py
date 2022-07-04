@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-import rospy
 import numpy as np
-from rospy.numpy_msg import numpy_msg
-from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
-from std_msgs.msg import Header
+import rospy
 from geometry_msgs.msg import Vector3Stamped
-from mil_passive_sonar.msg import Triggered
 from mil_passive_sonar import util
+from mil_passive_sonar.msg import Triggered
 from mil_ros_tools import Plotter, interweave
 from mil_tools import numpy_to_vector3
-
+from rospy.numpy_msg import numpy_msg
 from scipy.signal import correlate, decimate, resample
+from std_msgs.msg import Header
+from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 
 
 class PingLocator:
@@ -18,6 +17,7 @@ class PingLocator:
     Subscribers to ``/pings``, and publishes vector to the pinger on ``/direction``.
     Creates a node named ``ping_locator``.
     """
+
     def __init__(self):
         rospy.init_node("ping_locator")
         self.sub = rospy.Subscriber("pings", numpy_msg(Triggered), self.ping_cb)
@@ -50,7 +50,7 @@ class PingLocator:
 
     def ping_cb(self, msg) -> None:
         """
-        Callback called with each new ping. With each call, creates a 
+        Callback called with each new ping. With each call, creates a
         :class:`~geometry_msgs.msg._Vector3Stamped.Vector3Stamped` message containing
         the direction of the pinger.
 

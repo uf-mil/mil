@@ -3,10 +3,11 @@ Requires git-python
 TODO:
     - Automatically sort things into folders according to their sidebar
 '''
-from git import Repo
-import re
-import os
 import functools
+import os
+import re
+
+from git import Repo
 
 _filepath = os.path.dirname(os.path.realpath(__file__))
 join = functools.partial(os.path.join, _filepath)

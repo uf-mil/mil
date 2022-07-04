@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """Scan The Code Mission Script."""
 import txros
-from navigator_scan_the_code import ScanTheCodeMission
 from mil_misc_tools.text_effects import fprint
 from navigator import Navigator
+from navigator_scan_the_code import ScanTheCodeMission
 
 ___author___ = "Tess Bianchi"
 

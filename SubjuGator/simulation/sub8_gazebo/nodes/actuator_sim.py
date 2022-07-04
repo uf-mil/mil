@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
+import numpy as np
 import rospy
-
-from std_msgs.msg import String
 from gazebo_msgs.msg import ContactsState, ModelState
 from gazebo_msgs.srv import (
-    SetModelState,
-    GetModelState,
     ApplyJointEffort,
     ApplyJointEffortRequest,
+    GetModelState,
     JointRequest,
     JointRequestRequest,
+    SetModelState,
 )
 from geometry_msgs.msg import Twist
+from mil_ros_tools import geometry_helpers, msg_helpers
+from std_msgs.msg import String
 from sub8_msgs.srv import SetValve
-
-from mil_ros_tools import msg_helpers, geometry_helpers
-
-import numpy as np
 
 
 class ActuatorBoard:

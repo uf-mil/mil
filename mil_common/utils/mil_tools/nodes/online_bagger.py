@@ -1,21 +1,23 @@
 #!/usr/bin/env python
 
 from __future__ import division
-import rospy
-import rosbag
-import rostopic
+
+import argparse
+import datetime
+import itertools
 import os
 from collections import deque
-import itertools
-import datetime
-from actionlib import SimpleActionServer, SimpleActionClient, TerminalState
+
+import rosbag
+import rospy
+import rostopic
+from actionlib import SimpleActionClient, SimpleActionServer, TerminalState
 from mil_msgs.msg import (
     BagOnlineAction,
-    BagOnlineResult,
     BagOnlineFeedback,
     BagOnlineGoal,
+    BagOnlineResult,
 )
-import argparse
 from tqdm import tqdm
 
 """

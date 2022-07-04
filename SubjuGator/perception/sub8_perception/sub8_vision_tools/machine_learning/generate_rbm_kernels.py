@@ -1,14 +1,14 @@
 import pickle
-import numpy as np
-import matplotlib.pyplot as plt
-from sub8_vision_tools import machine_learning as ml
 
+import matplotlib.pyplot as plt
+import numpy as np
+import sklearn.svm
 from scipy.ndimage import convolve
 from sklearn import linear_model, metrics
 from sklearn.cross_validation import train_test_split
 from sklearn.neural_network import BernoulliRBM
 from sklearn.pipeline import Pipeline
-import sklearn.svm
+from sub8_vision_tools import machine_learning as ml
 
 """
 To RBM for sub...

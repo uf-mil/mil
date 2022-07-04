@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 """Runs all of the mission components of Scan The Code."""
-import txros
-import genpy
-from twisted.internet import defer
 import sys
-from sensor_msgs.msg import CameraInfo
-from scan_the_code_lib import ScanTheCodeAction, ScanTheCodePerception, Debug
+
+import genpy
+import txros
+from mil_tools import fprint
 from navigator_msgs.srv import ObjectDBQuery
 from navigator_tools import DBHelper
-from mil_tools import fprint
+from scan_the_code_lib import Debug, ScanTheCodeAction, ScanTheCodePerception
+from sensor_msgs.msg import CameraInfo
+from twisted.internet import defer
+
 ___author___ = "Tess Bianchi"
 
 

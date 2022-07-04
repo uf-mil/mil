@@ -1,9 +1,11 @@
 from __future__ import division
+
 import pickle
-import numpy as np
+
 import cv2
-from navigator_tools import BagCrawler
+import numpy as np
 from cv_bridge import CvBridge
+from navigator_tools import BagCrawler
 from SVM_classifier import SVMClassifier
 
 

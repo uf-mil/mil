@@ -1,12 +1,14 @@
 """Finds a rectangle in the image."""
 from __future__ import division
+
 import cv2
 import numpy as np
-import numpy.ma as ma
 import numpy.linalg as npl
-from mil_misc_tools.text_effects import fprint
+import numpy.ma as ma
 # from skimage importmeasure
 import scipy.ndimage.measurements as mes
+from mil_misc_tools.text_effects import fprint
+
 ___author___ = "Tess Bianchi"
 
 

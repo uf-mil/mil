@@ -1,6 +1,5 @@
 import numpy as np
 from mil_ros_tools import compose_transformation, make_rotation
-
 from sub8_sim_tools import rendering
 from sub8_sim_tools.meshes import Sub8 as Sub8Visual
 from sub8_sim_tools.physics import Sub8

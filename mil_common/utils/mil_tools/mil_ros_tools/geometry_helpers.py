@@ -1,10 +1,13 @@
 from __future__ import division
-import numpy as np
-import tf.transformations as trans
-from .msg_helpers import numpy_quat_pair_to_pose
-from geometry_msgs.msg import Quaternion
+
 from typing import List
+
+import numpy as np
 import numpy.typing as npt
+import tf.transformations as trans
+from geometry_msgs.msg import Quaternion
+
+from .msg_helpers import numpy_quat_pair_to_pose
 
 
 def rotate_vect_by_quat(v: List[float], q: List[float]) -> np.ndarray:
@@ -22,15 +25,19 @@ def rotate_vect_by_quat(v: List[float], q: List[float]) -> np.ndarray:
     cq = np.array([-q[0], -q[1], -q[2], q[3]])
     cq_v = trans.quaternion_multiply(cq, v)
     v = trans.quaternion_multiply(cq_v, q)
-    v[1:] *= -1  # Only seemed to work when I flipped this around, is there a problem with the math here?
+    v[
+        1:
+    ] *= (
+        -1
+    )  # Only seemed to work when I flipped this around, is there a problem with the math here?
     return np.array(v)[:3]
 
 
 def make_rotation(vector_a: List[float], vector_b: List[float]) -> npt.NDArray:
     """
-    Determine a 3D rotation that rotates A onto B. In other words, we want a 
+    Determine a 3D rotation that rotates A onto B. In other words, we want a
     matrix R that aligns A with B.
-    
+
     .. code-block:: python3
 
         >>> R = make_rotation(a, b)
@@ -78,7 +85,7 @@ def skew_symmetric_cross(vector: List[float]) -> np.ndarray:
     Returns the skew symmetric matrix representation of a vector.
 
     Args:
-        a (List[float]): The vector to find the skew symmetric matrix 
+        a (List[float]): The vector to find the skew symmetric matrix
             representation of.
 
     Returns:
@@ -124,13 +131,15 @@ def normalize(vector) -> npt.NDArray:
     return vector / np.linalg.norm(vector)
 
 
-def compose_transformation(rotation: npt.NDArray, translation: npt.NDArray) -> np.ndarray:
+def compose_transformation(
+    rotation: npt.NDArray, translation: npt.NDArray
+) -> np.ndarray:
     """
     Compose a transformation from a rotation matrix and a translation matrix.
 
     Args:
         rotation (np.ndarray): The rotation to add to the final transformation matrix.
-        translation (np.ndarray): The translation to add to the final 
+        translation (np.ndarray): The translation to add to the final
             transformation matrix.
 
     Returns:
@@ -155,7 +164,7 @@ def project_pt_to_plane(point, plane_normal):
 def clip_norm(vector, lower_bound, upper_bound):
     """
     Not currently used anywhere throughout repository.
-    
+
     Return a vector pointing the same direction as $vector,
     with maximum norm $bound
     if norm(vector) < bound, return vector unchanged

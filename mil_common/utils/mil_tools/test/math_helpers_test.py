@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 import unittest
+
 import numpy as np
 from geometry_msgs.msg import Quaternion
-from mil_ros_tools import quat_to_euler, euler_to_quat, normalize
-from mil_ros_tools import compose_transformation
+from mil_ros_tools import (
+    compose_transformation,
+    euler_to_quat,
+    normalize,
+    quat_to_euler,
+)
 
 
 class TestROSTools(unittest.TestCase):

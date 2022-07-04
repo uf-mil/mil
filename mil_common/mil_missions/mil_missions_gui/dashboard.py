@@ -9,10 +9,9 @@ import rospkg
 import rospy
 from actionlib import ActionClient, CommStateMachine, GoalManager, TerminalState
 from actionlib_msgs.msg import GoalID, GoalStatus
+from mil_missions.msg import DoMissionAction, DoMissionGoal
 from python_qt_binding import QtCore, QtWidgets, loadUi
 from qt_gui.plugin import Plugin
-
-from mil_missions.msg import DoMissionAction, DoMissionGoal
 
 
 class ExtendedGoalManager(GoalManager):

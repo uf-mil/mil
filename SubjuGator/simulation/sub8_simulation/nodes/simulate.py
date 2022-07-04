@@ -2,12 +2,11 @@
 import numpy as np
 import rospy
 from rosgraph_msgs.msg import Clock
-from vispy import app, gloo
-
 from sub8_sim_tools import physics, rendering
 from sub8_sim_tools.meshes import Transdec
 from sub8_sim_tools.physics import Box, Mesh, Sphere
 from sub8_sim_tools.widgets import Sub
+from vispy import app, gloo
 
 
 class SimWorld(rendering.Canvas):

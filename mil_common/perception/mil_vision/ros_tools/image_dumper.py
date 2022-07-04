@@ -1,17 +1,17 @@
 #!/usr/bin/python3
 
+import argparse
+import fnmatch
+import importlib
 import os
 import re
 import sys
-import importlib
-import fnmatch
-import argparse
-from tqdm import tqdm
-import cv2
-import rospy
-import rosbag
 
+import cv2
+import rosbag
+import rospy
 from cv_bridge import CvBridge, CvBridgeError
+from tqdm import tqdm
 
 # encoding=utf8
 importlib.reload(sys)

@@ -1,8 +1,9 @@
-import rospy
-import rosbag
-import time
-import txros
 import os
+import time
+
+import rosbag
+import rospy
+import txros
 import yaml
 
 

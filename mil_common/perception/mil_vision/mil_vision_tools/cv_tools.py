@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-import cv2
-import rospy
-import numpy as np
-import tf.transformations as trns
+from typing import Any, List, Optional, Tuple, Union
 
-from typing import Union, List, Tuple, Optional, Any
+import cv2
+import numpy as np
+import rospy
+import tf.transformations as trns
 
 __author__ = "Kevin Allen"
 

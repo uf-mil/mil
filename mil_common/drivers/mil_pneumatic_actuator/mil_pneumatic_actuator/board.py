@@ -18,6 +18,7 @@ class PnuematicActuatorDriverError(Exception):
 
     Inherits from :class:`Exception`.
     """
+
     def __init__(self, message):
         super(PnuematicActuatorDriverError, self).__init__("Actuator board: " + message)
 
@@ -28,6 +29,7 @@ class PnuematicActuatorDriverChecksumError(PnuematicActuatorDriverError):
 
     Inherits from :class:`PnuematicActuatorDriverError`.
     """
+
     def __init__(self, checksum_is, checksum_should_be):
         message = "Invalid checksum. Recievied {}, should be {}".format(
             hex(checksum_is), hex(checksum_should_be)
@@ -41,6 +43,7 @@ class PnuematicActuatorDriverResponseError(PnuematicActuatorDriverError):
 
     Inherits from :class:`PnuematicActuatorDriverError`.
     """
+
     def __init__(self, received, expected):
         message = "Unexpected response. Expected {}, recieved {}".format(
             hex(received), hex(expected)
@@ -54,6 +57,7 @@ class PnuematicActuatorTimeoutError(PnuematicActuatorDriverError):
 
     Inherits from :class:`PnuematicActuatorDriverError`.
     """
+
     def __init__(self):
         message = "Serial timout"
         super(PnuematicActuatorTimeoutError, self).__init__(message)
@@ -70,6 +74,7 @@ class PnuematicActuatorDriver:
     Futher information on the board's communication protocol can be found in the
     design documentation.
     """
+
     # TODO: Add a function to try and reconnect to the serial port if we lose connection.
 
     def __init__(self, port: str, baud: int = 9600, simulated: bool = False):

@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
+from typing import Sequence
+
+import mil_ros_tools
 import numpy as np
 import rospy
 import visualization_msgs.msg as visualization_msgs
-from visualization_msgs.msg import Marker, InteractiveMarker, InteractiveMarkerControl
-from interactive_markers.interactive_marker_server import InteractiveMarkerServer
-
 from geometry_msgs.msg import Pose, Vector3
-from std_msgs.msg import ColorRGBA, Float64
-from mil_msgs.msg import RangeStamped, DepthStamped
+from interactive_markers.interactive_marker_server import InteractiveMarkerServer
+from mil_msgs.msg import DepthStamped, RangeStamped
 
 # from sub8_alarm import AlarmListener, AlarmBroadcaster
-from ros_alarms import AlarmBroadcaster, AlarmListener, Alarm
-from typing import Sequence
-import mil_ros_tools
+from ros_alarms import Alarm, AlarmBroadcaster, AlarmListener
+from std_msgs.msg import ColorRGBA, Float64
+from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, Marker
 
 
 class RvizVisualizer:
     """
     Cute tool for drawing both depth and height-from-bottom in RVIZ.
     """
+
     def __init__(self):
         rospy.init_node("revisualizer")
         self.rviz_pub = rospy.Publisher(

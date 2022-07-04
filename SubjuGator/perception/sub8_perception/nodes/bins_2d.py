@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-import cv2
-import numpy as np
 import sys
-import rospy
+
+import cv2
 import image_geometry
 import mil_ros_tools
-from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D
-from std_msgs.msg import Header
+import numpy as np
+import rospy
 from geometry_msgs.msg import Pose2D
 from mil_msgs.msg import RangeStamped
+from std_msgs.msg import Header
+from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse
 
 
 def contour_sort(l):

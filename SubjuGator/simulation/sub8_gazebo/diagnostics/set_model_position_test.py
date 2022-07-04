@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import division
 
+import job_runner
+import numpy as np
+import tf
 import txros
+from mil_ros_tools import msg_helpers
 from nav_msgs.msg import Odometry
 from sub8_gazebo.srv import RunJobResponse
-from mil_ros_tools import msg_helpers
-import job_runner
-import tf
-
-from twisted.internet import reactor, defer
-import numpy as np
+from twisted.internet import defer, reactor
 
 
 @txros.util.cancellableInlineCallbacks

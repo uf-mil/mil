@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from mil_usb_to_can import SimulatedCANDevice
-from .packets import CommandMessage, FeedbackMessage, SEND_ID
+
+from .packets import SEND_ID, CommandMessage, FeedbackMessage
 
 
 class ActuatorBoardSimulation(SimulatedCANDevice):

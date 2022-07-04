@@ -1,25 +1,27 @@
 #!/usr/bin/env python3
 from __future__ import division
+
+from collections import deque
+
 import cv2
+import mil_ros_tools
 import numpy as np
 import rospy
-from image_geometry import PinholeCameraModel
-import mil_ros_tools
 import tf
-from collections import deque
-from sub8_vision_tools import rviz, MultiObservation
-from sub8_msgs.srv import (
-    VisionRequest2DResponse,
-    VisionRequest2D,
-    VisionRequest,
-    VisionRequestResponse,
-)
+from geometry_msgs.msg import Point, Pose, Pose2D, PoseStamped
+from image_geometry import PinholeCameraModel
+from mil_ros_tools import Image_Publisher, Image_Subscriber, rosmsg_to_numpy
+from mil_vision_tools import CircleFinder, Threshold
+from nav_msgs.msg import Odometry
 from std_msgs.msg import Header
 from std_srvs.srv import SetBool, SetBoolResponse
-from geometry_msgs.msg import Pose2D, PoseStamped, Pose, Point
-from mil_ros_tools import Image_Subscriber, Image_Publisher, rosmsg_to_numpy
-from nav_msgs.msg import Odometry
-from mil_vision_tools import CircleFinder, Threshold
+from sub8_msgs.srv import (
+    VisionRequest,
+    VisionRequest2D,
+    VisionRequest2DResponse,
+    VisionRequestResponse,
+)
+from sub8_vision_tools import MultiObservation, rviz
 
 
 class Buoy:
@@ -28,6 +30,7 @@ class Buoy:
     color values to segment an image for its color and an internal
     buffer of observations to use in position estimation.
     """
+
     def __init__(self, color, debug_cv=False):
         self._observations = deque()
         self._pose_pairs = deque()
@@ -115,6 +118,7 @@ class BuoyFinder:
     Intended to be modular so other approaches can be tried. Adding more sophistication
     to segmentation would increase reliability.
     """
+
     # TODO: Use same mask for yellow/green
     def __init__(self):
         self.tf_listener = tf.TransformListener()

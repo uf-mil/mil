@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import rospy
-import numpy as np
-import random
 import json
+import random
+
+import numpy as np
+import rospy
 from ros_alarms.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
 
 # Dummy params to pass in

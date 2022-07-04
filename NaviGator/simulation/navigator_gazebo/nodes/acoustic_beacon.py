@@ -6,7 +6,11 @@ import rospy
 import tf
 from geometry_msgs.msg import Point, Quaternion
 from nav_msgs.msg import Odometry
-from navigator_msgs.srv import AcousticBeacon, AcousticBeaconRequest, AcousticBeaconResponse
+from navigator_msgs.srv import (
+    AcousticBeacon,
+    AcousticBeaconRequest,
+    AcousticBeaconResponse,
+)
 from usv_msgs.msg import RangeBearing
 
 

@@ -2,10 +2,9 @@ from __future__ import division
 
 import numpy as np
 from mil_ros_tools import compose_transformation, make_rotation
+from sub8_sim_tools import ShaderManager, Shaders
 from vispy import geometry, gloo
 from vispy.util.transforms import perspective, rotate, translate
-
-from sub8_sim_tools import ShaderManager, Shaders
 
 
 class Entity(object):

@@ -1,5 +1,6 @@
-from sklearn import svm
 import pickle
+
+from sklearn import svm
 
 
 class SVMClassifier:

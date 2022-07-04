@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+import argparse
+
+import numpy as np
 import rospy
+from mil_tools import numpy_to_colorRGBA, numpy_to_point, rosmsg_to_numpy
 from sensor_msgs.msg import MagneticField
 from visualization_msgs.msg import Marker
-from mil_tools import rosmsg_to_numpy, numpy_to_point, numpy_to_colorRGBA
-import numpy as np
-import argparse
 
 __author__ = "Kevin Allen"
 

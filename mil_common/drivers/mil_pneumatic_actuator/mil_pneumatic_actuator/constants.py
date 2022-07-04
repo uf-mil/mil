@@ -23,6 +23,7 @@ class Constants:
             request is sent. Currently set to ``0x11``.
         CHECKSUM_CODE (int): The checksum code used by the board. Currently sent to ``0xFF``.
     """
+
     OPEN_REQUEST_BASE = 0x20
     OPEN_RESPONSE = 0x01
     CLOSE_REQUEST_BASE = 0x30

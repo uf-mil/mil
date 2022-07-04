@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-import time
 import argparse
-import sub8_thruster_comm as thruster_comm
+import time
+
 import rospy
+import sub8_thruster_comm as thruster_comm
 
 '''
 TODO tools

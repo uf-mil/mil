@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
+import sys
+
 import cv2
 import cv2.cv as cv
-import sys
-import rospy
 import image_geometry
-from sub8_msgs.srv import OcrRequest
-from mil_ros_tools import Image_Subscriber
+import rospy
 import tesseract
+from mil_ros_tools import Image_Subscriber
+from sub8_msgs.srv import OcrRequest
 
 
 class Ocr:

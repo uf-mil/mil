@@ -1,6 +1,6 @@
 from .navigator_robotx_comms import (
-    RobotXEntranceExitGateMessage,
     RobotXDetectDeliverMessage,
+    RobotXEntranceExitGateMessage,
     RobotXHeartbeatMessage,
     RobotXIdentifySymbolsDockMessage,
     RobotXScanCodeMessage,

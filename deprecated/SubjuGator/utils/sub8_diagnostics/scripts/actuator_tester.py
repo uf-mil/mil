@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-import serial
-import time
 import sys
+import time
+
 import mil_misc_tools
+import serial
 
 __author__ = 'Daniel Dugger'
 

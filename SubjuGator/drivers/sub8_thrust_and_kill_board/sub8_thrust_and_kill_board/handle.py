@@ -1,20 +1,21 @@
 #!/usr/bin/python3
 import rospy
-from rospy.timer import TimerEvent
-from ros_alarms.msg import Alarm
 from mil_usb_to_can import CANDeviceHandle
-from .thruster import make_thruster_dictionary
-from .packets import (
-    ThrustPacket,
-    KillMessage,
-    HeartbeatMessage,
-    StatusMessage,
-    THRUST_SEND_ID,
-    KILL_SEND_ID,
-)
-from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 from ros_alarms import AlarmBroadcaster, AlarmListener
+from ros_alarms.msg import Alarm
+from rospy.timer import TimerEvent
+from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 from sub8_msgs.msg import Thrust
+
+from .packets import (
+    KILL_SEND_ID,
+    THRUST_SEND_ID,
+    HeartbeatMessage,
+    KillMessage,
+    StatusMessage,
+    ThrustPacket,
+)
+from .thruster import make_thruster_dictionary
 
 
 class ThrusterAndKillBoard(CANDeviceHandle):

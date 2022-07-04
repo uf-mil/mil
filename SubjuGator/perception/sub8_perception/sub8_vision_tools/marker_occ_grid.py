@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 from __future__ import division
 
-import rospy
-import tf
-from std_msgs.msg import Header
-from geometry_msgs.msg import Pose, Point, Quaternion, Pose2D
-from nav_msgs.msg import OccupancyGrid, MapMetaData
-from sub8_msgs.srv import SearchPose
-from image_geometry import PinholeCameraModel
-from mil_ros_tools import msg_helpers
-from std_srvs.srv import Empty, EmptyResponse
 import cv2
 import numpy as np
+import rospy
+import tf
+from geometry_msgs.msg import Point, Pose, Pose2D, Quaternion
+from image_geometry import PinholeCameraModel
+from mil_ros_tools import msg_helpers
+from nav_msgs.msg import MapMetaData, OccupancyGrid
+from std_msgs.msg import Header
+from std_srvs.srv import Empty, EmptyResponse
+from sub8_msgs.srv import SearchPose
 
 
 def unit_vector(vect):
