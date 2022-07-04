@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 from __future__ import annotations
-import struct
 
+import struct
 from typing import Any, Optional
 
 
@@ -12,6 +12,7 @@ class ApplicationPacketWrongIdentifierException(Exception):
 
     Inherits from :class:`Exception`.
     """
+
     def __init__(self, was: Any, should_be: Any):
         """
         Attributes:
@@ -31,6 +32,7 @@ class ApplicationPacket:
         identifier (int): The identifier for the packet.
         payload (bytes): The payload of bytes to be sent in the packet.
     """
+
     def __init__(self, identifier: int, payload: bytes):
         self.identifier = identifier
         self.payload = payload
@@ -49,12 +51,14 @@ class ApplicationPacket:
         )
 
     @classmethod
-    def from_bytes(cls, data: bytes, expected_identifier: Optional[int] = None) -> ApplicationPacket:
+    def from_bytes(
+        cls, data: bytes, expected_identifier: Optional[int] = None
+    ) -> ApplicationPacket:
         """
         Unpacks a series of packed bytes representing an application packet using
         :meth:`struct.Struct.unpack`, which produces the packet identifier and array of data.
         These values are then used to produce the new instance of the class.
-        
+
         Args:
             data (bytes): The packed packet.
             expected_identifier (Optional[int]): The identifier that is expected to

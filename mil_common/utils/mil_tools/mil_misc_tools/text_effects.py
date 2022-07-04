@@ -1,4 +1,4 @@
-from typing import Optional, Callable
+from typing import Callable, Optional
 
 
 class Colors:
@@ -115,11 +115,12 @@ class FprintFactory:
             message.
         time (Optional[Callable]): A method for getting the time to produce
             with each method. If ``None``, then no time is sent with a message.
-        msg_color (Optional[str]): The color of each message. If ``None``, 
+        msg_color (Optional[str]): The color of each message. If ``None``,
             defaults to white.
         auto_bold (bool): Automatically bolds each method. Defaults to ``True``.
         newline (int): The number of newlines to print after each method.
     """
+
     def __init__(
         self,
         title: Optional[str] = None,

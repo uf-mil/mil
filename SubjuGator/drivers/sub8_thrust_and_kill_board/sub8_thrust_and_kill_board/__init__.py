@@ -1,4 +1,4 @@
 from .handle import ThrusterAndKillBoard
+from .packets import HeartbeatMessage, KillMessage, StatusMessage, ThrustPacket
 from .simulation import ThrusterAndKillBoardSimulation
-from .packets import ThrustPacket, KillMessage, HeartbeatMessage, StatusMessage
 from .thruster import Thruster

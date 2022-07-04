@@ -1,7 +1,7 @@
-import serial
-import rospy
-from constants import constants
 import numpy as np
+import rospy
+import serial
+from constants import constants
 from std_srvs.srv import SetBool, SetBoolResponse
 
 

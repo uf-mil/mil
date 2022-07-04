@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 import unittest
+
 import numpy as np
-from geometry_msgs.msg import Quaternion, Vector3, Pose2D
+from geometry_msgs.msg import Pose2D, Quaternion, Vector3
+from mil_ros_tools import (
+    get_image_msg,
+    make_image_msg,
+    make_rotation,
+    make_wrench_stamped,
+    normalize,
+    rosmsg_to_numpy,
+    skew_symmetric_cross,
+    thread_lock,
+)
 from sensor_msgs.msg import Image
-from mil_ros_tools import make_image_msg, get_image_msg
-from mil_ros_tools import rosmsg_to_numpy, make_wrench_stamped
-from mil_ros_tools import thread_lock
-from mil_ros_tools import skew_symmetric_cross, make_rotation, normalize
 
 
 class TestROSTools(unittest.TestCase):

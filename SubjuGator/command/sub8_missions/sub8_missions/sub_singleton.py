@@ -7,7 +7,6 @@ from typing import Callable, Optional, Sequence
 import genpy
 import mil_ros_tools
 import numpy as np
-from . import pose_editor
 import rospkg
 import sensor_msgs.point_cloud2 as pc2
 import yaml
@@ -45,6 +44,8 @@ from txros import (
     txros_tf,
     util,
 )
+
+from . import pose_editor
 
 
 class VisionProxy:

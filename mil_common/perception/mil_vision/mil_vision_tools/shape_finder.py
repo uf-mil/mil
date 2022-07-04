@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+
+from typing import Any, Optional, Tuple
+
+import cv2
 import numpy as np
 from geometry_msgs.msg import Polygon
 from image_geometry import PinholeCameraModel
-from mil_ros_tools.msg_helpers import rosmsg_to_numpy, numpy_to_polygon
-import cv2
-
-from typing import Optional, Tuple, Any
+from mil_ros_tools.msg_helpers import numpy_to_polygon, rosmsg_to_numpy
 
 __author__ = "Kevin Allen"
 

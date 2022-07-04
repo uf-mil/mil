@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-import serial
 import math
 import struct
+
+import serial
 
 
 class Sabertooth2x12:
@@ -17,14 +18,16 @@ class Sabertooth2x12:
             import rospy
 
     def _map(self, x, in_min, in_max, out_min, out_max):
-        return int(math.ceil((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min))
+        return int(
+            math.ceil((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
+        )
 
     def _contrain(self, x, low, high):
         return max(min(x, high), low)
 
     def setMotor1(self, speed):
         contrained_num = self._contrain(speed, -1.0, 1.0)
-        if (contrained_num == self.motor_1_speed):
+        if contrained_num == self.motor_1_speed:
             return
         self.motor_1_speed = contrained_num
         if not self.sim:
@@ -40,7 +43,7 @@ class Sabertooth2x12:
 
     def setMotor2(self, speed):
         contrained_num = self._contrain(speed, -1.0, 1.0)
-        if (contrained_num == self.motor_2_speed):
+        if contrained_num == self.motor_2_speed:
             return
         self.motor_2_speed = contrained_num
         if not self.sim:
@@ -55,6 +58,6 @@ class Sabertooth2x12:
         return self.motor_2_speed
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     st = Sabertooth2x12("/dev/ttyUSB0")
     st.setMotor1(-1)

@@ -1,9 +1,10 @@
-import cv2
-import numpy as np
-import pickle
 import argparse
+import pickle
 import sys
+
+import cv2
 import features
+import numpy as np
 
 """
 TODO

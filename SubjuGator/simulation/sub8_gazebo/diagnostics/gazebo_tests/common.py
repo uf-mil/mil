@@ -1,11 +1,11 @@
-from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Pose, Vector3
-from gazebo_msgs.srv import SetModelState, SetModelStateRequest, DeleteModel, SpawnModel
-from gazebo_msgs.msg import ModelState, ModelStates
-from kill_handling.srv import SetKill, SetKillRequest
-from kill_handling.msg import Kill
-from mil_ros_tools import numpy_to_twist
 import txros
+from gazebo_msgs.msg import ModelState, ModelStates
+from gazebo_msgs.srv import DeleteModel, SetModelState, SetModelStateRequest, SpawnModel
+from geometry_msgs.msg import Pose, Vector3
+from kill_handling.msg import Kill
+from kill_handling.srv import SetKill, SetKillRequest
+from mil_ros_tools import numpy_to_twist
+from nav_msgs.msg import Odometry
 
 
 class Job:

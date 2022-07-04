@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import numpy as np
 import rospy
-from mil_bounds.cfg import BoundsConfig
 from dynamic_reconfigure.client import Client
 from dynamic_reconfigure.server import Server
 from geometry_msgs.msg import Point
+from mil_bounds.cfg import BoundsConfig
 from visualization_msgs.msg import Marker
 
 

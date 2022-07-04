@@ -1,8 +1,9 @@
 import genpy
-from .base_mission import ExampleBaseMission
 from std_msgs.msg import String
 from twisted.internet import defer
 from txros import util
+
+from .base_mission import ExampleBaseMission
 
 
 class PublishThings(ExampleBaseMission):

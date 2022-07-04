@@ -1,8 +1,9 @@
 # !/usr/bin/python3
+import os
+
 import cv2
 import numpy as np
 from sklearn.svm import SVC
-import os
 
 # open the roi file
 

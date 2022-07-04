@@ -4,16 +4,17 @@ Note: The repeated use of CvBridge (instead of using make_image_msg and
 get_image_msg in the classes) is intentional, to avoid the use of a global
 cvbridge, and to avoid reinstantiating a CvBrige for each use.
 """
-import rospy
-import numpy as np
 from os import path
+from typing import Callable, List, Optional, Tuple
+
 import cv2
-from cv_bridge import CvBridge, CvBridgeError
-from sensor_msgs.msg import Image, CameraInfo
-from mil_ros_tools import wait_for_param
 import message_filters
+import numpy as np
+import rospy
+from cv_bridge import CvBridge, CvBridgeError
 from image_geometry import PinholeCameraModel
-from typing import List, Optional, Callable, Tuple
+from .init_helpers import wait_for_param
+from sensor_msgs.msg import CameraInfo, Image
 
 
 def get_parameter_range(parameter_root: str):
@@ -106,6 +107,7 @@ class Image_Subscriber:
         callback (Callable): The callback function to call upon receiving each
             image.
     """
+
     def __init__(self, topic, callback=None, encoding="bgr8", queue_size=1):
         if callback is None:
 
@@ -237,6 +239,7 @@ class StereoImageSubscriber:
         last_image_right_time (Optional[genpy.Time]): The timestamp when the last
             left image was received. Set to ``None`` upon class instantiation.
     """
+
     def __init__(
         self,
         left_image_topic: str,
@@ -265,7 +268,9 @@ class StereoImageSubscriber:
         queue_size (int): Integer, the number of images to store in a buffer
             for each camera to find synced images.
         """
-        if callback is None:  # Set default callback to just set image_left and image_right
+        if (
+            callback is None
+        ):  # Set default callback to just set image_left and image_right
 
             def callback(image_left, image_right):
                 setattr(self, "last_image_left", image_left)
@@ -310,7 +315,9 @@ class StereoImageSubscriber:
             )
         self._image_sub.registerCallback(self._image_callback)
 
-    def wait_for_camera_info(self, timeout: int = 10, unregister: bool = True) -> Tuple[CameraInfo, CameraInfo]:
+    def wait_for_camera_info(
+        self, timeout: int = 10, unregister: bool = True
+    ) -> Tuple[CameraInfo, CameraInfo]:
         """
         Blocks until camera info has been received.
 

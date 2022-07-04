@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 from __future__ import division
-import txros
+
+import math
+
 import numpy as np
-from twisted.internet import defer
-from vrx import Vrx
+import tf
+import txros
 from navigator_msgs.srv import MoveToWaypointRequest
 from tsp_solver.greedy import solve_tsp
-import math
-import tf
+from twisted.internet import defer
+from vrx import Vrx
 
 ___author___ = "Alex Perez"
 
@@ -18,35 +20,40 @@ class VrxWayfinding2(Vrx):
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
-        self.send_feedback('Waiting for task to start')
-        yield self.wait_for_task_such_that(lambda task: task.state in ['ready', 'running'])
+        self.send_feedback("Waiting for task to start")
+        yield self.wait_for_task_such_that(
+            lambda task: task.state in ["ready", "running"]
+        )
         path_msg = yield self.get_latching_msg(self.wayfinding_path_sub)
-        poses = [ (yield self.geo_pose_to_enu_pose(geo_pose.pose)) for geo_pose in path_msg.poses]
+        poses = [
+            (yield self.geo_pose_to_enu_pose(geo_pose.pose))
+            for geo_pose in path_msg.poses
+        ]
 
         position = self.pose[0]
 
-        #initialize distance matrix
+        # initialize distance matrix
         poses = poses + [position]
         array_size = len(poses)
         start_pose_index = array_size - 1
-        dist_matrix = np.zeros( (array_size, array_size) )
+        dist_matrix = np.zeros((array_size, array_size))
 
-        #fill up distance matrix
+        # fill up distance matrix
         for i in range(array_size):
             for j in range(array_size):
                 dist_matrix[i][j] = np.linalg.norm(poses[i][0] - poses[j][0])
 
-        #solve tsp algorithm (ensure start point is where boat is located) & remove current position from pose list
-        path = solve_tsp(dist_matrix, endpoints=(start_pose_index,None))
+        # solve tsp algorithm (ensure start point is where boat is located) & remove current position from pose list
+        path = solve_tsp(dist_matrix, endpoints=(start_pose_index, None))
         poses = poses[:start_pose_index]
         path = path[1:]
 
-        #self.send_feedback('Sorted poses' + str(poses))
-        yield self.wait_for_task_such_that(lambda task: task.state in ['running'])
+        # self.send_feedback('Sorted poses' + str(poses))
+        yield self.wait_for_task_such_that(lambda task: task.state in ["running"])
 
-        #do movements
+        # do movements
         for index in path:
-            self.send_feedback('Going to {}'.format(poses[index]))
+            self.send_feedback("Going to {}".format(poses[index]))
 
-            #Go to goal
+            # Go to goal
             yield self.send_trajectory_without_path(poses[index])

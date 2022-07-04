@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 import sys
-import tty
 import termios
+import tty
 
 __author__ = "David Soto"
 
 
 def get_ch():
     """
-    Gets a single character from stdin. Doesn't echo to screen. Catches ``CTRL-C`` 
+    Gets a single character from stdin. Doesn't echo to screen. Catches ``CTRL-C``
     and ``CTRL-E`` and raises exceptions.
 
     Raises:

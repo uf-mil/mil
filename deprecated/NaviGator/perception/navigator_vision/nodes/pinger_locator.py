@@ -1,13 +1,13 @@
 #!/usr/bin/env python
-import txros
-import numpy as np
-from hydrophones.msg import ProcessedPing
-from geometry_msgs.msg import Point, PoseStamped, Pose
-from navigator_alarm import single_alarm, AlarmListener, AlarmBroadcaster
-from twisted.internet import defer
 import navigator_tools
+import numpy as np
 import tf
+import txros
+from geometry_msgs.msg import Point, Pose, PoseStamped
+from hydrophones.msg import ProcessedPing
+from navigator_alarm import AlarmBroadcaster, AlarmListener, single_alarm
 from tf import transformations as trans
+from twisted.internet import defer
 
 ping_sub = yield navigator.nh.subscribe("/hydrophones/processed", ProcessedPing)
 yield ping_sub.get_next_message()

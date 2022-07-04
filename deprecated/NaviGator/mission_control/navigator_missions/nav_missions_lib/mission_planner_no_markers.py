@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 """Mission Planner Module that uses a DAG and YAML to find which mission to perform."""
-from txros import util, NodeHandle
-from twisted.internet import defer
-from navigator_singleton.navigator import Navigator
+import sys
+
+import genpy
 import nav_missions
 import nav_missions_test
 import Queue as que
-import sys
+from mil_misc_tools.text_effects import fprint
+from navigator_singleton.navigator import Navigator
+from navigator_tools import DBHelper, MissingPerceptionObject
 from Queue import Queue
 from sets import Set
-from navigator_tools import DBHelper, MissingPerceptionObject
-import genpy
 from std_msgs.msg import String
-from mil_misc_tools.text_effects import fprint
+from twisted.internet import defer
+from txros import NodeHandle, util
+
 __author__ = "Tess Bianchi"
 
 

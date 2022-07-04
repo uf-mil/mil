@@ -1,5 +1,5 @@
-import pickle
 import argparse
+import pickle
 import sys
 
 if __name__ == "__main__":

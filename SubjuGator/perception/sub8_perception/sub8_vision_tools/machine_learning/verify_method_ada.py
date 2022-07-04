@@ -1,9 +1,10 @@
-import cv2
-import numpy as np
-import pickle
 import argparse
+import pickle
 import sys
 from time import time
+
+import cv2
+import numpy as np
 from adaboost import observe
 
 if __name__ == "__main__":

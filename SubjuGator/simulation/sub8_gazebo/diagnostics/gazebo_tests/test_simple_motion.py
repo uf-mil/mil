@@ -1,7 +1,7 @@
-import txros
-from twisted.internet import defer
 import numpy as np
+import txros
 from diagnostics.gazebo_tests import common
+from twisted.internet import defer
 
 
 # TODO: Allow generic names

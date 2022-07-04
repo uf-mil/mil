@@ -1,12 +1,13 @@
 #!/usr/bin/python3
 
 from __future__ import division
-import traits
-import traitsui
-from mayavi import mlab
+
 import cv2
 import numpy as np
+import traits
+import traitsui
 import vtk
+from mayavi import mlab
 
 output = vtk.vtkFileOutputWindow()
 # Throw the stupid vtk runtime errors into a burning pit

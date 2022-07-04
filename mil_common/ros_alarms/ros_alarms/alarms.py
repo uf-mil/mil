@@ -1,17 +1,16 @@
-import rospy
-
-from ros_alarms.msg import Alarm as AlarmMsg
-from ros_alarms.srv import (
-    AlarmSet,
-    AlarmGet,
-    AlarmSetRequest,
-    AlarmGetRequest,
-    AlarmGetResponse,
-)
-
 import json
 import traceback
-from typing import Callable, Tuple, Optional
+from typing import Callable, Optional, Tuple
+
+import rospy
+from ros_alarms.msg import Alarm as AlarmMsg
+from ros_alarms.srv import (
+    AlarmGet,
+    AlarmGetRequest,
+    AlarmGetResponse,
+    AlarmSet,
+    AlarmSetRequest,
+)
 
 
 def parse_json_str(json_str: str) -> dict:

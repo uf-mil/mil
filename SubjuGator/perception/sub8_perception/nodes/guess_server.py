@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 import sys
+
 import rospy
-from sub8_msgs.srv import GuessRequest, GuessRequestResponse
 from geometry_msgs.msg import PoseStamped
 from interactive_markers.interactive_marker_server import (
     InteractiveMarker,
     InteractiveMarkerServer,
 )
-from visualization_msgs.msg import Marker, InteractiveMarkerControl
+from sub8_msgs.srv import GuessRequest, GuessRequestResponse
+from visualization_msgs.msg import InteractiveMarkerControl, Marker
 
 
 class Guess:

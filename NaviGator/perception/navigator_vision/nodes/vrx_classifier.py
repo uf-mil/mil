@@ -23,7 +23,7 @@ from mil_vision_tools import (
     roi_enclosing_points,
 )
 from PIL import Image
-from sensor_msgs.msg import PointCloud2, Image
+from sensor_msgs.msg import Image, PointCloud2
 from std_msgs.msg import Int32
 from std_srvs.srv import SetBool
 from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud

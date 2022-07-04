@@ -1,10 +1,11 @@
-import rospy
 import argparse
-import cv2
-import numpy as np
 import sys
-from boost_auto import observe
+
+import cv2
 import mil_ros_tools
+import numpy as np
+import rospy
+from boost_auto import observe
 
 
 def got_image(img):

@@ -1,20 +1,17 @@
 #!/usr/bin/python
-import txros
-from mil_misc_tools import text_effects
-from twisted.internet import defer, reactor
-import sys
 import subprocess
-from sub8_msgs.msg import ThrusterStatus
-from sensor_msgs.msg import Image
-from sensor_msgs.msg import CameraInfo
-from nav_msgs.msg import Odometry
-from tf.msg import tfMessage
-from mil_msgs.msg import VelocityMeasurements, RangeStamped, DepthStamped
-from sensor_msgs.msg import Imu, MagneticField
-from std_msgs.msg import Header
-from sensor_msgs.msg import Joy
-from geometry_msgs.msg import PoseStamped
+import sys
 
+import txros
+from geometry_msgs.msg import PoseStamped
+from mil_misc_tools import text_effects
+from mil_msgs.msg import DepthStamped, RangeStamped, VelocityMeasurements
+from nav_msgs.msg import Odometry
+from sensor_msgs.msg import CameraInfo, Image, Imu, Joy, MagneticField
+from std_msgs.msg import Header
+from sub8_msgs.msg import ThrusterStatus
+from tf.msg import tfMessage
+from twisted.internet import defer, reactor
 
 MESSAGE_TIMEOUT = 1  # s
 

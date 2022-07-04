@@ -18,16 +18,18 @@ back into a bag.
 """
 
 from __future__ import division
+
 import argparse
-import yaml
-import xml.etree.ElementTree
 import os
+import xml.etree.ElementTree
+
+import cv2
 import rosbag
 import rospy
-import cv2
+import yaml
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
-from mil_msgs.msg import LabeledObjects, LabeledObject
+from mil_msgs.msg import LabeledObject, LabeledObjects
 
 
 class BagConfig(object):

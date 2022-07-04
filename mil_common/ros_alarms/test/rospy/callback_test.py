@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import rospy
-from ros_alarms import AlarmListener, AlarmBroadcaster
+from ros_alarms import AlarmBroadcaster, AlarmListener
 
 cb1_ran = False
 cb2_ran = False

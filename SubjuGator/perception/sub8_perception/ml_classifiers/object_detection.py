@@ -1,9 +1,10 @@
 #!/usr/bin/python
-import rospy
-from std_srvs.srv import SetBool, SetBoolResponse
-import subprocess
 import os
 import signal
+import subprocess
+
+import rospy
+from std_srvs.srv import SetBool, SetBoolResponse
 
 """
 This is the main script for running Tensorflow inference. It a hacky

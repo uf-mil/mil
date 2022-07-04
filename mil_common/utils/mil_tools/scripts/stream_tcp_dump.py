@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # See argparse description
-import socket
-import time
 import argparse
-import time
+import socket
 import sys
+import time
 
 parser = argparse.ArgumentParser(
     description="Creates a TCP server and send any client whom connects the full contents of the specified binary file"

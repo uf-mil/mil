@@ -1,12 +1,14 @@
 #!/usr/bin/python3
-from mil_ros_tools import BagCrawler
 import argparse
-from cv_bridge import CvBridge
-import cv2
-import sys
-import pickle
 import os
+import pickle
+import sys
+
+import cv2
 import numpy as np
+from cv_bridge import CvBridge
+from mil_ros_tools import BagCrawler
+
 from .median_flow import MedianFlow
 
 ___author___ = "Tess Bianchi"

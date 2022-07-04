@@ -11,12 +11,11 @@ from geometry_msgs.msg import Vector3, Wrench, WrenchStamped
 from mil_msgs.msg import PoseTwist, PoseTwistStamped
 from mil_ros_tools import pose_to_numpy, twist_to_numpy
 from nav_msgs.msg import Odometry
-from ros_alarms import AlarmListener
-from std_msgs.msg import Header
-
 from rise_6dof import controller
 from rise_6dof.cfg import controllerConfig
 from rise_6dof.srv import SendConstantWrench
+from ros_alarms import AlarmListener
+from std_msgs.msg import Header
 
 
 class Node:

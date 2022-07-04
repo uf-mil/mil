@@ -1,10 +1,11 @@
 #!/usr/bin/python
-import cv2
-import sys
-import rospy
-import rospkg
 import datetime
+import sys
+
+import cv2
 import numpy as np
+import rospkg
+import rospy
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 from std_msgs.msg import String

@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 from __future__ import division
 
-from sub8 import tx_sub
-import rospkg
-import txros
-from sub8_gazebo_tools import BagManager
-from diagnostics import gazebo_tests
 import argparse
-import traceback
 import datetime
-from collections import deque
-from twisted.internet import reactor
-import time
 import os
 import sys
+import time
+import traceback
+from collections import deque
+
+import rospkg
+import txros
+from diagnostics import gazebo_tests
+from sub8 import tx_sub
+from sub8_gazebo_tools import BagManager
+from twisted.internet import reactor
 
 rospack = rospkg.RosPack()
 DIAG_OUT_DIR = os.path.join(rospack.get_path("sub8_gazebo"), "diagnostics/")

@@ -8,13 +8,12 @@ averaging the supply voltage to each of the four thrusters.
 
 from __future__ import division
 
-from roboteq_msgs.msg import Feedback, Status
-import rospy
-from std_msgs.msg import Float32
 import message_filters
+import rospy
+from roboteq_msgs.msg import Feedback, Status
 from ros_alarms import AlarmListener
 from ros_alarms.msg import Alarm
-
+from std_msgs.msg import Float32
 
 __author__ = "Anthony Olive"
 __maintainer__ = "Kevin Allen"
@@ -38,6 +37,7 @@ class BatteryMonitor:
         pub_voltage (rospy.Publisher): A publisher to the ``/battery_monitor``
             topic. Published by the :meth:`.publish_voltage` method.
     """
+
     def __init__(self):
 
         # Initialize the average voltage to none for the case of no feedback

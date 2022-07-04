@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import os
 import random
-import yaml
-import rospy
 
+import rospy
+import yaml
 
 rospy.init_node("param_saver", anonymous=True)
 

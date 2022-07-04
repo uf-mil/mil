@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+
 import abc
+from typing import Any, List, Optional
+
 import numpy as np
 import rospy
-
-from typing import List, Any, Optional
-
 
 __author__ = "Kevin Allen"
 

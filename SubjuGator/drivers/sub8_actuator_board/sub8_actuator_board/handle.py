@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import rospy
-from sub8_actuator_board.srv import SetValve, SetValveRequest, SetValveResponse
 from mil_usb_to_can import CANDeviceHandle
-from .packets import CommandMessage, InvalidAddressException, FeedbackMessage, SEND_ID
+from sub8_actuator_board.srv import SetValve, SetValveRequest, SetValveResponse
 
+from .packets import SEND_ID, CommandMessage, FeedbackMessage, InvalidAddressException
 
 __author__ = "John Morin"
 

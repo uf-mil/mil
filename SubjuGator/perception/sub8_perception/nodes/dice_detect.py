@@ -6,15 +6,17 @@ Publishes Image and Points
 """
 
 from __future__ import print_function
+
 import sys
-import rospy
+
 import cv2
 import numpy as np
-from sensor_msgs.msg import Image  # To publish Image
-from geometry_msgs.msg import Point  # To publish Points
-from std_msgs.msg import String  # To publish debug statements
+import rospy
 from cv_bridge import CvBridge, CvBridgeError
+from geometry_msgs.msg import Point  # To publish Points
 from scipy.spatial import distance
+from sensor_msgs.msg import Image  # To publish Image
+from std_msgs.msg import String  # To publish debug statements
 from std_srvs.srv import SetBool, SetBoolResponse
 
 # Display Window size for Debug

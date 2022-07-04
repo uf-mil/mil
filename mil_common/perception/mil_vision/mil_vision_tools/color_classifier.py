@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
+import argparse
 from abc import ABCMeta, abstractmethod, abstractproperty
-from mil_vision_tools import LabelBoxParser, contour_mask
+from typing import List, Optional, Tuple, Union
+
 import cv2
 import numpy as np
 import numpy.typing as npt
-from sklearn.naive_bayes import GaussianNB
 import pandas
-import argparse
-
-from typing import List, Optional, Union, Tuple
+from mil_vision_tools import LabelBoxParser, contour_mask
+from sklearn.naive_bayes import GaussianNB
 
 __author__ = "Kevin Allen"
 

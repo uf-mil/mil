@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 from __future__ import annotations
 
-from mil_misc_tools.serial_tools import SimulatedSerial
-from .utils import ReceivePacket, CommandPacket
-from .application_packet import ApplicationPacket
 import struct
+
+from mil_misc_tools.serial_tools import SimulatedSerial
+
+from .application_packet import ApplicationPacket
+from .utils import CommandPacket, ReceivePacket
 
 
 class SimulatedCANDevice:
@@ -14,6 +16,7 @@ class SimulatedCANDevice:
 
     Child classes can inherit from this class to implement a simulated CAN device.
     """
+
     def __init__(self, sim_board: SimulatedUSBtoCAN, can_id: int):
         self._sim_board = sim_board
         self._can_id = can_id
@@ -80,6 +83,7 @@ class SimulatedUSBtoCAN(SimulatedSerial):
     Simulates the USB to CAN board. Is supplied with a dictionary of simualted
     CAN devices to simulate the behavior of the whole CAN network.
     """
+
     def __init__(self, devices={0: SimulatedCANDevice}, can_id=-1):
         """
         Args:

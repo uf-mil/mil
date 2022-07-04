@@ -18,6 +18,7 @@ class ThrowingArgumentParser(ArgumentParser):
     The error method of the argument parser class is overloaded such that it
     will raise :class:`ArgumentParserException`.
     """
+
     # From: https://stackoverflow.com/questions/14728376/i-want-python-argparse-to-throw-an-exception-rather-than-usage
     def error(self, message: str):
         """

@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-from geometry_msgs.msg import Pose, Point, PoseStamped, Vector3
+import os
+import sys
+
+import numpy as np
+import rospkg
+import rospy
+import yaml
+from gazebo_msgs.srv import GetModelState
+from geometry_msgs.msg import Point, Pose, PoseStamped, Vector3
 from mil_misc_tools import text_effects
 from mil_msgs.srv import SetGeometry
-import numpy as np
-import rospy
-from std_srvs.srv import SetBool, SetBoolResponse
-from sub8_msgs.srv import VisionRequestResponse, VisionRequest, VisionRequest2D
-from gazebo_msgs.srv import GetModelState
 from std_msgs.msg import Header
-import os
-import rospkg
-import sys
-import yaml
-
+from std_srvs.srv import SetBool, SetBoolResponse
+from sub8_msgs.srv import VisionRequest, VisionRequest2D, VisionRequestResponse
 
 rospack = rospkg.RosPack()
 config_file = os.path.join(

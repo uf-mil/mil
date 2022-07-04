@@ -1,8 +1,10 @@
 from __future__ import division
-import numpy as np
-from sensor_msgs.msg import PointCloud2, PointField
-from genpy.rostime import Time
+
 from typing import Optional
+
+import numpy as np
+from genpy.rostime import Time
+from sensor_msgs.msg import PointCloud2, PointField
 
 
 def numpy_to_pointcloud2(

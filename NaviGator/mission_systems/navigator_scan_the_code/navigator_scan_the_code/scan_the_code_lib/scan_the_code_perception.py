@@ -1,22 +1,23 @@
 """Handles the perception of the ScanTheCode Mission."""
 from __future__ import division
-from collections import deque
-from scanthecode_model_tracker import ScanTheCodeModelTracker
-from collections import Counter
-from image_geometry import PinholeCameraModel
-import numpy.linalg as npl
-from rect_finder_clustering import RectangleFinderClustering
-from color_finder import ColorFinder
-from twisted.internet import defer
-from cv_bridge import CvBridge, CvBridgeError
-import cv2
-import txros
-import sensor_msgs.point_cloud2 as pc2
-from sensor_msgs.msg import PointCloud2, Image
+
 import sys
+from collections import Counter, deque
+
+import cv2
 import numpy as np
+import numpy.linalg as npl
+import sensor_msgs.point_cloud2 as pc2
+import txros
+from color_finder import ColorFinder
+from cv_bridge import CvBridge, CvBridgeError
+from image_geometry import PinholeCameraModel
 from mil_misc_tools.text_effects import fprint
 from mil_tools import rosmsg_to_numpy
+from rect_finder_clustering import RectangleFinderClustering
+from scanthecode_model_tracker import ScanTheCodeModelTracker
+from sensor_msgs.msg import Image, PointCloud2
+from twisted.internet import defer
 
 ___author___ = "Tess Bianchi"
 

@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 import sys
-import rospy
+
 import cv2
-from sensor_msgs.msg import Image
+import rospy
 from cv_bridge import CvBridge, CvBridgeError
 from HOG_detector import HOGDetector
+from sensor_msgs.msg import Image
 
 
 class HOG:

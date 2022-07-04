@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 import argparse
+import sys
+
 import cv2
 import numpy as np
-import sys
 from boost_auto import observe
 from mil_ros_tools import BagCrawler
 from sub8_vision_tools import ImageCrawler, VideoCrawler

@@ -1,8 +1,7 @@
-import urllib.request
-import os
-import zipfile
 import io as StringIO
-
+import os
+import urllib.request
+import zipfile
 from typing import Optional
 
 """
@@ -44,7 +43,7 @@ def download_and_unzip(url: str, output_dir: str):
         file_like = zip_.open(file_path)
 
         f = open(os.path.join(output_dir, file_name), "w")
-        f.write(file_like.read().decode('utf-8'))
+        f.write(file_like.read().decode("utf-8"))
         f.close()
 
 

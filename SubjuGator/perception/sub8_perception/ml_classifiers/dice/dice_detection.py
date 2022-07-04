@@ -1,15 +1,14 @@
 #!/usr/bin/python
-import sys
-import cv2
-import rospy
-import rospkg
 import datetime
+import sys
+
+import cv2
 import numpy as np
-
+import rospkg
+import rospy
 from cv_bridge import CvBridge, CvBridgeError
-from sensor_msgs.msg import Image
-
 from geometry_msgs.msg import Point
+from sensor_msgs.msg import Image
 
 rospack = rospkg.RosPack()
 

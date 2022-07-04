@@ -1,5 +1,6 @@
-from ros_alarms import HandlerBase, Alarm
 import subprocess
+
+from ros_alarms import Alarm, HandlerBase
 
 
 class BusVoltage(HandlerBase):

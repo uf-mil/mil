@@ -1,5 +1,5 @@
 import rospy
-from ros_alarms import HandlerBase, Alarm
+from ros_alarms import Alarm, HandlerBase
 from sub8_msgs.srv import UpdateThrusterLayout
 
 

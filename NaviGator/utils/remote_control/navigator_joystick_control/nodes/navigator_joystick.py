@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-from remote_control_lib import RemoteControl
 import rospy
+from remote_control_lib import RemoteControl
 from sensor_msgs.msg import Joy
-
 
 __maintainer__ = "Anthony Olive"
 __email__ = "anthony@iris-systems.net"

@@ -2,18 +2,18 @@
 
 from __future__ import division
 
+from collections import deque
+
 import numpy as np
 import rospy
-from geometry_msgs.msg import Vector3Stamped
-from mil_ros_tools import rosmsg_to_numpy, numpy_to_point
-from collections import deque
-from nav_msgs.msg import Odometry
 import tf2_ros
-from tf2_geometry_msgs import Vector3Stamped, PointStamped
-from std_msgs.msg import Header
-from geometry_msgs.msg import PointStamped, Vector3
+from geometry_msgs.msg import PointStamped, Vector3, Vector3Stamped
 from mil_passive_sonar.srv import FindPinger, FindPingerResponse
+from mil_ros_tools import numpy_to_point, rosmsg_to_numpy
+from nav_msgs.msg import Odometry
+from std_msgs.msg import Header
 from std_srvs.srv import SetBool, SetBoolResponse, Trigger, TriggerResponse
+from tf2_geometry_msgs import PointStamped, Vector3Stamped
 
 
 class MultilaterationNode:

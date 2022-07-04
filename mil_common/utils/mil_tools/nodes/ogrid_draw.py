@@ -2,14 +2,14 @@
 """
 Opens a neat window for drawing occupancy grids!
 """
-import rospy
-import cv2
-import numpy as np
 import argparse
 import sys
 
+import cv2
+import numpy as np
+import rospy
 from geometry_msgs.msg import Pose
-from nav_msgs.msg import OccupancyGrid, MapMetaData
+from nav_msgs.msg import MapMetaData, OccupancyGrid
 
 rospy.init_node("ogrid_draw_node", anonymous=True)
 

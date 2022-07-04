@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 from __future__ import division
-from qt_gui.plugin import Plugin
-import sys
-import rospy
+
 import os
+import sys
+
 import rospkg
+import rospy
 from python_qt_binding import QtCore, QtGui, loadUi
 from python_qt_binding.QtWidgets import QApplication, QWidget
-from std_msgs.msg import Float32
+from qt_gui.plugin import Plugin
 from roboteq_msgs.msg import Feedback
-
+from std_msgs.msg import Float32
 
 # Display voltage from battery_monitor and the four motors to a GUI
 

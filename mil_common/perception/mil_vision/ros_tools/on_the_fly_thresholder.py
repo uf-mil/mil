@@ -1,12 +1,13 @@
 #!/usr/bin/python3
-from txros import util, NodeHandle
-from twisted.internet import reactor
-from sensor_msgs.msg import Image
-from mil_ros_tools import image_helpers
-import numpy as np
-import sys
 import argparse
+import sys
+
 import cv2
+import numpy as np
+from mil_ros_tools import image_helpers
+from sensor_msgs.msg import Image
+from twisted.internet import reactor
+from txros import NodeHandle, util
 
 
 class Trackbars:

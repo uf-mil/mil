@@ -1,10 +1,11 @@
 #!/usr/bin/env python
+from typing import Optional
+
+import numpy as np
 from cv_bridge import CvBridge
 from cv_bridge.boost.cv_bridge_boost import cvtColor2
 from image_geometry import PinholeCameraModel
 from sensor_msgs.msg import Image
-import numpy as np
-from typing import Optional
 
 
 class ImageSet:

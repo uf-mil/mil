@@ -1,6 +1,7 @@
-from .base_mission import ExampleBaseMission
 from twisted.internet import defer
 from txros import util
+
+from .base_mission import ExampleBaseMission
 
 
 class SuperMission(ExampleBaseMission):

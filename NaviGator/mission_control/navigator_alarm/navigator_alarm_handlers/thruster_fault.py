@@ -1,7 +1,6 @@
-
-from ros_alarms import HandlerBase, AlarmBroadcaster
-from roboteq_msgs.msg import Status
 import rospy
+from roboteq_msgs.msg import Status
+from ros_alarms import AlarmBroadcaster, HandlerBase
 
 
 class ThrusterFault(HandlerBase):

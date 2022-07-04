@@ -1,9 +1,11 @@
 """Shows images for debugging purposes."""
+import sys
+
 import cv2
 import numpy as np
-from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
-import sys
+from sensor_msgs.msg import Image
+
 ___author___ = "Tess Bianchi"
 
 

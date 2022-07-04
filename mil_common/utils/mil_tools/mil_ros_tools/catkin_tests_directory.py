@@ -7,8 +7,8 @@ ex usage:
     rosrun mil_tools catkin_tests_directory.py src/NaviGator
 """
 
-import subprocess
 import argparse
+import subprocess
 import sys
 
 

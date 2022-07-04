@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 from collections import deque
+from typing import Optional
 
 import cv2
 import numpy as np
 import rospy
 import sensor_msgs.point_cloud2
 import tf2_ros
-from sensor_msgs.msg import Image
 from image_geometry import PinholeCameraModel
 from mil_ros_tools import Image_Publisher, Image_Subscriber
 from mil_vision_tools import (
@@ -18,8 +18,7 @@ from mil_vision_tools import (
 )
 from navigator_msgs.msg import ScanTheCode
 from navigator_vision import ScanTheCodeClassifier
-from sensor_msgs.msg import PointCloud2
-from typing import Optional
+from sensor_msgs.msg import Image, PointCloud2
 from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 
 

@@ -1,10 +1,11 @@
-import rospy
-from ros_alarms import HandlerBase, Alarm
-from actionlib import SimpleActionClient, TerminalState
-from mil_msgs.msg import BagOnlineAction, BagOnlineGoal
-from std_srvs.srv import SetBool
 import os
 from threading import Condition
+
+import rospy
+from actionlib import SimpleActionClient, TerminalState
+from mil_msgs.msg import BagOnlineAction, BagOnlineGoal
+from ros_alarms import Alarm, HandlerBase
+from std_srvs.srv import SetBool
 
 
 class Kill(HandlerBase):

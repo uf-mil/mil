@@ -7,6 +7,7 @@ or for a safety network heartbeat.
 import rospy
 from std_msgs.msg import Header
 
+
 class NetworkBroadcaster:
     """
     Serves as the main class broadcasting information through the network. Useful
@@ -19,6 +20,7 @@ class NetworkBroadcaster:
         pub (rospy.Publisher): The Publisher publishing information, with a queue
           size of 1.
     """
+
     def __init__(self):
         hz = rospy.get_param("~hz", 20)
         topic = rospy.get_param("~topic", "network")

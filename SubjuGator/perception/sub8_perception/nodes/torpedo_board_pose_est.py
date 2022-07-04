@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-from sub8_msgs.srv import TorpBoardPoseRequest
-import rospy
+import mil_ros_tools
 import numpy as np
 import numpy.linalg as lin
-from scipy import optimize
+import rospy
 import tf
 import visualization_msgs.msg as visualization_msgs
-from geometry_msgs.msg import Point, Vector3, Pose, Quaternion
+from geometry_msgs.msg import Point, Pose, Quaternion, Vector3
+from scipy import optimize
 from std_msgs.msg import ColorRGBA
-import mil_ros_tools
+from sub8_msgs.srv import TorpBoardPoseRequest
 
 
 class PoseObserver(object):

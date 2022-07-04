@@ -1,12 +1,13 @@
 #!/usr/bin/python3
-import cv2
-import numpy as np
-import os
 import argparse
+import os
 import sys
 from time import time
-from boost_auto import gen_data, observe
+
+import cv2
+import numpy as np
 import tqdm
+from boost_auto import gen_data, observe
 
 
 def load_images(path, images_to_use=2):

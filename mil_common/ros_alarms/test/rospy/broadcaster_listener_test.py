@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import rospy
-from ros_alarms import AlarmListener, AlarmBroadcaster
-
+from ros_alarms import AlarmBroadcaster, AlarmListener
 
 if __name__ == "__main__":
     rospy.init_node("broadcaster_listener_test")

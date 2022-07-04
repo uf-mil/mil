@@ -1,34 +1,42 @@
 #!/usr/bin/env python
 from __future__ import division
+
+import unittest
+
+import numpy as np
 import rosbag
 import rospy
-import unittest
-import numpy as np
-from sub8_msgs.srv import VisionRequest2D, VisionRequest2DRequest, VisionRequest2DResponse
-from sensor_msgs.msg import Image, CameraInfo
+from sensor_msgs.msg import CameraInfo, Image
 from std_srvs.srv import SetBool, SetBoolRequest
+from sub8_msgs.srv import (
+    VisionRequest2D,
+    VisionRequest2DRequest,
+    VisionRequest2DResponse,
+)
 
-PKG = 'sub8_perception'
+PKG = "sub8_perception"
 
 
 class TestPathMarker(unittest.TestCase):
 
-    '''
+    """
     Unit test for perception service finding orange path markers
     Plays several bags with known pixel coordinates of path marker,
     calls service to get 2D pose and check that it is close to known
     pose.
-    '''
+    """
 
     def __init__(self, *args):
         self.name = rospy.get_name()
         rospy.set_param("test", 5)
         self.info_topic = "/camera/down/left/camera_info"
         self.img_topic = "/camera/down/left/image_rect_color"
-        rospy.wait_for_service('/vision/orange_rectangle/2D', 3.0)
-        rospy.wait_for_service('/vision/orange_rectangle/enable', 3.0)
-        self.service = rospy.ServiceProxy('/vision/orange_rectangle/2D', VisionRequest2D)
-        enable = rospy.ServiceProxy('/vision/orange_rectangle/enable', SetBool)
+        rospy.wait_for_service("/vision/orange_rectangle/2D", 3.0)
+        rospy.wait_for_service("/vision/orange_rectangle/enable", 3.0)
+        self.service = rospy.ServiceProxy(
+            "/vision/orange_rectangle/2D", VisionRequest2D
+        )
+        enable = rospy.ServiceProxy("/vision/orange_rectangle/enable", SetBool)
         enable(SetBoolRequest(data=True))
         self.cam_info_pub = rospy.Publisher(self.info_topic, CameraInfo, queue_size=5)
         self.img_pub = rospy.Publisher(self.img_topic, Image, queue_size=5)
@@ -50,7 +58,7 @@ class TestPathMarker(unittest.TestCase):
     def _test_bag(self, filename, duration, pts):
         rospy.sleep(rospy.Duration(0.5))
         correct = self.get_ideal_response(pts)
-        print "Correct pose: {}".format(np.degrees(correct.pose.theta))
+        print("Correct pose: {}".format(np.degrees(correct.pose.theta)))
         bag = rosbag.Bag(filename)
         first = True
         first_time = None
@@ -76,57 +84,76 @@ class TestPathMarker(unittest.TestCase):
         res_xy = np.array([res.pose.x, res.pose.y])
         correct_xy = np.array([correct.pose.x, correct.pose.y])
         err = np.linalg.norm(res_xy - correct_xy)
-        msg = "Marker pose (x,y) too much error Res={} Correct={} Error={}".format(res_xy, correct_xy, err)
-        self.assertLess(err,
-                        20.0,
-                        # A little bit of tolerance given in precise ground truth. Will lower when new label system
-                        msg=msg)
+        msg = "Marker pose (x,y) too much error Res={} Correct={} Error={}".format(
+            res_xy, correct_xy, err
+        )
+        self.assertLess(
+            err,
+            20.0,
+            # A little bit of tolerance given in precise ground truth. Will lower when new label system
+            msg=msg,
+        )
         # 5 degrees error accepted
         theta_err = abs(
-            np.arctan2(np.sin(res.pose.theta - correct.pose.theta),
-                       np.cos(res.pose.theta - correct.pose.theta)))
-        msg = "Marker pose angle (theta) too much error Res={} Correct={} Error={}".format(np.degrees(res.pose.theta),
-                                                                                           np.degrees(
-                                                                                               correct.pose.theta),
-                                                                                           np.degrees(theta_err))
-        self.assertLess(theta_err,
-                        0.15,
-                        msg=msg)
+            np.arctan2(
+                np.sin(res.pose.theta - correct.pose.theta),
+                np.cos(res.pose.theta - correct.pose.theta),
+            )
+        )
+        msg = "Marker pose angle (theta) too much error Res={} Correct={} Error={}".format(
+            np.degrees(res.pose.theta),
+            np.degrees(correct.pose.theta),
+            np.degrees(theta_err),
+        )
+        self.assertLess(theta_err, 0.15, msg=msg)
 
     def test_transdec(self):
-        self._test_bag(rospy.get_param(self.name + '/transdec_path1'),
-                       rospy.Duration(3.10),
-                       [[43, 443], [216, 307]])
+        self._test_bag(
+            rospy.get_param(self.name + "/transdec_path1"),
+            rospy.Duration(3.10),
+            [[43, 443], [216, 307]],
+        )
 
     def test_transdec2(self):
-        self._test_bag(rospy.get_param(self.name + '/transdec_path2'),
-                       rospy.Duration(1.9),
-                       [[392, 166], [428, 16]])
+        self._test_bag(
+            rospy.get_param(self.name + "/transdec_path2"),
+            rospy.Duration(1.9),
+            [[392, 166], [428, 16]],
+        )
 
     def test_transdec3(self):
-        self._test_bag(rospy.get_param(self.name + '/transdec_path3'),
-                       rospy.Duration(0.8),
-                       [[244, 9], [321, 127]])
-    ''' Disabled because too noisey
+        self._test_bag(
+            rospy.get_param(self.name + "/transdec_path3"),
+            rospy.Duration(0.8),
+            [[244, 9], [321, 127]],
+        )
+
+    """ Disabled because too noisey
      def test_pool1(self):
          self._test_bag('/home/kallen/bag/path_marker_transdcec/fixed/pool_path1.bag',
                         rospy.Duration(2.7),
                         [ [237, 407],[295, 216] ])
-    '''
+    """
 
     def test_pool2(self):
-        self._test_bag(rospy.get_param(self.name + '/pool_path2'),
-                       rospy.Duration(2.7),
-                       [[180, 244], [313, 333]])
+        self._test_bag(
+            rospy.get_param(self.name + "/pool_path2"),
+            rospy.Duration(2.7),
+            [[180, 244], [313, 333]],
+        )
 
     def test_pool3(self):
-        self._test_bag(rospy.get_param(self.name + '/pool_path3'),
-                       rospy.Duration(5.8),
-                       [[188, 330], [354, 322]])
+        self._test_bag(
+            rospy.get_param(self.name + "/pool_path3"),
+            rospy.Duration(5.8),
+            [[188, 330], [354, 322]],
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     import rostest
-    rospy.init_node('test_path_marker', anonymous=True)
-    print "name", rospy.get_name()
-    print "namespace", rospy.get_namespace()
-    rostest.rosrun(PKG, 'path_marker_test', TestPathMarker)
+
+    rospy.init_node("test_path_marker", anonymous=True)
+    print("name", rospy.get_name())
+    print("namespace", rospy.get_namespace())
+    rostest.rosrun(PKG, "path_marker_test", TestPathMarker)

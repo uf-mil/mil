@@ -4,11 +4,12 @@ This file wis written by the team at UF MIL for the 2016 robosub competition.
 
 github.com/uf-mil
 """
-import rosbag
-from cv_bridge import CvBridge
-import tqdm
-from typing import Optional, List
+from typing import List, Optional
 
+import rosbag
+import tqdm
+import cv2
+from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 
 
@@ -37,7 +38,12 @@ class BagCrawler:
         img = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
         return img
 
-    def crawl(self, topic: Optional[str] = None, is_image: bool = False, max_msgs: float = float("inf")):
+    def crawl(
+        self,
+        topic: Optional[str] = None,
+        is_image: bool = False,
+        max_msgs: float = float("inf"),
+    ):
         """
         Crawls a bag file and returns a generator yielding each message in the
         file. Additionally, a tqdm progress bar is displayed.

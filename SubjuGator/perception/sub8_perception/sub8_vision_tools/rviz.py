@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import division
 
+import mil_ros_tools
 import numpy as np
 import rospy
 import visualization_msgs.msg as visualization_msgs
-from geometry_msgs.msg import Pose, Vector3, Point
+from geometry_msgs.msg import Point, Pose, Vector3
 from std_msgs.msg import ColorRGBA
-import mil_ros_tools
 
 
 class RvizVisualizer:

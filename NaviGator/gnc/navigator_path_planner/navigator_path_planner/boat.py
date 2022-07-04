@@ -2,29 +2,32 @@
 Constructs a planner that is good for boating around!
 """
 from __future__ import division
+
+from typing import List
+
+import lqrrt
 import numpy as np
+
 from .params import (
+    FPR,
+    B,
     D_neg,
     D_pos,
-    B,
-    invB,
-    thrust_max,
-    invM,
-    ss_start,
-    velmax_pos,
-    velmax_neg,
-    real_tol,
-    nstates,
-    ncontrols,
-    unset,
-    horizon,
-    dt,
-    FPR,
     basic_duration,
+    dt,
+    horizon,
+    invB,
+    invM,
     max_nodes,
+    ncontrols,
+    nstates,
+    real_tol,
+    ss_start,
+    thrust_max,
+    unset,
+    velmax_neg,
+    velmax_pos,
 )
-import lqrrt
-from typing import List
 
 # DYNAMICS
 

@@ -1,25 +1,22 @@
 #! /usr/bin/python3
 from __future__ import division
 
-import rospy
-import genpy
-import tf.transformations as trns
-import mil_tools
-from mil_misc_tools.text_effects import fprint as _fprint
-from std_srvs.srv import Trigger
+from copy import deepcopy
+from typing import Dict, List, Optional, Tuple
 
 import cv2
+import genpy
+import mil_tools
 import numpy as np
-from copy import deepcopy
-
-from dynamic_reconfigure.server import Server
+import rospy
+import tf.transformations as trns
 from dynamic_reconfigure.client import Client
-from navigator_msg_multiplexer.cfg import OgridConfig
+from dynamic_reconfigure.server import Server
+from mil_misc_tools.text_effects import fprint as _fprint
 from nav_msgs.msg import OccupancyGrid, Odometry
-
+from navigator_msg_multiplexer.cfg import OgridConfig
 from navigator_path_planner import params
-
-from typing import Tuple, Optional, Dict, List
+from std_srvs.srv import Trigger
 
 # Wow what a concept
 fprint = lambda *args, **kwargs: _fprint(title="OGRID_ARB", *args, **kwargs)
@@ -41,10 +38,15 @@ def make_ogrid_transform(ogrid: OccupancyGrid) -> np.array:
     origin = mil_tools.pose_to_numpy(ogrid.info.origin)[0]
 
     # Transforms points from ENU to ogrid frame coordinates
-    t = np.array([[1 / resolution, 0, -origin[0] / resolution],
-                  [0, 1 / resolution, -origin[1] / resolution],
-                  [0, 0, 1]])
+    t = np.array(
+        [
+            [1 / resolution, 0, -origin[0] / resolution],
+            [0, 1 / resolution, -origin[1] / resolution],
+            [0, 0, 1],
+        ]
+    )
     return t
+
 
 def numpyify(ogrid: OccupancyGrid) -> np.array:
     """
@@ -58,6 +60,7 @@ def numpyify(ogrid: OccupancyGrid) -> np.array:
         ogrid.
     """
     return np.array(ogrid.data).reshape(ogrid.info.height, ogrid.info.width)
+
 
 def transform_enu_to_ogrid(enu_points: List[int], grid: OccupancyGrid) -> np.ndarray:
     """
@@ -79,6 +82,7 @@ def transform_enu_to_ogrid(enu_points: List[int], grid: OccupancyGrid) -> np.nda
     t = make_ogrid_transform(grid)
     return t.dot(np.array(enu_points_np).T).T
 
+
 def transform_ogrid_to_enu(grid_points: List[int], grid: OccupancyGrid) -> np.ndarray:
     """
     Converts an ogrid cell into the ENU frame.
@@ -99,7 +103,10 @@ def transform_ogrid_to_enu(grid_points: List[int], grid: OccupancyGrid) -> np.nd
     t = np.linalg.inv(make_ogrid_transform(grid))
     return t.dot(np.array(grid_points_np).T).T
 
-def transform_between_ogrids(grid1_points: List[int], grid1: OccupancyGrid, grid2: OccupancyGrid) -> np.ndarray:
+
+def transform_between_ogrids(
+    grid1_points: List[int], grid1: OccupancyGrid, grid2: OccupancyGrid
+) -> np.ndarray:
     """
     ???
 
@@ -113,6 +120,7 @@ def transform_between_ogrids(grid1_points: List[int], grid1: OccupancyGrid, grid
     """
     enu = transform_ogrid_to_enu(grid1_points, grid1)
     return transform_enu_to_ogrid(enu, grid2)
+
 
 def get_enu_corners(grid) -> Tuple[np.ndarray, np.ndarray]:
     """
@@ -131,6 +139,7 @@ def get_enu_corners(grid) -> Tuple[np.ndarray, np.ndarray]:
     max = grid_to_enu.dot([grid.info.height, grid.info.width, 1])
     return (min, max)
 
+
 class OGrid:
     """
     Represents a class holding an occupancy grid. The class
@@ -145,14 +154,16 @@ class OGrid:
     replace: bool
     subscriber: rospy.Subscriber
 
-    def __init__(self, topic: str, replace: bool = False, frame_id: str = 'enu'):
+    def __init__(self, topic: str, replace: bool = False, frame_id: str = "enu"):
         # Assert that the topic is valid
         self.last_message_stamp = None
         self.topic = topic
-        self.nav_ogrid = None           # Last recieved OccupancyGrid message
-        self.np_map = None              # Numpy version of last recieved OccupancyGrid message
+        self.nav_ogrid = None  # Last recieved OccupancyGrid message
+        self.np_map = None  # Numpy version of last recieved OccupancyGrid message
         self.replace = replace
-        self.subscriber = rospy.Subscriber(topic, OccupancyGrid, self.subscriber_callback, queue_size=1)
+        self.subscriber = rospy.Subscriber(
+            topic, OccupancyGrid, self.subscriber_callback, queue_size=1
+        )
 
     @property
     def callback_delta(self) -> float:
@@ -177,11 +188,18 @@ class OGrid:
         self.nav_ogrid = ogrid
         self.np_map = numpyify(ogrid)
 
+
 class OGridServer:
 
     odom: Optional[Tuple[np.ndarray, np.ndarray]]
 
-    def __init__(self, frame_id: str = 'enu', map_size: int = 500, resolution: float = 0.3, rate: int = 1):
+    def __init__(
+        self,
+        frame_id: str = "enu",
+        map_size: int = 500,
+        resolution: float = 0.3,
+        rate: int = 1,
+    ):
         self.frame_id = frame_id
         self.ogrids = {}
         self.odom = None
@@ -197,17 +215,19 @@ class OGridServer:
         self.enu_bounds = [[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]]
 
         # Default to centering the ogrid
-        position = np.array([-(map_size * resolution) / 2, -(map_size * resolution) / 2, 0])
+        position = np.array(
+            [-(map_size * resolution) / 2, -(map_size * resolution) / 2, 0]
+        )
         quaternion = np.array([0, 0, 0, 1])
 
         self.origin = mil_tools.numpy_quat_pair_to_pose(position, quaternion)
         self.global_ogrid = self.create_grid((map_size, map_size))
 
-        rospy.Subscriber('/odom', Odometry, self.set_odom)
-        self.publisher = rospy.Publisher('/ogrid_master', OccupancyGrid, queue_size = 1)
+        rospy.Subscriber("/odom", Odometry, self.set_odom)
+        self.publisher = rospy.Publisher("/ogrid_master", OccupancyGrid, queue_size=1)
 
         self.ogrid_server = Server(OgridConfig, self.dynamic_config_callback)
-        self.dynam_client = Client("bounds_server", config_callback = self.bounds_cb)
+        self.dynam_client = Client("bounds_server", config_callback=self.bounds_cb)
 
         rospy.Service("~center_ogrid", Trigger, self.center_ogrid)
         rospy.Timer(rospy.Duration(1.0 / rate), self.publish)
@@ -225,7 +245,7 @@ class OGridServer:
         Returns:
             np.ndarray - The converted pose in a numpy array.
         """
-        return setattr(self, 'odom', mil_tools.pose_to_numpy(msg.pose.pose))
+        return setattr(self, "odom", mil_tools.pose_to_numpy(msg.pose.pose))
 
     def center_ogrid(self, _) -> dict:
         """
@@ -242,19 +262,19 @@ class OGridServer:
             complete trigger response.
         """
         if self.odom is None:
-            return {'success': False, 'message': 'odom not recieved'}
+            return {"success": False, "message": "odom not recieved"}
 
         dim = -(self.map_size[0] * self.resolution) / 2
         new_org = self.odom[0] + np.array([dim, dim, 0])
 
         # Update the dynamic configuration
         config = {}
-        config['origin_x'] = float(new_org[0])
-        config['origin_y'] = float(new_org[1])
-        config['set_origin'] = True
+        config["origin_x"] = float(new_org[0])
+        config["origin_y"] = float(new_org[1])
+        config["set_origin"] = True
         self.ogrid_server.update_configuration(config)
 
-        return {'success': True}
+        return {"success": True}
 
     def bounds_cb(self, config: dict) -> None:
         """
@@ -265,14 +285,16 @@ class OGridServer:
             config: dict - The update changes from dynamic
             reconfigure to be handled.
         """
-        rospy.loginfo('BOUNDS UPDATEDED')
+        rospy.loginfo("BOUNDS UPDATEDED")
 
-        self.enu_bounds = [[config['x1'], config['y1'], 1],
-                           [config['x2'], config['y2'], 1],
-                           [config['x3'], config['y3'], 1],
-                           [config['x4'], config['y4'], 1],
-                           [config['x1'], config['y1'], 1]]
-        self.enforce_bounds = config['enforce']
+        self.enu_bounds = [
+            [config["x1"], config["y1"], 1],
+            [config["x2"], config["y2"], 1],
+            [config["x3"], config["y3"], 1],
+            [config["x4"], config["y4"], 1],
+            [config["x1"], config["y1"], 1],
+        ]
+        self.enforce_bounds = config["enforce"]
 
     def dynamic_config_callback(self, config: dict, _) -> dict:
         """
@@ -286,39 +308,51 @@ class OGridServer:
         Returns:
             The updated dict containing no changes to the configuration.
         """
-        fprint("OGRID DYNAMIC CONFIG UPDATE!", msg_color='blue')
+        fprint("OGRID DYNAMIC CONFIG UPDATE!", msg_color="blue")
 
         # Receive and parse topic list
-        topics = config['topics'].replace(' ', '').split(',')
-        replace_topics = config['replace_topics'].replace(' ', '').split(',')
+        topics = config["topics"].replace(" ", "").split(",")
+        replace_topics = config["replace_topics"].replace(" ", "").split(",")
 
         # Update OGrids with new configuration changes
         new_grids = {}
         for topic in topics:
-            new_grids[topic] = OGrid(topic) if topic not in self.ogrids else self.ogrids[topic]
+            new_grids[topic] = (
+                OGrid(topic) if topic not in self.ogrids else self.ogrids[topic]
+            )
         for topic in replace_topics:
-            new_grids[topic] = OGrid(topic, replace=True) if topic not in self.ogrids else self.ogrids[topic]
+            new_grids[topic] = (
+                OGrid(topic, replace=True)
+                if topic not in self.ogrids
+                else self.ogrids[topic]
+            )
 
         self.ogrids = new_grids
 
-        map_size = map(int, (config['height'], config['width']))
+        map_size = map(int, (config["height"], config["width"]))
         self.map_size = map_size
 
-        self.plow = config['plow']
-        self.plow_factor = config['plow_factor']
-        self.ogrid_min_value = config['ogrid_min_value']
-        self.draw_bounds = config['draw_bounds']
-        self.resolution = config['resolution']
-        self.ogrid_timeout = config['ogrid_timeout']
+        self.plow = config["plow"]
+        self.plow_factor = config["plow_factor"]
+        self.ogrid_min_value = config["ogrid_min_value"]
+        self.draw_bounds = config["draw_bounds"]
+        self.resolution = config["resolution"]
+        self.ogrid_timeout = config["ogrid_timeout"]
 
-        if config['set_origin']:
+        if config["set_origin"]:
             fprint("Setting origin!")
-            position = np.array([config['origin_x'], config['origin_y'], 0])
+            position = np.array([config["origin_x"], config["origin_y"], 0])
             quaternion = np.array([0, 0, 0, 1])
             self.origin = mil_tools.numpy_quat_pair_to_pose(position, quaternion)
 
         else:
-            position = np.array([-(map_size[1] * self.resolution) / 2, -(map_size[0] * self.resolution) / 2, 0])
+            position = np.array(
+                [
+                    -(map_size[1] * self.resolution) / 2,
+                    -(map_size[0] * self.resolution) / 2,
+                    0,
+                ]
+            )
             quaternion = np.array([0, 0, 0, 1])
             self.origin = mil_tools.numpy_quat_pair_to_pose(position, quaternion)
 
@@ -386,14 +420,18 @@ class OGridServer:
                 l_h, l_w = ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width
                 g_h, g_w = global_ogrid.info.height, global_ogrid.info.width
                 if l_h > g_h or l_w > g_w:
-                    fprint("Proactively preventing errors in ogrid size.", msg_color="red")
+                    fprint(
+                        "Proactively preventing errors in ogrid size.", msg_color="red"
+                    )
                     new_size = max(l_w, g_w, l_h, g_h)
                     self.global_ogrid = self.create_grid((new_size, new_size))
 
                 # Local Ogrid (get everything in global frame though)
                 corners = get_enu_corners(ogrid.nav_ogrid)
                 index_limits = transform_enu_to_ogrid(corners, ogrid.nav_ogrid)
-                index_limits = transform_between_ogrids(index_limits, ogrid.nav_ogrid, global_ogrid)[:, :2]
+                index_limits = transform_between_ogrids(
+                    index_limits, ogrid.nav_ogrid, global_ogrid
+                )[:, :2]
 
                 l_x_min = index_limits[0][0]
                 l_x_max = index_limits[1][0]
@@ -407,15 +445,21 @@ class OGridServer:
                 start_y, end_y = np.round(ys[1:3])
 
                 # Should be indicies
-                l_ogrid_start = transform_between_ogrids([start_x, start_y, 1], global_ogrid, ogrid.nav_ogrid)
+                l_ogrid_start = transform_between_ogrids(
+                    [start_x, start_y, 1], global_ogrid, ogrid.nav_ogrid
+                )
 
                 # fprint("ROI {},{} {},{}".format(start_x, start_y, end_x, end_y))
-                index_width = l_ogrid_start[0] + end_x - start_x  # I suspect rounding will be a source of error
+                index_width = (
+                    l_ogrid_start[0] + end_x - start_x
+                )  # I suspect rounding will be a source of error
                 index_height = l_ogrid_start[1] + end_y - start_y
                 # fprint("width: {}, height: {}".format(index_width, index_height))
                 # fprint("Ogrid size: {}, {}".format(ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width))
 
-                to_add = ogrid.np_map[l_ogrid_start[1]:index_height, l_ogrid_start[0]:index_width]
+                to_add = ogrid.np_map[
+                    l_ogrid_start[1] : index_height, l_ogrid_start[0] : index_width
+                ]
 
                 # fprint("to_add shape: {}".format(to_add.shape))
 
@@ -432,12 +476,22 @@ class OGridServer:
                         np_grid[start_y:end_y, start_x:end_x] += to_add
 
                 except Exception as e:
-                    fprint("Exception caught, probably a dimension mismatch:", msg_color='red')
+                    fprint(
+                        "Exception caught, probably a dimension mismatch:",
+                        msg_color="red",
+                    )
                     print(e)
-                    fprint("w: {}, h: {}".format(global_ogrid.info.width, global_ogrid.info.height), msg_color='red')
+                    fprint(
+                        "w: {}, h: {}".format(
+                            global_ogrid.info.width, global_ogrid.info.height
+                        ),
+                        msg_color="red",
+                    )
 
         if self.draw_bounds and self.enforce_bounds:
-            ogrid_bounds = transform_enu_to_ogrid(self.enu_bounds, global_ogrid).astype(np.int32)
+            ogrid_bounds = transform_enu_to_ogrid(self.enu_bounds, global_ogrid).astype(
+                np.int32
+            )
             for i, point in enumerate(ogrid_bounds[:, :2]):
                 if i == 0:
                     last_point = point
@@ -500,7 +554,8 @@ class OGridServer:
 
         return np_grid
 
-if __name__ == '__main__':
-    rospy.init_node('ogrid_server', anonymous=False)
+
+if __name__ == "__main__":
+    rospy.init_node("ogrid_server", anonymous=False)
     og_server = OGridServer()
     rospy.spin()

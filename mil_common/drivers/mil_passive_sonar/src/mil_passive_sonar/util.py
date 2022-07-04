@@ -1,10 +1,10 @@
 from __future__ import division
 
+import math
+
 import numpy
 import scipy
 import scipy.signal
-import math
-
 from mil_passive_sonar.msg import Ping  # noqa
 
 

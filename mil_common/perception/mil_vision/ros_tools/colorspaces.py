@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import division
-import numpy as np
-import cv2
+
 import argparse
+
+import cv2
+import numpy as np
 
 __author__ = "David Soto"
 
@@ -185,8 +187,8 @@ if __name__ == "__main__":
 
     # Pull images from a ROS image topic
     elif args.use_ros_topic is not None:
-        import rospy
         import mil_ros_tools
+        import rospy
 
         rospy.init_node(NAME, anonymous=True)
         mil_ros_tools.Image_Subscriber(topic=args.use_ros_topic, callback=image_cb)

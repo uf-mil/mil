@@ -10,34 +10,34 @@ import socket
 import threading
 
 import rospy
-from ros_alarms import AlarmListener
-from ros_alarms.msg import Alarm
 from geometry_msgs.msg import PointStamped
 from mil_tools import thread_lock
 from nav_msgs.msg import Odometry
-from std_msgs.msg import String
 from navigator_msgs.msg import ScanTheCode
 from navigator_msgs.srv import (
+    MessageDetectDeliver,
+    MessageDetectDeliverRequest,
+    MessageDetectDeliverResponse,
     MessageExtranceExitGate,
     MessageExtranceExitGateRequest,
     MessageExtranceExitGateResponse,
     MessageIdentifySymbolsDock,
     MessageIdentifySymbolsDockRequest,
     MessageIdentifySymbolsDockResponse,
-    MessageDetectDeliver,
-    MessageDetectDeliverRequest,
-    MessageDetectDeliverResponse,
 )
-
 from navigator_robotx_comms.navigator_robotx_comms import (
     RobotXDetectDeliverMessage,
-    RobotXHeartbeatMessage,
     RobotXEntranceExitGateMessage,
-    RobotXScanCodeMessage,
+    RobotXHeartbeatMessage,
     RobotXIdentifySymbolsDockMessage,
+    RobotXScanCodeMessage,
 )
+from ros_alarms import AlarmListener
+from ros_alarms.msg import Alarm
+from std_msgs.msg import String
 
 lock = threading.Lock()
+
 
 class RobotXStartServices:
     """
@@ -54,6 +54,7 @@ class RobotXStartServices:
         system_mode (int): The mode of the system.
         wrench (str): The current wrench mode of the system. For example, ``autonomous``.
     """
+
     def __init__(self):
         # define all variables for subscribers
         self.gps_array = None
@@ -197,7 +198,9 @@ class RobotXStartServices:
         )
         self.robotx_client.send_message(message)
 
-    def handle_entrance_exit_gate_message(self, data: MessageExtranceExitGateRequest) -> MessageExtranceExitGateResponse:
+    def handle_entrance_exit_gate_message(
+        self, data: MessageExtranceExitGateRequest
+    ) -> MessageExtranceExitGateResponse:
         """
         Handles requests to make messages to use in the Entrance and Exit Gate
         mission.
@@ -244,7 +247,9 @@ class RobotXStartServices:
         )
         self.robotx_client.send_message(message)
 
-    def handle_identify_symbols_dock_message(self, data: MessageIdentifySymbolsDockRequest) -> MessageIdentifySymbolsDockResponse:
+    def handle_identify_symbols_dock_message(
+        self, data: MessageIdentifySymbolsDockRequest
+    ) -> MessageIdentifySymbolsDockResponse:
         """
         Handles requests to make messages to use in the Identify Symbols and Dock
         mission.
@@ -268,7 +273,9 @@ class RobotXStartServices:
         self.robotx_client.send_message(message.message)
         return MessageIdentifySymbolsDockResponse(message)
 
-    def handle_detect_deliver_message(self, data: MessageDetectDeliverRequest) -> MessageDetectDeliverResponse:
+    def handle_detect_deliver_message(
+        self, data: MessageDetectDeliverRequest
+    ) -> MessageDetectDeliverResponse:
         """
         Handles requests to make messages to use in the Detect and Deliver
         mission.
@@ -321,6 +328,7 @@ class RobotXClient:
         socket_connection (Optional[socket.socket]): The socket connection. This is
             initially set to ``None``, until it is made in :meth:`.connect`.
     """
+
     def __init__(self, tcp_ip: str, tcp_port: int):
         """
         Args:

@@ -1,16 +1,15 @@
-import math
-from math import sin, cos, sqrt, pi, atan2
-import os
 import functools
+import math
+import os
+from math import atan2, cos, pi, sin, sqrt
 
 import numpy
 import yaml
-
-from tf import transformations
-from geometry_msgs.msg import Point, Vector3, PointStamped
+from geometry_msgs.msg import Point, PointStamped, Vector3
+from rawgps_common.msg import Measurements, Satellite
 from std_msgs.msg import Header
+from tf import transformations
 
-from rawgps_common.msg import Satellite, Measurements
 from . import bitstream
 
 

@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
+import numpy as np
 import rospy
 from gazebo_msgs.srv import (
-    GetModelState,
-    ApplyBodyWrenchRequest,
     ApplyBodyWrench,
+    ApplyBodyWrenchRequest,
     ApplyBodyWrenchResponse,
+    GetModelState,
 )
-from sub8_gazebo.srv import SetTurbulence
 from mil_ros_tools import msg_helpers
-
-import numpy as np
+from sub8_gazebo.srv import SetTurbulence
 
 
 class Turbulizor:

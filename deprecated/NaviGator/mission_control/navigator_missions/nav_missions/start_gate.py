@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 from __future__ import division
-from navigator import Navigator
-import txros
-import tf.transformations as trns
-import numpy as np
-import mil_tools
-from twisted.internet import defer
-from nav_msgs.msg import OccupancyGrid
+
 import cv2
+import mil_tools
+import numpy as np
+import tf.transformations as trns
+import txros
+from nav_msgs.msg import OccupancyGrid
+from navigator import Navigator
+from twisted.internet import defer
 
 
 class Buoy(object):

@@ -1,6 +1,6 @@
-from ros_alarms import HandlerBase, AlarmBroadcaster
-from std_msgs.msg import Float32
 import rospy
+from ros_alarms import AlarmBroadcaster, HandlerBase
+from std_msgs.msg import Float32
 
 
 class BatteryVoltage(HandlerBase):

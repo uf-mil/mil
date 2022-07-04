@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
-import rospy
-from geometry_msgs.msg import Vector3Stamped
-from visualization_msgs.msg import Marker
-from mil_tools import rosmsg_to_numpy, numpy_to_point, numpy_to_colorRGBA
-import numpy as np
 import argparse
 from typing import List, Optional
+
+import numpy as np
+import rospy
+from geometry_msgs.msg import Vector3Stamped
+from mil_tools import numpy_to_colorRGBA, numpy_to_point, rosmsg_to_numpy
+from visualization_msgs.msg import Marker
 
 __author__ = "Kevin Allen"
 
 
 class VectorToMarker:
     """
-    Node to subscribe to a Vector3Stamped topic and publish a rviz marker 
-    with the same content. Used to get around the fact that rviz cannot display 
+    Node to subscribe to a Vector3Stamped topic and publish a rviz marker
+    with the same content. Used to get around the fact that rviz cannot display
     Vector3Stamped messages.
 
     Can be used from the command line through :mod:`argparse` support.
@@ -31,7 +32,13 @@ class VectorToMarker:
             messages.
     """
 
-    def __init__(self, vector_topic: str, marker_topic: str, length: Optional[float] = 1.0, color: List[float] = [0, 0, 1, 1]):
+    def __init__(
+        self,
+        vector_topic: str,
+        marker_topic: str,
+        length: Optional[float] = 1.0,
+        color: List[float] = [0, 0, 1, 1],
+    ):
         self.length = length
         self.pub = rospy.Publisher(marker_topic, Marker, queue_size=1)
         self.color = numpy_to_colorRGBA(color)

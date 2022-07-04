@@ -1,7 +1,6 @@
-from numpy import polyval
-from numpy import clip
+from typing import Any, Dict
 
-from typing import Dict, Any
+from numpy import clip, polyval
 
 
 def make_thruster_dictionary(dictionary):

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+import argparse
+
 import rospy
 from ros_alarms import AlarmBroadcaster
-import argparse
 
 parser = argparse.ArgumentParser(description="Raises an alarm")
 parser.add_argument("alarm_name", help="the name of the alarm to raise")

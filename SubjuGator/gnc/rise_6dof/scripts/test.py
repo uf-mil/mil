@@ -7,9 +7,8 @@ import numpy
 import roslib
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 from mil_msgs.msg import PoseTwist
-from tf import transformations
-
 from rise_6dof.controller import Controller
+from tf import transformations
 
 if __name__ == "__main__":
     roslib.load_manifest("rise_6dof")

@@ -1,9 +1,10 @@
 #! /usr/bin/env python
 from collections import deque
-from base_controller import Controller
+
 import matplotlib.pyplot as plt
 import numpy as np
 import rospy
+from base_controller import Controller
 from tf import transformations
 
 

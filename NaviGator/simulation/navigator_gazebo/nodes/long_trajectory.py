@@ -6,7 +6,11 @@ import rospy
 import tf.transformations as trns
 from mil_tools import rosmsg_to_numpy
 from nav_msgs.msg import Odometry
-from navigator_msgs.srv import MoveToWaypoint, MoveToWaypointRequest, MoveToWaypointResponse
+from navigator_msgs.srv import (
+    MoveToWaypoint,
+    MoveToWaypointRequest,
+    MoveToWaypointResponse,
+)
 from robot_localization.srv import FromLL
 from twisted.internet import defer
 from vrx_gazebo.msg import Task
@@ -34,7 +38,7 @@ class LongTrajectory:
         self.thresholds_changed = False
         rospy.spin()
 
-    def taskinfoSubscriber(self, msg: Task) -> None: 
+    def taskinfoSubscriber(self, msg: Task) -> None:
         if not self.thresholds_changed and msg.name == "wayfinding":
             self.x_thresh = 0.15
             self.y_thresh = 0.15

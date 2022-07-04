@@ -1,13 +1,14 @@
-import rospy
-import numpy as np
-from sensor_msgs.msg import Image
-from std_srvs.srv import SetBool, SetBoolResponse, SetBoolRequest
+import threading
+
 import cv2
+import matplotlib
+import numpy as np
+import rospy
 from cv_bridge import CvBridge
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
-import matplotlib
-import threading
+from sensor_msgs.msg import Image
+from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 
 
 class Plotter:
@@ -43,6 +44,7 @@ class Plotter:
             in upon construction and the queue size is 1.
         thread (threading.Thread): The thread used to publish data and plots on.
     """
+
     # Limitations:
     #     can only stack plots vertially
     #     all plots must have same number of points
@@ -68,7 +70,7 @@ class Plotter:
 
     def enable_disable(self, req: SetBoolRequest):
         """
-        Serves as a callback for the service responsible for enabling and disabling the 
+        Serves as a callback for the service responsible for enabling and disabling the
         plotter.
 
         Args:
@@ -142,7 +144,7 @@ def interweave(x: np.ndarray, data: np.ndarray):
         data (np.ndarray): An array of shape (channels, samples)
 
     Returns:
-        np.ndarray: Array of shape (channles*2, samples) where even numbered 
+        np.ndarray: Array of shape (channles*2, samples) where even numbered
             rows are x, odd rows are the data.
     """
     plots = [None] * data.shape[0]

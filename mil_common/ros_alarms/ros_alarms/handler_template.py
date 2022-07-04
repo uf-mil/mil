@@ -1,7 +1,8 @@
-from .alarms import Alarm
+from typing import Optional, Union
+
 from ros_alarms.msg import Alarm as AlarmMsg
 
-from typing import Union, Optional
+from .alarms import Alarm
 
 
 class HandlerBase:

@@ -3,7 +3,6 @@ from typing import Any, Callable, Optional
 
 import rospy
 from actionlib import SimpleActionClient
-
 from mil_missions.msg import DoMissionAction, DoMissionGoal
 from roboteq_msgs.msg import Feedback
 

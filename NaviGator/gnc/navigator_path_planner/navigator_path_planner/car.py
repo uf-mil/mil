@@ -3,30 +3,32 @@ Constructs a planner that is good for being kinda like a car-boat thing!
 
 """
 from __future__ import division
-import numpy as np
-from .params import (
-    D_neg,
-    D_pos,
-    B,
-    invB,
-    thrust_max,
-    invM,
-    ss_start,
-    velmax_pos,
-    velmax_neg,
-    nstates,
-    ncontrols,
-    unset,
-    horizon,
-    dt,
-    FPR,
-    basic_duration,
-    max_nodes,
-    free_radius,
-)
-import lqrrt
 
 from typing import List, Tuple
+
+import lqrrt
+import numpy as np
+
+from .params import (
+    FPR,
+    B,
+    D_neg,
+    D_pos,
+    basic_duration,
+    dt,
+    free_radius,
+    horizon,
+    invB,
+    invM,
+    max_nodes,
+    ncontrols,
+    nstates,
+    ss_start,
+    thrust_max,
+    unset,
+    velmax_neg,
+    velmax_pos,
+)
 
 # DYNAMICS
 

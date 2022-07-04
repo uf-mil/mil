@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
+from typing import Callable, List, Optional, Tuple
+
 import numpy as np
 import rospy
-from urdf_parser_py.urdf import URDF
 import tf2_ros
-from tf.transformations import euler_from_quaternion
 from mil_tools import rosmsg_to_numpy
+from tf.transformations import euler_from_quaternion
+from urdf_parser_py.urdf import URDF
 
-from typing import List, Tuple, Callable, Optional
 
 def vrx_force_to_command_scalar(force):
 
@@ -140,7 +141,9 @@ class ThrusterMap(object):
         return cls(names, positions, angles, vrx_force_to_command, (250.0, -100.0))
 
     @classmethod
-    def from_urdf(cls, urdf_string: str, transmission_suffix: str = "_thruster_transmission"):
+    def from_urdf(
+        cls, urdf_string: str, transmission_suffix: str = "_thruster_transmission"
+    ):
         """
         Load from an URDF string. Expects each thruster to be connected a transmission ending in the specified suffix.
         A transform between the propeller joint and base_link must be available

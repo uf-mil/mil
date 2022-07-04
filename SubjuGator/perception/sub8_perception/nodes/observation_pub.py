@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 from __future__ import print_function
+
 import sys
-import tf
-import mil_ros_tools
+from collections import deque
+
 import cv2
+import mil_ros_tools
 import numpy as np
 import rospy
-from std_msgs.msg import Header
-from collections import deque
-from sensor_msgs.msg import Image, RegionOfInterest
-from cv_bridge import CvBridgeError
-from sub8_vision_tools import MultiObservation
+import tf
+from cv_bridge import CvBridge, CvBridgeError
+from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion
 from image_geometry import PinholeCameraModel
-from std_srvs.srv import SetBool, SetBoolResponse
-from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion
-from sub8_msgs.srv import VisionRequest, VisionRequestResponse
-from mil_ros_tools import Image_Subscriber, Image_Publisher
-from cv_bridge import CvBridge
 from mil_misc_tools import FprintFactory
+from mil_ros_tools import Image_Publisher, Image_Subscriber
+from sensor_msgs.msg import Image, RegionOfInterest
+from std_msgs.msg import Header
+from std_srvs.srv import SetBool, SetBoolResponse
+from sub8_msgs.srv import VisionRequest, VisionRequestResponse
+from sub8_vision_tools import MultiObservation
 from visualization_msgs.msg import Marker
-
 
 """
 Perception component of the Torpedo Board Challenge. Utilizes code from

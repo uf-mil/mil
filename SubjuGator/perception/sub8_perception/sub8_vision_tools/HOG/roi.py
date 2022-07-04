@@ -1,5 +1,6 @@
-import cv2
 import os
+
+import cv2
 
 # change this to the diretory that has all the training images in it
 base = os.path.dirname(os.path.abspath(__file__))

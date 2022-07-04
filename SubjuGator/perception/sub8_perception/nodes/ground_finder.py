@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-import rospy
-import numpy as np
-import tf
 import mil_ros_tools
+import numpy as np
+import rospy
+import tf
 from sensor_msgs.msg import PointCloud
-
 
 rospy.init_node("ground_finder")
 

@@ -1,24 +1,24 @@
 #!/usr/bin/env python
-'''Monte-Carlo controller verification
-'''
-import rospy
-import numpy as np
+"""Monte-Carlo controller verification
+"""
 import time
-import mil_ros_tools
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # noqa
 
 import geometry_msgs.msg as geometry_msgs
+import matplotlib.pyplot as plt
+import mil_ros_tools
 import nav_msgs.msg as nav_msgs
-from sub8_simulation.srv import SimSetPose
+import numpy as np
+import rospy
+from mpl_toolkits.mplot3d import Axes3D  # noqa
 from sub8_msgs.msg import Trajectory, Waypoint
+from sub8_simulation.srv import SimSetPose
 
 
 class VerifyController(object):
     _sampling_period = rospy.Duration(0.1)
 
     def __init__(self, num_runs=4, time_limit=10, do_plot=False):
-        '''Verify that a controller is...
+        """Verify that a controller is...
 
             Stable:
                 - after T_end seconds, the state remains with an n-ball of radius r
@@ -33,7 +33,7 @@ class VerifyController(object):
         Arguments:
             num_runs: How many runs to do
             time_limit: How much time to allow each run to last
-        '''
+        """
         self.last_sample = rospy.Time.now()
 
         self.do_plot = do_plot
@@ -49,18 +49,22 @@ class VerifyController(object):
 
         self.all_histories = []
         self.cur_state_history = []
-        self.odom_sub = rospy.Subscriber('/truth/odom', nav_msgs.Odometry, self.odom_cb, queue_size=1)
-        self.target_sub = rospy.Subscriber('/trajectory', Trajectory, self.traj_cb)
-        self.target_pub = rospy.Publisher('/trajectory', Trajectory, latch=True, queue_size=1)
+        self.odom_sub = rospy.Subscriber(
+            "/truth/odom", nav_msgs.Odometry, self.odom_cb, queue_size=1
+        )
+        self.target_sub = rospy.Subscriber("/trajectory", Trajectory, self.traj_cb)
+        self.target_pub = rospy.Publisher(
+            "/trajectory", Trajectory, latch=True, queue_size=1
+        )
         self.target_state = None
 
-        rospy.wait_for_service('sim/vehicle/set_pose', timeout=7.5)
-        self.set_pose = rospy.ServiceProxy('sim/vehicle/set_pose', SimSetPose)
+        rospy.wait_for_service("sim/vehicle/set_pose", timeout=7.5)
+        self.set_pose = rospy.ServiceProxy("sim/vehicle/set_pose", SimSetPose)
 
     def set_random_pose(self, center, scale):
-        '''Set a random position, and for now constant orientation
+        """Set a random position, and for now constant orientation
         TODO: Random orientation
-        '''
+        """
         pos = center + (np.random.random(3) * scale)
         self.set_pose(
             pose=geometry_msgs.Pose(
@@ -70,19 +74,21 @@ class VerifyController(object):
         )
 
     def set_target(self, pos, orientation=(0.0, 0.0, 0.0, 1.0)):
-        '''TODO:
-            Add linear/angular velocity
-            Publish a trajectory
-        '''
+        """TODO:
+        Add linear/angular velocity
+        Publish a trajectory
+        """
         # self.target = make_pose_stamped(position=pos, orientation=orientation)
         target_msg = Trajectory(
-            header=mil_ros_tools.make_header(frame='/body'),
-            trajectory=[Waypoint(
-                pose=geometry_msgs.Pose(
-                    position=geometry_msgs.Vector3(*pos),
-                    orientation=geometry_msgs.Quaternion(*orientation)
+            header=mil_ros_tools.make_header(frame="/body"),
+            trajectory=[
+                Waypoint(
+                    pose=geometry_msgs.Pose(
+                        position=geometry_msgs.Vector3(*pos),
+                        orientation=geometry_msgs.Quaternion(*orientation),
+                    )
                 )
-            )]
+            ],
         )
         self.target_pub.publish(target_msg)
 
@@ -105,22 +111,18 @@ class VerifyController(object):
         # state_section = self.cur_state_history[::-1][:self.T]
 
     def plot(self, close_after=None):
-        '''TODO:
-            Visualize attitude (reduced is fine)'''
+        """TODO:
+        Visualize attitude (reduced is fine)"""
         fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
+        ax = fig.add_subplot(111, projection="3d")
 
         for state_history in self.all_histories:
             # I am not using quivers be
-            ax.plot(
-                state_history[:, 0],
-                state_history[:, 1],
-                state_history[:, 2]
-            )
+            ax.plot(state_history[:, 0], state_history[:, 1], state_history[:, 2])
 
-        ax.set_xlim(-11., 11.)
-        ax.set_ylim(-11., 11.)
-        ax.set_zlim(-11., 0.)
+        ax.set_xlim(-11.0, 11.0)
+        ax.set_ylim(-11.0, 11.0)
+        ax.set_zlim(-11.0, 0.0)
 
         # Don't close with timeout if you don't want to close
         if close_after is not None:
@@ -131,7 +133,7 @@ class VerifyController(object):
         plt.show()
 
     def analyze_stability(self):
-        '''
+        """
         To provide more information that simple steady-state error, this provides some quantitative
             information on the error bounds of the controller post convergence
 
@@ -154,7 +156,7 @@ class VerifyController(object):
         TODO:
             - Analyze other behaviors
             - Provide more useful feedback beyond the size of the convergence ball
-        '''
+        """
         envelopes = []
         for state_history in self.all_histories:
             errors = state_history[:, :3] - self.target_state[:3]
@@ -184,7 +186,7 @@ class VerifyController(object):
                     position=geometry_msgs.Vector3(
                         (np.random.random() * 15) - 7.5,
                         (np.random.random() * 15) - 7.5,
-                        (np.random.random() * 7) - 9  # Z must be <= 2!
+                        (np.random.random() * 7) - 9,  # Z must be <= 2!
                     )
                 )
             )

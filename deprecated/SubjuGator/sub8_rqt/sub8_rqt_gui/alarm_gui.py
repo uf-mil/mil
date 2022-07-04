@@ -1,17 +1,16 @@
-import os
-import rospy
-import rospkg
-
-import functools
 import datetime
+import functools
 import json
-from sub8_msgs.msg import Alarm
-from qt_gui.plugin import Plugin
-from python_qt_binding import loadUi
-from python_qt_binding.QtGui import QWidget
-import python_qt_binding.QtGui as qtg
-from python_qt_binding.QtCore import Qt
+import os
 
+import python_qt_binding.QtGui as qtg
+import rospkg
+import rospy
+from python_qt_binding import loadUi
+from python_qt_binding.QtCore import Qt
+from python_qt_binding.QtGui import QWidget
+from qt_gui.plugin import Plugin
+from sub8_msgs.msg import Alarm
 
 '''TODO:
 - Store everything in a dictionary and write new rows

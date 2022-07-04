@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-import rospy
-from ros_alarms import HandlerBase, Alarm
-from actionlib import SimpleActionClient, TerminalState
-from mil_msgs.msg import BagOnlineAction, BagOnlineGoal
 import os
+
+import rospy
+from actionlib import SimpleActionClient, TerminalState
 from mil_missions_core import MissionClient
+from mil_msgs.msg import BagOnlineAction, BagOnlineGoal
+from ros_alarms import Alarm, HandlerBase
 
 
 class Kill(HandlerBase):

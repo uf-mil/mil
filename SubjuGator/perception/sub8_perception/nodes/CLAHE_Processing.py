@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import print_function
+
 import sys
-import tf
+
 import cv2
 import rospy
-from image_geometry import PinholeCameraModel
-from mil_ros_tools import Image_Subscriber, Image_Publisher
+import tf
 from cv_bridge import CvBridge
+from image_geometry import PinholeCameraModel
+from mil_ros_tools import Image_Publisher, Image_Subscriber
 
 """
 CLAHE utiltiy script that takes in images and returns a CLAHE balanced image.

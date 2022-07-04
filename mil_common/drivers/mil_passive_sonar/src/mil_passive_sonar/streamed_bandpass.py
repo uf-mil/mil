@@ -1,7 +1,8 @@
+from typing import Optional
+
 import numpy as np
 import scipy
 from scipy.signal import fftconvolve
-from typing import Optional
 
 
 class StreamedBandpass:

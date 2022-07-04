@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import division
-import numpy as np
-import cv2
 
-from typing import Tuple, List, Optional, Union
+from typing import List, Optional, Tuple, Union
+
+import cv2
+import numpy as np
 
 __author__ = "Kevin Allen"
 

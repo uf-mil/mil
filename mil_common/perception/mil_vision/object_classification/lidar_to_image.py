@@ -1,17 +1,18 @@
-import txros
-from twisted.internet import defer
-from txros import util, tf
-from navigator_tools import CvDebug
 import sys
 from collections import deque
-from cv_bridge import CvBridge
-from nav_msgs.msg import Odometry
-from sensor_msgs.msg import Image, CameraInfo
-import genpy
+
 import cv2
-from mil_ros_tools import odometry_to_numpy
-from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+import genpy
 import numpy as np
+import txros
+from cv_bridge import CvBridge
+from mil_ros_tools import odometry_to_numpy
+from nav_msgs.msg import Odometry
+from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+from navigator_tools import CvDebug
+from sensor_msgs.msg import CameraInfo, Image
+from twisted.internet import defer
+from txros import tf, util
 
 ___author___ = "Tess Bianchi"
 

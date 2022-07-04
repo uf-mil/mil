@@ -3,25 +3,25 @@ import cv2
 import numpy as np
 import rospy
 import tf
-from tf.transformations import quaternion_from_euler
+from geometry_msgs.msg import Point, PointStamped, Vector3Stamped
+from image_geometry import PinholeCameraModel
+from mil_msgs.srv import SetGeometry
+from mil_ros_tools import (
+    Image_Publisher,
+    Image_Subscriber,
+    numpy_to_point,
+    numpy_to_quaternion,
+)
+from mil_vision_tools import RectFinder
 from std_srvs.srv import SetBool, SetBoolResponse
 from sub8_msgs.srv import (
-    VisionRequestResponse,
     VisionRequest,
     VisionRequest2D,
     VisionRequest2DResponse,
+    VisionRequestResponse,
 )
-from geometry_msgs.msg import PointStamped, Point, Vector3Stamped
-from mil_ros_tools import (
-    numpy_to_point,
-    Image_Publisher,
-    Image_Subscriber,
-    numpy_to_quaternion,
-)
-from image_geometry import PinholeCameraModel
+from tf.transformations import quaternion_from_euler
 from visualization_msgs.msg import Marker
-from mil_msgs.srv import SetGeometry
-from mil_vision_tools import RectFinder
 
 __author__ = "Kevin Allen"
 
@@ -288,9 +288,7 @@ class OrangeRectangleFinder:
             map_vec3 = self.tf_listener.transformVector3("map", vec3)
         except tf.Exception as err:
             rospy.logwarn(
-                "Could not transform {} to map error={}".format(
-                    self.cam.tfFrame(), err
-                )
+                "Could not transform {} to map error={}".format(self.cam.tfFrame(), err)
             )
             return False
         # Try to ensure vector always points the same way, so kf is not thrown off at some angles

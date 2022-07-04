@@ -20,7 +20,7 @@ class ScanTheCodeModelTracker:
             self.model = ScanTheCodeModel(points, frame)
 
         mission_status, colors = self.model.check_for_colors(debug)
-        if(mission_status):
+        if mission_status:
             self.colors = colors
             return True
 

@@ -1,10 +1,13 @@
+import time
+from typing import Any, Optional
+
 import rospy
 import rostest
-import time
-from typing import Optional, Any
 
 
-def wait_for_param(param_name: str, timeout: Optional[float] = None, poll_rate: float = 0.1) -> Optional[Any]:
+def wait_for_param(
+    param_name: str, timeout: Optional[float] = None, poll_rate: float = 0.1
+) -> Optional[Any]:
     """
     Blocking wait for a parameter named to exist. Polls at the frequency of poll_rate.
     Once the parameter exists, return get and return it.
@@ -18,7 +21,7 @@ def wait_for_param(param_name: str, timeout: Optional[float] = None, poll_rate: 
         poll_rate (float): The Hz rate to poll at.
 
     Returns:
-        Optional[Any]: If found, the value of the parameter. Returns ``None`` if 
+        Optional[Any]: If found, the value of the parameter. Returns ``None`` if
             the parameter never came to exist.
     """
     start_time = time.time()

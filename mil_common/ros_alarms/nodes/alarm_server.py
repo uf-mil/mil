@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
-import rospy
-from ros_alarms import HandlerBase
+import inspect
+from typing import Union
 
+import rospy
+from ros_alarms import Alarm, HandlerBase
 from ros_alarms.msg import Alarm as AlarmMsg
 from ros_alarms.srv import (
     AlarmGet,
-    AlarmSet,
-    AlarmSetRequest,
     AlarmGetRequest,
     AlarmGetResponse,
+    AlarmSet,
+    AlarmSetRequest,
 )
-from ros_alarms import Alarm
-
-import inspect
-from typing import Union
 
 
 class AlarmServer:

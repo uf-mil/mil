@@ -1,9 +1,8 @@
 # Utilities for object detector.
 import cv2
-import rospkg
 import numpy as np
+import rospkg
 import tensorflow as tf
-
 from utils import label_map_util
 
 rospack = rospkg.RosPack()

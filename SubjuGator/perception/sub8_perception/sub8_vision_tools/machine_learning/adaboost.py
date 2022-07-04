@@ -1,11 +1,12 @@
-import cv2
-import numpy as np
-import pickle
 import argparse
+import pickle
 import sys
+
+import cv2
 import features
-from sklearn.preprocessing import normalize
+import numpy as np
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.preprocessing import normalize
 from tqdm import tqdm
 
 """

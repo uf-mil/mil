@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
-import rospy
 import numpy as np
+import rospy
 from geometry_msgs.msg import WrenchStamped
+from navigator_thrust_mapper import ThrusterMap
 from roboteq_msgs.msg import Command
-from std_msgs.msg import Float32
 from ros_alarms import AlarmListener
 from ros_alarms.msg import Alarm
-from navigator_thrust_mapper import ThrusterMap
 from sensor_msgs.msg import JointState
+from std_msgs.msg import Float32
+
 
 class ThrusterMapperNode(object):
     """
     Node to publish individual thruster commands from the body frame wrench.
     See thruster_map.py for more details on this process as this is simply the ROS wrapper.
     """
+
     def __init__(self):
-        self.is_vrx = rospy.get_param("/is_vrx", default = False)
+        self.is_vrx = rospy.get_param("/is_vrx", default=False)
 
         # Used for mapping wrench to individual thrusts
         urdf = rospy.get_param("/robot_description", default=None)
@@ -110,6 +112,7 @@ class ThrusterMapperNode(object):
         else:
             for i in range(len(self.publishers)):
                 self.publishers[i].publish(commands[i].setpoint)
+
 
 if __name__ == "__main__":
     rospy.init_node("thrust_mapper")

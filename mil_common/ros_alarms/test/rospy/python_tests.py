@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-import rospy
-import rostest
-import unittest
 import random
 import sys
+import unittest
 
+import rospy
+import rostest
 from ros_alarms import AlarmBroadcaster, AlarmListener
 
 PKG = "ros_alarms"

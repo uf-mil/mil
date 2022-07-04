@@ -22,7 +22,6 @@ from mil_poi import TxPOIClient
 from nav_msgs.msg import Odometry
 from navigator_path_planner.msg import MoveAction, MoveGoal
 from navigator_tools import MissingPerceptionObject
-from .pose_editor import PoseEditor2
 from roboteq_msgs.msg import Command
 from ros_alarms import TxAlarmListener
 from std_msgs.msg import Bool
@@ -36,6 +35,8 @@ from std_srvs.srv import (
 from topic_tools.srv import MuxSelect, MuxSelectRequest
 from twisted.internet import defer
 from txros import NodeHandle, ServiceClient, action, txros_tf, util
+
+from .pose_editor import PoseEditor2
 
 
 class MissionResult:
@@ -841,6 +842,7 @@ class Searcher:
 
         if spotings >= spotings_req:
             self.object_found = True
+
 
 @util.cancellableInlineCallbacks
 def main():

@@ -1,15 +1,16 @@
 #!/usr/bin/env python
-import rospy
-import rospkg
-import numpy as np
-from numpy import linalg as npl
-import tf
-from navigator_msgs.srv import FindPinger, SetFrequency, SetFrequencyResponse
-from hydrophones.msg import ProcessedPing
-from geometry_msgs.msg import Point, PoseStamped, Pose
-from visualization_msgs.msg import Marker
-from std_srvs.srv import SetBool, SetBoolResponse
 import navigator_tools
+import numpy as np
+import rospkg
+import rospy
+import tf
+from geometry_msgs.msg import Point, Pose, PoseStamped
+from hydrophones.msg import ProcessedPing
+from navigator_msgs.srv import FindPinger, SetFrequency, SetFrequencyResponse
+from numpy import linalg as npl
+from std_srvs.srv import SetBool, SetBoolResponse
+from visualization_msgs.msg import Marker
+
 
 class PingerFinder(object):
     """

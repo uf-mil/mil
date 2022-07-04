@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-import rospy
-import datetime
 import csv
-from geometry_msgs.msg import PointStamped
+import datetime
 from typing import Dict, Union
+
+import rospy
+from geometry_msgs.msg import PointStamped
 
 
 class ClickedPointRecorder:
@@ -12,6 +13,7 @@ class ClickedPointRecorder:
     Listens to RVIZ clicked points, storing points in a CSV file. Support for running
     through `rosrun`.
     """
+
     def __init__(self):
         self.points = []
         self.point_sub = rospy.Subscriber("/clicked_point", PointStamped, self.point_cb)

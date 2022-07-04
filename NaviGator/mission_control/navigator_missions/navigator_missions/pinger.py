@@ -5,7 +5,6 @@ import mil_tools
 import numpy as np
 import txros
 from mil_misc_tools.text_effects import fprint
-from .navigator import Navigator
 from navigator_msgs.srv import (
     FindPinger,
     FindPingerRequest,
@@ -14,6 +13,8 @@ from navigator_msgs.srv import (
 )
 from std_srvs.srv import SetBool, SetBoolRequest
 from visualization_msgs.msg import Marker, MarkerArray
+
+from .navigator import Navigator
 
 ___author___ = "Kevin Allen"
 

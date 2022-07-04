@@ -2,7 +2,7 @@
 import rospy
 from actionlib import TerminalState
 from mil_missions_core import MissionClient
-from ros_alarms import HandlerBase, AlarmBroadcaster
+from ros_alarms import AlarmBroadcaster, HandlerBase
 
 
 class StationHold(HandlerBase):

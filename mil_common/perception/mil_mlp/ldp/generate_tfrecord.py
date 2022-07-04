@@ -7,15 +7,14 @@ Usage
   # Create test data:
   python generate_tfrecord.py --csv_input=test/test_labels.csv  --image_dir=test --output_path=test.record
 """
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
-import os
 import io
+import os
+from collections import namedtuple
+
 import tensorflow as tf
 from PIL import Image
-from collections import namedtuple
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -27,7 +26,7 @@ def create_dict():
         txt = f.read()
     labels = []
     ids = []
-    full_split = [s.strip().split(': ') for s in txt.splitlines()]
+    full_split = [s.strip().split(": ") for s in txt.splitlines()]
     full_split = full_split[1:]
     for i in full_split:
         if len(i) < 2:
@@ -41,7 +40,9 @@ def create_dict():
                 labels.append(i[1].strip("'"))
         else:
             print(
-                "Error, incorrect key located in labelmap. Should be only id or name. Instead found: ", i[1])
+                "Error, incorrect key located in labelmap. Should be only id or name. Instead found: ",
+                i[1],
+            )
     dictionary = dict(zip(labels, ids))
 
 
@@ -50,20 +51,23 @@ def class_text_to_int(row_label):
 
 
 def split(df, group):
-    data = namedtuple('data', ['filename', 'object'])
+    data = namedtuple("data", ["filename", "object"])
     gb = df.groupby(group)
-    return [data(filename, gb.get_group(x)) for filename, x in zip(gb.groups.keys(), gb.groups)]
+    return [
+        data(filename, gb.get_group(x))
+        for filename, x in zip(gb.groups.keys(), gb.groups)
+    ]
 
 
 def create_tf_example(group, path):
-    with tf.gfile.GFile(os.path.join(path, '{}'.format(group.filename)), 'rb') as fid:
+    with tf.gfile.GFile(os.path.join(path, "{}".format(group.filename)), "rb") as fid:
         encoded_jpg = fid.read()
     encoded_jpg_io = io.BytesIO(encoded_jpg)
     image = Image.open(encoded_jpg_io)
     width, height = image.size
 
-    filename = group.filename.encode('utf8')
-    image_format = b'jpg'
+    filename = group.filename.encode("utf8")
+    image_format = b"jpg"
     xmins = []
     xmaxs = []
     ymins = []
@@ -72,36 +76,41 @@ def create_tf_example(group, path):
     classes = []
 
     for index, row in group.object.iterrows():
-        xmins.append(row['xmin'] / width)
-        xmaxs.append(row['xmax'] / width)
-        ymins.append(row['ymin'] / height)
-        ymaxs.append(row['ymax'] / height)
-        classes_text.append(row['class'].encode('utf8'))
-        new_class = class_text_to_int(row['class'])
+        xmins.append(row["xmin"] / width)
+        xmaxs.append(row["xmax"] / width)
+        ymins.append(row["ymin"] / height)
+        ymaxs.append(row["ymax"] / height)
+        classes_text.append(row["class"].encode("utf8"))
+        new_class = class_text_to_int(row["class"])
         if new_class is None:
             continue
         classes.append(new_class)
-    tf_example = tf.train.Example(features=tf.train.Features(feature={
-        'image/height': int64_feature(height),
-        'image/width': int64_feature(width),
-        'image/filename': bytes_feature(filename),
-        'image/source_id': bytes_feature(filename),
-        'image/encoded': bytes_feature(encoded_jpg),
-        'image/format': bytes_feature(image_format),
-        'image/object/bbox/xmin': float_list_feature(xmins),
-        'image/object/bbox/xmax': float_list_feature(xmaxs),
-        'image/object/bbox/ymin': float_list_feature(ymins),
-        'image/object/bbox/ymax': float_list_feature(ymaxs),
-        'image/object/class/text': bytes_list_feature(classes_text),
-        'image/object/class/label': int64_list_feature(classes),
-    }))
+    tf_example = tf.train.Example(
+        features=tf.train.Features(
+            feature={
+                "image/height": int64_feature(height),
+                "image/width": int64_feature(width),
+                "image/filename": bytes_feature(filename),
+                "image/source_id": bytes_feature(filename),
+                "image/encoded": bytes_feature(encoded_jpg),
+                "image/format": bytes_feature(image_format),
+                "image/object/bbox/xmin": float_list_feature(xmins),
+                "image/object/bbox/xmax": float_list_feature(xmaxs),
+                "image/object/bbox/ymin": float_list_feature(ymins),
+                "image/object/bbox/ymax": float_list_feature(ymaxs),
+                "image/object/class/text": bytes_list_feature(classes_text),
+                "image/object/class/label": int64_list_feature(classes),
+            }
+        )
+    )
     return tf_example
 
-'''
+
+"""
 Utility Functions for processing datasets into tf_records.
 These were copied from utils/dataset_util.py provided in
 the Tensorflow Object Detection Repo to cut down on file usages.
-'''
+"""
 
 
 def int64_feature(value):
@@ -143,7 +152,7 @@ def read_examples_list(path):
     """
     with tf.gfile.GFile(path) as fid:
         lines = fid.readlines()
-    return [line.strip().split(' ')[0] for line in lines]
+    return [line.strip().split(" ")[0] for line in lines]
 
 
 def recursive_parse_xml_to_dict(xml):
@@ -163,7 +172,7 @@ def recursive_parse_xml_to_dict(xml):
     result = {}
     for child in xml:
         child_result = recursive_parse_xml_to_dict(child)
-        if child.tag != 'object':
+        if child.tag != "object":
             result[child.tag] = child_result[child.tag]
         else:
             if child.tag not in result:
