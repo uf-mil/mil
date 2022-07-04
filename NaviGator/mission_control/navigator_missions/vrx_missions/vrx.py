@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-from __future__ import division
-
+#!/usr/bin/env python3
 import math
 
 import numpy as np
@@ -22,7 +20,7 @@ from robot_localization.srv import FromLL, FromLLRequest, ToLL, ToLLRequest
 from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import Empty, Float64, Float64MultiArray, Int32, String
 from twisted.internet import defer
-from txros import NodeHandle, action, tf, util
+from txros import NodeHandle, action, txros_tf, util
 from vrx_gazebo.msg import Task
 from vrx_gazebo.srv import ColorSequence
 
@@ -73,7 +71,7 @@ class Vrx(Navigator):
         Vrx.darknet_objects = Vrx.nh.subscribe(
             "/darknet_ros/bounding_boxes", BoundingBoxes
         )
-        Vrx.tf_listener = tf.TransformListener(Vrx.nh)
+        Vrx.tf_listener = txros_tf.TransformListener(Vrx.nh)
         Vrx.database_response = Vrx.nh.get_service_client(
             "/database/requests", ObjectDBQuery
         )
@@ -149,7 +147,7 @@ class Vrx(Navigator):
     def point_at_goal(self, goal_pos):
         vect = [goal_pos[0] - self.pose[0][0], goal_pos[1] - self.pose[0][1]]
         theta = math.atan2(vect[1], vect[0])
-        orientation_fix = tf.transformations.quaternion_from_euler(0, 0, theta)
+        orientation_fix = txros_tf.transformations.quaternion_from_euler(0, 0, theta)
         yield self.move.set_orientation(orientation_fix).go(blind=True)
 
     @txros.util.cancellableInlineCallbacks

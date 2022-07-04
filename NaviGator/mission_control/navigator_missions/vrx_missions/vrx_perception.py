@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-from __future__ import division
-
+#!/usr/bin/env python3
 import numpy as np
 import txros
 from dynamic_reconfigure.msg import BoolParameter, DoubleParameter, IntParameter
