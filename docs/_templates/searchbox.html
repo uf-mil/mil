@@ -1,0 +1,8 @@
+<form id="search-form" role="search" class="search" action="{{ pathto('search') }}" method="get">
+    <div class="search-wrapper">
+        <input type="search" name="q" placeholder="{{ _('Search documentation') }}" />
+        <button type="submit" onmousedown="searchBarClick(event, document.getElementById('search-form'));">
+            <span class="material-icons">search</span>
+        </button>
+    </div>
+</form>
