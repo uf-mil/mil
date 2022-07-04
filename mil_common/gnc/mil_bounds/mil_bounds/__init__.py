@@ -1,1 +1,1 @@
-from bounds import BoundsClient, BoundsServer
+from .bounds import BoundsClient, BoundsServer
