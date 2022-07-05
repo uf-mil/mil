@@ -6,9 +6,9 @@ github.com/uf-mil
 """
 from typing import List, Optional
 
+import cv2
 import rosbag
 import tqdm
-import cv2
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import copy
 import threading
 
@@ -15,7 +15,7 @@ from std_msgs.msg import Header, String
 lock = threading.Lock()
 
 
-class KillInterface(object):
+class KillInterface:
     """
     Driver to interface with NaviGator's kill handeling board, which disconnects power to actuators
     if any of 4 emergency buttons is pressed, a software kill command is sent, or the network hearbeat

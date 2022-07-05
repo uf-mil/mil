@@ -13,8 +13,9 @@ import numpy as np
 import rospy
 from cv_bridge import CvBridge, CvBridgeError
 from image_geometry import PinholeCameraModel
-from .init_helpers import wait_for_param
 from sensor_msgs.msg import CameraInfo, Image
+
+from .init_helpers import wait_for_param
 
 
 def get_parameter_range(parameter_root: str):

@@ -3,9 +3,9 @@ import importlib
 from typing import Any, Dict, Generator, Optional, Tuple
 
 import rospy
-from mil_usb_to_can.board import (
+from mil_usb_to_can.board import (  # relative import causes import error with rosrun - GH-731
     USBtoCANBoard,
-)  # relative import causes import error with rosrun - GH-731
+)
 from mil_usb_to_can.utils import USB2CANException
 from serial import SerialException
 

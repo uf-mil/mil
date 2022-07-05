@@ -1,8 +1,9 @@
+from navigator_missions import Navigator
+from navigator_missions.move import Move
+
 from .dock import Dock
 from .dock_driver import DockDriver
 from .gymkhana import Gymkhana
-from navigator_missions import Navigator
-from navigator_missions.move import Move
 from .scan_and_dock import ScanAndDock
 from .scan_the_code import ScanTheCode
 from .vrx import Vrx

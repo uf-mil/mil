@@ -12,11 +12,8 @@ from typing import List
 import sphinx.errors
 from docutils import nodes
 from docutils.nodes import Node
-from docutils.parsers.rst.directives import (
-    flag,
-    unchanged,  # type: ignore
-    unchanged_required,
-)
+from docutils.parsers.rst.directives import unchanged  # type: ignore
+from docutils.parsers.rst.directives import flag, unchanged_required
 from sphinx import addnodes
 from sphinx.locale import _
 from sphinx.util.docutils import SphinxDirective
