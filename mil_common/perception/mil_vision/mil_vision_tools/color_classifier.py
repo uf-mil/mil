@@ -7,7 +7,8 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 import pandas
-from mil_vision_tools import LabelBoxParser, contour_mask
+from .cv_tools import contour_mask
+from .labelbox_parser import LabelBoxParser
 from sklearn.naive_bayes import GaussianNB
 
 __author__ = "Kevin Allen"

@@ -1,4 +1,6 @@
-"""Shows images for debugging purposes."""
+"""
+Shows images for debugging purposes.
+"""
 import sys
 from typing import Optional
 
@@ -19,7 +21,8 @@ class CvDebug:
     Attributes:
         width (int): The width of the debug image
         height (int): The height of the debug image
-        nh (Optional[NodeHandle]): The node handle for the image stream. If ``None``, then images are displayed through the OpenCV GUI.
+        nh (Optional[NodeHandle]): The node handle for the image stream. If ``None``,
+            then images are displayed through the OpenCV GUI.
         total (int): ???
         hor_num (float): ???
         max_width (float): ???

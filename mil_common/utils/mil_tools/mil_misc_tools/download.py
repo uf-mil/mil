@@ -1,9 +1,3 @@
-import io as StringIO
-import os
-import urllib.request
-import zipfile
-from typing import Optional
-
 """
 This file contains utilities for downloading a file from the internet
 We're using this because I don't want to track 20MB files in Git.
@@ -17,6 +11,12 @@ We're using this because I don't want to track 20MB files in Git.
 [3] Download a file via http
     http://stackoverflow.com/questions/22676
 """
+import io as StringIO
+import os
+import urllib.request
+import zipfile
+from typing import Optional
+
 
 
 def download_and_unzip(url: str, output_dir: str):
@@ -33,7 +33,7 @@ def download_and_unzip(url: str, output_dir: str):
     try:
         html = download(url)
     except:
-        raise IOError("Could not load file at {}".format(url))
+        raise IOError(f"Could not load file at {url}")
 
     fake_file = StringIO.StringIO(html)
 

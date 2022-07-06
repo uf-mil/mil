@@ -1,6 +1,11 @@
 Serial
 ------
 
+Utility Functions
+^^^^^^^^^^^^^^^^^
+
+.. autofunction:: mil_tools.hexify
+
 NoopSerial
 ^^^^^^^^^^
 

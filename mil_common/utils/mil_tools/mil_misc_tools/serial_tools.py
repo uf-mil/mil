@@ -1,18 +1,30 @@
 #!/usr/bin/env python3
+import binascii
+
 import serial
 
 
-def hexify(buff):
+def hexify(buff: bytes) -> bytes:
     """
-    Print a string displaying the bytes in hex format
-    example: hexify(my_packet) -> c0:14:09:48:45:4c:4c:4f:c1
+    Display a buffer of bytes in hex format. This should take a bytes object, and
+    will return a bytes string in hex format.
+
+    .. code-block:: python3
+
+        >>> p = CommandPacket.create_send_packet(data, can_id = can_id)
+        >>> p_bytes = p.to_bytes()
+        >>> print('Sending ', hexify(p_bytes))
+        Sending c0:14:09:48:45:4c:4c:4f:c1
+
     """
-    return ":".join(b.encode("hex") for b in buff)
+    hex_form = binascii.hexlify(buff)
+    return b":".join([hex_form[i:i+2] for i in range(0, len(hex_form), 2)])
 
 
 class NoopSerial(serial.Serial):
     """
     Inherits from :class:`serial.Serial`, doing nothing for each function.
+
     Allows super classes to implement custom behavior for simulating
     serial devices.
     """
@@ -51,7 +63,7 @@ class NoopSerial(serial.Serial):
     def flushInput(self):
         pass
 
-    def flushOuput(self):
+    def flushOutput(self):
         pass
 
     def reset_input_buffer(self):
@@ -66,23 +78,28 @@ class NoopSerial(serial.Serial):
 
 class SimulatedSerial(NoopSerial):
     """
-    Simulates a serial device, storing a buffer to be read in a program like a normal OS serial device.
+    Simulates a serial device, storing a buffer to be read in a program like a
+    normal OS serial device.
 
-    Intended to be extended by other classes, which should override the write function to recieve writes to
+    Intended to be extended by other classes, which should override the write function
+    to recieve writes to
     the simulated device. These classes simply append to the buffer string which will be returned
     on reads to the simulated device.
 
-    Note: :class:`NoopSerial` and :class:`SimulatedSerial` are generic and are candidates for mil_common.
+    Note: :class:`NoopSerial` and :class:`SimulatedSerial` are generic and are
+    candidates for mil_common.
 
-    Args:
+    Attributes:
         buffer (bytes): A buffer of bytes waiting to be read from the device.
     """
 
-    def __init__(self, *args, **kwargs):
+    buffer: bytes
+
+    def __init__(self):
         self.buffer = b""
 
     @property
-    def in_waiting(self):
+    def in_waiting(self) -> int:
         """
         The number of bytes waiting to be read. This does not modify the buffer in
         any way; the buffer is only inspected.
