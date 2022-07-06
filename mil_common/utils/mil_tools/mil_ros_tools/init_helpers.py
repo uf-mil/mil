@@ -1,3 +1,7 @@
+"""
+This module provides functions which help to ensure that resources are available
+when needed.
+"""
 import time
 from typing import Any, Optional
 
@@ -22,7 +26,7 @@ def wait_for_param(
 
     Returns:
         Optional[Any]: If found, the value of the parameter. Returns ``None`` if
-            the parameter never came to exist.
+        the parameter never came to exist.
     """
     start_time = time.time()
     rate = rospy.Rate(poll_rate)
@@ -51,6 +55,11 @@ def wait_for_subscriber(node_name: str, topic: str, timeout: float = 5.0) -> boo
             a local node name, then the name is resolved to be the global name.
         topic (str): The topic to check whether the node is subscribed to. If a
             local topic name, then the name is resolved to be the global name.
+        timeout (float): The amount of time to wait (in seconds) to attempt to
+            estalish a connection.
+
+    Returns:
+        bool: Whether the node with the given name has subscribed to the given topic.
     """
     end_time = time.time() + timeout
 
@@ -73,15 +82,19 @@ def wait_for_subscriber(node_name: str, topic: str, timeout: float = 5.0) -> boo
 
 
 def wait_for_service(
-    service, warn_time=1.0, warn_msg="Waiting for service..", timeout=None
-):
+    service,
+    warn_time: float = 1.0,
+    warn_msg: str = "Waiting for service..",
+    timeout: Optional[float] = None,
+) -> None:
     """
     A fancy extension of wait for service that will warn with a message if it is taking a while.
 
-    @param warn_time: float in seconds, how long to wait before logging warn_msg
-    @param warn_msg: msg logged with rospy.logwarn if warn_time passes without service connected
-    @param timeout: overall timeout. If None, does nothing. If a float, will raise exception
-                    if many TOTAL seconds has passed without connecting
+    Args:
+        warn_time (float): float in seconds, how long to wait before logging warn_msg
+        warn_msg (str): msg logged with rospy.logwarn if warn_time passes without service connected
+        timeout (Optional[float]): overall timeout. If None, does nothing. If a float,
+            will raise exception if many TOTAL seconds has passed without connecting.
     """
     try:
         service.wait_for_service(warn_time)

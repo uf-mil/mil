@@ -18,7 +18,7 @@ by MIL. These subsystems relate to a variety of processes.
     msghandlers
     txros
     rviz
-    threading
+    resources
     rc
     alarms
     pathplanning

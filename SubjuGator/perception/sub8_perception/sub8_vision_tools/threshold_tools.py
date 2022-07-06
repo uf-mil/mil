@@ -1,7 +1,8 @@
+from functools import lru_cache
+
 import cv2
 import numpy as np
 import rospy
-from mil_ros_tools.func_helpers import Cache
 
 
 def bgr_vec_to_hsv(vector):
@@ -11,7 +12,7 @@ def bgr_vec_to_hsv(vector):
     return np.squeeze(hsv)
 
 
-@Cache
+@lru_cache(maxsize=None)
 def get_threshold(parameter_basename, prefix="bgr"):
     possible_params = rospy.get_param_names()
     bounds = []

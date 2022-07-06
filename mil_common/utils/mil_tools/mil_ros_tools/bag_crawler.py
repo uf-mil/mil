@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """
 This file wis written by the team at UF MIL for the 2016 robosub competition.
-
-github.com/uf-mil
 """
 from typing import List, Optional
 
@@ -58,11 +56,11 @@ class BagCrawler:
         """
         num_seen = 0
         num_msgs = 0
-        bar = tqdm.tqdm(total=self.bag.get_message_count())
+        progress_bar = tqdm.tqdm(total=self.bag.get_message_count())
         if is_image:
             topic = self.image_topics[0]
         for msg_topic, msg, _ in self.bag.read_messages():
-            bar.update(num_msgs)
+            progress_bar.update(num_msgs)
             num_msgs += 1
             if msg_topic != topic:
                 continue
@@ -70,7 +68,7 @@ class BagCrawler:
                 break
             num_seen += 1
             yield msg
-        bar.close()
+        progress_bar.close()
 
     @property
     def image_topics(self, cam: str = "right") -> List[str]:

@@ -3,7 +3,7 @@
 Script to run all catkin tests in a specified directory. Useful in CI systems where you only need
 to test some of the packages
 
-ex usage:
+Example usage:
     rosrun mil_tools catkin_tests_directory.py src/NaviGator
 """
 

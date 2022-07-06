@@ -9,9 +9,13 @@ def create_labelbox_dataset_json(image_directory, url):
     Returns a JSON string which can be used to add a dataset to labelbox.
     The JSON will point to the images in a directory which is also present
     on a public web server.
-    @param image_directory: Directory containing 1 or more .png files, ex: /home/bob/my_dataset
-    @param url: The url of the same directory on a webserver, ex: https://ci.mil.ufl.edu/datasets/my_dataset
-    @return: A json string in the format needed to create a labelbox dataset
+
+    Args:
+        image_directory: Directory containing 1 or more .png files, ex: /home/bob/my_dataset
+        url: The url of the same directory on a webserver, ex: https://ci.mil.ufl.edu/datasets/my_dataset
+
+    Returns:
+        A json string in the format needed to create a labelbox dataset.
     """
     images = []
     for filename in os.listdir(image_directory):
