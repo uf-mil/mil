@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import argparse
+from typing import Optional
 
 import numpy as np
 import rospy
-from mil_tools import numpy_to_colorRGBA, numpy_to_point, rosmsg_to_numpy
+from mil_tools import numpy_to_point, rosmsg_to_numpy
 from sensor_msgs.msg import MagneticField
+from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker
 
 __author__ = "Kevin Allen"
@@ -12,21 +16,37 @@ __author__ = "Kevin Allen"
 
 class MagToMarker:
     """
-    Node to subscribe to a MagneticField topic and publish
-    a rviz marker with the same content. Used to get around
-    the fact that rviz cannot display MagneticField messages
-    @param mag_topic: topic of magneticfield to subscribe to
-    @param marker_topic: topic of marker to publish
-    @param length: length to scale vector to, if None, leave original scale
+    Node to subscribe to a MagneticField topic and publish a rviz marker with
+    the same content. Used to get around the fact that rviz cannot display
+    MagneticField messages.
     """
 
-    def __init__(self, mag_topic, marker_topic, length=1.0, color=[0, 0, 1, 1]):
+    color: ColorRGBA
+    length: float
+
+    def __init__(
+        self,
+        mag_topic: str,
+        marker_topic: str,
+        length: float = 1.0,
+        color: Optional[list[int]] = None,
+    ):
+        """
+        Args:
+            mag_topic (str): Topic of MagneticField to subscribe to.
+            marker_topic (str): Topic of marker to publish.
+            length (float): Length to scale vector to. Defaults to 1.0
+            color (Optional[list[int]]): The color of the marker. Defaults to
+                standard red.
+        """
+        if color is None:
+            color = [0, 0, 1, 1]
         self.length = length
         self.pub = rospy.Publisher(marker_topic, Marker, queue_size=1)
-        self.color = numpy_to_colorRGBA(color)
+        self.color = ColorRGBA(*color)
         rospy.Subscriber(mag_topic, MagneticField, self.publish)
 
-    def publish(self, vec):
+    def publish(self, vec: MagneticField):
         rospy.logdebug("mag received")
         marker = Marker()
         marker.header = vec.header
