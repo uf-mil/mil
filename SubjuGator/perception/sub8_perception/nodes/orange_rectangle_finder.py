@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import cv2
 import numpy as np
 import rospy
@@ -26,8 +26,8 @@ from visualization_msgs.msg import Marker
 __author__ = "Kevin Allen"
 
 
-# Ensure opencv3 is used, needed for KalmanFilter
-assert cv2.__version__[0] == "3"
+# Ensure opencv3 or opencv4 is used, needed for KalmanFilter
+assert cv2.__version__[0] in ["3", "4"]
 
 
 class OrangeRectangleFinder:
@@ -57,7 +57,7 @@ class OrangeRectangleFinder:
 
     # Coordinate axes for debugging image
     REFERENCE_POINTS = np.array(
-        [[0, 0, 0], [0.3, 0, 0], [0, 0.3, 0], [0, 0, 0.3]], dtype=np.float
+        [[0, 0, 0], [0.3, 0, 0], [0, 0.3, 0], [0, 0, 0.3]], dtype=float
     )
 
     def __init__(self):
