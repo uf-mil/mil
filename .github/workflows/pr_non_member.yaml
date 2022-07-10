@@ -1,4 +1,4 @@
-issue: Close PRs created by non members
+name: Close PRs created by non members
 
 on:
   pull_request:

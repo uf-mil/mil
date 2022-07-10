@@ -1,4 +1,4 @@
-issue: Check that new issues are opened by organization members
+name: Check that new issues are opened by organization members
 
 on:
   issues:

@@ -1,4 +1,4 @@
-issue: Check that issue comments are from MIL members
+name: Check that issue comments are from MIL members
 
 on:
   issue_comment:
