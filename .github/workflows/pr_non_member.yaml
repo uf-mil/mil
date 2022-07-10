@@ -1,0 +1,42 @@
+name: Close PRs created by non members
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  orgcheck:
+    name: Check that the PR author is in the uf-mil org
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment if user is not part of org
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.INVESTIGATOR_BOT_TOKEN}}
+          script: |
+            const closeableStates = ["none", "read"];
+            const creator = context.payload.pull_request.user.login;
+            const response = await github.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: creator
+            });
+            console.log(`${creator} permission: ${response.data.permission}`);
+            if (closeableStates.includes(response.data.permission)) {
+              github.issues.createComment({
+                issue_number: ${{ github.event.number }},
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `@${{ github.event.pull_request.user.login }}, hola from the [Machine Intelligence Lab at the University of Florida](https://mil.ufl.edu)!
+
+              Unfortunately, at this time, we are unable to accept issues and contributions to this repository from users who are not yet part of MIL. We may accept contributions in the future, and some of our other repositories and projects accept contributions. However, because much of our lab is dependent on this repository and because we use several in-house tools to ensure that new additions work properly, we are unable to easily accept the contributions from researchers outside of MIL.
+
+              _If you are a member of MIL, please contact a software leader to get access to the @uf-mil organization._`
+              });
+              github.pulls.update({
+                pull_number: ${{ github.event.number }},
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'closed'
+              });
+            }
