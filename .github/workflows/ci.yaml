@@ -1,0 +1,45 @@
+---
+name: MIL CI
+
+# yamllint disable-line rule:truthy
+on:
+  [push, pull_request, workflow_dispatch]
+
+env:
+  DEFAULT_PYTHON: 3.9
+
+# Cancels this run if a new one referring to the same object and same workflow
+# is requested
+concurrency:
+  group: >
+    ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  info:
+    name: Collect information about changes
+    runs-on: self-hosted
+    outputs:
+      docs_modified: ${{ steps.changes.output.docs }}
+      code_modified: ${{ steps.changes.output.code }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+      - name: Check which targets changed
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          # Currently, the only code files examined by CI are those that are
+          # listed below in the code filter. This means that the CI will focus
+          # solely on code changes found in these folders. If significant
+          # changes to code are made in other places, either those places
+          # should be moved, or the CI should be updated to account for those
+          # locations.
+          filters: |
+            docs:
+              - 'docs/**'
+            code:
+              - 'NaviGator/**'
+              - 'SubjuGator/**'
+              - 'mil_common/**'
+              - 'scripts/**'
