@@ -30,13 +30,10 @@ jobs:
                 issue_number: ${{ github.event.number }},
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                # yamllint disable-line rule:line-length
                 body: `@${{ github.event.pull_request.user.login }}, hola from the [Machine Intelligence Lab at the University of Florida](https://mil.ufl.edu)!
 
-              # yamllint disable-line rule:line-length
               Unfortunately, at this time, we are unable to accept issues and contributions to this repository from users who are not yet part of MIL. We may accept contributions in the future, and some of our other repositories and projects accept contributions. However, because much of our lab is dependent on this repository and because we use several in-house tools to ensure that new additions work properly, we are unable to easily accept the contributions from researchers outside of MIL.
 
-              # yamllint disable-line rule:line-length
               _If you are a member of MIL, please contact a software leader to get access to the @uf-mil organization._`
               });
               github.pulls.update({

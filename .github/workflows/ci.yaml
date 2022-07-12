@@ -6,7 +6,13 @@ on:
   [push, pull_request, workflow_dispatch]
 
 env:
-  DEFAULT_PYTHON: 3.9
+  # The version of caching we are using. This can be upgraded if we
+  # significantly change CI to the point where old caches become irrelevant.
+  CACHE_VERSION: 0
+  # Default Python version. Noetic defaults to 3.8.
+  DEFAULT_PYTHON: 3.8
+  # Location of the pre-commit cache. This is set by pre-commit, not us!
+  PRE_COMMIT_CACHE: ~/.cache/pre-commit
 
 # Cancels this run if a new one referring to the same object and same workflow
 # is requested
@@ -22,8 +28,10 @@ jobs:
     outputs:
       docs_modified: ${{ steps.changes.output.docs }}
       code_modified: ${{ steps.changes.output.code }}
+      pre-commit_cache_key: ${{ steps.pre-commit_cache_key.output.key }}
     steps:
-      - name: Remove old contents
+      - name: Remove old contents on Zobelisk
+        if: runner.name == 'zobelisk'
         run: >
           echo ${{ secrets.ZOBELISK_PASSWORD }} |
           sudo -S rm -rf ~/actions-runner/_work/mil/mil
@@ -31,6 +39,9 @@ jobs:
           mkdir ~/actions-runner/_work/mil/mil
       - name: Check out code from GitHub
         uses: actions/checkout@v3.0.2
+        with:
+          token: ${{ secrets.INVESTIGATOR_TOKEN }}
+          submodules: recursive
       - name: Check which targets changed
         uses: dorny/paths-filter@v2
         id: changes
@@ -49,3 +60,106 @@ jobs:
               - 'SubjuGator/**'
               - 'mil_common/**'
               - 'scripts/**'
+      # The cache key used for the pre-commit cache is meant to identify one
+      # cache of related pre-commit tooling. Changes to the Python version used
+      # or the pre-commit config file should cause the hash to change and a
+      # different cache to be used/generated.
+      - name: Generate pre-commit cache key
+        id: pre-commit_cache_key
+        run: >
+          echo "::set-output
+          name=key::${{ env.CACHE_VERSION }}-${{ env.DEFAULT_PYTHON }}-${{
+          hashFiles('.pre-commit-config.yaml') }}"
+
+  # Why do we use pre-commit for linting instead of just installing the
+  # individual linters? Good question!
+  # The pre-commit config file can be hashed in order to determine changes,
+  # the pre-commit config file makes it easy to install the same version of a
+  # tool across everyone's computer, and we know where pre-commit stores its
+  # cache, making it easy to speed up CI builds by using the same tool.
+  pre-commit:
+    name: Set up pre-commit
+    runs-on: self-hosted
+    needs:
+      - info
+    if: ${{ needs.info.outputs.code_modified }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        uses: actions/setup-python@v4.1.0
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          cache: "pip"
+      - name: Restore base Python virtual environment
+        id: cache-venv
+        uses: actions/cache@v3.0.4
+        with:
+          path: venv
+          key: >
+            ${{ runner.os }}-venv-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Create Python virtual environment
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          python -m venv venv
+          . venv/bin/activate
+          python --version
+          pip install "$(cat requirements_test.txt | grep pre-commit)"
+      - name: Restore pre-commit environment from cache
+        id: cache-precommit
+        uses: actions/cache@v3.0.4
+        with:
+          path: ${{ env.PRE_COMMIT_CACHE }}
+          key: >
+            ${{ runner.os
+            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Install pre-commit dependencies if no cache
+        if: steps.cache-precommit.outputs.cache-hit != 'true'
+        run: |
+          . venv/bin/activate
+          pre-commit install-hooks
+
+  isort:
+    name: Run isort
+    runs-on: self-hosted
+    needs:
+      - info
+      - pre-commit
+    if: ${{ needs.info.outputs.code_modified }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        uses: actions/setup-python@v4.1.0
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+      - name: Restore base Python virtual environment
+        id: cache-venv
+        uses: actions/cache@v3.0.4
+        with:
+          path: venv
+          key: >
+            ${{ runner.os
+            }}-venv-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Fail job if Python cache restore failed
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          echo "Failed to restore Python virtual environment from cache"
+          exit 1
+      - name: Restore pre-commit environment from cache
+        id: cache-precommit
+        uses: actions/cache@v3.0.4
+        with:
+          path: ${{ env.PRE_COMMIT_CACHE }}
+          key: >
+            ${{ runner.os
+            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Fail job if pre-commit cache restore failed
+        if: steps.cache-precommit.outputs.cache-hit != 'true'
+        run: |
+          echo "Failed to restore pre-commit environment from cache"
+          exit 1
+      - name: Run isort
+        run: |
+          . venv/bin/activate
+          pre-commit run isort --all-files --show-diff-on-failure
