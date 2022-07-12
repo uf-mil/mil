@@ -23,6 +23,12 @@ jobs:
       docs_modified: ${{ steps.changes.output.docs }}
       code_modified: ${{ steps.changes.output.code }}
     steps:
+      - name: Remove old contents
+        run: >
+          echo ${{ secrets.ZOBELISK_PASSWORD }} |
+          sudo -S rm -rf ~/actions-runner/_work/mil/mil
+
+          mkdir ~/actions-runner/_work/mil/mil
       - name: Check out code from GitHub
         uses: actions/checkout@v3.0.2
       - name: Check which targets changed
