@@ -38,9 +38,9 @@ CameraObserver::CameraObserver(ros::NodeHandle &nh, std::string &pcd_in_topic, s
 
 ColorObservation::VecImg CameraObserver::get_color_observations(const PCD<pcl::PointXYZ>::ConstPtr &pcd)
 {
-  using std::vector;
   using std::cout;
   using std::endl;
+  using std::vector;
   cout << __PRETTY_FUNCTION__ << endl;
 
   // Structre: Image pixels are lists of ColorObservations for the respective pixels in the image that have

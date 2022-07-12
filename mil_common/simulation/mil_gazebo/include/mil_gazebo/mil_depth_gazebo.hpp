@@ -4,6 +4,7 @@
 
 #include <mil_msgs/DepthStamped.h>
 #include <ros/ros.h>
+
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
 
@@ -38,6 +39,6 @@ private:
   std::string frame_name_;
   gazebo::event::ConnectionPtr update_connection_;
 };
-}
+}  // namespace mil_gazebo
 
 #endif

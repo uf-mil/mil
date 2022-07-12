@@ -4,6 +4,7 @@
  */
 #include <gtest/gtest.h>
 #include <std_msgs/String.h>
+
 #include <functional>
 #include <iostream>
 #include <ros_alarms/broadcaster.hpp>
@@ -12,9 +13,9 @@
 
 using namespace std;
 using ros_alarms::Alarm;
-using ros_alarms::AlarmProxy;
-using ros_alarms::AlarmListener;
 using ros_alarms::AlarmBroadcaster;
+using ros_alarms::AlarmListener;
+using ros_alarms::AlarmProxy;
 using ros_alarms::HeartbeatMonitor;
 
 TEST(HeartbeatMonitorTest, heartbeatMonitorTest)

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef USV_GAZEBO_PLUGINS_BUOYANCY_GAZEBO_PLUGIN_HH_
 #define USV_GAZEBO_PLUGINS_BUOYANCY_GAZEBO_PLUGIN_HH_
@@ -98,6 +98,6 @@ protected:
 protected:
   ignition::math::Vector3d gravity;
 };
-}
+}  // namespace gazebo
 
 #endif

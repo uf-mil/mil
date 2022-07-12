@@ -7,18 +7,23 @@ let mobileSearch;
 let sidebar;
 // let toTop;
 
-class Modal {
-  constructor(element) {
+class Modal
+{
+  constructor(element)
+  {
     this.element = element;
   }
 
-  close() {
+  close()
+  {
     activeModal = null;
     this.element.style.display = 'none'
   }
 
-  open() {
-    if (activeModal) {
+  open()
+  {
+    if (activeModal)
+    {
       activeModal.close();
     }
     activeModal = this;
@@ -26,28 +31,30 @@ class Modal {
   }
 }
 
-class SearchBar {
-
-  constructor() {
+class SearchBar
+{
+  constructor()
+  {
     this.box = document.querySelector('nav.mobile-only');
     this.bar = document.querySelector('nav.mobile-only input[type="search"]');
     this.openButton = document.getElementById('open-search');
     this.closeButton = document.getElementById('close-search');
   }
 
-  open() {
+  open()
+  {
     this.openButton.hidden = true;
     this.closeButton.hidden = false;
-    this.box.style.top = "100%";
+    this.box.style.top = '100%';
     this.bar.focus();
   }
 
-  close() {
+  close()
+  {
     this.openButton.hidden = false;
     this.closeButton.hidden = true;
-    this.box.style.top = "0";
+    this.box.style.top = '0';
   }
-
 }
 
 // function scrollToTop() {
@@ -61,14 +68,17 @@ document.addEventListener('DOMContentLoaded', () => {
   sections = document.querySelectorAll('section');
   hamburgerToggle = document.getElementById('hamburger-toggle');
 
-  if (hamburgerToggle) {
+  if (hamburgerToggle)
+  {
     hamburgerToggle.addEventListener('click', (e) => {
       sidebar.element.classList.toggle('sidebar-toggle');
       let button = hamburgerToggle.firstElementChild;
-      if (button.textContent == 'menu') {
+      if (button.textContent == 'menu')
+      {
         button.textContent = 'close';
       }
-      else {
+      else
+      {
         button.textContent = 'menu';
       }
     });
@@ -84,7 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('keydown', (event) => {
-  if (event.code == "Escape" && activeModal) {
+  if (event.code == 'Escape' && activeModal)
+  {
     activeModal.close();
   }
 });

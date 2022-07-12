@@ -9,4 +9,4 @@ typedef pcl::PointCloud<PointNT> PointCloudNT;
 typedef pcl::PointXYZRGB PointXYZT;
 typedef pcl::PointCloud<PointXYZT> PointCloudT;
 typedef pcl::visualization::PointCloudColorHandlerCustom<PointXYZT> ColorHandlerT;
-}
+}  // namespace sub

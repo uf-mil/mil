@@ -1,9 +1,11 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Vector3.h>
 #include <ros/ros.h>
+
 #include <map>
 #include <point_cloud_object_detection_and_recognition/object.hpp>
 #include <point_cloud_object_detection_and_recognition/pcodar_controller.hpp>
+
 #include "gazebo/common/common.hh"
 #include "gazebo/gazebo.hh"
 #include "gazebo/physics/physics.hh"
@@ -43,4 +45,4 @@ private:
   /// Timer to update ogrid, markers
   ros::Timer timer_;
 };
-}
+}  // namespace mil_gazebo

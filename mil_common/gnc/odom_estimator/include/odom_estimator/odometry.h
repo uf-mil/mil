@@ -51,6 +51,6 @@ nav_msgs::Odometry msg_from_odom(GaussianDistribution<Odom> const &res)
 
   return result;
 }
-}
+}  // namespace odom_estimator
 
 #endif

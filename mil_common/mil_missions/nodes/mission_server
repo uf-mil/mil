@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-from mil_missions.msg import DoMissionAction, DoMissionResult, DoMissionFeedback
-from mil_missions_core import MissionException, MissionResult
-from txros import util, NodeHandle, action
-from twisted.internet import defer, reactor
-import twisted.python
 import inspect
 import json
+
+import twisted.python
+from mil_missions.msg import DoMissionAction, DoMissionFeedback, DoMissionResult
+from mil_missions_core import MissionException, MissionResult
+from twisted.internet import defer, reactor
+from txros import NodeHandle, action, util
 
 
 class MissionRunner:

@@ -1,12 +1,13 @@
 #include <sub8_gazebo/sub8_thruster_config.hpp>
 
-using XmlRpc::XmlRpcValue;
 using XmlRpc::XmlRpcException;
+using XmlRpc::XmlRpcValue;
 using namespace std;
 
 namespace sub8_gazebo
 {
-void load_ports(XmlRpcValue& ports_xmlrpc, vector<ThrusterPort>& ports_vec) try
+void load_ports(XmlRpcValue& ports_xmlrpc, vector<ThrusterPort>& ports_vec)
+try
 {
   ports_vec = vector<ThrusterPort>();  // Reset vector
 
@@ -37,7 +38,8 @@ catch (XmlRpcException& e)
   return;
 }
 
-void load_thrusters(XmlRpcValue& thrusters_xmlrpc, map<string, ThrusterDef>& thruster_map) try
+void load_thrusters(XmlRpcValue& thrusters_xmlrpc, map<string, ThrusterDef>& thruster_map)
+try
 {
   thruster_map = map<string, ThrusterDef>();  // Reset map
 

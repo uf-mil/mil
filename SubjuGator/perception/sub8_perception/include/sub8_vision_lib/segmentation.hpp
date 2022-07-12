@@ -5,7 +5,9 @@
 #include <pcl/search/kdtree.h>
 #include <pcl/search/search.h>
 #include <pcl/segmentation/region_growing_rgb.h>
+
 #include <vector>
+
 #include "typedefs.hpp"
 
 namespace sub
@@ -76,4 +78,4 @@ void segment_box(const typename pcl::PointCloud<PointT>::Ptr input_cloud, const 
   box_cropper.setMax(h_max_pt);
   box_cropper.filter(output_cloud);
 }
-}
+}  // namespace sub

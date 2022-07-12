@@ -1,4 +1,5 @@
 #include <ros/console.h>
+
 #include <mil_vision_lib/cv_tools.hpp>
 
 namespace sub
@@ -30,4 +31,4 @@ void inParamRange(cv::Mat &src, Range &range, cv::Mat &dest)
 {
   cv::inRange(src, range.lower, range.upper, dest);
 }
-}
+}  // namespace sub

@@ -2,6 +2,7 @@
 #define MIL_GAZEBO_UTILS_H
 
 #include <geometry_msgs/Vector3.h>
+
 #include <gazebo/common/common.hh>
 
 namespace mil_gazebo

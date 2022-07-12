@@ -1,4 +1,5 @@
 #include "sub8_gazebo/sub8_thrusters.hpp"
+
 #include <gazebo/common/Plugin.hh>
 
 namespace gazebo

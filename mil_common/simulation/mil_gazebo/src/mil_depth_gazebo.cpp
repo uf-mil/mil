@@ -74,4 +74,4 @@ void MilDepthGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
   msg.depth = depth;
   depth_pub_.publish(msg);
 }
-}
+}  // namespace mil_gazebo

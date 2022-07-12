@@ -4,13 +4,15 @@ from __future__ import division
 
 import random
 import sys
+
+import mil_ros_tools
 import numpy
+import rosbag
+import roslib
 import scipy.linalg
 import yaml
-import roslib
-import rosbag
 from tf import transformations
-import mil_ros_tools
+
 roslib.load_manifest('magnetic_hardsoft_compensation')
 
 

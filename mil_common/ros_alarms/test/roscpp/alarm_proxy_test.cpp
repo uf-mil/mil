@@ -3,6 +3,7 @@
  * Date: Jan 16, 2017
  */
 #include <gtest/gtest.h>
+
 #include <ros_alarms/alarm_proxy.hpp>
 
 using namespace std;

@@ -4,10 +4,10 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <ros/ros.h>
-#include <opencv2/core/core.hpp>
 
 #include <exception>
 #include <memory>
+#include <opencv2/core/core.hpp>
 #include <string>
 
 namespace mil_vision
@@ -232,7 +232,8 @@ private:
 template <typename cam_model_ptr_t, typename time_t_, typename img_scalar_t, typename float_t>
 CameraFrame<cam_model_ptr_t, time_t_, img_scalar_t, float_t>::CameraFrame(
     const sensor_msgs::ImageConstPtr &image_msg_ptr, cam_model_ptr_t &cam_model_ptr, bool is_rectified,
-    float_t store_at_scale) try
+    float_t store_at_scale)
+try
 {
   // ROS image message decoding
   cv_bridge::CvImageConstPtr _ros_img_bridge;

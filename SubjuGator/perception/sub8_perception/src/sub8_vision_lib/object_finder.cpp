@@ -4,7 +4,8 @@
 // Class: Sub8ObjectFinder ////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-Sub8ObjectFinder::Sub8ObjectFinder() try : image_transport(nh), rviz("/torpedo_board/visualization/detection")
+Sub8ObjectFinder::Sub8ObjectFinder()
+try : image_transport(nh), rviz("/torpedo_board/visualization/detection")
 {
   std::stringstream log_msg;
   log_msg << "\nInitializing Sub8ObjectFinder:\n";

@@ -147,4 +147,4 @@ void SylphaseGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
   absodom_pub_.publish(absodom);
   acceleration_pub_.publish(accel);
 }
-}
+}  // namespace navigator_gazebo

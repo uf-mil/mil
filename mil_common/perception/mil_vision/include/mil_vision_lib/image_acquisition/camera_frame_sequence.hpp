@@ -1,6 +1,7 @@
 #pragma once
 
 #include <image_geometry/pinhole_camera_model.h>
+
 #include <boost/circular_buffer.hpp>
 #include <memory>
 #include <mil_vision_lib/image_acquisition/camera_frame.hpp>
@@ -8,7 +9,6 @@
 
 namespace mil_vision
 {
-    
 /*
  * This is an abstract class interface for classes that represent sequences of images. It provides
  * basic functionality to access individual frames along with camera geometry information. It is
@@ -18,7 +18,6 @@ namespace mil_vision
 template <typename cam_model_ptr_t, typename img_scalar_t, typename time_t_, typename float_t = float>
 class CameraFrameSequence
 {
-
 public:
   // Type aliases
   using CamFrame = CameraFrame<cam_model_ptr_t, img_scalar_t, time_t_, float_t>;

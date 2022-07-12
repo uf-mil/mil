@@ -39,4 +39,4 @@ point_cloud_ptr PointCloudCircularBuffer::get_point_cloud()
   return mega_cloud_;
 }
 
-}  // pcodar namespace
+}  // namespace pcodar

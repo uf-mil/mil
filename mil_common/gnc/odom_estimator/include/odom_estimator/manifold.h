@@ -113,9 +113,10 @@ struct IManifold
     NAME operator+(const Vec<RowsAtCompileTime> &other) const                                                          \
     {                                                                                                                  \
       BOOST_PP_SEQ_FOR_EACH_I_R(1, GENERATE_DEF, BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ), BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) \
-      assert(BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2, 1, BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(ATTRIBUTES_SEQ)), \
-                                                                      ATTRIBUTES_SEQ)),                                \
-                          _end) == other.rows());                                                                      \
+      assert(                                                                                                          \
+          BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(                                                                            \
+                           2, 1, BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(ATTRIBUTES_SEQ)), ATTRIBUTES_SEQ)),  \
+                       _end) == other.rows());                                                                         \
       return NAME(                                                                                                     \
           BOOST_PP_SEQ_FOR_EACH_I_R(1, GENERATE_PARAM, ATTRIBUTE_TUPLE_SIZE, BOOST_PP_SEQ_TAIL(TYPE_ATTRIBUTES_SEQ))   \
               BOOST_PP_SEQ_FOR_EACH_I_R(1, GENERATE_ADDER, ATTRIBUTE_TUPLE_SIZE, BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)));  \
@@ -238,6 +239,6 @@ public:
     return angle;
   }
 };
-}
+}  // namespace odom_estimator
 
 #endif

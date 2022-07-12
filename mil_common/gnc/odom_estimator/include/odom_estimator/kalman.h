@@ -37,6 +37,6 @@ GaussianDistribution<InType> kalman_update(IDistributionFunction<InType, ErrorTy
 
   return GaussianDistribution<InType>(new_mean, new_cov);
 }
-}
+}  // namespace odom_estimator
 
 #endif

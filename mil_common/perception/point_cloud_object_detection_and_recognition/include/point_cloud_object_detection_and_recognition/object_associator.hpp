@@ -1,11 +1,11 @@
 #pragma once
 
-#include "object_map.hpp"
-#include "pcodar_types.hpp"
-
 #include <mil_msgs/PerceptionObject.h>
 
 #include <limits>
+
+#include "object_map.hpp"
+#include "pcodar_types.hpp"
 
 namespace pcodar
 {

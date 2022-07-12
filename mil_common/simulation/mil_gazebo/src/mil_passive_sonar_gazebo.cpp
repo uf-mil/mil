@@ -1,5 +1,6 @@
 #include <mil_msgs/PerceptionObject.h>
 #include <mil_passive_sonar/ProcessedPing.h>
+
 #include <mil_gazebo/mil_passive_sonar_gazebo.hpp>
 
 namespace mil_gazebo
@@ -86,4 +87,4 @@ void MilPassiveSonarGazebo::GazeboVectorToRosMsg(ignition::math::Vector3d const&
 }
 
 GZ_REGISTER_MODEL_PLUGIN(MilPassiveSonarGazebo)
-}
+}  // namespace mil_gazebo

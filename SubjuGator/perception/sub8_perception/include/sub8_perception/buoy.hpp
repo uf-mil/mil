@@ -1,4 +1,8 @@
 #pragma once
+#include <cv_bridge/cv_bridge.h>
+#include <eigen_conversions/eigen_msg.h>
+#include <image_geometry/pinhole_camera_model.h>
+#include <image_transport/image_transport.h>
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/common/time.h>
 #include <pcl/console/print.h>
@@ -7,27 +11,20 @@
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <iostream>
-#include <map>
-#include <string>
-#include <vector>
-
-#include <cv_bridge/cv_bridge.h>
-#include <image_geometry/pinhole_camera_model.h>
-#include <image_transport/image_transport.h>
-#include <algorithm>
-#include <opencv2/opencv.hpp>
-
 #include <sensor_msgs/image_encodings.h>
 #include <tf/transform_listener.h>
 
-#include <eigen_conversions/eigen_msg.h>
 #include <Eigen/StdVector>
+#include <algorithm>
+#include <iostream>
+#include <map>
 #include <mil_vision_lib/cv_tools.hpp>
 #include <mil_vision_lib/pcl_tools.hpp>
+#include <opencv2/opencv.hpp>
+#include <string>
+#include <vector>
 
 #include "ros/ros.h"
-
 #include "sub8_msgs/VisionRequest.h"
 #include "sub8_msgs/VisionRequest2D.h"
 

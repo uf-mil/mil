@@ -3,10 +3,12 @@
 #include <geometry_msgs/Vector3Stamped.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
+
 #include <algorithm>
 #include <cmath>
 #include <mutex>
 #include <vector>
+
 #include "gazebo/common/common.hh"
 #include "gazebo/physics/physics.hh"
 #include "gazebo/sensors/sensors.hh"
@@ -46,4 +48,4 @@ private:
   static ignition::math::Pose3d SphericalCoordinatesTransform(const gazebo::common::SphericalCoordinates &_convert,
                                                               const CoordinateType in, const CoordinateType out);
 };
-}
+}  // namespace navigator_gazebo

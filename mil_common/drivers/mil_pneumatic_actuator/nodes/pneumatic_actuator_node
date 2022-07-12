@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+import threading
+
 import rospy
-from serial import SerialException
 from mil_pneumatic_actuator import PnuematicActuatorDriver, PnuematicActuatorDriverError
 from mil_pneumatic_actuator.srv import SetValve
+from serial import SerialException
 from std_srvs.srv import Trigger
-import threading
 
 lock = threading.Lock()
 
@@ -14,6 +15,7 @@ class Actuator:
     Encapsulates the configuration for an actuator, which can contain up to 2 valves
     and can be of 'set' or 'pulse' type.
     """
+
     def __init__(
         self, type_str, open_id, open_default, close_id, close_default, pulse_time
     ):
@@ -49,6 +51,7 @@ class PnuematicActuatorNode:
     """
     Allows high level ros code to interface with Daniel's pneumatics board.
     """
+
     # TODO: Add a function to try and reconnect to the serial port if we lose connection.
     # TODO: publish info to /diagnostics
     def __init__(self):

@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #include "sub8_gazebo/sub8_buoyancy.hpp"
+
 #include "gazebo/common/Assert.hh"
 #include "gazebo/common/Events.hh"
 
@@ -54,8 +55,8 @@ void BuoyancyPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   // SDF input is recommended for mesh or polylines collision shapes
   if (this->sdf->HasElement("link"))
   {
-    for (sdf::ElementPtr linkElem = this->sdf->GetElement("link"); linkElem;
-         linkElem = this->sdf->GetNextElement("link"))
+    for (sdf::ElementPtr linkElem = this->sdf->GetElement("link"); linkElem; linkElem = this->sdf->GetNextElement("lin"
+                                                                                                                  "k"))
     {
       int id = -1;
       std::string name = "";

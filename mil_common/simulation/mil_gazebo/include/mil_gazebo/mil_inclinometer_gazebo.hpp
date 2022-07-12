@@ -3,6 +3,7 @@
 
 #include <mil_msgs/IncrementalLinearVelocityStamped.h>
 #include <ros/ros.h>
+
 #include <gazebo/common/common.hh>
 #include <gazebo/sensors/GaussianNoiseModel.hh>
 #include <gazebo/sensors/sensors.hh>

@@ -7,8 +7,8 @@ using namespace cv;
 // Class: Sub8TorpedoBoardDetector ////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector() try : image_transport(nh),
-                                                           rviz("/torpedo_board/visualization/detection")
+Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector()
+try : image_transport(nh), rviz("/torpedo_board/visualization/detection")
 {
   using ros::param::param;
 

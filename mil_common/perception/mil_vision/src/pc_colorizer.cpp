@@ -1,24 +1,19 @@
-#include <ros/ros.h>
-#include <deque>
-
-#include <sensor_msgs/PointCloud2.h>
-
-#include <mil_vision_lib/image_acquisition/ros_camera_stream.hpp>
-
 #include <geometry_msgs/TransformStamped.h>
-#include <tf2_ros/transform_listener.h>
-
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/conversions.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
-
-#include <opencv2/opencv.hpp>
+#include <ros/ros.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+#include <deque>
+#include <mil_vision_lib/image_acquisition/ros_camera_stream.hpp>
+#include <opencv2/opencv.hpp>
 
 using ROSCameraStream_Vec3 = mil_vision::ROSCameraStream<cv::Vec3b>;
 //! Point Cloud Colorizer class.

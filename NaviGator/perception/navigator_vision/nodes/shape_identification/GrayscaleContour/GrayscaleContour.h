@@ -1,8 +1,10 @@
 #pragma once
 #include <navigator_msgs/DockShapes.h>
+
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include <memory>
+
 #include "../DockShapeVision.h"
 #include "opencv2/opencv.hpp"
 using namespace cv;

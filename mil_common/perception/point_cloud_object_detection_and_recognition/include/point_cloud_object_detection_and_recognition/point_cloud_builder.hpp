@@ -1,12 +1,11 @@
 #pragma once
 
-#include "pcodar_types.hpp"
-
+#include <pcl/filters/extract_indices.h>
 #include <sensor_msgs/PointCloud2.h>
 
 #include <boost/circular_buffer.hpp>
 
-#include <pcl/filters/extract_indices.h>
+#include "pcodar_types.hpp"
 
 namespace pcodar
 {
@@ -35,4 +34,4 @@ private:
   ///       the accumulated cloud is not reassembled on each addition
   boost::circular_buffer<point_cloud_ptr> prev_clouds_;
 };
-}  // pcodar namespace
+}  // namespace pcodar

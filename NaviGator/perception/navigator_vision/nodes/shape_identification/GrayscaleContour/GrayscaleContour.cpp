@@ -1,4 +1,5 @@
 #include "GrayscaleContour.h"
+
 #include <sstream>
 GrayscaleContour::GrayscaleContour(ros::NodeHandle& nh) : DockShapeVision(nh)
 {

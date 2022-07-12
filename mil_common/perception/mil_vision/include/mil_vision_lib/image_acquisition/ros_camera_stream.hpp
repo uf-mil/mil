@@ -1,16 +1,15 @@
 #pragma once
 
-#include <boost/circular_buffer.hpp>
-#include <mil_tools/mil_tools.hpp>
-#include <mil_vision_lib/image_acquisition/camera_frame_sequence.hpp>
-
 #include <image_geometry/pinhole_camera_model.h>
 #include <image_transport/image_transport.h>
 #include <message_filters/subscriber.h>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
 
+#include <boost/circular_buffer.hpp>
 #include <cmath>
+#include <mil_tools/mil_tools.hpp>
+#include <mil_vision_lib/image_acquisition/camera_frame_sequence.hpp>
 #include <mutex>
 #include <string>
 
@@ -21,7 +20,7 @@ namespace mil_vision
 {
 template <typename img_scalar_t = uint8_t, typename float_t = float>
 class ROSCameraStream
-    : public CameraFrameSequence<std::shared_ptr<image_geometry::PinholeCameraModel>, img_scalar_t, ros::Time, float_t>
+  : public CameraFrameSequence<std::shared_ptr<image_geometry::PinholeCameraModel>, img_scalar_t, ros::Time, float_t>
 {
   using cam_model_ptr_t = std::shared_ptr<image_geometry::PinholeCameraModel>;
   using time_t_ = ros::Time;
@@ -241,8 +240,9 @@ ROSCameraStream<img_scalar_t, float_t>::getFrameFromTime(ros::Time desired_time)
   // Check bounds on time
   if (desired_time < this->_start_time || desired_time > this->_end_time)
   {
-    ROS_WARN_STREAM_THROTTLE_NAMED(1, "ROSCameraStream", "ROSCameraStream: The camera frame you requested is outside "
-                                                         "the time range of the buffer.");
+    ROS_WARN_STREAM_THROTTLE_NAMED(1, "ROSCameraStream",
+                                   "ROSCameraStream: The camera frame you requested is outside "
+                                   "the time range of the buffer.");
     return nullptr;
   }
 
@@ -265,8 +265,8 @@ ROSCameraStream<img_scalar_t, float_t>::getFrameFromTime(ros::Time desired_time)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename img_scalar_t, typename float_t>
-typename ROSCameraStream<img_scalar_t, float_t>::CamFrameConstPtr ROSCameraStream<img_scalar_t, float_t>::
-operator[](int i)
+typename ROSCameraStream<img_scalar_t, float_t>::CamFrameConstPtr
+ROSCameraStream<img_scalar_t, float_t>::operator[](int i)
 {
   using mil_tools::operator"" _s;
 

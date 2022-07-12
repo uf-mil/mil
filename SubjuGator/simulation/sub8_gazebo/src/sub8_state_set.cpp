@@ -1,5 +1,7 @@
 #include "sub8_gazebo/sub8_state_set.hpp"
+
 #include <sstream>
+
 #include "gazebo/common/Assert.hh"
 #include "gazebo/common/Events.hh"
 #include "ros/ros.h"

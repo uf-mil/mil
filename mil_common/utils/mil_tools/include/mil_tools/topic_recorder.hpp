@@ -1,11 +1,10 @@
 #pragma once
 
-#include <stdio.h>
-#include <string.h>
-
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <std_srvs/SetBool.h>
+#include <stdio.h>
+#include <string.h>
 
 namespace mil_tools
 {
@@ -47,5 +46,5 @@ protected:
   bool enabled_ = false;
   rosbag::Bag bag_;
 };
-}
+}  // namespace mil_tools
 #include "../../src/mil_tools/topic_recorder.cpp"

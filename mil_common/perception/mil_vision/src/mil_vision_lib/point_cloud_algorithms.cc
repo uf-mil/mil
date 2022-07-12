@@ -18,9 +18,9 @@ PcdColorizer::PcdColorizer(ros::NodeHandle nh, string input_pcd_topic, string ou
 
   cloud_sub = nh.subscribe(input_pcd_topic, 10, &PcdColorizer::cloud_cb, this);
   cloud_pub = nh.advertise<PCD>(output_pcd_topic, 10, false);
-  rgb_cam_sub =
-      img_transport.subscribeCamera(rgb_cam_topic, 10, [this](const sensor_msgs::ImageConstPtr &image_msg_ptr,
-                                                              const sensor_msgs::CameraInfoConstPtr &info_msg_ptr) {
+  rgb_cam_sub = img_transport.subscribeCamera(
+      rgb_cam_topic, 10,
+      [this](const sensor_msgs::ImageConstPtr &image_msg_ptr, const sensor_msgs::CameraInfoConstPtr &info_msg_ptr) {
         this->latest_frame_img_msg = image_msg_ptr;
         this->latest_frame_info_msg = info_msg_ptr;
         if (!_intrinsics_set)

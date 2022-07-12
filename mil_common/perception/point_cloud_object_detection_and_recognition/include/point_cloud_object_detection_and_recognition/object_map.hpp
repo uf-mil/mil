@@ -1,10 +1,10 @@
 #pragma once
 
-#include "object.hpp"
-#include "pcodar_types.hpp"
-
 #include <mil_msgs/ObjectDBQuery.h>
 #include <mil_msgs/PerceptionObjectArray.h>
+
+#include "object.hpp"
+#include "pcodar_types.hpp"
 
 namespace pcodar
 {

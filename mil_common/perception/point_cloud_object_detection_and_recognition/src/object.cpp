@@ -1,9 +1,8 @@
-#include <point_cloud_object_detection_and_recognition/object.hpp>
+#include <tf2/LinearMath/Quaternion.h>
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
-#include <tf2/LinearMath/Quaternion.h>
+#include <point_cloud_object_detection_and_recognition/object.hpp>
 
 namespace pcodar
 {

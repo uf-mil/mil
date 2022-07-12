@@ -18,7 +18,6 @@ import zipfile
 from typing import Optional
 
 
-
 def download_and_unzip(url: str, output_dir: str):
     """
     Downloads a zip file at a particular URL and unzips it to a directory.

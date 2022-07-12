@@ -3,6 +3,7 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
+
 #include <gazebo/common/common.hh>
 #include <gazebo/sensors/sensors.hh>
 
@@ -24,6 +25,6 @@ private:
   std::string frame_name_;
   gazebo::event::ConnectionPtr connection_;
 };
-}
+}  // namespace mil_gazebo
 
 #endif  // MIL_IMU_GAZEBO_H

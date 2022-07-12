@@ -2,11 +2,13 @@
 
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
+
 #include <algorithm>
 #include <cmath>
 #include <map>
 #include <mutex>
 #include <vector>
+
 #include "gazebo/common/Assert.hh"
 #include "gazebo/common/Event.hh"
 #include "gazebo/common/Events.hh"
@@ -27,4 +29,4 @@ private:
   ros::ServiceServer service_;
   gazebo::physics::ModelPtr model_;
 };
-}
+}  // namespace navigator_gazebo

@@ -1,15 +1,13 @@
 #ifndef GUARD_HVRLSXDXNEOHTCRV
 #define GUARD_HVRLSXDXNEOHTCRV
 
-#include <fstream>
-#include <sstream>
-
-#include <boost/foreach.hpp>
+#include <ros/package.h>
 
 #include <Eigen/Dense>
+#include <boost/foreach.hpp>
+#include <fstream>
+#include <sstream>
 #include <unsupported/Eigen/AutoDiff>
-
-#include <ros/package.h>
 
 #include "odom_estimator/earth.h"
 #include "odom_estimator/util.h"
@@ -167,8 +165,9 @@ public:
     T res = T(0);
     BOOST_FOREACH (Coeff const &coeff, coeffs)
     {
-      res += a * (T(coeff.g + coeff.gdot * (t_year - t0_year)) * cos_sin[coeff.m].first +
-                  T(coeff.h + coeff.hdot * (t_year - t0_year)) * cos_sin[coeff.m].second) *
+      res += a *
+             (T(coeff.g + coeff.gdot * (t_year - t0_year)) * cos_sin[coeff.m].first +
+              T(coeff.h + coeff.hdot * (t_year - t0_year)) * cos_sin[coeff.m].second) *
              pow_aoverr_n[coeff.n + 1] * p(coeff.m, coeff.n);
     }
     return res * 1e-9;  // convert nT to T
@@ -212,7 +211,7 @@ public:
     return std::make_pair(y, res);
   }
 };
-}
-}
+}  // namespace magnetic
+}  // namespace odom_estimator
 
 #endif

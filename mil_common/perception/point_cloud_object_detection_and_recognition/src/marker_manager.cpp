@@ -4,7 +4,6 @@
 
 #include <pcl/common/centroid.h>
 #include <pcl/common/common.h>
-
 #include <tf/transform_datatypes.h>
 
 namespace
@@ -13,7 +12,7 @@ std::string marker_name(uint id)
 {
   return std::string("object") + std::to_string(id);
 }
-}
+}  // namespace
 
 namespace pcodar
 {
@@ -155,4 +154,4 @@ void MarkerManager::update_markers()
   interactive_marker_server_->applyChanges();
 }
 
-}  // pcodar namespace
+}  // namespace pcodar

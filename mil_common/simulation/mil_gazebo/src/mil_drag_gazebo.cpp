@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+
 #include <mil_gazebo/mil_drag_gazebo.hpp>
 #include <mil_gazebo/mil_gazebo_utils.hpp>
 
@@ -65,4 +66,4 @@ void MilDragGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
   link_->AddRelativeForce(force);
   link_->AddRelativeTorque(torque);
 }
-}
+}  // namespace mil_gazebo

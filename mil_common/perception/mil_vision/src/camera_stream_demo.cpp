@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+
 #include <mil_vision_lib/image_acquisition/ros_camera_stream.hpp>  // dont forget this include for camera stream functionality
 #include <opencv2/highgui/highgui.hpp>
 #include <string>

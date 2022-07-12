@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import rospy
-from ros_alarms import AlarmListener, AlarmBroadcaster
-import curses
 import argparse
+import curses
+
+import rospy
+from ros_alarms import AlarmBroadcaster, AlarmListener
 
 __author__ = "Kevin Allen"
 

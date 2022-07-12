@@ -1,8 +1,10 @@
 #pragma once
 #include <image_geometry/pinhole_camera_model.h>
+
 #include <iostream>
 #include <limits>
 #include <opencv2/opencv.hpp>
+
 #include "typedefs.hpp"
 
 namespace sub
@@ -142,4 +144,4 @@ Eigen::Vector3f point_to_eigen(const PointT& pcl_point)
   Eigen::Vector3f eig_point(pcl_point.x, pcl_point.y, pcl_point.z);
   return (eig_point);
 }
-}
+}  // namespace sub

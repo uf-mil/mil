@@ -1,12 +1,11 @@
-#include <map>
-
-#include <boost/foreach.hpp>
-#include <boost/range/adaptor/map.hpp>
-
 #include <nodelet/nodelet.h>
 #include <ros/ros.h>
 #include <sensor_msgs/MagneticField.h>
 #include <tf/transform_datatypes.h>
+
+#include <boost/foreach.hpp>
+#include <boost/range/adaptor/map.hpp>
+#include <map>
 #include <pluginlib/class_list_macros.hpp>
 
 #include "magnetic_dynamic_compensation/FieldInfo.h"
@@ -83,4 +82,4 @@ public:
 };
 
 PLUGINLIB_EXPORT_CLASS(magnetic_dynamic_compensation::Nodelet, nodelet::Nodelet);
-}
+}  // namespace magnetic_dynamic_compensation

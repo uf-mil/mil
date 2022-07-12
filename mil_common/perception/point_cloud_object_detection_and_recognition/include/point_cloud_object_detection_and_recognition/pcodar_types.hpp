@@ -1,14 +1,13 @@
 #pragma once
 
 #include <mil_msgs/PerceptionObject.h>
-#include <unordered_map>
-
 #include <pcl/PointIndices.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/search/kdtree.h>
-
 #include <point_cloud_object_detection_and_recognition/PCODARConfig.h>
+
+#include <unordered_map>
 
 namespace pcodar
 {

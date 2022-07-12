@@ -46,4 +46,4 @@ void load_ports(XmlRpc::XmlRpcValue& ports_xmlrpc, std::vector<ThrusterPort>& po
 */
 void load_thrusters(XmlRpc::XmlRpcValue& thrusters_xmlrpc, std::map<std::string, ThrusterDef>& thruster_map);
 
-}  // sub8_gazebo
+}  // namespace sub8_gazebo
