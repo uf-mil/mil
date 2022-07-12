@@ -41,7 +41,6 @@ jobs:
         uses: actions/checkout@v3.0.2
         with:
           token: ${{ secrets.INVESTIGATOR_BOT_TOKEN || github.token }}
-          path: mil
           submodules: recursive
       - name: Check which targets changed
         uses: dorny/paths-filter@v2
