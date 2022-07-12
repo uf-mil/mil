@@ -40,7 +40,7 @@ jobs:
       - name: Check out code from GitHub
         uses: actions/checkout@v3.0.2
         with:
-          token: ${{ secrets.INVESTIGATOR_TOKEN }}
+          token: ${{ secrets.INVESTIGATOR_BOT_TOKEN || github.token }}
           submodules: recursive
       - name: Check which targets changed
         uses: dorny/paths-filter@v2
