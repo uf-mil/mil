@@ -92,7 +92,7 @@ class MissionRunner:
             return
         goal = self.server.accept_new_goal()
         if not self.has_mission(goal.mission):
-            print("TASK RUNNER: unrecognized mission '{}'".format(goal.mission))
+            print(f"TASK RUNNER: unrecognized mission '{goal.mission}'")
             self.server.set_aborted(
                 result=DoMissionResult(success=False, result="mission unknown")
             )
@@ -129,7 +129,7 @@ class MissionRunner:
 
     def cleanup_fail(self, final, missionname):
         print("")
-        print("Clean up for {} failed!".format(missionname))
+        print(f"Clean up for {missionname} failed!")
         print(final.getTraceback())
 
     @util.cancellableInlineCallbacks

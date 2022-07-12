@@ -63,9 +63,7 @@ class Threshold:
         # If conversion code not specified, try to form it from other params
         if conversion_code is None and in_space != thresh_space:
             try:
-                self.conversion_code = getattr(
-                    cv2, "COLOR_{}2{}".format(in_space, thresh_space)
-                )
+                self.conversion_code = getattr(cv2, f"COLOR_{in_space}2{thresh_space}")
             except AttributeError:
                 raise AttributeError(
                     "Could not determine conversion code from params.\
@@ -171,7 +169,7 @@ class Threshold:
 
         for i in range(len(self.low)):
             cv2.createTrackbar(
-                "low {}".format(i),
+                f"low {i}",
                 window,
                 int(self.low[i]),
                 255,
@@ -179,7 +177,7 @@ class Threshold:
             )
         for i in range(len(self.high)):
             cv2.createTrackbar(
-                "high {}".format(i),
+                f"high {i}",
                 window,
                 int(self.high[i]),
                 255,

@@ -29,7 +29,7 @@ ___author___ = "Kevin Allen"
 
 class Vrx(Navigator):
     def __init__(self, *args, **kwargs):
-        super(Vrx, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def init():

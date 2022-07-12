@@ -22,9 +22,7 @@ class VrxColorClassifier(GaussianColorClassifier):
         rospack = RosPack()
         path = rospack.get_path("navigator_vision")
         training_file = os.path.join(path, "config/vrx/mean.csv")
-        super(VrxColorClassifier, self).__init__(
-            VrxColorClassifier.CLASSES, training_file=training_file
-        )
+        super().__init__(VrxColorClassifier.CLASSES, training_file=training_file)
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ import numpy as np
 from segment_name_gen import name_gen
 
 
-class Picker(object):
+class Picker:
     # Adaboost http://robertour.com/2012/01/24/adaboost-on-opencv-2-3/
 
     def __init__(self):
@@ -264,8 +264,8 @@ if __name__ == "__main__":
             bc = image_crawler.ImageCrawler(file_name)
 
     if args.topic is not None:
-        assert args.topic in bc.image_topics, "{} not in the bag".format(args.topic)
-        print("Crawling topic {}".format(args.topic))
+        assert args.topic in bc.image_topics, f"{args.topic} not in the bag"
+        print(f"Crawling topic {args.topic}")
         crawl = bc.crawl(topic=args.topic)
     else:
         crawl = bc.crawl(topic=bc.image_topics[0])
@@ -275,7 +275,7 @@ if __name__ == "__main__":
     num_imgs = 0
     for image in crawl:
         num_imgs += 1
-        print("On image #{}".format(num_imgs))
+        print(f"On image #{num_imgs}")
 
         p.update_image(image)
         last_mask, key = p.segment()

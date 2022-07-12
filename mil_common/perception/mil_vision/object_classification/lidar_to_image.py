@@ -21,7 +21,7 @@ Needs to be refactored to be generic and non depend on navigator.
 """
 
 
-class LidarToImage(object):
+class LidarToImage:
     def __init__(self, nh, classes=None, dist=50):
         self.MAX_SIZE = 74
         self.IMAGE_SIZE = 100

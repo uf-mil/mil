@@ -44,7 +44,7 @@ from sub8_vision_tools import visual_threshold_tools  # noqa
 os.system("export ETS_TOOLKIT=qt4")
 
 
-class Segmenter(object):
+class Segmenter:
     def __init__(self):
         self.is_done = False
         self.corners = []
@@ -76,7 +76,7 @@ class Segmenter(object):
         return box
 
 
-class ImageGetter(object):
+class ImageGetter:
     def __init__(self, topic_name="/down/left/image_raw"):
         self.sub = Image_Subscriber(topic_name, self.get_image)
 
@@ -158,10 +158,10 @@ if __name__ == "__main__":
 
     # Print out thresholds that can be put in the configuration yaml
     low = ranges[:, 0]
-    print("  {}_low: [{}, {}, {}]".format(prefix, low[0], low[1], low[2]))
+    print(f"  {prefix}_low: [{low[0]}, {low[1]}, {low[2]}]")
 
     high = ranges[:, 1]
-    print("  {}_high: [{}, {}, {}]".format(prefix, high[0], high[1], high[2]))
+    print(f"  {prefix}_high: [{high[0]}, {high[1]}, {high[2]}]")
 
     print("np." + repr(ranges))
 

@@ -101,7 +101,7 @@ class World:
             j.attach(geom1.getBody(), geom2.getBody())
 
 
-class Entity(object):
+class Entity:
     _linear_damping_coeff = -0.2
     _rotational_damping_coeff = -0.2
 

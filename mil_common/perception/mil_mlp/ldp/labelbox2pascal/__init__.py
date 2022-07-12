@@ -13,7 +13,7 @@ class UnknownFormatError(Exception):
     """Exception raised for unknown label_format"""
 
     def __init__(self, label_format):
-        self.message = "Provided label_format '{}' is unsupported".format(label_format)
+        self.message = f"Provided label_format '{label_format}' is unsupported"
 
 
 def from_json(
@@ -43,7 +43,7 @@ def from_json(
         return None
 
     # read labelbox JSON output
-    with open(labeled_data, "r") as f:
+    with open(labeled_data) as f:
         lines = f.readlines()
         label_data = json.loads(lines[0])
 
@@ -60,10 +60,8 @@ def from_json(
 
         except requests.exceptions.MissingSchema as e:
             logging.exception(
-                (
-                    '"Labeled Data" field must be a URL. '
-                    "Support for local files coming soon"
-                )
+                '"Labeled Data" field must be a URL. '
+                "Support for local files coming soon"
             )
             continue
         except requests.exceptions.ConnectionError as e:
@@ -81,7 +79,7 @@ def write_label(
     response = requests.get(image_url, stream=True)
     response.raw.decode_content = True
     im = Image.open(response.raw)
-    image_name = "{img_id}.{ext}".format(img_id=label_id, ext=im.format.lower())
+    image_name = f"{label_id}.{im.format.lower()}"
     image_fqn = os.path.join(images_output_dir, image_name)
     im.save(image_fqn, format=im.format)
 
@@ -110,7 +108,7 @@ def write_label(
             raise e
 
     # write Pascal VOC xml annotation for image
-    xml_writer.save(os.path.join(annotations_output_dir, "{}.xml".format(label_id)))
+    xml_writer.save(os.path.join(annotations_output_dir, f"{label_id}.xml"))
 
 
 def _add_pascal_object_from_wkt(xml_writer, img_height, wkt_data, label):

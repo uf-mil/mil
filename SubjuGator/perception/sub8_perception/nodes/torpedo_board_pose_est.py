@@ -11,7 +11,7 @@ from std_msgs.msg import ColorRGBA
 from sub8_msgs.srv import TorpBoardPoseRequest
 
 
-class PoseObserver(object):
+class PoseObserver:
     def __init__(self):
         self.x = 0
         self.y = 0
@@ -52,7 +52,7 @@ class PoseObserver(object):
         return pose
 
 
-class TBPoseEstimator(object):
+class TBPoseEstimator:
     def __init__(self):
         self.H = 1.24  # in meters
         self.W = 0.61  # in meters
@@ -178,7 +178,7 @@ class TBPoseEstimator(object):
         self.marker_pub.publish(marker)
 
 
-class ParsedPoseEstRequest(object):
+class ParsedPoseEstRequest:
     def __init__(self, req):
         self.seq = req.pose_stamped.header.seq
         self.stamp = rospy.Time.from_sec(req.pose_stamped.header.stamp.to_time())

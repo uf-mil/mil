@@ -44,7 +44,7 @@ class ClickedPointRecorder:
         Writes the points to a CSV file.
         """
         time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-        filename = "clickedpoints{}.csv".format(time)
+        filename = f"clickedpoints{time}.csv"
         with open(filename, "wx") as csvfile:
             fieldnames = ["seq", "secs", "nsecs", "frame_id", "x", "y", "z"]
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -52,7 +52,7 @@ class ClickedPointRecorder:
             for p in self.points:
                 d = self.point_to_dict(p)
                 writer.writerow(d)
-        rospy.loginfo("Writing points to {}".format(filename))
+        rospy.loginfo(f"Writing points to {filename}")
 
     def point_cb(self, point: PointStamped) -> None:
         """
@@ -62,7 +62,7 @@ class ClickedPointRecorder:
         Args:
             point (PointStamped): The message input to the callabck.
         """
-        rospy.loginfo("Received new point: {}".format(point))
+        rospy.loginfo(f"Received new point: {point}")
         self.points.append(point)
 
 

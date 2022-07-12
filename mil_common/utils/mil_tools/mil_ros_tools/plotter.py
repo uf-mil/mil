@@ -104,8 +104,8 @@ class Plotter:
     def publish_plots(
         self,
         plots: np.ndarray,
-        titles: Optional[list[str]] = None,
-        v_lines: Optional[list] = None,
+        titles: list[str] | None = None,
+        v_lines: list | None = None,
     ):
         """
         Starts as new thread to publish the data on a plot.
@@ -125,8 +125,8 @@ class Plotter:
     def publish_plots_(
         self,
         plots: np.ndarray,
-        titles: Optional[list[str]] = None,
-        v_lines: Optional[list] = None,
+        titles: list[str] | None = None,
+        v_lines: list | None = None,
     ):
         if titles is None:
             titles = []

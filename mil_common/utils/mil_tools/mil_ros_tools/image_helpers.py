@@ -24,16 +24,14 @@ def get_parameter_range(parameter_root: str):
     """
     low_param, high_param = parameter_root + "/hsv_low", parameter_root + "/hsv_high"
 
-    rospy.logwarn(
-        "Blocking -- waiting for parameters {} and {}".format(low_param, high_param)
-    )
+    rospy.logwarn(f"Blocking -- waiting for parameters {low_param} and {high_param}")
 
     wait_for_param(low_param)
     wait_for_param(high_param)
     low = rospy.get_param(low_param)
     high = rospy.get_param(high_param)
 
-    rospy.loginfo("Got {} and {}".format(low_param, high_param))
+    rospy.loginfo(f"Got {low_param} and {high_param}")
     return np.array([low, high]).transpose()
 
 

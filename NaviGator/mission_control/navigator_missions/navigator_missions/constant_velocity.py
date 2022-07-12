@@ -73,17 +73,13 @@ class ConstantVelocity(Navigator):
         self.msg.header.stamp = odom.header.stamp
         self.msg.pose = odom.pose
         self.msg.twist.twist = Twist()
-        self.send_feedback(
-            "Sending Zero Velocity for {} seconds".format(self.ZERO_TIME)
-        )
+        self.send_feedback(f"Sending Zero Velocity for {self.ZERO_TIME} seconds")
         while (yield self.nh.get_time()) < done_zero:
             self.ref_pub.publish(self.msg)
             yield self.nh.sleep(0.1)
 
         # Publish user selected velocity until task is canceled or a new task is run
-        self.send_feedback(
-            "Publishing constant velocity {}. Cancel task to stop.".format(args)
-        )
+        self.send_feedback(f"Publishing constant velocity {args}. Cancel task to stop.")
         self.msg.twist.twist.linear.x = args[0]
         self.msg.twist.twist.linear.y = args[1]
         self.msg.twist.twist.angular.z = args[2]

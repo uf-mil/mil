@@ -52,7 +52,7 @@ class ExampleSimulatedEchoDevice(SimulatedCANDevice):
 
     def __init__(self, *args, **kwargs):
         # Call parent classes contructor
-        super(ExampleSimulatedEchoDevice, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def on_data(self, data, can_id):
         # Echo data received back onto the bus
@@ -68,7 +68,7 @@ class ExampleSimulatedAdderDevice(SimulatedCANDevice):
 
     def __init__(self, *args, **kwargs):
         # Call parent classes contructor
-        super(ExampleSimulatedAdderDevice, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def on_data(self, data, can_id):
         packet = ApplicationPacket.from_bytes(data, expected_identifier=37)
@@ -92,10 +92,10 @@ class SimulatedUSBtoCAN(SimulatedSerial):
             can_id (int): ID of the CAN2USB device. Defaults to -1.
         """
         self._my_id = can_id
-        self._devices = dict(
-            (can_id, device(self, can_id)) for can_id, device in devices.items()
-        )
-        super(SimulatedUSBtoCAN, self).__init__()
+        self._devices = {
+            can_id: device(self, can_id) for can_id, device in devices.items()
+        }
+        super().__init__()
 
     def send_to_bus(self, can_id: int, data: bytes, from_mobo: bool = False):
         """

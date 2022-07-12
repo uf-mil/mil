@@ -15,8 +15,8 @@ class ActuatorBoardSimulation(SimulatedCANDevice):
 
     def __init__(self, *args, **kwargs):
         # Tracks the status of the 12 valves
-        self.status = dict((i, False) for i in range(12))
-        super(ActuatorBoardSimulation, self).__init__(*args, **kwargs)
+        self.status = {i: False for i in range(12)}
+        super().__init__(*args, **kwargs)
 
     def on_data(self, data, can_id) -> None:
         """

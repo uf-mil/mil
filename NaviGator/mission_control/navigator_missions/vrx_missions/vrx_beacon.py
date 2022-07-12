@@ -11,7 +11,7 @@ ___author___ = "Alex Perez"
 
 class VrxBeacon(Vrx):
     def __init__(self, *args, **kwargs):
-        super(VrxBeacon, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
@@ -31,7 +31,7 @@ class VrxBeacon(Vrx):
             beacon_msg.beacon_position.z,
         ]
 
-        self.send_feedback("Going to {}".format(position))
+        self.send_feedback(f"Going to {position}")
 
         goal_pose = [position, [0, 0, 0, 1]]
         yield self.move.set_position(goal_pose[0]).set_orientation(goal_pose[1]).go()

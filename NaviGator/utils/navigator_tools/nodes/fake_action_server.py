@@ -43,7 +43,7 @@ class FakeActionServer:
         fprint("Move request received!", msg_color="blue")
 
         if msg.move_type not in ["hold", "drive", "skid", "circle"]:
-            fprint("Move type '{}' not found".format(msg.move_type), msg_color="red")
+            fprint(f"Move type '{msg.move_type}' not found", msg_color="red")
             self.move_server.set_aborted(MoveResult("move_type"))
             return
 

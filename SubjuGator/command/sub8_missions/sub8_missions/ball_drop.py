@@ -46,7 +46,7 @@ class BallDrop(SubjuGator):
         cam_info = yield cam_info_sub.get_next_message()
         cam_center = np.array([cam_info.width / 2, cam_info.height / 2])
         cam_norm = np.sqrt(cam_center[0] ** 2 + cam_center[1] ** 2)
-        fprint("Cam center: {}".format(cam_center))
+        fprint(f"Cam center: {cam_center}")
 
         model = PinholeCameraModel()
         model.fromCameraInfo(cam_info)
@@ -76,17 +76,17 @@ class BallDrop(SubjuGator):
             ball_drop_msg = yield ball_drop_sub.get_next_message()
             ball_drop_xy = mil_ros_tools.rosmsg_to_numpy(ball_drop_msg)[:2]
             vec = ball_drop_xy - cam_center
-            fprint("Vec: {}".format(vec))
+            fprint(f"Vec: {vec}")
             vec = vec / cam_norm
             vec[1] = -vec[1]
-            fprint("Rel move vec {}".format(vec))
+            fprint(f"Rel move vec {vec}")
             if np.allclose(vec, np.asarray(0), atol=50):
                 break
             vec = np.append(vec, 0)
 
             yield self.move.relative_depth(vec).go(speed=SPEED)
 
-        fprint("Centered, going to depth {}".format(HEIGHT_BALL_DROPER))
+        fprint(f"Centered, going to depth {HEIGHT_BALL_DROPER}")
         yield self.move.to_height(HEIGHT_BALL_DROPER).zero_roll_and_pitch().go(
             speed=SPEED
         )

@@ -36,7 +36,7 @@ def MakeWait(base: Type):
 
         @util.cancellableInlineCallbacks
         def run(self, time: Union[float, int]):
-            self.send_feedback("waiting for {} seconds".format(time))
+            self.send_feedback(f"waiting for {time} seconds")
             yield self.nh.sleep(time)
             defer.returnValue("Done waiting.")
 

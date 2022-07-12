@@ -112,7 +112,7 @@ class PnuematicActuatorNode:
         try:
             self.driver.set_port(port, state)
         except (PnuematicActuatorDriverError, SerialException) as e:
-            rospy.logerr("Error interfacing with actuator board: {}".format(e))
+            rospy.logerr(f"Error interfacing with actuator board: {e}")
             return False
         return True
 
@@ -134,7 +134,7 @@ class PnuematicActuatorNode:
         try:
             self.driver.ping()
         except (PnuematicActuatorDriverError, SerialException) as e:
-            rospy.logwarn("Could not ping actuator board: {}".format(e))
+            rospy.logwarn(f"Could not ping actuator board: {e}")
             if self.connected:
                 rospy.logerr("Board not responding to pings. Disconnected.")
                 self.connected = False
@@ -165,9 +165,7 @@ class PnuematicActuatorNode:
 
         # If actuator is pulse type, open it and setup timer to close after pulse time
         if actuator.type == "pulse":
-            rospy.loginfo(
-                "Pulsing {} for {}s".format(srv.actuator, actuator.pulse_time)
-            )
+            rospy.loginfo(f"Pulsing {srv.actuator} for {actuator.pulse_time}s")
             self.set_port(actuator.open_id, not actuator.open_default)
             self.set_port(actuator.close_id, not actuator.close_default)
 
@@ -180,11 +178,11 @@ class PnuematicActuatorNode:
         # If actuator is set type, open/close as requested
         elif actuator.type == "set":
             if srv.opened:
-                rospy.loginfo("Opening {}".format(srv.actuator))
+                rospy.loginfo(f"Opening {srv.actuator}")
                 self.set_port(actuator.open_id, True)
                 self.set_port(actuator.close_id, False)
             else:
-                rospy.loginfo("Closing {}".format(srv.actuator))
+                rospy.loginfo(f"Closing {srv.actuator}")
                 self.set_port(actuator.open_id, False)
                 self.set_port(actuator.close_id, True)
         return {"success": True}

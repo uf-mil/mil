@@ -19,9 +19,7 @@ class ApplicationPacketWrongIdentifierException(Exception):
             was (Any): A value representing what was found.
             should_be (Any): What the found value should have been.
         """
-        super(ApplicationPacketWrongIdentifierException, self).__init__(
-            "Expected identified '{}', got '{}'".format(should_be, was)
-        )
+        super().__init__(f"Expected identified '{should_be}', got '{was}'")
 
 
 class ApplicationPacket:
@@ -46,13 +44,11 @@ class ApplicationPacket:
         Returns:
             bytes: The packed bytes.
         """
-        return struct.pack(
-            "B{}s".format(len(self.payload)), self.identifier, self.payload
-        )
+        return struct.pack(f"B{len(self.payload)}s", self.identifier, self.payload)
 
     @classmethod
     def from_bytes(
-        cls, data: bytes, expected_identifier: Optional[int] = None
+        cls, data: bytes, expected_identifier: int | None = None
     ) -> ApplicationPacket:
         """
         Unpacks a series of packed bytes representing an application packet using
@@ -74,7 +70,7 @@ class ApplicationPacket:
             ApplicationPacket: The data represented as an application packet.
         """
         payload_len = len(data) - 1
-        packet = cls(*struct.unpack("B{}s".format(payload_len), data))
+        packet = cls(*struct.unpack(f"B{payload_len}s", data))
         if expected_identifier is not None and expected_identifier != packet.identifier:
             raise ApplicationPacketWrongIdentifierException(
                 packet.identifier, expected_identifier

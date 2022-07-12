@@ -100,7 +100,7 @@ class VisionProxy:
         """
         return self._enable_service(SetBoolRequest(data=False))
 
-    def get_2d(self, target: str = "") -> Optional[defer.Deferred]:
+    def get_2d(self, target: str = "") -> defer.Deferred | None:
         """
         Get the 2D projection of the thing.
 
@@ -117,7 +117,7 @@ class VisionProxy:
             return None
         return pose
 
-    def get_pose(self, target: str = "", in_frame=None) -> Optional[defer.Deferred]:
+    def get_pose(self, target: str = "", in_frame=None) -> defer.Deferred | None:
         """
         Get the 3D pose of the object we're after.
         """
@@ -132,7 +132,7 @@ class VisionProxy:
             print(type(e))
         return pose
 
-    def set_geometry(self, polygon: SetGeometry) -> Optional[defer.Deferred]:
+    def set_geometry(self, polygon: SetGeometry) -> defer.Deferred | None:
         try:
             res = self._set_geometry_service(SetGeometryRequest(model=polygon))
         except (serviceclient.ServiceError):
@@ -166,13 +166,13 @@ class _VisionProxies:
         config_file = os.path.join(
             rospack.get_path("sub8_missions"), "sub8_missions", file_name
         )
-        f = yaml.safe_load(open(config_file, "r"))
+        f = yaml.safe_load(open(config_file))
 
         self.proxies: dict[str, VisionProxy] = {}
         for name, params in f.items():
             self.proxies[name] = VisionProxy(params["root"], nh)
 
-    def __getattr__(self, proxy: str) -> Optional[VisionProxy]:
+    def __getattr__(self, proxy: str) -> VisionProxy | None:
         return self.proxies.get(proxy, None)
 
 
@@ -291,12 +291,12 @@ class _ActuatorProxy:
 
 class SubjuGator(BaseMission):
     def __init__(self, **kwargs):
-        super(SubjuGator, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     @classmethod
     @util.cancellableInlineCallbacks
     def _init(cls, mission_server):
-        super(SubjuGator, cls)._init(mission_server)
+        super()._init(mission_server)
         cls._moveto_action_client = yield action.ActionClient(
             cls.nh, "moveto", MoveToAction
         )
@@ -452,9 +452,7 @@ class Searcher:
         while True:
             resp = yield self.vision_proxy()
             if resp.found:
-                print(
-                    "SEARCHER - Object found! {}/{}".format(spotings + 1, spotings_req)
-                )
+                print(f"SEARCHER - Object found! {spotings + 1}/{spotings_req}")
                 spotings += 1
                 if spotings >= spotings_req:
                     self.object_found = True
@@ -686,7 +684,7 @@ class SonarObjects:
                 if g_obj is None:
                     continue
                 count = len(g_obj)
-                print("SONAR OBJECTS: found {} that satisfy cone".format(count))
+                print(f"SONAR OBJECTS: found {count} that satisfy cone")
                 if count >= object_count:
                     g_obj = self._sort_by_angle(g_obj, ray, start_point)
                     res.objects = g_obj
@@ -706,15 +704,15 @@ class SonarObjects:
         for o in objects:
             print("=" * 50)
             pos = mil_ros_tools.rosmsg_to_numpy(o.pose.position)
-            print("pos {}".format(pos))
+            print(f"pos {pos}")
             dist = np.dot(pos - start_point, ray)
-            print("dist {}".format(dist))
+            print(f"dist {dist}")
             if dist > distance_tol or dist < 0:
                 continue
             vec_for_pos = pos - start_point
             vec_for_pos = vec_for_pos / np.linalg.norm(vec_for_pos)
             angle = np.arccos(vec_for_pos.dot(ray)) * 180 / np.pi
-            print("angle {}".format(angle))
+            print(f"angle {angle}")
             if angle > angle_tol:
                 continue
             out.append(o)
@@ -784,7 +782,7 @@ class SonarPointcloud:
                 )
             )
             concat = np.asarray(gen + pc_gen, np.float32)
-            print("SONAR_POINTCLOUD - current size: {}".format(concat.shape))
+            print(f"SONAR_POINTCLOUD - current size: {concat.shape}")
             self.pointcloud = mil_ros_tools.numpy_to_pointcloud2(concat)
         yield
 

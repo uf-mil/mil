@@ -341,7 +341,7 @@ class RobotXClient:
                 self.tcp_ip = socket.gethostbyname(tcp_ip)
                 break
             except socket.gaierror as e:
-                rospy.logwarn("Failed to resolved {}: {}".format(tcp_ip, e))
+                rospy.logwarn(f"Failed to resolved {tcp_ip}: {e}")
                 rospy.sleep(1.0)
                 continue
         self.tcp_port = tcp_port
@@ -370,7 +370,7 @@ class RobotXClient:
                 self.socket_connection.connect((self.tcp_ip, self.tcp_port))
                 self.connected = True
                 rospy.loginfo("Connection to TD Server Successful")
-            except socket.error:
+            except OSError:
                 rospy.sleep(2)
 
     @thread_lock(lock)
@@ -389,7 +389,7 @@ class RobotXClient:
             try:
                 self.socket_connection.send(message)
                 break
-            except socket.error:
+            except OSError:
                 rospy.loginfo("Connection to TD Server Lost")
                 self.connected = False
                 self.connect()

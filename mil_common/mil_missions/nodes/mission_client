@@ -71,14 +71,14 @@ class MissionClientCli:
             print("Goal finished with state ", TerminalState.to_string(state))
         print("Goal successful" if result.success else "Goal unsuccessful")
         if result.result != "":
-            print("Result: '{}'".format(result.result))
+            print(f"Result: '{result.result}'")
         if len(result.parameters) > 0:
             try:
                 x = json.loads(result.parameters)
                 if not isinstance(x, dict):
                     raise ValueError("not dict")
                 for key, value in x.items():
-                    print("{}: {}".format(key, value))
+                    print(f"{key}: {value}")
             except ValueError:
                 print("could not decode result parameters")
 

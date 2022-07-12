@@ -59,7 +59,7 @@ class BagManager:
 
                     msgs.append([key, (yield msg), (yield msg_time)])
                 else:
-                    print("There's a problem cacheing {0}".format(key))
+                    print(f"There's a problem cacheing {key}")
             self.write_to_cache(msgs)
 
         self.dump()
@@ -69,7 +69,7 @@ class BagManager:
         """
         Generate caching dictionary from a yaml file.
         """
-        with open(self.diag_dir + "messages_to_bag.yaml", "r") as f:
+        with open(self.diag_dir + "messages_to_bag.yaml") as f:
             messages_to_bag = yaml.load(f)
 
         # Set bagging parameters
@@ -86,7 +86,7 @@ class BagManager:
             msg_name = msg["message_name"]
 
             # Import the message
-            exec("from {0}.msg import {1}".format(msg_type, msg_name))
+            exec(f"from {msg_type}.msg import {msg_name}")
 
             # Create subscriber and add to dictionary
             self.cache_dict[msg_topic] = yield self.nh.subscribe(
@@ -127,7 +127,7 @@ class BagManager:
                     bag.write(key, (yield msg), t=(yield msg_time))
                     # msgs.append([key, (yield msg), (yield msg_time)])
                 else:
-                    print("There's a problem recording {0}".format(key))
+                    print(f"There's a problem recording {key}")
 
             yield self.nh.sleep(self.time_step)
 

@@ -10,7 +10,7 @@ class RunMissionTest(unittest.TestCase):
     def __init__(self, *args):
         self.client = MissionClient()
         self.client.wait_for_server()
-        super(RunMissionTest, self).__init__(*args)
+        super().__init__(*args)
 
     def test_run_mission(self):
         self.client.run_mission("PrintAndWait")

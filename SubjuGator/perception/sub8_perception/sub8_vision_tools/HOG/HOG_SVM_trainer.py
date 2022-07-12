@@ -9,7 +9,7 @@ from sklearn.svm import SVC
 
 base = os.path.dirname(os.path.abspath(__file__))
 folder = base + "/train_vid"
-f = open(base + "/roi", "r")
+f = open(base + "/roi")
 
 hog = cv2.HOGDescriptor((64, 64), (64, 64), (4, 4), (64, 64), 9)
 desc_list = None

@@ -469,7 +469,7 @@ class OGridServer:
 
                 try:
                     # fprint("np_grid shape: {}".format(np_grid[start_y:end_y, start_x:end_x].shape))
-                    fprint("{}, {}".format(ogrid.topic, ogrid.replace))
+                    fprint(f"{ogrid.topic}, {ogrid.replace}")
                     if ogrid.replace:
                         np_grid[start_y:end_y, start_x:end_x] = to_add
                     else:

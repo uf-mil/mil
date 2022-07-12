@@ -94,7 +94,7 @@ class SimulatedKillBoard(SimulatedSerial):
     port = "simulated-kill-board"
 
     def __init__(self, *args, **kwargs):
-        super(SimulatedKillBoard, self).__init__()
+        super().__init__()
         self.last_ping = None
         self.memory = {
             "BUTTON_FRONT_PORT": False,
@@ -109,7 +109,7 @@ class SimulatedKillBoard(SimulatedSerial):
         for key in constants["KILLS"]:
             if key.find("BUTTON") == 0:
                 rospy.Service(
-                    "~{}".format(key),
+                    f"~{key}",
                     SetBool,
                     lambda req, _button=key: self._set_button(_button, req.data),
                 )

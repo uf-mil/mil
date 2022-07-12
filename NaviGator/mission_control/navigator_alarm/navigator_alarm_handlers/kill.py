@@ -25,7 +25,7 @@ class Kill(HandlerBase):
 
     def _online_bagger_cb(self, status, result):
         if status == 3:
-            rospy.loginfo("KILL BAG WRITTEN TO {}".format(result.filename))
+            rospy.loginfo(f"KILL BAG WRITTEN TO {result.filename}")
         else:
             rospy.logwarn(
                 "KILL BAG {}, status: {}".format(

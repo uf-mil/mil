@@ -94,7 +94,7 @@ def train_classifier(x, y, n_trees=5, max_depth=3):
 
 def monitor(i, self, local_vars):
     bar.update(1)
-    bar.write("Train Loss: {}".format(self.train_score_[i]))
+    bar.write(f"Train Loss: {self.train_score_[i]}")
 
 
 def main():
@@ -115,7 +115,7 @@ def main():
     print("Loading pickle...")
     data = pickle.load(open(args.pkl, "rb"))
     clf = train_on_pkl(data)
-    print("Saving as {}".format(args.output))
+    print(f"Saving as {args.output}")
     pickle.dump(clf, open(args.output, "wb"))
     u_image, u_targets = data[-1]
     image = u_image[::2, ::2, :]

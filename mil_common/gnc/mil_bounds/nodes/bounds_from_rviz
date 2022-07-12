@@ -9,7 +9,7 @@ from mil_tools import rosmsg_to_numpy
 
 class BoundsFromRVIZ(BoundsClient):
     def __init__(self, frame, ignore_stamp):
-        super(BoundsFromRVIZ, self).__init__()
+        super().__init__()
         self.tf_buffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tf_buffer)
         self.frame = frame
@@ -28,9 +28,9 @@ class BoundsFromRVIZ(BoundsClient):
                     msg, self.frame, timeout=rospy.Duration(10, 0)
                 )
             except tf2_ros.TransformException as err:
-                rospy.logerr("Transform error: {}".format(err))
+                rospy.logerr(f"Transform error: {err}")
                 return
-        rospy.loginfo("Recievied point {} of 4".format(len(self.points) + 1))
+        rospy.loginfo(f"Recievied point {len(self.points) + 1} of 4")
         self.points.append(rosmsg_to_numpy(msg.point))
         if len(self.points) == 4:
             self.sub.unregister()

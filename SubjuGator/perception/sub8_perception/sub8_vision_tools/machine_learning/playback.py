@@ -45,8 +45,8 @@ if __name__ == "__main__":
 
     last_mask = None
     if args.topic is not None:
-        assert args.topic in bc.image_topics, "{} not in the bag".format(args.topic)
-        print("Crawling topic {}".format(args.topic))
+        assert args.topic in bc.image_topics, f"{args.topic} not in the bag"
+        print(f"Crawling topic {args.topic}")
         crawl = bc.crawl(topic=args.topic)
     else:
         crawl = bc.crawl(topic=bc.image_topics[0])

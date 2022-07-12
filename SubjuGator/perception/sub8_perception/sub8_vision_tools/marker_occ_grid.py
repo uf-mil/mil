@@ -185,7 +185,7 @@ class Searcher:
         #     return [0, False, srv.intial_position]
 
         self.current_search += 1
-        rospy.loginfo("Search number: {}".format(self.current_search))
+        rospy.loginfo(f"Search number: {self.current_search}")
         # Should be variable based on height maybe?
         pose = msg_helpers.numpy_quat_pair_to_pose(coor, np.array([0, 0, 0, 1]))
         return [self.check_searched(coor[:2], srv.search_radius), True, pose]

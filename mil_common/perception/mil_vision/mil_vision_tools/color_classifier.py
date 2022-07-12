@@ -336,7 +336,7 @@ class ContourClassifier:
         if args.cmd == "score":
             features, classes = self.read_from_csv(training_file=args.training_file)
             self.train(features, classes)
-            print("Score: {}%".format(self.score(features, classes) * 100))
+            print(f"Score: {self.score(features, classes) * 100}%")
 
 
 class GaussianColorClassifier(ContourClassifier):
@@ -351,7 +351,7 @@ class GaussianColorClassifier(ContourClassifier):
     FEATURES = ["B", "G", "R", "H", "S", "V", "L", "A", "B"]
 
     def __init__(self, classes, **kwargs):
-        super(GaussianColorClassifier, self).__init__(classes, **kwargs)
+        super().__init__(classes, **kwargs)
         self.classifier = GaussianNB()
 
     def get_features(self, img, mask):

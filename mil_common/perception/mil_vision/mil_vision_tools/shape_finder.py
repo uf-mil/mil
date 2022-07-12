@@ -97,9 +97,7 @@ class RectFinder:
         return numpy_to_polygon(self.model_3D)
 
     @staticmethod
-    def sort_corners(
-        rect: np.ndarray, debug_image: Optional[bool] = None
-    ) -> np.ndarray:
+    def sort_corners(rect: np.ndarray, debug_image: bool | None = None) -> np.ndarray:
         """
         Given a contour of 4 points, returns the same 4 points sorted in a known way.
         Used so that indicies of contour line up to that in model for cv2.solvePnp
@@ -160,10 +158,10 @@ class RectFinder:
     def get_corners(
         self,
         contour: np.ndarray,
-        debug_image: Optional[bool] = None,
-        epsilon_range: Tuple[float, float] = (0.01, 0.1),
+        debug_image: bool | None = None,
+        epsilon_range: tuple[float, float] = (0.01, 0.1),
         epsilon_step: float = 0.01,
-    ) -> Optional[np.ndarray]:
+    ) -> np.ndarray | None:
         """
         Attempts to find the 4 corners of a contour representing a quadrilateral.
 
@@ -198,11 +196,11 @@ class RectFinder:
     def get_pose_3D(
         self,
         corners: np.ndarray,
-        intrinsics: Optional[np.ndarray] = None,
-        dist_coeffs: Optional[np.ndarray] = None,
-        cam: Optional[PinholeCameraModel] = None,
+        intrinsics: np.ndarray | None = None,
+        dist_coeffs: np.ndarray | None = None,
+        cam: PinholeCameraModel | None = None,
         rectified: bool = False,
-    ) -> Tuple[Any, Any]:
+    ) -> tuple[Any, Any]:
         """
         Uses the model of the object, the corresponding pixels in the image, and camera
         intrinsics to estimate a 3D pose of the object.
@@ -237,7 +235,7 @@ class RectFinder:
         _, rvec, tvec = cv2.solvePnP(self.model_3D, corners, intrinsics, dist_coeffs)
         return (tvec, rvec)
 
-    def get_pose_2D(self, corners: np.ndarray) -> Tuple[Any, Any]:
+    def get_pose_2D(self, corners: np.ndarray) -> tuple[Any, Any]:
         """
         Finds the 2D center of the rectangle and a unit direction vector along the length
         of the rectangle in pixels....
@@ -259,7 +257,7 @@ class RectFinder:
         return (center, vector)
 
     def draw_model(
-        self, size: Tuple[int, int] = (500, 500), border: int = 25
+        self, size: tuple[int, int] = (500, 500), border: int = 25
     ) -> np.ndarray:
         """
         Returns a 1 channel image displaying the internal model of the rectangle.
@@ -300,7 +298,7 @@ class EllipseFinder(RectFinder):
         """
         Create internal model for an ellipse.
         """
-        super(EllipseFinder, self).__init__(length, width)
+        super().__init__(length, width)
 
         # Correct 2D model to be an oval to that verify_contour works
         scale = 1000.0 / self.length
@@ -331,4 +329,4 @@ class CircleFinder(EllipseFinder):
     """
 
     def __init__(self, radius, _=None):
-        super(CircleFinder, self).__init__(radius, radius)
+        super().__init__(radius, radius)

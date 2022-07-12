@@ -151,8 +151,8 @@ def intersect(A, a, B, b):
 
 def minimize_repro_error(left_cam, right_cam, pt_l, pt_r, estimation):
     def f(x):
-        left_error = np.linalg.norm(left_cam.project3dToPixel((x)) - pt_l)
-        right_error = np.linalg.norm(right_cam.project3dToPixel((x)) - pt_r)
+        left_error = np.linalg.norm(left_cam.project3dToPixel(x) - pt_l)
+        right_error = np.linalg.norm(right_cam.project3dToPixel(x) - pt_r)
         return left_error**2 + right_error**2
 
     correction = minimize(
@@ -170,8 +170,8 @@ def do_the_magic(pt_l, pt_r, cam_tf):
     """
     global left_cam, right_cam
 
-    ray_1 = np.array(left_cam.projectPixelTo3dRay((pt_l)))
-    ray_2 = np.array(right_cam.projectPixelTo3dRay((pt_r)))
+    ray_1 = np.array(left_cam.projectPixelTo3dRay(pt_l))
+    ray_2 = np.array(right_cam.projectPixelTo3dRay(pt_r))
 
     # I'm doing all the math in the camera frame
     origin_1 = np.array([0, 0, 0])
@@ -185,10 +185,10 @@ def do_the_magic(pt_l, pt_r, cam_tf):
 
 
 def load_from_parameter(color):
-    param_name = "/start_gate/{}".format(color)
+    param_name = f"/start_gate/{color}"
     if not rospy.has_param(param_name):
         rospy.logerr("No parameters have been set!")
-        rospy.signal_shutdown("Requires param to be set: {}".format(param_name))
+        rospy.signal_shutdown(f"Requires param to be set: {param_name}")
         # exit()
 
     param = rospy.get_param(param_name)

@@ -13,15 +13,15 @@ import sys
 
 
 def get_tests(directory):
-    cmd = "make -C {}".format(directory)
-    cmd += "  -qp | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}'"
+    cmd = f"make -C {directory}"
+    cmd += "  -qp | awk -F':' '/^[a-zA-Z0-9][^$#\\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}'"
     tests = subprocess.check_output(["bash", "-c", cmd])
     tests = tests.split()
     return tests
 
 
 def get_packages(directory):
-    cmd = "catkin_topological_order --only-names {}".format(directory)
+    cmd = f"catkin_topological_order --only-names {directory}"
     packages = subprocess.check_output(["bash", "-c", cmd])
     packages = packages.split()
     return packages
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     # produce a list of all test build targets from a package in the specified folders
     valid = []
     for p in packages:
-        test = "run_tests_{}".format(p)
+        test = f"run_tests_{p}"
         if test in tests:
             valid.append(test)
     if len(valid) < 1:

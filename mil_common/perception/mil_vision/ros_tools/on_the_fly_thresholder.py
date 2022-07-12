@@ -52,7 +52,7 @@ class Trackbars:
         return lower_bounds, upper_bounds
 
 
-class Thresholder(object):
+class Thresholder:
     """
     Does the thresholding and manages the windows associated with that
     """

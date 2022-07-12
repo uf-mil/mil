@@ -169,7 +169,7 @@ class StatusMessage(KillStatus):
         Constructs a new namedtuple to derive the class from. This can't be done
         in __init__ because namedtuples are immutable.
         """
-        return super(StatusMessage, cls).__new__(cls, *args)
+        return super().__new__(cls, *args)
 
     @classmethod
     def from_bytes(cls, data):

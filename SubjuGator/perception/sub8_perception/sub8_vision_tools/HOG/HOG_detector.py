@@ -59,7 +59,7 @@ class HOGDetector:
         #               int nlevels=DEFAULT_NLEVELS);
         self.hog = cv2.HOGDescriptor((64, 64), (64, 64), (4, 4), (64, 64), 9)
         self.base = os.path.dirname(os.path.abspath(__file__))
-        coef = open(self.base + "/coef", "r")
+        coef = open(self.base + "/coef")
         l = coef.read()
         arr = l.split("\n")
         coef = []

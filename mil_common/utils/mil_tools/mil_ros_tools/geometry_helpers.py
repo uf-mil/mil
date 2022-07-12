@@ -191,7 +191,7 @@ def quat_to_euler(q):
     Approximate a quaternion as a euler rotation vector
     """
     euler_rot_vec = trans.euler_from_quaternion([q.x, q.y, q.z, q.w])
-    final = np.array(([euler_rot_vec[0], euler_rot_vec[1], euler_rot_vec[2]]))
+    final = np.array([euler_rot_vec[0], euler_rot_vec[1], euler_rot_vec[2]])
     return final
 
 

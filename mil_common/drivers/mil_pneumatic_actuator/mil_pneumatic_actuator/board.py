@@ -20,7 +20,7 @@ class PnuematicActuatorDriverError(Exception):
     """
 
     def __init__(self, message):
-        super(PnuematicActuatorDriverError, self).__init__("Actuator board: " + message)
+        super().__init__("Actuator board: " + message)
 
 
 class PnuematicActuatorDriverChecksumError(PnuematicActuatorDriverError):
@@ -34,7 +34,7 @@ class PnuematicActuatorDriverChecksumError(PnuematicActuatorDriverError):
         message = "Invalid checksum. Recievied {}, should be {}".format(
             hex(checksum_is), hex(checksum_should_be)
         )
-        super(PnuematicActuatorDriverChecksumError, self).__init__(message)
+        super().__init__(message)
 
 
 class PnuematicActuatorDriverResponseError(PnuematicActuatorDriverError):
@@ -48,7 +48,7 @@ class PnuematicActuatorDriverResponseError(PnuematicActuatorDriverError):
         message = "Unexpected response. Expected {}, recieved {}".format(
             hex(received), hex(expected)
         )
-        super(PnuematicActuatorDriverResponseError, self).__init__(message)
+        super().__init__(message)
 
 
 class PnuematicActuatorTimeoutError(PnuematicActuatorDriverError):
@@ -60,7 +60,7 @@ class PnuematicActuatorTimeoutError(PnuematicActuatorDriverError):
 
     def __init__(self):
         message = "Serial timout"
-        super(PnuematicActuatorTimeoutError, self).__init__(message)
+        super().__init__(message)
 
 
 class PnuematicActuatorDriver:

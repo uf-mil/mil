@@ -36,8 +36,8 @@ def split_data(
     X = sorted(glob.glob(image_dir + "/*"))
     Y = sorted(glob.glob(ann_dir + "/*"))
 
-    X_set = set([os.path.basename(os.path.splitext(x)[0]) for x in X])
-    Y_set = set([os.path.basename(os.path.splitext(y)[0]) for y in Y])
+    X_set = {os.path.basename(os.path.splitext(x)[0]) for x in X}
+    Y_set = {os.path.basename(os.path.splitext(y)[0]) for y in Y}
 
     Z = X_set.symmetric_difference(Y_set)
     Z = [z + os.path.splitext(X[0])[1] for z in Z]

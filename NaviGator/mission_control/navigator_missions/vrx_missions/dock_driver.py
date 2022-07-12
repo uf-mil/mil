@@ -7,7 +7,7 @@ from vrx import Vrx
 
 class DockDriver(Vrx):
     def __init__(self, *args, **kwargs):
-        super(DockDriver, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
@@ -26,7 +26,8 @@ class DockDriver(Vrx):
 
         try:
             yield self.run_submission(
-                "Dock", parameters="%s %s" % (dock_msg[0], shape_to_shape[dock_msg[1]])
+                "Dock",
+                parameters=f"{dock_msg[0]} {shape_to_shape[dock_msg[1]]}",
             )
         except Exception as e:
             print(e)

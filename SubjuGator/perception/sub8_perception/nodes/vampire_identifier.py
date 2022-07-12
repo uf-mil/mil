@@ -109,7 +109,7 @@ class VampireIdentifier:
             self.min_observations = config["min_obs"]
 
         except ValueError as e:
-            rospy.logwarn("Invalid dynamic reconfigure: {}".format(e))
+            rospy.logwarn(f"Invalid dynamic reconfigure: {e}")
             return self.last_config
 
         if self.override:
@@ -285,8 +285,8 @@ class VampireIdentifier:
             M = cv2.moments(c)
             if M["m00"] == 0:
                 M["m00"] = 0.000001
-            cX = int((M["m10"] / M["m00"]))
-            cY = int((M["m01"] / M["m00"]))
+            cX = int(M["m10"] / M["m00"])
+            cY = int(M["m01"] / M["m00"])
             self.point_pub.publish(Point(x=cX, y=cY))
             shape = self.detect(c)
 
@@ -333,7 +333,7 @@ class VampireIdentifier:
                     rospy.Duration(0.2),
                 )
             except tf.Exception as e:
-                rospy.logwarn("Could not transform camera to map: {}".format(e))
+                rospy.logwarn(f"Could not transform camera to map: {e}")
                 return False
 
             (t, rot_q) = self.tf_listener.lookupTransform(
@@ -349,7 +349,7 @@ class VampireIdentifier:
                 self.status = "Pose found"
 
             else:
-                self.status = "{} observations".format(len(observations))
+                self.status = f"{len(observations)} observations"
 
 
 def main(args):

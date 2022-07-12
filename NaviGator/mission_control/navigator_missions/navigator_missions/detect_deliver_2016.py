@@ -32,7 +32,7 @@ class DetectDeliver(Navigator):
     BACKUP_DISTANCE = 5
 
     def __init__(self):
-        super(DetectDeliver, self).__init__()
+        super().__init__()
         self.identified_shapes = {}
         self.last_shape_error = ""
         self.last_lidar_error = ""
@@ -71,7 +71,7 @@ class DetectDeliver(Navigator):
         self.Shape = yield self.mission_params["detect_deliver_shape"].get()
         self.Color = yield self.mission_params["detect_deliver_color"].get()
         fprint(
-            "Color={} Shape={} Target={}".format(self.Color, self.Shape, target),
+            f"Color={self.Color} Shape={self.Shape} Target={target}",
             title="DETECT DELIVER",
             msg_color="green",
         )
@@ -107,13 +107,13 @@ class DetectDeliver(Navigator):
                     )
                 else:
                     fprint(
-                        "Normal not found Error={}".format(normal_res.error),
+                        f"Normal not found Error={normal_res.error}",
                         title="DETECT DELIVER",
                         msg_color="red",
                     )
         else:
             fprint(
-                "shape not found Error={}".format(shapes.error),
+                f"shape not found Error={shapes.error}",
                 title="DETECT DELIVER",
                 msg_color="red",
             )
@@ -253,7 +253,7 @@ class DetectDeliver(Navigator):
                 else:
                     if not self.last_lidar_error == normal_res.error:
                         fprint(
-                            "Normal not found Error={}".format(normal_res.error),
+                            f"Normal not found Error={normal_res.error}",
                             title="DETECT DELIVER",
                             msg_color="red",
                         )
@@ -261,7 +261,7 @@ class DetectDeliver(Navigator):
         else:
             if not self.last_shape_error == shapes.error:
                 fprint(
-                    "shape not found Error={}".format(shapes.error),
+                    f"shape not found Error={shapes.error}",
                     title="DETECT DELIVER",
                     msg_color="red",
                 )
@@ -305,7 +305,7 @@ class DetectDeliver(Navigator):
             -self.shooter_baselink_tf._p[0]
         )
         fprint(
-            "Aligning to shoot at {}".format(move),
+            f"Aligning to shoot at {move}",
             title="DETECT DELIVER",
             msg_color="green",
         )
@@ -357,19 +357,17 @@ class DetectDeliver(Navigator):
         for i in range(self.NUM_BALLS):
             goal = yield self.shooterLoad.send_goal(ShooterDoAction())
             fprint(
-                "Loading Shooter {}".format(i),
+                f"Loading Shooter {i}",
                 title="DETECT DELIVER",
                 msg_color="green",
             )
             yield goal.get_result()
             yield self.nh.sleep(2)
             goal = yield self.shooterFire.send_goal(ShooterDoAction())
-            fprint(
-                "Firing Shooter {}".format(i), title="DETECT DELIVER", msg_color="green"
-            )
+            fprint(f"Firing Shooter {i}", title="DETECT DELIVER", msg_color="green")
             yield goal.get_result()
             fprint(
-                "Waiting {} seconds between shots".format(self.WAIT_BETWEEN_SHOTS),
+                f"Waiting {self.WAIT_BETWEEN_SHOTS} seconds between shots",
                 title="DETECT DELIVER",
                 msg_color="green",
             )
@@ -434,14 +432,14 @@ class DetectDeliver(Navigator):
         align_defer = self.continuously_align()
         fprint(
             "Sleeping for {} seconds to allow for alignment",
-            title="DETECT DELIVER".format(self.FOREST_SLEEP),
+            title=f"DETECT DELIVER",
             msg_color="green",
         )
         yield self.nh.sleep(self.FOREST_SLEEP)
         for i in range(self.NUM_BALLS):
             goal = yield self.shooterLoad.send_goal(ShooterDoAction())
             fprint(
-                "Loading Shooter {}".format(i),
+                f"Loading Shooter {i}",
                 title="DETECT DELIVER",
                 msg_color="green",
             )
@@ -449,14 +447,12 @@ class DetectDeliver(Navigator):
             yield self.nh.sleep(2)
             self.align_forest_pause = True
             goal = yield self.shooterFire.send_goal(ShooterDoAction())
-            fprint(
-                "Firing Shooter {}".format(i), title="DETECT DELIVER", msg_color="green"
-            )
+            fprint(f"Firing Shooter {i}", title="DETECT DELIVER", msg_color="green")
             yield goal.get_result()
             yield self.nh.sleep(1)
             self.align_forest_pause = False
             fprint(
-                "Waiting {} seconds between shots".format(self.WAIT_BETWEEN_SHOTS),
+                f"Waiting {self.WAIT_BETWEEN_SHOTS} seconds between shots",
                 title="DETECT DELIVER",
                 msg_color="green",
             )
@@ -498,7 +494,7 @@ class DetectDeliver(Navigator):
         # color = "ANY"
         shape = "ANY"
         fprint(
-            "Setting search shape={} color={}".format(shape, color),
+            f"Setting search shape={shape} color={color}",
             title="DETECT DELIVER",
             msg_color="green",
         )

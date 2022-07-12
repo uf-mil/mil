@@ -51,7 +51,7 @@ class PingerAndy(Navigator):
         totems = []
         for i in range(4):
             while True:
-                self.send_feedback("Click on totem {} in rviz".format(i + 1))
+                self.send_feedback(f"Click on totem {i + 1} in rviz")
                 point = yield self.rviz_point.get_next_message()
                 if point.header.frame_id != "enu":
                     self.send_feedback(
@@ -60,7 +60,7 @@ class PingerAndy(Navigator):
                     )
                     continue
                 break
-            self.send_feedback("Recieved point for totem {}".format(i + 1))
+            self.send_feedback(f"Recieved point for totem {i + 1}")
             point = rosmsg_to_numpy(point.point)
             point[2] = 0.0
             totems.append(np.array(point))
@@ -96,13 +96,13 @@ class PingerAndy(Navigator):
         intersection = self.intersection(pinger_line, gates_line)
         if intersection is None:
             raise Exception("No intersection")
-        self.send_feedback("Pinger is roughly at {}".format(intersection))
+        self.send_feedback(f"Pinger is roughly at {intersection}")
 
         distances = []
         for gate in gates:
             distances.append(np.linalg.norm(gate[0:2] - intersection))
         argmin = np.argmin(np.array(distances))
-        self.send_feedback("Pinger is likely at gate {}".format(argmin + 1))
+        self.send_feedback(f"Pinger is likely at gate {argmin + 1}")
 
         gate = gates[argmin][:2]
 

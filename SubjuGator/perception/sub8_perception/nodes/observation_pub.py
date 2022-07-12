@@ -231,7 +231,7 @@ class MultiObs:
                 rospy.Duration(0.2),
             )
         except tf.Exception as e:
-            rospy.logwarn("Could not transform camera to map: {}".format(e))
+            rospy.logwarn(f"Could not transform camera to map: {e}")
             return False
 
         (t, rot_q) = self.tf_listener.lookupTransform(
@@ -266,7 +266,7 @@ class MultiObs:
             print((self.est + self.est1 + self.est2) / 3)
 
         else:
-            self.status = "{} observations".format(len(observations))
+            self.status = f"{len(observations)} observations"
 
 
 def main(args):

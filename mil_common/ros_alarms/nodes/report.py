@@ -16,7 +16,7 @@ def print_alarm(alarm):
         )
     )
     for name, value in alarm.parameters.items():
-        rospy.loginfo("\t{} = {}".format(name, value))
+        rospy.loginfo(f"\t{name} = {value}")
 
 
 rospy.init_node("alarm_report", anonymous=True)

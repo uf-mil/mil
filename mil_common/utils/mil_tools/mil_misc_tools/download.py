@@ -32,7 +32,7 @@ def download_and_unzip(url: str, output_dir: str):
     try:
         html = download(url)
     except:
-        raise IOError(f"Could not load file at {url}")
+        raise OSError(f"Could not load file at {url}")
 
     fake_file = StringIO.StringIO(html)
 

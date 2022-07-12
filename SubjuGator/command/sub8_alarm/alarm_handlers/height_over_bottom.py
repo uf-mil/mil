@@ -39,7 +39,7 @@ class HeightOverBottom(HandlerBase):
         if self._last_height <= self._height_to_kill and not self._killed:
             rospy.logwarn("SUB TOO LOW!")
             self.ab.raise_alarm(
-                problem_description="The sub was too low: {}".format(self._last_height),
+                problem_description=f"The sub was too low: {self._last_height}",
                 parameters={"height": self._last_height},
                 severity=5,
             )

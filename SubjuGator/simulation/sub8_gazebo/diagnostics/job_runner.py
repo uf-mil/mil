@@ -30,7 +30,7 @@ FUTURE:
 """
 
 
-class JobManager(object):
+class JobManager:
     def __init__(self, nh, sub, bag=True, verbose=False):
         self.nh = nh
         self.sub = sub
@@ -125,7 +125,7 @@ class JobManager(object):
 
             print("------------------------------------------------------------------")
             print(
-                "{0} Successes, {1} Fails, {2} Total".format(
+                "{} Successes, {} Fails, {} Total".format(
                     self.successes, self.fails, current_loop
                 )
             )
@@ -139,10 +139,10 @@ class JobManager(object):
         print
         print("JOB - Test Finished!")
         print("JOB - Writing report to file. Do not exit.")
-        self.log("Time of completion: {0}. \n".format(int(time.time())))
+        self.log(f"Time of completion: {int(time.time())}. \n")
 
     def log(self, text):
-        print("JOB - Logging {}".format(text))
+        print(f"JOB - Logging {text}")
         # a+ creates the file if it doesn't exist
         with open(DIAG_OUT_DIR + "log.txt", "a+") as f:
             f.write(text)
@@ -158,7 +158,7 @@ class JobManager(object):
             for test_name in dir(gazebo_tests)
             if not test_name.startswith("_")
         ]
-        assert name in available_tests, "Unknown test, {}".format(name)
+        assert name in available_tests, f"Unknown test, {name}"
         assert isinstance(
             runs, int
         ), "Cannot do non-integer runs, wtf are you trying to do?"

@@ -113,15 +113,15 @@ def test():
     )
     assert (
         error < 1e-5
-    ), "Magnetic Hardsoft Compenstion self-test failed, error: {}".format(error)
+    ), f"Magnetic Hardsoft Compenstion self-test failed, error: {error}"
 
 
 def axisEqual3D(ax):
     ax.axis("tight")
-    extents = numpy.array([getattr(ax, "get_{}lim".format(dim))() for dim in "xyz"])
+    extents = numpy.array([getattr(ax, f"get_{dim}lim")() for dim in "xyz"])
     r = numpy.max(numpy.abs(extents))
     for dim in "xyz":
-        getattr(ax, "set_{}lim".format(dim))(-r, r)
+        getattr(ax, f"set_{dim}lim")(-r, r)
 
 
 if __name__ == "__main__":
@@ -145,7 +145,7 @@ if __name__ == "__main__":
 
     points = numpy.array(points)
 
-    print("original error: %.4f%%" % (100 * calculate_error(points),))
+    print(f"original error: {100 * calculate_error(points):.4f}%")
 
     try:
         import matplotlib.pyplot as plt
@@ -164,7 +164,7 @@ if __name__ == "__main__":
 
     scale, shift, compensated = fit_ellipsoid(points)
     compensated = numpy.array(compensated)
-    print("error: %.4f%%" % (100 * calculate_error(compensated),))
+    print(f"error: {100 * calculate_error(compensated):.4f}%")
 
     try:
         import matplotlib.pyplot as plt

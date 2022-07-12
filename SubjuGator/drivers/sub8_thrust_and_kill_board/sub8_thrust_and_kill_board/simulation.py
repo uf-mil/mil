@@ -36,7 +36,7 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         self.soft_kill_mobo = False
         self.go_button = False
         self._last_heartbeat = None
-        super(ThrusterAndKillBoardSimulation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._update_timer = rospy.Timer(rospy.Duration(1), self.send_updates)
         self._soft_kill = rospy.Service(
             "/simulate_soft_kill", SetBool, self.set_soft_kill

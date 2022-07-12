@@ -47,7 +47,7 @@ class ShaderReader:
     @classmethod
     def update(self, _dict, _update):
         for k, v in _update.iteritems():
-            if isinstance(v, collections.Mapping):
+            if isinstance(v, collections.abc.Mapping):
                 r = self.update(_dict.get(k, {}), v)
                 _dict[k] = r
             else:

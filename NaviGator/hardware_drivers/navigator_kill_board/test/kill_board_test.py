@@ -18,7 +18,7 @@ class killtest(unittest.TestCase):
         self.updated = False
         self.AlarmListener = AlarmListener("hw-kill", self._hw_kill_cb)
         self.AlarmBroadcaster = AlarmBroadcaster("kill")
-        super(killtest, self).__init__(*args)
+        super().__init__(*args)
 
     @thread_lock(lock)
     def reset_update(self):
@@ -102,9 +102,7 @@ class killtest(unittest.TestCase):
         """
         Tests that button kills work through simulated service.
         """
-        bfp = rospy.ServiceProxy(
-            "/kill_board_interface/BUTTON_{}".format(button), SetBool
-        )
+        bfp = rospy.ServiceProxy(f"/kill_board_interface/BUTTON_{button}", SetBool)
         bfp.wait_for_service(timeout=5.0)
 
         self.reset_update()

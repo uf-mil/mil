@@ -22,14 +22,14 @@ class ROI_Collection:
         pickle.dump(self, open(name, "wb"))
 
 
-class ROI_Generator(object):
+class ROI_Generator:
     def __init__(self):
         self.folder = os.path.dirname(os.path.realpath(__file__))
         self.bridge = CvBridge()
         self.roi_to_tracker = {}
 
     def get_roi(self, name):
-        file = open(self.folder + "/" + name, "r")
+        file = open(self.folder + "/" + name)
         for line in file:
             line = line.replace("\n", "")
             if len(line) == 0:

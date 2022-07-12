@@ -92,7 +92,7 @@ class Move(SubjuGator):
             if command == "custom":
                 # Let the user input custom commands, the eval may be dangerous
                 # so do away with that at some point.
-                self.send_feedback("Moving with the command: {}".format(argument))
+                self.send_feedback(f"Moving with the command: {argument}")
                 res = yield eval("self.move.{}.go()".format(argument, **action_kwargs))
 
             elif command in ["tp", "teleport"]:
@@ -104,7 +104,7 @@ class Move(SubjuGator):
                     config_file = os.path.join(
                         rospack.get_path("sub8_gazebo"), "config", "teleport_locs.yaml"
                     )
-                    f = yaml.safe_load(open(config_file, "r"))
+                    f = yaml.safe_load(open(config_file))
                     if len(arguments) > 1:
                         # Command only takes in one string so to prevent this
                         # command from flowing over into movement we break
@@ -212,7 +212,7 @@ class Move(SubjuGator):
                     unit = argument[last_digit_index:]
 
                 extra = "and zeroing pitch and roll" if args.zrp else ""
-                self.send_feedback("{}ing {}{} {}".format(command, amount, unit, extra))
+                self.send_feedback(f"{command}ing {amount}{unit} {extra}")
                 bad_unit = UNITS.get(unit, "BAD")
                 if bad_unit == "BAD":
                     self.send_feedback("BAD UNIT")
@@ -222,4 +222,4 @@ class Move(SubjuGator):
                     res = yield goal.zero_roll_and_pitch().go(**action_kwargs)
                 else:
                     res = yield goal.go(**action_kwargs)
-                self.send_feedback("Result: {}".format(res.error))
+                self.send_feedback(f"Result: {res.error}")

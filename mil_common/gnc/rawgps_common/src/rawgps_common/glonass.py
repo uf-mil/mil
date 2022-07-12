@@ -140,6 +140,6 @@ class Ephemeris:
     def __str__(self):
         return (
             "Ephemeris(\n"
-            + "".join("    %s=%r\n" % (k, v) for k, v in sorted(self.__dict__.items()))
+            + "".join(f"    {k}={v!r}\n" for k, v in sorted(self.__dict__.items()))
             + ")"
         )

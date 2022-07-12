@@ -104,7 +104,7 @@ class CenteredCheckBox(QtWidgets.QWidget):
     """
 
     def __init__(self):
-        super(CenteredCheckBox, self).__init__()
+        super().__init__()
         checkbox = QtWidgets.QCheckBox()
         layout = QtWidgets.QHBoxLayout(self)
         layout.addWidget(checkbox)
@@ -140,7 +140,7 @@ class Dashboard(Plugin):
     """
 
     def __init__(self, context):
-        super(Dashboard, self).__init__(context)
+        super().__init__(context)
 
         # Lock used to ensure ROS callbacks are synced with Qt
         self.lock = threading.Lock()
@@ -218,7 +218,7 @@ class Dashboard(Plugin):
             self.current_mission_status_label.setText(self.current_mission_status)
             self.current_mission_result = ""
             self.current_mission_label.setText(self.current_mission_mission)
-            self.ui_log("STARTING: new mission {}".format(self.current_mission_mission))
+            self.ui_log(f"STARTING: new mission {self.current_mission_mission}")
         if goal.id == self.current_mission:
             terminal_state = TerminalState.to_string(status)
             if terminal_state == "NO_SUCH_STATE_1":
@@ -226,7 +226,7 @@ class Dashboard(Plugin):
             result = handler.get_result()
             if result and result.result != self.current_mission_result:
                 self.result_label.setText(result.result)
-                self.ui_log("RESULT: {}".format(result.result))
+                self.ui_log(f"RESULT: {result.result}")
             if terminal_state != self.current_mission_status:
                 self.current_mission_status = terminal_state
                 self.current_mission_status_label.setText(self.current_mission_status)
@@ -406,9 +406,9 @@ class Dashboard(Plugin):
     def load_file(self, event):
         name = QtWidgets.QFileDialog.getOpenFileName(self._widget, "Open File")[0]
         try:
-            f = open(name, "r")
-        except IOError as e:
-            rospy.logwarn("Error loading configuration from file: {}".format(e))
+            f = open(name)
+        except OSError as e:
+            rospy.logwarn(f"Error loading configuration from file: {e}")
             return
         with f:
             missions = json.load(f)
@@ -418,8 +418,8 @@ class Dashboard(Plugin):
         name = QtWidgets.QFileDialog.getSaveFileName(self._widget, "Save File")[0]
         try:
             f = open(name, "w")
-        except IOError as e:
-            rospy.logwarn("Error saving configuration to file: {}".format(e))
+        except OSError as e:
+            rospy.logwarn(f"Error saving configuration to file: {e}")
             return
         with f:
             missions = self.get_chained_missions()

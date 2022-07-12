@@ -33,7 +33,7 @@ as it writes.
 """
 
 
-class OnlineBagger(object):
+class OnlineBagger:
     BAG_TOPIC = "/online_bagger/bag"
 
     def __init__(self):
@@ -61,9 +61,7 @@ class OnlineBagger(object):
             auto_start=False,
         )
         self.subscribe_loop()
-        rospy.loginfo(
-            "Remaining Failed Topics: {}\n".format(self.get_subscriber_list(False))
-        )
+        rospy.loginfo(f"Remaining Failed Topics: {self.get_subscriber_list(False)}\n")
         self._action_server.start()
 
     def get_subscriber_list(self, status):
@@ -117,8 +115,8 @@ class OnlineBagger(object):
             if key[0:4] == "bag_":
                 add_env_var(os.environ[key])
 
-        rospy.loginfo("Default stream_time: {} seconds".format(self.stream_time))
-        rospy.loginfo("Bag Directory: {}".format(self.dir))
+        rospy.loginfo(f"Default stream_time: {self.stream_time} seconds")
+        rospy.loginfo(f"Bag Directory: {self.dir}")
 
     def make_dicts(self):
         """
@@ -163,9 +161,7 @@ class OnlineBagger(object):
         for topic in self.subscriber_list:
             self.topic_messages[topic] = SliceableDeque(deque())
 
-        rospy.loginfo(
-            "Initial subscriber_list: {}".format(self.get_subscriber_list(False))
-        )
+        rospy.loginfo(f"Initial subscriber_list: {self.get_subscriber_list(False)}")
 
     def subscribe_loop(self):
         """
@@ -424,13 +420,13 @@ class OnlineBagger(object):
             if bag is not None:
                 bag.close()
             return
-        rospy.loginfo("Bag written to {}".format(result.filename))
+        rospy.loginfo(f"Bag written to {result.filename}")
         result.success = True
         self._action_server.set_succeeded(result)
         self.streaming = True
 
 
-class OnlineBaggerClient(object):
+class OnlineBaggerClient:
     """
     Wrapper to run an action client connecting to online bagger
     and triggering a write with the specified topics, time, and
@@ -475,7 +471,7 @@ class OnlineBaggerClient(object):
         if status == 3:
             print("Bag successful")
         else:
-            print("Bag {}: {}".format(TerminalState.to_string(status), result.status))
+            print(f"Bag {TerminalState.to_string(status)}: {result.status}")
 
 
 if __name__ == "__main__":

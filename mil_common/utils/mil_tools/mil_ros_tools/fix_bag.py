@@ -40,7 +40,7 @@ class BagFixer:
         try:
             bag = rosbag.Bag(infile)
         except rosbag.bag.ROSBagException as e:
-            print("Error opening bag {}: {}".format(infile, e))
+            print(f"Error opening bag {infile}: {e}")
             return
         _, _, first_time = next(bag.read_messages())
         assert first_time is not None

@@ -91,16 +91,16 @@ class BBOXPCODAR:
                 object_pose_camera
             )
 
-            rospy.loginfo("Object {} at pixel {}".format(idn, object_pixel))
+            rospy.loginfo(f"Object {idn} at pixel {object_pixel}")
             objects: list[ObjectInImage] = msg.objects or []
 
             for obj in objects:
                 points = rosmsg_to_numpy(obj.points)
 
                 if self.point_in_bbox(object_pixel, points):
-                    rospy.loginfo("{} found for {}".format(obj.name, idn))
+                    rospy.loginfo(f"{obj.name} found for {idn}")
                     req = ObjectDBQueryRequest()
-                    req.cmd = "{}={}".format(idn, obj.name)
+                    req.cmd = f"{idn}={obj.name}"
                     self.pcodar_client(req)
 
 

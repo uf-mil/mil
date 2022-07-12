@@ -14,7 +14,7 @@ NAME = "server_tester"
 class ClientTester(unittest.TestCase):
     def __init__(self, *args):
         rospy.init_node(NAME, anonymous=True)
-        super(ClientTester, self).__init__(*args)
+        super().__init__(*args)
 
     """ Tests alarm client operations
     Creates some listeners and some broadcasters and tests various raising and clearing conditoins

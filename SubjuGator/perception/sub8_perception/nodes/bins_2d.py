@@ -118,7 +118,7 @@ class BinFinder:
         """Find the bins and their orientations."""
         assert (
             bin_type in self.bins[bin_type]
-        ), "Bins_2d does not know bin color: {}".format(bin_type)
+        ), f"Bins_2d does not know bin color: {bin_type}"
         if img is not None:
             kernel = np.ones((2, 2), np.float32) / 4
             img = cv2.filter2D(img, -1, kernel)

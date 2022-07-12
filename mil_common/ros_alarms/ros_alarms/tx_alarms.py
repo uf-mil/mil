@@ -28,10 +28,10 @@ def _check_for_valid_name(alarm_name, nowarn=False):
 
     assert (
         alarm_name.isalnum() or "_" in alarm_name or "-" in alarm_name
-    ), "Alarm name '{}' is not valid!".format(alarm_name)
+    ), f"Alarm name '{alarm_name}' is not valid!"
 
 
-class TxAlarmBroadcaster(object):
+class TxAlarmBroadcaster:
     @classmethod
     @txros.util.cancellableInlineCallbacks
     def init(cls, nh, name, node_name=None, nowarn=False):
@@ -50,7 +50,7 @@ class TxAlarmBroadcaster(object):
         self._node_name = node_name
         self._alarm_set = self._nh.get_service_client("/alarm/set", AlarmSet)
 
-        print("Created alarm broadcaster for alarm {}".format(name))
+        print(f"Created alarm broadcaster for alarm {name}")
 
     def _generate_request(
         self, raised, problem_description="", parameters={}, severity=0
@@ -75,7 +75,7 @@ class TxAlarmBroadcaster(object):
         return self._alarm_set(self._generate_request(False, **kwargs))
 
 
-class TxAlarmListener(object):
+class TxAlarmListener:
     @classmethod
     @txros.util.cancellableInlineCallbacks
     def init(cls, nh, name, callback_funct=None, nowarn=False, **kwargs):

@@ -101,7 +101,7 @@ class BagImageExtractorSource:
         elif encoding == cls.RECT_COLOR:
             return ImageProc.RECT_COLOR
         else:
-            raise Exception("invalid encoding {}".format(encoding))
+            raise Exception(f"invalid encoding {encoding}")
 
     @classmethod
     def from_dict(cls, d: dict):
@@ -238,7 +238,7 @@ class BagImageExtractorSource:
                 self._save_img(msg, time, image_dir, prefix=prefix)
 
 
-class BagImageExtractorDatasets(object):
+class BagImageExtractorDatasets:
     """Represents a dataset, or a set of bags from which images will be
     extracted and put into the same directory. For example, a set of bags
     containing a particular challenge from the same day.
@@ -306,11 +306,11 @@ class BagImageExtractorDatasets(object):
 
         """
         if verbose:
-            print("Producing dataset '{}'".format(self.name))
+            print(f"Producing dataset '{self.name}'")
         image_dir = os.path.join(image_dir, self.name)
         if not os.path.isdir(image_dir):
             if os.path.exists(image_dir):
-                raise Exception("{} exsists but is not a diretory".format(image_dir))
+                raise Exception(f"{image_dir} exsists but is not a diretory")
             os.makedirs(image_dir)
         for source in self.sources:
             source.extract_images(
@@ -318,7 +318,7 @@ class BagImageExtractorDatasets(object):
             )
 
 
-class BagImageExtractorProject(object):
+class BagImageExtractorProject:
     """Holds the configuration for a list of datasets, forming one logical
     project for labeling. For example, a user may create a project
     for the labeling buoys, which contains 3 datasets each with

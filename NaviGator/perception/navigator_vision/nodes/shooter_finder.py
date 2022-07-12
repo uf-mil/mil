@@ -60,7 +60,7 @@ def dist_from_line(p, line, J):
 
 def dist_from_rect(p, rect):
     return min(
-        [dist_from_line(p, line, J) for line, J in rect_lines(rect)],
+        (dist_from_line(p, line, J) for line, J in rect_lines(rect)),
         key=lambda dist_J: abs(dist_J[0]),
     )
 

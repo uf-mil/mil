@@ -88,7 +88,7 @@ class AlarmServer:
         """
         Either returns the alarm request if it exists or a blank alarm.
         """
-        rospy.logdebug("Got request for alarm: {}".format(srv.alarm_name))
+        rospy.logdebug(f"Got request for alarm: {srv.alarm_name}")
         return self.alarms.get(
             srv.alarm_name, Alarm.blank(srv.alarm_name)
         ).as_srv_resp()
@@ -162,7 +162,7 @@ class AlarmServer:
             if inspect.isclass(cls)
             and issubclass(cls, HandlerBase)
             and hasattr(cls, "alarm_name")
-            and name is not "HandlerBase"
+            and name != "HandlerBase"
         ]:
 
             # Have to instantiate so the class exists exists
@@ -191,7 +191,7 @@ class AlarmServer:
 
             self.handlers[alarm_name] = h
 
-            rospy.loginfo("Loaded handler: {}".format(h.alarm_name))
+            rospy.loginfo(f"Loaded handler: {h.alarm_name}")
 
     def _create_meta_alarms(self, namespace="meta_alarms/"):
         """Adds meta alarms to the alarm server

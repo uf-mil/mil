@@ -145,7 +145,7 @@ class Sim:
         return obj
 
     def got_request(self, req: ObjectDBQueryRequest) -> ObjectDBQueryResponse:
-        fprint("Request recieved {}".format(req.name))
+        fprint(f"Request recieved {req.name}")
         if req.name in self.ids:
             index = np.argwhere(self.ids == req.name)
             objects = [

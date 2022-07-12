@@ -17,7 +17,7 @@ MISSION = "Torpedo Challenge"
 
 class Target:
 
-    position: Optional[np.ndarray]
+    position: np.ndarray | None
     destroyed: bool
 
     def __init__(self):
@@ -145,7 +145,7 @@ class FireTorpedos(SubjuGator):
 
     @util.cancellableInlineCallbacks
     def fire(self, target: str):
-        self.print_info("FIRING {}".format(target))
+        self.print_info(f"FIRING {target}")
         target_pose = self.targets[target].position
         yield self.move.go(blind=self.BLIND, speed=0.1)  # Station hold
         transform = yield self._tf_listener.get_transform("map", "/base_link")
@@ -179,7 +179,7 @@ class FireTorpedos(SubjuGator):
         yield self.actuators.shoot_torpedo2()
         self.done = True
 
-    def get_target(self) -> Optional[str]:
+    def get_target(self) -> str | None:
         """
         Returns the target we are going to focus on. Loop through priorities.
         Highest priority is the TCX target, followed by the TRX and TLX.
@@ -206,7 +206,7 @@ class FireTorpedos(SubjuGator):
         # starts for timeout
 
         self.print_info("Enabling Perception")
-        self.print_info("{}, Ree".format(self.vision_proxies.xyz_points))
+        self.print_info(f"{self.vision_proxies.xyz_points}, Ree")
         self.vision_proxies.xyz_points.start()
         self.generate_pattern()
         pattern = self.pattern()

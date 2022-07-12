@@ -68,12 +68,9 @@ class ThrusterFault(HandlerBase):
                 problem_description="{} thrusters have faults".format(
                     len(self._raised_alarms)
                 ),
-                parameters=dict(
-                    [
-                        (t, self._get_fault_codes(k))
-                        for t, k in six.iteritems(self._raised_alarms)
-                    ]
-                ),
+                parameters={
+                    t: self._get_fault_codes(k) for t, k in self._raised_alarms.items()
+                },
             )
 
     def raised(self, alarm):

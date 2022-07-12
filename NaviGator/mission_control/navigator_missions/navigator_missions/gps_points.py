@@ -31,7 +31,7 @@ class GPSWaypoints(Navigator):
             parameters = self.DEFAULT_WAYPOINTS
         points = self.verify_parameters(parameters)
         for point in points:
-            self.send_feedback("Going to point {}".format(point))
+            self.send_feedback(f"Going to point {point}")
             m = self.move.to_lat_long(*point)
             lookat = self.move.look_at(m.pose[0])
             yield lookat.go()

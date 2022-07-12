@@ -5,7 +5,7 @@ from std_msgs.msg import String
 
 
 def printit(alarm):
-    rospy.loginfo("Alarm {} raised".format(alarm.alarm_name))
+    rospy.loginfo(f"Alarm {alarm.alarm_name} raised")
 
 
 if __name__ == "__main__":

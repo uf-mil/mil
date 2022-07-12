@@ -12,8 +12,8 @@ class Killed(Navigator):
     def run(self, parameters):
         alarm = self.kill_alarm
         if alarm.node_name != "":
-            self.send_feedback("Killed by {}".format(alarm.node_name))
+            self.send_feedback(f"Killed by {alarm.node_name}")
         if alarm.problem_description == "":
             return "Killed"
         else:
-            return "Killed: {}".format(alarm.problem_description)
+            return f"Killed: {alarm.problem_description}"

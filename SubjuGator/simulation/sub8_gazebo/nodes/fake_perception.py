@@ -18,7 +18,7 @@ rospack = rospkg.RosPack()
 config_file = os.path.join(
     rospack.get_path("sub8_missions"), "sub8", "vision_proxies.yaml"
 )
-f = yaml.load(open(config_file, "r"))
+f = yaml.load(open(config_file))
 model_state = rospy.ServiceProxy("/gazebo/get_model_state", GetModelState)
 
 fprint = text_effects.FprintFactory(title="SIMULATOR").fprint

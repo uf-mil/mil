@@ -14,7 +14,7 @@ class SimulatedSabertooth2x12(SimulatedSerial):
     """
 
     def __init__(self, *args, **kwargs):
-        super(SimulatedSabertooth2x12, self).__init__()
+        super().__init__()
 
     def write(self, data: bytes) -> None:
         """
@@ -29,17 +29,15 @@ class SimulatedSabertooth2x12(SimulatedSerial):
         address, command, data, checksum = struct.unpack("BBBB", data)
         checksum_verify = (address + command + data) & 127
         if checksum_verify != checksum:
-            rospy.logerr(
-                "Invalid checksum. Is {} should be {}".format(checksum, checksum_verify)
-            )
+            rospy.logerr(f"Invalid checksum. Is {checksum} should be {checksum_verify}")
             return
         if command == 0:
-            rospy.loginfo("Setting motor1 to {}".format(data / 127.0))
+            rospy.loginfo(f"Setting motor1 to {data / 127.0}")
         elif command == 1:
-            rospy.loginfo("Setting motor1 to {}".format(-data / 127.0))
+            rospy.loginfo(f"Setting motor1 to {-data / 127.0}")
         elif command == 4:
-            rospy.loginfo("Setting motor2 to {}".format(data / 127.0))
+            rospy.loginfo(f"Setting motor2 to {data / 127.0}")
         elif command == 5:
-            rospy.loginfo("Setting motor2 to {}".format(-data / 127.0))
+            rospy.loginfo(f"Setting motor2 to {-data / 127.0}")
         else:
-            rospy.logwarn("Unrecognized command {}".format(command))
+            rospy.logwarn(f"Unrecognized command {command}")

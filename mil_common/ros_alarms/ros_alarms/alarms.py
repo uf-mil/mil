@@ -16,7 +16,7 @@ from ros_alarms.srv import (
 def parse_json_str(json_str: str) -> dict:
     parameters = ""
     try:
-        parameters = "" if json_str is "" else json.loads(json_str)
+        parameters = "" if json_str == "" else json.loads(json_str)
     except ValueError:
         # User passed in a non JSON string
         parameters = {}
@@ -41,7 +41,7 @@ def _check_for_valid_name(alarm_name, nowarn=False):
 
     assert (
         alarm_name.isalnum() or "_" in alarm_name or "-" in alarm_name
-    ), "Alarm name '{}' is not valid!".format(alarm_name)
+    ), f"Alarm name '{alarm_name}' is not valid!"
 
 
 def _make_callback_error_string(alarm_name, backtrace=""):
@@ -121,7 +121,7 @@ class Alarm:
         Returns:
             Alarm: The constructed alarm.
         """
-        node_name = "unknown" if msg.node_name is "" else msg.node_name
+        node_name = "unknown" if msg.node_name == "" else msg.node_name
         parameters = parse_json_str(msg.parameters)
 
         return cls(
@@ -229,7 +229,7 @@ class Alarm:
         """
         self.stamp = rospy.Time.now()
 
-        node_name = "unknown" if srv.node_name is "" else srv.node_name
+        node_name = "unknown" if srv.node_name == "" else srv.node_name
         parameters = parse_json_str(srv.parameters)
 
         # Update all possible parameters
@@ -415,7 +415,7 @@ class AlarmListener:
         name: str,
         callback_funct: Optional[Callable] = None,
         nowarn: bool = False,
-        **kwargs
+        **kwargs,
     ):
         """
         Args:
@@ -628,14 +628,14 @@ class HeartbeatMonitor(AlarmBroadcaster):
         prd: float = 0.2,
         predicate: Optional[Callable] = None,
         nowarn: bool = False,
-        **kwargs
+        **kwargs,
     ):
         self._predicate = predicate if predicate is not None else lambda *args: True
         self._last_msg_time = None
         self._prd = rospy.Duration(prd)
         self._dropped = False
 
-        super(HeartbeatMonitor, self).__init__(alarm_name, nowarn=nowarn, **kwargs)
+        super().__init__(alarm_name, nowarn=nowarn, **kwargs)
         rospy.Subscriber(topic_name, msg_class, self._got_msg)
 
         rospy.Timer(rospy.Duration(prd / 2), self._check_for_message)

@@ -34,7 +34,7 @@ class ThrusterOut(HandlerBase):
         try:
             self._update_layout_proxy(*args, **kwargs)
         except rospy.ServiceException as e:
-            rospy.logwarn("Error updating thruster layout: {}".format(e))
+            rospy.logwarn(f"Error updating thruster layout: {e}")
 
     def raised(self, alarm: Alarm):
         """

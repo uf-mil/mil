@@ -22,7 +22,7 @@ __license__ = "MIT"
 
 class voltageGUI(Plugin):
     def __init__(self, context):
-        super(voltageGUI, self).__init__(context)
+        super().__init__(context)
         self.setObjectName("voltage_gui")
 
         self.myWidget = VoltageWidget()
@@ -49,7 +49,7 @@ class VoltageWidget(QWidget):
     resized = QtCore.pyqtSignal()
 
     def __init__(self):
-        super(VoltageWidget, self).__init__()
+        super().__init__()
 
         rp = rospkg.RosPack()
         ui_file = os.path.join(rp.get_path("voltage_gui"), "resource", "voltage_gui.ui")
@@ -98,7 +98,7 @@ class VoltageWidget(QWidget):
     # Part of signal that notifies program whenever window is resized
     def resizeEvent(self, event):
         self.resized.emit()
-        return super(VoltageWidget, self).resizeEvent(event)
+        return super().resizeEvent(event)
 
     # Increase/decrease size of fonts based on window resize
     def resizeFont(self) -> None:
@@ -281,31 +281,31 @@ class VoltageWidget(QWidget):
         self.setColors(numMain)
 
         # Turns all the voltages into strings and sets them as text in GUI boxes
-        self.labelMain.setText("{}".format(numMain))
+        self.labelMain.setText(f"{numMain}")
         try:
             numFL = (int(self.voltageFL * 100)) / 100
             stringFL = str(numFL)
-            self.labelFL.setText("{}".format(stringFL))
+            self.labelFL.setText(f"{stringFL}")
         except:
             pass
 
         try:
             numFR = (int(self.voltageFR * 100)) / 100
             stringFR = str(numFR)
-            self.labelFR.setText("{}".format(stringFR))
+            self.labelFR.setText(f"{stringFR}")
         except:
             pass
 
         try:
             numBL = (int(self.voltageBL * 100)) / 100
             stringBL = str(numBL)
-            self.labelBL.setText("{}".format(stringBL))
+            self.labelBL.setText(f"{stringBL}")
         except:
             pass
 
         try:
-            stringBR = float("{0:.2f}".format(self.voltageBR))
-            self.labelBR.setText("{}".format(stringBR))
+            stringBR = float(f"{self.voltageBR:.2f}")
+            self.labelBR.setText(f"{stringBR}")
         except:
             pass
 

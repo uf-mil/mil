@@ -22,14 +22,14 @@ class TrackedObject:
         observations (int): A number of observations executed on the object.
     """
 
-    data: Optional[np.ndarray]
+    data: np.ndarray | None
 
     def __init__(
         self,
         id: int,
         stamp: rospy.Time,
-        features: List[Any],
-        data: Optional[Any] = None,
+        features: list[Any],
+        data: Any | None = None,
     ):
         """
         Args:
@@ -45,7 +45,7 @@ class TrackedObject:
         self.update(stamp, features, data)
 
     def update(
-        self, stamp: rospy.Time, features: List[Any], data: Optional[np.ndarray] = None
+        self, stamp: rospy.Time, features: list[Any], data: np.ndarray | None = None
     ) -> None:
         """
         Update an object's metadata.
@@ -97,7 +97,7 @@ class ObjectsTracker:
 
     __metaclass__ = abc.ABCMeta
 
-    objects: List[TrackedObject]
+    objects: list[TrackedObject]
 
     def __init__(self, expiration_seconds: int = 5, max_distance: float = 0):
         """
@@ -113,7 +113,7 @@ class ObjectsTracker:
         self.objects = []
 
     def add_observation(
-        self, stamp: rospy.Time, features: List[Any], data: Optional[Any] = None
+        self, stamp: rospy.Time, features: list[Any], data: Any | None = None
     ) -> TrackedObject:
         """
         Add a new observation to the tracked objects.
@@ -141,7 +141,7 @@ class ObjectsTracker:
         self.objects.append(new_obj)
         return new_obj
 
-    def clear_expired(self, now: Optional[rospy.Time] = None):
+    def clear_expired(self, now: rospy.Time | None = None):
         """
         Deletes expired objects. Should be called frequently to clear expired objets.
 
@@ -190,9 +190,7 @@ class CentroidObjectsTracker(ObjectsTracker):
     """
 
     def __init__(self, max_distance=10.0, **kwargs):
-        super(CentroidObjectsTracker, self).__init__(
-            max_distance=max_distance, **kwargs
-        )
+        super().__init__(max_distance=max_distance, **kwargs)
 
     def distance(self, a, b):
         """

@@ -56,7 +56,7 @@ class BoundsClient(Client):
     """
 
     def __init__(self, server="bounds_server", **kwargs):
-        super(BoundsClient, self).__init__(server, **kwargs)
+        super().__init__(server, **kwargs)
 
     @staticmethod
     def config_to_numpy(config):

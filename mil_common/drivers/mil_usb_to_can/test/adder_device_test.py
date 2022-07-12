@@ -13,7 +13,7 @@ class AdderDeviceTest(unittest.TestCase):
 
     def __init__(self, *args):
         self.srv = rospy.ServiceProxy("add_two_ints", AddTwoInts)
-        super(AdderDeviceTest, self).__init__(*args)
+        super().__init__(*args)
 
     def test_1service_exists(self):
         """
@@ -22,14 +22,14 @@ class AdderDeviceTest(unittest.TestCase):
         try:
             self.srv.wait_for_service(5)
         except rospy.ServiceException as e:
-            self.fail("Service error: {}".format(e))
+            self.fail(f"Service error: {e}")
 
     def test_2service_works(self):
         a = 3
         b = 6
         correct_sum = a + b
         res = self.srv(AddTwoIntsRequest(a=a, b=b))
-        self.assertEquals(res.sum, correct_sum)
+        self.assertEqual(res.sum, correct_sum)
 
 
 if __name__ == "__main__":

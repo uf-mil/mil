@@ -229,12 +229,12 @@ class LQRRT_Node:
         ]:
             if msg.blind:
                 self.blind = True
-                print("Preparing: blind {}".format(msg.move_type))
+                print(f"Preparing: blind {msg.move_type}")
             else:
-                print("Preparing: {}".format(msg.move_type))
+                print(f"Preparing: {msg.move_type}")
             self.move_type = msg.move_type
         else:
-            print("Unsupported move_type: '{}'\n".format(msg.move_type))
+            print(f"Unsupported move_type: '{msg.move_type}'\n")
             self.move_server.set_aborted(MoveResult("move_type"))
             self.done = True
             return False
@@ -289,16 +289,16 @@ class LQRRT_Node:
                 self.focus_pub.publish(
                     self.pack_pointstamped(boat.focus, rospy.Time.now())
                 )
-                print("Focused on: {}".format(boat.focus[:2]))
+                print(f"Focused on: {boat.focus[:2]}")
         elif self.move_type == MoveGoal.SPIRAL:
             boat.focus = np.array([msg.focus.x, msg.focus.y, msg.focus.z])
             self.focus_pub.publish(self.pack_pointstamped(boat.focus, rospy.Time.now()))
             if boat.focus[2] >= 0:
-                print("Focused on: {}, counterclockwise".format(boat.focus[:2]))
+                print(f"Focused on: {boat.focus[:2]}, counterclockwise")
                 if boat.focus[2] == 0:
                     boat.focus[2] = 1
             else:
-                print("Focused on: {}, clockwise".format(boat.focus[:2]))
+                print(f"Focused on: {boat.focus[:2]}, clockwise")
         else:
             boat.focus = None
             self.focus_pub.publish(
@@ -307,7 +307,7 @@ class LQRRT_Node:
 
         # Store the initial planning time, if specified
         if msg.initial_plan_time > 0:
-            print("Initial plan time: {}".format(msg.initial_plan_time))
+            print(f"Initial plan time: {msg.initial_plan_time}")
             self.initial_plan_time = msg.initial_plan_time
 
         # Apply the speed factor, if specified
@@ -324,10 +324,10 @@ class LQRRT_Node:
                     msg.speed_factor[i] = 1
             if not np.all(msg.speed_factor == 1):
                 self.speed_factor = np.copy(msg.speed_factor)
-                print("Speed_factor: {}".format(self.speed_factor))
+                print(f"Speed_factor: {self.speed_factor}")
                 if np.any(self.speed_factor < 1) and self.dt > 0.05:
                     self.dt *= np.min(self.speed_factor)
-                    print("(using smaller timestep: {} s)".format(self.dt))
+                    print(f"(using smaller timestep: {self.dt} s)")
         for behavior in self.behaviors_list:
             behavior.planner.dt = self.dt
             behavior.velmax_pos = self.speed_factor * params.velmax_pos
@@ -388,9 +388,7 @@ class LQRRT_Node:
                 x_seq_rot, T_rot, rot_success, u_seq_rot = self.rotation_move(
                     self.state, h_goal, params.pointshoot_tol
                 )
-                print(
-                    "\nRotating towards goal (duration: {})".format(np.round(T_rot, 2))
-                )
+                print(f"\nRotating towards goal (duration: {np.round(T_rot, 2)})")
                 if not rot_success:
                     print("\n(cannot rotate completely!)")
 
@@ -446,16 +444,16 @@ class LQRRT_Node:
             if clean_update and not (
                 self.preempted or self.unreachable or self.stuck or self.lock_tree
             ):
-                print("\nMove {}\n----".format(self.move_count))
-                print("Behavior: {}".format(self.enroute_behavior.__name__[10:]))
+                print(f"\nMove {self.move_count}\n----")
+                print(f"Behavior: {self.enroute_behavior.__name__[10:]}")
                 print(
                     "Reached goal region: {}".format(
                         self.enroute_behavior.planner.plan_reached_goal
                     )
                 )
-                print("Goal bias: {}".format(np.round(self.goal_bias, 2)))
-                print("Tree size: {}".format(self.tree.size))
-                print("Move duration: {}".format(np.round(self.next_runtime, 1)))
+                print(f"Goal bias: {np.round(self.goal_bias, 2)}")
+                print(f"Tree size: {self.tree.size}")
+                print(f"Move duration: {np.round(self.next_runtime, 1)}")
             # elif not self.lock_tree:
             #     print("\nIssue Status\n----")
             #     print("Stuck: {}".format(self.stuck))

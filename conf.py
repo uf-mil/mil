@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # mil documentation build configuration file, created by
 # sphinx-quickstart on Sun Jul 21 13:37:52 2019.

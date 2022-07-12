@@ -13,9 +13,9 @@ from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 from tf import transformations
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
-EAST, NORTH, WEST, SOUTH = [
+EAST, NORTH, WEST, SOUTH = (
     transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in range(4)
-]
+)
 UNITS = {"m": 1, "ft": 0.3048, "yard": 0.9144, "rad": 1, "deg": 0.0174533}
 
 
@@ -75,7 +75,7 @@ def look_at_camera(forward, upish=UP):
     return triad((forward, upish), (UP, [0, -1, 0]))
 
 
-class PoseEditor2(object):
+class PoseEditor2:
     """
     Used to chain movements together
 
@@ -115,7 +115,7 @@ class PoseEditor2(object):
         self.result = None
 
     def __repr__(self):
-        return "p: {}, q: {}".format(self.position, self.orientation)
+        return f"p: {self.position}, q: {self.orientation}"
 
     @property
     def _rot(self):

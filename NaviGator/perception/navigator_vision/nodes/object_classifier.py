@@ -68,7 +68,7 @@ class ObjectClassifier:
             resp.found = True
         else:
             fprint(
-                "Object missclassified with class {}, prob {}".format(clss, prob),
+                f"Object missclassified with class {clss}, prob {prob}",
                 msg_color="red",
             )
             resp.found = False

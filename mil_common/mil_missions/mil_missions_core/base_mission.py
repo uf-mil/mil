@@ -99,7 +99,7 @@ class BaseMission:
         Called by child missions when sending feedback. By default sends this feedback prefixed
         with the name of the child mission.
         """
-        self.send_feedback("{}: {}".format(child.name(), message))
+        self.send_feedback(f"{child.name()}: {message}")
 
     @classmethod
     def has_mission(self, name: str):
@@ -136,12 +136,12 @@ class BaseMission:
             defer.Deferred: The deferred object, representing the execution of the mission.
         """
         if not self.has_mission(name):
-            raise Exception("Cannot run_submission, '{}' unrecognized".format(name))
+            raise Exception(f"Cannot run_submission, '{name}' unrecognized")
         mission = self.mission_runner.missions[name](parent=self)
         return defer.maybeDeferred(mission.run, parameters)
 
     @classmethod
-    def decode_parameters(cls, parameters: str) -> Union[dict, str]:
+    def decode_parameters(cls, parameters: str) -> dict | str:
         """
         Process parameters string from new mission goal or submission. Should return the
         processes parameters which will be passed to the run function. By default

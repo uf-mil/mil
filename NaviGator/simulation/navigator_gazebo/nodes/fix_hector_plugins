@@ -13,7 +13,7 @@ import xml.etree.ElementTree as ET
 
 
 def set_joint_origin_to_zero(root: ET.Element, name: str):
-    tag = root.find("*[@name='{}']".format(name))
+    tag = root.find(f"*[@name='{name}']")
     assert isinstance(tag, ET.Element)
     origin = tag.find("origin")
     assert isinstance(origin, ET.Element)

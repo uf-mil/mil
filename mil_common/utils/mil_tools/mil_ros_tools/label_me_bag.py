@@ -32,7 +32,7 @@ from geometry_msgs.msg import Point
 from mil_msgs.msg import LabeledObject, LabeledObjects
 
 
-class BagConfig(object):
+class BagConfig:
     """
     Stores the configuration for one bag to label.
     """
@@ -50,7 +50,7 @@ class BagConfig(object):
             raise Exception("Config for bag has no filename")
         self.filename = config["file"]
         if "topics" not in config:
-            raise Exception("{} config has no topics listed".format(self.filename))
+            raise Exception(f"{self.filename} config has no topics listed")
         self.topics = config["topics"]
         if not isinstance(self.topics, list):
             self.topics = [self.topics]
@@ -63,7 +63,7 @@ class BagConfig(object):
         self.outfile = config["outfile"] if "outfile" in config else self.filename
 
 
-class BagToLabelMe(object):
+class BagToLabelMe:
     """
     Interfaces between ROS bags and LabelMe images.
 
@@ -109,7 +109,7 @@ class BagToLabelMe(object):
         Contructs a BagToLabelMe object from a specified YAML file. Simply loads
         the yaml file and forwards the rest to the contructor.
         """
-        f = open(filename, "r")
+        f = open(filename)
         config = yaml.load(f)
         return cls(config, **kwargs)
 
@@ -209,9 +209,9 @@ class BagToLabelMe(object):
             outfilename
         ):  # If output bag already exists, only override if force glag is set
             if self.force:
-                self._print("{} already exists. OVERRIDING".format(outfilename))
+                self._print(f"{outfilename} already exists. OVERRIDING")
             else:
-                self._print("{} already exists. Not overriding".format(outfilename))
+                self._print(f"{outfilename} already exists. Not overriding")
                 return
         infilename = os.path.join(self.indir, bag.filename)
         inbag = rosbag.Bag(infilename)

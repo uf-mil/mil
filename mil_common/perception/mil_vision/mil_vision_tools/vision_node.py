@@ -164,7 +164,7 @@ if __name__ == "__main__":
 
         def __init__(self):
             # Call base class's init. Important to do this if you override __init__ in child class.
-            super(VisionNodeExample, self).__init__()
+            super().__init__()
 
         def find_objects(self, img):
             # Get a list of contours in image

@@ -20,7 +20,7 @@ sys.path.append(
 from utils import detector_utils  # noqa
 
 
-class classifier(object):
+class classifier:
     def __init__(self):
         """
         Parameters
@@ -136,9 +136,7 @@ class classifier(object):
         fps = self.num_frames / elapsed_time
 
         # Display FPS on frame
-        detector_utils.draw_text_on_image(
-            "FPS : " + str("{0:.2f}".format(fps)), cv_image
-        )
+        detector_utils.draw_text_on_image("FPS : " + str(f"{fps:.2f}"), cv_image)
 
         # Publish image
         try:

@@ -55,15 +55,15 @@ class ExampleEchoDeviceHandle(CANDeviceHandle):
     """
 
     def __init__(self, *args, **kwargs):
-        super(ExampleEchoDeviceHandle, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.last_sent = None
         self.send_new_string()
 
     def on_data(self, data):
         if self.last_sent is None:
-            print("Received {} but have not yet sent anthing".format(data))
+            print(f"Received {data} but have not yet sent anthing")
         elif data != self.last_sent[0]:
-            print("ERROR! Reveived {} but last sent {}".format(data, self.last_sent))
+            print(f"ERROR! Reveived {data} but last sent {self.last_sent}")
         else:
             print(
                 "SUCCESSFULLY echoed {} in {}seconds".format(
@@ -77,7 +77,7 @@ class ExampleEchoDeviceHandle(CANDeviceHandle):
         # Example string to test with
         test = "".join([random.choice(string.ascii_letters) for i in range(4)])
         self.last_sent = (test, rospy.Time.now())
-        print("SENDING {}".format(test))
+        print(f"SENDING {test}")
         self.send_data(test)
 
 
@@ -88,7 +88,7 @@ class ExampleAdderDeviceHandle(CANDeviceHandle):
     """
 
     def __init__(self, *args, **kwargs):
-        super(ExampleAdderDeviceHandle, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.correct_response = 37
         self.response_received = None
         self._srv = rospy.Service("add_two_ints", AddTwoInts, self.on_service_req)

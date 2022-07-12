@@ -155,14 +155,14 @@ class ObstacleAvoid(Navigator):
                             maxdif = diffs[np.argmax(diffs)]
 
                             if maxdif > self.DIFF_TOLERANCE:
-                                print("Failed edge with {}".format(maxdif))
+                                print(f"Failed edge with {maxdif}")
                                 continue
 
                             if abs(diagonals[0] - diagonals[1]) > self.DIFF_TOLERANCE:
-                                print("Failed diagonal with {}".format(maxdif))
+                                print(f"Failed diagonal with {maxdif}")
                                 continue
 
-                            print("Passed square with edgedif {}".format(maxdif))
+                            print(f"Passed square with edgedif {maxdif}")
                             self.square = (totem1, totem2, totem3, totem4)
                             break
 

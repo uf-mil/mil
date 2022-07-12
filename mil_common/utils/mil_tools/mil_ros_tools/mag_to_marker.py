@@ -29,7 +29,7 @@ class MagToMarker:
         mag_topic: str,
         marker_topic: str,
         length: float = 1.0,
-        color: Optional[list[int]] = None,
+        color: list[int] | None = None,
     ):
         """
         Args:

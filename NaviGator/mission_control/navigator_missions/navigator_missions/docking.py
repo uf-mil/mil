@@ -67,7 +67,7 @@ class Docking(Navigator):
         center_frame = yield self.get_center_frame()
         symbol = center_frame[2].lower()
 
-        self.send_feedback("Identified {}".format(symbol))
+        self.send_feedback(f"Identified {symbol}")
 
         # Find the target point
         target_pt = yield self.get_target_pt(center_frame)

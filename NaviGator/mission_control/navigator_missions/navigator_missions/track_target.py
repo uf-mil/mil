@@ -99,7 +99,7 @@ class TrackTarget(Navigator):
                 # Get distance from boat to goal
                 result[0][2] = 0.0
                 distance = np.linalg.norm(goal - result[0])
-                yield self.send_feedback("{} from goal".format(distance))
+                yield self.send_feedback(f"{distance} from goal")
 
                 # If close enough, fire
                 if distance < self.DISTANCE_TOLERANCE:

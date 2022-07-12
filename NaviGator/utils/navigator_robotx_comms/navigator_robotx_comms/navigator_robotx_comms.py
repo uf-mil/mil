@@ -137,11 +137,11 @@ class RobotXHeartbeatMessage:
         if system_mode is None:
             system_mode = 0
 
-        first_half_data = "{0}{1}{2}{3}{4}{5}{6}".format(
+        first_half_data = "{}{}{}{}{}{}{}".format(
             self.message_id, delim, hst_date_time, delim, latitude, delim, north_south
         )
 
-        second_half_data = "{0}{1}{2}{3}{4}{5}{6}{7}{8}".format(
+        second_half_data = "{}{}{}{}{}{}{}{}{}".format(
             longitude,
             delim,
             east_west,
@@ -163,7 +163,7 @@ class RobotXHeartbeatMessage:
         checksum = checksum_calc.ret_checksum(full_data)
         hex_checksum = format(checksum, "02X")
 
-        msg_return = "${0}*{1}\r\n".format(full_data, str(hex_checksum).zfill(2))
+        msg_return = f"${full_data}*{str(hex_checksum).zfill(2)}\r\n"
 
         return msg_return
 
@@ -235,7 +235,7 @@ class RobotXEntranceExitGateMessage:
         else:
             light_buoy_active_letter = "N"
 
-        data = "{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}".format(
+        data = "{}{}{}{}{}{}{}{}{}{}{}{}{}".format(
             self.message_id,
             delim,
             hst_date_time,
@@ -259,7 +259,7 @@ class RobotXEntranceExitGateMessage:
         checksum = checksum_calc.ret_checksum(data)
         hex_checksum = format(checksum, "02X")
 
-        msg_return = "${0}*{1}\r\n".format(data, hex_checksum)
+        msg_return = f"${data}*{hex_checksum}\r\n"
 
         return MessageExtranceExitGateResponse(msg_return)
 
@@ -322,7 +322,7 @@ class RobotXScanCodeMessage:
         Returns:
             str: The constructed message.
         """
-        data = "{0}{1}{2}{3}{4}{5}{6}".format(
+        data = "{}{}{}{}{}{}{}".format(
             self.message_id, delim, hst_date_time, delim, team_id, delim, color_pattern
         )
 
@@ -334,7 +334,7 @@ class RobotXScanCodeMessage:
         checksum = checksum_calc.ret_checksum(data)
         hex_checksum = format(checksum, "02X")
 
-        msg_return = "${0}*{1}\r\n".format(data, hex_checksum)
+        msg_return = f"${data}*{hex_checksum}\r\n"
 
         return msg_return
 
@@ -395,7 +395,7 @@ class RobotXIdentifySymbolsDockMessage:
                 about the mission.
             use_test_data (bool): Whether to use test data when constructing the message.
         """
-        data = "{0}{1}{2}{3}{4}{5}{6}{7}{8}".format(
+        data = "{}{}{}{}{}{}{}{}{}".format(
             self.message_id,
             delim,
             hst_date_time,
@@ -415,7 +415,7 @@ class RobotXIdentifySymbolsDockMessage:
         checksum = checksum_calc.ret_checksum(data)
         hex_checksum = format(checksum, "02X")
 
-        msg_return = "${0}*{1}\r\n".format(data, hex_checksum)
+        msg_return = f"${data}*{hex_checksum}\r\n"
 
         return MessageIdentifySymbolsDockResponse(msg_return)
 
@@ -477,7 +477,7 @@ class RobotXDetectDeliverMessage:
         Returns:
             MessageDetectDeliverResponse: The constructed message response.
         """
-        data = "{0}{1}{2}{3}{4}{5}{6}{7}{8}".format(
+        data = "{}{}{}{}{}{}{}{}{}".format(
             self.message_id,
             delim,
             hst_date_time,
@@ -497,6 +497,6 @@ class RobotXDetectDeliverMessage:
         checksum = checksum_calc.ret_checksum(data)
         hex_checksum = format(checksum, "02X")
 
-        msg_return = "${0}*{1}\r\n".format(data, hex_checksum)
+        msg_return = f"${data}*{hex_checksum}\r\n"
 
         return MessageDetectDeliverResponse(msg_return)

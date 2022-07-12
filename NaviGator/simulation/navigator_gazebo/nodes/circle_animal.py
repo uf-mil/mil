@@ -91,8 +91,8 @@ class CircleAnimal:
         start_circle_vector = self.animal_pos - start_circle_pos
 
         # go half way to animal
-        while ((abs(self.boat_pos[0] - mid_point[0]) > 0.5)) or (
-            (abs(self.boat_pos[1] - mid_point[1]) > 0.5)
+        while (abs(self.boat_pos[0] - mid_point[0]) > 0.5) or (
+            abs(self.boat_pos[1] - mid_point[1]) > 0.5
         ):
             self.new_animal_pose = False
 
@@ -116,8 +116,8 @@ class CircleAnimal:
             start_circle_ori = self.point_at_goal(start_circle_pos, self.animal_pos)
 
         # go to animal
-        while ((abs(self.boat_pos[0] - start_circle_pos[0]) > 0.5)) or (
-            (abs(self.boat_pos[1] - start_circle_pos[1]) > 0.5)
+        while (abs(self.boat_pos[0] - start_circle_pos[0]) > 0.5) or (
+            abs(self.boat_pos[1] - start_circle_pos[1]) > 0.5
         ):
             self.new_animal_pose = False
 
@@ -158,8 +158,8 @@ class CircleAnimal:
             new_pos = self.animal_pos[0:2] + vect
             circle_ori = self.point_at_goal(new_pos, self.animal_pos)
 
-            while ((abs(self.boat_pos[0] - new_pos[0]) > 0.5)) or (
-                (abs(self.boat_pos[1] - new_pos[1]) > 0.5)
+            while (abs(self.boat_pos[0] - new_pos[0]) > 0.5) or (
+                abs(self.boat_pos[1] - new_pos[1]) > 0.5
             ):
                 self.new_animal_pose = False
 

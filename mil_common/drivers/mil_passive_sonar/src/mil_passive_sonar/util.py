@@ -167,7 +167,7 @@ def calculate_dir_pinger(deltas, h_dist, v_sound):
 
                  x_hat * delta_i * v_sound
                   |
-                  \/
+                  \\/
     (pressure |------>0  <-h_i
     wave)     |    __/
     x_hat---->| __/  <----h_dist

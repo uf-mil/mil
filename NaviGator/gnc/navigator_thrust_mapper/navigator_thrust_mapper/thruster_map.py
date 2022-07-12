@@ -45,7 +45,7 @@ def generate_linear_force_to_command(ratio):
     return force_to_command
 
 
-class ThrusterMap(object):
+class ThrusterMap:
     """
     Helper class to map between global body forces / torques and thruster outputs, which are in a
     arbitrary effort unit. See thruster_mapper_node.py for usage example.
@@ -91,7 +91,7 @@ class ThrusterMap(object):
         self._force_to_command = force_to_command
         self.force_limit = force_limit
         if len(self.force_limit) != 2 or self.force_limit[1] > self.force_limit[0]:
-            raise Exception("self.force_limit {} is invalid".format(self.force_limit))
+            raise Exception(f"self.force_limit {self.force_limit} is invalid")
 
         """ Iterate through thruster positions and create thruster trans matrix"""
         thruster_matrix = []

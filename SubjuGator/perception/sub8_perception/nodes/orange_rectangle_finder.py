@@ -238,9 +238,7 @@ class OrangeRectangleFinder:
         dt = (self.image_sub.last_image_time - self.last_found_time_3D).to_sec()
         self.last_found_time_3D = self.image_sub.last_image_time
         if dt < 0 or dt > self.timeout_seconds:
-            rospy.logwarn(
-                "Timed out since last saw marker, resetting. DT={}".format(dt)
-            )
+            rospy.logwarn(f"Timed out since last saw marker, resetting. DT={dt}")
             self._clear_filter((x, y, z, dy, dx))
             return
 
@@ -288,7 +286,7 @@ class OrangeRectangleFinder:
             map_vec3 = self.tf_listener.transformVector3("map", vec3)
         except tf.Exception as err:
             rospy.logwarn(
-                "Could not transform {} to map error={}".format(self.cam.tfFrame(), err)
+                f"Could not transform {self.cam.tfFrame()} to map error={err}"
             )
             return False
         # Try to ensure vector always points the same way, so kf is not thrown off at some angles

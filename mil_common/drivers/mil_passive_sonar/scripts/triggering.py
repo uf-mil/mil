@@ -269,7 +269,7 @@ class HydrophoneTrigger:
                 except Exception as e:
                     rospy.logwarn("/hydrophone/triggering in find_freq %s" % e)
                     freq = self.target
-                rospy.loginfo("triggered at %f on %f Hz" % (trigger_time, freq))
+                rospy.loginfo(f"triggered at {trigger_time:f} on {freq:f} Hz")
 
                 ping = Triggered()
                 ping.header = Header()

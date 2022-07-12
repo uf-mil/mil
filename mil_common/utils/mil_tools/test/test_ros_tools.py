@@ -68,7 +68,7 @@ class TestROSTools(unittest.TestCase):
     def test_thread_lock(self):
         """Test that the thread lock decorator correctly locks, in the correct order"""
 
-        class FakeLock(object):
+        class FakeLock:
             def __init__(self):
                 self.entry = False
                 self.exit = False

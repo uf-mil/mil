@@ -33,7 +33,7 @@ TIMEOUT_SECONDS = 30
 
 class Dock(Vrx):
     def __init__(self, *args, **kwargs):
-        super(Dock, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.classifier = VrxStcColorClassifier()
         self.classifier.train_from_csv()
         self.camera_model = PinholeCameraModel()

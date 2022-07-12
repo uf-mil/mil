@@ -24,12 +24,12 @@ FLAGS = flags.FLAGS
 
 
 def main(_):
-    if FLAGS.labelbox_format is "json":
+    if FLAGS.labelbox_format == "json":
         json_path = FLAGS.json_path
         json_to_pascal(json_path)
         split_data(resize=FLAGS.resize)
 
-    elif FLAGS.labelbox_format is "PASCAL":
+    elif FLAGS.labelbox_format == "PASCAL":
         image_dir = FLAGS.image_dir
         ann_dir = FLAGS.ann_dir
         split_data(image_dir, ann_dir, resize=FLAGS.resize)
@@ -44,18 +44,18 @@ def main(_):
         print(" Number of Images in: ", folder, num_of_images)
         # Run Generate_tfrecords
         gtfr.create_dict()
-        if FLAGS.output_path is "default":
+        if FLAGS.output_path == "default":
             writer = tf.python_io.TFRecordWriter(
                 "../docker_tf/transfer_learning/data/" + (folder + ".record")
             )
         else:
             writer = tf.python_io.TFRecordWriter(FLAGS.output_path)
-        if FLAGS.image_dir is "default":
+        if FLAGS.image_dir == "default":
             path = os.path.join(os.getcwd(), folder)
         else:
             path = os.path.join(os.getcwd(), FLAGS.image_dir)
-        if FLAGS.csv_input is "default":
-            examples = pd.read_csv((folder + "_labels.csv"))
+        if FLAGS.csv_input == "default":
+            examples = pd.read_csv(folder + "_labels.csv")
         else:
             examples = pd.read_csv(FLAGS.csv_input)
         grouped = gtfr.split(examples, "filename")
@@ -65,13 +65,13 @@ def main(_):
 
         writer.close()
         output_path = os.path.join(os.getcwd(), FLAGS.output_path)
-        print("Successfully created the TFRecords: {}".format(output_path))
+        print(f"Successfully created the TFRecords: {output_path}")
 
         if FLAGS.check_tfrecords:
             print(
                 "Checking Validity of TFRecords. Expect image encoding alongside label data."
             )
-            if FLAGS.output_path is "default":
+            if FLAGS.output_path == "default":
                 for example in tf.python_io.tf_record_iterator(
                     "../docker_tf/transfer_learning/data/" + (folder + ".record")
                 ):
@@ -84,12 +84,12 @@ def main(_):
     # Clean up
     if FLAGS.cleanup:
         try:
-            if FLAGS.csv_input is "default":
+            if FLAGS.csv_input == "default":
                 os.remove("test_labels.csv")
                 os.remove("train_labels.csv")
             else:
                 os.remove(FLAGS.csv_input)
-            if FLAGS.image_dir is not "default" or FLAGS.ann_dir is not "default":
+            if FLAGS.image_dir != "default" or FLAGS.ann_dir != "default":
                 shutil.rmtree(FLAGS.image_dir)
                 shutil.rmtree(FLAGS.ann_dir)
             else:

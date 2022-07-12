@@ -11,7 +11,7 @@ ___author___ = "Kevin Allen and Alex Perez"
 
 class VrxNavigation(Vrx):
     def __init__(self, *args, **kwargs):
-        super(VrxNavigation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @txros.util.cancellableInlineCallbacks
     def inspect_object(self, position):
@@ -192,7 +192,7 @@ class VrxNavigation(Vrx):
 
                 # Move succeeded:
                 else:
-                    self.send_feedback("Investigated {}".format(move_id_tuple[1]))
+                    self.send_feedback(f"Investigated {move_id_tuple[1]}")
                     move_id_tuple = None
             else:
                 objects_msg = yield self.database_query(name="all")
@@ -226,7 +226,7 @@ class VrxNavigation(Vrx):
             if move_id_tuple is not None:
                 continue
 
-            self.send_feedback("ALREADY INVEST {}".format(investigated))
+            self.send_feedback(f"ALREADY INVEST {investigated}")
 
             #### The following is the logic for how we decide what buoy to investigate next ####
             potential_candidate = None
@@ -292,9 +292,7 @@ class VrxNavigation(Vrx):
             if potential_candidate is not None:
 
                 # if there exists a closest buoy, go to it
-                self.send_feedback(
-                    "Investigating {}".format(objects[potential_candidate].id)
-                )
+                self.send_feedback(f"Investigating {objects[potential_candidate].id}")
                 investigated.add(objects[potential_candidate].id)
                 move = self.inspect_object(positions[potential_candidate])
                 move_id_tuple = (move, objects[potential_candidate].id)

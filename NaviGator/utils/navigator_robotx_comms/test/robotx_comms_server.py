@@ -43,7 +43,7 @@ class TestRobotXComms(unittest.TestCase):
         self.scan_code_pub = rospy.Publisher(
             "/scan_the_code", ScanTheCode, queue_size=10
         )
-        super(TestRobotXComms, self).__init__(*args)
+        super().__init__(*args)
 
     def test_heartbeat_message(self):
         times_ran = 0
@@ -71,26 +71,26 @@ class TestRobotXComms(unittest.TestCase):
                         )
                         hex_checksum = format(tot_checksum, "02X")
                         final_checksum_string = hex_checksum + "\r\n"
-                        self.assertEquals(
+                        self.assertEqual(
                             len(data_list), 10, "heartbeat message formatting incorrect"
                         )
                         if self.use_test_data is True:
                             test_data = "$RXHRB,101218,161229,21.31198,N,157.88972,W,AUVSI,2,1*06\r\n"
                             list_test_data = test_data.split(self.delim)
                             checksum_list_test_data = test_data.split("*")
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[7], list_test_data[7], "team id incorrect"
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 checksum_list[1],
                                 checksum_list_test_data[1],
                                 "heartbeat message checksum incorrect",
                             )
                         else:
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[7], self.team_id, "team id incorrect"
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 checksum_list[1],
                                 final_checksum_string,
                                 "heartbeat message checksum incorrect",
@@ -139,7 +139,7 @@ class TestRobotXComms(unittest.TestCase):
                         )
                         hex_checksum = format(tot_checksum, "02X")
                         final_checksum_string = hex_checksum + "\r\n"
-                        self.assertEquals(
+                        self.assertEqual(
                             len(data_list),
                             8,
                             "entrance exit gate message formatting incorrect",
@@ -148,63 +148,63 @@ class TestRobotXComms(unittest.TestCase):
                             test_data = "$RXGAT,101218,161229,AUVSI,1,2,Y,RBG*25\r\n"
                             list_test_data = test_data.split(self.delim)
                             checksum_list_test_data = test_data.split("*")
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[3], list_test_data[3], "team id incorrect"
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 checksum_list[1],
                                 checksum_list_test_data[1],
                                 "entrance exit gate message checksum incorrect",
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 int(data_list[4]),
                                 int(list_test_data[4]),
                                 "entrance gate incorrect",
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 int(data_list[5]),
                                 int(list_test_data[5]),
                                 "exit gate incorrect",
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[6],
                                 list_test_data[6],
                                 "light buoy boolean incorrect",
                             )
                             msg_light_pattern = data_list[7].split("*")[0]
                             light_pattern = list_test_data[7].split("*")[0]
-                            self.assertEquals(
+                            self.assertEqual(
                                 msg_light_pattern,
                                 light_pattern,
                                 "light pattern incorrect",
                             )
                         else:
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[3], self.team_id, "team id incorrect"
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 checksum_list[1],
                                 final_checksum_string,
                                 "entrance exit gate message checksum incorrect",
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 int(data_list[4]),
                                 entrance_gate,
                                 "entrance gate incorrect",
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 int(data_list[5]), exit_gate, "exit gate incorrect"
                             )
                             if light_buoy_active:
-                                self.assertEquals(
+                                self.assertEqual(
                                     "Y", data_list[6], "light buoy boolean incorrect"
                                 )
                             else:
-                                self.assertEquals(
+                                self.assertEqual(
                                     "N", data_list[6], "light buoy boolean incorrect"
                                 )
                             msg_light_pattern = data_list[7].split("*")[0]
-                            self.assertEquals(
+                            self.assertEqual(
                                 msg_light_pattern,
                                 light_pattern,
                                 "light pattern incorrect",
@@ -246,39 +246,39 @@ class TestRobotXComms(unittest.TestCase):
                         )
                         hex_checksum = format(tot_checksum, "02X")
                         final_checksum_string = hex_checksum + "\r\n"
-                        self.assertEquals(
+                        self.assertEqual(
                             len(data_list), 5, "scan code message formatting incorrect"
                         )
                         if self.use_test_data is True:
                             test_data = "$RXCOD,101218,161229,AUVSI,RBG*49\r\n"
                             list_test_data = test_data.split(self.delim)
                             checksum_list_test_data = test_data.split("*")
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[3], list_test_data[3], "team id incorrect"
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 checksum_list[1],
                                 checksum_list_test_data[1],
                                 "scan code message checksum incorrect",
                             )
                             msg_color_pattern = data_list[4].split("*")[0]
                             light_pattern = list_test_data[4].split("*")[0]
-                            self.assertEquals(
+                            self.assertEqual(
                                 msg_color_pattern,
                                 light_pattern,
                                 "light pattern incorrect",
                             )
                         else:
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[3], self.team_id, "team id incorrect"
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 checksum_list[1],
                                 final_checksum_string,
                                 "scan code message checksum incorrect",
                             )
                             msg_color_pattern = data_list[4].split("*")[0]
-                            self.assertEquals(
+                            self.assertEqual(
                                 msg_color_pattern,
                                 color_pattern,
                                 "color pattern incorrect",
@@ -325,7 +325,7 @@ class TestRobotXComms(unittest.TestCase):
                         )
                         hex_checksum = format(tot_checksum, "02X")
                         final_checksum_string = hex_checksum + "\r\n"
-                        self.assertEquals(
+                        self.assertEqual(
                             len(data_list),
                             6,
                             "identify symbols dock message formatting incorrect",
@@ -334,34 +334,34 @@ class TestRobotXComms(unittest.TestCase):
                             test_data = "$RXDOK,101218,161229,AUVSI,R,TRIAN*28\r\n"
                             list_test_data = test_data.split(self.delim)
                             checksum_list_test_data = test_data.split("*")
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[3], list_test_data[3], "team id incorrect"
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 checksum_list[1],
                                 checksum_list_test_data[1],
                                 "identify symbols dock message checksum incorrect",
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[4], list_test_data[4], "shape color incorrect"
                             )
                             msg_shape = data_list[5].split("*")[0]
                             shape = list_test_data[5].split("*")[0]
-                            self.assertEquals(msg_shape, shape, "shape incorrect")
+                            self.assertEqual(msg_shape, shape, "shape incorrect")
                         else:
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[3], self.team_id, "team id incorrect"
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 checksum_list[1],
                                 final_checksum_string,
                                 "identify symbols dock message checksum incorrect",
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[4], shape_color, "shape color incorrect"
                             )
                             msg_shape = data_list[5].split("*")[0]
-                            self.assertEquals(shape, msg_shape, "shape incorrect")
+                            self.assertEqual(shape, msg_shape, "shape incorrect")
                         times_ran += 1
         finally:
             self.server.disconnect()
@@ -401,7 +401,7 @@ class TestRobotXComms(unittest.TestCase):
                         )
                         hex_checksum = format(tot_checksum, "02X")
                         final_checksum_string = hex_checksum + "\r\n"
-                        self.assertEquals(
+                        self.assertEqual(
                             len(data_list),
                             6,
                             "detect deliver message formatting incorrect",
@@ -410,34 +410,34 @@ class TestRobotXComms(unittest.TestCase):
                             test_data = "$RXDEL,101218,161229,AUVSI,R,CIRCL*32\r\n"
                             list_test_data = test_data.split(self.delim)
                             checksum_list_test_data = test_data.split("*")
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[3], list_test_data[3], "team id incorrect"
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 checksum_list[1],
                                 checksum_list_test_data[1],
                                 "detect deliver message checksum incorrect",
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[4], list_test_data[4], "shape color incorrect"
                             )
                             msg_shape = data_list[5].split("*")[0]
                             shape = list_test_data[5].split("*")[0]
-                            self.assertEquals(msg_shape, shape, "shape incorrect")
+                            self.assertEqual(msg_shape, shape, "shape incorrect")
                         else:
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[3], self.team_id, "team id incorrect"
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 checksum_list[1],
                                 final_checksum_string,
                                 "detect deliver message checksum incorrect",
                             )
-                            self.assertEquals(
+                            self.assertEqual(
                                 data_list[4], shape_color, "shape color incorrect"
                             )
                             msg_shape = data_list[5].split("*")[0]
-                            self.assertEquals(shape, msg_shape, "shape incorrect")
+                            self.assertEqual(shape, msg_shape, "shape incorrect")
                         times_ran += 1
 
         finally:
@@ -471,7 +471,7 @@ class RobotXServer:
                 self.socket_connection.listen(5)
                 self.conn, self.conn_ip = self.socket_connection.accept()
                 self.connected = True
-            except socket.error:
+            except OSError:
                 traceback.print_exc()
                 self.disconnect()
                 rospy.sleep(2)
@@ -489,7 +489,7 @@ class RobotXServer:
             try:
                 rx_msg = self.conn.recv(self.buffer_size)
                 return rx_msg
-            except socket.error:
+            except OSError:
                 self.disconnect()
                 self.connect()
 

@@ -114,7 +114,7 @@ class Time:
         self.WN = self.WN % 1024
 
     def __repr__(self):
-        return "gps.Time(%r, %r)" % (self.WN, self.TOW)
+        return f"gps.Time({self.WN!r}, {self.TOW!r})"
 
     def __sub__(self, other):
         if not isinstance(other, Time):
@@ -406,9 +406,7 @@ class Ephemeris:
     def __str__(self):
         return (
             "Ephemeris(\n"
-            + "".join(
-                "    %s=%r\n" % (k, v) for k, v in sorted(self.__dict__.iteritems())
-            )
+            + "".join(f"    {k}={v!r}\n" for k, v in sorted(self.__dict__.iteritems()))
             + ")"
         )
 

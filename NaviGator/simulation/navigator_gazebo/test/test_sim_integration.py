@@ -10,7 +10,7 @@ PKG = "navigator_gazebo"
 
 class TestSimIntegration(unittest.TestCase):
     def __init__(self, *args):
-        super(TestSimIntegration, self).__init__(*args)
+        super().__init__(*args)
         rospy.sleep(3.5)
         # subscribe to odometry topics
         self.odom_pos_msg = []
@@ -189,7 +189,7 @@ class TestSimIntegration(unittest.TestCase):
             rospy.sleep(0.01)
         self.assertTrue(
             len(self.cam_info_msg) == 4 and len(self.cam_image_msg) == 4,
-            msg="{} {}".format(len(self.cam_info_msg), len(self.cam_image_msg)),
+            msg=f"{len(self.cam_info_msg)} {len(self.cam_image_msg)}",
         )
         # 960, 600
         initial_res = [0, 0]
@@ -208,7 +208,7 @@ class TestSimIntegration(unittest.TestCase):
             rospy.sleep(0.01)
         self.assertTrue(
             len(self.pc_info_msg) == 1 and len(self.pc_msg) == 1,
-            msg="INFO, DATA: {}, {}".format(len(self.pc_info_msg), len(self.pc_msg)),
+            msg=f"INFO, DATA: {len(self.pc_info_msg)}, {len(self.pc_msg)}",
         )
         # 209, 1
         initial_res = [0, 0]

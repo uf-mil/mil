@@ -44,7 +44,7 @@ def bbox_countour_from_rectangle(bbox):
     )
 
 
-class VrxClassifier(object):
+class VrxClassifier:
     # Handle buoys / black totem specially, discrminating on volume as they have the same color
     # The black objects that we have trained the color classifier on
     BLACK_OBJECT_CLASSES = ["buoy", "black_totem"]

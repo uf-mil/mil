@@ -13,7 +13,7 @@ for module in os.listdir(
     try:
         __import__(module[:-3], locals(), globals())
     except Exception as e:
-        fprint("ERROR in module: {}".format(module), msg_color="red")
+        fprint(f"ERROR in module: {module}", msg_color="red")
         print(e, "\n")
 
 del fprint

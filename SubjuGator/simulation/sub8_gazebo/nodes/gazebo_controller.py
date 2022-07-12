@@ -22,7 +22,7 @@ from sub8_gazebo.srv import ResetGazebo, ResetGazeboResponse
 from tf import transformations
 
 
-class GazeboInterface(object):
+class GazeboInterface:
     def __init__(self, target="sub8::base_link"):
         self.target = target
         self.physics = rospy.get_param("/physics_flag", False)

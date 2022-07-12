@@ -15,7 +15,7 @@ def load_images(path, images_to_use=2):
     images = os.listdir(path)
     data = []
 
-    print("Images found in folder: {}".format(len(images) / 2 - 1))
+    print(f"Images found in folder: {len(images) / 2 - 1}")
     count = 0
     for i in tqdm.trange(len(images) / 2 - 1, desc="Loading images", unit=" images"):
         try:
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     param_gen = gen_data()
     for m, t, d, n in param_gen:
 
-        f_name = "{}_{}tree_{}depth.dic".format(n, t, d)
+        f_name = f"{n}_{t}tree_{d}depth.dic"
         print(" ===================== ")
         print(f_name)
 
@@ -108,7 +108,7 @@ if __name__ == "__main__":
             tic_observation = time()
             some_observations = observe(image)
             print("-------------------------")
-            print("Observing took {} seconds".format(time() - tic_observation))
+            print(f"Observing took {time() - tic_observation} seconds")
             tic_prediction = time()
 
             try:
@@ -119,7 +119,7 @@ if __name__ == "__main__":
                 print("Failed to load. File probably doesn't exist")
                 break
 
-            print("Predicting took {} seconds".format(time() - tic_prediction))
+            print(f"Predicting took {time() - tic_prediction} seconds")
             total_time = time() - tic_observation
 
             segmentation_image = np.reshape(segmentation, image[:, :, 2].shape)
@@ -140,8 +140,8 @@ if __name__ == "__main__":
                 np.logical_not(bool_targets) & bool_predictions
             ) / np.sum(np.logical_not(bool_targets)).astype(np.float32)
 
-            print("\tPercent correct: {}".format(true_positives))
-            print("\tFalse Positives: {}".format(false_positives))
+            print(f"\tPercent correct: {true_positives}")
+            print(f"\tFalse Positives: {false_positives}")
 
             attributes["true_positives"].append(true_positives)
             attributes["false_positives"].append(false_positives)

@@ -91,7 +91,7 @@ class Sub8AdapativeController:
             ki = self.parse_gains(config["ki"])
             kg = self.parse_gains(config["kg"])
         except ValueError as e:
-            rospy.logwarn("Invalid dynamic reconfigure: {}".format(e))
+            rospy.logwarn(f"Invalid dynamic reconfigure: {e}")
             return self.last_config
         self.kp = np.array(kp)
         self.kd = np.array(kd)

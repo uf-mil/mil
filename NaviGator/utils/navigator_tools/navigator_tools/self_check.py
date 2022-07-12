@@ -21,8 +21,8 @@ class FancyPrint:
 def add_camera_feeds(nh, cam_name, image_type="image_raw"):
     """Returns subscribers to the raw and compressed `image_type`"""
 
-    raw = "/{}/{}".format(cam_name, image_type)
-    compressed = "/{}/{}/compressed".format(cam_name, image_type)
+    raw = f"/{cam_name}/{image_type}"
+    compressed = f"/{cam_name}/{image_type}/compressed"
     return (
         nh.subscribe(raw, Image).get_next_message(),
         nh.subscribe(compressed, CompressedImage).get_next_message(),
@@ -73,19 +73,17 @@ def main():
         try:
             # Bold the name so it's distinct
             fancy_name = FancyPrint.BOLD + name + FancyPrint.NORMAL
-            print(" - - - - Testing for {}".format(fancy_name))
+            print(f" - - - - Testing for {fancy_name}")
 
             # 2 second timeout should be good
             result = yield txros.util.wrap_timeout(sub, 2)
             if result is None:
-                FancyPrint.error(
-                    "[ FAIL ] Response was None from {}".format(fancy_name)
-                )
+                FancyPrint.error(f"[ FAIL ] Response was None from {fancy_name}")
             else:
-                FancyPrint.okay("[ PASS ] Response found from {}".format(fancy_name))
+                FancyPrint.okay(f"[ PASS ] Response found from {fancy_name}")
 
         except BaseException:
-            FancyPrint.error("[ FAIL ] No response from {}".format(fancy_name))
+            FancyPrint.error(f"[ FAIL ] No response from {fancy_name}")
 
 
 if __name__ == "__main__":

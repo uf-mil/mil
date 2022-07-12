@@ -24,7 +24,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
     """
 
     def __init__(self, *args, **kwargs):
-        super(ThrusterAndKillBoard, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # Initialize thruster mapping from params
         self.thrusters = make_thruster_dictionary(
             rospy.get_param("/thruster_layout/thrusters")

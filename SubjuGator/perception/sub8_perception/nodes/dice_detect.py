@@ -29,7 +29,7 @@ SEARCH_RANGE_FOR_PIPS = 2
 SENTINEL_INFINITE = 10000
 
 
-class DiceDetect(object):
+class DiceDetect:
     """docstring for DiceDetect."""
 
     def __init__(self):

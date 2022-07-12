@@ -49,7 +49,7 @@ class KillInterface:
                 self.connect()
                 self.connected = True
             except serial.SerialException as e:
-                rospy.logerr("Cannot connect to kill board. {}".format(e))
+                rospy.logerr(f"Cannot connect to kill board. {e}")
                 self.publish_diagnostics(e)
                 rospy.sleep(1)
         rospy.loginfo("Board connected!")
@@ -186,13 +186,13 @@ class KillInterface:
         if self.last_request is not None:
             if msg == constants["RESPONSE_FALSE"]:
                 if self.board_status[self.last_request] is True:
-                    rospy.logdebug("SYNC FALSE for {}".format(self.last_request))
+                    rospy.logdebug(f"SYNC FALSE for {self.last_request}")
                 self.board_status[self.last_request] = False
                 self.last_request = None
                 return
             if msg == constants["RESPONSE_TRUE"]:
                 if self.board_status[self.last_request] is False:
-                    rospy.logdebug("SYNC TRUE for {}".format(self.last_request))
+                    rospy.logdebug(f"SYNC TRUE for {self.last_request}")
                 self.board_status[self.last_request] = True
                 self.last_request = None
                 return
@@ -200,12 +200,12 @@ class KillInterface:
         for kill in self.board_status:
             if msg == constants[kill]["FALSE"]:
                 if self.board_status[kill] is True:
-                    rospy.logdebug("ASYNC FALSE for {}".format(self.last_request))
+                    rospy.logdebug(f"ASYNC FALSE for {self.last_request}")
                 self.board_status[kill] = False
                 return
             if msg == constants[kill]["TRUE"]:
                 if self.board_status[kill] is False:
-                    rospy.logdebug("ASYNC TRUE FOR {}".format(kill))
+                    rospy.logdebug(f"ASYNC TRUE FOR {kill}")
                 self.board_status[kill] = True
                 return
         # If a response to another request, like ping or computer kill/clear is recieved

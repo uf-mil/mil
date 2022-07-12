@@ -113,7 +113,7 @@ class MissionPlannerTest(TestUnit):
 
     @util.cancellableInlineCallbacks
     def _run_mission(self, yaml_file, spoof_pub, spoof_service, desc):
-        with open(yaml_file, "r") as stream:
+        with open(yaml_file) as stream:
             try:
                 spoof_pub.start(self.nh)
                 yield spoof_service.start(self.nh)

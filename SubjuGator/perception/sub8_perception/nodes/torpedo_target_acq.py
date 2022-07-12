@@ -268,8 +268,8 @@ class torp_vision:
             M = cv2.moments(c)
             if M["m00"] == 0:
                 M["m00"] = 0.000001
-            cX = int((M["m10"] / M["m00"]))
-            cY = int((M["m01"] / M["m00"]))
+            cX = int(M["m10"] / M["m00"])
+            cY = int(M["m01"] / M["m00"])
             shape = self.detect(c)
 
             # multiply the contour (x, y)-coordinates by the resize ratio,
@@ -323,7 +323,7 @@ class torp_vision:
                     rospy.Duration(0.2),
                 )
             except tf.Exception as e:
-                rospy.logwarn("Could not transform camera to map: {}".format(e))
+                rospy.logwarn(f"Could not transform camera to map: {e}")
                 return False
 
             (t, rot_q) = self.tf_listener.lookupTransform(
@@ -339,7 +339,7 @@ class torp_vision:
                 self.status = "Pose found"
 
             else:
-                self.status = "{} observations".format(len(observations))
+                self.status = f"{len(observations)} observations"
 
 
 def main(args):
