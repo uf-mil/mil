@@ -1,7 +1,8 @@
 ---
 name: Check that new issues are opened by organization members
 
-true:
+# yamllint disable-line rule:truthy
+on:
   issues:
     types: [opened]
 

@@ -1,7 +1,8 @@
 ---
 name: Check that issue comments are from MIL members
 
-true:
+# yamllint disable-line rule:truthy
+on:
   issue_comment:
     types: [created]
 
