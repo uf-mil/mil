@@ -4,7 +4,7 @@ name: ReadTheDocs build support
 
 # Controls when the workflow will run
 # yamllint disable-line rule:truthy
-on: [push, release]
+on: [release]
 
 # A workflow run is made up of one or more jobs that can run sequentially
 # or in parallel

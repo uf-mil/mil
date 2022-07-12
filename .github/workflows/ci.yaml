@@ -26,8 +26,8 @@ jobs:
     name: Collect information about changes
     runs-on: self-hosted
     outputs:
-      docs_modified: ${{ steps.changes.output.docs }}
-      code_modified: ${{ steps.changes.output.code }}
+      docs_modified: ${{ steps.changes.outputs.docs }}
+      code_modified: ${{ steps.changes.outputs.code }}
       pre-commit_cache_key: ${{ steps.pre-commit_cache_key.output.key }}
     steps:
       - name: Remove old contents on Zobelisk
@@ -41,6 +41,7 @@ jobs:
         uses: actions/checkout@v3.0.2
         with:
           token: ${{ secrets.INVESTIGATOR_BOT_TOKEN || github.token }}
+          path: mil
           submodules: recursive
       - name: Check which targets changed
         uses: dorny/paths-filter@v2
