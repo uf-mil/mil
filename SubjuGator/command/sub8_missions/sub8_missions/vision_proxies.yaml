@@ -1,3 +1,4 @@
+---
 proxy1:
     root: "/vision/serviceTest"
 proxy2:

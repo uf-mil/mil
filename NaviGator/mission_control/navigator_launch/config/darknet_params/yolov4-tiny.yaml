@@ -1,3 +1,4 @@
+---
 yolo_model:
 
   config_file:
@@ -8,8 +9,8 @@ yolo_model:
     value: 0.5
   detection_classes:
     names:
-      - black    
-      - blue     
+      - black
+      - blue
       - green
       - mb_marker_buoy_black
       - mb_marker_buoy_green

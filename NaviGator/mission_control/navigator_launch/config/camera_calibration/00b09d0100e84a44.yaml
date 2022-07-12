@@ -1,3 +1,4 @@
+---
 image_width: 960
 image_height: 600
 camera_name: 00b09d0100e84a44
@@ -13,6 +14,7 @@ distortion_coefficients:
 rectification_matrix:
   rows: 3
   cols: 3
+  # yamllint disable-line rule:line-length
   data: [0.9991693896590961, -0.005453129023120229, 0.040383092404208, 0.005498346259638847, 0.9999843752085158, -0.001008725554093093, -0.04037696071621431, 0.001229927921290016, 0.9991837610372927]
 projection_matrix:
   rows: 3

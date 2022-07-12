@@ -1,7 +1,8 @@
+---
 test_mission_1:
   marker_dep: "Shooter"
   mission_dep: "None"
-  is_base: False
+  is_base: false
   points: 100
   min_time: 100
   weight: 2
@@ -11,7 +12,7 @@ test_mission_1:
 base_mission:
   marker_dep: "None"
   mission_dep: "None"
-  is_base: True
+  is_base: true
   points: 0
   min_time: 0
   weight: 0

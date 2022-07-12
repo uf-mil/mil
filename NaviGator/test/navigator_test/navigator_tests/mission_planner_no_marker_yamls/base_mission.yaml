@@ -1,11 +1,12 @@
+---
 test_base_mission:
   object_dep: []
   mission_dep: "None"
-  is_base: True
+  is_base: true
   timeout: 'inf'
 
 test_mission_1:
   object_dep: ["scan_the_code"]
   mission_dep: "None"
-  is_base: False
+  is_base: false
   timeout: 10
