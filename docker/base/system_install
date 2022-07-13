@@ -79,28 +79,11 @@ mil_system_install \
   ros-noetic-ros-control \
   ros-noetic-ros-controllers \
 
-# Install recent pip packages being used
-sudo pip3 install --ignore-installed --upgrade pip \
-    tsp_solver2 \
-    Pillow \
-    black \
-    modernize \
-    pyyaml
-
 # Documentation dependencies
 mil_system_install  python3-pip python3-setuptools
 
-# Install Python 3 ROS node dependencies
-sudo pip3 install -q \
-  sphinx \
-  myst-parser \
-  sphinx_rtd_theme \
-  numpy \
-  matplotlib \
-  tqdm \
-  scipy \
-  sklearn \
-  pandas
+# Install Python 3 dependencies
+sudo pip3 install -r requirements.txt
 
 # Link a python executable to Python 2 for temporary backwards compatibility
 if which python > /dev/null 2>&1;
