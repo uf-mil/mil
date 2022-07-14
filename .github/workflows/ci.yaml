@@ -154,12 +154,14 @@ jobs:
           exit 1
       - name: Run isort
         run: |
+          ls venv
           . venv/bin/activate
+          pip freeze
           pre-commit run isort --all-files --show-diff-on-failure
 
   yamllint:
     name: Run yamllint
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs:
       - info
       - pre-commit
@@ -199,12 +201,14 @@ jobs:
           exit 1
       - name: Run yamllint
         run: |
+          ls venv
           . venv/bin/activate
+          pip freeze
           pre-commit run yamllint --all-files --show-diff-on-failure
 
   black:
     name: Run black
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs:
       - info
       - pre-commit
@@ -244,7 +248,9 @@ jobs:
           exit 1
       - name: Run black
         run: |
+          ls
           . venv/bin/activate
+          pip freeze
           pre-commit run black --all-files --show-diff-on-failure
 
   clang-format:
