@@ -11,7 +11,7 @@ In one panel, run:
     $ roslaunch sub8_launch gazebo.launch
 
 This will launch the server side of the gazebo simulator. The gazebo server (a.k.a. ``gzserver``)
-is the half of the simulator that will do all the heavy lifting in terms of simulating phyiscs,
+is the half of the simulator that will do all the heavy lifting in terms of simulating physics,
 running stock / custom plugins (of which we have many), and tying into ROS.
 
 Run Gazebo Client
@@ -45,14 +45,14 @@ a new terminal:
 
 ``subviz`` is an `alias <https://alvinalexander.com/blog/post/linux-unix/create-aliases>`__
 which launches `RVIZ <http://wiki.ros.org/rviz>`__ with a configuration
-for SubjuGator. Generally speaking, this will show what information is avalible 
+for SubjuGator. Generally speaking, this will show what information is available 
 to the robot.
 
 Clear the Kill
 ~~~~~~~~~~~~~~
 
 Whenever SubjuGator is initialized, it is a state called "kill" for
-saftey. While in the kill state, the sub will not actuate in any way so
+safety. While in the kill state, the sub will not actuate in any way so
 it is safe for people the physically handle it. The sub must be put into
 a state of "unkill" to actually do anything. To unkill the sub, go to a
 new panel and run:
@@ -79,7 +79,7 @@ The sub should move forward by 5 meters.
 
 See the current odometry
 ~~~~~~~~~~~~~~~~~~~~~~~~
-Try streaming the content of a rostopic in a new pannel by running:
+Try streaming the content of a rostopic in a new panel by running:
 
 .. code-block:: bash
 

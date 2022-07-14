@@ -117,7 +117,7 @@ class BaseMission:
 
     def run_submission(self, name: str, parameters: str = "") -> defer.Deferred:
         """
-        Runs another mission available to the mission server, returning the defered object for the
+        Runs another mission available to the mission server, returning the deferred object for the
         missions execution.
 
         Args:
@@ -176,13 +176,13 @@ class BaseMission:
         If something goes wrong, raise an exception describing what went wrong
         and the mission will be aborted and cleanup is called.
 
-        If it executes succesfully, return with ``defer.returnValue(message)`` to
+        If it executes successfully, return with ``defer.returnValue(message)`` to
         send a final result to the connected clients. Missions can also spawn
         other missions in the run function using :meth:`.run_submission`.
 
         Args:
             parameters: Arguments to modify the behavior of the mission. By default
                 will be a json decoded object from the string passed in the goal,
-                but can be changed by overridding decode_parameters.
+                but can be changed by overriding decode_parameters.
         """
         pass

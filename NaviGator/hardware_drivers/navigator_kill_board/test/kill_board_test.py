@@ -68,7 +68,7 @@ class killtest(unittest.TestCase):
 
     def test_1_initial_state(self):  # test the initial state of kill signal
         """
-        Tests initial state of system, which should have hw-kill raised beause kill is raised at startup.
+        Tests initial state of system, which should have hw-kill raised because kill is raised at startup.
 
         Because hw-kill will be initialized to cleared then later raised when alarm server is fully started,
         so we need to allow for pottentialy two updates before it is raised.
@@ -137,7 +137,7 @@ class killtest(unittest.TestCase):
             rate.sleep()
 
         self.reset_update()
-        rospy.sleep(8.5)  # Wait slighly longer then the timeout on killboard
+        rospy.sleep(8.5)  # Wait slightly longer then the timeout on killboard
         self.assert_raised()
 
         self.reset_update()

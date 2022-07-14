@@ -17,7 +17,7 @@ from sub8_system_id import SubjuGatorDynamics
 class Sub:
     """
     A dynamics simulator for SubjuGator, modeling buoyancy, gravity, drag, and the user
-    inputed wrench to produce Odometry.
+    inputted wrench to produce Odometry.
     """
 
     def __init__(self):
@@ -80,7 +80,7 @@ class Sub:
         ):
             self.set_wrench(np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
 
-        # Calcuate rotation from body to global and global to body for later calculations
+        # Calculate rotation from body to global and global to body for later calculations
         body_to_world = quaternion_matrix(self.pose[3:])
         world_to_body = np.linalg.inv(body_to_world)
 

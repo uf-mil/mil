@@ -65,7 +65,7 @@ class Move(Navigator):
     @util.cancellableInlineCallbacks
     def run(self, args):
         if not self.pose:
-            raise Exception("Cant move: No odom")
+            raise Exception("Can't move: No odom")
 
         commands = args.commands
         arguments = commands[1::2]
@@ -118,7 +118,7 @@ class Move(Navigator):
                 target_pose = yield util.wrap_time_notice(
                     self.rviz_goal.get_next_message(), 2, "Rviz goal"
                 )
-                self.send_feedback("RVIZ pose recieved!")
+                self.send_feedback("RVIZ pose received!")
                 res = yield self.move.to_pose(target_pose).go(**action_kwargs)
 
             elif command == "circle":
@@ -126,7 +126,7 @@ class Move(Navigator):
                 target_point = yield util.wrap_time_notice(
                     self.rviz_point.get_next_message(), 2, "Rviz point"
                 )
-                self.send_feedback("RVIZ point recieved!")
+                self.send_feedback("RVIZ point received!")
                 target_point = rosmsg_to_numpy(target_point.point)
                 direction = "cw" if argument == "-1" else "ccw"
                 res = yield self.move.circle_point(

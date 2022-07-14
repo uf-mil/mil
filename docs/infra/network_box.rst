@@ -6,7 +6,7 @@ Network Box
 
 The Network Box is a pelican case containing the components needed to
 duplicate the network while out testing or at competition. It is
-intended to make networking in these enviroments seemless and portable.
+intended to make networking in these environments seamless and portable.
 The box is powered by a UPS so can operate for roughly an hour without
 being plugged into a wall outlet.
 
@@ -21,7 +21,7 @@ To use the Network Box:
 -  Connect your/other developer laptops via ethernet to any of the top ports BESIDES 
    the one labeled POE.
 
-    - Be sure your laptop is configured to automaticaly configure network over DHCP.
+    - Be sure your laptop is configured to automatically configure network over DHCP.
     - If your laptop does not have Ethernet (RJ45), you can use one of the provided 
       adapters inside the box.
 

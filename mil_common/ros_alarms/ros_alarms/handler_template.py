@@ -70,7 +70,7 @@ class HandlerBase:
 
     def raised(self, alarm: AlarmMsg):
         """
-        Unless on_set is overriden, called whenever a node requests this alarm be raised.
+        Unless on_set is overridden, called whenever a node requests this alarm be raised.
         If it returns False, this request is denied. Otherwise, the alarm is raised.
 
         Args:
@@ -81,7 +81,7 @@ class HandlerBase:
 
     def cleared(self, alarm: AlarmMsg):
         """
-        Unless on_set is overriden, called whenever a node requests this alarm be cleared.
+        Unless on_set is overridden, called whenever a node requests this alarm be cleared.
         If it returns False, this request is denied. Otherwise, the alarm is raised
 
         Args:

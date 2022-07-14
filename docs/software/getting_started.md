@@ -40,7 +40,7 @@ To install Ubuntu, please see here:
 to install Ubuntu on a Windows computer. To complete the process, [look here](https://help.ubuntu.com/community/WindowsDualBoot).
 
 * **Using a virtual machine on Windows:** You could also use a virtual machine
-software on Windows to run Ubuntu. These softwares include VirtualBox or VMWare.
+software on Windows to run Ubuntu. These software include VirtualBox or VMWare.
 Choose which virtualization software works best for you and find a tutorial on how
 to install Ubuntu.
 
@@ -128,7 +128,7 @@ the repository.
 
 ### Join the Github organization
 In order to contribute code, you need to be in the [uf-mil Github organization](https://github.com/uf-mil). 
-First create an acount if you do not have one, then ask someone in MIL / on Slack 
+First create an account if you do not have one, then ask someone in MIL / on Slack 
 to invite you.
 
 ## Viewing simulation

@@ -10,12 +10,12 @@ parser = argparse.ArgumentParser(
 )
 parser.add_argument("file", help="name of file to playback")
 parser.add_argument("--port", default=10001, type=int, help="Port to bind to")
-parser.add_argument("--ip", default="127.0.0.1", help="IP addres to bind to")
+parser.add_argument("--ip", default="127.0.0.1", help="IP address to bind to")
 parser.add_argument(
     "--batch_size",
     default=0,
     type=int,
-    help="Number of samples to send at a time (in bytes), 0 for all availible",
+    help="Number of samples to send at a time (in bytes), 0 for all available",
 )
 parser.add_argument(
     "--rate", default=0, type=float, help="Number of times to send a batch per second"
@@ -56,7 +56,7 @@ try:
                 conn.send(data)
                 print("sent samples")
                 conn.close()
-                print("Clossed connection")
+                print("Closed connection")
         elif args.batch_size != 0:
             while True:
                 print("New connection")
@@ -65,7 +65,7 @@ try:
                     print("sent samples")
                     time.sleep(wait_time)
                 conn.close()
-                print("Clossed connection")
+                print("Closed connection")
     else:
         left = "\x1b[C"
         right = "\x1b[D"
@@ -103,7 +103,7 @@ try:
                 print("sent samples")
                 i = get_next_sample_idx(i)
             conn.close()
-            print("Clossed connection")
+            print("Closed connection")
 
 except KeyboardInterrupt:
     print("closing port")

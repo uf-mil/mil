@@ -79,7 +79,7 @@ class classifier:
         self.num_frames = rospy.get_param("~num_frames", 0)
         # Number of objects we detect
         self.num_objects_detect = rospy.get_param("~objects_detected", 1)
-        # Mininum confidence score for the detections
+        # Minimum confidence score for the detections
         self.score_thresh = rospy.get_param("~score_thresh", 0.99)
         # If we want debug images published or not.
         self.debug = rospy.get_param("~debug", True)
@@ -118,7 +118,7 @@ class classifier:
 
     def check_timestamp(self):
         """
-        Check to see how old the image we are recieving is.
+        Check to see how old the image we are receiving is.
         This is a serious problem considering how long it takes to
         process a single image.
         """

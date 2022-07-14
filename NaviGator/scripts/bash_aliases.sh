@@ -48,7 +48,7 @@ complete -F _nwrench_complete nwrench
 # Pneumatics
 _nvalve_complete()
 {
-	# Python oneliners are POWERFULL
+	# Python one-liners are POWERFUL
   # Get a list of all the actuator names and ids for autocompletion
   ACTUATORS=$(python -c "import rospy; rospy.init_node('test', anonymous=True); param = rospy.get_param('/actuator_driver/actuators'); print ' '.join([key for key in param]) + ' ' + ' '.join([str(param[key]) for key in param if type(param[key]) == int])")
 

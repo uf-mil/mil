@@ -73,7 +73,7 @@ class MedianFlow:
         return _roi, best
 
     def _calculate_forward_backward_error(self, prev_frame, prev_points):
-        # Get the last set of frame in the list, calulate optical flow from f(t) to f(t-TRACKING_LENGTH)
+        # Get the last set of frame in the list, calculate optical flow from f(t) to f(t-TRACKING_LENGTH)
         # for the number of frame in tracking frame
         # Go backwards through the list because we want the most recent element
         # first
@@ -176,7 +176,7 @@ class MedianFlow:
             curr_point_A = curr_comb[i][0]
             curr_point_B = curr_comb[i][1]
 
-            # Get the distance between every corresponsing pair of points
+            # Get the distance between every corresponding pair of points
             prev_dist = np.subtract(prev_point_A, prev_point_B)
             curr_dist = np.subtract(curr_point_A, curr_point_B)
 

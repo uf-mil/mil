@@ -3,7 +3,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/mil/badge/?version=latest)](https://mil.readthedocs.io/en/latest)
 
-This is the repository hosting publicly released software and other resources created by the [Machine Intelligence Labratory](https://mil.ufl.edu) at the University of Florida.
+This is the repository hosting publicly released software and other resources created by the [Machine Intelligence Laboratory](https://mil.ufl.edu) at the University of Florida.
 
 Further documentation is generated from this repository and hosted separately by [readthedocs](https://mil.readthedocs.io)
 

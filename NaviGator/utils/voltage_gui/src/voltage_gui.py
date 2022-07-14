@@ -131,7 +131,7 @@ class VoltageWidget(QWidget):
         # Good (Green), Warning (Yellow), and Critical (Red)
         # If the parameter server has not set these values then we use the DEFAULT
         # values as of Oct. 2017 which are 26 and 20
-        # The GUI notifies that it is using defualt values and will continually
+        # The GUI notifies that it is using default values and will continually
         # check to see if the params have been set, as symboloized by self.gotParams
         self.gotParams = True
         self.lowThreshold = 26

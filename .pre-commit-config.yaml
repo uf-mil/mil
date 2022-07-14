@@ -28,3 +28,13 @@ repos:
     hooks:
       - id: pyupgrade
         args: [--py38-plus]
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.1.0
+    hooks:
+      - id: codespell
+        args:
+          - --ignore-words-list=fpr,ser,wan,te,wan,ba,ned,ans,hist,nd
+          - --skip="./.*,*.csv,*.json"
+          - --quiet-level=2
+        exclude_types: [csv, json]
+        exclude: ^NaviGator/perception/darknet_ros|NaviGator/simulation/VRX

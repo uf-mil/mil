@@ -1,5 +1,5 @@
 # C++ Style Guide
-Welcome to the C++ style guide! This stlye guide briefly explains how we write
+Welcome to the C++ style guide! This style guide briefly explains how we write
 our code to do crazy robot things, and how we'd like you to write yours, too!
 This style is used in our continuous integration process to make sure that all
 code submitted to our repository is somewhat organized and maintainable.
@@ -33,7 +33,7 @@ is officially done.
 Continuous integration is the service that makes sure that new code added to the repository
 is ready to be added. Continuous integration runs a plethora of checks, including
 style checks on C++ code. This means that if your code does not comply with the C++
-style guidelines when you push, it may be deined, requiring you to go fix it.
+style guidelines when you push, it may be denied, requiring you to go fix it.
 
 ## Philosophy
 Before discussing the nuts and bolts of our desired C++ style, we'll offer a brief
@@ -194,7 +194,7 @@ need to disable the tool on the lines where it is complaining.
 Always use spaces, and always use 2 spaces for indentation.
 
 #### Floating Points
-When using floating point numbers in C++, either use an integer to intialize the float,
+When using floating point numbers in C++, either use an integer to initialize the float,
 or use a radix point with numbers on both sides. If you want to use exponential notation
 with the number, use either an `e` or an `E`.
 

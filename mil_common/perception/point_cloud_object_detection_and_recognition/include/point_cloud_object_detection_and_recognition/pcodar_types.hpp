@@ -11,7 +11,7 @@
 
 namespace pcodar
 {
-/// Alias for the dyanmic reconfigure object used for PCODAR configuration
+/// Alias for the dynamic reconfigure object used for PCODAR configuration
 using Config = point_cloud_object_detection_and_recognition::PCODARConfig;
 
 /// Alias for type of pointcloud used internally
@@ -20,7 +20,7 @@ using point_t = pcl::PointXYZ;
 using point_cloud = pcl::PointCloud<point_t>;
 /// Pointer to PCODAR's pointclouds
 using point_cloud_ptr = point_cloud::Ptr;
-/// Constant poitner to PCODAR's pointclouds
+/// Constant pointer to PCODAR's pointclouds
 using point_cloud_const_ptr = point_cloud::ConstPtr;
 using KdTree = pcl::search::KdTree<point_t>;
 using KdTreePtr = KdTree::Ptr;

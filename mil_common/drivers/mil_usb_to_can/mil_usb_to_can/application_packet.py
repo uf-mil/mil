@@ -7,8 +7,8 @@ from typing import Any, Optional
 
 class ApplicationPacketWrongIdentifierException(Exception):
     """
-    Exception thrown when the identifer for a MIL appliction level CAN packet
-    had a different identifer from what was expected.
+    Exception thrown when the identifier for a MIL application level CAN packet
+    had a different identifier from what was expected.
 
     Inherits from :class:`Exception`.
     """
@@ -78,6 +78,6 @@ class ApplicationPacket:
         return packet
 
     def __str__(self):
-        return "MilApplicationPacket(identifer={}, payload={})".format(
+        return "MilApplicationPacket(identifier={}, payload={})".format(
             self.identifier, self.payload
         )

@@ -13,7 +13,7 @@ try
 
   if (!(ports_xmlrpc.getType() == XmlRpcValue::Type::TypeArray))
   {
-    auto err_str = "Error loading thruster defintions: param needs to be a dictionary";
+    auto err_str = "Error loading thruster definitions: param needs to be a dictionary";
     ROS_ERROR("%s", err_str);
     return;
   }
@@ -45,12 +45,12 @@ try
 
   if (!(thrusters_xmlrpc.getType() == XmlRpcValue::Type::TypeStruct))
   {
-    auto err_str = "Error loading thruster defintions: param needs to be a dictionary";
+    auto err_str = "Error loading thruster definitions: param needs to be a dictionary";
     ROS_ERROR("%s", err_str);
     return;
   }
 
-  for (auto& thruster : thrusters_xmlrpc)  // Iterater through thruster definitions (XmlRpcValues)
+  for (auto& thruster : thrusters_xmlrpc)  // Iterator through thruster definitions (XmlRpcValues)
   {
     bool is_valid = thruster.second.hasMember("node_id") && thruster.second.hasMember("position") &&
                     thruster.second.hasMember("direction") && thruster.second.hasMember("thrust_bounds");

@@ -31,7 +31,7 @@ namespace gazebo
 /// All SDF parameters are optional.
 ///   <fluid_density>: Sets the density of the fluid that surrounds the
 ///                    buoyant object [kg/m^3].
-///                    This paramater is optional.
+///                    This parameter is optional.
 ///
 ///   <fluid_level>:   The height of the fluid/air interface [m].
 ///                    This parameter is optional.

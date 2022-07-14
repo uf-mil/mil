@@ -40,7 +40,7 @@ class classifier:
         self.num_frames = rospy.get_param("~num_frames", 0)
         # Number of objects we detect
         self.num_objects_detect = rospy.get_param("~objects_detected", 2)
-        # Mininum confidence score for the detections
+        # Minimum confidence score for the detections
         self.score_thresh = rospy.get_param("~score_thresh", 0.1)
         # If we want debug images published or not.
         self.debug = rospy.get_param("~debug", True)
@@ -91,7 +91,7 @@ class classifier:
 
     def check_timestamp(self, msg):
         """
-        Check to see how old the image we are recieving is.
+        Check to see how old the image we are receiving is.
         This is a serious problem considering how long it takes to
         process a single image.
         """
@@ -266,7 +266,7 @@ class classifier:
         """
         Starts the process of finding the curve of the marker.
         Performs a variety of checks including masking the image and finding
-        contours. Pass in the region of interest if availble, otherwise pass
+        contours. Pass in the region of interest if available, otherwise pass
         in full image.
         """
 
@@ -299,7 +299,7 @@ class classifier:
         """
         This is how we find the direction the marker curves.
         Passing in the contour, we check all pairs of it, which are pixel
-        coodinates of the contour.
+        coordinates of the contour.
         Once we center on the marker, we look to the midpoint of the ROI.
         We then look at the far left and far right of the image.
         If the furthest left pixel is higher than the furthest right,

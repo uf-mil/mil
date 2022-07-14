@@ -33,7 +33,7 @@ class StartGate(SubjuGator):
         fprint("Begin search for gates")
         rotate_start = self.move.zero_roll_and_pitch()
         for i in range(4):
-            # Search 4 quadrants seperated by 90 degrees for the gate
+            # Search 4 quadrants separated by 90 degrees for the gate
             fprint(f"Searching {90 * i} degrees")
             yield rotate_start.yaw_right_deg(90 * i).go(speed=CAREFUL_SPEED)
             start = self.move.zero_roll_and_pitch()
@@ -147,7 +147,7 @@ class StartGate(SubjuGator):
             ray: direction we expect gate to be near
             min_distance_away: minimum distance for the two poles
             max_distance_away: max distance the two objects can be away from each other
-            perp_threshold: max dot product value for perpindicular test with ray
+            perp_threshold: max dot product value for perpendicular test with ray
             depth_threshold: make sure the two objects have close enough depth
         """
         for o in objects:

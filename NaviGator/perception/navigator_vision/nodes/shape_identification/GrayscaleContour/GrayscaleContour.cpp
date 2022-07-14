@@ -304,7 +304,7 @@ bool GrayscaleContour::isCircle(std::vector<Point>& points)
   if (error > circleEnclosingErrorThreshold)
     return false;
 
-  // ~doub
+  // ~double
   // ~Rect rect = boundingRect(points);
   // ~double contour_area = contourArea(points); //Actual area of the contour
   // ~double expected_area = pi*pow(rect.width/2.0,2); //What area should be if

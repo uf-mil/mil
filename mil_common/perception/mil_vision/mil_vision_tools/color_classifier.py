@@ -126,11 +126,11 @@ class ContourClassifier:
     def score(self, features: np.ndarray, classes: np.ndarray) -> float:
         """
         Returns the classification accuracy based on the set of features and
-        labeled class indicies.
+        labeled class indices.
 
         Args:
             features (np.ndarray): Array of shape ``(n_samples, m_features)``, where each row is a list of features.
-            classes (np.ndarray): Array of shape ``(n_samples)`` with labeled class indicies.
+            classes (np.ndarray): Array of shape ``(n_samples)`` with labeled class indices.
 
         Returns:
             A proportion accuracy correct_classificiations / len(classes).
@@ -146,7 +146,7 @@ class ContourClassifier:
     def string_to_class(self, strings: Union[List[str], str]) -> Union[List[int], int]:
         """
         Maps a single string or list of strings representing a class in the set
-        of those passed to the contructor to the corresponding integer index
+        of those passed to the constructor to the corresponding integer index
         representing this class, used in most functions for training / classification.
 
         Args:
@@ -194,7 +194,7 @@ class ContourClassifier:
     def probabilities(self, img: np.ndarray, mask: np.ndarray) -> List[float]:
         """
         Return a vector of probabilities of the features retrieved from the contour with
-        given mask coresponding to the class list.
+        given mask corresponding to the class list.
 
         Args:
             img (np.ndarray): 2D image representation.

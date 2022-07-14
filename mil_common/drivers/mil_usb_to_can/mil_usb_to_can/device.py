@@ -61,7 +61,7 @@ class ExampleEchoDeviceHandle(CANDeviceHandle):
 
     def on_data(self, data):
         if self.last_sent is None:
-            print(f"Received {data} but have not yet sent anthing")
+            print(f"Received {data} but have not yet sent anything")
         elif data != self.last_sent[0]:
             print(f"ERROR! Reveived {data} but last sent {self.last_sent}")
         else:

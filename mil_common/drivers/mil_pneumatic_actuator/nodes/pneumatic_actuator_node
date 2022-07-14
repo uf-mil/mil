@@ -147,7 +147,7 @@ class PnuematicActuatorNode:
 
     def got_service_request(self, srv):
         """
-        Close/Open/Pulse the requested actuator when a service request is recieved
+        Close/Open/Pulse the requested actuator when a service request is received
         """
         if not self.connected:
             return {"success": False, "message": "board not connected"}

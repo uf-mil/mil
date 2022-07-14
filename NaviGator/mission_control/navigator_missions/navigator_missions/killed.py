@@ -4,7 +4,7 @@ from .navigator import Navigator
 
 class Killed(Navigator):
     """
-    Run when Navigator is killed. Exsists mostly to
+    Run when Navigator is killed. Exists mostly to
     cancel the current mission on kill and print
     this to the GUI.
     """

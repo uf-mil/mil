@@ -14,12 +14,12 @@ basic tool to record ONE type of message on ONE topic according to an arbitrary 
 Default behavior (direct implementation) every message on that topic is recordded and put in a bag
 (not much didffrent that rosbag)
 
-Designed to be inherited and the Callback function overloaded so that mesages are reorded according to an arbitrary
+Designed to be inherited and the Callback function overloaded so that messages are reorder according to an arbitrary
 function
 ie:
   time:record every so many seconds(periodic) or location: every 1 m change in location(spacial).
 
-see indyav_path path_recorder.cpp for an implemenation example
+see indyav_path path_recorder.cpp for an implementation example
 */
 
 template <class MSG>

@@ -5,7 +5,7 @@ from mil_usb_to_can import ApplicationPacket
 
 # CAN channel to send thrust messages to
 THRUST_SEND_ID = 0x21
-# CAN channel ot send kill messages to
+# CAN channel to send kill messages to
 KILL_SEND_ID = 0x11
 
 

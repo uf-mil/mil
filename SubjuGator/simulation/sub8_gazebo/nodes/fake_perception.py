@@ -29,7 +29,7 @@ def handle_fake_perception(extra, target_object):
     Calls the GetModelState service from gazebo to get the realtime position of the model targeted.
     Provides this information to the mission.
     @param extra The target_name passed through some missions.
-    Other missions do not pass a target_name thus its lable of extra.
+    Other missions do not pass a target_name thus its label of extra.
     @param target_object Is the model name of the object targeted by the mission.
     Missions that do not pass a target_name must use this.
     """
@@ -42,7 +42,7 @@ def handle_fake_perception(extra, target_object):
         fprint("NO TARGET")
         sys.exit(0)
     model = get_position(target_object)
-    # Library of offets. Models must be manually offset as gazebo coordinates != center of model.
+    # Library of offsets. Models must be manually offset as gazebo coordinates != center of model.
     centlib = {
         "start_gate": Point(1.5, 0, 0),
         "nav_gate": Point(1.15, 0, 0),
@@ -97,7 +97,7 @@ def start(resp):
 
 def init_service(name, target):
 
-    # Generates services required for missions and target aquisition
+    # Generates services required for missions and target acquisition
     rospy.Service(
         "/vision/" + name + "/pose",
         VisionRequest,

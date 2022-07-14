@@ -204,7 +204,7 @@ void Sub8ObjectFinder::determine_torpedo_board_position()
   // Denoise Images
   /*
     TODO:
-    Try inhomogenous diffusion, anisotropic diffusion for better filtering that
+    Try inhomogeneous diffusion, anisotropic diffusion for better filtering that
     preserves edges
   */
 

@@ -33,7 +33,7 @@ class PingerAndy(Navigator):
     @staticmethod
     def intersection(L1, L2):
         """
-        Return point intersection (if it exsists) of two lines given their equations obtained from the line method
+        Return point intersection (if it exists) of two lines given their equations obtained from the line method
         https://stackoverflow.com/questions/20677795/how-do-i-compute-the-intersection-point-of-two-lines-in-python
         """
         D = L1[0] * L2[1] - L1[1] * L2[0]
@@ -60,7 +60,7 @@ class PingerAndy(Navigator):
                     )
                     continue
                 break
-            self.send_feedback(f"Recieved point for totem {i + 1}")
+            self.send_feedback(f"Received point for totem {i + 1}")
             point = rosmsg_to_numpy(point.point)
             point[2] = 0.0
             totems.append(np.array(point))
@@ -78,7 +78,7 @@ class PingerAndy(Navigator):
         # Get heading towards pinger from Andy hydrophone system
         self.send_feedback("All gates clicked on! Waiting for pinger heading...")
         heading = yield self.pinger_heading.get_next_message()
-        self.send_feedback("Recieved pinger heading")
+        self.send_feedback("Received pinger heading")
 
         # Convert heading and hydophones from to enu
         hydrophones_to_enu = yield self.tf_listener.get_transform(

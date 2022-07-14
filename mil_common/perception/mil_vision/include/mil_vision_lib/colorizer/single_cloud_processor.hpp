@@ -23,7 +23,7 @@ public:
   SingleCloudProcessor(ros::NodeHandle nh, std::string &in_pcd_topic, size_t hist_size);
 
   /**
-   * Incomplete method. Aside from priting debug statements, does no actions.
+   * Incomplete method. Aside from printing debug statements, does no actions.
    */
   void operator()(const PCD<pcl::PointXYZ>::ConstPtr &pcd);
 

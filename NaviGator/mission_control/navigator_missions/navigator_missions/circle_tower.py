@@ -10,7 +10,7 @@ from .navigator import Navigator
 class CircleTower(Navigator):
     """
     Simple mission to circle totems once they have been labeled, does not
-    have searching funcitonality found
+    have searching functionality found
     """
 
     CIRCLE_DISTANCE = 5.0  # Distance around totem to circle

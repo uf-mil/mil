@@ -63,7 +63,7 @@ void PcdColorizer::_transform_to_cam()
 
 void PcdColorizer::_color_pcd()
 {
-  // confgure output_pcd header
+  // configure output_pcd header
   output_pcd = PCD();
   output_pcd.header.stamp = input_pcd.header.stamp;
   output_pcd.header.seq = seq;
@@ -110,7 +110,7 @@ void PcdColorizer::_color_pcd()
     xyz << iter_x_input[0], iter_x_input[1], iter_x_input[2];
     Eigen::Vector3f hom_img_coordinates;
     hom_img_coordinates = cam_intrinsics * xyz;                          // Project point in cam frame into image plane
-    hom_img_coordinates = hom_img_coordinates / hom_img_coordinates[2];  // normalize homogenous vector
+    hom_img_coordinates = hom_img_coordinates / hom_img_coordinates[2];  // normalize homogeneous vector
     Vec3b rgb;
     if (in_view(hom_img_coordinates))
     {

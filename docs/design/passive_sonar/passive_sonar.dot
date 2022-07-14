@@ -26,9 +26,9 @@ digraph passive_sonar {
     wait_for_new_data_triggering:e [label="NO"];
     
     "Gradient(Hydrophone 0) >\nTheshold":s ->
-    "Crop Gradient(All Hydrophones)\n around where its > theshold":n [label="YES"];
+    "Crop Gradient(All Hydrophones)\n around where its > threshold":n [label="YES"];
     
-    "Crop Gradient(All Hydrophones)\n around where its > theshold" ->
+    "Crop Gradient(All Hydrophones)\n around where its > threshold" ->
     "Publish Gradient (All Hydrophones)\n to ROS Topic\n (/hydrophones/pings)";
 
   }

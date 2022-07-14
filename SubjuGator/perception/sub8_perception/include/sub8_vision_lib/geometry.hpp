@@ -18,7 +18,7 @@ namespace sub
 // TODO:
 //  ? Additional (wasteful) branching to check if something is actually in front of the ray (Always
 //  true for an image)
-//  - Does squaredNorm improve speed? (This will be miniscule at best, but saves computation)
+//  - Does squaredNorm improve speed? (This will be minuscule at best, but saves computation)
 //
 // @param[in] cloud The point cloud over which to determine the closest point
 // @param[in] direction The direction of the ray with which we are concerned
@@ -68,7 +68,7 @@ size_t closest_point_index_rayOMP(const pcl::PointCloud<PointT>& cloud, const Ei
 // TODO:
 //  ? Additional (wasteful) branching to check if something is actually in front of the ray (Always
 //  true for an image)
-//  - Does squaredNorm improve speed? (This will be miniscule at best, but saves computation)
+//  - Does squaredNorm improve speed? (This will be minuscule at best, but saves computation)
 //
 // @param[in] cloud The point cloud over which to determine the closest point
 // @param[in] direction The direction of the ray with which we are concerned

@@ -4,7 +4,7 @@
 class SubjuGatorException(BaseException):
     """
     This class is supposed to be a base for deriving exceptions that are tightly coupled
-    to the sub's hardware or architecture as opposed to more generic programatic exceptions
+    to the sub's hardware or architecture as opposed to more generic programmatic exceptions
 
     Examples of appropriate uses are actuator exceptions, thruster exceptions, camera
     exceptions, etc.

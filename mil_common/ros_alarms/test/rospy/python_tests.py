@@ -74,7 +74,7 @@ class ClientTester(unittest.TestCase):
         self.assertTrue(al_b.is_cleared())
         self.assertTrue(al_c.is_cleared())
 
-        # Make sure arugments were passed correctly
+        # Make sure arguments were passed correctly
         self.assertEqual(al_b.get_alarm().parameters, _full_params)
         self.assertEqual(al_c.get_alarm().parameters, _blank_params)
 
@@ -110,7 +110,7 @@ class ClientTester(unittest.TestCase):
         self.assertFalse(al_b.is_cleared())
         self.assertFalse(al_c.is_cleared())
 
-        # Set everyhing cleared
+        # Set everything cleared
         ab_b.clear_alarm()
         ab_c.clear_alarm()
 

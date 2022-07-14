@@ -20,7 +20,7 @@ class RunMissionTest(unittest.TestCase):
         self.assertEqual(state, TerminalState.SUCCEEDED)
         self.assertTrue(result.success)
         self.assertEqual(result.parameters, "")
-        self.assertEqual(result.result, "The darkness isnt so scary")
+        self.assertEqual(result.result, "The darkness isn't so scary")
 
 
 if __name__ == "__main__":

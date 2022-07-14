@@ -210,9 +210,9 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
         cls, nh, alarm_name, topic_name, msg_class, prd=0.2, predicate=None, **kwargs
     ):
         """Used to trigger an alarm if a message on the topic `topic_name` isn't published
-            atleast every `prd` seconds. This alarm is self clearing.
+            at least every `prd` seconds. This alarm is self clearing.
 
-        An alarm won't be triggered if no messages are initally received
+        An alarm won't be triggered if no messages are initially received
         """
         ab = yield TxAlarmBroadcaster.init(nh, alarm_name, **kwargs)
         predicate = predicate if predicate is not None else lambda *args: True
@@ -237,7 +237,7 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
     @txros.util.cancellableInlineCallbacks
     def start_monitor(self, sample_prd=-1):
         """Starts monitoring the topic
-        This seperate function allows you to start and stop the heartbeat monitor
+        This separate function allows you to start and stop the heartbeat monitor
         """
         if sample_prd == -1:
             sample_prd = self._prd.to_sec() / 2

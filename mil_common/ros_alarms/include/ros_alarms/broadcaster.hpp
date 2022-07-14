@@ -15,7 +15,7 @@ namespace ros_alarms
 class AlarmBroadcaster
 {
 public:
-  // Constuct a broadcaster w/ an internally controlled (default) or externally controlled
+  // Construct a broadcaster w/ an internally controlled (default) or externally controlled
   // (optional ptr argument) AlarmProxy
   /**
    * Constructs a broadcaster with an internally controlled (default) or externally controlled AlarmProxy.

@@ -47,7 +47,7 @@ class OrangeRectangleFinder:
     * filter contours to find those that may be contours by:
       * checking # of sides in appox polygon
       * checking ratio of length/width close to known model
-    * estimates 3D pose using cv2.solvePnP with known object demensions and camera model
+    * estimates 3D pose using cv2.solvePnP with known object dimensions and camera model
     * Use translation vector from PnP and direction vector from 2d contour for pose
     * Transform this frames pose into /map frame
     * Plug this frames pose in /map into a kalman filter to reduce noise
@@ -129,7 +129,7 @@ class OrangeRectangleFinder:
     def _send_debug_marker(self):
         """
         Sends a rviz marker in the camera frame with the estimated pose of the object.
-        This marker is a scaled cube with the demensions of the model.
+        This marker is a scaled cube with the dimensions of the model.
         Only called if debug_ros param == True
         """
         if self.last3d is None or not self.found:
@@ -141,7 +141,7 @@ class OrangeRectangleFinder:
         m.id = 0
         m.type = 1
         m.action = 0
-        # Real demensions of path marker
+        # Real dimensions of path marker
         m.scale.x = self.rect_model.length
         m.scale.y = self.rect_model.width
         m.scale.z = 0.05
@@ -365,7 +365,7 @@ class OrangeRectangleFinder:
 
     def _get_edges(self):
         """
-        Proccesses latest image to find edges by:
+        Processes latest image to find edges by:
         blurring and thresholding for highly saturated orangish objects
         then runs canny on threshold images and returns canny's edges
         """

@@ -589,7 +589,7 @@ void AerialMapDisplay::transformAerialMap()
   }
   if (position.isNaN() || orientation.isNaN())
   {
-    // this can occur if an invalid TF is published. Set to identiy so OGRE does
+    // this can occur if an invalid TF is published. Set to identify so OGRE does
     // not throw an assertion
     position = Ogre::Vector3::ZERO;
     orientation = Ogre::Quaternion::IDENTITY;

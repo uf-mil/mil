@@ -1,6 +1,6 @@
 Ubuntu Password Reset Guide
 ===========================
-Follow the steps for reseting your Ubuntu Password:
+Follow the steps for resetting your Ubuntu Password:
 
 1. Boot up your device / VM.
 

@@ -34,7 +34,7 @@ Great! Now that you've successfully signed into Zobelisk, let's take it to the n
 level.
 
 If you'd like, you can use `sshfs` with Docker to run programs safely on Zobelisk.
-This means that instead of running progams in a simple bash terminal, that you will
+This means that instead of running programs in a simple bash terminal, that you will
 instead run them in a containerized environment (a fresh install of Linux!).
 
 

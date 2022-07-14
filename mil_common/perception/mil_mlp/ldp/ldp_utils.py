@@ -12,7 +12,7 @@ sys.path.append("..")
 dictionary = {}
 
 """
-Split data function seperates images and annotations into testing and training sets.
+Split data function separates images and annotations into testing and training sets.
 Takes in the absolute paths to the directories or defaults to generated directories from process_data.py.
 Supports resizing images, but given that this has shown no performance increase, it is currently defaulting to false.
 """

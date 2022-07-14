@@ -23,11 +23,11 @@ void InputCloudFilter::filter(point_cloud_const_ptr in, point_cloud& pc)
 
 void InputCloudFilter::set_bounds(point_cloud_ptr bounds)
 {
-  pcl::Vertices indicies;
-  indicies.vertices.reserve(bounds->size());
+  pcl::Vertices indices;
+  indices.vertices.reserve(bounds->size());
   for (size_t i = 0; i < bounds->size(); ++i)
-    indicies.vertices.push_back(i);
-  std::vector<pcl::Vertices> hull = { indicies };
+    indices.vertices.push_back(i);
+  std::vector<pcl::Vertices> hull = { indices };
 
   bounds_filter_.setHullCloud(bounds);
   bounds_filter_.setHullIndices(hull);

@@ -54,7 +54,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
 
     def set_mobo_kill(self, req: SetBoolRequest) -> SetBoolResponse:
         """
-        Called on service calls to ``/set_mobo_kill``, sending the approrpriate
+        Called on service calls to ``/set_mobo_kill``, sending the appropriate
         packet to the board to unassert or assert to motherboard-origin kill.
 
         Args:
@@ -119,7 +119,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         Args:
             status (StatusMessage): The status message.
         """
-        # Set serverity / problem message appropriately
+        # Set severity / problem message appropriately
         severity = 0
         message = ""
         if status.hard_killed:

@@ -17,10 +17,10 @@ lock = threading.Lock()
 
 class KillInterface:
     """
-    Driver to interface with NaviGator's kill handeling board, which disconnects power to actuators
+    Driver to interface with NaviGator's kill handling board, which disconnects power to actuators
     if any of 4 emergency buttons is pressed, a software kill command is sent, or the network hearbeat
     stops. This driver enables the software kill option via ros_alarms and outputs diagnostics
-    data about the board to ROS. The driver can handle the board's asyncronous updates of kill statuses
+    data about the board to ROS. The driver can handle the board's asynchronous updates of kill statuses
     and will also periodicly request updates in case the async is not working (it often doesn't).
     """
 
@@ -127,7 +127,7 @@ class KillInterface:
 
     def handle_byte(self, msg):
         """
-        React to a byte recieved from the board. This could by an async update of a kill status or
+        React to a byte received from the board. This could by an async update of a kill status or
         a known response to a recent request
         """
         # If the controller message start byte is received, next 8 bytes are the controller data
@@ -182,7 +182,7 @@ class KillInterface:
                     )
             self.ctrl_msg_count -= 1
             return
-        # If a response has been recieved to a requested status (button, remove, etc), update internal state
+        # If a response has been received to a requested status (button, remove, etc), update internal state
         if self.last_request is not None:
             if msg == constants["RESPONSE_FALSE"]:
                 if self.board_status[self.last_request] is True:
@@ -196,7 +196,7 @@ class KillInterface:
                 self.board_status[self.last_request] = True
                 self.last_request = None
                 return
-        # If an async update was recieved, update internal state
+        # If an async update was received, update internal state
         for kill in self.board_status:
             if msg == constants[kill]["FALSE"]:
                 if self.board_status[kill] is True:
@@ -208,14 +208,14 @@ class KillInterface:
                     rospy.logdebug(f"ASYNC TRUE FOR {kill}")
                 self.board_status[kill] = True
                 return
-        # If a response to another request, like ping or computer kill/clear is recieved
+        # If a response to another request, like ping or computer kill/clear is received
         for index, byte in enumerate(self.expected_responses):
             if msg == byte:
                 del self.expected_responses[index]
                 return
-        # Log a warning if an unexpected byte was recieved
+        # Log a warning if an unexpected byte was received
         rospy.logwarn(
-            "Recieved an unexpected byte {}, remaining expected_responses={}".format(
+            "Received an unexpected byte {}, remaining expected_responses={}".format(
                 hex(ord(msg)), len(self.expected_responses)
             )
         )
@@ -223,7 +223,7 @@ class KillInterface:
     @thread_lock(lock)
     def receive(self):
         """
-        Recieve update bytes sent from the board without requests being sent, updating internal
+        Receive update bytes sent from the board without requests being sent, updating internal
         state, raising alarms, etc in response to board updates. Clears the in line buffer.
         """
         while self.ser.in_waiting > 0 and not rospy.is_shutdown():
@@ -243,7 +243,7 @@ class KillInterface:
 
     def wrench_cb(self, msg):
         """
-        Updates wrench (autnomous vs teleop) diagnostic light if nessesary
+        Updates wrench (autnomous vs teleop) diagnostic light if necessary
         on wrench changes
         """
         wrench = msg.data
@@ -321,7 +321,7 @@ class KillInterface:
 
     def update_hw_kill(self):
         """
-        Raise/Clear hw-kill ROS Alarm is nessesary (any kills on board are engaged)
+        Raise/Clear hw-kill ROS Alarm is necessary (any kills on board are engaged)
         """
         killed = self.board_status["OVERALL"]
         if (killed and not self._hw_killed) or (

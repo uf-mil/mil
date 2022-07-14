@@ -54,7 +54,7 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
   ASSERT_TRUE(hb_monitor.waitForConnection(ros::Duration(0.5)))  // Returns false if timed-out
       << "Timed out waiting for a publisher to " << heartbeat_topic;
 
-  // Neede to test time_to_raise and time_to_clear behaviour
+  // Need to test time_to_raise and time_to_clear behaviour
   ros::Time monitor_start_time = ros::Time::now();
   hb_monitor.startMonitoring();
 

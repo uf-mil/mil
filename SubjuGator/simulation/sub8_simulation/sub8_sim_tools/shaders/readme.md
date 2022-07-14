@@ -1,7 +1,7 @@
 Shaders
 =======
 
-These are GLSL (GL Shader Langauge) programs, written for OpenGL. They are compiled, and then run on the GPU. Vertex shaders are executed once for every vertex, and fragment shaders are executed many times, but you can imagine them as being executed once per pixel.
+These are GLSL (GL Shader Language) programs, written for OpenGL. They are compiled, and then run on the GPU. Vertex shaders are executed once for every vertex, and fragment shaders are executed many times, but you can imagine them as being executed once per pixel.
 
 # Shader standard
 

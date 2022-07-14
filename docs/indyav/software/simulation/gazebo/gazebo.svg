@@ -144,7 +144,7 @@
 <title>right_wheel</title>
 <ellipse fill="#ffffff" stroke="#ffffff" cx="535.3004" cy="-313.695" rx="170.4675" ry="41.0911"/>
 <text text-anchor="middle" x="535.3004" y="-326.295" font-family="Times,serif" font-size="14.00" fill="#000000">right front wheel controller</text>
-<text text-anchor="middle" x="535.3004" y="-309.495" font-family="Times,serif" font-size="14.00" fill="#000000">(controlls the steering angle of the right </text>
+<text text-anchor="middle" x="535.3004" y="-309.495" font-family="Times,serif" font-size="14.00" fill="#000000">(controls the steering angle of the right </text>
 <text text-anchor="middle" x="535.3004" y="-292.695" font-family="Times,serif" font-size="14.00" fill="#000000">front wheel)</text>
 </g>
 <!-- Controller manager&#45;&gt;right_wheel -->
@@ -159,7 +159,7 @@
 <title>left_wheel</title>
 <ellipse fill="#ffffff" stroke="#ffffff" cx="1152.3004" cy="-313.695" rx="164.9572" ry="41.0911"/>
 <text text-anchor="middle" x="1152.3004" y="-326.295" font-family="Times,serif" font-size="14.00" fill="#000000">left front wheel controller</text>
-<text text-anchor="middle" x="1152.3004" y="-309.495" font-family="Times,serif" font-size="14.00" fill="#000000">(controlls the steering angle of the left </text>
+<text text-anchor="middle" x="1152.3004" y="-309.495" font-family="Times,serif" font-size="14.00" fill="#000000">(controls the steering angle of the left </text>
 <text text-anchor="middle" x="1152.3004" y="-292.695" font-family="Times,serif" font-size="14.00" fill="#000000">front wheel)</text>
 </g>
 <!-- Controller manager&#45;&gt;left_wheel -->

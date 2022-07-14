@@ -34,7 +34,7 @@ class TrackedObject:
         """
         Args:
             id (int): A unique id for this object.
-            stamp (rospy.Time): Time stamp object was observered.
+            stamp (rospy.Time): Time stamp object was observed.
             features (List[Any]): Feature set used by the specific implementation
                 of ObjectsTracker.
             data (Optional[Any]): Optional additional application-specific data to track
@@ -143,7 +143,7 @@ class ObjectsTracker:
 
     def clear_expired(self, now: rospy.Time | None = None):
         """
-        Deletes expired objects. Should be called frequently to clear expired objets.
+        Deletes expired objects. Should be called frequently to clear expired objects.
 
         Args:
             now (rospy.Time): The time to compare to each object's timestamp to see
@@ -194,6 +194,6 @@ class CentroidObjectsTracker(ObjectsTracker):
 
     def distance(self, a, b):
         """
-        Calculates distance by the euclidian distance between the centroids
+        Calculates distance by the euclidean distance between the centroids
         """
         return np.linalg.norm(a - b)

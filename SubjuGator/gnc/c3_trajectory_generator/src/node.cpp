@@ -265,7 +265,7 @@ struct Node
         }
         if (checkWPResult.second == WAYPOINT_ERROR_TYPE::NO_OGRID)
         {
-          ROS_ERROR("WaypointValidity - Did not recieve any ogrid");
+          ROS_ERROR("WaypointValidity - Did not receive any ogrid");
         }
       }
     }

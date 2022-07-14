@@ -19,7 +19,7 @@
 namespace ros_alarms
 {
 /**
- * Class responsible for monitoring a heartbeat connection mantained through
+ * Class responsible for monitoring a heartbeat connection maintained through
  * successive messages sent on a heartbeat topic. Absence of messages after some
  * amount of time will cause the class to raise an alarm through an AlarmProxy.
  */

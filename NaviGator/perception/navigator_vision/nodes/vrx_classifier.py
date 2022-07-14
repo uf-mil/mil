@@ -184,7 +184,7 @@ class VrxClassifier:
         if self.is_perception_task:
             CUTOFF_METERS = 100
 
-        # Get a list of indicies of objects who are sufficiently close and can be seen by camera
+        # Get a list of indices of objects who are sufficiently close and can be seen by camera
         met_criteria = []
         for i in range(len(self.last_objects.objects)):
             distance = distances[i]

@@ -43,7 +43,7 @@ ColorObservation::VecImg CameraObserver::get_color_observations(const PCD<pcl::P
   using std::vector;
   cout << __PRETTY_FUNCTION__ << endl;
 
-  // Structre: Image pixels are lists of ColorObservations for the respective pixels in the image that have
+  // Structure: Image pixels are lists of ColorObservations for the respective pixels in the image that have
   // pcd points that would be imaged there
   auto obs_img = vector<vector<ColorObservation>>{ size_t(_cam_stream.rows()),
                                                    vector<ColorObservation>{ size_t(_cam_stream.cols()) } };

@@ -107,11 +107,11 @@ class PoseEditor2:
     def __init__(self, nav, pose, **kwargs):
         self.nav = nav
 
-        # Position and kwargs ultimatly passed into the final function
+        # Position and kwargs ultimately passed into the final function
         self.position, self.orientation = pose
         self.kwargs = kwargs
 
-        # Move result (should be a defered)
+        # Move result (should be a deferred)
         self.result = None
 
     def __repr__(self):

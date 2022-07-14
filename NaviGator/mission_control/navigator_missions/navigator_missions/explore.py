@@ -30,8 +30,8 @@ def get_closest_objects(position, objects, max_len: int = 3, max_dist: int = 30)
 
 
 @txros.util.cancellableInlineCallbacks
-def wait_for_object(objec, helper, nh):
-    helper.set_looking_for(objec)
+def wait_for_object(object, helper, nh):
+    helper.set_looking_for(object)
     while not helper.is_found_func():
         yield nh.sleep(1)
 

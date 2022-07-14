@@ -51,7 +51,7 @@ class Move(SubjuGator):
             type=str,
             nargs="*",
             help="Pose editor commands to run each followed by an argument to pass to the command\
-                                  (distance or angle usally). \
+                                  (distance or angle usually). \
                                   Optionally a unit can be added if a non-standard unit is desired.",
         )
         parser.add_argument(

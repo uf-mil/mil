@@ -198,10 +198,10 @@ class Observation:
         q_sig = kwargs.get("q_sig", 1.3)
 
         # Compute data required before applying weights
-        guass = self._guass
-        value_errs = guass(self.values, v_u, v_sig)
-        dists = guass(self.dists, 5, dist_sig)
-        q_diffs = guass(self.q_errs, 0, q_sig)
+        gauss = self._guass
+        value_errs = gauss(self.values, v_u, v_sig)
+        dists = gauss(self.dists, 5, dist_sig)
+        q_diffs = gauss(self.q_errs, 0, q_sig)
 
         # Normalize weights
         w_norm = value_w + dist_w + q_diff_w
@@ -304,7 +304,7 @@ class Colorama:
         # Update parameters
         self.history_length = 100  # How many of each color to keep
         self.min_obs = (
-            5  # Need atleast this many observations before making a determination
+            5  # Need at least this many observations before making a determination
         )
         self.conf_reject = 0.5  # When to reject an observation based on it's confidence
 
@@ -339,7 +339,7 @@ class Colorama:
 
     def _get_quaternion_error(self, q, target_q):
         """
-        Returns an angluar differnce between q and target_q in radians
+        Returns an angluar difference between q and target_q in radians
         """
         dq = trns.quaternion_multiply(
             np.array(target_q), trns.quaternion_inverse(np.array(q))
@@ -438,9 +438,9 @@ class Colorama:
     def do_observe(self, *args):
         resp = self.make_request(name="totem")
 
-        # If atleast one totem was found start observing
+        # If at least one totem was found start observing
         if resp.found:
-            # Time of the databse request
+            # Time of the database request
             time_of_marker = resp.objects[0].header.stamp  # - ros_t(1)
             fprint(
                 f"Looking for image at {time_of_marker.to_sec()}",
@@ -502,7 +502,7 @@ class Colorama:
                 threshold = np.min(points_np[:, 2]) + self.height_remove * height
                 points_np = points_np[points_np[:, 2] > threshold]
 
-                # Shove ones in there to make homogenous points to get points in image frame
+                # Shove ones in there to make homogeneous points to get points in image frame
                 points_np_homo = np.hstack(
                     (points_np, np.ones((points_np.shape[0], 1)))
                 ).T
@@ -640,8 +640,8 @@ class Colorama:
             return False
 
         px = np.array(self.camera_model.project3dToPixel(object_point))
-        resoultion = self.camera_model.fullResolution()
-        return not (np.any([0, 0] > px) or np.any(px > resoultion))
+        resolution = self.camera_model.fullResolution()
+        return not (np.any([0, 0] > px) or np.any(px > resolution))
 
 
 if __name__ == "__main__":

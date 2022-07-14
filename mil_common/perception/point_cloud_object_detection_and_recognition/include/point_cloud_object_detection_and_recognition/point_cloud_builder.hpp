@@ -30,7 +30,7 @@ private:
   /// Accumulated pointcloud kept up to date with each call to add_point_cloud
   point_cloud_ptr mega_cloud_;
   /// Internal buffer of pointclouds
-  /// @TODO consider more efficent implementation, like storing indicies of older pointclouds so
+  /// @TODO consider more efficient implementation, like storing indices of older pointclouds so
   ///       the accumulated cloud is not reassembled on each addition
   boost::circular_buffer<point_cloud_ptr> prev_clouds_;
 };

@@ -16,12 +16,12 @@ GZ_REGISTER_MODEL_PLUGIN(StatePlugin)
 
 /**
  * Gazebo ROS plugin to continuously update a models poition to the
- * position outputed by a trajectory generator
+ * position outputted by a trajectory generator
  *
  * Assumes a topic specified as referenceTopic outputs geometry_msgs/PoseStamped
  * where the pose is relative to the starting position of the model in the gazebo world.
  * As each message arrive, gazebo is updated to follow this carrot exactly.
- * This is useful for situations where it is desireable to test perception or other code
+ * This is useful for situations where it is desirable to test perception or other code
  * where physics simulated controls would just by a pain.
  */
 

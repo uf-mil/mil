@@ -14,7 +14,7 @@ fi
 CATKIN_SOURCE_DIR="$CATKIN_DIR/src"
 MIL_REPO_DIR="$CATKIN_SOURCE_DIR/mil"
 
-# Clone repositry
+# Clone repository
 mil_user_install_dependencies()
 {
   sudo apt update
@@ -33,7 +33,7 @@ mil_user_install_dependencies()
 mil_user_setup_rc()
 {
   # Line(s) added to ~/.bashrc or ~/.zshrc
-  # Note that for backwards compatiblity this should not be changed
+  # Note that for backwards compatibility this should not be changed
   # unless you have a very good reason.
   BASH_RC_LINES=". $MIL_REPO_DIR/scripts/setup.bash"
   if [[ "$SHELL" == "/usr/bin/zsh" ]]
@@ -45,7 +45,7 @@ mil_user_setup_rc()
     else
         echo "Adding source of milrc to ~/.zshrc"
         echo "" >> ~/.zshrc
-        echo "# Setup enviroment for MIL developement" >> ~/.zshrc
+        echo "# Setup environment for MIL development" >> ~/.zshrc
         echo "$BASH_RC_LINES" >> ~/.zshrc
     fi
   else
@@ -56,7 +56,7 @@ mil_user_setup_rc()
     else
         echo "Adding source of milrc to ~/.bashrc"
         echo "" >> ~/.bashrc
-        echo "# Setup enviroment for MIL developement" >> ~/.bashrc
+        echo "# Setup environment for MIL development" >> ~/.bashrc
         echo "$BASH_RC_LINES" >> ~/.bashrc
     fi
   fi

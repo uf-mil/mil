@@ -12,7 +12,7 @@ class DemonstrateNavigation(Navigator):
     """
     Mission for the "Demonstrate Navigation And Control" challenge.
     May either use the objects in PCODAR or to clicked points.
-    TODO: check that moves were completed succesfully
+    TODO: check that moves were completed successfully
     """
 
     START_MARGIN_METERS = 4.0

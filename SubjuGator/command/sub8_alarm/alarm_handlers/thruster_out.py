@@ -15,7 +15,7 @@ class ThrusterOut(HandlerBase):
     alarm_name = "thruster-out"
 
     def __init__(self):
-        # Alarm server wil set this as the intial state of kill alarm
+        # Alarm server will set this as the initial state of kill alarm
         self.initial_alarm = Alarm(
             self.alarm_name,
             False,

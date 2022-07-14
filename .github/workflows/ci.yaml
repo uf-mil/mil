@@ -75,7 +75,9 @@ jobs:
     runs-on: self-hosted
     needs:
       - info
-    if: ${{ needs.info.outputs.code_modified }}
+    if: >
+      ${{ needs.info.outputs.code_modified ||
+      needs.info.outputs.docs_modified }}
     steps:
       - name: Check out code from GitHub
         uses: actions/checkout@v3.0.2
@@ -169,6 +171,9 @@ jobs:
         run: |
           echo "Failed to restore pre-commit environment from cache"
           exit 1
+      - name: Register yamllint problem matcher
+        run: |
+          echo "::add-matcher::.github/workflows/matchers/yamllint.json"
       - name: Run yamllint
         run: |
           pre-commit run yamllint --all-files --show-diff-on-failure
@@ -240,7 +245,7 @@ jobs:
         if: steps.cache-precommit.outputs.cache-hit != 'true'
         run: |
           echo "Failed to restore pre-commit environment from cache"
-          exit 1 
+          exit 1
       - name: Run clang-format
         run: |
           pre-commit run clang-format --all-files --show-diff-on-failure
@@ -280,3 +285,41 @@ jobs:
       - name: Run pyupgrade
         run: |
           pre-commit run pyupgrade --all-files --show-diff-on-failure
+
+  codespell:
+    name: Run codespell
+    runs-on: self-hosted
+    needs:
+      - info
+      - pre-commit
+    if: >
+      ${{ needs.info.outputs.code_modified
+      || needs.info.outputs.docs_modified }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        uses: actions/setup-python@v4.1.0
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          cache: "pip"
+      - name: Initialize pre-commit for use
+        run: |
+          python --version
+          pip install "$(cat requirements_test.txt | grep pre-commit)"
+      - name: Restore pre-commit environment from cache
+        id: cache-precommit
+        uses: actions/cache@v3.0.4
+        with:
+          path: ${{ env.PRE_COMMIT_CACHE }}
+          key: >
+            ${{ runner.os
+            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Fail job if pre-commit cache restore failed
+        if: steps.cache-precommit.outputs.cache-hit != 'true'
+        run: |
+          echo "Failed to restore pre-commit environment from cache"
+          exit 1
+      - name: Run pyupgrade
+        run: |
+          pre-commit run codespell --all-files --show-diff-on-failure

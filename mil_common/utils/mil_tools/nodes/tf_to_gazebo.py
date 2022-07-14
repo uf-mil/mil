@@ -13,7 +13,7 @@ def main():
 
     while not rospy.is_shutdown():
         try:
-            print("============= TRANFORMS ================")
+            print("============= TRANSFORMS ================")
             for frame_id in listener.getFrameStrings():
                 (trans, rot) = listener.lookupTransform(
                     tf_parent, frame_id, rospy.Time(0)

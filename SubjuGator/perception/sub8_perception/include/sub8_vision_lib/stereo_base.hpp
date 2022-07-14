@@ -81,7 +81,7 @@ protected:
   int n_states_;
 
   /**
-   * number of measurments
+   * number of measurements
    * default to 6 which contains x,y,z, and euler angles
    */
   int n_measurements_;

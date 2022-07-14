@@ -153,4 +153,4 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
             packet = HeartbeatMessage.from_bytes(data)
             self._last_heartbeat = rospy.Time.now()
         else:
-            assert False, "No recognized identifer"
+            assert False, "No recognized identifier"

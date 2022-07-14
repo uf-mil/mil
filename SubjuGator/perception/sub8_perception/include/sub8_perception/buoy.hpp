@@ -39,7 +39,7 @@
 // [2] http://docs.pointclouds.org/trunk/classpcl_1_1visualization_1_1_p_c_l_visualizer.html
 /* TODO
   - Smarter buoy tracking
-  - Better cacheing (instead of immediate assignment)
+  - Better caching (instead of immediate assignment)
 */
 
 class Sub8BuoyDetector

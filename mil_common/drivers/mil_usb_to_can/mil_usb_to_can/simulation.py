@@ -11,7 +11,7 @@ from .utils import CommandPacket, ReceivePacket
 
 class SimulatedCANDevice:
     """
-    Simulates a CAN device, with functions to be overrided to handle data requests
+    Simulates a CAN device, with functions to be overridden to handle data requests
     and sends from motherboard.
 
     Child classes can inherit from this class to implement a simulated CAN device.
@@ -46,12 +46,12 @@ class SimulatedCANDevice:
 class ExampleSimulatedEchoDevice(SimulatedCANDevice):
     """
     Example implementation of a SimulatedCANDevice.
-    On sends, stores the transmited data in a buffer.
+    On sends, stores the transmitted data in a buffer.
     When data is requested, it echos this data back.
     """
 
     def __init__(self, *args, **kwargs):
-        # Call parent classes contructor
+        # Call parent classes constructor
         super().__init__(*args, **kwargs)
 
     def on_data(self, data, can_id):
@@ -62,12 +62,12 @@ class ExampleSimulatedEchoDevice(SimulatedCANDevice):
 class ExampleSimulatedAdderDevice(SimulatedCANDevice):
     """
     Example implementation of a SimulatedCANDevice.
-    On sends, stores the transmited data in a buffer.
+    On sends, stores the transmitted data in a buffer.
     When data is requested, it echos this data back.
     """
 
     def __init__(self, *args, **kwargs):
-        # Call parent classes contructor
+        # Call parent classes constructor
         super().__init__(*args, **kwargs)
 
     def on_data(self, data, can_id):

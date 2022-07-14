@@ -82,7 +82,7 @@ class ObstacleAvoid(Navigator):
                 self.square[3], self.square[2], midpoints_far[i], out_offset
             )
 
-            # If its on the first side go to the close side then the far side, otherwise vise versa
+            # If its on the first side go to the close side then the far side, otherwise vice versa
             if i % 2 == 0:
                 traverse_points.append(ppoints_close[0])
                 traverse_points.append(ppoints_far[1])

@@ -43,7 +43,7 @@ if __name__ == "__main__":
         type=str,
         default="src",
         nargs="?",
-        help="directory to print all tests frome",
+        help="directory to print all tests from",
     )
     parser.add_argument(
         "-b",

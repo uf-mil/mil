@@ -11,7 +11,7 @@ __author__ = "Kevin Allen"
 class AlarmMonitor:
     """
     Curses based terminal interface for monitoring and
-    controling an alarm.
+    controlling an alarm.
     """
 
     RAISE_KEYS = [ord("r"), 32]  # r, SPACE to raise alarm
@@ -131,7 +131,7 @@ class AlarmMonitor:
 
     def _update_key(self, _):
         """
-        Processes an inputed key and raises or clears alarm
+        Processes an inputted key and raises or clears alarm
         if key in RAISE_KEYS or CLEAR_KEYS is entered.
         """
         key = self._read_key()

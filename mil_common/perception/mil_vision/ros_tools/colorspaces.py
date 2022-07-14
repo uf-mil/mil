@@ -49,7 +49,7 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
     labels = [["B", "G", "R"], ["H", "S", "V"], ["L", "A", "B"]]
 
     def flatten_channels(img, labels):
-        """Return horizontal stacking of single channels with a label overlayed"""
+        """Return horizontal stacking of single channels with a label overlaid"""
         assert len(labels) == img.shape[2]
         flat = np.hstack(cv2.split(img))
         for i, label in enumerate(labels):

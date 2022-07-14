@@ -13,7 +13,7 @@
 namespace ros_alarms
 {
 /**
- * Representation of a ROS alarm. Used by several other classes to faciliate proper
+ * Representation of a ROS alarm. Used by several other classes to facilitate proper
  * interactions between components.
  */
 struct AlarmProxy
@@ -34,7 +34,7 @@ struct AlarmProxy
 
   /**
    * A constructor with parameters for all class attributes, except the node name,
-   * which is dervied from the current node name (using ``ros::this_node``).
+   * which is derived from the current node name (using ``ros::this_node``).
    */
   AlarmProxy(std::string alarm_name,  // ctor without node name
              bool raised, std::string problem_description, std::string json_parameters, int severity);
@@ -63,7 +63,7 @@ struct AlarmProxy
    *
    * @param full Whether to print the full description.
    */
-  std::string str(bool full = false) const;  // Returns printable representaion of AlarmProxy
+  std::string str(bool full = false) const;  // Returns printable representation of AlarmProxy
 
   /**
    * Overloaded equality operator. Returns true if both alarms share the same name,

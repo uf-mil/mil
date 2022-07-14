@@ -52,7 +52,7 @@ class HydrophoneTrigger:
 
     def __init__(self):
 
-        # Attriburtes about our general frequency range (all pinger live here)
+        # Attributes about our general frequency range (all pinger live here)
         #  Frequency range garunteed to be relatively quiet except for the pingers (in Hz)
         self.general_lower = 15000  # lowest frequency pinger - 10 kHz
         self.general_upper = 50000  # highest frequency pinger + 10 kHz
@@ -117,7 +117,7 @@ class HydrophoneTrigger:
         self.v_sound = rospy.get_param("v_sound")
 
         # Misc attributes
-        #  minimum gradient of the max convolution wrt time to trigger a time of arivals calcualtion
+        #  minimum gradient of the max convolution wrt time to trigger a time of arivals calculation
         self.threshold = rospy.get_param("~threshold")
         self.trigger_offset = rospy.get_param("~trigger_offset")
         #  how far after the triggering time to make upper bound of samples at triggering in sec

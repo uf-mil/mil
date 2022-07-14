@@ -51,7 +51,7 @@ class POIServer:
         # Radius of interactive marker for POIs
         self.marker_scale = rospy.get_param("~marker_scale", 0.5)
 
-        # Create intial empty POI array
+        # Create initial empty POI array
         self.pois = POIArray()
 
         # Get the global frame to be used
@@ -172,7 +172,7 @@ class POIServer:
                 from the request.
 
         Returns:
-            AddPOIResponse: Whether the operation was succesful, along with a message
+            AddPOIResponse: Whether the operation was successful, along with a message
             indicating why.
         """
         name = req.name
@@ -185,7 +185,7 @@ class POIServer:
             if position is None:
                 return AddPOIResponse(success=False, message="tf error (bad poi)")
         if not self.add_poi(name, position):
-            return AddPOIResponse(success=True, message="alread exists (bad poi)")
+            return AddPOIResponse(success=True, message="already exists (bad poi)")
         return AddPOIResponse(success=True, message="good poi")
 
     def delete_poi_cb(self, req: DeletePOIRequest) -> DeletePOIResponse:
@@ -310,7 +310,7 @@ class POIServer:
         # Return false if marker with that name not added to interactive marker server
         if not self.interactive_marker_server.erase(name):
             return False
-        # Find POI with specifed name and delete it from list
+        # Find POI with specified name and delete it from list
         for i, poi in enumerate(self.pois.pois):
             if poi.name == name:
                 del self.pois.pois[i]

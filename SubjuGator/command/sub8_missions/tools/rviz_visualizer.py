@@ -147,7 +147,7 @@ class RvizVisualizer:
             length=distance,
             color=(0.0, 1.0, 0.2, 0.7),  # green,
             frame=frame,
-            id=0,  # Keep these guys from overwriting eachother
+            id=0,  # Keep these guys from overwriting each other
         )
         self.surface_marker.ns = "sub"
         self.surface_marker.header = mil_ros_tools.make_header(frame="/depth")
@@ -178,7 +178,7 @@ class RvizVisualizer:
             color=color,  # red,
             frame=frame,
             up_vector=np.array([0.0, 0.0, -1.0]),  # up is down in range world
-            id=1,  # Keep these guys from overwriting eachother
+            id=1,  # Keep these guys from overwriting each other
         )
         self.depth_marker.ns = "sub"
         self.depth_marker.header = mil_ros_tools.make_header(frame="/dvl")

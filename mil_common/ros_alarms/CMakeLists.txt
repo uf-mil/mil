@@ -68,7 +68,7 @@ add_dependencies(ros_alarms ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTE
 #   add_rostest_gtest(${PROJECT_NAME}_cpp_tests
 #     test/rostests/ros_alarms_cpp.test
 #     # Disabled flakey test
-#     # TODO: actualy fix
+#     # TODO: actually fix
 #     # test/roscpp/heartbeat_monitor_test.cpp
 #     test/roscpp/broadcaster_test.cpp
 #     test/roscpp/listener_test.cpp

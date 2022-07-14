@@ -59,7 +59,7 @@ class BagManager:
 
                     msgs.append([key, (yield msg), (yield msg_time)])
                 else:
-                    print(f"There's a problem cacheing {key}")
+                    print(f"There's a problem caching {key}")
             self.write_to_cache(msgs)
 
         self.dump()

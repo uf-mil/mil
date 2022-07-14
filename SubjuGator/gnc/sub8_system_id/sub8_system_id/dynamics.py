@@ -12,7 +12,7 @@ class SubjuGatorDynamics:
     Attributes:
         mass (float): Mass of the sub (in kg).
         volume (float): Volume of sub in m^3.
-        drag_coeffs (np.ndarray): A 6x1 numpy array. N/(m/s) drag coeffients
+        drag_coeffs (np.ndarray): A 6x1 numpy array. N/(m/s) drag coefficients
             for X, Y, Z, R, P, Y.
         height (float): Height of the sub in meters.
         water_density (float): Density of water in kg/m^3.
@@ -36,7 +36,7 @@ class SubjuGatorDynamics:
             mass (float): Mass of the sub (in kg).
             rotational_inertia (np.ndarray): 3x3 rotational inertia matrix.
             volume (float): Volume of sub in m^3.
-            drag_coeffs (np.ndarray): A 6x1 numpy array. N/(m/s) drag coeffients
+            drag_coeffs (np.ndarray): A 6x1 numpy array. N/(m/s) drag coefficients
                 for X, Y, Z, R, P, Y.
             height (float): Height of the sub in meters.
             water_density (float): Density of water in kg/m^3.
@@ -205,7 +205,7 @@ class SubjuGatorDynamics:
 
     def dynamics(self, twist: np.ndarray, accel: np.ndarray) -> np.ndarray:
         """
-        Calcualtes the net force + torque which produced a given acceleration.
+        Calculates the net force + torque which produced a given acceleration.
 
         Args:
             twist (np.ndarray): 6x1 linear + angular velocity in body frame in m/s

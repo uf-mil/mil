@@ -108,7 +108,7 @@ class TorpedoLauncher:
             return
 
         # Generally, if the torpedo is laying on the ground the collision force will be very small.
-        # So if the force is really small, we assume the impact collision has occured before the torpedo was launched.
+        # So if the force is really small, we assume the impact collision has occurred before the torpedo was launched.
         print(
             np.abs(
                 np.linalg.norm(
@@ -191,7 +191,7 @@ class GripperController:
         if srv.opened:
             rospy.loginfo("Opening Gripper")
         else:
-            rospy.loginfo("Clossing Gripper")
+            rospy.loginfo("Closing Gripper")
         self.clear_force(JointRequestRequest(joint_name=self.joint_name))
 
         effort_mod = 1

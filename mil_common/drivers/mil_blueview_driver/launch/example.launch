@@ -33,16 +33,16 @@
             # Sets image/range profile resolution, see blueview SDK documentation for details
             #range_resolution: 1.0
 
-            # Set gain adjustment in dB, see blueview SDK documentaiton for details
+            # Set gain adjustment in dB, see blueview SDK documentation for details
             #gain_adjustment: 0.0
 
-            #Set time variable analog gain, dB/meters, see SDK documentaiton for details
+            #Set time variable analog gain, dB/meters, see SDK documentation for details
             #tvg_slope: 0.0
 
             # Enable/Disable blueview dynamic power management, see SDK for details
             dynamic_power_management: False
 
-            # Lowest intensity accepted to be included in ranges messsages
+            # Lowest intensity accepted to be included in ranges messages
             # Tune for desired performance, low values will be slower when raw ranges is enabled
             range_profile_intensity_threshold: 2000
 

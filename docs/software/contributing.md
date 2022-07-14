@@ -12,7 +12,7 @@ can only be found on **your** computer! No one else has access to it. Therefore,
 you can't really hurt anyone else's progress. Even if you run some commands that
 mess up your copy, you can just ask for a new one! How sweet is that?
 
-Moreso, we use branch protection, so you can't push code onto the robot without
+More so, we use branch protection, so you can't push code onto the robot without
 approval from a leader first. Therefore, don't feel pressured to always type the right
 command - you might screw up, and it's all okay!
 

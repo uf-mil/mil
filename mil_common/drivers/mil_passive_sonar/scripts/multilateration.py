@@ -55,7 +55,7 @@ class MultilaterationNode:
         if not self.enabled:
             return
         try:
-            # Transform ping into gloabl frame
+            # Transform ping into global frame
             transformed_vec = self.tfBuffer.transform(
                 p_message, self.global_frame, rospy.Duration(2)
             )

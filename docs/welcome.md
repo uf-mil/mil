@@ -22,7 +22,7 @@ by themselves and then share the results with the other teams. This allows for t
 synergy when constructing world-class robots.
 
 You can join any of these three teams (or multiple!). Each team has one or more leaders
-who help to coordiante the responsibilities of the team.
+who help to coordinate the responsibilities of the team.
 
 ## Culture of MIL
 MIL does things differently than many other labs or student organizations. Our lab

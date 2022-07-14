@@ -116,7 +116,7 @@ class LQRRT_Node:
             behavior.planner.set_runtime(sys_time=self.rostime)
             behavior.planner.constraints.set_feasibility_function(self.is_feasible)
 
-        # Initialize resetable stuff
+        # Initialize resettable stuff
         self.reset()
 
         # Subscribers
@@ -919,9 +919,9 @@ class LQRRT_Node:
         points = x[:2] + R.dot(params.vps).T
 
         # Check for collision
-        indicies = (self.ogrid_cpm * (points - self.ogrid_origin)).astype(np.int64)
+        indices = (self.ogrid_cpm * (points - self.ogrid_origin)).astype(np.int64)
         try:
-            grid_values = self.ogrid[indicies[:, 1], indicies[:, 0]]
+            grid_values = self.ogrid[indices[:, 1], indices[:, 0]]
         except IndexError:
             return False
 
@@ -1487,7 +1487,7 @@ class LQRRT_Node:
         """
         Callback to the odometry topic subscriber. Stores the current state of
         the tracking vehicle and its reference frame. Sets the class tracking
-        variable to True or False based on if the vehicle is succesfully
+        variable to True or False based on if the vehicle is successfully
         tracking.
 
         Args:
@@ -1499,7 +1499,7 @@ class LQRRT_Node:
         self.state = self.unpack_odom(msg)
         last_update_time = self.last_update_time
 
-        # Calculate error between the goal and state and tell if tracking is succesful
+        # Calculate error between the goal and state and tell if tracking is successful
         if self.get_ref is not None and last_update_time is not None:
             error = np.abs(
                 self.erf(self.get_ref(self.rostime() - last_update_time), self.state)

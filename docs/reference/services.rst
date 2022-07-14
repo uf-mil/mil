@@ -18,7 +18,7 @@ AcousticBeacon
 
 .. class:: navigator_msgs.srv.AcousticBeaconResponse
 
-   The repsonse class for the ``navigator_msgs/AcousticBeacon`` service.
+   The response class for the ``navigator_msgs/AcousticBeacon`` service.
 
    .. attribute:: beacon_position
 
@@ -57,7 +57,7 @@ ChooseAnimal
 
 .. class:: navigator_msgs.srv.ChooseAnimalResponse
 
-   The repsonse class for the ``navigator_msgs/ChooseAnimal`` service.
+   The response class for the ``navigator_msgs/ChooseAnimal`` service.
 
    .. attribute:: movement_complete
 
@@ -83,7 +83,7 @@ ColorRequest
 
 .. class:: navigator_msgs.srv.ColorRequestResponse
 
-   The repsonse class for the ``navigator_msgs/ColorRequest`` service.
+   The response class for the ``navigator_msgs/ColorRequest`` service.
 
    .. attribute:: found
     
@@ -110,7 +110,7 @@ FindPinger
 
 .. class:: navigator_msgs.srv.FindPingerResponse
 
-   The repsonse class for the ``navigator_msgs/FindPinger`` service.
+   The response class for the ``navigator_msgs/FindPinger`` service.
 
    .. attribute:: pinger_position
     
@@ -137,7 +137,7 @@ GetDockBays
 
 .. class:: navigator_msgs.srv.GetDockBaysResponse
 
-   The repsonse class for the ``navigator_msgs/GetDockBays`` service.
+   The response class for the ``navigator_msgs/GetDockBays`` service.
 
    .. attribute:: bays
     
@@ -253,7 +253,7 @@ GetDockShape
 
 .. class:: navigator_msgs.srv.GetDockShapeResponse
 
-   The repsonse class for the ``navigator_msgs/GetDockShape`` service.
+   The response class for the ``navigator_msgs/GetDockShape`` service.
 
    .. attribute:: symbol
 
@@ -389,7 +389,7 @@ GetDockShapes
 
 .. class:: navigator_msgs.srv.GetDockShapesResponse
 
-   The repsonse class for the ``navigator_msgs/GetDockShapes`` service.
+   The response class for the ``navigator_msgs/GetDockShapes`` service.
 
    .. attribute:: shapes
 
@@ -462,7 +462,7 @@ ShooterManual
 
 .. class:: navigator_msgs.srv.ShooterManualResponse
 
-   The repsonse class for the ``navigator_msgs/ShooterManual`` service.
+   The response class for the ``navigator_msgs/ShooterManual`` service.
 
    .. attribute:: success
 
@@ -483,7 +483,7 @@ StartGate
 
 .. class:: navigator_msgs.srv.StartGateResponse
 
-   The repsonse class for the ``navigator_msgs/StartGate`` service.
+   The response class for the ``navigator_msgs/StartGate`` service.
 
    .. attribute:: target
 
@@ -519,7 +519,7 @@ AlarmGet
 
 .. class:: ros_alarms.srv.AlarmGetResponse
 
-   The repsonse class for the ``ros_alarms/AlarmGet`` service.
+   The response class for the ``ros_alarms/AlarmGet`` service.
 
    .. attribute:: header
 
@@ -552,7 +552,7 @@ AlarmSet
 
 .. class:: ros_alarms.srv.AlarmSetResponse
 
-   The repsonse class for the ``ros_alarms/AlarmSet`` service.
+   The response class for the ``ros_alarms/AlarmSet`` service.
 
    .. attribute:: succeed
 
@@ -584,7 +584,7 @@ CameraDBQuery
 
 .. class:: navigator_msgs.srv.CameraDBQueryResponse
 
-   The repsonse class for the ``navigator_msgs/CameraDBQuery`` service.
+   The response class for the ``navigator_msgs/CameraDBQuery`` service.
 
    .. attribute:: found
 
@@ -610,7 +610,7 @@ MoveToWaypoint
 
 .. class:: navigator_msgs.srv.MoveToWaypointResponse
 
-   The repsonse class for the ``navigator_msgs/MoveToWaypoint`` service.
+   The response class for the ``navigator_msgs/MoveToWaypoint`` service.
 
    .. attribute:: success
 
@@ -644,7 +644,7 @@ ObjectDBQuery
 
 .. class:: navigator_msgs.srv.ObjectDBQueryResponse
 
-   The repsonse class for the ``navigator_msgs/ObjectDBQuery`` service.
+   The response class for the ``navigator_msgs/ObjectDBQuery`` service.
 
    .. attribute:: found
 
@@ -676,7 +676,7 @@ SetFrequency
 
 .. class:: navigator_msgs.srv.SetFrequencyResponse
 
-   The repsonse class for the ``navigator_msgs/SetFrequency`` service. The
+   The response class for the ``navigator_msgs/SetFrequency`` service. The
    class no public attributes.
 
 SetROI
@@ -697,7 +697,7 @@ SetROI
 
 .. class:: navigator_msgs.srv.SetROIResponse
 
-   The repsonse class for the ``navigator_msgs/SetROI`` service.
+   The response class for the ``navigator_msgs/SetROI`` service.
 
    .. attribute:: success
 
@@ -760,11 +760,11 @@ StereoShapeDetector
 
 .. class:: navigator_msgs.srv.StereoShapeDetectorResponse
 
-   The repsonse class for the ``navigator_msgs/StereoShapeDetector`` service.
+   The response class for the ``navigator_msgs/StereoShapeDetector`` service.
 
    .. attribute:: success
 
-        Whether the detector was succesful in detecting!
+        Whether the detector was successful in detecting!
 
         :type: bool
 
@@ -786,7 +786,7 @@ VisionRequest
 
 .. class:: navigator_msgs.srv.VisionRequestResponse
 
-   The repsonse class for the ``navigator_msgs/VisionRequest`` service.
+   The response class for the ``navigator_msgs/VisionRequest`` service.
 
    .. attribute:: pose
 
@@ -828,7 +828,7 @@ SetBool
 
     .. attribute:: success
 
-        Whether the boolean value was succesfully set.
+        Whether the boolean value was successfully set.
 
         :type: bool
 
@@ -873,7 +873,7 @@ CameraToLidarTransform
 
 .. class:: navigator_msgs.srv.CameraToLidarTransformResponse
 
-   The repsonse class for the ``navigator_msgs/CameraToLidarTransform`` service.
+   The response class for the ``navigator_msgs/CameraToLidarTransform`` service.
 
    .. attribute:: success
 
@@ -974,7 +974,7 @@ CoordinateConversion
 
 .. class:: navigator_msgs.srv.CoordinateConversionResponse
 
-   The repsonse class for the ``navigator_msgs/CoordinateConversion`` service.
+   The response class for the ``navigator_msgs/CoordinateConversion`` service.
 
    .. attribute:: converted
     
@@ -1012,7 +1012,7 @@ KeyboardControl
 
 .. class:: navigator_msgs.srv.KeyboardControlResponse
 
-   The repsonse class for the ``navigator_msgs/KeyboardControl`` service.
+   The response class for the ``navigator_msgs/KeyboardControl`` service.
 
    .. attribute:: generated_uuid
 
@@ -1054,11 +1054,11 @@ AddPOI
 
 .. class:: mil_poi.srv.AddPOIResponse
 
-   The repsonse class for the ``mil_poi/AddPOI`` service.
+   The response class for the ``mil_poi/AddPOI`` service.
 
    .. attribute:: success
 
-        Whether the add operation was succesful.
+        Whether the add operation was successful.
 
         :type: bool
 
@@ -1092,11 +1092,11 @@ MovePOI
 
 .. class:: mil_poi.srv.MovePOIResponse
 
-   The repsonse class for the ``mil_poi/MovePOI`` service.
+   The response class for the ``mil_poi/MovePOI`` service.
 
    .. attribute:: success
 
-        Whether the move operation was succesful.
+        Whether the move operation was successful.
 
         :type: bool
 
@@ -1124,11 +1124,11 @@ DeletePOI
 
 .. class:: mil_poi.srv.DeletePOIResponse
 
-   The repsonse class for the ``mil_poi/DeletePOI`` service.
+   The response class for the ``mil_poi/DeletePOI`` service.
 
    .. attribute:: success
 
-        Whether the delete operation was succesful.
+        Whether the delete operation was successful.
 
         :type: bool
 

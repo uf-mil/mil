@@ -62,7 +62,7 @@ class VectorToMarker:
         if self.length is not None:
             norm = np.linalg.norm(vec)
             if norm == 0:
-                rospy.logwarn("Zero vector recieved, skipping")
+                rospy.logwarn("Zero vector received, skipping")
                 return
             vec = (self.length / norm) * vec
         marker.points.append(numpy_to_point(vec))

@@ -1,7 +1,7 @@
 # Navigator Path Planner
 Contains the node and messages for NaviGator's path planner
 and trajectory generator, which accepts pose goals
-and generates feasable paths to that goal which does not collide
+and generates feasible paths to that goal which does not collide
 with objects in our occupancy grid. The node also
 creates a trajectory to follow this path, used by the controller.
 

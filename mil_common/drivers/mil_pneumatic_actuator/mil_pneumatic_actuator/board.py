@@ -45,7 +45,7 @@ class PnuematicActuatorDriverResponseError(PnuematicActuatorDriverError):
     """
 
     def __init__(self, received, expected):
-        message = "Unexpected response. Expected {}, recieved {}".format(
+        message = "Unexpected response. Expected {}, received {}".format(
             hex(received), hex(expected)
         )
         super().__init__(message)
@@ -59,7 +59,7 @@ class PnuematicActuatorTimeoutError(PnuematicActuatorDriverError):
     """
 
     def __init__(self):
-        message = "Serial timout"
+        message = "Serial timeout"
         super().__init__(message)
 
 
@@ -71,7 +71,7 @@ class PnuematicActuatorDriver:
     to open or close. For the shooter system, sending a ``True`` signal will
     pulse the valve.
 
-    Futher information on the board's communication protocol can be found in the
+    Further information on the board's communication protocol can be found in the
     design documentation.
     """
 

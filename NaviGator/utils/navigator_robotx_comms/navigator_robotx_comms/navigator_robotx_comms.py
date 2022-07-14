@@ -55,7 +55,7 @@ class RobotXHeartbeatMessage:
         lists encoded in the string.
 
         Args:
-            delim (str): The delimeter separating the values in the data list. Frequently
+            delim (str): The delimiter separating the values in the data list. Frequently
                 is a comma.
             string (str): The message represented as a string.
 
@@ -81,10 +81,10 @@ class RobotXHeartbeatMessage:
         """
         Given the necessary information to encode in the message, a message (as a string)
         is created. This message is ready to be sent back through the RobotX communications
-        protcol.
+        protocol.
 
         Args:
-            delim (str): The delimeter to use when separating the data.
+            delim (str): The delimiter to use when separating the data.
             team_id (str): The team ID used by MIL when sending messages.
             hst_date_time (Any): Presumably (??) a datetime object representing the
                 current time in HST.
@@ -192,7 +192,7 @@ class RobotXEntranceExitGateMessage:
         Constructs a list of data values and a checksum list from a provided message.
 
         Args:
-            delim (str): The delimeter splitting up the data values.
+            delim (str): The delimiter splitting up the data values.
             string (str): The message to get the data values from.
 
         Returns:
@@ -217,7 +217,7 @@ class RobotXEntranceExitGateMessage:
         according to 2018 AUSVI specifications.
 
         Args:
-            delim (str): The delimeter to use in between data values.
+            delim (str): The delimiter to use in between data values.
             team_id (Any): A value (??) that can be converted to a string to represent
                 the MIL team ID.
             hst_date_time (Any): A value (??) used to represent the current date + time
@@ -288,7 +288,7 @@ class RobotXScanCodeMessage:
         Returns the information encoded in a message.
 
         Args:
-            delim (str): The delimeter separating values in the data list encoded
+            delim (str): The delimiter separating values in the data list encoded
                 in the message.
             string (str): The message string to use to get data from.
 
@@ -312,7 +312,7 @@ class RobotXScanCodeMessage:
         Constructs a Scan the Code status message.
 
         Args:
-            delim (str): The string delimeter used to separate distinct data
+            delim (str): The string delimiter used to separate distinct data
                 points in the message.
             team_id (Any): The team ID used by MIL in the competition.
             hst_date_time (Any): The datetime to send in HST.
@@ -363,7 +363,7 @@ class RobotXIdentifySymbolsDockMessage:
         Retrieves the data and checksum list from a message.
 
         Args:
-            delim (str): The delimeter used to separate distinct datapoints.
+            delim (str): The delimiter used to separate distinct datapoints.
             string (str): The source message, as a string.
 
         Returns:
@@ -386,7 +386,7 @@ class RobotXIdentifySymbolsDockMessage:
         Constructs a status message with the provided information.
 
         Args:
-            delim (str): The delimeter used to separate distinct data values that
+            delim (str): The delimiter used to separate distinct data values that
                 need to be sent.
             team_id (Any): The team ID used by MIL at the competition.
             hst_date_time (Any): A value (??) used to represent the date/time combination
@@ -445,7 +445,7 @@ class RobotXDetectDeliverMessage:
         a constructed message.
 
         Args:
-            delim (str): The delimeter separating the distinct data values.
+            delim (str): The delimiter separating the distinct data values.
             string (str): The source message to retrieve the values from.
 
         Returns:
@@ -468,7 +468,7 @@ class RobotXDetectDeliverMessage:
         Constructs a status message given the provided information.
 
         Args:
-            delim (str): The delimeter separating individual data values.
+            delim (str): The delimiter separating individual data values.
             team_id (Any): The team ID used by MIL in competition.
             hst_date_time (Any): A representation of a particular date/time in HST.
             data (MessageDetectDeliverRequest): The data request associated with the mission.

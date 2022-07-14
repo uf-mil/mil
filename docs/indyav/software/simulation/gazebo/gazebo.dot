@@ -39,8 +39,8 @@ digraph indyav_gazebo
             invis [style=invis, pos="0,0"];
             sylphase_ins [label="sylphase_ins Plugin \n(give the gound truth odom)"];
     
-            right_wheel [label="right front wheel controller\n(controlls the steering angle of the right \nfront wheel)"];
-            left_wheel[label="left front wheel controller\n(controlls the steering angle of the left \nfront wheel)"];
+            right_wheel [label="right front wheel controller\n(controls the steering angle of the right \nfront wheel)"];
+            left_wheel[label="left front wheel controller\n(controls the steering angle of the left \nfront wheel)"];
         }
     }
 

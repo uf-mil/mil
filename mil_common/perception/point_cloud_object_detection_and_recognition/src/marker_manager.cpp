@@ -55,7 +55,7 @@ void MarkerManager::update_interactive_marker(mil_msgs::PerceptionObject const& 
   // Form the marker name from the object id
   std::string name = marker_name(object.id);
 
-  // Stores the new / pervious interactive marker
+  // Stores the new / previous interactive marker
   visualization_msgs::InteractiveMarker int_marker;
 
   // Tracks if the marker needs to be inserted or just updated

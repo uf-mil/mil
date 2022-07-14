@@ -97,7 +97,7 @@ class Packet:
 
     def to_bytes(self) -> bytes:
         """
-        Returns the binary represnetation of this packet to be sent accross the CAN network.
+        Returns the binary represnetation of this packet to be sent across the CAN network.
         Uses :meth:`struct.Struct.pack` to pack the payload between the :attr:`.SOF` and
         :attr:`.EOF`.
 
@@ -167,7 +167,7 @@ class Packet:
             Optional[Packet]: If found, read a packet from the serial device. Otherwise,
               return ``None``.
         """
-        # Read until SOF is encourntered incase buffer contains the end of a previous packet
+        # Read until SOF is encourntered in case buffer contains the end of a previous packet
         sof = None
         for _ in range(10):
             sof = ser.read(1)

@@ -58,7 +58,7 @@ def create_object_msg(
 
     # Fill points with contour, rect, or center depending on which is set
     if contour is not None:
-        # Reshape to Nx2 incase input was given in cv's native Nx1x2 shape
+        # Reshape to Nx2 in case input was given in cv's native Nx1x2 shape
         if len(contour.shape) == 3:
             contour = contour.reshape((contour.shape[0], contour.shape[2]))
         for point in contour:
@@ -138,7 +138,7 @@ class VisionNode(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def find_objects(self, img: np.ndarray) -> List[ObjectInImage]:
         """
-        Given an image as a source, this abstract method should be overriden to return
+        Given an image as a source, this abstract method should be overridden to return
         a list of :class:`ObjectInImage`.
 
         Args:
@@ -168,15 +168,15 @@ if __name__ == "__main__":
 
         def find_objects(self, img):
             # Get a list of contours in image
-            blured = cv2.blur(img, (5, 5))
-            edges = cv2.Canny(blured, 100, 200)
+            blurred = cv2.blur(img, (5, 5))
+            edges = cv2.Canny(blurred, 100, 200)
             _, contours, _ = cv2.findContours(
                 edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
             contours = np.array(contours)
             objects = []
 
-            # Add each contour, randomly chosing center, contour, or rect to demonstrate all three
+            # Add each contour, randomly choosing center, contour, or rect to demonstrate all three
             # In real application, only one of the three methods will be used depending on the algorithm
             # and what information is needed.
             for idx, contour in enumerate(contours):

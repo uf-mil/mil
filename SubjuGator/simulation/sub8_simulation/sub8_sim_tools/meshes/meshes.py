@@ -76,7 +76,7 @@ def load_mesh(path):
         return load_from_cache(path)
 
     elif os.path.exists(path):
-        print(f"SIM: Loading and then cacheing {path}")
+        print(f"SIM: Loading and then caching {path}")
         return load_and_cache_mesh(path)
 
     else:

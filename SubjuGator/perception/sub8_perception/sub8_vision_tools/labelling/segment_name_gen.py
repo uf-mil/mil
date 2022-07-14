@@ -7,7 +7,7 @@ import urllib2
 """
 Generate a random name from a wikipedia article.
 Before you freak out - I want to do this so I dont overwrite segemented images.
-I want to arbitrarly add and remove images without having to scan the folder everytime.
+I want to arbitrarily add and remove images without having to scan the folder every time.
 Plus this is more entertaining.
 """
 
@@ -44,7 +44,7 @@ def name_gen(no_web=False):
                 .lower()
             )
             stripped_title.replace("-", "_")
-            # Replace any non alpha numberic characters
+            # Replace any non alpha numeric characters
             stripped_title = re.sub(r"\W+", "", stripped_title)
 
         except:

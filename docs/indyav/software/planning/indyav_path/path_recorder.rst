@@ -1,6 +1,6 @@
 Path Recorder
 -------------
-This is a Utility we use to save a human gernerated path in the global frame: ``/ecef``.
+This is a Utility we use to save a human generated path in the global frame: ``/ecef``.
 
 Indyav Path Recorder inherits from the ``mil_tools TopicRecorder``. We override the CallBack function to record odometry messages at a fixed rate.
 
@@ -28,7 +28,7 @@ Basic Usage Example
 - If you like, you can now kill the path recorder by going to the terminal where it was launch and pressing:
   ``Ctrl + c``
 
-- Play back the recording as a normal rosbag on a diffrent topic and visualize it:
+- Play back the recording as a normal rosbag on a different topic and visualize it:
   ``rosbag play ~/test.bag  /odom:=/odom2 -l``
 
 - Visualize this new topic in rviz by clicking `Add` and then `/odom2 -> Odometry`

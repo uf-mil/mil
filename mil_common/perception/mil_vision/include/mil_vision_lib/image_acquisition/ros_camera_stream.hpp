@@ -51,7 +51,7 @@ public:
   // Returns true if the camera stream object has been successfully initialized
   bool init(std::string &camera_topic);
 
-  // Returns false if an internal error has ocurred or ROS is in the process of shutting down the
+  // Returns false if an internal error has occurred or ROS is in the process of shutting down the
   // enclosing node
   bool ok()
   {
@@ -172,7 +172,7 @@ bool ROSCameraStream<img_scalar_t, float_t>::init(std::string &camera_topic)
   bool success = false;
   image_transport::CameraSubscriber cam_sub;
 
-  // subscribes to image msg and camera info and initializes CameraModel Object then disconnets subscriber
+  // subscribes to image msg and camera info and initializes CameraModel Object then disconnects subscriber
   auto init_lambda = [&](const sensor_msgs::ImageConstPtr &image_msg_ptr,
                          const sensor_msgs::CameraInfoConstPtr &info_msg_ptr) mutable {
     std::string init_msg{ "ROSCameraStream: Initializing with " };
@@ -290,7 +290,7 @@ ROSCameraStream<img_scalar_t, float_t>::operator[](int i)
   }
   catch (std::exception &e)
   {
-    auto err = "ROSCameraStream: The circular buffer index you are trying to acess is out of bounds:\n"_s + e.what();
+    auto err = "ROSCameraStream: The circular buffer index you are trying to access is out of bounds:\n"_s + e.what();
     ROS_WARN_THROTTLE_NAMED(1, "ROSCameraStream", err.c_str());
     _mtx.unlock();
     return nullptr;

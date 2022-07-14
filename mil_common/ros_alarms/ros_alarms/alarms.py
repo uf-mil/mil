@@ -518,7 +518,7 @@ class AlarmListener:
         return self._last_alarm
 
     def _severity_cb_check(self, severity):
-        # In case _last alarm hasnt been declared yet
+        # In case _last alarm hasn't been declared yet
         if self._last_alarm is None:
             return False
 
@@ -615,9 +615,9 @@ class HeartbeatMonitor(AlarmBroadcaster):
     Used to trigger an alarm if a message on the topic ``topic_name`` isn't published
     at least every ``prd`` seconds.
 
-    An alarm won't be triggered if no messages are initally received.
+    An alarm won't be triggered if no messages are initially received.
 
-    All of this class' methods and attribues are internal.
+    All of this class' methods and attributes are internal.
     """
 
     def __init__(

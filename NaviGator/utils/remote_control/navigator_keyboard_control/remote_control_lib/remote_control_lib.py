@@ -271,7 +271,7 @@ class RemoteControl:
         """
         Used to actually call the shooter's reset service.
         """
-        rospy.loginfo("Reseting the shooter service")
+        rospy.loginfo("Resetting the shooter service")
         self.shooter_reset_client(TriggerRequest())
         rospy.loginfo(
             "In New York you can be a new man! In New York you can be a new man!"

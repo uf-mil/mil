@@ -3,7 +3,7 @@ Uses the Telodyne Blue View SDK to produce images / range profiles in ROS
 
 Also provides the bvtsdk as a cmake library for use in other packages.
 
-## Instalation
+## Installation
 
 This package requires the proprietary blueview sdk (bvtsdk) to build.
 

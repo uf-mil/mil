@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(navigator_vision)
 
 # SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
-# set c++11 as default, overide with set_target_properties()
+# set c++11 as default, override with set_target_properties()
 # if needed for specific nodes (cough..cough... PCL)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -pedantic -Wall -std=c++11 ")
 

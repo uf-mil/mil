@@ -29,7 +29,7 @@ namespace pcodar
 {
 /**
  * Base class for a class implementing the object detection needed for the PCODAR node.
- * This can be fufilled by processesing LIDAR pointclouds (like in @pcodar::Node) or using
+ * This can be fulfilled by processesing LIDAR pointclouds (like in @pcodar::Node) or using
  * simulated ground truth (like in pcodar_gazebo).
  */
 class NodeBase

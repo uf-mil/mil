@@ -49,7 +49,7 @@ public:
     std::string pointcloud_advertiser = "/velodyne_points/colored";
     nh_.param<std::string>("pointcloud_advertiser", pointcloud_advertiser, pointcloud_advertiser);
 
-    // pushback camera streams that are avaliable
+    // pushback camera streams that are available
     for (auto &i : camera_names)
     {
       std::unique_ptr<ROSCameraStream_Vec3> cam(new ROSCameraStream_Vec3(nh_, 1));
@@ -76,7 +76,7 @@ public:
       if (!tf_buffer_.canTransform((*cam)[0]->getCameraModelPtr()->tfFrame(), point_cloud->header.frame_id,
                                    ros::Time(0)))
       {
-        ROS_ERROR_STREAM("PC_COLORIZER: failed to find a trasformation for camera");
+        ROS_ERROR_STREAM("PC_COLORIZER: failed to find a transformation for camera");
         return;
       }
 

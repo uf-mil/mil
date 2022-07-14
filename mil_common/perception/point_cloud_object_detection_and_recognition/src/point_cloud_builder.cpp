@@ -11,11 +11,11 @@ void PointCloudCircularBuffer::add_point_cloud(const point_cloud_ptr& pc)
   // Add new cloud to buffer
   prev_clouds_.push_back(pc);
 
-  // Don't contruct mega cloud until buffer of recent clouds is full
+  // Don't construct mega cloud until buffer of recent clouds is full
   if (!prev_clouds_.full())
     return;
 
-  //  Assemple cloud as union of buffered clouds
+  //  Assemble cloud as union of buffered clouds
   mega_cloud_->clear();
   for (const auto& cloud : prev_clouds_)
   {

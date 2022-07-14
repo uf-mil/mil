@@ -37,11 +37,11 @@ extern struct ogrid_param
   // Statistical Outlier Removal
   float statistical_mean_k;
   float statistical_stddev_mul_thresh;
-  // Euclidian Clustering
+  // Euclidean Clustering
   float cluster_tolerance_m;
   float cluster_min_num_points;
   float cluster_max_num_points;
-  // Remmove points below threshold
+  // Remove points below threshold
   float nearby_threshold;
   // Remove points below depth in map frame
   float depth;
@@ -67,9 +67,9 @@ public:
 
   // Publish mat_ogrid
   void publish_ogrid();
-  // Project point_cloud and make a persistant ogrid
+  // Project point_cloud and make a persistent ogrid
   void process_persistant_ogrid(pcl::PointCloud<pcl::PointXYZI>::Ptr point_cloud_plane);
-  // Convert persistant ogrid to a mat_ogrid
+  // Convert persistent ogrid to a mat_ogrid
   void populate_mat_ogrid();
 
   mil_msgs::PerceptionObjectArray cluster(pcl::PointCloud<pcl::PointXYZI>::Ptr pc);

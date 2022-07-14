@@ -63,7 +63,7 @@ class SimulatedSerial(NoopSerial):
     """
     Simulates a serial device, storing a buffer to be read in a program like a normal OS serial device.
 
-    Intended to be extended by other classes, which should override the write function to recieve writes to
+    Intended to be extended by other classes, which should override the write function to receive writes to
     the simulated device. These classes simply append to the buffer string which will be returned
     on reads to the simulated device.
 
@@ -168,7 +168,7 @@ class SimulatedKillBoard(SimulatedSerial):
                 return
 
     def _handle_sync(self, data):
-        # Handle syncronous requests
+        # Handle synchronous requests
         if data == constants["PING"]["REQUEST"]:
             self.last_ping = rospy.Time.now()
             self.buffer = constants["PING"]["RESPONSE"] + self.buffer

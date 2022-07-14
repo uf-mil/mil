@@ -10,7 +10,7 @@ bags:                                   # Required list of bags
     topics: /down/left/image_raw        # Topic to pull images from
 
   - file: orange_pipes.bag
-    # Optionaly explicitly set output file, important because another section
+    # Optionally explicitly set output file, important because another section
     # has same input bag
     # outfile: front_orange_pipes.bag
     # Can have multiple topics

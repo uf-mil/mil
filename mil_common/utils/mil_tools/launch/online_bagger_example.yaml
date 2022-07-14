@@ -6,7 +6,7 @@ stream_time: 10  # seconds
 
 # yamllint disable-line rule:line-length
 # adds additional topics to stream, or overrides default stream time on specific topics
-# leave blank to bag MIL bag script enviromental variables only
+# leave blank to bag MIL bag script environmental variables only
 topics: [["/odom", 300],
          ["/absodom", 300],
          ["/stereo/left/camera_info"],

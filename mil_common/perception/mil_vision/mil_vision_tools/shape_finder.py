@@ -30,9 +30,9 @@ class RectFinder:
         two will be reversed so that length is always the longer side.
 
         Args:
-            length (float): The measurment of the longer side of the rectangle
+            length (float): The measurement of the longer side of the rectangle
                 in meters.
-            width (float): The measurment of the shorter side of the rectangle
+            width (float): The measurement of the shorter side of the rectangle
                 in meters.
         """
         # Ensure length >= width
@@ -100,7 +100,7 @@ class RectFinder:
     def sort_corners(rect: np.ndarray, debug_image: bool | None = None) -> np.ndarray:
         """
         Given a contour of 4 points, returns the same 4 points sorted in a known way.
-        Used so that indicies of contour line up to that in model for cv2.solvePnp
+        Used so that indices of contour line up to that in model for cv2.solvePnp
 
         Args:
             rect (np.ndarray): An array representing the contour of 4 points.
@@ -128,10 +128,10 @@ class RectFinder:
         atan_indicies = np.argsort(atan)
         # Sort by arctan formed by vector from centroid to each point
         rect = rect[atan_indicies]
-        # If rect is horizontal, correct indicies as noted above
+        # If rect is horizontal, correct indices as noted above
         if np.linalg.norm(rect[0] - rect[1]) > np.linalg.norm(rect[0] - rect[3]):
             rect = rect[[3, 0, 1, 2]]
-        # Print indicies onto image if debug_image is given
+        # Print indices onto image if debug_image is given
         if debug_image is not None:
             for i, pixel in enumerate(rect):
                 center = (int(pixel[0]), int(pixel[1]))
@@ -222,7 +222,7 @@ class RectFinder:
             ``rvec`` to a 3x3 rotation matrix.
         """
         corners = np.array(corners, dtype=np.float)
-        # Use camera intrinsics and knowledge of marker's real demensions to
+        # Use camera intrinsics and knowledge of marker's real dimensions to
         # get a pose estimate in camera frame
         if cam is not None:
             intrinsics = cam.intrinsicMatrix()

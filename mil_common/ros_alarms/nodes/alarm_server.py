@@ -105,7 +105,7 @@ class AlarmServer:
     def _handle_meta_alarm(self, meta_alarm, sub_alarms):
         """
         Calls the meta_predicate callback for an alarm handler when one of its metal alarms has changed.
-        Then, updates the status of the parent alarm, if nessesary.
+        Then, updates the status of the parent alarm, if necessary.
         """
         alarms = {
             name: alarm for name, alarm in self.alarms.items() if name in sub_alarms

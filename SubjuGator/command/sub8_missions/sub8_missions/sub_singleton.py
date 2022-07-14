@@ -55,7 +55,7 @@ class VisionProxy:
     Make sure your perception nodes are structured as follows:
     * The node provides an enable service to start and stop percetion
     * The node provides a 3d and/or 2d pose service to get the position of the
-      object of intrest in real world or pixel
+      object of interest in real world or pixel
     * All services need to have the same root
       * For example, a buoy finder node may provide the following:
 
@@ -153,7 +153,7 @@ class _VisionProxies:
     """
     Gives interface to vision proxies.
 
-    Add vision proxy names and roots to the yaml config file and acccess them through here, ex:
+    Add vision proxy names and roots to the yaml config file and access them through here, ex:
 
     .. code-block:: python
 
@@ -322,7 +322,7 @@ class SubjuGator(BaseMission):
     @util.cancellableInlineCallbacks
     def tx_pose(self):
         """
-        Slighty safer to use.
+        Slightly safer to use.
         """
         if self.test_mode:
             yield self.nh.sleep(0.1)
@@ -477,7 +477,7 @@ class PoseSequenceCommander:
     ):
         """
         Pass a list of positions and orientations (euler).
-        Each is realive to the sub's pose folloing the previous
+        Each is realive to the sub's pose following the previous
         pose command.
         """
         for i in range(len(positions)):
@@ -503,7 +503,7 @@ class PoseSequenceCommander:
     ):
         """
         Pass a list of positions and orientations (quaternion).
-        Each is realive to the sub's pose folloing the previous
+        Each is realive to the sub's pose following the previous
         pose command.
         """
         for i in range(len(positions)):
@@ -596,7 +596,7 @@ class SonarObjects:
             # sleep
             yield self.sub.nh.sleep(0.1)
 
-            # Break out of loop if we find something satisifying function
+            # Break out of loop if we find something satisfying function
             res = yield self._objects_service(ObjectDBQueryRequest())
             g_obj = self._get_objects_within_cone(
                 res.objects, start_point, ray, angle_tol, distance_tol
@@ -608,7 +608,7 @@ class SonarObjects:
                 out = c_func(g_obj, ray)
                 print("SONAR_OBJECTS: " + str(out))
                 if out is not None or out is True:
-                    print("SONAR_OBJECTS: found objects satisfing function")
+                    print("SONAR_OBJECTS: found objects satisfying function")
                     break
 
         res = yield self._objects_service(ObjectDBQueryRequest())

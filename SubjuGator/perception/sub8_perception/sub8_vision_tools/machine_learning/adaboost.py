@@ -22,7 +22,7 @@ SHOULD:
     - Easier tool for generating data
 
 CONSIDER:
-    - Use sklearn preprocessing standar scaler
+    - Use sklearn preprocessing standard scaler
         - Whiten data, yo
 
 - Package kernels alongside Boost

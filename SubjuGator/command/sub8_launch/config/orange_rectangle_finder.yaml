@@ -2,7 +2,7 @@
 ---
 debug_ros: true
 
-# paramaters to pass to canny contour detection.
+# parameters to pass to canny contour detection.
 #   runs: cv2.Canny(img, canny_low, canny_low*self.canny_ratio)
 canny_low: 100
 canny_ratio: 3.0

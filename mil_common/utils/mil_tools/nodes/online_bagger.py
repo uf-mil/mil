@@ -195,12 +195,12 @@ class OnlineBagger:
         Subscribe to the topics defined in the yaml configuration file
 
         Function checks subscription status True/False of each topic
-        if True: topic has already been sucessfully subscribed to
+        if True: topic has already been successfully subscribed to
         if False: topic still needs to be subscribed to and
         subscriber will be run.
 
         Each element in self.subscriber list is a list [topic, Bool]
-        where the Bool tells the current status of the subscriber (sucess/failure).
+        where the Bool tells the current status of the subscriber (success/failure).
 
         Return number of topics that failed subscription
         """
@@ -247,7 +247,7 @@ class OnlineBagger:
         The number of requested seconds should be the number of seoncds desired from
         the end of deque. (ie. requested_seconds = 10 )
         If the desired time length of the bag is greater than the available messages it will output a
-        message and return how ever many seconds of data are avaiable at the moment.
+        message and return how ever many seconds of data are available at the moment.
         Seconds is of a number type (not a rospy.Time type) (ie. int, float)
         """
 

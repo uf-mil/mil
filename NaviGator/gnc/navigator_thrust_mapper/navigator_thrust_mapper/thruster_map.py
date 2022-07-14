@@ -74,11 +74,11 @@ class ThrusterMap:
             force_limit: (MAX_FORWARD, MAX_REVERSE) maximum force in either direction
               that should be commanded to a thruster, in newtons
             com: offset of boat's true center of mass to the frame thruster positions
-              are given (base_link) defaults to (0, 0, 0) incase we don't know com
+              are given (base_link) defaults to (0, 0, 0) in case we don't know com
 
         The mapping from body wrench to individual thrusts or visa versa is a simple least square solver.
         Bibliography:
-          [1] Christiaan De Wit
+          [1] Christiaan De With
               "Optimal Thrust Allocation Methods for Dynamic Positioning of Ships"
               see: http://repository.tudelft.nl/assets/uuid:4c9685ac-3f76-41c0-bae5-a2a96f4d757e/DP_Report_FINAL.pdf
 
@@ -95,7 +95,7 @@ class ThrusterMap:
 
         """ Iterate through thruster positions and create thruster trans matrix"""
         thruster_matrix = []
-        # loop through all sub positions and compute collumns of A
+        # loop through all sub positions and compute columns of A
         for thruster_number, position in enumerate(positions):
             # l_x and l_y are the offset for the center of gravity
             l_x, l_y = np.subtract(position, com)
@@ -107,7 +107,7 @@ class ThrusterMap:
             thruster_column = np.transpose(np.array([[cos, sin, torque_effect]]))
             thruster_matrix.append(thruster_column)
 
-        # returns a matrix made of the thruster collumns
+        # returns a matrix made of the thruster columns
         self.thruster_matrix = np.hstack(thruster_matrix)
         self.thruster_matrix_inv = np.linalg.pinv(
             self.thruster_matrix
@@ -223,7 +223,7 @@ class ThrusterMap:
     def thrusts_to_wrench(self, thrusts):
         """
         Given a the 4 thrust commands in effort units, returns the
-        equivilant
+        equivalent
         param thrusts: np float array of thruster efforts in order of ThrusterMap.THRUSTERS
         returns: wrench (x, y, torque about z) force/torque applied to boat
         """
@@ -259,7 +259,7 @@ class ThrusterMap:
         """
         This command is currently unimplemented and will raise an immediate error.
 
-        Maps a list of thrusts in effort units to the corosponding force in newtons.
+        Maps a list of thrusts in effort units to the corresponding force in newtons.
         """
         raise Exception(
             "Unimplemented. Please file an issue if you encounter this error"

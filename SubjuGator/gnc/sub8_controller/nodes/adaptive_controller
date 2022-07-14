@@ -99,7 +99,7 @@ class Sub8AdapativeController:
         self.kg = np.array(kg)
         self.use_learned = config["use_learned"]
         self.last_config = config
-        rospy.loginfo("Gains succesfully updated via dynamic reconfigure")
+        rospy.loginfo("Gains successfully updated via dynamic reconfigure")
         return config
 
     def update(self) -> None:

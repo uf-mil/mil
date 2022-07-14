@@ -86,7 +86,7 @@ class FireTorpedos(SubjuGator):
             """
             In the event we want to attempt other targets beyond bare minimum
             for target in self.targets. Eventually we will want to take the
-            best target, which is the TCX target. Priority targetting will
+            best target, which is the TCX target. Priority targeting will
             come once we confirm we can actually unblock currently blocked
             targets.
             """
@@ -169,7 +169,7 @@ class FireTorpedos(SubjuGator):
         ).go(blind=True, speed=0.5)
 
         self.print_good(
-            "{} locked. Firing torpedos. Hit confirmed, good job Commander.".format(
+            "{} locked. Firing torpedoes. Hit confirmed, good job Commander.".format(
                 target
             )
         )

@@ -18,7 +18,7 @@ namespace sub
 // TODO:
 //  ? Additional (wasteful) branching to check if something is actually in front of the ray (Always
 //  true for an image)
-//  - Does squaredNorm improve speed? (This will be miniscule at best, but saves computation)
+//  - Does squaredNorm improve speed? (This will be minuscule at best, but saves computation)
 //
 // @param[in] target_cloud Cloud of interest
 // @param[in] indices Indices of seed points

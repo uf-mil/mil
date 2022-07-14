@@ -94,7 +94,7 @@ class Threshold:
             AttributeError: No valid colorspace was found in the dictionary.
 
         Args:
-            d (Dict[str, Dict[str, List[int]]]): The dictionary containing the releveant
+            d (Dict[str, Dict[str, List[int]]]): The dictionary containing the relevant
             colorspace information.
         """
         assert isinstance(d, dict), "d is not a dictionary"
@@ -201,7 +201,7 @@ def auto_canny(image: np.ndarray, sigma: float = 0.33) -> np.ndarray:
     """
     Returns a binary image of the edges in an image. Uses the median of the
     image to pick good low and upper threshold values for Canny, which makes
-    it both adaptive and require less tunning.
+    it both adaptive and require less tuning.
 
     Args:
         image (np.ndarray): Grayscale image to find edges in.
@@ -222,8 +222,8 @@ def auto_canny(image: np.ndarray, sigma: float = 0.33) -> np.ndarray:
 
 def contour_centroid(contour: List[float], M: Optional[Any] = None) -> Tuple[int, int]:
     """
-    Returns the centroid of the contour. If you have already calcualted the
-    moments for this contour, pass it in as the second paramter so it not recalculated.
+    Returns the centroid of the contour. If you have already calculated the
+    moments for this contour, pass it in as the second parameter so it not recalculated.
 
     Args:
         contour (np.ndarray): The array of ``(x, y)`` representing a single contour.

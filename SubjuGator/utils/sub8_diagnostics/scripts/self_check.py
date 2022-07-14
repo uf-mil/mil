@@ -36,7 +36,7 @@ class TemplateChecker:
         pass
 
     def do_check(self):
-        # Do acutal checking here, either pass or fail
+        # Do actual checking here, either pass or fail
         pass
 
     def pass_check(self, status="", name=None):
@@ -126,7 +126,7 @@ class ThrusterChecker(TemplateChecker):
         if passed:
             self.pass_check("all thrusters up.")
         else:
-            self.warn_check("unkown failure.")
+            self.warn_check("unknown failure.")
 
     @txros.util.cancellableInlineCallbacks
     def get_all_thrusters(self):
@@ -169,7 +169,7 @@ class CameraChecker(TemplateChecker):
 
     @txros.util.cancellableInlineCallbacks
     def do_check(self):
-        # Check if front cameras are actally on usb bus
+        # Check if front cameras are actually on usb bus
         command = f"lsusb -d {self.front_cam_product_id}"
         err_str = "{} front camera{} not connected to usb port"
         try:

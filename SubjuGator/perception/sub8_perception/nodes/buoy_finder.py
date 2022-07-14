@@ -129,7 +129,7 @@ class BuoyFinder:
         self.camera_model = None
         self.circle_finder = CircleFinder(
             1.0
-        )  # Model radius doesn't matter beacause it's not being used for 3D pose
+        )  # Model radius doesn't matter because it's not being used for 3D pose
 
         # Various constants for tuning, debugging. See buoy_finder.yaml for more info
         self.min_observations = rospy.get_param("~min_observations")
@@ -320,7 +320,7 @@ class BuoyFinder:
     def find_single_buoy(self, buoy_type):
         """
         Attempt to find one color buoy in the image.
-        1) Create mask for buoy's color in colorspace specified in paramaters
+        1) Create mask for buoy's color in colorspace specified in parameters
         2) Select the largest contour in this mask
         3) Approximate a circle around this contour
         4) Store the center of this circle and the current tf between map and camera

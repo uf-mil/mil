@@ -181,7 +181,7 @@ class torp_vision:
         approx = cv2.approxPolyDP(c, 0.04 * peri, True)
 
         if len(approx) == 4:
-            target = "Target Aquisition Successful"
+            target = "Target Acquisition Successful"
 
         elif len(approx) == 3 or len(approx) == 5:
             target = "Partial Target Acquisition"
@@ -278,7 +278,7 @@ class torp_vision:
             c = c.astype("float")
             # c *= ratio
             c = c.astype("int")
-            if shape == "Target Aquisition Successful":
+            if shape == "Target Acquisition Successful":
                 if self.debug:
                     try:
                         cv2.drawContours(cv_image, [c], -1, (0, 255, 0), 2)
@@ -307,14 +307,14 @@ class torp_vision:
         of where we are trying to go and perform more accurate movements
         to align with the target. The first thing we need to do is convert from
         camera coordinates in pixels to 3D coordinates.
-        Every time we succesfully get a target aquisition we add it to the
+        Every time we successfully get a target acquisition we add it to the
         counter. Once we observe it enough times
         we can be confident we are looking at the correct target. We then
         perform an least squares intersection from multiple angles
         to derive the approximate 3D coordinates.
         """
 
-        if m_shape == "Target Aquisition Successful":
+        if m_shape == "Target Acquisition Successful":
             try:
                 self.tf_listener.waitForTransform(
                     "map",

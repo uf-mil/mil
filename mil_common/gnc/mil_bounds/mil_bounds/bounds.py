@@ -21,7 +21,7 @@ def tuple_to_config(tup, config, index):
 class BoundsServer:
     """
     Runs the dynamic reconfigure server which implements a global 4 sided
-    boundry.
+    boundary.
     """
 
     def __init__(self):
@@ -33,7 +33,7 @@ class BoundsServer:
     def update_config(self, config, level):
         """
         Callback when a dynamic_reconfigure request arrives.
-        Publishes visualization of the boundry.
+        Publishes visualization of the boundary.
         """
         marker = Marker()
         marker.header.frame_id = config.frame
@@ -61,7 +61,7 @@ class BoundsClient(Client):
     @staticmethod
     def config_to_numpy(config):
         """
-        Return a 4x3 numpy matrix representing the 4 3D points of the boundry
+        Return a 4x3 numpy matrix representing the 4 3D points of the boundary
         """
         bounds = np.zeros((4, 3), dtype=float)
         for i in range(1, 5):
@@ -72,7 +72,7 @@ class BoundsClient(Client):
     def numpy_to_config(arr, config):
         """
         Sets the values of the config from a 4x3 numpy representation
-        of the boundry corners
+        of the boundary corners
         """
         for i in range(1, 5):
             tuple_to_config(arr[i - 1], config, i)

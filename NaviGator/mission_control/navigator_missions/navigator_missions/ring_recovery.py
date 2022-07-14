@@ -60,7 +60,7 @@ class RingRecovery(Navigator):
         self.send_feedback("Backing up")
         yield self.move.backward(self.DEPLOY_DISTANCE).go(move_type="skid", blind=True)
 
-        # Retract the mechnism so we can move on
+        # Retract the mechanism so we can move on
         self.send_feedback("Retracting grinch")
         yield self.retract_grinch()
 

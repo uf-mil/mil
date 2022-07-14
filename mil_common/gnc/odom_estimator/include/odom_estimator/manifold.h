@@ -19,7 +19,7 @@ namespace odom_estimator
 // only looking at D-dimensional Euclidean vector between points, obtained by
 // subtracting points (operator-) and by adding a D-dimensional Euclidean
 // vector to a point (operator+).
-// This type acts like Eigen vectors so instances can be used interchangably
+// This type acts like Eigen vectors so instances can be used interchangeably
 // with them.
 template <typename Derived, int D>
 struct IManifold

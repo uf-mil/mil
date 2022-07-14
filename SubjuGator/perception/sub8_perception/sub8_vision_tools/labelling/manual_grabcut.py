@@ -79,7 +79,7 @@ class Picker:
             self.mouse_state[0] = 0
             self.brush_size_change = None
 
-        # NOTE: Right mouse buttoning doesnt work right with newest opencv - use ALT drag instead.
+        # NOTE: Right mouse buttoning does not work right with newest opencv - use ALT drag instead.
         # elif event == cv2.EVENT_RBUTTONDOWN:
         #     self.mouse_state[1] = 1
         #     cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 0, 200), -1)

@@ -124,7 +124,7 @@ class VampireIdentifier:
             else:
                 raise ValueError("Invalid Target Name")
         self.last_config = config
-        rospy.loginfo("Params succesfully updated via dynamic reconfigure")
+        rospy.loginfo("Params successfully updated via dynamic reconfigure")
         return config
 
     def image_cb(self, image):
@@ -231,7 +231,7 @@ class VampireIdentifier:
             return target
         approx = cv2.approxPolyDP(c, 0.04 * peri, True)
 
-        target = "Target Aquisition Successful"
+        target = "Target Acquisition Successful"
 
         return target
 
@@ -296,7 +296,7 @@ class VampireIdentifier:
             c = c.astype("float")
             # c *= ratio
             c = c.astype("int")
-            if shape == "Target Aquisition Successful":
+            if shape == "Target Acquisition Successful":
                 if self.debug:
                     try:
                         cv2.drawContours(cv_image, [c], -1, (0, 255, 0), 2)
@@ -324,7 +324,7 @@ class VampireIdentifier:
         Approximate 3D coordinates.
         """
 
-        if m_shape == "Target Aquisition Successful":
+        if m_shape == "Target Acquisition Successful":
             try:
                 self.tf_listener.waitForTransform(
                     "map",

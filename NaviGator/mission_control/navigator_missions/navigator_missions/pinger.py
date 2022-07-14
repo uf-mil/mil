@@ -380,7 +380,7 @@ class PingerMission(Navigator):
 
     @txros.util.cancellableInlineCallbacks
     def set_active_pinger(self):
-        """Set the paramter for the active pinger identified for use in other mission"""
+        """Set the parameter for the active pinger identified for use in other mission"""
         fprint(
             f"PINGER: setting active pinger to Gate_{int(self.gate_index) + 1}",
             msg_color="green",
@@ -452,7 +452,7 @@ class PingerMission(Navigator):
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
         fprint("PINGER: Starting Pinger Mission", msg_color="green")
-        fprint("PINGER: Reseting Frequency", msg_color="green")
+        fprint("PINGER: Resetting Frequency", msg_color="green")
         yield self.reset_freq()
         fprint("PINGER: Getting database objects", msg_color="green")
         yield self.get_objects()

@@ -32,7 +32,7 @@ class ExtendedGoalManager(GoalManager):
 class ObserveActionClient(ActionClient):
     """
     Extension of actionlib's actionclient which will also
-    notice goals comming from other clients by subscribing to the goal topic.
+    notice goals coming from other clients by subscribing to the goal topic.
     Used in the GUI to monitor the current mission even when it was triggered
     by a different client.
     """
@@ -61,7 +61,7 @@ class ObserveActionClient(ActionClient):
         self.observer_feedback_cb = fn
 
     def _observer_transition_cb(self, goal, handler):
-        # TODO: delete from self.observe_goals when very old.... shouldnt really be a problem though
+        # TODO: delete from self.observe_goals when very old.... shouldn't really be a problem though
         if self.observer_transition_cb:
             self.observer_transition_cb(goal, handler)
 
@@ -201,7 +201,7 @@ class Dashboard(Plugin):
 
     def transition_cb(self, goal, handler):
         """
-        When a mission "transitions" (canceled, started, aborted, succeded), update
+        When a mission "transitions" (canceled, started, aborted, succeeded), update
         the log and result pane
         """
         status = handler.get_goal_status()
@@ -427,7 +427,7 @@ class Dashboard(Plugin):
 
     def connect_ui(self):
         """
-        Stores various interactive widgets as member variabes so we can get and set their contents.
+        Stores various interactive widgets as member variables so we can get and set their contents.
         """
         self.save_button = self._widget.findChild(QtWidgets.QToolButton, "save_button")
         self.load_button = self._widget.findChild(QtWidgets.QToolButton, "load_button")

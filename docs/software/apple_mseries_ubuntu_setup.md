@@ -10,7 +10,7 @@ Installing Ubuntu 18.04 on an M1 Mac can be challenging, as the device does not 
 
 4. In the Parallels menu at the top of the window, allow Parallels access to the USB drive you just inserted. Click the USB icon, and then click on the specific USB drive you inserted into your computer. It should now show a check mark next to the name.
 
-5. Continue proceeding through the Ubuntu Server installation process. There is no GUI, all steps are completed through the textual user interface. When partitioning your disk, you can use guided partitioning, which should partition all of the space Parallels alotted for that VM.
+5. Continue proceeding through the Ubuntu Server installation process. There is no GUI, all steps are completed through the textual user interface. When partitioning your disk, you can use guided partitioning, which should partition all of the space Parallels allotted for that VM.
 
 6. The installation process will ask if you want to install any recommended software (such as software to make your computer into a DNS server). Do not select any options, just press `<Enter>`.
 

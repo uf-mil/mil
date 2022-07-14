@@ -36,7 +36,7 @@ tldr; Scale your objects evenly in blender or else the machine spirits will be d
 3. Immediately after, go to the library_effects tag or create one directly beneath library_images.
 4. Create Material Effect and Material Effect 2.
 5. These will allow you to bind the image to a material as its texture. Examples found in colored_lid.dae.
-6. Close library_effects tag and open library_materials tage if one does not yet exist.
+6. Close library_effects tag and open library_materials stage if one does not yet exist.
 7. Follow format set in colored_lid.dae.
 8. Within the mesh settings under the library_geometry tag, search for materials and ensure they carry the same name as your material.
 9. In colored_lid, the material is simply called 'Material'.

@@ -84,10 +84,10 @@ class VrxNavigation(Vrx):
                 ]
             )
             distances = np.linalg.norm(positions_local[forward_indicies], axis=1)
-            indicies = forward_indicies[np.argsort(distances).flatten()].tolist()
-            # ids = [objects[i].id for i in indicies]
+            indices = forward_indicies[np.argsort(distances).flatten()].tolist()
+            # ids = [objects[i].id for i in indices]
             # self.send_feedback('Im attracted to {}'.format(ids))
-            return indicies
+            return indices
 
         def is_done(objects, positions):
             try:
@@ -124,7 +124,7 @@ class VrxNavigation(Vrx):
     @txros.util.cancellableInlineCallbacks
     def explore_closest_until(self, is_done, filter_and_sort):
         """
-        @conditon func taking in sorted objects, positions
+        @condition func taking in sorted objects, positions
         @object_filter func filters and sorts
         """
         move_id_tuple = None
@@ -202,15 +202,15 @@ class VrxNavigation(Vrx):
                 [rosmsg_to_numpy(obj.pose.position) for obj in objects]
             )
             if len(objects) == 0:
-                indicies = []
+                indices = []
             else:
-                indicies = filter_and_sort(objects, positions)
-            if indicies is None or len(indicies) == 0:
+                indices = filter_and_sort(objects, positions)
+            if indices is None or len(indices) == 0:
                 self.send_feedback("No objects")
                 continue
-            objects = [objects[i] for i in indicies]
+            objects = [objects[i] for i in indices]
             # print(len(objects))
-            positions = positions[indicies]
+            positions = positions[indices]
 
             # Exit if done
             ret = is_done(objects, positions)

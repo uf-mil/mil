@@ -93,7 +93,7 @@ class ThrusterMapperNode:
 
     def publish_thrusts(self) -> None:
         """
-        Use the mapper to find the individual thrusts needed to acheive the current body wrench.
+        Use the mapper to find the individual thrusts needed to achieve the current body wrench.
         If killed, publish 0 to all thrusters just to be safe.
         """
         commands = [Command() for i in range(len(self.publishers))]

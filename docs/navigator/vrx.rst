@@ -163,4 +163,4 @@ i.e. to play the 2019 docking task run 1:
 
     Not all tasks and runs have a video. Navigate to 
     `$MIL_REPO/NaviGator/simulation/VRX/vrx_logs/2019/vrx_2019_videos` to see 
-    the avalible videos.
+    the available videos.

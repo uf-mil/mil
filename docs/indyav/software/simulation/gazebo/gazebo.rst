@@ -11,7 +11,7 @@ Launch Gazebo for IndyAV
 
 Launch RVIZ for IndyAV
 **********************
-in a new pannel
+in a new panel
 ``indyviz``
 (this represents what the robot knows)
 
@@ -19,7 +19,7 @@ in a new pannel
 
 Launch the gazebo client (visualizer and gui)
 *********************************************
-in a new pannel
+in a new panel
 ``gazebogui``
 (this represents ground truth)
 
@@ -31,7 +31,7 @@ in a new pannel
 
 Command a Steering angle
 ************************
-in a new pannel::
+in a new panel::
 
   rostopic pub /steering indyav_control/SteeringStamped -r 10 '{header: {
   seq: 0,
@@ -43,7 +43,7 @@ in a new pannel::
 
 Command throttle
 ****************
-in a new pannel::
+in a new panel::
 
   rostopic pub /throttle indyav_control/RevsStamped -r 10 '{header: {
   seq: 0,

@@ -133,7 +133,7 @@ class DetectDeliver(Navigator):
             yield self.move.circle_point(
                 platform_np, direction=self.circle_direction
             ).go()
-            done_circle = True  # noqa flake8 cant see that it is defined above
+            done_circle = True  # noqa flake8 can't see that it is defined above
 
         do_circle()
         while not done_circle:
@@ -322,7 +322,7 @@ class DetectDeliver(Navigator):
         angle = np.arctan2(-enunormal[0], enunormal[1])
         aligned_orientation = trns.quaternion_from_euler(
             0, 0, angle
-        )  # Align perpindicular
+        )  # Align perpendicular
         return (aligned_position, aligned_orientation)
 
     def get_shape_pos(self, normal_res, enu_cam_tf):
@@ -425,7 +425,7 @@ class DetectDeliver(Navigator):
             )
             return
         fprint(
-            "Aligned successs. Shooting while using forest realign",
+            "Aligned success. Shooting while using forest realign",
             title="DETECT DELIVER",
             msg_color="green",
         )
@@ -476,7 +476,7 @@ class DetectDeliver(Navigator):
             )
             return
         fprint(
-            "Aligned successs. Shooting without realignment",
+            "Aligned success. Shooting without realignment",
             title="DETECT DELIVER",
             msg_color="green",
         )

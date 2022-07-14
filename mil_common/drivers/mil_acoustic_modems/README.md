@@ -5,5 +5,5 @@ Python scripts that are run on two Raspberry Pi 3 B+ units connected to EvoLogic
 ## Current Objectives:
 
 * Amending to the previous on startup of the Pi's automatically
-* Impliment GPS via the onboard HW UART
+* Implement GPS via the onboard HW UART
 * Plotting on a map and adding a depth field in postprocessing.

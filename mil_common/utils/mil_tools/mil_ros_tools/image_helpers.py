@@ -100,7 +100,7 @@ class Image_Subscriber:
         im_sub (rospy.Subscriber): The subscriber to the image topic. The topic
             name and queue size are received through the constructor.
         info_sub (rospy.Susbcriber): The subscriber to the camera info topic.
-            The topic nmae is derived from the root of the supplied topic and the
+            The topic name is derived from the root of the supplied topic and the
             queue size is derived from the constructor.
         bridge (CvBridge): The bridge between OpenCV and ROS.
         callback (Callable): The callback function to call upon receiving each
@@ -249,7 +249,7 @@ class StereoImageSubscriber:
         queue_size: int = 10,
     ):
         """
-        Contruct a StereoImageSubscriber
+        Construct a StereoImageSubscriber
 
         left_image_topic (str): ROS topic to subscribe for the left camera.
             For example, ``/camera/front/left/image_rect_color``.

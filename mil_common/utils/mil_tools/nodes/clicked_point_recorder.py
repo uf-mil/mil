@@ -60,7 +60,7 @@ class ClickedPointRecorder:
         messages and adds the messages to the internal points array.
 
         Args:
-            point (PointStamped): The message input to the callabck.
+            point (PointStamped): The message input to the callback.
         """
         rospy.loginfo(f"Received new point: {point}")
         self.points.append(point)

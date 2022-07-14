@@ -11,7 +11,7 @@ from txros import NodeHandle, action, util
 
 class MissionRunner:
     """
-    Node which runs the missions server, recieving goals from a client
+    Node which runs the missions server, receiving goals from a client
     to run a mission, cancel a mission, and publish feedback.
     """
 
@@ -39,7 +39,7 @@ class MissionRunner:
         base_mission = getattr(mission_module, base_mission_name)
         yield base_mission._init(self)
 
-        # Import all missions which extend the base class and initilize them
+        # Import all missions which extend the base class and initialize them
         self.missions = {}
         for name, cls in inspect.getmembers(mission_module):
             if (
@@ -135,12 +135,12 @@ class MissionRunner:
     @util.cancellableInlineCallbacks
     def mission_finished_cb(self, final):
         """
-        Called when the current mission finishes succesfully, is cancled, is preempted by another
+        Called when the current mission finishes successfully, is canceled, is preempted by another
         mission, or raises an exception. Publishes the correct result to the action clients.
         """
         result = DoMissionResult()
 
-        # If mission failed / was cancled, abort mission
+        # If mission failed / was canceled, abort mission
         if isinstance(final, twisted.python.failure.Failure):
             result.success = False
 

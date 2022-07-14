@@ -41,7 +41,7 @@ lock = threading.Lock()
 
 class RobotXStartServices:
     """
-    Initializes services and subscribes to necessary publishers in order to faciliate
+    Initializes services and subscribes to necessary publishers in order to facilitate
     the transmission of messages between the robot client and the Technical Director
     server.
 
@@ -144,7 +144,7 @@ class RobotXStartServices:
     def gps_coord_callback(self, lla: PointStamped) -> None:
         """
         Updates the :attr:`.gps_array` attribute with the most recent :class:`PointStamped`
-        message receieved.
+        message received.
         """
         self.gps_array = lla
 

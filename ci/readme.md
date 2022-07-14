@@ -5,8 +5,8 @@ These docs need to be updated to show the interactions of CI with GitHub Actions
 the CI process that we are moving towards.
 :::
 
-MIL uses [BuildKite](https://buildkite.com/uf-mil) as our continuous integration system. This sytem
-automaticly tests pull requests to ensure they build, pass unit/integration tests, and satisfy formating requriements.
+MIL uses [BuildKite](https://buildkite.com/uf-mil) as our continuous integration system. This system
+automatically tests pull requests to ensure they build, pass unit/integration tests, and satisfy formatting requriements.
 
 ##  Updating/Running the BuildKite agent
 While the web frontend for the CI is hosted for free by the good folks at BuildKite, the actual

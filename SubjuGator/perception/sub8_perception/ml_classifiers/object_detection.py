@@ -25,7 +25,7 @@ class launcher:
     def __init__(self, name):
         """
         Object to store service threads and name of executable
-        param name: exectuable name assumbed to be in sub8_perception pkg
+        param name: executable name assumed to be in sub8_perception pkg
                     which also enable a SetBoot ROS service under the path
                     /{param name}/enable
         """

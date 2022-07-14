@@ -32,7 +32,7 @@ def main():
 
     al = yield TxAlarmListener.init(nh, alarm_name)
 
-    print("Inital Clear test")
+    print("Initial Clear test")
     assert (yield al.is_cleared())
     yield nh.sleep(0.5)
 

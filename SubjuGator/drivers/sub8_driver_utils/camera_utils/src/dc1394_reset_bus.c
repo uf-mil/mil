@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
         dc1394_log_error("Failed to initialize camera with guid %llx", list->ids[i].guid);
         return 1;
       }
-      printf("GUID found - Reseting bus...\n");
+      printf("GUID found - Resetting bus...\n");
       if (dc1394_reset_bus(camera) != DC1394_SUCCESS)
         printf("Warning: reset reported error\n");
 

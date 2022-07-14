@@ -25,7 +25,7 @@ FREQUENCY_TOL = 3000
 PINGER_HEIGHT = 0.75  # how high to go above pinger after found
 MOVE_AT_DEPTH = 0.5  # how low to swim and move
 
-POSITION_TOL = 0.09  # how close to pinger before quiting
+POSITION_TOL = 0.09  # how close to pinger before quitting
 Z_POSITION_TOL = -0.53
 
 
@@ -82,7 +82,7 @@ class Pinger(SubjuGator):
             # Ignore freuqnecy
             if not abs(p_message.freq - FREQUENCY) < FREQUENCY_TOL:
                 fprint(
-                    f"Ignored! Recieved Frequency {p_message.freq}",
+                    f"Ignored! Received Frequency {p_message.freq}",
                     msg_color="red",
                 )
                 if use_prediction:
@@ -99,7 +99,7 @@ class Pinger(SubjuGator):
                     yield self.go_to_random_guess(self, pinger_1_req, pinger_2_req)
                 continue
 
-            # Tranform hydrophones vector to relative coordinate
+            # Transform hydrophones vector to relative coordinate
             transform = yield self._tf_listener.get_transform(
                 "/base_link", "/hydrophones"
             )

@@ -203,7 +203,7 @@ class IdentifyDockMission:
                 self.CIRCLE_RADIUS
             ).look_at(self.dock_pose).go()
             yield self.navigator.move.circle_point(self.dock_pose, direction="ccw").go()
-            done_circle = True  # noqa flake8 cant see that it is defined above
+            done_circle = True  # noqa flake8 can't see that it is defined above
 
         print_good("Circling dock to get shapes identified")
         circle_bay()

@@ -27,7 +27,7 @@ class Kill(HandlerBase):
     HARDWARE_KILL_GRACE_PERIOD_SECONDS = 6.0
 
     def __init__(self):
-        # Alarm server wil set this as the intial state of kill alarm (starts killed)
+        # Alarm server will set this as the initial state of kill alarm (starts killed)
         self.initial_alarm = Alarm(
             self.alarm_name,
             True,
