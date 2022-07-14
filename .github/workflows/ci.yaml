@@ -28,7 +28,7 @@ jobs:
     outputs:
       docs_modified: ${{ steps.changes.outputs.docs }}
       code_modified: ${{ steps.changes.outputs.code }}
-      pre-commit_cache_key: ${{ steps.pre-commit_cache_key.output.key }}
+      pre-commit_cache_key: ${{ steps.pre-commit_cache_key.outputs.key }}
     steps:
       - name: Check out code from GitHub
         uses: actions/checkout@v3.0.2
@@ -198,7 +198,7 @@ jobs:
         run: |
           echo "Failed to restore pre-commit environment from cache"
           exit 1
-      - name: Run isort
+      - name: Run yamllint
         run: |
           . venv/bin/activate
           pre-commit run yamllint --all-files --show-diff-on-failure
@@ -243,7 +243,7 @@ jobs:
         run: |
           echo "Failed to restore pre-commit environment from cache"
           exit 1
-      - name: Run isort
+      - name: Run black
         run: |
           . venv/bin/activate
           pre-commit run black --all-files --show-diff-on-failure
@@ -288,7 +288,7 @@ jobs:
         run: |
           echo "Failed to restore pre-commit environment from cache"
           exit 1
-      - name: Run isort
+      - name: Run clang-format
         run: |
           . venv/bin/activate
           pre-commit run clang-format --all-files --show-diff-on-failure
@@ -333,7 +333,7 @@ jobs:
         run: |
           echo "Failed to restore pre-commit environment from cache"
           exit 1
-      - name: Run isort
+      - name: Run pyupgrade
         run: |
           . venv/bin/activate
           pre-commit run pyupgrade --all-files --show-diff-on-failure
