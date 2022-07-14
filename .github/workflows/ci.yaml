@@ -157,3 +157,183 @@ jobs:
         run: |
           . venv/bin/activate
           pre-commit run isort --all-files --show-diff-on-failure
+
+  yamllint:
+    name: Run yamllint
+    runs-on: self-hosted
+    needs:
+      - info
+      - pre-commit
+    if: ${{ needs.info.outputs.code_modified }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        uses: actions/setup-python@v4.1.0
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+      - name: Restore base Python virtual environment
+        id: cache-venv
+        uses: actions/cache@v3.0.4
+        with:
+          path: venv
+          key: >
+            ${{ runner.os
+            }}-venv-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Fail job if Python cache restore failed
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          echo "Failed to restore Python virtual environment from cache"
+          exit 1
+      - name: Restore pre-commit environment from cache
+        id: cache-precommit
+        uses: actions/cache@v3.0.4
+        with:
+          path: ${{ env.PRE_COMMIT_CACHE }}
+          key: >
+            ${{ runner.os
+            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Fail job if pre-commit cache restore failed
+        if: steps.cache-precommit.outputs.cache-hit != 'true'
+        run: |
+          echo "Failed to restore pre-commit environment from cache"
+          exit 1
+      - name: Run isort
+        run: |
+          . venv/bin/activate
+          pre-commit run yamllint --all-files --show-diff-on-failure
+
+  black:
+    name: Run black
+    runs-on: self-hosted
+    needs:
+      - info
+      - pre-commit
+    if: ${{ needs.info.outputs.code_modified }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        uses: actions/setup-python@v4.1.0
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+      - name: Restore base Python virtual environment
+        id: cache-venv
+        uses: actions/cache@v3.0.4
+        with:
+          path: venv
+          key: >
+            ${{ runner.os
+            }}-venv-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Fail job if Python cache restore failed
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          echo "Failed to restore Python virtual environment from cache"
+          exit 1
+      - name: Restore pre-commit environment from cache
+        id: cache-precommit
+        uses: actions/cache@v3.0.4
+        with:
+          path: ${{ env.PRE_COMMIT_CACHE }}
+          key: >
+            ${{ runner.os
+            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Fail job if pre-commit cache restore failed
+        if: steps.cache-precommit.outputs.cache-hit != 'true'
+        run: |
+          echo "Failed to restore pre-commit environment from cache"
+          exit 1
+      - name: Run isort
+        run: |
+          . venv/bin/activate
+          pre-commit run black --all-files --show-diff-on-failure
+
+  clang-format:
+    name: Run clang-format
+    runs-on: self-hosted
+    needs:
+      - info
+      - pre-commit
+    if: ${{ needs.info.outputs.code_modified }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        uses: actions/setup-python@v4.1.0
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+      - name: Restore base Python virtual environment
+        id: cache-venv
+        uses: actions/cache@v3.0.4
+        with:
+          path: venv
+          key: >
+            ${{ runner.os
+            }}-venv-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Fail job if Python cache restore failed
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          echo "Failed to restore Python virtual environment from cache"
+          exit 1
+      - name: Restore pre-commit environment from cache
+        id: cache-precommit
+        uses: actions/cache@v3.0.4
+        with:
+          path: ${{ env.PRE_COMMIT_CACHE }}
+          key: >
+            ${{ runner.os
+            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Fail job if pre-commit cache restore failed
+        if: steps.cache-precommit.outputs.cache-hit != 'true'
+        run: |
+          echo "Failed to restore pre-commit environment from cache"
+          exit 1
+      - name: Run isort
+        run: |
+          . venv/bin/activate
+          pre-commit run clang-format --all-files --show-diff-on-failure
+
+  pyupgrade:
+    name: Run pyupgrade
+    runs-on: self-hosted
+    needs:
+      - info
+      - pre-commit
+    if: ${{ needs.info.outputs.code_modified }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        uses: actions/setup-python@v4.1.0
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+      - name: Restore base Python virtual environment
+        id: cache-venv
+        uses: actions/cache@v3.0.4
+        with:
+          path: venv
+          key: >
+            ${{ runner.os
+            }}-venv-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Fail job if Python cache restore failed
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          echo "Failed to restore Python virtual environment from cache"
+          exit 1
+      - name: Restore pre-commit environment from cache
+        id: cache-precommit
+        uses: actions/cache@v3.0.4
+        with:
+          path: ${{ env.PRE_COMMIT_CACHE }}
+          key: >
+            ${{ runner.os
+            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Fail job if pre-commit cache restore failed
+        if: steps.cache-precommit.outputs.cache-hit != 'true'
+        run: |
+          echo "Failed to restore pre-commit environment from cache"
+          exit 1
+      - name: Run isort
+        run: |
+          . venv/bin/activate
+          pre-commit run pyupgrade --all-files --show-diff-on-failure
