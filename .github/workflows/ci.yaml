@@ -30,13 +30,6 @@ jobs:
       code_modified: ${{ steps.changes.outputs.code }}
       pre-commit_cache_key: ${{ steps.pre-commit_cache_key.output.key }}
     steps:
-      - name: Remove old contents on Zobelisk
-        if: runner.name == 'zobelisk'
-        run: >
-          echo ${{ secrets.ZOBELISK_PASSWORD }} |
-          sudo -S rm -rf ~/actions-runner/_work/mil/mil
-
-          mkdir ~/actions-runner/_work/mil/mil
       - name: Check out code from GitHub
         uses: actions/checkout@v3.0.2
         with:
@@ -104,6 +97,7 @@ jobs:
           python -m venv venv
           . venv/bin/activate
           python --version
+          ls
           pip install "$(cat requirements_test.txt | grep pre-commit)"
       - name: Restore pre-commit environment from cache
         id: cache-precommit
