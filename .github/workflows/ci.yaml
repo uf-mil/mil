@@ -187,19 +187,11 @@ jobs:
         uses: actions/setup-python@v4.1.0
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
-      - name: Restore base Python virtual environment
-        id: cache-venv
-        uses: actions/cache@v3.0.4
-        with:
-          path: venv
-          key: >
-            ${{ runner.os
-            }}-venv-${{ needs.info.outputs.pre-commit_cache_key }}
-      - name: Fail job if Python cache restore failed
-        if: steps.cache-venv.outputs.cache-hit != 'true'
+          cache: "pip"
+      - name: Initialize pre-commit for use
         run: |
-          echo "Failed to restore Python virtual environment from cache"
-          exit 1
+          python --version
+          pip install "$(cat requirements_test.txt | grep pre-commit)"
       - name: Restore pre-commit environment from cache
         id: cache-precommit
         uses: actions/cache@v3.0.4
@@ -215,9 +207,6 @@ jobs:
           exit 1
       - name: Run black
         run: |
-          ls
-          . venv/bin/activate
-          pip freeze
           pre-commit run black --all-files --show-diff-on-failure
 
   clang-format:
@@ -234,19 +223,11 @@ jobs:
         uses: actions/setup-python@v4.1.0
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
-      - name: Restore base Python virtual environment
-        id: cache-venv
-        uses: actions/cache@v3.0.4
-        with:
-          path: venv
-          key: >
-            ${{ runner.os
-            }}-venv-${{ needs.info.outputs.pre-commit_cache_key }}
-      - name: Fail job if Python cache restore failed
-        if: steps.cache-venv.outputs.cache-hit != 'true'
+          cache: "pip"
+      - name: Initialize pre-commit for use
         run: |
-          echo "Failed to restore Python virtual environment from cache"
-          exit 1
+          python --version
+          pip install "$(cat requirements_test.txt | grep pre-commit)"
       - name: Restore pre-commit environment from cache
         id: cache-precommit
         uses: actions/cache@v3.0.4
@@ -259,10 +240,9 @@ jobs:
         if: steps.cache-precommit.outputs.cache-hit != 'true'
         run: |
           echo "Failed to restore pre-commit environment from cache"
-          exit 1
+          exit 1 
       - name: Run clang-format
         run: |
-          . venv/bin/activate
           pre-commit run clang-format --all-files --show-diff-on-failure
 
   pyupgrade:
@@ -279,19 +259,11 @@ jobs:
         uses: actions/setup-python@v4.1.0
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
-      - name: Restore base Python virtual environment
-        id: cache-venv
-        uses: actions/cache@v3.0.4
-        with:
-          path: venv
-          key: >
-            ${{ runner.os
-            }}-venv-${{ needs.info.outputs.pre-commit_cache_key }}
-      - name: Fail job if Python cache restore failed
-        if: steps.cache-venv.outputs.cache-hit != 'true'
+          cache: "pip"
+      - name: Initialize pre-commit for use
         run: |
-          echo "Failed to restore Python virtual environment from cache"
-          exit 1
+          python --version
+          pip install "$(cat requirements_test.txt | grep pre-commit)"
       - name: Restore pre-commit environment from cache
         id: cache-precommit
         uses: actions/cache@v3.0.4
@@ -307,5 +279,4 @@ jobs:
           exit 1
       - name: Run pyupgrade
         run: |
-          . venv/bin/activate
           pre-commit run pyupgrade --all-files --show-diff-on-failure
