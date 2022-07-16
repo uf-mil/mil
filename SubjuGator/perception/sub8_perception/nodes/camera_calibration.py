@@ -1,22 +1,16 @@
 #!/usr/bin/env python
 import cv2
 import rospy
-from datetime import datetime
-import time
 from collections import deque
-import yaml
-import os
 import numpy as np
 from mil_ros_tools import Image_Subscriber, Image_Publisher
 from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
 
 class CameraCalibration:
     def __init__(self):
         self.camera = "/camera/front/left/image_raw"
         self.image_sub = Image_Subscriber(self.camera, self.image_cb)
         self.image_pub = Image_Publisher("/image/checkerboard")
-        self.bridge = CvBridge()
         self.count = 0
         self.checkerboard = (6,9) # measured from inner corners
         self.criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
