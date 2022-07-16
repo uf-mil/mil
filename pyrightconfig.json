@@ -1,7 +1,9 @@
 {
     "exclude": [
         "deprecated",
-        "docs"
+        "docs",
+        "NaviGator/simulation/VRX",
+        "NaviGator/perception/darknet_ros"
     ],
     "reportMissingTypeStubs": false,
     "pythonVersion": "3.8",

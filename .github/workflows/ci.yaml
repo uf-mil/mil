@@ -325,16 +325,20 @@ jobs:
           pre-commit run codespell --all-files --show-diff-on-failure
 
   catkin_test:
-    name: Catkin test results
+    name: Generate catkin_test_results
     runs-on: self-hosted
     needs:
       - info
     if: ${{ needs.info.outputs.code_modified }}
     steps:
+      - name: Configure catkin workspace folder structure
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/catkin_ws/src
       - name: Check out code from GitHub
         uses: actions/checkout@v3.0.2
         with:
           submodules: recursive
+          path: $GITHUB_WORKSPACE/catkin_ws/src/mil
       - name: Setup ROS Noetic
         uses: ros-tooling/setup-ros@v0.3
         with:
@@ -343,7 +347,7 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get upgrade -y
-      - name:
+      - name: Install pip dependencies
         run: |
           # Ignore installations provided by ros-tooling; they can cause
           # conflicts
@@ -358,7 +362,9 @@ jobs:
       - name: Run catkin_make
         run: >
           source /opt/ros/noetic/setup.bash &&
-          source src/mil/scripts/setup.bash;
+          source scripts/setup.bash;
+
+          cd $GITHUB_WORKSPACE/catkin_ws;
 
           catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros"
       - name: Get test results
@@ -378,9 +384,10 @@ jobs:
         uses: jakebailey/pyright-action@v1
         continue-on-error: true
         with:
-          version: 1.1.219
+          version: 1.1.260
           python-version: ${{ env.DEFAULT_PYTHON }}
           python-platform: Linux
+          working-directory: mil_common/mil_missions/mil_missions_core  # Test
 
   pylint:
     name: Run pylint
