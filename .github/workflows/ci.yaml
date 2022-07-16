@@ -13,6 +13,8 @@ env:
   DEFAULT_PYTHON: 3.8
   # Location of the pre-commit cache. This is set by pre-commit, not us!
   PRE_COMMIT_CACHE: ~/.cache/pre-commit
+  # Max number of commits to switch to comparing files to the commit before
+  MAX_BRANCH_COMMIT_LIMIT: 20
 
 # Cancels this run if a new one referring to the same object and same workflow
 # is requested
@@ -26,6 +28,7 @@ jobs:
     name: Collect information about changes
     runs-on: self-hosted
     outputs:
+      py_modified: ${{ steps.changes.outputs.py_modified }}
       docs_modified: ${{ steps.changes.outputs.docs }}
       code_modified: ${{ steps.changes.outputs.code }}
       pre-commit_cache_key: ${{ steps.pre-commit_cache_key.outputs.key }}
@@ -35,6 +38,20 @@ jobs:
         with:
           token: ${{ secrets.INVESTIGATOR_BOT_TOKEN || github.token }}
           submodules: recursive
+      # This step is used to generate the branch for which comparisons will be
+      # made against. Basically, we want to compare against master for short
+      # feature/hotfix/development branches, but we want to compare to the
+      # previous commit for long-running branches (long development branches
+      # or master).
+      #
+      # For pull requests, this setting is ignored. The base comparison is the
+      # branch being merged into.
+      - name: Get base comparison branch
+        id: branch_comparison
+        run: >
+          echo "::set-output name=commitdiff::$(
+            git log refs/heads/master..${{ github.ref }} --oneline | wc -l
+          )"
       - name: Check which targets changed
         uses: dorny/paths-filter@v2
         id: changes
@@ -53,6 +70,20 @@ jobs:
               - 'SubjuGator/**'
               - 'mil_common/**'
               - 'scripts/**'
+            py_modified:
+              - added|modified: '*.py'
+
+          list-files: 'shell'
+
+          base: >
+            ${{
+              steps.outputs.branch_comparison.commitdiff >
+              env.MAX_BRANCH_COMMIT_LIMIT
+              &&
+              github.ref
+              ||
+              'master'
+            }}
       # The cache key used for the pre-commit cache is meant to identify one
       # cache of related pre-commit tooling. Changes to the Python version used
       # or the pre-commit config file should cause the hash to change and a
@@ -387,7 +418,7 @@ jobs:
           version: 1.1.260
           python-version: ${{ env.DEFAULT_PYTHON }}
           python-platform: Linux
-          working-directory: mil_common/mil_missions/mil_missions_core  # Test
+          extra-args: ${{ needs.info.outputs.py_modified }}
 
   pylint:
     name: Run pylint
