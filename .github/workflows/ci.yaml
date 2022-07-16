@@ -343,13 +343,17 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get upgrade -y
+      - name:
+        run: |
+          # Ignore installations provided by ros-tooling; they can cause
+          # conflicts
+          sudo pip install -I -r requirements.txt
       - name: Install system dependencies
         run: |
           ./scripts/system_install
       - name: Install user dependencies
         run: |
           # Exits with zero because of error with darknet_ros in user_install
-          pip install --ignore-installed PyYAML # Bug with PyYAML + ros-tooling
           ./scripts/user_install; exit 0
       - name: Run catkin_make
         run: >
