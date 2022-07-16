@@ -1,0 +1,9 @@
+{
+    "exclude": [
+        "deprecated",
+        "docs"
+    ],
+    "reportMissingTypeStubs": false,
+    "pythonVersion": "3.8",
+    "pythonPlatform": "Linux"
+}
