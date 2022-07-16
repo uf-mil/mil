@@ -13,8 +13,6 @@ env:
   DEFAULT_PYTHON: 3.8
   # Location of the pre-commit cache. This is set by pre-commit, not us!
   PRE_COMMIT_CACHE: ~/.cache/pre-commit
-  # Max number of commits to switch to comparing files to the commit before
-  MAX_BRANCH_COMMIT_LIMIT: 20
 
 # Cancels this run if a new one referring to the same object and same workflow
 # is requested
@@ -39,20 +37,6 @@ jobs:
           fetch-depth: 0  # For fetching history for branch comparison below
           token: ${{ secrets.INVESTIGATOR_BOT_TOKEN || github.token }}
           submodules: recursive
-      # This step is used to generate the branch for which comparisons will be
-      # made against. Basically, we want to compare against master for short
-      # feature/hotfix/development branches, but we want to compare to the
-      # previous commit for long-running branches (long development branches
-      # or master).
-      #
-      # For pull requests, this setting is ignored. The base comparison is the
-      # branch being merged into.
-      - name: Get base comparison branch
-        id: branch_comparison
-        run: >
-          echo "::set-output name=commitdiff::$(
-            git rev-list master..${{ github.sha }} | wc -l
-          )"
       - name: Check which targets changed
         uses: dorny/paths-filter@v2
         id: changes
@@ -75,16 +59,6 @@ jobs:
               - added|modified: '**.py'
 
           list-files: 'shell'
-
-          base: >
-            ${{
-              steps.outputs.branch_comparison.commitdiff >
-              env.MAX_BRANCH_COMMIT_LIMIT
-              &&
-              github.ref
-              ||
-              'master'
-            }}
       # The cache key used for the pre-commit cache is meant to identify one
       # cache of related pre-commit tooling. Changes to the Python version used
       # or the pre-commit config file should cause the hash to change and a
@@ -394,9 +368,6 @@ jobs:
           ./scripts/user_install
       - name: Run catkin_make
         run: >
-          source /opt/ros/noetic/setup.bash &&
-          source scripts/setup.bash;
-
           cd $GITHUB_WORKSPACE/catkin_ws;
 
           catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros"
