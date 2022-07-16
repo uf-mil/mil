@@ -50,13 +50,6 @@ class CameraCalibration:
     def image_cb(self, image):
         self.calculatePoints(image)
 
-    def drain(queue):
-        while True:
-            try:
-                yield queue.get_nowait()
-            except queue.Empty():
-                break
-
     def calculate_matrix(self):
         print("Calculating camera matrix")
         obj = list(self.objpoints)
