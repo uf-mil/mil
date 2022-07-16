@@ -4,6 +4,7 @@
   <arg name="threed" default="True" />
   <!-- roslaunch sub8_launch perception.launch color_calibration:=gazebo_color_calibration.yaml -->
   <arg name="color_calibration" default="default_color_calibration.yaml" />
+  <include file="$(find sub8_launch)/launch/subsystems/cameras.launch" />
 
   <rosparam file="$(find sub8_launch)/config/course_geometry.yaml" />
   <rosparam file="$(find sub8_launch)/config/$(arg color_calibration)" />
