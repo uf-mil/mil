@@ -341,12 +341,12 @@ jobs:
     steps:
       - name: Configure catkin workspace folder structure
         run: |
-          mkdir -p $GITHUB_WORKSPACE/catkin_ws/src
+          mkdir -p $HOME/catkin_ws/src
       - name: Check out code from GitHub
         uses: actions/checkout@v3.0.2
         with:
           submodules: recursive
-          path: $GITHUB_WORKSPACE/catkin_ws/src/mil
+          path: $HOME/catkin_ws/src/mil
       - name: Setup ROS Noetic
         uses: ros-tooling/setup-ros@v0.3
         with:
@@ -370,7 +370,7 @@ jobs:
           ./scripts/user_install
       - name: Run catkin_make
         run: >
-          cd $GITHUB_WORKSPACE/catkin_ws;
+          cd $HOME/catkin_ws;
 
           catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros"
       - name: Get test results
