@@ -27,6 +27,9 @@ sphinx==5.0.1
 breathe==4.34.0
 myst-parser==0.18.0
 
+# External Devices
+pyserial==3.5
+
 # Linting
 black==22.1.0
 modernize==0.8.0 # This can be removed after Noetic Migration is complete.

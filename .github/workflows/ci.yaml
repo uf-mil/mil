@@ -323,3 +323,80 @@ jobs:
       - name: Run pyupgrade
         run: |
           pre-commit run codespell --all-files --show-diff-on-failure
+
+  catkin_test:
+    name: Catkin test results
+    runs-on: self-hosted
+    needs:
+      - info
+    if: ${{ needs.info.outputs.code_modified }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+        with:
+          submodules: recursive
+      - name: Setup ROS Noetic
+        uses: ros-tooling/setup-ros@v0.3
+        with:
+          required-ros-distributions: noetic
+      - name: Install the latest dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get upgrade -y
+      - name: Install system dependencies
+        run: |
+          ./scripts/system_install
+      - name: Install user dependencies
+        run: |
+          # Exits with zero because of error with darknet_ros in user_install
+          ./scripts/user_install; exit 0
+      - name: Run catkin_make
+        run: >
+          source /opt/ros/noetic/setup.bash &&
+          source src/mil/scripts/setup.bash;
+
+          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros"
+      - name: Get test results
+        run: |
+          catkin_test_results $MIL_WS/build/test_results --verbose
+
+  pyright:
+    name: Run pyright
+    runs-on: self-hosted
+    needs:
+      - info
+    if: ${{ needs.info.outputs.code_modified }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+      - name: Run pyright
+        uses: jakebailey/pyright-action@v1
+        continue-on-error: true
+        with:
+          version: 1.1.219
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          python-platform: Linux
+
+  pylint:
+    name: Run pylint
+    runs-on: self-hosted
+    needs:
+      - info
+    if: ${{ needs.info.outputs.code_modified }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        uses: actions/setup-python@v4.1.0
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          cache: "pip"
+      - name: Install test dependencies
+        run: |
+          pip install -r requirements_test.txt
+      - name: Register pylint problem matcher
+        run: |
+          echo "::add-matcher::.github/workflows/matchers/pylint.json"
+      - name: Run pylint
+        run: |
+          pylint --ignore-missing-annotations=y $(git ls-files "*.py")
