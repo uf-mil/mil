@@ -51,8 +51,7 @@ jobs:
         id: branch_comparison
         run: >
           echo "::set-output name=commitdiff::$(
-            git rev-list refs/heads/master..${{ github.ref }} --oneline
-            | wc -l
+            git rev-list refs/heads/master..${{ github.ref }} --oneline | wc -l
           )"
       - name: Check which targets changed
         uses: dorny/paths-filter@v2
