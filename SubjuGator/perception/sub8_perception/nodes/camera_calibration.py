@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import cv2
 import rospy
-import time 
-import Queue
+from datetime import datetime
+import time
+from Queue import Queue
 from yaml import dump
 import os
 import numpy as np
@@ -12,7 +13,7 @@ from cv_bridge import CvBridge
 
 class CameraCalibration:
     def __init__(self):
-        self.camera = "/camera/front/left/image_rect_color"
+        self.camera = "/camera/front/left/image_raw"
         self.image_sub = Image_Subscriber(self.camera, self.image_cb)
         self.image_pub = Image_Publisher("/image/checkerboard")
         self.bridge = CvBridge()
@@ -20,7 +21,7 @@ class CameraCalibration:
         self.checkerboard = (6,9) # measured from inner corners
         self.criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
         self.objp = np.zeros((1, self.checkerboard[0] * self.checkerboard[1], 3), np.float32)
-        self.objp[0, :, :2] = np.mgrid(0:self.checkerboard[0], 0:self.checkerboard[1]].T.reshape(-1, 2) * 25.4
+        self.objp[0, :, :2] = np.mgrid[0:self.checkerboard[0], 0:self.checkerboard[1]].T.reshape(-1, 2) * 25.4
         self.objpoints = Queue()
         self.imgpoints = Queue()
         self.width = None
@@ -29,7 +30,8 @@ class CameraCalibration:
         
 
     def getMs(self):
-        return int(time.time_ns() / 1_000_000)
+        dt_obj = datetime.strptime('20.12.2016 09:38:42,76','%d.%m.%Y %H:%M:%S,%f')
+        return int(time.mktime(dt_obj.utctimetuple()) * 1000 + dt_obj.microsecond / 1000) 
 
     def calculatePoints(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -38,7 +40,7 @@ class CameraCalibration:
         if ret == True:
             corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), self.criteria)
             img = cv2.drawChessboardCorners(image, self.checkerboard, corners2, ret)
-            self.image_pub.publish(self.bridge.cv2_to_imgmsg(img, "bgr8"))
+            self.image_pub.publish(img)
             self.height, self.width = img.shape[:2]
             self.shape = gray.shape[::-1]
             if self.getMs() - self.curr_time > 500:
@@ -47,8 +49,7 @@ class CameraCalibration:
                 self.curr_time = self.getMs()
 
     def image_cb(self, image):
-        image = self.bridge.imgmsg_to_cv2(image)
-        calculatePoints(image)
+        self.calculatePoints(image)
 
     def drain(queue):
         while True:
