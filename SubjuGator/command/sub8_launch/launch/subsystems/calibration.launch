@@ -1,0 +1,8 @@
+<launch>
+  <arg name="HSV" default="True" />
+  <include file="$(find sub8_launch)/launch/subsystems/cameras.launch" />
+  <group ns="calibration">
+    <node if="$(eval ('arg HSV') == False)" pkg="sub8_perception" type="camera_calibration.py" name="camera_calibration" output="screen" />
+    <node if="$(arg HSV)" pkg="sub8_perception" type="hsv_calibration.py" name="hsv_calibration" output="screen" />
+  </group>
+</launch>
