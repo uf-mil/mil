@@ -335,7 +335,9 @@ jobs:
     runs-on: self-hosted
     needs:
       - info
-    if: ${{ needs.info.outputs.code_modified }}
+    if: >
+      ${{ needs.info.outputs.code_modified ||
+          needs.info.outputs.docs_modified}}
     steps:
       - name: Configure catkin workspace folder structure
         run: |
@@ -417,3 +419,35 @@ jobs:
         continue-on-error: true
         run: |
           pylint $(git ls-files "*.py")
+
+  docs:
+    name: Build docs
+    runs-on: self-hosted
+    needs:
+      - info
+      - catkin_test
+    if: >
+      ${{ needs.info.outputs.code_modified ||
+          needs.info.outputs.docs_modified}}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        uses: actions/setup-python@v4.1.0
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          cache: "pip"
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          sudo apt-get install doxygen doxygen-doc doxygen-gui graphviz
+      - name: Build docs
+        run: |
+          ./scripts/build_docs -D
+      - name: Publish docs artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: >
+            docs-${{ github.workflow }}-${{ github.event.pull_request.number
+            || github.ref }}
+          path: ~/.mil/docs
