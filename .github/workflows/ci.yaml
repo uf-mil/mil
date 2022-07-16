@@ -51,7 +51,8 @@ jobs:
         id: branch_comparison
         run: >
           echo "::set-output name=commitdiff::$(
-            git log refs/heads/master..${{ github.ref }} --oneline | wc -l
+            git rev-list 'refs/heads/master..${{ github.ref }}' --oneline
+            | wc -l
           )"
       - name: Check which targets changed
         uses: dorny/paths-filter@v2
@@ -72,7 +73,7 @@ jobs:
               - 'mil_common/**'
               - 'scripts/**'
             python:
-              - added|modified: '*.py'
+              - added|modified: '**.py'
 
           list-files: 'shell'
 
@@ -388,9 +389,10 @@ jobs:
         run: |
           ./scripts/system_install
       - name: Install user dependencies
+        continue-on-error: true
         run: |
           # Exits with zero because of error with darknet_ros in user_install
-          ./scripts/user_install; exit 0
+          ./scripts/user_install
       - name: Run catkin_make
         run: >
           source /opt/ros/noetic/setup.bash &&
