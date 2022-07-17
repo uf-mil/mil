@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+import rospy
+import numpy as np
+from rospy.numpy_msg import numpy_msg
+from std_msgs.msg import Header
+from std_srvs.srv import SetBool, SetBoolResponse
+from std_srvs.srv import Trigger, TriggerResponse
+from mil_passive_sonar.msg import HydrophoneSamplesStamped, Triggered, Ping
+from mil_passive_sonar import util
+from mil_passive_sonar.streamed_bandpass import StreamedBandpass
+from mil_ros_tools import Plotter, interweave
+
+from scipy.ndimage.filters import maximum_filter1d
+
+
+class HydrophoneRepeater:
+
+    def __init__(self):
+
+        # Ros stuff
+        rospy.init_node('hydrophone_trigger')
+        # used for old bags
+        self.sub = rospy.Subscriber('samples_raw', numpy_msg(HydrophoneSamplesStamped), self.hydrophones_cb)
+        self.pub = rospy.Publisher('samples', numpy_msg(HydrophoneSamplesStamped), queue_size=1)
+
+
+    def hydrophones_cb(self, msg):
+        
+        for i in range(len(msg.hydrophone_samples.data)):
+
+            print(len(msg.hydrophone_samples.data))
+            new_msg = msg
+            new_msg.hydrophone_samples.data = []
+
+            x = np.int16(msg.hydrophone_samples.data[i])
+            new_msg.hydrophone_samples.data.append(x.byteswap())
+            print(new_msg.hydrophone_samples.data)
+
+
+if __name__ == '__main__':
+    a = HydrophoneRepeater()
+    rospy.spin()
+
+
