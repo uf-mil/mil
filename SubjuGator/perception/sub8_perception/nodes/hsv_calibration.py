@@ -32,7 +32,9 @@ class HSVCalibration:
     def reconfigure(self, config, level):
         try:
             self.lower = np.array(self.parse_string(config['dyn_lower']))
+            rospy.logwarn('HSV lower bound below minimum value') if self.lower < 0 else None
             self.upper = np.array(self.parse_string(config['dyn_upper']))
+            rospy.logwarn('HSV upper bound above maximum values') if self.upper[0] > 179 and self.upper[1:] > 255 else None
         
         except ValueError as e:
             rospy.logwarn('Invalid dynamic reconfigure: {}'.format(e))
