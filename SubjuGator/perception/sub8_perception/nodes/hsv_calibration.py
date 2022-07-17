@@ -22,6 +22,13 @@ class HSVCalibration:
         img = cv2.bitwise_and(img, img, mask=mask)
         self.image_pub.publish(img)
 
+    @staticmethod
+    def parse_string(threshes):
+        ret = [float(thresh.strip()) for thresh in threshes.split(',')]
+        if len(ret) != 3:
+            raise ValueError('not 3')
+        return ret
+
     def reconfigure(self, config, level):
         try:
             self.lower = np.array(self.parse_string(config['dyn_lower']))
