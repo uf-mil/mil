@@ -4,6 +4,7 @@ import rospy
 import numpy as np
 from mil_ros_tools import Image_Subscriber, Image_Publisher
 from dynamic_reconfigure.server import Server as DynamicReconfigureServer
+from sub8_perception.cfg import HSVCalibrationConfig
 
 class HSVCalibration:
     def __init__(self):
