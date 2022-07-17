@@ -375,7 +375,6 @@ jobs:
 
           cd $GITHUB_WORKSPACE/catkin_ws
 
-          source $GITHUB_WORKSPACE/catkin_ws/src/mil/scripts/setup.bash
           source /opt/ros/noetic/setup.bash
 
           catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros"
