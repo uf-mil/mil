@@ -346,14 +346,14 @@ jobs:
         uses: actions/checkout@v3.0.2
         with:
           submodules: recursive
-          path: $GITHUB_WORKSPACE/catkin_ws/src/mil
+          path: catkin_ws/src/mil
       - name: Setup ROS Noetic
         uses: ros-tooling/setup-ros@v0.3
         with:
           required-ros-distributions: noetic
       - name: Install the latest dependencies
         run: |
-          ls $GITHUB_WORKSPACE/catkin_ws/src/mil
+          ls $GITHUB_WORKSPACE/catkin_ws/src/mil; ls catkin_ws/src/mil
           sudo apt-get update -y
           sudo apt-get upgrade -y
       - name: Install pip dependencies
