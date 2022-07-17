@@ -37,4 +37,8 @@ add_executable(sylphase_sonar_ros_bridge src/sylphase_ros_bridge.cpp)
 target_link_libraries(sylphase_sonar_ros_bridge ${catkin_LIBRARIES})
 add_dependencies(sylphase_sonar_ros_bridge ${catkin_EXPORTED_TARGETS})
 
+add_executable(repeater src/repeater.cpp)
+target_link_libraries(repeater ${catkin_LIBRARIES})
+add_dependencies(repeater ${catkin_EXPORTED_TARGETS})
+
 install(PROGRAMS scripts/ping_printer scripts/ping_logger scripts/ping_plotter scripts/hydrophones DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
