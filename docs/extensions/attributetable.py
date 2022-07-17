@@ -377,7 +377,7 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
                             TableElement(fullname=fullname, label=parsed, badge=badge)
                         )
 
-            elif all([c in node.attributes["classes"] for c in ["cpp", "var"]]):
+            elif all(c in node.attributes["classes"] for c in ["cpp", "var"]):
                 # Try to get signature lines for C++ variables
                 try:
                     descriptions = [
@@ -409,11 +409,15 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
     for node in doctree.traverse(cppattributetableplaceholder):
         target = node["cpp-full-name"]
 
+        # New change with Sphinx 5: simpler sigs
+        target = re.sub(r".*\:\:", "", target)
+
         # Turn the table elements in a node
         table = attributetable("")
 
         # Throw error if not found in list of classes
         if target not in classes:
+            print(target, classes)
             raise sphinx.errors.ExtensionError(
                 "No C++ class or struct was found matching the "
                 f"{target} target provided. Please ensure that this class is purely "

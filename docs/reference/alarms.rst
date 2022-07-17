@@ -1,13 +1,13 @@
-Alarms
-------
+:mod:`ros_alarms` - Stateful Alarm System
+-----------------------------------------
+
+.. automodule:: ros_alarms
 
 Python
 ^^^^^^
 
 Alarm
 ~~~~~
-.. currentmodule:: ros_alarms
-
 .. attributetable:: ros_alarms.Alarm
 
 .. autoclass:: ros_alarms.Alarm
@@ -15,8 +15,6 @@ Alarm
 
 AlarmServer
 ~~~~~~~~~~~
-.. currentmodule:: mil_common.ros_alarms
-
 .. attributetable:: ros_alarms.nodes.alarm_server.AlarmServer
 
 .. autoclass:: ros_alarms.nodes.alarm_server.AlarmServer
@@ -24,8 +22,6 @@ AlarmServer
 
 AlarmBroadcaster
 ~~~~~~~~~~~~~~~~
-.. currentmodule:: ros_alarms
-
 .. attributetable:: ros_alarms.AlarmBroadcaster
 
 .. autoclass:: ros_alarms.AlarmBroadcaster
@@ -33,8 +29,6 @@ AlarmBroadcaster
 
 AlarmListener
 ~~~~~~~~~~~~~
-.. currentmodule:: ros_alarms
-
 .. attributetable:: ros_alarms.AlarmListener
 
 .. autoclass:: ros_alarms.AlarmListener
@@ -42,8 +36,6 @@ AlarmListener
 
 HeartbeatMonitor
 ~~~~~~~~~~~~~~~~
-.. currentmodule:: ros_alarms
-
 .. attributetable:: ros_alarms.HeartbeatMonitor
 
 .. autoclass:: ros_alarms.HeartbeatMonitor
@@ -51,8 +43,6 @@ HeartbeatMonitor
 
 HandlerBase
 ~~~~~~~~~~~
-.. currentmodule:: ros_alarms
-
 .. attributetable:: ros_alarms.HandlerBase
 
 .. autoclass:: ros_alarms.HandlerBase

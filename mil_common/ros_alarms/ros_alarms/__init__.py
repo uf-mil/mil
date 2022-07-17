@@ -1,3 +1,6 @@
+"""
+Stateful alarm system that allows for the immediate kill of a robotic machine.
+"""
 from .alarms import (
     Alarm,
     AlarmBroadcaster,
@@ -5,11 +8,5 @@ from .alarms import (
     HeartbeatMonitor,
     parse_json_str,
 )
-
-try:
-    from .tx_alarms import TxAlarmBroadcaster, TxAlarmListener, TxHeartbeatMonitor
-except:
-    # No txros installed
-    pass
-
 from .handler_template import HandlerBase
+from .tx_alarms import TxAlarmBroadcaster, TxAlarmListener, TxHeartbeatMonitor

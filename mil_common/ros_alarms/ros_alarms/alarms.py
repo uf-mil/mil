@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import traceback
 from typing import Callable, Optional, Tuple
@@ -13,7 +15,7 @@ from ros_alarms.srv import (
 )
 
 
-def parse_json_str(json_str: str) -> dict:
+def parse_json_str(json_str: str) -> dict | str:
     parameters = ""
     try:
         parameters = "" if json_str == "" else json.loads(json_str)
@@ -77,9 +79,19 @@ class Alarm:
     """
     Pythonic representation of a ROS alarm.
 
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Pretty prints the contents of the alarm. Equivalent to ``repr(x)``.
+
+        .. describe:: repr(x)
+
+            Pretty prints the contents of the alarm. Equivalent to ``str(x)``.
+
     Attributes:
         alarm_name (str): The name of this specific alarm.
-        raised (bool): Whether the alarm ahs been raised.
+        raised (bool): Whether the alarm has been raised.
         node_name (str): The name of the node attached to the alarm. Defaults to
             ``unknown``.
         problem_description (str): A description of the problem related to the alarm.
@@ -96,42 +108,6 @@ class Alarm:
             when the alarm is cleared. Each callback should be associated with
             the severity required to execute the callback through a tuple.
     """
-
-    @classmethod
-    def blank(cls, name: str) -> "Alarm":
-        """
-        Generate a general blank alarm that is cleared with a low severity.
-
-        Args:
-            name (str): The name for the blank alarm.
-
-        Returns:
-            ros_alarms.Alarm: The constructed alarm.
-        """
-        return cls(name, raised=False, severity=0)
-
-    @classmethod
-    def from_msg(cls, msg: AlarmMsg) -> "Alarm":
-        """
-        Generate an alarm object from an Alarm message.
-
-        Args:
-            msg (AlarmMsg): The message to generate the object from.
-
-        Returns:
-            Alarm: The constructed alarm.
-        """
-        node_name = "unknown" if msg.node_name == "" else msg.node_name
-        parameters = parse_json_str(msg.parameters)
-
-        return cls(
-            msg.alarm_name,
-            msg.raised,
-            node_name,
-            msg.problem_description,
-            parameters,
-            msg.severity,
-        )
 
     def __init__(
         self,
@@ -166,6 +142,42 @@ class Alarm:
 
     __str__ = __repr__
 
+    @classmethod
+    def blank(cls, name: str) -> Alarm:
+        """
+        Generate a general blank alarm that is cleared with a low severity.
+
+        Args:
+            name (str): The name for the blank alarm.
+
+        Returns:
+            ros_alarms.Alarm: The constructed alarm.
+        """
+        return cls(name, raised=False, severity=0)
+
+    @classmethod
+    def from_msg(cls, msg: AlarmMsg) -> Alarm:
+        """
+        Generate an alarm object from an Alarm message.
+
+        Args:
+            msg (AlarmMsg): The message to generate the object from.
+
+        Returns:
+            Alarm: The constructed alarm.
+        """
+        node_name = "unknown" if msg.node_name == "" else msg.node_name
+        parameters = parse_json_str(msg.parameters)
+
+        return cls(
+            msg.alarm_name,
+            msg.raised,
+            node_name,
+            msg.problem_description,
+            parameters,
+            msg.severity,
+        )
+
     def _severity_cb_check(self, severity):
         if isinstance(severity, tuple) or isinstance(severity, list):
             return severity[0] <= self.severity <= severity[1]
@@ -178,10 +190,19 @@ class Alarm:
         funct: Callable,
         call_when_raised: bool = True,
         call_when_cleared: bool = True,
-        severity_required: Tuple[int, int] = (0, 5),
+        severity_required: tuple[int, int] = (0, 5),
     ):
         """
         Adds a callback function to the alarm.
+
+        If the callback is set to be called when the alarm has been raised, and
+        the alarm is already raised, then the callback is immediately called.
+        Similarly, if the callback is set to run when the alarm is cleared, and
+        the alarm is already cleared, then the callback is immediately ran. In
+        both cases, the callback is registered like any other callback.
+
+        Exceptions in callbacks are swallowed and are printed out through a
+        rospy logging statement.
 
         Args:
             funct (Callable): The callback to add.
@@ -219,7 +240,7 @@ class Alarm:
                         )
                     )
 
-    def update(self, srv: "Alarm"):
+    def update(self, srv: Alarm):
         """
         Updates this alarm with a new AlarmSet request. Also will call any
         required callbacks.
@@ -294,9 +315,7 @@ class AlarmBroadcaster:
     of the alarm.
     """
 
-    def __init__(
-        self, name: str, node_name: Optional[str] = None, nowarn: bool = False
-    ):
+    def __init__(self, name: str, node_name: str | None = None, nowarn: bool = False):
         """
         Args:
             name (str): The name of the related alarm.
@@ -413,7 +432,7 @@ class AlarmListener:
     def __init__(
         self,
         name: str,
-        callback_funct: Optional[Callable] = None,
+        callback_funct: Callable | None = None,
         nowarn: bool = False,
         **kwargs,
     ):
@@ -438,7 +457,7 @@ class AlarmListener:
         if callback_funct is not None:
             self.add_callback(callback_funct, **kwargs)
 
-    def wait_for_server(self, timeout: Optional[float] = None):
+    def wait_for_server(self, timeout: float | None = None):
         """
         Wait for node to connect to alarm server. Waits timeout seconds (or forever
             if ``timeout`` is ``None``) to connect then fetches the current alarm
@@ -493,7 +512,7 @@ class AlarmListener:
         """
         return not self.is_raised(fetch=fetch)
 
-    def get_alarm(self, fetch: bool = True) -> Optional[AlarmGetResponse]:
+    def get_alarm(self, fetch: bool = True) -> AlarmGetResponse | None:
         """
         Returns the alarm message.
 
@@ -533,7 +552,7 @@ class AlarmListener:
         funct: Callable,
         call_when_raised: bool = True,
         call_when_cleared: bool = True,
-        severity_required: Tuple[int, int] = (0, 5),
+        severity_required: tuple[int, int] = (0, 5),
     ):
         """
         Adds a callback function to the alarm.
@@ -626,7 +645,7 @@ class HeartbeatMonitor(AlarmBroadcaster):
         topic_name: str,
         msg_class,
         prd: float = 0.2,
-        predicate: Optional[Callable] = None,
+        predicate: Callable | None = None,
         nowarn: bool = False,
         **kwargs,
     ):
