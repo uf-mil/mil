@@ -1,5 +1,5 @@
-txros
------
+:mod:`txros` - Independent extensions for ROS
+---------------------------------------------
 
 .. currentmodule:: txros
 

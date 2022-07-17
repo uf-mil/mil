@@ -1,5 +1,5 @@
-Sabertooth 2x12
----------------
+:mod:`sabertooth2x12` - Sabertooth 2x12
+---------------------------------------
 
 Sabertooth2x12
 ^^^^^^^^^^^^^^

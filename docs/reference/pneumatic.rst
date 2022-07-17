@@ -1,5 +1,5 @@
-Pneumatic Actuator Board
-------------------------
+:mod:`mil_pneumatic_actuator` - Pneumatic Actuator Board
+--------------------------------------------------------
 
 Exceptions
 ^^^^^^^^^^

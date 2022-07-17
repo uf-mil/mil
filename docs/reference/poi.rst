@@ -1,5 +1,5 @@
-POI Handling
-------------
+:mod:`mil_poi` - POI Handling
+-----------------------------
 
 POIServer
 ^^^^^^^^^

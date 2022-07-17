@@ -1,5 +1,5 @@
-Path Planning
--------------
+:mod:`lqrrt` - Path Planning
+----------------------------
 
 Constraints
 ^^^^^^^^^^^
