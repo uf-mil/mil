@@ -468,12 +468,12 @@ jobs:
           sudo pip install -I -r requirements.txt
       - name: Install system dependencies
         run: |
-          ./scripts/system_install
+          $GITHUB_WORKSPACE/catkin_ws/src/mil/scripts/system_install
       - name: Install user dependencies
         continue-on-error: true
         run: |
           # Exits with zero because of error with darknet_ros in user_install
-          ./scripts/user_install
+          $GITHUB_WORKSPACE/catkin_ws/src/mil/scripts/user_install
       - name: Run catkin_make
         run: >
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
@@ -486,14 +486,14 @@ jobs:
       - name: Install dependencies for docs
         if: ${{ always() }}
         run: |
-          pip install -r requirements.txt
+          pip install -r $GITHUB_WORKSPACE/catkin_ws/src/mil/requirements.txt
           sudo apt-get install doxygen doxygen-doc doxygen-gui graphviz
       - name: Build docs
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
           mkdir $HOME/.mil
           source /opt/ros/noetic/setup.bash
-          ./scripts/build_docs -D
+          $GITHUB_WORKSPACE/catkin_ws/src/mil/scripts/build_docs -D
       - name: Publish docs artifact
         uses: actions/upload-artifact@v3
         with:
