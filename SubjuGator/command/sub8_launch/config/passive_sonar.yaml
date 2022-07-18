@@ -10,7 +10,7 @@ triggering/frequency_tolerance: 100
 triggering/min_time_between_pings: 1.5
 # threshold for triggering on gradient(max_convolution(bandpass(signal)))
 # NOTE: Tuned for a swimming pool, at Transdec recommended value :4.0
-triggering/threshold: 2.0
+triggering/threshold: 1.0
 # how many seconds to offset the trigger time
 triggering/trigger_offset: 0.0
 triggering/enable_on_launch: True

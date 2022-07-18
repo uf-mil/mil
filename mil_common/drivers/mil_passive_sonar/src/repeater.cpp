@@ -13,19 +13,25 @@ public:
 
   Repeater(ros::NodeHandle nh){
     this->nh = nh;
-    pub = nh.advertise<mil_passive_sonar::HydrophoneSamplesStamped>("samples_raw", 1);
+    pub = nh.advertise<mil_passive_sonar::HydrophoneSamplesStamped>("/hydrophones/samples_raw", 1);
     sub = nh.subscribe("/hydrophones/samples", 1000, &Repeater::cb, this);
   };
 
   void cb(const mil_passive_sonar::HydrophoneSamplesStamped& msg) {
     
     mil_passive_sonar::HydrophoneSamplesStamped new_msg;
-    new_msg = msg;
+    new_msg.header = msg.header;
+    new_msg.hydrophone_samples.channels = msg.hydrophone_samples.channels;
+    new_msg.hydrophone_samples.sample_rate = msg.hydrophone_samples.sample_rate;
+    new_msg.hydrophone_samples.samples = msg.hydrophone_samples.samples;
     
-    for (size_t i = 0; i < msg.hydrophone_samples.data.size(); ++i)
+    for (int i = 0; i < msg.hydrophone_samples.data.size(); ++i)
     {
-      new_msg.hydrophone_samples.data[i] = (new_msg.hydrophone_samples.data[i] << 8) |
-                                      ((new_msg.hydrophone_samples.data[i] >> 8) & 0x00ff);
+      //std::cout << new_msg.hydrophone_samples.data[i] << std::endl;
+      //new_msg.hydrophone_samples.data.push_back( msg.hydrophone_samples.data[i] );
+      new_msg.hydrophone_samples.data.push_back( (msg.hydrophone_samples.data[i] << 8) |
+                                      ((msg.hydrophone_samples.data[i] >> 8) & 0x00ff) );
+      //std::cout << new_msg.hydrophone_samples.data[i] << std::endl<< std::endl;
     }
     pub.publish(new_msg);
   }
@@ -44,4 +50,5 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh;
   Repeater node(nh);
+  ros::spin();
 }

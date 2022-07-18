@@ -9,6 +9,8 @@ add_message_files(
   Debug.msg
   HydrophoneSamples.msg
   HydrophoneSamplesStamped.msg
+  HydrophoneSamples_unsigned.msg
+  HydrophoneSamplesStamped2.msg
   Ping.msg
   Triggered.msg
 )
