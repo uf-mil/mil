@@ -374,7 +374,7 @@ jobs:
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
           cd $GITHUB_WORKSPACE/catkin_ws
           source /opt/ros/noetic/setup.bash
-          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros"
+          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" run_tests -j12
       - name: Get test results
         run: >
           source /opt/ros/noetic/setup.bash
