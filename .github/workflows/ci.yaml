@@ -335,6 +335,12 @@ jobs:
     runs-on: self-hosted
     needs:
       - info
+      - clang-format
+      - codespell
+      - pyupgrade
+      - black
+      - yamllint
+      - isort
     if: >
       ${{ needs.info.outputs.code_modified }}
     steps:
@@ -432,6 +438,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs:
       - info
+      # - catkin_test   Disabling for testing
     if: >
       ${{ needs.info.outputs.code_modified ||
       needs.info.outputs.docs_modified }}
@@ -457,6 +464,7 @@ jobs:
         run: |
           # Ignore installations provided by ros-tooling; they can cause
           # conflicts
+          cd $GITHUB_WORKSPACE/catkin_ws/src/mil
           sudo pip install -I -r requirements.txt
       - name: Install system dependencies
         run: |
