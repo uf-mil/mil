@@ -376,6 +376,7 @@ jobs:
           source /opt/ros/noetic/setup.bash
           catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" run_tests -j12
       - name: Get test results
+        continue-on-error: true
         run: >
           source /opt/ros/noetic/setup.bash
 
