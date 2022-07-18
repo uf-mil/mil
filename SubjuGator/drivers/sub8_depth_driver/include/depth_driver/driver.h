@@ -1,8 +1,11 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
+#include <ros/console.h>
+
 #include <boost/asio/serial_port.hpp>
 #include <boost/crc.hpp>
+#include <boost/thread/thread.hpp>
 #include <cmath>
 #include <fstream>
 
