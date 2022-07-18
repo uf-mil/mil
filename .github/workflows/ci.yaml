@@ -377,6 +377,8 @@ jobs:
           catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros"
       - name: Get test results
         run: >
+          source /opt/ros/noetic/setup.bash
+
           catkin_test_results $GITHUB_WORKSPACE/catkin_ws/build/test_results
           --verbose
 
