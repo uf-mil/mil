@@ -331,7 +331,7 @@ jobs:
           pre-commit run codespell --all-files --show-diff-on-failure
 
   catkin_test:
-    name: Generate catkin_test_results
+    name: Run catkin tests and build docs
     runs-on: self-hosted
     needs:
       - info
@@ -370,18 +370,39 @@ jobs:
           # Exits with zero because of error with darknet_ros in user_install
           ./scripts/user_install
       - name: Run catkin_make
-        run: |
+        run: >
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
+
           cd $GITHUB_WORKSPACE/catkin_ws
+
           source /opt/ros/noetic/setup.bash
-          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" run_tests -j12
+
+          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -C $MIL_WS -j12
+          run_tests
       - name: Get test results
-        continue-on-error: true
         run: >
           source /opt/ros/noetic/setup.bash
 
           catkin_test_results $GITHUB_WORKSPACE/catkin_ws/build/test_results
           --verbose
+      - name: Install dependencies for docs
+        if: ${{ always() }}
+        run: |
+          pip install -r requirements.txt
+          sudo apt-get install doxygen doxygen-doc doxygen-gui graphviz
+      - name: Build docs
+        run: |
+          export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
+          mkdir $HOME/.mil
+          source /opt/ros/noetic/setup.bash
+          ./scripts/build_docs -D
+      - name: Publish docs artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: >
+            docs-${{ github.workflow }}-${{ github.event.pull_request.number
+            || github.ref }}
+          path: $GITHUB_WORKSPACE/.mil/docs
 
   pyright:
     name: Run pyright
@@ -425,42 +446,3 @@ jobs:
         continue-on-error: true
         run: |
           pylint $(git ls-files "*.py")
-
-  docs:
-    name: Build docs
-    runs-on: self-hosted
-    needs:
-      - info
-      - catkin_test
-    if: >
-      ${{ needs.info.outputs.code_modified ||
-          needs.info.outputs.docs_modified}}
-    steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4.1.0
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON }}
-          cache: "pip"
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          sudo apt-get install doxygen doxygen-doc doxygen-gui graphviz
-      - name: Setup ROS Noetic
-        uses: ros-tooling/setup-ros@v0.3
-        with:
-          required-ros-distributions: noetic
-      - name: Build docs
-        run: |
-          export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
-          mkdir $HOME/.mil
-          source /opt/ros/noetic/setup.bash
-          ./scripts/build_docs -D
-      - name: Publish docs artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: >
-            docs-${{ github.workflow }}-${{ github.event.pull_request.number
-            || github.ref }}
-          path: $GITHUB_WORKSPACE/.mil/docs
