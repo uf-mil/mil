@@ -370,16 +370,14 @@ jobs:
           # Exits with zero because of error with darknet_ros in user_install
           ./scripts/user_install
       - name: Run catkin_make
-        run: >
+        run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
-
           cd $GITHUB_WORKSPACE/catkin_ws
-
           source /opt/ros/noetic/setup.bash
-
           catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros"
       - name: Get test results
         run: |
+          source /opt/ros/noetic/setup.bash
           catkin_test_results $MIL_WS/build/test_results --verbose
 
   pyright:
@@ -448,6 +446,8 @@ jobs:
           sudo apt-get install doxygen doxygen-doc doxygen-gui graphviz
       - name: Build docs
         run: |
+          export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
+          mkdir $HOME/.mil
           ./scripts/build_docs -D
       - name: Publish docs artifact
         uses: actions/upload-artifact@v3
@@ -455,4 +455,4 @@ jobs:
           name: >
             docs-${{ github.workflow }}-${{ github.event.pull_request.number
             || github.ref }}
-          path: ~/.mil/docs
+          path: $GITHUB_WORKSPACE/.mil/docs
