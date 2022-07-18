@@ -446,10 +446,15 @@ jobs:
         run: |
           pip install -r requirements.txt
           sudo apt-get install doxygen doxygen-doc doxygen-gui graphviz
+      - name: Setup ROS Noetic
+        uses: ros-tooling/setup-ros@v0.3
+        with:
+          required-ros-distributions: noetic
       - name: Build docs
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
           mkdir $HOME/.mil
+          source /opt/ros/noetic/setup.bash
           ./scripts/build_docs -D
       - name: Publish docs artifact
         uses: actions/upload-artifact@v3
