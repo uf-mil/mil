@@ -438,7 +438,6 @@ jobs:
     runs-on: self-hosted
     needs:
       - info
-      # - catkin_test   Disabling for testing
     if: >
       ${{ needs.info.outputs.code_modified ||
       needs.info.outputs.docs_modified }}
@@ -486,7 +485,6 @@ jobs:
 
           catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j8
       - name: Install dependencies for docs
-        if: ${{ always() }}
         run: |
           sudo apt-get install doxygen doxygen-doc doxygen-gui graphviz
       - name: Build docs

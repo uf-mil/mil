@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 RobotX Communications: A node that handles unit tests for the the RobotX Communication Protocol
@@ -389,7 +389,7 @@ class TestRobotXComms(unittest.TestCase):
                 split_rx_data = rx_data.splitlines(True)
                 for message in split_rx_data:
                     deserialized_msg = robot_x_detect_deliver_message.from_string(
-                        self.delim, message
+                        self.delim, message.decode()
                     )
                     data_list = deserialized_msg[0]
                     checksum_list = deserialized_msg[1]

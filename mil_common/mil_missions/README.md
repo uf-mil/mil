@@ -39,7 +39,7 @@ To use MIL missions on a new Robotic platform, you need to do the following:
 ### Implementing a BaseClass
 Here is an example BaseClass implementation:
 ```
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from mil_missions_core import BaseMission
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 from copy import copy, deepcopy
 from threading import Lock

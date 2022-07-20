@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import datetime
 import sys
 
@@ -17,7 +17,7 @@ sys.path.append(
     rospack.get_path("sub8_perception") + "/ml_classifiers/path_marker/utils"
 )
 
-from utils import detector_utils  # noqa
+from utils import detector_utils  # noqa: manually appending sys.path
 
 
 class classifier:

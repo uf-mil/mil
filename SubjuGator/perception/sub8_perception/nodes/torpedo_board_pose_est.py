@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import mil_ros_tools
 import numpy as np
 import numpy.linalg as lin
