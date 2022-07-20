@@ -79,6 +79,7 @@ myst_enable_extensions = ["colon_fence"]
 # Document __init__ methods of classes
 autoclass_content = "both"
 autodoc_inherit_docstrings = False
+autodoc_mock_imports = ["mayavi"]  # Package is very hard to install sometimes
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["docs/_templates"]
