@@ -494,6 +494,7 @@ jobs:
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
           mkdir $HOME/.mil
           source /opt/ros/noetic/setup.bash
+          source $GITHUB_WORKSPACE/catkin_ws/devel/setup.bash
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
           ./scripts/build_docs -D
       - name: Publish docs artifact
@@ -502,4 +503,4 @@ jobs:
           name: >
             docs-${{ github.workflow }}-${{ github.event.pull_request.number
             || github.ref }}
-          path: $GITHUB_WORKSPACE/.mil/docs
+          path: ${{ github.workspace }}/.mil/docs
