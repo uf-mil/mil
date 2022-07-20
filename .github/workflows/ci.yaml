@@ -375,13 +375,17 @@ jobs:
           # Exits with zero because of error with darknet_ros in user_install
           ./scripts/user_install
       - name: Run catkin_make
+        run: |
+          export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
+          cd $GITHUB_WORKSPACE/catkin_ws
+          source /opt/ros/noetic/setup.bash
+          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j8
+      - name: Run catkin_make tests
         run: >
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
-
           cd $GITHUB_WORKSPACE/catkin_ws
-
           source /opt/ros/noetic/setup.bash
-
+          source devel/setup.bash
           catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j8 run_tests
       - name: Get test results
         run: >
@@ -490,7 +494,7 @@ jobs:
       - name: Build docs
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
-          mkdir $HOME/.mil
+          mkdir -p $HOME/.mil
           source /opt/ros/noetic/setup.bash
           source $GITHUB_WORKSPACE/catkin_ws/devel/setup.bash
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
