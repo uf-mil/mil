@@ -501,6 +501,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: >
-            docs-${{ github.workflow }}-${{ github.event.pull_request.number
-            || github.ref }}
-          path: ${{ github.workspace }}/.mil/docs
+            docs-ci-html-${{ github.sha }}
+          path: ${{ github.workspace }}/.mil/docs/html

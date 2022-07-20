@@ -8,6 +8,7 @@ tsp-solver2==0.4.1
 # Data Science
 pandas==1.4.1
 numpy==1.22.3
+mayavi==4.5.0
 
 # Machine Learning
 scipy==1.7.3
