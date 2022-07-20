@@ -379,14 +379,14 @@ jobs:
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
           cd $GITHUB_WORKSPACE/catkin_ws
           source /opt/ros/noetic/setup.bash
-          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j8
+          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j6
       - name: Run catkin_make tests
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
           cd $GITHUB_WORKSPACE/catkin_ws
           source /opt/ros/noetic/setup.bash
           source devel/setup.bash
-          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j8 run_tests
+          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j6 run_tests
       - name: Get test results
         run: >
           source /opt/ros/noetic/setup.bash
@@ -487,7 +487,7 @@ jobs:
 
           source /opt/ros/noetic/setup.bash
 
-          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j8
+          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j6
       - name: Install dependencies for docs
         run: |
           sudo apt-get install doxygen doxygen-doc doxygen-gui graphviz
