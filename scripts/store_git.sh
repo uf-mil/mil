@@ -1,21 +1,13 @@
-#! /bin/sh
+#! /bin/bash
 # Author: Cameron Brown
 
-# From https://stackoverflow.com/a/16844327 - thanks!
-RCol='\e[0m'    # Text Reset
-
-# Regular           Bold                Underline           High Intensity      BoldHigh Intens     Background          High Intensity Backgrounds
-Bla='\e[0;30m';     BBla='\e[1;30m';    UBla='\e[4;30m';    IBla='\e[0;90m';    BIBla='\e[1;90m';   On_Bla='\e[40m';    On_IBla='\e[0;100m';
-Red='\e[0;31m';     BRed='\e[1;31m';    URed='\e[4;31m';    IRed='\e[0;91m';    BIRed='\e[1;91m';   On_Red='\e[41m';    On_IRed='\e[0;101m';
-Gre='\e[0;32m';     BGre='\e[1;32m';    UGre='\e[4;32m';    IGre='\e[0;92m';    BIGre='\e[1;92m';   On_Gre='\e[42m';    On_IGre='\e[0;102m';
-Yel='\e[0;33m';     BYel='\e[1;33m';    UYel='\e[4;33m';    IYel='\e[0;93m';    BIYel='\e[1;93m';   On_Yel='\e[43m';    On_IYel='\e[0;103m';
-Blu='\e[0;34m';     BBlu='\e[1;34m';    UBlu='\e[4;34m';    IBlu='\e[0;94m';    BIBlu='\e[1;94m';   On_Blu='\e[44m';    On_IBlu='\e[0;104m';
-Pur='\e[0;35m';     BPur='\e[1;35m';    UPur='\e[4;35m';    IPur='\e[0;95m';    BIPur='\e[1;95m';   On_Pur='\e[45m';    On_IPur='\e[0;105m';
-Cya='\e[0;36m';     BCya='\e[1;36m';    UCya='\e[4;36m';    ICya='\e[0;96m';    BICya='\e[1;96m';   On_Cya='\e[46m';    On_ICya='\e[0;106m';
-Whi='\e[0;37m';     BWhi='\e[1;37m';    UWhi='\e[4;37m';    IWhi='\e[0;97m';    BIWhi='\e[1;97m';   On_Whi='\e[47m';    On_IWhi='\e[0;107m';
+Red='\e[0;31m';
+Gre='\e[0;32m';
+Yel='\e[0;33m';
+Pur='\e[0;35m';
 
 color() {
-    printf "$1"
+    printf "%b" "$1"
 }
 
 # header display functions
@@ -24,7 +16,7 @@ hash_header() { echo "########################################"; }
 # Display header
 clear
 cat << EOF
-$(color $Pur)
+$(color "$Pur")
          &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
        @@@@@@*,...................................................,/@@@@@@
      ,@@@@                                                            ,@@@@
@@ -46,7 +38,7 @@ $(color $Pur)
      .@@@@.                                                           (@@@@
        @@@@@@%////////////////////////////////////////////////////(&@@@@@@
          #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@/
-$(color $Yel)
+$(color "$Yel")
 $(hash_header)
 Hola! Let's *git* your Git setup ready to go. You will need to do this at one point or another,
 but doing it all in one place will help to ensure that your computer stores your credentials
@@ -59,9 +51,9 @@ This script will help you:
 
 EOF
 
-read -r -p "$(color $Gre)Ready to start? [y/N] " response
+read -r -p "$(color "$Gre")Ready to start? [y/N] " response
 case "$response" in
-    [yY][eE][sS]|[yY]) 
+    [yY][eE][sS]|[yY])
         ;;
     *)
         exit 1
@@ -83,28 +75,28 @@ if [ "$GitName" != "" ]
 then
 cat << EOF
 $(hash_header)
-$(color $Yel)You appear to have your Git name/email setup. Are the following
-values correct? The name should be your first name, followed by your last name. 
+$(color "$Yel")You appear to have your Git name/email setup. Are the following
+values correct? The name should be your first name, followed by your last name.
 The email shown below should be linked to your GitHub account.
 
-    $(color $Pur)Name: ${GitName}
+    $(color "$Pur")Name: ${GitName}
     Email: ${GitEmail}
 
 EOF
-read -r -p "$(color $Gre)Are the values correct? [y/N] " response
+read -r -p "$(color "$Gre")Are the values correct? [y/N] " response
 case "$response" in
-    [yY][eE][sS]|[yY]) 
+    [yY][eE][sS]|[yY])
         ;;
     *)
         clear
-        echo $(hash_header)
+        hash_header
         GitFixNeeded=1
         ;;
 esac
 else
 cat << EOF
 $(hash_header)
-$(color $Yel)You do not have your Git name/email set up. These values are used
+$(color "$Yel")You do not have your Git name/email set up. These values are used
 to link your commits to you and your GitHub account.
 
 EOF
@@ -114,30 +106,30 @@ fi
 if [ $GitFixNeeded = 1 ]
 then
 cat << EOF
-$(color $Yel)Enter your Git credentials below.
+$(color "$Yel")Enter your Git credentials below.
 
 EOF
 
 Done=1
 while [ $Done = 1 ]
 do
-    read -r -p "$(color $Gre)Enter your name (First Last): " GitNameResponse
-    read -r -p "$(color $Gre)Enter your email: " GitEmailResponse
+    read -r -p "$(color "$Gre")Enter your name (First Last): " GitNameResponse
+    read -r -p "$(color "$Gre")Enter your email: " GitEmailResponse
 
 cat << EOF
-$(color $Yel)Please verify that the values below are correct for your name
+$(color "$Yel")Please verify that the values below are correct for your name
 and email.
 
     Name: ${GitNameResponse}
     Email: ${GitEmailResponse}
 
 EOF
-read -r -p "$(color $Gre)Are the values correct? [y/N] " GitNameVerifyResponse
+read -r -p "$(color "$Gre")Are the values correct? [y/N] " GitNameVerifyResponse
 case "$GitNameVerifyResponse" in
-    [yY][eE][sS]|[yY]) 
+    [yY][eE][sS]|[yY])
         clear
-        echo $(hash_header)
-        echo $(color $Gre)The values have been saved. Proceeding to the next step in 5 seconds.
+        hash_header
+        echo "$(color "$Gre")The values have been saved. Proceeding to the next step in 5 seconds."
         sleep 5;
         Done=0
         ;;
@@ -157,13 +149,13 @@ then
 clear
 cat << EOF
 $(hash_header)
-$(color $Yel)We will now setup your device authentication with GitHub using the GitHub CLI.
+$(color "$Yel")We will now setup your device authentication with GitHub using the GitHub CLI.
 You do not appear to have the CLI installed.
 EOF
 
-read -r -p "$(color $Gre)May we install it? [y/N] " response
+read -r -p "$(color "$Gre")May we install it? [y/N] " response
 case "$response" in
-    [yY][eE][sS]|[yY]) 
+    [yY][eE][sS]|[yY])
         ;;
     *)
         exit 1
@@ -176,12 +168,12 @@ sudo apt update
 sudo apt install gh
 
 GhInstalledAgain=$(gh --version)
-if [ $GhInstalledAgain != 0 ]
+if [ "$GhInstalledAgain" != 0 ]
 then
 
 cat << EOF
 $(hash_header)
-$(color $Red)There was an issue with the installation. The GitHub CLI could not be installed.
+$(color "$Red")There was an issue with the installation. The GitHub CLI could not be installed.
 Please report this as an error.
 EOF
 exit 1;
@@ -191,7 +183,7 @@ else
 clear
 cat << EOF
 $(hash_header)
-$(color $Yel)The GitHub CLI was successfully installed. We are now going to
+$(color "$Yel")The GitHub CLI was successfully installed. We are now going to
 authenticate you using the CLI.
 EOF
 
@@ -201,14 +193,14 @@ fi
 clear
 cat << EOF
 $(hash_header)
-$(color $Yel)You will now generate a personal access token (PAT).
+$(color "$Yel")You will now generate a personal access token (PAT).
 
 A web browser will open that allows you to create a new token. You should just
 need to click Generate Token at the bottom of the dialog, after signing in.
 
 EOF
 
-read -r -p "$(color $Gre)Open the browser? [y/N] " response
+read -r -p "$(color "$Gre")Open the browser? [y/N] " response
 case "$response" in
     [yY][eE][sS]|[yY])
         xdg-open "https://github.com/settings/tokens/new?scopes=repo,admin:public_key,gist,read:org&description=MIL+token"
@@ -218,7 +210,7 @@ case "$response" in
         ;;
 esac
 
-read -r -p "$(color $Gre)Enter the PAT (it should start with ghp_): " response
+read -r -p "$(color "$Gre")Enter the PAT (it should start with ghp_): " response
 echo "$response" > token.txt
 gh auth login --with-token < token.txt
 rm token.txt
@@ -226,5 +218,5 @@ rm token.txt
 clear
 cat << EOF
 $(hash_header)
-$(color $Yel)You should now be authenticated with Git and GitHub!
+$(color "$Yel")You should now be authenticated with Git and GitHub!
 EOF

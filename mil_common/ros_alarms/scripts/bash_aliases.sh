@@ -11,10 +11,10 @@ _alarm_complete() {
 	for ALARM in $(rosparam get /known_alarms); do
 
 		# Skip any entry that does not match the string to complete
-		if [[ -z "$2" || ! -z "$(echo ${ALARM:0:${#2}} | grep $2)" ]]; then
+		if [[ -z "$2" || ! -z "$(echo "${ALARM:0:${#2}}" | grep "$2")" ]]; then
 
 			# Append the alarm name to the autocomplete list
-			if [[ ! -z "$( echo ${ALARM: -1} | grep ',')" ]]; then
+			if [[ ! -z "$( echo "${ALARM: -1}" | grep ',')" ]]; then
 				COMPREPLY+=( "${ALARM:0:-1}" )
 			else
 				COMPREPLY+=( "$ALARM" )
