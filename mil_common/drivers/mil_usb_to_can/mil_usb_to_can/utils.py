@@ -59,7 +59,7 @@ class InvalidStartFlagException(InvalidFlagException):
     Exception thrown when the SOF flag is invalid. Inherits from :class:`InvalidFlagException`.
     """
 
-    def __init__(self, was: bytes):
+    def __init__(self, was: int):
         super().__init__("SOF", Packet.SOF, was)
 
 
@@ -68,7 +68,7 @@ class InvalidEndFlagException(InvalidFlagException):
     Exception thrown when the EOF flag is invalid. Inherits from :class:`InvalidFlagException`.
     """
 
-    def __init__(self, was: bytes):
+    def __init__(self, was: int):
         super().__init__("EOF", Packet.EOF, was)
 
 
@@ -173,10 +173,13 @@ class Packet:
             sof = ser.read(1)
             if sof is None or len(sof) == 0:
                 return None
-            if sof == cls.SOF:
+            sof_int = int.from_bytes(sof, byteorder="big")
+            if sof_int == cls.SOF:
                 break
-        if sof != cls.SOF:
-            raise InvalidStartFlagException(sof)
+        assert isinstance(sof, bytes)
+        sof_int = int.from_bytes(sof, byteorder="big")
+        if sof_int != cls.SOF:
+            raise InvalidStartFlagException(sof_int)
         data = sof
         eof = None
         for _ in range(10):
@@ -184,10 +187,13 @@ class Packet:
             if eof is None or len(eof) == 0:
                 return None
             data += eof
-            if eof == cls.EOF:
+            eof_int = int.from_bytes(eof, byteorder="big")
+            if eof_int == cls.EOF:
                 break
-        if eof != cls.EOF:
-            raise InvalidEndFlagException(eof)
+        assert isinstance(eof, bytes)
+        eof_int = int.from_bytes(eof, byteorder="big")
+        if eof_int != cls.EOF:
+            raise InvalidEndFlagException(eof_int)
         # print hexify(data)
         return cls.from_bytes(data)
 
@@ -198,7 +204,7 @@ class ReceivePacket(Packet):
         """
         The device ID associated with the packet.
         """
-        return struct.unpack("B", self.payload[0])[0]
+        return struct.unpack("B", self.payload[0:1])[0]
 
     @property
     def data(self) -> bytes:
@@ -209,7 +215,7 @@ class ReceivePacket(Packet):
 
     @property
     def length(self):
-        return struct.unpack("B", self.payload[1])[0]
+        return struct.unpack("B", self.payload[1:2])[0]
 
     @classmethod
     def create_receive_packet(cls, device_id: int, payload: bytes) -> ReceivePacket:
