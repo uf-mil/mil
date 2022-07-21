@@ -331,7 +331,7 @@ jobs:
           pre-commit run codespell --all-files --show-diff-on-failure
 
   pre-commit-ros:
-    name: Run ROS pre-commit hooks
+    name: Run ROS hooks
     runs-on: self-hosted
     needs:
       - info
@@ -372,7 +372,7 @@ jobs:
           pre-commit run sort-package-xml --all-files --show-diff-on-failure
 
   pre-commit-hooks:
-    name: Run generic pre-commit hooks
+    name: Run generic hooks
     runs-on: self-hosted
     needs:
       - info
@@ -423,6 +423,8 @@ jobs:
       - black
       - yamllint
       - isort
+      - pre-commit-ros
+      - pre-commit-hooks
     if: >
       ${{ needs.info.outputs.code_modified }}
     steps:
