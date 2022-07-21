@@ -2,9 +2,9 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b odom_estimator 
+\b odom_estimator
 
-<!-- 
+<!--
 Provide an overview of your package.
 -->
 

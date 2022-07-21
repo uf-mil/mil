@@ -1250,7 +1250,7 @@ div.code-block-caption {
 
   header {
     background: rgb(205,140,0);
-    background: linear-gradient(90deg, rgba(205,140,0,1) 0%, rgba(250,70,22,1) 100%); 
+    background: linear-gradient(90deg, rgba(205,140,0,1) 0%, rgba(250,70,22,1) 100%);
   }
 
   header > nav {

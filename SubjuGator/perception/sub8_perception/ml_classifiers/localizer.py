@@ -109,7 +109,7 @@ class classifier:
         Publishers:
         debug_image_pub: publishes the images showing what tensorflow has
         identified as path markers
-        bbox_pub: publishes the bounding boxes. 
+        bbox_pub: publishes the bounding boxes.
         """
         self.debug_image_pub = rospy.Publisher("path_debug", Image, queue_size=1)
         self.bbox_pub = rospy.Publisher("bbox_pub", Point, queue_size=1)

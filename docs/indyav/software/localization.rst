@@ -11,7 +11,7 @@ Currently we are investigating 3 types of sensor to be used used for localizatio
 
 Inertial Navigator Sensors and GNSS (GPS, GLONASS, etc.)
 ********************************************************
-INS and GNSS are usually coupled into an single device. 
+INS and GNSS are usually coupled into an single device.
 
 Pros
 ####

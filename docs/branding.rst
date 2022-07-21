@@ -6,7 +6,7 @@ as our logo.
 Logos
 -----
 
-Copies of the MIL logo (with and without text) can be found below. Two 
+Copies of the MIL logo (with and without text) can be found below. Two
 different formats are provided, an SVG and Adobe Illustrator file.
 
 :download:`MIL Logo (SVG) </branding/mil.svg>`
@@ -15,7 +15,7 @@ different formats are provided, an SVG and Adobe Illustrator file.
 
 Fonts
 -----
-For shirts / other banding displaying our name, we use the 
+For shirts / other banding displaying our name, we use the
 `Serpentine font <https://www.linotype.com/1196048/serpentine-family.html>`_.
 
 Colors

@@ -105,4 +105,3 @@ target_link_libraries(scan_the_code_marshall
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
 )
-

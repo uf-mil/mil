@@ -20,7 +20,7 @@ This dual-booted solution will not run on top of your current operating system, 
 will instead run by directly using your computer's resources.
 
 Dual-booting your computer is highly recommended over using a virtual machine.
-However, if you **have an M-series (ARM) Mac computer**, you will need to use a 
+However, if you **have an M-series (ARM) Mac computer**, you will need to use a
 virtual machine. Intel-based Macs may also experience some issues with dual-booting
 Ubuntu.
 
@@ -28,8 +28,8 @@ Ubuntu.
 
 Autonomous robotics is computationally expensive, especially when running simulations.
 
-If you can, use a powerful computer. We recommend you have at least 8GB RAM dedicated 
-to your solution and a modern i5 or better CPU. Many tasks such as simulation and 
+If you can, use a powerful computer. We recommend you have at least 8GB RAM dedicated
+to your solution and a modern i5 or better CPU. Many tasks such as simulation and
 computer vision will run faster on a system with a GPU.
 
 ## Installing Ubuntu
@@ -54,7 +54,7 @@ For instructions on installing Ubuntu with UTM, [see here](https://mac.getutm.ap
 
 ## Starting from a clean slate
 
-First, we will want to check if there are any updates. Sometimes this is already 
+First, we will want to check if there are any updates. Sometimes this is already
 done for you.
 
 To do this, we use a command-line tool on Ubuntu named ``apt``. This tool allows
@@ -69,14 +69,14 @@ if you'd like.)
 
 ## Install git
 
-To contribute changes, you will need to have [git](https://www.git-scm.com) installed. 
+To contribute changes, you will need to have [git](https://www.git-scm.com) installed.
 This program will be used to track and upload any changes that you make to the repository.
 
     $ sudo apt install git
 
 ## Cloning the repository
 
-You need to clone (download) a copy of the repository onto your computer so you 
+You need to clone (download) a copy of the repository onto your computer so you
 can make changes.
 
 First clone the upstream (MIL's fork) version of the repo.
@@ -85,14 +85,14 @@ and clone it into the `src` or that workspace.
 
     $ mkdir -p ~/catkin_ws/src && cd ~/catkin_ws/src
 
-Then, clone the repository (the `--recurse-submodules` is essential, as that is 
-what pulls the submodules, `-j8` is a speed optimization that downloads up to 8 
-submodules at a time). Cloning the repository allows you to have a local copy 
+Then, clone the repository (the `--recurse-submodules` is essential, as that is
+what pulls the submodules, `-j8` is a speed optimization that downloads up to 8
+submodules at a time). Cloning the repository allows you to have a local copy
 of the code on your computer.
 
     $ git clone --recurse-submodules -j8 https://github.com/uf-mil/mil.git
 
-Navigate to the root of the repository now. If you have followed the 
+Navigate to the root of the repository now. If you have followed the
 instructions exactly, you can get there through:
 
     $ cd ~/catkin_ws/src/mil
@@ -100,7 +100,7 @@ instructions exactly, you can get there through:
 ### Run the setup scripts
 
 If you are running Ubuntu, and prefer to simply run code directly on your "host"
-operating system without using Docker, you can run the following scripts from 
+operating system without using Docker, you can run the following scripts from
 the root of the repository.
 
     $ ./scripts/system_install
@@ -109,8 +109,8 @@ the root of the repository.
 
 Exit the terminal and enter it again.
 
-To build our tools, we use a tool that ROS provides us named `catkin_make`. This 
-searches through all of our packages and compiles them together. If you want to 
+To build our tools, we use a tool that ROS provides us named `catkin_make`. This
+searches through all of our packages and compiles them together. If you want to
 run this tool from anywhere in the directory, use `cm`.
 
     $ cm
@@ -119,16 +119,16 @@ If something goes wrong, try the suggestions in [Getting Help](help).
 
 ### Configuring Git
 
-If you have not configured Git to use your name/email on your new Ubuntu setup, 
-you can use the script below to set up your Git configuration! It will help you 
-register your name and email with Git and authenticate so that you can push to 
+If you have not configured Git to use your name/email on your new Ubuntu setup,
+you can use the script below to set up your Git configuration! It will help you
+register your name and email with Git and authenticate so that you can push to
 the repository.
 
     $ ./scripts/store_git.sh
 
 ### Join the Github organization
-In order to contribute code, you need to be in the [uf-mil Github organization](https://github.com/uf-mil). 
-First create an account if you do not have one, then ask someone in MIL / on Slack 
+In order to contribute code, you need to be in the [uf-mil Github organization](https://github.com/uf-mil).
+First create an account if you do not have one, then ask someone in MIL / on Slack
 to invite you.
 
 ## Viewing simulation
@@ -152,7 +152,7 @@ launches the Gazebo GUI - aka, the thing you will actually interact with! If all
 goes according to plan, you should see our robot in its own little world!
 
 ## What's next?
-If the `catkin_make` didn't fail on your computer, you're all good to go! 
+If the `catkin_make` didn't fail on your computer, you're all good to go!
 Congratulations, and welcome to MIL!
 
 The next step is to get assigned a task and to dive in. You should have the setup

@@ -1,4 +1,4 @@
-# Maintenance 
+# Maintenance
 
 ## CNC
 - After each use of the machine, be sure to clean the dust on the platform and drive unit. Use compressed air to blow dust out of the control box (Do not use brushes or any other tools which could produce electrostatic electricity), check the screws of the wire plugs to ensure an optimal contact.
@@ -10,4 +10,3 @@
 - Keep plenty of isopropyl on hand for aluminum coolant.
 
 - The lead screw/ballscrews need some lube from time to time. White lithium spray is good as far as our knowledge goes but more research needs to be done to find the best method
-

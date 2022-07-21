@@ -77,4 +77,3 @@ add_executable(test_mag src/test_mag.cpp)
 target_link_libraries(test_mag ${catkin_LIBRARIES})
 add_dependencies(test_mag ${catkin_EXPORTED_TARGETS})
 set_target_properties(test_mag PROPERTIES COMPILE_FLAGS "-O3 -std=c++0x")
-

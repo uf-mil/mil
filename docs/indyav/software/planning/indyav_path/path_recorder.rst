@@ -51,6 +51,3 @@ mil_tools TopicRecorder:
 
 launch file:
     ``rosed indyav_launch path_recorder.launch``
-
-
-

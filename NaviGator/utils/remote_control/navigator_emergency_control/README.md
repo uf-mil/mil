@@ -1,6 +1,6 @@
 This package contains nodes for interfacing with the emergency controller receiver board, its firmware, and bootloader.
 
-The 'nodes' folder contains a python node for listening to the /joy_emergency topic and publishes to /wrench/cmd when the emergency controller is selected as the active controller. 
+The 'nodes' folder contains a python node for listening to the /joy_emergency topic and publishes to /wrench/cmd when the emergency controller is selected as the active controller.
 
 The 'navigator_emergency_control' folder contains the firmware and bootloader for the receiver board, and a c++ driver node which publishes incoming joy data from the uP to /joy_emergency. The code for connecting to the stm32f3 uP through usb and corresponding bootloader is hijacked from Forrest Voight's stm32f3discovery_imu_driver package in hardware-common.
 

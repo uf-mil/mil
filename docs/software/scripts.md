@@ -4,11 +4,11 @@ At MIL, we use a lot of scripts to help us complete tasks quickly! Check out som
 
 ## Occupancy Grid
 
-**Draw an occupancy grid:** 
+**Draw an occupancy grid:**
 
     $ roscd mil_tools && ./mil_tools/nodes/ogrid_draw.py
 
-**Maintains a bag file with multiple topics:** 
+**Maintains a bag file with multiple topics:**
 
     $ roscd mil_tools && ./mil_tools/nodes/online_bagger.py
 
@@ -19,18 +19,18 @@ classes inside of the ``navigator_keyboard_control`` package.
 The two nodes within the package can be run through ``rosrun``.
 
 ## Alarms
-**Clear an alarm:** 
+**Clear an alarm:**
 
     $ roscd ros_alarms && rosrun nodes/clear.py
 
-**Monitor an alarm:** 
+**Monitor an alarm:**
 
     $ roscd ros_alarms && rosrun nodes/monitor.py
 
-**Raise an alarm:** 
+**Raise an alarm:**
 
     $ roscd ros_alarms && rosrun nodes/raise.py
 
-**Reports the status of an alarm:** 
+**Reports the status of an alarm:**
 
     $ roscd ros_alarms && rosrun nodes/report.py

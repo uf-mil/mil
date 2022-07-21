@@ -21,7 +21,7 @@ PneumaticActuatorDriver
 
 .. autoclass:: mil_pneumatic_actuator.PnuematicActuatorDriver
     :members:
-   
+
 Pneumatic Board Constants
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 .. attributetable:: mil_pneumatic_actuator.Constants
@@ -35,4 +35,3 @@ SimulatedPnuematicActuatorBoard
 
 .. autoclass:: mil_pneumatic_actuator.SimulatedPnuematicActuatorBoard
     :members:
-

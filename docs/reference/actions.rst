@@ -14,19 +14,19 @@ MoveAction
     A custom message representing the general movement of an entire system.
 
     .. attribute:: action_goal
-    
+
         The goal for an action's movement.
 
         :type: MoveActionGoal
 
     .. attribute:: action_result
-    
+
         The result of a move action's result.
 
         :type: MoveActionResult
 
     .. attribute:: action_feedback
-    
+
         The feedback for an action movement.
 
         :type: MoveActionFeedback
@@ -40,19 +40,19 @@ MoveActionResult
     A custom message representing the result of a system's movement.
 
     .. attribute:: header
-    
+
         The header for the message.
 
         :type: Header
 
     .. attribute:: status
-    
+
         The status of the system in its movement.
 
         :type: GoalStatus
 
     .. attribute:: result
-    
+
         The result of the movement
 
         :type: MoveResult
@@ -66,19 +66,19 @@ MoveActionFeedback
     A custom message representing the feedback of a system's movement.
 
     .. attribute:: header
-    
+
         The header for the message.
 
         :type: Header
 
     .. attribute:: status
-    
+
         The status of the system in its movement.
 
         :type: GoalStatus
 
     .. attribute:: feedback
-    
+
         The feedback of the movement.
 
         :type: MoveFeedback
@@ -92,19 +92,19 @@ MoveActionGoal
     A custom message representing the goal of an object's action movement.
 
     .. attribute:: header
-    
+
         The header for the message.
 
         :type: Header
 
     .. attribute:: goal_id
-    
+
         The ID of the goal.
 
         :type: GoalID
 
     .. attribute:: goal
-    
+
         The goal to move to.
 
         :type: MoveGoal
@@ -124,25 +124,25 @@ MoveFeedback
         :type: str
 
     .. attribute:: tree_size
-    
+
         The size of the lqRRT tree.
 
         :type: int
 
     .. attribute:: tracking
-    
+
         ???
 
         :type: bool
 
     .. attribute:: distance
-    
+
         ???
 
         :type: List[float]
 
     .. attribute:: time_till_next_branch
-    
+
         ???
 
         :type: float
@@ -260,19 +260,19 @@ ShooterDoAction
     A custom message representing the general movement of an entire system.
 
     .. attribute:: action_goal
-    
+
         The goal for an action's movement.
 
         :type: ShooterDoActionGoal
 
     .. attribute:: action_result
-    
+
         The result of a move action's result.
 
         :type: ShooterDoActionResult
 
     .. attribute:: action_feedback
-    
+
         The feedback for an action movement.
 
         :type: ShooterDoActionFeedback
@@ -287,19 +287,19 @@ ShooterDoActionResult
     A custom message representing the result of a system's movement.
 
     .. attribute:: header
-    
+
         The header for the message.
 
         :type: Header
 
     .. attribute:: status
-    
+
         The status of the system in its movement.
 
         :type: GoalStatus
 
     .. attribute:: result
-    
+
         The result of the movement
 
         :type: ShooterDoResult
@@ -314,19 +314,19 @@ ShooterDoActionFeedback
     A custom message representing the feedback of a system's movement.
 
     .. attribute:: header
-    
+
         The header for the message.
 
         :type: Header
 
     .. attribute:: status
-    
+
         The status of the system in its movement.
 
         :type: GoalStatus
 
     .. attribute:: feedback
-    
+
         The feedback of the movement.
 
         :type: ShooterDoFeedback
@@ -341,19 +341,19 @@ ShooterDoActionGoal
     A custom message representing the goal of an object's action movement.
 
     .. attribute:: header
-    
+
         The header for the message.
 
         :type: Header
 
     .. attribute:: goal_id
-    
+
         The ID of the goal.
 
         :type: GoalID
 
     .. attribute:: goal
-    
+
         The goal to move to.
 
         :type: ShooterDoGoal

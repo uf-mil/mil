@@ -5,7 +5,7 @@ a system, but don't document it, future generations may not even know what to do
 what you've built!
 
 ## Docstrings vs. Explicit Documentation
-There are two main types of document in our repository: docstrings and explicit 
+There are two main types of document in our repository: docstrings and explicit
 documentation.
 
 Docstrings are documentation **within** the code itself. These docstrings are then

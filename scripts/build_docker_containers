@@ -50,4 +50,3 @@ if [ ! -f $HOME/.mil/dev-docker-ws/devel/setup.sh ] && [ $USER != "root" ]; then
                       catkin_make -C /home/mil-dev/catkin_ws -j8; \
                       exit"
 fi
-

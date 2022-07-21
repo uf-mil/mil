@@ -59,4 +59,3 @@ If you are using a bag
     ROS_NAMESPACE=/camera/front/left rosrun image_proc image_proc
     rosbag play ./holding_buoy_mil.bag
 ```
-

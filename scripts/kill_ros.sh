@@ -32,4 +32,3 @@ while read -r p; do
 done<ptk.txt
 rm ptk.txt
 echo "Clean up finished :)"
-

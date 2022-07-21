@@ -39,8 +39,8 @@ const float screen_gamma = 2.2; // Assume the monitor is calibrated to the sRGB 
 void main() {
     vec3 normal = normalize(v_normal);
     vec3 ambient_color = u_color.rgb;
-    vec3 color_linear = ambient_color; 
-     
+    vec3 color_linear = ambient_color;
+
     int i;
     for(i = 0; i!= u_numLights * 2; i += 2){
         vec3 lightPos = u_lights[i];
@@ -62,7 +62,7 @@ void main() {
         }
         color_linear += (intensity * lambertian) +
                             (specular * speccolor);
-       
+
     }
 
   vec3 color_gamma_corrected = pow(color_linear, vec3(1.0 / screen_gamma));

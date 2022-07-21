@@ -23,7 +23,7 @@ from sub8_vision_tools import MultiObservation
 
 """
 This Vampiric Grymoire identifies the four major types of Vampire:
-    Jiangshi --> Flat "Buoy"        
+    Jiangshi --> Flat "Buoy"
     Draugr   --> 3 Sided Buoy
     Aswang   --> 3 Sided Buoy
     Vetalas  --> 3 Sided Buoy
@@ -33,8 +33,8 @@ General outline of task
     Boop the Buoy.
     Find 3 Sided Buoy with Sonar.
     Find Declared Enemy based on config.
-    Boop the Declared Enemy. 
-    Flee scene of crime before other vampires get to us. 
+    Boop the Declared Enemy.
+    Flee scene of crime before other vampires get to us.
 """
 
 

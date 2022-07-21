@@ -6,4 +6,3 @@
 This is the repository hosting publicly released software and other resources created by the [Machine Intelligence Laboratory](https://mil.ufl.edu) at the University of Florida.
 
 Further documentation is generated from this repository and hosted separately by [readthedocs](https://mil.readthedocs.io)
-

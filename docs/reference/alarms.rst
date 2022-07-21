@@ -48,7 +48,7 @@ HandlerBase
 .. autoclass:: ros_alarms.HandlerBase
     :members:
 
-   
+
 C++
 ^^^
 
@@ -133,4 +133,3 @@ ThrusterOut
 
 .. autoclass:: alarm_handlers.ThrusterOut
     :members:
-

@@ -45,7 +45,7 @@ a new terminal:
 
 ``subviz`` is an `alias <https://alvinalexander.com/blog/post/linux-unix/create-aliases>`__
 which launches `RVIZ <http://wiki.ros.org/rviz>`__ with a configuration
-for SubjuGator. Generally speaking, this will show what information is available 
+for SubjuGator. Generally speaking, this will show what information is available
 to the robot.
 
 Clear the Kill
@@ -61,9 +61,9 @@ new panel and run:
 
     $ amonitor kill
 
-and then hold ``Shift + C`` until the terminal turns green. 
+and then hold ``Shift + C`` until the terminal turns green.
 
-To initiate a software kill, press the space bar into the same terminal where 
+To initiate a software kill, press the space bar into the same terminal where
 you unkilled.
 
 Give a move command
@@ -73,7 +73,7 @@ Give SubjuGator a move command with ``submove``:
 
 .. code-block:: bash
 
-   $ submove forward 5m 
+   $ submove forward 5m
 
 The sub should move forward by 5 meters.
 

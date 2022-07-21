@@ -1,5 +1,5 @@
 # frame_id of sonar, time when ping generated
-Header header     
+Header header
 
 # Note: elements in corresponding indices of bearings, ranges, and intensities describe the same hit
 # len(bearings) == len(ranges) == len(intensities)

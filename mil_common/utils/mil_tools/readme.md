@@ -7,4 +7,3 @@ Examples:
 
 # TODO
 * The items that directly interact with ros topics or the parameter server do not yet have unittests, they require rostest.
-

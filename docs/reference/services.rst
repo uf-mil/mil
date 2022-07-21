@@ -86,13 +86,13 @@ ColorRequest
    The response class for the ``navigator_msgs/ColorRequest`` service.
 
    .. attribute:: found
-    
+
         Whether objects were found.
 
         :type: bool
 
    .. attribute:: ids
-    
+
         The IDs of objects that were found.
 
         :type: List[int]
@@ -113,13 +113,13 @@ FindPinger
    The response class for the ``navigator_msgs/FindPinger`` service.
 
    .. attribute:: pinger_position
-    
+
         The position of the pinger.
 
         :type: Point
 
    .. attribute:: num_samples
-    
+
         ???
 
         :type: int
@@ -140,7 +140,7 @@ GetDockBays
    The response class for the ``navigator_msgs/GetDockBays`` service.
 
    .. attribute:: bays
-    
+
         The positions of the three dock bays in the ENU frame. The first element is
         the position of the left dock, the second element is the position of the center dock,
         the third element is the position of the right dock.
@@ -148,19 +148,19 @@ GetDockBays
         :type: List[Point]
 
    .. attribute:: normal
-    
+
         The normal vector pointing away from the plane of dock back.
 
         :type: Vector3
 
    .. attribute:: success
-    
+
         Whether the position of the docks could be found.
 
         :type: bool
 
    .. attribute:: error
-    
+
         If :attr:`~navigator_msgs.srv.GetDockBays.success` is ``False``,
         then a message describing what went wrong.
 
@@ -262,13 +262,13 @@ GetDockShape
         :type: DockShape
 
    .. attribute:: found
-    
+
         Whether a viable dock was found.
 
         :type: bool
 
    .. attribute:: error
-    
+
         If :attr:`~navigator_msgs.srv.GetDockShapeResponse.found` was false,
         then a description of what went wrong. May be equal to one of this class' enumerations.
 
@@ -398,13 +398,13 @@ GetDockShapes
         :type: List[DockShape]
 
    .. attribute:: found
-    
+
         If one or more suitable shapes was returned, then true.
 
         :type: bool
 
    .. attribute:: error
-    
+
         If :attr:`~navigator_msgs.srv.GetDockShapesResponse.found`
         was false, then an explanation of why.
 
@@ -731,7 +731,7 @@ StereoShapeDetector
         ???
 
         :type: bool
-        
+
    .. attribute:: shape
 
         ???
@@ -781,7 +781,7 @@ VisionRequest
         The target to look for in the vision system.
 
         :type: str
-        
+
 .. attributetable:: navigator_msgs.srv.VisionRequestResponse
 
 .. class:: navigator_msgs.srv.VisionRequestResponse
@@ -801,7 +801,7 @@ VisionRequest
         :type: Vector3
 
    .. attribute:: found
-   
+
         Whether the vision object was found.
 
         :type: bool
@@ -977,13 +977,13 @@ CoordinateConversion
    The response class for the ``navigator_msgs/CoordinateConversion`` service.
 
    .. attribute:: converted
-    
+
         The list of converted points.
 
         :type: List[Point]
 
    .. attribute:: message
-    
+
         If an error occurred, the message of what went wrong.
 
         :type: str
@@ -1021,7 +1021,7 @@ KeyboardControl
         :type: str
 
    .. attribute:: is_locked
-    
+
         Whether the client which sent the keycode has "locked control" of the keyboard
         server, and is therefore blocking other keyboard input.
 

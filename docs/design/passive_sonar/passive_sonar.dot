@@ -6,7 +6,7 @@ digraph passive_sonar {
   "Slyphase Ros Bridge"->
   "ROS Topic (/hydrophones/samples)" ->
   wait_for_new_data_triggering;
-  
+
   subgraph cluster_triggering
   {
     style=filled;
@@ -21,30 +21,30 @@ digraph passive_sonar {
     "Max Convolution of Data"->
     "Gradient of Max Convolution"->
     "Gradient(Hydrophone 0) >\nTheshold";
-    
+
     "Gradient(Hydrophone 0) >\nTheshold":e ->
     wait_for_new_data_triggering:e [label="NO"];
-    
+
     "Gradient(Hydrophone 0) >\nTheshold":s ->
     "Crop Gradient(All Hydrophones)\n around where its > threshold":n [label="YES"];
-    
+
     "Crop Gradient(All Hydrophones)\n around where its > threshold" ->
     "Publish Gradient (All Hydrophones)\n to ROS Topic\n (/hydrophones/pings)";
 
   }
-  
+
   "Publish Gradient (All Hydrophones)\n to ROS Topic\n (/hydrophones/pings)"->
   wait_for_new_data_ping_locator;
-  
+
   "Hydrophone Visualization";
-  
+
   subgraph cluster_ping_locator
   {
     style=filled;
     color=lightgrey;
     label = "Ping Locator ROS\nNode";
     labeljust="l";
-    
+
     wait_for_new_data_ping_locator[label="Wait For New Data"];
     wait_for_new_data_ping_locator ->
     "Cross Correlate the Hydrophones" ->
@@ -52,13 +52,13 @@ digraph passive_sonar {
     "Calculate the unit vector\n of the direction of the\n ping from Deltas (utils.py calcualte_dir_pinger)" ->
     "publish the vector on ROS\n Topic (/hydrophones/direction)" ->
     wait_for_new_data_ping_locator:e;
-   
+
   }
-  
+
   "publish the vector on ROS\n Topic (/hydrophones/direction)" ->
   "Hydrophone Visualization";
-  
+
   "Hydrophone Visualization" ->
   "publish ROS Topic (/hydrophones/direction_marker)"
-  
+
 }

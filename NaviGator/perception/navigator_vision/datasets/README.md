@@ -4,7 +4,7 @@ This directory contains the configuration used to create the unified [`navigator
 ## Contents
 
 ### project_labels.json
-The latest exported labels from the labelbox.io project. 
+The latest exported labels from the labelbox.io project.
 
 ### project_config.json
 The configuration file for the labelbox.io project, contains the list of all objects that can be labeled.
@@ -24,5 +24,3 @@ The configuration for the extract_bag_images tool in mil_common, used to produce
 1. Add the `<my_dataset>.json` dataset to labelbox.io
 1. Add `<my_dataset>` to the `navigator_computer_vision` labelbox project
 1. Commit the changes to project_bags.yaml and PR it
-
-

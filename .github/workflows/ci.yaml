@@ -330,6 +330,88 @@ jobs:
         run: |
           pre-commit run codespell --all-files --show-diff-on-failure
 
+  pre-commit-ros:
+    name: Run ROS pre-commit hooks
+    runs-on: self-hosted
+    needs:
+      - info
+      - pre-commit
+    if: >
+      ${{ needs.info.outputs.code_modified
+      || needs.info.outputs.docs_modified }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        uses: actions/setup-python@v4.1.0
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          cache: "pip"
+      - name: Initialize pre-commit for use
+        run: |
+          python --version
+          pip install "$(cat requirements_test.txt | grep pre-commit)"
+      - name: Restore pre-commit environment from cache
+        id: cache-precommit
+        uses: actions/cache@v3.0.4
+        with:
+          path: ${{ env.PRE_COMMIT_CACHE }}
+          key: >
+            ${{ runner.os
+            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Fail job if pre-commit cache restore failed
+        if: steps.cache-precommit.outputs.cache-hit != 'true'
+        run: |
+          echo "Failed to restore pre-commit environment from cache"
+          exit 1
+      - name: Run pre-commit ROS hooks
+        run: |
+          pre-commit run prettier-xacro --all-files --show-diff-on-failure
+          pre-commit run prettier-launch-xml --all-files --show-diff-on-failure
+          pre-commit run prettier-package-xml --all-files --show-diff-on-failure
+          pre-commit run sort-package-xml --all-files --show-diff-on-failure
+
+  pre-commit-hooks:
+    name: Run generic pre-commit hooks
+    runs-on: self-hosted
+    needs:
+      - info
+      - pre-commit
+    if: >
+      ${{ needs.info.outputs.code_modified
+      || needs.info.outputs.docs_modified }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        uses: actions/setup-python@v4.1.0
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          cache: "pip"
+      - name: Initialize pre-commit for use
+        run: |
+          python --version
+          pip install "$(cat requirements_test.txt | grep pre-commit)"
+      - name: Restore pre-commit environment from cache
+        id: cache-precommit
+        uses: actions/cache@v3.0.4
+        with:
+          path: ${{ env.PRE_COMMIT_CACHE }}
+          key: >
+            ${{ runner.os
+            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
+      - name: Fail job if pre-commit cache restore failed
+        if: steps.cache-precommit.outputs.cache-hit != 'true'
+        run: |
+          echo "Failed to restore pre-commit environment from cache"
+          exit 1
+      - name: Run generic pre-commit hooks
+        run: |
+          pre-commit run end-of-file-fixer --all-files --show-diff-on-failure
+          pre-commit run check-case-conflict --all-files --show-diff-on-failure
+          pre-commit run trailing-whitespace --all-files --show-diff-on-failure
+          pre-commit run mixed-line-ending --all-files --show-diff-on-failure
+
   catkin_test:
     name: Run catkin_make tests
     runs-on: self-hosted

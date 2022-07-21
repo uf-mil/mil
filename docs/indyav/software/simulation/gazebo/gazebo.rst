@@ -59,7 +59,3 @@ But How Does Any of This Work
 -----------------------------
 
 .. graphviz:: gazebo.dot
-
-
-
-

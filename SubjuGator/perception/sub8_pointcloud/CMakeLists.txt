@@ -37,7 +37,7 @@ find_package(PCL REQUIRED)
 
 add_library(pointcloud_ogrid_lib src/OGridGen.cpp src/Classification.cpp)
 target_link_libraries(pointcloud_ogrid_lib
-  ${catkin_LIBRARIES} 
+  ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${roslib_LIBRARIES}
 )
@@ -47,4 +47,3 @@ include_directories(include ${roslib_INCLUDE_DIRS}  ${PCL_INCLUDE_DIRS} ${catkin
 add_executable(ogrid_generator src/OGridGen.cpp)
 add_dependencies(ogrid_generator pointcloud_ogrid_lib ${catkin_EXPORTED_TARGETS})
 target_link_libraries(ogrid_generator pointcloud_ogrid_lib ${catkin_LIBRARIES})
-

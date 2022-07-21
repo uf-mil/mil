@@ -20,6 +20,3 @@
     <node pkg="navigator_battery_monitor" type="navigator_battery_monitor.py" name="battery_monitor" />
 
 </launch>
-
-
-

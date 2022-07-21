@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(mil_tools)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pedantic -Wall -std=c++11")
 
-find_package(catkin REQUIRED COMPONENTS 
+find_package(catkin REQUIRED COMPONENTS
   rostest
   std_msgs
   std_srvs
@@ -46,5 +46,3 @@ add_library(mil_tools
 )
 target_include_directories(mil_tools PUBLIC include ${EIGEN3_INCLUDE_DIRS})
 target_link_libraries(mil_tools ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-
-

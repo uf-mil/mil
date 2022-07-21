@@ -34,7 +34,7 @@ GoalStatus
 
     .. attribute:: SUCCEEDED
 
-        A constant of the message type used to indicate a goal which succeeded. 
+        A constant of the message type used to indicate a goal which succeeded.
         Truly set to 2.
 
 Alarms
@@ -98,25 +98,25 @@ Quaternion
     A message type representing a quaternion.
 
     .. attribute:: w
-    
+
         The first element of the quaternion.
 
         :rtype: float
 
     .. attribute:: x
-    
+
         The second element of the quaternion.
 
         :rtype: float
 
     .. attribute:: y
-    
+
         The third element of the quaternion.
 
         :rtype: float
 
     .. attribute:: z
-    
+
         The fourth element of the quaternion.
 
         :rtype: float
@@ -338,7 +338,7 @@ Twist
 ~~~~~
 
 .. attributetable:: geometry_msgs.msg.Twist
-   
+
 .. class:: geometry_msgs.msg.Twist
 
     A ROS message type representing an object's twist.
@@ -393,7 +393,7 @@ Polygon
 
 Wrench
 ~~~~~~
-        
+
 .. attributetable:: geometry_msgs.msg.Wrench
 
 .. class:: geometry_msgs.msg.Wrench
@@ -624,145 +624,145 @@ PerceptionObject
     system.
 
     .. attribute:: header
-    
+
         The message header.
 
         :type: Header
 
     .. attribute:: name
-    
+
         The name of the object.
 
         :type: str
 
     .. attribute:: DETECT_DELIVER_PLATFORM
-    
+
         The constant string field representing the platform to detect and deliver.
         Actual string value is ``shooter``.
 
         :type: str
 
     .. attribute:: IDENTIFY_AND_DOCK
-    
+
         The constant string field representing the dock in the Identify and Dock mission.
         Actual string value is ``dock``.
 
         :type: str
 
     .. attribute:: SCAN_THE_CODE
-    
-        The constant string field representing the Scan the Code totem. Actual 
+
+        The constant string field representing the Scan the Code totem. Actual
         string value is ``scan_the_code``.
 
         :type: str
 
     .. attribute:: TOTEM
-    
+
         The constant string field representing the totem in the Find Totems mission.
         Actual string value is ``totem``.
 
         :type: str
 
     .. attribute:: START_GATE_BUOY
-    
+
         The constant string field representing the buoy of the start gate.
         Actual string value is ``start_gate``.
 
         :type: str
 
     .. attribute:: BUOY
-    
+
         The constant string field representing a buoy.
         Actual string value is ``buoy``.
 
         :type: str
 
     .. attribute:: UNKNOWN
-    
+
         The constant string field representing an unknown object.
         Actual string value is ``unknown``.
 
         :type: str
 
     .. attribute:: ALL
-    
+
         The constant string field representing all objects found.
         Actual string value is ``all``.
 
         :type: str
 
     .. attribute:: FAKE_SHOOTER
-    
+
         The constant string field representing a fake shooter.
         Actual string value is ``Shooter``.
 
         :type: str
 
     .. attribute:: FAKE_IDENTIFY_AND_DOCK
-    
+
         The constant string field representing a fake dock in the Identify and Dock mission.
         Actual string value is ``Dock``.
 
         :type: str
 
     .. attribute:: FAKE_SCAN_THE_CODE
-    
+
         The constant string field representing a fake Scan the Code totem in the
         Scan the Code mission. Actual string value is ``Dock``.
 
         :type: str
 
     .. attribute:: GATE1
-    
+
         The constant string field representing the first gate.
         Actual string value is ``Gate_1``.
 
         :type: str
 
     .. attribute:: GATE2
-    
+
         The constant string field representing the first gate.
         Actual string value is ``Gate_2``.
 
         :type: str
 
     .. attribute:: GATE3
-    
+
         The constant string field representing the first gate.
         Actual string value is ``Gate_3``.
 
         :type: str
 
     .. attribute:: BUOY_FIELD
-    
+
         The constant string field representing a field of buoys.
         Actual string value is ``BuoyField``.
 
         :type: str
 
     .. attribute:: FIND_THE_BREAK
-    
+
         The constant string field representing ???.
         Actual string value is ``FindBreak``.
 
         :type: str
 
     .. attribute:: CORAL_SURVEY
-    
+
         The constant string field representing ???.
         Actual string value is ``CoralSurvey``.
 
         :type: str
 
     .. attribute:: ACOUSTIC_PINGER
-    
+
         The constant string field representing an acoustic pinger.
         Actual string value is ``AcousticPinger``.
 
         :type: str
 
     .. attribute:: EMPTY_SPACE
-    
+
         The constant string field representing empty space.
         Actual string value is ``EmptySpace``.
 
@@ -887,11 +887,11 @@ Hosts
         :type: str
 
     .. attribute:: hosts
-    
+
         The hosts belonging to the group.
 
         :type: List[~navigator_msgs.msg.Host]
-        
+
 Passive Sonar Messages
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -901,7 +901,7 @@ HydrophoneSamples
 .. attributetable:: mil_passive_sonar.msg.HydrophoneSamples
 
 .. class:: mil_passive_sonar.msg.HydrophoneSamples
-    
+
     A custom message definition to represent data coming from the hydrophones.
 
     .. attribute:: channels
@@ -936,7 +936,7 @@ HydrophoneSamplesStamped
 .. attributetable:: mil_passive_sonar.msg.HydrophoneSamplesStamped
 
 .. class:: mil_passive_sonar.msg.HydrophoneSamplesStamped
-    
+
     A custom message definition to represent time-stamped data coming from the hydrophones.
 
     .. attribute:: header
@@ -957,13 +957,13 @@ Ping
 .. attributetable:: mil_passive_sonar.msg.Ping
 
 .. class:: mil_passive_sonar.msg.Ping
-    
+
     A custom message definition to represent a ping from channels of data.
 
     .. danger::
 
-        This class is deprecated, and has been replaced by 
-        :class:`~mil_passive_sonar.msg.HydrophoneSamples` and 
+        This class is deprecated, and has been replaced by
+        :class:`~mil_passive_sonar.msg.HydrophoneSamples` and
         :class:`~mil_passive_sonar.msg.HydrophoneSamplesStamped`.
         Support for this message type throughout the repository still exists,
         although it may be removed in the future.
@@ -1006,7 +1006,7 @@ ProcessedPing
 .. attributetable:: mil_passive_sonar.msg.ProcessedPing
 
 .. class:: mil_passive_sonar.msg.ProcessedPing
-    
+
     A custom message definition to represent a ping from channels of data.
 
     .. attribute:: header
@@ -1045,7 +1045,7 @@ Triggered
 .. attributetable:: mil_passive_sonar.msg.Triggered
 
 .. class:: mil_passive_sonar.msg.Triggered
-    
+
     A custom message definition to represent ???.
 
     .. attribute:: header
@@ -1180,7 +1180,7 @@ Image
 
     .. attribute:: data
 
-        Actual image data. The size of the list is equal to :attr:`.step` multiplied 
+        Actual image data. The size of the list is equal to :attr:`.step` multiplied
         by the number of rows.
 
         :type: List[int]
@@ -1427,7 +1427,7 @@ Motor Status
 
         A representation of any fault that occurred in the motor. Likely one of the
         enumerated fault types of this class.
- 
+
         :type: int
 
     .. attribute:: FAULT_OVERHEAT
@@ -1643,7 +1643,7 @@ DockShape
 
     .. attribute.. img_width
 
-        The width of the image showing the dock and its shape.        
+        The width of the image showing the dock and its shape.
 
         :type: int
 

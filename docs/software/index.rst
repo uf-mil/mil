@@ -4,7 +4,7 @@ Various documentation related to practices followed by the MIL Software team.
 
 .. toctree::
    :maxdepth: 1
-  
+
    Getting Started <getting_started>
    Contributing Changes <contributing>
    Adding Documentation <adding_documentation>

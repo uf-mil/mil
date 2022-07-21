@@ -19,7 +19,7 @@ Your innovation and willingness to break and bend the rules that currently exist
 This section explains how to use several of Python's features to your advantage.
 
 ### Naming
-**Naming** describes how variables, methods, classes, etc. are named. 
+**Naming** describes how variables, methods, classes, etc. are named.
 
 #### General
 Here is a brief table explaining the general pattern of naming:
@@ -290,7 +290,7 @@ Whitespace (not to be confused with greenspace, redspace, or rainbowspace!) can 
 
 When using whitespace:
 * Do not use whitespace in front of a comma or colon.
-* Always surround comparison operators (`==`, `!=`, `<`) with a whitespace character. 
+* Always surround comparison operators (`==`, `!=`, `<`) with a whitespace character.
 * Do not put a whitespace character before an index slice (such as `x [1]`) or function call (such as `fun (20)`).
 * Do not include whitespace inside brackets including parentheses, brackets, or braces. For example, use `(x + 1)`, not `( x + 1 )` or `{'schwartz': True}`, not `{ 'schwartz': True }`.
 * In function calls, do not use whitespace when passing a default parameter, unless a type annotation is present. For example, do not use `test(a, b: float=0.0)`, instead use `test(a, b: float = 0.0)`.
@@ -385,7 +385,7 @@ Each module should have a docstring placed in its `__init__.py` file, at the top
 ```python
 # calculator/__init__.py
 """
-Provides several calculation methods to add, subtract, multiply, and divide 
+Provides several calculation methods to add, subtract, multiply, and divide
 integers.
 
 Each calculation method is structured into a separate method. Some methods can
@@ -394,7 +394,7 @@ Some methods also support different methods of calculation or provide
 optimizations to speed up performance.
 
 Example 1:
-    
+
     calc = Calculator()
     calc.add(4, 3) # 7
 

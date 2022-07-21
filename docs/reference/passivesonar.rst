@@ -67,4 +67,3 @@ SylphaseSonarToRosNode
 .. cppattributetable:: SylphaseSonarToRosNode
 
 .. doxygenclass:: SylphaseSonarToRosNode
-

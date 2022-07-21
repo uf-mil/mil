@@ -86,7 +86,7 @@ This section explains the actual style practices we encourage when writing C++
 code for MIL.
 
 ### Naming
-_Source: [ROS C++ style 4](http://wiki.ros.org/CppStyleGuide#Naming), 
+_Source: [ROS C++ style 4](http://wiki.ros.org/CppStyleGuide#Naming),
 [Google Style Naming](https://google.github.io/styleguide/cppguide.html#Naming)_
 
 Below explains the process of naming various resources around the repository.
@@ -152,7 +152,7 @@ bool was_seen_yesterday;  // Ah, that helps much more!
 Furthermore:
 * Constants should use all capitals. For example, ``SPEED_OF_LIGHT``. This also
   applies to the values of enumerators.
-* Member variables (of classes, not structs) should have a trailing underscore. 
+* Member variables (of classes, not structs) should have a trailing underscore.
   For example, ``internal_attribute_``.
 * Global variables should be prepended with ``g_``. For example, ``g_global_attribute``.
 
@@ -168,7 +168,7 @@ namespace large_hadron_collider {
 ```
 
 ### Formatting
-_Source: [ROS C++ style: 6](http://wiki.ros.org/CppStyleGuide#Formatting), 
+_Source: [ROS C++ style: 6](http://wiki.ros.org/CppStyleGuide#Formatting),
 [Google Style: Formatting](https://google.github.io/styleguide/cppguide.html#Formatting)_
 
 #### Line Length
@@ -291,7 +291,7 @@ if (this_is_perfect) {
 For `switch` blocks, braces are optional. Attempt to be consistent throughout a particular
 package.
 
-In the case of fallthrough (ie, the exclusion of `break` in a case statement), 
+In the case of fallthrough (ie, the exclusion of `break` in a case statement),
 please add a comment indicating fallthrough. Some tutorials might suggest the use
 of the `[[fallthrough]]` attribute, but unfortunately, this is only allowed in C++17
 and further.
@@ -407,7 +407,7 @@ class Pan {
  public:
   void pourCupcake(int row, int col);
   Cupcake retrieveCupcake(int row, int col);
-  
+
  private:
   Cupcake[][] cupcakes_;
 };

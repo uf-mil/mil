@@ -75,7 +75,7 @@ Exceptions
 
 .. autoclass:: txros.ServiceError
     :members:
-   
+
 .. attributetable:: txros.TooPastError
 
 .. autoclass:: txros.TooPastError

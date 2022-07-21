@@ -2,7 +2,7 @@
 
 ## Before leaving
 
-### Packing list 
+### Packing list
 * Power Strip
 * Table
 * Extension Cord

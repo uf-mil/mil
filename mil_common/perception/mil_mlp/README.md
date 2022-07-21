@@ -172,5 +172,3 @@ Changing the batch size of the pipeline config may throw an error if you are usi
 If something else broke, its probably your data. Run the verify_data.py to check all the labels and images. If they look correct, check the csv files and the tfrecords. Something may still be going wrong there. Tensorflow has done a good job of making sure the only issues you will run into is your own data. If that isn't the case, posting it on the Tensorflow github page as an issue may be of some help.
 
 If the problem does indeed lie in the data, it is likely the our ldp is broken somewhere. Finding the leak and fixing it would be greatly appreciated! The Machine Spirits will indeed be pleased.
-
-

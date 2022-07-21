@@ -57,7 +57,7 @@ Use get_command to receive the necessary wrench for this instant.
 That is, get_command publishes a ROS wrench message, and is fed
 the current odometry and timestamp.
 
-You can make it to not learn and only use a PD controller by setting 
+You can make it to not learn and only use a PD controller by setting
 self.only_PD to True.
 
 ################################################# INTERNAL SEMANTICS
@@ -79,4 +79,3 @@ aa: angular acceleration
 ################################################# OTHER
 
 Author: Jason Nezvadovitz
-

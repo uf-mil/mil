@@ -8,6 +8,5 @@
   <exec_depend>rospy</exec_depend>
   <build_depend>dynamic_reconfigure</build_depend>
   <buildtool_depend>catkin</buildtool_depend>
-  <export>
-  </export>
+  <export/>
 </package>

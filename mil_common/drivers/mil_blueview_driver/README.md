@@ -22,5 +22,3 @@ Please see the ```launch/example.launch``` for info on how to configure the driv
 ## Config
 
 See example launch file at ``` launch/example.launch ``` for full configuration options
-
-

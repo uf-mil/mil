@@ -1,19 +1,17 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro  name="sylphase"
-                params="name='ins'
+  <xacro:macro name="sylphase" params="name='ins'
                         xyz:='0 0 0' rpy:='0 0 0'">
-    <xacro:include filename="$(find navigator_gazebo)/urdf/fixed_link_persistent.xacro" />
-    <link name="${name}">
-    </link>
+    <xacro:include filename="$(find navigator_gazebo)/urdf/fixed_link_persistent.xacro"/>
+    <link name="${name}"/>
     <gazebo reference="${name}">
-      <sensor name="${name}_imu" type="imu" />
-      <sensor name="${name}_gps" type="gps" />
+      <sensor name="${name}_imu" type="imu"/>
+      <sensor name="${name}_gps" type="gps"/>
     </gazebo>
     <joint name="${name}_to_base_link" type="fixed">
-      <parent link="base_link" />
-      <child link="${name}" />
-      <origin xyz="${xyz}" rpy="${rpy}" />
+      <parent link="base_link"/>
+      <child link="${name}"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
     </joint>
     <gazebo>
       <plugin name="sylphase_plugin" filename="libsylphase_gazebo.so">

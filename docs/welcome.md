@@ -2,9 +2,9 @@
 If you have reached this page, you likely want to get started working in MIL.
 We're quite excited to have you on the team! MIL has been committed to designing
 high-quality robots for several decades at the University of Florida, and we're excited
-that you're interested in becoming part of that history. 
+that you're interested in becoming part of that history.
 
-Our team has world championship tournaments across the globe five times, and 
+Our team has world championship tournaments across the globe five times, and
 we've placed amongst the top three teams fifteen times. You can help us to win
 our sixth championship!
 
@@ -48,8 +48,8 @@ We use Slack as our primary communication platform. On Slack, you can communicat
 with members of your team, and members of other teams. This is where we can stay
 up to date with each other about the progress of the robots.
 
-Our Slack workspace can be found at [uf-mil.slack.com](https://uf-mil.slack.com). 
-Ask someone in MIL to invite you, or email [ems@ufl.edu](mailto:ems@ufl.edu) (the 
+Our Slack workspace can be found at [uf-mil.slack.com](https://uf-mil.slack.com).
+Ask someone in MIL to invite you, or email [ems@ufl.edu](mailto:ems@ufl.edu) (the
 lab director, Dr. Eric Schwartz).
 
 ## Jump in!

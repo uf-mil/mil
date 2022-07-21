@@ -11,4 +11,3 @@ RUN apt update && apt install -y sudo && apt clean
 
 ADD system_install /tmp/system_install
 RUN chmod +x /tmp/system_install && /tmp/system_install
-

@@ -54,4 +54,3 @@ void main()
 
     gl_FragColor = v_color * brightness * vec4(u_light_intensity, 1.0);
 }
-

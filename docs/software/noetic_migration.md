@@ -129,16 +129,16 @@ the root problem. Great job!
 
 ### Step Three: Documenting the code (optional!)
 
-An optional step in the migration process is documenting the code as you convert it. 
+An optional step in the migration process is documenting the code as you convert it.
 Documenting the code helps future members understand the code they are reading.
 
-Documentation comes in many forms! One form is by typing the code, a feature of 
-Python that Python 3 supports. To type the code, add the types that the method 
+Documentation comes in many forms! One form is by typing the code, a feature of
+Python that Python 3 supports. To type the code, add the types that the method
 accepts as parameters and what types it returns.
 
-Another form is by adding docstrings throughout the code, which help to explain 
-what methods do and how they work. These docstrings can be added through a 
-multi-line comment under the method signature. The docstring should include the 
+Another form is by adding docstrings throughout the code, which help to explain
+what methods do and how they work. These docstrings can be added through a
+multi-line comment under the method signature. The docstring should include the
 type and an explanation for each argument and what the method returns.
 
 For example, the following code block can be annotated with types and docstrings:
@@ -190,23 +190,23 @@ That last command should build the documentation on your computer and provide yo
 with a link - clicking that link should open up an HTML page where you can see
 your beautiful new documentation! How exciting!
 
-When a new member sees the method in the first code block, how are they supposed 
-to know what it does? This is what the docstring and typing annotations help with! 
-Now, another member can instantly see the types of parameters the method accepts, 
+When a new member sees the method in the first code block, how are they supposed
+to know what it does? This is what the docstring and typing annotations help with!
+Now, another member can instantly see the types of parameters the method accepts,
 what it returns, and what it is supposed to do.
 
-Again, this is totally optional. But, if you complete this step, you will have 
+Again, this is totally optional. But, if you complete this step, you will have
 the opportunity to learn much more about the codebase and how each module works!
 
 ### Step Four: Check and verify
 
-Great! By now, the code should be ready to be run in Python 3. For a last step check, 
-run `python-modernize` again and verify that any warnings that appear do not need 
+Great! By now, the code should be ready to be run in Python 3. For a last step check,
+run `python-modernize` again and verify that any warnings that appear do not need
 to be fixed. Finally, run `black` again.
 
 ## Updating CMake minimum version
 
-The CMake minimum version in each package needs to be updated to version `3.0.3`. 
+The CMake minimum version in each package needs to be updated to version `3.0.3`.
 This has already been completed for all packages and should not need to be completed again.
 
 ## Testing the changes

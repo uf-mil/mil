@@ -10,7 +10,7 @@
         <amplitude>${amplitude}</amplitude>
       </plugin>
     </gazebo>
-    <link name="${name}" />
+    <link name="${name}"/>
     <joint name="${name}_joint" type="fixed">
       <origin xyz="${xyz}" rpy="${rpy}"/>
       <parent link="base_link"/>

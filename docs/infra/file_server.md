@@ -19,6 +19,6 @@ The share is which file share you want. You can chose one of the following:
 * navigator
 * subjugator
 
-To unmount all shares, run 
+To unmount all shares, run
 
     $ ./scripts/umount_fileserver

@@ -10,11 +10,11 @@ more general overview of MIL, please check that page first!
 :::
 
 ## Join the electrical Slack channel
-Like the other teams, we use Slack as our primary communication platform. Our 
+Like the other teams, we use Slack as our primary communication platform. Our
 Slack workspace can be found at [https://uf-mil.slack.com](https://uf-mil.slack.com/).
-Ask someone in MIL to invite you or email [ems@ufl.edu](mailto:ems@ufl.edu). 
+Ask someone in MIL to invite you or email [ems@ufl.edu](mailto:ems@ufl.edu).
 
-Once you’re on Slack, be sure to join the [#electrical](https://app.slack.com/client/T6VBSPR50/C6VGAF2MA) 
+Once you’re on Slack, be sure to join the [#electrical](https://app.slack.com/client/T6VBSPR50/C6VGAF2MA)
 channel. This is where we will post important updates about the electrical team,
 including meeting times.
 

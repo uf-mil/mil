@@ -219,8 +219,8 @@
       <grid>0</grid>
       <origin_visual>0</origin_visual>
       <ambient>
-        
-0.3 0.3 0.3 1    
+
+0.3 0.3 0.3 1
       </ambient>
     </scene>
   </world>

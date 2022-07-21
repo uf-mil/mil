@@ -20,7 +20,7 @@ Planner
 
 .. autoclass:: lqrrt.Planner
     :members:
-   
+
 Tree
 ^^^^
 

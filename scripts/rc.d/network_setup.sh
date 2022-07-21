@@ -113,7 +113,7 @@ ros_connect()
       echo "Usage:   ros_connect <mode>"
       echo "Modes:      local - run things entirely on your local machine with no network"
       echo "            lan   - share your ROS network with other devices on the network"
-      echo "            mil   - same as lan, but fails if not on MIL network" 
+      echo "            mil   - same as lan, but fails if not on MIL network"
       echo "            sub   - connect your local machine to SubjuGator"
       return 1
   fi

@@ -26,4 +26,3 @@ The error state will be the delta between a desired and measured forward speed.
 Future Work
 -----------
 * MPC controller will probably be looked into.
-

@@ -154,7 +154,7 @@ ActiveContour
 .. cppattributetable:: mil_vision::ActiveContour
 
 .. doxygenclass:: mil_vision::ActiveContour
-   
+
 CameraObserver
 ^^^^^^^^^^^^^^
 .. cppattributetable:: mil_vision::CameraObserver
@@ -224,7 +224,7 @@ CameraFrameSequence
 .. cppattributetable:: mil_vision::CameraFrameSequence
 
 .. doxygenclass:: mil_vision::CameraFrameSequence
-   
+
 CameraModel
 ^^^^^^^^^^^
 .. cppattributetable:: mil_vision::CameraModel
