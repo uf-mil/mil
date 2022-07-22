@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import copy
 import threading
 
@@ -56,7 +58,7 @@ class KillInterface:
         self.board_status = {}
         for kill in constants["KILLS"]:
             self.board_status[kill] = False
-        self.kills = self.board_status.keys()
+        self.kills: list[str] = list(self.board_status.keys())
         self.expected_responses = []
         self.network_msg = None
         self.wrench = ""

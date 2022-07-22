@@ -1,8 +1,9 @@
 import numpy as np
 import rospy
 import serial
-from constants import constants
 from std_srvs.srv import SetBool, SetBoolResponse
+
+from . import constants
 
 
 class NoopSerial(serial.Serial):
