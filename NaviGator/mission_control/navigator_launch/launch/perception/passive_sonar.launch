@@ -1,6 +1,6 @@
 <launch>
   <arg name="simulation" default="False" />
-  <node unless="$(arg simulation)" pkg="mil_passive_sonar" type="hydrophones" name="hydrophones_heading">
+  <node unless="$(arg simulation)" pkg="mil_passive_sonar" type="hydrophones.py" name="hydrophones_heading">
     <param name="dist_h" value="2.286e-02" />
     <param name="dist_h4" value="2.286e-02" />
     <param name="v_sound" value="1482" />

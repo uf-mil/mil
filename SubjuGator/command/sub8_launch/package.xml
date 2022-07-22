@@ -27,6 +27,9 @@
   <run_depend>mil_poi</run_depend>
   <run_depend>sub8_controller</run_depend>
   <run_depend>mil_passive_sonar</run_depend>
+  <run_depend>mil_pneumatic_actuator</run_depend>
+  <run_depend>mil_blueview_driver</run_depend>
+  <run_depend>sub8_perception</run_depend>
   <buildtool_depend>catkin</buildtool_depend>
   <export/>
 </package>
