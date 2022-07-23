@@ -32,7 +32,7 @@ class LightDarkMode
     this.value = 'dark';
     document.documentElement.setAttribute('data-theme', this.value);
     localStorage.setItem('mil-docs-light-dark', this.value);
-    document.getElementById('mil-light-dark-icon').getElementsByTagName('span')[0].innerHTML = 'nights_stay';
+    document.getElementById('mil-light-dark-icon').getElementsByTagName('span')[0].innerHTML = 'dark_mode';
     document.getElementById('mil-light-dark-icon').getElementsByTagName('span')[0].title =
         'The site is displayed using a dark mode theme.';
   }

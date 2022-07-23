@@ -69,6 +69,7 @@ Historically however, thanks to:
   --search-focus: var(--blue-1);
   --search-button: var(--grey-6);
   --search-button-hover: var(--grey-1-8);
+  --sidebar-aside-background: var(--grey-2);
   --footer-text: var(--grey-5);
   --footer-link: var(--grey-6);
   --hr-border: var(--grey-2);
@@ -137,6 +138,7 @@ Historically however, thanks to:
   --search-focus: var(--blue-1);
   --search-button: var(--grey-1);
   --search-button-hover: var(--grey-1-8);
+  --sidebar-aside-background: var(--grey-6);
   --nav-background: var(--main-background);
   --nav-text: var(--grey-1);
   --nav-hover-text: var(--grey-2);
@@ -482,7 +484,6 @@ aside .material-icons,
 
 #sidebar form {
   margin: 1em 0;
-  display: flex;
   align-items: baseline;
 }
 
@@ -1289,11 +1290,16 @@ div.code-block-caption {
     color: var(--nav-header-text);
   }
 
+  aside.grid-item {
+    background-color: var(--sidebar-aside-background);
+  }
+
   #sidebar {
     display: inline-block;
     position: sticky;
     top: 1em;
     max-height: calc(100vh - 2em);
+    min-width: 90%;
     overflow-y: auto;
     margin: 1em;
     padding-left: 0.5em;
@@ -1340,12 +1346,12 @@ div.code-block-caption {
   .main-grid {
     /* 62.5% width => multiple of 5/8 content */
     /* sidebar takes up 20% of the inner area */
-    grid-template-columns: repeat(16, 1fr);
+    grid-template-columns: repeat(15, 1fr);
     grid-template-areas:
-      "h h h h h h h h h h h h h h h h"
-      "n n n n n n n n n n n n n n n n"
-      "s s s . . c c c c c c c c c . ."
-      "s s s f f f f f f f f f f f f f"
+      "h h h h h h h h h h h h h h h"
+      "n n n n n n n n n n n n n n n"
+      "s s s s . c c c c c c c c c ."
+      "s s s s f f f f f f f f f f f"
   }
 
   header > nav {
