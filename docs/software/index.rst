@@ -6,6 +6,7 @@ Various documentation related to practices followed by the MIL Software team.
    :maxdepth: 1
 
    Getting Started <getting_started>
+   devtools
    Contributing Changes <contributing>
    Adding Documentation <adding_documentation>
    help
