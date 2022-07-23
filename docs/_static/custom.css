@@ -1131,6 +1131,40 @@ rect.highlighted {
   background-color: var(--api-entry-background);
 }
 
+.container.services {
+  padding: 10px;
+  border: 1px solid var(--codeblock-border);
+  margin-bottom: 20px;
+}
+
+.container.services::before {
+  content: 'Available Services';
+  color: var(--main-big-headers-text);
+  display: block;
+  padding-bottom: 0.5em;
+}
+
+.container.services > dl.describe > dt {
+  background-color: var(--api-entry-background);
+}
+
+.container.topics {
+  padding: 10px;
+  border: 1px solid var(--codeblock-border);
+  margin-bottom: 20px;
+}
+
+.container.topics::before {
+  content: 'Available Topics';
+  color: var(--main-big-headers-text);
+  display: block;
+  padding-bottom: 0.5em;
+}
+
+.container.topics > dl.describe > dt {
+  background-color: var(--api-entry-background);
+}
+
 .table-wrapper {
   overflow-x: auto;
 }
