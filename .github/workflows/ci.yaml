@@ -458,6 +458,12 @@ jobs:
         run: |
           # Exits with zero because of error with darknet_ros in user_install
           ./scripts/user_install
+      # We want to run a full test suite in CI - this includes the BlueView
+      # tests!
+      - name: Install BlueView Sonar SDK
+        run: |
+          ./scripts/install_bvtsdk --pass ${{ secrets.ZOBELISK_PASSWORD }}
+          ls mil_common/drivers/mil_blueview_driver
       - name: Run catkin_make
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
