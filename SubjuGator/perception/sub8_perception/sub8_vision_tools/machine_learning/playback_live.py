@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(usage="", description="")
     parser.add_argument(
-        dest="classifer", type=str, help="Name of the classifer to use."
+        dest="classifier", type=str, help="Name of the classifier to use."
     )
     parser.add_argument(
         dest="topic",
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     args = parser.parse_args(sys.argv[1:])
 
     clf = cv2.Boost()
-    clf.load(args.classifer)
+    clf.load(args.classifier)
 
     image_sub = mil_ros_tools.Image_Subscriber(args.topic, got_image, queue_size=1)
     image_pub = mil_ros_tools.Image_Publisher(args.topic + "_segmented")

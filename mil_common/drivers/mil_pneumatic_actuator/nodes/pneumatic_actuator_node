@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+import threading
+
 import rospy
-from serial import SerialException
 from mil_pneumatic_actuator import PnuematicActuatorDriver, PnuematicActuatorDriverError
 from mil_pneumatic_actuator.srv import SetValve
+from serial import SerialException
 from std_srvs.srv import Trigger
-import threading
 
 lock = threading.Lock()
 
@@ -14,6 +15,7 @@ class Actuator:
     Encapsulates the configuration for an actuator, which can contain up to 2 valves
     and can be of 'set' or 'pulse' type.
     """
+
     def __init__(
         self, type_str, open_id, open_default, close_id, close_default, pulse_time
     ):
@@ -49,6 +51,7 @@ class PnuematicActuatorNode:
     """
     Allows high level ros code to interface with Daniel's pneumatics board.
     """
+
     # TODO: Add a function to try and reconnect to the serial port if we lose connection.
     # TODO: publish info to /diagnostics
     def __init__(self):
@@ -109,7 +112,7 @@ class PnuematicActuatorNode:
         try:
             self.driver.set_port(port, state)
         except (PnuematicActuatorDriverError, SerialException) as e:
-            rospy.logerr("Error interfacing with actuator board: {}".format(e))
+            rospy.logerr(f"Error interfacing with actuator board: {e}")
             return False
         return True
 
@@ -131,7 +134,7 @@ class PnuematicActuatorNode:
         try:
             self.driver.ping()
         except (PnuematicActuatorDriverError, SerialException) as e:
-            rospy.logwarn("Could not ping actuator board: {}".format(e))
+            rospy.logwarn(f"Could not ping actuator board: {e}")
             if self.connected:
                 rospy.logerr("Board not responding to pings. Disconnected.")
                 self.connected = False
@@ -144,7 +147,7 @@ class PnuematicActuatorNode:
 
     def got_service_request(self, srv):
         """
-        Close/Open/Pulse the requested actuator when a service request is recieved
+        Close/Open/Pulse the requested actuator when a service request is received
         """
         if not self.connected:
             return {"success": False, "message": "board not connected"}
@@ -162,9 +165,7 @@ class PnuematicActuatorNode:
 
         # If actuator is pulse type, open it and setup timer to close after pulse time
         if actuator.type == "pulse":
-            rospy.loginfo(
-                "Pulsing {} for {}s".format(srv.actuator, actuator.pulse_time)
-            )
+            rospy.loginfo(f"Pulsing {srv.actuator} for {actuator.pulse_time}s")
             self.set_port(actuator.open_id, not actuator.open_default)
             self.set_port(actuator.close_id, not actuator.close_default)
 
@@ -177,11 +178,11 @@ class PnuematicActuatorNode:
         # If actuator is set type, open/close as requested
         elif actuator.type == "set":
             if srv.opened:
-                rospy.loginfo("Opening {}".format(srv.actuator))
+                rospy.loginfo(f"Opening {srv.actuator}")
                 self.set_port(actuator.open_id, True)
                 self.set_port(actuator.close_id, False)
             else:
-                rospy.loginfo("Closing {}".format(srv.actuator))
+                rospy.loginfo(f"Closing {srv.actuator}")
                 self.set_port(actuator.open_id, False)
                 self.set_port(actuator.close_id, True)
         return {"success": True}

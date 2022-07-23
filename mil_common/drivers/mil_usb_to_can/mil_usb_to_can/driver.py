@@ -3,8 +3,8 @@ import importlib
 from typing import Any, Dict, Generator, Optional, Tuple
 
 import rospy
-from mil_usb_to_can.board import (  # relative import causes import error with rosrun - GH-731
-    USBtoCANBoard,
+from mil_usb_to_can.board import (
+    USBtoCANBoard,  # relative import causes import error with rosrun - GH-731
 )
 from mil_usb_to_can.utils import USB2CANException
 from serial import SerialException
@@ -51,12 +51,12 @@ class USBtoCANDriver:
             self.board = USBtoCANBoard(port=port, baud=baud, simulated=simulation)
 
         # Add device handles from the modules specified in ROS params
-        self.handles: Dict[int, Any] = dict(
-            (device_id, cls(self, device_id))
+        self.handles: Dict[int, Any] = {
+            device_id: cls(self, device_id)
             for device_id, cls in self.parse_module_dictionary(
                 rospy.get_param("~device_handles")
             )
-        )
+        }
 
         self.timer = rospy.Timer(rospy.Duration(1.0 / 20.0), self.process_in_buffer)
 
@@ -71,7 +71,7 @@ class USBtoCANDriver:
         try:
             packet = self.board.read_packet()
         except (SerialException, USB2CANException) as e:
-            rospy.logerr("Error reading packet: {}".format(e))
+            rospy.logerr(f"Error reading packet: {e}")
             return False
         if packet is None:
             return False
@@ -104,7 +104,7 @@ class USBtoCANDriver:
             self.board.send_data(*args, **kwargs)
             return None
         except (SerialException, USB2CANException) as e:
-            rospy.logerr("Error writing packet: {}".format(e))
+            rospy.logerr(f"Error writing packet: {e}")
             return e
 
     @staticmethod

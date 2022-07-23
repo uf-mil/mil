@@ -11,7 +11,7 @@ class SimulatedPnuematicActuatorBoard(SimulatedSerial):
     """
 
     def __init__(self, *args, **kwargs):
-        super(SimulatedPnuematicActuatorBoard, self).__init__()
+        super().__init__()
 
     def write(self, data: bytes):
         """
@@ -23,10 +23,10 @@ class SimulatedPnuematicActuatorBoard(SimulatedSerial):
             rospy.loginfo("Ping received")
             byte = Constants.PING_RESPONSE
         elif request > 0x20 and request < 0x30:
-            rospy.loginfo("Open port {}".format(request - 0x20))
+            rospy.loginfo(f"Open port {request - 0x20}")
             byte = Constants.OPEN_RESPONSE
         elif request > 0x30 and request < 0x40:
-            rospy.loginfo("Close port {}".format(request - 0x30))
+            rospy.loginfo(f"Close port {request - 0x30}")
             byte = Constants.CLOSE_RESPONSE
         else:
             rospy.loginfo("Default")

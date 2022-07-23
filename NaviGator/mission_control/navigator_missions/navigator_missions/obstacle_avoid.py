@@ -82,7 +82,7 @@ class ObstacleAvoid(Navigator):
                 self.square[3], self.square[2], midpoints_far[i], out_offset
             )
 
-            # If its on the first side go to the close side then the far side, otherwise vise versa
+            # If its on the first side go to the close side then the far side, otherwise vice versa
             if i % 2 == 0:
                 traverse_points.append(ppoints_close[0])
                 traverse_points.append(ppoints_far[1])
@@ -155,14 +155,14 @@ class ObstacleAvoid(Navigator):
                             maxdif = diffs[np.argmax(diffs)]
 
                             if maxdif > self.DIFF_TOLERANCE:
-                                print("Failed edge with {}".format(maxdif))
+                                print(f"Failed edge with {maxdif}")
                                 continue
 
                             if abs(diagonals[0] - diagonals[1]) > self.DIFF_TOLERANCE:
-                                print("Failed diagonal with {}".format(maxdif))
+                                print(f"Failed diagonal with {maxdif}")
                                 continue
 
-                            print("Passed square with edgedif {}".format(maxdif))
+                            print(f"Passed square with edgedif {maxdif}")
                             self.square = (totem1, totem2, totem3, totem4)
                             break
 

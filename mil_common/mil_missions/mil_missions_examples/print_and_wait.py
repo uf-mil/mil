@@ -16,4 +16,4 @@ class PrintAndWait(ExampleBaseMission):
         self.send_feedback("I like milk")
         yield self.nh.sleep(1.0)
         self.send_feedback("I fear death.")
-        defer.returnValue("The darkness isnt so scary")
+        defer.returnValue("The darkness isn't so scary")

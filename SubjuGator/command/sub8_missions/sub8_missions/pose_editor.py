@@ -15,9 +15,9 @@ from std_msgs.msg import Header
 from tf import transformations
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
-EAST, NORTH, WEST, SOUTH = [
+EAST, NORTH, WEST, SOUTH = (
     transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in range(4)
-]
+)
 
 
 def normalized(x: np.ndarray) -> np.ndarray:
@@ -30,7 +30,7 @@ def normalized(x: np.ndarray) -> np.ndarray:
     return x
 
 
-def get_perpendicular(a: np.ndarray, b: Optional[np.ndarray] = None) -> np.ndarray:
+def get_perpendicular(a: np.ndarray, b: np.ndarray | None = None) -> np.ndarray:
     a = np.array(a)
     if max(map(abs, a)) == 0:
         if b is not None:
@@ -150,7 +150,7 @@ class PoseEditor:
         self.orientation = orientation
 
     def __str__(self):
-        return "p: {}, q: {}".format(self.position, self.orientation)
+        return f"p: {self.position}, q: {self.orientation}"
 
     @property
     def _rot(self) -> np.ndarray:

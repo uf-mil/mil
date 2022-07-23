@@ -29,14 +29,14 @@ public:
   void set_id(uint id);
 
 private:
-  /// ROS message representing the object, automaticly kept up to date
+  /// ROS message representing the object, automatically kept up to date
   /// TODO: make private
   mil_msgs::PerceptionObject msg_;
   /// The points associated with this object
   point_cloud_ptr points_;
   /// Search tree, always kept up to date
   KdTreePtr search_tree_;
-  /// The center of the minimum area bounding box aroudn the objet
+  /// The center of the minimum area bounding box aroudn the object
   point_t center_;
   /// Update points_ and center_, called after a call to update_points
   void update_msg();

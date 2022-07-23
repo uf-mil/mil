@@ -12,7 +12,7 @@ list_lan_devices()
       echo "Usage:   list_lan_devices <subnet>"
       echo "Example: list_lan_devices 192.168.37.1/24"
   fi
-  nmap -sP $1 -oG - | awk '/Up$/{print $2}'
+  nmap -sP "$1" -oG - | awk '/Up$/{print $2}'
 }
 
 # List all devices on the MIL network currently by scanning
@@ -24,12 +24,12 @@ alias list_mil_devices="list_lan_devices 192.168.37.1/24"
 # TODO: verify that "real" networks get priority over docker0 / vpn
 get_lan_ip()
 {
-  IPS=( $(hostname -I) )
+  IPS=( "$(hostname -I)" )
   local MIL_IP=$(printf '%s\n' "${IPS[@]}" | grep "$MIL_NETWORK_PREFIX")
   if [ ! -z "$MIL_IP" ]; then
     echo "$MIL_IP"
   elif [ ! -z "$IPS" ]; then
-    echo $IPS | awk '{print $1}'
+    echo "$IPS" | awk '{print $1}'
   else
     echo "No local IP addresses. Is WIFI on / Ethernet plugged in?" 1>2&
     return 1
@@ -63,7 +63,7 @@ ros_mil_lan()
 {
 
   ros_lan
-  if [[ $(echo $ROS_IP | grep -c "$MIL_NETWORK_PREFIX") == 0 ]]; then
+  if [[ $(echo "$ROS_IP" | grep -c "$MIL_NETWORK_PREFIX") == 0 ]]; then
     echo "Not on the MIL network. Reverting to local" 1>&2
     ros_local
     return 1
@@ -109,11 +109,11 @@ ROS_CONNECT_OPTIONS="local lan sub mil -h"
 # users to use a single command for ROS networking needs
 ros_connect()
 {
-  if [ $# -lt 1 ] || [ $1 == "-h" ] ; then
+  if [ $# -lt 1 ] || [ "$1" == "-h" ] ; then
       echo "Usage:   ros_connect <mode>"
       echo "Modes:      local - run things entirely on your local machine with no network"
       echo "            lan   - share your ROS network with other devices on the network"
-      echo "            mil   - same as lan, but fails if not on MIL network" 
+      echo "            mil   - same as lan, but fails if not on MIL network"
       echo "            sub   - connect your local machine to SubjuGator"
       return 1
   fi
@@ -121,12 +121,12 @@ ros_connect()
   # Simple call the function corresponding to the mode
   # e.g "ros_connect sub" runs "ros_sub"
   COMMAND="ros_$1"
-  $COMMAND
+  "$COMMAND"
 }
 
 # Autocomplete for ROS connect, suggesting all the $ROS_CONNECT_OPTIONS
 _ros_connect_complete() {
   cur="${COMP_WORDS[COMP_CWORD]}"
-  COMPREPLY=( $(compgen -W "$ROS_CONNECT_OPTIONS" -- ${cur}) )
+  COMPREPLY=( "$(compgen -W "$ROS_CONNECT_OPTIONS" -- "$cur")" )
 }
 complete -F _ros_connect_complete ros_connect

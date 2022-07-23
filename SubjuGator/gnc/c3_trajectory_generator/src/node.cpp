@@ -1,22 +1,20 @@
 #include <actionlib/server/simple_action_server.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <mil_msgs/MoveToAction.h>
+#include <mil_msgs/PoseTwistStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 
-#include <mil_msgs/PoseTwistStamped.h>
+#include <boost/assign/list_of.hpp>
+#include <boost/unordered_map.hpp>
 #include <mil_tools/msg_helpers.hpp>
 #include <mil_tools/param_helpers.hpp>
 #include <ros_alarms/listener.hpp>
-
-#include <mil_msgs/MoveToAction.h>
-#include "C3Trajectory.h"
-#include "c3_trajectory_generator/SetDisabled.h"
-
 #include <waypoint_validity.hpp>
 
-#include <boost/assign/list_of.hpp>
-#include <boost/unordered_map.hpp>
+#include "C3Trajectory.h"
+#include "c3_trajectory_generator/SetDisabled.h"
 
 using namespace std;
 using namespace geometry_msgs;
@@ -27,9 +25,10 @@ using namespace c3_trajectory_generator;
 
 const boost::unordered_map<WAYPOINT_ERROR_TYPE, const std::string> WAYPOINT_ERROR_TO_STRING =
     boost::assign::map_list_of(WAYPOINT_ERROR_TYPE::OCCUPIED, "OCCUPIED")(WAYPOINT_ERROR_TYPE::UNKNOWN, "UNKNOWN")(
-        WAYPOINT_ERROR_TYPE::UNOCCUPIED, "UNOCCUPIED")(WAYPOINT_ERROR_TYPE::ABOVE_WATER, "ABOVE_WATER")(
-        WAYPOINT_ERROR_TYPE::NO_OGRID, "NO_OGRID")(WAYPOINT_ERROR_TYPE::NOT_CHECKED, "NOT_CHECKED")(
-        WAYPOINT_ERROR_TYPE::OCCUPIED_TRAJECTORY, "OCCUPIED_TRAJECTORY");
+        WAYPOINT_ERROR_TYPE::UNOCCUPIED, "UNOCCUPIED")(WAYPOINT_ERROR_TYPE::ABOVE_WATER,
+                                                       "ABOVE_WATER")(WAYPOINT_ERROR_TYPE::NO_OGRID, "NO_OGRID")(
+        WAYPOINT_ERROR_TYPE::NOT_CHECKED, "NOT_CHECKED")(WAYPOINT_ERROR_TYPE::OCCUPIED_TRAJECTORY, "OCCUPIED_"
+                                                                                                   "TRAJECTORY");
 
 subjugator::C3Trajectory::Point Point_from_PoseTwist(const Pose &pose, const Twist &twist)
 {
@@ -240,8 +239,8 @@ struct Node
       if (checkWPResult.first == false && waypoint_check_)  // got a point that we should not move to
       {
         waypoint_validity_.pub_size_ogrid(Pose_from_Waypoint(current_waypoint), (int)OGRID_COLOR::RED);
-        if (checkWPResult.second ==
-            WAYPOINT_ERROR_TYPE::UNKNOWN)  // if unknown, check if there's a huge displacement with the new waypoint
+        if (checkWPResult.second == WAYPOINT_ERROR_TYPE::UNKNOWN)  // if unknown, check if there's a huge displacement
+                                                                   // with the new waypoint
         {
           auto a_point = Pose_from_Waypoint(current_waypoint);
           auto b_point = Pose_from_Waypoint(old_waypoint);
@@ -266,7 +265,7 @@ struct Node
         }
         if (checkWPResult.second == WAYPOINT_ERROR_TYPE::NO_OGRID)
         {
-          ROS_ERROR("WaypointValidity - Did not recieve any ogrid");
+          ROS_ERROR("WaypointValidity - Did not receive any ogrid");
         }
       }
     }

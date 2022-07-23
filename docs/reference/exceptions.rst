@@ -12,7 +12,7 @@ Exceptions
     :class:`ThrowingArgumentParser`.
 
     .. attribute:: message
-    
+
         The message associated with the error.
 
         :rtype: :class:`str`

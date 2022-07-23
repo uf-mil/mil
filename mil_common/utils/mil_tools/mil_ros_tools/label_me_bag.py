@@ -32,7 +32,7 @@ from geometry_msgs.msg import Point
 from mil_msgs.msg import LabeledObject, LabeledObjects
 
 
-class BagConfig(object):
+class BagConfig:
     """
     Stores the configuration for one bag to label.
     """
@@ -50,7 +50,7 @@ class BagConfig(object):
             raise Exception("Config for bag has no filename")
         self.filename = config["file"]
         if "topics" not in config:
-            raise Exception("{} config has no topics listed".format(self.filename))
+            raise Exception(f"{self.filename} config has no topics listed")
         self.topics = config["topics"]
         if not isinstance(self.topics, list):
             self.topics = [self.topics]
@@ -63,11 +63,11 @@ class BagConfig(object):
         self.outfile = config["outfile"] if "outfile" in config else self.filename
 
 
-class BagToLabelMe(object):
+class BagToLabelMe:
     """
     Interfaces between ROS bags and LabelMe images.
 
-    Can be used to insert images from ROS bags into LabelMe instalation
+    Can be used to insert images from ROS bags into LabelMe installation
     or extract LabelMe annotations into a ROS bag
 
     TODO:
@@ -89,7 +89,7 @@ class BagToLabelMe(object):
         @param verbose: if true, print more about what the program is doing
         @param indir: directory input bags are in
         @param outdir: directory to put
-        @param force: If True, will override exsisting bag files when extracting labels
+        @param force: If True, will override existing bag files when extracting labels
         """
         self.bags = []
         if "bags" not in config:
@@ -106,10 +106,10 @@ class BagToLabelMe(object):
     @classmethod
     def from_yaml_file(cls, filename, **kwargs):
         """
-        Contructs a BagToLabelMe object from a specified YAML file. Simply loads
-        the yaml file and forwards the rest to the contructor.
+        Constructs a BagToLabelMe object from a specified YAML file. Simply loads
+        the yaml file and forwards the rest to the constructor.
         """
-        f = open(filename, "r")
+        f = open(filename)
         config = yaml.load(f)
         return cls(config, **kwargs)
 
@@ -144,7 +144,7 @@ class BagToLabelMe(object):
         """
         Crawls through all bags in config YAML, placing images from the specified
         topics and the specified frequency into corresponding folders within
-        Images of the labelme instalation.
+        Images of the labelme installation.
 
         These folders will be created as follows if not already:
         LABELME_DIR/Images/SEGEMENT_NAME/TOPIC_NAME
@@ -209,9 +209,9 @@ class BagToLabelMe(object):
             outfilename
         ):  # If output bag already exists, only override if force glag is set
             if self.force:
-                self._print("{} already exists. OVERRIDING".format(outfilename))
+                self._print(f"{outfilename} already exists. OVERRIDING")
             else:
-                self._print("{} already exists. Not overriding".format(outfilename))
+                self._print(f"{outfilename} already exists. Not overriding")
                 return
         infilename = os.path.join(self.indir, bag.filename)
         inbag = rosbag.Bag(infilename)
@@ -248,7 +248,7 @@ class BagToLabelMe(object):
         by the config YAML to the number of annotated XML files produced by
         LabelMe in each of these directories.
 
-        Prints out these counts in percentages by segement, bag, and overall
+        Prints out these counts in percentages by segment, bag, and overall
         """
         self._print("Generating completion report for all bags in config")
         total_xml_count = 0
@@ -350,7 +350,7 @@ if __name__ == "__main__":
         dest="dir",
         type=str,
         default="",
-        help="root directory of labelme instalation. \nDefaults to current directory.",
+        help="root directory of labelme installation. \nDefaults to current directory.",
     )
     parser.add_argument(
         "--bag-dir",
@@ -358,7 +358,7 @@ if __name__ == "__main__":
         dest="bag_dir",
         type=str,
         default="",
-        help="directory to resolve relative paths specifed in YAML for input bags. \n\
+        help="directory to resolve relative paths specified in YAML for input bags. \n\
                               Defaults to current directory.",
     )
     parser.add_argument(

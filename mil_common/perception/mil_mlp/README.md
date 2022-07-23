@@ -2,7 +2,7 @@
 
 # @TODO
 1. Configurable image download
-2. [BLOCKED BY TENSORFLOW/CUDA COMPATABILITY] Add docker build to the install script. Until then docker build must be done manually.
+2. [BLOCKED BY TENSORFLOW/CUDA COMPATIBILITY] Add docker build to the install script. Until then docker build must be done manually.
 3. Have datasets stored on internal server so it can be downloaded.
 4. Configurable resize (Low importance due to no significant performance gain)
 5. Configurable CSV input (Currently it still assumes you are handing it a json or PASCAL so it will error out if
@@ -40,7 +40,7 @@ cd transfer_learning
 ### I. The Code Structure
 This package is broken up into two distinct parts: Data Processing, and Network Training. Inside of Data Processing you will find all the tools necessary to create TF Records from labelled data. The scripts and functions within automatically trim the data and validate it, ensuring that it is suitable for training. More details on those in part II.
 
-This pipeline is built upon Docker Images for easy deployment and updating. Currently, we build and update off of 3 distinct Docker Images. The first image is the CUDA 10.0 docker image distributed by NVIDIA. This simply installs CUDA drivers into the image and allows us to communicate with the card. The second image we  run is a custom tensorflow 9.0 image, compiled using the dockerfiles made availble to us from Tensorflow. We had to configure the compilation to target CUDA 10.0 instead of CUDA 9.0, which is the default. CUDA 10.0 is not officially supported by TF as of yet, however it is the only version of CUDA our graphics card supports. The final image is the docker image that loads our custom scripts and the Models directory of Tensorflow. Eventually, these will all be merged into a single docker image, however this allows us to update CUDA, Tensorflow, and our scripts separately, without having to recompile everything each time.
+This pipeline is built upon Docker Images for easy deployment and updating. Currently, we build and update off of 3 distinct Docker Images. The first image is the CUDA 10.0 docker image distributed by NVIDIA. This simply installs CUDA drivers into the image and allows us to communicate with the card. The second image we  run is a custom tensorflow 9.0 image, compiled using the dockerfiles made available to us from Tensorflow. We had to configure the compilation to target CUDA 10.0 instead of CUDA 9.0, which is the default. CUDA 10.0 is not officially supported by TF as of yet, however it is the only version of CUDA our graphics card supports. The final image is the docker image that loads our custom scripts and the Models directory of Tensorflow. Eventually, these will all be merged into a single docker image, however this allows us to update CUDA, Tensorflow, and our scripts separately, without having to recompile everything each time.
 
 ### II. The Data: LabelBox Data Processing (ldp)
 The entire purpose of this pipeline is to make a streamlined data processing pipeline. Tensorflow has done a great job of ensuring it will work so long as you give it good data. That is our point of failure and thus the first thing you should do if your network fails to train is to check the data.
@@ -82,7 +82,7 @@ flags.DEFINE_string('labelmap_path', '', 'Path to labelmap.pbtxt')
 flags.DEFINE_boolean('cleanup', True, 'Delete all files? Boolean.')
 ```
 
-Note that this repo does not make the models or data directory in docker_tf/transfer_learning. Both of those must be present for this to work by default. Teh data directory holds the TFRecords. The models directory holds a pretrained model from the tensorflow model zoo you chose to download. The only files that should be in there are the three model.ckpt files and the pipeline.config. All other files should be deleted.
+Note that this repo does not make the models or data directory in docker_tf/transfer_learning. Both of those must be present for this to work by default. The data directory holds the TFRecords. The models directory holds a pretrained model from the tensorflow model zoo you chose to download. The only files that should be in there are the three model.ckpt files and the pipeline.config. All other files should be deleted.
 
 Further, the dataset is automatically trimmed of any labels that are not present inside the pbtxt. If, for example, I have an image that has labels for buoys and totems, but my labelmap only has the labels for colored shapes inside, the image will be tossed out of the dataset and not processed.
 
@@ -98,7 +98,7 @@ The file that handles the actual conversion to TF records. This is a file taken 
 
 #### D. labelbox2pascal
 
-This directory houses the repo cloned from Labelbox. It contains the tools necessary to download images from labelbox using their json file along with a variety of other useful utils for parsing their json files. At the time of writing this couldn't be installed through pip and it was easier to just clone it into our directory. We only needed the labelbox2pascal functionality of the labelbox toolset, so the entire repo was not cloned. These files are no longer available on the repo and have been depricated. Eventually we may move to using labelbox's own outputs but for now our pipeline needs these utilities to process the json.
+This directory houses the repo cloned from Labelbox. It contains the tools necessary to download images from labelbox using their json file along with a variety of other useful utils for parsing their json files. At the time of writing this couldn't be installed through pip and it was easier to just clone it into our directory. We only needed the labelbox2pascal functionality of the labelbox toolset, so the entire repo was not cloned. These files are no longer available on the repo and have been deprecated. Eventually we may move to using labelbox's own outputs but for now our pipeline needs these utilities to process the json.
 
 ### III. The Docker Images: docker_tf and transfer_learning
 
@@ -113,14 +113,14 @@ docker build -t 'whatever you want to name the image' .
 ```
 This will build our image and assuming you get no errors you are ready to go! You may need to edit the name of the tensorflow image depending on what you chose to name the one you compiled from tensorflow using their script. You can specify this in command line. Again follow their instructions on how to do so.
 
-NOTE: The models we use for transfer learning were compiled in tensorflow 1.9! They are no longer compatable with Tensorflow 1.12+! Until these models are updated you must keep your tensorflow version at 1.11 or lower!
+NOTE: The models we use for transfer learning were compiled in tensorflow 1.9! They are no longer compatible with Tensorflow 1.12+! Until these models are updated you must keep your tensorflow version at 1.11 or lower!
 
 ```bash
 pip install tensorflow==1.9.0
 ```
 #### pipeline.sh
 
-Once you get your docker image compiled and ready to go, you can run pipeline.sh. This will launch the image (you may need to edit the script to point to the docker image yuo created if you named it something different from ours). This places you in the Object Detection directory of the Tensorflow repo. If all went well you should see a folder in there called transfer_learning. This holds our models and scripts.
+Once you get your docker image compiled and ready to go, you can run pipeline.sh. This will launch the image (you may need to edit the script to point to the docker image you created if you named it something different from ours). This places you in the Object Detection directory of the Tensorflow repo. If all went well you should see a folder in there called transfer_learning. This holds our models and scripts.
 
 #### transfer_learning
 
@@ -165,12 +165,10 @@ For formatting your pbtxt, look around online at COCO dataset labelmaps or any o
 
 If you ran out of memory while training, you should reduce batch size or image size in the config file.
 
-If you get an infinite numebr or NaN tensor at any point, it means one of two things. One: Your model's batch size was too small or learning rate too high and the algorithm exploded. Two: You have a bad label somewhere in the data set and it needs to be fixed!
+If you get an infinite number or NaN tensor at any point, it means one of two things. One: Your model's batch size was too small or learning rate too high and the algorithm exploded. Two: You have a bad label somewhere in the data set and it needs to be fixed!
 
 Changing the batch size of the pipeline config may throw an error if you are using a keen_aspect_ratio_resizer. To tell if you are using such a resizer, scroll to the top of your config file and check! If you are, you will need to change to a fixed_shape_resizer to adjust the batch size. This also means you will have to change the max_size and min_size variables to instead be named width and height respectively.
 
 If something else broke, its probably your data. Run the verify_data.py to check all the labels and images. If they look correct, check the csv files and the tfrecords. Something may still be going wrong there. Tensorflow has done a good job of making sure the only issues you will run into is your own data. If that isn't the case, posting it on the Tensorflow github page as an issue may be of some help.
 
 If the problem does indeed lie in the data, it is likely the our ldp is broken somewhere. Finding the leak and fixing it would be greatly appreciated! The Machine Spirits will indeed be pleased.
-
-

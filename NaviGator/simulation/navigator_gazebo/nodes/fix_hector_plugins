@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """
 Fixes an URDF file which uses hector_gazebo_plugins for gps/imu.
-Beacause gazebo_ros's URDF->SDF blindly replaces link name strings with base_link, thus
+Because gazebo_ros's URDF->SDF blindly replaces link name strings with base_link, thus
 making the imu/gps plugins measure from base_link but report a different link.
 This fixes the urdf to have these sensors also be at baselink so transforms work correctly.
 Note: currently hardcoded for VRX purposes. Simply change the strings to work more genericly.
@@ -13,7 +13,7 @@ import xml.etree.ElementTree as ET
 
 
 def set_joint_origin_to_zero(root: ET.Element, name: str):
-    tag = root.find("*[@name='{}']".format(name))
+    tag = root.find(f"*[@name='{name}']")
     assert isinstance(tag, ET.Element)
     origin = tag.find("origin")
     assert isinstance(origin, ET.Element)

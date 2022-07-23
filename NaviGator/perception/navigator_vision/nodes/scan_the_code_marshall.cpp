@@ -9,10 +9,12 @@
 #include <sensor_msgs/point_cloud_conversion.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
+
 #include <cmath>
 #include <cstring>
 #include <fstream>
 #include <iostream>
+
 #include "ros/ros.h"
 
 // this is the Lidar Analyzer class. Only one is every created.
@@ -65,7 +67,7 @@ public:
     // if we dont have the point from RVIZ yet, kill the callback and well see if we have one later.
     if (!gotRvizPt)
     {
-      ROS_ERROR("no STC center yet, cant do no math:-(, please feed me an rviz point");
+      ROS_ERROR("no STC center yet, can't do no math:-(, please feed me an rviz point");
       return;
     }
 
@@ -99,20 +101,20 @@ public:
     // initialize pt_cloud
     pcl::PointCloud<pcl::PointXYZ>::Ptr pt_cloud(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::fromPCLPointCloud2(pcl_pc2, *pt_cloud);
-    this->cloudOfIntrest = pt_cloud;
+    this->cloudOfInterest = pt_cloud;
     pcl::PointCloud<pcl::PointXYZ>::Ptr ledPts(new pcl::PointCloud<pcl::PointXYZ>);
     // TODO make service call to pcodar for center of stc_platform in the RF of the velodyne
-    ROS_INFO("cloudOfIntrest %i", cloudOfIntrest->size());
-    this->cylinderPrune(this->radius, this->stcCenter, this->cloudOfIntrest);
+    ROS_INFO("cloudOfInterest %i", cloudOfInterest->size());
+    this->cylinderPrune(this->radius, this->stcCenter, this->cloudOfInterest);
     ROS_INFO("cyindar prune finished");
 
-    this->cloudRotateZ(this->stcCenter, this->cloudOfIntrest, -1);
+    this->cloudRotateZ(this->stcCenter, this->cloudOfInterest, -1);
     ROS_INFO("rotation finfished");
 
     ledPts = this->calcLedPts();
     ROS_INFO("calcLedPts finished");
 
-    // ledPts = cloudOfIntrest;
+    // ledPts = cloudOfInterest;
     this->cloudRotateZ(this->stcCenter, ledPts, 1);  // now we rotate back
     // this->cloudRotateZ(this->stcCenter,cloudRefined, 1);//now we rotate back
     // ROS_INFO("rotation back finfished\n\n");
@@ -130,7 +132,7 @@ public:
     // partitions.erase(partitions.begin(),partitions.end());
     /*
     //debug
-    this->cloudRotateZ(this->stcCenter,this->cloudOfIntrest, 1);
+    this->cloudRotateZ(this->stcCenter,this->cloudOfInterest, 1);
     sensor_msgs::PointCloud2 output_msg2;
     pcl::toROSMsg(*cloudRefined, output_msg2);
     output_msg2.header = input->header;
@@ -157,7 +159,7 @@ private:
   ros::Publisher pub_debug_points, pub_debug2_points;
   ros::Subscriber sub_velodyne_points, sub_rviz_point;
   int count;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloudOfIntrest;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloudOfInterest;
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloudRefined;
 
   // pcl::PointCloud<pcl::PointXYZ>::Ptr ledPts(new pcl::PointCloud<pcl::PointXYZ>);
@@ -165,7 +167,7 @@ private:
   float *betaHat = new float[2];
   float stcCenter[3];
   const float radius = 1;      //
-  const float ledHeight = .6;  // tallness of the LED Pannel
+  const float ledHeight = .6;  // tallness of the LED Panel
 
   bool gotRvizPt = true;
 
@@ -175,7 +177,7 @@ private:
   // tf::Transform transform;
 
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> partitions;
-  // function to erase ponts outside of a specified vertical cylendar
+  // function to erase points outside of a specified vertical cylendar
   void cylinderPrune(float radius, float center[3], pcl::PointCloud<pcl::PointXYZ>::Ptr input)
   {
     float dist = pow(radius, 2);
@@ -197,14 +199,14 @@ private:
       input->points.resize(input->height * input->width);
       ++j;
     }
-    for (size_t i = 0; i < cloudOfIntrest->size(); ++i)
+    for (size_t i = 0; i < cloudOfInterest->size(); ++i)
     {
-      pcl::PointXYZ pt = cloudOfIntrest->points[i];
+      pcl::PointXYZ pt = cloudOfInterest->points[i];
       if ((pt.x != pt.x) || (pt.y != pt.y) || ((pt.z != pt.z)))
         ROS_ERROR("%i is NAN", i);
     }
   }
-  // rotates Cloud of intrest about the z axis so that stc center lines on the x axis
+  // rotates Cloud of interest about the z axis so that stc center lines on the x axis
   // this will make it easier to analyze
   void cloudRotateZ(float center[3], pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int dir)
   {
@@ -255,18 +257,18 @@ private:
   pcl::PointCloud<pcl::PointXYZ>::Ptr calcLedPts()
   {
     // first we find the most Z pts of the cloudRefined
-    pcl::PointXYZ mostZPt = cloudOfIntrest->points[0];
+    pcl::PointXYZ mostZPt = cloudOfInterest->points[0];
     // ROS_INFO("spooky scarry: %i", cloudRefined->size());
-    for (size_t i = 0; i < cloudOfIntrest->size(); ++i)
+    for (size_t i = 0; i < cloudOfInterest->size(); ++i)
     {
-      if (cloudOfIntrest->points[i].z > mostZPt.z)
+      if (cloudOfInterest->points[i].z > mostZPt.z)
       {
-        mostZPt = cloudOfIntrest->points[i];
+        mostZPt = cloudOfInterest->points[i];
       }
       // ROS_INFO("aH %.2f", mostZPt.z);
     }
     ROS_INFO("highest Z point %.2f", mostZPt.z);
-    // now we find the top and bottom of the led pannel
+    // now we find the top and bottom of the led panel
     float led2dTop = mostZPt.z;
 
     float led2dBot = led2dTop - ledHeight;
@@ -275,12 +277,12 @@ private:
     pcl::PointCloud<pcl::PointXYZ>::Ptr _ledPts(new pcl::PointCloud<pcl::PointXYZ>);
     ROS_INFO("finding points between %.2e, and %.2e", led2dBot, led2dTop);
     pcl::PointCloud<pcl::PointXYZ>::Ptr allLedPts(new pcl::PointCloud<pcl::PointXYZ>);
-    for (size_t i = 0; i < cloudOfIntrest->size(); ++i)
+    for (size_t i = 0; i < cloudOfInterest->size(); ++i)
     {
-      if (cloudOfIntrest->points[i].z >= led2dBot && (cloudOfIntrest->points[i].z < led2dTop - .2))
+      if (cloudOfInterest->points[i].z >= led2dBot && (cloudOfInterest->points[i].z < led2dTop - .2))
       {
         // ROS_INFO("getting outlinepts from %i",i);
-        allLedPts->points.push_back(cloudOfIntrest->points[i]);
+        allLedPts->points.push_back(cloudOfInterest->points[i]);
       }
     }
     ROS_INFO("%i number of ledPts", _ledPts->size());
@@ -315,8 +317,8 @@ private:
     outlinePts->points.push_back(left);
     outlinePts->points.push_back(right);
     return outlinePts;
-    /***stuff for considering coner case***
-    //y delta between the left most(mostY) and middle point(leastX)
+    /***stuff for considering corner case***
+    //y delta between the left most(mostly) and middle point(leastX)
     float distL = sqrt(pow(mostYPt.x-leastXPt.x,2)+pow(mostYPt.y-leastXPt.y,2)+pow(mostYPt.z-leastXPt.z,2));
     //y delta between the right most(leastY) and middle point(leastX)
     //float distR = abs(leastYPt.y-leastXPt.y);

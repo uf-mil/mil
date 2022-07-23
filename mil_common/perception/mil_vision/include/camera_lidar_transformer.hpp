@@ -11,7 +11,6 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <pcl_conversions/pcl_conversions.h>
 #include <pcl_ros/point_cloud.h>
 #include <ros/ros.h>
 #include <sensor_msgs/CameraInfo.h>
@@ -22,6 +21,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <visualization_msgs/MarkerArray.h>
+
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include <iostream>
@@ -32,6 +32,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/image_encodings.h>
+
 #include "opencv2/opencv.hpp"
 #endif
 
@@ -61,7 +62,6 @@ private:
   image_transport::Publisher points_debug_publisher;
 #endif
 public:
-
   /**
    * Default constructor for the transformer between camera and LIDAR data.
    */

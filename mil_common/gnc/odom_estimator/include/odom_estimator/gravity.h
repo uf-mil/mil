@@ -18,12 +18,11 @@ Vec<3> gravity(Vec<3> pos)
   Vec<3> pos_bar = pos.normalized();
   double mu_bar = mu / pow(pos.norm(), 2);
   double rho = a_E / pos.norm();
-  return -mu_bar * pos_bar +
-         3 / 2. * C_20 * mu_bar * pow(rho, 2) *
-             pos_bar.cwiseProduct(
-                 Vec<3>(1 - 5 * pow(pos_bar[2], 2), 1 - 5 * pow(pos_bar[2], 2), 3 - 5 * pow(pos_bar[2], 2)));
+  return -mu_bar * pos_bar + 3 / 2. * C_20 * mu_bar * pow(rho, 2) *
+                                 pos_bar.cwiseProduct(Vec<3>(1 - 5 * pow(pos_bar[2], 2), 1 - 5 * pow(pos_bar[2], 2),
+                                                             3 - 5 * pow(pos_bar[2], 2)));
 }
-}
-}
+}  // namespace gravity
+}  // namespace odom_estimator
 
 #endif

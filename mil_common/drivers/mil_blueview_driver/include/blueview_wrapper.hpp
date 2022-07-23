@@ -1,8 +1,7 @@
-#include <iostream>
-#include <iterator>
-
 #include <bvt_sdk.h>
 
+#include <iostream>
+#include <iterator>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -20,7 +19,7 @@ public:
   ~BlueViewSonar();
 
   /**  Connects to sonar, called by constructor but can be recalled to retry connection
-   *   \param params ConnectionType specific paramater, IP/Domain of sonar or path to .son file
+   *   \param params ConnectionType specific parameter, IP/Domain of sonar or path to .son file
    *   \param head_id For systems with multiple heads, which head to connect to
    */
   void init(ConnectionType type, const std::string& params, int head_id = 0);

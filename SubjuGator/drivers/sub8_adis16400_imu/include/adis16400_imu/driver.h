@@ -1,11 +1,11 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
-#include <cmath>
-#include <fstream>
-
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
+
+#include <cmath>
+#include <fstream>
 
 namespace adis16400_imu
 {
@@ -106,6 +106,6 @@ public:
     return true;
   }
 };
-}
+}  // namespace adis16400_imu
 
 #endif

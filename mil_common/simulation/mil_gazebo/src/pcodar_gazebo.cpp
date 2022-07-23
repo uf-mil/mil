@@ -1,4 +1,5 @@
 #include <mil_msgs/PerceptionObject.h>
+
 #include <mil_gazebo/pcodar_gazebo.hpp>
 
 namespace mil_gazebo
@@ -111,4 +112,4 @@ void PCODARGazebo::GazeboVectorToRosMsg(ignition::math::Vector3d const& in, geom
 }
 
 GZ_REGISTER_WORLD_PLUGIN(PCODARGazebo)
-}
+}  // namespace mil_gazebo

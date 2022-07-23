@@ -10,7 +10,7 @@ ___author___ = "Kevin Allen"
 
 class VrxSquare(Vrx):
     def __init__(self, *args, **kwargs):
-        super(VrxSquare, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):

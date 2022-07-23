@@ -52,7 +52,7 @@ class OdomKill(HandlerBase):
         self.check_count += 1
         if not self._killed and self.need_kill():
             if self.last_position is None:
-                if self.check_count < 10:  # Probably just havent received odom yet
+                if self.check_count < 10:  # Probably just haven't received odom yet
                     pass
                 else:  # Odom is probably not publishing
                     self._killed = True

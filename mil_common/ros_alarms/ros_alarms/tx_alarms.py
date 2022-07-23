@@ -28,10 +28,10 @@ def _check_for_valid_name(alarm_name, nowarn=False):
 
     assert (
         alarm_name.isalnum() or "_" in alarm_name or "-" in alarm_name
-    ), "Alarm name '{}' is not valid!".format(alarm_name)
+    ), f"Alarm name '{alarm_name}' is not valid!"
 
 
-class TxAlarmBroadcaster(object):
+class TxAlarmBroadcaster:
     @classmethod
     @txros.util.cancellableInlineCallbacks
     def init(cls, nh, name, node_name=None, nowarn=False):
@@ -50,7 +50,7 @@ class TxAlarmBroadcaster(object):
         self._node_name = node_name
         self._alarm_set = self._nh.get_service_client("/alarm/set", AlarmSet)
 
-        print("Created alarm broadcaster for alarm {}".format(name))
+        print(f"Created alarm broadcaster for alarm {name}")
 
     def _generate_request(
         self, raised, problem_description="", parameters={}, severity=0
@@ -75,7 +75,7 @@ class TxAlarmBroadcaster(object):
         return self._alarm_set(self._generate_request(False, **kwargs))
 
 
-class TxAlarmListener(object):
+class TxAlarmListener:
     @classmethod
     @txros.util.cancellableInlineCallbacks
     def init(cls, nh, name, callback_funct=None, nowarn=False, **kwargs):
@@ -210,9 +210,9 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
         cls, nh, alarm_name, topic_name, msg_class, prd=0.2, predicate=None, **kwargs
     ):
         """Used to trigger an alarm if a message on the topic `topic_name` isn't published
-            atleast every `prd` seconds. This alarm is self clearing.
+            at least every `prd` seconds. This alarm is self clearing.
 
-        An alarm won't be triggered if no messages are initally received
+        An alarm won't be triggered if no messages are initially received
         """
         ab = yield TxAlarmBroadcaster.init(nh, alarm_name, **kwargs)
         predicate = predicate if predicate is not None else lambda *args: True
@@ -237,7 +237,7 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
     @txros.util.cancellableInlineCallbacks
     def start_monitor(self, sample_prd=-1):
         """Starts monitoring the topic
-        This seperate function allows you to start and stop the heartbeat monitor
+        This separate function allows you to start and stop the heartbeat monitor
         """
         if sample_prd == -1:
             sample_prd = self._prd.to_sec() / 2

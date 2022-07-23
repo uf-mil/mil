@@ -52,8 +52,8 @@ class Sabertooth2x12:
         Returns:
             bytes: The constructed packet.
         """
-        checkum = (address + command + data) & 127
-        return struct.pack("BBBB", address, command, data, checkum)
+        checksum = (address + command + data) & 127
+        return struct.pack("BBBB", address, command, data, checksum)
 
     def send_packet(self, command: int, data: int) -> None:
         """

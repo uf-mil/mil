@@ -3,12 +3,14 @@
 #include <ros/ros.h>
 #include <sub8_msgs/Thrust.h>
 #include <sub8_msgs/ThrusterCmd.h>
+
 #include <algorithm>
 #include <cmath>
 #include <map>
 #include <mutex>
 #include <sub8_gazebo/sub8_thruster_config.hpp>
 #include <vector>
+
 #include "gazebo/common/Assert.hh"
 #include "gazebo/common/Event.hh"
 #include "gazebo/common/Events.hh"
@@ -64,4 +66,4 @@ protected:
   ros::Time lastTime;
   std::vector<sub8_msgs::ThrusterCmd> cmdQueue;
 };
-}
+}  // namespace gazebo

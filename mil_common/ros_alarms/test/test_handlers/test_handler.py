@@ -28,5 +28,5 @@ class Tester2(HandlerBase):
         print("Tester2 cleared")
 
 
-class Tester3(object):
+class Tester3:
     pass

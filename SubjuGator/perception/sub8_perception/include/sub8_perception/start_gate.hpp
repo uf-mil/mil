@@ -1,25 +1,20 @@
 #pragma once
-#include <iostream>
-#include <string>
-#include <vector>
-
-#include <ros/ros.h>
-
 #include <cv_bridge/cv_bridge.h>
-#include <opencv2/highgui/highgui.hpp>
-
+#include <ros/ros.h>
 #include <std_srvs/SetBool.h>
 #include <sub8_msgs/VisionRequest.h>
 #include <sub8_msgs/VisionRequest2D.h>
-
-#include <sub8_vision_lib/stereo_base.hpp>
-
 #include <tf2/convert.h>
 #include <tf2/transform_datatypes.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_ros/transform_listener.h>
-
 #include <visualization_msgs/Marker.h>
+
+#include <iostream>
+#include <opencv2/highgui/highgui.hpp>
+#include <string>
+#include <sub8_vision_lib/stereo_base.hpp>
+#include <vector>
 
 class Sub8StartGateDetector : public StereoBase
 {

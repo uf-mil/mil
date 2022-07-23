@@ -2,6 +2,7 @@
 
 #include <pcl_ros/transforms.h>
 #include <tf/transform_listener.h>
+
 #include <mil_tools/mil_tools.hpp>
 #include <mil_vision_lib/colorizer/camera_observer.hpp>
 #include <mil_vision_lib/colorizer/common.hpp>
@@ -22,7 +23,7 @@ public:
   SingleCloudProcessor(ros::NodeHandle nh, std::string &in_pcd_topic, size_t hist_size);
 
   /**
-   * Incomplete method. Aside from priting debug statements, does no actions.
+   * Incomplete method. Aside from printing debug statements, does no actions.
    */
   void operator()(const PCD<pcl::PointXYZ>::ConstPtr &pcd);
 

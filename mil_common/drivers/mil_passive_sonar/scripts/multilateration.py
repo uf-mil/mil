@@ -55,7 +55,7 @@ class MultilaterationNode:
         if not self.enabled:
             return
         try:
-            # Transform ping into gloabl frame
+            # Transform ping into global frame
             transformed_vec = self.tfBuffer.transform(
                 p_message, self.global_frame, rospy.Duration(2)
             )
@@ -69,7 +69,7 @@ class MultilaterationNode:
             vec = vec / np.linalg.norm(vec)
             origin = rosmsg_to_numpy(transformed_origin.transform.translation)
         except tf2_ros.TransformException as e:
-            rospy.logwarn("TF Exception: {}".format(e))
+            rospy.logwarn(f"TF Exception: {e}")
             return
 
         # Check if two samples were taken too close to each other

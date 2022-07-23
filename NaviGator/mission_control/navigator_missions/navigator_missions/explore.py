@@ -30,8 +30,8 @@ def get_closest_objects(position, objects, max_len: int = 3, max_dist: int = 30)
 
 
 @txros.util.cancellableInlineCallbacks
-def wait_for_object(objec, helper, nh):
-    helper.set_looking_for(objec)
+def wait_for_object(object, helper, nh):
+    helper.set_looking_for(object)
     while not helper.is_found_func():
         yield nh.sleep(1)
 
@@ -40,7 +40,7 @@ def wait_for_object(objec, helper, nh):
 def go_to_objects(navigator, position, objs):
     objects = get_closest_objects(position, objs)
     for o in objects:
-        fprint("MOVING TO OBJECT WITH ID {}".format(o.id), msg_color="green")
+        fprint(f"MOVING TO OBJECT WITH ID {o.id}", msg_color="green")
         yield navigator.nh.sleep(5)
         pos = nt.rosmsg_to_numpy(o.position)
         yield navigator.move.look_at(pos).set_position(pos).backward(7).go()
@@ -80,11 +80,11 @@ def myfunc(navigator, looking_for, center_marker):
         try:
             obj = yield navigator.database_query(object_name=looking_for)
             fprint("EXPLORER FOUND OBJECT", msg_color="blue")
-            yield navigator.database_query(cmd="lock {} {}".format(obj.id, looking_for))
+            yield navigator.database_query(cmd=f"lock {obj.id} {looking_for}")
             defer.returnValue(True)
         except MissingPerceptionObject:
             fprint(
-                "The object {} is not in the database".format(looking_for),
+                f"The object {looking_for} is not in the database",
                 msg_color="red",
             )
     try:

@@ -9,7 +9,7 @@ class StreamedBandpass:
     """
     Class for bandpass filtering sequential batches of data. Takes care of the
         overlap-adding that needs to be done when filtering sequential batches
-        of data indivudually.
+        of data individually.
 
     Attributes:
         lower (float): The lower bound of the desired frequency.

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import os
 import signal
 import subprocess
@@ -21,31 +21,31 @@ exec_names = ["vamp", "stake", "garlic"]
 alive_processes = {}
 
 
-class launcher(object):
+class launcher:
     def __init__(self, name):
         """
         Object to store service threads and name of executable
-        param name: exectuable name assumbed to be in sub8_perception pkg
+        param name: executable name assumed to be in sub8_perception pkg
                     which also enable a SetBoot ROS service under the path
                     /{param name}/enable
         """
         self.name = name
-        rospy.Service("/vision/{}/enable".format(name), SetBool, self.enable_callback)
+        rospy.Service(f"/vision/{name}/enable", SetBool, self.enable_callback)
 
     def enable_callback(self, srv):
         global alive_processes
         if srv.data:
-            rospy.loginfo("Enabling {}".format(self.name))
+            rospy.loginfo(f"Enabling {self.name}")
             # Open up a subprocess under PID
             alive_processes[self.name] = subprocess.Popen(
-                "rosrun sub8_perception localizer.py --{}".format(self.name),
+                f"rosrun sub8_perception localizer.py --{self.name}",
                 shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 preexec_fn=os.setsid,
             )
         else:
-            rospy.loginfo("Disabled {}".format(self.name))
+            rospy.loginfo(f"Disabled {self.name}")
             # Kill subprocess under PID
             os.killpg(os.getpgid(alive_processes[self.name].pid), signal.SIGTERM)
 

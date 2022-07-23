@@ -18,7 +18,7 @@ def hexify(buff: bytes) -> bytes:
 
     """
     hex_form = binascii.hexlify(buff)
-    return b":".join([hex_form[i:i+2] for i in range(0, len(hex_form), 2)])
+    return b":".join([hex_form[i : i + 2] for i in range(0, len(hex_form), 2)])
 
 
 class NoopSerial(serial.Serial):
@@ -82,7 +82,7 @@ class SimulatedSerial(NoopSerial):
     normal OS serial device.
 
     Intended to be extended by other classes, which should override the write function
-    to recieve writes to
+    to receive writes to
     the simulated device. These classes simply append to the buffer string which will be returned
     on reads to the simulated device.
 

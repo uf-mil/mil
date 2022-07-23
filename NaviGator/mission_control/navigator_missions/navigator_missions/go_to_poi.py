@@ -21,7 +21,7 @@ class GoToPOI(Navigator):
     def run(self, poi):
         self.send_feedback("Waiting for " + poi)
         position = yield self.poi.get(poi)
-        self.send_feedback("Moving to {} at {}".format(poi, position[0:2]))
+        self.send_feedback(f"Moving to {poi} at {position[0:2]}")
         yield self.change_wrench("autonomous")
         yield self.move.look_at(position).set_position(position).go()
         defer.returnValue("Success")

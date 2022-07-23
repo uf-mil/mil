@@ -1,16 +1,7 @@
 #pragma once
 
-#include "input_cloud_filter.hpp"
-#include "marker_manager.hpp"
-#include "object_associator.hpp"
-#include "object_detector.hpp"
-#include "object_map.hpp"
-#include "ogrid_manager.hpp"
-#include "pcodar_types.hpp"
-#include "persistent_cloud_filter.hpp"
-#include "point_cloud_builder.hpp"
-
 #include <dynamic_reconfigure/client.h>
+#include <dynamic_reconfigure/server.h>
 #include <mil_bounds/BoundsConfig.h>
 #include <mil_msgs/ObjectDBQuery.h>
 #include <nav_msgs/Odometry.h>
@@ -22,15 +13,23 @@
 #include <tf2_msgs/TFMessage.h>
 #include <tf2_ros/transform_listener.h>
 
-#include <dynamic_reconfigure/server.h>
-
 #include <boost/circular_buffer.hpp>
+
+#include "input_cloud_filter.hpp"
+#include "marker_manager.hpp"
+#include "object_associator.hpp"
+#include "object_detector.hpp"
+#include "object_map.hpp"
+#include "ogrid_manager.hpp"
+#include "pcodar_types.hpp"
+#include "persistent_cloud_filter.hpp"
+#include "point_cloud_builder.hpp"
 
 namespace pcodar
 {
 /**
  * Base class for a class implementing the object detection needed for the PCODAR node.
- * This can be fufilled by processesing LIDAR pointclouds (like in @pcodar::Node) or using
+ * This can be fulfilled by processesing LIDAR pointclouds (like in @pcodar::Node) or using
  * simulated ground truth (like in pcodar_gazebo).
  */
 class NodeBase

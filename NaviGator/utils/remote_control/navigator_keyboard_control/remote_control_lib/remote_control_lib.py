@@ -208,7 +208,7 @@ class RemoteControl:
         Selects the autonomously generated trajectory as the active controller.
         """
         mode = next(self.wrench_choices)
-        rospy.loginfo("Changing Control Mode: {}".format(mode))
+        rospy.loginfo(f"Changing Control Mode: {mode}")
         self.wrench_changer(mode)
 
     def _shooter_load_feedback(self, status, result):
@@ -271,7 +271,7 @@ class RemoteControl:
         """
         Used to actually call the shooter's reset service.
         """
-        rospy.loginfo("Reseting the shooter service")
+        rospy.loginfo("Resetting the shooter service")
         self.shooter_reset_client(TriggerRequest())
         rospy.loginfo(
             "In New York you can be a new man! In New York you can be a new man!"
@@ -314,9 +314,7 @@ class RemoteControl:
         Args:
             speed (int): The speed to set the shooter disc to.
         """
-        rospy.loginfo(
-            "Setting the shooter's accelerator disc speed to {}".format(speed)
-        )
+        rospy.loginfo(f"Setting the shooter's accelerator disc speed to {speed}")
         self.shooter_manual_client(0, float(speed) / -100)
 
     @_timeout_check
@@ -327,7 +325,7 @@ class RemoteControl:
         rotation: float,
         stamp: Optional[genpy.rostime.Time] = None,
         *args,
-        **kwargs
+        **kwargs,
     ) -> None:
         """
         Publishes a wrench to the specified node based on force inputs from the

@@ -5,7 +5,7 @@ from mil_usb_to_can import ApplicationPacket
 
 # CAN channel to send thrust messages to
 THRUST_SEND_ID = 0x21
-# CAN channel ot send kill messages to
+# CAN channel to send kill messages to
 KILL_SEND_ID = 0x11
 
 
@@ -169,7 +169,7 @@ class StatusMessage(KillStatus):
         Constructs a new namedtuple to derive the class from. This can't be done
         in __init__ because namedtuples are immutable.
         """
-        return super(StatusMessage, cls).__new__(cls, *args)
+        return super().__new__(cls, *args)
 
     @classmethod
     def from_bytes(cls, data):

@@ -1,4 +1,4 @@
-Mathematics 
+Mathematics
 -------------------
 
 .. currentmodule:: mil_tools

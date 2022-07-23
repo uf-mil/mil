@@ -33,7 +33,7 @@ class Dashboard(Plugin):
     UPDATE_MILLISECONDS = 100
 
     def __init__(self, context: Any):
-        super(Dashboard, self).__init__(context)
+        super().__init__(context)
 
         # Create the widget and name it
         self._widget = QtWidgets.QWidget()

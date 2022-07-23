@@ -259,11 +259,11 @@ class MissionPlannerTest(TestUnit):
             ],
         )
 
-        fprint("{} Missions passed".format(self.count), msg_color="green")
+        fprint(f"{self.count} Missions passed", msg_color="green")
 
     @util.cancellableInlineCallbacks
     def _run_mission(self, yaml_file, spoof_pub, spoof_service, time, desc, res):
-        with open(yaml_file, "r") as stream:
+        with open(yaml_file) as stream:
             try:
                 spoof_pub.start(self.nh)
                 yield spoof_service.start(self.nh)

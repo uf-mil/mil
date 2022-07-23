@@ -73,7 +73,7 @@ def get_max_label_map_index(label_map):
     Returns:
       an integer
     """
-    return max([item.id for item in label_map.item])
+    return max(item.id for item in label_map.item)
 
 
 def convert_label_map_to_categories(label_map, max_num_classes, use_display_name=True):
@@ -107,7 +107,7 @@ def convert_label_map_to_categories(label_map, max_num_classes, use_display_name
             categories.append(
                 {
                     "id": class_id + label_id_offset,
-                    "name": "category_{}".format(class_id + label_id_offset),
+                    "name": f"category_{class_id + label_id_offset}",
                 }
             )
         return categories

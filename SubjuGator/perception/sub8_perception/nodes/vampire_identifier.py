@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import print_function
 
 import sys
@@ -23,7 +23,7 @@ from sub8_vision_tools import MultiObservation
 
 """
 This Vampiric Grymoire identifies the four major types of Vampire:
-    Jiangshi --> Flat "Buoy"        
+    Jiangshi --> Flat "Buoy"
     Draugr   --> 3 Sided Buoy
     Aswang   --> 3 Sided Buoy
     Vetalas  --> 3 Sided Buoy
@@ -33,8 +33,8 @@ General outline of task
     Boop the Buoy.
     Find 3 Sided Buoy with Sonar.
     Find Declared Enemy based on config.
-    Boop the Declared Enemy. 
-    Flee scene of crime before other vampires get to us. 
+    Boop the Declared Enemy.
+    Flee scene of crime before other vampires get to us.
 """
 
 
@@ -109,7 +109,7 @@ class VampireIdentifier:
             self.min_observations = config["min_obs"]
 
         except ValueError as e:
-            rospy.logwarn("Invalid dynamic reconfigure: {}".format(e))
+            rospy.logwarn(f"Invalid dynamic reconfigure: {e}")
             return self.last_config
 
         if self.override:
@@ -124,7 +124,7 @@ class VampireIdentifier:
             else:
                 raise ValueError("Invalid Target Name")
         self.last_config = config
-        rospy.loginfo("Params succesfully updated via dynamic reconfigure")
+        rospy.loginfo("Params successfully updated via dynamic reconfigure")
         return config
 
     def image_cb(self, image):
@@ -231,7 +231,7 @@ class VampireIdentifier:
             return target
         approx = cv2.approxPolyDP(c, 0.04 * peri, True)
 
-        target = "Target Aquisition Successful"
+        target = "Target Acquisition Successful"
 
         return target
 
@@ -285,8 +285,8 @@ class VampireIdentifier:
             M = cv2.moments(c)
             if M["m00"] == 0:
                 M["m00"] = 0.000001
-            cX = int((M["m10"] / M["m00"]))
-            cY = int((M["m01"] / M["m00"]))
+            cX = int(M["m10"] / M["m00"])
+            cY = int(M["m01"] / M["m00"])
             self.point_pub.publish(Point(x=cX, y=cY))
             shape = self.detect(c)
 
@@ -296,7 +296,7 @@ class VampireIdentifier:
             c = c.astype("float")
             # c *= ratio
             c = c.astype("int")
-            if shape == "Target Aquisition Successful":
+            if shape == "Target Acquisition Successful":
                 if self.debug:
                     try:
                         cv2.drawContours(cv_image, [c], -1, (0, 255, 0), 2)
@@ -324,7 +324,7 @@ class VampireIdentifier:
         Approximate 3D coordinates.
         """
 
-        if m_shape == "Target Aquisition Successful":
+        if m_shape == "Target Acquisition Successful":
             try:
                 self.tf_listener.waitForTransform(
                     "map",
@@ -333,7 +333,7 @@ class VampireIdentifier:
                     rospy.Duration(0.2),
                 )
             except tf.Exception as e:
-                rospy.logwarn("Could not transform camera to map: {}".format(e))
+                rospy.logwarn(f"Could not transform camera to map: {e}")
                 return False
 
             (t, rot_q) = self.tf_listener.lookupTransform(
@@ -349,7 +349,7 @@ class VampireIdentifier:
                 self.status = "Pose found"
 
             else:
-                self.status = "{} observations".format(len(observations))
+                self.status = f"{len(observations)} observations"
 
 
 def main(args):

@@ -12,7 +12,7 @@ class DemonstrateNavigation(Navigator):
     """
     Mission for the "Demonstrate Navigation And Control" challenge.
     May either use the objects in PCODAR or to clicked points.
-    TODO: check that moves were completed succesfully
+    TODO: check that moves were completed successfully
     """
 
     START_MARGIN_METERS = 4.0
@@ -56,9 +56,7 @@ class DemonstrateNavigation(Navigator):
             distance = np.linalg.norm(target_point - us) + self.END_MARGIN_METERS
             distance_per_move = distance / parameters.num_moves
             for i in range(parameters.num_moves):
-                self.send_feedback(
-                    "Doing move {}/{}".format(i + 1, parameters.num_moves)
-                )
+                self.send_feedback(f"Doing move {i + 1}/{parameters.num_moves}")
                 yield self.move.look_at(target_point).forward(distance_per_move).go(
                     blind=True
                 )

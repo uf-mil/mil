@@ -13,9 +13,9 @@ usage()
 
         --dev-server
 
-            This flag causes the correct export of ros environment variables to the container when running remotely. Only to be used when runnning the container on the dev server.
+            This flag causes the correct export of ros environment variables to the container when running remotely. Only to be used when running the container on the dev server.
 
-        [COMMAND ARG...] If additional arugments are given, they will be passed as the command to run inside the container. Be default, it will open an interactive bash terminal"
+        [COMMAND ARG...] If additional arguments are given, they will be passed as the command to run inside the container. Be default, it will open an interactive bash terminal"
 
 exit 1
 }

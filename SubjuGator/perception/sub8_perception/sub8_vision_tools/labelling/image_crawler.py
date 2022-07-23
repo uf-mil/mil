@@ -1,7 +1,7 @@
 import cv2
 
 
-class ImageCrawler(object):
+class ImageCrawler:
     def __init__(self, starting_image):
         """
         Give it the first image in an image sequence. The sequence should be just abunch of numbered images,
@@ -28,7 +28,7 @@ class ImageCrawler(object):
         return [None]
 
 
-class VideoCrawler(object):
+class VideoCrawler:
     def __init__(self, source):
         if source is None:
             source = 0

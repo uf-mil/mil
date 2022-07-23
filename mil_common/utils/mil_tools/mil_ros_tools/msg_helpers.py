@@ -481,5 +481,5 @@ def odom_sub(topic, callback):
 
 
 def ros_to_np_3D(msg):
-    xyz_array = np.array(([msg.x, msg.y, msg.z]))
+    xyz_array = np.array([msg.x, msg.y, msg.z])
     return xyz_array

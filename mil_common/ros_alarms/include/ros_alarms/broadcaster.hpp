@@ -5,7 +5,6 @@
 #include <ros_alarms/AlarmSet.h>
 
 #include <ros_alarms/alarm_proxy.hpp>
-
 #include <string>
 
 namespace ros_alarms
@@ -16,7 +15,7 @@ namespace ros_alarms
 class AlarmBroadcaster
 {
 public:
-  // Constuct a broadcaster w/ an internally controlled (default) or externally controlled
+  // Construct a broadcaster w/ an internally controlled (default) or externally controlled
   // (optional ptr argument) AlarmProxy
   /**
    * Constructs a broadcaster with an internally controlled (default) or externally controlled AlarmProxy.
@@ -56,8 +55,9 @@ public:
     raise();
   }
 
-  /** 
-   * Publishes current state of the AlarmProxy to the server. If the publication encountered an error, a ROS warning is sent alongside returning ``false``.
+  /**
+   * Publishes current state of the AlarmProxy to the server. If the publication encountered an error, a ROS warning is
+   * sent alongside returning ``false``.
    *
    * @return The success of the publication.
    */
@@ -68,7 +68,8 @@ public:
   /**
    * Returns the alarm proxy associated with the broadcaster.
    *
-   * Warning: If the class uses an externally modified alarm proxy, then modifying this class could have reprocussions for other services which rely on that alarm proxy.
+   * Warning: If the class uses an externally modified alarm proxy, then modifying this class could have reprocussions
+   * for other services which rely on that alarm proxy.
    *
    * @return The proxy.
    */

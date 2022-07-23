@@ -1,11 +1,11 @@
 Ubuntu Password Reset Guide
 ===========================
-Follow the steps for reseting your Ubuntu Password:
+Follow the steps for resetting your Ubuntu Password:
 
 1. Boot up your device / VM.
 
 2. Go into the boot menu by either holding down ```SHIFT``` or pressing ```ESC``` depending on your device; This will get you into the ****GRUB menu****.
-    
+
     ![image text](https://i.stack.imgur.com/MQv6f.png)
 
 3. Navigate to the 2nd option from the top (Top most Recovery Boot Option) and then hit ```ENTER```; This will get you to the ****Recovery Menu****.
@@ -27,6 +27,6 @@ Follow the steps for reseting your Ubuntu Password:
 
 
 
-<br> </br> 
+<br> </br>
 <br> </br>
 _Images taken from stackoverflow_

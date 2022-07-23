@@ -84,7 +84,7 @@ class ThrusterMapper:
         """
         rospy.logwarn("Layout in update...")
         self.dropped_thrusters = srv.dropped_thrusters
-        rospy.logwarn("Missing thrusters: {}".format(self.dropped_thrusters))
+        rospy.logwarn(f"Missing thrusters: {self.dropped_thrusters}")
 
         # Reset min and max thrusts, this will be overwritten by any dropped thrusters
         self.min_thrusts = np.copy(self.default_min_thrusts)

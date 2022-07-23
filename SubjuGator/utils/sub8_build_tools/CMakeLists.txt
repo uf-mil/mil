@@ -8,4 +8,3 @@ catkin_package(
  CATKIN_DEPENDS
  DEPENDS
 )
-

@@ -45,7 +45,7 @@ def generate_linear_force_to_command(ratio):
     return force_to_command
 
 
-class ThrusterMap(object):
+class ThrusterMap:
     """
     Helper class to map between global body forces / torques and thruster outputs, which are in a
     arbitrary effort unit. See thruster_mapper_node.py for usage example.
@@ -74,11 +74,11 @@ class ThrusterMap(object):
             force_limit: (MAX_FORWARD, MAX_REVERSE) maximum force in either direction
               that should be commanded to a thruster, in newtons
             com: offset of boat's true center of mass to the frame thruster positions
-              are given (base_link) defaults to (0, 0, 0) incase we don't know com
+              are given (base_link) defaults to (0, 0, 0) in case we don't know com
 
         The mapping from body wrench to individual thrusts or visa versa is a simple least square solver.
         Bibliography:
-          [1] Christiaan De Wit
+          [1] Christiaan De With
               "Optimal Thrust Allocation Methods for Dynamic Positioning of Ships"
               see: http://repository.tudelft.nl/assets/uuid:4c9685ac-3f76-41c0-bae5-a2a96f4d757e/DP_Report_FINAL.pdf
 
@@ -91,11 +91,11 @@ class ThrusterMap(object):
         self._force_to_command = force_to_command
         self.force_limit = force_limit
         if len(self.force_limit) != 2 or self.force_limit[1] > self.force_limit[0]:
-            raise Exception("self.force_limit {} is invalid".format(self.force_limit))
+            raise Exception(f"self.force_limit {self.force_limit} is invalid")
 
         """ Iterate through thruster positions and create thruster trans matrix"""
         thruster_matrix = []
-        # loop through all sub positions and compute collumns of A
+        # loop through all sub positions and compute columns of A
         for thruster_number, position in enumerate(positions):
             # l_x and l_y are the offset for the center of gravity
             l_x, l_y = np.subtract(position, com)
@@ -107,7 +107,7 @@ class ThrusterMap(object):
             thruster_column = np.transpose(np.array([[cos, sin, torque_effect]]))
             thruster_matrix.append(thruster_column)
 
-        # returns a matrix made of the thruster collumns
+        # returns a matrix made of the thruster columns
         self.thruster_matrix = np.hstack(thruster_matrix)
         self.thruster_matrix_inv = np.linalg.pinv(
             self.thruster_matrix
@@ -223,7 +223,7 @@ class ThrusterMap(object):
     def thrusts_to_wrench(self, thrusts):
         """
         Given a the 4 thrust commands in effort units, returns the
-        equivilant
+        equivalent
         param thrusts: np float array of thruster efforts in order of ThrusterMap.THRUSTERS
         returns: wrench (x, y, torque about z) force/torque applied to boat
         """
@@ -259,7 +259,7 @@ class ThrusterMap(object):
         """
         This command is currently unimplemented and will raise an immediate error.
 
-        Maps a list of thrusts in effort units to the corosponding force in newtons.
+        Maps a list of thrusts in effort units to the corresponding force in newtons.
         """
         raise Exception(
             "Unimplemented. Please file an issue if you encounter this error"

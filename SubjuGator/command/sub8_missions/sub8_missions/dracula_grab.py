@@ -37,7 +37,7 @@ class DraculaGrabber(SubjuGator):
         cam_info = yield cam_info_sub.get_next_message()
         cam_center = np.array([cam_info.width / 2, cam_info.height / 2])
         cam_norm = np.sqrt(cam_center[0] ** 2 + cam_center[1] ** 2)
-        fprint("Cam center: {}".format(cam_center))
+        fprint(f"Cam center: {cam_center}")
 
         model = PinholeCameraModel()
         model.fromCameraInfo(cam_info)
@@ -68,17 +68,17 @@ class DraculaGrabber(SubjuGator):
             dracula_msg = yield dracula_sub.get_next_message()
             dracula_xy = mil_ros_tools.rosmsg_to_numpy(dracula_msg)[:2]
             vec = dracula_xy - cam_center
-            fprint("Vec: {}".format(vec))
+            fprint(f"Vec: {vec}")
             vec = vec / cam_norm
             vec[1] = -vec[1]
-            fprint("Rel move vec {}".format(vec))
+            fprint(f"Rel move vec {vec}")
             if np.allclose(vec, np.asarray(0), atol=50):
                 break
             vec = np.append(vec, 0)
 
             yield self.move.relative_depth(vec).go(speed=SPEED)
 
-        fprint("Centered, going to depth {}".format(HEIGHT_DRACULA_GRABBER))
+        fprint(f"Centered, going to depth {HEIGHT_DRACULA_GRABBER}")
         yield self.move.to_height(HEIGHT_DRACULA_GRABBER).zero_roll_and_pitch().go(
             speed=SPEED
         )

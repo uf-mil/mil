@@ -40,4 +40,3 @@ Note: For time-acceleration greater than 1.5, you must disable rendering, by set
 Truth odometry is published on /truth/odom
 
 You can set the truth pose by calling the service /sim/vehicle/set_pose using the sub8_simulation.srv.SimSetPose service type
-

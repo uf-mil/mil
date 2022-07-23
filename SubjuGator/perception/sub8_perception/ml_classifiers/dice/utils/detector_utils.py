@@ -70,7 +70,7 @@ def draw_box_on_image(
 
             cv2.putText(
                 image_np,
-                "confidence: " + str("{0:.2f}".format(scores[i])),
+                "confidence: " + str(f"{scores[i]:.2f}"),
                 (int(left), int(top) - 20),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.5,

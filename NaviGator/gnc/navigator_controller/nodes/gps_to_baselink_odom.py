@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# this is a cameron problem https://answers.ros.org/question/326226/importerror-dynamic-module-does-not-define-module-export-function-pyinit__tf2/
+#!/usr/bin/env python3
 import math
 
 import rospy

@@ -13,7 +13,7 @@ class BackAndForth(Navigator):
             home = self.move
             """
             p2 now contains a pose editor object.
-            The statment `navigator.move` is equivalent to `navigator.move.forward(0)`,
+            The statement `navigator.move` is equivalent to `navigator.move.forward(0)`,
                 so it creates a waypoint at the position of the boat at the current time.
             """
             while True:

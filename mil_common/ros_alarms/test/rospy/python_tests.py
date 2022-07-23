@@ -14,7 +14,7 @@ NAME = "server_tester"
 class ClientTester(unittest.TestCase):
     def __init__(self, *args):
         rospy.init_node(NAME, anonymous=True)
-        super(ClientTester, self).__init__(*args)
+        super().__init__(*args)
 
     """ Tests alarm client operations
     Creates some listeners and some broadcasters and tests various raising and clearing conditoins
@@ -74,7 +74,7 @@ class ClientTester(unittest.TestCase):
         self.assertTrue(al_b.is_cleared())
         self.assertTrue(al_c.is_cleared())
 
-        # Make sure arugments were passed correctly
+        # Make sure arguments were passed correctly
         self.assertEqual(al_b.get_alarm().parameters, _full_params)
         self.assertEqual(al_c.get_alarm().parameters, _blank_params)
 
@@ -110,7 +110,7 @@ class ClientTester(unittest.TestCase):
         self.assertFalse(al_b.is_cleared())
         self.assertFalse(al_c.is_cleared())
 
-        # Set everyhing cleared
+        # Set everything cleared
         ab_b.clear_alarm()
         ab_c.clear_alarm()
 

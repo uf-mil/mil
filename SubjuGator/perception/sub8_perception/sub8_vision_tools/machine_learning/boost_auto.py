@@ -22,7 +22,7 @@ SHOULD:
     - Easier tool for generating data
 
 CONSIDER:
-    - Use sklearn preprocessing standar scaler
+    - Use sklearn preprocessing standard scaler
         - Whiten data, yo
 
 - Package kernels alongside Boost
@@ -72,7 +72,7 @@ def train_on_data(observation_list, label_list, split_factor=4):
     """
     assert len(observation_list) / split_factor is int
 
-    print("Done! Training on: {} images.".format(len(observation_list)))
+    print(f"Done! Training on: {len(observation_list)} images.")
 
     all_observations = np.vstack(observation_list)
     all_labels = np.vstack(label_list)
@@ -85,9 +85,9 @@ def train_on_data(observation_list, label_list, split_factor=4):
     print
     param_gen = gen_data()
     for m, t, d, n in param_gen:
-        f_name = "{}_{}tree_{}depth.dic".format(n, t, d)
+        f_name = f"{n}_{t}tree_{d}depth.dic"
         print("=====================")
-        print("Generating {}...".format(f_name))
+        print(f"Generating {f_name}...")
 
         boost = cv2.Boost()
         parameters = {
@@ -101,11 +101,11 @@ def train_on_data(observation_list, label_list, split_factor=4):
         process_round = 0
         # Split this into multiple passes in an attempt to free RAM (no idea if this works).
         for x, y in zip(all_observations_split, all_labels_split):
-            print("Training subset {}/{}.".format(process_round + 1, split_factor))
+            print(f"Training subset {process_round + 1}/{split_factor}.")
             boost.train(x, cv2.CV_ROW_SAMPLE, y, params=parameters)
             process_round += 1
 
-        print("Time to complete: {}".format(time.time() - s_time))
+        print(f"Time to complete: {time.time() - s_time}")
         print("Done! Saving...")
         boost.save(f_name, "s")
         print
@@ -117,7 +117,7 @@ def load_images(path, images_to_use=8):
     observation_list = []
     label_list = []
 
-    print("Images found in folder: {}".format(len(images) / 2 - 1))
+    print(f"Images found in folder: {len(images) / 2 - 1}")
     count = 0
     for i in tqdm.trange(len(images) / 2 - 1, desc="Loading images", unit=" images"):
         try:

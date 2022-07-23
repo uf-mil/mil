@@ -1,5 +1,5 @@
-Passive Sonar
--------------
+:mod:`mil_passive_sonar` - Passive Sonar
+----------------------------------------
 
 .. currentmodule:: mil_passive_sonar
 
@@ -67,4 +67,3 @@ SylphaseSonarToRosNode
 .. cppattributetable:: SylphaseSonarToRosNode
 
 .. doxygenclass:: SylphaseSonarToRosNode
-

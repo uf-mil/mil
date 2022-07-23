@@ -1,0 +1,36 @@
+# Graphing
+matplotlib==3.1.2
+tqdm==4.62.3
+
+# Algorithms
+tsp-solver2==0.4.1
+
+# Data Science
+pandas==1.4.1
+numpy==1.22.3
+
+# Machine Learning
+scipy==1.7.3
+scikit-learn==1.1.1
+
+# Computer Vision
+Pillow==9.1.1
+
+# File Handling
+PyYAML==6.0
+urdf-parser-py==0.0.4
+
+# Internet
+aiohttp==3.8.1
+
+# Documentation
+sphinx==5.0.1
+breathe==4.34.0
+myst-parser==0.18.0
+
+# External Devices
+pyserial==3.5
+
+# Linting
+black==22.1.0
+modernize==0.8.0 # This can be removed after Noetic Migration is complete.

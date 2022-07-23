@@ -256,7 +256,7 @@ RvizVisualizer
 .. cppattributetable:: sub::RvizVisualizer
 
 .. doxygenclass:: sub::RvizVisualizer
-   
+
 OccGridUtils
 ^^^^^^^^^^^^
 .. attributetable:: sub8_vision_tools.OccGridUtils

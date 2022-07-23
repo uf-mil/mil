@@ -183,8 +183,8 @@
       <grid>0</grid>
       <origin_visual>0</origin_visual>
       <ambient>
-        
-0.3 0.6 1 0.7    
+
+0.3 0.6 1 0.7
       </ambient>
     </scene>
     <include>

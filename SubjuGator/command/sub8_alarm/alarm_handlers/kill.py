@@ -27,7 +27,7 @@ class Kill(HandlerBase):
     HARDWARE_KILL_GRACE_PERIOD_SECONDS = 6.0
 
     def __init__(self):
-        # Alarm server wil set this as the intial state of kill alarm (starts killed)
+        # Alarm server will set this as the initial state of kill alarm (starts killed)
         self.initial_alarm = Alarm(
             self.alarm_name,
             True,
@@ -56,7 +56,7 @@ class Kill(HandlerBase):
         try:
             return self._set_mobo_kill(*args, **kwargs)
         except rospy.ServiceException as e:
-            rospy.logwarn("Error sending motherboard kill: {}".format(e))
+            rospy.logwarn(f"Error sending motherboard kill: {e}")
             return None
 
     def raised(self, alarm: Alarm) -> None:
@@ -98,7 +98,7 @@ class Kill(HandlerBase):
 
     def _bag_done_cb(self, status, result):
         if status == 3:
-            rospy.loginfo("KILL BAG WRITTEN TO {}".format(result.filename))
+            rospy.loginfo(f"KILL BAG WRITTEN TO {result.filename}")
         else:
             rospy.logwarn(
                 "KILL BAG {}, status: {}".format(

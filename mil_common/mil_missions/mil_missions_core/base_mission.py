@@ -99,7 +99,7 @@ class BaseMission:
         Called by child missions when sending feedback. By default sends this feedback prefixed
         with the name of the child mission.
         """
-        self.send_feedback("{}: {}".format(child.name(), message))
+        self.send_feedback(f"{child.name()}: {message}")
 
     @classmethod
     def has_mission(self, name: str):
@@ -117,7 +117,7 @@ class BaseMission:
 
     def run_submission(self, name: str, parameters: str = "") -> defer.Deferred:
         """
-        Runs another mission available to the mission server, returning the defered object for the
+        Runs another mission available to the mission server, returning the deferred object for the
         missions execution.
 
         Args:
@@ -136,12 +136,12 @@ class BaseMission:
             defer.Deferred: The deferred object, representing the execution of the mission.
         """
         if not self.has_mission(name):
-            raise Exception("Cannot run_submission, '{}' unrecognized".format(name))
+            raise Exception(f"Cannot run_submission, '{name}' unrecognized")
         mission = self.mission_runner.missions[name](parent=self)
         return defer.maybeDeferred(mission.run, parameters)
 
     @classmethod
-    def decode_parameters(cls, parameters: str) -> Union[dict, str]:
+    def decode_parameters(cls, parameters: str) -> dict | str:
         """
         Process parameters string from new mission goal or submission. Should return the
         processes parameters which will be passed to the run function. By default
@@ -176,13 +176,13 @@ class BaseMission:
         If something goes wrong, raise an exception describing what went wrong
         and the mission will be aborted and cleanup is called.
 
-        If it executes succesfully, return with ``defer.returnValue(message)`` to
+        If it executes successfully, return with ``defer.returnValue(message)`` to
         send a final result to the connected clients. Missions can also spawn
         other missions in the run function using :meth:`.run_submission`.
 
         Args:
             parameters: Arguments to modify the behavior of the mission. By default
                 will be a json decoded object from the string passed in the goal,
-                but can be changed by overridding decode_parameters.
+                but can be changed by overriding decode_parameters.
         """
         pass

@@ -1,5 +1,5 @@
 # Contributing Guide
-This guide describes how to make a change in the repository, and contribute this 
+This guide describes how to make a change in the repository, and contribute this
 change back to the lab.
 
 ## Sanity with Git
@@ -12,7 +12,7 @@ can only be found on **your** computer! No one else has access to it. Therefore,
 you can't really hurt anyone else's progress. Even if you run some commands that
 mess up your copy, you can just ask for a new one! How sweet is that?
 
-Moreso, we use branch protection, so you can't push code onto the robot without
+More so, we use branch protection, so you can't push code onto the robot without
 approval from a leader first. Therefore, don't feel pressured to always type the right
 command - you might screw up, and it's all okay!
 
@@ -25,10 +25,10 @@ project you'd like!
 
 ## General contributing process
 For those unfamiliar with git, this will the general idea.
-1. Create a new branch off of the master branch (or branch off of another branch 
+1. Create a new branch off of the master branch (or branch off of another branch
 you want to fix).
 1. Make changes on that new branch.
-1. Add files that you will want to commit (You can think of a commit like a 
+1. Add files that you will want to commit (You can think of a commit like a
 save file that you can go back to at any moment in time).
 1. Create a commit (This is actually creating the "save file").
 1. Push the commit to the remote branch.
@@ -38,8 +38,8 @@ Check out [this cool link](https://rogerdudler.github.io/git-guide/) if you want
 another overview of Git!
 
 ## Create a new branch
-Create a new branch for your changes `git checkout -b <branchname>`. Be sure to 
-pick a descriptive name (usually 2-4 words, joined by dashes will do). The specific 
+Create a new branch for your changes `git checkout -b <branchname>`. Be sure to
+pick a descriptive name (usually 2-4 words, joined by dashes will do). The specific
 name of the branch generally does not matter.
 
 ## Viewing the status of files
@@ -57,7 +57,7 @@ It's sort of like if you have a folder with homework that's ready to turn in. Yo
 may finish your homework two days before it's due and put it in this folder, "staging"
 it. It's not officially turned in (that will happen when we commit), but it's ready to go!
 
-## Adding file to be staged for a commit 
+## Adding file to be staged for a commit
 You can add all these changes to be staged like this:
 
     $ git add .
@@ -82,7 +82,7 @@ You will need to provide a short description of your change when you commit it.
 Now, you have made one or more commits, but unfortunately, these changes are still
 only available on your local copy. Let's change that, with pushing!
 
-Pushing commits allows everyone in MIL to see your work. This allows leaders to 
+Pushing commits allows everyone in MIL to see your work. This allows leaders to
 approve your work and other MILers to build off of what you've built!
 
 :::{danger}
@@ -103,7 +103,7 @@ the branch you're pushing to as the one you always want to be pushing to.
 
 
 ## Creating a pull request
-Now that your changes have been committed, it's time to submit them to be 
+Now that your changes have been committed, it's time to submit them to be
 reviewed and then merged into the repository on Github.
 
 To create a new pull request, head over to the `Pull Requests` tab of our GitHub
@@ -114,7 +114,7 @@ is related to, you can also connect your PR to a project on the right-hand side 
 the interface.
 
 ## Request and wait for review
-To ensure our code quality and robot safety, we require all code to be reviewed 
+To ensure our code quality and robot safety, we require all code to be reviewed
 by at least one core developer before merging.
 
 When you first opened your PR, you may have noticed a spinning yellow circle on
@@ -124,14 +124,14 @@ checkmark will appear, helping your reviewer to know that your changes are prime
 If it doesn't pass, you'll see a bright red X, indicating that you need to review your
 changes and fix something. See the next section below.
 
-If you have a friend in MIL or someone with a good knowledge of the things you 
-changed, you can assign them as a reviewer on GitHub. If it has been a few days 
+If you have a friend in MIL or someone with a good knowledge of the things you
+changed, you can assign them as a reviewer on GitHub. If it has been a few days
 and no one has looked at your pull request, you can also bug people in slack.
 We strive for a 24-hour turn around for the first review.
 
 ## Amend pull request
-Unless you are a true prodigy (or your reviewer is lazy), there will likely be 
-some changes requested in your PR. After making the requested changes, you need 
+Unless you are a true prodigy (or your reviewer is lazy), there will likely be
+some changes requested in your PR. After making the requested changes, you need
 to commit them and push them.
 
 * You should merge in upstream changes before making your changes. See the section below.
@@ -147,17 +147,17 @@ If changes made by other developers are merged in before your pull request, you 
 you pull request to include these changes. This can sometimes be a tedious process if changes
 were made to the same files you changed.
 
-* Fetch the latest changes from upstream (this just caches them locally, not 
+* Fetch the latest changes from upstream (this just caches them locally, not
 changing any of your code): `git fetch origin`.
-* Backup your current branch in case anything goes wrong during the rebase with `git checkout -b <branchname>-backup`, 
+* Backup your current branch in case anything goes wrong during the rebase with `git checkout -b <branchname>-backup`,
 and then go back to your original branch `git checkout <branchname>`.
 * Rebase your changes to the latest master branch `git rebase -i origin/master`
-* This will open up your text editor with a list of the commits that will be 
-added on top of master. Be sure to comment out (by adding `#` before the line) 
+* This will open up your text editor with a list of the commits that will be
+added on top of master. Be sure to comment out (by adding `#` before the line)
 any commits that are not yours.
-* Save and close the text editor. Git will now attempt to rebase your changes 
-on top of the master branch. If git detects a conflict, it will prompt you 
+* Save and close the text editor. Git will now attempt to rebase your changes
+on top of the master branch. If git detects a conflict, it will prompt you
 on how to manually fix them.
-* Once you have gone through the whole process and git says the rebase was 
-successful, push your updated branch `git push origin -f <branchname>`. Note 
+* Once you have gone through the whole process and git says the rebase was
+successful, push your updated branch `git push origin -f <branchname>`. Note
 the `-f` which you need as you have re-written history

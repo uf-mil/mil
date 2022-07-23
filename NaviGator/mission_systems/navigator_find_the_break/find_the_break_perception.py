@@ -14,7 +14,7 @@ from txros import util
 # Params : direction
 
 
-class FindTheBreakPerception(object):
+class FindTheBreakPerception:
     def __init__(self, nh):
         """Initialize FindTheBreakPerception class."""
         # PARAMS
@@ -66,8 +66,8 @@ class FindTheBreakPerception(object):
         ret, label, center = cv2.kmeans(Z, K, criteria, 10, 0)
         center = np.uint8(center)
         image_as_centers = center[label.flatten()]
-        image_as_centers = image_as_centers.reshape((frame.shape))
-        labels = label.reshape((frame.shape[:2]))
+        image_as_centers = image_as_centers.reshape(frame.shape)
+        labels = label.reshape(frame.shape[:2])
 
         # Get the bounding boxes of the clusters
         rects = []

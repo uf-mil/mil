@@ -78,7 +78,7 @@
 // #define BACKWARD_HAS_UNWIND 1
 //  - unwind comes from libgcc, but I saw an equivalent inside clang itself.
 //  - with unwind, the stacktrace is as accurate as it can possibly be, since
-//  this is used by the C++ runtine in gcc/clang for stack unwinding on
+//  this is used by the C++ runtime in gcc/clang for stack unwinding on
 //  exception.
 //  - normally libgcc is already linked to your program by default.
 //
@@ -548,7 +548,7 @@ struct ResolvedTrace : public Trace
 
 /*************** STACK TRACE ***************/
 
-// default implemention.
+// default implementation.
 template <typename TAG>
 class StackTraceImpl
 {
@@ -942,7 +942,7 @@ public:
 
     // trace.addr is the next instruction to be executed after returning
     // from the nested stack frame. In C++ this usually relate to the next
-    // statement right after the function call that leaded to a new stack
+    // statement right after the function call that led to a new stack
     // frame. This is not usually what you want to see when printing out a
     // stacktrace...
     find_sym_result details_call_site = find_symbol_details(fobj, trace.addr, symbol_info.dli_fbase);
@@ -989,7 +989,7 @@ public:
         // this time we get the name of the function where the code is
         // located, instead of the function were the address is
         // located. In short, if the code was inlined, we get the
-        // function correspoding to the code. Else we already got in
+        // function corresponding to the code. Else we already got in
         // trace.function.
         trace.source.function = demangle(details_selected->funcname);
 
@@ -1691,7 +1691,7 @@ public:
     for (line_idx = 1; line_idx < line_start; ++line_idx)
     {
       getline(*_file, line);
-      if (not*_file)
+      if (not *_file)
       {
         return lines;
       }
@@ -1712,7 +1712,7 @@ public:
     for (; line_idx < line_start + line_count; ++line_idx)
     {
       getline(*_file, line);
-      if (not*_file)
+      if (not *_file)
       {
         return lines;
       }
@@ -1819,8 +1819,8 @@ public:
   {
     SourceFile& src_file = get_src_file(filename);
 
-    using std::min;
     using std::max;
+    using std::min;
     unsigned a = min(line_a, line_b);
     unsigned b = max(line_a, line_b);
 

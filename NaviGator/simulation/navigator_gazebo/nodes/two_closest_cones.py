@@ -127,7 +127,7 @@ class PcodarAverageScales:
                 # print(i, self.scale_z_avg[i], self.max_z[i], self.min_z[i],dist, "round")
                 continue
             else:
-                # big waves usually cause discrepencies and cause averages to increase
+                # big waves usually cause discrepancies and cause averages to increase
                 if self.scale_z_avg[i] > 0.6:
                     pass
                     # print(i, self.scale_z_avg[i], self.max_z[i], self.min_z[i],dist, "cone")

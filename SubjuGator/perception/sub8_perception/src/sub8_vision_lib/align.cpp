@@ -6,6 +6,7 @@
 #include <pcl/point_types.h>
 #include <pcl/registration/icp.h>
 #include <pcl/registration/sample_consensus_prerejective.h>
+
 #include <Eigen/Core>
 #include <mil_vision_lib/pcl_tools.hpp>
 
@@ -31,4 +32,4 @@ void compute_features(PointCloudNT::Ptr& cloud, FeatureCloudT::Ptr& feature_clou
   feature_estimator.setInputNormals(cloud);
   feature_estimator.compute(*feature_cloud);
 }
-}
+}  // namespace sub

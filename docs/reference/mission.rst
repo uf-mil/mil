@@ -1,5 +1,5 @@
-Mission System
---------------
+:mod:`mil_missions_core` - Mission System
+-----------------------------------------
 
 BaseMission
 ^^^^^^^^^^^

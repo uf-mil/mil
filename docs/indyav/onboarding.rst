@@ -7,7 +7,7 @@ Make sure to checkout `Development <../development/index.html>`_ first.
 
 Slack
 *****
-Join the slack to keep updated on the developement at `uf-cimar <https://uf-cimar.slack.com>`_.
+Join the slack to keep updated on the development at `uf-cimar <https://uf-cimar.slack.com>`_.
 Any valid @ufl.edu email will be able to create an account.
 
 Github

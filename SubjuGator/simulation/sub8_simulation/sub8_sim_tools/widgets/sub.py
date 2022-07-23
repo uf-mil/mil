@@ -5,7 +5,7 @@ from sub8_sim_tools.meshes import Sub8 as Sub8Visual
 from sub8_sim_tools.physics import Sub8
 
 
-class Sub(object):
+class Sub:
     def __init__(
         self, rendering_world, physics_world, position, thrust_indicators=True
     ):
@@ -82,7 +82,7 @@ class Sub(object):
             scaling_factor=0.01,
         )
 
-        class ThrustGetter(object):
+        class ThrustGetter:
 
             """This is a pretty garbage thing, and will be replaced by the scenegraph system"""
 

@@ -9,9 +9,8 @@
 #include <ros_alarms/Alarm.h>
 #include <ros_alarms/AlarmGet.h>
 
-#include <ros_alarms/alarm_proxy.hpp>
-
 #include <functional>
+#include <ros_alarms/alarm_proxy.hpp>
 #include <string>
 
 namespace ros_alarms
@@ -48,7 +47,7 @@ struct ListenerCb
   /**
    * The specific callback function.
    */
-  callable_t cb_func;   // object needs to have a call operator
+  callable_t cb_func;  // object needs to have a call operator
 
   /**
    * The highest severity under which the callback can be called.
@@ -165,7 +164,7 @@ public:
   }
 
   // Functions that return the status of the alarm at time of last update
-  
+
   /**
    * Returns a cached value of whether the alarm has been raised. Avoids querying
    * the server by using the cache.
@@ -176,7 +175,7 @@ public:
   {
     return __last_alarm.raised;
   }
-  
+
   /**
    * Returns a cached value of whether the alarm is cleared. Does not query the alarm
    * server.
@@ -320,8 +319,8 @@ private:
 };
 
 template <typename callable_t>
-AlarmListener<callable_t>::AlarmListener(ros::NodeHandle &nh, std::string alarm_name) try
-    : __nh(nh),
+AlarmListener<callable_t>::AlarmListener(ros::NodeHandle &nh, std::string alarm_name)
+try : __nh(nh),
       __alarm_name(alarm_name),
       __get_alarm(__nh.serviceClient<ros_alarms::AlarmGet>("/alarm/get")),
       __async_spinner(1, &__cb_queue)

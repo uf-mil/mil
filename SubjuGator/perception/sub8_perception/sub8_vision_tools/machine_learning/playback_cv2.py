@@ -20,7 +20,7 @@ if __name__ == "__main__":
         help="Pass the path to a bag, the start of an image sequence, or 'video' for a webcam.",
     )
     parser.add_argument(
-        dest="classifer", type=str, help="Name of the classifer to use."
+        dest="classifier", type=str, help="Name of the classifier to use."
     )
     parser.add_argument(
         "--topic",
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     args = parser.parse_args(sys.argv[1:])
 
     clf = cv2.Boost()
-    clf.load(args.classifer)
+    clf.load(args.classifier)
 
     file_name = args.file_name
     if file_name.split(".")[-1] == "bag":
@@ -46,8 +46,8 @@ if __name__ == "__main__":
 
     last_mask = None
     if args.topic is not None:
-        assert args.topic in bc.image_topics, "{} not in the bag".format(args.topic)
-        print("Crawling topic {}".format(args.topic))
+        assert args.topic in bc.image_topics, f"{args.topic} not in the bag"
+        print(f"Crawling topic {args.topic}")
         crawl = bc.crawl(topic=args.topic)
     else:
         crawl = bc.crawl(topic=bc.image_topics[0])

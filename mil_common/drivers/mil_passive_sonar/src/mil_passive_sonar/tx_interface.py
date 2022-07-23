@@ -81,7 +81,7 @@ class TxHydrophonesClient:
 
     def heading_cb(self, heading_msg: Vector3Stamped):
         """
-        Callback for pings recieved.
+        Callback for pings received.
 
         Args:
             heading_msg (Vector3Stamped): The passed-in message representing the
@@ -96,7 +96,7 @@ class TxHydrophonesClient:
 
         Args:
             cb (Callable): The callback to set. The callback should have a single
-                parameter that takes a Vector3Stamped message reprsenting the heading
+                parameter that takes a Vector3Stamped message representing the heading
                 towards the pinger.
         """
         self.dir_callback = cb

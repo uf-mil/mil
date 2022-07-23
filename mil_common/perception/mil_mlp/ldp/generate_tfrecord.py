@@ -22,7 +22,7 @@ FLAGS = flags.FLAGS
 
 def create_dict():
     global dictionary
-    with open((FLAGS.labelmap_path)) as f:
+    with open(FLAGS.labelmap_path) as f:
         txt = f.read()
     labels = []
     ids = []
@@ -60,7 +60,7 @@ def split(df, group):
 
 
 def create_tf_example(group, path):
-    with tf.gfile.GFile(os.path.join(path, "{}".format(group.filename)), "rb") as fid:
+    with tf.gfile.GFile(os.path.join(path, f"{group.filename}"), "rb") as fid:
         encoded_jpg = fid.read()
     encoded_jpg_io = io.BytesIO(encoded_jpg)
     image = Image.open(encoded_jpg_io)

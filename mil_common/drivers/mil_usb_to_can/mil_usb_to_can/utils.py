@@ -25,7 +25,7 @@ class ChecksumException(USB2CANException):
     """
 
     def __init__(self, calculated, expected):
-        super(ChecksumException, self).__init__(
+        super().__init__(
             "Checksum was calculated as {} but reported as {}".format(
                 calculated, expected
             )
@@ -39,8 +39,8 @@ class PayloadTooLargeException(USB2CANException):
     """
 
     def __init__(self, length):
-        super(PayloadTooLargeException, self).__init__(
-            "Payload is {} bytes, which is greater than the maximum of 8".format(length)
+        super().__init__(
+            f"Payload is {length} bytes, which is greater than the maximum of 8"
         )
 
 
@@ -51,9 +51,7 @@ class InvalidFlagException(USB2CANException):
     """
 
     def __init__(self, description, expected, was):
-        super(InvalidFlagException, self).__init__(
-            "{} flag should be {} but was {}".format(description, expected, was)
-        )
+        super().__init__(f"{description} flag should be {expected} but was {was}")
 
 
 class InvalidStartFlagException(InvalidFlagException):
@@ -61,8 +59,8 @@ class InvalidStartFlagException(InvalidFlagException):
     Exception thrown when the SOF flag is invalid. Inherits from :class:`InvalidFlagException`.
     """
 
-    def __init__(self, was: bytes):
-        super(InvalidStartFlagException, self).__init__("SOF", Packet.SOF, was)
+    def __init__(self, was: int):
+        super().__init__("SOF", Packet.SOF, was)
 
 
 class InvalidEndFlagException(InvalidFlagException):
@@ -70,8 +68,8 @@ class InvalidEndFlagException(InvalidFlagException):
     Exception thrown when the EOF flag is invalid. Inherits from :class:`InvalidFlagException`.
     """
 
-    def __init__(self, was: bytes):
-        super(InvalidEndFlagException, self).__init__("EOF", Packet.EOF, was)
+    def __init__(self, was: int):
+        super().__init__("EOF", Packet.EOF, was)
 
 
 class Packet:
@@ -99,19 +97,17 @@ class Packet:
 
     def to_bytes(self) -> bytes:
         """
-        Returns the binary represnetation of this packet to be sent accross the CAN network.
+        Returns the binary represnetation of this packet to be sent across the CAN network.
         Uses :meth:`struct.Struct.pack` to pack the payload between the :attr:`.SOF` and
         :attr:`.EOF`.
 
         Returns:
             The packed bytes.
         """
-        return struct.pack(
-            "B{}sB".format(len(self.payload)), self.SOF, self.payload, self.EOF
-        )
+        return struct.pack(f"B{len(self.payload)}sB", self.SOF, self.payload, self.EOF)
 
     @classmethod
-    def unpack_payload(cls, data: bytes) -> Optional[bytes]:
+    def unpack_payload(cls, data: bytes) -> bytes | None:
         """
         Attempts to obtain the raw data from a packed payload.
 
@@ -128,7 +124,7 @@ class Packet:
         payload_len = len(data) - 2
         if payload_len < 1:
             return None
-        sof, payload, eof = struct.unpack("B{}sB".format(payload_len), data)
+        sof, payload, eof = struct.unpack(f"B{payload_len}sB", data)
         if sof != cls.SOF:
             raise InvalidStartFlagException(sof)
         if eof != cls.EOF:
@@ -136,7 +132,7 @@ class Packet:
         return payload
 
     @classmethod
-    def from_bytes(cls, data: bytes) -> Optional[Packet]:
+    def from_bytes(cls, data: bytes) -> Packet | None:
         """
         Parses a packet from a bytes string into a Packet instance.
 
@@ -152,12 +148,10 @@ class Packet:
         return cls(payload)
 
     def __str__(self):
-        return "Packet(payload={})".format(self.payload)
+        return f"Packet(payload={self.payload})"
 
     @classmethod
-    def read_packet(
-        cls, ser: Union[serial.Serial, SimulatedUSBtoCAN]
-    ) -> Optional[Packet]:
+    def read_packet(cls, ser: serial.Serial | SimulatedUSBtoCAN) -> Packet | None:
         """
         Read a packet with a known size from a serial device
 
@@ -173,16 +167,19 @@ class Packet:
             Optional[Packet]: If found, read a packet from the serial device. Otherwise,
               return ``None``.
         """
-        # Read until SOF is encourntered incase buffer contains the end of a previous packet
+        # Read until SOF is encourntered in case buffer contains the end of a previous packet
         sof = None
         for _ in range(10):
             sof = ser.read(1)
             if sof is None or len(sof) == 0:
                 return None
-            if sof == cls.SOF:
+            sof_int = int.from_bytes(sof, byteorder="big")
+            if sof_int == cls.SOF:
                 break
-        if sof != cls.SOF:
-            raise InvalidStartFlagException(sof)
+        assert isinstance(sof, bytes)
+        sof_int = int.from_bytes(sof, byteorder="big")
+        if sof_int != cls.SOF:
+            raise InvalidStartFlagException(sof_int)
         data = sof
         eof = None
         for _ in range(10):
@@ -190,10 +187,13 @@ class Packet:
             if eof is None or len(eof) == 0:
                 return None
             data += eof
-            if eof == cls.EOF:
+            eof_int = int.from_bytes(eof, byteorder="big")
+            if eof_int == cls.EOF:
                 break
-        if eof != cls.EOF:
-            raise InvalidEndFlagException(eof)
+        assert isinstance(eof, bytes)
+        eof_int = int.from_bytes(eof, byteorder="big")
+        if eof_int != cls.EOF:
+            raise InvalidEndFlagException(eof_int)
         # print hexify(data)
         return cls.from_bytes(data)
 
@@ -204,7 +204,7 @@ class ReceivePacket(Packet):
         """
         The device ID associated with the packet.
         """
-        return struct.unpack("B", self.payload[0])[0]
+        return struct.unpack("B", self.payload[0:1])[0]
 
     @property
     def data(self) -> bytes:
@@ -215,7 +215,7 @@ class ReceivePacket(Packet):
 
     @property
     def length(self):
-        return struct.unpack("B", self.payload[1])[0]
+        return struct.unpack("B", self.payload[1:2])[0]
 
     @classmethod
     def create_receive_packet(cls, device_id: int, payload: bytes) -> ReceivePacket:
@@ -236,7 +236,7 @@ class ReceivePacket(Packet):
             checksum += byte
         checksum %= 16
         data = struct.pack(
-            "BB{}sB".format(len(payload)), device_id, len(payload), payload, checksum
+            f"BB{len(payload)}sB", device_id, len(payload), payload, checksum
         )
         return cls(data)
 
@@ -347,7 +347,7 @@ class CommandPacket(Packet):
         """
         if len(data) > 8:
             raise PayloadTooLargeException(len(data))
-        payload = struct.pack("BB{}s".format(len(data)), length_byte, filter_id, data)
+        payload = struct.pack(f"BB{len(data)}s", length_byte, filter_id, data)
         return cls(payload)
 
     @classmethod
@@ -407,7 +407,7 @@ class CommandPacket(Packet):
         return cls(payload)
 
     def to_bytes(self) -> bytes:
-        data = super(CommandPacket, self).to_bytes()
+        data = super().to_bytes()
         checksum = 0
         for byte in data:
             checksum += byte

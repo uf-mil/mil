@@ -30,7 +30,7 @@ class StartGateGuess(SubjuGator):
         gate_2 = np.array(rospy.get_param("/poi_server/initial_pois/start_gate2"))
         # mid = (gate_1 + gate_2) / 2
         # mid = gate_1
-        fprint("Found mid {}".format(gate_1))
+        fprint(f"Found mid {gate_1}")
 
         fprint("Looking at gate")
         #      yield self.move.down(DOWN).set_orientation(sub_start_orientation).go(

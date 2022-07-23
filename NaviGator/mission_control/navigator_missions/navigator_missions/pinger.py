@@ -29,7 +29,7 @@ class PingerMission(Navigator):
     USE_CLOSE_POINTS = False
 
     def __init__(self):
-        super(PingerMission, self).__init__()
+        super().__init__()
         self.negate = False
         self.markers = MarkerArray()
         self.last_id = 0
@@ -171,9 +171,7 @@ class PingerMission(Navigator):
             yield self.stop_listen()
             yield self.move.set_position(p).look_at(self.look_at_points[i]).go()
             yield self.start_listen()
-            fprint(
-                "PINGER: Listening To Pinger at point {}".format(p), msg_color="green"
-            )
+            fprint(f"PINGER: Listening To Pinger at point {p}", msg_color="green")
             yield self.nh.sleep(self.LISTEN_TIME)
         yield self.stop_listen()
 
@@ -292,7 +290,7 @@ class PingerMission(Navigator):
             if circle_error < self.MAX_CIRCLE_BUOY_ERROR:
                 self.circle_totem = mil_tools.rosmsg_to_numpy(sorted_circle[0].position)
                 fprint(
-                    "PINGER: found buoy to circle at {}".format(self.circle_totem),
+                    f"PINGER: found buoy to circle at {self.circle_totem}",
                     msg_color="green",
                 )
             else:
@@ -365,13 +363,13 @@ class PingerMission(Navigator):
 
             if active_colors != "UNKNOWN":
                 fprint(
-                    "PINGER: setting active pinger colors to {}".format(active_colors),
+                    f"PINGER: setting active pinger colors to {active_colors}",
                     msg_color="green",
                 )
                 yield self.mission_params["acoustic_pinger_active"].set(active_colors)
             else:
                 fprint(
-                    "PINGER: cannot determine gate colors".format(sorted_3[0].color),
+                    f"PINGER: cannot determine gate colors",
                     msg_color="red",
                 )
             #  fprint("PINGER: gate 3 color {}".format(sorted_3[0].color), msg_color='blue')
@@ -382,9 +380,9 @@ class PingerMission(Navigator):
 
     @txros.util.cancellableInlineCallbacks
     def set_active_pinger(self):
-        """Set the paramter for the active pinger identified for use in other mission"""
+        """Set the parameter for the active pinger identified for use in other mission"""
         fprint(
-            "PINGER: setting active pinger to Gate_{}".format(int(self.gate_index) + 1),
+            f"PINGER: setting active pinger to Gate_{int(self.gate_index) + 1}",
             msg_color="green",
         )
         yield self.get_colored_buoys()
@@ -454,7 +452,7 @@ class PingerMission(Navigator):
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
         fprint("PINGER: Starting Pinger Mission", msg_color="green")
-        fprint("PINGER: Reseting Frequency", msg_color="green")
+        fprint("PINGER: Resetting Frequency", msg_color="green")
         yield self.reset_freq()
         fprint("PINGER: Getting database objects", msg_color="green")
         yield self.get_objects()

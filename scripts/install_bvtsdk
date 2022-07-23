@@ -4,7 +4,24 @@ set -euo pipefail
 
 BVTSDK=$(realpath $(dirname $BASH_SOURCE)/../proprietary/libbvtsdk.tar.gz.enc)
 DESTINATION=$(realpath $(dirname $BASH_SOURCE)/../mil_common/drivers/mil_blueview_driver)
+PASS=""
 
-echo "Enter proprietary software password to decrypt blueview sdk"
-echo "Ask a MIL leader for the password if you don't know it"
-cat $BVTSDK | openssl enc -aes-256-cbc -md md5 -d | tar -xpzC $DESTINATION
+echo "Enter proprietary software password to decrypt BlueView Sonar SDK."
+echo "Ask a MIL leader for the password if you don't know it."
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --pass)
+      PASS="$2"
+      shift # past argument
+      shift # past value
+      ;;
+  esac
+done
+
+if [[ -n "$PASS" ]]
+then
+    cat "$BVTSDK" | openssl enc -aes-256-cbc -md md5 -d -pass pass:"$PASS" | tar -xpzC "$DESTINATION"
+else
+    cat "$BVTSDK" | openssl enc -aes-256-cbc -md md5 -d | tar -xpzC "$DESTINATION"
+fi

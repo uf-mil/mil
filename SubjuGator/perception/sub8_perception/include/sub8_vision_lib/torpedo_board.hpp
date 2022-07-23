@@ -1,37 +1,33 @@
 #pragma once
-#include <algorithm>
-#include <cstdint>
-#include <iostream>
-#include <iterator>
-#include <stdexcept>
-#include <string>
-#include <utility>
-#include <vector>
-
-#include <boost/bind.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/thread.hpp>
-
-#include <eigen_conversions/eigen_msg.h>
-#include <Eigen/Core>
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
-#include <Eigen/StdVector>
-#include <opencv2/opencv.hpp>
-
 #include <cv_bridge/cv_bridge.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <image_transport/image_transport.h>
 #include <ros/ros.h>
 #include <sensor_msgs/image_encodings.h>
-#include <tf/transform_listener.h>
-
 #include <sub8_msgs/TBDetectionSwitch.h>
 #include <sub8_msgs/TorpBoardPoseRequest.h>
-#include <mil_vision_lib/cv_tools.hpp>
-#include <sub8_vision_lib/visualization.hpp>
+#include <tf/transform_listener.h>
 
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include <Eigen/StdVector>
+#include <algorithm>
+#include <boost/bind.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread.hpp>
+#include <cstdint>
+#include <iostream>
+#include <iterator>
 #include <mil_tools/mil_tools.hpp>
+#include <mil_vision_lib/cv_tools.hpp>
+#include <opencv2/opencv.hpp>
+#include <stdexcept>
+#include <string>
+#include <sub8_vision_lib/visualization.hpp>
+#include <utility>
+#include <vector>
 
 // #define SEGMENTATION_DEBUG
 

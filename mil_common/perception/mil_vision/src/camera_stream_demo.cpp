@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+
 #include <mil_vision_lib/image_acquisition/ros_camera_stream.hpp>  // dont forget this include for camera stream functionality
 #include <opencv2/highgui/highgui.hpp>
 #include <string>
@@ -17,7 +18,7 @@ int main(int argc, char **argv)
   // For grayscale images
   mil_vision::ROSCameraStream<cv::Vec3b> left_cam_stream(nh, history_length);  // Constructs empty inactive
                                                                                // camera stream object
-  if (!left_cam_stream.init(cam_topic))  // Initializes object, if sucessful, object will automatically
+  if (!left_cam_stream.init(cam_topic))  // Initializes object, if successful, object will automatically
     return -1;                           // store a history of images published to cam_topic in its buffer
 
   // Display most recent and oldest frame in the buffer

@@ -21,7 +21,7 @@ class Spacenav:
         behaviors = ["wrench", "velocity", "position"]
         assert (
             self.behavior in behaviors
-        ), "Parameter 'behavior' invalid, must be in {}".format(behaviors)
+        ), f"Parameter 'behavior' invalid, must be in {behaviors}"
 
         if self.behavior == "wrench":
             self.wrench_pub = rospy.Publisher("/wrench", WrenchStamped, queue_size=1)

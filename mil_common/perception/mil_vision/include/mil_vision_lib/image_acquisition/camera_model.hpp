@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ros/ros.h>
+
 #include <Eigen/Core>
 
 namespace mil_vision

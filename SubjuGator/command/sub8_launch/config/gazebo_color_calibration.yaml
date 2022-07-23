@@ -1,4 +1,5 @@
 # Always prefer bgr to hsv when red is a possible color
+---
 color:
   buoy:
     red:

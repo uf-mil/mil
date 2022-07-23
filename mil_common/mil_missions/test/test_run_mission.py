@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 
 import rospy
@@ -10,7 +10,7 @@ class RunMissionTest(unittest.TestCase):
     def __init__(self, *args):
         self.client = MissionClient()
         self.client.wait_for_server()
-        super(RunMissionTest, self).__init__(*args)
+        super().__init__(*args)
 
     def test_run_mission(self):
         self.client.run_mission("PrintAndWait")
@@ -20,7 +20,7 @@ class RunMissionTest(unittest.TestCase):
         self.assertEqual(state, TerminalState.SUCCEEDED)
         self.assertTrue(result.success)
         self.assertEqual(result.parameters, "")
-        self.assertEqual(result.result, "The darkness isnt so scary")
+        self.assertEqual(result.result, "The darkness isn't so scary")
 
 
 if __name__ == "__main__":

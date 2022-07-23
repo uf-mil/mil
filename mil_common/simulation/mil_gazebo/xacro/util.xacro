@@ -1,23 +1,12 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-
   <!-- determined by https://en.wikipedia.org/wiki/List_of_moments_of_inertia -->
   <xacro:macro name="box_inertia" params="x y z mass">
-    <inertia ixx="${((y*y) + (z*z))*mass/12.0}"
-             ixy="0.0"
-             ixz="0.0"
-             iyy="${((x*x) + (z*z))*mass/12.0}"
-             iyz="0.0"
-             izz="${((y*y) + (x*x))*mass/12.0}"/>
+    <inertia ixx="${((y*y) + (z*z))*mass/12.0}" ixy="0.0" ixz="0.0" iyy="${((x*x) + (z*z))*mass/12.0}" iyz="0.0" izz="${((y*y) + (x*x))*mass/12.0}"/>
   </xacro:macro>
-  
+
   <xacro:macro name="cylinder_inertia" params="r h mass">
-    <inertia ixx="${((3*r*r) + (h*h))*mass/12.0}"
-             ixy="0.0"
-             ixz="0.0"
-             iyy="${((3*r*r) + (h*h))*mass/12.0}"
-             iyz="0.0"
-             izz="${(r*r)*mass/2.0}"/>
+    <inertia ixx="${((3*r*r) + (h*h))*mass/12.0}" ixy="0.0" ixz="0.0" iyy="${((3*r*r) + (h*h))*mass/12.0}" iyz="0.0" izz="${(r*r)*mass/2.0}"/>
   </xacro:macro>
 
   <xacro:macro name="joint_transmission" params="name parent_link">

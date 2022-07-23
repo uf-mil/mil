@@ -1,5 +1,5 @@
-Path Planning
--------------
+:mod:`lqrrt` - Path Planning
+----------------------------
 
 Constraints
 ^^^^^^^^^^^
@@ -20,7 +20,7 @@ Planner
 
 .. autoclass:: lqrrt.Planner
     :members:
-   
+
 Tree
 ^^^^
 

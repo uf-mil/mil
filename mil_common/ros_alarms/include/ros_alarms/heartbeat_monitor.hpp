@@ -8,19 +8,18 @@
 #include <ros/ros.h>
 #include <std_msgs/Header.h>
 
-#include <ros_alarms/broadcaster.hpp>
-#include <ros_alarms/listener.hpp>
-
 #include <algorithm>
 #include <cstdio>
 #include <iostream>
+#include <ros_alarms/broadcaster.hpp>
+#include <ros_alarms/listener.hpp>
 #include <sstream>
 #include <string>
 
 namespace ros_alarms
 {
 /**
- * Class responsible for monitoring a heartbeat connection mantained through
+ * Class responsible for monitoring a heartbeat connection maintained through
  * successive messages sent on a heartbeat topic. Absence of messages after some
  * amount of time will cause the class to raise an alarm through an AlarmProxy.
  */
@@ -43,12 +42,13 @@ public:
    * @param period The amount of time to wait to check for another heartbeat. Defaults
    * to 0.02 seconds.
    */
-  HeartbeatMonitor(ros::NodeHandle nh, std::string alarm_name, std::string heartbeat_topic,
-                   std::function<bool(msg_t)> predicate = [](msg_t) { return true; },
-                   ros::Duration time_to_raise = ros::Duration(0.1), ros::Duration time_to_clear = ros::Duration(0.1),
-                   ros::Duration period = ros::Duration(0.02));
+  HeartbeatMonitor(
+      ros::NodeHandle nh, std::string alarm_name, std::string heartbeat_topic,
+      std::function<bool(msg_t)> predicate = [](msg_t) { return true; },
+      ros::Duration time_to_raise = ros::Duration(0.1), ros::Duration time_to_clear = ros::Duration(0.1),
+      ros::Duration period = ros::Duration(0.02));
   // TODO: find out why a period < 0.02 causes callbacks not to be called
-  
+
   /**
    * @return The name of the alarm connected through AlarmProxy.
    */
@@ -64,7 +64,7 @@ public:
   {
     return __heartbeat_topic;
   }
-  
+
   /**
    * Returns whether the connection is alive and healthy! A healthy connection indicates
    * that the connection established to the heartbeat is still running and sending
@@ -76,7 +76,7 @@ public:
   {
     return __healthy;
   }
-  
+
   /**
    * Get the time of the last heartbeat.
    *
@@ -178,8 +178,9 @@ HeartbeatMonitor<msg_t>::HeartbeatMonitor(ros::NodeHandle nh, std::string alarm_
   __object_name = obj.str();
 
   std::stringstream init_msg;
-  init_msg << "Node " << __alarm_proxy.node_name << " is now monitoring the following"
-                                                    " heartbeat: "
+  init_msg << "Node " << __alarm_proxy.node_name
+           << " is now monitoring the following"
+              " heartbeat: "
            << __heartbeat_topic;
   // ROS_INFO("%s", init_msg.str().c_str());
 }

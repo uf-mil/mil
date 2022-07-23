@@ -189,7 +189,7 @@ while not rospy.is_shutdown():
                 break
 
             elif 'pkg="tf"' in line:
-                # Incase we don't find the tf line of interest to change, we want to insert the new tf line after
+                # In case we don't find the tf line of interest to change, we want to insert the new tf line after
                 # the last tf line
                 tab_level = line[:line.find("<")]  # The labs infront of the tf line
                 last_static_pub = i

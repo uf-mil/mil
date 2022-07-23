@@ -1,24 +1,19 @@
-#include <ros/ros.h>
-#include <deque>
-
-#include <sensor_msgs/PointCloud2.h>
-
-#include <mil_vision_lib/image_acquisition/ros_camera_stream.hpp>
-
 #include <geometry_msgs/TransformStamped.h>
-#include <tf2_ros/transform_listener.h>
-
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/conversions.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
-
-#include <opencv2/opencv.hpp>
+#include <ros/ros.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+#include <deque>
+#include <mil_vision_lib/image_acquisition/ros_camera_stream.hpp>
+#include <opencv2/opencv.hpp>
 
 using ROSCameraStream_Vec3 = mil_vision::ROSCameraStream<cv::Vec3b>;
 //! Point Cloud Colorizer class.
@@ -54,7 +49,7 @@ public:
     std::string pointcloud_advertiser = "/velodyne_points/colored";
     nh_.param<std::string>("pointcloud_advertiser", pointcloud_advertiser, pointcloud_advertiser);
 
-    // pushback camera streams that are avaliable
+    // pushback camera streams that are available
     for (auto &i : camera_names)
     {
       std::unique_ptr<ROSCameraStream_Vec3> cam(new ROSCameraStream_Vec3(nh_, 1));
@@ -81,7 +76,7 @@ public:
       if (!tf_buffer_.canTransform((*cam)[0]->getCameraModelPtr()->tfFrame(), point_cloud->header.frame_id,
                                    ros::Time(0)))
       {
-        ROS_ERROR_STREAM("PC_COLORIZER: failed to find a trasformation for camera");
+        ROS_ERROR_STREAM("PC_COLORIZER: failed to find a transformation for camera");
         return;
       }
 

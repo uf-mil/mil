@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import json
 import os
 
@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 
-class LabelBoxParser(object):
+class LabelBoxParser:
     """
     Class to read an exported labelbox annotation file (must be JSON formatted)
     and call a user specified callback function with this parsed annotation along with the

@@ -1,5 +1,5 @@
-CAN Communication
------------------
+:mod:`mil_usb_to_can` - USB to CAN Communication
+------------------------------------------------
 
 ApplicationPacket
 ^^^^^^^^^^^^^^^^^

@@ -1,12 +1,11 @@
+#include <nodelet/nodelet.h>
+#include <ros/ros.h>
+
 #include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
-
-#include <nodelet/nodelet.h>
-#include <ros/ros.h>
-#include <pluginlib/class_list_macros.hpp>
-
 #include <mil_tools/param_helpers.hpp>
+#include <pluginlib/class_list_macros.hpp>
 
 #include "rdi_explorer_dvl/driver.hpp"
 
@@ -80,4 +79,4 @@ private:
 };
 
 PLUGINLIB_EXPORT_CLASS(rdi_explorer_dvl::Nodelet, nodelet::Nodelet);
-}
+}  // namespace rdi_explorer_dvl

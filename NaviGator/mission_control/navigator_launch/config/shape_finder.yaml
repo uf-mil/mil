@@ -1,3 +1,4 @@
+---
 tracking:
   min_count: 5
   max_distance_gap: 25

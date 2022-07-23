@@ -11,7 +11,7 @@ from .utils import CommandPacket, ReceivePacket
 
 class SimulatedCANDevice:
     """
-    Simulates a CAN device, with functions to be overrided to handle data requests
+    Simulates a CAN device, with functions to be overridden to handle data requests
     and sends from motherboard.
 
     Child classes can inherit from this class to implement a simulated CAN device.
@@ -46,13 +46,13 @@ class SimulatedCANDevice:
 class ExampleSimulatedEchoDevice(SimulatedCANDevice):
     """
     Example implementation of a SimulatedCANDevice.
-    On sends, stores the transmited data in a buffer.
+    On sends, stores the transmitted data in a buffer.
     When data is requested, it echos this data back.
     """
 
     def __init__(self, *args, **kwargs):
-        # Call parent classes contructor
-        super(ExampleSimulatedEchoDevice, self).__init__(*args, **kwargs)
+        # Call parent classes constructor
+        super().__init__(*args, **kwargs)
 
     def on_data(self, data, can_id):
         # Echo data received back onto the bus
@@ -62,13 +62,13 @@ class ExampleSimulatedEchoDevice(SimulatedCANDevice):
 class ExampleSimulatedAdderDevice(SimulatedCANDevice):
     """
     Example implementation of a SimulatedCANDevice.
-    On sends, stores the transmited data in a buffer.
+    On sends, stores the transmitted data in a buffer.
     When data is requested, it echos this data back.
     """
 
     def __init__(self, *args, **kwargs):
-        # Call parent classes contructor
-        super(ExampleSimulatedAdderDevice, self).__init__(*args, **kwargs)
+        # Call parent classes constructor
+        super().__init__(*args, **kwargs)
 
     def on_data(self, data, can_id):
         packet = ApplicationPacket.from_bytes(data, expected_identifier=37)
@@ -92,10 +92,10 @@ class SimulatedUSBtoCAN(SimulatedSerial):
             can_id (int): ID of the CAN2USB device. Defaults to -1.
         """
         self._my_id = can_id
-        self._devices = dict(
-            (can_id, device(self, can_id)) for can_id, device in devices.items()
-        )
-        super(SimulatedUSBtoCAN, self).__init__()
+        self._devices = {
+            can_id: device(self, can_id) for can_id, device in devices.items()
+        }
+        super().__init__()
 
     def send_to_bus(self, can_id: int, data: bytes, from_mobo: bool = False):
         """

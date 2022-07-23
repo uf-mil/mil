@@ -4,7 +4,8 @@
 // Class: Sub8ObjectFinder ////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-Sub8ObjectFinder::Sub8ObjectFinder() try : image_transport(nh), rviz("/torpedo_board/visualization/detection")
+Sub8ObjectFinder::Sub8ObjectFinder()
+try : image_transport(nh), rviz("/torpedo_board/visualization/detection")
 {
   std::stringstream log_msg;
   log_msg << "\nInitializing Sub8ObjectFinder:\n";
@@ -203,7 +204,7 @@ void Sub8ObjectFinder::determine_torpedo_board_position()
   // Denoise Images
   /*
     TODO:
-    Try inhomogenous diffusion, anisotropic diffusion for better filtering that
+    Try inhomogeneous diffusion, anisotropic diffusion for better filtering that
     preserves edges
   */
 

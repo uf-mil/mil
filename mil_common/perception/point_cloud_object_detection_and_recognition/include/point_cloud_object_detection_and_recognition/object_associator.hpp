@@ -1,17 +1,17 @@
 #pragma once
 
-#include "object_map.hpp"
-#include "pcodar_types.hpp"
-
 #include <mil_msgs/PerceptionObject.h>
 
 #include <limits>
+
+#include "object_map.hpp"
+#include "pcodar_types.hpp"
 
 namespace pcodar
 {
 /**
  * Associates recently identified objects with previous objects so they persist over time.
- * This is acomplished by finding the nearest neighbor point, creating a new object if this is
+ * This is accomplished by finding the nearest neighbor point, creating a new object if this is
  * greater than a maximum distance.
  */
 class Associator

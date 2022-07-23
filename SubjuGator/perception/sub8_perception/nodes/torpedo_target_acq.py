@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import print_function
 
 import sys
@@ -181,7 +181,7 @@ class torp_vision:
         approx = cv2.approxPolyDP(c, 0.04 * peri, True)
 
         if len(approx) == 4:
-            target = "Target Aquisition Successful"
+            target = "Target Acquisition Successful"
 
         elif len(approx) == 3 or len(approx) == 5:
             target = "Partial Target Acquisition"
@@ -268,8 +268,8 @@ class torp_vision:
             M = cv2.moments(c)
             if M["m00"] == 0:
                 M["m00"] = 0.000001
-            cX = int((M["m10"] / M["m00"]))
-            cY = int((M["m01"] / M["m00"]))
+            cX = int(M["m10"] / M["m00"])
+            cY = int(M["m01"] / M["m00"])
             shape = self.detect(c)
 
             # multiply the contour (x, y)-coordinates by the resize ratio,
@@ -278,7 +278,7 @@ class torp_vision:
             c = c.astype("float")
             # c *= ratio
             c = c.astype("int")
-            if shape == "Target Aquisition Successful":
+            if shape == "Target Acquisition Successful":
                 if self.debug:
                     try:
                         cv2.drawContours(cv_image, [c], -1, (0, 255, 0), 2)
@@ -307,14 +307,14 @@ class torp_vision:
         of where we are trying to go and perform more accurate movements
         to align with the target. The first thing we need to do is convert from
         camera coordinates in pixels to 3D coordinates.
-        Every time we succesfully get a target aquisition we add it to the
+        Every time we successfully get a target acquisition we add it to the
         counter. Once we observe it enough times
         we can be confident we are looking at the correct target. We then
         perform an least squares intersection from multiple angles
         to derive the approximate 3D coordinates.
         """
 
-        if m_shape == "Target Aquisition Successful":
+        if m_shape == "Target Acquisition Successful":
             try:
                 self.tf_listener.waitForTransform(
                     "map",
@@ -323,7 +323,7 @@ class torp_vision:
                     rospy.Duration(0.2),
                 )
             except tf.Exception as e:
-                rospy.logwarn("Could not transform camera to map: {}".format(e))
+                rospy.logwarn(f"Could not transform camera to map: {e}")
                 return False
 
             (t, rot_q) = self.tf_listener.lookupTransform(
@@ -339,7 +339,7 @@ class torp_vision:
                 self.status = "Pose found"
 
             else:
-                self.status = "{} observations".format(len(observations))
+                self.status = f"{len(observations)} observations"
 
 
 def main(args):

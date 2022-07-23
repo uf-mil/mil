@@ -149,7 +149,7 @@ class FprintFactory:
         # timestamp
         self.time = time
         self.msg_color = (
-            msg_color  # Either `None` for deafult printing or a string color
+            msg_color  # Either `None` for default printing or a string color
         )
         self.auto_bold = auto_bold  # Should each message be bolded by default
         self.newline = newline  # The number of newlines characters to add to the end

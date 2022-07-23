@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import subprocess
 import sys
 
@@ -16,7 +16,7 @@ from twisted.internet import defer, reactor
 MESSAGE_TIMEOUT = 1  # s
 
 
-class TemplateChecker(object):
+class TemplateChecker:
 
     """Template for how each checker class should look.
     This provides interface functions for the main function to use. You don't have to
@@ -36,7 +36,7 @@ class TemplateChecker(object):
         pass
 
     def do_check(self):
-        # Do acutal checking here, either pass or fail
+        # Do actual checking here, either pass or fail
         pass
 
     def pass_check(self, status="", name=None):
@@ -45,8 +45,8 @@ class TemplateChecker(object):
             name = self.name
         pass_text = self.p.text("[ ").set_green.bold("PASS").text(" ]")
         pass_text += self.p.space().bold(name)
-        if status is not "":
-            pass_text += self.p.text(": {}".format(status))
+        if status != "":
+            pass_text += self.p.text(f": {status}")
 
         print(pass_text)
 
@@ -56,8 +56,8 @@ class TemplateChecker(object):
             name = self.name
         warn_text = self.p.text("[ ").set_yellow.bold("WARN").text(" ]")
         warn_text += self.p.space().bold(name)
-        if reason is not "":
-            warn_text += self.p.text(": {}".format(reason))
+        if reason != "":
+            warn_text += self.p.text(f": {reason}")
 
         print(warn_text)
 
@@ -67,16 +67,16 @@ class TemplateChecker(object):
             name = self.name
         fail_text = self.p.text("[ ").set_red.bold("FAIL").text(" ]")
         fail_text += self.p.space().bold(name)
-        if reason is not "":
-            fail_text += self.p.text(": {}".format(reason))
+        if reason != "":
+            fail_text += self.p.text(f": {reason}")
 
         print(fail_text)
 
     def err_msg(self, error, line_number):
         # If there is an error on runtime, this runs
         fail_text = self.p.text("[ ").set_red.bold(" ERR").text(" ]")
-        fail_text += self.p.space().bold(self.name).text(": ({})".format(line_number))
-        fail_text += self.p.space().text("{}".format(error))
+        fail_text += self.p.space().bold(self.name).text(f": ({line_number})")
+        fail_text += self.p.space().text(f"{error}")
 
         print(fail_text)
 
@@ -92,7 +92,7 @@ class ThrusterChecker(TemplateChecker):
         try:
             thrusters = yield self.nh.get_param("/thruster_layout/thrusters")
         except txros.rosxmlrpc.Error as e:
-            raise IOError(e.message)
+            raise OSError(e.message)
 
         self.found_thrusters = {}
         for thruster_name in thrusters.keys():
@@ -111,7 +111,7 @@ class ThrusterChecker(TemplateChecker):
             if not any(self.found_thrusters.values()):
                 self.fail_check("no messages found.")
             elif self.found_thrusters.values().count(False) > 1:
-                err_msg += "more than one failed thruster: {}".format(lost_thrusters)
+                err_msg += f"more than one failed thruster: {lost_thrusters}"
                 self.fail_check(err_msg)
             elif self.found_thrusters.values().count(False) == 1:
                 err_msg += "one thruster is out ({}), things should still work.".format(
@@ -126,7 +126,7 @@ class ThrusterChecker(TemplateChecker):
         if passed:
             self.pass_check("all thrusters up.")
         else:
-            self.warn_check("unkown failure.")
+            self.warn_check("unknown failure.")
 
     @txros.util.cancellableInlineCallbacks
     def get_all_thrusters(self):
@@ -169,8 +169,8 @@ class CameraChecker(TemplateChecker):
 
     @txros.util.cancellableInlineCallbacks
     def do_check(self):
-        # Check if front cameras are actally on usb bus
-        command = "lsusb -d {}".format(self.front_cam_product_id)
+        # Check if front cameras are actually on usb bus
+        command = f"lsusb -d {self.front_cam_product_id}"
         err_str = "{} front camera{} not connected to usb port"
         try:
             count_front_cam_usb = subprocess.check_output(

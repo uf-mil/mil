@@ -38,7 +38,7 @@ class Job(common.Job):
                 or model == "ground_plane"
             ):
                 continue
-            print("MARKER_TEST - Deleting {}".format(model))
+            print(f"MARKER_TEST - Deleting {model}")
             self.delete_model(DeleteModelRequest(model_name=model))
 
         self.nh.sleep(1)
@@ -53,7 +53,7 @@ class Job(common.Job):
         )
         sub_pose = msg_helpers.numpy_quat_pair_to_pose(sub_point, sub_quat)
         yield self.set_model_pose(sub_pose)
-        print("MARKER_TEST - Sub at {0}".format(sub_pose))
+        print(f"MARKER_TEST - Sub at {sub_pose}")
 
         # Set marker position
         self.marker_point = np.random.uniform(-3, 3, size=2)
@@ -63,7 +63,7 @@ class Job(common.Job):
         self.marker_pose = msg_helpers.numpy_quat_pair_to_pose(
             np.append(self.marker_point, -4.9), self.marker_quat
         )
-        print("MARKER_TEST - Marker at {0}".format(self.marker_pose))
+        print(f"MARKER_TEST - Marker at {self.marker_pose}")
         self.set_model_pose(self.marker_pose, model="channel_marker_1")
 
     @txros.util.cancellableInlineCallbacks

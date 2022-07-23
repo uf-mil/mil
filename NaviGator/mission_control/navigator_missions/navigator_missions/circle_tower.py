@@ -10,7 +10,7 @@ from .navigator import Navigator
 class CircleTower(Navigator):
     """
     Simple mission to circle totems once they have been labeled, does not
-    have searching funcitonality found
+    have searching functionality found
     """
 
     CIRCLE_DISTANCE = 5.0  # Distance around totem to circle
@@ -51,7 +51,7 @@ class CircleTower(Navigator):
             # Make sure they are valid colors
             for color in parameters:
                 if color not in self.DIRECTIONS:
-                    raise Exception("Color {} is not known.".format(color))
+                    raise Exception(f"Color {color} is not known.")
             colors = parameters
 
         colors = self.net_stc_result
@@ -63,10 +63,10 @@ class CircleTower(Navigator):
                 "totem_" + color.lower(), n=1, throw=False
             )
             if res is None:
-                self.send_feedback("Totem {} not found".format(color))
+                self.send_feedback(f"Totem {color} not found")
                 continue
             position = res[1][0]
-            self.send_feedback("Totem {} found!".format(color))
+            self.send_feedback(f"Totem {color} found!")
             targets.append((position, color))
             yield self.nh.sleep(0.1)
 
@@ -81,7 +81,7 @@ class CircleTower(Navigator):
             color = target[1]
             position = target[0]
             direction = self.DIRECTIONS[color]
-            self.send_feedback("Attempting to circle {} {}".format(color, direction))
+            self.send_feedback(f"Attempting to circle {color} {direction}")
             self.send_feedback("Moving in front of totem")
             yield self.nh.sleep(0.1)
 

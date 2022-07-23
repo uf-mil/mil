@@ -41,7 +41,7 @@ lock = threading.Lock()
 
 class RobotXStartServices:
     """
-    Initializes services and subscribes to necessary publishers in order to faciliate
+    Initializes services and subscribes to necessary publishers in order to facilitate
     the transmission of messages between the robot client and the Technical Director
     server.
 
@@ -144,7 +144,7 @@ class RobotXStartServices:
     def gps_coord_callback(self, lla: PointStamped) -> None:
         """
         Updates the :attr:`.gps_array` attribute with the most recent :class:`PointStamped`
-        message receieved.
+        message received.
         """
         self.gps_array = lla
 
@@ -341,7 +341,7 @@ class RobotXClient:
                 self.tcp_ip = socket.gethostbyname(tcp_ip)
                 break
             except socket.gaierror as e:
-                rospy.logwarn("Failed to resolved {}: {}".format(tcp_ip, e))
+                rospy.logwarn(f"Failed to resolved {tcp_ip}: {e}")
                 rospy.sleep(1.0)
                 continue
         self.tcp_port = tcp_port
@@ -370,7 +370,7 @@ class RobotXClient:
                 self.socket_connection.connect((self.tcp_ip, self.tcp_port))
                 self.connected = True
                 rospy.loginfo("Connection to TD Server Successful")
-            except socket.error:
+            except OSError:
                 rospy.sleep(2)
 
     @thread_lock(lock)
@@ -389,7 +389,7 @@ class RobotXClient:
             try:
                 self.socket_connection.send(message)
                 break
-            except socket.error:
+            except OSError:
                 rospy.loginfo("Connection to TD Server Lost")
                 self.connected = False
                 self.connect()

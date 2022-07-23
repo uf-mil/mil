@@ -3,6 +3,7 @@
  * Date: Jan 16, 2017
  */
 #include <gtest/gtest.h>
+
 #include <functional>
 #include <iostream>
 #include <ros_alarms/broadcaster.hpp>
@@ -10,9 +11,9 @@
 #include <string>
 
 using namespace std;
-using ros_alarms::AlarmProxy;
 using ros_alarms::AlarmBroadcaster;
 using ros_alarms::AlarmListener;
+using ros_alarms::AlarmProxy;
 
 TEST(BroadcasterTest, broadcasterTest)
 {

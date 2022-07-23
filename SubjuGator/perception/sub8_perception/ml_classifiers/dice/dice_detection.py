@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import datetime
 import sys
 
@@ -18,7 +18,7 @@ sys.path.append(rospack.get_path("sub8_perception") + "/ml_classifiers/dice/util
 from utils import detector_utils  # noqa
 
 
-class classifier(object):
+class classifier:
     def __init__(self):
         rospy.init_node("dice_detection")
         self.bridge = CvBridge()
@@ -70,9 +70,7 @@ class classifier(object):
         fps = self.num_frames / elapsed_time
 
         # Display FPS on frame
-        detector_utils.draw_text_on_image(
-            "FPS : " + str("{0:.2f}".format(fps)), cv_image
-        )
+        detector_utils.draw_text_on_image("FPS : " + str(f"{fps:.2f}"), cv_image)
 
         # Publish image
         try:

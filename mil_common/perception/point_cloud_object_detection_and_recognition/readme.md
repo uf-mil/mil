@@ -10,4 +10,3 @@ To run, use the command:
 ```roslaunch point_cloud_object_detection_and_recognition pcodar.launch```
 
 ## Implementation Overview
-

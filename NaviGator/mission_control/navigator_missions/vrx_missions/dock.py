@@ -33,7 +33,7 @@ TIMEOUT_SECONDS = 30
 
 class Dock(Vrx):
     def __init__(self, *args, **kwargs):
-        super(Dock, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.classifier = VrxStcColorClassifier()
         self.classifier.train_from_csv()
         self.camera_model = PinholeCameraModel()
@@ -423,7 +423,7 @@ class Dock(Vrx):
             # ensure boat is lined up to be able to hit the target
             # by making sure the black box is in correct part of image
             # values were obtained by setting the ball shooter at a
-            # specific yaw and pitch and determing where the box needed
+            # specific yaw and pitch and determining where the box needed
             # to be for the ball to go in the box
 
             if square_pix is None:
@@ -541,7 +541,7 @@ class Dock(Vrx):
 
         midpoint = (left_wall + right_wall) / 2
 
-        # helpful for debugging to ensure we truly found the center of teh docking area
+        # helpful for debugging to ensure we truly found the center of the docking area
         for i in range(height):
             mask[i, midpoint] = 0
 

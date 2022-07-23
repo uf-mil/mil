@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-from mil_missions.msg import DoMissionAction, DoMissionResult, DoMissionFeedback
-from mil_missions_core import MissionException, MissionResult
-from txros import util, NodeHandle, action
-from twisted.internet import defer, reactor
-import twisted.python
 import inspect
 import json
+
+import twisted.python
+from mil_missions.msg import DoMissionAction, DoMissionFeedback, DoMissionResult
+from mil_missions_core import MissionException, MissionResult
+from twisted.internet import defer, reactor
+from txros import NodeHandle, action, util
 
 
 class MissionRunner:
     """
-    Node which runs the missions server, recieving goals from a client
+    Node which runs the missions server, receiving goals from a client
     to run a mission, cancel a mission, and publish feedback.
     """
 
@@ -38,7 +39,7 @@ class MissionRunner:
         base_mission = getattr(mission_module, base_mission_name)
         yield base_mission._init(self)
 
-        # Import all missions which extend the base class and initilize them
+        # Import all missions which extend the base class and initialize them
         self.missions = {}
         for name, cls in inspect.getmembers(mission_module):
             if (
@@ -91,7 +92,7 @@ class MissionRunner:
             return
         goal = self.server.accept_new_goal()
         if not self.has_mission(goal.mission):
-            print("TASK RUNNER: unrecognized mission '{}'".format(goal.mission))
+            print(f"TASK RUNNER: unrecognized mission '{goal.mission}'")
             self.server.set_aborted(
                 result=DoMissionResult(success=False, result="mission unknown")
             )
@@ -128,18 +129,18 @@ class MissionRunner:
 
     def cleanup_fail(self, final, missionname):
         print("")
-        print("Clean up for {} failed!".format(missionname))
+        print(f"Clean up for {missionname} failed!")
         print(final.getTraceback())
 
     @util.cancellableInlineCallbacks
     def mission_finished_cb(self, final):
         """
-        Called when the current mission finishes succesfully, is cancled, is preempted by another
+        Called when the current mission finishes successfully, is canceled, is preempted by another
         mission, or raises an exception. Publishes the correct result to the action clients.
         """
         result = DoMissionResult()
 
-        # If mission failed / was cancled, abort mission
+        # If mission failed / was canceled, abort mission
         if isinstance(final, twisted.python.failure.Failure):
             result.success = False
 

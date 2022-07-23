@@ -38,10 +38,10 @@ if __name__ == "__main__":
     )
     parser.add_argument(dest="name", help="Name of the object.")
     parser.add_argument(
-        dest="lat", type=float, help="Latitude in degrees of the object of intrest."
+        dest="lat", type=float, help="Latitude in degrees of the object of interest."
     )
     parser.add_argument(
-        dest="long", type=float, help="Longitude in degrees of the object of intrest."
+        dest="long", type=float, help="Longitude in degrees of the object of interest."
     )
     parser.add_argument(
         "--alt",
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         action="store",
         type=float,
         default=0.0,
-        help="Altitude in meters of the object of intrest (usually can be omitted).",
+        help="Altitude in meters of the object of interest (usually can be omitted).",
     )
 
     args = parser.parse_args(sys.argv[1:])

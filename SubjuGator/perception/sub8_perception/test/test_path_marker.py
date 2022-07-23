@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import division
 
 import unittest
@@ -40,7 +40,7 @@ class TestPathMarker(unittest.TestCase):
         enable(SetBoolRequest(data=True))
         self.cam_info_pub = rospy.Publisher(self.info_topic, CameraInfo, queue_size=5)
         self.img_pub = rospy.Publisher(self.img_topic, Image, queue_size=5)
-        super(TestPathMarker, self).__init__(*args)
+        super().__init__(*args)
 
     def get_ideal_response(self, pts):
         pts = np.array(pts)
@@ -58,7 +58,7 @@ class TestPathMarker(unittest.TestCase):
     def _test_bag(self, filename, duration, pts):
         rospy.sleep(rospy.Duration(0.5))
         correct = self.get_ideal_response(pts)
-        print("Correct pose: {}".format(np.degrees(correct.pose.theta)))
+        print(f"Correct pose: {np.degrees(correct.pose.theta)}")
         bag = rosbag.Bag(filename)
         first = True
         first_time = None

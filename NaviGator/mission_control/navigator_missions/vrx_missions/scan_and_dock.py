@@ -12,7 +12,7 @@ from vrx_gazebo.srv import ColorSequence, ColorSequenceRequest
 
 class ScanAndDock(Vrx):
     def __init__(self, *args, **kwargs):
-        super(ScanAndDock, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
@@ -31,7 +31,8 @@ class ScanAndDock(Vrx):
 
         try:
             yield self.run_submission(
-                "Dock", parameters="%s %s" % (sequence[0], color_to_shape[sequence[2]])
+                "Dock",
+                parameters=f"{sequence[0]} {color_to_shape[sequence[2]]}",
             )
         except Exception as e:
             print(e)

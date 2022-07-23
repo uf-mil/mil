@@ -1,3 +1,4 @@
+---
 wamv_camera:
     - name: front_left_camera
       x: 0.75

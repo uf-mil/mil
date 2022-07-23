@@ -67,7 +67,7 @@ def load_mesh(path):
 
         else:
             # If we don't have the file cached, there's no way we've downloaded it
-            print("SIM: Model for {} does not exist, downloading it...".format(file_))
+            print(f"SIM: Model for {file_} does not exist, downloading it...")
             download_and_unzip(urls[file_], dir_)
             return load_and_cache_mesh(path, url=urls[file_])
 
@@ -76,7 +76,7 @@ def load_mesh(path):
         return load_from_cache(path)
 
     elif os.path.exists(path):
-        print("SIM: Loading and then cacheing {}".format(path))
+        print(f"SIM: Loading and then caching {path}")
         return load_and_cache_mesh(path)
 
     else:
@@ -96,4 +96,4 @@ print("SIM: Loading Sub8 reduced mesh model")
 Sub8 = load_mesh(os.path.join(_filepath, "Sub.obj"))
 tic = time() - tic
 
-print("SIM: All meshes loaded, took {} seconds".format(tic))
+print(f"SIM: All meshes loaded, took {tic} seconds")

@@ -20,7 +20,7 @@ class PnuematicActuatorDriverError(Exception):
     """
 
     def __init__(self, message):
-        super(PnuematicActuatorDriverError, self).__init__("Actuator board: " + message)
+        super().__init__("Actuator board: " + message)
 
 
 class PnuematicActuatorDriverChecksumError(PnuematicActuatorDriverError):
@@ -34,7 +34,7 @@ class PnuematicActuatorDriverChecksumError(PnuematicActuatorDriverError):
         message = "Invalid checksum. Recievied {}, should be {}".format(
             hex(checksum_is), hex(checksum_should_be)
         )
-        super(PnuematicActuatorDriverChecksumError, self).__init__(message)
+        super().__init__(message)
 
 
 class PnuematicActuatorDriverResponseError(PnuematicActuatorDriverError):
@@ -45,10 +45,10 @@ class PnuematicActuatorDriverResponseError(PnuematicActuatorDriverError):
     """
 
     def __init__(self, received, expected):
-        message = "Unexpected response. Expected {}, recieved {}".format(
+        message = "Unexpected response. Expected {}, received {}".format(
             hex(received), hex(expected)
         )
-        super(PnuematicActuatorDriverResponseError, self).__init__(message)
+        super().__init__(message)
 
 
 class PnuematicActuatorTimeoutError(PnuematicActuatorDriverError):
@@ -59,8 +59,8 @@ class PnuematicActuatorTimeoutError(PnuematicActuatorDriverError):
     """
 
     def __init__(self):
-        message = "Serial timout"
-        super(PnuematicActuatorTimeoutError, self).__init__(message)
+        message = "Serial timeout"
+        super().__init__(message)
 
 
 class PnuematicActuatorDriver:
@@ -71,7 +71,7 @@ class PnuematicActuatorDriver:
     to open or close. For the shooter system, sending a ``True`` signal will
     pulse the valve.
 
-    Futher information on the board's communication protocol can be found in the
+    Further information on the board's communication protocol can be found in the
     design documentation.
     """
 

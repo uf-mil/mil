@@ -33,8 +33,8 @@ class StartGate(SubjuGator):
         fprint("Begin search for gates")
         rotate_start = self.move.zero_roll_and_pitch()
         for i in range(4):
-            # Search 4 quadrants seperated by 90 degrees for the gate
-            fprint("Searching {} degrees".format(90 * i))
+            # Search 4 quadrants separated by 90 degrees for the gate
+            fprint(f"Searching {90 * i} degrees")
             yield rotate_start.yaw_right_deg(90 * i).go(speed=CAREFUL_SPEED)
             start = self.move.zero_roll_and_pitch()
             # Pitch up and down to populate pointcloud
@@ -52,7 +52,7 @@ class StartGate(SubjuGator):
                 clear=True,
                 c_func=self.find_gate,
             )
-            fprint("Found {} objects".format(len(res.objects)))
+            fprint(f"Found {len(res.objects)} objects")
             # Didn't find enough objects
             if len(res.objects) < 2:
                 fprint("No objects")
@@ -90,7 +90,7 @@ class StartGate(SubjuGator):
         mid_point = mid_point / 2
         # Offset z so we don't hit the bar
         mid_point[2] = mid_point[2] - 0.75
-        fprint("Midpoint: {}".format(mid_point))
+        fprint(f"Midpoint: {mid_point}")
 
         fprint("Looking at gate", msg_color="yellow")
         yield self.move.look_at(mid_point).go(speed=CAREFUL_SPEED)
@@ -98,7 +98,7 @@ class StartGate(SubjuGator):
         normal = mid_point - self.pose.position
         normal[2] = 0
         normal = normal / np.linalg.norm(normal)
-        fprint("Normal {}".format(normal))
+        fprint(f"Normal {normal}")
 
         if gate_points[0].dot(normal) < 0:
             right_gate = gate_points[0]
@@ -113,7 +113,7 @@ class StartGate(SubjuGator):
         offset_dir = offset_dir * 0.508 * RIGHT_OR_LEFT
         goal_point = mid_point + offset_dir
 
-        fprint("Goalpoint: {}".format(goal_point))
+        fprint(f"Goalpoint: {goal_point}")
 
         fprint("Moving in front of goalpoint!", msg_color="yellow")
         yield self.move.set_position(goal_point - 2 * normal).look_at(goal_point).go(
@@ -139,7 +139,7 @@ class StartGate(SubjuGator):
         max_distance_away: float = 3.3,
         perp_threshold: float = 0.5,
         depth_threshold: float = 1,
-    ) -> Optional[tuple[np.ndarray, np.ndarray]]:
+    ) -> tuple[np.ndarray, np.ndarray] | None:
         """
         find_gate: search for two objects that satisfy critria
 
@@ -147,7 +147,7 @@ class StartGate(SubjuGator):
             ray: direction we expect gate to be near
             min_distance_away: minimum distance for the two poles
             max_distance_away: max distance the two objects can be away from each other
-            perp_threshold: max dot product value for perpindicular test with ray
+            perp_threshold: max dot product value for perpendicular test with ray
             depth_threshold: make sure the two objects have close enough depth
         """
         for o in objects:
@@ -164,18 +164,16 @@ class StartGate(SubjuGator):
                     )
                     continue
                 if distance.euclidean(p, p2) < min_distance_away:
-                    fprint(
-                        "Poles too close. Distance {}".format(distance.euclidean(p, p2))
-                    )
+                    fprint(f"Poles too close. Distance {distance.euclidean(p, p2)}")
                     continue
                 line = p - p2
                 perp = line.dot(ray)
                 perp = perp / np.linalg.norm(perp)
                 if not (-perp_threshold <= perp <= perp_threshold):
-                    fprint("Not perpendicular. Dot {}".format(perp))
+                    fprint(f"Not perpendicular. Dot {perp}")
                     pass
                     # continue
-                print("Dist {}".format(line))
+                print(f"Dist {line}")
                 if abs(line[2] > depth_threshold):
                     print(
                         "Not similar height. Height: {}. Thresh: ".format(

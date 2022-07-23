@@ -2,6 +2,7 @@
 #define MIL_GAZEBO_UTILS_H
 
 #include <geometry_msgs/Vector3.h>
+
 #include <gazebo/common/common.hh>
 
 namespace mil_gazebo
@@ -16,7 +17,7 @@ double addRandomWalkNoise(double& _in, double& dt, double& previous_bias, double
                           double& correlation_time);
 
 /**
- * Determines weither a tag is set in sdf or has the ros paramter refered
+ * Determines weither a tag is set in sdf or has the ros parameter referred
  * to with the value of that tag + "_param"
  *
  * @param _sdf: Pointer to the parent sdf element to find the tag

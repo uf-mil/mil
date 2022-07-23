@@ -37,7 +37,7 @@ void SylphaseGazebo::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf
 
   pose_ = _sdf->Get<ignition::math::Pose3d>("pose");
 
-  // Get tranformation from gazebo to enu and gazeb oto ecef
+  // Get transformation from gazebo to enu and gazeb oto ecef
   converter_ = _model->GetWorld()->SphericalCoords();
   if (!converter_)
   {
@@ -147,4 +147,4 @@ void SylphaseGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
   absodom_pub_.publish(absodom);
   acceleration_pub_.publish(accel);
 }
-}
+}  // namespace navigator_gazebo

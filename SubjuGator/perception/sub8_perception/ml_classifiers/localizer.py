@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import argparse
 import datetime
 import multiprocessing
@@ -25,7 +25,7 @@ from utils import detector_utils  # noqa
 rospack = rospkg.RosPack()
 
 
-class classifier(object):
+class classifier:
     def __init__(self):
         """
         Parameters
@@ -79,7 +79,7 @@ class classifier(object):
         self.num_frames = rospy.get_param("~num_frames", 0)
         # Number of objects we detect
         self.num_objects_detect = rospy.get_param("~objects_detected", 1)
-        # Mininum confidence score for the detections
+        # Minimum confidence score for the detections
         self.score_thresh = rospy.get_param("~score_thresh", 0.99)
         # If we want debug images published or not.
         self.debug = rospy.get_param("~debug", True)
@@ -109,7 +109,7 @@ class classifier(object):
         Publishers:
         debug_image_pub: publishes the images showing what tensorflow has
         identified as path markers
-        bbox_pub: publishes the bounding boxes. 
+        bbox_pub: publishes the bounding boxes.
         """
         self.debug_image_pub = rospy.Publisher("path_debug", Image, queue_size=1)
         self.bbox_pub = rospy.Publisher("bbox_pub", Point, queue_size=1)
@@ -118,7 +118,7 @@ class classifier(object):
 
     def check_timestamp(self):
         """
-        Check to see how old the image we are recieving is.
+        Check to see how old the image we are receiving is.
         This is a serious problem considering how long it takes to
         process a single image.
         """
@@ -162,9 +162,7 @@ class classifier(object):
         fps = self.num_frames / elapsed_time
 
         # Display FPS on frame
-        detector_utils.draw_text_on_image(
-            "FPS : " + str("{0:.2f}".format(fps)), cv_image
-        )
+        detector_utils.draw_text_on_image("FPS : " + str(f"{fps:.2f}"), cv_image)
         print("bbox:", bbox)
         if len(bbox) > 0:
             pointx = (bbox[0][0] + bbox[1][0]) / 2

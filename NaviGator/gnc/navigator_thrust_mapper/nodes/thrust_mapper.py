@@ -10,7 +10,7 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Float32
 
 
-class ThrusterMapperNode(object):
+class ThrusterMapperNode:
     """
     Node to publish individual thruster commands from the body frame wrench.
     See thruster_map.py for more details on this process as this is simply the ROS wrapper.
@@ -41,7 +41,7 @@ class ThrusterMapperNode(object):
         if self.is_vrx:
             self.publishers = [
                 rospy.Publisher(
-                    "/wamv/thrusters/{}_thrust_cmd".format(name[5:]),
+                    f"/wamv/thrusters/{name[5:]}_thrust_cmd",
                     Float32,
                     queue_size=1,
                 )
@@ -49,7 +49,7 @@ class ThrusterMapperNode(object):
             ]
         else:
             self.publishers = [
-                rospy.Publisher("/{}_motor/cmd".format(name), Command, queue_size=1)
+                rospy.Publisher(f"/{name}_motor/cmd", Command, queue_size=1)
                 for name in self.thruster_map.names
             ]
 
@@ -93,7 +93,7 @@ class ThrusterMapperNode(object):
 
     def publish_thrusts(self) -> None:
         """
-        Use the mapper to find the individual thrusts needed to acheive the current body wrench.
+        Use the mapper to find the individual thrusts needed to achieve the current body wrench.
         If killed, publish 0 to all thrusters just to be safe.
         """
         commands = [Command() for i in range(len(self.publishers))]

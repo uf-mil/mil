@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 from copy import copy, deepcopy
 from threading import Lock
@@ -18,7 +18,7 @@ class killtest(unittest.TestCase):
         self.updated = False
         self.AlarmListener = AlarmListener("hw-kill", self._hw_kill_cb)
         self.AlarmBroadcaster = AlarmBroadcaster("kill")
-        super(killtest, self).__init__(*args)
+        super().__init__(*args)
 
     @thread_lock(lock)
     def reset_update(self):
@@ -68,7 +68,7 @@ class killtest(unittest.TestCase):
 
     def test_1_initial_state(self):  # test the initial state of kill signal
         """
-        Tests initial state of system, which should have hw-kill raised beause kill is raised at startup.
+        Tests initial state of system, which should have hw-kill raised because kill is raised at startup.
 
         Because hw-kill will be initialized to cleared then later raised when alarm server is fully started,
         so we need to allow for pottentialy two updates before it is raised.
@@ -102,9 +102,7 @@ class killtest(unittest.TestCase):
         """
         Tests that button kills work through simulated service.
         """
-        bfp = rospy.ServiceProxy(
-            "/kill_board_interface/BUTTON_{}".format(button), SetBool
-        )
+        bfp = rospy.ServiceProxy(f"/kill_board_interface/BUTTON_{button}", SetBool)
         bfp.wait_for_service(timeout=5.0)
 
         self.reset_update()
@@ -139,7 +137,7 @@ class killtest(unittest.TestCase):
             rate.sleep()
 
         self.reset_update()
-        rospy.sleep(8.5)  # Wait slighly longer then the timeout on killboard
+        rospy.sleep(8.5)  # Wait slightly longer then the timeout on killboard
         self.assert_raised()
 
         self.reset_update()

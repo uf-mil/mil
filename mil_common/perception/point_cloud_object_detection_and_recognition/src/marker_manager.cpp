@@ -4,7 +4,6 @@
 
 #include <pcl/common/centroid.h>
 #include <pcl/common/common.h>
-
 #include <tf/transform_datatypes.h>
 
 namespace
@@ -13,7 +12,7 @@ std::string marker_name(uint id)
 {
   return std::string("object") + std::to_string(id);
 }
-}
+}  // namespace
 
 namespace pcodar
 {
@@ -56,7 +55,7 @@ void MarkerManager::update_interactive_marker(mil_msgs::PerceptionObject const& 
   // Form the marker name from the object id
   std::string name = marker_name(object.id);
 
-  // Stores the new / pervious interactive marker
+  // Stores the new / previous interactive marker
   visualization_msgs::InteractiveMarker int_marker;
 
   // Tracks if the marker needs to be inserted or just updated
@@ -155,4 +154,4 @@ void MarkerManager::update_markers()
   interactive_marker_server_->applyChanges();
 }
 
-}  // pcodar namespace
+}  // namespace pcodar

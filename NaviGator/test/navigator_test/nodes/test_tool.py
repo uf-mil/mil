@@ -43,7 +43,7 @@ def main():
 
     for test in args.tests:
         # Make sure all missions exist before we run
-        assert test in available_missions, "'{}' test not found".format(test)
+        assert test in available_missions, f"'{test}' test not found"
 
     for test in args.tests:
         fprint("Running Test!\n", title="TEST")
@@ -54,10 +54,10 @@ def main():
         result = yield to_run.run_tests()
 
         if result is None:
-            fprint("{} finished with no result.".format(test), title="TEST")
+            fprint(f"{test} finished with no result.", title="TEST")
         else:
             for r in result:
-                fprint("{} finished with:".format(test), title="TEST")
+                fprint(f"{test} finished with:", title="TEST")
             print(r)
 
     defer.returnValue(reactor.stop())

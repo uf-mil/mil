@@ -1,9 +1,12 @@
+---
 name: Close PRs created by non members
 
+# yamllint disable-line rule:truthy
 on:
   pull_request:
     types: [opened]
 
+# yamllint disable rule:line-length
 jobs:
   orgcheck:
     name: Check that the PR author is in the uf-mil org

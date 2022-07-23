@@ -1,11 +1,11 @@
+#include <ros/ros.h>
+
 #include <functional>
 #include <gazebo/common/Assert.hh>
 #include <gazebo/common/Events.hh>
 #include <mil_gazebo/mil_buoyancy_gazebo.hpp>
 #include <mil_gazebo/mil_gazebo_utils.hpp>
 #include <string>
-
-#include <ros/ros.h>
 
 using namespace gazebo;
 

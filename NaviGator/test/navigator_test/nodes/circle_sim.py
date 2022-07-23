@@ -32,7 +32,7 @@ class DoOdom:
         fprint("Shaking hands and taking names.")
         rospy.sleep(1)
 
-        # We need to publish an inital odom message for lqrrt
+        # We need to publish an initial odom message for lqrrt
         start_ori = trns.quaternion_from_euler(0, 0, np.random.normal() * 3.14)
         start_pos = np.append(np.random.uniform(rand_size, size=(2)), 1)
         start_pose = mil_tools.numpy_quat_pair_to_pose(start_pos, start_ori)
@@ -145,7 +145,7 @@ class Sim:
         return obj
 
     def got_request(self, req: ObjectDBQueryRequest) -> ObjectDBQueryResponse:
-        fprint("Request recieved {}".format(req.name))
+        fprint(f"Request received {req.name}")
         if req.name in self.ids:
             index = np.argwhere(self.ids == req.name)
             objects = [

@@ -15,7 +15,7 @@ ___author___ = "Kevin Allen"
 class VrxPerception(Vrx):
     def __init__(self, *args, **kwargs):
         self.announced = set()
-        super(VrxPerception, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @txros.util.cancellableInlineCallbacks
     def get_object_map(self):
@@ -37,12 +37,12 @@ class VrxPerception(Vrx):
     @txros.util.cancellableInlineCallbacks
     def announce_object(self, obj_id, classification, position_enu, boat_position_enu):
         if classification == "UNKNOWN":
-            self.send_feedback("Ignoring UNKNOWN object {}".format(obj_id))
+            self.send_feedback(f"Ignoring UNKNOWN object {obj_id}")
             defer.returnValue(False)
         if obj_id in self.announced:
             defer.returnValue(False)
         if np.linalg.norm(position_enu - boat_position_enu) < 3.5:
-            self.send_feedback("Ignoring {} b/c its too close".format(obj_id))
+            self.send_feedback(f"Ignoring {obj_id} b/c its too close")
             defer.returnValue(False)
         geo_point = yield self.enu_position_to_geo_point(position_enu)
         msg = GeoPoseStamped()
@@ -69,7 +69,7 @@ class VrxPerception(Vrx):
             position_enu = (yield self.tx_pose)[0]
             for key in new_objects:
                 if key not in objects:
-                    self.send_feedback("NEW object {} {}".format(key, new_objects[key]))
+                    self.send_feedback(f"NEW object {key} {new_objects[key]}")
                     yield self.announce_object(
                         key, new_objects[key], positions[key], position_enu
                     )

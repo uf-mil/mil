@@ -1,19 +1,17 @@
 #pragma once
 
-#include "object_map.hpp"
-#include "pcodar_types.hpp"
-
 #include <mil_msgs/PerceptionObject.h>
 #include <mil_msgs/PerceptionObjectArray.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
-
 #include <ros/ros.h>
 
 #include <opencv2/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include <opencv2/highgui/highgui.hpp>
+#include "object_map.hpp"
+#include "pcodar_types.hpp"
 
 namespace pcodar
 {

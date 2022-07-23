@@ -39,9 +39,9 @@ class RvizStrings:
         marker.color.a = 1
         marker.color.b = 1
         if self.voltage is not None:
-            marker.text += "Voltage {}".format(self.voltage)
+            marker.text += f"Voltage {self.voltage}"
         if self.wrench is not None:
-            marker.text += "\nWrench {}".format(self.wrench)
+            marker.text += f"\nWrench {self.wrench}"
         if self.station_holding:
             marker.text += "\nStation Holding"
         if self.kill_alarm:

@@ -412,7 +412,7 @@ class EntranceGate(Navigator):
                 (hydrophones_origin[0:2], hydrophones_origin[0:2] + heading_enu[0:2])
             )
         except tf2_ros.TransformException as e:
-            self.send_feedback("TF Exception: {}".format(e))
+            self.send_feedback(f"TF Exception: {e}")
 
     """
 

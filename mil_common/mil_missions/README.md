@@ -39,7 +39,7 @@ To use MIL missions on a new Robotic platform, you need to do the following:
 ### Implementing a BaseClass
 Here is an example BaseClass implementation:
 ```
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from mil_missions_core import BaseMission
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose
@@ -66,7 +66,7 @@ class MyRobotBaseMission(BaseMission):
     def move_to(cls, pose):
         goal = cls._move_to_client.send_goal(MoveToGoal(pose=pose))
         return goal.get_result()
-        
+
 
     @classmethod
     def pose_cb(cls, odom):
@@ -106,7 +106,7 @@ class MoveToWaypoint(MyRobotBaseMission):
         if not result.success:
             raise Exception('Error moving, {}'.format(result.failure_reason)
         defer.returnValue('Move completed!')
-	   
+
 ```
 Again, some things to note:
 * The mission inherits ExampleBaseMission, which allows it to use the move_to function
@@ -131,7 +131,5 @@ This assumes the above code was written in a python module called ```myrobot_mis
 * Imports ```MyRobotBaseMission```
 * Calls ```MyRobotBaseMission._init(self)```, passing it the mission runner object (which contains the node handle) to the base mission. If this init function fails, the mission server will crash
 * Imports all other classes in the ```myrobot_missions``` module which extend ```MyRobotBaseMission```, including our example ```MoveToWaypoint``` mission
-* Calls the ```init()``` function for each mission, if it exists. 
+* Calls the ```init()``` function for each mission, if it exists.
 * Waits for a new mission to be triggered from the CLI or GUI (see usage guide above)
-
-

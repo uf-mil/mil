@@ -38,7 +38,7 @@ void main()
     v_col = abs(clamp(a_position, -1, 1));
     // v_texcoord = texcoord;
 }
-    
+
 >debug:fragment
 #version 120
 // varying vec2 v_texcoord;

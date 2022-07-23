@@ -55,7 +55,7 @@ class RobotXHeartbeatMessage:
         lists encoded in the string.
 
         Args:
-            delim (str): The delimeter separating the values in the data list. Frequently
+            delim (str): The delimiter separating the values in the data list. Frequently
                 is a comma.
             string (str): The message represented as a string.
 
@@ -81,10 +81,10 @@ class RobotXHeartbeatMessage:
         """
         Given the necessary information to encode in the message, a message (as a string)
         is created. This message is ready to be sent back through the RobotX communications
-        protcol.
+        protocol.
 
         Args:
-            delim (str): The delimeter to use when separating the data.
+            delim (str): The delimiter to use when separating the data.
             team_id (str): The team ID used by MIL when sending messages.
             hst_date_time (Any): Presumably (??) a datetime object representing the
                 current time in HST.
@@ -137,11 +137,11 @@ class RobotXHeartbeatMessage:
         if system_mode is None:
             system_mode = 0
 
-        first_half_data = "{0}{1}{2}{3}{4}{5}{6}".format(
+        first_half_data = "{}{}{}{}{}{}{}".format(
             self.message_id, delim, hst_date_time, delim, latitude, delim, north_south
         )
 
-        second_half_data = "{0}{1}{2}{3}{4}{5}{6}{7}{8}".format(
+        second_half_data = "{}{}{}{}{}{}{}{}{}".format(
             longitude,
             delim,
             east_west,
@@ -163,7 +163,7 @@ class RobotXHeartbeatMessage:
         checksum = checksum_calc.ret_checksum(full_data)
         hex_checksum = format(checksum, "02X")
 
-        msg_return = "${0}*{1}\r\n".format(full_data, str(hex_checksum).zfill(2))
+        msg_return = f"${full_data}*{str(hex_checksum).zfill(2)}\r\n"
 
         return msg_return
 
@@ -192,7 +192,7 @@ class RobotXEntranceExitGateMessage:
         Constructs a list of data values and a checksum list from a provided message.
 
         Args:
-            delim (str): The delimeter splitting up the data values.
+            delim (str): The delimiter splitting up the data values.
             string (str): The message to get the data values from.
 
         Returns:
@@ -217,7 +217,7 @@ class RobotXEntranceExitGateMessage:
         according to 2018 AUSVI specifications.
 
         Args:
-            delim (str): The delimeter to use in between data values.
+            delim (str): The delimiter to use in between data values.
             team_id (Any): A value (??) that can be converted to a string to represent
                 the MIL team ID.
             hst_date_time (Any): A value (??) used to represent the current date + time
@@ -235,7 +235,7 @@ class RobotXEntranceExitGateMessage:
         else:
             light_buoy_active_letter = "N"
 
-        data = "{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}".format(
+        data = "{}{}{}{}{}{}{}{}{}{}{}{}{}".format(
             self.message_id,
             delim,
             hst_date_time,
@@ -259,7 +259,7 @@ class RobotXEntranceExitGateMessage:
         checksum = checksum_calc.ret_checksum(data)
         hex_checksum = format(checksum, "02X")
 
-        msg_return = "${0}*{1}\r\n".format(data, hex_checksum)
+        msg_return = f"${data}*{hex_checksum}\r\n"
 
         return MessageExtranceExitGateResponse(msg_return)
 
@@ -288,7 +288,7 @@ class RobotXScanCodeMessage:
         Returns the information encoded in a message.
 
         Args:
-            delim (str): The delimeter separating values in the data list encoded
+            delim (str): The delimiter separating values in the data list encoded
                 in the message.
             string (str): The message string to use to get data from.
 
@@ -312,7 +312,7 @@ class RobotXScanCodeMessage:
         Constructs a Scan the Code status message.
 
         Args:
-            delim (str): The string delimeter used to separate distinct data
+            delim (str): The string delimiter used to separate distinct data
                 points in the message.
             team_id (Any): The team ID used by MIL in the competition.
             hst_date_time (Any): The datetime to send in HST.
@@ -322,7 +322,7 @@ class RobotXScanCodeMessage:
         Returns:
             str: The constructed message.
         """
-        data = "{0}{1}{2}{3}{4}{5}{6}".format(
+        data = "{}{}{}{}{}{}{}".format(
             self.message_id, delim, hst_date_time, delim, team_id, delim, color_pattern
         )
 
@@ -334,7 +334,7 @@ class RobotXScanCodeMessage:
         checksum = checksum_calc.ret_checksum(data)
         hex_checksum = format(checksum, "02X")
 
-        msg_return = "${0}*{1}\r\n".format(data, hex_checksum)
+        msg_return = f"${data}*{hex_checksum}\r\n"
 
         return msg_return
 
@@ -363,7 +363,7 @@ class RobotXIdentifySymbolsDockMessage:
         Retrieves the data and checksum list from a message.
 
         Args:
-            delim (str): The delimeter used to separate distinct datapoints.
+            delim (str): The delimiter used to separate distinct datapoints.
             string (str): The source message, as a string.
 
         Returns:
@@ -386,7 +386,7 @@ class RobotXIdentifySymbolsDockMessage:
         Constructs a status message with the provided information.
 
         Args:
-            delim (str): The delimeter used to separate distinct data values that
+            delim (str): The delimiter used to separate distinct data values that
                 need to be sent.
             team_id (Any): The team ID used by MIL at the competition.
             hst_date_time (Any): A value (??) used to represent the date/time combination
@@ -395,7 +395,7 @@ class RobotXIdentifySymbolsDockMessage:
                 about the mission.
             use_test_data (bool): Whether to use test data when constructing the message.
         """
-        data = "{0}{1}{2}{3}{4}{5}{6}{7}{8}".format(
+        data = "{}{}{}{}{}{}{}{}{}".format(
             self.message_id,
             delim,
             hst_date_time,
@@ -415,7 +415,7 @@ class RobotXIdentifySymbolsDockMessage:
         checksum = checksum_calc.ret_checksum(data)
         hex_checksum = format(checksum, "02X")
 
-        msg_return = "${0}*{1}\r\n".format(data, hex_checksum)
+        msg_return = f"${data}*{hex_checksum}\r\n"
 
         return MessageIdentifySymbolsDockResponse(msg_return)
 
@@ -445,7 +445,7 @@ class RobotXDetectDeliverMessage:
         a constructed message.
 
         Args:
-            delim (str): The delimeter separating the distinct data values.
+            delim (str): The delimiter separating the distinct data values.
             string (str): The source message to retrieve the values from.
 
         Returns:
@@ -468,7 +468,7 @@ class RobotXDetectDeliverMessage:
         Constructs a status message given the provided information.
 
         Args:
-            delim (str): The delimeter separating individual data values.
+            delim (str): The delimiter separating individual data values.
             team_id (Any): The team ID used by MIL in competition.
             hst_date_time (Any): A representation of a particular date/time in HST.
             data (MessageDetectDeliverRequest): The data request associated with the mission.
@@ -477,7 +477,7 @@ class RobotXDetectDeliverMessage:
         Returns:
             MessageDetectDeliverResponse: The constructed message response.
         """
-        data = "{0}{1}{2}{3}{4}{5}{6}{7}{8}".format(
+        data = "{}{}{}{}{}{}{}{}{}".format(
             self.message_id,
             delim,
             hst_date_time,
@@ -497,6 +497,6 @@ class RobotXDetectDeliverMessage:
         checksum = checksum_calc.ret_checksum(data)
         hex_checksum = format(checksum, "02X")
 
-        msg_return = "${0}*{1}\r\n".format(data, hex_checksum)
+        msg_return = f"${data}*{hex_checksum}\r\n"
 
         return MessageDetectDeliverResponse(msg_return)

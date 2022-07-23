@@ -18,7 +18,6 @@ import zipfile
 from typing import Optional
 
 
-
 def download_and_unzip(url: str, output_dir: str):
     """
     Downloads a zip file at a particular URL and unzips it to a directory.
@@ -33,7 +32,7 @@ def download_and_unzip(url: str, output_dir: str):
     try:
         html = download(url)
     except:
-        raise IOError(f"Could not load file at {url}")
+        raise OSError(f"Could not load file at {url}")
 
     fake_file = StringIO.StringIO(html)
 

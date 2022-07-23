@@ -1,8 +1,9 @@
 import numpy as np
 import rospy
 import serial
-from constants import constants
 from std_srvs.srv import SetBool, SetBoolResponse
+
+from . import constants
 
 
 class NoopSerial(serial.Serial):
@@ -63,7 +64,7 @@ class SimulatedSerial(NoopSerial):
     """
     Simulates a serial device, storing a buffer to be read in a program like a normal OS serial device.
 
-    Intended to be extended by other classes, which should override the write function to recieve writes to
+    Intended to be extended by other classes, which should override the write function to receive writes to
     the simulated device. These classes simply append to the buffer string which will be returned
     on reads to the simulated device.
 
@@ -94,7 +95,7 @@ class SimulatedKillBoard(SimulatedSerial):
     port = "simulated-kill-board"
 
     def __init__(self, *args, **kwargs):
-        super(SimulatedKillBoard, self).__init__()
+        super().__init__()
         self.last_ping = None
         self.memory = {
             "BUTTON_FRONT_PORT": False,
@@ -109,7 +110,7 @@ class SimulatedKillBoard(SimulatedSerial):
         for key in constants["KILLS"]:
             if key.find("BUTTON") == 0:
                 rospy.Service(
-                    "~{}".format(key),
+                    f"~{key}",
                     SetBool,
                     lambda req, _button=key: self._set_button(_button, req.data),
                 )
@@ -168,7 +169,7 @@ class SimulatedKillBoard(SimulatedSerial):
                 return
 
     def _handle_sync(self, data):
-        # Handle syncronous requests
+        # Handle synchronous requests
         if data == constants["PING"]["REQUEST"]:
             self.last_ping = rospy.Time.now()
             self.buffer = constants["PING"]["RESPONSE"] + self.buffer

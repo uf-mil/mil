@@ -13,7 +13,7 @@ def check_contact(msg, buoy_pub):
 
     object_name = None
     for state in msg.states:
-        # It seems like collisions are in alpabetical order - so check both.
+        # It seems like collisions are in alphabetical order - so check both.
         if state.collision1_name == sub_name:
             object_name = state.collision2_name.split("::")[0]
             break

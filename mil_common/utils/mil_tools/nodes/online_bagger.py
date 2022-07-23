@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import division
 
@@ -33,7 +33,7 @@ as it writes.
 """
 
 
-class OnlineBagger(object):
+class OnlineBagger:
     BAG_TOPIC = "/online_bagger/bag"
 
     def __init__(self):
@@ -61,9 +61,7 @@ class OnlineBagger(object):
             auto_start=False,
         )
         self.subscribe_loop()
-        rospy.loginfo(
-            "Remaining Failed Topics: {}\n".format(self.get_subscriber_list(False))
-        )
+        rospy.loginfo(f"Remaining Failed Topics: {self.get_subscriber_list(False)}\n")
         self._action_server.start()
 
     def get_subscriber_list(self, status):
@@ -117,8 +115,8 @@ class OnlineBagger(object):
             if key[0:4] == "bag_":
                 add_env_var(os.environ[key])
 
-        rospy.loginfo("Default stream_time: {} seconds".format(self.stream_time))
-        rospy.loginfo("Bag Directory: {}".format(self.dir))
+        rospy.loginfo(f"Default stream_time: {self.stream_time} seconds")
+        rospy.loginfo(f"Bag Directory: {self.dir}")
 
     def make_dicts(self):
         """
@@ -163,9 +161,7 @@ class OnlineBagger(object):
         for topic in self.subscriber_list:
             self.topic_messages[topic] = SliceableDeque(deque())
 
-        rospy.loginfo(
-            "Initial subscriber_list: {}".format(self.get_subscriber_list(False))
-        )
+        rospy.loginfo(f"Initial subscriber_list: {self.get_subscriber_list(False)}")
 
     def subscribe_loop(self):
         """
@@ -199,12 +195,12 @@ class OnlineBagger(object):
         Subscribe to the topics defined in the yaml configuration file
 
         Function checks subscription status True/False of each topic
-        if True: topic has already been sucessfully subscribed to
+        if True: topic has already been successfully subscribed to
         if False: topic still needs to be subscribed to and
         subscriber will be run.
 
         Each element in self.subscriber list is a list [topic, Bool]
-        where the Bool tells the current status of the subscriber (sucess/failure).
+        where the Bool tells the current status of the subscriber (success/failure).
 
         Return number of topics that failed subscription
         """
@@ -251,7 +247,7 @@ class OnlineBagger(object):
         The number of requested seconds should be the number of seoncds desired from
         the end of deque. (ie. requested_seconds = 10 )
         If the desired time length of the bag is greater than the available messages it will output a
-        message and return how ever many seconds of data are avaiable at the moment.
+        message and return how ever many seconds of data are available at the moment.
         Seconds is of a number type (not a rospy.Time type) (ie. int, float)
         """
 
@@ -424,13 +420,13 @@ class OnlineBagger(object):
             if bag is not None:
                 bag.close()
             return
-        rospy.loginfo("Bag written to {}".format(result.filename))
+        rospy.loginfo(f"Bag written to {result.filename}")
         result.success = True
         self._action_server.set_succeeded(result)
         self.streaming = True
 
 
-class OnlineBaggerClient(object):
+class OnlineBaggerClient:
     """
     Wrapper to run an action client connecting to online bagger
     and triggering a write with the specified topics, time, and
@@ -475,7 +471,7 @@ class OnlineBaggerClient(object):
         if status == 3:
             print("Bag successful")
         else:
-            print("Bag {}: {}".format(TerminalState.to_string(status), result.status))
+            print(f"Bag {TerminalState.to_string(status)}: {result.status}")
 
 
 if __name__ == "__main__":

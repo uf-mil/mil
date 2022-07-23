@@ -42,9 +42,9 @@ class Buoy:
         self.color = color
         self.timeout = rospy.Duration(rospy.get_param("~timeout_seconds"))
         self.min_trans = rospy.get_param("~min_trans")
-        self.threshold = Threshold.from_param("/color/buoy/{}".format(color))
+        self.threshold = Threshold.from_param(f"/color/buoy/{color}")
         rospy.loginfo(
-            "{} buoy has {}".format(color, self.threshold)
+            f"{color} buoy has {self.threshold}"
         )  # Print threshold for each buoy
         if debug_cv:
             self.threshold.create_trackbars(window=color)
@@ -63,7 +63,7 @@ class Buoy:
             self.cv_colors = (0, 255, 255, 0)
             self.visual_id = 2
         else:
-            rospy.logerr("Unknown buoy color {}".format(color))
+            rospy.logerr(f"Unknown buoy color {color}")
             self.draw_colors = (0.0, 0.0, 0.0, 1.0)
             self.visual_id = 3
 
@@ -129,7 +129,7 @@ class BuoyFinder:
         self.camera_model = None
         self.circle_finder = CircleFinder(
             1.0
-        )  # Model radius doesn't matter beacause it's not being used for 3D pose
+        )  # Model radius doesn't matter because it's not being used for 3D pose
 
         # Various constants for tuning, debugging. See buoy_finder.yaml for more info
         self.min_observations = rospy.get_param("~min_observations")
@@ -320,7 +320,7 @@ class BuoyFinder:
     def find_single_buoy(self, buoy_type):
         """
         Attempt to find one color buoy in the image.
-        1) Create mask for buoy's color in colorspace specified in paramaters
+        1) Create mask for buoy's color in colorspace specified in parameters
         2) Select the largest contour in this mask
         3) Approximate a circle around this contour
         4) Store the center of this circle and the current tf between map and camera
@@ -330,7 +330,7 @@ class BuoyFinder:
         """
         assert (
             buoy_type in self.buoys.keys()
-        ), "Buoys_2d does not know buoy color: {}".format(buoy_type)
+        ), f"Buoys_2d does not know buoy color: {buoy_type}"
         buoy = self.buoys[buoy_type]
         mask = buoy.get_mask(self.last_image)
         kernel = np.ones((5, 5), np.uint8)
@@ -353,7 +353,7 @@ class BuoyFinder:
         cnt, err = self.get_best_contour(contours)
         if cnt is None:
             buoy.clear_old_observations()
-            buoy.status = "{} w/ {} obs".format(err, buoy.size())
+            buoy.status = f"{err} w/ {buoy.size()} obs"
             return
         center, radius = cv2.minEnclosingCircle(cnt)
 
@@ -371,7 +371,7 @@ class BuoyFinder:
                 "map", self.frame_id, self.last_image_time, rospy.Duration(0.2)
             )
         except tf.Exception as e:
-            rospy.logwarn("Could not transform camera to map: {}".format(e))
+            rospy.logwarn(f"Could not transform camera to map: {e}")
             return False
 
         if not self.sanity_check(center, self.last_image_time):
@@ -398,7 +398,7 @@ class BuoyFinder:
                     _id=buoy.visual_id,
                 )
         else:
-            buoy.status = "{} observations".format(len(observations))
+            buoy.status = f"{len(observations)} observations"
         return center, radius
 
     def sanity_check(self, coordinate, timestamp):

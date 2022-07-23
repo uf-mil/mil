@@ -9,7 +9,7 @@ Usage:
 rosrun mil_tools extract_bag_images config.yaml --source-dir <location of bag files> --image-dir <directory for extracted images>         # noqa
 
 See example_bag_image_config.yaml or the class documentation for how to form this configuration.
-Essentialy, the yaml file defines a project, which is a single labeling task or project on labelbox.io.
+Essentially, the yaml file defines a project, which is a single labeling task or project on labelbox.io.
 Each project contains n datasets. Each dataset has a list of bags (sources) to get images from and represents a dataset on labelbox.io.
 """
 from __future__ import division
@@ -59,7 +59,7 @@ class BagImageExtractorSource:
                 start (Optional[genpy.Time]): Time relative to start of bag to
                 begin extracting images from. If None, extraction will start at beginning of bag
                 stop (Optional[genpy.Time]): time relative to start of bag to stop
-                extracting images from. If None, extraction wil end at end of bag.
+                extracting images from. If None, extraction will end at end of bag.
                 freq (Optional[int]): Number of images to extract for each second
                 of bag time. If None, include all images.
                 encoding (Optional[BagImageExtractorSource]): Specifies if color conversion
@@ -101,7 +101,7 @@ class BagImageExtractorSource:
         elif encoding == cls.RECT_COLOR:
             return ImageProc.RECT_COLOR
         else:
-            raise Exception("invalid encoding {}".format(encoding))
+            raise Exception(f"invalid encoding {encoding}")
 
     @classmethod
     def from_dict(cls, d: dict):
@@ -238,7 +238,7 @@ class BagImageExtractorSource:
                 self._save_img(msg, time, image_dir, prefix=prefix)
 
 
-class BagImageExtractorDatasets(object):
+class BagImageExtractorDatasets:
     """Represents a dataset, or a set of bags from which images will be
     extracted and put into the same directory. For example, a set of bags
     containing a particular challenge from the same day.
@@ -262,7 +262,7 @@ class BagImageExtractorDatasets(object):
 
     @classmethod
     def from_dict(cls, d):
-        """Contruct from a dictionary, as in from a yaml file. Must have a name key
+        """Construct from a dictionary, as in from a yaml file. Must have a name key
         and a sources which maps to a list of dictionaries in the form described in BagImageExtractorSource.from_dict.
         ex:
         { 'name': 'scanthecode_day1',
@@ -306,11 +306,11 @@ class BagImageExtractorDatasets(object):
 
         """
         if verbose:
-            print("Producing dataset '{}'".format(self.name))
+            print(f"Producing dataset '{self.name}'")
         image_dir = os.path.join(image_dir, self.name)
         if not os.path.isdir(image_dir):
             if os.path.exists(image_dir):
-                raise Exception("{} exsists but is not a diretory".format(image_dir))
+                raise Exception(f"{image_dir} exists but is not a directory")
             os.makedirs(image_dir)
         for source in self.sources:
             source.extract_images(
@@ -318,7 +318,7 @@ class BagImageExtractorDatasets(object):
             )
 
 
-class BagImageExtractorProject(object):
+class BagImageExtractorProject:
     """Holds the configuration for a list of datasets, forming one logical
     project for labeling. For example, a user may create a project
     for the labeling buoys, which contains 3 datasets each with
@@ -396,7 +396,7 @@ if __name__ == "__main__":
         dest="source_dir",
         type=str,
         default=None,
-        help="directory to resolve relative paths specifed in YAML for input bags. \n\
+        help="directory to resolve relative paths specified in YAML for input bags. \n\
                               Defaults to current directory.",
     )
     parser.add_argument(
@@ -425,6 +425,6 @@ if __name__ == "__main__":
     if args.image_dir is not None:
         config["image_dir"] = args.image_dir
 
-    # Contruct a project from the config and extract images
+    # Construct a project from the config and extract images
     project = BagImageExtractorProject.from_dict(config)
     project.extract_images(verbose=args.verbose)

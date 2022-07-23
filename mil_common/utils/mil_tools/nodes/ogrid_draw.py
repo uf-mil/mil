@@ -30,7 +30,7 @@ class DrawGrid:
     def make_image(self, image_path):
         img = cv2.imread(image_path, 0)
         if img is None:
-            print("Image not found at '{}'".format(image_path))
+            print(f"Image not found at '{image_path}'")
             return
 
         img = cv2.resize(img, (self.width, self.height), interpolation=cv2.INTER_CUBIC)

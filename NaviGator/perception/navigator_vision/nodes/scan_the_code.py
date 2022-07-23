@@ -144,7 +144,7 @@ class ScanTheCodePerception:
             scale = 3
             thickness = 2
             putText_ul(debug, text, (0, 0), fontScale=scale, thickness=thickness)
-            rospy.loginfo("saw {},  running {}".format(symbol, text))
+            rospy.loginfo(f"saw {symbol},  running {text}")
             debug = cv2.bitwise_or(img, img, mask=debug)
             self.image_mux[1] = debug
             if (
@@ -160,7 +160,7 @@ class ScanTheCodePerception:
                     + self.classification_list[2]
                     + self.classification_list[3]
                 ).upper()
-                rospy.loginfo("SAW PATTERN {}!!!!!!!!!!!".format(pattern))
+                rospy.loginfo(f"SAW PATTERN {pattern}!!!!!!!!!!!")
                 self.pattern_pub.publish(ScanTheCode(color_pattern=pattern))
         self.image_mux[0] = img
         if self.debug:

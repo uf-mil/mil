@@ -1,5 +1,5 @@
 # Getting Help
-Programming is hard, and programming at the level needed for autonomous systems 
+Programming is hard, and programming at the level needed for autonomous systems
 is even harder. Every developer write bugs, encounters confusing errors, and gets stuck
 in countless other ways. With time you'll learn not just how to write better code,
 but also how to effectively get help when you're stuck.
@@ -15,15 +15,15 @@ to do and if it makes sense or if the solution is obvious.
 
 Ask yourself the following questions:
 
-* Are you running the latest code? Have you pulled from git lately (including 
+* Are you running the latest code? Have you pulled from git lately (including
 submodules) and updated your system packages?
   * Be sure to back up / commit any changes to a branch
-  * To reset to the latest code from github run `git fetch origin` and then 
+  * To reset to the latest code from github run `git fetch origin` and then
   `git checkout origin/master -B master`
   * Be sure to initialize and update all submodules as well with `git submodule update --init --recursive`.
 * If the error says exactly how to fix it, have you tried that?
 * Is your system setup correctly as described in the [Getting Started Guide](/docs/software/getting_started)?
-* Have you blindly copy-pasted/ran things from the internet? If so, do you know 
+* Have you blindly copy-pasted/ran things from the internet? If so, do you know
 why? Do you know what it's doing?
 * Could you be trying to use something that is outdated / deprecated?
 * Have you tried simply rebooting your system or running it again?
@@ -58,7 +58,7 @@ For example, if you see an error `DVL: error on write`, you can run:
 
 And see the exact source file where this error comes from.
 
-Likewise, if you want to learn how to use a function, you can search the code 
+Likewise, if you want to learn how to use a function, you can search the code
 for examples of it being used.
 
 ## Search the internet
@@ -72,7 +72,7 @@ In fact, often when people come to me with issues I simply Google them myself.
 Someone may have already asked a similar question on Slack. Try searching there.
 
 ## Ask for Help
-If you made decent efforts to follow the above steps to figure things out on 
+If you made decent efforts to follow the above steps to figure things out on
 your own, now it is time to ask for help!
 
 In order for people to be able to understand your issue, please include:

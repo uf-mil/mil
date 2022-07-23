@@ -30,13 +30,13 @@ fprint = FprintFactory(title="COLORAMA", time=None).fprint
 
 class ImageHolder:
 
-    image: Optional[Image]
-    time: Optional[rospy.Duration]
+    image: Image | None
+    time: rospy.Duration | None
 
     @classmethod
     def from_msg(cls, msg: Image) -> ImageHolder:
         time = msg.header.stamp
-        fprint("Got image! {}".format(time.to_sec()))
+        fprint(f"Got image! {time.to_sec()}")
         try:
             image = CvBridge().imgmsg_to_cv2(msg)
             return cls(image, time)
@@ -52,7 +52,7 @@ class ImageHolder:
 
     def __repr__(self):
         if self.contains_valid_image and isinstance(self.time, rospy.Duration):
-            return "Image from t={}".format(self.time.to_sec())
+            return f"Image from t={self.time.to_sec()}"
         return "Invalid Image"
 
     @property
@@ -198,10 +198,10 @@ class Observation:
         q_sig = kwargs.get("q_sig", 1.3)
 
         # Compute data required before applying weights
-        guass = self._guass
-        value_errs = guass(self.values, v_u, v_sig)
-        dists = guass(self.dists, 5, dist_sig)
-        q_diffs = guass(self.q_errs, 0, q_sig)
+        gauss = self._guass
+        value_errs = gauss(self.values, v_u, v_sig)
+        dists = gauss(self.dists, 5, dist_sig)
+        q_diffs = gauss(self.q_errs, 0, q_sig)
 
         # Normalize weights
         w_norm = value_w + dist_w + q_diff_w
@@ -230,7 +230,7 @@ class Observation:
 
 class Colorama:
 
-    odom: Optional[np.ndarray]
+    odom: np.ndarray | None
 
     def __init__(self):
         info_topic = camera_root + "/camera_info"
@@ -258,7 +258,7 @@ class Colorama:
         self.image_history = ImageHistory(image_topic)
 
         # Wait for camera info, and exit if not found
-        fprint("Waiting for camera info on: '{}'".format(info_topic))
+        fprint(f"Waiting for camera info on: '{info_topic}'")
         while not rospy.is_shutdown():
             try:
                 camera_info_msg = rospy.wait_for_message(
@@ -304,7 +304,7 @@ class Colorama:
         # Update parameters
         self.history_length = 100  # How many of each color to keep
         self.min_obs = (
-            5  # Need atleast this many observations before making a determination
+            5  # Need at least this many observations before making a determination
         )
         self.conf_reject = 0.5  # When to reject an observation based on it's confidence
 
@@ -322,7 +322,7 @@ class Colorama:
 
         rospy.Timer(ros_t(self.update_time), self.do_observe)
 
-    def _compute_average_angle(self, angles, weights) -> Optional[np.ndarray]:
+    def _compute_average_angle(self, angles, weights) -> np.ndarray | None:
         """
         Returns weighted average of angles.
         Tends to break down with too many angles 180 degrees of each other - try not to do that.
@@ -339,7 +339,7 @@ class Colorama:
 
     def _get_quaternion_error(self, q, target_q):
         """
-        Returns an angluar differnce between q and target_q in radians
+        Returns an angluar difference between q and target_q in radians
         """
         dq = trns.quaternion_multiply(
             np.array(target_q), trns.quaternion_inverse(np.array(q))
@@ -376,14 +376,14 @@ class Colorama:
         """Calculates best color estimate for a given totem id"""
         fprint("DOING ESTIMATE", msg_color="blue")
         if totem_id not in self.colored:
-            fprint("Totem ID {} not found!".format(totem_id), msg_color="red")
+            fprint(f"Totem ID {totem_id} not found!", msg_color="red")
             return None
 
         t_color = self.colored[totem_id]
 
         if len(t_color) < self.min_obs:
             fprint(
-                "Only {} observations. {} required.".format(len(t_color), self.min_obs),
+                f"Only {len(t_color)} observations. {self.min_obs} required.",
                 msg_color="red",
             )
             return None
@@ -399,7 +399,7 @@ class Colorama:
         w, weights = t_color.compute_confidence(
             [self.v_factor, self.dist_factor, self.q_factor], True, **kwargs
         )
-        fprint("CONF: {}".format(w))
+        fprint(f"CONF: {w}")
         if np.mean(w) < self.conf_reject:
             return None
 
@@ -417,7 +417,7 @@ class Colorama:
         msg.hues = np.array(t_color.hues) * 2
         self.status_pub.publish(msg)
 
-        fprint("Color: {}".format(color[0]))
+        fprint(f"Color: {color[0]}")
         return color
 
     def got_request(self, req):
@@ -428,7 +428,7 @@ class Colorama:
             if self.valid_color(_id) == req.color
         ]
 
-        fprint("Colored IDs: {}".format(colored_ids), msg_color="blue")
+        fprint(f"Colored IDs: {colored_ids}", msg_color="blue")
         print("\n" * 50)
         if len(colored_ids) == 0:
             return ColorRequestResponse(found=False)
@@ -438,12 +438,12 @@ class Colorama:
     def do_observe(self, *args):
         resp = self.make_request(name="totem")
 
-        # If atleast one totem was found start observing
+        # If at least one totem was found start observing
         if resp.found:
-            # Time of the databse request
+            # Time of the database request
             time_of_marker = resp.objects[0].header.stamp  # - ros_t(1)
             fprint(
-                "Looking for image at {}".format(time_of_marker.to_sec()),
+                f"Looking for image at {time_of_marker.to_sec()}",
                 msg_color="yellow",
             )
             image_holder = self.image_history.get_around_time(time_of_marker)
@@ -468,13 +468,13 @@ class Colorama:
 
             cam_tf = self.camera_model.tfFrame()
             try:
-                fprint("Getting transform between /enu and {}...".format(cam_tf))
+                fprint(f"Getting transform between /enu and {cam_tf}...")
                 self.tf_listener.waitForTransform(
                     "/enu", cam_tf, time_of_marker, ros_t(1)
                 )
                 t_mat44 = self.tf_listener.asMatrix(cam_tf, header)
             except tf.ExtrapolationException as e:
-                fprint("TF error found and excepted: {}".format(e))
+                fprint(f"TF error found and excepted: {e}")
                 return
 
             for obj in resp.objects:
@@ -502,7 +502,7 @@ class Colorama:
                 threshold = np.min(points_np[:, 2]) + self.height_remove * height
                 points_np = points_np[points_np[:, 2] > threshold]
 
-                # Shove ones in there to make homogenous points to get points in image frame
+                # Shove ones in there to make homogeneous points to get points in image frame
                 points_np_homo = np.hstack(
                     (points_np, np.ones((points_np.shape[0], 1)))
                 ).T
@@ -527,8 +527,8 @@ class Colorama:
 
                 dist = np.linalg.norm(self.odom[0] - point_to_numpy(obj.position))
 
-                fprint("H: {}, S: {}, V: {}".format(h, s, v))
-                fprint("q_err: {}, dist: {}".format(q_err, dist))
+                fprint(f"H: {h}, S: {s}, V: {v}")
+                fprint(f"q_err: {q_err}, dist: {dist}")
 
                 # Add to database and setup debug image
                 if s < self.saturation_reject or v < self.value_reject:
@@ -640,8 +640,8 @@ class Colorama:
             return False
 
         px = np.array(self.camera_model.project3dToPixel(object_point))
-        resoultion = self.camera_model.fullResolution()
-        return not (np.any([0, 0] > px) or np.any(px > resoultion))
+        resolution = self.camera_model.fullResolution()
+        return not (np.any([0, 0] > px) or np.any(px > resolution))
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ parser.add_argument(
     "--severity",
     type=int,
     default=5,
-    help="severity of the alarm, 1 being the heighest level",
+    help="severity of the alarm, 1 being the highest level",
 )
 parser.add_argument(
     "--parameters",

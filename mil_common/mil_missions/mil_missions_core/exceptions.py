@@ -39,7 +39,7 @@ class TimeoutException(Exception):
         self.timeout = timeout
 
     def __str__(self):
-        return "failed to finish within {} seconds".format(self.timeout)
+        return f"failed to finish within {self.timeout} seconds"
 
 
 class ParametersException(Exception):
@@ -64,7 +64,7 @@ class ParametersException(Exception):
         self.msg = msg
 
     def __str__(self):
-        return "invalid parameters: {}".format(self.msg)
+        return f"invalid parameters: {self.msg}"
 
 
 class SubmissionException(Exception):
@@ -93,4 +93,4 @@ class SubmissionException(Exception):
         self.exception = exception
 
     def __str__(self):
-        return "In submission {}: {}".format(self.mission, self.exception)
+        return f"In submission {self.mission}: {self.exception}"

@@ -41,9 +41,7 @@ class TestMapThrusters(unittest.TestCase):
         target_node = "thruster_mapper"
         target_topic = "/wrench"
         subscribed = wait_for_subscriber(target_node, target_topic)
-        self.assertTrue(
-            subscribed, "{} did not not come up in time".format(target_node)
-        )
+        self.assertTrue(subscribed, f"{target_node} did not not come up in time")
 
         thrust_pub = rospy.Publisher("/wrench", WrenchStamped, queue_size=1, latch=True)
         wrenches = [

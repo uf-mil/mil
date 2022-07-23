@@ -11,5 +11,5 @@ usage()
 # Call usage() function if arguments not supplied.
 [[ $# -lt 1 ]] && usage
 
-# Run sylphase 
-exec $MIL_CONFIG_DIR/sylphase-sonar/driver/publish $@
+# Run sylphase
+exec "$MIL_CONFIG_DIR"/sylphase-sonar/driver/publish "$@"

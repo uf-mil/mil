@@ -34,7 +34,7 @@ TIMEOUT_SECONDS = 30
 
 class ScanTheCode(Vrx):
     def __init__(self, *args, **kwargs):
-        super(ScanTheCode, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.classifier = VrxStcColorClassifier()
         self.classifier.train_from_csv()
         self.camera_model = PinholeCameraModel()
@@ -187,7 +187,7 @@ class ScanTheCode(Vrx):
 
         try:
             yield self.sequence_report(color_sequence)
-        except Exception as e:  # catch error incase vrx scroing isnt running
+        except Exception as e:  # catch error in case vrx scroing isn't running
             print(e)
 
     @txros.util.cancellableInlineCallbacks
@@ -198,7 +198,7 @@ class ScanTheCode(Vrx):
         try:
             _, poses = yield self.get_sorted_objects(name="stc_platform", n=1)
             pose = poses[0]
-        # incase stc platform not already identified
+        # in case stc platform not already identified
         except Exception as e:
             print("could not find stc_platform")
             # get all pcodar objects
@@ -234,7 +234,7 @@ class ScanTheCode(Vrx):
                     yield self.pcodar_label(msgs[i].id, "dock")
                     dock_pose = poses[i]
 
-                else:  # if about same size as stc, lable it stc
+                else:  # if about same size as stc, label it stc
                     yield self.pcodar_label(msgs[i].id, "stc_platform")
                     pose = poses[i]
                     break
@@ -250,7 +250,7 @@ class ScanTheCode(Vrx):
         try:
             _, poses = yield self.get_sorted_objects(name="stc_platform", n=1)
             pose = poses[0]
-        # incase stc platform not already identified
+        # in case stc platform not already identified
         except Exception as e:
             print("could not find stc_platform")
             # get all pcodar objects
@@ -278,7 +278,7 @@ class ScanTheCode(Vrx):
                 # if no other things, throw error and exit mission
                 yield self.pcodar_label(msgs[0].id, "stc_platform")
                 pose = poses[0]
-            else:  # if about same size as stc, lable it stc
+            else:  # if about same size as stc, label it stc
                 yield self.pcodar_label(msgs[0].id, "stc_platform")
                 pose = poses[0]
 

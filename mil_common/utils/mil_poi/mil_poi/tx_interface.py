@@ -39,7 +39,7 @@ class TxPOIClient:
     def get(self, name, only_fresh=False):
         """
         Get the position of POI in the global frame as a 3x1 numpy array.
-        Note: returns a defered object which will be calledback when the POI is found, which
+        Note: returns a deferred object which will be calledback when the POI is found, which
               may be immediately
         @param name: the name of the POI
         @param only_fresh: if the POI is already known, wait for a fresh message before returning

@@ -1,21 +1,23 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <!-- Macro for inserting an engine with its propeller. -->
-  <xacro:macro  name="navigator_camera"
-                params="name namespace:='/camera'
+  <xacro:macro
+    name="navigator_camera"
+    params="name namespace:='/camera'
                         parent='base_link' xyz:='0 0 0' rpy:='0 0 0'
                         width:=960 height:=600 fov:=1.047 fps:=30
-                        k1:=0 k2:=0 t1:=0 t2:=0 k3:=0">
-    <link name="${name}" />
+                        k1:=0 k2:=0 t1:=0 t2:=0 k3:=0"
+  >
+    <link name="${name}"/>
     <joint name="${name}_to_${parent}" type="fixed">
-      <parent link="${parent}" />
-      <child link="${name}" />
-      <origin xyz="${xyz}" rpy="${rpy}" />
+      <parent link="${parent}"/>
+      <child link="${name}"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
     </joint>
-    <link name="${name}_optical" />
+    <link name="${name}_optical"/>
     <joint name="${name}_to_${name}_optical" type="fixed">
-      <parent link="${name}" />
-      <child link="${name}_optical" />
+      <parent link="${name}"/>
+      <child link="${name}_optical"/>
       <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
     </joint>
     <gazebo reference="${name}">

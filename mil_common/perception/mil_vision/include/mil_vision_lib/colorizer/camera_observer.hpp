@@ -2,6 +2,7 @@
 
 #include <image_geometry/pinhole_camera_model.h>
 #include <tf/transform_listener.h>
+
 #include <mil_vision_lib/colorizer/color_observation.hpp>
 #include <mil_vision_lib/colorizer/common.hpp>  // Common includes are here
 #include <opencv2/core/eigen.hpp>

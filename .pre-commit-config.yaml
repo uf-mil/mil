@@ -1,0 +1,69 @@
+---
+exclude: ^deprecated/
+
+default_language_version:
+  python: python3.8
+
+repos:
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        name: isort (python)
+        args: ['--profile', 'black']
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.27.1
+    hooks:
+      - id: yamllint
+  - repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+      - id: black
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: 732c271
+    hooks:
+      - id: clang-format
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.37.1
+    hooks:
+      - id: pyupgrade
+        args: [--py38-plus]
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.1.0
+    hooks:
+      - id: codespell
+        args:
+          - --ignore-words-list=fpr,ser,wan,te,wan,ba,ned,ans,hist,nd
+          - --skip="./.*,*.csv,*.json"
+          - --quiet-level=2
+        exclude_types: [csv, json]
+        exclude: ^NaviGator/perception/darknet_ros|NaviGator/simulation/VRX
+        #   - repo: https://github.com/lsst-ts/pre-commit-xmllint
+        #     rev: v1.0.0
+        #     hooks:
+        #       - id: format-xmllint
+        #         files: '.*\.(xml|launch|test)'
+        #         exclude_types: [svg]
+        #         exclude: |
+        #           (?x)^(
+        #                  mil_common/perception/mil_mlp/ldp/labelbox2pascal/.*|
+        #                  mil_common/gnc/odometry_utils/nodelet.xml
+        #                )$
+  - repo: https://github.com/tier4/pre-commit-hooks-ros
+    rev: v0.7.0
+    hooks:
+      - id: prettier-xacro
+      - id: prettier-launch-xml
+      - id: prettier-package-xml
+      - id: sort-package-xml
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace

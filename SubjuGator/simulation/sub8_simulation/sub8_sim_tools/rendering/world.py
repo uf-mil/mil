@@ -7,7 +7,7 @@ from vispy import geometry, gloo
 from vispy.util.transforms import perspective, rotate, translate
 
 
-class Entity(object):
+class Entity:
     _debug = False
     _vertex_shader = Shaders.passthrough["mesh"]["vertex"]
     _fragment_shader = Shaders.passthrough["mesh"]["fragment"]
@@ -292,7 +292,7 @@ class Mesh(Entity):
         shader_manager.register_lighting_shader(self)
 
 
-class World(object):
+class World:
     def __init__(self):
         """Future methods
         - Add light

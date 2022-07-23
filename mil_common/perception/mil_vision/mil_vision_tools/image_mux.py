@@ -170,7 +170,7 @@ class ImageMux:
             img (np.ndarray): Array with shape ``(m, n, 3)`` or ``(m, n, 1)`` representing
                 the image to insert in the pane specified in key. If a one-channel
                 image, first convert grayscale to BGR. If :attr:`.keep_ratio`
-                was True in contructor, will add black bars as necessary to fill pane.
+                was True in constructor, will add black bars as necessary to fill pane.
                 Otherwise, use standard cv2.resize to fit img into pane.
 
         Raises:

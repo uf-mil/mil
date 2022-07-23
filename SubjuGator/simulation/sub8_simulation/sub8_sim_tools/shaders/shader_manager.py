@@ -1,7 +1,7 @@
 from shaders import Shaders
 
 
-class LightManager(object):
+class LightManager:
     def __init__(self):
         self.num_lights = 0
         self.light_sensitive_entities = []

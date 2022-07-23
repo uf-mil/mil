@@ -40,7 +40,7 @@ class BagFixer:
         try:
             bag = rosbag.Bag(infile)
         except rosbag.bag.ROSBagException as e:
-            print("Error opening bag {}: {}".format(infile, e))
+            print(f"Error opening bag {infile}: {e}")
             return
         _, _, first_time = next(bag.read_messages())
         assert first_time is not None
@@ -50,7 +50,7 @@ class BagFixer:
         if self.stop is not None:
             stop = first_time + rospy.Duration(self.stop)
         total_messages = bag.get_message_count()
-        # This could be made signifigantly faster by using ag.get_type_and_topic_info
+        # This could be made significantly faster by using ag.get_type_and_topic_info
         # to do some preprocessing on what topics will be used / remaped /
         # processed
         for topic, msg, time in tqdm(
@@ -125,7 +125,7 @@ if __name__ == "__main__":
         nargs="+",
         type=str,
         metavar="oldtopic:newtopic",
-        help="list of topics to remap, seperated by a colon, ex /down_cam/:/camera/down/\
+        help="list of topics to remap, separated by a colon, ex /down_cam/:/camera/down/\
                               /my_odom:/odom\nIf ends in a slash (ex: /cameras/:/cams/,\
                               all topics after slash will be remaped",
     )
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         nargs="+",
         type=str,
         metavar="oldframe:newframe",
-        help="list of frame_ids in headers to be maped, ex: my_camera:cam_front",
+        help="list of frame_ids in headers to be mapped, ex: my_camera:cam_front",
     )
     parser.add_argument(
         "--start",

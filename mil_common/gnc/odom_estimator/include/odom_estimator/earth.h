@@ -80,6 +80,6 @@ SqMat<3> enu_from_ecef_mat(Vec<3> zero_pos_ecef)
   Vec<3> north_ecef = (Vec<3>() << -sin_lat * cos_lon, -sin_lat * sin_lon, cos_lat).finished();
   return (SqMat<3>() << east_ecef, north_ecef, up_ecef).finished().transpose();
 }
-}
+}  // namespace odom_estimator
 
 #endif

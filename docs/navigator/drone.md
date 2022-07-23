@@ -9,5 +9,4 @@
 - He recommended to also check the bearings in the motor to check for corrosion and resistance when turning. If there is, consider replacing the motors.  
 - He will send us a telemetry unit, and the ground unit. Also, he will send a selection bag with rubber gaskets for the GPS enclosure. 
 - Next steps are to get [Mission Planner](https://ardupilot.org/planner/) on a laptop and interface with the vehicle. Then research how to interface with ROS. 
-- He also recommended <https://github.com/rmackay9> and <https://irlock.readme.io/docs/1-sensor-firmware-software>, <https://irlock.com/products/ir-lock-sensor-precision-landing-kit> for landing. 
-
+- He also recommended <https://github.com/rmackay9> and <https://irlock.readme.io/docs/1-sensor-firmware-software>, <https://irlock.com/products/ir-lock-sensor-precision-landing-kit> for landing.

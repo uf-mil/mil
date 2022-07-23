@@ -12,7 +12,7 @@ ping_checker() {
 		else
 			echo -e "$HOST......${RED}NOT OKAY${NC}"
 		fi
-	else 
+	else
 		echo -e "$HOST...... ${RED}NOT FOUND${NC}"
 	fi
 }

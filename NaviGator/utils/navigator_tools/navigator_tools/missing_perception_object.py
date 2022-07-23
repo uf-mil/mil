@@ -4,7 +4,7 @@ class MissingPerceptionObject(Exception):
     ):
 
         # Call the base class constructor with the parameters it needs
-        super(MissingPerceptionObject, self).__init__(message)
+        super().__init__(message)
 
         # Now for your custom code...
         self.missing_object = missing_object

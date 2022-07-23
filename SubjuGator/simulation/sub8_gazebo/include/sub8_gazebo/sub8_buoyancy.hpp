@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef _GAZEBO_BUOYANCY_PLUGIN_HH_
 #define _GAZEBO_BUOYANCY_PLUGIN_HH_
 
+#include <ignition/math/Vector3.hh>
 #include <map>
+
 #include "gazebo/common/Event.hh"
 #include "gazebo/common/Plugin.hh"
 #include "gazebo/physics/physics.hh"
-
-#include <ignition/math/Vector3.hh>
 
 namespace gazebo
 {
@@ -110,6 +110,6 @@ protected:
 protected:
   std::map<int, VolumeProperties> volPropsMap;
 };
-}
+}  // namespace gazebo
 
 #endif

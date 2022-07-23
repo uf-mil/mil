@@ -55,7 +55,7 @@ class Plotter:
     #     Publishing happens in another thread,
     #         if publish_plots is called before a previous publish plots call finishes,
     #         the most recent publish plots call will be ignored
-    #     cannot plot mutiple data sets on top of  each other in the same plot
+    #     cannot plot multiple data sets on top of  each other in the same plot
     #     cannot change color of plots
     # Features:
     #     Can be enables/disabled via the <topic_name>_enable service call
@@ -104,8 +104,8 @@ class Plotter:
     def publish_plots(
         self,
         plots: np.ndarray,
-        titles: Optional[list[str]] = None,
-        v_lines: Optional[list] = None,
+        titles: list[str] | None = None,
+        v_lines: list | None = None,
     ):
         """
         Starts as new thread to publish the data on a plot.
@@ -125,8 +125,8 @@ class Plotter:
     def publish_plots_(
         self,
         plots: np.ndarray,
-        titles: Optional[list[str]] = None,
-        v_lines: Optional[list] = None,
+        titles: list[str] | None = None,
+        v_lines: list | None = None,
     ):
         if titles is None:
             titles = []
@@ -168,7 +168,7 @@ def interweave(x: np.ndarray, data: np.ndarray):
         data (np.ndarray): An array of shape (channels, samples)
 
     Returns:
-        np.ndarray: Array of shape (channles*2, samples) where even numbered
+        np.ndarray: Array of shape (channels*2, samples) where even numbered
             rows are x, odd rows are the data.
     """
     plots = [None] * data.shape[0]

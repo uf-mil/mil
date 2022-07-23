@@ -24,7 +24,7 @@ while not rospy.is_shutdown():
 
         p = rospy.get_param(file_basepath)
         data = yaml.dump(
-            dict((k, v) for k, v in p.items() if k in param_paths), Dumper=MyDumper
+            {k: v for k, v in p.items() if k in param_paths}, Dumper=MyDumper
         )
 
         if os.path.exists(filename):
@@ -37,4 +37,4 @@ while not rospy.is_shutdown():
             f.write(data)
         os.rename(tmp_filename, filename)
 
-        print("Saved %s to %s" % (file_basepath, filename))
+        print(f"Saved {file_basepath} to {filename}")

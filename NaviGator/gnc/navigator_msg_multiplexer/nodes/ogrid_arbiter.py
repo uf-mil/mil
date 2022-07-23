@@ -158,8 +158,8 @@ class OGrid:
         # Assert that the topic is valid
         self.last_message_stamp = None
         self.topic = topic
-        self.nav_ogrid = None  # Last recieved OccupancyGrid message
-        self.np_map = None  # Numpy version of last recieved OccupancyGrid message
+        self.nav_ogrid = None  # Last received OccupancyGrid message
+        self.np_map = None  # Numpy version of last received OccupancyGrid message
         self.replace = replace
         self.subscriber = rospy.Subscriber(
             topic, OccupancyGrid, self.subscriber_callback, queue_size=1
@@ -262,7 +262,7 @@ class OGridServer:
             complete trigger response.
         """
         if self.odom is None:
-            return {"success": False, "message": "odom not recieved"}
+            return {"success": False, "message": "odom not received"}
 
         dim = -(self.map_size[0] * self.resolution) / 2
         new_org = self.odom[0] + np.array([dim, dim, 0])
@@ -285,7 +285,7 @@ class OGridServer:
             config: dict - The update changes from dynamic
             reconfigure to be handled.
         """
-        rospy.loginfo("BOUNDS UPDATEDED")
+        rospy.loginfo("BOUNDS UPDATED")
 
         self.enu_bounds = [
             [config["x1"], config["y1"], 1],
@@ -416,7 +416,7 @@ class OGridServer:
                     continue
 
                 # Proactively checking for errors.
-                # This should be temporary but probably wont be.
+                # This should be temporary but probably won't be.
                 l_h, l_w = ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width
                 g_h, g_w = global_ogrid.info.height, global_ogrid.info.width
                 if l_h > g_h or l_w > g_w:
@@ -440,11 +440,11 @@ class OGridServer:
 
                 xs = np.sort([g_x_max, g_x_min, l_x_max, l_x_min])
                 ys = np.sort([g_y_max, g_y_min, l_y_max, l_y_min])
-                # These are indicies in cell units
+                # These are indices in cell units
                 start_x, end_x = np.round(xs[1:3])  # Grabbing indices 1 and 2
                 start_y, end_y = np.round(ys[1:3])
 
-                # Should be indicies
+                # Should be indices
                 l_ogrid_start = transform_between_ogrids(
                     [start_x, start_y, 1], global_ogrid, ogrid.nav_ogrid
                 )
@@ -469,7 +469,7 @@ class OGridServer:
 
                 try:
                     # fprint("np_grid shape: {}".format(np_grid[start_y:end_y, start_x:end_x].shape))
-                    fprint("{}, {}".format(ogrid.topic, ogrid.replace))
+                    fprint(f"{ogrid.topic}, {ogrid.replace}")
                     if ogrid.replace:
                         np_grid[start_y:end_y, start_x:end_x] = to_add
                     else:

@@ -158,7 +158,7 @@ class IdentifyDockMission:
         )
 
     def done_searching(self):
-        print_good("CURRENT IDENTIFIED BAYS: {}".format(self.identified_shapes))
+        print_good(f"CURRENT IDENTIFIED BAYS: {self.identified_shapes}")
         for shape_color, point_normal in self.identified_shapes.iteritems():
             if self.correct_shape(self.bay_1, shape_color):
                 for shape_color2, point_normal in self.identified_shapes.iteritems():
@@ -182,9 +182,9 @@ class IdentifyDockMission:
                     if self.done_searching():
                         defer.returnValue(True)
                 else:
-                    print_bad("NORMAL ERROR: {}".format(normal_res.error))
+                    print_bad(f"NORMAL ERROR: {normal_res.error}")
         else:
-            print_bad("SHAPES ERROR: {}".format(shapes.error))
+            print_bad(f"SHAPES ERROR: {shapes.error}")
         defer.returnValue(False)
 
     def _bounding_rect(self, points):
@@ -203,7 +203,7 @@ class IdentifyDockMission:
                 self.CIRCLE_RADIUS
             ).look_at(self.dock_pose).go()
             yield self.navigator.move.circle_point(self.dock_pose, direction="ccw").go()
-            done_circle = True  # noqa flake8 cant see that it is defined above
+            done_circle = True  # noqa flake8 can't see that it is defined above
 
         print_good("Circling dock to get shapes identified")
         circle_bay()
@@ -231,7 +231,7 @@ class IdentifyDockMission:
         normal_res = yield self.cameraLidarTransformer(req)
         if not self.normal_is_sane(normal_res.normal):
             normal_res.success = False
-            print_bad("UNREASONABLE NORMAL={}".format(normal_res.normal))
+            print_bad(f"UNREASONABLE NORMAL={normal_res.normal}")
             normal_res.error = "UNREASONABLE NORMAL"
         defer.returnValue(normal_res)
 

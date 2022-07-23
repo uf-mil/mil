@@ -1,5 +1,5 @@
 # C++ Style Guide
-Welcome to the C++ style guide! This stlye guide briefly explains how we write
+Welcome to the C++ style guide! This style guide briefly explains how we write
 our code to do crazy robot things, and how we'd like you to write yours, too!
 This style is used in our continuous integration process to make sure that all
 code submitted to our repository is somewhat organized and maintainable.
@@ -33,7 +33,7 @@ is officially done.
 Continuous integration is the service that makes sure that new code added to the repository
 is ready to be added. Continuous integration runs a plethora of checks, including
 style checks on C++ code. This means that if your code does not comply with the C++
-style guidelines when you push, it may be deined, requiring you to go fix it.
+style guidelines when you push, it may be denied, requiring you to go fix it.
 
 ## Philosophy
 Before discussing the nuts and bolts of our desired C++ style, we'll offer a brief
@@ -86,7 +86,7 @@ This section explains the actual style practices we encourage when writing C++
 code for MIL.
 
 ### Naming
-_Source: [ROS C++ style 4](http://wiki.ros.org/CppStyleGuide#Naming), 
+_Source: [ROS C++ style 4](http://wiki.ros.org/CppStyleGuide#Naming),
 [Google Style Naming](https://google.github.io/styleguide/cppguide.html#Naming)_
 
 Below explains the process of naming various resources around the repository.
@@ -152,7 +152,7 @@ bool was_seen_yesterday;  // Ah, that helps much more!
 Furthermore:
 * Constants should use all capitals. For example, ``SPEED_OF_LIGHT``. This also
   applies to the values of enumerators.
-* Member variables (of classes, not structs) should have a trailing underscore. 
+* Member variables (of classes, not structs) should have a trailing underscore.
   For example, ``internal_attribute_``.
 * Global variables should be prepended with ``g_``. For example, ``g_global_attribute``.
 
@@ -168,7 +168,7 @@ namespace large_hadron_collider {
 ```
 
 ### Formatting
-_Source: [ROS C++ style: 6](http://wiki.ros.org/CppStyleGuide#Formatting), 
+_Source: [ROS C++ style: 6](http://wiki.ros.org/CppStyleGuide#Formatting),
 [Google Style: Formatting](https://google.github.io/styleguide/cppguide.html#Formatting)_
 
 #### Line Length
@@ -194,7 +194,7 @@ need to disable the tool on the lines where it is complaining.
 Always use spaces, and always use 2 spaces for indentation.
 
 #### Floating Points
-When using floating point numbers in C++, either use an integer to intialize the float,
+When using floating point numbers in C++, either use an integer to initialize the float,
 or use a radix point with numbers on both sides. If you want to use exponential notation
 with the number, use either an `e` or an `E`.
 
@@ -291,7 +291,7 @@ if (this_is_perfect) {
 For `switch` blocks, braces are optional. Attempt to be consistent throughout a particular
 package.
 
-In the case of fallthrough (ie, the exclusion of `break` in a case statement), 
+In the case of fallthrough (ie, the exclusion of `break` in a case statement),
 please add a comment indicating fallthrough. Some tutorials might suggest the use
 of the `[[fallthrough]]` attribute, but unfortunately, this is only allowed in C++17
 and further.
@@ -407,7 +407,7 @@ class Pan {
  public:
   void pourCupcake(int row, int col);
   Cupcake retrieveCupcake(int row, int col);
-  
+
  private:
   Cupcake[][] cupcakes_;
 };

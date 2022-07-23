@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from typing import Optional
 
 import numpy as np
@@ -56,7 +56,7 @@ class ImageProc:
 
     # https://github.com/ros-perception/image_pipeline/blob/indigo/image_proc/include/image_proc/processor.h # noqa
 
-    # Flags to select which images should be outputed
+    # Flags to select which images should be outputted
     RAW = 0
     MONO = 1 << 0
     RECT = 1 << 1
@@ -113,7 +113,7 @@ class ImageProc:
             if mono:
                 out.mono = out.raw
             if color:
-                raise Exception("cant get color from mono image")
+                raise Exception("can't get color from mono image")
         else:  # Otherwise assume color
             if mono:
                 out.mono = cvtColor2(out.raw, raw_encoding, "mono8")

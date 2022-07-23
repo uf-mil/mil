@@ -9,4 +9,4 @@ string to_frame   # frame to convert input points to
 geometry_msgs/Point[] points # points to convert
 ---
 geometry_msgs/Point[] converted  # transformed points in to_frame, len(converted) == len(points) if success, else see message
-string message                   # error message if poitns were not transformed succesfully
+string message                   # error message if poitns were not transformed successfully

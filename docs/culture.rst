@@ -5,7 +5,7 @@ The Machine Intelligence Lab has a unique student culture which creates a synerg
 Meetings
 --------
 As of the Spring 2022 semester, each team has its own meeting schedules and strategies
-for completing projects. 
+for completing projects.
 
 The software team currently meets on Mondays and Fridays, and software members
 are highly encouraged to come. In these meetings, software members exchange ideas
@@ -15,5 +15,5 @@ about what was shared in the meeting.
 
 Diversity, Equity, and Inclusion
 --------------------------------
-MIL has always been, and will always be, strongly committed to diversity, 
+MIL has always been, and will always be, strongly committed to diversity,
 equity, and inclusion.

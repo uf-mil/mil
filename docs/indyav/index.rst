@@ -26,5 +26,3 @@ Collaborators
    Autonomy Architecture <autonomy_architecture>
    Hardware <hardware/hardware>
    Software <software/software>
-
-

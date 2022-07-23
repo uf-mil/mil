@@ -4,6 +4,7 @@
  */
 #include <gtest/gtest.h>
 #include <std_msgs/String.h>
+
 #include <functional>
 #include <iostream>
 #include <ros_alarms/broadcaster.hpp>
@@ -12,9 +13,9 @@
 
 using namespace std;
 using ros_alarms::Alarm;
-using ros_alarms::AlarmProxy;
-using ros_alarms::AlarmListener;
 using ros_alarms::AlarmBroadcaster;
+using ros_alarms::AlarmListener;
+using ros_alarms::AlarmProxy;
 using ros_alarms::HeartbeatMonitor;
 
 TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
@@ -53,7 +54,7 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
   ASSERT_TRUE(hb_monitor.waitForConnection(ros::Duration(0.5)))  // Returns false if timed-out
       << "Timed out waiting for a publisher to " << heartbeat_topic;
 
-  // Neede to test time_to_raise and time_to_clear behaviour
+  // Need to test time_to_raise and time_to_clear behaviour
   ros::Time monitor_start_time = ros::Time::now();
   hb_monitor.startMonitoring();
 

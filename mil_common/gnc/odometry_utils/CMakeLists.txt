@@ -42,4 +42,3 @@ add_library(odometry_to_tf src/odometry_to_tf.cpp)
 target_link_libraries(odometry_to_tf ${catkin_LIBRARIES})
 add_dependencies(odometry_to_tf ${catkin_EXPORTED_TARGETS})
 set_target_properties(odometry_to_tf PROPERTIES COMPILE_FLAGS "-O3 -std=c++11")
-

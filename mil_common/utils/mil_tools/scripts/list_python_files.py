@@ -4,7 +4,7 @@ import sys
 
 """
 Short script to print all python files in a given directory. Used to generate a list
-to check pep8 formating. A file is included in the output if it ends in '.py' or
+to check pep8 formatting. A file is included in the output if it ends in '.py' or
 the first line contains one of the header strings listed below.
 
 Usage:

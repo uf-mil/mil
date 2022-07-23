@@ -57,7 +57,7 @@ class RosVideoPlayer:
         self.cap.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, self.start_frame)
         self.num_frames = self.cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT)
         if self.num_frames < 1:
-            raise Exception("Cannot read video {}".format(self.filename))
+            raise Exception(f"Cannot read video {self.filename}")
 
         self.paused = False
         self.ended = False
@@ -134,10 +134,10 @@ class RosVideoPlayer:
         try:
             ret, frame = self.cap.read()
         except Exception as e:
-            print("Exception: {}".format(e))
+            print(f"Exception: {e}")
         if not ret:
             if not self.ended:
-                rospy.loginfo("File {} ended".format(self.filename))
+                rospy.loginfo(f"File {self.filename} ended")
             self.ended = True
             return
         else:

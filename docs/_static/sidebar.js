@@ -1,11 +1,14 @@
-class Sidebar {
-  constructor(element) {
+class Sidebar
+{
+  constructor(element)
+  {
     this.element = element;
     this.activeLink = null;
 
     this.element.addEventListener('click', (e) => {
       // If we click a navigation, close the hamburger menu
-      if (e.target.tagName == 'A' && this.element.classList.contains('sidebar-toggle')) {
+      if (e.target.tagName == 'A' && this.element.classList.contains('sidebar-toggle'))
+      {
         this.element.classList.remove('sidebar-toggle');
         let button = hamburgerToggle.firstElementChild;
         button.textContent = 'menu';
@@ -21,31 +24,37 @@ class Sidebar {
     });
   }
 
-  createCollapsableSections() {
+  createCollapsableSections()
+  {
     let toc = this.element.querySelector('ul');
-    if (!toc) {
+    if (!toc)
+    {
       return
     }
     let allReferences = toc.querySelectorAll('a.reference.internal:not([href="#"])');
 
-    for (let ref of allReferences) {
-
+    for (let ref of allReferences)
+    {
       let next = ref.nextElementSibling;
 
-      if (next && next.tagName === "UL") {
-
+      if (next && next.tagName === 'UL')
+      {
         let icon = document.createElement('span');
         icon.className = 'material-icons collapsible-arrow expanded';
         icon.innerText = 'expand_more';
 
-        if (next.parentElement.tagName == "LI") {
+        if (next.parentElement.tagName == 'LI')
+        {
           next.parentElement.classList.add('no-list-style')
         }
 
         icon.addEventListener('click', () => {
-          if (icon.classList.contains('expanded')) {
+          if (icon.classList.contains('expanded'))
+          {
             this.collapseSection(icon);
-          } else {
+          }
+          else
+          {
             this.expandSection(icon);
           }
         })
@@ -56,71 +65,89 @@ class Sidebar {
     }
   }
 
-  resize() {
+  resize()
+  {
     let rect = this.element.getBoundingClientRect();
     this.element.style.height = `calc(100vh - 1em - ${rect.top + document.body.offsetTop}px)`;
   }
 
-  collapseSection(icon) {
+  collapseSection(icon)
+  {
     icon.classList.remove('expanded');
     icon.classList.add('collapsed');
     let children = icon.nextElementSibling.nextElementSibling;
     // <arrow><heading>
     // --> <square><children>
-    setTimeout(() => children.style.display = "none", 75)
+    setTimeout(() => children.style.display = 'none', 75)
   }
 
-  expandSection(icon) {
+  expandSection(icon)
+  {
     icon.classList.remove('collapse');
     icon.classList.add('expanded');
     let children = icon.nextElementSibling.nextElementSibling;
-    setTimeout(() => children.style.display = "block", 75)
+    setTimeout(() => children.style.display = 'block', 75)
   }
 
-  checkForScroll(section) {
-    if (this.activeLink) {
+  checkForScroll(section)
+  {
+    if (this.activeLink)
+    {
       let rect = this.activeLink.getBoundingClientRect();
       var sidebarXpath = `/html/body/div/aside/div`;
-      var sidebarDiv = document.evaluate(sidebarXpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+      var sidebarDiv =
+          document.evaluate(sidebarXpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
       let sidebarHeight = sidebarDiv.clientHeight;
-      if (sidebarHeight - rect.bottom < 100) {
+      if (sidebarHeight - rect.bottom < 100)
+      {
         sidebarDiv.scrollBy(0, -(sidebarHeight - rect.bottom) + 100);
-      } else if (rect.bottom < 100) {
+      }
+      else if (rect.bottom < 100)
+      {
         sidebarDiv.scrollBy(0, rect.top - 100);
       }
     }
   }
 
-  setActiveLink(section) {
-    if (this.activeLink) {
+  setActiveLink(section)
+  {
+    if (this.activeLink)
+    {
       this.activeLink.parentElement.classList.remove('active');
     }
-    if (section) {
+    if (section)
+    {
       this.activeLink = document.querySelector(`#sidebar a[href="#${section.id}"]`);
-      if (this.activeLink) {
+      if (this.activeLink)
+      {
         let headingChildren = this.activeLink.parentElement.parentElement;
         let heading = headingChildren.previousElementSibling.previousElementSibling;
 
-        if (heading && headingChildren.style.display === 'none') {
+        if (heading && headingChildren.style.display === 'none')
+        {
           this.activeLink = heading;
         }
         this.activeLink.parentElement.classList.add('active');
       }
     }
   }
-
 }
 
-function getCurrentSection() {
+function getCurrentSection()
+{
   let currentSection;
-  if (window.scrollY + window.innerHeight > bottomHeightThreshold) {
+  if (window.scrollY + window.innerHeight > bottomHeightThreshold)
+  {
     currentSection = sections[sections.length - 1];
   }
-  else {
-    if (sections) {
+  else
+  {
+    if (sections)
+    {
       sections.forEach(section => {
         let rect = section.getBoundingClientRect();
-        if (rect.top + document.body.offsetTop < 1) {
+        if (rect.top + document.body.offsetTop < 1)
+        {
           currentSection = section;
         }
       });

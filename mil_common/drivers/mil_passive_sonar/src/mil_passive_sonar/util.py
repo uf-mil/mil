@@ -144,7 +144,7 @@ def find_freq_response(filt, rate, lower_freq, upper_freq, worN=2000):
 def calculate_dir_pinger(deltas, h_dist, v_sound):
     """
     deltas:
-        numpy array of shape (4,) where datas[i] = time delay from h_0 to h_i
+        numpy array of shape (4,) where data[i] = time delay from h_0 to h_i
 
     h_dist:
         the unit distance from any hydrophone_i(i!=0) to hydrophone_0 in meters
@@ -157,7 +157,7 @@ def calculate_dir_pinger(deltas, h_dist, v_sound):
         numpy array of unit vector towards the pinger (in hydrophone frame) *NOTE: the hydrophone
             array has symmetry along the z axis, so we always assume the pinger is below us*
 
-    assumes hydrophone arrangment:
+    assumes hydrophone arrangement:
         h_0 = (0, 0, 0)
         h_1 = (1, 0, 0) * h_dist
         h_2 = (-1,0, 0) * h_dist
@@ -167,7 +167,7 @@ def calculate_dir_pinger(deltas, h_dist, v_sound):
 
                  x_hat * delta_i * v_sound
                   |
-                  \/
+                  \\/
     (pressure |------>0  <-h_i
     wave)     |    __/
     x_hat---->| __/  <----h_dist

@@ -15,7 +15,7 @@ class ActuatorBoard(CANDeviceHandle):
     """
 
     def __init__(self, *args, **kwargs):
-        super(ActuatorBoard, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._service = rospy.Service("/set_valve", SetValve, self.set_valve)
 
     def set_valve(self, req: SetValveRequest) -> dict:
@@ -57,10 +57,8 @@ class ActuatorBoard(CANDeviceHandle):
         """
         # Ensure packet contains correct identifier byte
         if FeedbackMessage.IDENTIFIER != ord(data[0]):
-            rospy.logwarn(
-                "Received packet with wrong identifer byte {}".format(ord(data[0]))
-            )
+            rospy.logwarn(f"Received packet with wrong identifier byte {ord(data[0])}")
             return
         # Parse message and (for now) just log it
         message = FeedbackMessage.from_bytes(data)
-        rospy.loginfo("ActuatorBoard received {}".format(message))
+        rospy.loginfo(f"ActuatorBoard received {message}")

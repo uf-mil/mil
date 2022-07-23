@@ -22,6 +22,6 @@ public:
   static VectorXd Tanh(const VectorXd& v);
   static VectorXd Sech(const VectorXd& v);
 };
-}
+}  // namespace subjugator
 
 #endif /* SUBATTITUDEHELPERS_H_ */

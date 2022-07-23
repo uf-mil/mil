@@ -60,7 +60,7 @@ class World:
             Say we want to add a Sphere to my physics world
             from physics import Sphere, World
             w = World(dt=0.1)
-            w.add_entity(Sphere, postion, density, radius)
+            w.add_entity(Sphere, position, density, radius)
 
         NOTE that we did not instantiate a Sphere, there was no Sphere(~~~)
         We just passed the Sphere class, not a Sphere instance
@@ -101,7 +101,7 @@ class World:
             j.attach(geom1.getBody(), geom2.getBody())
 
 
-class Entity(object):
+class Entity:
     _linear_damping_coeff = -0.2
     _rotational_damping_coeff = -0.2
 

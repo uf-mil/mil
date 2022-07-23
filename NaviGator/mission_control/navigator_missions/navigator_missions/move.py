@@ -65,7 +65,7 @@ class Move(Navigator):
     @util.cancellableInlineCallbacks
     def run(self, args):
         if not self.pose:
-            raise Exception("Cant move: No odom")
+            raise Exception("Can't move: No odom")
 
         commands = args.commands
         arguments = commands[1::2]
@@ -106,7 +106,7 @@ class Move(Navigator):
 
             if command == "custom":
                 # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
-                self.send_feedback("Moving with the command: {}".format(argument))
+                self.send_feedback(f"Moving with the command: {argument}")
                 res = yield eval(
                     "self.move.{}.go(move_type='{move_type}')".format(
                         argument, **action_kwargs
@@ -118,7 +118,7 @@ class Move(Navigator):
                 target_pose = yield util.wrap_time_notice(
                     self.rviz_goal.get_next_message(), 2, "Rviz goal"
                 )
-                self.send_feedback("RVIZ pose recieved!")
+                self.send_feedback("RVIZ pose received!")
                 res = yield self.move.to_pose(target_pose).go(**action_kwargs)
 
             elif command == "circle":
@@ -126,7 +126,7 @@ class Move(Navigator):
                 target_point = yield util.wrap_time_notice(
                     self.rviz_point.get_next_message(), 2, "Rviz point"
                 )
-                self.send_feedback("RVIZ point recieved!")
+                self.send_feedback("RVIZ point received!")
                 target_point = rosmsg_to_numpy(target_point.point)
                 direction = "cw" if argument == "-1" else "ccw"
                 res = yield self.move.circle_point(
@@ -163,13 +163,9 @@ class Move(Navigator):
                 if station_hold:
                     action_kwargs["move_type"] = MoveGoal.HOLD
 
-                msg = (
-                    "Moving {} ".format(command)
-                    if trans_move
-                    else "Yawing {} ".format(command[4:])
-                )
-                self.send_feedback(msg + "{}{}".format(amount, unit))
+                msg = f"Moving {command} " if trans_move else f"Yawing {command[4:]} "
+                self.send_feedback(msg + f"{amount}{unit}")
                 res = yield movement(float(amount), unit).go(**action_kwargs)
-            if res.failure_reason is not "":
-                raise Exception("Move failed. Reason: {}".format(res.failure_reason))
+            if res.failure_reason != "":
+                raise Exception(f"Move failed. Reason: {res.failure_reason}")
         defer.returnValue("Move completed successfully!")

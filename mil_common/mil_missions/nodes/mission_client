@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
+import argparse
+import json
+
 import rospy
 from actionlib import TerminalState
-import argparse
 from mil_missions_core import MissionClient
-import json
 
 
 class MissionClientCli:
@@ -27,7 +28,11 @@ class MissionClientCli:
     def list(cls) -> None:
         missions = MissionClient.available_missions()
         if not missions:
-            print("{} param not set. Is mission runner running?".format(MissionClient.LIST_PARAM))
+            print(
+                "{} param not set. Is mission runner running?".format(
+                    MissionClient.LIST_PARAM
+                )
+            )
             return
         print("Available Missions:")
         for mission in missions:
@@ -44,7 +49,7 @@ class MissionClientCli:
 
     def on_shutdown(self) -> None:
         """
-        If shutdown (rosnode kill, Control+C, etc), cancel the current goal if 
+        If shutdown (rosnode kill, Control+C, etc), cancel the current goal if
         we sent one.
         """
         if self.running:
@@ -66,14 +71,14 @@ class MissionClientCli:
             print("Goal finished with state ", TerminalState.to_string(state))
         print("Goal successful" if result.success else "Goal unsuccessful")
         if result.result != "":
-            print("Result: '{}'".format(result.result))
+            print(f"Result: '{result.result}'")
         if len(result.parameters) > 0:
             try:
                 x = json.loads(result.parameters)
                 if not isinstance(x, dict):
                     raise ValueError("not dict")
                 for key, value in x.items():
-                    print("{}: {}".format(key, value))
+                    print(f"{key}: {value}")
             except ValueError:
                 print("could not decode result parameters")
 

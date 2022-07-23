@@ -1,7 +1,7 @@
 /**
-* Author: David Soto
-* Date: Jan 16, 2017
-*/
+ * Author: David Soto
+ * Date: Jan 16, 2017
+ */
 #include <gtest/gtest.h>
 #include <ros/ros.h>
 

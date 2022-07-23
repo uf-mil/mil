@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
+
+#include "sub8_gazebo/sub8_liftdrag.hpp"
 
 #include <algorithm>
 #include <string>
@@ -22,7 +24,6 @@
 #include "gazebo/physics/physics.hh"
 #include "gazebo/sensors/SensorManager.hh"
 #include "gazebo/transport/transport.hh"
-#include "sub8_gazebo/sub8_liftdrag.hpp"
 
 using namespace gazebo;
 

@@ -5,6 +5,7 @@
 #include <mil_msgs/RangeStamped.h>
 #include <mil_msgs/VelocityMeasurements.h>
 #include <ros/ros.h>
+
 #include <gazebo/common/common.hh>
 #include <gazebo/sensors/sensors.hh>
 
@@ -59,6 +60,6 @@ private:
 private:
   gazebo::event::ConnectionPtr update_connection_;
 };
-}
+}  // namespace mil_gazebo
 
 #endif

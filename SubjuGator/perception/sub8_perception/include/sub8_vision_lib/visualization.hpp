@@ -5,6 +5,7 @@
 // #include "typedefs.hpp"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+
 #include "geometry_msgs/Pose.h"
 #include "ros/ros.h"
 
@@ -22,4 +23,4 @@ public:
                                std::vector<Eigen::Vector3d>& targets, std::vector<Eigen::Vector3d>& corners3d,
                                std::string& frame_id);
 };
-}
+}  // namespace sub

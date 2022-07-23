@@ -44,7 +44,7 @@ def bbox_countour_from_rectangle(bbox):
     )
 
 
-class VrxClassifier(object):
+class VrxClassifier:
     # Handle buoys / black totem specially, discrminating on volume as they have the same color
     # The black objects that we have trained the color classifier on
     BLACK_OBJECT_CLASSES = ["buoy", "black_totem"]
@@ -184,7 +184,7 @@ class VrxClassifier(object):
         if self.is_perception_task:
             CUTOFF_METERS = 100
 
-        # Get a list of indicies of objects who are sufficiently close and can be seen by camera
+        # Get a list of indices of objects who are sufficiently close and can be seen by camera
         met_criteria = []
         for i in range(len(self.last_objects.objects)):
             distance = distances[i]

@@ -1,6 +1,6 @@
 # File Server
 MIL has a file server we use to store bag files, videos, etc.
-This fileserver is accessable from anywhere on the UF network.
+This fileserver is accessible from anywhere on the UF network.
 
 :::{warning}
 These docs have not been updated in a considerable amount of time. Please use
@@ -19,6 +19,6 @@ The share is which file share you want. You can chose one of the following:
 * navigator
 * subjugator
 
-To unmount all shares, run 
+To unmount all shares, run
 
     $ ./scripts/umount_fileserver

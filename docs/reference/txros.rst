@@ -1,5 +1,5 @@
-txros
------
+:mod:`txros` - Independent extensions for ROS
+---------------------------------------------
 
 .. currentmodule:: txros
 
@@ -75,7 +75,7 @@ Exceptions
 
 .. autoclass:: txros.ServiceError
     :members:
-   
+
 .. attributetable:: txros.TooPastError
 
 .. autoclass:: txros.TooPastError

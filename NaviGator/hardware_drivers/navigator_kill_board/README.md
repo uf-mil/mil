@@ -3,7 +3,7 @@
 ## Description
 This package contains a ROS node to interface with NaviGator's student designed kill board, which communicates over USB with the main computer. The board can receive input one one of 4 emergency buttons, the main computer, and a network heartbeat to trigger a disconnect of power to the thrusters.
 
-The driver in this package (kill_board_driver.py), connects to the board over serial to pass software kill commands (from ros_alarms) to the board, notify ROS of hardware kills, and publish diagnostics information about the board to ROS. 
+The driver in this package (kill_board_driver.py), connects to the board over serial to pass software kill commands (from ros_alarms) to the board, notify ROS of hardware kills, and publish diagnostics information about the board to ROS.
 
 ## Usage
 The kill board driver is included in the master_board.launch file, but to run it manually on NaviGator:
@@ -24,13 +24,13 @@ If you do not have physical access to the kill board hardware, but would like to
 | Alarm  |   Description |
 |--|--|
 | hw-kill |  broadcasts, raised if the board is killed (power is cut to thrusters) |
-| kill | listener, notifies board of raise/clear to update board's software kill status | 
+| kill | listener, notifies board of raise/clear to update board's software kill status |
 
 ### Subscriptions
 | Topic  |   Type | Description |
 |--|--|--|
 | /wrench/current | std_msgs/String |  turns NaviGator's control indicator light green in autonomous mode and yellow in rc mode |
-| /network | std_msgs/Header | passes network hearbeat messages to board to prevent board's network kill | 
+| /network | std_msgs/Header | passes network hearbeat messages to board to prevent board's network kill |
 
 ### Publishers
 | Topic | Type | Description |
@@ -40,6 +40,4 @@ If you do not have physical access to the kill board hardware, but would like to
 ### Service Servers
 | Service | Type | Description
 |--|--|--|
-| ~BUTTON<AFT_PORT/AFT_STARBOARD/FRONT_PORT/FRONT_STARBOARD> | std_srvs/SetBool | When running in simulated mode, simulate pressing / unpressing of emergency buttons | 
-
-
+| ~BUTTON<AFT_PORT/AFT_STARBOARD/FRONT_PORT/FRONT_STARBOARD> | std_srvs/SetBool | When running in simulated mode, simulate pressing / unpressing of emergency buttons |

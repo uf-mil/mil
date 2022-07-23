@@ -1,29 +1,36 @@
+---
 # This is a basic workflow to help you get started with Actions
 name: ReadTheDocs build support
 
 # Controls when the workflow will run
-on: [push, release]
+# yamllint disable-line rule:truthy
+on: [release]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# A workflow run is made up of one or more jobs that can run sequentially
+# or in parallel
 jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
     runs-on: self-hosted
-    
-    # Steps represent a sequence of tasks that will be executed as part of the job
+
+    # Steps represent a sequence of tasks that will be executed as part of the
+    # job
     steps:
       # Remove old mil directory if one exists
       - name: Remove old contents
-        run: |
-          echo ${{ secrets.ZOBELISK_PASSWORD }} | sudo -S rm -rf ~/actions-runner/_work/mil/mil
+        run: >
+          echo ${{ secrets.ZOBELISK_PASSWORD }} |
+          sudo -S rm -rf ~/actions-runner/_work/mil/mil
+
           mkdir ~/actions-runner/_work/mil/mil
 
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can
+      # access it
       - uses: actions/checkout@v2
         with:
           submodules: recursive
-          
+
       # Runs a single command using the runners shell
       - name: List and set up directory
         run: |
@@ -35,14 +42,15 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/docker/noetic
           docker build --no-cache -t example/docker-ros-test:latest .
-          
+
       - name: Run Docker container
         uses: addnab/docker-run-action@v3
         with:
-            image: example/docker-ros-test:latest
-            options: -v ${{ github.workspace }}/docker/noetic/html_output:/root/.mil/docs/html
-            run: |
-              ./scripts/build_docs -D
+          image: example/docker-ros-test:latest
+          options: "-v ${{ github.workspace }}\
+                    /docker/noetic/html_output:/root/.mil/docs/html"
+          run: |
+            ./scripts/build_docs -D
 
       - uses: actions/upload-artifact@v2
         with:

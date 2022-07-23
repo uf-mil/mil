@@ -17,4 +17,3 @@ CATKIN_DEPENDS
 	roscpp
 	navigator_msg_multiplexer
 )
-

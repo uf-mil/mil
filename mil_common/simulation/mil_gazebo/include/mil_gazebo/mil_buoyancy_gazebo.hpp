@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef USV_GAZEBO_PLUGINS_BUOYANCY_GAZEBO_PLUGIN_HH_
 #define USV_GAZEBO_PLUGINS_BUOYANCY_GAZEBO_PLUGIN_HH_
@@ -31,7 +31,7 @@ namespace gazebo
 /// All SDF parameters are optional.
 ///   <fluid_density>: Sets the density of the fluid that surrounds the
 ///                    buoyant object [kg/m^3].
-///                    This paramater is optional.
+///                    This parameter is optional.
 ///
 ///   <fluid_level>:   The height of the fluid/air interface [m].
 ///                    This parameter is optional.
@@ -98,6 +98,6 @@ protected:
 protected:
   ignition::math::Vector3d gravity;
 };
-}
+}  // namespace gazebo
 
 #endif

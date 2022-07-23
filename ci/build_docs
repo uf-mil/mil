@@ -8,7 +8,7 @@ BUILD_DIR=$HOME/.mil/docs
 mkdir -p $BUILD_DIR/doctrees
 mkdir -p $BUILD_DIR/html
 
-if [ "$1" == "-D" ]; then 
+if [ "$1" == "-D" ]; then
     #Doxygen
     cd $HOME/.mil
     doxygen $MIL_DIR/docs/Doxyfile

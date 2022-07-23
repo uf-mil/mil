@@ -9,7 +9,7 @@ from roboteq_msgs.msg import Feedback
 
 class MissionClient(SimpleActionClient):
     """
-    Extends SimpleActionClient to do boostrap of making a mission
+    Extends SimpleActionClient to do bootstrap of making a mission
     client for you.
     """
 

@@ -1,6 +1,7 @@
+<?xml version="1.0"?>
 <library path="lib/libdepth_driver_nodelet">
   <class name="depth_driver/nodelet" type="depth_driver::Nodelet" base_class_type="nodelet::Nodelet">
-    <description> 
+    <description>
       depth_driver
     </description>
   </class>

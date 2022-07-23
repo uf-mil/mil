@@ -41,7 +41,7 @@ class DetectDeliverTargetDetector(VisionNode):
         )
         self.debug_pub = Image_Publisher("~debug")
         self.first_object_id = -1
-        super(DetectDeliverTargetDetector, self).__init__()
+        super().__init__()
 
     def find_objects(self, img):
         # Clear old objects from being tracked

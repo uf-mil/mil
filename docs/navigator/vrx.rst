@@ -1,11 +1,11 @@
 VRX
 ===
-This page provides general info about developing for `VRX <https://github.com/osrf/vrx>`_, 
+This page provides general info about developing for `VRX <https://github.com/osrf/vrx>`_,
 a simulated competition based on the real-life RobotX challenge.
 
 MIL participates both in VRX and RobotX. Most code for this is hosted under ``NaviGator/``.
 
-.. warning:: 
+.. warning::
 
     Please go through the [getting started guide](/docs/development/getting_started) before going through this tutorial.
 
@@ -94,22 +94,22 @@ Run the dev container:
     .. code-block:: bash
 
         $ mil
-    
+
     .. code-block:: bash
 
 	    $ ./scripts/build_vrx_trial_container my_branch https://github.com/ME/mil.git
-	
+
 	If you pushed to the uf-mil github, run:
 
     .. code-block:: bash
-	
+
 	    $ ./scripts/build_vrx_trial_container my_branch
 
 	.. note::
 
         Make sure when building your trial container, that the code actually compiles.
-	
-Run your container with a terminal for sanity check. Make sure your container 
+
+Run your container with a terminal for sanity check. Make sure your container
 actually does what you want when it starts up:
 
 .. code-block:: bash
@@ -161,6 +161,6 @@ i.e. to play the 2019 docking task run 1:
 
 .. warning::
 
-    Not all tasks and runs have a video. Navigate to 
-    `$MIL_REPO/NaviGator/simulation/VRX/vrx_logs/2019/vrx_2019_videos` to see 
-    the avalible videos.
+    Not all tasks and runs have a video. Navigate to
+    `$MIL_REPO/NaviGator/simulation/VRX/vrx_logs/2019/vrx_2019_videos` to see
+    the available videos.

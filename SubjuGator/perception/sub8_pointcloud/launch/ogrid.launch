@@ -18,7 +18,7 @@
             statistical_mean_k: 90
             statistical_stddev_mul_thresh: 1
 
-            # Euclidian Clustering
+            # Euclidean Clustering
             cluster_tolerance_m: 0.5
             cluster_min_num_points: 20
             cluster_max_num_points: 500
@@ -34,4 +34,3 @@
         </rosparam>
     </node>
 </launch>
-

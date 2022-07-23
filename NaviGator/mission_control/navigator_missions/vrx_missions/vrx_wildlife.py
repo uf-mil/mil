@@ -17,7 +17,7 @@ ___author___ = "Alex Perez"
 
 class VrxWildlife(Vrx):
     def __init__(self, *args, **kwargs):
-        super(VrxWildlife, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def closest_point_on_radius(self, start_pos, end_pos, radius):
         # given two points, this finds the closest point to the end_pose given a radius around the end_pose

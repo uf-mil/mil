@@ -43,7 +43,7 @@ def check_some(getter, count=50):
         a = AlarmGetRequest()
         a.alarm_name = random.choice(names)
 
-        rospy.loginfo("Checking '{}' alarm".format(a.alarm_name))
+        rospy.loginfo(f"Checking '{a.alarm_name}' alarm")
 
         resp = getter(a)
         print("raised", resp.alarm.raised)

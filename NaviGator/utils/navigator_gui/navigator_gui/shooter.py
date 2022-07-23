@@ -26,7 +26,7 @@ __license__ = "MIT"
 
 class Shooter(Plugin):
     def __init__(self, context):
-        super(Shooter, self).__init__(context)
+        super().__init__(context)
 
         # Create the widget and name it
         self._widget = QtWidgets.QWidget()

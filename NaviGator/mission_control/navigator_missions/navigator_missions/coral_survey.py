@@ -103,7 +103,7 @@ class OgridFactory:
             [origin_x, origin_y, 0], [0, 0, 0, 1]
         )
 
-        # The grid needs to have it's axes swaped since its row major
+        # The grid needs to have it's axes swapped since its row major
         self.grid = (
             np.zeros((self.height / self.resolution, self.width / self.resolution)) - 1
         )

@@ -11,7 +11,7 @@ from .SVM_classifier import SVMClassifier
 ___author___ = "Tess Bianchi"
 
 
-class Config(object):
+class Config:
     def __init__(self):
         self.classes = ["totem", "scan_the_code", "nothing", "shooter"]
         self.classifier = SVMClassifier()
@@ -86,7 +86,7 @@ class Config(object):
         return np.repeat(img, rep, axis=1)
 
 
-class Training(object):
+class Training:
     def __init__(self, roi_file, output):
         self.config = Config()
         self.output = output
@@ -105,8 +105,8 @@ class Training(object):
             print(clss)
         descs = np.array(descs)
         classify = np.array(classify)
-        counts = dict((x, list(classify).count(x)) for x in set(classify))
-        counts = dict((self.config.to_class(k), v) for k, v in counts.items())
+        counts = {x: list(classify).count(x) for x in set(classify)}
+        counts = {self.config.to_class(k): v for k, v in counts.items()}
         print(counts)
 
         self.config.classifier.train(descs, classify)
@@ -116,7 +116,7 @@ class Training(object):
 # class Classifier(object):
 
 
-class ClassiferTest(object):
+class ClassiferTest:
     def __init__(self, roi_file, class_file):
         self.config = Config()
         self.roi_file = roi_file

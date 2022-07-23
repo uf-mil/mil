@@ -1,25 +1,22 @@
 #pragma once
 
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-#include <limits>
-#include <sstream>
-#include <string>
-#include <vector>
-
 #include <eigen_conversions/eigen_msg.h>
-#include <Eigen/SVD>
-#include <Eigen/StdVector>
-
-#include <boost/foreach.hpp>
-
-#include <opencv2/opencv.hpp>
-
 #include <image_geometry/pinhole_camera_model.h>
 #include <image_transport/image_transport.h>
 #include <ros/ros.h>
 #include <sensor_msgs/image_encodings.h>
+
+#include <Eigen/SVD>
+#include <Eigen/StdVector>
+#include <algorithm>
+#include <boost/foreach.hpp>
+#include <cmath>
+#include <iostream>
+#include <limits>
+#include <opencv2/opencv.hpp>
+#include <sstream>
+#include <string>
+#include <vector>
 
 // #define SEGMENTATION_DEBUG
 
@@ -102,7 +99,7 @@ cv::Mat triangulate_Linear_LS(cv::Mat mat_P_l, cv::Mat mat_P_r, cv::Mat undistor
  *     This method does not appear to be used for any particular action in the codebase.
  *     It may have only been written as a test.
  * \endrst
- * 
+ *
  * @param pt1 The first point from the first camera.
  * @param pt2 The second point from the second camera.
  * @param essential The essential matrix to use in the calcaulation.
@@ -115,8 +112,8 @@ Eigen::Vector3d lindstrom_triangulation(const cv::Point2d &pt1, const cv::Point2
                                         const Eigen::Matrix3d &essential, const Eigen::Matrix3d &R);
 
 /**
- * Packages corresponding sensor_msgs::ImageConstPtr and 
- * sensor_msgs::CameraInfoConstPtr into one object. Containers of these objects 
+ * Packages corresponding sensor_msgs::ImageConstPtr and
+ * sensor_msgs::CameraInfoConstPtr into one object. Containers of these objects
  * can be sorted by their image_time attribute.
  */
 struct ImageWithCameraInfo
@@ -137,7 +134,7 @@ public:
 
 /**
  * Object that subscribes itself to an image topic and stores up to a
- * user defined number of ImageWithCameraInfo objects. The frame history can then be 
+ * user defined number of ImageWithCameraInfo objects. The frame history can then be
  * retrieved in whole or just a portion.
  */
 class FrameHistory
@@ -171,4 +168,4 @@ void range_from_param(std::string &param_root, Range &range);
 
 void inParamRange(cv::Mat &src, Range &range, cv::Mat &dest);
 
-}  // namespace sub
+}  // namespace mil_vision

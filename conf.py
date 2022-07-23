@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # mil documentation build configuration file, created by
 # sphinx-quickstart on Sun Jul 21 13:37:52 2019.
@@ -80,6 +79,7 @@ myst_enable_extensions = ["colon_fence"]
 # Document __init__ methods of classes
 autoclass_content = "both"
 autodoc_inherit_docstrings = False
+autodoc_mock_imports = ["mayavi"]  # Package is very hard to install sometimes
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["docs/_templates"]

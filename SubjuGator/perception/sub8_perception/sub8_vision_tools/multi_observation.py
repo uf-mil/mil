@@ -67,7 +67,7 @@ class MultiObservation:
 
         outliers = np.where(dists > threshold)[0][::-1]
         if self.debug:
-            print("MULTI_OBS: Removing ({}) outliers.".format(len(outliers)))
+            print(f"MULTI_OBS: Removing ({len(outliers)}) outliers.")
         for index in outliers:
             del observations[index]
             del cameras[index]

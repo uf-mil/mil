@@ -14,7 +14,7 @@ ___author___ = "Alex Perez"
 
 class VrxWayfinding2(Vrx):
     def __init__(self, *args, **kwargs):
-        super(VrxWayfinding2, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
@@ -51,7 +51,7 @@ class VrxWayfinding2(Vrx):
 
         # do movements
         for index in path:
-            self.send_feedback("Going to {}".format(poses[index]))
+            self.send_feedback(f"Going to {poses[index]}")
 
             # Go to goal
             yield self.send_trajectory_without_path(poses[index])

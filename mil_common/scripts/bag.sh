@@ -23,13 +23,13 @@ _bagging_complete() {
 	if [[ "$PREVIOUS" == "-i" || "$PREVIOUS" == "--import" ]]; then
 
 		# Check for configuration files in the catkin workspace repositories
-		for ITEM in $CATKIN_DIR/src/"$2"*; do
+		for ITEM in "$CATKIN_DIR/src/$2"*; do
 
 			# Skip any repository that does not contain a configuration file
 			if [[ -f $ITEM/scripts/$CONFIGURATION_FILE ]]; then
 
 				# Append just the name of the repository to the autocomplete list
-				COMPREPLY+=( $(echo "$ITEM" | rev | cut -d '/' -f1 | rev) )
+				COMPREPLY+=( "$(echo "$ITEM" | rev | cut -d '/' -f1 | rev)" )
 			fi
 		done
 
@@ -37,24 +37,24 @@ _bagging_complete() {
 	elif [[ "$PREVIOUS" == "-e" || "$PREVIOUS" == "--export" ]]; then
 
 		# Check for scripts directories in the catkin workspace repositories
-		for ITEM in $CATKIN_DIR/src/"$2"*; do
+		for ITEM in "$CATKIN_DIR/src/$2"*; do
 
 			# Skip any repository that does not contain a scripts directories
 			if [[ -d $ITEM/scripts ]]; then
 
 				# Append just the name of the repository to the autocomplete list
-				COMPREPLY+=( $(echo "$ITEM" | rev | cut -d '/' -f1 | rev) )
+				COMPREPLY+=( "$(echo "$ITEM" | rev | cut -d '/' -f1 | rev)" )
 			fi
 		done
 
 	# Append all ROS topics to the autocomplete list if the string to autocomplete begins with a '/' character
 	elif [[ "${2:0:1}" == '/' ]]; then
-		COMPREPLY+=( $(rostopic list 2> /dev/null) )
+		COMPREPLY+=( "$(rostopic list 2> /dev/null)" )
 
 	else
 
 		# Otherwise, iterate over all of the bagging variables in the environment with the prefix removed
-		for ITEM in $(env | grep "$VARIABLE_PREFIX$2" | cut -d '=' -f1 | sed "s@$VARIABLE_PREFIX@@"); do
+		for ITEM in "$(env | grep "$VARIABLE_PREFIX$2" | cut -d '=' -f1 | sed "s@$VARIABLE_PREFIX@@")"; do
 
 			# Append the variable to the autocomplete list
 			COMPREPLY+=( "$ITEM" )
@@ -83,8 +83,8 @@ generate_configuration() {
 	echo ""
 	echo "# Topic variables that can be used from the bag command"
 
-	for VARIABLE in $BAGGING_VARIABLES; do
-		echo "export $VARIABLE=\"$(env | grep $VARIABLE= | cut -d '=' -f2)\""
+	for VARIABLE in "${BAGGING_VARIABLES[@]}"; do
+		echo "export $VARIABLE=\"$(env | grep "$VARIABLE"= | cut -d '=' -f2)\""
 	done
 }
 
@@ -117,7 +117,7 @@ bag() {
 				;;
 			-c|--clear)
 				if [[ ! -z "$BAGGING_VARIABLES" ]]; then
-					for VARIABLE in $BAGGING_VARIABLES; do
+					for VARIABLE in "${BAGGING_VARIABLES[@]}"; do
 						unset "$VARIABLE"
 					done
 				fi
@@ -136,7 +136,7 @@ bag() {
 				;;
 			-e|--export)
 				if [[ -d $CATKIN_DIR/src/$2/scripts ]]; then
-					generate_configuration > $CATKIN_DIR/src/$2/scripts/$CONFIGURATION_FILE
+					generate_configuration > "$CATKIN_DIR/src/$2/scripts/$CONFIGURATION_FILE"
 
 				# Inform the user if the selected repository does not have a scripts directory
 				else
@@ -178,7 +178,7 @@ bag() {
 				bag -c
 
 				if [[ -f $CATKIN_DIR/src/$2/scripts/$CONFIGURATION_FILE ]]; then
-					source $CATKIN_DIR/src/$2/scripts/$CONFIGURATION_FILE
+					source "$CATKIN_DIR/src/$2/scripts/$CONFIGURATION_FILE"
 
 				# Inform the user if the selected file does not exist
 				else
@@ -215,7 +215,7 @@ bag() {
 					echo "Always bag topics:	$BAG_ALWAYS"
 					echo ""
 					echo "Bagging variables:"
-					env | grep $VARIABLE_PREFIX
+					env | grep "$VARIABLE_PREFIX"
 				else
 					echo "No bagging variables have been loaded"
 					echo "Try 'bag --help' for more information."
@@ -235,11 +235,11 @@ bag() {
 				;;
 			*)
 				if [[ "$MODE" != "false" ]]; then
-					if [[ ! -z "$(eval echo \$${VARIABLE_PREFIX}${1})" || "${1:0:1}" == '/' ]]; then
+					if [[ ! -z "$(eval echo \$"$VARIABLE_PREFIX${1}")" || "${1:0:1}" == '/' ]]; then
 						if [[ -z "$TOPICS" ]]; then
-							TOPICS=$(eval echo \$${VARIABLE_PREFIX}${1})
+							TOPICS=$(eval echo \$"$VARIABLE_PREFIX${1}")
 						else
-							TOPICS="$TOPICS "$(eval echo \$${VARIABLE_PREFIX}${1})
+							TOPICS="$TOPICS "$(eval echo \$"$VARIABLE_PREFIX${1}")
 						fi
 					else
 						echo "$1 is not one of the available bagging aliases."
@@ -270,17 +270,17 @@ bag() {
 		done
 
 		# Store the bag in the correct dated folder
-		mkdir -p $BAG_DIR"/$(date +%Y-%m-%d)"
-		cd $BAG_DIR"/$(date +%Y-%m-%d)"
-		rosbag record -O $NAME $ARGS $BAG_ALWAYS $TOPICS
+		mkdir -p "$BAG_DIR/$(date +%Y-%m-%d)"
+		cd "$BAG_DIR/$(date +%Y-%m-%d)"
+		rosbag record -O "$NAME" "$ARGS" "$BAG_ALWAYS" "$TOPICS"
 
 		# If the text flag was passed in, create a notes file of the same name
 		if [[ "$NOTE_TEXT" == "true" ]]; then
-			vim $NAME.txt
+			vim "$NAME".txt
 		fi
 
 		# Return the user to the directory they ran the command from
-		cd $WORKING_DIRECTORY
+		cd "$WORKING_DIRECTORY"
 
 	# If online mode was selected, call the online bagger service
 	elif [[ "$MODE" == "online" ]]; then
@@ -295,7 +295,7 @@ bag() {
 
 		# If the text flag was passed in, create a notes file of the same name
 		if [[ "$NOTE_TEXT" == "true" ]]; then
-			vim $BAG_DIR"/$(date +%Y-%m-%d)"/$NAME.txt
+			vim "$BAG_DIR/$(date +%Y-%m-%d)"/"$NAME".txt
 		fi
 	fi
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <tf/tf.h>
+
 #include <Eigen/Dense>
 
 namespace mil_tools
@@ -94,4 +95,4 @@ inline T quat2xyzw(Eigen::Quaterniond q)
 {
   return make_xyzw<T>(q.x(), q.y(), q.z(), q.w());
 }
-}
+}  // namespace mil_tools

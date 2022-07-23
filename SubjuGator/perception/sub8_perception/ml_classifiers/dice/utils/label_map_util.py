@@ -92,7 +92,7 @@ def convert_label_map_to_categories(label_map, max_num_classes, use_display_name
             categories.append(
                 {
                     "id": class_id + label_id_offset,
-                    "name": "category_{}".format(class_id + label_id_offset),
+                    "name": f"category_{class_id + label_id_offset}",
                 }
             )
         return categories

@@ -15,7 +15,7 @@ ___author___ = "Alex Perez"
 
 class VrxNavigation2(Vrx):
     def __init__(self, *args, **kwargs):
-        super(VrxNavigation2, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def get_gate(one, two, position):

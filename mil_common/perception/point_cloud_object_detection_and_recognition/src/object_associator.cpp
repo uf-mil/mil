@@ -1,9 +1,9 @@
-#include <point_cloud_object_detection_and_recognition/object_associator.hpp>
-
 #include <mil_msgs/PerceptionObject.h>
 #include <pcl/registration/correspondence_estimation.h>
 #include <pcl/registration/correspondence_rejection_trimmed.h>
 #include <pcl/search/octree.h>
+
+#include <point_cloud_object_detection_and_recognition/object_associator.hpp>
 #include <unordered_set>
 
 namespace pcodar

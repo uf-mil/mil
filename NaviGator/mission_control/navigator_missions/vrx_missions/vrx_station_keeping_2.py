@@ -10,7 +10,7 @@ ___author___ = "Alex Perez"
 
 class VrxStationKeeping2(Vrx):
     def __init__(self, *args, **kwargs):
-        super(VrxStationKeeping2, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
@@ -20,7 +20,7 @@ class VrxStationKeeping2(Vrx):
         self.send_feedback("Waiting for station keeping goal")
         goal_msg = yield self.get_latching_msg(self.station_keep_goal)
         goal_pose = yield self.geo_pose_to_enu_pose(goal_msg.pose)
-        self.send_feedback("Going to {}".format(goal_pose))
+        self.send_feedback(f"Going to {goal_pose}")
 
         # Go to goal
         yield self.send_trajectory_without_path(goal_pose)

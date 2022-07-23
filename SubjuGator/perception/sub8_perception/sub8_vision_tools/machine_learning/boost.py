@@ -19,7 +19,7 @@ SHOULD:
     - Easier tool for generating data
 
 CONSIDER:
-    - Use sklearn preprocessing standar scaler
+    - Use sklearn preprocessing standard scaler
         - Whiten data, yo
 
 - Package kernels alongside Boost
@@ -112,7 +112,7 @@ def main():
     ]
     prediction2 = [int(x) for x in [clf.predict(obs) for obs in some_observations]]
 
-    print("Saving as {}...".format(args.output))
+    print(f"Saving as {args.output}...")
     clf.save(args.output, "s")
 
     print("Displaying...")

@@ -30,7 +30,7 @@ MessageDetectDeliver
 
 .. class:: navigator_msgs.srv.MessageDetectDeliverResponse
 
-   The repsonse class for the ``navigator_msgs/MessageDetectDeliver`` service.
+   The response class for the ``navigator_msgs/MessageDetectDeliver`` service.
 
    .. attribute:: message
 
@@ -76,7 +76,7 @@ MessageExtranceExitGate
 
 .. class:: navigator_msgs.srv.MessageExtranceExitGateResponse
 
-   The repsonse class for the ``navigator_msgs/MessageExtranceExitGate`` service.
+   The response class for the ``navigator_msgs/MessageExtranceExitGate`` service.
 
    .. attribute:: message
 
@@ -109,7 +109,7 @@ MessageIdentifySymbolsDock
 
 .. class:: navigator_msgs.srv.MessageIdentifySymbolsDockResponse
 
-   The repsonse class for the ``navigator_msgs/MessageIdentifySymbolsDock`` service.
+   The response class for the ``navigator_msgs/MessageIdentifySymbolsDock`` service.
 
    .. attribute:: message
 
@@ -135,7 +135,7 @@ ScanTheCodeMission
 
 .. class:: navigator_msgs.srv.ScanTheCodeMissionResponse
 
-   The repsonse class for the ``navigator_msgs/ScanTheCodeMission`` service.
+   The response class for the ``navigator_msgs/ScanTheCodeMission`` service.
 
    .. attribute:: observing
 

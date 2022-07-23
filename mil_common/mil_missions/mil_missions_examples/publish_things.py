@@ -17,9 +17,7 @@ class PublishThings(ExampleBaseMission):
 
     @util.cancellableInlineCallbacks
     def run(self, parameters):
-        self.send_feedback(
-            "Printing {} for {} seconds".format(parameters, self.publish_time)
-        )
+        self.send_feedback(f"Printing {parameters} for {self.publish_time} seconds")
         end_time = (yield self.nh.get_time()) + genpy.Duration(self.publish_time)
         msg = String(parameters)
         while (yield self.nh.get_time()) < end_time:

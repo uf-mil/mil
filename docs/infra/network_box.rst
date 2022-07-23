@@ -6,7 +6,7 @@ Network Box
 
 The Network Box is a pelican case containing the components needed to
 duplicate the network while out testing or at competition. It is
-intended to make networking in these enviroments seemless and portable.
+intended to make networking in these environments seamless and portable.
 The box is powered by a UPS so can operate for roughly an hour without
 being plugged into a wall outlet.
 
@@ -16,16 +16,16 @@ Usage
 To use the Network Box:
 
 -  If possible, plug the box into wall power using the special cable.
--  Turn the box on by holding down the ON button until you hear a beep and the 
+-  Turn the box on by holding down the ON button until you hear a beep and the
    RED led turns on.
--  Connect your/other developer laptops via ethernet to any of the top ports BESIDES 
+-  Connect your/other developer laptops via ethernet to any of the top ports BESIDES
    the one labeled POE.
 
-    - Be sure your laptop is configured to automaticaly configure network over DHCP.
-    - If your laptop does not have Ethernet (RJ45), you can use one of the provided 
+    - Be sure your laptop is configured to automatically configure network over DHCP.
+    - If your laptop does not have Ethernet (RJ45), you can use one of the provided
       adapters inside the box.
 
--  Connect the vehicle to the box. If connecting the Ubiquitii Antenna, connect 
+-  Connect the vehicle to the box. If connecting the Ubiquitii Antenna, connect
    it to the POE port.
 -  Wait a few minutes until your computer reports it is connected to the network.
 -  To verify functionality, try pinging the vehicle or accessing the config panel.
@@ -57,13 +57,13 @@ Internal
 Configuring
 -----------
 
-.. warning:: 
+.. warning::
 
-    Bad changes to the network box config can break communication between developers 
+    Bad changes to the network box config can break communication between developers
     and robots. Proceed with caution.
 
 You can configure things such as the WAN (internet) connection, DHCP server, etc by
-logging into the PFsense web panel at https://192.168.37.1 (accept the invalid 
+logging into the PFsense web panel at https://192.168.37.1 (accept the invalid
 certificate). Ask a MIL leader for the login credentials.
 
 Backup / Restore
@@ -77,13 +77,13 @@ You can download the pfSense config XML file by clicking :download:`here </infra
 WAN Setup
 ~~~~~~~~~
 
-.. warning:: 
+.. warning::
 
-    Do not connect the MIL network or any other network using our subnet to the 
-    WAN port. This can cause serious issues for both networks as both will have 
+    Do not connect the MIL network or any other network using our subnet to the
+    WAN port. This can cause serious issues for both networks as both will have
     an active DHCP server.
 
-At competition, we are often given a WAN (internet) cable. Plug this cable into 
-the WAN port on the box. Once connected, try pinging an internet server with 
+At competition, we are often given a WAN (internet) cable. Plug this cable into
+the WAN port on the box. Once connected, try pinging an internet server with
 
     $ ping 8.8.8.8

@@ -5,7 +5,7 @@ a system, but don't document it, future generations may not even know what to do
 what you've built!
 
 ## Docstrings vs. Explicit Documentation
-There are two main types of document in our repository: docstrings and explicit 
+There are two main types of document in our repository: docstrings and explicit
 documentation.
 
 Docstrings are documentation **within** the code itself. These docstrings are then
@@ -118,7 +118,7 @@ You can use either reStructuredText or Markdown for creating your documents, but
 you are making an index or navigation-focused page, use reST.
 
 ### Indexing the file
-For your newly added page to be found, it needs to be added to a table of contents. There is a root table of contents in `index.rst` and smaller table of contents within various subdirectories. Add your page to one or both of these, whichever you deem more appropriate. To do so, add the path to your page (without the extention) under the
+For your newly added page to be found, it needs to be added to a table of contents. There is a root table of contents in `index.rst` and smaller table of contents within various subdirectories. Add your page to one or both of these, whichever you deem more appropriate. To do so, add the path to your page (without the extension) under the
 `.. toctree::` section of the `index.rst` file. For example, to add the "Meeting Schedule" page mentioned above, the `index.rst` will now look like
 ```
 .. toctree::

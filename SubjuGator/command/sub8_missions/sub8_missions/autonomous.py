@@ -87,7 +87,7 @@ class Autonomous(SubjuGator):
     def _check_for_run(self, nh: txros.NodeHandle, _):
         """Waits for the network loss alarm to trigger before"""
         if (yield nh.has_param("autonomous")) and (yield nh.get_param("autonomous")):
-            fprint("Waiting {} seconds before running missions...".format(WAIT_SECONDS))
+            fprint(f"Waiting {WAIT_SECONDS} seconds before running missions...")
             yield nh.sleep(WAIT_SECONDS)
             fprint("Running Missions")
             yield self.do_mission()

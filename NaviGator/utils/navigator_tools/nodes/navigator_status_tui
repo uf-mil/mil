@@ -42,7 +42,7 @@ class nav_tui:
         self.LAT = None
         self.LON = None
         self.ALT = None
-        # The fault values are initalized as zero (no faults)
+        # The fault values are initialized as zero (no faults)
         self.FL_fault = 0
         self.FR_fault = 0
         self.BL_fault = 0
@@ -194,7 +194,7 @@ class nav_tui:
                 self.window.addstr(9, 0, battery_voltage, curses.color_pair(1))
 
             # Displays LLA coordinates
-            self.window.addstr(11, 0, "Currrent LLA Coordinates:", color)
+            self.window.addstr(11, 0, "Current LLA Coordinates:", color)
             self.window.addstr(12, 0, LLA_Lat, curses.color_pair(5))
             self.window.addstr(13, 0, LLA_Lon, curses.color_pair(5))
             self.window.addstr(14, 0, LLA_Alt, curses.color_pair(5))
@@ -202,7 +202,7 @@ class nav_tui:
             self.window.addstr(2, self.x / 2 + 5, "Thrusters", color)
 
             """
-            The following code is used to display the faults of each thruster indivdually; the
+            The following code is used to display the faults of each thruster individually; the
             for loop is used so that existing faults are always displayed top - down in consecutive order;
             if there is no faults being published, it displays "No faults" in green
             """

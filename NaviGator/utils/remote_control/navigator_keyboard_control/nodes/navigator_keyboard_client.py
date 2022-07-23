@@ -100,8 +100,8 @@ class KeyboardClient:
         Updates the status bar text, which consists of the UUID and the current
         locked state, and a help menu of which key is used for what.
         """
-        uuid_string = "UUID: {}".format(self.uuid)
-        locked_string = "Locked: {}".format(self.is_locked)
+        uuid_string = f"UUID: {self.uuid}"
+        locked_string = f"Locked: {self.is_locked}"
         height, width = self.screen.getmaxyx()
         self.clear()
 

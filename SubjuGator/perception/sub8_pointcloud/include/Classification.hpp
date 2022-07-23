@@ -12,21 +12,19 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
-#include "pcl_ros/point_cloud.h"
-
 #include <tf/transform_listener.h>
 #include <tf2/convert.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_msgs/TFMessage.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
-
-#include "opencv2/opencv.hpp"
-
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
 #include <waypoint_validity.hpp>  // C3
+
+#include "opencv2/opencv.hpp"
+#include "pcl_ros/point_cloud.h"
 
 class Classification
 {

@@ -29,7 +29,7 @@ class MagToMarker:
         mag_topic: str,
         marker_topic: str,
         length: float = 1.0,
-        color: Optional[list[int]] = None,
+        color: list[int] | None = None,
     ):
         """
         Args:
@@ -60,7 +60,7 @@ class MagToMarker:
         if self.length is not None:
             norm = np.linalg.norm(vec)
             if norm == 0:
-                rospy.logwarn("Zero vector recieved, skipping")
+                rospy.logwarn("Zero vector received, skipping")
                 return
             vec = (self.length / norm) * vec
         marker.points.append(numpy_to_point(vec))

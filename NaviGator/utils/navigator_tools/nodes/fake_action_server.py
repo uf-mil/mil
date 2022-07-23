@@ -43,7 +43,7 @@ class FakeActionServer:
         fprint("Move request received!", msg_color="blue")
 
         if msg.move_type not in ["hold", "drive", "skid", "circle"]:
-            fprint("Move type '{}' not found".format(msg.move_type), msg_color="red")
+            fprint(f"Move type '{msg.move_type}' not found", msg_color="red")
             self.move_server.set_aborted(MoveResult("move_type"))
             return
 
@@ -88,13 +88,13 @@ class FakeActionServer:
         # Check for collision
         cpm = 1 / self.ogrid.info.resolution
         origin = pose_to_numpy(self.ogrid.info.origin)[0][:2]
-        indicies = (cpm * (points - origin)).astype(np.int64)
+        indices = (cpm * (points - origin)).astype(np.int64)
 
         try:
             data = np.array(self.ogrid.data).reshape(
                 self.ogrid.info.width, self.ogrid.info.height
             )
-            grid_values = data[indicies[:, 1], indicies[:, 0]]
+            grid_values = data[indices[:, 1], indices[:, 0]]
         except IndexError:
             return False
 

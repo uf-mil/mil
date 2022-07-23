@@ -27,7 +27,7 @@ class EarthCoordinateConverter:
 
     Subscribes to odom in ENU and absodom in ECEF to perform these conversions via a service call.
 
-    Also publishes the current LLA point at each syncronized message of odom and absodom.
+    Also publishes the current LLA point at each synchronized message of odom and absodom.
     """
 
     FRAMES = ["enu", "ecef", "lla"]

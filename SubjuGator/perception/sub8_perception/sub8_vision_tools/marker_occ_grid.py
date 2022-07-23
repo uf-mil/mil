@@ -63,7 +63,7 @@ class OccGridUtils:
     def add_circle(self, center, radius):
         """
         Adds a circle to the grid.
-        Also used to project the camera's view onto the grid becuase it is rotationally intolerant.
+        Also used to project the camera's view onto the grid because it is rotationally intolerant.
         """
         center_offset = np.array(center) / self.meta_data.resolution - np.array(
             [self.mid_x, self.mid_y]
@@ -141,7 +141,7 @@ class OccGridUtils:
 
 class Searcher:
     """
-    Intented to provide a service that will return a pose to go to in order to
+    Intended to provide a service that will return a pose to go to in order to
     search for a missing marker.
 
     Not sure how this will be implemented in its entirety.
@@ -185,7 +185,7 @@ class Searcher:
         #     return [0, False, srv.intial_position]
 
         self.current_search += 1
-        rospy.loginfo("Search number: {}".format(self.current_search))
+        rospy.loginfo(f"Search number: {self.current_search}")
         # Should be variable based on height maybe?
         pose = msg_helpers.numpy_quat_pair_to_pose(coor, np.array([0, 0, 0, 1]))
         return [self.check_searched(coor[:2], srv.search_radius), True, pose]
@@ -193,7 +193,7 @@ class Searcher:
     def check_searched(self, search_center, search_radius):
         """
         Mask out a circle of the searched area around the point, then find the area of the grid in that mask. If
-        the area is above some threshold assume we have searched this area and do not need to serach it again.
+        the area is above some threshold assume we have searched this area and do not need to search it again.
         """
         center_offset = np.array(search_center) / self.grid_res - self.position_offset
 
@@ -364,7 +364,7 @@ class MarkerOccGrid(OccGridUtils):
 
     def calculate_marker_area(self, height):
         """
-        Esitmate what the area of the marker should be so we don't add incorrect markers to the occupancy grid.
+        Estimate what the area of the marker should be so we don't add incorrect markers to the occupancy grid.
         What we really don't want is to add markers to the grid that are on the edge since the direction and center of
             the marker are off.
         """

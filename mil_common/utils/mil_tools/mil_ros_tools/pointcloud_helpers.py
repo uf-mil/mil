@@ -16,7 +16,7 @@ def numpy_to_pointcloud2(
     Args:
         points (np.ndarray): The array of points.
         stamp (Optional[genpy.rostime.Time]): An optional timestamp for the message header.
-        frame_id (Optional[str]): An optional string desciribing the frame
+        frame_id (Optional[str]): An optional string describing the frame
           associated with the point cloud.
 
     Returns:

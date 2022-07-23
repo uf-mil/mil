@@ -4,8 +4,12 @@ import rospy
 import tf.transformations as trans
 from geometry_msgs.msg import WrenchStamped
 from mil_ros_tools.geometry_helpers import quaternion_matrix
-from mil_ros_tools.msg_helpers import (numpy_to_point, numpy_to_quaternion,
-                                       numpy_to_twist, wrench_to_numpy)
+from mil_ros_tools.msg_helpers import (
+    numpy_to_point,
+    numpy_to_quaternion,
+    numpy_to_twist,
+    wrench_to_numpy,
+)
 from nav_msgs.msg import Odometry
 from sub8_system_id import SubjuGatorDynamics
 
@@ -13,8 +17,9 @@ from sub8_system_id import SubjuGatorDynamics
 class Sub:
     """
     A dynamics simulator for SubjuGator, modeling buoyancy, gravity, drag, and the user
-    inputed wrench to produce Odometry.
+    inputted wrench to produce Odometry.
     """
+
     def __init__(self):
         # Internal dynamics model of the sub from the system_id package
         self.dynamics = SubjuGatorDynamics.from_ros_params()
@@ -50,7 +55,7 @@ class Sub:
 
     def set_wrench(self, wrench: np.ndarray) -> None:
         """
-        Set the currently applied wrench from the thrusters from the 6x1 array 
+        Set the currently applied wrench from the thrusters from the 6x1 array
         (X, Y, Z, rot_x, rot_y, rot_z).
         """
         self.wrench = wrench
@@ -75,7 +80,7 @@ class Sub:
         ):
             self.set_wrench(np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
 
-        # Calcuate rotation from body to global and global to body for later calculations
+        # Calculate rotation from body to global and global to body for later calculations
         body_to_world = quaternion_matrix(self.pose[3:])
         world_to_body = np.linalg.inv(body_to_world)
 

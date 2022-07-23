@@ -29,7 +29,7 @@ This essentially means that the trajectory generator is built into it.
 
 The model reference used here is a boat with the same inertia and thrusters
 as our actual boat, but drag that is such that the terminal velocities
-achieved are those specified by self.vel_max_body. This vitual boat
+achieved are those specified by self.vel_max_body. This virtual boat
 moves with ease (no disturbances) directly to the desired waypoint goal. The
 controller then tries to make the real boat track this "prescribed ideal" motion.
 
@@ -57,7 +57,7 @@ Use get_command to receive the necessary wrench for this instant.
 That is, get_command publishes a ROS wrench message, and is fed
 the current odometry and timestamp.
 
-You can make it to not learn and only use a PD controller by setting 
+You can make it to not learn and only use a PD controller by setting
 self.only_PD to True.
 
 ################################################# INTERNAL SEMANTICS
@@ -79,4 +79,3 @@ aa: angular acceleration
 ################################################# OTHER
 
 Author: Jason Nezvadovitz
-

@@ -16,7 +16,7 @@ from mil_usb_to_can.utils import (  # causes error if relative import used - GH-
 class USBtoCANBoard:
     """
     ROS-independent wrapper which provides an interface to connect to the USB to CAN board
-    via a serial (or simulated serial) device. Provides thread-safe funtionality.
+    via a serial (or simulated serial) device. Provides thread-safe functionality.
 
     Attributes:
         lock (threading.Lock): The thread lock.

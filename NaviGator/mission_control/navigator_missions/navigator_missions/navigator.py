@@ -64,14 +64,14 @@ class MissionResult:
         _pass = (
             cool_bars,
             "    Mission Success!",
-            "    Message: {}".format(self.message),
+            f"    Message: {self.message}",
             cool_bars,
         )
         _fail = (
             cool_bars,
             "    Mission Failure!",
-            "    Message: {}".format(self.message),
-            "    Post function: {}".format(self.post_function.__name__),
+            f"    Message: {self.message}",
+            f"    Post function: {self.post_function.__name__}",
             cool_bars,
         )
 
@@ -90,12 +90,12 @@ class Navigator(BaseMission):
     max_grinch_effort = 500
 
     def __init__(self, **kwargs):
-        super(Navigator, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     @classmethod
     @util.cancellableInlineCallbacks
     def _init(cls, mission_runner):
-        super(Navigator, cls)._init(mission_runner)
+        super()._init(mission_runner)
 
         cls.is_vrx = yield cls.nh.get_param("/is_vrx")
 
@@ -191,7 +191,7 @@ class Navigator(BaseMission):
             )
         except AttributeError as err:
             fprint(
-                "Error getting service clients in nav singleton init: {}".format(err),
+                f"Error getting service clients in nav singleton init: {err}",
                 title="NAVIGATOR",
                 msg_color="red",
             )
@@ -418,7 +418,7 @@ class Navigator(BaseMission):
     @util.cancellableInlineCallbacks
     def reload_launcher(self):
         if self.launcher_state != "inactive":
-            raise Exception("Launcher is {}".format(self.launcher_state))
+            raise Exception(f"Launcher is {self.launcher_state}")
         self.launcher_state = "reloading"
         yield self.set_valve("LAUNCHER_RELOAD_EXTEND", True)
         yield self.set_valve("LAUNCHER_RELOAD_RETRACT", False)
@@ -433,7 +433,7 @@ class Navigator(BaseMission):
     @util.cancellableInlineCallbacks
     def fire_launcher(self):
         if self.launcher_state != "inactive":
-            raise Exception("Launcher is {}".format(self.launcher_state))
+            raise Exception(f"Launcher is {self.launcher_state}")
         self.launcher_state = "firing"
         yield self.set_valve("LAUNCHER_FIRE", True)
         yield self.nh.sleep(0.5)
@@ -457,7 +457,7 @@ class Navigator(BaseMission):
         objects = (yield self.database_query(object_name=name, **kwargs)).objects
         if n != -1 and len(objects) < n:
             if throw:
-                raise Exception("Could not get {} {} objects".format(n, name))
+                raise Exception(f"Could not get {n} {name} objects")
             else:
                 n = len(objects)
         if n == 0:
@@ -475,7 +475,7 @@ class Navigator(BaseMission):
 
     @util.cancellableInlineCallbacks
     def database_query(
-        self, object_name: Optional[str] = None, raise_exception: bool = True, **kwargs
+        self, object_name: str | None = None, raise_exception: bool = True, **kwargs
     ):
         if object_name is not None:
             kwargs["name"] = object_name
@@ -490,7 +490,7 @@ class Navigator(BaseMission):
         defer.returnValue(res)
 
     @util.cancellableInlineCallbacks
-    def camera_database_query(self, object_name: Optional[str] = None, **kwargs):
+    def camera_database_query(self, object_name: str | None = None, **kwargs):
         if object_name is not None:
             kwargs["name"] = object_name
             res = yield self._camera_database_query(
@@ -535,7 +535,7 @@ class Navigator(BaseMission):
     def latching_publisher(
         self,
         topic: str,
-        msg_type: Type[genpy.Message],
+        msg_type: type[genpy.Message],
         msg: genpy.Message,
         freq: int = 2,
         update_header: bool = True,
@@ -564,7 +564,7 @@ class Navigator(BaseMission):
         config_file = os.path.join(
             rospack.get_path("navigator_missions"), "launch", fname
         )
-        f = yaml.safe_load(open(config_file, "r"))
+        f = yaml.safe_load(open(config_file))
 
         for name in f:
             try:
@@ -579,7 +579,7 @@ class Navigator(BaseMission):
                     s_client, s_req, s_args, s_switch
                 )
             except Exception as e:
-                err = "Error loading vision sevices: {}".format(e)
+                err = f"Error loading vision sevices: {e}"
                 fprint("" + err, title="NAVIGATOR", msg_color="red")
 
     @classmethod
@@ -588,7 +588,7 @@ class Navigator(BaseMission):
         config_file = os.path.join(
             rospack.get_path("navigator_missions"), "launch", fname
         )
-        f = yaml.safe_load(open(config_file, "r"))
+        f = yaml.safe_load(open(config_file))
 
         for name in f:
             try:
@@ -600,7 +600,7 @@ class Navigator(BaseMission):
                     cls.nh, param, options, desc, default
                 )
             except Exception as e:
-                err = "Error loading mission params: {}".format(e)
+                err = f"Error loading mission params: {e}"
                 fprint("" + err, title="NAVIGATOR", msg_color="red")
 
     @classmethod
@@ -673,7 +673,7 @@ class MissionParam:
                 yield self.set(self.default)
                 defer.returnValue(self.default)
             if raise_exception:
-                raise Exception("Mission Param {} not yet set".format(self.param))
+                raise Exception(f"Mission Param {self.param} not yet set")
             else:
                 defer.returnValue(False)
         value = yield self.nh.get_param(self.param)
@@ -831,7 +831,7 @@ class Searcher:
         while spotings < spotings_req:
             if (yield self.looker(**self.looker_kwargs)):
                 fprint(
-                    "Object found! {}/{}".format(spotings + 1, spotings_req),
+                    f"Object found! {spotings + 1}/{spotings_req}",
                     title="SEARCHER",
                 )
                 spotings += 1
