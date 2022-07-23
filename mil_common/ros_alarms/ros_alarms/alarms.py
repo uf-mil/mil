@@ -79,6 +79,11 @@ class Alarm:
     """
     Pythonic representation of a ROS alarm.
 
+    This class should not be constructed by clients (excluding internal ``ros_alarms``
+    code, of course). This class is primarily used by the alarm server node to
+    manage data about a series of alarms. However, this class may be passed
+    into callbacks registered to particular alarms.
+
     .. container:: operations
 
         .. describe:: str(x)
@@ -607,7 +612,7 @@ class AlarmListener:
         self._raised_cbs = []
         self._cleared_cbs = []
 
-    def _alarm_update(self, alarm):
+    def _alarm_update(self, alarm: AlarmMsg):
         if alarm.alarm_name != self._alarm_name:
             return
         alarm.parameters = parse_json_str(alarm.parameters)

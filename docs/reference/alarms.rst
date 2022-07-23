@@ -6,6 +6,24 @@
 Python
 ^^^^^^
 
+Various Python classes have been built around making the alarm system easier to
+interface with between nodes.
+
+For example, these classes can be used to immediately control alarms without
+the need to interface with topics or services:
+
+.. code-block:: python
+
+    >>> # Assume that the alarm_server node has been started
+    >>> from ros_alarms import Alarm, AlarmBroadcaster, AlarmListener
+    >>> broadcaster = AlarmBroadcaster("test-alarm")
+    >>> listener = AlarmListener("test-alarm")
+    >>> def callback(alarm: Alarm):
+    ...     print(f"An alarm with the name {alarm.alarm_name} was called.")
+    >>> listener.add_callback(callback, call_when_raised = True)
+    >>> broadcaster.raise_alarm()
+    An alarm with the name test-alarm was called.
+
 Alarm
 ~~~~~
 .. attributetable:: ros_alarms.Alarm
