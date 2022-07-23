@@ -464,10 +464,12 @@ jobs:
         run: |
           ./scripts/install_bvtsdk --pass ${{ secrets.ZOBELISK_PASSWORD }}
           ls mil_common/drivers/mil_blueview_driver
+          echo $PWD
       - name: Run catkin_make
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
           cd $GITHUB_WORKSPACE/catkin_ws
+          ls src/mil/mil_common/drivers/mil_blueview_driver
           source /opt/ros/noetic/setup.bash
           catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j6
       - name: Run catkin_make tests
