@@ -1,9 +1,11 @@
 ---
 name: MIL CI
 
+# We do not trigger on the pull_request hook because it will have already been
+# triggered by the push hook!
 # yamllint disable-line rule:truthy
 on:
-  [push, pull_request, workflow_dispatch]
+  [push, workflow_dispatch]
 
 env:
   # The version of caching we are using. This can be upgraded if we
