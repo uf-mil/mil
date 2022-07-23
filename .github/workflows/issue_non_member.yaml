@@ -15,7 +15,7 @@ jobs:
           github-token: ${{secrets.INVESTIGATOR_BOT_TOKEN}}
           script: |
             const closeableStates = ["none", "read"];
-            const creator = context.payload.comment.user.login;
+            const creator = context.payload.issue.user.login;
             const response = await github.repos.getCollaboratorPermissionLevel({
               owner: context.repo.owner,
               repo: context.repo.repo,
