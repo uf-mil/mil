@@ -86,7 +86,7 @@ class RobotXHeartbeatMessage:
                                                                 east_west,
                                                                 delim,
                                                                 team_id,
-                                                                delim, str(system_mode), delim,
+                                                                delim, system_mode, delim,
                                                                 str(auv_status))
 
         full_data = first_half_data + delim + second_half_data
