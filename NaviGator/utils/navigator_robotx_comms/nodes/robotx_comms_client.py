@@ -25,7 +25,7 @@ lock = threading.Lock()
 
 rospy.init_node("robotx_comms_client")
 
-class system_modes(IntEnum):
+class SystemModes(IntEnum):
     """
     Enumerates constants of friendly system mode names to ints
     """
@@ -96,11 +96,11 @@ class RobotXStartServices:
 
     def update_system_mode(self):
         if self.kill is True:
-            self.system_mode = system_modes.KILLED
+            self.system_mode = SystemModes.KILLED
         elif self.wrench == "autonomous" or self.wrench == "/wrench/autonomous":
-            self.system_mode = system_modes.AUTONOMOUS
+            self.system_mode = SystemModes.AUTONOMOUS
         else:
-            self.system_mode = system_modes.REMOTE_CONTROLLED
+            self.system_mode = SystemModes.REMOTE_CONTROLLED
 
     def wrench_callback(self, wrench):
         self.wrench = wrench.data
