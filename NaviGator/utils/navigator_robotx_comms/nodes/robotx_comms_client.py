@@ -31,7 +31,7 @@ class system_modes(IntEnum):
     """
     KILLED = 3
     AUTONOMOUS = 2
-    OTHER = 1
+    REMOTE_CONTROLLED = 1
     
 
 class RobotXStartServices:
@@ -100,7 +100,7 @@ class RobotXStartServices:
         elif self.wrench == "autonomous" or self.wrench == "/wrench/autonomous":
             self.system_mode = system_modes.AUTONOMOUS
         else:
-            self.system_mode = system_modes.OTHER
+            self.system_mode = system_modes.REMOTE_CONTROLLED
 
     def wrench_callback(self, wrench):
         self.wrench = wrench.data
