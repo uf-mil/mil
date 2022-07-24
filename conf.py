@@ -58,6 +58,7 @@ extensions = [
     "builder",
     "breathe",
     "myst_parser",
+    "exception_hierarchy",
 ]
 
 intersphinx_mapping = {

@@ -1,6 +1,47 @@
 :mod:`mil_usb_to_can` - USB to CAN Communication
 ------------------------------------------------
 
+Exceptions
+^^^^^^^^^^
+
+Exception Hierarchy
+~~~~~~~~~~~~~~~~~~~
+.. currentmodule:: mil_usb_to_can
+
+.. exception_hierarchy::
+
+    - :exc:`Exception`
+        - :exc:`ApplicationPacketWrongIdentifierException`
+        - :exc:`USB2CANException`
+            - :exc:`ChecksumException`
+            - :exc:`PayloadTooLargeException`
+            - :exc:`InvalidFlagException`
+                - :exc:`InvalidStartFlagException`
+                - :exc:`InvalidEndFlagException`
+
+Exception List
+~~~~~~~~~~~~~~~~~~~
+.. autoclass:: ApplicationPacketWrongIdentifierException
+    :members:
+
+.. autoclass:: USB2CANException
+    :members:
+
+.. autoclass:: ChecksumException
+    :members:
+
+.. autoclass:: PayloadTooLargeException
+    :members:
+
+.. autoclass:: InvalidFlagException
+    :members:
+
+.. autoclass:: InvalidStartFlagException
+    :members:
+
+.. autoclass:: InvalidEndFlagException
+    :members:
+
 ApplicationPacket
 ^^^^^^^^^^^^^^^^^
 .. attributetable:: mil_usb_to_can.ApplicationPacket
