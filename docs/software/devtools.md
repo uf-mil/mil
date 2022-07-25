@@ -127,3 +127,49 @@ walkthrough the process here. However, here are some things you may want to setu
 * Setting up diagnostics and formatters used in `pre-commit` with [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim)
 * Finding a beautiful colorscheme!
 * Setting up extensions to make your life easier (A lot of great ones can be found at [vimawesome](https://vimawesome.com/))
+
+## Bash and Zsh
+
+Furthermore, our team's upgrade to ROS Noetic brought another feature: support
+for the Zsh shell. This shell is an alternative to the Bash shell (the default
+shell on Ubuntu). Zsh has some more features than Bash, which might interest
+you.
+
+Note that either shell works, and you should explore around to see if switching
+to the Zsh is more in-line with your preferences. We'll walk below setting up
+some helpful tools for both below. You should set up one or the other; not both.
+
+:::{note}
+Because of the flexibility of `bash`, all shell scripts should be written in
+`bash`, not `zsh` or `sh`. You can designate a script as being a bash script
+by using the `#! /bin/bash` shebang at the top of the file. The Z shell runs
+these scripts fine.
+:::
+
+### Bash
+
+By default, the main configuration file for the Bash shell is the `~/.bashrc`
+file. In here, you can setup plugins, set aliases, and run commands when your
+shell starts up. Pretty helpful!
+
+A recommended plugin for your Bash terminal is setting up `oh-my-bash`.
+[This plugin](https://github.com/ohmybash/oh-my-bash) allows you to easily add
+themes and plugins into your terminal using your configuration file. On the
+project README, you can see how to set up the plugin and begin configuring
+plugins and themes.
+
+### Zsh
+
+The alternative to the default Bash shell is the Z shell, commonly known as `zsh`.
+This shell is becoming more mainstream as time goes on due to its increased
+flexibility over the bash shell. The main configuration file for this shell is
+`~/.zshrc` - this is where you can put aliases and various configuration values,
+similar to bash's `~/.bashrc`.
+
+A common plugin for the Z shell is the [`oh-my-zsh` plugin](https://github.com/ohmyzsh/ohmyzsh).
+This project is one of the largest repositories on GitHub, and comes with a
+multitude of themes and extensions.
+
+You may also want to check out [Powerlevel10k](https://github.com/romkatv/powerlevel10k),
+which displays helpful information in your shell prompt, such as `git` info. It's
+definitely worth checking out.
