@@ -24,54 +24,58 @@ To add a new docstring to the reference documentation, add a docstring inside of
 
 Let's look at an example:
 
-    def download_and_unzip(url, output_dir):
-        try:
-            html = download(url)
-        except:
-            raise IOError("Could not load file at {}".format(url))
+```python
+def download_and_unzip(url, output_dir):
+    try:
+        html = download(url)
+    except:
+        raise IOError("Could not load file at {}".format(url))
 
-        fake_file = StringIO.StringIO(html)
+    fake_file = StringIO.StringIO(html)
 
-        zip_ = zipfile.ZipFile(fake_file, "r")
-        for file_path in zip_.namelist():
-            _, file_name = os.path.split(file_path)
-            file_like = zip_.open(file_path)
+    zip_ = zipfile.ZipFile(fake_file, "r")
+    for file_path in zip_.namelist():
+        _, file_name = os.path.split(file_path)
+        file_like = zip_.open(file_path)
 
-            f = open(os.path.join(output_dir, file_name), "w")
-            f.write(file_like.read().decode('utf-8'))
-            f.close()
+        f = open(os.path.join(output_dir, file_name), "w")
+        f.write(file_like.read().decode('utf-8'))
+        f.close()
+```
 
 Can you tell what this method does? You could maybe look at some of the lines and
 guess as to what it's doing - but this isn't ideal. Without a docstring, this is
 how you (and all of the other software MILers) have to understand this code! Let's
 fix that by adding a docstring.
 
-    def download_and_unzip(url: str, output_dir: str) -> None:
-        """
-        Downloads a zip file at a particular URL and unzips it to a directory.
+```python
+def download_and_unzip(url: str, output_dir: str) -> None:
+    """
+    Downloads a zip file at a particular URL and unzips it to a directory.
 
-        Args:
-            url (str): The URL to obtain the zip file from.
-            output_dir (str): The location of where to write the zip contents to.
+    Args:
+        url (str): The URL to obtain the zip file from.
+        output_dir (str): The location of where to write the zip contents to.
 
-        Raises:
-            IOError: The file at the URL could not be found/loaded.
-        """
-        try:
-            html = download(url)
-        except:
-            raise IOError("Could not load file at {}".format(url))
+    Raises:
+        IOError: The file at the URL could not be found/loaded.
+    """
+    try:
+        html = download(url)
+    except:
+        raise IOError("Could not load file at {}".format(url))
 
-        fake_file = StringIO.StringIO(html)
+    fake_file = StringIO.StringIO(html)
 
-        zip_ = zipfile.ZipFile(fake_file, "r")
-        for file_path in zip_.namelist():
-            _, file_name = os.path.split(file_path)
-            file_like = zip_.open(file_path)
+    zip_ = zipfile.ZipFile(fake_file, "r")
+    for file_path in zip_.namelist():
+        _, file_name = os.path.split(file_path)
+        file_like = zip_.open(file_path)
 
-            f = open(os.path.join(output_dir, file_name), "w")
-            f.write(file_like.read().decode('utf-8'))
-            f.close()
+        f = open(os.path.join(output_dir, file_name), "w")
+        f.write(file_like.read().decode('utf-8'))
+        f.close()
+```
 
 Wow! Look how much clearer that is. You know what the type of each argument is, and
 what it represents. You can see any errors that the function might raise, as well, along
@@ -94,17 +98,19 @@ declaration. You can use JavaDoc-like syntax to add annotations.
 
 For example:
 
-    /**
-     * Waits for a connection to be established on the heartbeat listener. If no connection
-     * is established before the timeout has run out, then false is returned and the
-     * function exits.
-     *
-     * @param timeout The amount of time to wait before exiting the function and returning
-     * false.
-     *
-     * @return Whether a connection was established in time.
-     */
-    bool waitForConnection(ros::Duration timeout = { -1.0 }) const;  // waits forever by default
+```cpp
+/**
+ * Waits for a connection to be established on the heartbeat listener. If no connection
+ * is established before the timeout has run out, then false is returned and the
+ * function exits.
+ *
+ * @param timeout The amount of time to wait before exiting the function and returning
+ * false.
+ *
+ * @return Whether a connection was established in time.
+ */
+bool waitForConnection(ros::Duration timeout = { -1.0 }) const;  // waits forever by default
+```
 
 This docstring includes a general description of the function, along with what parameter
 it's poised to accept. Additionally, what the function returns is documented. Great!
@@ -120,7 +126,8 @@ you are making an index or navigation-focused page, use reST.
 ### Indexing the file
 For your newly added page to be found, it needs to be added to a table of contents. There is a root table of contents in `index.rst` and smaller table of contents within various subdirectories. Add your page to one or both of these, whichever you deem more appropriate. To do so, add the path to your page (without the extension) under the
 `.. toctree::` section of the `index.rst` file. For example, to add the "Meeting Schedule" page mentioned above, the `index.rst` will now look like
-```
+
+```rst
 .. toctree::
    :maxdepth: 1
 
@@ -130,7 +137,8 @@ For your newly added page to be found, it needs to be added to a table of conten
 
 Sometimes, though, you don't want your document to be in a `toctree`. In this case,
 add it to a `:hidden:` TOC tree, like so:
-```
+
+```rst
 .. toctree::
    :hidden:
 
@@ -143,9 +151,11 @@ because the document is in some TOC tree.
 ## Viewing changes
 It is important to generate the documentation website locally and view it in a web browser to verify your changes did what you wanted them to do and they are easy to read.
 
-    $ mil
-    $ ./scripts/build_docs
-    $ ./scripts/display_docs
+```bash
+$ mil
+$ ./scripts/build_docs
+$ ./scripts/display_docs
+```
 
 ## Contributing changes
 Now that you have made and verifed your changes, follow the [contributing guide](contributing) to add your changes to the repository.
