@@ -8,6 +8,7 @@ with the Technical Director server for the RobotX Communication Protocol
 import datetime
 import socket
 import threading
+from enum import IntEnum
 
 import rospy
 from ros_alarms import AlarmListener
@@ -24,6 +25,14 @@ lock = threading.Lock()
 
 rospy.init_node("robotx_comms_client")
 
+class SystemModes(IntEnum):
+    """
+    Enumerates constants of friendly system mode names to ints
+    """
+    KILLED = 3
+    AUTONOMOUS = 2
+    REMOTE_CONTROLLED = 1
+    
 
 class RobotXStartServices:
     """
@@ -87,11 +96,11 @@ class RobotXStartServices:
 
     def update_system_mode(self):
         if self.kill is True:
-            self.system_mode = 3
+            self.system_mode = SystemModes.KILLED
         elif self.wrench == "autonomous" or self.wrench == "/wrench/autonomous":
-            self.system_mode = 2
+            self.system_mode = SystemModes.AUTONOMOUS
         else:
-            self.system_mode = 1
+            self.system_mode = SystemModes.REMOTE_CONTROLLED
 
     def wrench_callback(self, wrench):
         self.wrench = wrench.data
