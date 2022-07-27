@@ -1,41 +1,16 @@
-#include <mil_tools/image_publisher.h>
-/*
-int main(int argc, char** argv)
+#include <mil_tools/image_publisher.hpp>
+
+ImagePublisher::ImagePublisher(const std::string & topic, const std::string &encoding,int queue_size) :
+    it_(nh_)
 {
-	ros::init(argc, argv, "init_publisher");
-	ros::NodeHandle nh;
-	image_transport:: ImageTransport it(nh);
-	image_transport::Publisher pub = it.advertise("camera/image", 1);
-	cv::Mat image = cv::imread(argv[1], CV_LOAD_IMAGE_COLOR);
-	cv::waitKey(30);
-	sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
-
-	ros::Rate loop_rate(5);
-
-	while (nh.ok()){
-
-		pub.publish(msg);
-		ros::spinOnce();
-		loop_rate.sleep();
-	}
-
-
-
-
+  this->encoding_ = encoding;
+  pub_ = it_.advertise(topic, queue_size);
 }
-*/
-
-Image_Publisher::Image_Publisher(const std::string & topic, const std::string &encoding = "bgr8",int queue_size = 1 )
+void ImagePublisher::publish(cv::Mat& image_arg)
 {
-	this->encoding = encoding;
-	ros::init(argc, argv, "init_publisher");
-       	ros::NodeHandle nh;
-       	image_transport:: ImageTransport it(nh);
-       	pub = it.advertise(topic, queue_size);
-}
-void Image_Publisher::publish(cv::Mat imagearg)
-{
-    	sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), encoding, cv::Mat& imagearg).toImageMsg();
-        pub.publish(msg);
+  std_msgs::Header header;
+  header.stamp = ros::Time::now();
+  sensor_msgs::ImagePtr msg = cv_bridge::CvImage(header, encoding_, image_arg).toImageMsg();
+  pub_.publish(msg);
 }
 
