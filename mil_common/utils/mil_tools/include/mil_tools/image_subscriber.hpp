@@ -8,6 +8,7 @@
 #include <sensor_msgs/Image.h>
 #include <boost/optional.hpp>
 #include <sensor_msgs/CameraInfo.h>
+#include <std_msgs/Time.h>
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <image_geometry/pinhole_camera_model.h>
@@ -24,7 +25,7 @@ class ImageSubscriber
   {
     image_subscriber_ = it_.subscribe(topic, queue_size, &ImageSubscriber::imageCallback, this);
     function_ = std::bind(func, a, std::placeholders::_1);
-    camera_info_sub_ = nh_.subscribe(getInfoTopic(topic), queue_size, &ImageSubscriber::info_callback, this);
+    camera_info_sub_ = nh_.subscribe(getInfoTopic(topic), queue_size, &ImageSubscriber::infoCallback, this);
   }
 
   template <typename = typename std::enable_if<std::is_same<void, T>::value>>
@@ -35,7 +36,7 @@ class ImageSubscriber
   {
     image_subscriber_ = it_.subscribe(topic, queue_size, &ImageSubscriber::imageCallback, this);
     function_ = func;
-    camera_info_sub_ = nh_.subscribe(getInfoTopic(topic), queue_size, &ImageSubscriber::info_callback, this);
+    camera_info_sub_ = nh_.subscribe(getInfoTopic(topic), queue_size, &ImageSubscriber::infoCallback, this);
   }
 
   std::string getInfoTopic(const std::string& input)
@@ -77,7 +78,7 @@ class ImageSubscriber
     return true;
   }
 
-  void info_callback(const sensor_msgs::CameraInfo& info)
+  void infoCallback(const sensor_msgs::CameraInfo& info)
   {
     camera_info_sub_.shutdown();
     camera_info_.emplace(info);
@@ -87,12 +88,18 @@ class ImageSubscriber
   {
     try
     {
+      last_image_time_ = image.header.stamp;
       function_(cv_bridge::toCvCopy(image, encoding_)->image);
     }
     catch(cv_bridge::Exception& e)
     {
       ROS_ERROR("Could not convert from '%s' to '%s'.", image->encoding, encoding_);
     }
+  }
+
+  boost::optional<std_msgs::Time> getLastImageTime()
+  {
+    return camera_info_;
   }
  private:
   std::string encoding_;
@@ -106,5 +113,6 @@ class ImageSubscriber
 
   ros::Subscriber camera_info_sub_;
   boost::optional<sensor_msgs::CameraInfo> camera_info_;
+  boost::optional<std_msgs::Time> last_image_time_;
 };
 #endif // IMAGE_SUBSCRIBER_H_
