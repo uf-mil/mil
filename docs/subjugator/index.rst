@@ -8,7 +8,7 @@ for 20+ years. Most code for this is hosted under ``SubjuGator/``.
 
 .. warning::
 
-   You should have gone through the `Getting Started Guide </docs/software/getting_started>`__
+   You should have gone through the `Getting Started Guide <../../docs/software/getting_started.html>`__
    before going through this section.
 
 .. toctree::
@@ -16,3 +16,4 @@ for 20+ years. Most code for this is hosted under ``SubjuGator/``.
 
     design
     simulating
+    enabling
