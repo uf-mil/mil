@@ -47,7 +47,7 @@ class HydrophoneTrigger:
         if msg_type == 'Ping':
           self.sub = rospy.Subscriber('samples', numpy_msg(Ping), self.hydrophones_cb)
         elif msg_type == 'HydrophoneSamplesStamped':
-            self.sub = rospy.Subscriber('samples', numpy_msg(HydrophoneSamplesStamped), self.hydrophones_cb)
+            self.sub = rospy.Subscriber('samples_r', numpy_msg(HydrophoneSamplesStamped), self.hydrophones_cb)
         else:
             ROS_FATAL('sample_msg_type not supported')
             return

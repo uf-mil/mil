@@ -218,7 +218,7 @@
       </link>
       <pose frame=''>-0.11 0.1787 -1.49 0 -0 0</pose>
     </model>
-    <model name='transdec_pinger'>
+    <!--<model name='transdec_pinger'>
       <static>1</static>
       <pose frame=''>15 0 -2 0 -0 0</pose>
       <link name='link'>
@@ -251,7 +251,7 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-    </model>
+    </model>-->
     <scene>
       <sky>
         <clouds>
@@ -683,7 +683,7 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='transdec_pinger'>
+      <!--<model name='transdec_pinger'>
         <pose frame=''>14 1 -2 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
@@ -702,7 +702,7 @@
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
-      </model>
+      </model>-->
       <model name='water'>
         <pose frame=''>-0.069528 0.449668 0 3.14159 9.3e-05 3.14159</pose>
         <scale>1 1 1</scale>
