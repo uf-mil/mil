@@ -21,6 +21,7 @@ CAREFUL_SPEED = 0.3
 
 # How many meters to pass the gate by
 DIST_AFTER_GATE = 1
+WAIT_SECONDS = 180
 
 RIGHT_OR_LEFT = 1
 
@@ -31,5 +32,13 @@ class StartGate2022(SubjuGator):
     def run(self, args):
         fprint('Waiting for odom')
         yield self.tx_pose()
+
+        fprint('Waiting {} seconds...'.format(WAIT_SECONDS))
+        yield self.nh.sleep(WAIT_SECONDS)
+
         fprint('Found odom')
-        fprint('Begin search for gates')
+        down = self.move.down(1).zero_roll_and_pitch()
+        forward = self.move.forward(4).zero_roll_and_pitch()
+
+        yield down.go(speed=SPEED)
+        yield forward.go(speed=SPEED)
