@@ -20,4 +20,14 @@ class MakeGrade2022(SubjuGator):
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
         fprint('Starting the Mark the Grade Mission')
-        yield self.nh.sleep(0.5)
+        
+        bounding_boxes = yield self.darknet_objects.get_next_message()
+
+        for box in bounding_boxes.bounding_boxes:
+            print(box.probability)
+            print(box.xmin)
+            print(box.xmax)
+            print(box.ymin)
+            print(box.ymax)
+            print(box.Class)
+            print("")
