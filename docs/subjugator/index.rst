@@ -17,3 +17,4 @@ for 20+ years. Most code for this is hosted under ``SubjuGator/``.
     design
     simulating
     enabling
+    cameras
