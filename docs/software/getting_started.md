@@ -127,6 +127,14 @@ instructions exactly, you can get there through:
 $ cd ~/catkin_ws/src/mil
 ```
 
+Next, switch to the `noetic-migration` branch. This step will be removed in
+August 2022.
+
+```bash
+$ git checkout noetic-migration
+$ git submodule update --init --recursive
+```
+
 ### Run the setup scripts
 
 If you are running Ubuntu, and prefer to simply run code directly on your "host"
@@ -135,18 +143,17 @@ the root of the repository.
 
 ```bash
 $ ./scripts/system_install
-$ ./scripts/user_install
+$ ./scripts/user_install; exit 0
 $ exec bash # or exec zsh if you have set up zsh
 ```
 
 Exit the terminal and enter it again.
 
 To build our tools, we use a tool that ROS provides us named `catkin_make`. This
-searches through all of our packages and compiles them together. If you want to
-run this tool from anywhere in the directory, use `cm`.
+searches through all of our packages and compiles them together.
 
 ```bash
-$ cm
+$ catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros"
 ```
 
 If something goes wrong, try the suggestions in [Getting Help](help). It's common
