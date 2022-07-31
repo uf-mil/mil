@@ -27,6 +27,7 @@ aiohttp==3.8.1
 sphinx==5.0.1
 breathe==4.34.0
 myst-parser==0.18.0
+sphinx-copybutton==0.5.0
 
 # External Devices
 pyserial==3.5

@@ -54,6 +54,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.graphviz",
+    "sphinx_copybutton",
     "attributetable",
     "builder",
     "breathe",
@@ -76,6 +77,9 @@ breathe_implementation_filename_extensions = [".c", ".cc", ".cpp"]
 breathe_default_members = ("members", "undoc-members")
 
 myst_enable_extensions = ["colon_fence"]
+
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+copybutton_prompt_is_regexp = True
 
 # Document __init__ methods of classes
 autoclass_content = "both"
