@@ -6,15 +6,12 @@ This page provides general info about developing for
 competition for autonomous submarines. MIL has participated in RoboSub
 for 20+ years. Most code for this is hosted under ``SubjuGator/``.
 
-.. warning::
-
-   You should have gone through the `Getting Started Guide <../../docs/software/getting_started.html>`__
-   before going through this section.
-
 .. toctree::
     :maxdepth: 1
 
     design
-    simulating
-    enabling
-    cameras
+    Simulating <simulating>
+    Enabling <enabling>
+    Cameras <cameras>
+
+    electrical

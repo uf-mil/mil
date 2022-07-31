@@ -32,3 +32,10 @@ Now that the sub is on, you may to want to see what it's doing. That's where
 the magical SSH comes in! You can run programs on the sub's computer, which is
 helpful when you want to record bag files, run programs, see diagnostics, or
 do anything else!
+
+To be able to `ssh` into SubjuGator, you're going to need to be on the same
+network as the sub. Frequently, the [MIL Network Box](/docs/infra/network_box.rst)
+is used to achieve this. You should connect an ethernet cable to the sub over
+tether, and then insert this cable into the box. Then, you can insert your own
+Ethernet cables and be connected to the sub. For more information on the box,
+see its documentation page.
