@@ -1,1 +1,20 @@
-../ci/build_docs
+#!/bin/bash
+
+# Get root directory of MIL repo
+MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
+
+# Directory to build docs into
+BUILD_DIR=$HOME/.mil/docs
+mkdir -p $BUILD_DIR/doctrees
+mkdir -p $BUILD_DIR/html
+
+if [ "$1" == "-D" ]; then
+    #Doxygen
+    cd $HOME/.mil
+    doxygen $MIL_DIR/docs/Doxyfile
+    cd -
+fi
+
+# Then Sphinx build
+sphinx-build -E -b html -d $BUILD_DIR/doctrees $MIL_DIR $BUILD_DIR/html
+echo "Docs available at file://$BUILD_DIR/html/index.html"

@@ -1,2 +1,0 @@
-#!/bin/bash
-catkin_make -C $MIL_WS

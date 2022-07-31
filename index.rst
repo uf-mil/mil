@@ -30,7 +30,7 @@ New Members
     docs/subjugator/reference
     docs/navigator/reference
     docs/design/design
-    docs/infra/index
+    docs/infrastructure/index
 
     docs/culture
     docs/branding
