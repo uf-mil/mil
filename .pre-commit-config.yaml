@@ -56,6 +56,12 @@ repos:
       - id: prettier-launch-xml
       - id: prettier-package-xml
       - id: sort-package-xml
+  - repo: https://github.com/christopher-haueter/pre-commit-alex
+    rev: v0.1.2
+    hooks:
+      - id: alex
+        name: alex
+        types: [markdown]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.4.0
     hooks:

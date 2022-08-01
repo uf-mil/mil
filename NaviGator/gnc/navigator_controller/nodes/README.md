@@ -64,7 +64,7 @@ self.only_PD to True.
 
 *_des: "desired", refers to the end goal, the "waypoint" we are trying to hold at.
 
-*_ref: "reference", it is basically the generated trajectory, the "bread crumb",
+*_ref: "reference", it is the generated trajectory, the "bread crumb",
        the instantaneous desired state on the way to the end goal waypoint.
 
 *_body: "body frame", unless it is labelled with _body, it is in world-frame.

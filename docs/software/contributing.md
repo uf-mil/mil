@@ -10,7 +10,7 @@ command and break everything! The good news is that this can't happen.
 Git works by giving you your own personalized copy of our source code. This copy
 can only be found on **your** computer! No one else has access to it. Therefore,
 you can't really hurt anyone else's progress. Even if you run some commands that
-mess up your copy, you can just ask for a new one! How sweet is that?
+mess up your copy, you can ask for a new one! How sweet is that?
 
 More so, we use branch protection, so you can't push code onto the robot without
 approval from a leader first. Therefore, don't feel pressured to always type the right
@@ -147,7 +147,7 @@ If changes made by other developers are merged in before your pull request, you 
 you pull request to include these changes. This can sometimes be a tedious process if changes
 were made to the same files you changed.
 
-* Fetch the latest changes from upstream (this just caches them locally, not
+* Fetch the latest changes from upstream (this caches them locally, not
 changing any of your code): `git fetch origin`.
 * Backup your current branch in case anything goes wrong during the rebase with `git checkout -b <branchname>-backup`,
 and then go back to your original branch `git checkout <branchname>`.

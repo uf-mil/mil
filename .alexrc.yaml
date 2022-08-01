@@ -1,0 +1,14 @@
+---
+
+profanitySureness: 2
+allow:
+  - whitespace
+  - gal-guy
+  - nuts
+  - her-him
+  - he-she
+  - alumnae-alumni
+  - special
+  - hang
+  - master
+  - host-hostess

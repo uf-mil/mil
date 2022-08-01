@@ -28,7 +28,7 @@ you know to add you to the organization.
 You can find the list of issues [here](https://github.com/uf-mil/mil/issues).
 You will notice that there are other issues for the software and electrical teams,
 which isn't super helpful for you (unless you want to help out those teams as well!).
-To filter for just Mechanical tasks, click the `Label` dropdown, and choose the
+To filter for Mechanical tasks, click the `Label` dropdown, and choose the
 `mechanical` label.
 
 When you are first getting started, you may also want to find a task that is good

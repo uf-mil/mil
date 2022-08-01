@@ -137,7 +137,7 @@ $ git submodule update --init --recursive
 
 ### Run the setup scripts
 
-If you are running Ubuntu, and prefer to simply run code directly on your "host"
+If you are running Ubuntu, and prefer to run code directly on your "host"
 operating system without using Docker, you can run the following scripts from
 the root of the repository.
 

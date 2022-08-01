@@ -1,7 +1,7 @@
 # Getting Help
 Programming is hard, and programming at the level needed for autonomous systems
 is even harder. Every developer write bugs, encounters confusing errors, and gets stuck
-in countless other ways. With time you'll learn not just how to write better code,
+in countless other ways. With time you'll learn not how to write better code,
 but also how to effectively get help when you're stuck.
 
 You should always try to solve problems yourself using the internet, documentation,
@@ -11,7 +11,7 @@ teach yourself to fish rather than asking for fish.
 
 ## Check your sanity
 A great first move is to take a step back and think about what you're trying
-to do and if it makes sense or if the solution is obvious.
+to do and if it makes sense.
 
 Ask yourself the following questions:
 
@@ -26,7 +26,7 @@ submodules) and updated your system packages?
 * Have you blindly copy-pasted/ran things from the internet? If so, do you know
 why? Do you know what it's doing?
 * Could you be trying to use something that is outdated / deprecated?
-* Have you tried simply rebooting your system or running it again?
+* Have you tried rebooting your system or running it again?
 
 ## Search these docs
 You may have noticed that these docs have a search bar. If you want
@@ -64,9 +64,7 @@ for examples of it being used.
 ## Search the internet
 If your problem is not MIL-specific (issue with Linux, ROS, C++, etc),
 somone has most likely had the same problem and written about it on the internet.
-You'll be surprised how often you can fix your issue by simply Googling the error.
-
-In fact, often when people come to me with issues I simply Google them myself.
+You'll be surprised how often you can fix your issue by Googling the error.
 
 ## Search Slack
 Someone may have already asked a similar question on Slack. Try searching there.

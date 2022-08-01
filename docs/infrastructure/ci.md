@@ -7,8 +7,7 @@ newly committed code may be causing problems. Code which "fails CI" (or doesn't
 pass one of the various tests) will not be merged into the master branch,
 because it causes problems.
 
-Currently, we use GitHub Actions as our CI provider. GitHub Actions makes it
-easy to integrate CI into our use of GitHub. It provides quick check markers to
+Currently, we use GitHub Actions as our CI provider. It provides quick check markers to
 show which specific tests failed for a given commit.
 
 ## Self-Hosted Runners

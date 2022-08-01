@@ -14,7 +14,7 @@ documentation is documentation created by members by using files under the `docs
 folder.
 
 ## Docstrings
-Docstrings are a powerful method of documentation. The documentation is clearly outlined
+Docstrings are a powerful method of documentation. The documentation is outlined
 in the code, allowing developers to grasp what classes and methods do as they're working
 on them. Plus, these docstrings get concatenated together to form the HTML reference
 docs. (Hint: These are what make up most of the [Software Reference page](/docs/reference/index.rst)!)
@@ -149,7 +149,7 @@ This TOC tree won't be rendered, but Sphinx will still allow you to build the do
 because the document is in some TOC tree.
 
 ## Viewing changes
-It is important to generate the documentation website locally and view it in a web browser to verify your changes did what you wanted them to do and they are easy to read.
+It is important to generate the documentation website locally and view it in a web browser to verify your changes did what you wanted them to do and they are quick to read.
 
 ```bash
 $ mil

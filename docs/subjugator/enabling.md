@@ -11,8 +11,8 @@ SubjuGator 8 can be powered through two methods, AC power, and batteries. You're
 going to want to use one over the other depending on where you're testing the
 robot. If you're testing out of the water, you're going to want to use AC power,
 as this will give you a nice, smooth uninterrupted power supply. If you're testing
-in the water, then AC power is obviously no longer an option unless you want to
-break the power supply. Therefore, you'll need to use batteries.
+in the water, then AC power is no longer an option unless you want to break the
+power supply. Therefore, you'll need to use batteries.
 
 The AC power looks like a gray metal box, with a fan at two ends. It plugs into
 a wall. You should then be able to use the power supply with the sub through a

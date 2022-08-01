@@ -73,7 +73,7 @@ Porting Guide above.
 
 Great! So now we know what to fix in our file. Here's some more tips about `python-modernize`:
 1. It always starts with a long list of "fixers" telling you what it looked for
-in the file. This is okay; you just need to ignore the list.
+in the file. This is okay; you need to ignore the list.
 1. Some changes ask you to use `import six.XXX`. Never do this! This is covered more below.
 1. After migrating `print '...'` to `print('...')`, you may notice that `python-modernize`
 wants you to now write `print(('...'))`! Don't do this - only one set of parentheses
@@ -124,7 +124,7 @@ RefactoringTool: old.py
 ```
 
 Now the suggestion of wrapping `range` in a `list` is gone, but it's still
-asking us to `import range`. We can just ignore this, because we know that we fixed
+asking us to `import range`. We can ignore this, because we know that we fixed
 the root problem. Great job!
 
 ### Step Three: Documenting the code (optional!)
@@ -213,6 +213,6 @@ This has already been completed for all packages and should not need to be compl
 
 After making some changes to a package, you may have the desire to test the changes that you've made. But wait! You can't.
 
-Many of the packages in our codebase rely on each other like an interlocking Jenga tower. If one block is removed, the tower will frequently fall. Therefore, if you attempt to simulate your changes after making some changes, the simlulation may just fail.
+Many of the packages in our codebase rely on each other like an interlocking Jenga tower. If one block is removed, the tower will frequently fall. Therefore, if you attempt to simulate your changes after making some changes, the simlulation may fail.
 
 Therefore, make the best changes that you can; changes that you feel confident in. Once all packages have been updated for ROS Noetic, then we can test to see how our all the packages perform. If things are still broken at this point, then we can make further commits to fix what's broken.

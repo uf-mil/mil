@@ -40,7 +40,7 @@ cd transfer_learning
 ### I. The Code Structure
 This package is broken up into two distinct parts: Data Processing, and Network Training. Inside of Data Processing you will find all the tools necessary to create TF Records from labelled data. The scripts and functions within automatically trim the data and validate it, ensuring that it is suitable for training. More details on those in part II.
 
-This pipeline is built upon Docker Images for easy deployment and updating. Currently, we build and update off of 3 distinct Docker Images. The first image is the CUDA 10.0 docker image distributed by NVIDIA. This simply installs CUDA drivers into the image and allows us to communicate with the card. The second image we  run is a custom tensorflow 9.0 image, compiled using the dockerfiles made available to us from Tensorflow. We had to configure the compilation to target CUDA 10.0 instead of CUDA 9.0, which is the default. CUDA 10.0 is not officially supported by TF as of yet, however it is the only version of CUDA our graphics card supports. The final image is the docker image that loads our custom scripts and the Models directory of Tensorflow. Eventually, these will all be merged into a single docker image, however this allows us to update CUDA, Tensorflow, and our scripts separately, without having to recompile everything each time.
+This pipeline is built upon Docker Images for deployment and updating. Currently, we build and update off of 3 distinct Docker Images. The first image is the CUDA 10.0 docker image distributed by NVIDIA. This installs CUDA drivers into the image and allows us to communicate with the card. The second image we  run is a custom tensorflow 9.0 image, compiled using the dockerfiles made available to us from Tensorflow. We had to configure the compilation to target CUDA 10.0 instead of CUDA 9.0, which is the default. CUDA 10.0 is not officially supported by TF as of yet, however it is the only version of CUDA our graphics card supports. The final image is the docker image that loads our custom scripts and the Models directory of Tensorflow. Eventually, these will all be merged into a single docker image, however this allows us to update CUDA, Tensorflow, and our scripts separately, without having to recompile everything each time.
 
 ### II. The Data: LabelBox Data Processing (ldp)
 The entire purpose of this pipeline is to make a streamlined data processing pipeline. Tensorflow has done a great job of ensuring it will work so long as you give it good data. That is our point of failure and thus the first thing you should do if your network fails to train is to check the data.
@@ -98,7 +98,7 @@ The file that handles the actual conversion to TF records. This is a file taken 
 
 #### D. labelbox2pascal
 
-This directory houses the repo cloned from Labelbox. It contains the tools necessary to download images from labelbox using their json file along with a variety of other useful utils for parsing their json files. At the time of writing this couldn't be installed through pip and it was easier to just clone it into our directory. We only needed the labelbox2pascal functionality of the labelbox toolset, so the entire repo was not cloned. These files are no longer available on the repo and have been deprecated. Eventually we may move to using labelbox's own outputs but for now our pipeline needs these utilities to process the json.
+This directory houses the repo cloned from Labelbox. It contains the tools necessary to download images from labelbox using their json file along with a variety of other useful utils for parsing their json files. At the time of writing this couldn't be installed through pip and it was easier to clone it into our directory. We only needed the labelbox2pascal functionality of the labelbox toolset, so the entire repo was not cloned. These files are no longer available on the repo and have been deprecated. Eventually we may move to using labelbox's own outputs but for now our pipeline needs these utilities to process the json.
 
 ### III. The Docker Images: docker_tf and transfer_learning
 
@@ -132,7 +132,7 @@ The models directory contains the models that you pulled from the tensorflow mod
 
 Once you have one of these models downloaded, you will need to remove everything except for the model.ckpt files and the pipeline.config. The pipeline.config may have been updated and it would behoove you to check this repo for updates: https://github.com/tensorflow/models/tree/master/research/object_detection/samples/configs
 
-Replace the pipeline.config file with the corresponding config in the above link if necessary. Make sure the file name is still pipeline.config however as it is easier to work with. Inside of this file you will need to add the absolute paths to the train.record, test.record, and labelmap.pbtxt you will be using. These vary depending on what choices you have made perivously but should be fairly simple to figure out. Also make sure that you update the use checkpoint path to the model.cpkt in this directory! This will allow us to perform the transferlearning part of this shindig. The lines you need to change are clearly marked in caps.
+Replace the pipeline.config file with the corresponding config in the above link if necessary. Make sure the file name is still pipeline.config however as it is easier to work with. Inside of this file you will need to add the absolute paths to the train.record, test.record, and labelmap.pbtxt you will be using. These vary depending on what choices you have made previously. Also make sure that you update the use checkpoint path to the model.cpkt in this directory! This will allow us to perform the transferlearning part of this shindig. The lines you need to change are marked in caps.
 
 
 One final thing to note is that the number of classes should be changed to match the number of entities in the labelmap.pbtxt and under the eval_config: {} section of the config you will need to change num_examples to match the number of testing data you have in your dataset. This is printed after completing the ldp script.
@@ -156,7 +156,7 @@ Change the last four-five numbers of the model.ckpt to match whatever checkpoint
 
 ### Common Errors, Tips, Tricks, etc etc etc...
 
-When running the process_data script for the first time, if you encounter an sklearn import error, it is because you need version 0.18 of scikit-learn for python 2. The installation is fairly simple:
+When running the process_data script for the first time, if you encounter an sklearn import error, it is because you need version 0.18 of scikit-learn for python 2. The installation is fairly short:
 
 ```python
 pip2 install scikit-learn==0.18
