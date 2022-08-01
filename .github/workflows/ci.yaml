@@ -414,6 +414,7 @@ jobs:
           pre-commit run trailing-whitespace --all-files --show-diff-on-failure
           pre-commit run mixed-line-ending --all-files --show-diff-on-failure
           pre-commit run check-json --all-files --show-diff-on-failure
+          pre-commit run alex --all-files --show-diff-on-failure
           pre-commit run check-executables-have-shebangs --all-files --show-diff-on-failure
 
   catkin_test:
