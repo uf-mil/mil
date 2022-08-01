@@ -367,11 +367,21 @@ jobs:
           echo "Failed to restore pre-commit environment from cache"
           exit 1
       - name: Run pre-commit ROS hooks
-        run: |
-          pre-commit run prettier-xacro --all-files --show-diff-on-failure
-          pre-commit run prettier-launch-xml --all-files --show-diff-on-failure
+        run: >
+          pre-commit run prettier-xacro
+                     --all-files --show-diff-on-failure
+
+          pre-commit run prettier-launch-xml
+                     --all-files --show-diff-on-failure
+
           pre-commit run prettier-package-xml --all-files --show-diff-on-failure
+
           pre-commit run sort-package-xml --all-files --show-diff-on-failure
+
+          pre-commit run check-json --all-files --show-diff-on-failure
+
+          pre-commit run check-executables-have-shebangs
+                     --all-files --show-diff-on-failure
 
   pre-commit-hooks:
     name: Run generic hooks
