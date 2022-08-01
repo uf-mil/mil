@@ -6,6 +6,7 @@ from .dracula_grab import DraculaGrabber
 from .gripper_test import GripperTest
 from .move import Move
 from .pinger import Pinger
+from .pose_editor import PoseEditor
 from .square import Square
 from .start_gate import StartGate
 from .start_gate_guess import StartGateGuess
