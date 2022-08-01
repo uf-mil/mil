@@ -1,4 +1,10 @@
 #!/bin/bash
+usage="$(basename "$0") [-h] [-s] [-d] -- build MIL docs
+
+where:
+    -h  show this help text
+    -s  build the docs from scratch (don't use cache)
+    -d  build doxygen documentation cache"
 
 # Get root directory of MIL repo
 MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
@@ -8,13 +14,47 @@ BUILD_DIR=$HOME/.mil/docs
 mkdir -p $BUILD_DIR/doctrees
 mkdir -p $BUILD_DIR/html
 
-if [ "$1" == "-D" ]; then
+DOXYGEN=false
+SCRATCH=false
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -d|--doxygen)
+      DOXYGEN=true
+      shift # past argument
+      shift # past value
+      ;;
+    -s|--scratch)
+      SCRATCH=true
+      shift # past argument
+      shift # past value
+      ;;
+    -h|--help)
+      echo "$usage"
+      exit
+      shift # past argument
+      shift # past value
+      ;;
+    -*|--*)
+      echo "Unknown option $1"
+      exit 1
+      ;;
+  esac
+done
+
+if [ "$DOXYGEN" = true ]; then
     #Doxygen
     cd $HOME/.mil
     doxygen $MIL_DIR/docs/Doxyfile
     cd -
 fi
 
+if [ "$SCRATCH" = true ]; then
+    #Doxygen
+    sphinx-build -E -b html -d $BUILD_DIR/doctrees $MIL_DIR $BUILD_DIR/html
+else
+    sphinx-build -b html -d $BUILD_DIR/doctrees $MIL_DIR $BUILD_DIR/html
+fi
+
 # Then Sphinx build
-sphinx-build -E -b html -d $BUILD_DIR/doctrees $MIL_DIR $BUILD_DIR/html
 echo "Docs available at file://$BUILD_DIR/html/index.html"

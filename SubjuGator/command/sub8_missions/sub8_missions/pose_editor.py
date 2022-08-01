@@ -495,6 +495,12 @@ class PoseEditor:
         return self.heading(np.radians(heading_deg))
 
     def roll_right(self, angle: float) -> PoseEditor:
+        """
+        Returns a pose editor rolled to the right by a specific radian amount.
+
+        Args:
+            angle (float): The angle to roll, in radians.
+        """
         return self.set_orientation(
             transformations.quaternion_multiply(
                 self.orientation,
@@ -503,15 +509,36 @@ class PoseEditor:
         )
 
     def roll_left(self, angle: float) -> PoseEditor:
+        """
+        Returns a pose editor rolled to the left by a specific radian amount.
+
+        Args:
+            angle (float): The angle to roll, in radians.
+        """
         return self.roll_right(-angle)
 
     def roll_right_deg(self, angle_degrees: float) -> PoseEditor:
+        """
+        Returns a pose editor rolled to the right by a specific degree amount.
+
+        Args:
+            angle (float): The angle to roll, in radians.
+        """
         return self.roll_right(np.radians(angle_degrees))
 
     def roll_left_deg(self, angle_degrees: float) -> PoseEditor:
+        """
+        Returns a pose editor rolled to the left by a specific degree amount.
+
+        Args:
+            angle (float): The angle to roll, in radians.
+        """
         return self.roll_left(np.radians(angle_degrees))
 
     def zero_roll(self) -> PoseEditor:
+        """
+        Returns a pose editor with zero roll.
+        """
         return self.set_orientation(look_at(self.forward_vector))
 
     def pitch_down(self, angle: float) -> PoseEditor:
@@ -537,14 +564,27 @@ class PoseEditor:
         return self.set_orientation(look_at_without_pitching(self.forward_vector))
 
     def as_Pose(self) -> Pose:
+        """
+        Constructs a :class:`~geometry_msgs.msg.Pose` message class from the
+        pose editor.
+        """
         return Pose(
             position=Point(*self.position),
             orientation=Quaternion(*self.orientation),
         )
 
     def as_PoseTwist(
-        self, linear: Sequence[int] = [0, 0, 0], angular: Sequence[int] = [0, 0, 0]
+        self, linear: Sequence[float] = [0, 0, 0], angular: Sequence[float] = [0, 0, 0]
     ):
+        """
+        Returns a :class:`~mil_msgs.msg.PoseTwist` message class with the pose
+        supplied from the current pose editor. The linear and angular twist
+        are supplied as parameters.
+
+        Args:
+            linear (Sequence[float]): The linear twist.
+            angular (Sequence[float]): The angular twist.
+        """
         return PoseTwist(
             pose=self.as_Pose(),
             twist=Twist(
@@ -556,6 +596,16 @@ class PoseEditor:
     def as_PoseTwistStamped(
         self, linear: Sequence[int] = [0, 0, 0], angular: Sequence[int] = [0, 0, 0]
     ) -> PoseTwistStamped:
+        """
+        Returns a :class:`~mil_msgs.msg.PoseTwist` message class with the pose
+        supplied from the current pose editor. The linear and angular twist
+        are supplied as parameters. The header includes the frame ID specified
+        in the current pose editor.
+
+        Args:
+            linear (Sequence[float]): The linear twist.
+            angular (Sequence[float]): The angular twist.
+        """
         return PoseTwistStamped(
             header=Header(
                 frame_id=self.frame_id,
