@@ -2,4 +2,4 @@
 
 The electrical design of the sub is featured below:
 
-![Electrical Diagram](/docs/subjugator/sub8_electrical_diagram.png)
+![Electrical Diagram](/subjugator/sub8_electrical_diagram.png)

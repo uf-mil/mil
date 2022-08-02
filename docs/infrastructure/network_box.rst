@@ -72,7 +72,7 @@ We store the XML config of the router within the repo.
 You can update this config or restore it from the web panel at
 https://192.168.37.1/diag_backup.php.
 
-You can download the pfSense config XML file by clicking :download:`here </infrastructure/network-box/pfsense_config.xml>`.
+You can download the pfSense config XML file by clicking :download:`here <../../infra/network-box/pfsense_config.xml>`.
 
 WAN Setup
 ~~~~~~~~~

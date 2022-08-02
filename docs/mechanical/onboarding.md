@@ -6,7 +6,7 @@ components of the robots. As a mechanical member, you will be engaging with CAD
 files mostly.
 
 :::{note}
-If you have not visited with the [welcome page](/docs/welcome.md) and would like a
+If you have not visited with the [welcome page](/welcome.md) and would like a
 more general overview of MIL, please check that page first!
 :::
 
@@ -49,7 +49,7 @@ Below are some of our current projects:
 * Subjugator 8
 * Subjugator 9 (WIP)
 * NaviGator
-* [Drone](/docs/navigator/drone.md)
+* [Drone](/navigator/drone.md)
 
-For good mechanical resources, check out the [Resources](/docs/mechanical/resources.md)
+For good mechanical resources, check out the [Resources](/mechanical/resources.md)
  page.

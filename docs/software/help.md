@@ -22,7 +22,7 @@ submodules) and updated your system packages?
   `git checkout origin/master -B master`
   * Be sure to initialize and update all submodules as well with `git submodule update --init --recursive`.
 * If the error says exactly how to fix it, have you tried that?
-* Is your system setup correctly as described in the [Getting Started Guide](/docs/software/getting_started)?
+* Is your system setup correctly as described in the [Getting Started Guide](/software/getting_started)?
 * Have you blindly copy-pasted/ran things from the internet? If so, do you know
 why? Do you know what it's doing?
 * Could you be trying to use something that is outdated / deprecated?
@@ -35,7 +35,7 @@ or finding a docs page in the table of contents. The search bar will also help
 you to find related code to the problem you may be encountering, as it can search
 through the entire software reference.
 
-You may find the [Glossary](/docs/glossary) especially useful.
+You may find the [Glossary](/glossary) especially useful.
 
 ## View the docs on related classes/methods
 Although you may be developing a new system/class/method (or not!), finding the

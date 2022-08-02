@@ -51,9 +51,9 @@ fi
 
 if [ "$SCRATCH" = true ]; then
     #Doxygen
-    sphinx-build -E -b html -d $BUILD_DIR/doctrees $MIL_DIR $BUILD_DIR/html
+    sphinx-build -E -b html -d $BUILD_DIR/doctrees $MIL_DIR/docs $BUILD_DIR/html
 else
-    sphinx-build -b html -d $BUILD_DIR/doctrees $MIL_DIR $BUILD_DIR/html
+    sphinx-build -b html -d $BUILD_DIR/doctrees $MIL_DIR/docs $BUILD_DIR/html
 fi
 
 # Then Sphinx build

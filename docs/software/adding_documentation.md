@@ -17,7 +17,7 @@ folder.
 Docstrings are a powerful method of documentation. The documentation is outlined
 in the code, allowing developers to grasp what classes and methods do as they're working
 on them. Plus, these docstrings get concatenated together to form the HTML reference
-docs. (Hint: These are what make up most of the [Software Reference page](/docs/reference/index.rst)!)
+docs. (Hint: These are what make up most of the [Software Reference page](/reference/index.rst)!)
 
 ### Adding a docstring (Python)
 To add a new docstring to the reference documentation, add a docstring inside of the code.
@@ -87,7 +87,7 @@ add either an `.. autofunction:: ` or `.. autoclass:: ` directive. (Check out
 the document to see examples!)
 
 Then, when you build the docs, the docstring will be added to the docs. For more information
-on docstrings in Python, consult the [Python style guide](/docs/software/python_style).
+on docstrings in Python, consult the [Python style guide](/software/python_style).
 
 ### Adding a docstring (C++)
 To add new docstrings for C++ code, you should add the docstrings in the necessary
@@ -131,8 +131,8 @@ For your newly added page to be found, it needs to be added to a table of conten
 .. toctree::
    :maxdepth: 1
 
-   docs/my_article
-   Meeting Schedule <docs/meeting_schedule.md>
+   my_article
+   Meeting Schedule <meeting_schedule.md>
 ```
 
 Sometimes, though, you don't want your document to be in a `toctree`. In this case,
@@ -142,7 +142,7 @@ add it to a `:hidden:` TOC tree, like so:
 .. toctree::
    :hidden:
 
-   docs/peek_a_boo
+   peek_a_boo
 ```
 
 This TOC tree won't be rendered, but Sphinx will still allow you to build the docs

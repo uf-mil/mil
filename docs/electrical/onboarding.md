@@ -5,7 +5,7 @@ team's electrical systems on the robots. This requires developing special hardwa
 and embedded systems.
 
 :::{note}
-If you have not visited with the [welcome page](/docs/welcome.md) and would like a
+If you have not visited with the [welcome page](/welcome.md) and would like a
 more general overview of MIL, please check that page first!
 :::
 

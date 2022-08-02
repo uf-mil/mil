@@ -52,4 +52,4 @@
 * Verify odometry.
 
 What happens when the valve box isn't closed:
-![What happens when the valve box isn't closed.](/docs/flooded_valve_box.jpg)
+![What happens when the valve box isn't closed.](/flooded_valve_box.jpg)
