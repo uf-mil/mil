@@ -456,13 +456,9 @@ jobs:
           # conflicts
           sudo pip install -I -r requirements.txt
       - name: Install system dependencies
-        run: |
-          ./scripts/system_install
-      - name: Install user dependencies
         continue-on-error: true
         run: |
-          # Exits with zero because of error with darknet_ros in user_install
-          ./scripts/user_install
+          ./scripts/install
       # We want to run a full test suite in CI - this includes the BlueView
       # tests!
       - name: Install BlueView Sonar SDK
@@ -581,9 +577,6 @@ jobs:
           source /opt/ros/noetic/setup.bash
 
           catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j6
-      - name: Install dependencies for docs
-        run: |
-          sudo apt-get install doxygen doxygen-doc doxygen-gui graphviz
       - name: Build docs
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
