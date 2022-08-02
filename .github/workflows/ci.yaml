@@ -568,15 +568,10 @@ jobs:
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
           sudo pip install -I -r requirements.txt
       - name: Install system dependencies
-        run: |
-          cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          ./scripts/system_install
-      - name: Install user dependencies
         continue-on-error: true
         run: |
-          # Exits with zero because of error with darknet_ros in user_install
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          ./scripts/user_install
+          ./scripts/install
       - name: Run catkin_make
         run: >
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
@@ -596,7 +591,7 @@ jobs:
           source /opt/ros/noetic/setup.bash
           source $GITHUB_WORKSPACE/catkin_ws/devel/setup.bash
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          ./scripts/build_docs -D
+          ./scripts/build_docs -s -d
       - name: Publish docs artifact
         uses: actions/upload-artifact@v3
         with:

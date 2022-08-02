@@ -3,6 +3,8 @@
 # To be run after system_install has been run.
 set -euo pipefail
 
+echo "This script is deprecated. Please migrate to using scripts/install instead."
+
 # It is generally assumed that users will use ~/catkin_ws, but
 # setting CATKIN_WS prior to running this script will change this behavior.
 if [[ -z ${CATKIN_DIR:-""} ]]; then

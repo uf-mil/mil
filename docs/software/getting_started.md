@@ -141,9 +141,12 @@ If you are running Ubuntu, and prefer to run code directly on your "host"
 operating system without using Docker, you can run the following scripts from
 the root of the repository.
 
+If you're wondering what these scripts do, they install all of the tools needed
+for you to work in MIL (``git``, ROS, Python dependencies, etc.). Feel free
+to open up the file in an editor if you're more curious.
+
 ```bash
-$ ./scripts/system_install
-$ ./scripts/user_install; exit 0
+$ ./scripts/install
 $ exec bash # or exec zsh if you have set up zsh
 ```
 
