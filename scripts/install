@@ -14,8 +14,12 @@ color() {
 # header display functions
 hash_header() { echo "########################################"; }
 
+# We only want to clear if the user is actually using a GUI terminal
+if [[ -z "${TERM}" ]]; then
+    clear
+fi
+
 # Display header
-clear
 cat << EOF
 $(color "$Pur")
          &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
