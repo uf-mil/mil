@@ -6,9 +6,9 @@ PCL/CV object identification, recognition and registration.
 
 # Buoy Detector
 
-The buoy detector does simple OpenCV thresholding to find the buoy in a 2D HSV image. The centroid of the detected contour is projected into the point cloud for 3D analysis (which is where the heavy lifting takes place). More work is being done (by Tess) to make the vision component more robust.
+The buoy detector does OpenCV thresholding to find the buoy in a 2D HSV image. The centroid of the detected contour is projected into the point cloud for 3D analysis (which is where the heavy lifting takes place). More work is being done (by Tess) to make the vision component more robust.
 
-A service is called, and this returns a pose that is the estimated pose of the buoy in the camera stereo frame. When the service is not called, this node simply caches incoming point cloud and image data until it is needed to compute a buoy position.
+A service is called, and this returns a pose that is the estimated pose of the buoy in the camera stereo frame. When the service is not called, this node caches incoming point cloud and image data until it is needed to compute a buoy position.
 
 To handle potential timing discrepancy, the timestamp at which the images and pointclouds were recorded is carried through the messages, so that the TF cache can be used in the frame-lookup, and we don't have any loss in data. Instead of looking up `buoy->cameras->base_link` and hoping the movement during propagation time was small, we can do `buoy->cameras->base_link[10 seconds ago]` i.e. look up the transform for when the image was taken.
 

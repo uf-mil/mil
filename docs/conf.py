@@ -19,26 +19,26 @@ import sys
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath(".."))
-sys.path.append(os.path.abspath("docs/extensions"))
+sys.path.append(os.path.abspath("extensions"))
 
 # Node extensions
-sys.path.append(os.path.abspath("mil_common"))
-sys.path.append(os.path.abspath("mil_common/ros_alarms"))
-sys.path.append(os.path.abspath("mil_common/ros_alarms/nodes"))
-sys.path.append(os.path.abspath("mil_common/drivers"))
-sys.path.append(os.path.abspath("mil_common/drivers/mil_passive_sonar"))
-sys.path.append(os.path.abspath("mil_common/drivers/mil_passive_sonar/scripts"))
+sys.path.append(os.path.abspath("../mil_common"))
+sys.path.append(os.path.abspath("../mil_common/ros_alarms"))
+sys.path.append(os.path.abspath("../mil_common/ros_alarms/nodes"))
+sys.path.append(os.path.abspath("../mil_common/drivers"))
+sys.path.append(os.path.abspath("../mil_common/drivers/mil_passive_sonar"))
+sys.path.append(os.path.abspath("../mil_common/drivers/mil_passive_sonar/scripts"))
 
-sys.path.append(os.path.abspath("NaviGator"))
-sys.path.append(os.path.abspath("NaviGator/gnc"))
-sys.path.append(os.path.abspath("NaviGator/gnc/navigator_path_planner"))
-sys.path.append(os.path.abspath("NaviGator/gnc/navigator_path_planner/nodes"))
+sys.path.append(os.path.abspath("../NaviGator"))
+sys.path.append(os.path.abspath("../NaviGator/gnc"))
+sys.path.append(os.path.abspath("../NaviGator/gnc/navigator_path_planner"))
+sys.path.append(os.path.abspath("../NaviGator/gnc/navigator_path_planner/nodes"))
 
-sys.path.append(os.path.abspath("NaviGator/utils"))
-sys.path.append(os.path.abspath("NaviGator/utils/navigator_battery_monitor"))
-sys.path.append(os.path.abspath("NaviGator/utils/navigator_battery_monitor/nodes"))
-sys.path.append(os.path.abspath("NaviGator/utils/navigator_robotx_comms"))
-sys.path.append(os.path.abspath("NaviGator/utils/navigator_robotx_comms/nodes"))
+sys.path.append(os.path.abspath("../NaviGator/utils"))
+sys.path.append(os.path.abspath("../NaviGator/utils/navigator_battery_monitor"))
+sys.path.append(os.path.abspath("../NaviGator/utils/navigator_battery_monitor/nodes"))
+sys.path.append(os.path.abspath("../NaviGator/utils/navigator_robotx_comms"))
+sys.path.append(os.path.abspath("../NaviGator/utils/navigator_robotx_comms/nodes"))
 
 # -- General configuration ------------------------------------------------
 
@@ -54,6 +54,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.graphviz",
+    "sphinx_copybutton",
     "attributetable",
     "builder",
     "breathe",
@@ -77,13 +78,16 @@ breathe_default_members = ("members", "undoc-members")
 
 myst_enable_extensions = ["colon_fence"]
 
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+copybutton_prompt_is_regexp = True
+
 # Document __init__ methods of classes
 autoclass_content = "both"
 autodoc_inherit_docstrings = False
 autodoc_mock_imports = ["mayavi"]  # Package is very hard to install sometimes
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ["docs/_templates"]
+templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -186,17 +190,17 @@ html_theme_options = {"fixed_sidebar": True}
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = "branding/mil.svg"
+html_logo = "../branding/mil.svg"
 
 # The name of an image file (relative to this directory) to use as a favicon of
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = "branding/mil_white.svg"
+html_favicon = "../branding/mil_white.svg"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["docs/_static"]
+html_static_path = ["_static"]
 
 html_js_files = ["custom.js", "sidebar.js", "lightdarkmode.js"]
 

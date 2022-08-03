@@ -1445,3 +1445,13 @@ img[src*="_images/collage.png"] {
     border: 2px solid #e4680b;
     margin-bottom: 1.5em;
 }
+
+button.copybtn svg {
+    width: 2.3em;
+    height: 2.3em;
+}
+
+button.copybtn {
+    width: 2.5em;
+    height: 2.5em;
+}

@@ -32,7 +32,7 @@ while not rospy.is_shutdown():
                         ]
                     ),
                 )
-                for i in xrange(4)
+                for i in range(4)
             ],
         )
     )

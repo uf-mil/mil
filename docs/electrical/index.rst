@@ -11,3 +11,4 @@ To get started, checkout the onboarding page!
    :maxdepth: 1
 
    Onboarding <onboarding>
+   battery_charger.md

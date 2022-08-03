@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from txros import util
 
 from .sub_singleton import SubjuGator

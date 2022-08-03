@@ -15,7 +15,7 @@ To access the basic bash shell associated with your user account, you can use st
 SSH protocol. This can be helpful if you'd like to store long-term material under
 your username on Zobelisk.
 
-To do so, simply sign in with `ssh` on your own Ubuntu installation:
+To do so, sign in with `ssh` on your own Ubuntu installation:
 
     $ ssh <username>@192.168.37.176
 
@@ -34,7 +34,7 @@ Great! Now that you've successfully signed into Zobelisk, let's take it to the n
 level.
 
 If you'd like, you can use `sshfs` with Docker to run programs safely on Zobelisk.
-This means that instead of running programs in a simple bash terminal, that you will
+This means that instead of running programs in a bash terminal, that you will
 instead run them in a containerized environment (a fresh install of Linux!).
 
 

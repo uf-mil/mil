@@ -7,6 +7,17 @@ because of its familiarity with ROS.
 
 ## System Requirements
 
+Autonomous robotics is computationally expensive, especially when running simulations.
+Your VM or computer should have at least 4GB, although it will run much faster with
+8GB of RAM or higher. You should have at least a dual-core system, but using
+more cores will allow compilation to run much faster.
+
+If you are using a virtual machine, you can change the amount of RAM and the
+number of CPU cores allotted to the virtual machine by visiting the settings
+of your VM software.
+
+## Installing Ubuntu
+
 To use Ubuntu in MIL, you have two options:
 
 1. Use a **virtual machine**. A virtual machine uses your current operating system
@@ -29,19 +40,6 @@ virtual machine as these systems are not able to have two operating systems inst
 at once. Intel-based Macs may also experience some issues with dual-booting Ubuntu.
 :::
 
-### Hardware
-
-Autonomous robotics is computationally expensive, especially when running simulations.
-Your VM or computer should have at least 4GB, although it will run much faster with
-8GB of RAM or higher. You should have at least a dual-core system, but using
-more cores will allow compilation to run much faster.
-
-If you are using a virtual machine, you can change the amount of RAM and the
-number of CPU cores allotted to the virtual machine by visiting the settings
-of your VM software.
-
-## Installing Ubuntu
-
 Please follow the link that suits your best use case:
 
 * **Dual-booting a Windows computer**: Dual-booting on windows is the best option
@@ -62,7 +60,12 @@ MacOS. The software is free, unlike Parallels, but requires more setup by the us
 For instructions on installing Ubuntu with UTM,
 [see here](https://mac.getutm.app/gallery/ubuntu-20-04).
 
-## Starting from a clean slate
+After you have the operating system downloaded, you may need to configure it.
+This includes setting your preferred language and keyboard layout, along with
+your username and password. Set these settings up to your liking, but note that
+having a shorter username may save you some typing in the long run.
+
+## Updating packages
 
 First, we will refresh the list of packages available for your computer. You
 will install packages on Ubuntu using the `apt` package manager. You may also
@@ -127,26 +130,36 @@ instructions exactly, you can get there through:
 $ cd ~/catkin_ws/src/mil
 ```
 
-### Run the setup scripts
+Next, switch to the `noetic-migration` branch. This step will be removed in
+August 2022.
 
-If you are running Ubuntu, and prefer to simply run code directly on your "host"
+```bash
+$ git checkout noetic-migration
+$ git submodule update --init --recursive
+```
+
+## Run the setup scripts
+
+If you are running Ubuntu, and prefer to run code directly on your "host"
 operating system without using Docker, you can run the following scripts from
 the root of the repository.
 
+If you're wondering what these scripts do, they install all of the tools needed
+for you to work in MIL (``git``, ROS, Python dependencies, etc.). Feel free
+to open up the file in an editor if you're more curious.
+
 ```bash
-$ ./scripts/system_install
-$ ./scripts/user_install
+$ ./scripts/install
 $ exec bash # or exec zsh if you have set up zsh
 ```
 
 Exit the terminal and enter it again.
 
 To build our tools, we use a tool that ROS provides us named `catkin_make`. This
-searches through all of our packages and compiles them together. If you want to
-run this tool from anywhere in the directory, use `cm`.
+searches through all of our packages and compiles them together.
 
 ```bash
-$ cm
+$ catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros"
 ```
 
 If something goes wrong, try the suggestions in [Getting Help](help). It's common
@@ -154,7 +167,7 @@ for the build to fail if your system was unable to find enough resources to buil
 the project. If you are using a VM, you may want to allocate more cores or RAM
 to the instance.
 
-### Configuring Git
+## Configuring Git
 
 If you have not configured Git to use your name/email on your new Ubuntu setup,
 you can use the script below to set up your Git configuration! It will help you
@@ -164,11 +177,6 @@ the repository.
 ```bash
 $ ./scripts/store_git.sh
 ```
-
-### Join the Github organization
-In order to contribute code, you need to be in the [uf-mil Github organization](https://github.com/uf-mil).
-First create a GitHub account if you do not have one, then ask someone in MIL / on Slack
-to invite you.
 
 ## Viewing simulation
 Now that you've built the repository, check to make sure that the simulation works
@@ -200,3 +208,9 @@ Congratulations, and welcome to MIL!
 
 The next step is to get assigned a task and to dive in. You should have the setup
 to do so now!
+
+:::{note}
+In order to contribute code, you need to be in the [uf-mil GitHub organization](https://github.com/uf-mil).
+First create a GitHub account if you do not have one, then ask someone in MIL / on Slack
+to invite you.
+:::

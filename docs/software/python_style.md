@@ -112,7 +112,7 @@ Do not use:
     * `f` as a file object
 * `__double_underscore_names__`, because these are reserved by Python!
 * Names that needlessly include a type
-* Names that are offensive (obviously, right?)
+* Names that are offensive
 * Names that are meaningless (such as `cool_constant` or `fun_variable`)
 
 #### Mathematical Names
@@ -123,7 +123,7 @@ Sometimes, we will use our code to implement common mathematics or algorithms. I
 * Add a short line comment after the first use of the variable if it could help future readers. You may also desire to include units here as well.
 
 #### File Naming
-Files should end with `.py` and should not use dashes (`-`), but rather underscores (`_`). If you do not want the `.py` ending on the Python file and would prefer the file to take the role of an executable, consider making a symbolic link or a shell script wrapper that runs the Python file. (This can be as simple as `exec "$0.py" "$@"`!)
+Files should end with `.py` and should not use dashes (`-`), but rather underscores (`_`). If you do not want the `.py` ending on the Python file and would prefer the file to take the role of an executable, consider making a symbolic link or a shell script wrapper that runs the Python file. (This can be as short as `exec "$0.py" "$@"`!)
 
 ### Imports
 Imports are a powerful feature of Python. Here is a quick guide for using imports in Python:
@@ -162,7 +162,7 @@ When attempting to catch exceptions:
 * Do not catch `Exception`. Attempting to catch `Exception` will catch every exception thrown, which could indirectly catch exceptions that the program was not meant to catch. Instead, catch for a specific exception that will be raised. There is one case in which catching `Exception` is acceptable, however:
     * Attempting to catch all exceptions in attempt to mitigate exceptions blocking some code from running. For example, in order to handle exceptions quietly rather than ending a thread which runs a specific process.
 * Keep `try` blocks to a minimum. As `try` blocks grow in size, the probability of *some exception* being raised increases, which may hide the true reasons behind some exceptions. Instead, attempt to keep logic outside of `try` blocks and instead only use `try` to catch code that could directly throw the exception you are trying to catch.
-* Feel free to generate your own exception classes which inherit from built-in exception types. However, in many cases, it makes more sense to only use standard exceptions. For example, there is no need to create a new exception class for catching improper types passed into a method - instead, just use `TypeError`.
+* Feel free to generate your own exception classes which inherit from built-in exception types. However, in many cases, it makes more sense to only use standard exceptions. For example, there is no need to create a new exception class for catching improper types passed into a method - instead, use `TypeError`.
 
 When using `assert`:
 
@@ -192,16 +192,16 @@ for k, v in dict.iteritems():
 
 ### Yielding
 
-Sometimes, it may be desired to have your method **yield** values rather than simply **return** them. Yielding in Python is a powerful feature which delays your method's execution until you need it.
+Sometimes, it may be desired to have your method **yield** values rather than **return** them. Yielding in Python is a powerful feature which delays your method's execution until you need it.
 
-To have a method yield rather than simply return, use the `yield` keyword in the method and mark the method docstring with `Yields:`.
+To have a method yield rather than return, use the `yield` keyword in the method and mark the method docstring with `Yields:`.
 
 ### Lambda Functions
 
 Lambda functions are mini-functions. They are expressed like so: `lambda x, y: x + y`.
 
 If you use lambda functions:
-* Keep them to one line. If they are longer than 80 characters, just use a nested function.
+* Keep them to one line. If they are longer than 80 characters, use a nested function.
 * Use them sparingly. Using complex, important operations in a lambda functions makes the code harder to debug and harder for other members to understand.
 
 ### Conditional Expressions
@@ -230,7 +230,7 @@ super_long = (evaluating_function(parameter)
 Properties are a powerful feature of Python which allow traditional class methods to be hidden as attributes. Sneaky! This adds the benefit of masking getters and setters as traditional properties, but can accidentally mask complexion in the code that should not be hidden.
 
 Properties should:
-* Not be used for very simple operations (such as just returning a value)
+* Not be used for very short operations (such as returning a value)
 * Not be used when the method invokes a lot of operations. The calling user may not understand this and accidentally invoke a lot of operations that block other processes.
 * Always be marked with the `@property` decorator.
 
@@ -252,8 +252,6 @@ if b:
 In those statements, `True` and `False` were never explicitly used. However, they were implicitly used.
 
 Attempt to use these statements when possible, as they help to make our code look more crafted and cute. However, keep some things in mind:
-* If you are checking for `None`, just use `if x is None`. If you use `if not x`, then `x = False` will also trigger the conditional statement. This could be a problem when checking to see if a parameter is `None` - if the user passes in `False`, then you're going to have a little problem!
-* Be wary when using these types of statements when checking the value of integers. Using something like `if not x / 2` is confusing because both boolean and numerical statements are involved.
 * When using this type of statement to check the size of a Numpy array, use `if (not) array.size` instead of `if array`.
 
 ### Decorators
@@ -299,7 +297,7 @@ When using whitespace:
 
 Many times you will want to format strings in a certain way: to add variables into the string, to make the string look pretty, or to use the string in a certain context, such as an enumerated iterator (`for i, v in enumerate(list): print(i + v)`).
 
-In general: Just use f-strings! f-strings are a special type of string and can be made by prepending the first single/double quote of a string with `f`. This special string allows you to add in expressions into the string by using a pair of curly braces:
+In general: use f-strings! f-strings are a unique type of string and can be made by prepending the first single/double quote of a string with `f`. This string allows you to add in expressions into the string by using a pair of curly braces:
 ```python
 ultimate_answer = 42
 print(f"The ultimate answer is {ultimate_answer}.")
@@ -320,7 +318,7 @@ print(f"This number is less than one: {rand}")
 
 ### TODO Comments
 
-TODO comments are a great way to mark a piece of code as not currently finished. To use TODO comments, simply create a comment that starts with `TODO`, has your name, and what still needs to be done. Simple!
+TODO comments are a great way to mark a piece of code as not currently finished. To use TODO comments, create a comment that starts with `TODO`, has your name, and what still needs to be done.
 ```python
 # TODO (Dr. Schwartz) - Finish method to add c in final sum
 def sum(a: int, b: int, c: int):
@@ -331,9 +329,9 @@ def sum(a: int, b: int, c: int):
 
 Getters and setters serve as dedicated methods for getting and setting a property of a class. These are similar to `@property` methods, but these are explicit methods which are not hidden as properties.
 
-Getters and setters should only be used when changing a single property causes significant overhead or recalculation of other properties. Otherwise, simply set the property as public or use a small `@property` method.
+Getters and setters should only be used when changing a single property causes significant overhead or recalculation of other properties. Otherwise, set the property as public or use a small `@property` method.
 
-Getters and setters should be named in a way that clearly demonstrates which property is being set. For example, `get_weather()` and `set_weather()`.
+Getters and setters should be named in a way that demonstrates which property is being set. For example, `get_weather()` and `set_weather()`.
 
 ### Function Length
 
@@ -372,7 +370,7 @@ Note that if your type annotations are overly long, it may be a good idea to spl
 
 ## Docstrings
 
-Docstrings stand for doctor strings, strings that can only be created by medical professionals. Just kidding! Docstrings stand for strings that document particular aspects of one's code. Docstrings can be used to document modules, methods, and classes!
+Docstrings stand for doctor strings, strings that can only be created by medical professionals. Kidding! Docstrings stand for strings that document particular aspects of one's code. Docstrings can be used to document modules, methods, and classes!
 
 ### General Docstrings
 
@@ -427,7 +425,7 @@ class CalculatorHistory:
 
 ### Methods
 
-Just like modules and classes, methods should also have docstrings! Begin method docstrings with a brief explanation, followed by a longer, more detailed explanation if needed. Then, add the following three sections of the docstring:
+Like modules and classes, methods should also have docstrings! Begin method docstrings with a brief explanation, followed by a longer, more detailed explanation if needed. Then, add the following three sections of the docstring:
 
 1. `Args:` - The arguments accepted by the function. List each argument name, its type annotation, and what it is in English. If multiple positional arguments (such as `*args`) or multiple keyword arguments (such as `**kwargs`) are accepted by the method, write these in the docstring as well.
 2. `Returns:` - The type annotation of the method's returned value, as well as an explanation of what is returned in English.

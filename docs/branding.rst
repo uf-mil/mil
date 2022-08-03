@@ -9,9 +9,9 @@ Logos
 Copies of the MIL logo (with and without text) can be found below. Two
 different formats are provided, an SVG and Adobe Illustrator file.
 
-:download:`MIL Logo (SVG) </branding/mil.svg>`
+:download:`MIL Logo (SVG) <../branding/mil.svg>`
 
-:download:`MIL Logo With Name (Adobe Illustrator) </branding/mil_with_text.ai>`
+:download:`MIL Logo With Name (Adobe Illustrator) <../branding/mil_with_text.ai>`
 
 Fonts
 -----

@@ -15,7 +15,7 @@ This command-line tool checks your code for linting errors, spell check errors,
 unneeded whitespace, and the formatting of your files. And, it does this
 automatically, without you even needing to ask! How awesome is that?
 
-Basically, `pre-commit` runs on a shared config file that all MIL members use.
+`pre-commit` runs on a shared config file that all MIL members use.
 This config file specifies what the tool should check for, such as if you have
 extra whitespace at the end of the line. When you attempt to commit changes to
 the repo, the tool will block your commit if it finds any errors. Some of the
@@ -122,7 +122,7 @@ in the process. However, it's also a lot. Because there's so much to it, we won'
 walkthrough the process here. However, here are some things you may want to setup:
 
 * Installing an extension manager ([vim-plug](https://github.com/junegunn/vim-plug) for example!)
-* Setting up a sane escape key (such as `jk`)
+* Setting up a reasonable escape key (such as `jk`)
 * Setting up integrated LSP (Try checking out [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)!)
 * Setting up diagnostics and formatters used in `pre-commit` with [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim)
 * Finding a beautiful colorscheme!
@@ -153,7 +153,7 @@ file. In here, you can setup plugins, set aliases, and run commands when your
 shell starts up. Pretty helpful!
 
 A recommended plugin for your Bash terminal is setting up `oh-my-bash`.
-[This plugin](https://github.com/ohmybash/oh-my-bash) allows you to easily add
+[This plugin](https://github.com/ohmybash/oh-my-bash) allows you to add
 themes and plugins into your terminal using your configuration file. On the
 project README, you can see how to set up the plugin and begin configuring
 plugins and themes.

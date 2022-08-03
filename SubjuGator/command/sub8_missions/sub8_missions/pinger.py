@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import random
 
 import mil_ros_tools

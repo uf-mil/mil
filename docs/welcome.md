@@ -41,7 +41,7 @@ frequently hang out together on the weekends, be in the lab late at night, go on
 "food trains" (a bunch of MILers heading to a restaurant for a bite to eat), and
 embark on trips across the world. We'd love to have you become a MILer, too!
 
-For more information, read about our [culture](/docs/culture).
+For more information, read about our [culture](/culture).
 
 ## Join Slack and say hello!
 We use Slack as our primary communication platform. On Slack, you can communicate
@@ -65,6 +65,6 @@ You can find the recording [here](https://mil.ufl.edu/videos/MIL_Kick_Off_Fall_2
 :::
 
 The next step is to look into joining a specific team:
-- Click here to embark on the [Mechanical Team onboarding](/docs/mechanical/onboarding).
-- Click here to embark on the [Electrical Team](/docs/electrical/onboarding).
-- Click here to embark on the [Software Team](/docs/software/getting_started).
+- Click here to embark on the [Mechanical Team onboarding](/mechanical/onboarding).
+- Click here to embark on the [Electrical Team](/electrical/onboarding).
+- Click here to embark on the [Software Team](/software/getting_started).

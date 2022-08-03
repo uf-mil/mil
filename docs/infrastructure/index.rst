@@ -5,5 +5,6 @@ Various docs related to infrastructure systems in MIL such as servers and networ
 .. toctree::
  Networking <network>
  Network Box <network_box>
- Continuous Integration </ci/readme>
+ Continuous Integration <ci>
  File Server <file_server>
+ shipping

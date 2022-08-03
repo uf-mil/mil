@@ -309,3 +309,12 @@ SubjuGatorDynamics
 
 .. autoclass:: sub8_system_id.SubjuGatorDynamics
     :members:
+
+Missions
+--------
+PoseEditor
+^^^^^^^^^^
+.. attributetable:: sub8_missions.PoseEditor
+
+.. autoclass:: sub8_missions.PoseEditor
+    :members:

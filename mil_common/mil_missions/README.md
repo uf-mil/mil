@@ -19,7 +19,7 @@ To run the GUI, open rqt and add the plugin or from the terminal run:
 MIL Missions provides a command line interface to trigger a new mission, list available missions, and cancel the current mission.
 
 ### Running a new mission
-To run the Wait mission (which simply sleeps for a specified time) with parameters "5" (to run for 5 seconds)
+To run the Wait mission (which sleeps for a specified time) with parameters "5" (to run for 5 seconds)
 ```runmission Wait 5```
 
 ### Listing available missions
@@ -114,7 +114,7 @@ Again, some things to note:
 * The mission raises exceptions if something goes wrong. When the server sees an exception is raised, it aborts the mission and sends the error message as the result
 * Again, the run function has ```@util.cancellableInlineCallbacks``` because it waits on the move goal to complete
 * The mission uses ```self.send_feedback```, which sends a string to connected clients about what the mission is doing/thinking about right now
-* The mission does very little computation, it just interfaces with other ROS systems. This is how missions are intended to work. Any serious computation should be done in other nodes.
+* The mission does very little computation, it interfaces with other ROS systems. This is how missions are intended to work. Any serious computation should be done in other nodes.
 
 ### Launching the mission runner
 Now that we have a base mission and at least one mission, we can run the mission server using this new system. For this, lets use a launch file so we don't need to type the parameters each time.

@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+echo "This script is deprecated. Please migrate to using scripts/install instead."
+
 mil_system_install()
 {
   sudo apt install -y $@

@@ -18,7 +18,7 @@ Various documentation related to practices followed by the MIL Software team.
    Installing NVIDIA Drivers for RTX 2080 <rtx_2080_drivers.md>
    Installing Ubuntu 18.04 on an M-series Apple computer <apple_mseries_ubuntu_setup.md>
    Resetting Ubuntu Administrative Password <resetubuntupass.md>
-   Network with Vehicles and Simulation Servers <../infra/network.md>
+   Network with Vehicles and Simulation Servers <../infrastructure/network.md>
    Developing with Submodules <submodule.md>
    Optional Extensions <extension_support.md>
    Helpful Scripts <scripts>

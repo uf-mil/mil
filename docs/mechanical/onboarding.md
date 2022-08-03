@@ -6,7 +6,7 @@ components of the robots. As a mechanical member, you will be engaging with CAD
 files mostly.
 
 :::{note}
-If you have not visited with the [welcome page](/docs/welcome.md) and would like a
+If you have not visited with the [welcome page](/welcome.md) and would like a
 more general overview of MIL, please check that page first!
 :::
 
@@ -28,7 +28,7 @@ you know to add you to the organization.
 You can find the list of issues [here](https://github.com/uf-mil/mil/issues).
 You will notice that there are other issues for the software and electrical teams,
 which isn't super helpful for you (unless you want to help out those teams as well!).
-To filter for just Mechanical tasks, click the `Label` dropdown, and choose the
+To filter for Mechanical tasks, click the `Label` dropdown, and choose the
 `mechanical` label.
 
 When you are first getting started, you may also want to find a task that is good
@@ -49,7 +49,7 @@ Below are some of our current projects:
 * Subjugator 8
 * Subjugator 9 (WIP)
 * NaviGator
-* [Drone](/docs/navigator/drone.md)
+* [Drone](/navigator/drone.md)
 
-For good mechanical resources, check out the [Resources](/docs/mechanical/resources.md)
+For good mechanical resources, check out the [Resources](/mechanical/resources.md)
  page.

@@ -1,6 +1,6 @@
 # Working with Git Submodules
 
-Submodules are an important part of the MIL repo! These submodules allow our code to function properly! Formally, these submodules are just directories inside of our repository somewhere which are actually a Git repository themselves. In essence, these directories (inside of the main MIL directory) are pointing at a specific commit inside of another Git repository.
+Submodules are an important part of the MIL repo! These submodules allow our code to function properly! Formally, these submodules are directories inside of our repository somewhere which are actually a Git repository themselves. In essence, these directories (inside of the main MIL directory) are pointing at a specific commit inside of another Git repository.
 
 This pattern can be confusing, so here are some commands to help you out!
 
@@ -12,7 +12,7 @@ To add a new submodule into a repository, you can use `git submodule add <url>`!
 $ git submodule add https://github.com/chaconinc/DbConnector
 ```
 
-When you do this, a new directory called `DbConnector` will appear, and the `.gitmodules` file (which keeps track of your submodules) will be updated. Now, you'll need to actually commit it to the repository, just like any other folder you add:
+When you do this, a new directory called `DbConnector` will appear, and the `.gitmodules` file (which keeps track of your submodules) will be updated. Now, you'll need to actually commit it to the repository, like any other folder you add:
 ```sh
 $ git commit -am 'Add DbConnector module'
 $ git push
@@ -29,7 +29,7 @@ In this command, `--init` initializes your submodule configuration file, while `
 ## Pulling in upstream changes in submodules
 ### Through the submodule remote
 
-Sometimes, submodules can be updated by another user, and you'll need to pull these changes into your own copy. If you would like to do this for just one submodule, `cd` into the submodule, and then update the specific submodule yourself:
+Sometimes, submodules can be updated by another user, and you'll need to pull these changes into your own copy. If you would like to do this for one submodule, `cd` into the submodule, and then update the specific submodule yourself:
 
 ```sh
 $ cd DbConnector
@@ -42,7 +42,7 @@ $ git push
 
 Because you committed with the new submodule code, whenever others fetch new changes, they will also get the update submodule changes.
 
-While the above is great for small, independent submodule changes where you want more customizability in how the submodule is updated, repeatedly doing multiple commands just to update the submodule can get annoying! Thankfully, git helps to fix that with:
+While the above is great for small, independent submodule changes where you want more customizability in how the submodule is updated, repeatedly doing multiple commands to update the submodule can get annoying! Thankfully, git helps to fix that with:
 ```sh
 $ git submodule update --remote
 ```
@@ -98,4 +98,4 @@ But, we still haven't actually pushed the changes!
 ```sh
 $ git push --recurse-submodules=on-demand
 ```
-Note that this will push any commits for **every** submodule. If you just want to push some commits for one submodule, then `cd` into the submodule directory and use `git push`.
+Note that this will push any commits for **every** submodule. If you want to push some commits for one submodule, then `cd` into the submodule directory and use `git push`.

@@ -1,4 +1,4 @@
-.. image:: docs/images/collage.png
+.. image:: images/collage.png
 
 Machine Intelligence Lab
 ===============================
@@ -18,46 +18,46 @@ New Members
 .. toctree::
     :hidden:
 
-    docs/welcome
+    welcome
 
-    docs/mechanical/index
-    docs/electrical/index
-    docs/software/index
+    mechanical/index
+    electrical/index
+    software/index
 
-    docs/subjugator/index
-    docs/navigator/index
-    docs/reference/index
-    docs/subjugator/reference
-    docs/navigator/reference
-    docs/design/design
-    docs/infra/index
+    subjugator/index
+    navigator/index
+    reference/index
+    subjugator/reference
+    navigator/reference
+    design/design
+    infrastructure/index
 
-    docs/culture
-    docs/branding
+    culture
+    branding
 
-* **Interested software members**: Please read the :doc:`Software Getting Started Guide <docs/software/getting_started>`.
-* **Interested electrical members**: Please read the :doc:`Electrical Onboarding Guide <docs/electrical/onboarding>`
-* **Interested mechanical members**: Please read the :doc:`Mechanical Onboarding Guide <docs/mechanical/onboarding>`.
+* **Interested software members**: Please read the :doc:`Software Getting Started Guide <software/getting_started>`.
+* **Interested electrical members**: Please read the :doc:`Electrical Onboarding Guide <electrical/onboarding>`
+* **Interested mechanical members**: Please read the :doc:`Mechanical Onboarding Guide <mechanical/onboarding>`.
 
 Relevant Links
 --------------
 * **Websites:** `MIL Website <https://mil.ufl.edu>`_ / `NaviGator <https://navigator.org>`_ / `SubjuGator <https://subjugatoruf.org>`_
 * **Source:** `GitHub <https://github.com/uf-mil/mil>`_
-* **Branding:** :doc:`Branding <docs/branding>`
-* **Culture:** :doc:`Glossary <docs/glossary>` / :doc:`Culture <docs/culture>` / :doc:`Technical Design <docs/design/design>`
+* **Branding:** :doc:`Branding <branding>`
+* **Culture:** :doc:`Glossary <glossary>` / :doc:`Culture <culture>` / :doc:`Technical Design <design/design>`
 
 Software Reference
 ------------------
-* **All Repository Source Documentation:** :doc:`Reference <docs/reference/index>`
-* **Practices:** :doc:`Our Development Practices <docs/software/index>` / :doc:`Scripts <docs/software/scripts>` / :doc:`Extensions <docs/software/extension_support>`
-* **Project Procedures:** :doc:`SubjuGator <docs/subjugator/index>` / :doc:`VRX <docs/navigator/vrx>`
-* **Getting Help:** :doc:`Development Help <docs/software/help>`
+* **All Repository Source Documentation:** :doc:`Reference <reference/index>`
+* **Practices:** :doc:`Our Development Practices <software/index>` / :doc:`Scripts <software/scripts>` / :doc:`Extensions <software/extension_support>`
+* **Project Procedures:** :doc:`SubjuGator <subjugator/index>` / :doc:`VRX <navigator/vrx>`
+* **Getting Help:** :doc:`Development Help <software/help>`
 
 Meta
 ----
 .. toctree::
     :maxdepth: 1
 
-    docs/glossary
-    docs/testingprocedures.md
-    docs/deprecated
+    glossary
+    testingprocedures.md
+    deprecated

@@ -43,7 +43,7 @@ to try to encourage the following of these philosophies.
 
 In general, try to make your code **user-friendly**. This is super important, since
 all of us at MIL are humans, not computers! While computers run our code, they never
-innovtate on it, they just run whatever we tell them. It's up to us to work together
+innovtate on it, they run whatever we tell them. It's up to us to work together
 to innovate new solutions in our programming so that these robots can do new things.
 
 ### 1. Be expressive, not restrictive
@@ -94,7 +94,7 @@ Below explains the process of naming various resources around the repository.
 #### Files
 When naming your files, use **underscores**, and attempt to be descriptive, but
 not lengthy. Consider if someone new to that package would be able to guess what's
-in that file without opening it, just based on it's name.
+in that file without opening it, based on it's name.
 
 For the extensions, use `.cpp` for a C++ file, and use `.h` for a header file.
 There's no reason to use `.cc` or `.cxx` or `.hpp` or any other extension.
@@ -215,7 +215,7 @@ arguments, which can cause the call to become excessively long.
 
 If you need to break up the function call, you can align the rest of the arguments
 in the function call with the first argument. If you've already indented, then you
-can just use a four space indent to align the arguments.
+can use a four space indent to align the arguments.
 
 ```cpp
 bool result = funnyFunction(huge_argument_number_one_oh_my_this_is_long,
@@ -238,7 +238,7 @@ bool result = weirdMathFunction(quat[1] + std::sqrt(quat[2]) & 8,  // Crazy Scie
                                 argument_two, argument_three);
 ```
 
-Sometimes, you may just want specific arguments to exist on specific lines for readability.
+Sometimes, you may want specific arguments to exist on specific lines for readability.
 This is totally okay, too!
 ```cpp
 int magic[][] = createMagicSquare(x1, x2, x3,
@@ -248,7 +248,7 @@ int magic[][] = createMagicSquare(x1, x2, x3,
 
 #### Braces
 When using braces for conditions or control logic, place the braces on a new line.
-In the case that the logic inside a control block is simple (one line or less),
+In the case that the logic inside a control block is short (one line or less),
 then the braces can be excluded. An exception to this rule is `switch` statements, discussed
 below.
 
@@ -323,7 +323,7 @@ switch (x) {
 ```
 
 #### Loops
-Loops are similar to conditional statements. Braces can be avoided for very simple
+Loops are similar to conditional statements. Braces can be avoided for very short
 loops, or they can be kept in.
 
 For loops with no bodies, either use a pair of empty braces or use the `continue`
