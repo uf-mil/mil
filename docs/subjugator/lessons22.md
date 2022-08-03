@@ -14,7 +14,10 @@ We need to have a comprehensive list of equipment needed for any testing. That l
 
 ### Shipping
 Shipping was extremely painful to arrange this year. There were several primary reasons:
- - Our shipping was arranged
+ - Our shipping was arranged the week that we needed to ship, and the process of loading wasn't completed until the day we were shipping the items.
+ - The items that were loaded were mostly catalouged, but not all of them were enumerated.
+ - The cataloging wasn't for each box, it ended up being for the set of items each team was packing.
+ - We didn't know how many pelicans we would need, and ended up having to go get more from solar park
 
 ## Electrical
 
@@ -24,7 +27,7 @@ Shipping was extremely painful to arrange this year. There were several primary 
 ### Hydrophones
 
 We talked with Forrest during the 2022 competition and he warned us that the Sylphase hydrophone board was very sensitive to moisture. While it initially had a desiccant pack placed inside during shipping, we failed to pack more to replace it after it was saturated.
-The moisture causes the board to misbehave. We experienced an issue where (what seemed to be a self check of reading and writing a value from a place called `"ADDR15"`. We had opened the board in the team village (which was exceptionally muggy that day) minutes before getting that issue.
+The moisture causes the board to misbehave. We experienced an issue where a self check (reading and writing a value from a place called `"ADDR15"`) failed repeatedly. We had opened the board in the team village (which was exceptionally muggy that day) minutes before getting that issue.
 
 
 The connector in the hydrophone vessel was also problematic.
