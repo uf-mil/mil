@@ -28,6 +28,8 @@ Shipping was extremely painful to arrange this year. There were several primary 
  - The cataloging wasn't for each box, it ended up being for the set of items each team was packing.
  - We didn't know how many pelicans we would need, and ended up having to go get more from [solar park](../../infrastructure/solar_park)
  - arranging the shipping pickup at the event ended up taking another day after we got a FedEx Express Shipment, not FedEx Ground.
+   - FedEx didn't ask or specify when Dr. Schwartz scheduled the pickup, and they sent us a FedEx express truck who couldn't take our packages because they were labeled for FedEx Ground
+   - Takeaway: Make sure to check what label you got, and arrange shipping to include the return label when getting it in the first place
 
 ## Electrical
 
