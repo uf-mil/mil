@@ -7,17 +7,27 @@
 We need to add a automated testing output for any system that can be tested. Battery system should report it's voltage. The sub computer should always have a quick self-test to confirm that all of the cameras are working. The thrusters should be explicitly visually confirmed to be spinning.
 
 
-***Going to the Pool at Competition and at home***
+***Going to the pool at competition and at home***
 
 The process for going to, working at, and packing up from the pool at the competition needs to be practiced.
 We need to have a comprehensive list of equipment needed for any testing. That list *MUST* be the only things that are brought with us to all testing, and it *Must* be all of the things that we need for any reasonably possible challenge.
 
 ### Shipping
+Total items shipped for the team was:
+| # | Type                   | Shipped Via   |
+|---|------------------------|---------------|
+| 3 | Large Pelicans         | FedEx Ground  |
+| 4 | Medium Pelicans        | FedEx Ground  |
+| 1 | Small Pelicans         | FedEx Ground  |
+| 1 | Sub Shipping Container | FedEx Freight |
+| 1 | Battery Box            | UPS           |
+
 Shipping was extremely painful to arrange this year. There were several primary reasons:
  - Our shipping was arranged the week that we needed to ship, and the process of loading wasn't completed until the day we were shipping the items.
- - The items that were loaded were mostly catalouged, but not all of them were enumerated.
+ - The items that were loaded were mostly cataloged, but not all of them were enumerated.
  - The cataloging wasn't for each box, it ended up being for the set of items each team was packing.
- - We didn't know how many pelicans we would need, and ended up having to go get more from solar park
+ - We didn't know how many pelicans we would need, and ended up having to go get more from [solar park](../../infrastructure/solar_park)
+ - arranging the shipping pickup at the event ended up taking another day after we got a FedEx Express Shipment, not FedEx Ground.
 
 ## Electrical
 
