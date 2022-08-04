@@ -2,7 +2,8 @@
 import numpy as np
 import txros
 from std_msgs.msg import String
-from vrx import Vrx
+
+from .vrx import Vrx
 
 
 class DockDriver(Vrx):

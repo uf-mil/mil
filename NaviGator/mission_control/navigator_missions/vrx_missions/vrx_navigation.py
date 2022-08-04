@@ -4,7 +4,8 @@ import txros
 from mil_tools import quaternion_matrix, rosmsg_to_numpy
 from std_srvs.srv import SetBoolRequest
 from twisted.internet import defer
-from vrx import Vrx
+
+from .vrx import Vrx
 
 ___author___ = "Kevin Allen and Alex Perez"
 

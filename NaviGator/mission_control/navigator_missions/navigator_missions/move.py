@@ -77,7 +77,7 @@ class Move(Navigator):
         self.send_feedback("Switching wrench to autonomous")
         yield self.change_wrench("autonomous")
 
-        for i in xrange(len(commands)):
+        for i in range(len(commands)):
             command = commands[i]
             argument = arguments[i]
 
@@ -89,11 +89,11 @@ class Move(Navigator):
             action_kwargs["blind"] = args.blind
             if args.speedfactor is not None:
                 if "," in args.speedfactor:
-                    sf = np.array(map(float, args.speedfactor[1:-1].split(",")))
+                    sf = np.array(list(map(float, args.speedfactor[1:-1].split(","))))
                 else:
                     sf = [float(args.speedfactor)] * 3
 
-            action_kwargs["speed_factor"] = sf
+            action_kwargs["speed_factor"] = list(sf)
 
             if args.plantime is not None:
                 action_kwargs["initial_plan_time"] = float(args.plantime)

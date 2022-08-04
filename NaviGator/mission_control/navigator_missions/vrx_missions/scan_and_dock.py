@@ -6,8 +6,9 @@ from mil_tools import numpy_to_pointcloud2 as np2pc2
 from mil_tools import rosmsg_to_numpy
 from nav_msgs.msg import Odometry
 from std_msgs.msg import String
-from vrx import Vrx
 from vrx_gazebo.srv import ColorSequence, ColorSequenceRequest
+
+from .vrx import Vrx
 
 
 class ScanAndDock(Vrx):
