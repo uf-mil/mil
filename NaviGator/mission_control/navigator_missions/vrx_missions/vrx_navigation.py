@@ -235,7 +235,7 @@ class VrxNavigation(Vrx):
 
             # check if there are any buoys that have "marker" in the name that haven't been investigated
             # obtain the closest one to the previous gate and deem that the next buoy to investigate
-            for i in xrange(len(objects)):
+            for i in range(len(objects)):
 
                 if (
                     "marker" in objects[i].labeled_classification
@@ -254,7 +254,7 @@ class VrxNavigation(Vrx):
             # if there no known cone buoys that haven't been investigated, check if we have already investigated one
             # and find closest one within 25 meters (max width of a gate).
             if cone_buoys_investigated > 0 and potential_candidate is None:
-                for i in xrange(len(objects)):
+                for i in range(len(objects)):
                     print(positions[i])
                     if (
                         objects[i].id not in investigated
@@ -272,7 +272,7 @@ class VrxNavigation(Vrx):
 
             # if that doesn't produce any results, literally just go to closest buoy
             if potential_candidate is None:
-                for i in xrange(len(objects)):
+                for i in range(len(objects)):
 
                     if (
                         objects[i].id not in investigated

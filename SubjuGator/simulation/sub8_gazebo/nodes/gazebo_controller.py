@@ -99,7 +99,7 @@ class GazeboInterface:
                 header=msg.header,
                 bearings=[
                     (msg.angle_min + i * msg.angle_increment)
-                    for i in xrange(len(msg.ranges))
+                    for i in range(len(msg.ranges))
                 ],
                 ranges=msg.ranges,
                 intensities=[
