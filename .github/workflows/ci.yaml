@@ -456,13 +456,9 @@ jobs:
           # conflicts
           sudo pip install -I -r requirements.txt
       - name: Install system dependencies
-        run: |
-          ./scripts/system_install
-      - name: Install user dependencies
         continue-on-error: true
         run: |
-          # Exits with zero because of error with darknet_ros in user_install
-          ./scripts/user_install
+          ./scripts/install
       # We want to run a full test suite in CI - this includes the BlueView
       # tests!
       - name: Install BlueView Sonar SDK
@@ -477,14 +473,14 @@ jobs:
           cd $GITHUB_WORKSPACE/catkin_ws
           ls src/mil/mil_common/drivers/mil_blueview_driver
           source /opt/ros/noetic/setup.bash
-          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j6
+          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j5
       - name: Run catkin_make tests
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
           cd $GITHUB_WORKSPACE/catkin_ws
           source /opt/ros/noetic/setup.bash
           source devel/setup.bash
-          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j6 run_tests
+          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j5 run_tests
       - name: Get test results
         run: >
           source /opt/ros/noetic/setup.bash
@@ -572,6 +568,12 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
           ./scripts/install
+      - name: Install BlueView Sonar SDK
+        run: |
+          cd $GITHUB_WORKSPACE/catkin_ws/src/mil
+          ./scripts/install_bvtsdk --pass ${{ secrets.ZOBELISK_PASSWORD }}
+          ls mil_common/drivers/mil_blueview_driver
+          echo $PWD
       - name: Run catkin_make
         run: >
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
@@ -580,10 +582,7 @@ jobs:
 
           source /opt/ros/noetic/setup.bash
 
-          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j6
-      - name: Install dependencies for docs
-        run: |
-          sudo apt-get install doxygen doxygen-doc doxygen-gui graphviz
+          catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros" -j5
       - name: Build docs
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts

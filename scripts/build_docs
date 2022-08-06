@@ -22,18 +22,15 @@ while [[ $# -gt 0 ]]; do
     -d|--doxygen)
       DOXYGEN=true
       shift # past argument
-      shift # past value
       ;;
     -s|--scratch)
       SCRATCH=true
       shift # past argument
-      shift # past value
       ;;
     -h|--help)
       echo "$usage"
       exit
       shift # past argument
-      shift # past value
       ;;
     -*|--*)
       echo "Unknown option $1"
@@ -42,6 +39,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+echo "$DOXYGEN"
 if [ "$DOXYGEN" = true ]; then
     #Doxygen
     cd $HOME/.mil
