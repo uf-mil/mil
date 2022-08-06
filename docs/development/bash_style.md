@@ -1,9 +1,4 @@
-# Overview
-This page describes MIL's coding style for the various languages used
-in our software, tooling, and documentation. Conforming to these
-standards allows our code to be consistent and easier to read.
-
-## Bash
+## Bash Style Guide (In Progress)
 
 ### Preample
 All bash scripts should have the following lines at the top of the file:
@@ -16,9 +11,3 @@ The first line allows the script to be executed from the terminal (e.g. `./my_sc
 Please also observe the following additional style rules:
 
 * Indent using 2 spaces
-
-## C++
-We follow the [ROS style guide](http://wiki.ros.org/CppStyleGuide)
-
-### Autoformating
-TODO

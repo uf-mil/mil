@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   cv_bridge
   rosbag
+  image_transport
 )
 
 find_package(Eigen3 REQUIRED)
@@ -23,6 +24,7 @@ catkin_package(
   CATKIN_DEPENDS
     roscpp
     cv_bridge
+    image_transport
   DEPENDS
 )
 
@@ -39,12 +41,13 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${EIGEN_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
 )
 
 add_library(mil_tools
   src/mil_tools/mil_tools.cpp
+  src/mil_tools/image_publisher.cpp
+  include/mil_tools/image_subscriber.hpp
 )
-target_include_directories(mil_tools PUBLIC include ${EIGEN3_INCLUDE_DIRS})
-target_link_libraries(mil_tools ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-
-
+target_include_directories(mil_tools PUBLIC include ${EIGEN3_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+target_link_libraries(mil_tools ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
