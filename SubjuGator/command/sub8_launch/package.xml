@@ -6,6 +6,7 @@
   <maintainer email="jpanikulam@ufl.edu">Jacob Panikulam</maintainer>
   <license>MIT</license>
   <build_depend>roslaunch</build_depend>
+  <run_depend>darknet_ros</run_depend>
   <run_depend>roslaunch</run_depend>
   <run_depend>robot_state_publisher</run_depend>
   <run_depend>nodelet</run_depend>

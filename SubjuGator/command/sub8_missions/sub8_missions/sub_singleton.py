@@ -11,6 +11,7 @@ import mil_ros_tools
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
 from mil_msgs.srv import SetGeometry, SetGeometryRequest
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+from darknet_ros_msgs.msg import BoundingBoxes
 #from sub8_msgs.srv import SetValve, SetValveRequest
 from sub8_actuator_board.srv import SetValve, SetValveRequest
 from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
@@ -264,6 +265,7 @@ class SubjuGator(BaseMission):
         cls.actuators = _ActuatorProxy(cls.nh)
         cls.test_mode = False
         cls.pinger_sub = yield cls.nh.subscribe('/hydrophones/processed', ProcessedPing)
+        cls.darknet_objects = yield cls.nh.subscribe("/darknet_ros/bounding_boxes", BoundingBoxes)
 
     @property
     def pose(self):

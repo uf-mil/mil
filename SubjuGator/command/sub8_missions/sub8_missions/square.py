@@ -21,4 +21,4 @@ class Square(SubjuGator):
             center = center.yaw_right_deg(90)
             yield center.go(speed=SPEED_LIMIT)
 
-        print "Done!"
+        print("Done!")

@@ -28,6 +28,7 @@ catkin_python_setup()
 
 generate_dynamic_reconfigure_options(
   cfg/VampireIdentifier.cfg
+  cfg/HSVCalibration.cfg
 )
 
 catkin_package(
