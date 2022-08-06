@@ -58,11 +58,11 @@ Many issues faced by the electrical team during the competition were preventable
 
 - **Electrical documentation**
   - Lack of documentation made debugging harder, as we had to learn how certain systems worked on the spot
-  - Documentation for each individual board and the higher level system will be beneficial for understanding the submarine and help make onboarding wasier
-  - Have consistant format and include information such as purpose, bill of material (BOM), and a description
+  - Documentation for each individual board and the higher level system will be beneficial for understanding the submarine and help make onboarding easier
+  - Have consistent format and include information such as purpose, bill of material (BOM), and a description
 - **Useful Circuits to add**
   - BATTERY LOW VOLTAGE WARNING AND CUTOFF
-    - Many batteries were lost due to running the sub too long and forgetting to remove certain cables. There is a need for a board to warn and cut the power once the battery goes under a certain percentage. 
+    - Many batteries were lost due to running the sub too long and forgetting to remove certain cables. There is a need for a board to warn and cut the power once the battery goes under a certain percentage.
   - LOCKING CONNECTORS
 
 ### Hydrophones
