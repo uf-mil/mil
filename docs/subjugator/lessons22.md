@@ -97,14 +97,19 @@ following will need to be worked and improved on:
 
 ### Hydrophones
 
-We talked with Forrest during the 2022 competition and he warned us that the Sylphase hydrophone board was very sensitive to moisture. While it initially had a desiccant pack placed inside during shipping, we failed to pack more to replace it after it was saturated.
-The moisture causes the board to misbehave. We experienced an issue where a self check (reading and writing a value from a place called `"ADDR15"`) failed repeatedly.
+We talked with Forrest during the 2022 competition and he warned us that the
+Sylphase hydrophone board was very sensitive to moisture. While it initially had
+a desiccant pack placed inside during shipping, we failed to pack more to replace
+it after it was saturated.
 
+The moisture causes the board to misbehave. We experienced an issue where a self
+check (reading and writing a value from a place called `"ADDR15"`) failed repeatedly.
 
-The connector in the hydrophone vessel was also problematic.
-We started getting an inconsistent "device not found" error after arriving at the competition.
-For some unknown reason, the connector used was a reversible USB micro B cable that none of us had ever seen used for anything else. Needless to say, it was rather janky. We ended up swapping it out for a standard USB micro B cable.
-
+The connector in the hydrophone vessel was also problematic. We started getting an
+inconsistent "device not found" error after arriving at the competition.
+For some unknown reason, the connector used was a reversible USB micro B cable
+that none of us had ever seen used for anything else. Needless to say, it was
+rather janky. We ended up swapping it out for a standard USB micro B cable.
 
 ## Mechanical
 
