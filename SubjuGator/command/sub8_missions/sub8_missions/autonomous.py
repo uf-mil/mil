@@ -123,9 +123,7 @@ class Autonomous(SubjuGator):
 
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
-        print("hey")
         al = yield TxAlarmListener.init(self.nh, "network-loss")
-        print("hey2")
         self._auto_param_watchdog(self.nh)
 
         call_with_sub = lambda *args: self._check_for_run(*args)
