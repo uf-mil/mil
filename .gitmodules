@@ -14,9 +14,6 @@
 [submodule "mil_common/txros"]
 	path = mil_common/txros
 	url = https://github.com/uf-mil/txros.git
-[submodule "NaviGator/perception/darknet_ros"]
-	path = NaviGator/perception/darknet_ros
-	url = https://github.com/uf-mil/darknet_ros.git
 [submodule "NaviGator/simulation/VRX/vrx"]
 	path = NaviGator/simulation/VRX/vrx
 	url = https://github.com/uf-mil/vrx.git
