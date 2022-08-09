@@ -4,14 +4,70 @@ countless numbers of MIL generations to understand what you've built. If you onl
 a system, but don't document it, future generations may not even know what to do with
 what you've built!
 
+:::{warning}
+For members who do not have ROS setup (most electrical and mechanical members),
+you can still contribute to the documentation, but you will not be able to add
+reference documentation (ie, docstrings).
+
+Furthermore, you will need to build the documentation differently. See the
+[Viewing changes](viewing_changes) section below for more information.
+:::
+
+## ReStructured Text
+
+One of the most common formats you'll see used for documentation is ReStructured
+Text, or RST. These files usually end in `.rst`. Furthermore, all docstrings
+are automatically rendered using RST.
+
+To create and edit documentation, you don't need to know too much RST. For a nice
+introduction, check out [this primer](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html).
+
+If you're writing new documentation, feel free to write it in RST, or the alternate
+MyST, described below.
+
+## Markdown and MyST
+
+While RST is great (and used by default), its syntax can sometimes feel dated and
+old. Therefore, a replacement was developed: MyST. Similar in name, this alternate
+parser allows you to write documentation using Markdown rather than RST.
+
+To use MyST instead of RST, write documentation files in Markdown instead of RST!
+Using a `.md` extension should be enough to tell Sphinx which parser to use.
+
+Everything that's available through the RST syntax can be found in MyST - the syntax
+is a little different. For more information on MyST and how to use it, check out
+its [documentation](https://myst-parser.readthedocs.io/en/latest/index.html).
+
+## Admonitions
+
+Sometimes, you want to make things a little more evident. Admonitions are great
+for this purpose. Admonitions are the "Danger" or "Note" boxes that you see
+around the docs.
+
+They are compatible with both RST and MyST and support a variety of syntax:
+
+```rst
+.. danger::
+
+    It's dangerous to go alone! Take this admonition.
+```
+
+```md
+:::{warning}
+Oh my gosh! Be careful.
+:::
+```
+
 ## Docstrings vs. Explicit Documentation
 There are two main types of document in our repository: docstrings and explicit
 documentation.
 
 Docstrings are documentation **within** the code itself. These docstrings are then
-found by Sphinx and compiled into the repository reference documentation. Explicit
-documentation is documentation created by members by using files under the `docs/`
-folder.
+found by Sphinx and compiled into the repository reference documentation.
+
+Explicit documentation is documentation created by members by using files under
+the `docs/` folder. Explicit documentation is not connected to any code we use
+in particular, which makes it very flexible.
 
 ## Docstrings
 Docstrings are a powerful method of documentation. The documentation is outlined
@@ -148,13 +204,43 @@ add it to a `:hidden:` TOC tree, like so:
 This TOC tree won't be rendered, but Sphinx will still allow you to build the docs
 because the document is in some TOC tree.
 
+<!-- Reference in MYST -->
+(viewing_changes)=
+
 ## Viewing changes
-It is important to generate the documentation website locally and view it in a web browser to verify your changes did what you wanted them to do and they are quick to read.
+It is important to generate the documentation website locally and view it in a
+web browser to verify your changes did what you wanted them to do and they are
+quick to read.
+
+For members who have ROS setup, you can build the documentation with the following
+commands:
 
 ```bash
 $ mil
 $ ./scripts/build_docs
-$ ./scripts/display_docs
+```
+
+Members without ROS setup will need to build the documentation without the source
+files. Because you aren't building the reference files, you will get a few errors
+explaining that Sphinx can't find those files. This is expected. Errors related
+to files you've modified may be a result of your changes, however.
+
+```bash
+$ mil
+$ ./scripts/build_docs --no-source
+```
+
+At the bottom of each build output, a link is displayed where you can access
+the built documentation. Keep in mind that this link does not start with `https://`,
+but rather `file://`.
+
+After you've built the repository for the first time, the build contents are cached,
+meaning that subsequent changes the docs will only re-build the files you edited
+since you last built the docs. If this is not ideal behavior, you can completely
+re-build the docs by adding another flag:
+```bash
+$ mil
+$ ./scripts/build_docs --scratch
 ```
 
 ## Contributing changes
