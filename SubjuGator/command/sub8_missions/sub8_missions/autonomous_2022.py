@@ -1,26 +1,25 @@
-import txros
-from twisted.internet import defer
-from ros_alarms import TxAlarmListener, TxAlarmBroadcaster
-from mil_misc_tools import text_effects
 import genpy
-from .sub_singleton import SubjuGator
+import txros
+from mil_misc_tools import text_effects
+from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
+from twisted.internet import defer
+
+from .bin_2022 import Bin2022
+from .fire_torpedos_2022 import FireTorpedos2022
+from .follow_path_2022 import FollowPath2022
+from .make_the_grade_2022 import MakeGrade2022
+from .pinger_2022 import Pinger2022
 
 # Import missions here
 from .start_gate_2022 import StartGate2022
-from .follow_path_2022 import FollowPath2022
-from .make_the_grade_2022 import MakeGrade2022
-from .bin_2022 import Bin2022
-from .pinger_2022 import Pinger2022
-from .fire_torpedos_2022 import FireTorpedos2022
+from .sub_singleton import SubjuGator
 from .surface import Surface
-
 
 fprint = text_effects.FprintFactory(title="AUTO_MISSION").fprint
 WAIT_SECONDS = 5.0
 
 
 class Autonomous2022(SubjuGator):
-
     @txros.util.cancellableInlineCallbacks
     def run_mission(self, mission, timeout):
         # timeout in seconds
@@ -31,7 +30,7 @@ class Autonomous2022(SubjuGator):
                 m.cancel()
                 defer.returnValue(True)
             yield self.nh.sleep(0.5)
-        fprint('MISSION TIMEOUT', msg_color='red')
+        fprint("MISSION TIMEOUT", msg_color="red")
         m.cancel()
         defer.returnValue(False)
 
@@ -41,39 +40,39 @@ class Autonomous2022(SubjuGator):
 
         try:
             # Run start gate mission
-            fprint("Running start gate mission", msg_color='green')
+            fprint("Running start gate mission", msg_color="green")
             yield self.run_mission(StartGate2022(), 400)
 
             # Run mission to follow orange marker
-            fprint("Following orange marker", msg_color='green')
+            fprint("Following orange marker", msg_color="green")
             yield self.run_mission(FollowPath2022(), 400)
 
             # Run mission to do phase 1 buoys
-            fprint("Making the Grade", msg_color='green')
+            fprint("Making the Grade", msg_color="green")
             yield self.run_mission(MakeGrade2022(), 400)
 
             # Run mission to follow orange marker
-            fprint("Following orange marker", msg_color='green')
+            fprint("Following orange marker", msg_color="green")
             yield self.run_mission(FollowPath2022(), 400)
 
             # Run mission to do bins mission
-            fprint("Starting bins mission", msg_color='green')
+            fprint("Starting bins mission", msg_color="green")
             yield self.run_mission(Bin2022(), 400)
 
             # Run mission to get to next pinger location
-            fprint("Going to pinger location", msg_color='green')
+            fprint("Going to pinger location", msg_color="green")
             yield self.run_mission(Pinger2022(), 400)
 
-            # Run mission to Analyze where to fire torpedos
-            fprint("Starting mission to fire torpedos", msg_color='green')
+            # Run mission to Analyze where to fire torpedoes
+            fprint("Starting mission to fire torpedoes", msg_color="green")
             yield self.run_mission(FireTorpedos2022(), 400)
 
             # Run mission to get to next pinger location
-            fprint("Finding other pinger location", msg_color='green')
+            fprint("Finding other pinger location", msg_color="green")
             yield self.run_mission(Pinger2022(), 400)
 
             # Rise from Octagon
-            fprint("Rising from Octagon", msg_color='green')
+            fprint("Rising from Octagon", msg_color="green")
             yield self.run_mission(Surface(), 400)
 
         except Exception as e:
@@ -87,19 +86,17 @@ class Autonomous2022(SubjuGator):
 
     @txros.util.cancellableInlineCallbacks
     def wait_before_start(self, nh):
-        ''' Waits for the network loss alarm to trigger before '''
+        """Waits for the network loss alarm to trigger before"""
         if (yield nh.has_param("autonomous")):
-            fprint("Waiting {} seconds before running missions...".format(WAIT_SECONDS))
+            fprint(f"Waiting {WAIT_SECONDS} seconds before running missions...")
 
             yield nh.sleep(WAIT_SECONDS)
-            fprint('Running Missions')
+            fprint("Running Missions")
             yield self.do_mission()
         else:
-            fprint(
-                "Please place sub in autonomous mode",
-                msg_color='red')
+            fprint("Please place sub in autonomous mode", msg_color="red")
 
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
-        
+
         yield self.wait_before_start(self.nh)

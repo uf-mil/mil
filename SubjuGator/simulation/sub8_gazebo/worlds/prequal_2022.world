@@ -25,7 +25,7 @@
 
     <!-- Sandiego Lat Long: 32.703412, -117.250474 Height: 50m (ish)-->
     <!-- ECEF made from https://www.oc.nps.edu/oc2902w/coord/llhxyz.htm?source=post_page -->
-    <!-- mag feild made from https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml#igrfwmm -->
+    <!-- mag field made from https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml#igrfwmm -->
     <!-- NOTE: above cite gives in NEU, we convert to ENU -->
     <magnetic_field>4.8302E-6 2.44943E-5 3.89367E-5</magnetic_field>
 
