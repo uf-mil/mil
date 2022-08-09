@@ -4,19 +4,20 @@
 
 * **We need to implement an automated check system for all systems.** - For example,
 the battery system should report it's voltage and the thrusters should be verified
-to ensure that the proper thrusters spin when asked, a check that cameras and sensors
-such as DVL, gyroscope, depth, ouput reasonable values. This should be automated
-and required (and hopefully quick) so that we can avoid having busted batteries
-or accidentally loose connections. At the competition, we needed to take out the
-robot multiple times because of things which could have been verified _before_
-the sub was put in the water.
+to ensure that the proper thrusters spin when asked. Other examples include having
+a check that cameras and sensors such as DVL, gyroscope, depth, output reasonable values.
+This should be automated and required (and hopefully quick) so that we can avoid having
+busted batteries or accidentally loose connections. At the competition, we needed to
+take out the robot multiple times because of things which could have been verified
+_before_ the sub was put in the water.
 
-* **We need to practice the logistic of testing in water more.** - The process for 
-going to, working at, and packing up from the pool at the competition needs to be 
-practiced. We need to have comprehensive list of equipment needed for any testing. 
-The lists _must_ include only things that are brought with us to all testing, and 
+* **We need to practice the logistic of testing in water more.** - The process for
+going to, working at, and packing up from the pool at the competition needs to be
+practiced. We need to have comprehensive list of equipment needed for any testing.
+The lists _must_ include only things that are brought with us to all testing, and
 it _must_ include all of the things that we need for any reasonably possible challenge.
-A useful rule of thumb is to always be ready 10 min before. 
+We should aim to be fully ready to test 10 minutes before when we actually plan
+to enter the water, as practice.
 
 * **We need a dedicated testing leader.** - One person needs to be fully responsible
 for assuring that these procedures are followed every time we do anything in or
@@ -46,13 +47,13 @@ these platforms.
 * **We should have a designated person that signs up for testing slots.** - Two days
 of competition we missed chances to test in the pool because none of our team members
 woke up early to sign up for the slots. A way to solve this is to have a designated
-person sign up for the slots or at least a rotation where a person is responsible to 
-sign up per day. 
+person sign up for the slots or at least a rotation where a person is responsible to
+sign up per day.
 
-* **We need to pack a replacement for everything in the sub.** - We forgot the radiator, 
-spare thrusters and spare motherboards. The proces of packing should not be done in a rush
-and on it we should think about what could break in the sub, and bring a replacement for 
-basically every part of the sub.
+* **We need to pack a replacement for everything in the sub.** - We forgot the radiator,
+spare thrusters and spare motherboards. The process of packing should not be done in a rush
+and on it we should think about what could break in the sub, and bring a replacement for
+every part of the sub.
 
 ## Shipping
 Total items shipped for the team was:
@@ -165,8 +166,8 @@ rather janky. We ended up swapping it out for a standard USB micro B cable.
     confident that we could move our code on to the sub once it was tethered.
   - Not implementing a gazebo sim exacerbated these issues, as we couldn't do
     even basic sanity checks until the sub was hooked up.
-  - We need to come up with an easy way to move code from the developer's computer
-    to the sub's computer that hopefully prevents mistakes when migrating. 
+  - We need to come up with a way to move code from the developer's computer
+    to the sub's computer that hopefully prevents mistakes when migrating.
 - Everyone working on the sub should be running the same version of the sub's
   current OS if at all possible. This lowers the amount of churn and multiple
   configurations that we need to keep a working knowledge of, and makes using
