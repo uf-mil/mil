@@ -2,19 +2,30 @@
 
 ## Overall Process
 
+* **TEST BEFORE, A LOT.** - At least a semester prior to the summer of the competition, a testing
+ schedule needs to be designed which involves pretty much testing biweekly in spring and weekly
+ during the summer. Test first single tasks in the smaller and more accessible pools but also,
+ test in a full course at least at a big pool such as Florida pool as much as possible when the
+ single tasks have been mastered. As soon as you arrive to the competition, dedicate the first
+ few tests to check the behavior of the sub in tasks that might have changed between Gainesville
+ and the new pool. We made the mistake of not taking this too seriously.
+
 * **We need to implement an automated check system for all systems.** - For example,
 the battery system should report it's voltage and the thrusters should be verified
-to ensure that the proper thrusters spin when asked. This should be automated
-and required (and hopefully quick) so that we can avoid having busted batteries
-or accidentally loose connections. At the competition, we needed to take out the
-robot multiple times because of things which could have been verified _before_
-the sub was put in the water.
+to ensure that the proper thrusters spin when asked. Other examples include having
+a check that cameras and sensors such as DVL, gyroscope, depth, output reasonable values.
+This should be automated and required (and hopefully quick) so that we can avoid having
+busted batteries or accidentally loose connections. At the competition, we needed to
+take out the robot multiple times because of things which could have been verified
+_before_ the sub was put in the water.
 
-* **We need to practice in water more.** - The process for going to, working at, and
-packing up from the pool at the competition needs to be practiced. We need to
-have a comprehensive list of equipment needed for any testing. That list _must_
-be the only things that are brought with us to all testing, and it _must_ be
-all of the things that we need for any reasonably possible challenge.
+* **We need to practice the logistic of testing in water more.** - The process for
+going to, working at, and packing up from the pool at the competition needs to be
+practiced. We need to have comprehensive list of equipment needed for any testing.
+The lists _must_ include only things that are brought with us to all testing, and
+it _must_ include all of the things that we need for any reasonably possible challenge.
+We should aim to be fully ready to test 10 minutes before when we actually plan
+to enter the water, as practice.
 
 * **We need a dedicated testing leader.** - One person needs to be fully responsible
 for assuring that these procedures are followed every time we do anything in or
@@ -40,6 +51,17 @@ opportunities, and interaction with other teams over the internet. Be it Instagr
 Band, the mysterious data sharing platform, or old fashioned email, we are missing
 lots of support, motivation, opportunity, and experience that can be found through
 these platforms.
+
+* **We should have a designated person that signs up for testing slots.** - Two days
+of competition we missed chances to test in the pool because none of our team members
+woke up early to sign up for the slots. A way to solve this is to have a designated
+person sign up for the slots or at least a rotation where a person is responsible to
+sign up per day.
+
+* **We need to pack a replacement for everything in the sub.** - We forgot the radiator,
+spare thrusters and spare motherboards. The process of packing should not be done in a rush
+and on it we should think about what could break in the sub, and bring a replacement for
+every part of the sub.
 
 ## Shipping
 Total items shipped for the team was:
@@ -125,6 +147,8 @@ rather janky. We ended up swapping it out for a standard USB micro B cable.
        the sub.
      - This system would be much improved by adding some kind of formed shoulder
        pads to spread the weight and add stability.
+- If we are going to continue using SubjuGator 8, the mechanical team will need
+  to find a way to transport the bot around efficiently.
 - Several mechanical and electrical systems were damaged by transport (either from
   shipping or moving the sub around from the team village to the pool) and had to
   be fixed multiple times. This involved opening up the main computer vessel,
@@ -132,8 +156,6 @@ rather janky. We ended up swapping it out for a standard USB micro B cable.
   of this damage came down to loose, non-locking connectors. (Mechanically this
   was mostly represented as parts moving around inside of their respective vessels
   and bumping wires and connectors loose.)
-- If we are going to continue using SubjuGator 8, the mechanical team will need
-  to find a way to transport the bot around efficiently.
 
 ## Software
 
@@ -152,6 +174,8 @@ rather janky. We ended up swapping it out for a standard USB micro B cable.
     confident that we could move our code on to the sub once it was tethered.
   - Not implementing a gazebo sim exacerbated these issues, as we couldn't do
     even basic sanity checks until the sub was hooked up.
+  - We need to come up with a way to move code from the developer's computer
+    to the sub's computer that hopefully prevents mistakes when migrating.
 - Everyone working on the sub should be running the same version of the sub's
   current OS if at all possible. This lowers the amount of churn and multiple
   configurations that we need to keep a working knowledge of, and makes using
