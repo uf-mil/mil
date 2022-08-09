@@ -4,12 +4,6 @@ from mil_misc_tools import text_effects
 from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
 from twisted.internet import defer
 
-from .bin_2022 import Bin2022
-from .fire_torpedos_2022 import FireTorpedos2022
-from .follow_path_2022 import FollowPath2022
-from .make_the_grade_2022 import MakeGrade2022
-from .pinger_2022 import Pinger2022
-
 # Import missions here
 from .start_gate_2022 import StartGate2022
 from .sub_singleton import SubjuGator
