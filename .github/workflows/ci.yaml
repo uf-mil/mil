@@ -23,6 +23,12 @@ concurrency:
     ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+# Permissions for actions/deploy-pages action
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   info:
     name: Collect information about changes
