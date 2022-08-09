@@ -39,8 +39,6 @@ from std_msgs.msg import String
 
 lock = threading.Lock()
 
-rospy.init_node("robotx_comms_client")
-
 
 class SystemModes(IntEnum):
     """
