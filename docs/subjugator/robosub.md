@@ -10,6 +10,5 @@ and navigate towards them, and surface in a specified area.
 
 ## Lessons Learned
 
-If you're interested to see what we recommend before beginning the next RoboSub
-competition, please check out the [lessons learned in 2019](/subjugator/lessons19.md)
-and the [lessons learned in 2022](/subjugator/lessons22.md).
+If you're working on the sub and/or you are planning on going to competition it is **strongly recommended to read the [lessons learned in 2019](/subjugator/lessons19.md)
+and the [lessons learned in 2022](/subjugator/lessons22.md)**.

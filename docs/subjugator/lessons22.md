@@ -2,6 +2,14 @@
 
 ## Overall Process
 
+* **TEST BEFORE, A LOT.** - At least a semester prior to the summer of the competition, a testing
+ schedule needs to be designed which involves pretty much testing biweekly in spring and weekly
+ during the summer. Test first single tasks in the smaller and more accesible pools but also,
+ test in a full course at least at a big pool such as Florida pool as much as possible when the 
+ single tasks have been mastered. As soon as you arrive to the competition, dedicate the first 
+ few tests to check the behavior of the sub in tasks that might have changed between Gainesville 
+ and the new pool. We made the mistake of not taking this too seriously. 
+
 * **We need to implement an automated check system for all systems.** - For example,
 the battery system should report it's voltage and the thrusters should be verified
 to ensure that the proper thrusters spin when asked. Other examples include having
