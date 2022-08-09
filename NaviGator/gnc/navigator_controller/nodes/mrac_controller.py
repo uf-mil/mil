@@ -9,6 +9,7 @@ import rospy
 import tf.transformations as trns
 from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion, WrenchStamped
 from nav_msgs.msg import Odometry
+from navigator_msgs.msg import PoseTwistStamped
 from std_msgs.msg import Float64MultiArray, Header, String
 from vrx_gazebo.msg import Task
 

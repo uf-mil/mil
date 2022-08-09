@@ -130,14 +130,29 @@ language = "en"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # For now, excluding the core code directories
-exclude_patterns = [
-    "_build",
-    "NaviGator/**",
-    "SubjuGator",
-    "mil_common",
-    "deprecated",
-    "README.md",
-]
+no_source = os.environ.get("NO_SOURCE", "") == "true"
+print(os.environ["NO_SOURCE"])
+if no_source:
+    exclude_patterns = [
+        "_build",
+        "NaviGator/**",
+        "reference/**",
+        "subjugator/reference.rst",
+        "navigator/reference.rst",
+        "SubjuGator",
+        "mil_common",
+        "deprecated",
+        "README.md",
+    ]
+else:
+    exclude_patterns = [
+        "_build",
+        "NaviGator/**",
+        "SubjuGator",
+        "mil_common",
+        "deprecated",
+        "README.md",
+    ]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

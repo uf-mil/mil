@@ -3,7 +3,8 @@ import numpy as np
 import txros
 from navigator_msgs.srv import MoveToWaypointRequest
 from twisted.internet import defer
-from vrx import Vrx
+
+from .vrx import Vrx
 
 ___author___ = "Alex Perez"
 

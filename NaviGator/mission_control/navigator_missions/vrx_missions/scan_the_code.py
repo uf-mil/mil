@@ -16,8 +16,9 @@ from navigator_vision import VrxStcColorClassifier
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2
 from std_srvs.srv import SetBoolRequest
 from twisted.internet import defer
-from vrx import Vrx
 from vrx_gazebo.srv import ColorSequence, ColorSequenceRequest
+
+from .vrx import Vrx
 
 LED_PANNEL_MAX = 0.25
 LED_PANNEL_MIN = 0.6

@@ -19,7 +19,8 @@ from std_srvs.srv import SetBoolRequest
 from tf import transformations
 from tf.transformations import quaternion_matrix
 from twisted.internet import defer
-from vrx import Vrx
+
+from .vrx import Vrx
 
 PANNEL_MAX = 0
 PANNEL_MIN = 2
