@@ -25,12 +25,22 @@ Many issues faced by the electrical team during the competition were preventable
 
 - **Electrical documentation**
   - Lack of documentation made debugging harder, as we had to learn how certain systems worked on the spot
-  - Documentation for each individual board and the higher level system will be beneficial for understanding the submarine and help make onboarding wasier
-  - Have consistant format and include information such as purpose, bill of material (BOM), and a description
-- **Useful Circuits to add**
+  - Documentation for each individual board and the higher level system will be beneficial for understanding the submarine and help make onboarding easier
+  - Having a consistant format and include information such as purpose, bill of material (BOM), and a description would make reading documentation faster
+  - Use GitHub issues to share work that needs to be done 
+- **Circuitry**
   - BATTERY LOW VOLTAGE WARNING AND CUTOFF
-    - Many batteries were lost due to running the sub too long and forgetting to remove certain cables. There is a need for a board to warn and cut the power once the battery goes under a certain percentage. 
+    - Many batteries were lost due to running the sub too long and forgetting to remove certain cables. There is a need for a board to audibly warn and cut the power once the battery goes under a certain percentage. 
+  - SYSTEM STATUS
+    - Certain electrical systems went down due to loose connections (see Locking Connectors section). A board that checks whether each electrical system is powered and trasmitting/receiving data properly will be immensly helpful to lower the amount of time to debug and fix.
+  - DEBUG PINS
+    - Most electrical systems lack debug pins that could be used to check signals with an oscilliscope. The USB to CAN board is one of the few boards that contain this and is useful to have to check whether the board functions properly. This will require updating existing circuit and PCB to include debug headers
   - LOCKING CONNECTORS
+    - During the competition, many wires and connections fell off, which disconnected certain systems. Due to the poor wire management, this was difficult to trace and debug. Locking connectors and other methods that will keep secure connections through shipping and transportation is needed to save testing time.
+  - BETTER SOLDERING TOOLS
+    - Our heat gun and one soldering gun stopped working during the competition. These items need to be replaced.
+- **Random**
+  - Bring tupperware for food
 
 ### Hydrophones
 
