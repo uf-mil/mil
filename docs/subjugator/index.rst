@@ -10,6 +10,9 @@ for 20+ years. Most code for this is hosted under ``SubjuGator/``.
     :maxdepth: 1
 
     Lessons from 2022 <lessons22>
+	Lessons from 2019 <lessons19>
+
+	RoboSub <robosub>
 
     design
     Simulating <simulating>
