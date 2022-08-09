@@ -597,3 +597,26 @@ jobs:
           name: >
             docs-ci-html-${{ github.sha }}
           path: ${{ github.workspace }}/.mil/docs/html
+
+  deploy-docs:
+    name: Deploy docs
+    # if: ${{ github.event_name == "push" && github.ref_name == "master" }}
+    runs-on: ubuntu-latest
+    needs:
+      - docs
+    steps:
+      - name: Download docs artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: >
+            docs-ci-html-${{ github.sha }}
+          path: ${{ github.workspace }}
+      - name: Setup Pages
+        uses: actions/configure-pages@v1
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ${{ github.workspace }}
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@main
