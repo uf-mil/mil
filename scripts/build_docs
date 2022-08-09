@@ -39,7 +39,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-echo "$DOXYGEN"
 if [ "$DOXYGEN" = true ]; then
     #Doxygen
     cd $HOME/.mil

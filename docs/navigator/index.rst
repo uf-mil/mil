@@ -13,6 +13,7 @@ are being created in preparation for the November 2022 competition in Sydney, Au
    :maxdepth: 1
 
    Drone <drone>
+   lidar
 
 Past Projects
 -------------
