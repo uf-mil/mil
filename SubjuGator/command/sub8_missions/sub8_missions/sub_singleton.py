@@ -10,6 +10,7 @@ import numpy as np
 import rospkg
 import sensor_msgs.point_cloud2 as pc2
 import yaml
+from darknet_ros_msgs.msg import BoundingBoxes
 from mil_missions_core import BaseMission
 from mil_msgs.msg import MoveToAction, PoseTwistStamped, RangeStamped
 from mil_msgs.srv import (
@@ -23,6 +24,7 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import PointCloud2
 from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
 
+# from sub8_msgs.srv import SetValve, SetValveRequest
 # from sub8_msgs.srv import SetValve, SetValveRequest
 from sub8_actuator_board.srv import SetValve, SetValveRequest
 from sub8_msgs.srv import (
@@ -310,6 +312,9 @@ class SubjuGator(BaseMission):
         cls.actuators = _ActuatorProxy(cls.nh)
         cls.test_mode = False
         cls.pinger_sub = yield cls.nh.subscribe("/hydrophones/processed", ProcessedPing)
+        cls.darknet_objects = yield cls.nh.subscribe(
+            "/darknet_ros/bounding_boxes", BoundingBoxes
+        )
 
     @property
     def pose(self) -> pose_editor.PoseEditor:
