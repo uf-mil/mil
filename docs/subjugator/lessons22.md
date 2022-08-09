@@ -45,7 +45,7 @@ Many issues faced by the electrical team during the competition were preventable
 ### Hydrophones
 
 We talked with Forrest during the 2022 competition and he warned us that the Sylphase hydrophone board was very sensitive to moisture. While it initially had a desiccant pack placed inside during shipping, we failed to pack more to replace it after it was saturated.
-The moisture causes the board to misbehave. We experienced an issue where a self check (reading and writing a value from a place called `"ADDR15"`) failed repeatedly. We had opened the board in the team village (which was exceptionally muggy that day) minutes before getting that issue.
+The moisture causes the board to misbehave. We experienced an issue where a self check (reading and writing a value from `"ADDR15"`) failed repeatedly. We had opened the board in the team village (which was exceptionally muggy that day) minutes before getting that issue.
 
 
 The connector in the hydrophone vessel was also problematic.
