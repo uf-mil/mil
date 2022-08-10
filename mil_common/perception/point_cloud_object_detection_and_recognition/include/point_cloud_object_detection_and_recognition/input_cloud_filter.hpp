@@ -1,10 +1,10 @@
 #pragma once
 
-#include "pcodar_types.hpp"
-
 #include <pcl/filters/crop_box.h>
 #include <pcl/filters/crop_hull.h>
 #include <pcl/point_types.h>
+
+#include "pcodar_types.hpp"
 
 namespace pcodar
 {

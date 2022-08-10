@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import txros
-from twisted.internet import defer
-from std_msgs.msg import String
 from ros_alarms import TxAlarmListener, TxHeartbeatMonitor
+from std_msgs.msg import String
+from twisted.internet import defer
 
 publish = True
 
@@ -20,39 +20,41 @@ def do_publishing(nh):
 @txros.util.cancellableInlineCallbacks
 def main():
     global publish
-    nh = yield txros.NodeHandle.from_argv('tx_hearbeat_test')
+    nh = yield txros.NodeHandle.from_argv("tx_hearbeat_test")
 
     alarm_name = "test_alarm123"
-    hbm = yield TxHeartbeatMonitor.init(nh, alarm_name, "/heartbeat", String, nowarn=True)
+    hbm = yield TxHeartbeatMonitor.init(
+        nh, alarm_name, "/heartbeat", String, nowarn=True
+    )
     monitor_df = hbm.start_monitor()
 
     do_publishing(nh)
 
     al = yield TxAlarmListener.init(nh, alarm_name)
 
-    print "Inital Clear test"
+    print("Initial Clear test")
     assert (yield al.is_cleared())
     yield nh.sleep(0.5)
 
-    print "Heartbeat raise test"
+    print("Heartbeat raise test")
     publish = False
     yield nh.sleep(1)
     assert (yield al.is_raised())
     yield nh.sleep(0.5)
 
-    print "Hearbeat clear test"
+    print("Hearbeat clear test")
     publish = True
     yield nh.sleep(1)
     assert (yield al.is_cleared())
 
-    print "Stop monitoring test"
+    print("Stop monitoring test")
     monitor_df.addErrback(lambda e: e.trap(defer.CancelledError)).cancel()
     publish = False
     yield nh.sleep(1)
     assert (yield al.is_cleared())
     yield nh.sleep(0.5)
 
-    print "Predicated test"
+    print("Predicated test")
     publish = True
 
     @txros.util.cancellableInlineCallbacks
@@ -68,6 +70,7 @@ def main():
     yield nh.sleep(0.5)
     assert (yield al.is_cleared())
 
-    print "\nPassed!"
+    print("\nPassed!")
+
 
 txros.util.launch_main(main)

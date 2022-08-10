@@ -1,25 +1,22 @@
 #pragma once
 
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-#include <limits>
-#include <sstream>
-#include <string>
-#include <vector>
-
 #include <eigen_conversions/eigen_msg.h>
-#include <Eigen/SVD>
-#include <Eigen/StdVector>
-
-#include <boost/foreach.hpp>
-
-#include <opencv2/opencv.hpp>
-
 #include <image_geometry/pinhole_camera_model.h>
 #include <image_transport/image_transport.h>
 #include <ros/ros.h>
 #include <sensor_msgs/image_encodings.h>
+
+#include <Eigen/SVD>
+#include <Eigen/StdVector>
+#include <algorithm>
+#include <boost/foreach.hpp>
+#include <cmath>
+#include <iostream>
+#include <limits>
+#include <opencv2/opencv.hpp>
+#include <sstream>
+#include <string>
+#include <vector>
 
 // #define SEGMENTATION_DEBUG
 
@@ -88,21 +85,39 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, cv::Mat &
 
 cv::Mat triangulate_Linear_LS(cv::Mat mat_P_l, cv::Mat mat_P_r, cv::Mat undistorted_l, cv::Mat undistorted_r);
 
+/**
+ * Computes a triangulation using a method developed in research by K. Kanatani,
+ * shared in the paper found <a href="http://www.bmva.org/bmvc/2008/papers/55.pdf">here</a>.
+ *
+ * This method attempts to calculate the triangulation of two points in stereo vision,
+ * given two points, an essential matrix, and (presumably) the horizontal difference
+ * between the points.
+ *
+ * \rst
+ * .. warning::
+ *
+ *     This method does not appear to be used for any particular action in the codebase.
+ *     It may have only been written as a test.
+ * \endrst
+ *
+ * @param pt1 The first point from the first camera.
+ * @param pt2 The second point from the second camera.
+ * @param essential The essential matrix to use in the calcaulation.
+ * @param R ???
+ */
 Eigen::Vector3d kanatani_triangulation(const cv::Point2d &pt1, const cv::Point2d &pt2, const Eigen::Matrix3d &essential,
                                        const Eigen::Matrix3d &R);
 
 Eigen::Vector3d lindstrom_triangulation(const cv::Point2d &pt1, const cv::Point2d &pt2,
                                         const Eigen::Matrix3d &essential, const Eigen::Matrix3d &R);
 
+/**
+ * Packages corresponding sensor_msgs::ImageConstPtr and
+ * sensor_msgs::CameraInfoConstPtr into one object. Containers of these objects
+ * can be sorted by their image_time attribute.
+ */
 struct ImageWithCameraInfo
 {
-  /**
-          Packages corresponding  sensor_msgs::ImageConstPtr and
-     sensor_msgs::CameraInfoConstPtr
-     info_msg
-          into one object. Containers of these objects can be sorted by their
-     image_time attribute
-  */
 public:
   ImageWithCameraInfo()
   {
@@ -117,15 +132,13 @@ public:
   }
 };
 
+/**
+ * Object that subscribes itself to an image topic and stores up to a
+ * user defined number of ImageWithCameraInfo objects. The frame history can then be
+ * retrieved in whole or just a portion.
+ */
 class FrameHistory
 {
-  /**
-          Object that subscribes itself to an image topic and stores up to a
-     user defined
-          number of ImageWithCameraInfo objects. The frame history can then be
-     retrieved
-          in whole or just a portion.
-  */
 public:
   FrameHistory(std::string img_topic, unsigned int hist_size);
   ~FrameHistory();
@@ -144,8 +157,7 @@ private:
   size_t frame_count;
 };
 
-/// Param Helpers
-
+/// Helper struct to show a range between two numbers.
 struct Range
 {
   cv::Scalar lower;
@@ -156,4 +168,4 @@ void range_from_param(std::string &param_root, Range &range);
 
 void inParamRange(cv::Mat &src, Range &range, cv::Mat &dest);
 
-}  // namespace sub
+}  // namespace mil_vision

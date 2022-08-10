@@ -8,6 +8,7 @@
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/Image.h>
 #include <std_msgs/Time.h>
+
 #include <boost/optional.hpp>
 #include <functional>
 #include <opencv2/opencv.hpp>

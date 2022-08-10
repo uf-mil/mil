@@ -1,5 +1,6 @@
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 cmake_minimum_required(VERSION 2.8.3)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 project(sub8_pointcloud)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -36,7 +37,7 @@ find_package(PCL REQUIRED)
 
 add_library(pointcloud_ogrid_lib src/OGridGen.cpp src/Classification.cpp)
 target_link_libraries(pointcloud_ogrid_lib
-  ${catkin_LIBRARIES} 
+  ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${roslib_LIBRARIES}
 )
@@ -46,4 +47,3 @@ include_directories(include ${roslib_INCLUDE_DIRS}  ${PCL_INCLUDE_DIRS} ${catkin
 add_executable(ogrid_generator src/OGridGen.cpp)
 add_dependencies(ogrid_generator pointcloud_ogrid_lib ${catkin_EXPORTED_TARGETS})
 target_link_libraries(ogrid_generator pointcloud_ogrid_lib ${catkin_LIBRARIES})
-

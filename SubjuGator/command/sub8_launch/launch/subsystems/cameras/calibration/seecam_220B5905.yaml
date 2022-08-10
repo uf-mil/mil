@@ -1,9 +1,11 @@
+---
 image_width: 1920
 image_height: 1080
 camera_name: seecam
 camera_matrix:
   rows: 3
   cols: 3
+  # yamllint disable-line rule:line-length
   data: [903.260286, 0.000000, 977.985625, 0.000000, 898.432970, 549.365502, 0.000000, 0.000000, 1.000000]
 distortion_model: plumb_bob
 distortion_coefficients:
@@ -13,8 +15,10 @@ distortion_coefficients:
 rectification_matrix:
   rows: 3
   cols: 3
+  # yamllint disable-line rule:line-length
   data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
 projection_matrix:
   rows: 3
   cols: 4
+  # yamllint disable-line rule:line-length
   data: [681.365540, 0.000000, 973.604278, 0.000000, 0.000000, 812.821594, 551.564321, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]

@@ -1,11 +1,10 @@
 #pragma once
 
-#include "pcodar_types.hpp"
-
 #include <mil_msgs/PerceptionObjectArray.h>
-
 #include <pcl/kdtree/kdtree.h>
 #include <pcl/segmentation/extract_clusters.h>
+
+#include "pcodar_types.hpp"
 
 namespace pcodar
 {
@@ -23,4 +22,4 @@ public:
 private:
   pcl::EuclideanClusterExtraction<point_t> cluster_extractor_;
 };
-}
+}  // namespace pcodar

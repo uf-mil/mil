@@ -8,13 +8,13 @@
 
 # Directory navigation
 
-CATKIN_DIR="$(realpath $(dirname $BASH_SOURCE)/../../../../)"
+CATKIN_DIR="$HOME/catkin_ws"
 
 alias sub="cd \$CATKIN_DIR/src/mil/SubjuGator"
 
 # Networking
-alias rsub="ros_connect -n ${HOSTNAMES[0]}"
-alias sshsub="ssh sub8@${HOSTNAMES[0]} -Y"
+alias rsub='ros_connect -n ${HOSTNAMES[0]}'
+alias sshsub='ssh sub8@${HOSTNAMES[0]} -Y'
 
 # Actuators
 subvalveopen()
@@ -28,7 +28,7 @@ subvalveclose()
 subvalveopenclose()
 {
  rosservice call /set_valve "{actuator: $1, opened: true}"
- sleep $2
+ sleep "$2"
  rosservice call /set_valve "{actuator: $1, opened: false}"
 }
 

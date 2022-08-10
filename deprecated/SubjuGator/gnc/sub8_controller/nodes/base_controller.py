@@ -1,17 +1,18 @@
 #! /usr/bin/env python
-from tf import transformations
 import threading
-import geometry_msgs.msg as geometry_msgs
-import rospy
-import numpy as np
-from sub8_msgs.msg import Trajectory
 from collections import deque
-from scipy import linalg
-from sub8_simulation.srv import SimSetPose
-import nav_msgs.msg as nav_msgs
+
+import geometry_msgs.msg as geometry_msgs
 import mil_ros_tools
+import nav_msgs.msg as nav_msgs
+import numpy as np
+import rospy
 from dynamic_reconfigure.server import Server
+from scipy import linalg
 from sub8_controller.cfg import GainConfig  # Configuration file
+from sub8_msgs.msg import Trajectory
+from sub8_simulation.srv import SimSetPose
+from tf import transformations
 
 lock = threading.Lock()
 

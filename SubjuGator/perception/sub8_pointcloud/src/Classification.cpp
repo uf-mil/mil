@@ -1,6 +1,7 @@
 // TODO: Segmentation, Classification, Bounds, Ogrid filtering
 
 #include "Classification.hpp"
+
 #include "OGridGen.hpp"  // for params extern struct
 Classification::Classification(ros::NodeHandle *nh)
 {

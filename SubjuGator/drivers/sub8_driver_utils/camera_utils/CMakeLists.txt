@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(camera_utils)
 
 # This builds a utility to reset the camera bus using the DC1394 camera libraries
-# Since we are moving away from dc1394 towards pointgrey drivers. This utility is 
+# Since we are moving away from dc1394 towards pointgrey drivers. This utility is
 # no longer applicable. HoWever, we may need to create something similar using the
 # flycapture SDK
 

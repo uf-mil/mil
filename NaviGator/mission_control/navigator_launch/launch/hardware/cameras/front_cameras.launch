@@ -10,4 +10,3 @@
     <arg name="simulation" value="$(arg simulation)" />
   </include>
 </launch>
-

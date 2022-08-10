@@ -1,16 +1,18 @@
-#!/usr/bin/env python
-from __future__ import division
+#!/usr/bin/env python3
+from __future__ import annotations
 
-import txros
-import tf.transformations as trns
-import numpy as np
-import mil_tools
 from random import shuffle
-from navigator import Navigator
-import pose_editor
-from twisted.internet import defer
-from nav_msgs.msg import OccupancyGrid
+
 import cv2
+import mil_tools
+import numpy as np
+import tf.transformations as trns
+import txros
+from nav_msgs.msg import OccupancyGrid
+from twisted.internet import defer
+
+from . import pose_editor
+from .navigator import Navigator
 
 WEST = trns.quaternion_matrix(pose_editor.WEST)
 EAST = trns.quaternion_matrix(pose_editor.EAST)
@@ -18,7 +20,7 @@ NORTH = trns.quaternion_matrix(pose_editor.NORTH)
 SOUTH = trns.quaternion_matrix(pose_editor.SOUTH)
 
 # What should we pick this time?
-shapes = ['CIRCLE', 'TRIANGLE', 'CROSS']
+shapes = ["CIRCLE", "TRIANGLE", "CROSS"]
 shuffle(shapes)
 
 
@@ -32,13 +34,20 @@ class CoralSurvey(Navigator):
         totem = yield self.database_query("all")
 
         # Get the closest totem object to the boat
-        totems_np = map(lambda obj: mil_tools.rosmsg_to_numpy(obj.position), totem.objects)
-        dist = map(lambda totem_np: np.linalg.norm(
-            totem_np - mil_tools.rosmsg_to_numpy(est_coral_survey.objects[0].position)), totems_np)
+        totems_np = map(
+            lambda obj: mil_tools.rosmsg_to_numpy(obj.position), totem.objects
+        )
+        dist = map(
+            lambda totem_np: np.linalg.norm(
+                totem_np
+                - mil_tools.rosmsg_to_numpy(est_coral_survey.objects[0].position)
+            ),
+            totems_np,
+        )
         middle_point = totems_np[np.argmin(dist)]
 
-        print "Totem sorted:", totems_np
-        print "Totem selected: ", totems_np[0]
+        print("Totem sorted:", totems_np)
+        print("Totem selected: ", totems_np[0])
         quad = yield self.mission_params["acoustic_pinger_active_index_correct"].get()
 
         waypoint_from_center = np.array([10 * np.sqrt(2)])
@@ -52,20 +61,23 @@ class CoralSurvey(Navigator):
         directions = [EAST, NORTH, WEST, SOUTH]
         # for quad in quads_to_search:
         mid = self.move.set_position(middle_point).set_orientation(directions[quad - 1])
-        search_center = mid.yaw_left(45, "deg").forward(waypoint_from_center).set_orientation(NORTH)
+        search_center = (
+            mid.yaw_left(45, "deg").forward(waypoint_from_center).set_orientation(NORTH)
+        )
         yield search_center.left(6).go()
-        yield self.move.circle_point(search_center.position, direction='cw').go()
+        yield self.move.circle_point(search_center.position, direction="cw").go()
 
         yield self.mission_params["coral_survey_shape1"].set(shapes[0])
         latched.cancel()
         defer.returnValue(None)
 
+
 # This really shouldn't be here - it should be somewhere behind the scenes
 
 
-class OgridFactory():
+class OgridFactory:
     def __init__(self, center, draw_borders=False):
-        self.resolution = .3
+        self.resolution = 0.3
         self.height, self.width = 60, 60  # meters
         self.center = center
 
@@ -87,16 +99,23 @@ class OgridFactory():
     def make_ogrid_transform(self):
         origin_x = self.center[0] - 30
         origin_y = self.center[1] - 30
-        self.origin = mil_tools.numpy_quat_pair_to_pose([origin_x, origin_y, 0],
-                                                        [0, 0, 0, 1])
+        self.origin = mil_tools.numpy_quat_pair_to_pose(
+            [origin_x, origin_y, 0], [0, 0, 0, 1]
+        )
 
-        # The grid needs to have it's axes swaped since its row major
-        self.grid = np.zeros((self.height / self.resolution, self.width / self.resolution)) - 1
+        # The grid needs to have it's axes swapped since its row major
+        self.grid = (
+            np.zeros((self.height / self.resolution, self.width / self.resolution)) - 1
+        )
 
         # Transforms points from ENU to ogrid frame coordinates
-        self.t = np.array([[1 / self.resolution, 0, -origin_x / self.resolution],
-                           [0, 1 / self.resolution, -origin_y / self.resolution],
-                           [0, 0, 1]])
+        self.t = np.array(
+            [
+                [1 / self.resolution, 0, -origin_x / self.resolution],
+                [0, 1 / self.resolution, -origin_y / self.resolution],
+                [0, 0, 1],
+            ]
+        )
 
         self.transform = lambda point: self.t.dot(np.append(point[:2], 1))[:2]
 
@@ -109,10 +128,16 @@ class OgridFactory():
         north_point = NORTH[:3, :3].dot(vect) + self.center
         south_point = NORTH[:3, :3].dot(-vect) + self.center
 
-        self.walls = [self.center, west_point,
-                      self.center, east_point,
-                      self.center, north_point,
-                      self.center, south_point]
+        self.walls = [
+            self.center,
+            west_point,
+            self.center,
+            east_point,
+            self.center,
+            north_point,
+            self.center,
+            south_point,
+        ]
 
     def draw_lines(self, points, value):
         last_wall = None

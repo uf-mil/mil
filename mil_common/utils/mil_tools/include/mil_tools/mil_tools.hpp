@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ros/ros.h>
+
 #include <algorithm>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -32,4 +33,4 @@ void combinations(uint8_t n, uint8_t k, std::vector<std::vector<uint8_t>>& idx_a
 // Helper function for combinations
 void _increase_elements_after_level(std::vector<uint8_t> comb, std::vector<std::vector<uint8_t>>& comb_array, uint8_t n,
                                     uint8_t k, uint8_t level);
-}
+}  // namespace mil_tools

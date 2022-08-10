@@ -1,41 +1,58 @@
-#!/usr/bin/env python
-from __future__ import division
+#!/usr/bin/env python3
+from __future__ import annotations
+
 import os
-import numpy as np
-import yaml
+from typing import Optional, Type
+
 import genpy
-import rospkg
-from twisted.internet import defer
-from txros import action, util, tf, NodeHandle
-from pose_editor import PoseEditor2
 import mil_tools
-from ros_alarms import TxAlarmListener
-from navigator_path_planner.msg import MoveAction, MoveGoal
-from nav_msgs.msg import Odometry
-from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
-from geometry_msgs.msg import PoseStamped, PointStamped
 import navigator_msgs.srv as navigator_srvs
-from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
-from topic_tools.srv import MuxSelect, MuxSelectRequest
+import numpy as np
+import rospkg
+import yaml
+from dynamic_reconfigure.msg import Config
+from dynamic_reconfigure.srv import Reconfigure, ReconfigureRequest
+from geometry_msgs.msg import PointStamped, PoseStamped
 from mil_misc_tools.text_effects import fprint
-from navigator_tools import MissingPerceptionObject
 from mil_missions_core import BaseMission
+from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from mil_passive_sonar import TxHydrophonesClient
 from mil_pneumatic_actuator.srv import SetValve, SetValveRequest
 from mil_poi import TxPOIClient
+from nav_msgs.msg import Odometry
+from navigator_path_planner.msg import MoveAction, MoveGoal
+from navigator_tools import MissingPerceptionObject
 from roboteq_msgs.msg import Command
+from ros_alarms import TxAlarmListener
 from std_msgs.msg import Bool
-from dynamic_reconfigure.srv import Reconfigure, ReconfigureRequest
-from dynamic_reconfigure.msg import Config
+from std_srvs.srv import (
+    SetBool,
+    SetBoolRequest,
+    SetBoolResponse,
+    Trigger,
+    TriggerRequest,
+)
+from topic_tools.srv import MuxSelect, MuxSelectRequest
+from twisted.internet import defer
+from txros import NodeHandle, ServiceClient, action, txros_tf, util
+
+from .pose_editor import PoseEditor2
 
 
-class MissionResult(object):
+class MissionResult:
     NoResponse = 0
     ParamNotFound = 1
     DbObjectNotFound = 2
     OtherResponse = 100
 
-    def __init__(self, success=True, response=None, message="", need_rerun=False, post_function=None):
+    def __init__(
+        self,
+        success: bool = True,
+        response=None,
+        message: str = "",
+        need_rerun: bool = False,
+        post_function=None,
+    ):
         self.success = success
         self.response = self.NoResponse if response is None else response
         self.message = message
@@ -44,17 +61,21 @@ class MissionResult(object):
 
     def __repr__(self):
         cool_bars = "=" * 75
-        _pass = (cool_bars,
-                 "    Mission Success!",
-                 "    Message: {}".format(self.message),
-                 cool_bars)
-        _fail = (cool_bars,
-                 "    Mission Failure!",
-                 "    Message: {}".format(self.message),
-                 "    Post function: {}".format(self.post_function.__name__),
-                 cool_bars)
+        _pass = (
+            cool_bars,
+            "    Mission Success!",
+            f"    Message: {self.message}",
+            cool_bars,
+        )
+        _fail = (
+            cool_bars,
+            "    Mission Failure!",
+            f"    Message: {self.message}",
+            f"    Post function: {self.post_function.__name__}",
+            cool_bars,
+        )
 
-        return '\n'.join(_pass if self.success else _fail)
+        return "\n".join(_pass if self.success else _fail)
 
 
 class Navigator(BaseMission):
@@ -69,32 +90,39 @@ class Navigator(BaseMission):
     max_grinch_effort = 500
 
     def __init__(self, **kwargs):
-        super(Navigator, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     @classmethod
     @util.cancellableInlineCallbacks
     def _init(cls, mission_runner):
-        super(Navigator, cls)._init(mission_runner)
+        super()._init(mission_runner)
 
         cls.is_vrx = yield cls.nh.get_param("/is_vrx")
 
-        cls._moveto_client = action.ActionClient(cls.nh, 'move_to', MoveAction)
+        cls._moveto_client = action.ActionClient(cls.nh, "move_to", MoveAction)
 
         # For missions to access clicked points / poses
         cls.rviz_goal = cls.nh.subscribe("/move_base_simple/goal", PoseStamped)
         cls.rviz_point = cls.nh.subscribe("/clicked_point", PointStamped)
 
-        cls._change_wrench = cls.nh.get_service_client('/wrench/select', MuxSelect)
-        cls._change_trajectory = cls.nh.get_service_client('/trajectory/select', MuxSelect)
-        cls._database_query = cls.nh.get_service_client('/database/requests', ObjectDBQuery)
-        cls._reset_pcodar = cls.nh.get_service_client('/pcodar/reset', Trigger)
-        cls._pcodar_set_params = cls.nh.get_service_client('/pcodar/set_parameters', Reconfigure)
+        cls._change_wrench = cls.nh.get_service_client("/wrench/select", MuxSelect)
+        cls._change_trajectory = cls.nh.get_service_client(
+            "/trajectory/select", MuxSelect
+        )
+        cls._database_query = cls.nh.get_service_client(
+            "/database/requests", ObjectDBQuery
+        )
+        cls._reset_pcodar = cls.nh.get_service_client("/pcodar/reset", Trigger)
+        cls._pcodar_set_params = cls.nh.get_service_client(
+            "/pcodar/set_parameters", Reconfigure
+        )
 
         cls.pose = None
 
         def odom_set(odom):
-            return setattr(cls, 'pose', mil_tools.odometry_to_numpy(odom)[0])
-        cls._odom_sub = cls.nh.subscribe('odom', Odometry, odom_set)
+            return setattr(cls, "pose", mil_tools.odometry_to_numpy(odom)[0])
+
+        cls._odom_sub = cls.nh.subscribe("odom", Odometry, odom_set)
 
         if cls.is_vrx:
             yield cls._init_vrx()
@@ -105,7 +133,9 @@ class Navigator(BaseMission):
     def _init_vrx(cls):
         cls.killed = False
         cls.odom_loss = False
-        cls.set_vrx_classifier_enabled = cls.nh.get_service_client('/vrx_classifier/set_enabled', SetBool)
+        cls.set_vrx_classifier_enabled = cls.nh.get_service_client(
+            "/vrx_classifier/set_enabled", SetBool
+        )
 
     @classmethod
     @util.cancellableInlineCallbacks
@@ -122,17 +152,18 @@ class Navigator(BaseMission):
         # If you don't want to use txros
         cls.ecef_pose = None
 
-        cls.killed = '?'
-        cls.odom_loss = '?'
+        cls.killed = "?"
+        cls.odom_loss = "?"
 
-        if (yield cls.nh.has_param('/is_simulation')):
-            cls.sim = yield cls.nh.get_param('/is_simulation')
+        if (yield cls.nh.has_param("/is_simulation")):
+            cls.sim = yield cls.nh.get_param("/is_simulation")
         else:
             cls.sim = False
 
         def enu_odom_set(odom):
-            return setattr(cls, 'ecef_pose', mil_tools.odometry_to_numpy(odom)[0])
-        cls._ecef_odom_sub = cls.nh.subscribe('absodom', Odometry, enu_odom_set)
+            return setattr(cls, "ecef_pose", mil_tools.odometry_to_numpy(odom)[0])
+
+        cls._ecef_odom_sub = cls.nh.subscribe("absodom", Odometry, enu_odom_set)
 
         cls.hydrophones = TxHydrophonesClient(cls.nh)
 
@@ -141,43 +172,63 @@ class Navigator(BaseMission):
         cls._grinch_lower_time = yield cls.nh.get_param("~grinch_lower_time")
         cls._grinch_raise_time = yield cls.nh.get_param("~grinch_raise_time")
         cls.grinch_limit_switch_pressed = False
-        cls._grinch_limit_switch_sub = yield cls.nh.subscribe('/limit_switch', Bool, cls._grinch_limit_switch_cb)
+        cls._grinch_limit_switch_sub = yield cls.nh.subscribe(
+            "/limit_switch", Bool, cls._grinch_limit_switch_cb
+        )
         cls._winch_motor_pub = cls.nh.advertise("/grinch_winch/cmd", Command)
         cls._grind_motor_pub = cls.nh.advertise("/grinch_spin/cmd", Command)
 
         try:
-            cls._actuator_client = cls.nh.get_service_client('/actuator_driver/actuate', SetValve)
+            cls._actuator_client = cls.nh.get_service_client(
+                "/actuator_driver/actuate", SetValve
+            )
             cls._camera_database_query = cls.nh.get_service_client(
-                '/camera_database/requests', navigator_srvs.CameraDBQuery)
-            cls._change_wrench = cls.nh.get_service_client('/wrench/select', MuxSelect)
-            cls._change_trajectory = cls.nh.get_service_client('/trajectory/select', MuxSelect)
-        except AttributeError, err:
-            fprint("Error getting service clients in nav singleton init: {}".format(
-                err), title="NAVIGATOR", msg_color='red')
+                "/camera_database/requests", navigator_srvs.CameraDBQuery
+            )
+            cls._change_wrench = cls.nh.get_service_client("/wrench/select", MuxSelect)
+            cls._change_trajectory = cls.nh.get_service_client(
+                "/trajectory/select", MuxSelect
+            )
+        except AttributeError as err:
+            fprint(
+                f"Error getting service clients in nav singleton init: {err}",
+                title="NAVIGATOR",
+                msg_color="red",
+            )
 
-        cls.tf_listener = tf.TransformListener(cls.nh)
+        cls.tf_listener = txros_tf.TransformListener(cls.nh)
 
         # Vision
-        cls.obstacle_course_vision_enable = cls.nh.get_service_client('/vision/obsc/enable', SetBool)
-        cls.docks_vision_enable = cls.nh.get_service_client('/vision/docks/enable', SetBool)
+        cls.obstacle_course_vision_enable = cls.nh.get_service_client(
+            "/vision/obsc/enable", SetBool
+        )
+        cls.docks_vision_enable = cls.nh.get_service_client(
+            "/vision/docks/enable", SetBool
+        )
 
         yield cls._make_alarms()
 
         if cls.sim:
             fprint("Sim mode active!", title="NAVIGATOR")
-            yield cls.nh.sleep(.5)
+            yield cls.nh.sleep(0.5)
         else:
             # We want to make sure odom is working before we continue
             fprint("Action client do you yield?", title="NAVIGATOR")
-            yield util.wrap_time_notice(cls._moveto_client.wait_for_server(), 2, "Lqrrt action server")
+            yield util.wrap_time_notice(
+                cls._moveto_client.wait_for_server(), 2, "Lqrrt action server"
+            )
             fprint("Yes he yields!", title="NAVIGATOR")
 
             fprint("Waiting for odom...", title="NAVIGATOR")
-            odom = util.wrap_time_notice(cls._odom_sub.get_next_message(), 2, "Odom listener")
-            enu_odom = util.wrap_time_notice(cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
+            odom = util.wrap_time_notice(
+                cls._odom_sub.get_next_message(), 2, "Odom listener"
+            )
+            enu_odom = util.wrap_time_notice(
+                cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener"
+            )
             yield defer.gatherResults([odom, enu_odom])  # Wait for all those to finish
 
-        cls.docking_scan = 'NA'
+        cls.docking_scan = "NA"
 
     @classmethod
     @util.cancellableInlineCallbacks
@@ -193,9 +244,9 @@ class Navigator(BaseMission):
 
     @classmethod
     @util.cancellableInlineCallbacks
-    def pcodar_label(cls, idx, name):
-        cmd = '%d=%s'%(idx,name)
-        yield cls._database_query(ObjectDBQueryRequest(name='', cmd=cmd))
+    def pcodar_label(cls, idx: int, name: str):
+        cmd = "%d=%s" % (idx, name)
+        yield cls._database_query(ObjectDBQueryRequest(name="", cmd=cmd))
 
     @classmethod
     def _grinch_limit_switch_cb(cls, data):
@@ -214,11 +265,11 @@ class Navigator(BaseMission):
         defer.returnValue(mil_tools.odometry_to_numpy(last_odom_msg)[0])
 
     @property
-    def move(self):
+    def move(self) -> PoseEditor2:
         return PoseEditor2(self, self.pose)
 
-    def hold(self):
-        goal = MoveGoal(move_type='hold')
+    def hold(self) -> action.GoalManager:
+        goal = MoveGoal(move_type="hold")
         return self._moveto_client.send_goal(goal)
 
     def fetch_result(self, *args, **kwargs):
@@ -241,8 +292,8 @@ class Navigator(BaseMission):
         yield self.docks_vision_enable(SetBoolRequest(data=False))
 
     @util.cancellableInlineCallbacks
-    def spin_grinch(self, speed=1.0, interval=0.1):
-        '''
+    def spin_grinch(self, speed: float = 1.0, interval: float = 0.1):
+        """
         Spin the grinch mechnaism. To avoid watchdog timeout, this is sent
         in a loop at the specified interface. So to stop spinning,
         cancel the defer
@@ -254,27 +305,31 @@ class Navigator(BaseMission):
         ...
         # Stop spinning
         d.cancel()
-        '''
+        """
         while True:
-            self._grind_motor_pub.publish(Command(setpoint=speed * self.max_grinch_effort))
+            self._grind_motor_pub.publish(
+                Command(setpoint=speed * self.max_grinch_effort)
+            )
             yield self.nh.sleep(interval)
 
     @util.cancellableInlineCallbacks
-    def spin_winch(self, speed=-1.0, interval=0.1):
-        '''
+    def spin_winch(self, speed: float = -1.0, interval: float = 0.1):
+        """
         Spin the grinch raise/lower mechanism. To avoid watchdog timeout, this is sent
         in a loop at the specified interface. So to stop spinning,
         cancel the defer
-        '''
+        """
         while True:
-            self._winch_motor_pub.publish(Command(setpoint=speed * self.max_grinch_effort))
+            self._winch_motor_pub.publish(
+                Command(setpoint=speed * self.max_grinch_effort)
+            )
             yield self.nh.sleep(interval)
 
     @util.cancellableInlineCallbacks
     def deploy_grinch(self):
-        '''
+        """
         Deploy the grinch mechanism
-        '''
+        """
         winch_defer = self.spin_winch(speed=1.0)
         yield self.nh.sleep(self._grinch_lower_time)
         self._winch_motor_pub.publish(Command(setpoint=0))
@@ -282,101 +337,105 @@ class Navigator(BaseMission):
 
     @util.cancellableInlineCallbacks
     def retract_grinch(self):
-        '''
+        """
         Retract the grinch mechanism
-        '''
+        """
         now = yield self.nh.get_time()
         end = now + genpy.Duration(self._grinch_raise_time)
         winch_defer = self.spin_winch(speed=-1.0)
         while True:
             now = yield self.nh.get_time()
             if self.grinch_limit_switch_pressed:
-                print 'limit switch pressed, stopping'
+                print("limit switch pressed, stopping")
                 break
             elif now >= end:
-                print 'retract timed out'
+                print("retract timed out")
                 break
             yield self.nh.sleep(0.1)
         winch_defer.cancel()
         self._winch_motor_pub.publish(Command(setpoint=0))
 
     @util.cancellableInlineCallbacks
-    def deploy_thruster(self, name):
-        '''
+    def deploy_thruster(self, name: str):
+        """
         Execute sequence to deploy one thruster
-        '''
-        extend = name + '_extend'
-        retract = name + '_retract'
-        unlock = name + '_unlock'
+        """
+        extend = name + "_extend"
+        retract = name + "_retract"
+        unlock = name + "_unlock"
         # Pull thruster up a bit to remove pressure from lock
         yield self.set_valve(retract, True)
-        yield self.nh.sleep(self._actuator_timing['deploy_loosen_time'])
+        yield self.nh.sleep(self._actuator_timing["deploy_loosen_time"])
         # Stop pulling thruster up and unlock
         yield self.set_valve(retract, False)
         yield self.set_valve(unlock, True)
         # Beging extending piston to push thruster down
         yield self.set_valve(extend, True)
-        yield self.nh.sleep(self._actuator_timing['deploy_wait_time'])
+        yield self.nh.sleep(self._actuator_timing["deploy_wait_time"])
         # Lock and stop extending after waiting a time for lock to engage
         yield self.set_valve(unlock, False)
-        yield self.nh.sleep(self._actuator_timing['deploy_lock_time'])
+        yield self.nh.sleep(self._actuator_timing["deploy_lock_time"])
         yield self.set_valve(extend, False)
 
     @util.cancellableInlineCallbacks
-    def retract_thruster(self, name):
-        '''
+    def retract_thruster(self, name: str):
+        """
         Execute sequence to retract one thruster
-        '''
-        retract = name + '_retract'
-        unlock = name + '_unlock'
+        """
+        retract = name + "_retract"
+        unlock = name + "_unlock"
         # Unlock and begin pulling thruster up
         yield self.set_valve(unlock, True)
         yield self.set_valve(retract, True)
         # Wait time for piston to fully retract
-        yield self.nh.sleep(self._actuator_timing['retract_wait_time'])
+        yield self.nh.sleep(self._actuator_timing["retract_wait_time"])
         # Lock thruster in place
         yield self.set_valve(unlock, False)
         # Wait some time for lock to engage
-        yield self.nh.sleep(self._actuator_timing['retract_lock_time'])
+        yield self.nh.sleep(self._actuator_timing["retract_lock_time"])
         # Stop pulling up
         yield self.set_valve(retract, False)
 
-    def deploy_thrusters(self):
-        '''
+    def deploy_thrusters(self) -> defer.DeferredList:
+        """
         Deploy all 4 thrusters simultaneously.
         TODO: perform in sequence after testing has been done to see if this is needed
-        '''
-        return defer.DeferredList([self.deploy_thruster(name) for name in ['FL', 'FR', 'BL', 'BR']])
+        """
+        return defer.DeferredList(
+            [self.deploy_thruster(name) for name in ["FL", "FR", "BL", "BR"]]
+        )
 
-    def retract_thrusters(self):
-        '''
+    def retract_thrusters(self) -> defer.DeferredList:
+        """
         Retract all 4 thrusters simultaneously.
         TODO: perform in sequence after testing has been done to see if this is needed
-        '''
+        """
 
-        return defer.DeferredList([self.retract_thruster(name) for name in ['FL', 'FR', 'BL', 'BR']])
+        return defer.DeferredList(
+            [self.retract_thruster(name) for name in ["FL", "FR", "BL", "BR"]]
+        )
 
     @util.cancellableInlineCallbacks
     def reload_launcher(self):
         if self.launcher_state != "inactive":
-            raise Exception("Launcher is {}".format(self.launcher_state))
+            raise Exception(f"Launcher is {self.launcher_state}")
         self.launcher_state = "reloading"
-        yield self.set_valve('LAUNCHER_RELOAD_EXTEND', True)
-        yield self.set_valve('LAUNCHER_RELOAD_RETRACT', False)
-        yield self.nh.sleep(self._actuator_timing['launcher_reload_extend_time'])
-        yield self.set_valve('LAUNCHER_RELOAD_EXTEND', False)
-        yield self.set_valve('LAUNCHER_RELOAD_RETRACT', True)
-        yield self.nh.sleep(self._actuator_timing['launcher_reload_retract_time'])
-        yield self.set_valve('LAUNCHER_RELOAD_EXTEND', False)
-        yield self.set_valve('LAUNCHER_RELOAD_RETRACT', False)
+        yield self.set_valve("LAUNCHER_RELOAD_EXTEND", True)
+        yield self.set_valve("LAUNCHER_RELOAD_RETRACT", False)
+        yield self.nh.sleep(self._actuator_timing["launcher_reload_extend_time"])
+        yield self.set_valve("LAUNCHER_RELOAD_EXTEND", False)
+        yield self.set_valve("LAUNCHER_RELOAD_RETRACT", True)
+        yield self.nh.sleep(self._actuator_timing["launcher_reload_retract_time"])
+        yield self.set_valve("LAUNCHER_RELOAD_EXTEND", False)
+        yield self.set_valve("LAUNCHER_RELOAD_RETRACT", False)
         self.launcher_state = "inactive"
 
     @util.cancellableInlineCallbacks
     def fire_launcher(self):
         if self.launcher_state != "inactive":
-            raise Exception("Launcher is {}".format(self.launcher_state))
+            raise Exception(f"Launcher is {self.launcher_state}")
         self.launcher_state = "firing"
-        yield self.set_valve('LAUNCHER_FIRE', True)
+        yield self.set_valve("LAUNCHER_FIRE", True)
         yield self.nh.sleep(0.5)
         self.launcher_state = "inactive"
 
@@ -384,10 +443,9 @@ class Navigator(BaseMission):
         req = SetValveRequest(actuator=name, opened=state)
         return self._actuator_client(req)
 
-
     @util.cancellableInlineCallbacks
-    def get_sorted_objects(self, name, n=-1, throw=True, **kwargs):
-        '''
+    def get_sorted_objects(self, name: str, n: int = -1, throw: bool = True, **kwargs):
+        """
         Get the closest N objects with a particular name from the PCODAR database
         @param name: the name of the object
         @param n: the number of objects to get, if -1, get all of them
@@ -395,11 +453,11 @@ class Navigator(BaseMission):
         @param **kwargs: other kwargs to give to database_query
         @return tuple([sorted_object_messages, [object_positions]) of sorted object messages
                 and their positions as a Nx3 numpy array.
-        '''
+        """
         objects = (yield self.database_query(object_name=name, **kwargs)).objects
         if n != -1 and len(objects) < n:
             if throw:
-                raise Exception('Could not get {} {} objects'.format(n, name))
+                raise Exception(f"Could not get {n} {name} objects")
             else:
                 n = len(objects)
         if n == 0:
@@ -416,13 +474,15 @@ class Navigator(BaseMission):
         defer.returnValue((objects_sorted, positions[distances_argsort, :]))
 
     @util.cancellableInlineCallbacks
-    def database_query(self, object_name=None, raise_exception=True, **kwargs):
+    def database_query(
+        self, object_name: str | None = None, raise_exception: bool = True, **kwargs
+    ):
         if object_name is not None:
-            kwargs['name'] = object_name
+            kwargs["name"] = object_name
             res = yield self._database_query(ObjectDBQueryRequest(**kwargs))
 
             if not res.found and raise_exception:
-                raise MissingPerceptionObject(kwargs['name'])
+                raise MissingPerceptionObject(kwargs["name"])
 
             defer.returnValue(res)
 
@@ -430,10 +490,12 @@ class Navigator(BaseMission):
         defer.returnValue(res)
 
     @util.cancellableInlineCallbacks
-    def camera_database_query(self, object_name=None, **kwargs):
+    def camera_database_query(self, object_name: str | None = None, **kwargs):
         if object_name is not None:
-            kwargs['name'] = object_name
-            res = yield self._camera_database_query(navigator_srvs.CameraDBQueryRequest(**kwargs))
+            kwargs["name"] = object_name
+            res = yield self._camera_database_query(
+                navigator_srvs.CameraDBQueryRequest(**kwargs)
+            )
 
             defer.returnValue(res)
 
@@ -450,35 +512,42 @@ class Navigator(BaseMission):
 
     @classmethod
     def disable_thrusters(cls):
-        '''
+        """
         Disable thrusters by setting the wrench source to none
-        '''
+        """
         return cls.change_wrench("__none")
 
     @classmethod
     def enable_autonomous(cls):
-        '''
+        """
         Enable autonmous wrench, useful to call after disable_thrusters to regain control
-        '''
+        """
         return cls.change_wrench("autonomous")
 
     @classmethod
-    def change_trajectory(cls, source):
+    def change_trajectory(cls, source: str):
         return cls._change_trajectory(MuxSelectRequest(source))
 
     def search(self, *args, **kwargs):
         return Searcher(self, *args, **kwargs)
 
     @util.cancellableInlineCallbacks
-    def latching_publisher(self, topic, msg_type, msg, freq=2, update_header=True):
-        '''
+    def latching_publisher(
+        self,
+        topic: str,
+        msg_type: type[genpy.Message],
+        msg: genpy.Message,
+        freq: int = 2,
+        update_header: bool = True,
+    ):
+        """
         Creates a publisher that publishes a message at a set frequency.
         Usage:
             latched = navigator.latching_publisher("/ogrid", OccupancyGrid, my_ogrid)
             # Now the ogrid is publishing twice a second...
             # If you want to cancel the publisher:
             latched.cancel()
-        '''
+        """
         pub = yield self.nh.advertise(topic, msg_type)
 
         while True:
@@ -490,28 +559,36 @@ class Navigator(BaseMission):
             yield self.nh.sleep(1.0 / freq)
 
     @classmethod
-    def _load_vision_services(cls, fname="vision_services.yaml"):
+    def _load_vision_services(cls, fname: str = "vision_services.yaml"):
         rospack = rospkg.RosPack()
-        config_file = os.path.join(rospack.get_path('navigator_missions'), 'launch', fname)
-        f = yaml.load(open(config_file, 'r'))
+        config_file = os.path.join(
+            rospack.get_path("navigator_missions"), "launch", fname
+        )
+        f = yaml.safe_load(open(config_file))
 
         for name in f:
             try:
                 s_type = getattr(navigator_srvs, f[name]["type"])
                 s_req = getattr(navigator_srvs, "{}Request".format(f[name]["type"]))
-                s_args = f[name]['args']
+                s_args = f[name]["args"]
                 s_client = cls.nh.get_service_client(f[name]["topic"], s_type)
-                s_switch = cls.nh.get_service_client(f[name]["topic"] + '/switch', SetBool)
-                cls.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
-            except Exception, e:
-                err = "Error loading vision sevices: {}".format(e)
-                fprint("" + err, title="NAVIGATOR", msg_color='red')
+                s_switch = cls.nh.get_service_client(
+                    f[name]["topic"] + "/switch", SetBool
+                )
+                cls.vision_proxies[name] = VisionProxy(
+                    s_client, s_req, s_args, s_switch
+                )
+            except Exception as e:
+                err = f"Error loading vision sevices: {e}"
+                fprint("" + err, title="NAVIGATOR", msg_color="red")
 
     @classmethod
     def _load_mission_params(cls, fname="mission_params.yaml"):
         rospack = rospkg.RosPack()
-        config_file = os.path.join(rospack.get_path('navigator_missions'), 'launch', fname)
-        f = yaml.load(open(config_file, 'r'))
+        config_file = os.path.join(
+            rospack.get_path("navigator_missions"), "launch", fname
+        )
+        f = yaml.safe_load(open(config_file))
 
         for name in f:
             try:
@@ -519,10 +596,12 @@ class Navigator(BaseMission):
                 options = f[name]["options"]
                 desc = f[name]["description"]
                 default = f[name].get("default")
-                cls.mission_params[name] = MissionParam(cls.nh, param, options, desc, default)
-            except Exception, e:
-                err = "Error loading mission params: {}".format(e)
-                fprint("" + err, title="NAVIGATOR", msg_color='red')
+                cls.mission_params[name] = MissionParam(
+                    cls.nh, param, options, desc, default
+                )
+            except Exception as e:
+                err = f"Error loading mission params: {e}"
+                fprint("" + err, title="NAVIGATOR", msg_color="red")
 
     @classmethod
     def kill_alarm_cb(cls, _, alarm):
@@ -532,10 +611,14 @@ class Navigator(BaseMission):
     @classmethod
     @util.cancellableInlineCallbacks
     def _make_alarms(cls):
-        cls.kill_listener = yield TxAlarmListener.init(cls.nh, 'kill', cls.kill_alarm_cb)
+        cls.kill_listener = yield TxAlarmListener.init(
+            cls.nh, "kill", cls.kill_alarm_cb
+        )
         cls.odom_loss_listener = yield TxAlarmListener.init(
-            cls.nh, 'odom-kill',
-            lambda _, alarm: setattr(cls, 'odom_loss', alarm.raised))
+            cls.nh,
+            "odom-kill",
+            lambda _, alarm: setattr(cls, "odom_loss", alarm.raised),
+        )
         fprint("Alarm listener created, listening to alarms: ", title="NAVIGATOR")
 
         cls.kill_alarm = yield cls.kill_listener.get_alarm()
@@ -547,9 +630,14 @@ class Navigator(BaseMission):
         fprint(cls.odom_loss)
 
 
-class VisionProxy(object):
-
-    def __init__(self, client, request, args, switch):
+class VisionProxy:
+    def __init__(
+        self,
+        client: ServiceClient,
+        request: ServiceClient,
+        args,
+        switch: Callable[[SetBoolRequest], SetBoolResponse],
+    ):
         self.client = client
         self.request = request
         self.args = args
@@ -569,9 +657,8 @@ class VisionProxy(object):
         return self.client(s_req)
 
 
-class MissionParam(object):
-
-    def __init__(self, nh, param, options, desc, default):
+class MissionParam:
+    def __init__(self, nh: NodeHandle, param, options, desc, default):
         self.nh = nh
         self.param = param
         self.options = options
@@ -579,31 +666,37 @@ class MissionParam(object):
         self.default = default
 
     @util.cancellableInlineCallbacks
-    def get(self, raise_exception=True):
+    def get(self, raise_exception: bool = True):
         # Returns deferred object, make sure to yield on this (same for below)
         if not (yield self.exists()):
             if self.default is not None:
                 yield self.set(self.default)
                 defer.returnValue(self.default)
             if raise_exception:
-                raise Exception("Mission Param {} not yet set".format(self.param))
+                raise Exception(f"Mission Param {self.param} not yet set")
             else:
                 defer.returnValue(False)
         value = yield self.nh.get_param(self.param)
         if not self._valid(value):
-            raise Exception("Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
-                value, self.param, self.options, self.description))
+            raise Exception(
+                "Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
+                    value, self.param, self.options, self.description
+                )
+            )
         else:
             defer.returnValue(value)
 
-    def exists(self):
+    def exists(self) -> bool:
         return self.nh.has_param(self.param)
 
     @util.cancellableInlineCallbacks
     def set(self, value):
         if not self._valid(value):
-            raise Exception("Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
-                value, self.param, self.options, self.description))
+            raise Exception(
+                "Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
+                    value, self.param, self.options, self.description
+                )
+            )
         yield self.nh.set_param(self.param, value)
 
     @util.cancellableInlineCallbacks
@@ -624,15 +717,22 @@ class MissionParam(object):
             else:
                 yield self.nh.delete_param(self.param)
 
-    def _valid(self, value):
+    def _valid(self, value) -> bool:
         for x in self.options:
             if x == value:
                 return True
         return False
 
 
-class Searcher(object):
-    def __init__(self, nav, search_pattern=None, looker=None, vision_proxy="test", **kwargs):
+class Searcher:
+    def __init__(
+        self,
+        nav: Navigator,
+        search_pattern=None,
+        looker=None,
+        vision_proxy: str = "test",
+        **kwargs,
+    ):
         self.nav = nav
         self.looker = looker
         if looker is None:
@@ -644,13 +744,13 @@ class Searcher(object):
         self.object_found = False
         self.pattern_done = False
         self.response = None
-        print "dfdf"
+        print("dfdf")
 
     def catch_error(self, failure):
         if failure.check(defer.CancelledError):
             fprint("Cancelling defer.", title="SEARCHER")
         else:
-            fprint("There was an error.", title="SEARCHER", msg_color='red')
+            fprint("There was an error.", title="SEARCHER", msg_color="red")
             fprint(failure.printTraceback())
             # Handle error
 
@@ -685,10 +785,10 @@ class Searcher(object):
 
     @util.cancellableInlineCallbacks
     def _run_search_pattern(self, loop, **kwargs):
-        '''
+        """
         Look around using the search pattern.
         If `loop` is true, then keep iterating over the list until timeout is reached or we find it.
-        '''
+        """
         if self.search_pattern is None:
             return
 
@@ -715,20 +815,25 @@ class Searcher(object):
 
     @util.cancellableInlineCallbacks
     def _vision_proxy_look(self):
-        resp = yield self.nav.vision_proxies[self.vision_proxy].get_response(**self.looker_kwargs)
+        resp = yield self.nav.vision_proxies[self.vision_proxy].get_response(
+            **self.looker_kwargs
+        )
         defer.returnValue(resp.found)
 
     @util.cancellableInlineCallbacks
     def _run_look(self, spotings_req):
-        '''
+        """
         Look for the object using the vision proxy.
         Only return true when we spotted the objects `spotings_req` many times (for false positives).
-        '''
+        """
         spotings = 0
         fprint("Looking for object.", title="SEARCHER")
         while spotings < spotings_req:
             if (yield self.looker(**self.looker_kwargs)):
-                fprint("Object found! {}/{}".format(spotings + 1, spotings_req), title="SEARCHER")
+                fprint(
+                    f"Object found! {spotings + 1}/{spotings_req}",
+                    title="SEARCHER",
+                )
                 spotings += 1
             else:
                 spotings = 0
@@ -743,10 +848,11 @@ class Searcher(object):
 def main():
     nh = yield NodeHandle.from_argv("navigator_singleton")
     n = yield Navigator(nh)._init()
-    fprint((yield n.vision_proxies['start_gate'].get_response()))
+    fprint((yield n.vision_proxies["start_gate"].get_response()))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from twisted.internet import reactor
+
     reactor.callWhenRunning(main)
     reactor.run()

@@ -1,12 +1,10 @@
-import txros
-from twisted.internet import defer
-from ros_alarms import TxAlarmListener, TxAlarmBroadcaster
-from mil_misc_tools import text_effects
 import genpy
-
 # Import missions here
 import pinger
-
+import txros
+from mil_misc_tools import text_effects
+from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
+from twisted.internet import defer
 
 fprint = text_effects.FprintFactory(title="AUTO_MISSION").fprint
 WAIT_SECONDS = 5.0

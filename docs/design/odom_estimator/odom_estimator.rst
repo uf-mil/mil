@@ -1,5 +1,5 @@
-odom_estimator
-==============
+``odom_estimator``
+==================
 
 ``odom_estimator`` is an `unscented Kalman filter <https://en.wikipedia.org/wiki/Kalman_filter#Unscented_Kalman_filter>`_ that fuses accelerometer, gyroscope, magnetometer, DVL, and depth sensor measurements into an estimate of a moving platform's pose.
 
@@ -10,7 +10,9 @@ There are a few weird/surprising things in the implementation:
 Manifold types
 --------------
 
-*Note: This section is a very concise summary of the key concepts of the the "Sound State Representations" paper linked above.*
+.. note::
+
+   This section is a very concise summary of the key concepts of the the "Sound State Representations" paper linked above.
 
 Central to ``odom_estimator`` is the concept of a "`manifold <https://en.wikipedia.org/wiki/Manifold>`_."
 

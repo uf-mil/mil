@@ -8,17 +8,17 @@ digraph indyav_gazebo
     "go_kart.xacro"->"indyav_car.urdf.xacro":ne [label="  included by  "];
     "sylphase.xacro"->"indyav_car.urdf.xacro":e [label="  included by  "];
     "indyav_car.urdf.xacro"->"indyav_car.urdf" [label="  interpreted into  "];
-    
+
     "actuators.yaml"->"Controller manager" [label="  informs  "]
     "indyav_car.urdf"->"Controller manager" [label="  informs  "]
-    
+
     "Robot Spawner";
-    
+
     "indyav_car.urdf" -> "Robot Spawner";
-    
-    
-    
-    
+
+
+
+
     subgraph cluster_gazebo
     {
         compound=true;
@@ -34,39 +34,39 @@ digraph indyav_gazebo
             node [style=filled,color=white];
             label = "indyav_car"
             labeljust="l";
-    
-            back_wheel [label="BackWheelPlugin\n(Applies Thrust)"];        
+
+            back_wheel [label="BackWheelPlugin\n(Applies Thrust)"];
             invis [style=invis, pos="0,0"];
             sylphase_ins [label="sylphase_ins Plugin \n(give the gound truth odom)"];
-    
-            right_wheel [label="right front wheel controller\n(controlls the steering angle of the right \nfront wheel)"];
-            left_wheel[label="left front wheel controller\n(controlls the steering angle of the left \nfront wheel)"];
+
+            right_wheel [label="right front wheel controller\n(controls the steering angle of the right \nfront wheel)"];
+            left_wheel[label="left front wheel controller\n(controls the steering angle of the left \nfront wheel)"];
         }
     }
 
     "Robot Spawner"->invis[label="spawns"];
-    
+
     "Controller manager"->right_wheel
         [label="  manages  "];
     "Controller manager"->left_wheel
         [label="  manages  "];
-    
+
     sylphase_ins->"/ins_odom"[label="Publishes"];
     "/ins_odom"->"dumb_truth_tf"
         [label="Subscribes"];
-    
+
     "dumb_truth_tf"->"Transform: enu <=> base_link"[label="Broadcasts"];
-    
+
     right_command [label="/car/simulated_hardware_controllers\n/steering/right/command", pos="-1,-1"];
     right_command -> right_wheel [label="Subscribes"];
     "simulated steering driver"-> right_command [label="Publishes"];
-    
-    
+
+
     left_command [label="/car/simulated_hardware_controllers\n/steering/left/command"];
     left_command -> left_wheel [label="Subscribes"];
     "simulated steering driver"-> left_command [label="Publishes"];
 
     "/steering"->"simulated steering driver"[label="Subscribes"];
 
-    "/throttle"->back_wheel[label="Subscribes"];   
+    "/throttle"->back_wheel[label="Subscribes"];
 }

@@ -1,9 +1,8 @@
 #!/usr/bin/env python
+import rospy
 from geometry_msgs.msg import WrenchStamped
 from navigator_msgs.srv import WrenchSelect
-import rospy
 from std_msgs.msg import Bool, String
-
 
 rospy.init_node("wrench_arbiter")
 

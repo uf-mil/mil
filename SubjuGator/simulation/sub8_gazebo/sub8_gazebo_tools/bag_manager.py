@@ -1,13 +1,13 @@
-import rospy
-import rosbag
-import time
-import txros
 import os
+import time
+
+import rosbag
+import rospy
+import txros
 import yaml
 
 
-class BagManager(object):
-
+class BagManager:
     def __init__(self, nh, diag_dir):
         self.nh = nh
         self.diag_dir = diag_dir
@@ -21,14 +21,17 @@ class BagManager(object):
 
     @txros.util.cancellableInlineCallbacks
     def start_caching(self):
-        '''
+        """
         Caches bags using big dicts.
-        {topic_name_1: subscriber_1, topic_name_2: subscriber_2, ...}
+
+        .. code-block:: python3
+
+            {topic_name_1: subscriber_1, topic_name_2: subscriber_2, ...}
+
         Every 'time_step' seconds it will save all of the subscribers' most recent message.
         This will continue and will fill a cache array that will store 'pre_cache_time'
         seconds worth of messages before erasing the oldest messages.
-        '''
-
+        """
         # Used to avoid adding copies of the same message.
         last_timestamps = dict(self.cache_dict)
         while True:
@@ -44,8 +47,9 @@ class BagManager(object):
                 msg_time = yield self.cache_dict[key].get_last_message_time()
 
                 if msg is not None:
-                    if (self.nh.get_time() > rospy.Time.from_sec(30)) and\
-                       (msg_time < self.nh.get_time() - rospy.Duration(30)):
+                    if (self.nh.get_time() > rospy.Time.from_sec(30)) and (
+                        msg_time < self.nh.get_time() - rospy.Duration(30)
+                    ):
                         # This fixes a negative time exception if we are within the first 30 seconds of time.
                         continue
 
@@ -55,62 +59,64 @@ class BagManager(object):
 
                     msgs.append([key, (yield msg), (yield msg_time)])
                 else:
-                    print "There's a problem cacheing {0}".format(key)
+                    print(f"There's a problem caching {key}")
             self.write_to_cache(msgs)
 
         self.dump()
 
     @txros.util.cancellableInlineCallbacks
     def make_dict(self):
-        '''
+        """
         Generate caching dictionary from a yaml file.
-        '''
-        with open(self.diag_dir + 'messages_to_bag.yaml', 'r') as f:
+        """
+        with open(self.diag_dir + "messages_to_bag.yaml") as f:
             messages_to_bag = yaml.load(f)
 
         # Set bagging parameters
-        self.time_step = messages_to_bag['PARAMS']['time_step']
-        self.pre_cache_time = messages_to_bag['PARAMS']['pre_cache_time']
-        self.post_cache_time = messages_to_bag['PARAMS']['post_cache_time']
+        self.time_step = messages_to_bag["PARAMS"]["time_step"]
+        self.pre_cache_time = messages_to_bag["PARAMS"]["pre_cache_time"]
+        self.post_cache_time = messages_to_bag["PARAMS"]["post_cache_time"]
 
         self.cache_dict = {}
-        msgs = messages_to_bag['MESSAGES']
+        msgs = messages_to_bag["MESSAGES"]
         for msg in msgs.values():
             # Get message information
-            msg_topic = msg['message_topic']
-            msg_type = msg['message_type']
-            msg_name = msg['message_name']
+            msg_topic = msg["message_topic"]
+            msg_type = msg["message_type"]
+            msg_name = msg["message_name"]
 
             # Import the message
-            exec("from {0}.msg import {1}".format(msg_type, msg_name))
+            exec(f"from {msg_type}.msg import {msg_name}")
 
             # Create subscriber and add to dictionary
-            self.cache_dict[msg_topic] = yield self.nh.subscribe(msg_topic, eval(msg_name))
+            self.cache_dict[msg_topic] = yield self.nh.subscribe(
+                msg_topic, eval(msg_name)
+            )
 
     @txros.util.cancellableInlineCallbacks
     def dump(self):
-        '''
+        """
         Save cached bags and save the next 'post_cache_time' seconds.
-        '''
+        """
         self.dumping = True
         # Make bag directory if it doesn't exist
-        directory = os.path.join(self.diag_dir, 'bags')
+        directory = os.path.join(self.diag_dir, "bags")
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        bag = rosbag.Bag(os.path.join(directory, str(int(time.time())) + '.bag'), 'w')
+        bag = rosbag.Bag(os.path.join(directory, str(int(time.time())) + ".bag"), "w")
 
         gen = self.read_from_cache()
 
         last_timestamps = dict(self.cache_dict)
 
-        print "Saving post-fail data. Do not exit."
+        print("Saving post-fail data. Do not exit.")
         for i in range(int(self.post_cache_time / self.time_step)):
             for key in self.cache_dict:
                 msg = self.cache_dict[key].get_last_message()
                 msg_time = self.cache_dict[key].get_last_message_time()
                 if msg is not None:
-                    if msg_time < self.nh.get_time() - rospy.Duration(.5):
+                    if msg_time < self.nh.get_time() - rospy.Duration(0.5):
                         # If the message is too old, forget about it.
                         continue
 
@@ -121,11 +127,11 @@ class BagManager(object):
                     bag.write(key, (yield msg), t=(yield msg_time))
                     # msgs.append([key, (yield msg), (yield msg_time)])
                 else:
-                    print "There's a problem recording {0}".format(key)
+                    print(f"There's a problem recording {key}")
 
             yield self.nh.sleep(self.time_step)
 
-        print "Saving pre-fail data. Do not exit."
+        print("Saving pre-fail data. Do not exit.")
         # We've written the post crash stuff now let's write the pre-crash data.
         for i in range(self.buffer_array_size):
             msgs = next(gen)

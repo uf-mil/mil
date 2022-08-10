@@ -3,6 +3,7 @@
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_datatypes.h>
+
 #include <pluginlib/class_list_macros.hpp>
 
 namespace odometry_utils
@@ -34,4 +35,4 @@ public:
 };
 
 PLUGINLIB_EXPORT_CLASS(odometry_utils::odometry_to_tf, nodelet::Nodelet);
-}
+}  // namespace odometry_utils

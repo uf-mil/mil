@@ -15,7 +15,7 @@ CATKIN_DIR="$HOME/catkin_ws"
 CATKIN_SOURCE_DIR="$CATKIN_DIR/src"
 MIL_REPO_DIR="$CATKIN_SOURCE_DIR/mil"
 
-# Clone repositry
+# Clone repository
 mil_clone_repo()
 {
   sudo apt install -y git

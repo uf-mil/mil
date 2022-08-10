@@ -1,16 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import sys
-import rospy
+
 import cv2
-from sensor_msgs.msg import Image
+import rospy
 from cv_bridge import CvBridge, CvBridgeError
 from HOG_detector import HOGDetector
+from sensor_msgs.msg import Image
 
 
 class HOG:
-
     def __init__(self, topic):
-        print topic
+        print(topic)
         self.hog = HOGDetector()
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber(topic, Image, self.callback)
@@ -22,17 +22,18 @@ class HOG:
             cv2.imshow("window", img)
             cv2.waitKey(20)
         except CvBridgeError as e:
-            print e
+            print(e)
 
 
 def main(args):
-    rospy.init_node('HOG', anonymous=True)
+    rospy.init_node("HOG", anonymous=True)
     HOG(args[1])
     try:
         rospy.spin()
     except KeyboardInterrupt:
-        print "Shutting down"
+        print("Shutting down")
     cv2.DestroyAllWindows()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main(sys.argv)

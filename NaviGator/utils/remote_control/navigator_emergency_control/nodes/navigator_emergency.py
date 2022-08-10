@@ -1,10 +1,7 @@
-#!/usr/bin/env python
-
-
-from remote_control_lib import RemoteControl
+#!/usr/bin/env python3
 import rospy
+from remote_control_lib import RemoteControl
 from sensor_msgs.msg import Joy
-
 
 __maintainer__ = "David Zobel"
 __email__ = "zobeldavid@ufl.edu"
@@ -12,11 +9,7 @@ __copyright__ = "Copyright 2016, MIL"
 __license__ = "MIT"
 
 
-rospy.init_node("emergency")
-
-
-class Joystick(object):
-
+class Joystick:
     def __init__(self):
         self.force_scale = rospy.get_param("/joystick_wrench/force_scale", 600)
         self.torque_scale = rospy.get_param("/joystick_wrench/torque_scale", 500)
@@ -27,11 +20,11 @@ class Joystick(object):
         self.active = False
         self.reset()
 
-    def reset(self):
-        '''
+    def reset(self) -> None:
+        """
         Used to reset the state of the controller. Sometimes when it
         disconnects then comes back online, the settings are all out of whack.
-        '''
+        """
         self.last_raise_kill = False
         self.last_clear_kill = False
         self.last_station_hold_state = False
@@ -61,10 +54,12 @@ class Joystick(object):
                     self.reset()
 
         else:
-            joy.header.stamp = rospy.Time.now()  # In the sim, stamps weren't working right
+            joy.header.stamp = (
+                rospy.Time.now()
+            )  # In the sim, stamps weren't working right
             self.last_joy = joy
 
-    def joy_recieved(self, joy):
+    def joy_recieved(self, joy: Joy) -> None:
         self.last_time = rospy.Time.now()
         self.check_for_timeout(joy)
 
@@ -79,7 +74,7 @@ class Joystick(object):
         thruster_deploy = bool(joy.buttons[5])
 
         if go_inactive and not self.last_go_inactive:
-            rospy.loginfo('Go inactive pressed. Going inactive')
+            rospy.loginfo("Go inactive pressed. Going inactive")
             self.reset()
             return
 
@@ -133,11 +128,11 @@ class Joystick(object):
         rotation = joy.axes[3] * self.torque_scale
         self.remote.publish_wrench(x, y, rotation, joy.header.stamp)
 
-    def die_check(self, event):
-        '''
+    def die_check(self, _: rospy.timer.TimerEvent) -> None:
+        """
         Publishes zeros after 2 seconds of no update
         in case node navigator_emergency_xbee dies
-        '''
+        """
         if self.active:
 
             # No new instructions after 2 seconds
@@ -148,6 +143,8 @@ class Joystick(object):
 
 
 if __name__ == "__main__":
+    rospy.init_node("emergency")
+
     emergency = Joystick()
     rospy.Timer(rospy.Duration(1), emergency.die_check, oneshot=False)
     rospy.spin()

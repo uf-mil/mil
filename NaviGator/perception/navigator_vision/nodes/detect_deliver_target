@@ -1,31 +1,47 @@
-#!/usr/bin/env python
-import rospy
-from mil_vision_tools import VisionNode, create_object_msg, ImageMux, auto_canny, RectFinder, putText_ul
-from mil_vision_tools import CentroidObjectsTracker, quaternion_from_rvec, contour_centroid
-from mil_tools import Image_Publisher, numpy_quat_pair_to_pose
-from geometry_msgs.msg import PoseStamped
-import numpy as np
+#!/usr/bin/env python3
 import cv2
+import numpy as np
+import rospy
+from geometry_msgs.msg import PoseStamped
+from mil_tools import Image_Publisher, numpy_quat_pair_to_pose
+from mil_vision_tools import (
+    CentroidObjectsTracker,
+    ImageMux,
+    RectFinder,
+    VisionNode,
+    auto_canny,
+    contour_centroid,
+    create_object_msg,
+    putText_ul,
+    quaternion_from_rvec,
+)
 
 __author__ = "Kevin Allen"
 
 
 class DetectDeliverTargetDetector(VisionNode):
+
     BORDER_THICKNESS_METERS = 0.0508
 
     def __init__(self):
-        self.min_area = rospy.get_param('~min_area', default=1000)
-        self.max_contour_score = rospy.get_param('~max_contour_score', default=0.03)
+        self.min_area = rospy.get_param("~min_area", default=1000)
+        self.max_contour_score = rospy.get_param("~max_contour_score", default=0.03)
         self.pose_pub = rospy.Publisher("~pose", PoseStamped, queue_size=3)
         self.tracker = CentroidObjectsTracker(max_distance=20.0)
-        self.large_target_model = RectFinder(length=0.500126 + self.BORDER_THICKNESS_METERS,
-                                             width=0.500126 + self.BORDER_THICKNESS_METERS)
-        self.small_target_model = RectFinder(length=0.249936 + self.BORDER_THICKNESS_METERS,
-                                             width=0.249936 + self.BORDER_THICKNESS_METERS)
-        self.image_mux = ImageMux(shape=(2, 2), labels=['Blur', 'Threshold', 'Edges', 'Found'])
+        self.large_target_model = RectFinder(
+            length=0.500126 + self.BORDER_THICKNESS_METERS,
+            width=0.500126 + self.BORDER_THICKNESS_METERS,
+        )
+        self.small_target_model = RectFinder(
+            length=0.249936 + self.BORDER_THICKNESS_METERS,
+            width=0.249936 + self.BORDER_THICKNESS_METERS,
+        )
+        self.image_mux = ImageMux(
+            shape=(2, 2), labels=["Blur", "Threshold", "Edges", "Found"]
+        )
         self.debug_pub = Image_Publisher("~debug")
         self.first_object_id = -1
-        super(DetectDeliverTargetDetector, self).__init__()
+        super().__init__()
 
     def find_objects(self, img):
         # Clear old objects from being tracked
@@ -75,21 +91,27 @@ class DetectDeliverTargetDetector(VisionNode):
 
             # Track this contour with the previous contours
             centroid = contour_centroid(c)
-            obj = self.tracker.add_observation(self._image_sub.last_image_time, np.array(centroid), data=corners)
+            obj = self.tracker.add_observation(
+                self._image_sub.last_image_time, np.array(centroid), data=corners
+            )
 
             # Draw this contour for debugging
             putText_ul(img, str(obj.id), centroid, color=(0, 0, 255), fontScale=2)
             cv2.drawContours(img, [corners], -1, (0, 255, 0), 3)
 
-            found.append(create_object_msg("target_large", contour=cnts[num - 1], confidence=1.0))
+            found.append(
+                create_object_msg("target_large", contour=cnts[num - 1], confidence=1.0)
+            )
 
         # Get objects which have persisted over many frames
-        persistent = self.tracker.get_persistent_objects(min_observations=8, min_age=rospy.Duration(1.5))
+        persistent = self.tracker.get_persistent_objects(
+            min_observations=8, min_age=rospy.Duration(1.5)
+        )
 
-        if len(persistent) > 0:
+        if persistent:
             if self.first_object_id == -1:
                 self.first_object_id = persistent[0].id
-                print 'FIRST DETECTED IS ', self.first_object_id
+                print("FIRST DETECTED IS ", self.first_object_id)
             for obj in persistent:
                 if obj.id != self.first_object_id:
                     continue
@@ -97,10 +119,12 @@ class DetectDeliverTargetDetector(VisionNode):
                 ps = PoseStamped()
                 ps.header = self._image_sub.last_image_header
                 # Get 3D pose of target use PnP
-                tvec, rvec = self.small_target_model.get_pose_3D(obj.data, cam=self.camera_model, rectified=True)
+                tvec, rvec = self.small_target_model.get_pose_3D(
+                    obj.data, cam=self.camera_model, rectified=True
+                )
                 # Throw out up/down and convert to quaternion
                 # rvec[1] = 0.
-                rvec[2] = 0.
+                rvec[2] = 0.0
                 rvec = rvec / np.linalg.norm(rvec)
                 ps.pose = numpy_quat_pair_to_pose(tvec, quaternion_from_rvec(rvec))
                 self.pose_pub.publish(ps)

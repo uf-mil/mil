@@ -88,6 +88,6 @@ private:
   static std::pair<Eigen::Vector3d, Eigen::Vector3d> limit(const Eigen::Vector3d &vmin, const Eigen::Vector3d &vmax,
                                                            const Eigen::Vector3d &delta);
 };
-};
+};  // namespace subjugator
 
 #endif

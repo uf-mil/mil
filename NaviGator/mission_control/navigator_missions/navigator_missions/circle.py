@@ -1,6 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import txros
-from navigator import Navigator
+
+from .navigator import Navigator
 
 
 class Circle(Navigator):
@@ -10,5 +11,5 @@ class Circle(Navigator):
         while True:
             p += [0, 1, 0]
 
-            self.move.set_position(p).go(move_type='skid', initial_plan_time=0)
-            yield self.nh.sleep(.1)
+            self.move.set_position(p).go(move_type="skid", initial_plan_time=0)
+            yield self.nh.sleep(0.1)

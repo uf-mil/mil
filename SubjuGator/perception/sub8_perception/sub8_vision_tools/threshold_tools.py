@@ -1,7 +1,8 @@
-import numpy as np
+from functools import lru_cache
+
 import cv2
+import numpy as np
 import rospy
-from mil_ros_tools.func_helpers import Cache
 
 
 def bgr_vec_to_hsv(vector):
@@ -11,8 +12,8 @@ def bgr_vec_to_hsv(vector):
     return np.squeeze(hsv)
 
 
-@Cache
-def get_threshold(parameter_basename, prefix='bgr'):
+@lru_cache(maxsize=None)
+def get_threshold(parameter_basename, prefix="bgr"):
     possible_params = rospy.get_param_names()
     bounds = []
 
@@ -30,13 +31,13 @@ def get_threshold(parameter_basename, prefix='bgr'):
     return np.vstack([lower_bound, upper_bound]).transpose()
 
 
-def param_thresh(rgb_image, parameter_basename, prefer='bgr'):
+def param_thresh(rgb_image, parameter_basename, prefer="bgr"):
     """This assumes a bgr encoding"""
     prefer = prefer.lower()
 
-    if prefer == 'bgr':
+    if prefer == "bgr":
         thresh_image = rgb_image
-    elif prefer == 'hsv':
+    elif prefer == "hsv":
         thresh_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
     else:
         raise TypeError
@@ -50,14 +51,14 @@ def grow_cluster(image, prior_range):
     pass
 
 
-if __name__ == '__main__':
-    from sklearn import cluster  # noqa
+if __name__ == "__main__":
     import visual_threshold_tools
     from mayavi import mlab
+    from sklearn import cluster  # noqa
 
-    img = cv2.imread('/home/sub8/Pictures/Selection_001.png')
-    cv2.imshow('ss', img)
-    thresh, _ = param_thresh(img, '/color/buoy/red')
+    img = cv2.imread("/home/sub8/Pictures/Selection_001.png")
+    cv2.imshow("ss", img)
+    thresh, _ = param_thresh(img, "/color/buoy/red")
     _range = np.array([[0.0, 0.0, 49.572], [56.661, 46.053, 201.8835]])
 
     seg_image = cv2.inRange(img, _range[0, :], _range[1, :])
@@ -77,16 +78,12 @@ if __name__ == '__main__':
     # clust = cluster.MeanShift(seeds=seeds)
     clust = cluster.MeanShift()
 
-    print rgb_list.shape
+    print(rgb_list.shape)
 
     clust.fit(all_list)
 
     # print clust.cluster_centers_
     visual_threshold_tools.points_with_labels(
-        all_list[:, 0],
-        all_list[:, 1],
-        all_list[:, 2],
-        clust.labels_,
-        scale_factor=5.0
+        all_list[:, 0], all_list[:, 1], all_list[:, 2], clust.labels_, scale_factor=5.0
     )
     mlab.show()

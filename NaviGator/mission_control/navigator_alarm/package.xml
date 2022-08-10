@@ -6,8 +6,8 @@
   <maintainer email="kma1660@gmail.com">Kevin Allen</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>ros_alarms</depend>
-  <depend>nav_msgs</depend>
   <depend>mil_tools</depend>
+  <depend>nav_msgs</depend>
+  <depend>ros_alarms</depend>
   <depend>rospy</depend>
 </package>

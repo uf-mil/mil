@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 from __future__ import division
-import numpy as np
+
 import sys
-import serial
-import rospy
-import rospkg
-import rosparam
-import sub8_thruster_comm as thrust_comm
-from sub8_exception import SubjuGatorException
+
 import mil_misc_tools.text_effects as te
+import numpy as np
+import rosparam
+import rospkg
+import rospy
+import serial
+import sub8_thruster_comm as thrust_comm
 from mil_misc_tools.terminal_input import get_ch
+from sub8_exception import SubjuGatorException
 
 __author__ = 'David Soto'
 

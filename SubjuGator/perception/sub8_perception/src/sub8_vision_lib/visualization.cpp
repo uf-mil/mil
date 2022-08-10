@@ -1,4 +1,5 @@
 #include <visualization_msgs/Marker.h>
+
 #include <sub8_vision_lib/visualization.hpp>
 
 namespace sub
@@ -155,4 +156,4 @@ void RvizVisualizer::visualize_torpedo_board(geometry_msgs::Pose& pose, Eigen::Q
   rviz_pub.publish(borders);
 }
 
-}  // End namespace "sub"
+}  // namespace sub

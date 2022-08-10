@@ -1,0 +1,13 @@
+roslibpy
+vcstool
+Pillow
+black
+modernize
+numpy
+matplotlib
+tqdm
+scipy
+sklearn
+pandas
+rtds_action
+myst-parser

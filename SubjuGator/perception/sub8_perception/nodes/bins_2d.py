@@ -1,14 +1,15 @@
-#!/usr/bin/env python
-import cv2
-import numpy as np
+#!/usr/bin/env python3
 import sys
-import rospy
+
+import cv2
 import image_geometry
 import mil_ros_tools
-from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D
-from std_msgs.msg import Header
+import numpy as np
+import rospy
 from geometry_msgs.msg import Pose2D
 from mil_msgs.msg import RangeStamped
+from std_msgs.msg import Header
+from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse
 
 
 def contour_sort(l):
@@ -45,7 +46,6 @@ def evaluate_bin(roi):
 
 
 class BinFinder:
-
     def __init__(self):
         rospy.sleep(1.0)
         self.bin_type = None
@@ -53,43 +53,46 @@ class BinFinder:
         self.last_draw_image = None
         self.last_image_time = None
         self.camera_model = None
-        self.pose_service = rospy.Service('vision/bin/2D', VisionRequest2D, self.request_bin)
-        self.image_sub = mil_ros_tools.Image_Subscriber('/down/left/image_rect_color', self.image_cb)
-        self.image_pub = mil_ros_tools.Image_Publisher('/vision/bin_2d/target_info')
+        self.pose_service = rospy.Service(
+            "vision/bin/2D", VisionRequest2D, self.request_bin
+        )
+        self.image_sub = mil_ros_tools.Image_Subscriber(
+            "/down/left/image_rect_color", self.image_cb
+        )
+        self.image_pub = mil_ros_tools.Image_Publisher("/vision/bin_2d/target_info")
         self.range = None
-        self.range_sub = rospy.Subscriber("dvl/range", RangeStamped, self.range_callback)
+        self.range_sub = rospy.Subscriber(
+            "dvl/range", RangeStamped, self.range_callback
+        )
 
         # Occasional status publisher
         self.timer = rospy.Timer(rospy.Duration(1.0), self.publish_target_info)
 
         self.bins = {
-            'orange': '/color/bin/orange',
-            'norange': '/color/bin/norange',
+            "orange": "/color/bin/orange",
+            "norange": "/color/bin/norange",
         }
 
     def request_bin(self, srv):
         self.bin_type = srv.target_name
-        if (self.last_image is not None):
+        if self.last_image is not None:
             response = self.find_single_bin(np.copy(self.last_image), srv.target_name)
 
             if response is False or response is None:
-                rospy.loginfo('did not find')
-                resp = VisionRequest2DResponse(header=mil_ros_tools.make_header(frame='/down'),
-                                               found=False)
+                rospy.loginfo("did not find")
+                resp = VisionRequest2DResponse(
+                    header=mil_ros_tools.make_header(frame="/down"), found=False
+                )
             else:
                 # Fill in
                 center, radius = response
                 resp = VisionRequest2DResponse(
-                    header=Header(stamp=self.last_image_time, frame_id='/down'),
-                    pose=Pose2D(
-                        x=center[0],
-                        y=center[1],
-                        theta=radius
-                    ),
+                    header=Header(stamp=self.last_image_time, frame_id="/down"),
+                    pose=Pose2D(x=center[0], y=center[1], theta=radius),
                     max_x=self.last_image.shape[0],
                     max_y=self.last_image.shape[1],
                     camera_info=self.image_sub.camera_info,
-                    found=True
+                    found=True,
                 )
             return resp
 
@@ -101,7 +104,7 @@ class BinFinder:
             self.image_pub.publish(self.last_draw_image)
 
     def image_cb(self, image):
-        '''Hang on to last image'''
+        """Hang on to last image"""
         self.last_image = image
         self.last_image_time = self.image_sub.last_image_time
         if self.camera_model is None:
@@ -113,14 +116,18 @@ class BinFinder:
 
     def find_single_bin(self, img, bin_type):
         """Find the bins and their orientations."""
-        assert bin_type in self.bins[bin_type], "Bins_2d does not know bin color: {}".format(bin_type)
+        assert (
+            bin_type in self.bins[bin_type]
+        ), f"Bins_2d does not know bin color: {bin_type}"
         if img is not None:
             kernel = np.ones((2, 2), np.float32) / 4
             img = cv2.filter2D(img, -1, kernel)
             debug_image = np.copy(img)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             ret, img = cv2.threshold(img, 254, 255, cv2.THRESH_BINARY)
-            contours, hierarchy = cv2.findContours(np.copy(img), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            contours, hierarchy = cv2.findContours(
+                np.copy(img), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+            )
             contours = contour_sort(contours)
             """This finds the bins and looks for the one that is orange or is not
                orange. Each bin is given an orangeness rating and either the most
@@ -128,7 +135,7 @@ class BinFinder:
             """
             if len(contours) > 0:
                 bins = 2
-                if (self.bin_type == 'orange'):
+                if self.bin_type == "orange":
                     orangeness = 0
                 else:
                     orangeness = 100000
@@ -136,14 +143,15 @@ class BinFinder:
                     bins = len(contours)
                 for i in range(0, bins + 1):
                     x, y, w, h = cv2.boundingRect(contours[i])
-                    roi = debug_image[y: y + h, x: x + w]
+                    roi = debug_image[y : y + h, x : x + w]
                     temp = evaluate_bin(roi)
-                    if ((orangeness > temp and self.bin_type == 'norange') or
-                       (orangeness < temp and self.bin_type == 'orange')):
+                    if (orangeness > temp and self.bin_type == "norange") or (
+                        orangeness < temp and self.bin_type == "orange"
+                    ):
                         orangeness = temp
                         M = cv2.moments(contours[i])
-                        cx = int(M['m10'] / M['m00'])
-                        cy = int(M['m01'] / M['m00'])
+                        cx = int(M["m10"] / M["m00"])
+                        cy = int(M["m01"] / M["m00"])
                         img_h, img_w, _ = np.shape(debug_image)
                         point = (cx, cy)
                         (_, _), (_, _), rad = cv2.fitEllipse(contours[i])
@@ -162,12 +170,14 @@ class BinFinder:
                     pixels = np.asarray([pixels[0], pixels[1], 1])
                     ray = _P.dot(pixels)
                     tuple_center = self.range * ray
-                    tuple_center[2] = -tuple_center[2] + 0.45 + 1  # height of the bin and some buffer
+                    tuple_center[2] = (
+                        -tuple_center[2] + 0.45 + 1
+                    )  # height of the bin and some buffer
                     self.last_draw_image = debug_image
                     return tuple_center, rad
 
     def range_callback(self, msg):
-        '''Handle range data grabbed from dvl'''
+        """Handle range data grabbed from dvl"""
         self.range = msg.range
 
     def find_bins(self, img, srv):
@@ -178,6 +188,7 @@ def main(args):
     BinFinder()
     rospy.spin()
 
-if __name__ == '__main__':
-    rospy.init_node('bin_vision')
+
+if __name__ == "__main__":
+    rospy.init_node("bin_vision")
     main(sys.argv)

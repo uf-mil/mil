@@ -1,9 +1,9 @@
 #!/bin/bash
-# This is a script that is meant to facilitate multiple people using one server over the network for the development of autonymous systems using ROS. This script is meant to be run on the client's computer always.
+# This is a script that is meant to facilitate multiple people using one server over the network for the development of autonomous systems using ROS. This script is meant to be run on the client's computer always.
 
 #This script runs each client a docker container on the network (docker host network), puts each client in a bash session the docker container, and starts a tmux session (detached) on the client's machine with the appropriate ros environment variables such that all ros info (topics/ services/ etc..) are avlalible in this tmux session.
 
-#This script also supports file sharing between the dev server (zobelisk) and the cleint's machine to help facilitate GUI text editors, but this requires an open ssh server to be run on the client's machine. This feature can be turned off with --safe or -s option.
+#This script also supports file sharing between the dev server (zobelisk) and the client's machine to help facilitate GUI text editors, but this requires an open ssh server to be run on the client's machine. This feature can be turned off with --safe or -s option.
 
 set -euo pipefail
 

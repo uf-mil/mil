@@ -5,9 +5,9 @@
         <rosparam param="actuators">
           # Stores information about each actuator.
           # Each actuator can be up to 2 physical valves (such as an extend/retract for a piston)
-          # Actuators can be of type 'set' (open / close atomicly) or 'pulse' (open for a short time, then close)
+          # Actuators can be of type 'set' (open / close atomically) or 'pulse' (open for a short time, then close)
 
-          # Simpliest configuration, sets up a 'set' actuator where true opens id 7 and false closes id 7
+          # Simplest configuration, sets up a 'set' actuator where true opens id 7 and false closes id 7
           my_actuator: 7
 
           # Example of a pulse actuator, will open 1 for 1 second then close

@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-from Sabertooth2x12 import Sabertooth2x12
-import rospy
 import actionlib
-from ros_alarms import AlarmListener
-from navigator_msgs.msg import ShooterDoAction, ShooterDoActionFeedback, ShooterDoActionResult
+import rospy
+from navigator_msgs.msg import (ShooterDoAction, ShooterDoActionFeedback,
+                                ShooterDoActionResult)
 from navigator_msgs.srv import ShooterManual, ShooterManualResponse
-from std_srvs.srv import Trigger, TriggerResponse, TriggerRequest
+from ros_alarms import AlarmListener
+from Sabertooth2x12 import Sabertooth2x12
 from std_msgs.msg import String
+from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
 
 
 class ShooterControl:

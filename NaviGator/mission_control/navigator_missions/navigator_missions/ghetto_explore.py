@@ -1,6 +1,6 @@
-#!/usr/bin/env python
-import txros
+#!/usr/bin/env python3
 import mil_tools as nt
+import txros
 from twisted.internet import defer
 
 
@@ -15,10 +15,10 @@ def myfunc(navigator, **kwargs):
         try:
             objects = yield navigator.database_query(e)
             o = objects.objects[0]
-            print o.name
+            print(o.name)
             pos = nt.rosmsg_to_numpy(o.position)
             yield navigator.move.set_position(pos).go()
-            nt.fprint(o.name, msg_color='green')
+            nt.fprint(o.name, msg_color="green")
 
         except:
             nt.fprint("Missing Marker", msg_color="red")
@@ -27,6 +27,6 @@ def myfunc(navigator, **kwargs):
 @txros.util.cancellableInlineCallbacks
 def main(navigator, **kwargs):
     navigator.change_wrench("autonomous")
-    yield navigator.nh.sleep(.1)
+    yield navigator.nh.sleep(0.1)
     good = yield myfunc(navigator)
     defer.returnValue(good)

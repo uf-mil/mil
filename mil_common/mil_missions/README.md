@@ -19,7 +19,7 @@ To run the GUI, open rqt and add the plugin or from the terminal run:
 MIL Missions provides a command line interface to trigger a new mission, list available missions, and cancel the current mission.
 
 ### Running a new mission
-To run the Wait mission (which simply sleeps for a specified time) with parameters "5" (to run for 5 seconds)
+To run the Wait mission (which sleeps for a specified time) with parameters "5" (to run for 5 seconds)
 ```runmission Wait 5```
 
 ### Listing available missions
@@ -39,7 +39,7 @@ To use MIL missions on a new Robotic platform, you need to do the following:
 ### Implementing a BaseClass
 Here is an example BaseClass implementation:
 ```
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from mil_missions_core import BaseMission
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose
@@ -66,7 +66,7 @@ class MyRobotBaseMission(BaseMission):
     def move_to(cls, pose):
         goal = cls._move_to_client.send_goal(MoveToGoal(pose=pose))
         return goal.get_result()
-        
+
 
     @classmethod
     def pose_cb(cls, odom):
@@ -106,7 +106,7 @@ class MoveToWaypoint(MyRobotBaseMission):
         if not result.success:
             raise Exception('Error moving, {}'.format(result.failure_reason)
         defer.returnValue('Move completed!')
-	   
+
 ```
 Again, some things to note:
 * The mission inherits ExampleBaseMission, which allows it to use the move_to function
@@ -114,7 +114,7 @@ Again, some things to note:
 * The mission raises exceptions if something goes wrong. When the server sees an exception is raised, it aborts the mission and sends the error message as the result
 * Again, the run function has ```@util.cancellableInlineCallbacks``` because it waits on the move goal to complete
 * The mission uses ```self.send_feedback```, which sends a string to connected clients about what the mission is doing/thinking about right now
-* The mission does very little computation, it just interfaces with other ROS systems. This is how missions are intended to work. Any serious computation should be done in other nodes.
+* The mission does very little computation, it interfaces with other ROS systems. This is how missions are intended to work. Any serious computation should be done in other nodes.
 
 ### Launching the mission runner
 Now that we have a base mission and at least one mission, we can run the mission server using this new system. For this, lets use a launch file so we don't need to type the parameters each time.
@@ -131,7 +131,5 @@ This assumes the above code was written in a python module called ```myrobot_mis
 * Imports ```MyRobotBaseMission```
 * Calls ```MyRobotBaseMission._init(self)```, passing it the mission runner object (which contains the node handle) to the base mission. If this init function fails, the mission server will crash
 * Imports all other classes in the ```myrobot_missions``` module which extend ```MyRobotBaseMission```, including our example ```MoveToWaypoint``` mission
-* Calls the ```init()``` function for each mission, if it exists. 
+* Calls the ```init()``` function for each mission, if it exists.
 * Waits for a new mission to be triggered from the CLI or GUI (see usage guide above)
-
-

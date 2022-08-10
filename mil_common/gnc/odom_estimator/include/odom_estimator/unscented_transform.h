@@ -162,6 +162,6 @@ public:
   {
   }
 };
-}
+}  // namespace odom_estimator
 
 #endif

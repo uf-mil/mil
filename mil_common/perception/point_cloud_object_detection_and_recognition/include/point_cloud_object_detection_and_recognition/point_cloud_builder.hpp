@@ -1,12 +1,11 @@
 #pragma once
 
-#include "pcodar_types.hpp"
-
+#include <pcl/filters/extract_indices.h>
 #include <sensor_msgs/PointCloud2.h>
 
 #include <boost/circular_buffer.hpp>
 
-#include <pcl/filters/extract_indices.h>
+#include "pcodar_types.hpp"
 
 namespace pcodar
 {
@@ -31,8 +30,8 @@ private:
   /// Accumulated pointcloud kept up to date with each call to add_point_cloud
   point_cloud_ptr mega_cloud_;
   /// Internal buffer of pointclouds
-  /// @TODO consider more efficent implementation, like storing indicies of older pointclouds so
+  /// @TODO consider more efficient implementation, like storing indices of older pointclouds so
   ///       the accumulated cloud is not reassembled on each addition
   boost::circular_buffer<point_cloud_ptr> prev_clouds_;
 };
-}  // pcodar namespace
+}  // namespace pcodar

@@ -1,38 +1,41 @@
-#!/usr/bin/python2
-'''
+#!/usr/bin/python3
+"""
 Fixes an URDF file which uses hector_gazebo_plugins for gps/imu.
-Beacause gazebo_ros's URDF->SDF blindly replaces link name strings with base_link, thus
+Because gazebo_ros's URDF->SDF blindly replaces link name strings with base_link, thus
 making the imu/gps plugins measure from base_link but report a different link.
 This fixes the urdf to have these sensors also be at baselink so transforms work correctly.
 Note: currently hardcoded for VRX purposes. Simply change the strings to work more genericly.
-'''
-from __future__ import print_function
-import xml.etree.ElementTree as ET
+"""
+from __future__ import annotations
+
 import sys
+import xml.etree.ElementTree as ET
 
 
-def set_joint_origin_to_zero(root, name):
-    tag = root.find("*[@name='{}']".format(name))
+def set_joint_origin_to_zero(root: ET.Element, name: str):
+    tag = root.find(f"*[@name='{name}']")
+    assert isinstance(tag, ET.Element)
     origin = tag.find("origin")
-    origin.set('rpy', '0 0 0')
-    origin.set('xyz', '0 0 0')
+    assert isinstance(origin, ET.Element)
+    origin.set("rpy", "0 0 0")
+    origin.set("xyz", "0 0 0")
 
 
-def fix_gps(root):
-    set_joint_origin_to_zero(root, 'wamv/gps_wamv_joint')
+def fix_gps(root: ET.Element):
+    set_joint_origin_to_zero(root, "wamv/gps_wamv_joint")
 
 
-def fix_imu(root):
-    set_joint_origin_to_zero(root, 'wamv/imu_wamv_joint')
+def fix_imu(root: ET.Element):
+    set_joint_origin_to_zero(root, "wamv/imu_wamv_joint")
 
 
-def fix_file(filename):
+def fix_file(filename: str):
     tree = ET.parse(filename)
     root = tree.getroot()
-    fix_gps(root) 
+    fix_gps(root)
     fix_imu(root)
-    print(ET.tostring(root))
-    
-    
-if __name__ == '__main__':
+    print(ET.tostring(root, encoding="unicode"))
+
+
+if __name__ == "__main__":
     fix_file(sys.argv[1])

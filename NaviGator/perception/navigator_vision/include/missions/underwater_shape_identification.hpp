@@ -1,23 +1,20 @@
 #pragma once
 
-#include <cmath>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
-#include <boost/filesystem.hpp>
-
-#include <mil_vision_lib/image_acquisition/ros_camera_stream.hpp>
-#include <mil_vision_lib/image_filtering.hpp>
-
 #include <ros/package.h>
 #include <ros/ros.h>
 
+#include <boost/filesystem.hpp>
+#include <cmath>
+#include <iostream>
+#include <memory>
+#include <mil_vision_lib/image_acquisition/ros_camera_stream.hpp>
+#include <mil_vision_lib/image_filtering.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace nav
 {

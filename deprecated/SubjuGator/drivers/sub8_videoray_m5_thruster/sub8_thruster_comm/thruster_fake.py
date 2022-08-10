@@ -86,9 +86,9 @@ if __name__ == '__main__':
     Module test code
     TODO: unit-test this if not already done
     '''
-    import rospkg
-    import rosparam
     import numpy.random as npr  # haha
+    import rosparam
+    import rospkg
     sub8_thruster_mapper = rospkg.RosPack().get_path('sub8_thruster_mapper')
     thruster_layout = rosparam.load_file(
         sub8_thruster_mapper + '/config/thruster_layout.yaml')[0][0]

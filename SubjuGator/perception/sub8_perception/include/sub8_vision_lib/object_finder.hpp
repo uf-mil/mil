@@ -1,29 +1,27 @@
 #pragma once
-#include <algorithm>
-#include <boost/bind.hpp>
-#include <boost/thread.hpp>
-#include <iostream>
-#include <stdexcept>
-#include <string>
-#include <utility>  // std::pair
-#include <vector>
-
-#include <eigen_conversions/eigen_msg.h>
-#include <Eigen/Core>
-#include <Eigen/StdVector>
-#include <opencv2/opencv.hpp>
-
 #include <cv_bridge/cv_bridge.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <image_transport/image_transport.h>
 #include <ros/ros.h>
 #include <sensor_msgs/image_encodings.h>
-#include <tf/transform_listener.h>
-
 #include <sub8_msgs/TBDetectionSwitch.h>
 #include <sub8_msgs/TorpBoardPoseRequest.h>
+#include <tf/transform_listener.h>
+
+#include <Eigen/Core>
+#include <Eigen/StdVector>
+#include <algorithm>
+#include <boost/bind.hpp>
+#include <boost/thread.hpp>
+#include <iostream>
 #include <mil_vision_lib/cv_tools.hpp>
 #include <mil_vision_lib/visualization.hpp>
+#include <opencv2/opencv.hpp>
+#include <stdexcept>
+#include <string>
+#include <utility>  // std::pair
+#include <vector>
 
 // #define SEGMENTATION_DEBUG
 

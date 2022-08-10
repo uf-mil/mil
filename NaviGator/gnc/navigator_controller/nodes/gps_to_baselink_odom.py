@@ -1,23 +1,24 @@
-#!/usr/bin/env python
-#this is a cameron problem https://answers.ros.org/question/326226/importerror-dynamic-module-does-not-define-module-export-function-pyinit__tf2/
-import rospy
-from nav_msgs.msg import Odometry
+#!/usr/bin/env python3
 import math
-import tf
 
-#Defines a service that returns the position of the acoustic beacon from odom and the range_bearing topic
-class GPSToBaseLink():
+import rospy
+import tf
+from nav_msgs.msg import Odometry
+
+
+# Defines a service that returns the position of the acoustic beacon from odom and the range_bearing topic
+class GPSToBaseLink:
     def __init__(self):
         rospy.init_node("gps_base_link_odom")
-        self.odom = rospy.Subscriber('/odom_gps', Odometry, self.odometrySubscriber)
-        self.pub = rospy.Publisher('/odom', Odometry, queue_size=10)
+        self.odom = rospy.Subscriber("/odom_gps", Odometry, self.odometrySubscriber)
+        self.pub = rospy.Publisher("/odom", Odometry, queue_size=10)
         rospy.spin()
 
-    #Requires both odom and range_bearing to be publishing data
+    # Requires both odom and range_bearing to be publishing data
     def odometrySubscriber(self, msg):
 
         base_link_odom = msg
-        pose = [[0,0,0],[0,0,0,0]]
+        pose = [[0, 0, 0], [0, 0, 0, 0]]
 
         pose[0][0] = msg.pose.pose.position.x
         pose[0][1] = msg.pose.pose.position.y
@@ -39,10 +40,8 @@ class GPSToBaseLink():
 
         self.pub.publish(base_link_odom)
 
-        
-
     def get_base_link_odom(self, gps_pose):
-        '''Provides odom with reference to base link instead of gps'''
+        """Provides odom with reference to base link instead of gps"""
         gps_offset = 0.85
         (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(gps_pose[1])
         dx = gps_offset * math.cos(yaw)
@@ -54,5 +53,5 @@ class GPSToBaseLink():
         return base_link_pose
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     GPSToBaseLink()

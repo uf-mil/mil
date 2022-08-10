@@ -1,15 +1,16 @@
 # This file describes the network interfaces available on your system
 # For more information, see netplan(5).
+---
 network:
   version: 2
   renderer: networkd
   ethernets:
     enp6s0:
-      dhcp4: no
+      dhcp4: false
     enx0050b61edace:
-      dhcp4: no
+      dhcp4: false
     enp0s31f6:
-      dhcp4: no
+      dhcp4: false
   bridges:
     br0:
       addresses:

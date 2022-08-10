@@ -2,8 +2,10 @@
 #include <navigator_msgs/GetDockShape.h>
 #include <navigator_msgs/GetDockShapes.h>
 #include <ros/ros.h>
+
 #include <algorithm>
 #include <vector>
+
 #include "TrackedShape.h"
 
 class ShapeTracker

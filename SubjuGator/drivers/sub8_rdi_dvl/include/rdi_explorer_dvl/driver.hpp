@@ -1,17 +1,15 @@
 #pragma once
 
-#include <cmath>
-#include <fstream>
+#include <mil_msgs/RangeStamped.h>
+#include <mil_msgs/VelocityMeasurements.h>
 
 #include <boost/asio/serial_port.hpp>
 #include <boost/foreach.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/none.hpp>
-
+#include <cmath>
+#include <fstream>
 #include <mil_tools/msg_helpers.hpp>
-
-#include <mil_msgs/RangeStamped.h>
-#include <mil_msgs/VelocityMeasurements.h>
 
 namespace rdi_explorer_dvl
 {
@@ -32,7 +30,7 @@ private:
 
   const std::string port;
   const int baudrate;
-  boost::asio::io_service io;
+  boost::asio::io_context io;
   boost::asio::serial_port p;
 
   /*

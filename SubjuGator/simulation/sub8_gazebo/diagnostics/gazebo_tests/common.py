@@ -1,24 +1,25 @@
-from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Pose, Vector3
-from gazebo_msgs.srv import SetModelState, SetModelStateRequest, DeleteModel, SpawnModel
-from gazebo_msgs.msg import ModelState, ModelStates
-from kill_handling.srv import SetKill, SetKillRequest
-from kill_handling.msg import Kill
-from mil_ros_tools import numpy_to_twist
 import txros
+from gazebo_msgs.msg import ModelState, ModelStates
+from gazebo_msgs.srv import DeleteModel, SetModelState, SetModelStateRequest, SpawnModel
+from geometry_msgs.msg import Pose, Vector3
+from kill_handling.msg import Kill
+from kill_handling.srv import SetKill, SetKillRequest
+from mil_ros_tools import numpy_to_twist
+from nav_msgs.msg import Odometry
 
 
-class Job(object):
+class Job:
 
     """Inherit from this!"""
-    _job_name = 'generic job'
+
+    _job_name = "generic job"
 
     def __init__(self, nh):
         self.nh = nh
-        self.true_pose_sub = nh.subscribe('/world_odom', Odometry)
-        self.delete_model = nh.get_service_client('/gazebo/delete_model', DeleteModel)
-        self.spawn_model = nh.get_service_client('/gazebo/spawn_sdf_model', SpawnModel)
-        self.model_states = nh.subscribe('/gazebo/model_states', ModelStates)
+        self.true_pose_sub = nh.subscribe("/world_odom", Odometry)
+        self.delete_model = nh.get_service_client("/gazebo/delete_model", DeleteModel)
+        self.spawn_model = nh.get_service_client("/gazebo/spawn_sdf_model", SpawnModel)
+        self.model_states = nh.subscribe("/gazebo/model_states", ModelStates)
 
     @property
     def true_pose(self):
@@ -41,24 +42,25 @@ class Job(object):
         raise NotImplementedError
 
     @txros.util.cancellableInlineCallbacks
-    def set_model_position(self, position, model='sub8'):
+    def set_model_position(self, position, model="sub8"):
         current_pose = yield self.true_pose
         pose = Pose(
-            position=Vector3(*position),
-            orientation=current_pose.pose.pose.orientation
+            position=Vector3(*position), orientation=current_pose.pose.pose.orientation
         )
         yield self.set_model_pose(pose, model=model)
 
     @txros.util.cancellableInlineCallbacks
-    def set_model_pose(self, pose, twist=None, model='sub8'):
-        '''
+    def set_model_pose(self, pose, twist=None, model="sub8"):
+        """
         Set the position of 'model' to 'pose'.
         It may be helpful to kill the sub before moving it.
 
         TODO:
             - Deprecate kill stuff
-        '''
-        set_state = yield self.nh.get_service_client('/gazebo/set_model_state', SetModelState)
+        """
+        set_state = yield self.nh.get_service_client(
+            "/gazebo/set_model_state", SetModelState
+        )
 
         if twist is None:
             twist = numpy_to_twist([0, 0, 0], [0, 0, 0])
@@ -68,14 +70,14 @@ class Job(object):
         model_state.pose = pose
         model_state.twist = twist
 
-        if model == 'sub8':
+        if model == "sub8":
             # TODO: Deprecate kill stuff (Zach's PR upcoming)
-            kill = self.nh.get_service_client('/set_kill', SetKill)
-            yield kill(SetKillRequest(kill=Kill(id='initial', active=False)))
+            kill = self.nh.get_service_client("/set_kill", SetKill)
+            yield kill(SetKillRequest(kill=Kill(id="initial", active=False)))
             yield kill(SetKillRequest(kill=Kill(active=True)))
-            yield self.nh.sleep(.1)
+            yield self.nh.sleep(0.1)
             yield set_state(SetModelStateRequest(model_state))
-            yield self.nh.sleep(.1)
+            yield self.nh.sleep(0.1)
             yield kill(SetKillRequest(kill=Kill(active=False)))
         else:
             set_state(SetModelStateRequest(model_state))

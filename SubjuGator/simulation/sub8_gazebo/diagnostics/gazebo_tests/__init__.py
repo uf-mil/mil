@@ -4,7 +4,7 @@ import os
 import sys
 
 for module in os.listdir(os.path.dirname(__file__)):
-    if module == '__init__.py' or module[-3:] != '.py':
+    if module == "__init__.py" or module[-3:] != ".py":
         continue
     # TODO: Something more sophisticated
     __import__(module[:-3], locals(), globals())

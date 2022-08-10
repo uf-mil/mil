@@ -1,14 +1,13 @@
 #ifndef GUARD_MJABIWMKOFIHVAOG
 #define GUARD_MJABIWMKOFIHVAOG
 
-#include <boost/math/special_functions/sinc.hpp>
-
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
-
 #include <eigen_conversions/eigen_msg.h>
 #include <geometry_msgs/Vector3.h>
 #include <tf_conversions/tf_eigen.h>
+
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include <boost/math/special_functions/sinc.hpp>
 
 namespace odom_estimator
 {
@@ -118,6 +117,6 @@ void assert_none_nan(const Eigen::MatrixBase<Derived> &m)
     }
   }
 }
-}
+}  // namespace odom_estimator
 
 #endif

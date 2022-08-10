@@ -1,5 +1,5 @@
-import numpy as np
 import cv2
+import numpy as np
 from scipy.signal import ricker
 
 
@@ -48,7 +48,7 @@ def conv_features(image):
     Returns an N channel image
     """
     all_convolutions = []
-    avg = np.ones((15, 15)) / (15. * 15.)
+    avg = np.ones((15, 15)) / (15.0 * 15.0)
 
     for kernel in useful_kernels:
         # Convolve with kernel
@@ -60,6 +60,7 @@ def conv_features(image):
         all_convolutions.append(flt)
 
     return np.dstack(all_convolutions)
+
 
 useful_kernels = [
     circle_kernel(5),
@@ -75,19 +76,19 @@ useful_kernels = [
 # I know this looks ugly.
 ksize = 10
 box = np.ones((ksize, ksize))
-box[ksize // 2:, :] = -1
+box[ksize // 2 :, :] = -1
 useful_kernels.append(np.copy(box))
 
 box = np.ones((ksize, ksize))
-box[:ksize // 2, :] = -1
+box[: ksize // 2, :] = -1
 useful_kernels.append(np.copy(box))
 
 box = np.ones((ksize, ksize))
-box[:, ksize // 2:] = -1
+box[:, ksize // 2 :] = -1
 useful_kernels.append(np.copy(box))
 
 box = np.ones((ksize, ksize))
-box[:, :ksize // 2] = -1
+box[:, : ksize // 2] = -1
 useful_kernels.append(np.copy(box))
 
 # box = np.ones((ksize * 2, ksize * 2))

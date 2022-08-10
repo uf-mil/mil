@@ -1,23 +1,25 @@
 """Use the DBHelper class to interface with the Database without having to deal with ROS things."""
-from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
-from nav_msgs.msg import Odometry
-from twisted.internet import defer, threads
-from txros import util
-import time
 import sys
-from sets import Set
-from missing_perception_object import MissingPerceptionObject
+import time
+
 import mil_tools as nt
 import numpy as np
+from nav_msgs.msg import Odometry
+from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+from twisted.internet import defer, threads
+from txros import util
+
+from .missing_perception_object import MissingPerceptionObject
+
 __author__ = "Tess Bianchi"
 
 
-class DBHelper(object):
+class DBHelper:
     """DBHelper class."""
 
     def __init__(self, nh):
         """Initialize the DB helper class."""
-        self.found = Set()
+        self.found = set()
         self.nh = nh
         self.position = None
         self.rot = None
@@ -32,10 +34,12 @@ class DBHelper(object):
     def init_(self, navigator=None):
         """Initialize the txros parts of the DBHelper."""
         # self._sub_database = yield self.nh.subscribe('/database/objects', PerceptionObjectArray, self.object_cb)
-        self._database = yield self.nh.get_service_client("/database/requests", ObjectDBQuery)
+        self._database = yield self.nh.get_service_client(
+            "/database/requests", ObjectDBQuery
+        )
         self.navigator = navigator
         if navigator is None:
-            self._odom_sub = yield self.nh.subscribe('/odom', Odometry, self._odom_cb)
+            self._odom_sub = yield self.nh.subscribe("/odom", Odometry, self._odom_cb)
         else:
             self.position = yield navigator.tx_pose
             self.position = self.position[0]
@@ -46,9 +50,9 @@ class DBHelper(object):
 
     @util.cancellableInlineCallbacks
     def get_object_by_id(self, my_id):
-        print my_id
+        print(my_id)
         req = ObjectDBQueryRequest()
-        req.name = 'all'
+        req.name = "all"
         resp = yield self._database(req)
         ans = [obj for obj in resp.objects if obj.id == my_id][0]
         defer.returnValue(ans)
@@ -62,9 +66,9 @@ class DBHelper(object):
         """
         self.new_object_subscriber = cb
         req = ObjectDBQueryRequest()
-        req.name = 'all'
+        req.name = "all"
         resp = yield self._database(req)
-        req.name = 'All'
+        req.name = "All"
         resp1 = yield self._database(req)
         for o in resp.objects:
             # The is upper call is because the first case is upper case if it is a 'fake' object... WHYYYYY
@@ -81,11 +85,11 @@ class DBHelper(object):
     @util.cancellableInlineCallbacks
     def get_unknown_and_low_conf(self):
         req = ObjectDBQueryRequest()
-        req.name = 'all'
+        req.name = "all"
         resp = yield self._database(req)
         m = []
         for o in resp.objects:
-            if o.name == 'unknown':
+            if o.name == "unknown":
                 m.append(o)
             elif o.confidence < 50:
                 pass
@@ -127,7 +131,7 @@ class DBHelper(object):
 
     def ensure_object_permanence(self, object_dep, cb):
         """Ensure that all the objects in the object_dep list remain in the database.
-           Call the callback if this isn't true."""
+        Call the callback if this isn't true."""
         if object_dep is None or cb is None:
             return
         self.ensuring_objects = True
@@ -183,7 +187,9 @@ class DBHelper(object):
             position = yield self.navigator.tx_pose
             position = position[0]
             self.position = position
-        defer.returnValue(np.linalg.norm(nt.rosmsg_to_numpy(x.position) - self.position))
+        defer.returnValue(
+            np.linalg.norm(nt.rosmsg_to_numpy(x.position) - self.position)
+        )
 
     @util.cancellableInlineCallbacks
     def get_object(self, object_name, volume_only=False, thresh=50, thresh_strict=50):
@@ -234,7 +240,7 @@ class DBHelper(object):
     def wait_for_additional_objects(self, timeout=60):
         num_items = self.num_items
         start = time()
-        while(timeout < time() - start):
+        while timeout < time() - start:
             if self.num_items > num_items:
                 return True
         return False
@@ -250,7 +256,7 @@ class DBHelper(object):
     @util.cancellableInlineCallbacks
     def get_objects_in_radius(self, pos, radius, objects="all"):
         req = ObjectDBQueryRequest()
-        req.name = 'all'
+        req.name = "all"
         resp = yield self._database(req)
         ans = []
 

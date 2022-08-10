@@ -21,10 +21,10 @@
   <node pkg="tf2_ros" type="static_transform_publisher" name="gps_base_link_fix" args="0 0 0 0 0 0 1 wamv/base_link wamv/gps_wamv_link" />
   <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_enu_fix" args="0 0 0 0 0 0 1 enu wamv/base_link" />
 
-  <node pkg="tf" type="static_transform_publisher" name="right_camera_optical" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 wamv/front_right_camera_link wamv/front_right_camera_link_optical 100" />
-  <!--<node pkg="tf2_ros" type="static_transform_publisher" name="right_camera_optical" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 front_right_camera_link front_right_camera_link_optical" />-->
+  <!--<node pkg="tf" type="static_transform_publisher" name="right_camera_optical" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 wamv/front_right_camera_link wamv/front_right_camera_link_optical 100" />-->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="right_camera_optical" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 front_right_camera_link front_right_camera_link_optical" />
 
-  <node pkg="tf" type="static_transform_publisher" name="left_camera_optical" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 wamv/front_left_camera_link wamv/front_left_camera_link_optical 100" />
-  <!--<node pkg="tf2_ros" type="static_transform_publisher" name="left_camera_optical" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 front_left_camera_link front_left_camera_link_optical" />-->
+  <!--<node pkg="tf" type="static_transform_publisher" name="left_camera_optical" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 wamv/front_left_camera_link wamv/front_left_camera_link_optical 100" />-->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="left_camera_optical" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 front_left_camera_link front_left_camera_link_optical" />
 
 </launch>

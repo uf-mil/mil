@@ -1,30 +1,36 @@
-#!/usr/bin/env python
-from __future__ import division
+#!/usr/bin/env python3
+from typing import Sequence
 
+import mil_ros_tools
 import numpy as np
 import rospy
 import visualization_msgs.msg as visualization_msgs
-from visualization_msgs.msg import Marker, InteractiveMarker, InteractiveMarkerControl
-from interactive_markers.interactive_marker_server import InteractiveMarkerServer
-
 from geometry_msgs.msg import Pose, Vector3
-from std_msgs.msg import ColorRGBA, Float64
-from mil_msgs.msg import RangeStamped, DepthStamped
+from interactive_markers.interactive_marker_server import InteractiveMarkerServer
+from mil_msgs.msg import DepthStamped, RangeStamped
+
 # from sub8_alarm import AlarmListener, AlarmBroadcaster
-from ros_alarms import AlarmBroadcaster, AlarmListener
-import mil_ros_tools
+from ros_alarms import Alarm, AlarmBroadcaster, AlarmListener
+from std_msgs.msg import ColorRGBA, Float64
+from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, Marker
 
 
-class RvizVisualizer(object):
-
-    '''Cute tool for drawing both depth and height-from-bottom in RVIZ
-    '''
+class RvizVisualizer:
+    """
+    Cute tool for drawing both depth and height-from-bottom in RVIZ.
+    """
 
     def __init__(self):
-        rospy.init_node('revisualizer')
-        self.rviz_pub = rospy.Publisher("visualization/state", visualization_msgs.Marker, queue_size=2)
-        self.rviz_pub_t = rospy.Publisher("visualization/state_t", visualization_msgs.Marker, queue_size=2)
-        self.rviz_pub_utils = rospy.Publisher("visualization/bus_voltage", visualization_msgs.Marker, queue_size=2)
+        rospy.init_node("revisualizer")
+        self.rviz_pub = rospy.Publisher(
+            "visualization/state", visualization_msgs.Marker, queue_size=2
+        )
+        self.rviz_pub_t = rospy.Publisher(
+            "visualization/state_t", visualization_msgs.Marker, queue_size=2
+        )
+        self.rviz_pub_utils = rospy.Publisher(
+            "visualization/bus_voltage", visualization_msgs.Marker, queue_size=2
+        )
         self.kill_server = InteractiveMarkerServer("interactive_kill")
 
         # text marker
@@ -40,12 +46,12 @@ class RvizVisualizer(object):
         self.depth_marker.scale.z = 0.1
 
         # create marker for displaying current battery voltage
-        self.low_battery_threshold = rospy.get_param('/battery/kill_voltage', 44.0)
-        self.warn_battery_threshold = rospy.get_param('/battery/warn_voltage', 44.5)
+        self.low_battery_threshold = rospy.get_param("/battery/kill_voltage", 44.0)
+        self.warn_battery_threshold = rospy.get_param("/battery/warn_voltage", 44.5)
         self.voltage_marker = visualization_msgs.Marker()
         self.voltage_marker.header.frame_id = "base_link"
         self.voltage_marker.lifetime = rospy.Duration(5)
-        self.voltage_marker.ns = 'sub'
+        self.voltage_marker.ns = "sub"
         self.voltage_marker.id = 22
         self.voltage_marker.pose.position.x = -2.0
         self.voltage_marker.scale.z = 0.2
@@ -78,11 +84,15 @@ class RvizVisualizer(object):
         self.kill_alarm = AlarmBroadcaster("kill")
 
         # distance to bottom
-        self.range_sub = rospy.Subscriber("dvl/range", RangeStamped, self.range_callback)
+        self.range_sub = rospy.Subscriber(
+            "dvl/range", RangeStamped, self.range_callback
+        )
         # distance to surface
         self.depth_sub = rospy.Subscriber("depth", DepthStamped, self.depth_callback)
         # battery voltage
-        self.voltage_sub = rospy.Subscriber("/bus_voltage", Float64, self.voltage_callback)
+        self.voltage_sub = rospy.Subscriber(
+            "/bus_voltage", Float64, self.voltage_callback
+        )
 
     def update_kill_button(self):
         if self.killed:
@@ -96,7 +106,7 @@ class RvizVisualizer(object):
         self.kill_server.insert(self.kill_marker)
         self.kill_server.applyChanges()
 
-    def kill_alarm_callback(self, alarm):
+    def kill_alarm_callback(self, alarm: Alarm):
         self.need_kill_update = False
         self.killed = alarm.raised
         self.update_kill_button()
@@ -112,8 +122,8 @@ class RvizVisualizer(object):
         else:
             self.kill_alarm.raise_alarm()
 
-    def voltage_callback(self, voltage):
-        self.voltage_marker.text = str(round(voltage.data, 2)) + ' volts'
+    def voltage_callback(self, voltage: Float64):
+        self.voltage_marker.text = str(round(voltage.data, 2)) + " volts"
         self.voltage_marker.header.stamp = rospy.Time()
         if voltage.data < self.low_battery_threshold:
             self.voltage_marker.color.r = 1
@@ -126,30 +136,34 @@ class RvizVisualizer(object):
             self.voltage_marker.color.g = 1
         self.rviz_pub_utils.publish(self.voltage_marker)
 
-    def depth_callback(self, msg):
-        '''Handle depth data sent from depth sensor'''
-        frame = '/depth'
+    def depth_callback(self, msg: DepthStamped):
+        """
+        Handle depth data sent from depth sensor.
+        """
+        frame = "/depth"
         distance = msg.depth
         marker = self.make_cylinder_marker(
             np.array([0.0, 0.0, 0.0]),  # place at origin
             length=distance,
             color=(0.0, 1.0, 0.2, 0.7),  # green,
             frame=frame,
-            id=0  # Keep these guys from overwriting eachother
+            id=0,  # Keep these guys from overwriting each other
         )
-        self.surface_marker.ns = 'sub'
-        self.surface_marker.header = mil_ros_tools.make_header(frame='/depth')
+        self.surface_marker.ns = "sub"
+        self.surface_marker.header = mil_ros_tools.make_header(frame="/depth")
         self.surface_marker.pose = marker.pose
-        self.surface_marker.text = str(round(distance, 3)) + 'm'
+        self.surface_marker.text = str(round(distance, 3)) + "m"
         self.surface_marker.id = 0
 
         self.rviz_pub.publish(marker)
         self.rviz_pub_t.publish(self.depth_marker)
 
-    def range_callback(self, msg):
-        '''Handle range data grabbed from dvl'''
+    def range_callback(self, msg: RangeStamped):
+        """
+        Handle range data grabbed from DVL.
+        """
         # future: should be /base_link/dvl, no?
-        frame = '/dvl'
+        frame = "/dvl"
         distance = msg.range
 
         # Color a sharper red if we're in danger
@@ -164,30 +178,38 @@ class RvizVisualizer(object):
             color=color,  # red,
             frame=frame,
             up_vector=np.array([0.0, 0.0, -1.0]),  # up is down in range world
-            id=1  # Keep these guys from overwriting eachother
+            id=1,  # Keep these guys from overwriting each other
         )
-        self.depth_marker.ns = 'sub'
-        self.depth_marker.header = mil_ros_tools.make_header(frame='/dvl')
+        self.depth_marker.ns = "sub"
+        self.depth_marker.header = mil_ros_tools.make_header(frame="/dvl")
         self.depth_marker.pose = marker.pose
-        self.depth_marker.text = str(round(distance, 3)) + 'm'
+        self.depth_marker.text = str(round(distance, 3)) + "m"
         self.depth_marker.id = 1
 
         self.rviz_pub_t.publish(self.depth_marker)
         self.rviz_pub.publish(marker)
 
-    def make_cylinder_marker(self, base, length, color, frame='/base_link',
-                             up_vector=np.array([0.0, 0.0, 1.0]), **kwargs):
-        '''Handle the frustration that Rviz cylinders are designated by their center, not base'''
-
+    def make_cylinder_marker(
+        self,
+        base,
+        length: float,
+        color: Sequence[float],
+        frame: str = "/base_link",
+        up_vector: np.ndarray = np.array([0.0, 0.0, 1.0]),
+        **kwargs
+    ):
+        """
+        Handle the frustration that Rviz cylinders are designated by their center, not base.
+        """
         center = base + (up_vector * (length / 2))
 
         pose = Pose(
             position=mil_ros_tools.numpy_to_point(center),
-            orientation=mil_ros_tools.numpy_to_quaternion([0.0, 0.0, 0.0, 1.0])
+            orientation=mil_ros_tools.numpy_to_quaternion([0.0, 0.0, 0.0, 1.0]),
         )
 
         marker = visualization_msgs.Marker(
-            ns='sub',
+            ns="sub",
             header=mil_ros_tools.make_header(frame=frame),
             type=visualization_msgs.Marker.CYLINDER,
             action=visualization_msgs.Marker.ADD,
@@ -200,6 +222,6 @@ class RvizVisualizer(object):
         return marker
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     vizualizer = RvizVisualizer()
     rospy.spin()

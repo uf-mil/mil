@@ -1,3 +1,4 @@
+---
 pub_rate: 1.0
 analyzers:
     kill_board:

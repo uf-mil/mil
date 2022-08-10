@@ -23,4 +23,4 @@ void compute_normals(const typename pcl::PointCloud<PointT>::Ptr input_cloud, Po
   normal_estimator.setInputCloud(input_cloud);
   normal_estimator.compute(output_cloud);
 }
-}
+}  // namespace sub

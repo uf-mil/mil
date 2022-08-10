@@ -4,10 +4,10 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <ros/ros.h>
-#include <opencv2/core/core.hpp>
 
 #include <exception>
 #include <memory>
+#include <opencv2/core/core.hpp>
 #include <string>
 
 namespace mil_vision
@@ -70,10 +70,17 @@ public:
   // Constructors and Destructors ///////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Default constructor for the class. Does not complete any actions; serves as
+   * an empty constructor.
+   */
   CameraFrame()  // Default Constructor
   {
   }
 
+  /**
+   * Copy constructor for the class.
+   */
   CameraFrame(const CameraFrame &other)  // Copy Constructor
   {
     this->_seq = other._seq;
@@ -82,7 +89,15 @@ public:
     this->_cam_model_ptr = other.cam_model_ptr;
   }
 
-  // From ROS img msg
+  /**
+   * Constructs a class instance from a ROS message.
+   *
+   * @param image_msg_ptr A pointer to the image message.
+   * @param cam_model_ptr A pointer to the camera model.
+   * @param is_rectified Whether the image is rectified (camera geometry has been
+   *   taken into account).
+   * @param store_at_scale The scale to store the image at.
+   */
   CameraFrame(const sensor_msgs::ImageConstPtr &image_msg_ptr, cam_model_ptr_t &cam_model_ptr,
               bool is_rectified = false, float_t store_at_scale = 1.0);
 
@@ -90,41 +105,84 @@ public:
   // Public Methods /////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Returns a pointer to the camera model.
+   *
+   * @return The pointer.
+   */
   cam_model_ptr_t getCameraModelPtr() const
   {
     return _cam_model_ptr;
   }
 
+  /**
+   * Representing the sequence number of camera frames which have come from the same
+   * source.
+   *
+   * These progressively increase over time as more camrea frame objects are generated.
+   *
+   * @return The sequence number.
+   */
   unsigned int seq() const
   {
     return _seq;
   }
 
+  /**
+   * Returns the timestamp associated with the image.
+   *
+   * @return The timestamp.
+   */
   time_t_ stamp() const
   {
     return _stamp;
   }
 
+  /**
+   * Returns an image mat representing the image.
+   *
+   * @return The image as an OpenCV mat.
+   */
   const cv::Mat_<img_scalar_t> &image() const
   {
     return _image;
   }
 
+  /**
+   * Whether the image has been rectified using the disortion parameters specified
+   * by the camera model.
+   *
+   * @return Whether the rectification has occurred.
+   */
   bool rectified() const
   {
     return _rectified;
   }
 
+  /**
+   * The scale of the image. A scale of 1 represents an image that is its true size
+   * and is not scaled.
+   *
+   * @return The scale.
+   */
   float_t getImageScale() const
   {
     return _img_scale;
   }
 
+  /**
+   * Copies the image to another OpenCV mat.
+   */
   void copyImgTo(cv::Mat dest) const
   {
-    dest = image.clone();
+    dest = image().clone();
   }
 
+  /**
+   * Returns true if the camera geometry is NOT specified.
+   *
+   * @return Whether the camera geometry has been specified.
+   */
   bool isCameraGeometryKnown() const
   {
     return _cam_model_ptr == nullptr;
@@ -174,7 +232,8 @@ private:
 template <typename cam_model_ptr_t, typename time_t_, typename img_scalar_t, typename float_t>
 CameraFrame<cam_model_ptr_t, time_t_, img_scalar_t, float_t>::CameraFrame(
     const sensor_msgs::ImageConstPtr &image_msg_ptr, cam_model_ptr_t &cam_model_ptr, bool is_rectified,
-    float_t store_at_scale) try
+    float_t store_at_scale)
+try
 {
   // ROS image message decoding
   cv_bridge::CvImageConstPtr _ros_img_bridge;

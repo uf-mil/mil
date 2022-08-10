@@ -1,20 +1,22 @@
-#!/usr/bin/env python
-'''
+#!/usr/bin/env python3
+"""
 script to detect dice , and mark the value of the dice
 Subscribes to Image topic
 Publishes Image and Points
-'''
+"""
 
 from __future__ import print_function
+
 import sys
-import rospy
+
 import cv2
 import numpy as np
-from sensor_msgs.msg import Image  # To publish Image
-from geometry_msgs.msg import Point  # To publish Points
-from std_msgs.msg import String  # To publish debug statements
+import rospy
 from cv_bridge import CvBridge, CvBridgeError
+from geometry_msgs.msg import Point  # To publish Points
 from scipy.spatial import distance
+from sensor_msgs.msg import Image  # To publish Image
+from std_msgs.msg import String  # To publish debug statements
 from std_srvs.srv import SetBool, SetBoolResponse
 
 # Display Window size for Debug
@@ -27,28 +29,29 @@ SEARCH_RANGE_FOR_PIPS = 2
 SENTINEL_INFINITE = 10000
 
 
-class DiceDetect(object):
+class DiceDetect:
     """docstring for DiceDetect."""
 
     def __init__(self):
-        '''
+        """
         debug_image_publisher publishes the final detected image
         debug_image_input_publisher publishes input image to the detect function
         debug_talker publishes chatter of whether the program is running
-        '''
+        """
         self.debug_image_publisher = rospy.Publisher(
-            "dice/debugimage", Image, queue_size=1)
+            "dice/debugimage", Image, queue_size=1
+        )
         self.debug_image_input_publisher = rospy.Publisher(
-            "dice/debugimageinput", Image, queue_size=1)
-        self.point_publisher = rospy.Publisher(
-            "dice/points", Point, queue_size=1)
-        self.debug_talker = rospy.Publisher(
-            "dice/debugtalker", String, queue_size=1)
+            "dice/debugimageinput", Image, queue_size=1
+        )
+        self.point_publisher = rospy.Publisher("dice/points", Point, queue_size=1)
+        self.debug_talker = rospy.Publisher("dice/debugtalker", String, queue_size=1)
         self.image_subscriber = rospy.Subscriber(
-            "/camera/front/left/image_rect_color", Image, self.callback)
+            "/camera/front/left/image_rect_color", Image, self.callback
+        )
         self.bridge = CvBridge()
         self.enabled = False
-        rospy.Service('~enable', SetBool, self.toggle)
+        rospy.Service("~enable", SetBool, self.toggle)
 
     def toggle(self, srv):
         if srv.data:
@@ -72,7 +75,9 @@ class DiceDetect(object):
 
         # Filter by Area.
         params.filterByArea = True
-        params.minArea = 25  # in pixels , 10 to pick up from far away , but also picks up noise
+        params.minArea = (
+            25  # in pixels , 10 to pick up from far away , but also picks up noise
+        )
         # 25 is an ideal amount
         params.maxArea = 200000  # max are in pixels
 
@@ -88,7 +93,7 @@ class DiceDetect(object):
         # 0 = Detects even lines
 
         # Create a detector with the parameters
-        ver = (cv2.__version__).split('.')
+        ver = (cv2.__version__).split(".")
         if int(ver[0]) < 3:
             detector = cv2.SimpleBlobDetector(params)
         else:
@@ -105,21 +110,26 @@ class DiceDetect(object):
 
         # For Visualization purposes
         # Draw detected blobs as red circles
-        im_with_keypoints = cv2.drawKeypoints(im_c, keypoints, np.array(
-            []), (0, 0, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        im_with_keypoints = cv2.drawKeypoints(
+            im_c,
+            keypoints,
+            np.array([]),
+            (0, 0, 255),
+            cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS,
+        )
 
         # Debug to print all blobs detected
         key_len = len(keypoints)
         # print(keypoints)
 
         # Neighborhood search algorithm
-        '''
+        """
         Looks at every point in the keypoints array and finds the nearest point to it
         Within a Threshold, set by Global Var 'DIST_THRESHOLD' . Then looks for other points
         within 'SEARCH_RANGE_FOR_PIPS' times the 'DIST_THRESHOLD' .Basically within a circle of
         radius twice the size of the nearest pip.
 
-        '''
+        """
 
         for i in range(0, key_len):
             a = keypoints[i].pt
@@ -128,15 +138,15 @@ class DiceDetect(object):
             for j in range(i + 1, key_len):
                 b = keypoints[j].pt
                 dist_itr = distance.euclidean(a, b)
-                if (dist_itr <= dist and dist_itr < DIST_THRESHOLD):
+                if dist_itr <= dist and dist_itr < DIST_THRESHOLD:
                     dist = dist_itr
 
             for j in range(0, key_len):
                 b = keypoints[j].pt
                 dist_itr = distance.euclidean(a, b)
-                if (dist_itr <= SEARCH_RANGE_FOR_PIPS * dist):
+                if dist_itr <= SEARCH_RANGE_FOR_PIPS * dist:
                     count = count + 1
-            if (dist == SENTINEL_INFINITE):
+            if dist == SENTINEL_INFINITE:
                 count = 1
 
             if count > 4:
@@ -146,11 +156,20 @@ class DiceDetect(object):
                 d[str(count)] = [keypoints[i].pt[0], keypoints[i].pt[1]]
 
                 font_face = cv2.FONT_HERSHEY_SIMPLEX
-                cv2.putText(im_with_keypoints,
-                            (str(int(keypoints[i].pt[0])) + ', ' +
-                             str(int(keypoints[i].pt[1]))),
-                            (int(keypoints[i].pt[0]), int(keypoints[i].pt[1])),
-                            font_face, 1, (255, 255, 255), 1, cv2.LINE_AA)
+                cv2.putText(
+                    im_with_keypoints,
+                    (
+                        str(int(keypoints[i].pt[0]))
+                        + ", "
+                        + str(int(keypoints[i].pt[1]))
+                    ),
+                    (int(keypoints[i].pt[0]), int(keypoints[i].pt[1])),
+                    font_face,
+                    1,
+                    (255, 255, 255),
+                    1,
+                    cv2.LINE_AA,
+                )
 
         # im_with_keypoints now displays image, keypoints and x, y values displayed as text
 
@@ -168,24 +187,26 @@ class DiceDetect(object):
             print(e)
 
         # rospy.sleep is necessary to process the videofeed
-        rospy.sleep(1.)  # 1 frame per
+        rospy.sleep(1.0)  # 1 frame per
         print("Dice Detection Running ")
 
         # output_dict is a dictionary of points as values and the count as key
         # output_image is an OpenCv image
         output_dict, output_image, input_image = self.detect(cv_image)
 
-        for key, value in output_dict.iteritems():
+        for key, value in output_dict.items():
 
-            if (int(key) > 0):
+            if int(key) > 0:
                 x_pos = value[0]
                 y_pos = value[1]
 
                 try:
                     self.debug_image_publisher.publish(
-                        self.bridge.cv2_to_imgmsg(output_image, "bgr8"))
+                        self.bridge.cv2_to_imgmsg(output_image, "bgr8")
+                    )
                     self.debug_image_input_publisher.publish(
-                        self.bridge.cv2_to_imgmsg(input_image, "bgr8"))
+                        self.bridge.cv2_to_imgmsg(input_image, "bgr8")
+                    )
                     self.point_publisher.publish(Point(x_pos, y_pos, int(key)))
                     self.debug_talker.publish(String("Dice Detection Running"))
                     # print("success")
@@ -195,7 +216,7 @@ class DiceDetect(object):
 
 
 def main(args):
-    rospy.init_node('dice', anonymous=False)
+    rospy.init_node("dice", anonymous=False)
     DiceDetect()
 
     try:
@@ -205,5 +226,5 @@ def main(args):
     cv2.destroyAllWindows()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(sys.argv)

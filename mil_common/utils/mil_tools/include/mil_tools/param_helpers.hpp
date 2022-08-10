@@ -2,8 +2,8 @@
 
 #include <ros/ros.h>
 #include <tf/LinearMath/Quaternion.h>
-#include <Eigen/Dense>
 
+#include <Eigen/Dense>
 #include <mil_tools/msg_helpers.hpp>
 
 namespace mil_tools
@@ -151,4 +151,4 @@ T getParam(ros::NodeHandle &nh, std::string name, T default_value)
   }
   return res;
 }
-}
+}  // namespace mil_tools

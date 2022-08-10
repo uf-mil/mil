@@ -5,7 +5,9 @@
 #include <pcl/search/kdtree.h>
 #include <pcl/search/search.h>
 #include <pcl/segmentation/region_growing_rgb.h>
+
 #include <vector>
+
 #include "typedefs.hpp"
 
 namespace sub
@@ -16,7 +18,7 @@ namespace sub
 // TODO:
 //  ? Additional (wasteful) branching to check if something is actually in front of the ray (Always
 //  true for an image)
-//  - Does squaredNorm improve speed? (This will be miniscule at best, but saves computation)
+//  - Does squaredNorm improve speed? (This will be minuscule at best, but saves computation)
 //
 // @param[in] target_cloud Cloud of interest
 // @param[in] indices Indices of seed points
@@ -76,4 +78,4 @@ void segment_box(const typename pcl::PointCloud<PointT>::Ptr input_cloud, const 
   box_cropper.setMax(h_max_pt);
   box_cropper.filter(output_cloud);
 }
-}
+}  // namespace sub

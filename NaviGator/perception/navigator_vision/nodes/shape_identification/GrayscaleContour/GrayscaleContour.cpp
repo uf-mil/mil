@@ -1,4 +1,5 @@
 #include "GrayscaleContour.h"
+
 #include <sstream>
 GrayscaleContour::GrayscaleContour(ros::NodeHandle& nh) : DockShapeVision(nh)
 {
@@ -165,7 +166,7 @@ void GrayscaleContour::FindContours()
 bool GrayscaleContour::GetColor(int Index, std::string& color, float& confidence)
 {
   Mat mask = Mat::zeros(colorFrame.rows, colorFrame.cols, CV_8UC1);
-  drawContours(mask, contours, Index, Scalar(255), CV_FILLED);
+  drawContours(mask, contours, Index, Scalar(255), FILLED);
   Mat meanBGR(1, 1, colorFrame.type(), mean(colorFrame, mask));
   Mat mean_hsv_mat(1, 1, colorFrame.type(), Scalar(0, 0, 0));
   cvtColor(meanBGR, mean_hsv_mat, CV_BGR2HSV, 3);
@@ -303,7 +304,7 @@ bool GrayscaleContour::isCircle(std::vector<Point>& points)
   if (error > circleEnclosingErrorThreshold)
     return false;
 
-  // ~doub
+  // ~double
   // ~Rect rect = boundingRect(points);
   // ~double contour_area = contourArea(points); //Actual area of the contour
   // ~double expected_area = pi*pow(rect.width/2.0,2); //What area should be if

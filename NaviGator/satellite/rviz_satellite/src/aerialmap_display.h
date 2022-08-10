@@ -8,43 +8,43 @@
  *	Created on: 07/09/2014
  */
 
- /*
-  * NOTICE: I have changed these files from the source code.
-  * Integrated into Navigator by Aeyzechiah Vasquez.
-  * 11/18/2018
-  */
+/*
+ * NOTICE: I have changed these files from the source code.
+ * Integrated into Navigator by Aeyzechiah Vasquez.
+ * 11/18/2018
+ */
 #ifndef AERIAL_MAP_DISPLAY_H
 #define AERIAL_MAP_DISPLAY_H
 
 // NOTE: workaround for issue: https://bugreports.qt.io/browse/QTBUG-22829
 #ifndef Q_MOC_RUN
+#include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreTexture.h>
+#include <geometry_msgs/PointStamped.h>
+#include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <ros/time.h>
 #include <rviz/display.h>
 #include <sensor_msgs/NavSatFix.h>
-#include <nav_msgs/Odometry.h>
-#include <geometry_msgs/PointStamped.h>
-
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreMaterial.h>
 #endif  //  Q_MOC_RUN
 
-#include <QObject>
-#include <QtConcurrentRun>
-#include <QFuture>
-#include <QByteArray>
-#include <QFile>
-#include <QNetworkRequest>
-
-#include <memory>
 #include <tileloader.h>
 
-namespace Ogre {
+#include <QByteArray>
+#include <QFile>
+#include <QFuture>
+#include <QNetworkRequest>
+#include <QObject>
+#include <QtConcurrentRun>
+#include <memory>
+
+namespace Ogre
+{
 class ManualObject;
 }
 
-namespace rviz {
-
+namespace rviz
+{
 class FloatProperty;
 class IntProperty;
 class Property;
@@ -57,7 +57,8 @@ class EnumProperty;
  * @class AerialMapDisplay
  * @brief Displays a satellite map along the XY plane.
  */
-class AerialMapDisplay : public Display {
+class AerialMapDisplay : public Display
+{
   Q_OBJECT
 public:
   AerialMapDisplay();
@@ -112,7 +113,8 @@ protected:
   unsigned int scene_id_;
 
   /// Instance of a tile w/ associated ogre data
-  struct MapObject {
+  struct MapObject
+  {
     Ogre::ManualObject *object;
     Ogre::TexturePtr texture;
     Ogre::MaterialPtr material;
@@ -132,7 +134,7 @@ protected:
   FloatProperty *resolution_property_;
   FloatProperty *alpha_property_;
   Property *draw_under_property_;
-  EnumProperty * frame_convention_property_;
+  EnumProperty *frame_convention_property_;
   RosTopicProperty *topic_property_2;
 
   float alpha_;
@@ -147,9 +149,9 @@ protected:
   sensor_msgs::NavSatFix ref_fix_;
   std::shared_ptr<TileLoader> loader_;
 
-  const nav_msgs::Odometry* odom;
+  const nav_msgs::Odometry *odom;
 };
 
-} // namespace rviz
+}  // namespace rviz
 
 #endif

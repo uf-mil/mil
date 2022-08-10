@@ -7,8 +7,8 @@ using namespace cv;
 // Class: Sub8TorpedoBoardDetector ////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector() try : image_transport(nh),
-                                                           rviz("/torpedo_board/visualization/detection")
+Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector()
+try : image_transport(nh), rviz("/torpedo_board/visualization/detection")
 {
   using ros::param::param;
 
@@ -1104,7 +1104,7 @@ bool Sub8TorpedoBoardDetector::find_board_corners(const Mat &segmented_board, ve
     }
   }
 
-  // Connect yellow pannels
+  // Connect yellow panels
   Point pt1 = mil_vision::contour_centroid(contours[0]);
   Point pt2 = mil_vision::contour_centroid(contours[1]);
   convex_hull_working_img = Mat::zeros(convex_hull_working_img.size(), CV_8UC1);
@@ -1261,7 +1261,7 @@ void Sub8TorpedoBoardDetector::stereo_correspondence(const Mat &gray_L, const Ma
     blocks_R.push_back(gray_R(roi));
   }
 
-  // Points from smaller fature list will be matched to points from the
+  // Points from smaller feature list will be matched to points from the
   // larger feature list (lists could be of equal size)
   vector<size_t> *small_idxs_ptr, *large_idxs_ptr;
   vector<Mat> *small_blocks_ptr, *large_blocks_ptr;
@@ -1637,7 +1637,7 @@ void best_plane_from_combination(const vector<Eigen::Vector3d> &point_list, doub
     selected plane.
   */
 
-  // Calculate indeces for all possible point triplets
+  // Calculate indices for all possible point triplets
   size_t features3D_count = point_list.size();
   vector<vector<uint8_t> > combination_idxs;
   mil_tools::combinations(features3D_count, 3, combination_idxs);

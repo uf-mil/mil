@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <library path="src">
   <class name="Dashboard" type="navigator_gui.Dashboard" base_class_type="rqt_gui_py::Plugin">
     <description>

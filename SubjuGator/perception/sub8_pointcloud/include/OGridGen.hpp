@@ -1,41 +1,35 @@
 #pragma once
 #include <geometry_msgs/Point.h>
 #include <mil_blueview_driver/BlueViewPing.h>
+#include <mil_msgs/ObjectDBQuery.h>
+#include <mil_msgs/PerceptionObject.h>
+#include <mil_msgs/PerceptionObjectArray.h>
+#include <mil_msgs/RangeStamped.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <pcl/common/common.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl_ros/point_cloud.h>
 #include <ros/ros.h>
-
+#include <std_srvs/Trigger.h>
+#include <sub8_msgs/Bounds.h>
 #include <tf/transform_listener.h>
 #include <tf2/convert.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_msgs/TFMessage.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
-
-#include <opencv2/core/core.hpp>
-#include <stdexcept>
-#include "opencv2/opencv.hpp"
-
-#include <pcl/common/common.h>
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include <pcl_ros/point_cloud.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
+#include <Classification.hpp>
 #include <boost/circular_buffer.hpp>
-
-#include <sub8_msgs/Bounds.h>
-
+#include <opencv2/core/core.hpp>
+#include <ros_alarms/listener.hpp>
+#include <stdexcept>
 #include <waypoint_validity.hpp>
 
-#include <Classification.hpp>
-
-#include <mil_msgs/ObjectDBQuery.h>
-#include <mil_msgs/PerceptionObject.h>
-#include <mil_msgs/PerceptionObjectArray.h>
-#include <mil_msgs/RangeStamped.h>
-#include <std_srvs/Trigger.h>
-#include <ros_alarms/listener.hpp>
+#include "opencv2/opencv.hpp"
 
 extern struct ogrid_param
 {
@@ -43,11 +37,11 @@ extern struct ogrid_param
   // Statistical Outlier Removal
   float statistical_mean_k;
   float statistical_stddev_mul_thresh;
-  // Euclidian Clustering
+  // Euclidean Clustering
   float cluster_tolerance_m;
   float cluster_min_num_points;
   float cluster_max_num_points;
-  // Remmove points below threshold
+  // Remove points below threshold
   float nearby_threshold;
   // Remove points below depth in map frame
   float depth;
@@ -73,9 +67,9 @@ public:
 
   // Publish mat_ogrid
   void publish_ogrid();
-  // Project point_cloud and make a persistant ogrid
+  // Project point_cloud and make a persistent ogrid
   void process_persistant_ogrid(pcl::PointCloud<pcl::PointXYZI>::Ptr point_cloud_plane);
-  // Convert persistant ogrid to a mat_ogrid
+  // Convert persistent ogrid to a mat_ogrid
   void populate_mat_ogrid();
 
   mil_msgs::PerceptionObjectArray cluster(pcl::PointCloud<pcl::PointXYZI>::Ptr pc);

@@ -1,9 +1,9 @@
-from sklearn import svm
 import pickle
 
+from sklearn import svm
 
-class SVMClassifier(object):
 
+class SVMClassifier:
     def __init__(self):
         self.clf = svm.SVC(probability=True)
         self.number = 0
@@ -20,5 +20,5 @@ class SVMClassifier(object):
         self.clf.fit(desc, clss)
 
     def pickle(self, name):
-        with open(name, 'wb') as f:
+        with open(name, "wb") as f:
             pickle.dump(self, f)

@@ -7,16 +7,22 @@
 
 print "\nWelcome to David's M5 Thruster Shell\n"
 import rospy
+
 print 'Imported rospy'
 import sub8_thruster_comm.thruster_comm as tc
+
 print 'Imported sub8_thruster_comm.thruster_comm as tc'
 import sub8_thruster_comm.protocol as tp
+
 print 'Imported sub8_thruster_comm.protocol as tp'
 import rosparam
+
 print 'Imported rosparam'
 import numpy as np
+
 print 'Imported numpy as np'
 import os
+
 print 'Imported os'
 
 rospy.init_node('m5_debug_shell')

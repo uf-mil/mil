@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 #ifndef _GAZEBO_LIFT_DRAG_PLUGIN_HH_
 #define _GAZEBO_LIFT_DRAG_PLUGIN_HH_
 
@@ -154,5 +154,5 @@ protected:
 protected:
   sdf::ElementPtr sdf;
 };
-}
+}  // namespace gazebo
 #endif

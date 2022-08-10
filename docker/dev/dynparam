@@ -35,19 +35,24 @@
 # Revision $Id$
 from __future__ import print_function
 
-NAME='dynparam'
-import roslib; roslib.load_manifest('dynamic_reconfigure')
-import rospy
+NAME = "dynparam"
+import roslib
+
+roslib.load_manifest("dynamic_reconfigure")
 import optparse
 import sys
-import yaml
+
 import dynamic_reconfigure.client
+import rospy
+import yaml
+
 
 def do_list():
     connect()
     list = dynamic_reconfigure.find_reconfigure_services()
     for s in list:
         print(s)
+
 
 def do_set_from_parameters():
     usage = """Usage: %prog set_from_parameters [options] node
@@ -76,10 +81,14 @@ Example launch file:
     try:
         params = rospy.get_param("~")
     except KeyError:
-        print('error updating parameters: no parameters found on parameter server', file=sys.stderr)
+        print(
+            "error updating parameters: no parameters found on parameter server",
+            file=sys.stderr,
+        )
         return
 
     set_params(node, params, timeout=options.timeout)
+
 
 def do_set():
     usage = """Usage: %prog set [options] node parameter value
@@ -91,8 +100,8 @@ Examples:
 
     args, optparse_args = [], []
     for s in myargv[2:]:
-        if s.startswith('-'):
-            if len(s) > 1 and ord(s[1]) >= ord('0') and ord(s[1]) <= ord('9'):
+        if s.startswith("-"):
+            if len(s) > 1 and ord(s[1]) >= ord("0") and ord(s[1]) <= ord("9"):
                 args.append(s)
             else:
                 optparse_args.append(s)
@@ -105,25 +114,30 @@ Examples:
     if len(args) > 3:
         parser.error("too many arguments")
     elif len(args) < 2:
-        parser.error("invalid arguments. Please specify either a node name, parameter name and parameter value, or a node name and a YAML dictionary")
+        parser.error(
+            "invalid arguments. Please specify either a node name, parameter name and parameter value, or a node name and a YAML dictionary"
+        )
 
     node = args[0]
     if len(args) == 2:
         node, value = args[0], args[1]
         values_dict = yaml.load(value, Loader=yaml.Loader)
         if type(values_dict) != dict:
-            parser.error('invalid arguments. Please specify either a node name, parameter name and parameter value, or a node name and a YAML dictionary')
+            parser.error(
+                "invalid arguments. Please specify either a node name, parameter name and parameter value, or a node name and a YAML dictionary"
+            )
     elif len(args) == 3:
         node, parameter, value = args[0], args[1], args[2]
-        values_dict = { parameter : value }
+        values_dict = {parameter: value}
 
     connect()
     try:
         set_params(node, values_dict, timeout=options.timeout)
     except rospy.service.ServiceException:
-        print('couldn\'t set parameters at node %s' % node)
+        print("couldn't set parameters at node %s" % node)
     except rospy.exceptions.ROSException:
-        print('couldn\'t set parameters at node %s' % node)
+        print("couldn't set parameters at node %s" % node)
+
 
 def do_get():
     usage = "Usage: %prog get [options] node"
@@ -142,6 +156,7 @@ def do_get():
     if params is not None:
         print(params)
 
+
 def do_load():
     usage = "Usage: %prog load [options] node file"
 
@@ -156,7 +171,7 @@ def do_load():
         parser.error("too many arguments")
     node, path = args[0], args[1]
 
-    f = file(path, 'r')
+    f = file(path, "r")
     try:
         params = {}
         for doc in yaml.load_all(f.read(), Loader=yaml.Loader):
@@ -166,6 +181,7 @@ def do_load():
 
     connect()
     set_params(node, params, timeout=options.timeout)
+
 
 def do_dump():
     usage = "Usage: %prog dump [options] node file"
@@ -184,7 +200,7 @@ def do_dump():
     connect()
     params = get_params(node, timeout=options.timeout)
     if params is not None:
-        f = file(path, 'w')
+        f = file(path, "w")
         try:
             yaml.dump(params, f)
             return
@@ -193,22 +209,34 @@ def do_dump():
 
     print("couldn't get parameters from node %s" % node)
 
+
 def get_params(node, timeout=None):
     client = dynamic_reconfigure.client.Client(node, timeout=timeout)
     return client.get_configuration(timeout=timeout)
+
 
 def set_params(node, params, timeout=None):
     client = dynamic_reconfigure.client.Client(node, timeout=timeout)
     try:
         client.update_configuration(params)
     except dynamic_reconfigure.DynamicReconfigureParameterException as e:
-        print('error updating parameters: ' + str(e))
+        print("error updating parameters: " + str(e))
+
 
 def add_timeout_option(parser):
-    parser.add_option('-t', '--timeout', action='store', type='float', default=None, help='timeout in secs')
+    parser.add_option(
+        "-t",
+        "--timeout",
+        action="store",
+        type="float",
+        default=None,
+        help="timeout in secs",
+    )
+
 
 def print_usage():
-    print("""dynparam is a command-line tool for getting, setting, and
+    print(
+        """dynparam is a command-line tool for getting, setting, and
 deleting parameters of a dynamically configurable node.
 
 Commands:
@@ -220,25 +248,35 @@ Commands:
 \tdynparam list                 list configurable nodes
 
 Type dynparam <command> -h for more detailed usage, e.g. 'dynparam get -h'
-""")
+"""
+    )
     sys.exit(1)
 
-def connect():
-    rospy.init_node('dynparam', anonymous=True)
 
-if __name__ == '__main__':
+def connect():
+    rospy.init_node("dynparam", anonymous=True)
+
+
+if __name__ == "__main__":
     myargv = rospy.myargv()
     if len(myargv) == 1:
         print_usage()
     else:
         cmd = myargv[1]
         try:
-            if   cmd == 'list':                do_list()
-            elif cmd == 'set_from_parameters': do_set_from_parameters()
-            elif cmd == 'set':                 do_set()
-            elif cmd == 'get':                 do_get()
-            elif cmd == 'load':                do_load()
-            elif cmd == 'dump':                do_dump()
-            else:                              print_usage()
+            if cmd == "list":
+                do_list()
+            elif cmd == "set_from_parameters":
+                do_set_from_parameters()
+            elif cmd == "set":
+                do_set()
+            elif cmd == "get":
+                do_get()
+            elif cmd == "load":
+                do_load()
+            elif cmd == "dump":
+                do_dump()
+            else:
+                print_usage()
         except rospy.exceptions.ROSInterruptException:
             pass

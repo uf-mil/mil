@@ -31,6 +31,6 @@ private:
   ignition::math::Vector3d angular_coeffs_;
   gazebo::event::ConnectionPtr update_connection_;
 };
-}
+}  // namespace mil_gazebo
 
 #endif

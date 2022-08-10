@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+
 #include <gazebo/common/Plugin.hh>
 
 namespace gazebo
@@ -24,4 +25,4 @@ public:
   }
 };
 GZ_REGISTER_WORLD_PLUGIN(WorldPluginTutorial)
-}
+}  // namespace gazebo

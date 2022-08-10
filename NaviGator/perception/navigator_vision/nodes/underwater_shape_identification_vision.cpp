@@ -1,9 +1,7 @@
 #include <iostream>
-#include <string>
-
-#include <opencv2/highgui/highgui.hpp>
-
 #include <missions/underwater_shape_identification.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <string>
 
 using namespace std;
 

@@ -15,15 +15,16 @@
 """Label map utility functions."""
 
 import logging
+import sys
 
+import rospkg
 import tensorflow as tf
 from google.protobuf import text_format
-import rospkg
-import sys
 
 rospack = rospkg.RosPack()
 sys.path.append(
-    rospack.get_path('sub8_perception') + '/ml_classifiers/path_marker/protos')
+    rospack.get_path("sub8_perception") + "/ml_classifiers/path_marker/protos"
+)
 
 from protos import string_int_label_map_pb2  # noqa
 
@@ -39,10 +40,9 @@ def _validate_label_map(label_map):
     """
     for item in label_map.item:
         if item.id < 0:
-            raise ValueError('Label map ids should be >= 0.')
-        if item.id == 0 and item.name != 'background':
-            raise ValueError(
-                'Label map id 0 is reserved for the background label')
+            raise ValueError("Label map ids should be >= 0.")
+        if item.id == 0 and item.name != "background":
+            raise ValueError("Label map id 0 is reserved for the background label")
 
 
 def create_category_index(categories):
@@ -60,7 +60,7 @@ def create_category_index(categories):
     """
     category_index = {}
     for cat in categories:
-        category_index[cat['id']] = cat
+        category_index[cat["id"]] = cat
     return category_index
 
 
@@ -73,12 +73,10 @@ def get_max_label_map_index(label_map):
     Returns:
       an integer
     """
-    return max([item.id for item in label_map.item])
+    return max(item.id for item in label_map.item)
 
 
-def convert_label_map_to_categories(label_map,
-                                    max_num_classes,
-                                    use_display_name=True):
+def convert_label_map_to_categories(label_map, max_num_classes, use_display_name=True):
     """Loads label map proto and returns categories list compatible with eval.
 
     This function loads a label map and returns a list of dicts, each of which
@@ -106,25 +104,27 @@ def convert_label_map_to_categories(label_map,
     if not label_map:
         label_id_offset = 1
         for class_id in range(max_num_classes):
-            categories.append({
-                'id':
-                class_id + label_id_offset,
-                'name':
-                'category_{}'.format(class_id + label_id_offset)
-            })
+            categories.append(
+                {
+                    "id": class_id + label_id_offset,
+                    "name": f"category_{class_id + label_id_offset}",
+                }
+            )
         return categories
     for item in label_map.item:
         if not 0 < item.id <= max_num_classes:
-            logging.info('Ignore item %d since it falls outside of requested '
-                         'label range.', item.id)
+            logging.info(
+                "Ignore item %d since it falls outside of requested " "label range.",
+                item.id,
+            )
             continue
-        if use_display_name and item.HasField('display_name'):
+        if use_display_name and item.HasField("display_name"):
             name = item.display_name
         else:
             name = item.name
         if item.id not in list_of_ids_already_added:
             list_of_ids_already_added.append(item.id)
-            categories.append({'id': item.id, 'name': name})
+            categories.append({"id": item.id, "name": name})
     return categories
 
 
@@ -136,7 +136,7 @@ def load_labelmap(path):
     Returns:
       a StringIntLabelMapProto
     """
-    with tf.gfile.GFile(path, 'r') as fid:
+    with tf.gfile.GFile(path, "r") as fid:
         label_map_string = fid.read()
         label_map = string_int_label_map_pb2.StringIntLabelMap()
         try:
@@ -186,4 +186,4 @@ def create_category_index_from_labelmap(label_map_path):
 
 def create_class_agnostic_category_index():
     """Creates a category index with a single `object` class."""
-    return {1: {'id': 1, 'name': 'object'}}
+    return {1: {"id": 1, "name": "object"}}

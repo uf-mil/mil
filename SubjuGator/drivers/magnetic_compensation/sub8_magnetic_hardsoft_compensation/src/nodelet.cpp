@@ -1,13 +1,12 @@
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
 #include <eigen_conversions/eigen_msg.h>
 #include <nodelet/nodelet.h>
 #include <ros/ros.h>
 #include <sensor_msgs/MagneticField.h>
-#include <pluginlib/class_list_macros.hpp>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 #include <mil_tools/param_helpers.hpp>
+#include <pluginlib/class_list_macros.hpp>
 
 namespace magnetic_hardsoft_compensation
 {
@@ -61,4 +60,4 @@ public:
 };
 
 PLUGINLIB_EXPORT_CLASS(magnetic_hardsoft_compensation::Nodelet, nodelet::Nodelet);
-}
+}  // namespace magnetic_hardsoft_compensation

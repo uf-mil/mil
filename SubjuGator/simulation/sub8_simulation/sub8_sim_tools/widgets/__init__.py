@@ -1,2 +1,2 @@
 # flake8: noqa
-from sub import Sub
+from .sub import Sub

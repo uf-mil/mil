@@ -7,10 +7,12 @@
 #include <sensor_msgs/RegionOfInterest.h>
 #include <sensor_msgs/image_encodings.h>
 #include <std_srvs/SetBool.h>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
+
 #include "DockShapeVision.h"
 #include "GrayscaleContour/GrayscaleContour.h"
 #include "ShapeTracker.h"

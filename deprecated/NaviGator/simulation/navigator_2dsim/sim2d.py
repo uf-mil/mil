@@ -4,24 +4,25 @@ A module sporting a simple 2D simulation of the kinematics of NaviGator.
 """
 from typing import Tuple
 
-import rospy
 import numpy as np
-
+import rospy
 import tf.transformations as trns
 from mil_tools import numpy_to_quaternion
 from nav_msgs.msg import Odometry
-from roboteq_msgs.msg import Command
 from navigator_thrust_mapper import ThrusterMap
+from roboteq_msgs.msg import Command
+
 
 class Navsim:
     """
     A simple 2D simulation of the kinematics of NaviGator.
     """
 
-    def __init__(self,
-                 pose_zero: np.ndarray = np.array([0, 0, 0]),
-                 twist_zero: np.ndarray = np.array([0, 0, 0])
-                ):
+    def __init__(
+        self,
+        pose_zero: np.ndarray = np.array([0, 0, 0]),
+        twist_zero: np.ndarray = np.array([0, 0, 0]),
+    ):
 
         # Used to publish current state
         self.odom_publisher = rospy.Publisher("/odom", Odometry, queue_size=1)
@@ -30,21 +31,26 @@ class Navsim:
         self.pose = np.float64(pose_zero)
         self.twist = np.float64(twist_zero)
         self.wrench = np.float64([0, 0, 0])
-        self.thrusts = np.zeros(4, dtype = np.float64)
+        self.thrusts = np.zeros(4, dtype=np.float64)
 
         # Get other contants from ROS params
         self.get_params()
 
         # Get URDF description from thrusters
-        urdf = rospy.get_param('robot_description', default=None)
+        urdf = rospy.get_param("robot_description", default=None)
         if urdf is None or len(urdf) == 0:
-            raise Exception('robot description not set or empty')
+            raise Exception("robot description not set or empty")
         self.thrust_map = ThrusterMap.from_urdf(urdf)
 
         # Subscribe to thrusters so we can simulate their forces
         for i, motor in enumerate(self.thrust_map.names):
-            rospy.Subscriber(f'/{motor}_motor/cmd', Command, self.thruster_cb,
-                             queue_size=3, callback_args=i)
+            rospy.Subscriber(
+                f"/{motor}_motor/cmd",
+                Command,
+                self.thruster_cb,
+                queue_size=3,
+                callback_args=i,
+            )
 
         # Start timer to run simulator
         rospy.Timer(rospy.Duration(self.update_period), self.timer_cb)
@@ -53,18 +59,18 @@ class Navsim:
         """
         Load important configurable constants from ROS params
         """
-        mass = rospy.get_param('~mass')
-        drag = rospy.get_param('~drag')
-        rotational_inertia = rospy.get_param('~rotational_inertia')
-        wind = rospy.get_param('~wind', [0, 0, 0])
+        mass = rospy.get_param("~mass")
+        drag = rospy.get_param("~drag")
+        rotational_inertia = rospy.get_param("~rotational_inertia")
+        wind = rospy.get_param("~wind", [0, 0, 0])
 
         self.inertia = np.float64([mass, mass, rotational_inertia])
         self.drag = np.float64(drag)
         self.wind = np.float64(wind)
 
-        self.update_period = rospy.get_param('~update_period', 0.1)
-        self.world_frame = rospy.get_param('~world_frame', 'enu')
-        self.body_frame = rospy.get_param('~body_frame', 'base_link')
+        self.update_period = rospy.get_param("~update_period", 0.1)
+        self.world_frame = rospy.get_param("~world_frame", "enu")
+        self.body_frame = rospy.get_param("~body_frame", "base_link")
 
     def thruster_cb(self, msg: Command, index: int) -> None:
         self.thrusts[index] = msg.setpoint
@@ -85,18 +91,28 @@ class Navsim:
         cos_result = np.cos(self.pose[2])
 
         # Rotation Matrix converts body to world by default
-        rotation = np.array([[cos_result, -sin_result, 0], [sin_result, cos_result, 0], [0, 0, 1]])
+        rotation = np.array(
+            [[cos_result, -sin_result, 0], [sin_result, cos_result, 0], [0, 0, 1]]
+        )
         wrench = np.array(wrench)
         posedot, twistdot = self.state_deriv(np.float64(wrench), rotation)
 
-        self.pose = self.pose + posedot * time_delta + 0.5 * rotation.dot(twistdot) * time_delta**2
+        self.pose = (
+            self.pose
+            + posedot * time_delta
+            + 0.5 * rotation.dot(twistdot) * time_delta**2
+        )
         self.twist = self.twist + twistdot * time_delta
 
-    def state_deriv(self, wrench: np.float64, rotation: np.ndarray) -> Tuple[np.ndarray, float]:
+    def state_deriv(
+        self, wrench: np.float64, rotation: np.ndarray
+    ) -> Tuple[np.ndarray, float]:
         posedot = rotation.dot(self.twist)
-        twistdot = (1 / self.inertia) * (wrench - self.drag *
-                                         np.sign(self.twist) * self.twist
-                                         * self.twist + rotation.T.dot(self.wind))
+        twistdot = (1 / self.inertia) * (
+            wrench
+            - self.drag * np.sign(self.twist) * self.twist * self.twist
+            + rotation.T.dot(self.wind)
+        )
         return posedot, twistdot
 
     def publish_odom(self) -> None:
@@ -122,7 +138,8 @@ class Navsim:
         msg.twist.twist.angular.z = twist[2]
         return msg
 
-if __name__ == '__main__':
-    rospy.init_node('navigator_sim2D')
-    navsim = Navsim(pose_zero = np.array([0, 0, np.pi / 2]))
+
+if __name__ == "__main__":
+    rospy.init_node("navigator_sim2D")
+    navsim = Navsim(pose_zero=np.array([0, 0, np.pi / 2]))
     rospy.spin()

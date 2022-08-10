@@ -1,16 +1,15 @@
 #pragma once
 
-#include <boost/circular_buffer.hpp>
-#include <mil_tools/mil_tools.hpp>
-#include <mil_vision_lib/image_acquisition/camera_frame_sequence.hpp>
-
 #include <image_geometry/pinhole_camera_model.h>
 #include <image_transport/image_transport.h>
 #include <message_filters/subscriber.h>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
 
+#include <boost/circular_buffer.hpp>
 #include <cmath>
+#include <mil_tools/mil_tools.hpp>
+#include <mil_vision_lib/image_acquisition/camera_frame_sequence.hpp>
 #include <mutex>
 #include <string>
 
@@ -21,7 +20,7 @@ namespace mil_vision
 {
 template <typename img_scalar_t = uint8_t, typename float_t = float>
 class ROSCameraStream
-    : public CameraFrameSequence<std::shared_ptr<image_geometry::PinholeCameraModel>, img_scalar_t, ros::Time, float_t>
+  : public CameraFrameSequence<std::shared_ptr<image_geometry::PinholeCameraModel>, img_scalar_t, ros::Time, float_t>
 {
   using cam_model_ptr_t = std::shared_ptr<image_geometry::PinholeCameraModel>;
   using time_t_ = ros::Time;
@@ -52,7 +51,7 @@ public:
   // Returns true if the camera stream object has been successfully initialized
   bool init(std::string &camera_topic);
 
-  // Returns false if an internal error has ocurred or ROS is in the process of shutting down the
+  // Returns false if an internal error has occurred or ROS is in the process of shutting down the
   // enclosing node
   bool ok()
   {
@@ -173,7 +172,7 @@ bool ROSCameraStream<img_scalar_t, float_t>::init(std::string &camera_topic)
   bool success = false;
   image_transport::CameraSubscriber cam_sub;
 
-  // subscribes to image msg and camera info and initializes CameraModel Object then disconnets subscriber
+  // subscribes to image msg and camera info and initializes CameraModel Object then disconnects subscriber
   auto init_lambda = [&](const sensor_msgs::ImageConstPtr &image_msg_ptr,
                          const sensor_msgs::CameraInfoConstPtr &info_msg_ptr) mutable {
     std::string init_msg{ "ROSCameraStream: Initializing with " };
@@ -241,8 +240,9 @@ ROSCameraStream<img_scalar_t, float_t>::getFrameFromTime(ros::Time desired_time)
   // Check bounds on time
   if (desired_time < this->_start_time || desired_time > this->_end_time)
   {
-    ROS_WARN_STREAM_THROTTLE_NAMED(1, "ROSCameraStream", "ROSCameraStream: The camera frame you requested is outside "
-                                                         "the time range of the buffer.");
+    ROS_WARN_STREAM_THROTTLE_NAMED(1, "ROSCameraStream",
+                                   "ROSCameraStream: The camera frame you requested is outside "
+                                   "the time range of the buffer.");
     return nullptr;
   }
 
@@ -265,8 +265,8 @@ ROSCameraStream<img_scalar_t, float_t>::getFrameFromTime(ros::Time desired_time)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename img_scalar_t, typename float_t>
-typename ROSCameraStream<img_scalar_t, float_t>::CamFrameConstPtr ROSCameraStream<img_scalar_t, float_t>::
-operator[](int i)
+typename ROSCameraStream<img_scalar_t, float_t>::CamFrameConstPtr
+ROSCameraStream<img_scalar_t, float_t>::operator[](int i)
 {
   using mil_tools::operator"" _s;
 
@@ -290,7 +290,7 @@ operator[](int i)
   }
   catch (std::exception &e)
   {
-    auto err = "ROSCameraStream: The circular buffer index you are trying to acess is out of bounds:\n"_s + e.what();
+    auto err = "ROSCameraStream: The circular buffer index you are trying to access is out of bounds:\n"_s + e.what();
     ROS_WARN_THROTTLE_NAMED(1, "ROSCameraStream", err.c_str());
     _mtx.unlock();
     return nullptr;

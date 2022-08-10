@@ -1,20 +1,17 @@
 #pragma once
 
-#include "object_map.hpp"
-#include "pcodar_types.hpp"
-
 #include <interactive_markers/interactive_marker_server.h>
 #include <interactive_markers/menu_handler.h>
-
 #include <mil_msgs/PerceptionObject.h>
 #include <mil_msgs/PerceptionObjectArray.h>
-
-#include <visualization_msgs/MarkerArray.h>
-
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <visualization_msgs/MarkerArray.h>
 
 #include <memory>
+
+#include "object_map.hpp"
+#include "pcodar_types.hpp"
 
 namespace pcodar
 {

@@ -46,4 +46,4 @@ void MilMagnetometerGazebo::OnUpdate()
     mag_pub_.publish(msg);
   }
 }
-}
+}  // namespace mil_gazebo

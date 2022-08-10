@@ -1,16 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+import sys
+
 import cv2
 import cv2.cv as cv
-import sys
-import rospy
 import image_geometry
-from sub8_msgs.srv import OcrRequest
-from mil_ros_tools import Image_Subscriber
+import rospy
 import tesseract
+from mil_ros_tools import Image_Subscriber
+from sub8_msgs.srv import OcrRequest
 
 
 class Ocr:
-
     def __init__(self):
         rospy.sleep(1.0)
         self.last_image = None
@@ -18,17 +18,21 @@ class Ocr:
         self.last_image_time = None
         self.camera_model = None
         self.white_list = None
-        self.ocr_service = rospy.Service('vision/ocr', OcrRequest, self.request_characters)
-        self.image_sub = Image_Subscriber('/camera/front/right/image_rect_color', self.image_cb)
+        self.ocr_service = rospy.Service(
+            "vision/ocr", OcrRequest, self.request_characters
+        )
+        self.image_sub = Image_Subscriber(
+            "/camera/front/right/image_rect_color", self.image_cb
+        )
 
     def request_characters(self, srv):
         self.white_list = srv.target_name
-        if (self.last_image is not None):
+        if self.last_image is not None:
             response = self.ocr()
             return response
 
     def image_cb(self, image):
-        '''Hang on to last image'''
+        """Hang on to last image"""
         self.last_image = image
         self.last_image_time = self.image_sub.last_image_time
         if self.camera_model is None:
@@ -51,9 +55,8 @@ class Ocr:
                 offset,
                 offset,
                 cv2.BORDER_CONSTANT,
-                value=(255,
-                       255,
-                       255))
+                value=(255, 255, 255),
+            )
             # Init and configure tesseract api
             api = tesseract.TessBaseAPI()
             api.Init(".", "eng", tesseract.OEM_DEFAULT)
@@ -63,12 +66,14 @@ class Ocr:
             # Derived from example code here: http://blog.mimvp.com/2015/11/python-ocr-recognition/
             height, width, channel = image.shape
             iplimage = cv.CreateImageHeader((width, height), cv.IPL_DEPTH_8U, channel)
-            cv.SetData(iplimage, image.tostring(), image.dtype.itemsize * channel * (width))
+            cv.SetData(
+                iplimage, image.tostring(), image.dtype.itemsize * channel * (width)
+            )
             tesseract.SetCvImage(iplimage, api)
             api.Recognize(None)
             ri = api.GetIterator()
             level = tesseract.RIL_WORD
-            if (ri):
+            if ri:
                 word = ri.GetUTF8Text(level)
                 return word
 
@@ -77,6 +82,7 @@ def main(args):
     Ocr()
     rospy.spin()
 
-if __name__ == '__main__':
-    rospy.init_node('ocr')
+
+if __name__ == "__main__":
+    rospy.init_node("ocr")
     main(sys.argv)

@@ -1,11 +1,13 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
-#include <cmath>
-#include <fstream>
+#include <ros/console.h>
 
 #include <boost/asio/serial_port.hpp>
 #include <boost/crc.hpp>
+#include <boost/thread/thread.hpp>
+#include <cmath>
+#include <fstream>
 
 namespace depth_driver
 {
@@ -24,7 +26,7 @@ private:
 
   const std::string port;
   const int baudrate;
-  boost::asio::io_service io;
+  boost::asio::io_context io;
   boost::asio::serial_port p;
 
   void send_packet(ByteVec unescaped)
@@ -174,6 +176,6 @@ public:
     p.close();
   }
 };
-}
+}  // namespace depth_driver
 
 #endif

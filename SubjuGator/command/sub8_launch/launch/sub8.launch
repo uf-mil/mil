@@ -10,7 +10,7 @@
 
   <include file="$(find sub8_launch)/launch/tf.launch" >
     <arg name="simulate_cams" value="$(arg simulate_cams)" />
-  </include>  
+  </include>
 
   <include if="$(eval environment != 'dynsim')" file="$(find sub8_launch)/launch/subsystems/nav_box.launch" >
     <arg name="imu" value="true" />

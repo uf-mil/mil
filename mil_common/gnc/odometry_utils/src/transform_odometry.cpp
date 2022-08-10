@@ -1,15 +1,15 @@
 #include <eigen_conversions/eigen_msg.h>
 #include <nodelet/nodelet.h>
+#include <odom_estimator/odometry.h>
+#include <odom_estimator/unscented_transform.h>
+#include <odom_estimator/util.h>
 #include <ros/ros.h>
 #include <tf/LinearMath/Quaternion.h>
 #include <tf/transform_datatypes.h>
 #include <tf/transform_listener.h>
 #include <tf_conversions/tf_eigen.h>
-#include <pluginlib/class_list_macros.hpp>
 
-#include <odom_estimator/odometry.h>
-#include <odom_estimator/unscented_transform.h>
-#include <odom_estimator/util.h>
+#include <pluginlib/class_list_macros.hpp>
 
 namespace odometry_utils
 {
@@ -96,4 +96,4 @@ public:
   }
 };
 PLUGINLIB_EXPORT_CLASS(odometry_utils::transform_odometry, nodelet::Nodelet);
-}
+}  // namespace odometry_utils

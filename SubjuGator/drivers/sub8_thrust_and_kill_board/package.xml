@@ -5,7 +5,7 @@
   <description>The sub8_thrust_and_kill_board package</description>
   <maintainer email="Allen@todo.todo">Kevin Allen</maintainer>
   <license>MIT</license>
-  <author >Kevin Allen</author>
+  <author>Kevin Allen</author>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>mil_usb_to_can</build_depend>
   <build_export_depend>mil_usb_to_can</build_export_depend>

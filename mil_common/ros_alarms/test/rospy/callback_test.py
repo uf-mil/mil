@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
-from ros_alarms import AlarmListener, AlarmBroadcaster
+from ros_alarms import AlarmBroadcaster, AlarmListener
 
 cb1_ran = False
 cb2_ran = False
@@ -8,16 +8,17 @@ cb2_ran = False
 
 def cb1(alarm):
     global cb1_ran
-    print alarm.alarm_name, alarm.raised
+    print(alarm.alarm_name, alarm.raised)
     cb1_ran = True
-    print alarm
-    print "Callback1!"
+    print(alarm)
+    print("Callback1!")
 
 
 def cb2(alarm):
     global cb2_ran
     cb2_ran = True
-    print "Callback2!"
+    print("Callback2!")
+
 
 if __name__ == "__main__":
     rospy.init_node("callback_test")
@@ -29,7 +30,7 @@ if __name__ == "__main__":
 
     al.add_callback(cb1)
 
-    print "Inited"
+    print("Inited")
     assert al.is_cleared()
 
     rospy.loginfo("Raise Test")
@@ -84,4 +85,4 @@ if __name__ == "__main__":
     assert not cb2_ran
     cb1_ran = False
 
-    print "All checks passed"
+    print("All checks passed")

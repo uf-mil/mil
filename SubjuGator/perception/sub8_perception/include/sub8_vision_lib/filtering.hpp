@@ -1,6 +1,7 @@
 #pragma once
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/filters/voxel_grid.h>
+
 #include "typedefs.hpp"
 
 namespace sub
@@ -26,4 +27,4 @@ void statistical_outlier_filter(const typename pcl::PointCloud<PointT>::Ptr inpu
   outlier_remover.setStddevMulThresh(std_dev_mul_thresh);
   outlier_remover.filter(*output_cloud);
 }
-}
+}  // namespace sub

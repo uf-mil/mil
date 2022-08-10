@@ -103,4 +103,4 @@ void _increase_elements_after_level(std::vector<uint8_t> comb, std::vector<std::
     }
   }
 }
-}
+}  // namespace mil_tools

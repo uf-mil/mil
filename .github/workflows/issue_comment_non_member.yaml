@@ -1,9 +1,13 @@
+---
 name: Check that issue comments are from MIL members
 
+# yamllint disable-line rule:truthy
 on:
   issue_comment:
     types: [created]
 
+# Disable line length for JS string phrase
+# yamllint disable rule:line-length
 jobs:
   orgcheck:
     name: Check that the issue comment author is in the uf-mil org

@@ -7,7 +7,7 @@ If you are using MRAC controller, you will notice a class attribute
 called use_external_tgen. If you manually set this to True in the source
 code, it will subscribe to something that publishes on /trajectory (i.e.
 the C3 trajectory generator from the sub, etc...). If you want to play it
-safe and use the built in trajectory generator, just keep it False and
+safe and use the built in trajectory generator, keep it False and
 it will only need to describe to a /waypoint which is a pose representing
 the end goal. The move_helper node (built into the NaviGator GUI) uses this.
 

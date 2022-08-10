@@ -24,7 +24,7 @@ The resulting published position point is in the coordinate frame shown above.
 # Other trivia:
 
 `mil_passive_sonar.yaml` contains `dish_h`, `dist_h4`, and `v_sound`.
-`dist_h` is the distance (in meters, of course) from hydrophone 0 to 1 (and
+`dist_h` is the distance (in meters) from hydrophone 0 to 1 (and
 equivalently, 0 to 2). `dist_h4` is the distance from 0 to 3.
 
 The deltas (seen internally and published on the debug topic) are _delays_, so

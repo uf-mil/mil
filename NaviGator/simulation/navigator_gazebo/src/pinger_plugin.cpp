@@ -1,4 +1,5 @@
 #include "navigator_gazebo/pinger_plugin.hpp"
+
 #include <gazebo/common/Plugin.hh>
 
 namespace navigator_gazebo

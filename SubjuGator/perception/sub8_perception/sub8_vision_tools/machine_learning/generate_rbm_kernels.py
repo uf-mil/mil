@@ -1,14 +1,14 @@
 import pickle
-import numpy as np
-import matplotlib.pyplot as plt
-from sub8_vision_tools import machine_learning as ml
 
+import matplotlib.pyplot as plt
+import numpy as np
+import sklearn.svm
 from scipy.ndimage import convolve
 from sklearn import linear_model, metrics
 from sklearn.cross_validation import train_test_split
 from sklearn.neural_network import BernoulliRBM
 from sklearn.pipeline import Pipeline
-import sklearn.svm
+from sub8_vision_tools import machine_learning as ml
 
 """
 To RBM for sub...
@@ -32,48 +32,36 @@ def nudge_dataset(X, Y):
     by moving the 8x8 images in X around by 1px to left, right, down, up
     """
     direction_vectors = [
-        [[0, 1, 0],
-         [0, 0, 0],
-         [0, 0, 0]],
+        [[0, 1, 0], [0, 0, 0], [0, 0, 0]],
+        [[0, 0, 0], [1, 0, 0], [0, 0, 0]],
+        [[0, 0, 0], [0, 0, 1], [0, 0, 0]],
+        [[0, 0, 0], [0, 0, 0], [0, 1, 0]],
+    ]
 
-        [[0, 0, 0],
-         [1, 0, 0],
-         [0, 0, 0]],
-
-        [[0, 0, 0],
-         [0, 0, 1],
-         [0, 0, 0]],
-
-        [[0, 0, 0],
-         [0, 0, 0],
-         [0, 1, 0]]]
-
-    shift = lambda x, w: convolve(x.reshape((8, 8)), mode='constant',
-                                  weights=w).ravel()
-    X = np.concatenate([X] +
-                       [np.apply_along_axis(shift, 1, X, vector)
-                        for vector in direction_vectors])
+    shift = lambda x, w: convolve(x.reshape((8, 8)), mode="constant", weights=w).ravel()
+    X = np.concatenate(
+        [X] + [np.apply_along_axis(shift, 1, X, vector) for vector in direction_vectors]
+    )
     Y = np.concatenate([Y for _ in range(5)], axis=0)
     return X, Y
+
 
 # Load Data
 # digits = datasets.load_digits()
 data = pickle.load(open("segments.p", "rb"))
 ims, lbls = ml.utils.make_dataset(data)
-print ims.shape
+print(ims.shape)
 imsz = np.reshape(ims.transpose(), (-1, ims.shape[1] * ims.shape[1]))
 X, Y = ml.utils.desample_binary(imsz, lbls)
-print X.shape, Y.shape
-print np.sum(Y == 0)
-print np.sum(Y == 1)
+print(X.shape, Y.shape)
+print(np.sum(Y == 0))
+print(np.sum(Y == 1))
 
 # X = np.asarray(digits.data, 'float32')
 X, Y = nudge_dataset(X, Y)
 X = (X - np.min(X, 0)) / (np.max(X, 0) + 0.0001)  # 0-1 scaling
 
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y,
-                                                    test_size=0.2,
-                                                    random_state=0)
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=0)
 
 # Models we will use
 logistic = linear_model.LogisticRegression()
@@ -81,7 +69,7 @@ rbm = BernoulliRBM(random_state=0, verbose=True)
 svc = sklearn.svm.SVC()
 
 # classifier = Pipeline(steps=[('rbm', rbm), ('logistic', logistic)])
-classifier = Pipeline(steps=[('rbm', rbm), ('svc', svc)])
+classifier = Pipeline(steps=[("rbm", rbm), ("svc", svc)])
 
 
 #
@@ -108,15 +96,15 @@ logistic_classifier.fit(X_train, Y_train)
 # Evaluation
 
 print()
-print("Logistic regression using RBM features:\n%s\n" % (
-    metrics.classification_report(
-        Y_test,
-        classifier.predict(X_test))))
+print(
+    "Logistic regression using RBM features:\n%s\n"
+    % (metrics.classification_report(Y_test, classifier.predict(X_test)))
+)
 
-print("Logistic regression using raw pixel features:\n%s\n" % (
-    metrics.classification_report(
-        Y_test,
-        logistic_classifier.predict(X_test))))
+print(
+    "Logistic regression using raw pixel features:\n%s\n"
+    % (metrics.classification_report(Y_test, logistic_classifier.predict(X_test)))
+)
 
 #
 # Plotting
@@ -124,13 +112,12 @@ print("Logistic regression using raw pixel features:\n%s\n" % (
 plt.figure(figsize=(4.2, 4))
 for i, comp in enumerate(rbm.components_):
     plt.subplot(10, 10, i + 1)
-    plt.imshow(comp.reshape((8, 8)), cmap=plt.cm.gray_r,
-               interpolation='nearest')
+    plt.imshow(comp.reshape((8, 8)), cmap=plt.cm.gray_r, interpolation="nearest")
     plt.xticks(())
     plt.yticks(())
-plt.suptitle('100 components extracted by RBM', fontsize=16)
+plt.suptitle("100 components extracted by RBM", fontsize=16)
 plt.subplots_adjust(0.08, 0.02, 0.92, 0.85, 0.08, 0.23)
 
-pickle.dump((classifier, rbm), open('rbm.p', 'wb'))
+pickle.dump((classifier, rbm), open("rbm.p", "wb"))
 
 plt.show()

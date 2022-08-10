@@ -1,9 +1,12 @@
+---
 name: Check that new issues are opened by organization members
 
+# yamllint disable-line rule:truthy
 on:
   issues:
     types: [opened]
 
+# yamllint disable rule:line-length
 jobs:
   orgcheck:
     name: Check that the issue author is in the uf-mil org

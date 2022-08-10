@@ -167,7 +167,7 @@ std::vector<cv::Point> Sub8StartGateDetector::get_corner_center_points(const std
 
 cv::Mat Sub8StartGateDetector::process_image(cv::Mat &image)
 {
-  cv::Mat kernal = cv::Mat::ones(5, 5, CV_8U);
+  cv::Mat kernel = cv::Mat::ones(5, 5, CV_8U);
 
   cv::Mat lab;
   cv::cvtColor(image, lab, cv::COLOR_BGR2Lab);
@@ -194,10 +194,10 @@ cv::Mat Sub8StartGateDetector::process_image(cv::Mat &image)
   // debug_image_pub_canny_.publish(dbg_img_msg_canny);
 
   cv::Mat closing;
-  cv::morphologyEx(canny, closing, cv::MORPH_CLOSE, kernal);
+  cv::morphologyEx(canny, closing, cv::MORPH_CLOSE, kernel);
 
   cv::Mat dilation;
-  cv::dilate(closing, dilation, kernal, cv::Point(), dilate_amount_);
+  cv::dilate(closing, dilation, kernel, cv::Point(), dilate_amount_);
 
   return dilation;
 }

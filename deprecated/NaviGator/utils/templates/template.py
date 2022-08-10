@@ -30,11 +30,15 @@ N. Step N
 
 '''
 
-import rospy
+import math
+import threading
+
+import numpy
 import roslib
-import numpy,math,tf,threading
-from kill_handling.listener import KillListener
+import rospy
+import tf
 from kill_handling.broadcaster import KillBroadcaster
+from kill_handling.listener import KillListener
 
 rospy.init_node('NODE_NAME')
 

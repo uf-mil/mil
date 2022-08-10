@@ -1,12 +1,11 @@
 #pragma once
 
-#include <stdio.h>
-#include <string.h>
-
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
 #include <std_srvs/SetBool.h>
+#include <stdio.h>
+#include <string.h>
 
 namespace mil_tools
 {
@@ -32,6 +31,6 @@ protected:
   virtual void Play(const ros::TimerEvent& event);
   ros::Publisher pub_;
 };
-}
+}  // namespace mil_tools
 
 #include "../../src/mil_tools/topic_player.cpp"

@@ -1,11 +1,11 @@
+import image_geometry
 import numpy as np
 from scipy.optimize import minimize
-import image_geometry
-import estimation
+
+from . import estimation
 
 
-class MultiObservation(object):
-
+class MultiObservation:
     """
     This is NOT a bundle adjuster.
 
@@ -45,13 +45,13 @@ class MultiObservation(object):
             return t_cost
 
         minimization = minimize(
-            method='bfgs',
+            method="bfgs",
             fun=cost,
             # jac=obj_jacobian,
             x0=(5.0, 5.0, 5.0),
             # x0=(self.min_thrusts + self.max_thrusts) / 2,
             # bounds=zip([-15.0, -15.0, -15.0], [15.0, 15.0, 15.0]),
-            tol=1e-3
+            tol=1e-3,
         )
 
         dists = []
@@ -60,26 +60,26 @@ class MultiObservation(object):
             dists.append(norm(np.cross(ray.T, minimization.x - t)))
         dists = np.array(dists)
         threshold = dists.std()
-        if threshold < .1:  # May need to be tuned
+        if threshold < 0.1:  # May need to be tuned
             if self.debug:
-                print "MULTI_OBS: No outliers."
+                print("MULTI_OBS: No outliers.")
             return minimization.x  # No outliers
 
         outliers = np.where(dists > threshold)[0][::-1]
         if self.debug:
-            print "MULTI_OBS: Removing ({}) outliers.".format(len(outliers))
+            print(f"MULTI_OBS: Removing ({len(outliers)}) outliers.")
         for index in outliers:
             del observations[index]
             del cameras[index]
 
         minimization = minimize(
-            method='slsqp',
+            method="slsqp",
             fun=cost,
             # jac=obj_jacobian,
             x0=(5.0, 5.0, 5.0),
             # x0=(self.min_thrusts + self.max_thrusts) / 2,
             bounds=zip([-15.0, -15.0, -15.0], [15.0, 15.0, 15.0]),
-            tol=1e-3
+            tol=1e-3,
         )
 
         return minimization.x
@@ -87,8 +87,8 @@ class MultiObservation(object):
     def get_ray(self, observation):
         """Returns a ray in camera frame pointing towards the observation
 
-            self.R.dot(observation) will give the ray in world frame
-            self.t would be the base of the ray
+        self.R.dot(observation) will give the ray in world frame
+        self.t would be the base of the ray
         """
         obs_column = self.column_vectorize(observation)
         ray = self.K_inv.dot(np.vstack([obs_column, 1.0]))
@@ -102,14 +102,15 @@ def test():
     TODO:
         Make this an actual unit test
     """
-    import mil_ros_tools
     import time
+
+    import mil_ros_tools
     import rospy
     from mayavi import mlab
 
-    rospy.init_node('test_estimation')
-    q = mil_ros_tools.Image_Subscriber('/camera/front/left/image_raw')
-    while(q.camera_info is None):
+    rospy.init_node("test_estimation")
+    q = mil_ros_tools.Image_Subscriber("/camera/front/left/image_raw")
+    while q.camera_info is None:
         time.sleep(0.1)
 
     camera_model = image_geometry.PinholeCameraModel()
@@ -118,12 +119,12 @@ def test():
     # K = np.array(camera_model.fullIntrinsicMatrix(), dtype=np.float32)
 
     real = np.array([1.0, 3.0, 7.0])
-    p_wrong = .2
+    p_wrong = 0.2
 
     projected_h = MO.K.dot(real)
     projected = projected_h[:2] / projected_h[2]
 
-    print 'starting'
+    print("starting")
     R = np.diag([1.0, 1.0, 1.0])
     camera_t = np.array([0.0, 0.0, 0.0])
     cameras = []
@@ -134,21 +135,25 @@ def test():
     for k in range(max_k):
         if k < 1:
             camera_t = np.array([0.0, -8.0, 7.0])
-            R = np.array([
-                [1.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0],
-                [0.0, -1.0, 0.0],
-            ])
+            R = np.array(
+                [
+                    [1.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0],
+                    [0.0, -1.0, 0.0],
+                ]
+            )
 
         else:
             R = np.diag([1.0, 1.0, 1.0])
             camera_t = np.hstack([(np.random.random(2) - 0.5) * 5, 0.0])
 
         if (np.random.random() < p_wrong) and (k > 1):
-            print "Doing a random observation"
-            projected = np.random.random(2) * np.array([640., 480.])
+            print("Doing a random observation")
+            projected = np.random.random(2) * np.array([640.0, 480.0])
         else:
-            projected_h = MO.K.dot(np.dot(R.transpose(), real) - R.transpose().dot(camera_t))
+            projected_h = MO.K.dot(
+                np.dot(R.transpose(), real) - R.transpose().dot(camera_t)
+            )
             projected = projected_h[:2] / projected_h[2]
 
         obs_final = projected + np.random.normal(scale=2.0, size=2)
@@ -158,7 +163,7 @@ def test():
         observations.append(obs_final)
 
     best_p = MO.lst_sqr_intersection(observations, cameras)
-    print best_p
+    print(best_p)
 
     mlab.points3d(*map(np.array, best_p), scale_factor=0.3)
     estimation.draw_cameras(rays, cameras)
@@ -166,5 +171,5 @@ def test():
     mlab.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test()

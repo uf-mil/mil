@@ -72,7 +72,7 @@ void PcdColorizer::_cloud_cb(const PCD<>::ConstPtr &cloud_in)
 //   {
 //     // Construct on heap but store ptrs in stack
 //     _ros_cam_ptrs.emplace_back(new CamStream{this->_nh, this->_img_hist_size});
-//     good_init += int(_ros_cam_ptrs[i]->init(rect_color_topics[i]));  // Count successfull init
+//     good_init += int(_ros_cam_ptrs[i]->init(rect_color_topics[i]));  // Count successful init
 //     _transformed_cloud_ptrs.emplace_back(nullptr);
 //   }
 

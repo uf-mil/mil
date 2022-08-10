@@ -1,31 +1,33 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import print_function
+
 import sys
-import tf
+
 import cv2
 import rospy
-from image_geometry import PinholeCameraModel
-from mil_ros_tools import Image_Subscriber, Image_Publisher
+import tf
 from cv_bridge import CvBridge
+from image_geometry import PinholeCameraModel
+from mil_ros_tools import Image_Publisher, Image_Subscriber
 
-'''
+"""
 CLAHE utiltiy script that takes in images and returns a CLAHE balanced image.
 Emphasizes color differences and contrast in an image.
-'''
+"""
 
 
 class CLAHE_generator:
-
     def __init__(self):
 
-        self.camera = rospy.get_param('~camera_topic',
-                                      '/camera/front/left/image_rect_color')
+        self.camera = rospy.get_param(
+            "~camera_topic", "/camera/front/left/image_rect_color"
+        )
 
         # Instantiate remaining variables and objects
         self.last_image_time = None
         self.last_image = None
         self.tf_listener = tf.TransformListener()
-        self.status = ''
+        self.status = ""
         self.est = None
         self.visual_id = 0
         self.enabled = False
@@ -35,7 +37,7 @@ class CLAHE_generator:
 
         self.image_sub = Image_Subscriber(self.camera, self.image_cb)
         self.camera_info = self.image_sub.wait_for_camera_info()
-        '''
+        """
         These variables store the camera information required to perform
         the transformations on the coordinates to move from the subs
         perspective to our global map perspective. This information is
@@ -43,7 +45,7 @@ class CLAHE_generator:
         will find the 3D coordinates of the torpedo board based on 2D
         observations from the Camera. More info on this can be found in
         sub8_vision_tools.
-        '''
+        """
 
         self.camera_info = self.image_sub.wait_for_camera_info()
         self.camera_model = PinholeCameraModel()
@@ -53,32 +55,34 @@ class CLAHE_generator:
         self.image_pub = Image_Publisher("CLAHE/debug")
 
         # Debug
-        self.debug = rospy.get_param('~debug', True)
+        self.debug = rospy.get_param("~debug", True)
 
     def image_cb(self, image):
-        '''
+        """
         Run each time an image comes in from ROS. If enabled,
         attempt to find the torpedo board.
-        '''
+        """
 
         self.last_image = image
 
-        if self.last_image_time is not None and \
-                self.image_sub.last_image_time < self.last_image_time:
+        if (
+            self.last_image_time is not None
+            and self.image_sub.last_image_time < self.last_image_time
+        ):
             # Clear tf buffer if time went backwards (nice for playing bags in
             # loop)
             self.tf_listener.clear()
 
         self.last_image_time = self.image_sub.last_image_time
         self.CLAHE(image)
-        print('published')
+        print("published")
 
     def CLAHE(self, cv_image):
-        '''
+        """
         CLAHE (Contrast Limited Adaptive Histogram Equalization)
         This increases the contrast between color channels and allows us to
         better differentiate colors under certain lighting conditions.
-        '''
+        """
         clahe = cv2.createCLAHE(clipLimit=9.5, tileGridSize=(4, 4))
 
         # convert from BGR to LAB color space
@@ -94,7 +98,7 @@ class CLAHE_generator:
 
 
 def main(args):
-    rospy.init_node('CLAHE', anonymous=False)
+    rospy.init_node("CLAHE", anonymous=False)
     CLAHE_generator()
 
     try:
@@ -104,5 +108,5 @@ def main(args):
     cv2.destroyAllWindows()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(sys.argv)

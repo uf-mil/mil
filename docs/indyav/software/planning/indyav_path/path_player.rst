@@ -3,7 +3,7 @@ Path Player
 
 This is a utility that we use to play back a path that we recorded from earlier, so that we can test systems not related to path planning.
 
-Path Player is just an instance of ``mil_tools TopicRecorder``. Its current behavior is that it will publish all messages in a bag file(our recorded path) in sequential order with correct timing between them. This utility is designed to be inherited from and the ``Play`` function overriden.
+Path Player is just an instance of ``mil_tools TopicRecorder``. Its current behavior is that it will publish all messages in a bag file(our recorded path) in sequential order with correct timing between them. This utility is designed to be inherited from and the ``Play`` function overridden.
 
 Basic Usage Example
 ^^^^^^^^^^^^^^^^^^^

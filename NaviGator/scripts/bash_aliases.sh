@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # Directory navigation
-NAV_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
-VRX_DIR="$(realpath $(dirname $BASH_SOURCE)/../simulation/VRX/vrx)"
-alias nav="cd $NAV_DIR"
-alias vrx="cd $VRX_DIR"
+NAV_DIR="$HOME/catkin_ws/src/mil/NaviGator"
+VRX_DIR="$HOME/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx"
+alias nav='cd $NAV_DIR'
+alias vrx='cd $VRX_DIR'
 # VRX
 alias vrxviz="rviz -d \$MIL_REPO/NaviGator/vrx.rviz"
 
 # Networking
-alias rnav="ros_connect -n ${HOSTNAMES[1]}"
-alias sshnav="ssh navigator@${HOSTNAMES[1]} -Y"
+alias rnav='ros_connect -n ${HOSTNAMES[1]}'
+alias sshnav='ssh navigator@${HOSTNAMES[1]} -Y'
 
 nthrust()
 {
@@ -48,7 +48,7 @@ complete -F _nwrench_complete nwrench
 # Pneumatics
 _nvalve_complete()
 {
-	# Python oneliners are POWERFULL
+	# Python one-liners are POWERFUL
   # Get a list of all the actuator names and ids for autocompletion
   ACTUATORS=$(python -c "import rospy; rospy.init_node('test', anonymous=True); param = rospy.get_param('/actuator_driver/actuators'); print ' '.join([key for key in param]) + ' ' + ' '.join([str(param[key]) for key in param if type(param[key]) == int])")
 
@@ -88,9 +88,9 @@ alias nrespawn="rosservice call /gazebo/delete_model 'navigator' && roslaunch na
 
 # Work around for bagging to SSD and copying to HDD when possible
 # Sync bags from the SSD to the HDD
-alias nsyncbags="rsync -hru --progress $HOME/bags-fast/ $HOME/bags/"
+alias nsyncbags='rsync -hru --progress $HOME/bags-fast/ $HOME/bags/'
 # Bag to the SSD (so buffer doesn't overflow)
-alias bagfast="BAG_DIR=$HOME/bags-fast bag"
+alias bagfast='BAG_DIR=$HOME/bags-fast bag'
 # Clear the bag fast dir on the SSD (run after it is synced)
-alias purgebagfast="rm -r $HOME/bags-fast/*"
+alias purgebagfast='rm -r $HOME/bags-fast/*'
 complete -F _bagging_complete bagfast

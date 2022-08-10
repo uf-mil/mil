@@ -1,5 +1,6 @@
 #include <geometry_msgs/Vector3Stamped.h>
 #include <ros/ros.h>
+
 #include "gazebo/common/common.hh"
 #include "gazebo/gazebo.hh"
 #include "gazebo/physics/physics.hh"
@@ -40,4 +41,4 @@ private:
   // This default value is entirely guessed at
   double amplitude_ = 1000;
 };
-}
+}  // namespace mil_gazebo

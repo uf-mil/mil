@@ -1,11 +1,10 @@
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
 #include <nodelet/nodelet.h>
 #include <ros/ros.h>
-#include <pluginlib/class_list_macros.hpp>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 #include <mil_tools/param_helpers.hpp>
+#include <pluginlib/class_list_macros.hpp>
 
 #include "adis16400_imu/driver.h"
 
@@ -67,4 +66,4 @@ private:
 };
 
 PLUGINLIB_EXPORT_CLASS(adis16400_imu::Nodelet, nodelet::Nodelet);
-}
+}  // namespace adis16400_imu

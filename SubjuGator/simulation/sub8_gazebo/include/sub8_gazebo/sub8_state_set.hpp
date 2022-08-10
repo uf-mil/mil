@@ -1,11 +1,11 @@
 #ifndef _GAZEBO_STATE_PLUGIN_HH_
 #define _GAZEBO_STATE_PLUGIN_HH_
 
+#include <geometry_msgs/PoseStamped.h>
+
 #include "gazebo/common/Event.hh"
 #include "gazebo/common/Plugin.hh"
 #include "gazebo/physics/physics.hh"
-
-#include <geometry_msgs/PoseStamped.h>
 #include "ros/ros.h"
 
 namespace gazebo
@@ -32,6 +32,6 @@ protected:
   ignition::math::Pose3d first_pose_;    // Starting position of model, to add to each reference
   ignition::math::Pose3d last_ref_pose_;
 };
-}
+}  // namespace gazebo
 
 #endif

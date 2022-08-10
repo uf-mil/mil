@@ -7,7 +7,7 @@ project(navigator_judgespanel)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
-  sensor_msgs  
+  sensor_msgs
   navigator_msgs
 )
 
@@ -38,7 +38,7 @@ qt5_wrap_ui (JudgesPanelLib_ui_moc  ${JudgesPanelLib_ui})
 include_directories (${PROJECT_SOURCE_DIR})
 include_directories (${PROJECT_BINARY_DIR})
 
-add_library (JudgesPanelLib SHARED 
+add_library (JudgesPanelLib SHARED
     ${JudgesPanelLib_src}
     ${JudgesPanelLib_hdr_moc}
     ${JudgesPanelLib_ui_moc}

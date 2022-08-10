@@ -83,7 +83,9 @@ void MilDVLGazebo::OnUpdate()
     double z = cos(tilt);
 
     std::array<ignition::math::Vector3d, 4> directions = {
-      ignition::math::Vector3d(-x, 0., -z), ignition::math::Vector3d(x, 0., -z), ignition::math::Vector3d(0., x, -z),
+      ignition::math::Vector3d(-x, 0., -z),
+      ignition::math::Vector3d(x, 0., -z),
+      ignition::math::Vector3d(0., x, -z),
       ignition::math::Vector3d(0., -x, -z),
     };
 
@@ -99,4 +101,4 @@ void MilDVLGazebo::OnUpdate()
     vel_pub_.publish(vel_msg);
   }
 }
-}
+}  // namespace mil_gazebo

@@ -1,8 +1,9 @@
+import genpy
+from std_msgs.msg import String
 from twisted.internet import defer
 from txros import util
-from base_mission import ExampleBaseMission
-from std_msgs.msg import String
-import genpy
+
+from .base_mission import ExampleBaseMission
 
 
 class PublishThings(ExampleBaseMission):
@@ -11,17 +12,17 @@ class PublishThings(ExampleBaseMission):
 
     @classmethod
     def init(cls):
-        cls.publisher = cls.nh.advertise('/test_pub', String)
-        print('Publish things created publisher')
+        cls.publisher = cls.nh.advertise("/test_pub", String)
+        print("Publish things created publisher")
 
     @util.cancellableInlineCallbacks
     def run(self, parameters):
-        self.send_feedback('Printing {} for {} seconds'.format(parameters, self.publish_time))
+        self.send_feedback(f"Printing {parameters} for {self.publish_time} seconds")
         end_time = (yield self.nh.get_time()) + genpy.Duration(self.publish_time)
         msg = String(parameters)
         while (yield self.nh.get_time()) < end_time:
             self.publisher.publish(msg)
             yield self.nh.sleep(1.0 / self.publish_frequency)
-        self.send_feedback('Done publishing.')
+        self.send_feedback("Done publishing.")
         yield self.nh.sleep(1.0)
-        defer.returnValue('I did it mom!')
+        defer.returnValue("I did it mom!")

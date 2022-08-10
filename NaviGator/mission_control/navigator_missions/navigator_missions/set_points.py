@@ -1,10 +1,11 @@
-#!/usr/bin/env python
-from txros import util
+#!/usr/bin/env python3
 import itertools
-from sensor_msgs.msg import Joy
+
 from geometry_msgs.msg import PoseArray
-from std_msgs.msg import Header
 from mil_tools import numpy_quat_pair_to_pose
+from sensor_msgs.msg import Joy
+from std_msgs.msg import Header
+from txros import util
 
 
 @util.cancellableInlineCallbacks
@@ -16,7 +17,7 @@ def main(navigator):
     waypoint_pub = yield navigator.nh.advertise("/mission_waypoints", PoseArray)
 
     last_set = False
-    print "Waiting for input. RB to set waypoint, right D-Pad to go."
+    print("Waiting for input. RB to set waypoint, right D-Pad to go.")
     navigator.change_wrench("rc")
     while True:
         joy_msg = yield joy.get_next_message()
@@ -30,16 +31,16 @@ def main(navigator):
             # For displaying a pose array
             poses.append(numpy_quat_pair_to_pose(*navigator.pose))
             pa = PoseArray(header=Header(frame_id="enu"), poses=poses)
-            print "SET"
+            print("SET")
             yield waypoint_pub.publish(pa)
 
         last_set = b_set
 
         if b_go and len(waypoints) > 1:
-            print "GOING"
+            print("GOING")
             break
 
     for waypoint in itertools.cycle(waypoints):
         yield waypoint.go()
-        print "Arrived!"
+        print("Arrived!")
         yield navigator.nh.sleep(5)

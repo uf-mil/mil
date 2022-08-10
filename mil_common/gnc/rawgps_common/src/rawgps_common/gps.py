@@ -1,19 +1,16 @@
-from __future__ import division
-
-import math
-from math import sin, cos, sqrt, pi, atan2
-import os
 import functools
+import math
+import os
+from math import atan2, cos, pi, sin, sqrt
 
 import numpy
 import yaml
-
-from tf import transformations
-from geometry_msgs.msg import Point, Vector3, PointStamped
+from geometry_msgs.msg import Point, PointStamped, Vector3
+from rawgps_common.msg import Measurements, Satellite
 from std_msgs.msg import Header
+from tf import transformations
 
-from rawgps_common.msg import Satellite, Measurements
-import bitstream
+from . import bitstream
 
 
 def xyz_array(o):
@@ -21,7 +18,7 @@ def xyz_array(o):
 
 
 def deriv(f, x):
-    return (f(x + .1) - f(x - .1)) / .2
+    return (f(x + 0.1) - f(x - 0.1)) / 0.2
 
 
 inf = 1e1000
@@ -37,28 +34,32 @@ b = a * (1 - f)
 
 
 def ecef_from_latlongheight(latitude, longitude, height):
-    N = a / sqrt(1 - e**2 * sin(latitude)**2)
-    return numpy.array([
-        (N + height) * cos(latitude) * cos(longitude),
-        (N + height) * cos(latitude) * sin(longitude),
-        (N * (1 - e**2) + height) * sin(latitude),
-    ])
+    N = a / sqrt(1 - e**2 * sin(latitude) ** 2)
+    return numpy.array(
+        [
+            (N + height) * cos(latitude) * cos(longitude),
+            (N + height) * cos(latitude) * sin(longitude),
+            (N * (1 - e**2) + height) * sin(latitude),
+        ]
+    )
 
 
-def latlongheight_from_ecef((x, y, z)):
+def latlongheight_from_ecef(tup):
     # Ferrari's solution
+    x, y, z = tup
     zeta = (1 - e**2) * z**2 / a**2
     p = math.sqrt(x**2 + y**2)
     rho = (p**2 / a**2 + zeta - e**4) / 6
     s = e**4 * zeta * p**2 / (4 * a**2)
-    t = (rho**3 + s + math.sqrt(s * (s + 2 * rho**3)))**(1 / 3)
+    t = (rho**3 + s + math.sqrt(s * (s + 2 * rho**3))) ** (1 / 3)
     u = rho + t + rho**2 / t
     v = math.sqrt(u**2 + e**4 * zeta)
     w = e**2 * (u + v - zeta) / (2 * v)
     k = 1 + e**2 * (math.sqrt(u + v + w**2) + w) / (u + v)
-    k0 = (1 - e**2)**-1
+    k0 = (1 - e**2) ** -1
     h = e**-2 * (k**-1 - k0**-1) * math.sqrt(p**2 + z**2 * k**2)
     return math.atan(z * k / p), math.atan2(y, x), h
+
 
 # for i in xrange(100):
 #     import random
@@ -68,8 +69,12 @@ def latlongheight_from_ecef((x, y, z)):
 
 
 def enu_from_ecef_tf(ecef_pos):
-    up_ecef = transformations.unit_vector(ecef_from_latlongheight(
-        *latlongheight_from_ecef(ecef_pos) + numpy.array([0, 0, 1])) - ecef_pos)
+    up_ecef = transformations.unit_vector(
+        ecef_from_latlongheight(
+            *latlongheight_from_ecef(ecef_pos) + numpy.array([0, 0, 1])
+        )
+        - ecef_pos
+    )
     east_ecef = transformations.unit_vector(numpy.cross([0, 0, 1], up_ecef))
     north_ecef = numpy.cross(up_ecef, east_ecef)
     enu_from_ecef = numpy.array([east_ecef, north_ecef, up_ecef])
@@ -86,7 +91,7 @@ def ecef_from_enu(enu_v, ecef_pos):
 
 def newton(x0, f, f_prime):
     x = x0
-    for i in xrange(10):
+    for i in range(10):
         x -= f(x) / f_prime(x)
     assert abs(f(x) / f_prime(x) / x) < 1e-6
     return x
@@ -96,7 +101,7 @@ week_length = 7 * 24 * 60 * 60
 
 
 @functools.total_ordering
-class Time(object):
+class Time:
     def __init__(self, WN, TOW):
         self.WN = WN
         self.TOW = TOW
@@ -109,7 +114,7 @@ class Time(object):
         self.WN = self.WN % 1024
 
     def __repr__(self):
-        return 'gps.Time(%r, %r)' % (self.WN, self.TOW)
+        return f"gps.Time({self.WN!r}, {self.TOW!r})"
 
     def __sub__(self, other):
         if not isinstance(other, Time):
@@ -152,7 +157,7 @@ mu = 3.986005e14  # m^3/s^2
 omega_dot_e = 7.2921151467e-5  # rad/s
 
 
-class TLM(object):
+class TLM:
     def __init__(self, data):
         assert len(data) == 3
 
@@ -165,7 +170,7 @@ class TLM(object):
         assert bs.at_end()
 
 
-class HOW(object):
+class HOW:
     def __init__(self, data):
         assert len(data) == 3
 
@@ -178,7 +183,7 @@ class HOW(object):
         assert bs.at_end()
 
 
-class Subframe1(object):
+class Subframe1:
     def __init__(self, data):
         assert len(data) == 30
 
@@ -201,7 +206,7 @@ class Subframe1(object):
         self.T_GD = bs.read_signed(8) * 2**-31
         self.IODC = IODC_MSB * 2**8 + bs.read(8)
         self.t_oc_TOW = bs.read(16) * 2**4
-        self.a_f2 = bs.read_signed(8) * 2 ** -55
+        self.a_f2 = bs.read_signed(8) * 2**-55
         self.a_f1 = bs.read_signed(16) * 2**-43
         self.a_f0 = bs.read_signed(22) * 2**-31
         bs.read(2)  # t
@@ -211,7 +216,7 @@ class Subframe1(object):
         self.IODE = self.IODC % (2**8)
 
 
-class Subframe2(object):
+class Subframe2:
     def __init__(self, data):
         assert len(data) == 30
 
@@ -236,7 +241,7 @@ class Subframe2(object):
         assert bs.at_end()
 
 
-class Subframe3(object):
+class Subframe3:
     def __init__(self, data):
         assert len(data) == 30
 
@@ -259,7 +264,7 @@ class Subframe3(object):
         assert bs.at_end()
 
 
-class Subframe4(object):
+class Subframe4:
     def __init__(self, data):
         assert len(data) == 30
 
@@ -301,7 +306,7 @@ class Subframe4(object):
             pass
 
 
-class Subframe5(object):
+class Subframe5:
     def __init__(self, data):
         assert len(data) == 30
 
@@ -317,8 +322,11 @@ class Subframe5(object):
 
 
 subframes = {
-    1: Subframe1, 2: Subframe2, 3: Subframe3,
-    4: Subframe4, 5: Subframe5,
+    1: Subframe1,
+    2: Subframe2,
+    3: Subframe3,
+    4: Subframe4,
+    5: Subframe5,
 }
 
 
@@ -328,7 +336,7 @@ def parse_subframe(data):
     return subframes[HOW(data[3:6]).subframe_ID](data)
 
 
-class Ephemeris(object):
+class Ephemeris:
     def __init__(self, subframe_1, subframe_2, subframe_3):
         assert subframe_1.IODE == subframe_2.IODE == subframe_3.IODE
         self.__dict__.update(subframe_1.__dict__)
@@ -344,12 +352,17 @@ class Ephemeris(object):
         t_k = t - self.t_oe
         assert abs(t_k) < week_length / 2
         if not (abs(t_k) < 6 * 60 * 60):
-            print 'ERROR: ephemeris predicting more than 6 hours from now (%f hours)' % (t_k / 60 / 60,)
+            print(
+                "ERROR: ephemeris predicting more than 6 hours from now (%f hours)"
+                % (t_k / 60 / 60,)
+            )
         n = n_0 + self.Deltan
         M_k = self.M_0 + n * t_k
-        E_k = newton(M_k,
-                     lambda E_k: E_k - self.e * sin(E_k) - M_k,
-                     lambda E_k: 1 - self.e * cos(E_k))
+        E_k = newton(
+            M_k,
+            lambda E_k: E_k - self.e * sin(E_k) - M_k,
+            lambda E_k: 1 - self.e * cos(E_k),
+        )
         v_k = atan2(sqrt(1 - self.e**2) * sin(E_k), (cos(E_k) - self.e))
         phi_k = v_k + self.omega
 
@@ -364,40 +377,48 @@ class Ephemeris(object):
         x_k_prime = r_k * cos(u_k)
         y_k_prime = r_k * sin(u_k)
 
-        omega_k = self.Omega_0 + \
-            (self.Omega_dot - omega_dot_e) * t_k - omega_dot_e * self.t_oe.TOW
+        omega_k = (
+            self.Omega_0
+            + (self.Omega_dot - omega_dot_e) * t_k
+            - omega_dot_e * self.t_oe.TOW
+        )
 
         x_k = x_k_prime * cos(omega_k) - y_k_prime * cos(i_k) * sin(omega_k)
         y_k = x_k_prime * sin(omega_k) + y_k_prime * cos(i_k) * cos(omega_k)
         z_k = y_k_prime * sin(i_k)
 
-        F = -2 * mu**(1 / 2) / c**2
-        deltat_r = F * self.e * A**(1 / 2) * sin(E_k)
+        F = -2 * mu ** (1 / 2) / c**2
+        deltat_r = F * self.e * A ** (1 / 2) * sin(E_k)
 
         return numpy.array([x_k, y_k, z_k]), deltat_r
 
     def predict(self, t):
         pos, deltat_r = self.predict_pos_deltat_r(t)
-        vel = (self.predict_pos_deltat_r(t + .1)
-               [0] - self.predict_pos_deltat_r(t - .1)[0]) / .2
+        vel = (
+            self.predict_pos_deltat_r(t + 0.1)[0]
+            - self.predict_pos_deltat_r(t - 0.1)[0]
+        ) / 0.2
         return pos, deltat_r, vel
 
     def is_healthy(self):
         return self.SV_health == 0
 
     def __str__(self):
-        return 'Ephemeris(\n' + ''.join('    %s=%r\n' % (k, v) for k, v in sorted(self.__dict__.iteritems())) + ')'
+        return (
+            "Ephemeris(\n"
+            + "".join(f"    {k}={v!r}\n" for k, v in sorted(self.__dict__.iteritems()))
+            + ")"
+        )
 
 
-class IonosphericModel(object):
+class IonosphericModel:
     def __init__(self, a, b):
         assert len(a) == 4 and len(b) == 4
         self.a, self.b = a, b
 
     def evaluate(self, ground_pos_ecef, sat_pos_ecef, GPS_time):
         lat, lon, height = latlongheight_from_ecef(ground_pos_ecef)
-        sat_pos_enu = enu_from_ecef(
-            sat_pos_ecef - ground_pos_ecef, ground_pos_ecef)
+        sat_pos_enu = enu_from_ecef(sat_pos_ecef - ground_pos_ecef, ground_pos_ecef)
         sat_dir_enu = sat_pos_enu / numpy.linalg.norm(sat_pos_enu)
 
         E = math.asin(sat_dir_enu[2]) / math.pi
@@ -413,19 +434,18 @@ class IonosphericModel(object):
         if phi_i < -0.416:
             phi_i = -0.416
 
-        lambda_i = lambda_u + psi * \
-            math.sin(A * math.pi) / math.cos(phi_i * math.pi)
+        lambda_i = lambda_u + psi * math.sin(A * math.pi) / math.cos(phi_i * math.pi)
         phi_m = phi_i + 0.064 * math.cos((lambda_i - 1.617) * math.pi)
 
         t = (4.32e4 * lambda_i + GPS_time.TOW) % 86400
 
-        F = 1 + 16 * (0.53 - E)**3
+        F = 1 + 16 * (0.53 - E) ** 3
 
-        PER = sum(self.b[n] * phi_m**n for n in xrange(4))
+        PER = sum(self.b[n] * phi_m**n for n in range(4))
         if PER < 72000:
             PER = 72000
 
-        AMP = sum(self.a[n] * phi_m**n for n in xrange(4))
+        AMP = sum(self.a[n] * phi_m**n for n in range(4))
         if AMP < 0:
             AMP = 0
 
@@ -440,30 +460,31 @@ class IonosphericModel(object):
 
 
 def tropospheric_model(ground_pos_ecef, sat_pos_ecef):  # returns meters
-    sat_pos_enu = enu_from_ecef(
-        sat_pos_ecef - ground_pos_ecef, ground_pos_ecef)
+    sat_pos_enu = enu_from_ecef(sat_pos_ecef - ground_pos_ecef, ground_pos_ecef)
     sat_dir_enu = sat_pos_enu / numpy.linalg.norm(sat_pos_enu)
 
     E = math.asin(sat_dir_enu[2])
 
-    return 2.312 / math.sin(math.sqrt(E * E + 1.904E-3)) + \
-        0.084 / math.sin(math.sqrt(E * E + 0.6854E-3))
+    return 2.312 / math.sin(math.sqrt(E * E + 1.904e-3)) + 0.084 / math.sin(
+        math.sqrt(E * E + 0.6854e-3)
+    )
 
 
-class GPSPublisher(object):
+class GPSPublisher:
     def __init__(self, frame_id, pub, pos_pub):
         self.frame_id = frame_id
 
         self.ephemeris_data = {}  # prn -> (iode -> [frame*3])
         self.ephemerises = {}
 
-        home = os.path.expanduser('~')
-        if home == '~':
+        home = os.path.expanduser("~")
+        if home == "~":
             raise AssertionError("home path expansion didn't work")
-        self._ionospheric_model_path = os.path.join(home, '.ros',
-                                                    'rawgps_common', 'ionospheric_model.yaml')
+        self._ionospheric_model_path = os.path.join(
+            home, ".ros", "rawgps_common", "ionospheric_model.yaml"
+        )
         if os.path.exists(self._ionospheric_model_path):
-            with open(self._ionospheric_model_path, 'rb') as f:
+            with open(self._ionospheric_model_path, "rb") as f:
                 self.ionospheric_model = IonosphericModel(**yaml.load(f))
         else:
             self.ionospheric_model = None
@@ -478,11 +499,14 @@ class GPSPublisher(object):
 
         if not os.path.exists(os.path.dirname(self._ionospheric_model_path)):
             os.makedirs(os.path.dirname(self._ionospheric_model_path))
-        with open(self._ionospheric_model_path, 'wb') as f:
-            yaml.dump(dict(
-                a=self.ionospheric_model.a,
-                b=self.ionospheric_model.b,
-            ), f)
+        with open(self._ionospheric_model_path, "wb") as f:
+            yaml.dump(
+                dict(
+                    a=self.ionospheric_model.a,
+                    b=self.ionospheric_model.b,
+                ),
+                f,
+            )
 
     def handle_raw_measurements(self, stamp, gps_time, sats, sync=nan):
         satellites = []
@@ -490,66 +514,92 @@ class GPSPublisher(object):
             # print sat['prn'], sat['cn0'], sat['pseudo_range'],
             # sat['carrier_cycles'], sat['doppler_freq']
 
-            if sat['prn'] not in self.ephemerises:
+            if sat["prn"] not in self.ephemerises:
                 # print 'no ephemeris, dropping', sat['prn']
                 continue
-            eph = self.ephemerises[sat['prn']]
+            eph = self.ephemerises[sat["prn"]]
             if not eph.is_healthy():
                 # print 'unhealthy, dropping', sat['prn']
                 continue
 
             sat_msg = generate_satellite_message(
-                sat['prn'], eph, sat['cn0'], gps_time,
-                sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq'],
-                self._last_pos, self.ionospheric_model)
+                sat["prn"],
+                eph,
+                sat["cn0"],
+                gps_time,
+                sat["pseudo_range"],
+                sat["carrier_cycles"],
+                sat["doppler_freq"],
+                self._last_pos,
+                self.ionospheric_model,
+            )
             if sat_msg is not None:
                 satellites.append(sat_msg)
 
         if len(satellites) >= 4:
             pos_estimate = estimate_pos(
-                satellites, use_corrections=self._last_pos is not None)
-            self.pos_pub.publish(PointStamped(
-                header=Header(
-                    stamp=stamp,
-                    frame_id='/ecef',
-                ),
-                point=Point(*pos_estimate),
-            ))
+                satellites, use_corrections=self._last_pos is not None
+            )
+            self.pos_pub.publish(
+                PointStamped(
+                    header=Header(
+                        stamp=stamp,
+                        frame_id="/ecef",
+                    ),
+                    point=Point(*pos_estimate),
+                )
+            )
         else:
             pos_estimate = None
         self._last_pos = pos_estimate
 
         satellites = []
         for sat in sats:
-            print sat['prn'], sat['cn0'], sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq']
+            print(
+                sat["prn"],
+                sat["cn0"],
+                sat["pseudo_range"],
+                sat["carrier_cycles"],
+                sat["doppler_freq"],
+            )
 
-            if sat['prn'] not in self.ephemerises:
-                print 'no ephemeris, dropping', sat['prn']
+            if sat["prn"] not in self.ephemerises:
+                print("no ephemeris, dropping", sat["prn"])
                 continue
-            eph = self.ephemerises[sat['prn']]
+            eph = self.ephemerises[sat["prn"]]
             if not eph.is_healthy():
-                print 'unhealthy, dropping', sat['prn']
+                print("unhealthy, dropping", sat["prn"])
                 continue
 
             sat_msg = generate_satellite_message(
-                sat['prn'], eph, sat['cn0'], gps_time,
-                sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq'],
-                pos_estimate, self.ionospheric_model)
+                sat["prn"],
+                eph,
+                sat["cn0"],
+                gps_time,
+                sat["pseudo_range"],
+                sat["carrier_cycles"],
+                sat["doppler_freq"],
+                pos_estimate,
+                self.ionospheric_model,
+            )
             if sat_msg is not None:
                 satellites.append(sat_msg)
 
-        self.pub.publish(Measurements(
-            header=Header(
-                stamp=stamp,
-                frame_id=self.frame_id,
-            ),
-            sync_WN=gps_time.WN,
-            sync=gps_time.TOW,
-            position=Point(
-                *pos_estimate if pos_estimate is not None else (0, 0, 0)),
-            position_valid=pos_estimate is not None,
-            satellites=satellites,
-        ))
+        self.pub.publish(
+            Measurements(
+                header=Header(
+                    stamp=stamp,
+                    frame_id=self.frame_id,
+                ),
+                sync_WN=gps_time.WN,
+                sync=gps_time.TOW,
+                position=Point(
+                    *pos_estimate if pos_estimate is not None else (0, 0, 0)
+                ),
+                position_valid=pos_estimate is not None,
+                satellites=satellites,
+            )
+        )
         print
 
     def handle_subframe(self, stamp, prn, data):
@@ -558,12 +608,14 @@ class GPSPublisher(object):
 
         if subframe.HOW.subframe_ID in [1, 2, 3]:
             self.ephemeris_data.setdefault(prn, {}).setdefault(
-                subframe.IODE, [None] * 3)[subframe.HOW.subframe_ID - 1] = subframe
+                subframe.IODE, [None] * 3
+            )[subframe.HOW.subframe_ID - 1] = subframe
             self._ephemeris_think(prn, subframe.IODE)
         elif subframe.HOW.subframe_ID == 4:
             if subframe.sv_id == 56:  # page 18
                 self._set_ionospheric_model(
-                    IonosphericModel(subframe.alpha, subframe.beta))
+                    IonosphericModel(subframe.alpha, subframe.beta)
+                )
 
     def _ephemeris_think(self, prn, iode):
         subframes = self.ephemeris_data[prn][iode]
@@ -572,8 +624,17 @@ class GPSPublisher(object):
         self.ephemerises[prn] = Ephemeris(*subframes)
 
 
-def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycles, doppler_freq,
-                               approximate_receiver_position=None, ionospheric_model=None):
+def generate_satellite_message(
+    prn,
+    eph,
+    cn0,
+    gps_t,
+    pseudo_range,
+    carrier_cycles,
+    doppler_freq,
+    approximate_receiver_position=None,
+    ionospheric_model=None,
+):
     if pseudo_range is None:  # need pseudorange
         return None
 
@@ -581,11 +642,12 @@ def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycle
 
     t = t_SV  # initialize
     deltat_r = 0
-    for i in xrange(2):
+    for i in range(2):
         dt = t - eph.t_oc
         assert abs(dt) < week_length / 2
-        deltat_SV_L1 = eph.a_f0 + eph.a_f1 * dt + \
-            eph.a_f2 * dt**2 + deltat_r - eph.T_GD
+        deltat_SV_L1 = (
+            eph.a_f0 + eph.a_f1 * dt + eph.a_f2 * dt**2 + deltat_r - eph.T_GD
+        )
         t = t_SV - deltat_SV_L1
         if i == 1:
             sat_pos, deltat_r, sat_vel = eph.predict(t)
@@ -600,13 +662,16 @@ def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycle
         direction = sat_pos - approximate_receiver_position
         direction /= numpy.linalg.norm(direction)
         direction_enu = enu_from_ecef(direction, approximate_receiver_position)
-        T_iono = ionospheric_model.evaluate(approximate_receiver_position,
-                                            sat_pos, gps_t) if ionospheric_model is not None else nan
-        T_tropo = tropospheric_model(
-            approximate_receiver_position, sat_pos) / c
+        T_iono = (
+            ionospheric_model.evaluate(approximate_receiver_position, sat_pos, gps_t)
+            if ionospheric_model is not None
+            else nan
+        )
+        T_tropo = tropospheric_model(approximate_receiver_position, sat_pos) / c
 
         sat_pos_enu = enu_from_ecef(
-            sat_pos - approximate_receiver_position, approximate_receiver_position)
+            sat_pos - approximate_receiver_position, approximate_receiver_position
+        )
         sat_dir_enu = sat_pos_enu / numpy.linalg.norm(sat_pos_enu)
 
         E = math.asin(sat_dir_enu[2])
@@ -621,13 +686,14 @@ def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycle
         time=-pseudo_range / c - deltat_SV_L1,
         T_iono=T_iono,
         T_tropo=T_tropo,
-        carrier_distance=carrier_cycles * c /
-        L1_f0 if carrier_cycles is not None else nan,
+        carrier_distance=carrier_cycles * c / L1_f0
+        if carrier_cycles is not None
+        else nan,
         doppler_velocity=doppler_freq * c / L1_f0,
-
         direction_enu=Vector3(*direction_enu),
-        velocity_plus_drift=doppler_freq * c / L1_f0 +
-        direction.dot(sat_vel) if doppler_freq is not None else nan,
+        velocity_plus_drift=doppler_freq * c / L1_f0 + direction.dot(sat_vel)
+        if doppler_freq is not None
+        else nan,
     )
 
 
@@ -642,12 +708,14 @@ def estimate_pos(sats, use_corrections, quiet=False, pos_guess=None):
     def find_minimum(x0, residuals):
         # print 'x0', x0
         x = x0
-        for i in xrange(6):
+        for i in range(6):
             r, J = residuals(x)
             # print 'r', r
             # print sum(r)
             if not quiet:
-                print '|r|', numpy.linalg.norm(r) / math.sqrt(len(r)), use_corrections, x
+                print(
+                    "|r|", numpy.linalg.norm(r) / math.sqrt(len(r)), use_corrections, x
+                )
             # print 'J', J
             try:
                 # dx = (J^T J)^-1 J^T r
@@ -656,8 +724,8 @@ def estimate_pos(sats, use_corrections, quiet=False, pos_guess=None):
                 x = x - numpy.linalg.solve(J.T.dot(J), J.T.dot(r))
             except:
                 numpy.set_printoptions(threshold=numpy.nan)
-                print repr(sats), use_corrections
-                print 'J =', J
+                print(repr(sats), use_corrections)
+                print("J =", J)
                 raise
             # lat, lon, height = latlongheight_from_ecef(x[:3])
             # print 'x', x, '=', math.degrees(lat), math.degrees(lon), height
@@ -669,53 +737,77 @@ def estimate_pos(sats, use_corrections, quiet=False, pos_guess=None):
         t = x[3] / c
 
         import glonass  # for inertial_from_ecef
+
         # for sat in sats:
         # print sat.prn, (sat.T_iono + sat.T_tropo if use_corrections else 0)*c
         return [
             numpy.linalg.norm(
-                glonass.inertial_from_ecef(t, pos) -
-                glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
-            ) - (t - sat.time - (sat.T_iono + sat.T_tropo if use_corrections else 0)) * c
-            for sat in sats], numpy.array([[transformations.unit_vector(
-                glonass.inertial_from_ecef(t, pos) -
-                glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
-            ).dot(glonass.inertial_from_ecef(t, [1, 0, 0])), transformations.unit_vector(
-                glonass.inertial_from_ecef(t, pos) -
-                glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
-            ).dot(glonass.inertial_from_ecef(t, [0, 1, 0])), transformations.unit_vector(
-                glonass.inertial_from_ecef(t, pos) -
-                glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
-            ).dot(glonass.inertial_from_ecef(t, [0, 0, 1])), transformations.unit_vector(
-                glonass.inertial_from_ecef(t, pos) -
-                glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
-            ).dot(glonass.inertial_vel_from_ecef_vel(t, [0, 0, 0], pos)) / c - 1] for sat in sats])
-    x = find_minimum([pos_guess[0], pos_guess[1], pos_guess[2],
-                      mean((sat.time + (sat.T_iono + sat.T_tropo if use_corrections else 0)) *
-                           c + numpy.linalg.norm(xyz_array(sat.position) - pos_guess) for sat in sats),
-                      # 0,
-                      ], residuals)
+                glonass.inertial_from_ecef(t, pos)
+                - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+            )
+            - (t - sat.time - (sat.T_iono + sat.T_tropo if use_corrections else 0)) * c
+            for sat in sats
+        ], numpy.array(
+            [
+                [
+                    transformations.unit_vector(
+                        glonass.inertial_from_ecef(t, pos)
+                        - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+                    ).dot(glonass.inertial_from_ecef(t, [1, 0, 0])),
+                    transformations.unit_vector(
+                        glonass.inertial_from_ecef(t, pos)
+                        - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+                    ).dot(glonass.inertial_from_ecef(t, [0, 1, 0])),
+                    transformations.unit_vector(
+                        glonass.inertial_from_ecef(t, pos)
+                        - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+                    ).dot(glonass.inertial_from_ecef(t, [0, 0, 1])),
+                    transformations.unit_vector(
+                        glonass.inertial_from_ecef(t, pos)
+                        - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+                    ).dot(glonass.inertial_vel_from_ecef_vel(t, [0, 0, 0], pos))
+                    / c
+                    - 1,
+                ]
+                for sat in sats
+            ]
+        )
+
+    x = find_minimum(
+        [
+            pos_guess[0],
+            pos_guess[1],
+            pos_guess[2],
+            mean(
+                (sat.time + (sat.T_iono + sat.T_tropo if use_corrections else 0)) * c
+                + numpy.linalg.norm(xyz_array(sat.position) - pos_guess)
+                for sat in sats
+            ),
+            # 0,
+        ],
+        residuals,
+    )
     pos = x[:3]
     return pos
 
 
-if __name__ == '__main__':
-    station_pos = ecef_from_latlongheight(
-        math.radians(40), -math.radians(100), 0)
-    print 'station_pos', station_pos
-    sat_pos_enu = 5000e3 * numpy.array([
-        math.cos(math.radians(20)) * math.sin(math.radians(210)),
-        math.cos(math.radians(20)) * math.cos(math.radians(210)),
-        math.sin(math.radians(20)),
-    ])
-    print 'sat_pos_enu', sat_pos_enu
+if __name__ == "__main__":
+    station_pos = ecef_from_latlongheight(math.radians(40), -math.radians(100), 0)
+    print("station_pos", station_pos)
+    sat_pos_enu = 5000e3 * numpy.array(
+        [
+            math.cos(math.radians(20)) * math.sin(math.radians(210)),
+            math.cos(math.radians(20)) * math.cos(math.radians(210)),
+            math.sin(math.radians(20)),
+        ]
+    )
+    print("sat_pos_enu", sat_pos_enu)
     sat_pos = ecef_from_enu(sat_pos_enu, station_pos) + station_pos
-    print 'sat_pos', sat_pos
+    print("sat_pos", sat_pos)
 
     im = IonosphericModel(
         [3.82e-8, 1.49e-8, -1.79e-7, 0],
         [1.43e5, 0, -3.28e5, 1.13e5],
     )
 
-    print
-
-    print im.evaluate(station_pos, sat_pos, (20 * 60 + 45) * 60)
+    print(im.evaluate(station_pos, sat_pos, (20 * 60 + 45) * 60))

@@ -8,11 +8,11 @@
 #include <std_msgs/String.h>
 
 #include <QTimer>
-#include "ui_UI.h"
-
 #include <ctime>
 #include <iostream>
 #include <random>
+
+#include "ui_UI.h"
 
 class UI : public QMainWindow
 {

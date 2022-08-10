@@ -93,7 +93,7 @@ void BlueViewRosDriver::initParams()
   if (nh.getParam("tvg_slope", tvg))
     head.SetTVGSlope(tvg);
 
-  // Set dynamic power managment
+  // Set dynamic power management
   bool dynamic_power;
   if (nh.getParam("dynamic_power_management", dynamic_power))
     head.SetDynamicPowerManagement(dynamic_power);

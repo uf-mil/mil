@@ -1,12 +1,12 @@
-from txros import util
-import tf
-import rospy
 import numpy as np
-from mil_ros_tools import rosmsg_to_numpy
+import rospy
+import tf
 import visualization_msgs.msg as visualization_msgs
-from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3
 from mil_misc_tools import FprintFactory
+from mil_ros_tools import rosmsg_to_numpy
+from txros import util
+from visualization_msgs.msg import Marker, MarkerArray
 
 MISSION = 'Roulette Challenge'
 

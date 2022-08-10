@@ -176,8 +176,8 @@
       <grid>0</grid>
       <origin_visual>0</origin_visual>
       <ambient>
-        
-1 1 1 1    
+
+1 1 1 1
       </ambient>
     </scene>
     <include>

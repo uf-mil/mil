@@ -55,7 +55,7 @@ void Shape::load(string path, float shape_area)
 
   _name = template_path.stem().string();
   _template_path = path;
-  _template = cv::imread(path, CV_LOAD_IMAGE_GRAYSCALE);
+  _template = cv::imread(path, IMREAD_GRAYSCALE);
   if (!_template.data)
   {
     cout << __PRETTY_FUNCTION__ << ": the image at " << path << " could not be loaded." << endl;

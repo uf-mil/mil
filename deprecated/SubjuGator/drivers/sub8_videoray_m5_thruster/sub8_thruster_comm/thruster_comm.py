@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 from __future__ import division
-import numpy as np
-import struct
+
 import binascii
 import copy
-from sub8_thruster_comm.protocol import Const
-from sub8_exception import SubjuGatorException
-import serial
+import struct
+
+import numpy as np
 import rospy
+import serial
+from sub8_exception import SubjuGatorException
+from sub8_thruster_comm.protocol import Const
 
 
 class UnavailableThrusterException(SubjuGatorException):
@@ -586,9 +588,9 @@ if __name__ == '__main__':
     '''
     Module test code - this requires hardware, and as such is not a unit test
     '''
-    import rospkg
-    import rosparam
     import numpy.random as npr  # haha
+    import rosparam
+    import rospkg
     sub8_thruster_mapper = rospkg.RosPack().get_path('sub8_thruster_mapper')
     thruster_layout = rosparam.load_file(sub8_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
     print thruster_layout

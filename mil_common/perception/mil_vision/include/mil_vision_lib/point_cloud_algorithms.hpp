@@ -71,4 +71,4 @@ private:
   sensor_msgs::CameraInfoConstPtr latest_frame_info_msg;
 };
 
-}  // namwspace nav
+}  // namespace mil_vision

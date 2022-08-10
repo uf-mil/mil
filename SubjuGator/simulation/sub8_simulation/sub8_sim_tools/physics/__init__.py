@@ -1,3 +1,3 @@
 # flake8: noqa
-from .physics import World, Sphere, Box, Mesh
+from .physics import Box, Mesh, Sphere, World
 from .vehicle import Sub8

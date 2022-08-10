@@ -1,2 +1,2 @@
-from server import POIServer
-from tx_interface import TxPOIClient
+from .server import POIServer
+from .tx_interface import TxPOIClient

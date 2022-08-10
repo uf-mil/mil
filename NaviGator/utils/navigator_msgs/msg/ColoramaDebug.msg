@@ -3,7 +3,7 @@ uint16     num_observations
 float32    confidence
 
 string[]   labels
-float32[]  weights 
+float32[]  weights
 
 string     color
 float32    est_hue

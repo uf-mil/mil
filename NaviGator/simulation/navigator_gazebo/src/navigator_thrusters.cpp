@@ -1,4 +1,5 @@
 #include "navigator_gazebo/navigator_thrusters.hpp"
+
 #include <gazebo/common/Plugin.hh>
 
 namespace navigator_gazebo
@@ -41,8 +42,8 @@ void ThrusterPlugin::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf
   GZ_ASSERT(_model != NULL, "Received NULL model pointer");
   GZ_ASSERT(ros::isInitialized(), "ROS not initialized");
 
-  for (auto link_sdf = _sdf->GetElement("thruster"); link_sdf != nullptr;
-       link_sdf = link_sdf->GetNextElement("thruster"))
+  for (auto link_sdf = _sdf->GetElement("thruster"); link_sdf != nullptr; link_sdf = link_sdf->GetNextElement("thruste"
+                                                                                                              "r"))
   {
     std::string name = link_sdf->Get<std::string>();
     std::string link_name = name + "_propeller_link";
@@ -82,4 +83,4 @@ void ThrusterPlugin::OnUpdate(const gazebo::common::UpdateInfo& info)
   joint_state_msg_.header.stamp.nsec = info.simTime.nsec;
   joint_state_pub_.publish(joint_state_msg_);
 }
-}
+}  // namespace navigator_gazebo

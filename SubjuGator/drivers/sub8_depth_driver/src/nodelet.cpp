@@ -1,14 +1,12 @@
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
+#include <depth_driver/driver.h>
+#include <mil_msgs/DepthStamped.h>
 #include <nodelet/nodelet.h>
 #include <ros/ros.h>
-#include <pluginlib/class_list_macros.hpp>
 
-#include <mil_msgs/DepthStamped.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 #include <mil_tools/param_helpers.hpp>
-
-#include <depth_driver/driver.h>
+#include <pluginlib/class_list_macros.hpp>
 
 namespace depth_driver
 {
@@ -69,4 +67,4 @@ private:
 };
 
 PLUGINLIB_EXPORT_CLASS(depth_driver::Nodelet, nodelet::Nodelet);
-}
+}  // namespace depth_driver

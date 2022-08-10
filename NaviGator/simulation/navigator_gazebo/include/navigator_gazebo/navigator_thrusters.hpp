@@ -1,11 +1,13 @@
 #pragma once
 
 #include <ros/ros.h>
+
 #include <algorithm>
 #include <cmath>
 #include <map>
 #include <mutex>
 #include <vector>
+
 #include "gazebo/common/Assert.hh"
 #include "gazebo/common/Event.hh"
 #include "gazebo/common/Events.hh"
@@ -48,4 +50,4 @@ private:
   sensor_msgs::JointState joint_state_msg_;
   gazebo::event::ConnectionPtr update_connection_;
 };
-}
+}  // namespace navigator_gazebo

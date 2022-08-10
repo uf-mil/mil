@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+echo "This script is deprecated. Please migrate to using scripts/install instead."
+
 mil_system_install()
 {
   sudo apt install -y $@
@@ -9,20 +11,39 @@ mil_system_install()
 # Update apt
 sudo apt update
 
+# Installation for virtual machines
+# Installs the apt-add-repository command
+sudo apt-get install software-properties-common -y
+
+# Installs keyboard config without prompting for input
+sudo DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration -y # Weird bug
+
 # System dependencies
 mil_system_install apt-utils
 mil_system_install --no-install-recommends \
   ca-certificates \
+  curl \
   tzdata \
   dirmngr \
   gnupg2 \
   lsb-release \
-  python-vcstools \
-  python-pip \
+  python3 \
+  python3-pip \
+  python2 \
   ruby \
   wget \
   vim \
   expect
+
+# Attempt to install vcstool using apt-get or pip if apt-get does not work
+sudo apt install -y python3-vcstool || sudo pip3 install -U vcstool
+
+# Install Python 2 pip
+sudo add-apt-repository universe
+sudo apt update
+curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
+python2 get-pip.py
+rm get-pip.py
 
 # ROS apt source
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -39,53 +60,47 @@ wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 # Update apt again and install ros
 sudo apt update
 
-mil_system_install ros-melodic-desktop-full
+mil_system_install ros-noetic-desktop-full
 # Install additional dependencies not bundled by default with ros
 # Please put each on a new line for readability
 mil_system_install \
-  ros-melodic-serial \
-  ros-melodic-tf2-sensor-msgs \
-  ros-melodic-geographic-msgs \
-  ros-melodic-velodyne \
-  ros-melodic-usb-cam \
-  ros-melodic-joy \
-  ros-melodic-spacenav-node \
-  ros-melodic-velodyne-simulator \
-  ros-melodic-hector-gazebo-plugins \
-  ros-melodic-joy \
-  ros-melodic-joy-teleop \
-  ros-melodic-key-teleop \
-  ros-melodic-robot-localization \
-  ros-melodic-teleop-tools \
-  ros-melodic-teleop-twist-keyboard \
-  ros-melodic-ros-control \
-  ros-melodic-ros-controllers \
-  python-pip \
-  clang-format-3.9
-sudo pip install \
-  tqdm \
-  scipy \
-  sklearn \
-  pandas \
-
-pip install --upgrade pip
-pip2 install tsp_solver2
-pip2 install Pillow
-pip2 install pyyaml
+  ros-noetic-serial \
+  ros-noetic-tf2-sensor-msgs \
+  ros-noetic-geographic-msgs \
+  ros-noetic-velodyne \
+  ros-noetic-usb-cam \
+  ros-noetic-joy \
+  ros-noetic-spacenav-node \
+  ros-noetic-velodyne-simulator \
+  ros-noetic-hector-gazebo-plugins \
+  ros-noetic-joy-teleop \
+  ros-noetic-key-teleop \
+  ros-noetic-robot-localization \
+  ros-noetic-teleop-tools \
+  ros-noetic-teleop-twist-keyboard \
+  ros-noetic-ros-control \
+  ros-noetic-ros-controllers \
 
 # Documentation dependencies
-mil_system_install  python3-pip python-setuptools
+mil_system_install  python3-pip python3-setuptools
 
-sudo pip3 install -q \
-  sphinx \
-  recommonmark \
-  sphinx_rtd_theme \
-  numpy \
-  matplotlib \
-  rospkg \
-  pyyaml
+# Install Python 3 dependencies
+sudo pip3 install -r requirements.txt
+
+# Link a python executable to Python 2 for temporary backwards compatibility
+if which python > /dev/null 2>&1;
+then
+    echo "Python executable already exists."
+else
+    echo "Attempting to symlink python2 to python..."
+    sudo ln -s /usr/bin/python2 /usr/bin/python
+    echo "Symlinked Python executable! Nice!"
+fi
 
 # Initialize rosdep
-sudo pip install -U rosdep
+sudo apt-get install python3-rosdep
+
+# Update rosdep
+sudo rm -rf /etc/ros/rosdep/sources.list.d/* # Delete this file first - if not deleted, error could be thrown
 sudo rosdep init
-rosdep update
+sudo rosdep update

@@ -1,24 +1,22 @@
-#include <boost/bind.hpp>
-#include <boost/math/constants/constants.hpp>
-#include <boost/utility/in_place_factory.hpp>
-
 #include <eigen_conversions/eigen_msg.h>
 #include <message_filters/subscriber.h>
+#include <mil_msgs/DepthStamped.h>
+#include <mil_msgs/VelocityMeasurements.h>
 #include <nav_msgs/Odometry.h>
 #include <nodelet/nodelet.h>
+#include <odom_estimator/Info.h>
+#include <odom_estimator/SetIgnoreMagnetometer.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
 #include <tf/message_filter.h>
 #include <tf/transform_listener.h>
 #include <tf_conversions/tf_eigen.h>
+
+#include <boost/bind.hpp>
+#include <boost/math/constants/constants.hpp>
+#include <boost/utility/in_place_factory.hpp>
 #include <pluginlib/class_list_macros.hpp>
-
-#include <mil_msgs/DepthStamped.h>
-#include <mil_msgs/VelocityMeasurements.h>
-
-#include <odom_estimator/Info.h>
-#include <odom_estimator/SetIgnoreMagnetometer.h>
 
 #include "odom_estimator/earth.h"
 #include "odom_estimator/kalman.h"
@@ -239,9 +237,9 @@ private:
                                  local_mag_orientation._transformVector(measurement_noise);
               Vec<3> predicted_enu = enu_from_ecef * state.getOrientECEF()._transformVector(predicted);
               double predicted_angle = atan2(predicted_enu(1), predicted_enu(0));
-              Vec<3> measured_enu = enu_from_ecef *
-                                    state.getOrientECEF()._transformVector(
-                                        local_mag_orientation._transformVector(xyz2vec(msg.magnetic_field)));
+              Vec<3> measured_enu =
+                  enu_from_ecef * state.getOrientECEF()._transformVector(
+                                      local_mag_orientation._transformVector(xyz2vec(msg.magnetic_field)));
               double measured_angle = atan2(measured_enu(1), measured_enu(0));
               double error_angle = measured_angle - predicted_angle;
               double pi = boost::math::constants::pi<double>();
@@ -389,4 +387,4 @@ private:
   boost::optional<NodeImpl> nodeimpl;
 };
 PLUGINLIB_EXPORT_CLASS(odom_estimator::Nodelet, nodelet::Nodelet);
-}
+}  // namespace odom_estimator

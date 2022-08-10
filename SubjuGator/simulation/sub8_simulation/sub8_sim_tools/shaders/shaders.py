@@ -1,31 +1,29 @@
-import os
 import collections
+import os
 
 
-class ShaderReader(object):
-
+class ShaderReader:
     @classmethod
     def read_shader(self, shader_text):
-        '''Given an iterable containing the text of a shader file,
+        """Given an iterable containing the text of a shader file,
         parse it to produce a dictionary of usable subshaders
-        '''
+        """
         shader_dict = {}
         current_shader_hierarchy = None
 
-        current_shader_text = ''
+        current_shader_text = ""
         for line in shader_text:
-            if line.startswith('>'):
+            if line.startswith(">"):
                 if current_shader_hierarchy is not None:
                     self.update(
                         shader_dict,
                         self.recursive_dictionary(
-                            current_shader_hierarchy,
-                            current_shader_text
-                        )
+                            current_shader_hierarchy, current_shader_text
+                        ),
                     )
-                    current_shader_text = ''
+                    current_shader_text = ""
 
-                current_shader_hierarchy = line[1:].strip().split(':')
+                current_shader_hierarchy = line[1:].strip().split(":")
 
             # Don't parse any lines if the current shader has not been specified
             elif current_shader_hierarchy is None:
@@ -40,9 +38,8 @@ class ShaderReader(object):
             self.update(
                 shader_dict,
                 self.recursive_dictionary(
-                    current_shader_hierarchy,
-                    current_shader_text
-                )
+                    current_shader_hierarchy, current_shader_text
+                ),
             )
 
         return shader_dict
@@ -50,7 +47,7 @@ class ShaderReader(object):
     @classmethod
     def update(self, _dict, _update):
         for k, v in _update.iteritems():
-            if isinstance(v, collections.Mapping):
+            if isinstance(v, collections.abc.Mapping):
                 r = self.update(_dict.get(k, {}), v)
                 _dict[k] = r
             else:
@@ -67,9 +64,9 @@ class ShaderReader(object):
         return dct
 
 
-class Shaders(object):
+class Shaders:
 
-    '''A Shaders class, which automatically contains all of the shaders
+    """A Shaders class, which automatically contains all of the shaders
         in the shaders folder
     WTF?
         shaders.Shaders.passthrough is a dictionary containing the point:vertex and point:fragment shaders
@@ -78,23 +75,23 @@ class Shaders(object):
         Python: No parents, no rules.
         The files are parsed, and the attributes programmatically added to this class in the coming lines
          that is what 'setattr' does.
-    '''
+    """
 
 
 filepath = os.path.dirname(os.path.realpath(__file__))
 for _file in os.listdir(filepath):
     file_name = os.path.split(_file)[-1]
     name, ext = os.path.splitext(file_name)
-    if ext == '.glsl':
+    if ext == ".glsl":
         path_to_file = os.path.join(filepath, _file)
         setattr(Shaders, name, ShaderReader.read_shader(file(path_to_file)))
 
 
-if __name__ == '__main__':
-    print Shaders.passthrough['debug']['vertex']
-    print '---------'
-    print Shaders.passthrough['debug']['fragment']
-    print '========='
-    print Shaders.passthrough['mesh']['vertex']
-    print '---------'
-    print Shaders.passthrough['mesh']['fragment']
+if __name__ == "__main__":
+    print(Shaders.passthrough["debug"]["vertex"])
+    print("---------")
+    print(Shaders.passthrough["debug"]["fragment"])
+    print("=========")
+    print(Shaders.passthrough["mesh"]["vertex"])
+    print("---------")
+    print(Shaders.passthrough["mesh"]["fragment"])

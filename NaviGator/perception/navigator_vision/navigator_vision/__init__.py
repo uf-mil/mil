@@ -1,3 +1,3 @@
-from scan_the_code_classifier import ScanTheCodeClassifier
-from vrx_color_classifier import VrxColorClassifier
-from vrx_stc_color_classifier import VrxStcColorClassifier
+from .scan_the_code_classifier import ScanTheCodeClassifier
+from .vrx_color_classifier import VrxColorClassifier
+from .vrx_stc_color_classifier import VrxStcColorClassifier

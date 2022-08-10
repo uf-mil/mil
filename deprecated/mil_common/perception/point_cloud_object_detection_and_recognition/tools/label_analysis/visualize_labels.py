@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
-import rosbag
 import matplotlib.pyplot as plt
+import rosbag
 
 if __name__ == '__main__':
     # TODO(tbianchi): Add argument parser

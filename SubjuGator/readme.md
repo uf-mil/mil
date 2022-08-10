@@ -2,7 +2,7 @@
 
 # SubjuGator Autonomous Underwater Vehicle
 
-This is where all of the project specific code for [SubjuGator](http://subjugator.org) hosted. The platform is designed to compete in the anual [RoboSub competition](http://www.robonation.org/competition/robosub). For more information on project specifics, vehicle operation, or contacting the current team lead, please see the [wiki](https://github.com/uf-mil/SubjuGator/wiki).
+This is where all of the project specific code for [SubjuGator](http://subjugator.org) hosted. The platform is designed to compete in the annual [RoboSub competition](http://www.robonation.org/competition/robosub). For more information on project specifics, vehicle operation, or contacting the current team lead, please see the [wiki](https://github.com/uf-mil/SubjuGator/wiki).
 
 ![SubjuGator AUV](vehicle.jpg)
 

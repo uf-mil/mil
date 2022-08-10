@@ -3,6 +3,7 @@ Parameters that are the same for all behaviors.
 
 """
 from __future__ import division
+
 import numpy as np
 
 # DIMENSIONALITY
@@ -33,7 +34,7 @@ dt = 0.1  # s
 FPR = 0
 ss_start = 10  # m
 ss_step = 5  # m
-max_nodes = 1E5
+max_nodes = 1e5
 
 # INERTIA
 
@@ -50,16 +51,24 @@ thrust_max = np.array([220, 220, 220, 220])  # N, per thruster
 # THRUSTER CONFIGURATION
 
 # Thruster layout, [back-left, back-right, front-left front-right] (m)
-thruster_positions = np.array([[-1.9000, 1.0000, -0.0123],
-                               [-1.9000, -1.0000, -0.0123],
-                               [1.6000, 0.6000, -0.0123],
-                               [1.6000, -0.6000, -0.0123]])
+thruster_positions = np.array(
+    [
+        [-1.9000, 1.0000, -0.0123],
+        [-1.9000, -1.0000, -0.0123],
+        [1.6000, 0.6000, -0.0123],
+        [1.6000, -0.6000, -0.0123],
+    ]
+)
 
 # Thruster heading vectors, [back-left, back-right, front-left front-right] (m)
-thruster_directions = np.array([[0.7071, 0.7071, 0.0000],
-                                [0.7071, -0.7071, 0.0000],
-                                [0.7071, -0.7071, 0.0000],
-                                [0.7071, 0.7071, 0.0000]])
+thruster_directions = np.array(
+    [
+        [0.7071, 0.7071, 0.0000],
+        [0.7071, -0.7071, 0.0000],
+        [0.7071, -0.7071, 0.0000],
+        [0.7071, 0.7071, 0.0000],
+    ]
+)
 
 # Fresh sprinkles
 thrust_levers = np.cross(thruster_positions, thruster_directions)
@@ -86,10 +95,15 @@ vps_spacing = 0.1  # m
 vps_grid_x, vps_grid_y = np.mgrid[
     slice(
         -(boat_length + boat_buffer) / 2,
-        (boat_length + boat_buffer) / 2 + vps_spacing, vps_spacing),
+        (boat_length + boat_buffer) / 2 + vps_spacing,
+        vps_spacing,
+    ),
     slice(
         -(boat_width + boat_buffer) / 2,
-        (boat_width + boat_buffer) / 2 + vps_spacing, vps_spacing)]
+        (boat_width + boat_buffer) / 2 + vps_spacing,
+        vps_spacing,
+    ),
+]
 vps_grid_x = vps_grid_x.reshape(vps_grid_x.size)
 vps_grid_y = vps_grid_y.reshape(vps_grid_y.size)
 vps = np.zeros((vps_grid_x.size, 2))

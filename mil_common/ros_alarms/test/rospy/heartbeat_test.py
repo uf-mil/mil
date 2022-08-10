@@ -1,11 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from ros_alarms import AlarmListener, HeartbeatMonitor
 from std_msgs.msg import String
 
 
 def printit(alarm):
-    rospy.loginfo("Alarm {} raised".format(alarm.alarm_name))
+    rospy.loginfo(f"Alarm {alarm.alarm_name} raised")
+
 
 if __name__ == "__main__":
     rospy.init_node("heartbeat_test")

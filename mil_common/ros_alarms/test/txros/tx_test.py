@@ -1,11 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import txros
 from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
 
 
 @txros.util.cancellableInlineCallbacks
 def main():
-    nh = yield txros.NodeHandle.from_argv('tx_alarm_test')
+    nh = yield txros.NodeHandle.from_argv("tx_alarm_test")
 
     alarm_name = "tx"
     ab = yield TxAlarmBroadcaster.init(nh, alarm_name)
@@ -29,10 +29,10 @@ def main():
         global var
         var = True
         yield nh.sleep(1)
-        print "DONE SLEEPING"
+        print("DONE SLEEPING")
 
     yield al.add_callback(cb, call_when_raised=False)
-    yield nh.sleep(.1)
+    yield nh.sleep(0.1)
     assert not var
 
     yield ab.raise_alarm()
@@ -41,7 +41,8 @@ def main():
     yield ab.clear_alarm()
     assert not var
 
-    print "\nPassed"
+    print("\nPassed")
     yield nh.sleep(2)
+
 
 txros.util.launch_main(main)

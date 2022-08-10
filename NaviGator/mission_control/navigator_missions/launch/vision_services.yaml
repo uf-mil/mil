@@ -6,6 +6,7 @@
 #   args: {}  # Dictionary to pass to service request
 #
 # Services need to be in navigator_msgs/srv/
+---
 get_shape:
   topic: /vision/get_shapes
   type: GetDockShapes
@@ -22,9 +23,9 @@ scan_the_code_activate:
   args: {}
 
 scan_the_code_status:
-    topic: /vision/scan_the_code_status
-    type: ScanTheCodeMission
-    args: {}
+  topic: /vision/scan_the_code_status
+  type: ScanTheCodeMission
+  args: {}
 
 coral_survey:
   topic: /vision/coral_survey

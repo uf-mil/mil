@@ -97,30 +97,30 @@
 <path fill="none" stroke="#000000" d="M323.5599,-1719.7446C317.3412,-1702.0452 307.843,-1675.0116 300.7074,-1654.7026"/>
 <polygon fill="#000000" stroke="#000000" points="303.9373,-1653.3367 297.3202,-1645.0623 297.333,-1655.6572 303.9373,-1653.3367"/>
 </g>
-<!-- Gradient(Hydrophone 0) &gt;\nTheshold -->
+<!-- Gradient(Hydrophone 0) &gt;\nThreshold -->
 <g id="node7" class="node">
-<title>Gradient(Hydrophone 0) &gt;\nTheshold</title>
+<title>Gradient(Hydrophone 0) &gt;\nThreshold</title>
 <polygon fill="none" stroke="#000000" points="264,-1185.3742 97.6494,-1143.674 264,-1101.9738 430.3506,-1143.674 264,-1185.3742"/>
 <text text-anchor="middle" x="264" y="-1147.874" font-family="Times,serif" font-size="14.00" fill="#000000">Gradient(Hydrophone 0) &gt;</text>
-<text text-anchor="middle" x="264" y="-1131.074" font-family="Times,serif" font-size="14.00" fill="#000000">Theshold</text>
+<text text-anchor="middle" x="264" y="-1131.074" font-family="Times,serif" font-size="14.00" fill="#000000">Threshold</text>
 </g>
-<!-- Gradient(Hydrophone 0) &gt;\nTheshold&#45;&gt;wait_for_new_data_triggering -->
+<!-- Gradient(Hydrophone 0) &gt;\nThreshold&#45;&gt;wait_for_new_data_triggering -->
 <g id="edge11" class="edge">
-<title>Gradient(Hydrophone 0) &gt;\nTheshold:e-&gt;wait_for_new_data_triggering:e</title>
+<title>Gradient(Hydrophone 0) &gt;\nThreshold:e-&gt;wait_for_new_data_triggering:e</title>
 <path fill="none" stroke="#000000" d="M430,-1143.674C465.3349,-1143.674 422,-1187.4391 422,-1222.774 422,-1425.774 422,-1425.774 422,-1425.774 422,-1482.7587 441,-1495.5893 441,-1552.574 441,-1682.574 441,-1682.574 441,-1682.574 441,-1705.4591 443.0842,-1729.6143 427.1077,-1736.2812"/>
 <polygon fill="#000000" stroke="#000000" points="426.235,-1732.8812 417,-1738.074 427.4576,-1739.7736 426.235,-1732.8812"/>
 <text text-anchor="middle" x="434.1066" y="-1448.474" font-family="Times,serif" font-size="14.00" fill="#000000">NO</text>
 </g>
-<!-- Crop Gradient(All Hydrophones)\n around where its &gt; theshold -->
+<!-- Crop Gradient(All Hydrophones)\n around where its &gt; threshold -->
 <g id="node12" class="node">
-<title>Crop Gradient(All Hydrophones)\n around where its &gt; theshold</title>
+<title>Crop Gradient(All Hydrophones)\n around where its &gt; Threshold</title>
 <ellipse fill="none" stroke="#000000" cx="264" cy="-981.8584" rx="143.0345" ry="29.3315"/>
 <text text-anchor="middle" x="264" y="-986.0584" font-family="Times,serif" font-size="14.00" fill="#000000">Crop Gradient(All Hydrophones)</text>
-<text text-anchor="middle" x="264" y="-969.2584" font-family="Times,serif" font-size="14.00" fill="#000000"> around where its &gt; theshold</text>
+<text text-anchor="middle" x="264" y="-969.2584" font-family="Times,serif" font-size="14.00" fill="#000000"> around where its &gt; Threshold</text>
 </g>
-<!-- Gradient(Hydrophone 0) &gt;\nTheshold&#45;&gt;Crop Gradient(All Hydrophones)\n around where its &gt; theshold -->
+<!-- Gradient(Hydrophone 0) &gt;\nThreshold&#45;&gt;Crop Gradient(All Hydrophones)\n around where its &gt; threshold -->
 <g id="edge12" class="edge">
-<title>Gradient(Hydrophone 0) &gt;\nTheshold:s-&gt;Crop Gradient(All Hydrophones)\n around where its &gt; theshold:n</title>
+<title>Gradient(Hydrophone 0) &gt;\nThreshold:s-&gt;Crop Gradient(All Hydrophones)\n around where its &gt; threshold:n</title>
 <path fill="none" stroke="#000000" d="M264,-1102.074C264,-1065.3441 264,-1053.6867 264,-1021.4621"/>
 <polygon fill="#000000" stroke="#000000" points="267.5001,-1021.274 264,-1011.274 260.5001,-1021.274 267.5001,-1021.274"/>
 <text text-anchor="middle" x="277.2209" y="-1052.474" font-family="Times,serif" font-size="14.00" fill="#000000">YES</text>
@@ -161,9 +161,9 @@
 <path fill="none" stroke="#000000" d="M261.1651,-1370.9446C261.3222,-1353.5113 261.5608,-1327.0222 261.7428,-1306.8229"/>
 <polygon fill="#000000" stroke="#000000" points="265.2443,-1306.6618 261.8346,-1296.6306 258.2446,-1306.5986 265.2443,-1306.6618"/>
 </g>
-<!-- Gradient of Max Convolution&#45;&gt;Gradient(Hydrophone 0) &gt;\nTheshold -->
+<!-- Gradient of Max Convolution&#45;&gt;Gradient(Hydrophone 0) &gt;\nThreshold -->
 <g id="edge10" class="edge">
-<title>Gradient of Max Convolution-&gt;Gradient(Hydrophone 0) &gt;\nTheshold</title>
+<title>Gradient of Max Convolution-&gt;Gradient(Hydrophone 0) &gt;\nThreshold</title>
 <path fill="none" stroke="#000000" d="M262.2697,-1260.1212C262.5157,-1243.5687 262.8912,-1218.2948 263.2297,-1195.5178"/>
 <polygon fill="#000000" stroke="#000000" points="266.7329,-1195.3196 263.382,-1185.2687 259.7337,-1195.2155 266.7329,-1195.3196"/>
 </g>
@@ -175,9 +175,9 @@
 <text text-anchor="middle" x="264" y="-831.9477" font-family="Times,serif" font-size="14.00" fill="#000000"> to ROS Topic</text>
 <text text-anchor="middle" x="264" y="-815.1477" font-family="Times,serif" font-size="14.00" fill="#000000"> (/hydrophones/pings)</text>
 </g>
-<!-- Crop Gradient(All Hydrophones)\n around where its &gt; theshold&#45;&gt;Publish Gradient (All Hydrophones)\n to ROS Topic\n (/hydrophones/pings) -->
+<!-- Crop Gradient(All Hydrophones)\n around where its &gt; threshold&#45;&gt;Publish Gradient (All Hydrophones)\n to ROS Topic\n (/hydrophones/pings) -->
 <g id="edge13" class="edge">
-<title>Crop Gradient(All Hydrophones)\n around where its &gt; theshold-&gt;Publish Gradient (All Hydrophones)\n to ROS Topic\n (/hydrophones/pings)</title>
+<title>Crop Gradient(All Hydrophones)\n around where its &gt; threshold-&gt;Publish Gradient (All Hydrophones)\n to ROS Topic\n (/hydrophones/pings)</title>
 <path fill="none" stroke="#000000" d="M264,-952.3716C264,-933.7783 264,-909.2597 264,-887.5369"/>
 <polygon fill="#000000" stroke="#000000" points="267.5001,-887.461 264,-877.4611 260.5001,-887.4611 267.5001,-887.461"/>
 </g>

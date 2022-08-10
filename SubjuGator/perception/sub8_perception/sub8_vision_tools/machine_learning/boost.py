@@ -1,9 +1,11 @@
-import cv2
-import numpy as np
-import pickle
 import argparse
+import pickle
 import sys
+
+import cv2
 import features
+import numpy as np
+
 """
 TODO
 MUST:
@@ -17,7 +19,7 @@ SHOULD:
     - Easier tool for generating data
 
 CONSIDER:
-    - Use sklearn preprocessing standar scaler
+    - Use sklearn preprocessing standard scaler
         - Whiten data, yo
 
 - Package kernels alongside Boost
@@ -30,9 +32,9 @@ def observe(image):
 
     kernels_run = features.conv_features(im_gs)
 
-    kernel_observations = np.reshape(
-        kernels_run, (-1, kernels_run.shape[2])
-    ).astype(np.float32)
+    kernel_observations = np.reshape(kernels_run, (-1, kernels_run.shape[2])).astype(
+        np.float32
+    )
 
     all_observations = np.hstack(
         (
@@ -50,7 +52,7 @@ def train_on_pkl(pkl_data, images_to_use=None):
     if images_to_use is None:
         images_to_use = len(pkl_data)
 
-    print 'Generating training data...'
+    print("Generating training data...")
     for u_image, u_targets in pkl_data[:images_to_use]:
         image = u_image[::2, ::2, :]
         targets = u_targets[::2, ::2]
@@ -75,44 +77,50 @@ def train_classifier(x, y):
         # "boost_type": cv2.BOOST_DISCRETE,
         "weak_count": n_trees,
         "weight_trim_rate": 0,
-        "max_depth": max_depth
+        "max_depth": max_depth,
     }
 
     boost = cv2.Boost()
-    print 'Training...'
+    print("Training...")
     boost.train(x, cv2.CV_ROW_SAMPLE, y, params=parameters)
     return boost
 
 
 def main():
-    usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")
+    usage_msg = "Pass the path to a bag, and we'll crawl through the images in it"
     desc_msg = "A tool for making manual segmentation fun!"
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
-    parser.add_argument(dest='pkl',
-                        help="The pickle data file to train on")
-    parser.add_argument('--output', type=str, help="Path to a file to output to (and overwrite)",
-                        default='boost.cv2')
+    parser.add_argument(dest="pkl", help="The pickle data file to train on")
+    parser.add_argument(
+        "--output",
+        type=str,
+        help="Path to a file to output to (and overwrite)",
+        default="boost.cv2",
+    )
 
     args = parser.parse_args(sys.argv[1:])
 
-    print 'Loading pickle...'
+    print("Loading pickle...")
     data = pickle.load(open(args.pkl, "rb"))
     clf = train_on_pkl(data)
     image, targets = data[-1]
 
     some_observations = observe(image)
-    prediction = [int(x) for x in [clf.predict(obs, returnSum=True) for obs in some_observations]]
+    prediction = [
+        int(x) for x in [clf.predict(obs, returnSum=True) for obs in some_observations]
+    ]
     prediction2 = [int(x) for x in [clf.predict(obs) for obs in some_observations]]
 
-    print 'Saving as {}...'.format(args.output)
-    clf.save(args.output, 's')
+    print(f"Saving as {args.output}...")
+    clf.save(args.output, "s")
 
-    print 'Displaying...'
+    print("Displaying...")
     prediction_image = np.reshape(prediction, targets.shape)
     prediction_image2 = np.reshape(prediction2, targets.shape)
 
     import matplotlib.pyplot as plt
+
     plt.figure(1)
     plt.imshow(prediction_image)
     plt.figure(2)

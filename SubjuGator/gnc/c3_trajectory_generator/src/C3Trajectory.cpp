@@ -1,5 +1,7 @@
 #include "C3Trajectory.h"
+
 #include <cmath>
+
 #include "AttitudeHelpers.h"
 #include "boost/tuple/tuple.hpp"
 
