@@ -22,4 +22,4 @@
 	url = https://github.com/uf-mil/vrx-docker.git
 [submodule "mil_common/perception/yolov7-ros"]
 	path = mil_common/perception/yolov7-ros
-	url = git@github.com:uf-mil/yolov7-ros.git
+	url = https://github.com/uf-mil/yolov7-ros.git
