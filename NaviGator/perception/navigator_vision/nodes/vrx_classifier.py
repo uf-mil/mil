@@ -218,11 +218,11 @@ class VrxClassifier:
                 classified.add(self.last_objects.objects[closest_to_box].id)
                 print(
                     "Object {} classified as {}".format(
-                        self.last_objects.objects[closest_to_box].id, a.results[0].id
+                        self.last_objects.objects[closest_to_box].id, self.CLASSES[a.results[0].id]
                     )
                 )
                 cmd = "{}={}".format(
-                    self.last_objects.objects[closest_to_box].id, a.results[0].id
+                    self.last_objects.objects[closest_to_box].id, self.CLASSES[a.results[0].id]
                 )
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
 

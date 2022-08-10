@@ -1,13 +1,12 @@
 <?xml version="1.0"?>
 <launch>
 
-    <!-- TODO: Create weights file for sub-->
     <arg name="weights" default="$(find yolov7_ros)/src/best.pt" />
     <arg name="image_topic" default="/wamv/sensors/cameras/front_left_camera/image_raw" />
     <arg name="out_topic" default="detections" />
     <arg name="conf_thresh" default="0.75" />
     <arg name="image_size" default="640" />
-    <arg name="device" default="cpu" />
+    <arg name="device" default="cuda" />
 
     <!-- Use YOLOv7 -->
     <include file="$(find yolov7_ros)/launch/yolov7.launch">
