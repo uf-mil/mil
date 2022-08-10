@@ -458,7 +458,7 @@ jobs:
       - name: Install system dependencies
         continue-on-error: true
         run: |
-          ./scripts/install
+          ./scripts/install.sh
       # We want to run a full test suite in CI - this includes the BlueView
       # tests!
       - name: Install BlueView Sonar SDK
@@ -567,7 +567,7 @@ jobs:
         continue-on-error: true
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          ./scripts/install
+          ./scripts/install.sh
       - name: Install BlueView Sonar SDK
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
