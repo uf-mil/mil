@@ -3,7 +3,7 @@ import math
 
 import numpy as np
 import txros
-from darknet_ros_msgs.msg import BoundingBoxes
+from vision_msgs.msg import Detection2DArray
 from geographic_msgs.msg import GeoPath, GeoPoseStamped
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from mil_tools import numpy_to_point, rosmsg_to_numpy
@@ -68,8 +68,8 @@ class Vrx(Navigator):
         Vrx.set_long_waypoint = Vrx.nh.get_service_client(
             "/set_long_waypoint", MoveToWaypoint
         )
-        Vrx.darknet_objects = Vrx.nh.subscribe(
-            "/darknet_ros/bounding_boxes", BoundingBoxes
+        Vrx.yolo_objects = Vrx.nh.subscribe(
+            "/yolov7/detections", Detection2DArray
         )
         Vrx.tf_listener = txros_tf.TransformListener(Vrx.nh)
         Vrx.database_response = Vrx.nh.get_service_client(
