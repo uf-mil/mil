@@ -159,7 +159,7 @@ To build our tools, we use a tool that ROS provides us named `catkin_make`. This
 searches through all of our packages and compiles them together.
 
 ```bash
-$ catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros"
+$ catkin_make
 ```
 
 If something goes wrong, try the suggestions in [Getting Help](help). It's common

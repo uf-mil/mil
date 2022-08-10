@@ -57,7 +57,6 @@
   <run_depend>navigator_robotx_comms</run_depend>
   <run_depend>mil_poi</run_depend>
   <run_depend>vrx_gazebo</run_depend>
-  <run_depend>darknet_ros</run_depend>
   <run_depend>tf2_ros</run_depend>
   <run_depend>mil_missions</run_depend>
   <export/>
