@@ -6,7 +6,6 @@
   <maintainer email="jpanikulam@ufl.edu">Jacob Panikulam</maintainer>
   <license>MIT</license>
   <build_depend>roslaunch</build_depend>
-  <run_depend>darknet_ros</run_depend>
   <run_depend>roslaunch</run_depend>
   <run_depend>robot_state_publisher</run_depend>
   <run_depend>nodelet</run_depend>
@@ -31,6 +30,7 @@
   <run_depend>mil_pneumatic_actuator</run_depend>
   <run_depend>mil_blueview_driver</run_depend>
   <run_depend>sub8_perception</run_depend>
+  <run_depend>yolov7_ros</run_depend>
   <buildtool_depend>catkin</buildtool_depend>
   <export/>
 </package>
