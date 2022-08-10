@@ -148,7 +148,7 @@ class RobotXHeartbeatMessage:
             delim,
             team_id,
             delim,
-            str(system_mode),
+            system_mode,
             delim,
             str(auv_status),
         )

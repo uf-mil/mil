@@ -172,6 +172,7 @@ mil_system_install \
   ros-noetic-teleop-twist-keyboard \
   ros-noetic-ros-control \
   ros-noetic-ros-controllers \
+  ros-noetic-tf2-tools \
 
 cat << EOF
 $(color "$Pur")

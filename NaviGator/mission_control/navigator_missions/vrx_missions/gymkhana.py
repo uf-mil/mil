@@ -2,7 +2,8 @@
 import numpy as np
 import rospy
 import txros
-from vrx import Vrx
+
+from .vrx import Vrx
 
 
 class Gymkhana(Vrx):

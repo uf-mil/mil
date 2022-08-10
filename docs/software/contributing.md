@@ -18,6 +18,15 @@ command - you might screw up, and it's all okay!
 
 Now, back to the guide...
 
+## Setting up `pre-commit`
+If you have not already done so, it is highly recommended to setup `pre-commit`.
+While not required, this tool will help you debug any spelling mistakes, trailing
+whitespace, or formatting errors you have before your changes ever reach CI. If
+you don't use `pre-commit`, the chances of your changes failing in CI is somewhat
+high, as one spelling mistake could require you to modify your work once more.
+
+For information on setting up `pre-commit`, see the [page on developer tools](/software/devtools).
+
 ## Find a project
 If you don't yet know what you want to work on, see our [issues list](https://github.com/uf-mil/mil/issues).
 We have a variety of projects to work on, and you can select a task in whatever

@@ -149,7 +149,7 @@ for you to work in MIL (``git``, ROS, Python dependencies, etc.). Feel free
 to open up the file in an editor if you're more curious.
 
 ```bash
-$ ./scripts/install
+$ ./scripts/install.sh
 $ exec bash # or exec zsh if you have set up zsh
 ```
 

@@ -1,1 +1,1 @@
-from thruster_map import ThrusterMap
+from .thruster_map import ThrusterMap

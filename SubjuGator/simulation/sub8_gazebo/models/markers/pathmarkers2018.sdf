@@ -51,5 +51,7 @@
             <uri>file://markers/PathMarkers2018s.dae</uri>
           </mesh>
         </geometry>
+      </visual>
+    </link>
   </model>
 </sdf>
