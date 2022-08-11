@@ -6,21 +6,12 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
 
-permissions:
-  contents: read
-  deployments: write
-  pages: write
-  id-token: write
-
 concurrency:
   group: "pages"
   cancel-in-progress: true
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: https://uf-mil.github.io/pr-docs/${{ github.event.number }}
     runs-on: ubuntu-latest
     steps:
       # Wait for the CI to finish so we can download the docs artifact
