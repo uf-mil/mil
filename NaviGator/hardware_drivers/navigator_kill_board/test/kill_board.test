@@ -8,5 +8,5 @@
   <!-- Start kill_board_dirver -->
   <include file="$(find navigator_launch)/launch/hardware/kill_board.launch" />
 
-  <test test-name="kill_board_test" pkg="navigator_kill_board" type="kill_board_test.py" />
+  <test test-name="kill_board_test" pkg="navigator_kill_board" type="kill_board_test.py" time-limit="180.0"/>
 </launch>

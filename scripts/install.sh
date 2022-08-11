@@ -159,6 +159,7 @@ mil_system_install \
   ros-noetic-serial \
   ros-noetic-tf2-sensor-msgs \
   ros-noetic-geographic-msgs \
+  ros-noetic-vision-msgs \
   ros-noetic-velodyne \
   ros-noetic-usb-cam \
   ros-noetic-joy \
