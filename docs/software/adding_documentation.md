@@ -12,8 +12,7 @@ to ensure you have all the needed dependencies.
 
 Remember to make your changes on an accessible branch:
 ```bash
-$ git checkout noetic-migration
-$ git checkout -b noetic-<your branch name here>
+$ git checkout -b <your branch name here>
 ```
 
 Feel free to be flexible with this; you may not need to make a new branch if you
@@ -29,14 +28,11 @@ setup working that allows you to contribute to the docs and preview your changes
     ```bash
     $ git clone https://github.com/uf-mil/mil -j8 --recurse-submodules
     ```
-2.  Switch to the `noetic-migration` branch, and make your own branch off of this.
-    This branch only will be used by you (and any collaborators working with you),
-    so feel free to play around with things.
+2.  Make your own branch off of `master`. This branch only will be used by you
+    (and any collaborators working with you), so feel free to play around with things.
     ```bash
     $ cd mil
-    $ git checkout noetic-migration
-    $ git submodule update --init --recursive
-    $ git checkout -b noetic-<your branch name here>
+    $ git checkout -b <your branch name here>
     ```
 3.  Install Python and the needed dependencies. This will vary based on your
     operating system.
