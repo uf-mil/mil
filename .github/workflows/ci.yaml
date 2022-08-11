@@ -619,7 +619,7 @@ jobs:
 
       - name: Rename docs folder
         run: |
-          mv docs-ci-html-${{ github.sha }} docs
+          mv build/docs-ci-html-${{ github.sha }} build/docs
 
       # We need to install rsync for GitHub Pages deploy action
       - name: Install rsync
