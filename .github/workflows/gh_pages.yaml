@@ -53,7 +53,7 @@ jobs:
         run: |
           cd ${{ github.workspace }}/pr-docs
           mv docs-ci-html-${{ github.event.pull_request.head.sha }} ${{ github.event.number }}
-          echo "datetime=$(date '+%Y-%m-%d %H:%M %Z')" >> $GITHUB_ENV
+          echo "datetime=$(TZ=America/New_York date '+%Y-%m-%d %H:%M %Z')" >> $GITHUB_ENV
 
       # Publish the artifact to the GitHub Pages branch
       - name: Push preview to GitHub Pages

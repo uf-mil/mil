@@ -1,5 +1,5 @@
 # Getting Help
-Programming is hard, and programming at the level needed for autonomous systems
+Programming is difficult, and programming at the level needed for autonomous systems
 is even harder. Every developer write bugs, encounters confusing errors, and gets stuck
 in countless other ways. With time you'll learn not how to write better code,
 but also how to effectively get help when you're stuck.
