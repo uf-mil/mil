@@ -609,21 +609,13 @@ jobs:
 
       - name: Make folders
         run: |
-          mkdir -p $GITHUB_WORKSPACE/build
+          mkdir -p $GITHUB_WORKSPACE/build/docs
 
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
           name: docs-ci-html-${{ github.sha }}
-          path: ${{ github.workspace }}/build
-
-      - name: Rename docs folder
-        run: |
-          ls
-          cd $GITHUB_WORKSPACE
-          ls
-          ls build
-          mv build/docs-ci-html-${{ github.sha }} build/docs
+          path: ${{ github.workspace }}/build/docs
 
       # We need to install rsync for GitHub Pages deploy action
       - name: Install rsync
