@@ -76,10 +76,12 @@ jobs:
           header: pr-preview
           number: ${{ github.event.number }}
           message: >
-            Hello, it's your friendly InvestiGator bot here!\n
+            Hello, it's your friendly InvestiGator bot here!
+
 
             The **docs preview** for this PR is available at
-            https://uf-mil.github.io/pr-docs/${{ github.event.number }}.\n
+            https://uf-mil.github.io/pr-docs/${{ github.event.number }}.
+
 
             ```css
 
@@ -89,7 +91,8 @@ jobs:
 
             ► ${{ env.datetime }}
 
-            ```\n
+            ```
+
 
             Have a great day! Go gators! 🐊
 
