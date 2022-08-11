@@ -13,6 +13,7 @@ class Gymkhana(Vrx):
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
         yield self.nh.sleep(5)
+        yield self.reset_pcodar()
 
         yield self.run_submission("VrxNavigation")
         yield self.run_submission("VrxBeacon")
