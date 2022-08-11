@@ -1,0 +1,137 @@
+---
+name: Deploy documentation to pages branch
+
+# yamllint disable-line rule:truthy
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  content: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: https://uf-mil.github.io/pr-docs/${{ github.event.number }}
+    runs-on: ubuntu-latest
+    steps:
+      # Wait for the CI to finish so we can download the docs artifact
+      - name: Wait for CI
+        uses: lewagon/wait-on-check-action@v1.0.0
+        if: github.event.action != 'closed'
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          check-name: "Build docs"
+          repo-token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
+          allowed-conclusions: success,cancelled,failure,timed_out
+          verbose: true
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Prepare directories
+        if: github.event.action != 'closed'
+        run: |
+          mkdir -p ${{ github.workspace }}/pr-docs/
+
+      - name: Download artifact
+        uses: dawidd6/action-download-artifact@v2
+        if: github.event.action != 'closed'
+        with:
+          github_token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
+          workflow: .github/workflows/ci.yaml
+          workflow_conclusion: completed
+          commit: ${{ github.event.pull_request.head.sha }}
+          path: ${{ github.workspace }}/pr-docs
+
+      # We need to install rsync for GitHub Pages deploy action
+      - name: Install rsync
+        run: |
+          apt-get upgrade && apt-get update && apt-get install -y rsync
+
+      - name: Move folders
+        if: github.event.action != 'closed'
+        run: |
+          cd ${{ github.workspace }}/pr-docs
+          mv docs-ci-html-${{ github.event.pull_request.head.sha }} ${{ github.event.number }}
+          echo "datetime=$(date '+%Y-%m-%d %H:%M %Z')" >> $GITHUB_ENV
+
+      # Publish the artifact to the GitHub Pages branch
+      - name: Push preview to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        if: github.event.action != 'closed'
+        with:
+          token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
+          branch: main
+          repository-name: uf-mil/uf-mil.github.io
+          folder: ${{ github.workspace }}/pr-docs/${{ github.event.number }}
+          target-folder: pr-docs/${{ github.event.number }}
+          commit-message: "Adding PR preview for PR ${{ github.event.number }}"
+
+      # Create/update stickied comment
+      - name: Update stickied comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event.action != 'closed'
+        with:
+          GITHUB_TOKEN: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
+          header: pr-preview
+          number: ${{ github.event.number }}
+          message: >
+            Hello, it's your friendly InvestiGator bot here!\n
+
+            The **docs preview** for this PR is available at
+            https://uf-mil.github.io/pr-docs/${{ github.event.number }}.\n
+
+            ```css
+
+            Last updated at:
+
+            ► ${{ github.event.pull_request.head.sha }}
+
+            ► ${{ env.datetime }}
+
+            ```\n
+
+            Have a great day! Go gators! 🐊
+
+      # If the PR is closed, remove the files
+      - name: Prepare empty folder
+        if: github.event.action == 'closed'
+        run: |
+          echo "emptydir=$(mktemp -d)" >> $GITHUB_ENV
+
+      - name: Prepare deletion folders
+        uses: JamesIves/github-pages-deploy-action@v4
+        if: github.event.action == 'closed'
+        with:
+          token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
+          branch: main
+          repository-name: uf-mil/uf-mil.github.io
+          folder: ${{ env.emptydir }}
+          target-folder: pr-docs/${{ github.event.number }}
+          commit-message: Removing PR preview for PR ${{ github.event.number }}
+
+      # Create/update stickied comment
+      - name: Update stickied comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event.action == 'closed'
+        with:
+          GITHUB_TOKEN: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
+          header: pr-preview
+          number: ${{ github.event.number }}
+          message: >
+            Hola, your friendly InvestiGator bot here with another message!
+
+
+            Because this PR was closed/merged, I'm going to remove the docs
+            preview for now.
+
+
+            Have a great day! Go gators! 🐊
