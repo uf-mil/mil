@@ -46,7 +46,7 @@ jobs:
       # We need to install rsync for GitHub Pages deploy action
       - name: Install rsync
         run: |
-          sudo apt-get upgrade && apt-get update && apt-get install -y rsync
+          sudo apt-get upgrade && sudo apt-get update && sudo apt-get install -y rsync
 
       - name: Move folders
         if: github.event.action != 'closed'
