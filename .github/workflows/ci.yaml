@@ -97,7 +97,7 @@ jobs:
       - name: Install pre-commit hooks
         run: |
           python --version
-          pip install "$(cat requirements_test.txt | grep pre-commit)"
+          pip install "$(cat requirements.txt | grep pre-commit)"
       - name: Restore base pre-commit environment
         id: cache-pre-commmit
         uses: actions/cache@v3.0.4
@@ -129,7 +129,7 @@ jobs:
       - name: Initialize pre-commit for use
         run: |
           python --version
-          pip install "$(cat requirements_test.txt | grep pre-commit)"
+          pip install "$(cat requirements.txt | grep pre-commit)"
       - name: Restore pre-commit environment from cache
         id: cache-precommit
         uses: actions/cache@v3.0.4
@@ -165,7 +165,7 @@ jobs:
       - name: Initialize pre-commit for use
         run: |
           python --version
-          pip install "$(cat requirements_test.txt | grep pre-commit)"
+          pip install "$(cat requirements.txt | grep pre-commit)"
       - name: Restore pre-commit environment from cache
         id: cache-precommit
         uses: actions/cache@v3.0.4
@@ -204,7 +204,7 @@ jobs:
       - name: Initialize pre-commit for use
         run: |
           python --version
-          pip install "$(cat requirements_test.txt | grep pre-commit)"
+          pip install "$(cat requirements.txt | grep pre-commit)"
       - name: Restore pre-commit environment from cache
         id: cache-precommit
         uses: actions/cache@v3.0.4
@@ -240,7 +240,7 @@ jobs:
       - name: Initialize pre-commit for use
         run: |
           python --version
-          pip install "$(cat requirements_test.txt | grep pre-commit)"
+          pip install "$(cat requirements.txt | grep pre-commit)"
       - name: Restore pre-commit environment from cache
         id: cache-precommit
         uses: actions/cache@v3.0.4
@@ -276,7 +276,7 @@ jobs:
       - name: Initialize pre-commit for use
         run: |
           python --version
-          pip install "$(cat requirements_test.txt | grep pre-commit)"
+          pip install "$(cat requirements.txt | grep pre-commit)"
       - name: Restore pre-commit environment from cache
         id: cache-precommit
         uses: actions/cache@v3.0.4
@@ -314,7 +314,7 @@ jobs:
       - name: Initialize pre-commit for use
         run: |
           python --version
-          pip install "$(cat requirements_test.txt | grep pre-commit)"
+          pip install "$(cat requirements.txt | grep pre-commit)"
       - name: Restore pre-commit environment from cache
         id: cache-precommit
         uses: actions/cache@v3.0.4
@@ -352,7 +352,7 @@ jobs:
       - name: Initialize pre-commit for use
         run: |
           python --version
-          pip install "$(cat requirements_test.txt | grep pre-commit)"
+          pip install "$(cat requirements.txt | grep pre-commit)"
       - name: Restore pre-commit environment from cache
         id: cache-precommit
         uses: actions/cache@v3.0.4
@@ -393,7 +393,7 @@ jobs:
       - name: Initialize pre-commit for use
         run: |
           python --version
-          pip install "$(cat requirements_test.txt | grep pre-commit)"
+          pip install "$(cat requirements.txt | grep pre-commit)"
       - name: Restore pre-commit environment from cache
         id: cache-precommit
         uses: actions/cache@v3.0.4
@@ -522,7 +522,7 @@ jobs:
           cache: "pip"
       - name: Install test dependencies
         run: |
-          pip install -r requirements_test.txt
+          pip install -r requirements.txt
       - name: Register pylint problem matcher
         run: |
           echo "::add-matcher::.github/workflows/matchers/pylint.json"
