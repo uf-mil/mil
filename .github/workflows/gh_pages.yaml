@@ -20,9 +20,9 @@ jobs:
         if: github.event.action != 'closed'
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-          check-name: "Build docs"
+          check-name: (Build docs)|(Run catkin_make tests)
           repo-token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
-          allowed-conclusions: success,cancelled,failure,timed_out
+          allowed-conclusions: success
           verbose: true
 
       - name: Checkout
