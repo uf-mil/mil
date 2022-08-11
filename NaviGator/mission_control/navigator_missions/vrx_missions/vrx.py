@@ -3,7 +3,6 @@ import math
 
 import numpy as np
 import txros
-from vision_msgs.msg import Detection2DArray
 from geographic_msgs.msg import GeoPath, GeoPoseStamped
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from mil_tools import numpy_to_point, rosmsg_to_numpy
@@ -19,8 +18,10 @@ from navigator_msgs.srv import (
 from robot_localization.srv import FromLL, FromLLRequest, ToLL, ToLLRequest
 from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import Empty, Float64, Float64MultiArray, Int32, String
+from std_srvs.srv import Trigger
 from twisted.internet import defer
 from txros import NodeHandle, action, txros_tf, util
+from vision_msgs.msg import Detection2DArray
 from vrx_gazebo.msg import Task
 from vrx_gazebo.srv import ColorSequence
 
@@ -68,9 +69,7 @@ class Vrx(Navigator):
         Vrx.set_long_waypoint = Vrx.nh.get_service_client(
             "/set_long_waypoint", MoveToWaypoint
         )
-        Vrx.yolo_objects = Vrx.nh.subscribe(
-            "/yolov7/detections", Detection2DArray
-        )
+        Vrx.yolo_objects = Vrx.nh.subscribe("/yolov7/detections", Detection2DArray)
         Vrx.tf_listener = txros_tf.TransformListener(Vrx.nh)
         Vrx.database_response = Vrx.nh.get_service_client(
             "/database/requests", ObjectDBQuery
@@ -78,7 +77,8 @@ class Vrx(Navigator):
         Vrx.get_two_closest_cones = Vrx.nh.get_service_client(
             "/get_two_closest_cones", TwoClosestCones
         )
-        # Vrx.scan_dock_placard_symbol = Vrx.nh.subscribe("/vrx/scan_dock/placard_symbol", String)
+
+        Vrx.pcodar_reset = Vrx.nh.get_service_client("/pcodar/reset", Trigger)
 
         Vrx.front_left_camera_info_sub = None
         Vrx.front_left_camera_sub = None
@@ -165,6 +165,10 @@ class Vrx(Navigator):
     @txros.util.cancellableInlineCallbacks
     def get_closest(self):
         ret = yield self.get_sorted_objects("all")
+
+    @txros.util.cancellableInlineCallbacks
+    def reset_pcodar(self):
+        yield self.pcodar_reset(Trigger())
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):

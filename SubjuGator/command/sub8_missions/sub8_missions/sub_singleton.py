@@ -10,7 +10,6 @@ import numpy as np
 import rospkg
 import sensor_msgs.point_cloud2 as pc2
 import yaml
-from vision_msgs.msg import Detection2DArray
 from mil_missions_core import BaseMission
 from mil_msgs.msg import MoveToAction, PoseTwistStamped, RangeStamped
 from mil_msgs.srv import (
@@ -45,6 +44,7 @@ from txros import (
     txros_tf,
     util,
 )
+from vision_msgs.msg import Detection2DArray
 
 from . import pose_editor
 

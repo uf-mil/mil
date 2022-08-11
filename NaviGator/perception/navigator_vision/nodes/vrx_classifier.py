@@ -9,7 +9,6 @@ import pandas
 import rospy
 import sensor_msgs.point_cloud2
 import tf2_ros
-from vision_msgs.msg import Detection2DArray
 from image_geometry import PinholeCameraModel
 from mil_msgs.msg import PerceptionObjectArray
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
@@ -28,6 +27,7 @@ from std_msgs.msg import Int32
 from std_srvs.srv import SetBool
 from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from tf.transformations import quaternion_matrix
+from vision_msgs.msg import Detection2DArray
 from vrx_gazebo.msg import Task
 
 lock = Lock()
@@ -133,10 +133,10 @@ class VrxClassifier:
 
     def in_rect(self, point, bbox):
         if (
-            point[0] >= bbox.bbox.center.x - bbox.bbox.size_x/2
-            and point[1] >= bbox.bbox.center.y - bbox.bbox.size_y/2
-            and point[0] <= bbox.bbox.center.x + bbox.bbox.size_x/2
-            and point[1] <= bbox.bbox.center.y + bbox.bbox.size_y/2
+            point[0] >= bbox.bbox.center.x - bbox.bbox.size_x / 2
+            and point[1] >= bbox.bbox.center.y - bbox.bbox.size_y / 2
+            and point[0] <= bbox.bbox.center.x + bbox.bbox.size_x / 2
+            and point[1] <= bbox.bbox.center.y + bbox.bbox.size_y / 2
         ):
             return True
         else:
@@ -218,11 +218,13 @@ class VrxClassifier:
                 classified.add(self.last_objects.objects[closest_to_box].id)
                 print(
                     "Object {} classified as {}".format(
-                        self.last_objects.objects[closest_to_box].id, self.CLASSES[a.results[0].id]
+                        self.last_objects.objects[closest_to_box].id,
+                        self.CLASSES[a.results[0].id],
                     )
                 )
                 cmd = "{}={}".format(
-                    self.last_objects.objects[closest_to_box].id, self.CLASSES[a.results[0].id]
+                    self.last_objects.objects[closest_to_box].id,
+                    self.CLASSES[a.results[0].id],
                 )
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
 
