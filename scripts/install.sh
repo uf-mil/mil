@@ -237,7 +237,8 @@ mil_user_install_dependencies()
     awscli \
     net-tools \
     cifs-utils \
-    nmap
+    nmap \
+    tmuxinator
 }
 
 # Add line to user's bashrc which source the repo's setup files
