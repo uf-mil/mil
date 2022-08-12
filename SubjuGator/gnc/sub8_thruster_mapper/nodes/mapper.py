@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import threading
 from typing import Tuple
 
@@ -121,7 +123,7 @@ class ThrusterMapper:
         rospy.logwarn("Layout updated")
         return UpdateThrusterLayoutResponse()
 
-    def get_ranges(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_ranges(self) -> tuple[np.ndarray, np.ndarray]:
         """
         Get upper and lower thrust limits for each thruster.
         Returns:
@@ -142,11 +144,16 @@ class ThrusterMapper:
         )
         return minima, maxima
 
-    def get_thruster_wrench(self, position: list, direction: list) -> np.ndarray:
-        """Compute a single column of B, or the wrench created by a particular thruster
+    def get_thruster_wrench(
+        self, position: list[float], direction: list[float]
+    ) -> np.ndarray:
+        """
+        Compute a single column of B, or the wrench created by a particular thruster
+
         Args:
             position (list): The position of the thruster in the body frame.
             direction (list): The direction of the thruster in the body frame.
+
         Returns:
             wrench (np.ndarray): The wrench created by the thruster.
         """
