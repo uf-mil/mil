@@ -166,7 +166,8 @@ class ThrusterMapper:
         return np.transpose(wrench_column)
 
     def get_b_matrix(self, srv: BMatrixRequest) -> BMatrixResponse:
-        """Return a copy of the B matrix flattened into a 1-D row-major order list
+        """
+        Return a copy of the B matrix flattened into a 1-D row-major order list
         Args:
             srv (BMatrixRequest): The request message.
         Returns:
@@ -223,7 +224,8 @@ class ThrusterMapper:
         thrust_cost = np.diag([1e-4] * self.num_thrusters)
 
         def objective(u) -> float:
-            """Tikhonov-regularized least-squares cost function
+            """
+            Tikhonov-regularized least-squares cost function
                https://en.wikipedia.org/wiki/Tikhonov_regularization
             Minimize
                 norm((B * u) - wrench) + (u.T * R * u)
