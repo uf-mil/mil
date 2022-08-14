@@ -67,7 +67,7 @@ repos:
     hooks:
       - id: alex
         name: alex
-        types: [markdown, rst]
+        types: [markdown]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.4.0
     hooks:
