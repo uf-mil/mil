@@ -35,7 +35,7 @@ RUN pip3 install breathe pyserial
 RUN source src/mil/scripts/setup.bash
 RUN source /opt/ros/noetic/setup.bash
 # ENV PYTHONPATH="/opt/ros/noetic/lib/python3/dist-packages:${PYTHONPATH}"
-RUN source /opt/ros/noetic/setup.bash && source src/mil/scripts/setup.bash; catkin_make -DCATKIN_BLACKLIST_PACKAGES="darknet_ros"
+RUN source /opt/ros/noetic/setup.bash && source src/mil/scripts/setup.bash; catkin_make
 RUN echo "source /catkin_ws/devel/setup.bash" >> ~/.bashrc
 
 # Build docs

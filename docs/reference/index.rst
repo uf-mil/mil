@@ -18,6 +18,7 @@ by MIL. These subsystems relate to a variety of processes.
     msghandlers
     txros
     rviz
+    pcodar
     resources
     rc
     alarms

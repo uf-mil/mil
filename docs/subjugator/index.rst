@@ -6,13 +6,24 @@ This page provides general info about developing for
 competition for autonomous submarines. MIL has participated in RoboSub
 for 20+ years. Most code for this is hosted under ``SubjuGator/``.
 
+SubjuGator 8
+------------
 .. toctree::
     :maxdepth: 1
 
-    Lessons from 2022 <lessons22>
     design
     Simulating <simulating>
     Enabling <enabling>
     Cameras <cameras>
 
     electrical
+
+RoboSub
+-------
+.. toctree::
+    :maxdepth: 1
+
+    RoboSub <robosub>
+
+    Lessons from 2022 <lessons22>
+    Lessons from 2019 <lessons19>

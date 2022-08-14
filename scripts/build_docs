@@ -1,8 +1,11 @@
 #!/bin/bash
-usage="$(basename "$0") [-h] [-s] [-d] -- build MIL docs
+usage="$(basename "$0") [-h | --help] [-s | --scratch] [-n | --no-source]
+[-d | --doxygen] -- build MIL docs
 
 where:
     -h  show this help text
+    -n  avoid building reference docs; this is useful for mechanical and electrical
+        members who may not have ROS setup
     -s  build the docs from scratch (don't use cache)
     -d  build doxygen documentation cache"
 
@@ -16,24 +19,26 @@ mkdir -p $BUILD_DIR/html
 
 DOXYGEN=false
 SCRATCH=false
+NO_SOURCE=false
 
 while [[ $# -gt 0 ]]; do
   case $1 in
     -d|--doxygen)
       DOXYGEN=true
       shift # past argument
-      shift # past value
       ;;
     -s|--scratch)
       SCRATCH=true
       shift # past argument
-      shift # past value
+      ;;
+    -n|--no-source)
+      NO_SOURCE=true
+      shift # past argument
       ;;
     -h|--help)
       echo "$usage"
       exit
       shift # past argument
-      shift # past value
       ;;
     -*|--*)
       echo "Unknown option $1"
@@ -51,9 +56,9 @@ fi
 
 if [ "$SCRATCH" = true ]; then
     #Doxygen
-    sphinx-build -E -b html -d $BUILD_DIR/doctrees $MIL_DIR/docs $BUILD_DIR/html
+    NO_SOURCE="$NO_SOURCE" sphinx-build -E -b html -d $BUILD_DIR/doctrees $MIL_DIR/docs $BUILD_DIR/html
 else
-    sphinx-build -b html -d $BUILD_DIR/doctrees $MIL_DIR/docs $BUILD_DIR/html
+    NO_SOURCE="$NO_SOURCE" sphinx-build -b html -d $BUILD_DIR/doctrees $MIL_DIR/docs $BUILD_DIR/html
 fi
 
 # Then Sphinx build

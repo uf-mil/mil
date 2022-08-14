@@ -34,7 +34,7 @@ def fix_file(filename: str):
     root = tree.getroot()
     fix_gps(root)
     fix_imu(root)
-    print(ET.tostring(root))
+    print(ET.tostring(root, encoding="unicode"))
 
 
 if __name__ == "__main__":

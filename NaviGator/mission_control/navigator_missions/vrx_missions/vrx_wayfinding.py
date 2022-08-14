@@ -7,7 +7,8 @@ import txros
 from mil_tools import rosmsg_to_numpy
 from tsp_solver.greedy import solve_tsp
 from twisted.internet import defer
-from vrx import Vrx
+
+from .vrx import Vrx
 
 ___author___ = "Alex Perez"
 
@@ -27,11 +28,14 @@ class VrxWayfinding(Vrx):
         yield self.wait_for_task_such_that(
             lambda task: task.state in ["ready", "running"]
         )
+        yield self.reset_pcodar()
+
         path_msg = yield self.get_latching_msg(self.wayfinding_path_sub)
-        poses = [
-            (yield self.geo_pose_to_enu_pose(geo_pose.pose))
-            for geo_pose in path_msg.poses
-        ]
+
+        poses = []
+        for geo_pose in path_msg.poses:
+            pose = yield self.geo_pose_to_enu_pose(geo_pose.pose)
+            poses.append(pose)
 
         position = self.pose[0]
 

@@ -33,7 +33,7 @@ To install `pre-commit`, use `pip`! We specify the version of `pre-commit` in
 a requirements file, which is why you reference it in the command below.
 
 ```sh
-$ pip3 install -r requirements_test.txt
+$ pip3 install -r requirements.txt
 ```
 
 After doing this step, you should be able to run the `pre-commit` command. Now,

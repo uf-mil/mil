@@ -154,7 +154,7 @@ class Plotter:
             axis.cla()
 
         # make ros msg of the img
-        msg = self.bridge.cv2_to_imgmsg(img, encoding="passthrough")
+        msg = self.bridge.cv2_to_imgmsg(img, encoding="rgba8")
         # publish the image
         self.pub.publish(msg)
 

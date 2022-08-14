@@ -44,6 +44,7 @@ from txros import (
     txros_tf,
     util,
 )
+from vision_msgs.msg import Detection2DArray
 
 from . import pose_editor
 
@@ -310,6 +311,9 @@ class SubjuGator(BaseMission):
         cls.actuators = _ActuatorProxy(cls.nh)
         cls.test_mode = False
         cls.pinger_sub = yield cls.nh.subscribe("/hydrophones/processed", ProcessedPing)
+        cls.yolo_objects = yield cls.nh.subscribe(
+            "/yolov7/detections", Detection2DArray
+        )
 
     @property
     def pose(self) -> pose_editor.PoseEditor:

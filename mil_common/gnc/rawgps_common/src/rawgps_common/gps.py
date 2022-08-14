@@ -441,11 +441,11 @@ class IonosphericModel:
 
         F = 1 + 16 * (0.53 - E) ** 3
 
-        PER = sum(self.b[n] * phi_m**n for n in xrange(4))
+        PER = sum(self.b[n] * phi_m**n for n in range(4))
         if PER < 72000:
             PER = 72000
 
-        AMP = sum(self.a[n] * phi_m**n for n in xrange(4))
+        AMP = sum(self.a[n] * phi_m**n for n in range(4))
         if AMP < 0:
             AMP = 0
 
@@ -642,7 +642,7 @@ def generate_satellite_message(
 
     t = t_SV  # initialize
     deltat_r = 0
-    for i in xrange(2):
+    for i in range(2):
         dt = t - eph.t_oc
         assert abs(dt) < week_length / 2
         deltat_SV_L1 = (
@@ -708,7 +708,7 @@ def estimate_pos(sats, use_corrections, quiet=False, pos_guess=None):
     def find_minimum(x0, residuals):
         # print 'x0', x0
         x = x0
-        for i in xrange(6):
+        for i in range(6):
             r, J = residuals(x)
             # print 'r', r
             # print sum(r)

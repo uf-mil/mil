@@ -1,18 +1,21 @@
 <?xml version="1.0"?>
 <launch>
 
-    <!-- Use YOLOv4 -->
-    <arg name="network_param_file" default="$(find navigator_launch)/config/darknet_params/yolov4-tiny.yaml"/>
-    <arg name="ros_param_file" default="$(find navigator_launch)/config/darknet_params/ros.yaml"/>
-    <arg name="image" default="/wamv/sensors/cameras/front_left_camera/image_raw"/>
-    <arg name="yolo_config_path"  default="$(find navigator_launch)/config/darknet_params"/>
+    <arg name="weights" default="$(find yolov7_ros)/src/best.pt" />
+    <arg name="image_topic" default="/wamv/sensors/cameras/front_left_camera/image_raw" />
+    <arg name="out_topic" default="detections" />
+    <arg name="conf_thresh" default="0.75" />
+    <arg name="image_size" default="640" />
+    <arg name="device" default="cpu" />
 
-    <!-- Main darknet_ros launch file-->
-    <include file="$(find darknet_ros)/launch/darknet_ros.launch">
-        <arg name="network_param_file" value="$(arg network_param_file)"/>
-        <arg name="ros_param_file" value="$(arg ros_param_file)"/>
-        <arg name="image" value="$(arg image)"/>
-        <arg name="yolo_config_path" value="$(arg yolo_config_path)"/>
+    <!-- Use YOLOv7 -->
+    <include file="$(find yolov7_ros)/launch/yolov7.launch">
+        <arg name="weights" value="$(arg weights)"/>
+        <arg name="image_topic" value="$(arg image_topic)"/>
+        <arg name="out_topic" value="$(arg out_topic)"/>
+        <arg name="conf_thresh" value="$(arg conf_thresh)"/>
+        <arg name="image_size" value="$(arg image_size)"/>
+        <arg name="device" value="$(arg device)"/>
     </include>
 
     <arg name="train" default="False" />

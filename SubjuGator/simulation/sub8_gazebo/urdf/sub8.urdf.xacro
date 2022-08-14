@@ -35,7 +35,7 @@
   <xacro:mil_fixed_link name="front_stereo" parent="base_link" xyz="0.2559 0 0.1707" rpy="0 0 0"/>
   <xacro:mil_camera name="front_left_cam" parent="front_stereo" namespace="/camera/front/left" xyz="0 0.0445 0" rpy="0 0 0"/>
   <xacro:mil_camera name="front_right_cam" parent="front_stereo" namespace="/camera/front/right" xyz="0 -0.0445 0" rpy="0 0 0"/>
-  <xacro:mil_camera name="down_left_cam" parent="base_link" namespace="/camera/down" xyz="0.054 0.105 -0.256" rpy="0 1.57 1.57"/>
+  <xacro:mil_camera name="down_left_cam" parent="base_link" namespace="/camera/down" xyz="0.054 0.105 -0.256" rpy="0 1.57 0"/>
   <xacro:mil_imu_magnetometer
     name="imu"
     parent="base_link"
@@ -58,6 +58,8 @@
   <xacro:mil_inclinometer name="inclinometer" topic_name='/imu/inclinometer' queue_size='20' xyz="0.21236 0.00254 -0.10233" rpy="0 -1.571 0" rate="250" vrw="0.08" ctime="1"/>
   <xacro:mil_depth name="depth" xyz="-0.235 0 -0.170" rpy="0 0 0" rate="20"/>
   <xacro:mil_passive_sonar name="hydrophones" xyz="-0.0908 0 -0.2459" rpy="0 0 1.571" model="transdec_pinger" freq="37000" amplitude="1000"/>
+
+  <xacro:mil_passive_sonar name="hydrophones2" xyz="-0.0908 0 -0.2459" rpy="0 0 1.571" model="transdec_pinger2" freq="42000" amplitude="1000"/>
 
   <!-- Other fixed frames -->
   <xacro:mil_fixed_link name="blueview" parent="base_link" xyz="0.333 0 0.381" rpy="3.142 0 0"/>

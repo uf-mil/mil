@@ -14,8 +14,12 @@ color() {
 # header display functions
 hash_header() { echo "########################################"; }
 
+# We only want to clear if the user is actually using a GUI terminal
+if [[ -z "${TERM}" ]]; then
+    clear
+fi
+
 # Display header
-clear
 cat << EOF
 $(color "$Pur")
          &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
@@ -155,6 +159,7 @@ mil_system_install \
   ros-noetic-serial \
   ros-noetic-tf2-sensor-msgs \
   ros-noetic-geographic-msgs \
+  ros-noetic-vision-msgs \
   ros-noetic-velodyne \
   ros-noetic-usb-cam \
   ros-noetic-joy \
@@ -168,6 +173,7 @@ mil_system_install \
   ros-noetic-teleop-twist-keyboard \
   ros-noetic-ros-control \
   ros-noetic-ros-controllers \
+  ros-noetic-tf2-tools \
 
 cat << EOF
 $(color "$Pur")

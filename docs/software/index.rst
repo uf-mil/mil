@@ -8,7 +8,8 @@ Various documentation related to practices followed by the MIL Software team.
    Getting Started <getting_started>
    devtools
    Contributing Changes <contributing>
-   Adding Documentation <adding_documentation>
+   documentation_syntax
+   adding_documentation
    help
    zobelisk
    Bash Style Guide <bash_style.md>

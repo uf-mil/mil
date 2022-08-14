@@ -4,7 +4,8 @@ import txros
 from mil_tools import rosmsg_to_numpy
 from navigator_msgs.srv import AcousticBeaconRequest
 from twisted.internet import defer
-from vrx import Vrx
+
+from .vrx import Vrx
 
 ___author___ = "Alex Perez"
 

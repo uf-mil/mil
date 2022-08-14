@@ -35,6 +35,6 @@ If you're currently a student at the University of Florida or are rising to beco
 one, we'd love to have you on our team. Please email our director, Dr. Eric Schwartz
 (`ems <at> ufl.edu`), or visit our [website](https://mil.ufl.edu) for more information.
 
-We aim to be a very inclusive environment where learning is emphasized, so please
+We aim to be a very inclusive environment where learning is emphasized; so please
 do not feel that you need to be well-versed in computers or robotics before entering
 our lab.
