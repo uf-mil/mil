@@ -390,6 +390,12 @@ jobs:
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
           cache: "pip"
+      # The alex hook seems to fail quite a bit in CI now, let's try installing
+      # node to see if that will help.
+      - name: Setup up Node (for alex hook)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
       - name: Initialize pre-commit for use
         run: |
           python --version
