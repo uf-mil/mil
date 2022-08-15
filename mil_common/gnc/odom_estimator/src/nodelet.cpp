@@ -161,23 +161,27 @@ private:
     last_rel_pos_ecef_ = state->mean.getRelPosECEF();
 
     {
-      EasyDistributionFunction<State, Odom> transformer([this, &msg](State const &state, Vec<0> const &) {
-        SqMat<3> m = enu_from_ecef_mat(state.getPosECEF());
-        return Odom(state.t, local_frame, msg.header.frame_id, m * state.getRelPosECEF(),
-                    Quaternion(m) * state.getOrientECEF(),
-                    state.getOrientECEF().conjugate()._transformVector(state.getVelECEF()),
-                    xyz2vec(msg.angular_velocity) - state.gyro_bias);
-      });
+      EasyDistributionFunction<State, Odom> transformer(
+          [this, &msg](State const &state, Vec<0> const &)
+          {
+            SqMat<3> m = enu_from_ecef_mat(state.getPosECEF());
+            return Odom(state.t, local_frame, msg.header.frame_id, m * state.getRelPosECEF(),
+                        Quaternion(m) * state.getOrientECEF(),
+                        state.getOrientECEF().conjugate()._transformVector(state.getVelECEF()),
+                        xyz2vec(msg.angular_velocity) - state.gyro_bias);
+          });
 
       odom_pub.publish(msg_from_odom(transformer(*state)));
     }
 
     {
-      EasyDistributionFunction<State, Odom> transformer([&msg](State const &state, Vec<0> const &) {
-        return Odom(state.t, "/ecef", msg.header.frame_id, state.getPosECEF(), state.getOrientECEF(),
-                    state.getOrientECEF().conjugate()._transformVector(state.getVelECEF()),
-                    xyz2vec(msg.angular_velocity) - state.gyro_bias);
-      });
+      EasyDistributionFunction<State, Odom> transformer(
+          [&msg](State const &state, Vec<0> const &)
+          {
+            return Odom(state.t, "/ecef", msg.header.frame_id, state.getPosECEF(), state.getOrientECEF(),
+                        state.getOrientECEF().conjugate()._transformVector(state.getVelECEF()),
+                        xyz2vec(msg.angular_velocity) - state.gyro_bias);
+          });
 
       absodom_pub.publish(msg_from_odom(transformer(*state)));
     }
@@ -231,7 +235,8 @@ private:
     Vec<3> mag_eci = magnetic_model.getField(state->mean.pos_eci, state->mean.t.toSec());
     state = kalman_update(
         EasyDistributionFunction<State, Vec<1>, Vec<3>>(
-            [&msg, &mag_eci, &local_mag_orientation, this](State const &state, Vec<3> const &measurement_noise) {
+            [&msg, &mag_eci, &local_mag_orientation, this](State const &state, Vec<3> const &measurement_noise)
+            {
               SqMat<3> enu_from_ecef = enu_from_ecef_mat(state.getPosECEF());
               Vec<3> predicted = state.orient.conjugate()._transformVector(mag_eci) +
                                  local_mag_orientation._transformVector(measurement_noise);
@@ -298,7 +303,8 @@ private:
     state = kalman_update(
         EasyDistributionFunction<State, Vec<Dynamic>, Vec<Dynamic>>(
             [&good, &local_dvl_pos, &local_dvl_orientation, this](State const &state,
-                                                                  Vec<Dynamic> const &measurement_noise) {
+                                                                  Vec<Dynamic> const &measurement_noise)
+            {
               Vec<3> dvl_vel = local_dvl_orientation.inverse()._transformVector(
                   state.getOrientECEF().inverse()._transformVector(state.getVelECEF(local_dvl_pos, *last_gyro)));
 
@@ -336,7 +342,8 @@ private:
       return;
 
     state = kalman_update(EasyDistributionFunction<State, Vec<1>, Vec<1>>(
-                              [&](State const &state, Vec<1> const &measurement_noise) {
+                              [&](State const &state, Vec<1> const &measurement_noise)
+                              {
                                 SqMat<3> m = enu_from_ecef_mat(state.getPosECEF());
                                 double estimated =
                                     -(m * state.getRelPosECEF(local_depth_pos))(2) + measurement_noise(0);

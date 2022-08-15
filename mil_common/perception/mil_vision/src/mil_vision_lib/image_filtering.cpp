@@ -100,9 +100,9 @@ float getRadialSymmetryAngle(const cv::Mat &kernel, float ang_res, bool deg)
       else  // Decreased candidate above 0.975
         break;
     }
-    else                    // Decreased candidate below 0.975
-        if (result != max)  // Viable candidate already found
-      break;
+    else                  // Decreased candidate below 0.975
+      if (result != max)  // Viable candidate already found
+        break;
   }
 
   return result;

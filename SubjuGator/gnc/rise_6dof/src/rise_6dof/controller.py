@@ -1,5 +1,3 @@
-from __future__ import division
-
 from typing import Dict, Tuple, Union
 
 import numpy

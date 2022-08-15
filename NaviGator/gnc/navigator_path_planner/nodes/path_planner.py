@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import division
 
 from types import ModuleType
 from typing import List, Optional, Tuple

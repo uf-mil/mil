@@ -1,5 +1,3 @@
-from __future__ import division
-
 from typing import List
 
 import numpy as np
