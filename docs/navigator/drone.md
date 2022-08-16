@@ -1,5 +1,37 @@
 # Drone Project
 
+## Notes on hardware and software
+
+### Current hardware
+The drone from Aerotestra is currently configured to use a (very old) ardupilot Arduino-based controller.
+There are several other drones in the Software Dungeon that have other controllers.
+One of them (our **octocopter**) is running a newer [Pixhawk controller](https://docs.px4.io/main/en/flight_controller/mro_pixhawk.html)
+that is easily compatible with the newest [ground control software](https://docs.qgroundcontrol.com/master/en/releases/release_notes.html).
+Currently, we are only considering using these more current controllers.
+
+The exact model of magnetometer/GPS unit is currently unknown.
+It is a 3DRobotics unit from ~2016.
+
+
+### Software
+
+Zobby is currently the in-lab computer being used to develop the drone project.
+Zobby has QGroundControl installed as an AppImage ( in `~/Downloads/appimages`)
+
+The Pixhawk has been flashed with the latest available version of the Pixhawk firmware,
+rather than the arudpilot firmware. This decision was made because it seemed
+most likely to work smoothly.
+
+
+### Implimentation and Configuration
+The [OrangeRX T-Six](https://hobbyking.com/en_us/orangerx-t-six-2-4ghz-dsm2-compatible-6ch-transmitter-w-10-model-memory-and-3-pos-switch-mode-2.html)
+transmitter is paired to the receiver on the homemade octocopter, which has the Pixhawk onboard currently.
+The Pixhawk magnetometer has been calibrated roughly, although some drift still occurs.
+
+
+#### Synchronizing the RF transmitter and receiver
+![Controller Synchronizing](https://cdn-global-hk.hobbyking.com/media/file/330895068X111007X3.jpg)
+
 ## Comments by Sean (Founder of Aerotestra)
 
 - He can provide help with the OS systems and the current state of the vehicle. Confirm that whatever is inside is updated, autopilot can be controlled through a telemetry interface. Drone uses the ardupilot, which Jarrod Sanders has volunteered to become familiar with and keep communicating with Sean.  
