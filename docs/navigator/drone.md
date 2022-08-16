@@ -22,6 +22,10 @@ The Pixhawk has been flashed with the latest available version of the Pixhawk fi
 rather than the arudpilot firmware. This decision was made because it seemed
 most likely to work smoothly.
 
+Resources
+- [Basics of what is px4](https://docs.px4.io/main/en/getting_started/px4_basic_concepts.html)
+- [px4 ros](https://docs.px4.io/main/en/ros/ros2_comm.html)
+
 
 ### Implimentation and Configuration
 The [OrangeRX T-Six](https://hobbyking.com/en_us/orangerx-t-six-2-4ghz-dsm2-compatible-6ch-transmitter-w-10-model-memory-and-3-pos-switch-mode-2.html)
