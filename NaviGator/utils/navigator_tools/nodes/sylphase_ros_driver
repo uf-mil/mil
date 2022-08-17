@@ -46,11 +46,13 @@ def go():
         t = rospy.Time.now()
         if not d:
             break
-        buf += d
+        buf += d.decode("utf-8")
 
         lines = buf.split("\n")
+
         buf = lines[-1]
         for line in lines[:-1]:
+
             if first:
                 first = False
                 continue
