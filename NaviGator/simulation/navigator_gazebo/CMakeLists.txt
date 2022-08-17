@@ -82,7 +82,7 @@ add_custom_target(navigator_vrx_urdf ALL
 )
 add_custom_command(
   OUTPUT ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/urdf/navigator_vrx.urdf
-  COMMAND . ${CATKIN_DEVEL_PREFIX}/setup.sh && roslaunch vrx_gazebo generate_wamv.launch thruster_yaml:=${CMAKE_CURRENT_SOURCE_DIR}/urdf/navigator_vrx/thruster_config.yaml component_yaml:=${CMAKE_CURRENT_SOURCE_DIR}/urdf/navigator_vrx/component_config.yaml wamv_target:=${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/urdf/navigator_vrx.urdf wamv_locked:=True
+  COMMAND . ${CATKIN_DEVEL_PREFIX}/setup.sh && roslaunch vrx_gazebo generate_wamv.launch thruster_yaml:=${CMAKE_CURRENT_SOURCE_DIR}/urdf/navigator_vrx/thruster_config.yaml component_yaml:=${CMAKE_CURRENT_SOURCE_DIR}/urdf/navigator_vrx/component_config.yaml wamv_target:=${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/urdf/navigator_vrx.urdf wamv_locked:=False
   DEPENDS urdf/navigator_vrx/thruster_config.yaml urdf/navigator_vrx/component_config.yaml
   DEPENDS ${CATKIN_DEVEL_PREFIX}/setup.sh
   BYPRODUCTS urdf/navigator_vrx/thruster_config.xacro urdf/navigator_vrx/component_config.xacro
