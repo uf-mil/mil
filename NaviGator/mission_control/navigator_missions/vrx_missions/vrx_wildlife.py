@@ -38,7 +38,6 @@ class VrxWildlife(Vrx):
         yield self.wait_for_task_such_that(
             lambda task: task.state in ["ready", "running"]
         )
-        yield self.reset_pcodar()
         path_msg = yield self.get_latching_msg(self.animal_landmarks)
 
         poses = []
