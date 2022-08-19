@@ -137,7 +137,6 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         :class:`ThrustPacket`, and :class:`HeartbeatMessage` types.
         """
         assert can_id == THRUST_SEND_ID or can_id == KILL_SEND_ID
-        print(data[0], data)
         if KillMessage.IDENTIFIER == data[0]:
             packet = KillMessage.from_bytes(data)
             assert packet.is_command
