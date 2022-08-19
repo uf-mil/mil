@@ -8,7 +8,6 @@ ci:
   autofix_prs: false
   autoupdate_commit_msg: 'Update pre-commit hooks to latest versions'
   autoupdate_schedule: monthly
-  skip: [alex]  # Requests access to DNS, not allowed for pre-commit CI
 
 repos:
   - repo: https://github.com/pycqa/isort
