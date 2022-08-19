@@ -4,6 +4,11 @@ exclude: ^deprecated/
 default_language_version:
   python: python3.8
 
+ci:
+  autofix_prs: false
+  autoupdate_commit_msg: 'Update pre-commit hooks to latest versions'
+  autoupdate_schedule: monthly
+
 repos:
   - repo: https://github.com/pycqa/isort
     rev: 5.10.1
