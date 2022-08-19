@@ -1,0 +1,4 @@
+int8 uav_status # 1=stowed, 2=deployed, 3=faulted
+int8 item_status # 0=not picked up, 1=picked up, 2=delivered
+---
+string message

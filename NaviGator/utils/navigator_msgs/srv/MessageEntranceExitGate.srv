@@ -1,0 +1,4 @@
+int8 entrance_gate  # gate 1, 2, 3
+int8 exit_gate  # gate 1, 2, 3
+---
+string message

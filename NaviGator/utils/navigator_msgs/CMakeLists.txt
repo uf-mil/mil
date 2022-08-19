@@ -53,9 +53,13 @@ add_service_files(
   FindPinger.srv
   SetFrequency.srv
   GetDockBays.srv
-  MessageDetectDeliver.srv
-  MessageExtranceExitGate.srv
-  MessageIdentifySymbolsDock.srv
+  MessageDetectDock.srv
+  MessageEntranceExitGate.srv
+  MessageFindFling.srv
+  MessageFollowPath.srv
+  MessageReactReport.srv
+  MessageUAVReplenishment.srv
+  MessageUAVSearchReport.srv
   TwoClosestCones.srv
 )
 
