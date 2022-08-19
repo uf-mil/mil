@@ -414,7 +414,6 @@ jobs:
           pre-commit run trailing-whitespace --all-files --show-diff-on-failure
           pre-commit run mixed-line-ending --all-files --show-diff-on-failure
           pre-commit run check-json --all-files --show-diff-on-failure
-          pre-commit run alex --all-files --show-diff-on-failure
           pre-commit run check-executables-have-shebangs --all-files --show-diff-on-failure
 
   catkin_test:
@@ -594,6 +593,41 @@ jobs:
       - name: Publish docs artifact
         uses: actions/upload-artifact@v3
         with:
-          name: >
-            docs-ci-html-${{ github.sha }}
+          name: docs-ci-html-${{ github.sha }}
           path: ${{ github.workspace }}/.mil/docs/html
+
+  deploy-docs:
+    name: Deploy docs from master
+    runs-on: ubuntu-latest
+    needs:
+      - docs
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Make folders
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/build/docs
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: docs-ci-html-${{ github.sha }}
+          path: ${{ github.workspace }}/build/docs
+
+      # We need to install rsync for GitHub Pages deploy action
+      - name: Install rsync
+        run: |
+          sudo apt-get upgrade && sudo apt-get update && sudo apt-get install -y rsync
+
+      # Publish the artifact to the GitHub Pages branch
+      - name: Push docs to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
+          branch: main
+          repository-name: uf-mil/uf-mil.github.io
+          folder: ${{ github.workspace }}/build/docs
+          target-folder: docs
+          commit-message: Updating docs to ${{ github.sha }}
