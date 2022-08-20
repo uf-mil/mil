@@ -1,0 +1,4 @@
+string color  # color of shape R, G, B
+int8 ams_status  # 1=scanning, 2=flinging
+---
+string message
