@@ -79,7 +79,7 @@ $ tmux ls # Show active all tmux sessions ( not only ones started by tmuxinator 
 $ tx stop <config> # stop a session that is running
 ```
 
-The MIL configs for tmuxinator are hard linked from 
+The MIL configs for tmuxinator are hard linked from
 `$MIL_REPO/.tmuxinatorConfigs/<name>.yaml` to `~/.config/tmuxinator/<name>.yaml`.
 If you want, you can add personal tmuxinator configs you should add them in `.config`.
 If you need to add MIL-wide configs, place them in `.tmuxinatorConfigs`
