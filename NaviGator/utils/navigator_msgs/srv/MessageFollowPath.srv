@@ -1,0 +1,3 @@
+int8 finished # 1=in progress 2=completed
+---
+string message
