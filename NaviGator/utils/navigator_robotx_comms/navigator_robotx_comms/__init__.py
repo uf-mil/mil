@@ -1,7 +1,11 @@
 from .navigator_robotx_comms import (
-    RobotXDetectDeliverMessage,
+    RobotXDetectDockMessage,
     RobotXEntranceExitGateMessage,
+    RobotXFindFlingMessage,
+    RobotXFollowPathMessage,
     RobotXHeartbeatMessage,
-    RobotXIdentifySymbolsDockMessage,
+    RobotXReactReportMessage,
     RobotXScanCodeMessage,
+    RobotXUAVReplenishmentMessage,
+    RobotXUAVSearchReportMessage,
 )
