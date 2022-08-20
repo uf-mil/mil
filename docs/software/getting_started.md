@@ -130,14 +130,6 @@ instructions exactly, you can get there through:
 $ cd ~/catkin_ws/src/mil
 ```
 
-Next, switch to the `noetic-migration` branch. This step will be removed in
-August 2022.
-
-```bash
-$ git checkout noetic-migration
-$ git submodule update --init --recursive
-```
-
 ## Run the setup scripts
 
 If you are running Ubuntu, and prefer to run code directly on your "host"
@@ -156,10 +148,11 @@ $ exec bash # or exec zsh if you have set up zsh
 Exit the terminal and enter it again.
 
 To build our tools, we use a tool that ROS provides us named `catkin_make`. This
-searches through all of our packages and compiles them together.
+searches through all of our packages and compiles them together. You can use an
+alias, `cm` to call `catkin_make` quickly, from wherever you are in the MIL directory.
 
 ```bash
-$ catkin_make
+$ cm
 ```
 
 If something goes wrong, try the suggestions in [Getting Help](help). It's common
@@ -201,6 +194,15 @@ $ gazebogui
 The first command launches the necessary subsystems for Gazebo, while the second command
 launches the Gazebo GUI - aka, the thing you will actually interact with! If all
 goes according to plan, you should see our robot in its own little world!
+
+## Installing developer tools
+After you have verified that your Git setup is working appopriately, take a look
+at installing some developer tools on the [Developer Tools](/software/devtools)
+page.
+
+You are **highly recommended** to install `pre-commit`, but installing Zsh or
+a specific editor is entirely up to you. If you choose not to install `pre-commit`,
+the chance of your changes failing in CI is higher.
 
 ## What's next?
 If the `catkin_make` didn't fail on your computer, you're all good to go!

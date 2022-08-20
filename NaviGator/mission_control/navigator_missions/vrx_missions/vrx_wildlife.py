@@ -39,12 +39,11 @@ class VrxWildlife(Vrx):
             lambda task: task.state in ["ready", "running"]
         )
         path_msg = yield self.get_latching_msg(self.animal_landmarks)
-        # GH-776
-        # poses = [
-        #     (yield self.geo_pose_to_enu_pose(geo_pose.pose))
-        #     for geo_pose in path_msg.poses
-        # ]
+
         poses = []
+        for geo_pose in path_msg.poses:
+            pose = yield self.geo_pose_to_enu_pose(geo_pose.pose)
+            poses.append(pose)
 
         position = self.pose[0]
 

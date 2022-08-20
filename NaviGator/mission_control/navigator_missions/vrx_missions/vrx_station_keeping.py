@@ -18,6 +18,7 @@ class VrxStationKeeping(Vrx):
         yield self.wait_for_task_such_that(
             lambda task: task.state in ["ready", "running"]
         )
+
         self.send_feedback("Waiting for station keeping goal")
         goal_msg = yield self.get_latching_msg(self.station_keep_goal)
         goal_pose = yield self.geo_pose_to_enu_pose(goal_msg.pose)

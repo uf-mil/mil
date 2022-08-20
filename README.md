@@ -6,7 +6,7 @@
 
 Welcome to the repository for the Machine Intelligence Lab at the University of Florida, a robotics lab in Gainesville, Florida. Our lab has built [several robotic systems](https://mil.ufl.edu/projects/) since its inception several decades ago. Our current projects include:
 
-* **SubjuGator:** An autonomous, underwater submarine-like vehicle. Three-time champion of the AUSVI/ONR underwater competition. ([Website](https://subjugator.org))
+* **SubjuGator:** An autonomous, underwater submarine-like vehicle. Three-time champion of the AUVSI/ONR underwater competition. ([Website](https://subjugator.org))
 * **NaviGator:** An autonomous surface vehicle (ASV) which has competed in several maritime competitions. Won the 2016 Maritime RobotX Challenge, and received fourth in the 2018 Maritime RobotX Challenge. ([Website](https://subjugator.org))
 * **Virtual RobotX:** An new extension of the NaviGator project supporting virtual robotics.
 
@@ -35,6 +35,6 @@ If you're currently a student at the University of Florida or are rising to beco
 one, we'd love to have you on our team. Please email our director, Dr. Eric Schwartz
 (`ems <at> ufl.edu`), or visit our [website](https://mil.ufl.edu) for more information.
 
-We aim to be a very inclusive environment where learning is emphasized, so please
+We aim to be a very inclusive environment where learning is emphasized; so please
 do not feel that you need to be well-versed in computers or robotics before entering
 our lab.

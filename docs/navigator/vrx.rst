@@ -7,7 +7,8 @@ MIL participates both in VRX and RobotX. Most code for this is hosted under ``Na
 
 .. warning::
 
-    Please go through the [getting started guide](/docs/development/getting_started) before going through this tutorial.
+    Please go through the `getting started guide <../../software/getting_started.html>`_ before going through this tutorial.
+
 
 Verifying that the VRX Environment is Functional / Playing Around in VRX
 ------------------------------------------------------------------------

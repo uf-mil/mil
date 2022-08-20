@@ -88,19 +88,15 @@ class ScanTheCode(Vrx):
         while len(sequence) < 3:
 
             img = yield self.front_left_camera_sub.get_next_message()
-            bounding_box_msg = yield self.darknet_objects.get_next_message()
+            bounding_box_msg = yield self.yolo_objects.get_next_message()
 
             img = self.bridge.imgmsg_to_cv2(img)
             img2 = img.copy()
 
             _, width, height = img.shape[::-1]
-            xmin = bounding_box_msg.bounding_boxes[0].xmin
-            xmax = bounding_box_msg.bounding_boxes[0].xmax
-            ymin = bounding_box_msg.bounding_boxes[0].ymin
-            ymax = bounding_box_msg.bounding_boxes[0].ymax
 
-            cen_pixel_col = (xmin + xmax) / 2
-            cen_pixel_row = (ymin + ymax) / 2
+            cen_pixel_col = bounding_box_msg.detections[0].bbox.center.x
+            cen_pixel_row = bounding_box_msg.detections[0].bbox.center.y
 
             if cen_pixel_col > 2 * width / 3 or cen_pixel_col < width / 3:
                 print("too far left or right")

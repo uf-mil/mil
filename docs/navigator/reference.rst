@@ -38,17 +38,17 @@ MessageDetectDeliver
 
         :type: str
 
-MessageExtranceExitGate
+MessageEntranceExitGate
 ^^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv.MessageExtranceExitGateRequest
+.. attributetable:: navigator_msgs.srv.MessageEntranceExitGateRequest
 
-.. class:: navigator_msgs.srv.MessageExtranceExitGateRequest
+.. class:: navigator_msgs.srv.MessageEntranceExitGateRequest
 
-   The request class for the ``navigator_msgs/MessageExtranceExitGate`` service.
+   The request class for the ``navigator_msgs/MessageEntranceExitGate`` service.
 
-   .. attribute:: Extrance_gate
+   .. attribute:: Entrance_gate
 
-        The Extrance gate relevant to the task.
+        The Entrance gate relevant to the task.
 
         :type: int
 
@@ -72,11 +72,11 @@ MessageExtranceExitGate
 
         :type: str
 
-.. attributetable:: navigator_msgs.srv.MessageExtranceExitGateResponse
+.. attributetable:: navigator_msgs.srv.MessageEntranceExitGateResponse
 
-.. class:: navigator_msgs.srv.MessageExtranceExitGateResponse
+.. class:: navigator_msgs.srv.MessageEntranceExitGateResponse
 
-   The response class for the ``navigator_msgs/MessageExtranceExitGate`` service.
+   The response class for the ``navigator_msgs/MessageEntranceExitGate`` service.
 
    .. attribute:: message
 
@@ -155,9 +155,9 @@ ScanTheCodeMission
 
         :type: List[str]
 
-AUSVI Communication
+AUVSI Communication
 -------------------
-Below outline classes that are used to allow NaviGator to communicate with AUSVI-specific
+Below outline classes that are used to allow NaviGator to communicate with AUVSI-specific
 platforms.
 
 RobotXEntranceExitGateMessage

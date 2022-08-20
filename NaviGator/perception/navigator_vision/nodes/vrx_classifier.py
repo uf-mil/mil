@@ -9,7 +9,6 @@ import pandas
 import rospy
 import sensor_msgs.point_cloud2
 import tf2_ros
-from darknet_ros_msgs.msg import BoundingBoxes
 from image_geometry import PinholeCameraModel
 from mil_msgs.msg import PerceptionObjectArray
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
@@ -25,9 +24,10 @@ from mil_vision_tools import (
 from PIL import Image
 from sensor_msgs.msg import Image, PointCloud2
 from std_msgs.msg import Int32
-from std_srvs.srv import SetBool
+from std_srvs.srv import SetBool, Trigger
 from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from tf.transformations import quaternion_matrix
+from vision_msgs.msg import Detection2DArray
 from vrx_gazebo.msg import Task
 
 lock = Lock()
@@ -98,13 +98,16 @@ class VrxClassifier:
             "/pcodar/objects", PerceptionObjectArray, self.process_objects, queue_size=2
         )
         self.boxes_sub = rospy.Subscriber(
-            "/darknet_ros/bounding_boxes", BoundingBoxes, self.process_boxes
+            "/yolov7/detections", Detection2DArray, self.process_boxes
         )
         self.enabled_srv = rospy.Service("~set_enabled", SetBool, self.set_enable_srv)
         self.last_image = None
         if self.is_training:
             self.enabled = True
         self.queue = []
+
+        self.pcodar_reset = rospy.ServiceProxy("/pcodar/reset", Trigger)
+        self.pcodar_reset()
 
     @thread_lock(lock)
     def set_enable_srv(self, req):
@@ -133,10 +136,10 @@ class VrxClassifier:
 
     def in_rect(self, point, bbox):
         if (
-            point[0] >= bbox.xmin
-            and point[1] >= bbox.ymin
-            and point[0] <= bbox.xmax
-            and point[1] <= bbox.ymax
+            point[0] >= bbox.bbox.center.x - bbox.bbox.size_x / 2
+            and point[1] >= bbox.bbox.center.y - bbox.bbox.size_y / 2
+            and point[0] <= bbox.bbox.center.x + bbox.bbox.size_x / 2
+            and point[1] <= bbox.bbox.center.y + bbox.bbox.size_y / 2
         ):
             return True
         else:
@@ -199,7 +202,7 @@ class VrxClassifier:
         classified = set()
 
         # for each bounding box,check which buoy is closest to boat within pixel range of bounding box
-        for a in msg.bounding_boxes:
+        for a in msg.detections:
             buoys = []
 
             for i in met_criteria:
@@ -218,11 +221,13 @@ class VrxClassifier:
                 classified.add(self.last_objects.objects[closest_to_box].id)
                 print(
                     "Object {} classified as {}".format(
-                        self.last_objects.objects[closest_to_box].id, a.Class
+                        self.last_objects.objects[closest_to_box].id,
+                        self.CLASSES[a.results[0].id],
                     )
                 )
                 cmd = "{}={}".format(
-                    self.last_objects.objects[closest_to_box].id, a.Class
+                    self.last_objects.objects[closest_to_box].id,
+                    self.CLASSES[a.results[0].id],
                 )
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
 
