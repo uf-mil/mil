@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="wam-v-two-engines">
   <!-- Macro for inserting an engine with its propeller. -->
-  <xacro:macro name="navigator_thruster" params="name x y yaw">
+  <xacro:macro name="navigator_thruster" params="name parent x y yaw">
     <!-- Location of propeller from origin of engine -->
     <xacro:property name="prop_x_offset" value="-0.278156"/>
 
@@ -14,7 +14,7 @@
     <link name="${name}_engine_link">
       <visual>
         <geometry>
-          <mesh filename="package://wamv_description/mesh/engine.dae"/>
+          <mesh filename="package://wamv_description/models/engine/mesh/engine.dae"/>
         </geometry>
       </visual>
       <collision name="${name}_engine_vertical_axis_collision">
@@ -38,7 +38,7 @@
     <link name="${name}_propeller_link">
       <visual>
         <geometry>
-          <mesh filename="package://wamv_description/mesh/propeller.dae"/>
+          <mesh filename="package://wamv_description/models/propeller/mesh/propeller.dae"/>
         </geometry>
       </visual>
       <collision name="${name}_propeller_collision">
@@ -55,7 +55,7 @@
 
     <joint name="${name}_chasis_engine_joint" type="fixed">
       <origin xyz="${x_engine} ${y_engine} 0.318237" rpy="0.0 0.0 ${yaw}"/>
-      <parent link="base_link"/>
+      <parent link="${parent}"/>
       <child link="${name}_engine_link"/>
     </joint>
 
