@@ -23,7 +23,7 @@ MessageDetectDock
 
         The AMS status.
 
-        :type: int8
+        :type: int
 
 .. attributetable:: navigator_msgs.srv.MessageDetectDockResponse
 
@@ -87,7 +87,7 @@ MessageFindFling
 
         The AMS status (1=scanning, 2=flinging)
 
-        :type: int8
+        :type: int
 
 .. attributetable:: navigator_msgs.srv.MessageFindFlingResponse
 
@@ -113,7 +113,7 @@ MessageFollowPath
 
         The bool to say if we are finished following the path. (1=in progress 2=completed)
 
-        :type: int8
+        :type: int
 
 .. attributetable:: navigator_msgs.srv.MessageFollowPathResponse
 
@@ -165,13 +165,13 @@ MessageUAVReplenishment
 
         The UAV status # 1=stowed, 2=deployed, 3=faulted
 
-        :type: int8
+        :type: int
 
    .. attribute:: item_status
 
         The item status # 0=not picked up, 1=picked up, 2=delivered
 
-        :type: int8
+        :type: int
 
 .. attributetable:: navigator_msgs.srv.MessageUAVReplenishmentResponse
 
@@ -257,7 +257,7 @@ MessageUAVSearchReport
 
         The UAV status # 1=manual, 2=autonomous, 3=faulted
 
-        :type: int8
+        :type: int
 
 .. attributetable:: navigator_msgs.srv.MessageUAVSearchReportResponse
 
