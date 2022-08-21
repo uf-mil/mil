@@ -5,32 +5,31 @@ Below is the software reference for Navigator-specific systems.
 
 Services
 --------
+MessageDetectDock
+^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv.MessageDetectDockRequest
 
-MessageDetectDeliver
-^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv.MessageDetectDeliverRequest
+.. class:: navigator_msgs.srv.MessageDetectDockRequest
 
-.. class:: navigator_msgs.srv.MessageDetectDeliverRequest
+     The request class for the ``navigator_msgs/MessageDetectDock`` service.
 
-   The request class for the ``navigator_msgs/MessageDetectDeliver`` service.
+   .. attribute:: color
 
-   .. attribute:: shape_color
-
-        The color of the requested shape.
-
-        :type: str
-
-   .. attribute:: shape
-
-        The type of requested shape.
+        The color of the shape.
 
         :type: str
 
-.. attributetable:: navigator_msgs.srv.MessageDetectDeliverResponse
+   .. attribute:: ams_status
 
-.. class:: navigator_msgs.srv.MessageDetectDeliverResponse
+        The AMS status.
 
-   The response class for the ``navigator_msgs/MessageDetectDeliver`` service.
+        :type: int8
+
+.. attributetable:: navigator_msgs.srv.MessageDetectDockResponse
+
+.. class:: navigator_msgs.srv.MessageDetectDockResponse
+
+   The response class for the ``navigator_msgs/MessageDetectDock`` service.
 
    .. attribute:: message
 
@@ -46,9 +45,9 @@ MessageEntranceExitGate
 
    The request class for the ``navigator_msgs/MessageEntranceExitGate`` service.
 
-   .. attribute:: Entrance_gate
+   .. attribute:: entrance_gate
 
-        The Entrance gate relevant to the task.
+        The entrance gate relevant to the task.
 
         :type: int
 
@@ -57,20 +56,6 @@ MessageEntranceExitGate
         The exit gate relevant to the task.
 
         :type: int
-
-   .. attribute:: light_buoy_active
-
-        Whether the task's light buoy is active.
-
-        :type: bool
-
-   .. attribute:: light_pattern
-
-        The light pattern shown by the buoy. An empty string if the buoy is not active.
-        In the pattern, ``R`` represents red, ``B`` represents blue, and ``G`` represents
-        green.
-
-        :type: str
 
 .. attributetable:: navigator_msgs.srv.MessageEntranceExitGateResponse
 
@@ -84,32 +69,201 @@ MessageEntranceExitGate
 
         :type: str
 
-MessageIdentifySymbolsDock
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv.MessageIdentifySymbolsDockRequest
+MessageFindFling
+^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv.MessageFindFlingRequest
 
-.. class:: navigator_msgs.srv.MessageIdentifySymbolsDockRequest
+.. class:: navigator_msgs.srv.MessageFindFlingRequest
 
-   The request class for the ``navigator_msgs/MessageIdentifySymbolsDock`` service.
+   The request class for the ``navigator_msgs/MessageFindFling`` service.
 
-   .. attribute:: shape_color
+   .. attribute:: color
 
-        The color of the shape that was identified.
-
-        :type: str
-
-   .. attribute:: shape
-
-        The name of the shape that was identifed.
+        The color of the shape.
 
         :type: str
 
+   .. attribute:: ams_status
 
-.. attributetable:: navigator_msgs.srv.MessageIdentifySymbolsDockResponse
+        The AMS status (1=scanning, 2=flinging)
 
-.. class:: navigator_msgs.srv.MessageIdentifySymbolsDockResponse
+        :type: int8
 
-   The response class for the ``navigator_msgs/MessageIdentifySymbolsDock`` service.
+.. attributetable:: navigator_msgs.srv.MessageFindFlingResponse
+
+.. class:: navigator_msgs.srv.MessageFindFlingResponse
+
+   The response class for the ``navigator_msgs/MessageFindFling`` service.
+
+   .. attribute:: message
+
+        A message in response to the process.
+
+        :type: str
+
+MessageFollowPath
+^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv.MessageFollowPathRequest
+
+.. class:: navigator_msgs.srv.MessageFollowPathRequest
+
+   The request class for the ``navigator_msgs/MessageFollowPath`` service.
+
+   .. attribute:: finished
+
+        The bool to say if we are finished following the path. (1=in progress 2=completed)
+
+        :type: int8
+
+.. attributetable:: navigator_msgs.srv.MessageFollowPathResponse
+
+.. class:: navigator_msgs.srv.MessageFollowPathResponse
+
+   The response class for the ``navigator_msgs/MessageFollowPath`` service.
+
+   .. attribute:: message
+
+        A message in response to the process.
+
+        :type: str
+
+MessageReactReport
+^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv.MessageReactReportRequest
+
+.. class:: navigator_msgs.srv.MessageReactReportRequest
+
+   The request class for the ``navigator_msgs/MessageReactReport`` service.
+
+   .. attribute:: animal_array
+
+        List of animals (P,C,T), up to three animals (Platypus, Turtle, Croc)
+
+        :type: string[]
+
+.. attributetable:: navigator_msgs.srv.MessageReactReportResponse
+
+.. class:: navigator_msgs.srv.MessageReactReportResponse
+
+   The response class for the ``navigator_msgs/MessageReactReport`` service.
+
+   .. attribute:: message
+
+        A message in response to the process.
+
+        :type: str
+
+MessageUAVReplenishment
+^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv.MessageUAVReplenishmentRequest
+
+.. class:: navigator_msgs.srv.MessageUAVReplenishmentRequest
+
+   The request class for the ``navigator_msgs/MessageUAVReplenishment`` service.
+
+   .. attribute:: uav_status
+
+        The UAV status # 1=stowed, 2=deployed, 3=faulted
+
+        :type: int8
+
+   .. attribute:: item_status
+
+        The item status # 0=not picked up, 1=picked up, 2=delivered
+
+        :type: int8
+
+.. attributetable:: navigator_msgs.srv.MessageUAVReplenishmentResponse
+
+.. class:: navigator_msgs.srv.MessageUAVReplenishmentResponse
+
+   The response class for the ``navigator_msgs/MessageUAVReplenishment`` service.
+
+   .. attribute:: message
+
+        A message in response to the process.
+
+        :type: str
+
+MessageUAVSearchReport
+^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv.MessageUAVSearchReportRequest
+
+.. class:: navigator_msgs.srv.MessageUAVSearchReportRequest
+
+   The request class for the ``navigator_msgs/MessageUAVSearchReport`` service.
+
+   .. attribute:: object1
+
+        The object found (R or N)
+
+        :type: string
+
+   .. attribute:: object1_latitude
+
+        The latitude of object 1
+
+        :type: float64
+
+   .. attribute:: object1_n_s
+
+        The N/S of object 1
+
+        :type: string
+
+   .. attribute:: object1_longitude
+
+        The longitude of object 1
+
+        :type: float64
+
+   .. attribute:: object1_e_w
+
+        The E/W of object 1
+
+        :type: string
+
+   .. attribute:: object2
+
+        The object found (R or N)
+
+        :type: string
+
+   .. attribute:: object2_latitude
+
+        The latitude of object 2
+
+        :type: float64
+
+   .. attribute:: object2_n_s
+
+        The N/S of object 2
+
+        :type: string
+
+   .. attribute:: object2_longitude
+
+        The longitude of object 2
+
+        :type: float64
+
+   .. attribute:: object2_e_w
+
+        The E/W of object 2
+
+        :type: string
+
+   .. attribute:: uav_status
+
+        The UAV status # 1=manual, 2=autonomous, 3=faulted
+
+        :type: int8
+
+.. attributetable:: navigator_msgs.srv.MessageUAVSearchReportResponse
+
+.. class:: navigator_msgs.srv.MessageUAVSearchReportResponse
+
+   The response class for the ``navigator_msgs/MessageUAVSearchReport`` service.
 
    .. attribute:: message
 
@@ -155,6 +309,7 @@ ScanTheCodeMission
 
         :type: List[str]
 
+
 AUVSI Communication
 -------------------
 Below outline classes that are used to allow NaviGator to communicate with AUVSI-specific
@@ -167,11 +322,25 @@ RobotXEntranceExitGateMessage
 .. autoclass:: navigator_robotx_comms.RobotXEntranceExitGateMessage
     :members:
 
-RobotXDetectDeliverMessage
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_robotx_comms.RobotXDetectDeliverMessage
+RobotXDetectDockMessage
+^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_robotx_comms.RobotXDetectDockMessage
 
-.. autoclass:: navigator_robotx_comms.RobotXDetectDeliverMessage
+.. autoclass:: navigator_robotx_comms.RobotXDetectDockMessage
+    :members:
+
+RobotXFindFlingMessage
+^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_robotx_comms.RobotXFindFlingMessage
+
+.. autoclass:: navigator_robotx_comms.RobotXFindFlingMessage
+    :members:
+
+RobotXFollowPathMessage
+^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_robotx_comms.RobotXFollowPathMessage
+
+.. autoclass:: navigator_robotx_comms.RobotXFollowPathMessage
     :members:
 
 RobotXHeartbeatMessage
@@ -181,11 +350,11 @@ RobotXHeartbeatMessage
 .. autoclass:: navigator_robotx_comms.RobotXHeartbeatMessage
     :members:
 
-RobotXIdentifySymbolsDockMessage
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_robotx_comms.RobotXIdentifySymbolsDockMessage
+RobotXReactReportMessage
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_robotx_comms.RobotXReactReportMessage
 
-.. autoclass:: navigator_robotx_comms.RobotXIdentifySymbolsDockMessage
+.. autoclass:: navigator_robotx_comms.RobotXReactReportMessage
     :members:
 
 RobotXScanCodeMessage
@@ -193,6 +362,20 @@ RobotXScanCodeMessage
 .. attributetable:: navigator_robotx_comms.RobotXScanCodeMessage
 
 .. autoclass:: navigator_robotx_comms.RobotXScanCodeMessage
+    :members:
+
+RobotXUAVReplenishmentMessage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_robotx_comms.RobotXUAVReplenishmentMessage
+
+.. autoclass:: navigator_robotx_comms.RobotXUAVReplenishmentMessage
+    :members:
+
+RobotXUAVSearchReportMessage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_robotx_comms.RobotXUAVSearchReportMessage
+
+.. autoclass:: navigator_robotx_comms.RobotXUAVSearchReportMessage
     :members:
 
 RobotXStartServices
