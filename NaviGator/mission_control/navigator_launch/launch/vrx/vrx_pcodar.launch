@@ -1,7 +1,8 @@
 <launch>
-    <arg name="simulation" default="False" />
-    <node unless="$(arg simulation)" name="pcodar" pkg="point_cloud_object_detection_and_recognition" type="pcodar_node" output="screen">
-        <remap from="/velodyne_points" to="/wamv/sensors/lidars/lidar_wamv/points" />
+    <arg name="simulation" default="True" />
+    <arg name="topic" default="/wamv/sensors/lidars/lidar_wamv/points"/>
+    <node if="$(arg simulation)" name="pcodar" pkg="point_cloud_object_detection_and_recognition" type="pcodar_node" output="screen">
+        <remap from="/velodyne_points" to="$(arg topic)" />
     </node>
     <rosparam param="/pcodar" file="$(find navigator_launch)/config/pcodar_vrx.yaml" />
 

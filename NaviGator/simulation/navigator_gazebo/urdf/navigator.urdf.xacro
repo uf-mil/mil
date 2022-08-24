@@ -3,42 +3,47 @@
   <!-- Defines the base vehicle -->
   <xacro:include filename="$(find wamv_description)/urdf/wamv_base.urdf.xacro"/>
 
-  <!-- Fixed frames for sensors -->
-  <xacro:include filename="$(find navigator_gazebo)/urdf/fixed_link.xacro"/>
-  <xacro:include filename="$(find navigator_gazebo)/urdf/sylphase.xacro"/>
-  <xacro:fixed_link name="${namespace}/measurement" parent="${namespace}/base_link" xyz="1.2319 0 1.2" rpy="0 0 0"/>
+  <!--Simulated sensors/actuators -->
+  <xacro:include filename="$(find wamv_gazebo)/urdf/components/mil_lidar.xacro"/>
+  <xacro:include filename="$(find wamv_gazebo)/urdf/components/wamv_gps.xacro"/>
+  <xacro:include filename="$(find wamv_gazebo)/urdf/components/wamv_imu.xacro"/>
+  <xacro:include filename="$(find wamv_gazebo)/urdf/components/wamv_camera.xacro"/>
+  <xacro:include filename="$(find wamv_gazebo)/urdf/components/ball_shooter.xacro"/>
+  <xacro:include filename="$(find wamv_gazebo)/urdf/components/wamv_pinger.xacro"/>
 
-  <xacro:sylphase name="${namespace}/ins" parent='${namespace}/base_link' xyz="0.579628 0.136525 1.392278" rpy="0 0 0"/>
-  <xacro:fixed_link name="${namespace}/velodyne" parent="${namespace}/measurement" xyz="-0.277622 0 0.648208" rpy="0 0 0"/>
-  <xacro:fixed_link name="${namespace}/sick" parent="${namespace}/measurement" xyz="0.5334 -0.0254 -0.6858" rpy="0 0 0"/>
+  <xacro:property name="sensor_namespace" value="sensors/"/>
+  <xacro:property name="camera_namespace" value="camera/"/>
+  <xacro:property name="shooter_namespace" value="shooters/"/>
+  <xacro:property name="pinger_namespace" value="pingers/"/>
 
-  <xacro:fixed_link name="${namespace}/pinger_direction" parent="${namespace}/velodyne" xyz="0.8382 0 -2.0828" rpy="0 0 0"/>
-
-  <!-- Camera frames with gazebo simulation plugins -->
-  <xacro:include filename="$(find navigator_gazebo)/urdf/camera.xacro"/>
-  <xacro:navigator_camera name="${namespace}/front_left_cam" parent="${namespace}/velodyne" namespace="${namespace}/camera/front/left" xyz="0.294 0.1 -0.45" rpy="0 0.258 0"/>
-  <xacro:navigator_camera name="${namespace}/front_right_cam" parent="${namespace}/velodyne" namespace="${namespace}/camera/front/right" xyz="0.294 -0.099 -0.45" rpy="0 0.258 0"/>
-  <xacro:navigator_camera name="${namespace}/starboard_cam" parent="${namespace}/measurement" namespace="${namespace}/camera/starboard" xyz="-0.4191 -0.6985 0.2159" rpy="0 0 -1.570796"/>
-
-  <xacro:fixed_link name="${namespace}/shooter" parent="${namespace}/starboard_cam" xyz="0 0 0.2" rpy="0 0 0"/>
+  <xacro:wamv_camera name="front_left_cam" x="0.75" y="0.1" P="${radians(15)}"/>
+  <xacro:wamv_camera name="front_right_cam" x="0.75" y="-0.1" P="${radians(-30)}"/>
+  <xacro:mil_lidar name="velodyne" type="16_beam" P="${radians(8)}"/>
+  <xacro:wamv_gps name="ins" x="-0.85"/>
+  <xacro:wamv_imu name="imu_wamv" y="-0.2"/>
+  <xacro:wamv_ball_shooter name="ball_shooter" x="0.54" y="0.3" z="1.3" pitch="-0.8" yaw="0.1"/>
+  <xacro:wamv_pinger name="hydrophones" position="1 0 -1"/>
 
   <!-- Add 4 thrusters -->
-  <xacro:include filename="$(find navigator_gazebo)/urdf/thruster.xacro"/>
-  <xacro:navigator_thruster name="${namespace}/BL" parent="${namespace}/base_link" x="-1.9304" y="1.016" yaw="0.785398"/>
-  <xacro:navigator_thruster name="${namespace}/BR" parent="${namespace}/base_link" x="-1.9304" y="-1.016" yaw="-0.785398"/>
-  <xacro:navigator_thruster name="${namespace}/FL" parent="${namespace}/base_link" x="1.5748" y="0.6096" yaw="-0.785398"/>
-  <xacro:navigator_thruster name="${namespace}/FR" parent="${namespace}/base_link" x="1.5748" y="-0.6096" yaw="0.785398"/>
+  <xacro:include filename="$(find wamv_description)/urdf/thrusters/engine.xacro"/>
+  <xacro:property name="thruster_namespace" value="thrusters/"/>
+  <!-- === engine === -->
+  <xacro:engine prefix="BL" position="-1.9304 1.016 0.318237" orientation="0.0 0.0 0.785398"/>
+  <xacro:engine prefix="BR" position="-1.9304 -1.016 0.318237" orientation="0.0 0.0 -0.785398"/>
+  <xacro:engine prefix="FL" position="1.5 0.6096 0.318237" orientation="0.0 0.0 -0.785398"/>
+  <xacro:engine prefix="FR" position="1.5 -0.6096 0.318237" orientation="0.0 0.0 0.785398"/>
 
-  <!-- Plugin to imitate roboteq motor driver for thrusters -->
   <gazebo>
-    <plugin name="thrust_plugin" filename="libnavigator_thrusters.so">
-      <thruster>${namespace}/BL</thruster>
-      <thruster>${namespace}/BR</thruster>
-      <thruster>${namespace}/FL</thruster>
-      <thruster>${namespace}/FR</thruster>
+    <plugin name="wamv_gazebo_thrust" filename="libusv_gazebo_thrust_plugin.so">
+      <cmdTimeout>1.0</cmdTimeout>
+      <robotNamespace>${namespace}</robotNamespace>
+      <xacro:include filename="$(find wamv_gazebo)/urdf/thruster_layouts/wamv_gazebo_thruster_config.xacro"/>
+      <xacro:wamv_gazebo_thruster_config name="BL"/>
+      <xacro:wamv_gazebo_thruster_config name="BR"/>
+      <xacro:wamv_gazebo_thruster_config name="FL"/>
+      <xacro:wamv_gazebo_thruster_config name="FR"/>
     </plugin>
   </gazebo>
-  <xacro:fixed_link name="${namespace}/hydrophones" parent="${namespace}/base_link" xyz="0.102 -.635 -0.324" rpy="0 0 0"/>
 
   <!-- Attach hydrodynamics plugin -->
   <xacro:include filename="$(find wamv_gazebo)/urdf/macros.xacro"/>
