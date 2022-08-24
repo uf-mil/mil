@@ -24,6 +24,38 @@ from tf.transformations import quaternion_inverse, quaternion_multiply
 
 class Sub8AdapativeController:
     def __init__(self):
+        """
+        Sub8 adaptive controller receives desired state from a
+        trajectory generator, and uses the current state of the
+        sub (feeedback) to calculate the control input to achieve
+        the desired state.
+
+        This is achieved by using a PID controller and other adaptive
+        gains.
+        Comment: dist == disturbance, est == estimate
+
+        Attributes:
+            kp (np.array): proportional gain
+            kd (np.array): derivative gain
+            ki (np.array): i gain applied to the integral of the twist error
+            kg (np.array): g gain applied to the integral of the pose error
+            use_learned (bool): whether to use learned disturbances
+            last_config (Config): last config sent to reconfigure
+            desired_position (np.array): desired position
+            desired_orientation (np.array): desired orientation
+            desired_twist_world (np.array): desired twist in world frame
+            position (np.array): current position
+            orientation (np.array): current orientation
+            twist_body (np.array): current twist in body frame
+            twist_world (np.array): current twist in world frame
+            body_to_world (np.array): body to world transformation matrix
+            world_to_body (np.array): world to body transformation matrix
+            dist_est_world (np.array): disturbance estimate in world frame
+            drag_est_body (np.array): drag estimate in body frame
+            learning_distance (float): maximum distance of error to learn
+            body_frame (str): body frame id
+            global_frame (str): global frame id
+        """
         self.lock = Lock()
         np.set_printoptions(precision=2)
 
@@ -32,7 +64,9 @@ class Sub8AdapativeController:
         self.kd = np.zeros(6).T
         self.ki = np.zeros(6).T
         self.kg = np.zeros(6).T
-        self.learning_distance = 1.0
+        self.learning_distance = (
+            1.0  # TODO: investigate how to tune this for better performance
+        )
         self.use_learned = False
         self.last_config = None
         self.reconfigure_server = DynamicReconfigureServer(
@@ -85,6 +119,10 @@ class Sub8AdapativeController:
         return ret
 
     def reconfigure(self, config: Config, level: int) -> Config:
+        """Dynamic reconfigure callback. This allows for gains
+        to be tuned interactively.
+        References: http://wiki.ros.org/dynamic_reconfigure
+        """
         try:
             kp = self.parse_gains(config["kp"])
             kd = self.parse_gains(config["kd"])
@@ -103,6 +141,11 @@ class Sub8AdapativeController:
         return config
 
     def update(self) -> None:
+        """Computes the pose and twist errors, updates the regressors (estimates),
+        and calculates and publishes the desired wrench to be applied based on the
+        PD gains, the estimated drag in the body frame and the estimated disturbances
+        in the world frame.
+        """
         now = rospy.Time.now()
         kill_alarm = self.kill_listener.get_alarm(fetch=False)
 
@@ -138,8 +181,8 @@ class Sub8AdapativeController:
 
         # Calculate part of wrench from feedback
         feedback_proportional_world = kp.dot(pose_error_world)
-        feedback_dirivitive_world = kd.dot(twist_error_world)
-        feedback_world = feedback_proportional_world + feedback_dirivitive_world
+        feedback_derivative_world = kd.dot(twist_error_world)
+        feedback_world = feedback_proportional_world + feedback_derivative_world
 
         # Calculate part of wrench from learned parameters
         drag_effort_body = np.multiply(self.drag_est_body, self.twist_body)
@@ -212,6 +255,7 @@ class Sub8AdapativeController:
     def make_wrench_msg(
         wrench: np.ndarray, frame_id: str = "base_link", stamp=rospy.Time()
     ) -> WrenchStamped:
+        """Creates a WrenchStamped message from a numpy array."""
         msg = WrenchStamped()
         msg.header.stamp = stamp
         msg.header.frame_id = frame_id
@@ -220,11 +264,15 @@ class Sub8AdapativeController:
 
     @staticmethod
     def make_double_rotation(R: np.ndarray) -> np.ndarray:
+        """Creates a double rotation matrix from a rotation matrix. This
+        is useful to rotate two vectors in a single operation.
+        """
         R2 = np.zeros((6, 6))
         R2[:3, :3] = R2[3:, 3:] = R
         return R2
 
     def trajectory_cb(self, msg: PoseTwistStamped) -> None:
+        """Callback for the trajectory topic to get the desired state."""
         with self.lock:
             self.desired_position, self.desired_orientation = pose_to_numpy(
                 msg.posetwist.pose
@@ -237,6 +285,7 @@ class Sub8AdapativeController:
             )
 
     def odom_cb(self, msg: Odometry) -> None:
+        """Callback for the odometry topic to get the current state."""
         with self.lock:
             self.body_frame = msg.child_frame_id
             self.global_frame = msg.header.frame_id
@@ -256,6 +305,6 @@ class Sub8AdapativeController:
 
 
 if __name__ == "__main__":
-    rospy.init_node("subjugator_dynamics")
+    rospy.init_node("adaptive_controller")
     Sub8AdapativeController()
     rospy.spin()
