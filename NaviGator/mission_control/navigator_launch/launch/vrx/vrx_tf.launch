@@ -10,21 +10,10 @@
           - /wamv/joint_states
       </rosparam>
     </node>
-  <node pkg="tf2_ros" type="static_transform_publisher" name="imu_bug_fix" args="0 0 0 0 0 0 1 wamv/imu_wamv_link wamv/wamv/imu_wamv_link" />
-  <node pkg="tf2_ros" type="static_transform_publisher" name="gps_bug_fix" args="0 0 0 0 0 0 1 wamv/gps_wamv_link wamv/wamv/gps_wamv_link" />
-  <!-- HACK to tell tf that the lidar is just at base link as this seems to solve the issue of points drifting in global frame -->
-  <!-- We still do not know the actual cause of this issue (likely upstream). This fix has its own issue, as each point will be offset -->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="lidar_bug_fix" args="0 0 0 0 0 0 1 wamv/lidar_wamv_link wamv/wamv/lidar_wamv_link" />
 
   <!--Publishes connection between wamv/imu_wamv_link and wamv/base_link. Same for wamv/gps_wamv_link.-->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="imu_base_link_fix" args="0 0 0 0 0 0 1 wamv/base_link wamv/imu_wamv_link" />
-  <node pkg="tf2_ros" type="static_transform_publisher" name="gps_base_link_fix" args="0 0 0 0 0 0 1 wamv/base_link wamv/gps_wamv_link" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="imu_base_link_fix" args="0.3 -0.2 1.3 0 0 0 1 wamv/base_link wamv/imu_wamv_link" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="gps_base_link_fix" args="-0.85 0 1.3 0 0 1 wamv/base_link wamv/ins_link" />
   <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_enu_fix" args="0 0 0 0 0 0 1 enu wamv/base_link" />
-
-  <!--<node pkg="tf" type="static_transform_publisher" name="right_camera_optical" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 wamv/front_right_camera_link wamv/front_right_camera_link_optical 100" />-->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="right_camera_optical" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 front_right_camera_link front_right_camera_link_optical" />
-
-  <!--<node pkg="tf" type="static_transform_publisher" name="left_camera_optical" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 wamv/front_left_camera_link wamv/front_left_camera_link_optical 100" />-->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="left_camera_optical" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 front_left_camera_link front_left_camera_link_optical" />
 
 </launch>

@@ -5,5 +5,5 @@
     <node unless="$(arg simulation)" name="set_bounds" pkg="dynamic_reconfigure" type="dynparam"
           args="load bounds_server $(find navigator_launch)/config/bounds_$(arg course).yaml" />
     <node if="$(arg simulation)" name="set_bounds" pkg="dynamic_reconfigure" type="dynparam"
-          args="load bounds_server $(find navigator_launch)/config/bounds_gazebo.yaml" />
+          args="load bounds_server $(find navigator_launch)/config/bounds_vrx.yaml" />
 </launch>
