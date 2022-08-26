@@ -242,3 +242,17 @@ PcdSubPubAlgorithm
 .. cppattributetable:: mil_vision::PcdSubPubAlgorithm
 
 .. doxygenclass:: mil_vision::PcdSubPubAlgorithm
+
+
+ImagePublisher
+^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: ImagePublisher
+
+.. doxygenclass:: ImagePublisher
+
+
+ImageSubscriber
+^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: ImageSubscriber
+
+.. doxygenclass:: ImageSubscriber
