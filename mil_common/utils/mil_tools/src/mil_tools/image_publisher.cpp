@@ -1,8 +1,8 @@
 #include <mil_tools/image_publisher.hpp>
 
-ImagePublisher::ImagePublisher(const ros::NodeHandle& nh_, const std::string& topic, const std::string& encoding,
+ImagePublisher::ImagePublisher(const ros::NodeHandle& nh, const std::string& topic, const std::string& encoding,
                                int queue_size)
-  : it_(nh_)
+  : it_(nh)
 {
   this->encoding_ = encoding;
   pub_ = it_.advertise(topic, queue_size);
