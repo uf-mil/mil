@@ -25,9 +25,8 @@
   <xacro:wamv_pinger name="hydrophones" position="1 0 -1"/>
 
   <!-- Add 4 thrusters -->
-  <xacro:include filename="$(find wamv_description)/urdf/thrusters/engine.xacro"/>
+  <!--<xacro:include filename="$(find wamv_description)/urdf/thrusters/engine.xacro"/>
   <xacro:property name="thruster_namespace" value="thrusters/"/>
-  <!-- === engine === -->
   <xacro:engine prefix="BL" position="-1.9304 1.016 0.318237" orientation="0.0 0.0 0.785398"/>
   <xacro:engine prefix="BR" position="-1.9304 -1.016 0.318237" orientation="0.0 0.0 -0.785398"/>
   <xacro:engine prefix="FL" position="1.5 0.6096 0.318237" orientation="0.0 0.0 -0.785398"/>
@@ -42,6 +41,22 @@
       <xacro:wamv_gazebo_thruster_config name="BR"/>
       <xacro:wamv_gazebo_thruster_config name="FL"/>
       <xacro:wamv_gazebo_thruster_config name="FR"/>
+    </plugin>
+  </gazebo>-->
+  <!-- Add 4 thrusters -->
+  <xacro:include filename="$(find navigator_gazebo)/urdf/thruster.xacro"/>
+  <xacro:navigator_thruster name="${namespace}/BL" parent="${namespace}/base_link" x="-1.9304" y="1.016" yaw="0.785398"/>
+  <xacro:navigator_thruster name="${namespace}/BR" parent="${namespace}/base_link" x="-1.9304" y="-1.016" yaw="-0.785398"/>
+  <xacro:navigator_thruster name="${namespace}/FL" parent="${namespace}/base_link" x="1.5748" y="0.6096" yaw="-0.785398"/>
+  <xacro:navigator_thruster name="${namespace}/FR" parent="${namespace}/base_link" x="1.5748" y="-0.6096" yaw="0.785398"/>
+
+  <!-- Plugin to imitate roboteq motor driver for thrusters -->
+  <gazebo>
+    <plugin name="thrust_plugin" filename="libnavigator_thrusters.so">
+      <thruster>${namespace}/BL</thruster>
+      <thruster>${namespace}/BR</thruster>
+      <thruster>${namespace}/FL</thruster>
+      <thruster>${namespace}/FR</thruster>
     </plugin>
   </gazebo>
 
