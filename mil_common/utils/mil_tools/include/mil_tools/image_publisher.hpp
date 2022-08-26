@@ -13,6 +13,5 @@ public:
 private:
   std::string encoding_;
   image_transport::Publisher pub_;
-  ros::NodeHandle nh_;
   image_transport::ImageTransport it_;
 };

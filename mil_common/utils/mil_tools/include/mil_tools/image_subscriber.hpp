@@ -18,8 +18,8 @@ class ImageSubscriber
 {
 public:
   template <typename T>
-  ImageSubscriber(const std::string& topic, void (T::*func)(cv::Mat&), T* a, const std::string& encoding = "bgr8",
-                  int queue_size = 1)
+  ImageSubscriber(const ros::NodeHandle& nh_, const std::string& topic, void (T::*func)(cv::Mat&), T* a,
+                  const std::string& encoding = "bgr8", int queue_size = 1)
     : encoding_(encoding), queue_size_(queue_size), it_(nh_)
   {
     image_subscriber_ = it_.subscribe(topic, queue_size, &ImageSubscriber::imageCallback, this);
@@ -27,8 +27,8 @@ public:
     camera_info_sub_ = nh_.subscribe(getInfoTopic(topic), queue_size, &ImageSubscriber::infoCallback, this);
   }
 
-  ImageSubscriber(const std::string& topic, void (*func)(cv::Mat&), const std::string& encoding = "bgr8",
-                  int queue_size = 1)
+  ImageSubscriber(const ros::NodeHandle& nh_, const std::string& topic, void (*func)(cv::Mat&),
+                  const std::string& encoding = "bgr8", int queue_size = 1)
     : encoding_(encoding), queue_size_(queue_size), it_(nh_)
   {
     image_subscriber_ = it_.subscribe(topic, queue_size, &ImageSubscriber::imageCallback, this);
@@ -105,8 +105,7 @@ private:
 
   std::function<void(cv::Mat&)> function_;
 
-  ros::NodeHandle nh_;
-  image_transport::ImageTransport it_(nh_);
+  image_transport::ImageTransport it_;
   image_transport::Subscriber image_subscriber_;
 
   ros::Subscriber camera_info_sub_;
