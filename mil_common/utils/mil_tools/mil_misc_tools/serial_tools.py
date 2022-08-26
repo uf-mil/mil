@@ -98,6 +98,11 @@ class SimulatedSerial(NoopSerial):
     def __init__(self):
         self.buffer = b""
 
+    def __str__(self) -> str:
+        return f"<SimulatedSerial at 0x{id(self):0x}, buffer={self.buffer}>"
+
+    __repr__ = __str__
+
     @property
     def in_waiting(self) -> int:
         """
