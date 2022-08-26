@@ -30,7 +30,7 @@ class RvizStrings:
         marker.scale.y = 1
         marker.scale.z = 1
         marker.action = Marker.ADD
-        marker.header.frame_id = "base_link"
+        marker.header.frame_id = "wamv/base_link"
         marker.header.stamp = rospy.Time()
         marker.type = Marker.TEXT_VIEW_FACING
         marker.ns = self.NS

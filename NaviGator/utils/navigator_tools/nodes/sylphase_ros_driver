@@ -46,7 +46,7 @@ def go():
         t = rospy.Time.now()
         if not d:
             break
-        buf += d
+        buf += d.decode()
 
         lines = buf.split("\n")
         buf = lines[-1]
