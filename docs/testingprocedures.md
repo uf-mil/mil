@@ -22,6 +22,7 @@
 * Pool noddles
 * Dive fins
 * O'ring grease
+* Hot glue gun
 * Zip ties
 * clippers
 * Towels
