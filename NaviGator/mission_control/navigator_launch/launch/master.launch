@@ -1,6 +1,5 @@
 <launch>
     <arg name="simulation" default="False" />
-    <param name="is_vrx" value="$(arg simulation)"/>
     <arg name="online-bagger" default="True" />
 
     <!-- Load model into rviz -->

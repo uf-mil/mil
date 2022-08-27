@@ -97,7 +97,7 @@ class Navigator(BaseMission):
     def _init(cls, mission_runner):
         super()._init(mission_runner)
 
-        cls.is_vrx = yield cls.nh.get_param("/is_vrx")
+        cls.is_simulation = yield cls.nh.get_param("/is_simulation")
 
         cls._moveto_client = action.ActionClient(cls.nh, "move_to", MoveAction)
 
@@ -124,7 +124,7 @@ class Navigator(BaseMission):
 
         cls._odom_sub = cls.nh.subscribe("odom", Odometry, odom_set)
 
-        if cls.is_vrx:
+        if cls.is_simulation:
             yield cls._init_vrx()
         else:
             yield cls._init_not_vrx()
