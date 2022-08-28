@@ -1,9 +1,9 @@
 <launch>
   <include file="$(find navigator_launch)/launch/hardware/motor_controller.launch"/>
-  <include file="$(find navigator_launch)/launch/hardware/grinch_motor.launch" />
+  <!--<include file="$(find navigator_launch)/launch/hardware/grinch_motor.launch" />-->
   <include file="$(find navigator_launch)/launch/hardware/gps.launch" />
   <include file="$(find navigator_launch)/launch/hardware/cameras.launch"/>
   <include file="$(find navigator_launch)/launch/hardware/velodyne.launch"/>
   <include file="$(find navigator_launch)/launch/hardware/kill_board.launch"/>
-  <include file="$(find navigator_launch)/launch/hardware/pneumatic_actuators.launch" />
+  <!--<include file="$(find navigator_launch)/launch/hardware/pneumatic_actuators.launch" />-->
 </launch>
