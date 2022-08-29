@@ -279,7 +279,7 @@ class RobotXFollowPathMessage:
 
     Attributes:
         message_id (str): The ID of the message to signal that it is related to the
-        follow path message.
+            follow path message.
     """
 
     def __init__(self):
@@ -364,7 +364,7 @@ class RobotXReactReportMessage:
 
     Attributes:
         message_id (str): The ID of the message to signal that it is related to the
-        follow path message.
+            follow path message.
     """
 
     def __init__(self):
@@ -527,7 +527,7 @@ class RobotXDetectDockMessage:
 
     Attributes:
         message_id (str): The ID of the message to signal that it is related to the
-        detect dock message.
+            detect dock message.
     """
 
     def __init__(self):
@@ -614,7 +614,7 @@ class RobotXFindFlingMessage:
 
     Attributes:
         message_id (str): The ID of the message to signal that it is related to the
-        find fling message.
+            find fling message.
     """
 
     def __init__(self):
@@ -701,7 +701,7 @@ class RobotXUAVReplenishmentMessage:
 
     Attributes:
         message_id (str): The ID of the message to signal that it is related to the
-        uav replenishment message.
+            uav replenishment message.
     """
 
     def __init__(self):
@@ -788,7 +788,7 @@ class RobotXUAVSearchReportMessage:
 
     Attributes:
         message_id (str): The ID of the message to signal that it is related to the
-        uav search report message.
+            uav search report message.
     """
 
     def __init__(self):
