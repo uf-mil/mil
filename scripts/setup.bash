@@ -95,3 +95,11 @@ alias gazebogui="rosrun gazebo_ros gzclient __name:=gzclient"
 alias killgazebo="killall -9 gzserver && killall -9 gzclient"
 alias killros="$MIL_REPO/scripts/kill_ros.sh"
 alias killprocess="$MIL_REPO/scripts/kill_process.sh"
+
+startxbox()
+{
+    rosservice call /wrench/select "topic: '/wrench/rc'"
+    roslaunch navigator_launch shore.launch
+}
+
+alias xbox=startxbox
