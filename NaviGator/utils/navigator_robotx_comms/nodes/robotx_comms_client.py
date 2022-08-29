@@ -13,7 +13,6 @@ from enum import IntEnum
 import rospy
 from geometry_msgs.msg import PointStamped
 from mil_tools import thread_lock
-from nav_msgs.msg import Odometry
 from navigator_msgs.msg import ScanTheCode
 from navigator_msgs.srv import (
     MessageDetectDock,
@@ -51,7 +50,7 @@ from navigator_robotx_comms.navigator_robotx_comms import (
 )
 from ros_alarms import AlarmListener
 from ros_alarms.msg import Alarm
-from std_msgs.msg import String
+from std_msgs.msg import Int8, String
 
 lock = threading.Lock()
 
@@ -85,7 +84,6 @@ class RobotXStartServices:
     def __init__(self):
         # define all variables for subscribers
         self.gps_array = None
-        self.odom = None
         self.uav_status = 1
         self.system_mode = None
         self.wrench = None
@@ -123,9 +121,9 @@ class RobotXStartServices:
 
         # setup all subscribers
         rospy.Subscriber("lla", PointStamped, self.gps_coord_callback)
-        rospy.Subscriber("odom", Odometry, self.gps_odom_callback)
         rospy.Subscriber("/wrench/selected", String, self.wrench_callback)
         rospy.Subscriber("/scan_the_code", ScanTheCode, self.scan_the_code_callback)
+        rospy.Subscriber("/uav_status", Int8, self.uav_status_callback)
 
         # TODO: setup subscriber for uav status callback update
 
@@ -205,24 +203,11 @@ class RobotXStartServices:
         """
         self.gps_array = lla
 
-    def gps_odom_callback(self, odom: Odometry):
-        """
-        Stores the most recent :class:`Odometry` message.
-        """
-        self.odom = odom
-
-    def uav_status_callback(self, uav_status: int):
+    def uav_status_callback(self, uav_status: Int8):
         """
         Stores the most recent AUV status experienced by the boat.
         """
-        self.uav_status = uav_status
-
-    def system_mode_callback(self, system_mode: int):
-        """
-        Sets the class' :attr:`system_mode` attribute when given the most recent
-        system mode.
-        """
-        self.system_mode = system_mode
+        self.uav_status = uav_status.data
 
     def scan_the_code_callback(self, scan_the_code: ScanTheCode):
         """
@@ -248,7 +233,6 @@ class RobotXStartServices:
             self.team_id,
             aedt_date_time,
             self.gps_array,
-            self.odom,
             self.uav_status,
             self.system_mode,
             self.use_test_data,

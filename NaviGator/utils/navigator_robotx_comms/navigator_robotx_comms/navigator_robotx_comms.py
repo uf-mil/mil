@@ -83,7 +83,6 @@ class RobotXHeartbeatMessage:
         team_id: str,
         aedt_date_time: Any,
         gps_array: Optional[Any],
-        odom: Optional[Odometry],
         uav_status: Optional[int],
         system_mode: Optional[int],
         use_test_data: bool,
@@ -99,9 +98,6 @@ class RobotXHeartbeatMessage:
             aedt_date_time (Any): Presumably (??) a datetime object representing the
                 current time in AEDT.
             gps_array (Optional[Any]): A specific message type containing at least a point. (??)
-            odom (Optional[Odometry]): An optional odometry message to encode in the message.
-                If ``None``, then empty strings are used in the message instead of the
-                current position.
             uav_status (Optional[int]): The status of the UAV. If ``None``,
                 then zero is used in the message.
             system_mode (Optional[int]): The current mode of the boat. If ``None``,
@@ -115,29 +111,11 @@ class RobotXHeartbeatMessage:
         if gps_array is not None:
             latitude = gps_array.point.x
             longitude = gps_array.point.y
+            north_south = "N" if latitude > 0 else "S"
+            east_west = "E" if longitude > 0 else "W"
         else:
             latitude = ""
             longitude = ""
-
-        if odom is not None:
-            quaternion = odom.pose.pose.orientation
-            quaternion_numpy = rosmsg_to_numpy(quaternion)
-            euler_angles = trans.euler_from_quaternion(quaternion_numpy)
-            north_south = ""
-            east_west = ""
-            if 0 < euler_angles[2] < math.pi / 2:
-                north_south = "N"
-                east_west = "E"
-            elif math.pi / 2 < euler_angles[2] < math.pi:
-                north_south = "N"
-                east_west = "W"
-            elif -math.pi / 2 > euler_angles[2] > -math.pi:
-                north_south = "S"
-                east_west = "W"
-            elif 0 > euler_angles[2] > -math.pi / 2:
-                north_south = "S"
-                east_west = "E"
-        else:
             east_west = ""
             north_south = ""
 
