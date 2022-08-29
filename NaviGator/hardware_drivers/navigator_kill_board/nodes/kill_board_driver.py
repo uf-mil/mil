@@ -9,6 +9,7 @@ import rospy
 import serial
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from mil_tools import thread_lock
+from navigator_alarm import NetworkLoss
 from navigator_kill_board import constants
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from sensor_msgs.msg import Joy
@@ -92,9 +93,10 @@ class KillInterface:
         self._hw_kill_listener.wait_for_server()
         self._kill_listener.wait_for_server()
         rospy.Subscriber("/wrench/selected", String, self.wrench_cb)
-        rospy.Subscriber(
-            "/network", Header, self.network_cb
-        )  # Passes along network hearbeat to kill board
+        # rospy.Subscriber(
+        #     "/network", Header, self.network_cb
+        # )  # Passes along network hearbeat to kill board
+        self.network_kill = NetworkLoss()
 
     def connect(self):
         if rospy.get_param(
