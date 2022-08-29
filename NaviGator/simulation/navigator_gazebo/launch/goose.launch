@@ -1,18 +1,22 @@
 <?xml version="1.0"?>
 <!-- Run gazebo with navigator in a RobotX course -->
 <launch>
-  <arg name="gui" default="true" />
-
-  <!-- URDF Model of Navigator -->
+  <arg name="gui" default="False" />
+  <arg name="use_mil_world" default="False"/>
+  <arg name="world" default="example_course" />
+  <arg name="extra_gazebo_args" default=""/>
   <arg name="urdf" default="$(find navigator_gazebo)/urdf/navigator.urdf" />
-  <param name="robot_description" textfile="$(arg urdf)"/>
 
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find vrx_gazebo)/worlds/example_course.world" />
-    <arg name="gui" value="$(arg gui)" />
-    <arg name="verbose" value="true" />
+  <include if="$(eval use_mil_world == False)" file="$(find vrx_gazebo)/launch/vrx.launch">
+    <arg name="gui" value="false"/>
+    <arg name="urdf" value="$(find navigator_gazebo)/urdf/navigator.urdf"/>
+    <arg name="world" value="$(find vrx_gazebo)/worlds/$(arg world).world" />
+    <arg name="extra_gazebo_args" default="--verbose"/>
   </include>
-
-  <!-- Spawn model in Gazebo -->
-  <include file="$(find navigator_gazebo)/launch/spawn_navigator.launch" />
+  <include if="$(eval use_mil_world == True)" file="$(find vrx_gazebo)/launch/vrx.launch">
+    <arg name="gui" value="false"/>
+    <arg name="urdf" value="$(find navigator_gazebo)/urdf/navigator.urdf"/>
+    <arg name="world" value="$(find navigator_gazebo)/worlds/$(arg world).world" />
+    <arg name="extra_gazebo_args" default="--verbose"/>
+  </include>
 </launch>
