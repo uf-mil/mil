@@ -29,6 +29,9 @@ ___author___ = "Kevin Allen"
 
 
 class Vrx(Navigator):
+
+    nh: NodeHandle
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -87,7 +90,6 @@ class Vrx(Navigator):
 
         Vrx._vrx_init = True
 
-    # @txros.util.cancellableInlineCallbacks
     def cleanup(self):
         pass
 
@@ -115,43 +117,37 @@ class Vrx(Navigator):
                 "/wamv/sensors/cameras/front_right_camera/camera_info", CameraInfo
             )
 
-    @txros.util.cancellableInlineCallbacks
-    def geo_pose_to_enu_pose(self, geo):
+    async def geo_pose_to_enu_pose(self, geo):
         self.send_feedback("Waiting for LLA conversion")
-        enu_msg = yield self.from_lla(FromLLRequest(ll_point=geo.position))
+        enu_msg = await self.from_lla(FromLLRequest(ll_point=geo.position))
         position_enu = rosmsg_to_numpy(enu_msg.map_point)
         orientation_enu = rosmsg_to_numpy(geo.orientation)
-        defer.returnValue((position_enu, orientation_enu))
+        return (position_enu, orientation_enu)
 
-    @txros.util.cancellableInlineCallbacks
-    def enu_position_to_geo_point(self, enu_array):
+    async def enu_position_to_geo_point(self, enu_array):
         self.send_feedback("Waiting for LLA conversion")
-        lla_msg = yield self.to_lla(ToLLRequest(map_point=numpy_to_point(enu_array)))
-        defer.returnValue(lla_msg.ll_point)
+        lla_msg = await self.to_lla(ToLLRequest(map_point=numpy_to_point(enu_array)))
+        return lla_msg.ll_point
 
-    @txros.util.cancellableInlineCallbacks
-    def get_latching_msg(self, sub):
-        msg = yield sub.get_last_message()
+    async def get_latching_msg(self, sub):
+        msg = await sub.get_last_message()
         if msg is None:
-            msg = yield sub.get_next_message()
-        defer.returnValue(msg)
+            msg = await sub.get_next_message()
+        return msg
 
-    @txros.util.cancellableInlineCallbacks
-    def wait_for_task_such_that(self, f):
+    async def wait_for_task_such_that(self, f):
         while True:
-            msg = yield self.task_info_sub.get_next_message()
+            msg = await self.task_info_sub.get_next_message()
             if f(msg):
-                defer.returnValue(None)
+                return None
 
-    @txros.util.cancellableInlineCallbacks
-    def point_at_goal(self, goal_pos):
+    async def point_at_goal(self, goal_pos):
         vect = [goal_pos[0] - self.pose[0][0], goal_pos[1] - self.pose[0][1]]
         theta = math.atan2(vect[1], vect[0])
         orientation_fix = txros_tf.transformations.quaternion_from_euler(0, 0, theta)
-        yield self.move.set_orientation(orientation_fix).go(blind=True)
+        await self.move.set_orientation(orientation_fix).go(blind=True)
 
-    @txros.util.cancellableInlineCallbacks
-    def send_trajectory_without_path(self, goal_pose):
+    async def send_trajectory_without_path(self, goal_pose):
         req = MoveToWaypointRequest()
         req.target_p.position.x = goal_pose[0][0]
         req.target_p.position.y = goal_pose[0][1]
@@ -160,33 +156,30 @@ class Vrx(Navigator):
         req.target_p.orientation.y = goal_pose[1][1]
         req.target_p.orientation.z = goal_pose[1][2]
         req.target_p.orientation.w = goal_pose[1][3]
-        yield self.set_long_waypoint(req)
+        await self.set_long_waypoint(req)
 
-    @txros.util.cancellableInlineCallbacks
-    def get_closest(self):
-        ret = yield self.get_sorted_objects("all")
+    async def get_closest(self):
+        ret = await self.get_sorted_objects("all")
 
-    @txros.util.cancellableInlineCallbacks
-    def reset_pcodar(self):
-        yield self.pcodar_reset(Trigger())
+    async def reset_pcodar(self):
+        await self.pcodar_reset(Trigger())
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
-        yield self.set_vrx_classifier_enabled.wait_for_service()
-        yield self._pcodar_set_params.wait_for_service()
-        msg = yield self.task_info_sub.get_next_message()
+    async def run(self, parameters):
+        await self.set_vrx_classifier_enabled.wait_for_service()
+        await self._pcodar_set_params.wait_for_service()
+        msg = await self.task_info_sub.get_next_message()
         task_name = msg.name
         if task_name == "station_keeping":
-            yield self.run_submission("VrxStationKeeping2")
+            await self.run_submission("VrxStationKeeping2")
         elif task_name == "wayfinding":
-            yield self.run_submission("VrxWayfinding2")
+            await self.run_submission("VrxWayfinding2")
         elif task_name == "gymkhana":
-            yield self.run_submission("Gymkhana")
+            await self.run_submission("Gymkhana")
         elif task_name == "perception":
-            yield self.run_submission("VrxPerception")
+            await self.run_submission("VrxPerception")
         elif task_name == "wildlife":
-            yield self.run_submission("VrxWildlife")
+            await self.run_submission("VrxWildlife")
         elif task_name == "scan_dock_deliver":
-            yield self.run_submission("ScanAndDock")
-        msg = yield self.task_info_sub.get_next_message()
-        defer.returnValue(msg)
+            await self.run_submission("ScanAndDock")
+        msg = await self.task_info_sub.get_next_message()
+        return msg

@@ -3,7 +3,6 @@ import numpy as np
 from mil_misc_tools import ThrowingArgumentParser
 from mil_tools import numpy_to_point, rosmsg_to_numpy
 from navigator_path_planner.msg import MoveGoal
-from twisted.internet import defer
 from txros import util
 
 from .navigator import Navigator
@@ -62,8 +61,7 @@ class Move(Navigator):
         )
         cls.parser = parser
 
-    @util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
         if not self.pose:
             raise Exception("Can't move: No odom")
 
@@ -75,7 +73,7 @@ class Move(Navigator):
         self.change_trajectory("lqrrt")
 
         self.send_feedback("Switching wrench to autonomous")
-        yield self.change_wrench("autonomous")
+        await self.change_wrench("autonomous")
 
         for i in range(len(commands)):
             command = commands[i]
@@ -107,7 +105,7 @@ class Move(Navigator):
             if command == "custom":
                 # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
                 self.send_feedback(f"Moving with the command: {argument}")
-                res = yield eval(
+                res = await eval(
                     "self.move.{}.go(move_type='{move_type}')".format(
                         argument, **action_kwargs
                     )
@@ -115,21 +113,21 @@ class Move(Navigator):
 
             elif command == "rviz":
                 self.send_feedback("Select a 2D Nav Goal in RVIZ")
-                target_pose = yield util.wrap_time_notice(
+                target_pose = await util.wrap_time_notice(
                     self.rviz_goal.get_next_message(), 2, "Rviz goal"
                 )
                 self.send_feedback("RVIZ pose received!")
-                res = yield self.move.to_pose(target_pose).go(**action_kwargs)
+                res = await self.move.to_pose(target_pose).go(**action_kwargs)
 
             elif command == "circle":
                 self.send_feedback("Select a Publish Point in RVIZ")
-                target_point = yield util.wrap_time_notice(
+                target_point = await util.wrap_time_notice(
                     self.rviz_point.get_next_message(), 2, "Rviz point"
                 )
                 self.send_feedback("RVIZ point received!")
                 target_point = rosmsg_to_numpy(target_point.point)
                 direction = "cw" if argument == "-1" else "ccw"
-                res = yield self.move.circle_point(
+                res = await self.move.circle_point(
                     target_point, direction=direction
                 ).go(**action_kwargs)
 
@@ -165,7 +163,7 @@ class Move(Navigator):
 
                 msg = f"Moving {command} " if trans_move else f"Yawing {command[4:]} "
                 self.send_feedback(msg + f"{amount}{unit}")
-                res = yield movement(float(amount), unit).go(**action_kwargs)
+                res = await movement(float(amount), unit).go(**action_kwargs)
             if res.failure_reason != "":
                 raise Exception(f"Move failed. Reason: {res.failure_reason}")
-        defer.returnValue("Move completed successfully!")
+        return "Move completed successfully!"

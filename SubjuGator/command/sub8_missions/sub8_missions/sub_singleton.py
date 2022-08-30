@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import asyncio
 import os
-from typing import Callable, Optional, Sequence
+import traceback
+from typing import Any, Callable, Coroutine, Optional, Sequence
 
 import genpy
 import mil_ros_tools
@@ -33,17 +35,7 @@ from sub8_msgs.srv import (
     VisionRequestRequest,
 )
 from tf.transformations import quaternion_from_euler, quaternion_multiply
-from twisted.internet import defer
-from twisted.python import failure as twisted_failure
-from txros import (
-    DeferredCancelDeferred,
-    NodeHandle,
-    ServiceClient,
-    action,
-    serviceclient,
-    txros_tf,
-    util,
-)
+from txros import NodeHandle, ServiceClient, action, serviceclient, txros_tf, types
 from vision_msgs.msg import Detection2DArray
 
 from . import pose_editor
@@ -85,7 +77,7 @@ class VisionProxy:
             service_root + "/set_geometry", SetGeometry
         )
 
-    def start(self) -> defer.Deferred:
+    def start(self) -> Coroutine[Any, Any, types.Message]:
         """
         Allow user to start the vision processing backend.
 
@@ -93,7 +85,7 @@ class VisionProxy:
         """
         return self._enable_service(SetBoolRequest(data=True))
 
-    def stop(self) -> defer.Deferred:
+    def stop(self) -> Coroutine[Any, Any, types.Message]:
         """
         Allow user to stop the vision processing backend.
 
@@ -101,7 +93,7 @@ class VisionProxy:
         """
         return self._enable_service(SetBoolRequest(data=False))
 
-    def get_2d(self, target: str = "") -> defer.Deferred | None:
+    def get_2d(self, target: str = "") -> Coroutine[Any, Any, types.Message] | None:
         """
         Get the 2D projection of the thing.
 
@@ -118,7 +110,9 @@ class VisionProxy:
             return None
         return pose
 
-    def get_pose(self, target: str = "", in_frame=None) -> defer.Deferred | None:
+    def get_pose(
+        self, target: str = "", in_frame=None
+    ) -> Coroutine[Any, Any, types.Message] | None:
         """
         Get the 3D pose of the object we're after.
         """
@@ -133,7 +127,9 @@ class VisionProxy:
             print(type(e))
         return pose
 
-    def set_geometry(self, polygon: SetGeometry) -> defer.Deferred | None:
+    def set_geometry(
+        self, polygon: SetGeometry
+    ) -> Coroutine[Any, Any, types.Message] | None:
         try:
             res = self._set_geometry_service(SetGeometryRequest(model=polygon))
         except (serviceclient.ServiceError):
@@ -158,8 +154,8 @@ class _VisionProxies:
 
     .. code-block:: python
 
-        >>> yield sub.vision_proxies.buoy_finder.start()
-        >>> pose_2d = yield sub.vision_proxies.buoy_finder.get_2D('red')
+        >>> await sub.vision_proxies.buoy_finder.start()
+        >>> pose_2d = await sub.vision_proxies.buoy_finder.get_2D('red')
     """
 
     def __init__(self, nh: NodeHandle, file_name: str):
@@ -247,72 +243,74 @@ class _ActuatorProxy:
         self._actuator_service = nh.get_service_client("/set_valve", SetValve)
         self.nh = nh
 
-    def open(self, id: int) -> DeferredCancelDeferred:
+    def open(self, id: int) -> Coroutine[Any, Any, types.Message]:
         return self.set(id, True)
 
-    def close(self, id: int) -> DeferredCancelDeferred:
+    def close(self, id: int) -> Coroutine[Any, Any, types.Message]:
         return self.set(id, False)
 
-    def set(self, id: int, opened: bool) -> DeferredCancelDeferred:
+    def set(self, id: int, opened: bool) -> Coroutine[Any, Any, types.Message]:
         return self._actuator_service(SetValveRequest(actuator=id, opened=opened))
 
-    @util.cancellableInlineCallbacks
-    def pulse(self, id: int, time: float = 0.5):
-        self.open(id)
-        yield self.nh.sleep(time)
-        self.close(id)
+    async def pulse(self, id: int, time: float = 0.5):
+        await self.open(id)
+        await self.nh.sleep(time)
+        await self.close(id)
         return
 
-    @util.cancellableInlineCallbacks
-    def gripper_open(self):
-        self.close(4)
-        yield self.pulse(5)
+    async def gripper_open(self):
+        await self.close(4)
+        await self.pulse(5)
         return
 
-    def gripper_close(self):
-        self.open(4)
+    async def gripper_close(self):
+        await self.open(4)
         return
 
-    @util.cancellableInlineCallbacks
-    def shoot_torpedo1(self):
-        yield self.pulse(0)
+    async def shoot_torpedo1(self):
+        await self.pulse(0)
         return
 
-    @util.cancellableInlineCallbacks
-    def shoot_torpedo2(self):
-        yield self.pulse(1)
+    async def shoot_torpedo2(self):
+        await self.pulse(1)
         return
 
-    @util.cancellableInlineCallbacks
-    def drop_marker(self):
-        yield self.pulse(2, time=0.75)
-        yield self.pulse(3, time=0.25)
+    async def drop_marker(self):
+        await self.pulse(2, time=0.75)
+        await self.pulse(3, time=0.25)
         return
 
 
 class SubjuGator(BaseMission):
+
+    nh: NodeHandle
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     @classmethod
-    @util.cancellableInlineCallbacks
-    def _init(cls, mission_server):
+    async def _init(cls, mission_server):
         super()._init(mission_server)
-        cls._moveto_action_client = yield action.ActionClient(
-            cls.nh, "moveto", MoveToAction
-        )
-        cls._odom_sub = yield cls.nh.subscribe("odom", Odometry)
-        cls._trajectory_sub = yield cls.nh.subscribe("trajectory", PoseTwistStamped)
-        cls._trajectory_pub = yield cls.nh.advertise("trajectory", PoseTwistStamped)
-        cls._dvl_range_sub = yield cls.nh.subscribe("dvl/range", RangeStamped)
-        cls._tf_listener = yield txros_tf.TransformListener(cls.nh)
-
+        cls._moveto_action_client = action.ActionClient(cls.nh, "moveto", MoveToAction)
+        cls._odom_sub = cls.nh.subscribe("odom", Odometry)
+        cls._trajectory_sub = cls.nh.subscribe("trajectory", PoseTwistStamped)
+        cls._trajectory_pub = cls.nh.advertise("trajectory", PoseTwistStamped)
+        cls._dvl_range_sub = cls.nh.subscribe("dvl/range", RangeStamped)
+        cls._tf_listener = txros_tf.TransformListener(cls.nh)
         cls.vision_proxies = _VisionProxies(cls.nh, "vision_proxies.yaml")
         cls.actuators = _ActuatorProxy(cls.nh)
         cls.test_mode = False
-        cls.pinger_sub = yield cls.nh.subscribe("/hydrophones/processed", ProcessedPing)
-        cls.yolo_objects = yield cls.nh.subscribe(
-            "/yolov7/detections", Detection2DArray
+        cls.pinger_sub = cls.nh.subscribe("/hydrophones/processed", ProcessedPing)
+        cls.yolo_objects = cls.nh.subscribe("/yolov7/detections", Detection2DArray)
+
+        await asyncio.gather(
+            cls._moveto_action_client.setup(),
+            cls._trajectory_sub.setup(),
+            cls._trajectory_pub.setup(),
+            cls._dvl_range_sub.setup(),
+            cls._tf_listener.setup(),
+            cls.pinger_sub.setup(),
+            cls.yolo_objects.setup(),
         )
 
     @property
@@ -323,35 +321,32 @@ class SubjuGator(BaseMission):
         pose = pose_editor.PoseEditor.from_Odometry(last_odom_msg)
         return pose
 
-    @util.cancellableInlineCallbacks
-    def tx_pose(self):
+    async def tx_pose(self):
         """
         Slightly safer to use.
         """
         if self.test_mode:
-            yield self.nh.sleep(0.1)
+            await self.nh.sleep(0.1)
             blank = mil_ros_tools.pose_to_numpy(Odometry().pose.pose)
-            defer.returnValue(blank)
+            return blank
 
-        next_odom_msg = yield self._odom_sub.get_next_message()
+        next_odom_msg = await self._odom_sub.get_next_message()
         pose = mil_ros_tools.pose_to_numpy(next_odom_msg.pose.pose)
-        defer.returnValue(pose)
+        return pose
 
     @property
     def move(self) -> _PoseProxy:
         return _PoseProxy(self, self.pose, self.test_mode)
 
-    @util.cancellableInlineCallbacks
-    def get_dvl_range(self):
-        msg = yield self._dvl_range_sub.get_next_message()
-        defer.returnValue(msg.range)
+    async def get_dvl_range(self):
+        msg = await self._dvl_range_sub.get_next_message()
+        return msg.range
 
-    @util.cancellableInlineCallbacks
-    def get_in_frame(self, pose_stamped, frame: str = "map"):
+    async def get_in_frame(self, pose_stamped, frame: str = "map"):
         """
         TODO
         """
-        transform = yield self._tf_listener.get_transform(
+        transform = await self._tf_listener.get_transform(
             frame, pose_stamped.header.frame_id, pose_stamped.header.stamp
         )
         tft = txros_tf.Transform.from_Pose_message(pose_stamped.pose)
@@ -359,7 +354,7 @@ class SubjuGator(BaseMission):
         position = np.array(full_transform._p)
         orientation = np.array(full_transform._q)
 
-        defer.returnValue([position, orientation])
+        return [position, orientation]
 
 
 class Searcher:
@@ -376,16 +371,7 @@ class Searcher:
         self.object_found = False
         self.response = None
 
-    def catch_error(self, failure: twisted_failure.Failure) -> None:
-        if failure.check(defer.CancelledError):
-            print("SEARCHER - Cancelling defer.")
-        else:
-            print("SEARCHER - There was an error.")
-            print(failure.printTraceback())
-            # Handle error
-
-    @util.cancellableInlineCallbacks
-    def start_search(
+    async def start_search(
         self,
         timeout: float = 60,
         loop: bool = True,
@@ -393,8 +379,8 @@ class Searcher:
         speed: float = 0.1,
     ):
         print("SEARCHER - Starting.")
-        looker = self._run_look(spotings_req).addErrback(self.catch_error)
-        searcher = self._run_search_pattern(loop, speed).addErrback(self.catch_error)
+        looker = asyncio.create_task(self._run_look(spotings_req))
+        searcher = asyncio.create_task(self._run_search_pattern(loop, speed))
 
         start_pose = self.sub.move.forward(0)
         start_time = self.sub.nh.get_time()
@@ -404,18 +390,17 @@ class Searcher:
             if self.object_found:
                 searcher.cancel()
                 print("SEARCHER - Object found.")
-                defer.returnValue(self.response)
+                return self.response
 
-            yield self.sub.nh.sleep(0.1)
+            await self.sub.nh.sleep(0.1)
 
         print("SEARCHER - Object NOT found. Returning to start position.")
         looker.cancel()
         searcher.cancel()
 
-        yield start_pose.go()
+        await start_pose.go()
 
-    @util.cancellableInlineCallbacks
-    def _run_search_pattern(self, loop: bool, speed: float):
+    async def _run_search_pattern(self, loop: bool, speed: float):
         """
         Look around using the search pattern.
 
@@ -423,28 +408,32 @@ class Searcher:
         reached or we find it.
         """
         print("SEARCHER - Executing search pattern.")
-        if loop:
-            while True:
+        try:
+            if loop:
+                while True:
+                    for pose in self.search_pattern:
+                        print("SEARCHER - going to next position.")
+                        if type(pose) == list or type(pose) == np.ndarray:
+                            await self.sub.move.relative(pose).go(speed=speed)
+                        else:
+                            await pose.go()
+
+                        await self.sub.nh.sleep(2)
+
+            else:
                 for pose in self.search_pattern:
-                    print("SEARCHER - going to next position.")
                     if type(pose) == list or type(pose) == np.ndarray:
-                        yield self.sub.move.relative(pose).go(speed=speed)
+                        await self.sub.move.relative(np.array(pose)).go(speed=speed)
                     else:
-                        yield pose.go()
+                        await pose.go()
 
-                    yield self.sub.nh.sleep(2)
-
+                    await self.sub.nh.sleep(2)
+        except asyncio.CancelledError:
+            print("SEARCHER - Cancelling.")
         else:
-            for pose in self.search_pattern:
-                if type(pose) == list or type(pose) == np.ndarray:
-                    yield self.sub.move.relative(np.array(pose)).go(speed=speed)
-                else:
-                    yield pose.go()
+            traceback.print_exc()
 
-                yield self.sub.nh.sleep(2)
-
-    @util.cancellableInlineCallbacks
-    def _run_look(self, spotings_req: int):
+    async def _run_look(self, spotings_req: int):
         """
         Look for the object using the vision proxy.
 
@@ -453,27 +442,31 @@ class Searcher:
         """
         spotings = 0
         print("SEARCHER - Looking for object.")
-        while True:
-            resp = yield self.vision_proxy()
-            if resp.found:
-                print(f"SEARCHER - Object found! {spotings + 1}/{spotings_req}")
-                spotings += 1
-                if spotings >= spotings_req:
-                    self.object_found = True
-                    self.response = resp
-                    break
-            else:
-                spotings = 0
+        try:
+            while True:
+                resp = await self.vision_proxy()
+                if resp.found:
+                    print(f"SEARCHER - Object found! {spotings + 1}/{spotings_req}")
+                    spotings += 1
+                    if spotings >= spotings_req:
+                        self.object_found = True
+                        self.response = resp
+                        break
+                else:
+                    spotings = 0
 
-            yield self.sub.nh.sleep(0.5)
+                await self.sub.nh.sleep(0.5)
+        except asyncio.CancelledError:
+            print("SEARCHER - Cancelling.")
+        else:
+            traceback.print_exc()
 
 
 class PoseSequenceCommander:
     def __init__(self, sub: SubjuGator):
         self.sub = sub
 
-    @util.cancellableInlineCallbacks
-    def go_to_sequence_eulers(
+    async def go_to_sequence_eulers(
         self,
         positions: Sequence[Sequence[float]],
         orientations: Sequence[Sequence[float]],
@@ -485,11 +478,11 @@ class PoseSequenceCommander:
         pose command.
         """
         for i in range(len(positions)):
-            yield self.sub.move.look_at_without_pitching(
+            await self.sub.move.look_at_without_pitching(
                 np.array(positions[i][0:3])
             ).go(speed)
-            yield self.sub.move.relative(np.array(positions[i][0:3])).go(speed)
-            yield self.sub.move.set_orientation(
+            await self.sub.move.relative(np.array(positions[i][0:3])).go(speed)
+            await self.sub.move.set_orientation(
                 quaternion_multiply(
                     self.sub.pose.orientation,
                     quaternion_from_euler(
@@ -498,8 +491,7 @@ class PoseSequenceCommander:
                 )
             ).go(speed)
 
-    @util.cancellableInlineCallbacks
-    def go_to_sequence_quaternions(
+    async def go_to_sequence_quaternions(
         self,
         positions: Sequence[Sequence[float]],
         orientations: Sequence[Sequence[float]],
@@ -511,11 +503,11 @@ class PoseSequenceCommander:
         pose command.
         """
         for i in range(len(positions)):
-            yield self.sub.move.look_at_without_pitching(
+            await self.sub.move.look_at_without_pitching(
                 np.array(positions[i][0:3])
             ).go(speed)
-            yield self.sub.move.relative(np.array(positions[i][0:3])).go(speed)
-            yield self.sub.move.set_orientation(
+            await self.sub.move.relative(np.array(positions[i][0:3])).go(speed)
+            await self.sub.move.set_orientation(
                 quaternion_multiply(
                     self.sub.pose.orientation,
                     (
@@ -558,8 +550,7 @@ class SonarObjects:
     def __del__(self):
         print("cleared SonarObject -- thanks TX")
 
-    @util.cancellableInlineCallbacks
-    def start_search(self, speed: float = 0.5, clear: bool = False):
+    async def start_search(self, speed: float = 0.5, clear: bool = False):
         """
         Do a search and return all objects.
 
@@ -569,17 +560,16 @@ class SonarObjects:
         """
         if clear:
             print("SONAR_OBJECTS: clearing pointcloud")
-            self._clear_pcl(TriggerRequest())
+            await self._clear_pcl(TriggerRequest())
 
         print("SONAR_OBJECTS: running pattern")
-        yield self._run_pattern(speed)
+        await self._run_pattern(speed)
 
         print("SONAR_OBJECTS: requesting objects")
-        res = yield self._objects_service(ObjectDBQueryRequest())
-        defer.returnValue(res)
+        res = await self._objects_service(ObjectDBQueryRequest())
+        return res
 
-    @util.cancellableInlineCallbacks
-    def start_search_in_cone(
+    async def start_search_in_cone(
         self,
         start_point,
         ray,
@@ -591,22 +581,21 @@ class SonarObjects:
     ):
         if clear:
             print("SONAR_OBJECTS: clearing pointcloud")
-            self._clear_pcl(TriggerRequest())
+            await self._clear_pcl(TriggerRequest())
 
-        yield self.sub.nh.sleep(1)
+        await self.sub.nh.sleep(1)
 
         for pose in self.pattern:
-            yield pose.go(speed=speed, blind=True)
+            await pose.go(speed=speed, blind=True)
             # sleep
-            yield self.sub.nh.sleep(0.1)
+            await self.sub.nh.sleep(0.1)
 
             # Break out of loop if we find something satisfying function
-            res = yield self._objects_service(ObjectDBQueryRequest())
+            res = await self._objects_service(ObjectDBQueryRequest())
             g_obj = self._get_objects_within_cone(
                 res.objects, start_point, ray, angle_tol, distance_tol
             )
             g_obj = self._sort_by_angle(g_obj, ray, start_point)
-            yield
 
             if c_func is not None:
                 out = c_func(g_obj, ray)
@@ -615,16 +604,15 @@ class SonarObjects:
                     print("SONAR_OBJECTS: found objects satisfying function")
                     break
 
-        res = yield self._objects_service(ObjectDBQueryRequest())
+        res = await self._objects_service(ObjectDBQueryRequest())
         g_obj = self._get_objects_within_cone(
             res.objects, start_point, ray, angle_tol, distance_tol
         )
         g_obj = self._sort_by_angle(g_obj, ray, start_point)
         res.objects = g_obj
-        defer.returnValue(res)
+        return res
 
-    @util.cancellableInlineCallbacks
-    def start_until_found_x(
+    async def start_until_found_x(
         self, speed: float = 0.5, clear: bool = False, object_count: int = 0
     ):
         """
@@ -637,19 +625,18 @@ class SonarObjects:
         """
         if clear:
             print("SONAR_OBJECTS: clearing pointcloud")
-            self._clear_pcl(TriggerRequest())
+            await self._clear_pcl(TriggerRequest())
         count = -1
         while count < object_count:
             for pose in self.pattern:
-                yield pose.go(speed=speed)
-                res = yield self._objects_service(ObjectDBQueryRequest())
+                await pose.go(speed=speed)
+                res = await self._objects_service(ObjectDBQueryRequest())
                 count = len(res.objects)
                 if count >= object_count:
-                    defer.returnValue(res)
-        defer.returnValue(None)
+                    return res
+        return None
 
-    @util.cancellableInlineCallbacks
-    def start_until_found_in_cone(
+    async def start_until_found_in_cone(
         self,
         start_point: np.ndarray,
         speed: float = 0.5,
@@ -676,12 +663,12 @@ class SonarObjects:
         """
         if clear:
             print("SONAR_OBJECTS: clearing pointcloud")
-            self._clear_pcl(TriggerRequest())
+            await self._clear_pcl(TriggerRequest())
         count = -1
         while count < object_count:
             for pose in self.pattern:
-                yield pose.go(speed=speed, blind=True)
-                res = yield self._objects_service(ObjectDBQueryRequest())
+                await pose.go(speed=speed, blind=True)
+                res = await self._objects_service(ObjectDBQueryRequest())
                 g_obj = self._get_objects_within_cone(
                     res.objects, start_point, ray, angle_tol, distance_tol
                 )
@@ -692,8 +679,8 @@ class SonarObjects:
                 if count >= object_count:
                     g_obj = self._sort_by_angle(g_obj, ray, start_point)
                     res.objects = g_obj
-                    defer.returnValue(res)
-        defer.returnValue(None)
+                    return res
+        return None
 
     @staticmethod
     def _get_objects_within_cone(
@@ -737,10 +724,9 @@ class SonarObjects:
         idx = np.argsort(dots)
         return np.array(objects)[idx]
 
-    @util.cancellableInlineCallbacks
-    def _run_pattern(self, speed: float):
+    async def _run_pattern(self, speed: float):
         for pose in self.pattern:
-            yield pose.go(speed=speed)
+            await pose.go(speed=speed)
 
 
 class SonarPointcloud:
@@ -755,12 +741,12 @@ class SonarPointcloud:
         self.pointcloud = None
         self.pattern = pattern
 
-    @util.cancellableInlineCallbacks
-    def start(self, speed: float = 0.2):
-        self._plane_subscriber = yield self.sub.nh.subscribe(
+    async def start(self, speed: float = 0.2):
+        self._plane_subscriber = self.sub.nh.subscribe(
             "/ogrid_pointcloud/point_cloud/plane", PointCloud2
         )
-        yield self._run_move_pattern(speed)
+        await self._plane_subscriber.setup()
+        await self._run_move_pattern(speed)
 
         pc_gen = np.asarray(
             list(
@@ -769,11 +755,10 @@ class SonarPointcloud:
                 )
             )
         )
-        defer.returnValue(pc_gen)
+        return pc_gen
 
-    @util.cancellableInlineCallbacks
-    def _cat_newcloud(self):
-        data = yield self._plane_subscriber.get_next_message()
+    async def _cat_newcloud(self):
+        data = await self._plane_subscriber.get_next_message()
         if self.pointcloud is None:
             self.pointcloud = data
         else:
@@ -788,15 +773,13 @@ class SonarPointcloud:
             concat = np.asarray(gen + pc_gen, np.float32)
             print(f"SONAR_POINTCLOUD - current size: {concat.shape}")
             self.pointcloud = mil_ros_tools.numpy_to_pointcloud2(concat)
-        yield
 
-    @util.cancellableInlineCallbacks
-    def _run_move_pattern(self, speed: float):
+    async def _run_move_pattern(self, speed: float):
         for pose in self.pattern:
             if type(pose) == list or type(pose) == np.ndarray:
-                yield self.sub.move.relative(np.array(pose)).go(speed=speed)
+                await self.sub.move.relative(np.array(pose)).go(speed=speed)
             else:
-                yield pose.go()
-            yield self._cat_newcloud()
+                await pose.go()
+            await self._cat_newcloud()
 
-            yield self.sub.nh.sleep(2)
+            await self.sub.nh.sleep(2)

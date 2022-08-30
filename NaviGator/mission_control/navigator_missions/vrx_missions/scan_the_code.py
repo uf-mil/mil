@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import asyncio
 from operator import attrgetter
 from turtle import width
 
@@ -40,55 +41,56 @@ class ScanTheCode(Vrx):
         self.classifier.train_from_csv()
         self.camera_model = PinholeCameraModel()
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
         self.debug_points_pub = self.nh.advertise("/stc_led_points", PointCloud2)
         self.bridge = CvBridge()
         self.image_debug_pub = self.nh.advertise("/stc_mask_debug", Image)
         self.sequence_report = self.nh.get_service_client(
             COLOR_SEQUENCE_SERVICE, ColorSequence
         )
+        await asyncio.gather(
+            self.debug_points_pub.setup(), self.image_debug_pub.setup()
+        )
 
         self.init_front_left_camera()
         self.init_front_right_camera()
 
-        yield self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
-        info = yield self.front_left_camera_info_sub.get_next_message()
+        await self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
+        info = await self.front_left_camera_info_sub.get_next_message()
         self.camera_model.fromCameraInfo(info)
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = "cluster_tolerance_m"
         pcodar_cluster_tol.value = 6
 
-        yield self.pcodar_set_params(doubles=[pcodar_cluster_tol])
+        await self.pcodar_set_params(doubles=[pcodar_cluster_tol])
         try:
-            pose = yield self.find_stc2()
+            pose = await self.find_stc2()
         except Exception as e:
             sequence = ["red", "green", "blue"]
-            yield self.report_sequence(sequence)
+            await self.report_sequence(sequence)
             defer.returnValue(sequence)
 
-        yield self.move.look_at(pose).set_position(pose).backward(5).go()
-        yield self.nh.sleep(5)
+        await self.move.look_at(pose).set_position(pose).backward(5).go()
+        await self.nh.sleep(5)
 
         try:
-            sequence = yield txros.util.wrap_timeout(
+            sequence = await txros.util.wrap_timeout(
                 self.get_sequence(), TIMEOUT_SECONDS, "Guessing RGB"
             )
-        except txros.util.TimeoutError:
+        except asyncio.TimeoutError:
             sequence = ["red", "green", "blue"]
         print("Scan The Code Color Sequence", sequence)
         self.report_sequence(sequence)
-        yield self.send_feedback("Done!")
-        defer.returnValue(sequence)
+        await self.send_feedback("Done!")
+        return sequence
 
-    @txros.util.cancellableInlineCallbacks
-    def get_sequence(self):
+    async def get_sequence(self):
         sequence = []
         while len(sequence) < 3:
 
-            img = yield self.front_left_camera_sub.get_next_message()
-            bounding_box_msg = yield self.yolo_objects.get_next_message()
+            img = await self.front_left_camera_sub.get_next_message()
+            bounding_box_msg = await self.yolo_objects.get_next_message()
 
             img = self.bridge.imgmsg_to_cv2(img)
             img2 = img.copy()
@@ -173,27 +175,25 @@ class ScanTheCode(Vrx):
                 sequence.append(most_likely_name)
 
             print(sequence)
-        defer.returnValue(sequence)
+        return sequence
 
-    @txros.util.cancellableInlineCallbacks
-    def report_sequence(self, sequence):
+    async def report_sequence(self, sequence):
         color_sequence = ColorSequenceRequest()
         color_sequence.color1 = sequence[0]
         color_sequence.color2 = sequence[1]
         color_sequence.color3 = sequence[2]
 
         try:
-            yield self.sequence_report(color_sequence)
+            await self.sequence_report(color_sequence)
         except Exception as e:  # catch error in case vrx scroing isn't running
             print(e)
 
-    @txros.util.cancellableInlineCallbacks
-    def find_stc2(self):
+    async def find_stc2(self):
         pose = None
         print("entering find_stc")
         # see if we already got scan the code tower
         try:
-            _, poses = yield self.get_sorted_objects(name="stc_platform", n=1)
+            _, poses = await self.get_sorted_objects(name="stc_platform", n=1)
             pose = poses[0]
         # in case stc platform not already identified
         except Exception as e:
@@ -201,13 +201,13 @@ class ScanTheCode(Vrx):
             # get all pcodar objects
             try:
                 print("check for any objects")
-                msgs, poses = yield self.get_sorted_objects(name="UNKNOWN", n=-1)
+                msgs, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
             # if no pcodar objects, drive forward
             except Exception as e:
                 print("literally no objects?")
-                yield self.move.forward(25).go()
+                await self.move.forward(25).go()
                 # get first pcodar objects
-                msgs, poses = yield self.get_sorted_objects(name="UNKNOWN", n=-1)
+                msgs, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
                 # if still no pcodar objects, guess RGB and exit mission
             # go to nearest obj to get better data on that obj
 
@@ -228,24 +228,23 @@ class ScanTheCode(Vrx):
                 if np.linalg.norm(rosmsg_to_numpy(msgs[i].scale)) > 4.0:
                     # much bigger than scale of stc
                     # then we found the dock
-                    yield self.pcodar_label(msgs[i].id, "dock")
+                    await self.pcodar_label(msgs[i].id, "dock")
                     dock_pose = poses[i]
 
                 else:  # if about same size as stc, label it stc
-                    yield self.pcodar_label(msgs[i].id, "stc_platform")
+                    await self.pcodar_label(msgs[i].id, "stc_platform")
                     pose = poses[i]
                     break
 
         print("leaving find_stc")
-        defer.returnValue(pose)
+        return pose
 
-    @txros.util.cancellableInlineCallbacks
-    def find_stc(self):
+    async def find_stc(self):
         pose = None
         print("entering find_stc")
         # see if we already got scan the code tower
         try:
-            _, poses = yield self.get_sorted_objects(name="stc_platform", n=1)
+            _, poses = await self.get_sorted_objects(name="stc_platform", n=1)
             pose = poses[0]
         # in case stc platform not already identified
         except Exception as e:
@@ -253,34 +252,34 @@ class ScanTheCode(Vrx):
             # get all pcodar objects
             try:
                 print("check for any objects")
-                _, poses = yield self.get_sorted_objects(name="UNKNOWN", n=-1)
+                _, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
             # if no pcodar objects, drive forward
             except Exception as e:
                 print("literally no objects?")
-                yield self.move.forward(50).go()
+                await self.move.forward(50).go()
                 # get all pcodar objects
-                _, poses = yield self.get_sorted_objects(name="UNKNOWN", n=-1)
+                _, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
                 # if still no pcodar objects, guess RGB and exit mission
             # go to nearest obj to get better data on that obj
             print("going to nearest object")
-            yield self.move.set_position(poses[0]).go()
+            await self.move.set_position(poses[0]).go()
             # get data on closest obj
-            msgs, poses = yield self.get_sorted_objects(name="UNKNOWN", n=1)
+            msgs, poses = await self.get_sorted_objects(name="UNKNOWN", n=1)
             if np.linalg.norm(rosmsg_to_numpy(msgs[0].scale)) > 6.64:
                 # much bigger than scale of stc
                 # then we found the dock
-                yield self.pcodar_label(msgs[0].id, "dock")
+                await self.pcodar_label(msgs[0].id, "dock")
                 # get other things
-                msgs, poses = yield self.get_sorted_objects(name="UNKNOWN", n=1)
+                msgs, poses = await self.get_sorted_objects(name="UNKNOWN", n=1)
                 # if no other things, throw error and exit mission
-                yield self.pcodar_label(msgs[0].id, "stc_platform")
+                await self.pcodar_label(msgs[0].id, "stc_platform")
                 pose = poses[0]
             else:  # if about same size as stc, label it stc
-                yield self.pcodar_label(msgs[0].id, "stc_platform")
+                await self.pcodar_label(msgs[0].id, "stc_platform")
                 pose = poses[0]
 
         print("leaving find_stc")
-        defer.returnValue(pose)
+        return pose
 
 
 def z_filter(db_obj_msg):

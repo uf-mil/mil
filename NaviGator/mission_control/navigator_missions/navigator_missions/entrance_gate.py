@@ -97,17 +97,16 @@ class EntranceGate(Navigator):
             "/entrance_exit_gate_message", MessageExtranceExitGate
         )
 
-    @util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
         # Parse Arguments
         pass_scan = not args.drift
         traversal_distance = args.traversaldist
 
-        self.initial_boat_pose = yield self.tx_pose
+        self.initial_boat_pose = await self.tx_pose()
         self.initial_boat_pose = self.initial_boat_pose[0]
 
         # Find the gates
-        self.gate_results = yield self.find_gates()
+        self.gate_results = await self.find_gates()
         self.gate_centers = self.gate_results[0]
         self.gates_line = self.gate_results[1]
         self.gate_totems = self.gate_results[2]
@@ -116,9 +115,9 @@ class EntranceGate(Navigator):
         self.pinger_gate = 1
 
         if pass_scan:
-            yield self.run_pass_scan(args)
+            await self.run_pass_scan(args)
         else:
-            yield self.run_dual_scan(args)
+            await self.run_dual_scan(args)
 
         self.send_feedback("Gate identified as " + str(self.pinger_gate + 1))
         if args.exit:
@@ -139,7 +138,7 @@ class EntranceGate(Navigator):
             self.net_entrance_results = self.pinger_gate + 1
 
         # Calculate traversal points
-        traversal_points = yield self.get_perpendicular_points(
+        traversal_points = await self.get_perpendicular_points(
             self.gate_centers[self.pinger_gate],
             traversal_distance,
             boat_pose=self.initial_boat_pose,
@@ -147,14 +146,13 @@ class EntranceGate(Navigator):
 
         # Go through the gate
         self.send_feedback("Navigating through gate")
-        yield self.move.set_position(traversal_points[0]).look_at(
+        await self.move.set_position(traversal_points[0]).look_at(
             traversal_points[1]
         ).go()
-        yield self.move.set_position(traversal_points[1]).go()
+        await self.move.set_position(traversal_points[1]).go()
         self.send_feedback("Done with start gate!")
 
-    @util.cancellableInlineCallbacks
-    def run_dual_scan(self, args):
+    async def run_dual_scan(self, args):
         # Parse Parameters
         uses_multilateration = args.multilateration
         scan_dist = args.scandist
@@ -162,10 +160,10 @@ class EntranceGate(Navigator):
         listen_time = args.scantime
 
         # Calculate scan points
-        scan_points_0 = yield self.get_perpendicular_points(
+        scan_points_0 = await self.get_perpendicular_points(
             self.gate_totems[1], scan_dist
         )
-        scan_points_1 = yield self.get_perpendicular_points(
+        scan_points_1 = await self.get_perpendicular_points(
             self.gate_totems[2], scan_dist
         )
         scan_point_0 = scan_points_0[0]
@@ -175,8 +173,8 @@ class EntranceGate(Navigator):
 
         if uses_multilateration:
             # Reset Scan
-            yield self.hydrophones.disable()
-            yield self.hydrophones.reset()
+            await self.hydrophones.disable()
+            await self.hydrophones.reset()
         else:
             # Reset pings
             self.intersect_vectors = []
@@ -184,7 +182,7 @@ class EntranceGate(Navigator):
         # Execute Scan 1
 
         self.send_feedback("Navigating to scan start point 1")
-        yield self.move.set_position(scan_point_0).look_at(scan_lookat_0).go()
+        await self.move.set_position(scan_point_0).look_at(scan_lookat_0).go()
 
         # If kill is enabled, kill the thrusters
         if should_kill:
@@ -198,7 +196,7 @@ class EntranceGate(Navigator):
             self.hydrophones.set_callback(self.ping_recv)
 
         # Sleep
-        yield self.nh.sleep(listen_time)
+        await self.nh.sleep(listen_time)
 
         if uses_multilateration:
             # Disable multilateration
@@ -214,7 +212,7 @@ class EntranceGate(Navigator):
         # Execute Scan 2
 
         self.send_feedback("Navigating to scan start point 2")
-        yield self.move.set_position(scan_point_1).look_at(scan_lookat_1).go()
+        await self.move.set_position(scan_point_1).look_at(scan_lookat_1).go()
 
         # If kill is enabled, kill the thrusters
         if should_kill:
@@ -228,7 +226,7 @@ class EntranceGate(Navigator):
             self.hydrophones.set_callback(self.ping_recv)
 
         # Sleep
-        yield self.nh.sleep(listen_time)
+        await self.nh.sleep(listen_time)
 
         if uses_multilateration:
             # Disable multilateration
@@ -243,7 +241,7 @@ class EntranceGate(Navigator):
 
         # Calculate results
         if uses_multilateration:
-            multilateration_results = yield self.get_multilateration_closest()
+            multilateration_results = await self.get_multilateration_closest()
             self.pinger_gate = multilateration_results[0]
             multilateration_confidence = multilateration_results[1]
 
@@ -260,21 +258,20 @@ class EntranceGate(Navigator):
                 "Intersecting Method has confidence of " + str(intersect_confidence)
             )
 
-    @util.cancellableInlineCallbacks
-    def run_pass_scan(self, args):
+    async def run_pass_scan(self, args):
         # Parse Parameters
         uses_multilateration = args.multilateration
         scan_dist = args.scandist
         speed = args.speed
 
         # Calculate scan points
-        scan_points_0 = yield self.get_perpendicular_points(
+        scan_points_0 = await self.get_perpendicular_points(
             self.gate_centers[0], scan_dist
         )
-        scan_points_1 = yield self.get_perpendicular_points(
+        scan_points_1 = await self.get_perpendicular_points(
             self.gate_centers[2], scan_dist
         )
-        scan_points_2 = yield self.get_perpendicular_points(
+        scan_points_2 = await self.get_perpendicular_points(
             self.gate_totems[3], scan_dist
         )
         scan_point_0 = scan_points_0[0]
@@ -284,8 +281,8 @@ class EntranceGate(Navigator):
 
         if uses_multilateration:
             # Reset Scan
-            yield self.hydrophones.disable()
-            yield self.hydrophones.reset()
+            await self.hydrophones.disable()
+            await self.hydrophones.reset()
         else:
             # Reset pings
             self.intersect_vectors = []
@@ -293,7 +290,7 @@ class EntranceGate(Navigator):
         # Execute Scan
 
         self.send_feedback("Navigating to scan start point")
-        yield self.move.set_position(scan_point_0).look_at(scan_lookat_0).go()
+        await self.move.set_position(scan_point_0).look_at(scan_lookat_0).go()
 
         if uses_multilateration:
             # Turn on multilateration
@@ -303,7 +300,7 @@ class EntranceGate(Navigator):
             self.hydrophones.set_callback(self.ping_recv)
 
         self.send_feedback("Navigating to scan end point")
-        yield self.move.set_position(scan_point_1).look_at(scan_lookat_1).go(
+        await self.move.set_position(scan_point_1).look_at(scan_lookat_1).go(
             speed_factor=speed
         )
 
@@ -316,7 +313,7 @@ class EntranceGate(Navigator):
 
         # Calculate results
         if uses_multilateration:
-            multilateration_results = yield self.get_multilateration_closest()
+            multilateration_results = await self.get_multilateration_closest()
             self.pinger_gate = multilateration_results[0]
             multilateration_confidence = multilateration_results[1]
 
@@ -395,11 +392,10 @@ class EntranceGate(Navigator):
         confidence = bucket[pinger_gate] / (bucket[0] + bucket[1] + bucket[2])
         return (pinger_gate, confidence)
 
-    @util.cancellableInlineCallbacks
-    def ping_recv(self, p_message):
+    async def ping_recv(self, p_message):
         try:
             # Transform the ping into enu
-            hydrophones_to_enu = yield self.tf_listener.get_transform(
+            hydrophones_to_enu = await self.tf_listener.get_transform(
                 "enu", p_message.header.frame_id
             )
             hydrophones_origin = hydrophones_to_enu._p[0:2]
@@ -420,10 +416,9 @@ class EntranceGate(Navigator):
 
     """
 
-    @util.cancellableInlineCallbacks
-    def get_multilateration_closest(self):
+    async def get_multilateration_closest(self):
         # Get the most recent multilateration position
-        rospos = yield self.hydrophones.get_last_position()
+        rospos = await self.hydrophones.get_last_position()
         pinger_pos = rosmsg_to_numpy(rospos.point)[0:2]
 
         # Calculate the distances to each gate center
@@ -439,7 +434,7 @@ class EntranceGate(Navigator):
 
         # Calculate the confidence
         confidence = (5 - distances[pinger_gate]) / 5.0
-        defer.returnValue((pinger_gate, confidence))
+        return (pinger_gate, confidence)
 
     """
 
@@ -477,15 +472,14 @@ class EntranceGate(Navigator):
 
     """
 
-    @util.cancellableInlineCallbacks
-    def find_gates(self):
+    async def find_gates(self):
         # Find each of the needed totems
-        t1 = yield self.get_sorted_objects("totem_red", n=1)
+        t1 = await self.get_sorted_objects("totem_red", n=1)
         t1 = t1[1][0][:2]
-        white_totems = yield self.get_sorted_objects("totem_white", n=2)
+        white_totems = await self.get_sorted_objects("totem_white", n=2)
         t2 = white_totems[1][0][:2]
         t3 = white_totems[1][1][:2]
-        t4 = yield self.get_sorted_objects("totem_green", n=1)
+        t4 = await self.get_sorted_objects("totem_green", n=1)
         t4 = t4[1][0][:2]
 
         # Make sure the two white totems get ordered properly
@@ -522,13 +516,14 @@ class EntranceGate(Navigator):
 
     """
 
-    @util.cancellableInlineCallbacks
-    def get_perpendicular_points(self, center_point, offset_distance, boat_pose=None):
+    async def get_perpendicular_points(
+        self, center_point, offset_distance, boat_pose=None
+    ):
         # Find the perpendicular line
         perpendicular_vector = self.perpendicular(self.gates_line)
 
         if boat_pose is None:
-            boat_pose = yield self.tx_pose
+            boat_pose = await self.tx_pose()
             boat_pose = boat_pose[0]
 
         # Find the two points on either side of the line
@@ -559,4 +554,4 @@ class EntranceGate(Navigator):
             point = np.append(point, [0])
             perpendicular_points_np.append(point)
 
-        defer.returnValue(perpendicular_points_np)
+        return perpendicular_points_np

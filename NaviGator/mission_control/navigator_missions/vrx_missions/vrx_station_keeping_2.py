@@ -13,17 +13,16 @@ class VrxStationKeeping2(Vrx):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
-        yield self.wait_for_task_such_that(
+    async def run(self, parameters):
+        await self.wait_for_task_such_that(
             lambda task: task.state in ["ready", "running"]
         )
-        yield self.reset_pcodar()
+        await self.reset_pcodar()
 
         self.send_feedback("Waiting for station keeping goal")
-        goal_msg = yield self.get_latching_msg(self.station_keep_goal)
-        goal_pose = yield self.geo_pose_to_enu_pose(goal_msg.pose)
+        goal_msg = await self.get_latching_msg(self.station_keep_goal)
+        goal_pose = await self.geo_pose_to_enu_pose(goal_msg.pose)
         self.send_feedback(f"Going to {goal_pose}")
 
         # Go to goal
-        yield self.send_trajectory_without_path(goal_pose)
+        await self.send_trajectory_without_path(goal_pose)

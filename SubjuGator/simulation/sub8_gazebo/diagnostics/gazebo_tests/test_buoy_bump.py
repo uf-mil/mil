@@ -10,8 +10,7 @@ from twisted.internet import defer
 class Job(common.Job):
     _job_name = "test_buoy_bump"
 
-    @txros.util.cancellableInlineCallbacks
-    def setup(self):
+    async def setup(self):
         print("setting up")
         buoy_loc = np.array([20.0, 20.0, -1.0])
         start_seed = np.array([15.0, 20.0, -2.0])
@@ -20,19 +19,18 @@ class Job(common.Job):
         pe = pe.look_at_without_pitching(buoy_loc)
         pe = pe.backward(2.0)
         pe = pe.relative((np.random.random(3) - 0.5) * [2.5, 2.5, 2.0])
-        yield self.set_model_pose(pe.as_Pose())
-        yield self.nh.sleep(1.0)
+        await self.set_model_pose(pe.as_Pose())
+        await self.nh.sleep(1.0)
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, sub):
+    async def run(self, sub):
         print("running")
-        # yield sub.move.right(2.0).go()
-        # yield sub.move.down(1.0).go()
-        # yield sub.move.left(2.0).go()
-        # yield sub.move.up(1.0).go()
+        # await sub.move.right(2.0).go()
+        # await sub.move.down(1.0).go()
+        # await sub.move.left(2.0).go()
+        # await sub.move.up(1.0).go()
 
-        yield buoy.run(sub)
+        await buoy.run(sub)
 
         success = True
         reason = "No reason"
-        yield defer.returnValue((success, reason))
+        return (success, reason)

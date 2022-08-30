@@ -34,10 +34,9 @@ def MakeWait(base: Type):
                     raise ParametersException("must be a number")
             return cls.DEFAULT_SECONDS
 
-        @util.cancellableInlineCallbacks
-        def run(self, time: Union[float, int]):
+        async def run(self, time: Union[float, int]):
             self.send_feedback(f"waiting for {time} seconds")
-            yield self.nh.sleep(time)
-            defer.returnValue("Done waiting.")
+            await self.nh.sleep(time)
+            return "Done waiting."
 
     return Wait

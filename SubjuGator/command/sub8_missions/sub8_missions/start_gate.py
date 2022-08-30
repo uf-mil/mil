@@ -4,11 +4,9 @@ from __future__ import annotations
 from typing import Optional
 
 import numpy as np
-import txros
 from mil_misc_tools import text_effects
 from mil_ros_tools import rosmsg_to_numpy
 from scipy.spatial import distance
-from twisted.internet import defer
 
 from .sub_singleton import SonarObjects, SubjuGator
 
@@ -25,25 +23,24 @@ RIGHT_OR_LEFT = 1
 
 
 class StartGate(SubjuGator):
-    @txros.util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
         fprint("Waiting for odom")
-        yield self.tx_pose()
+        await self.tx_pose()
         fprint("Found odom")
         fprint("Begin search for gates")
         rotate_start = self.move.zero_roll_and_pitch()
         for i in range(4):
             # Search 4 quadrants separated by 90 degrees for the gate
             fprint(f"Searching {90 * i} degrees")
-            yield rotate_start.yaw_right_deg(90 * i).go(speed=CAREFUL_SPEED)
+            await rotate_start.yaw_right_deg(90 * i).go(speed=CAREFUL_SPEED)
             start = self.move.zero_roll_and_pitch()
             # Pitch up and down to populate pointcloud
             so = SonarObjects(self, [start.pitch_down_deg(7), start] * 5)
-            transform = yield self._tf_listener.get_transform("map", "/base_link")
+            transform = await self._tf_listener.get_transform("map", "/base_link")
             # [1, 0, 0] is front vector for self
             ray = transform._q_mat.dot(np.array([1, 0, 0]))
             # Start scan and search
-            res = yield so.start_search_in_cone(
+            res = await so.start_search_in_cone(
                 transform._p,
                 ray,
                 angle_tol=60,
@@ -68,8 +65,8 @@ class StartGate(SubjuGator):
             break
         if gate_points is None:
             fprint("Returning")
-            yield rotate_start.go()
-            defer.returnValue(False)
+            await rotate_start.go()
+            return False
 
         # Gate = 120 inches wide = 3.048 meters
         # Gate Center = 60 inches
@@ -93,7 +90,7 @@ class StartGate(SubjuGator):
         fprint(f"Midpoint: {mid_point}")
 
         fprint("Looking at gate", msg_color="yellow")
-        yield self.move.look_at(mid_point).go(speed=CAREFUL_SPEED)
+        await self.move.look_at(mid_point).go(speed=CAREFUL_SPEED)
 
         normal = mid_point - self.pose.position
         normal[2] = 0
@@ -116,20 +113,20 @@ class StartGate(SubjuGator):
         fprint(f"Goalpoint: {goal_point}")
 
         fprint("Moving in front of goalpoint!", msg_color="yellow")
-        yield self.move.set_position(goal_point - 2 * normal).look_at(goal_point).go(
+        await self.move.set_position(goal_point - 2 * normal).look_at(goal_point).go(
             speed=SPEED
         )
 
         fprint("Style on dem haters!", msg_color="yellow")
-        yield self.move.set_position(goal_point).yaw_right_deg(179).go(
+        await self.move.set_position(goal_point).yaw_right_deg(179).go(
             speed=CAREFUL_SPEED
         )
 
         fprint("Moving past the gate", msg_color="yellow")
-        yield self.move.set_position(
+        await self.move.set_position(
             goal_point + DIST_AFTER_GATE * normal
         ).yaw_right_deg(179).zero_roll_and_pitch().go(speed=CAREFUL_SPEED)
-        defer.returnValue(True)
+        return True
 
     def find_gate(
         self,

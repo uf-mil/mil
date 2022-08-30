@@ -14,16 +14,15 @@ class VrxBeacon(Vrx):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
+    async def run(self, parameters):
         self.send_feedback("Waiting for task to start")
-        yield self.wait_for_task_such_that(
+        await self.wait_for_task_such_that(
             lambda task: task.state in ["ready", "running"]
         )
 
-        yield self.wait_for_task_such_that(lambda task: task.state in ["running"])
+        await self.wait_for_task_such_that(lambda task: task.state in ["running"])
 
-        beacon_msg = yield self.beacon_landmark(AcousticBeaconRequest())
+        beacon_msg = await self.beacon_landmark(AcousticBeaconRequest())
         print(beacon_msg)
 
         position = [
@@ -35,4 +34,4 @@ class VrxBeacon(Vrx):
         self.send_feedback(f"Going to {position}")
 
         goal_pose = [position, [0, 0, 0, 1]]
-        yield self.move.set_position(goal_pose[0]).set_orientation(goal_pose[1]).go()
+        await self.move.set_position(goal_pose[0]).set_orientation(goal_pose[1]).go()

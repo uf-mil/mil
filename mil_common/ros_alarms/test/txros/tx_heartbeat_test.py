@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
+import asyncio
+
 import txros
+import uvloop
 from ros_alarms import TxAlarmListener, TxHeartbeatMonitor
 from std_msgs.msg import String
 from twisted.internet import defer
@@ -7,70 +10,70 @@ from twisted.internet import defer
 publish = True
 
 
-@txros.util.cancellableInlineCallbacks
-def do_publishing(nh):
+async def do_publishing(nh):
     global publish
     pub = nh.advertise("/heartbeat", String)
+    await pub.setup()
     while True:
-        yield nh.sleep(0.1)
+        await nh.sleep(0.1)
         if publish:
-            yield pub.publish(String("test"))
+            pub.publish(String("test"))
 
 
-@txros.util.cancellableInlineCallbacks
-def main():
+async def main():
     global publish
-    nh = yield txros.NodeHandle.from_argv("tx_hearbeat_test")
+    nh = await txros.NodeHandle.from_argv("tx_hearbeat_test")
 
     alarm_name = "test_alarm123"
-    hbm = yield TxHeartbeatMonitor.init(
+    hbm = await TxHeartbeatMonitor.init(
         nh, alarm_name, "/heartbeat", String, nowarn=True
     )
-    monitor_df = hbm.start_monitor()
+    monitor_df = asyncio.create_task(hbm.start_monitor())
 
-    do_publishing(nh)
+    await do_publishing(nh)
 
-    al = yield TxAlarmListener.init(nh, alarm_name)
+    al = await TxAlarmListener.init(nh, alarm_name)
 
     print("Initial Clear test")
-    assert (yield al.is_cleared())
-    yield nh.sleep(0.5)
+    assert await al.is_cleared()
+    await nh.sleep(0.5)
 
     print("Heartbeat raise test")
     publish = False
-    yield nh.sleep(1)
-    assert (yield al.is_raised())
-    yield nh.sleep(0.5)
+    await nh.sleep(1)
+    assert await al.is_raised()
+    await nh.sleep(0.5)
 
     print("Hearbeat clear test")
     publish = True
-    yield nh.sleep(1)
-    assert (yield al.is_cleared())
+    await nh.sleep(1)
+    assert await al.is_cleared()
 
     print("Stop monitoring test")
-    monitor_df.addErrback(lambda e: e.trap(defer.CancelledError)).cancel()
+    monitor_df.cancel()
     publish = False
-    yield nh.sleep(1)
-    assert (yield al.is_cleared())
-    yield nh.sleep(0.5)
+    await nh.sleep(1)
+    assert await al.is_cleared()
+    await nh.sleep(0.5)
 
     print("Predicated test")
     publish = True
 
-    @txros.util.cancellableInlineCallbacks
-    def cb(nh, alarm):
-        yield nh.sleep(1)
-        defer.returnValue(False)  # Should never raise
+    async def cb(nh, alarm):
+        await nh.sleep(1)
+        return False  # Should never raise
 
     hbm.set_predicate(cb)
     monitor_df = hbm.start_monitor()
 
-    yield nh.sleep(0.5)
+    await nh.sleep(0.5)
     publish = False
-    yield nh.sleep(0.5)
-    assert (yield al.is_cleared())
+    await nh.sleep(0.5)
+    assert await al.is_cleared()
 
     print("\nPassed!")
 
 
-txros.util.launch_main(main)
+if __name__ == "__main__":
+    uvloop.install()
+    asyncio.run(main())

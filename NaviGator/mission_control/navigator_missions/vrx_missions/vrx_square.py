@@ -13,14 +13,12 @@ class VrxSquare(Vrx):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
-        # yield self.move.forward(5, 'm').yaw_left(90, 'deg').go()
-        # yield self.move.forward(5, 'm').yaw_left(90, 'deg').go()
-        # yield self.move.forward(5, 'm').yaw_left(90, 'deg').go()
-        # yield self.move.forward(5, 'm').yaw_left(90, 'deg').go()
-
-        yield self.move.forward(5, "m").go()
-        yield self.move.left(5, "m").go()
-        yield self.move.backward(5, "m").go()
-        yield self.move.right(5, "m").go()
+    async def run(self, parameters):
+        # await self.move.forward(5, 'm').yaw_left(90, 'deg').go()
+        # await self.move.forward(5, 'm').yaw_left(90, 'deg').go()
+        # await self.move.forward(5, 'm').yaw_left(90, 'deg').go()
+        # await self.move.forward(5, 'm').yaw_left(90, 'deg').go()
+        await self.move.forward(5, "m").go()
+        await self.move.left(5, "m").go()
+        await self.move.backward(5, "m").go()
+        await self.move.right(5, "m").go()

@@ -4,6 +4,7 @@ tqdm==4.62.3
 
 # Algorithms
 tsp-solver2==0.4.1
+uvloop==0.16.0
 
 # Data Science
 pandas==1.4.1

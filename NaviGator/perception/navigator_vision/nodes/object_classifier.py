@@ -1,42 +1,43 @@
 #!/usr/bin/env python3
+import asyncio
 import os.path
 
 import cv2
 import numpy as np
 import txros
+import uvloop
 from mil_tools import CvDebug, fprint
 from navigator_msgs.srv import CameraDBQuery, CameraDBQueryResponse
 from object_classification import Config, LidarToImage, depicklify
 from twisted.internet import defer, reactor
-from txros import util
+from txros import NodeHandle, util
 
 
 class ObjectClassifier:
-    def __init__(self, nh, classifier, config):
+    def __init__(self, nh: NodeHandle, classifier, config):
         self.nh = nh
         # load up the trained svm via pickle
         self.classifier = classifier
         self.config = config
         self.debug = CvDebug(nh=nh)
 
-    @util.cancellableInlineCallbacks
-    def init_(self):
-        yield self.nh.advertise_service(
+    async def init_(self):
+        serv = self.nh.advertise_service(
             "/camera_database/requests", CameraDBQuery, self.database_request
         )
-        self.lidar_to_image = yield LidarToImage(self.nh).init_()
-        defer.returnValue(self)
+        await serv.setup()
+        self.lidar_to_image = await LidarToImage(self.nh).init_()
+        return self
 
-    @util.cancellableInlineCallbacks
-    def database_request(self, req):
+    async def database_request(self, req):
         id_ = req.id
         name = req.name
-        img, rois = yield self.lidar_to_image.get_object_rois(name=str(id_))
+        img, rois = await self.lidar_to_image.get_object_rois(name=str(id_))
         resp = CameraDBQueryResponse()
         if img is None or len(rois) == 0:
             fprint("Incorrect from reading from the lidar", msg_color="red")
             resp.found = False
-            defer.returnValue(resp)
+            return resp
 
         r = rois[0]
         roi = r["img"]
@@ -72,21 +73,20 @@ class ObjectClassifier:
                 msg_color="red",
             )
             resp.found = False
-        defer.returnValue(resp)
+        return resp
 
 
-@util.cancellableInlineCallbacks
-def main():
-    nh = yield txros.NodeHandle.from_argv("object_classifier")
-    config = Config()
-    class_file = os.path.abspath(__file__)
-    class_file = class_file.split("nodes")[0]
-    class_file = class_file + "object_classification/train.p"
+async def main():
+    async with txros.NodeHandle.from_argv("object_classifier"):
+        config = Config()
+        class_file = os.path.abspath(__file__)
+        class_file = class_file.split("nodes")[0]
+        class_file = class_file + "object_classification/train.p"
 
-    cl = depicklify(class_file)
-    yield ObjectClassifier(nh, cl, config).init_()
+        cl = depicklify(class_file)
+        await ObjectClassifier(nh, cl, config).init_()
 
 
 if __name__ == "__main__":
-    reactor.callWhenRunning(main)
-    reactor.run()
+    uvloop.install()
+    asyncio.run(main())

@@ -22,19 +22,18 @@ class VrxWayfinding(Vrx):
         theta = math.atan2(vect[1], vect[0])
         return tf.transformations.quaternion_from_euler(0, 0, theta)
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
+    async def run(self, parameters):
         self.send_feedback("Waiting for task to start")
-        yield self.wait_for_task_such_that(
+        await self.wait_for_task_such_that(
             lambda task: task.state in ["ready", "running"]
         )
-        yield self.reset_pcodar()
+        await self.reset_pcodar()
 
-        path_msg = yield self.get_latching_msg(self.wayfinding_path_sub)
+        path_msg = await self.get_latching_msg(self.wayfinding_path_sub)
 
         poses = []
         for geo_pose in path_msg.poses:
-            pose = yield self.geo_pose_to_enu_pose(geo_pose.pose)
+            pose = await self.geo_pose_to_enu_pose(geo_pose.pose)
             poses.append(pose)
 
         position = self.pose[0]
@@ -56,13 +55,13 @@ class VrxWayfinding(Vrx):
         path = path[1:]
 
         # self.send_feedback('Sorted poses' + str(poses))
-        yield self.wait_for_task_such_that(lambda task: task.state in ["running"])
+        await self.wait_for_task_such_that(lambda task: task.state in ["running"])
 
         # do movements
         for index in path:
             self.send_feedback(f"Going to {poses[index]}")
             orientation_fix = self.point_at_goal(poses[index][0])
-            yield self.move.set_orientation(orientation_fix).go(blind=True)
-            yield self.move.set_position(poses[index][0]).set_orientation(
+            await self.move.set_orientation(orientation_fix).go(blind=True)
+            await self.move.set_position(poses[index][0]).set_orientation(
                 poses[index][1]
             ).go(blind=True)

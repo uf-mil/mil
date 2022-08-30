@@ -6,7 +6,6 @@ class FindTheBreakTestPerception:
     def __init__(self, nh):
         self.nh = nh
 
-    @txros.util.cancellableInlineCallbacks
-    def count_pipes(self):
-        yield self.nh.sleep(5)
-        defer.returnValue(4)
+    async def count_pipes(self):
+        await self.nh.sleep(5)
+        return 4

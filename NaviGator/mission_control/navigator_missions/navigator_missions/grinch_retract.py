@@ -10,7 +10,6 @@ class GrinchRetract(Navigator):
     Retract the grinch
     """
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
-        yield self.retract_grinch()
-        defer.returnValue(True)
+    async def run(self, parameters):
+        await self.retract_grinch()
+        return True

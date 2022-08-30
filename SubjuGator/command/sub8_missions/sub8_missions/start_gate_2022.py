@@ -24,17 +24,16 @@ RIGHT_OR_LEFT = 1
 
 
 class StartGate2022(SubjuGator):
-    @txros.util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
         fprint("Waiting for odom")
-        yield self.tx_pose()
+        await self.tx_pose()
 
         fprint(f"Waiting {WAIT_SECONDS} seconds...")
-        yield self.nh.sleep(WAIT_SECONDS)
+        await self.nh.sleep(WAIT_SECONDS)
 
         fprint("Found odom")
         down = self.move.down(1).zero_roll_and_pitch()
         forward = self.move.forward(4).zero_roll_and_pitch()
 
-        yield down.go(speed=SPEED)
-        yield forward.go(speed=SPEED)
+        await down.go(speed=SPEED)
+        await forward.go(speed=SPEED)

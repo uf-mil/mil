@@ -11,8 +11,6 @@ from mil_passive_sonar.msg import ProcessedPing
 
 # from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 from std_srvs.srv import Trigger
-from twisted.internet import defer
-from txros import util
 from visualization_msgs.msg import Marker, MarkerArray
 
 from .sub_singleton import SubjuGator
@@ -31,11 +29,11 @@ Z_POSITION_TOL = -0.53
 
 
 class Pinger(SubjuGator):
-    @util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
         global markers
         markers = MarkerArray()
-        pub_markers = yield self.nh.advertise("/pinger/rays", MarkerArray)
+        pub_markers = self.nh.advertise("/pinger/rays", MarkerArray)
+        await pub_markers.setup()
 
         fprint("Getting Guess Locations")
 
@@ -56,7 +54,7 @@ class Pinger(SubjuGator):
                 )
 
                 # check \/
-                pinger_guess = yield self.transform_to_baselink(
+                pinger_guess = await self.transform_to_baselink(
                     self, pinger_1_req, pinger_2_req
                 )
                 fprint(pinger_guess)
@@ -75,7 +73,7 @@ class Pinger(SubjuGator):
             fprint("=" * 50)
 
             fprint("waiting for message")
-            p_message = yield self.pinger_sub.get_next_message()
+            p_message = await self.pinger_sub.get_next_message()
 
             pub_markers.publish(markers)
             fprint(p_message)
@@ -88,7 +86,7 @@ class Pinger(SubjuGator):
                 )
                 if use_prediction:
                     fprint("Moving to random guess")
-                    yield self.go_to_random_guess(self, pinger_1_req, pinger_2_req)
+                    await self.go_to_random_guess(self, pinger_1_req, pinger_2_req)
                 continue
 
             # Ignore magnitude from processed ping
@@ -97,11 +95,11 @@ class Pinger(SubjuGator):
             if np.isnan(vec).any():
                 fprint("Ignored! nan", msg_color="red")
                 if use_prediction:
-                    yield self.go_to_random_guess(self, pinger_1_req, pinger_2_req)
+                    await self.go_to_random_guess(self, pinger_1_req, pinger_2_req)
                 continue
 
             # Transform hydrophones vector to relative coordinate
-            transform = yield self._tf_listener.get_transform(
+            transform = await self._tf_listener.get_transform(
                 "/base_link", "/hydrophones"
             )
             vec = transform._q_mat.dot(vec)
@@ -131,7 +129,7 @@ class Pinger(SubjuGator):
                     fprint("Arrived to pinger!")
                     break
 
-                sub_position, _ = yield self.tx_pose()
+                sub_position, _ = await self.tx_pose()
                 dists = [
                     np.linalg.norm(
                         sub_position
@@ -142,13 +140,13 @@ class Pinger(SubjuGator):
                 pinger_id = np.argmin(dists)
                 # pinger_id 0 = pinger_surface
                 # pinger_id 1 = pinger_shooter
-                yield self.nh.set_param("pinger_where", int(pinger_id))
+                await self.nh.set_param("pinger_where", int(pinger_id))
 
                 break
 
             vec[2] = 0
             if use_prediction:
-                pinger_guess = yield self.transform_to_baselink(
+                pinger_guess = await self.transform_to_baselink(
                     self, pinger_1_req, pinger_2_req
                 )
                 fprint(f"Transformed guess: {pinger_guess}")
@@ -156,13 +154,12 @@ class Pinger(SubjuGator):
                 # check, vec = self.check_with_guess(vec, pinger_guess)
 
             fprint(f"move to {vec}")
-            yield self.fancy_move(self, vec)
+            await self.fancy_move(self, vec)
 
         fprint("Arrived to hydrophones! Going down!")
-        yield self.move.to_height(PINGER_HEIGHT).zero_roll_and_pitch().go(speed=0.1)
+        await self.move.to_height(PINGER_HEIGHT).zero_roll_and_pitch().go(speed=0.1)
 
-    @util.cancellableInlineCallbacks
-    def fancy_move(self, sub: SubjuGator, vec):
+    async def fancy_move(self, sub: SubjuGator, vec):
         global markers
         marker = Marker(
             ns="pinger",
@@ -179,17 +176,16 @@ class Pinger(SubjuGator):
         marker.color.a = 1
         markers.markers.append(marker)
 
-        yield sub.move.relative(vec).depth(MOVE_AT_DEPTH).zero_roll_and_pitch().go(
+        await sub.move.relative(vec).depth(MOVE_AT_DEPTH).zero_roll_and_pitch().go(
             speed=SPEED
         )
 
-    @util.cancellableInlineCallbacks
-    def go_to_random_guess(self, sub: SubjuGator, pinger_1_req, pinger_2_req):
-        pinger_guess = yield self.transform_to_baselink(sub, pinger_1_req, pinger_2_req)
+    async def go_to_random_guess(self, sub: SubjuGator, pinger_1_req, pinger_2_req):
+        pinger_guess = await self.transform_to_baselink(sub, pinger_1_req, pinger_2_req)
         where_to = random.choice(pinger_guess)
         where_to = where_to / np.linalg.norm(where_to)
         fprint(f"Going to random guess {where_to}", msg_color="yellow")
-        yield self.fancy_move(sub, where_to)
+        await self.fancy_move(sub, where_to)
 
     def check_with_guess(self, vec: np.ndarray, pinger_guess: np.ndarray):
         for guess in pinger_guess:
@@ -209,10 +205,9 @@ class Pinger(SubjuGator):
             return (False, go_to_guess)
         return (True, vec)
 
-    @util.cancellableInlineCallbacks
-    def transform_to_baselink(self, sub: SubjuGator, pinger_1_req, pinger_2_req):
-        transform = yield sub._tf_listener.get_transform("/base_link", "map")
-        position = yield sub.pose.position
+    async def transform_to_baselink(self, sub: SubjuGator, pinger_1_req, pinger_2_req):
+        transform = await sub._tf_listener.get_transform("/base_link", "map")
+        position = await sub.pose.position
         pinger_guess = [
             transform._q_mat.dot(np.array(x) - position)
             for x in (pinger_1_req, pinger_2_req)
@@ -232,4 +227,4 @@ class Pinger(SubjuGator):
             marker.color.a = 1
             global markers
             markers.markers.append(marker)
-        defer.returnValue(pinger_guess)
+        return pinger_guess

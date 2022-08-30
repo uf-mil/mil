@@ -1,11 +1,11 @@
 from geometry_msgs.msg import Point
 from nav_msgs.msg import Odometry
 from navigator_test_lib import SpoofGenerator, TestUnit
-from txros import util
+from txros import NodeHandle, util
 
 
 class MissionPlannerTest(TestUnit):
-    def __init__(self, nh):
+    def __init__(self, nh: NodeHandle):
         self.nh = nh
         self.results = []
         self.count = 0
@@ -22,6 +22,5 @@ class MissionPlannerTest(TestUnit):
         )
         self.pub_base_mission1.start(self.nh)
 
-    @util.cancellableInlineCallbacks
-    def run_tests(self):
-        yield self.nh.sleep(10000)
+    async def run_tests(self):
+        await self.nh.sleep(10000)

@@ -1,3 +1,4 @@
+import asyncio
 import json
 from typing import Any, Dict, List, Type
 
@@ -29,8 +30,7 @@ def MakeChainWithTimeout(base: Type):
         is the mission used by the rqt plugin under the "Chained Missions" section.
         """
 
-        @util.cancellableInlineCallbacks
-        def run_submission_with_timeout(
+        async def run_submission_with_timeout(
             self, mission: str, timeout: float, parameters: str
         ):
             """
@@ -52,17 +52,17 @@ def MakeChainWithTimeout(base: Type):
             """
             submission = self.run_submission(mission, parameters)
             if timeout == 0:  # Timeout of zero means no timeout
-                result = yield submission
-                defer.returnValue(result)
-            timeout_df = self.nh.sleep(timeout)
-            result, index = yield defer.DeferredList(
-                [submission, timeout_df], fireOnOneCallback=True, fireOnOneErrback=True
+                result = await submission
+                return result
+            timeout_fut = self.nh.sleep(timeout)
+            result, index = await asyncio.wait(
+                [submission, timeout_fut], return_when=asyncio.FIRST_COMPLETED
             )
             if index == 0:
-                yield timeout_df.cancel()
-                defer.returnValue(result)
+                timeout_fut.cancel()
+                return result
             if index == 1:
-                yield submission.cancel()
+                submission.cancel()
                 raise TimeoutException(timeout)
 
         @classmethod
@@ -117,8 +117,7 @@ def MakeChainWithTimeout(base: Type):
                     mission["required"] = True
             return parameters
 
-        @util.cancellableInlineCallbacks
-        def run(self, parameters: Dict[str, List]):
+        async def run(self, parameters: Dict[str, List]):
             """
             Runs a list of child missions specified in the parameters with optional timeouts.
 
@@ -153,12 +152,12 @@ def MakeChainWithTimeout(base: Type):
                         )
                         print("NO FAIL BRO")
 
-                df = self.run_submission_with_timeout(
+                fut = self.run_submission_with_timeout(
                     mission["mission"], mission["timeout"], mission["parameters"]
                 )
-                df.addBoth(cb)
-                yield df
+                fut.add_done_callback(cb)
+                await fut
             self.send_feedback("Done with all")
-            defer.returnValue("All missions complete or skipped.")
+            return "All missions complete or skipped."
 
     return ChainWithTimeout
