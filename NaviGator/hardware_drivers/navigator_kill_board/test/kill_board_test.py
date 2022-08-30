@@ -5,6 +5,8 @@ from threading import Lock
 
 import rospy
 from mil_tools import thread_lock
+from navigator_alarm_handlers import NetworkLoss
+from navigator_kill_board import HeartbeatServer
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from std_msgs.msg import Header
 from std_srvs.srv import SetBool
@@ -15,10 +17,13 @@ lock = Lock()
 class killtest(unittest.TestCase):
     def __init__(self, *args):
         self.hw_kill_alarm = None
+        self.network_kill_alarm = None
         self.updated = False
         self.AlarmListener = AlarmListener("hw-kill", self._hw_kill_cb)
+        self.NetworkListener = AlarmListener("network-loss", self._network_kill_cb)
         self.AlarmBroadcaster = AlarmBroadcaster("kill")
         super().__init__(*args)
+        # self.heartbeat = HeartbeatServer("/network", 1.0)
 
     @thread_lock(lock)
     def reset_update(self):
@@ -37,6 +42,21 @@ class killtest(unittest.TestCase):
             self.updated = True
         self.hw_kill_alarm = alarm
 
+    @thread_lock(lock)
+    def _network_kill_cb(self, alarm):
+        """
+        Called on change in network-kill alarm.
+        If the raised status changed, set update flag to true so test an notice change
+        """
+        if (
+            self.network_kill_alarm is None
+            or alarm.raised != self.network_kill_alarm.raised
+        ):
+            self.updated = True
+        self.network_kill_alarm = alarm
+        if alarm.raised:
+            rospy.logerr("network kill raised")
+
     def wait_for_kill_update(self, timeout=rospy.Duration(0.5)):
         """
         Wait up to timeout time to an hw-kill alarm change. Returns a copy of the new alarm or throws if times out
@@ -45,7 +65,7 @@ class killtest(unittest.TestCase):
         while rospy.Time.now() < timeout:
             lock.acquire()
             updated = copy(self.updated)
-            alarm = deepcopy(self.hw_kill_alarm)
+            alarm = (deepcopy(self.hw_kill_alarm), deepcopy(self.network_kill_alarm))
             lock.release()
             if updated:
                 return alarm
@@ -57,14 +77,14 @@ class killtest(unittest.TestCase):
         Waits for update and ensures it is now raised
         """
         alarm = self.wait_for_kill_update(timeout)
-        self.assertEqual(alarm.raised, True)
+        self.assertEqual(alarm[0].raised and alarm[1].raised, True)
 
     def assert_cleared(self, timeout=rospy.Duration(0.5)):
         """
         Wait for update and ensures is now cleared
         """
         alarm = self.wait_for_kill_update(timeout)
-        self.assertEqual(alarm.raised, False)
+        self.assertEqual(alarm[0].raised and alarm[1].raised, False)
 
     def test_1_initial_state(self):  # test the initial state of kill signal
         """
@@ -76,7 +96,7 @@ class killtest(unittest.TestCase):
         alarm = self.wait_for_kill_update(
             timeout=rospy.Duration(10.0)
         )  # Allow lots of time for initial alarm setup
-        if alarm.raised:
+        if alarm[0].raised or alarm[1].raised:
             self.assertTrue(True)
             return
         self.reset_update()
@@ -126,6 +146,7 @@ class killtest(unittest.TestCase):
         Tests remote kill by publishing hearbeat, stopping and checking alarm is raised, then
         publishing hearbeat again to ensure alarm gets cleared.
         """
+        # self.heartbeat = HeartbeatServer("/network", 0.5)
         # publishing msg to network
         pub = rospy.Publisher("/network", Header, queue_size=10)
         rate = rospy.Rate(10)

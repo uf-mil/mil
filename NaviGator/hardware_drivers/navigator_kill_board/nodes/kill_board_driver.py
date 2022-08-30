@@ -9,7 +9,7 @@ import rospy
 import serial
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from mil_tools import thread_lock
-from navigator_alarm import NetworkLoss
+from navigator_alarm_handlers import NetworkLoss
 from navigator_kill_board import constants
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from sensor_msgs.msg import Joy
