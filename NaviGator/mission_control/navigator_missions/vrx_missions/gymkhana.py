@@ -12,7 +12,6 @@ class Gymkhana(Vrx):
 
     async def run(self, args):
         await self.nh.sleep(5)
-        await self.reset_pcodar()
 
         await self.run_submission("VrxNavigation")
         await self.run_submission("VrxBeacon")

@@ -90,6 +90,21 @@ add_custom_command(
   COMMENT "xacro: generating ${output} from yamls"
 )
 
+# Generate general Navigator urdf via yaml files
+#add_custom_target(navigator_urdf ALL
+#  DEPENDS ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/urdf/navigator.urdf
+#)
+#add_custom_command(
+#  OUTPUT ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/urdf/navigator.urdf
+#  COMMAND . ${CATKIN_DEVEL_PREFIX}/setup.sh && roslaunch vrx_gazebo generate_wamv.launch thruster_yaml:=${CMAKE_CURRENT_SOURCE_DIR}/urdf/navigator/thruster_config.yaml component_yaml:=${CMAKE_CURRENT_SOURCE_DIR}/urdf/navigator/component_config.yaml wamv_target:=${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/urdf/navigator.urdf wamv_locked:=True
+#  DEPENDS urdf/navigator/thruster_config.yaml urdf/navigator/component_config.yaml
+#  DEPENDS ${CATKIN_DEVEL_PREFIX}/setup.sh
+#  BYPRODUCTS urdf/navigator/thruster_config.xacro urdf/navigator/component_config.xacro
+#  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#  COMMENT "xacro: generating ${output} from yamls"
+#)
+
+
 # Generate world files from xacro and install
 xacro_add_files(
   worlds/course.world.xacro

@@ -24,7 +24,7 @@ from mil_vision_tools import (
 from PIL import Image
 from sensor_msgs.msg import Image, PointCloud2
 from std_msgs.msg import Int32
-from std_srvs.srv import SetBool
+from std_srvs.srv import SetBool, Trigger
 from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from tf.transformations import quaternion_matrix
 from vision_msgs.msg import Detection2DArray
@@ -105,6 +105,9 @@ class VrxClassifier:
         if self.is_training:
             self.enabled = True
         self.queue = []
+
+        self.pcodar_reset = rospy.ServiceProxy("/pcodar/reset", Trigger)
+        self.pcodar_reset()
 
     @thread_lock(lock)
     def set_enable_srv(self, req):

@@ -27,7 +27,6 @@ class VrxWayfinding(Vrx):
         await self.wait_for_task_such_that(
             lambda task: task.state in ["ready", "running"]
         )
-        await self.reset_pcodar()
 
         path_msg = await self.get_latching_msg(self.wayfinding_path_sub)
 

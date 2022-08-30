@@ -5,7 +5,7 @@ import numpy as np
 import tf2_ros
 from mil_misc_tools import ThrowingArgumentParser
 from mil_tools import rosmsg_to_numpy
-from navigator_msgs.srv import MessageExtranceExitGate, MessageExtranceExitGateRequest
+from navigator_msgs.srv import MessageEntranceExitGate, MessageEntranceExitGateRequest
 from twisted.internet import defer
 from txros import util
 
@@ -94,7 +94,7 @@ class EntranceGate(Navigator):
         cls.parser = parser
 
         cls.net_service_call = cls.nh.get_service_client(
-            "/entrance_exit_gate_message", MessageExtranceExitGate
+            "/entrance_exit_gate_message", MessageEntranceExitGate
         )
 
     async def run(self, args):
@@ -121,7 +121,7 @@ class EntranceGate(Navigator):
 
         self.send_feedback("Gate identified as " + str(self.pinger_gate + 1))
         if args.exit:
-            msg = MessageExtranceExitGateRequest()
+            msg = MessageEntranceExitGateRequest()
             if self.net_entrance_results is not None:
                 msg.entrance_gate = self.net_entrance_results
             else:

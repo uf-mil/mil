@@ -17,7 +17,6 @@ class VrxStationKeeping2(Vrx):
         await self.wait_for_task_such_that(
             lambda task: task.state in ["ready", "running"]
         )
-        await self.reset_pcodar()
 
         self.send_feedback("Waiting for station keeping goal")
         goal_msg = await self.get_latching_msg(self.station_keep_goal)

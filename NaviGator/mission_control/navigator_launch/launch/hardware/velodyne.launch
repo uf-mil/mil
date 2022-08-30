@@ -9,6 +9,7 @@
   <include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
     <arg name="model" value="VLP16"/>
     <arg name="pcap" value="$(arg pcap)"/>
+    <arg name="frame_id" default="velodyne_link"/>
   </include>
 
   <!-- start cloud nodelet -->
