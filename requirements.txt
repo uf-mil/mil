@@ -23,6 +23,7 @@ urdf-parser-py==0.0.4
 
 # Internet
 aiohttp==3.8.1
+aiohttp-xmlrpc==1.5.0
 
 # Documentation
 sphinx==5.0.1

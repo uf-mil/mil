@@ -43,7 +43,10 @@ class MissionRunner:
         if not hasattr(mission_module, base_mission_name):
             raise Exception("Base mission not in module")
         base_mission = getattr(mission_module, base_mission_name)
-        await base_mission._init(self)
+        if inspect.iscoroutinefunction(base_mission._init):
+            await base_mission._init(self)
+        else:
+            base_mission._init(self)
 
         # Import all missions which extend the base class and initialize them
         self.missions = {}
@@ -72,7 +75,8 @@ class MissionRunner:
         self.server.start()
 
     async def shutdown(self) -> None:
-        await asyncio.gather(self.server.shutdown())
+        await self.server.shutdown()
+        await self.nh.shutdown()
 
     def has_mission(self, mission: str) -> bool:
         """
@@ -146,7 +150,7 @@ class MissionRunner:
         print(f"Clean up for {missionname} failed!")
         print(final.getTraceback())
 
-    async def mission_finished_cb(self, result: Any):
+    async def mission_finished_cb(self, task: Any):
         """
         Called when the current mission finishes successfully, is canceled, is preempted by another
         mission, or raises an exception. Publishes the correct result to the action clients.
@@ -154,7 +158,7 @@ class MissionRunner:
         result = DoMissionResult()
 
         try:
-            task_result = result.result
+            task_result = task
         except Exception as e:
             # If mission failed / was canceled, abort mission
             result.success = False
@@ -196,7 +200,7 @@ async def main():
     try:
         await t.init()
         await asyncio.Future()
-    except:
+    except asyncio.CancelledError:
         await t.shutdown()
 
 
