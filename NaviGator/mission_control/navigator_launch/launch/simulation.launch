@@ -29,10 +29,11 @@
     <!-- Simulation Relevant Code -->
     <include file="$(find navigator_launch)/launch/vrx/vrx_classifier.launch" >
         <arg name="image_topic" value="/wamv/sensors/camera/front_left_cam/image_raw"/>
+        <arg name="use_yolo" value="False"/>
     </include>
     <include file="$(find navigator_launch)/launch/vrx/vrx_tf.launch" />
     <include file="$(find navigator_launch)/launch/vrx/vrx_localization.launch" />
-    <include file="$(find navigator_launch)/launch/gnc/sim_controller.launch" /> <!-- Uses different PID values -->
+    <include file="$(find navigator_launch)/launch/vrx/vrx_controller.launch" /> <!-- Uses different PID values -->
     <include file="$(find navigator_launch)/launch/vrx/vrx_pcodar.launch">
       <arg name="topic" value="/velodyne_points"/>
     </include>

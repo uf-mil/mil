@@ -24,7 +24,7 @@ class ThrusterMapperNode:
         urdf = rospy.get_param("/robot_description", default=None)
         if urdf is None or len(urdf) == 0:
             raise Exception("robot description not set or empty")
-        if self.is_vrx:
+        if self.is_vrx or self.is_sim:
             self.thruster_map = ThrusterMap.from_vrx_urdf(urdf)
         else:
             self.thruster_map = ThrusterMap.from_urdf(urdf)
@@ -60,7 +60,7 @@ class ThrusterMapperNode:
 
         # Joint state publisher
         # TODO(ironmig):
-        if not self.is_vrx:
+        if not self.is_vrx and not self.is_sim:
             self.joint_state_pub = rospy.Publisher(
                 "/thruster_states", JointState, queue_size=1
             )

@@ -215,13 +215,13 @@ class KillInterface:
             if msg == byte:
                 del self.expected_responses[index]
                 return
-        # TODO: Figure out why this happens so much
+        # GH-861: Figure out why this happens so much
         # Log a warning if an unexpected byte was received
-        #rospy.logwarn(
+        # rospy.logwarn(
         #    "Received an unexpected byte {}, remaining expected_responses={}".format(
         #        hex(ord(msg)), len(self.expected_responses)
         #    )
-        #)
+        # )
 
     @thread_lock(lock)
     def receive(self):
