@@ -43,7 +43,6 @@ class ThrusterMapperNode:
         if self.is_vrx or self.is_sim:
             if self.is_vrx:
                 thrust_string = 5
-            print("hello", self.thruster_map.names)
             self.publishers = [
                 rospy.Publisher(
                     f"/wamv/thrusters/{name[thrust_string:]}_thrust_cmd",
