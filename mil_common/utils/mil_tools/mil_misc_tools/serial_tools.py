@@ -89,6 +89,18 @@ class SimulatedSerial(NoopSerial):
     Note: :class:`NoopSerial` and :class:`SimulatedSerial` are generic and are
     candidates for mil_common.
 
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Pretty prints the ``SimulatedSerial`` object, its address, and the start
+            of its buffer.
+
+        .. describe:: repr(x)
+
+            Pretty prints the ``SimulatedSerial`` object, its address, and the start
+            of its buffer. Equivalent to ``str(x)``.
+
     Attributes:
         buffer (bytes): A buffer of bytes waiting to be read from the device.
     """
@@ -97,6 +109,11 @@ class SimulatedSerial(NoopSerial):
 
     def __init__(self):
         self.buffer = b""
+
+    def __str__(self) -> str:
+        return f"<SimulatedSerial at 0x{id(self):0x}, buffer={self.buffer[:10]}>"
+
+    __repr__ = __str__
 
     @property
     def in_waiting(self) -> int:
