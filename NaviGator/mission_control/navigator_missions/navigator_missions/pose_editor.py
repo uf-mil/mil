@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import warnings
 from typing import TYPE_CHECKING
 
@@ -133,7 +134,7 @@ class PoseEditor2:
     def distance(self):
         return np.linalg.norm(self.position - self.nav.pose[0])
 
-    def go(self, *args, **kwargs):
+    def go(self, *args, **kwargs) -> asyncio.Future:
         if self.nav.killed is True or self.nav.odom_loss is True:
             # What do we want to do with missions when the boat is killed
             fprint(

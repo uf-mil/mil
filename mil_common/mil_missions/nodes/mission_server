@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 import asyncio
-import functools
 import inspect
 import json
 import traceback
+from typing import Any
 
-import twisted.python
 import uvloop
 from mil_missions.msg import DoMissionAction, DoMissionFeedback, DoMissionResult
 from mil_missions_core import MissionException, MissionResult
-from twisted.internet import defer, reactor
 from txros import NodeHandle, action, rosxmlrpc, util
 
 
@@ -31,6 +29,7 @@ class MissionRunner:
         self.nh = NodeHandle.from_argv("mission_runner")
         await self.nh.setup()
         self.server = action.SimpleActionServer(self.nh, "/mission", DoMissionAction)
+        await self.server.setup()
 
         # Get mission_module and base_mission from params, if not set just crash
         mission_module_name = await self.nh.get_param("~missions_module")
@@ -71,6 +70,9 @@ class MissionRunner:
         self.server.register_preempt_callback(self.check_new_mission)
         self.server.register_goal_callback(self.check_new_mission)
         self.server.start()
+
+    async def shutdown(self) -> None:
+        await asyncio.gather(self.server.shutdown())
 
     def has_mission(self, mission: str) -> bool:
         """
@@ -119,8 +121,11 @@ class MissionRunner:
 
         # Start mission, and create callbacks even if it is not a deferred
         self.mission = self.missions[goal.mission]()
-        self.mission_future = asyncio.create_task(self.mission.run(parameters))
-        self.mission_future.add_done_callback(self.mission_finished_cb)
+        self.mission_future = asyncio.create_task(self.run_with_callback(parameters))
+
+    async def run_with_callback(self, parameters):
+        result = await self.mission.run(parameters)
+        await self.mission_finished_cb(result)
 
     def check_new_mission(self):
         """
@@ -141,7 +146,7 @@ class MissionRunner:
         print(f"Clean up for {missionname} failed!")
         print(final.getTraceback())
 
-    async def mission_finished_cb(self, task: asyncio.Task):
+    async def mission_finished_cb(self, result: Any):
         """
         Called when the current mission finishes successfully, is canceled, is preempted by another
         mission, or raises an exception. Publishes the correct result to the action clients.
@@ -149,7 +154,7 @@ class MissionRunner:
         result = DoMissionResult()
 
         try:
-            task_result = task.result()
+            task_result = result.result
         except Exception as e:
             # If mission failed / was canceled, abort mission
             result.success = False
@@ -188,7 +193,11 @@ async def main():
     Start the mission server, crashing if the init function fails.
     """
     t = MissionRunner()
-    await t.init()
+    try:
+        await t.init()
+        await asyncio.Future()
+    except:
+        await t.shutdown()
 
 
 if __name__ == "__main__":

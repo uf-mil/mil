@@ -3,7 +3,7 @@ import numpy as np
 from mil_misc_tools import ThrowingArgumentParser
 from mil_tools import numpy_to_point, rosmsg_to_numpy
 from navigator_path_planner.msg import MoveGoal
-from txros import util
+from txros import types, util
 
 from .navigator import Navigator
 
@@ -70,7 +70,7 @@ class Move(Navigator):
         commands = commands[0::2]
 
         self.send_feedback("Switching trajectory to lqrrt")
-        self.change_trajectory("lqrrt")
+        await self.change_trajectory("lqrrt")
 
         self.send_feedback("Switching wrench to autonomous")
         await self.change_wrench("autonomous")
@@ -164,6 +164,6 @@ class Move(Navigator):
                 msg = f"Moving {command} " if trans_move else f"Yawing {command[4:]} "
                 self.send_feedback(msg + f"{amount}{unit}")
                 res = await movement(float(amount), unit).go(**action_kwargs)
-            if res.failure_reason != "":
+            if not isinstance(res, types.ActionResult) and res.failure_reason != "":
                 raise Exception(f"Move failed. Reason: {res.failure_reason}")
         return "Move completed successfully!"

@@ -519,8 +519,8 @@ class Navigator(BaseMission):
         return cls.change_wrench("autonomous")
 
     @classmethod
-    def change_trajectory(cls, source: str):
-        return cls._change_trajectory(MuxSelectRequest(source))
+    async def change_trajectory(cls, source: str):
+        return await cls._change_trajectory(MuxSelectRequest(source))
 
     def search(self, *args, **kwargs):
         return Searcher(self, *args, **kwargs)
