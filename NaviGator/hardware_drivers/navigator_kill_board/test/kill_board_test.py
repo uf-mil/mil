@@ -18,19 +18,26 @@ class killtest(unittest.TestCase):
     def __init__(self, *args):
         self.hw_kill_alarm = None
         self.network_kill_alarm = None
-        self.updated = False
+        self.hardware_updated = False
+        self.network_updated = False
         self.AlarmListener = AlarmListener("hw-kill", self._hw_kill_cb)
         self.NetworkListener = AlarmListener("network-loss", self._network_kill_cb)
         self.AlarmBroadcaster = AlarmBroadcaster("kill")
+        self.sub = rospy.Subscriber("/network", Header, self.cb)
+        self.network = NetworkLoss()
         super().__init__(*args)
         # self.heartbeat = HeartbeatServer("/network", 1.0)
+
+    def cb(self, msg):
+        rospy.logerr("heard /network")
 
     @thread_lock(lock)
     def reset_update(self):
         """
         Reset update state to False so we can notice changes to hw-kill
         """
-        self.updated = False
+        self.hardware_updated = False
+        self.network_updated = False
 
     @thread_lock(lock)
     def _hw_kill_cb(self, alarm):
@@ -39,7 +46,8 @@ class killtest(unittest.TestCase):
         If the raised status changed, set update flag to true so test an notice change
         """
         if self.hw_kill_alarm is None or alarm.raised != self.hw_kill_alarm.raised:
-            self.updated = True
+            self.hardware_updated = True
+            rospy.logerr("hardware updated")
         self.hw_kill_alarm = alarm
 
     @thread_lock(lock)
@@ -52,39 +60,45 @@ class killtest(unittest.TestCase):
             self.network_kill_alarm is None
             or alarm.raised != self.network_kill_alarm.raised
         ):
-            self.updated = True
+            rospy.logerr("network updated")
+            self.network_updated = True
         self.network_kill_alarm = alarm
-        if alarm.raised:
-            rospy.logerr("network kill raised")
 
-    def wait_for_kill_update(self, timeout=rospy.Duration(0.5)):
+    def wait_for_kill_update(self, timeout=rospy.Duration(0.5), ver=None):
         """
         Wait up to timeout time to an hw-kill alarm change. Returns a copy of the new alarm or throws if times out
         """
         timeout = rospy.Time.now() + timeout
+        rospy.logerr(f"waiting for kill update {ver}")
         while rospy.Time.now() < timeout:
             lock.acquire()
-            updated = copy(self.updated)
+            hardware_updated = copy(self.hardware_updated)
+            network_updated = copy(self.network_updated)
             alarm = (deepcopy(self.hw_kill_alarm), deepcopy(self.network_kill_alarm))
             lock.release()
-            if updated:
+            if hardware_updated or network_updated:
                 return alarm
             rospy.sleep(0.01)
+        rospy.logerr(f"no update found {ver}")
         raise Exception("timeout")
 
-    def assert_raised(self, timeout=rospy.Duration(0.5)):
+    def assert_raised(self, timeout=rospy.Duration(1)):
         """
         Waits for update and ensures it is now raised
         """
         alarm = self.wait_for_kill_update(timeout)
-        self.assertEqual(alarm[0].raised and alarm[1].raised, True)
+        hardware_pass = alarm[0].raised if alarm[0] is not None else True
+        network_pass = alarm[1].raised if alarm[1] is not None else True
+        self.assertEqual(hardware_pass and network_pass, True)
 
-    def assert_cleared(self, timeout=rospy.Duration(0.5)):
+    def assert_cleared(self, timeout=rospy.Duration(1)):
         """
         Wait for update and ensures is now cleared
         """
         alarm = self.wait_for_kill_update(timeout)
-        self.assertEqual(alarm[0].raised and alarm[1].raised, False)
+        hardware_pass = alarm[0].raised if alarm[0] is not None else True
+        network_pass = alarm[1].raised if alarm[1] is not None else True
+        self.assertEqual(hardware_pass and network_pass, False)
 
     def test_1_initial_state(self):  # test the initial state of kill signal
         """
@@ -93,10 +107,14 @@ class killtest(unittest.TestCase):
         Because hw-kill will be initialized to cleared then later raised when alarm server is fully started,
         so we need to allow for pottentialy two updates before it is raised.
         """
+        pub = rospy.Publisher("/network", Header, queue_size=10)
+        rospy.sleep(1)
+        pub.publish(Header())
+        self.reset_update()
         alarm = self.wait_for_kill_update(
-            timeout=rospy.Duration(10.0)
+            timeout=rospy.Duration(10.0), ver=1
         )  # Allow lots of time for initial alarm setup
-        if alarm[0].raised or alarm[1].raised:
+        if (alarm[0] and alarm[0].raised) or (alarm[1] and alarm[1].raised):
             self.assertTrue(True)
             return
         self.reset_update()

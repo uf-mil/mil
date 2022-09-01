@@ -60,6 +60,8 @@ class KillInterface:
         for kill in constants["KILLS"]:
             self.board_status[kill] = False
         self.kills: list[str] = list(self.board_status.keys())
+        self.nw_killed = False
+        self.sw_killed = False
         self.expected_responses = []
         self.network_msg = None
         self.wrench = ""
@@ -90,6 +92,9 @@ class KillInterface:
 
         self._hw_kill_listener = AlarmListener("hw-kill", self.hw_kill_alarm_cb)
         self._kill_listener = AlarmListener("kill", self.kill_alarm_cb)
+        self._network_kill_listener = AlarmListener(
+            "network-loss", self.network_kill_alarm_cb
+        )
         self._hw_kill_listener.wait_for_server()
         self._kill_listener.wait_for_server()
         rospy.Subscriber("/wrench/selected", String, self.wrench_cb)
@@ -269,12 +274,29 @@ class KillInterface:
                 )
             self.wrench = wrench
 
-    def network_cb(self, msg):
+    @thread_lock(lock)
+    def network_kill_alarm_cb(self, alarm):
         """
         Pings kill board on every network hearbeat message. Pretends to be the rf-based hearbeat because
         real one does not work :(
         """
-        self.request(constants["PING"]["REQUEST"], constants["PING"]["RESPONSE"])
+        if alarm.raised:
+            self.nw_killed = True
+            if self.sw_killed:
+                return
+            self.request(
+                constants["COMPUTER"]["KILL"]["REQUEST"],
+                constants["COMPUTER"]["KILL"]["RESPONSE"],
+            )
+        else:
+            self.nw_killed = False
+            if self.sw_killed:
+                return
+            self.request(
+                constants["COMPUTER"]["CLEAR"]["REQUEST"],
+                constants["COMPUTER"]["CLEAR"]["RESPONSE"],
+            )
+        # self.request(constants["PING"]["REQUEST"], constants["PING"]["RESPONSE"])
 
     def publish_diagnostics(self, err=None):
         """
@@ -350,20 +372,29 @@ class KillInterface:
             for byte in expected_response:
                 self.expected_responses.append(byte)
 
+    @thread_lock(lock)
     def kill_alarm_cb(self, alarm):
         """
         Informs kill board about software kills through ROS Alarms
         """
         if alarm.raised:
+            self.sw_killed = True
+            if self.nw_killed:
+                return
             self.request(
                 constants["COMPUTER"]["KILL"]["REQUEST"],
                 constants["COMPUTER"]["KILL"]["RESPONSE"],
             )
+            rospy.loginfo("Software killed")
         else:
+            self.sw_killed = False
+            if self.nw_killed:
+                return
             self.request(
                 constants["COMPUTER"]["CLEAR"]["REQUEST"],
                 constants["COMPUTER"]["CLEAR"]["RESPONSE"],
             )
+            rospy.loginfo("Software found")
 
     def hw_kill_alarm_cb(self, alarm):
         self._hw_killed = alarm.raised
