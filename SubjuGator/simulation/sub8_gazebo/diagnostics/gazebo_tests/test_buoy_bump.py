@@ -3,7 +3,6 @@ import txros
 from diagnostics.gazebo_tests import common
 from missions import buoy
 from sub8 import pose_editor
-from twisted.internet import defer
 
 
 # TODO: Allow generic names

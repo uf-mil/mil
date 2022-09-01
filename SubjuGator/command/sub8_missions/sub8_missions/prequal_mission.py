@@ -6,9 +6,6 @@ import cv2
 import numpy as np
 import tf
 from cv_bridge import CvBridge
-from sensor_msgs.msg import CameraInfo, Image
-from twisted.internet import defer
-from txros import util
 
 from .sub_singleton import SubjuGator
 

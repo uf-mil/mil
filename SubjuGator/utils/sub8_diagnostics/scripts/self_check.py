@@ -13,7 +13,6 @@ from sensor_msgs.msg import CameraInfo, Image, Imu, Joy, MagneticField
 from std_msgs.msg import Header
 from sub8_msgs.msg import ThrusterStatus
 from tf.msg import tfMessage
-from twisted.internet import defer, reactor
 
 MESSAGE_TIMEOUT = 1  # s
 

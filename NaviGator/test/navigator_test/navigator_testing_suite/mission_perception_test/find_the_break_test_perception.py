@@ -1,7 +1,3 @@
-import txros
-from twisted.internet import defer
-
-
 class FindTheBreakTestPerception:
     def __init__(self, nh):
         self.nh = nh

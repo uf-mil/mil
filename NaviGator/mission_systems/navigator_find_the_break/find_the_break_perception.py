@@ -8,8 +8,7 @@ import txros
 from cv_bridge import CvBridge
 from mil_misc_tools.text_effects import CvDebug, fprint
 from sensor_msgs.msg import Image
-from twisted.internet import defer
-from txros import NodeHandle, util
+from txros import NodeHandle
 
 # Perception
 # Params : direction
@@ -190,7 +189,7 @@ class FindTheBreakPerception:
 
             # the second hpipe is found
             if len(new_hpipes) > 0 and self.hpipe_found:
-                defer.returnValue(self.count)
+                return self.count
 
             # the first hpipe is found
             elif len(new_hpipes) > 0 and not self.hpipe_found:

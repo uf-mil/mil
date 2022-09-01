@@ -1,6 +1,3 @@
-from twisted.internet import defer
-from txros import util
-
 from .base_mission import ExampleBaseMission
 
 

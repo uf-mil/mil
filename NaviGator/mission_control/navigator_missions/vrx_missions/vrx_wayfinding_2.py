@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
-import math
-
 import numpy as np
-import tf
-import txros
 from navigator_msgs.srv import MoveToWaypointRequest
 from tsp_solver.greedy import solve_tsp
-from twisted.internet import defer
 
 from .vrx import Vrx
 

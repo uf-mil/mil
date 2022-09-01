@@ -17,9 +17,8 @@ from navigator_msgs.srv import (
 )
 from robot_localization.srv import FromLL, FromLLRequest, ToLL, ToLLRequest
 from sensor_msgs.msg import CameraInfo, Image
-from std_msgs.msg import Empty, Float64, Float64MultiArray, Int32, String
+from std_msgs.msg import Empty, Float64, Float64MultiArray
 from std_srvs.srv import Trigger
-from twisted.internet import defer
 from txros import NodeHandle, action, txros_tf, util
 from vision_msgs.msg import Detection2DArray
 from vrx_gazebo.msg import Task

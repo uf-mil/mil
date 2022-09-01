@@ -6,7 +6,6 @@ import tf
 import txros
 from mil_tools import rosmsg_to_numpy
 from tsp_solver.greedy import solve_tsp
-from twisted.internet import defer
 
 from .vrx import Vrx
 

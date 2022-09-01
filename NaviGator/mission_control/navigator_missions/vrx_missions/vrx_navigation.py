@@ -6,7 +6,6 @@ import txros
 from mil_tools import quaternion_matrix, rosmsg_to_numpy
 from rospy.impl.tcpros_service import service_connection_handler
 from std_srvs.srv import SetBoolRequest
-from twisted.internet import defer
 
 from .vrx import Vrx
 
@@ -218,7 +217,7 @@ class VrxNavigation(Vrx):
                     move_id_tuple[0].cancel()
                     move_id_tuple = None
 
-                defer.returnValue(ret)
+                return ret
 
             if move_id_tuple is not None:
                 continue

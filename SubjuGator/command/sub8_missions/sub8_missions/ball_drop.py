@@ -5,10 +5,6 @@ from geometry_msgs.msg import Point
 from image_geometry import PinholeCameraModel
 from mil_misc_tools import text_effects
 from sensor_msgs.msg import CameraInfo
-from std_srvs.srv import SetBool, SetBoolRequest, Trigger
-from sub8_msgs.srv import GuessRequest, GuessRequestRequest
-from twisted.internet import defer
-from txros import util
 
 from .sub_singleton import SubjuGator
 

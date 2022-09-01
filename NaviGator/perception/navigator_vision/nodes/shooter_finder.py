@@ -19,11 +19,8 @@ from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import ColorRGBA, Header
 from tf import transformations
-from twisted.internet import defer
 from txros import txros_tf, util
 from visualization_msgs.msg import Marker, MarkerArray
-
-defer.setDebugging(True)
 
 
 def rect_lines(rect):

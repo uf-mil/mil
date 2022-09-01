@@ -2,8 +2,6 @@
 import numpy as np
 from geometry_msgs.msg import Vector3Stamped
 from mil_tools import rosmsg_to_numpy
-from twisted.internet import defer
-from txros import util
 
 from .navigator import Navigator
 

@@ -1,8 +1,6 @@
 import genpy
-import txros
 from mil_misc_tools import text_effects
 from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
-from twisted.internet import defer
 
 # Import missions here
 from .start_gate_2022 import StartGate2022

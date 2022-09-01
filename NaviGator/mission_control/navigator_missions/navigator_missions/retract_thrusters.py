@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-import txros
-from twisted.internet import defer
-
 from .navigator import Navigator
 
 

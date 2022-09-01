@@ -19,7 +19,6 @@ from std_msgs.msg import Empty
 from std_srvs.srv import SetBoolRequest
 from tf import transformations
 from tf.transformations import quaternion_matrix
-from twisted.internet import defer
 
 from .vrx import Vrx
 
@@ -509,7 +508,7 @@ class Dock(Vrx):
         # if we hit something not blue before reaching halfway through the image, we are on the wrong side
         if base_of_dock > height / 2:
             print("we are on wrong side")
-            defer.returnValue(None)
+            return None
 
         # find left wall of docking area
         for i in range(width / 2):

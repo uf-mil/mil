@@ -11,8 +11,7 @@ from nav_msgs.msg import Odometry
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from navigator_tools import CvDebug
 from sensor_msgs.msg import CameraInfo, Image
-from twisted.internet import defer
-from txros import tf, util
+from txros import tf
 
 ___author___ = "Tess Bianchi"
 
@@ -98,11 +97,11 @@ class LidarToImage:
         obj = await self._database(req)
 
         if obj is None or not obj.found:
-            defer.returnValue((None, None))
+            return (None, None)
         rois = []
         ros_img = await self._get_closest_image(obj.objects[0].header.stamp)
         if ros_img is None:
-            defer.returnValue((None, None))
+            return (None, None)
         img = self.bridge.imgmsg_to_cv2(ros_img, "mono8")
         o = obj.objects[0]
 
@@ -120,7 +119,7 @@ class LidarToImage:
             or xmax - xmin == 0
             or ymax - ymin == 0
         ):
-            defer.returnValue((None, None))
+            return (None, None)
         if ymin < 0:
             ymin = 0
         roi = img[ymin:ymax, xmin:xmax]
@@ -133,7 +132,7 @@ class LidarToImage:
         ret_obj["name"] = o.name
         ret_obj["bbox"] = [xmin, ymin, xmax, ymax]
         rois.append(ret_obj)
-        defer.returnValue((img, rois))
+        return (img, rois)
 
     def img_cb(self, image_ros):
         """Add an image to the image cache."""
@@ -154,7 +153,7 @@ class LidarToImage:
                     min_diff = diff
                     min_img = img
             if min_img is not None:
-                defer.returnValue(min_img)
+                return min_img
             await self.nh.sleep(0.3)
 
     def _resize_image(self, img):

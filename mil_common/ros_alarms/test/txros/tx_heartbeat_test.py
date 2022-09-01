@@ -1,11 +1,10 @@
-#!/usr/bin/env python3
+#!usr/bin/env python3
 import asyncio
 
 import txros
 import uvloop
 from ros_alarms import TxAlarmListener, TxHeartbeatMonitor
 from std_msgs.msg import String
-from twisted.internet import defer
 
 publish = True
 

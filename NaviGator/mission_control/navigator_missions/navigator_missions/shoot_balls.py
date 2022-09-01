@@ -5,7 +5,6 @@ from mil_misc_tools import ThrowingArgumentParser
 from mil_msgs.msg import ObjectsInImage
 from mil_msgs.srv import CameraToLidarTransform, CameraToLidarTransformRequest
 from mil_tools import rosmsg_to_numpy
-from twisted.internet import defer
 from txros import util
 
 from .navigator import Navigator

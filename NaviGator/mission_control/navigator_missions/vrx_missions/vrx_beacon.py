@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-import numpy as np
-import txros
-from mil_tools import rosmsg_to_numpy
 from navigator_msgs.srv import AcousticBeaconRequest
-from twisted.internet import defer
 
 from .vrx import Vrx
 

@@ -9,7 +9,6 @@ from mil_tools import rosmsg_to_numpy
 from nav_msgs.msg import Odometry
 from navigator_msgs.srv import ChooseAnimal, ChooseAnimalRequest, ChooseAnimalResponse
 from tsp_solver.greedy import solve_tsp
-from twisted.internet import defer
 
 from .vrx import Vrx
 

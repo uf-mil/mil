@@ -6,7 +6,6 @@ import asyncio
 import txros
 import uvloop
 from geometry_msgs.msg import PointStamped, PoseStamped
-from twisted.internet import defer
 
 
 class RvizRepublisher:

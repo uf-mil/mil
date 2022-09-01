@@ -8,7 +8,6 @@ import numpy as np
 import uvloop
 from mil_ros_tools import image_helpers
 from sensor_msgs.msg import Image
-from twisted.internet import reactor
 from txros import NodeHandle, util
 
 

@@ -7,8 +7,7 @@ import navigator_tests
 import uvloop
 from mil_misc_tools.text_effects import fprint
 from navigator_test_lib import TestUnit
-from twisted.internet import defer, reactor
-from txros import NodeHandle, util
+from txros import NodeHandle
 
 
 def _import(module):

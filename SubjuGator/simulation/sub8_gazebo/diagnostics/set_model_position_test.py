@@ -11,7 +11,6 @@ import uvloop
 from mil_ros_tools import msg_helpers
 from nav_msgs.msg import Odometry
 from sub8_gazebo.srv import RunJobResponse
-from twisted.internet import defer, reactor
 
 
 async def run_mission(srv, sub, nh):

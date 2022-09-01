@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-from twisted.internet import defer
-from txros import util
-
 from .sub_singleton import SubjuGator
 
 

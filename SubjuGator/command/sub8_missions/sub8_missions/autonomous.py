@@ -4,7 +4,6 @@ import genpy
 import txros
 from mil_misc_tools import text_effects
 from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
-from twisted.internet import defer
 
 from .arm_torpedos import FireTorpedos
 from .ball_drop import BallDrop
@@ -29,7 +28,7 @@ class Autonomous(SubjuGator):
             # oof what a hack
             if len(m.callbacks) == 0:
                 m.cancel()
-                defer.returnValue(True)
+                return True
             await self.nh.sleep(0.5)
         fprint("MISSION TIMEOUT", msg_color="red")
         m.cancel()

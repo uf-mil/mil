@@ -12,7 +12,6 @@ from navigator_msgs.srv import (
     MoveToWaypointResponse,
 )
 from robot_localization.srv import FromLL
-from twisted.internet import defer
 from vrx_gazebo.msg import Task
 
 

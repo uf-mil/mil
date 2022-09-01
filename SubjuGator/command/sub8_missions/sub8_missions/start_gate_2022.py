@@ -1,14 +1,7 @@
 #!/usr/bin/env python
 from __future__ import division
 
-import numpy as np
-import txros
 from mil_misc_tools import text_effects
-from mil_ros_tools import rosmsg_to_numpy
-from scipy.spatial import distance
-from twisted.internet import defer
-
-from .sub_singleton import SonarObjects, SubjuGator
 
 fprint = text_effects.FprintFactory(title="START_GATE", msg_color="cyan").fprint
 

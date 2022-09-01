@@ -7,7 +7,6 @@ from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest, ObjectDBQueryRespo
 from mil_tools import quaternion_matrix, rosmsg_to_numpy
 from navigator_msgs.srv import MoveToWaypointRequest, TwoClosestConesRequest
 from std_srvs.srv import SetBoolRequest
-from twisted.internet import defer
 
 from .vrx import Vrx
 

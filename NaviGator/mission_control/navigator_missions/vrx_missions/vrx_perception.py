@@ -4,7 +4,6 @@ from dynamic_reconfigure.msg import BoolParameter, DoubleParameter, IntParameter
 from geographic_msgs.msg import GeoPoseStamped
 from mil_tools import rosmsg_to_numpy
 from std_srvs.srv import SetBoolRequest, TriggerRequest
-from twisted.internet import defer
 
 from .vrx import Vrx
 

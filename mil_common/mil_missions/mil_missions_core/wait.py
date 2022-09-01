@@ -1,8 +1,5 @@
 from typing import Type, Union
 
-from twisted.internet import defer
-from txros import util
-
 from .exceptions import ParametersException
 
 

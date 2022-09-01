@@ -1,4 +1,3 @@
-import mil_ros_tools
 import numpy as np
 import visualization_msgs.msg as visualization_msgs
 from geometry_msgs.msg import Point, Vector3
@@ -6,10 +5,6 @@ from image_geometry import PinholeCameraModel
 from mil_misc_tools import FprintFactory, text_effects
 from mil_ros_tools import rosmsg_to_numpy
 from sensor_msgs.msg import CameraInfo
-from std_srvs.srv import SetBool, SetBoolRequest
-from sub8_msgs.srv import GuessRequest, GuessRequestRequest
-from twisted.internet import defer
-from txros import util
 from visualization_msgs.msg import Marker, MarkerArray
 
 from .sub_singleton import SubjuGator

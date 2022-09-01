@@ -16,7 +16,6 @@ from mil_vision_tools.cv_tools import contour_mask, rect_from_roi, roi_enclosing
 from navigator_vision import VrxStcColorClassifier
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2
 from std_srvs.srv import SetBoolRequest
-from twisted.internet import defer
 from vrx_gazebo.srv import ColorSequence, ColorSequenceRequest
 
 from .vrx import Vrx
@@ -69,7 +68,7 @@ class ScanTheCode(Vrx):
         except Exception as e:
             sequence = ["red", "green", "blue"]
             await self.report_sequence(sequence)
-            defer.returnValue(sequence)
+            return sequence
 
         await self.move.look_at(pose).set_position(pose).backward(5).go()
         await self.nh.sleep(5)

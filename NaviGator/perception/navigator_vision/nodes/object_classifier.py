@@ -9,8 +9,7 @@ import uvloop
 from mil_tools import CvDebug, fprint
 from navigator_msgs.srv import CameraDBQuery, CameraDBQueryResponse
 from object_classification import Config, LidarToImage, depicklify
-from twisted.internet import defer, reactor
-from txros import NodeHandle, util
+from txros import NodeHandle
 
 
 class ObjectClassifier:

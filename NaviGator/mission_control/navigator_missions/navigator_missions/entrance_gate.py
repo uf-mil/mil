@@ -6,8 +6,6 @@ import tf2_ros
 from mil_misc_tools import ThrowingArgumentParser
 from mil_tools import rosmsg_to_numpy
 from navigator_msgs.srv import MessageEntranceExitGate, MessageEntranceExitGateRequest
-from twisted.internet import defer
-from txros import util
 
 from .navigator import Navigator
 
@@ -508,7 +506,7 @@ class EntranceGate(Navigator):
 
         # Calculate the line that goes through the gates
         gates_line = self.line(gate_centers[0], gate_centers[2])
-        defer.returnValue((gate_centers, gates_line, gate_totems))
+        return (gate_centers, gates_line, gate_totems)
 
     """
 

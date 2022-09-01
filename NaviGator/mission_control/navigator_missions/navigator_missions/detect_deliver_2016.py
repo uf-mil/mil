@@ -12,7 +12,6 @@ from navigator import Navigator
 from navigator_msgs.msg import ShooterDoAction
 from navigator_msgs.srv import CameraToLidarTransform, CameraToLidarTransformRequest
 from navigator_tools import MissingPerceptionObject
-from twisted.internet import defer
 
 
 class DetectDeliver(Navigator):
@@ -99,11 +98,9 @@ class DetectDeliver(Navigator):
                         "/enu", "/" + shape.header.frame_id, shape.header.stamp
                     )
                     self.update_shape(shape, normal_res, enu_cam_tf)
-                    defer.returnValue(
-                        (
-                            (shape.Shape, shape.Color),
-                            self.identified_shapes[(shape.Shape, shape.Color)],
-                        )
+                    return (
+                        (shape.Shape, shape.Color),
+                        self.identified_shapes[(shape.Shape, shape.Color)],
                     )
                 else:
                     fprint(
@@ -242,7 +239,7 @@ class DetectDeliver(Navigator):
                     )
                     if self.correct_shape(shape):
                         self.shape_pose = self.get_shape_pos(normal_res, enu_cam_tf)
-                        defer.returnValue(True)
+                        return True
                     self.update_shape(shape, normal_res, enu_cam_tf)
 
                 else:
@@ -340,7 +337,7 @@ class DetectDeliver(Navigator):
         if not self.normal_is_sane(normal_res.normal):
             normal_res.success = False
             normal_res.error = "UNREASONABLE NORMAL"
-        defer.returnValue(normal_res)
+        return normal_res
 
     def normal_is_sane(self, vector3):
         return abs(mil_tools.rosmsg_to_numpy(vector3)[1]) < 0.4
