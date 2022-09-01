@@ -124,15 +124,20 @@ class killtest(unittest.TestCase):
         """
         Test raising/clearing kill alarm (user kill) will cause same change in hw-kill
         """
+        pub = rospy.Publisher("/network", Header, queue_size=10)
+        rospy.sleep(1)
         self.reset_update()
+        pub.publish(Header())
         self.AlarmBroadcaster.clear_alarm()
         self.assert_cleared()
 
         self.reset_update()
         self.AlarmBroadcaster.raise_alarm()
+        rospy.sleep(2)
         self.assert_raised()
 
         self.reset_update()
+        pub.publish(Header())
         self.AlarmBroadcaster.clear_alarm()
         self.assert_cleared()
 
