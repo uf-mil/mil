@@ -1,0 +1,35 @@
+README for Arena SDK for Linux
+
+The Arena SDK documentation includes a section called "Initial Configuration in Linux". Please review this section before proceeding.
+
+
+Arena SDK requires the following dependencies:
+
+- g++ 5 or higher
+- make
+- libx264-dev and libx265-dev if using the Save API
+
+Installing Arena SDK for Linux:
+
+1. Extract the tarball to your desired location:
+
+    $ tar -xvzf ArenaSDK_Linux.tar.gz
+    
+    where ArenaSDK_Linux.tar.gz is the tarball name.
+
+2. Run the Arena_SDK.conf file
+
+    $ cd /path/to/ArenaSDK_Linux
+    $ sudo sh Arena_SDK_Linux_x64.conf
+    
+    This will make the Arena SDK shared library files accessible by the run-time linker (ld.so or ld-linux.so).
+
+
+Examples:
+  
+A precompiled version of the examples, including IpConfigUtility, are located in ArenaSDK_Linux/precompiledExamples.
+    
+- C++ examples are located in ArenaSDK_Linux/Examples/Arena. C examples are located in ArenaSDK_Linux/Examples/ArenaC. The Arena or ArenaC folders contain a Makefile that can be used to compile each example.
+
+- Upon successful compilation, the compiled binaries will be placed into ArenaSDK_Linux/OutputDirectory/Linux/x64Release.
+

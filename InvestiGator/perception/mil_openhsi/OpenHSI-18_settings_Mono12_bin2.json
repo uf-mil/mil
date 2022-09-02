@@ -1,0 +1,27 @@
+{
+    "camera_id": "OpenHSI-18",
+    "row_slice": [
+        6,
+        447
+    ],
+    "resolution": [
+        458,
+        528
+    ],
+    "fwhm_nm": 4,
+    "exposure_ms": 5.999864,
+    "datetime_str": "2021-05-26 03:26",
+    "binxy": [
+        2,
+        2
+    ],
+    "win_offset": [
+        64,
+        48
+    ],
+    "win_resolution": [
+        458,
+        528
+    ],
+    "pixel_format": "Mono12"
+}
