@@ -9,7 +9,6 @@
     <arg name="simulation" default="True"/>
     <param name="/use_sim_time" type="bool" value="true" />
     <param name="/is_simulation" type="bool" value="True" />
-    <param name="/is_vrx" type="bool" value="True" />
     <arg name="online-bagger" default="True" />
 
     <include file="$(find navigator_gazebo)/launch/goose.launch">
@@ -30,6 +29,7 @@
     <!-- Simulation Relevant Code -->
     <include file="$(find navigator_launch)/launch/vrx/vrx_classifier.launch" >
         <arg name="image_topic" value="/wamv/sensors/camera/front_left_cam/image_raw"/>
+        <arg name="use_yolo" value="False"/>
     </include>
     <include file="$(find navigator_launch)/launch/vrx/vrx_tf.launch" />
     <include file="$(find navigator_launch)/launch/vrx/vrx_localization.launch" />
