@@ -4,6 +4,7 @@ from typing import Callable
 
 from geometry_msgs.msg import PointStamped, Vector3Stamped
 from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
+from txros import NodeHandle
 
 
 class TxHydrophonesClient:

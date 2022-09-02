@@ -51,8 +51,8 @@ class ScanTheCode(Vrx):
             self.debug_points_pub.setup(), self.image_debug_pub.setup()
         )
 
-        self.init_front_left_camera()
-        self.init_front_right_camera()
+        await self.init_front_left_camera()
+        await self.init_front_right_camera()
 
         await self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
         info = await self.front_left_camera_info_sub.get_next_message()
@@ -80,7 +80,7 @@ class ScanTheCode(Vrx):
         except asyncio.TimeoutError:
             sequence = ["red", "green", "blue"]
         print("Scan The Code Color Sequence", sequence)
-        self.report_sequence(sequence)
+        await self.report_sequence(sequence)
         await self.send_feedback("Done!")
         return sequence
 

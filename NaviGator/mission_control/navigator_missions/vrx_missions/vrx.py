@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import asyncio
 import math
 
 import numpy as np
@@ -35,12 +36,13 @@ class Vrx(Navigator):
         super().__init__(*args, **kwargs)
 
     @staticmethod
-    def init():
+    async def init():
         if hasattr(Vrx, "_vrx_init"):
             return
         Vrx.from_lla = Vrx.nh.get_service_client("/fromLL", FromLL)
         Vrx.to_lla = Vrx.nh.get_service_client("/toLL", ToLL)
         Vrx.task_info_sub = Vrx.nh.subscribe("/vrx/task/info", Task)
+        await Vrx.task_info_sub.setup()
         Vrx.scan_dock_color_sequence = Vrx.nh.get_service_client(
             "/vrx/scan_dock_deliver/color_sequence", ColorSequence
         )
@@ -64,6 +66,16 @@ class Vrx(Navigator):
         Vrx.perception_landmark = Vrx.nh.advertise(
             "/vrx/perception/landmark", GeoPoseStamped
         )
+        await asyncio.gather(
+            Vrx.fire_ball.setup(),
+            Vrx.station_keep_goal.setup(),
+            Vrx.wayfinding_path_sub.setup(),
+            Vrx.station_keeping_pose_error.setup(),
+            Vrx.station_keeping_rms_error.setup(),
+            Vrx.wayfinding_min_errors.setup(),
+            Vrx.wayfinding_mean_error.setup(),
+            Vrx.perception_landmark.setup(),
+        )
 
         Vrx.animal_landmarks = Vrx.nh.subscribe("/vrx/wildlife/animals/poses", GeoPath)
         Vrx.beacon_landmark = Vrx.nh.get_service_client("beaconLocator", AcousticBeacon)
@@ -79,6 +91,10 @@ class Vrx(Navigator):
         Vrx.get_two_closest_cones = Vrx.nh.get_service_client(
             "/get_two_closest_cones", TwoClosestCones
         )
+        await asyncio.gather(
+            Vrx.animal_landmarks.setup(),
+            Vrx.yolo_objects.setup(),
+        )
 
         Vrx.pcodar_reset = Vrx.nh.get_service_client("/pcodar/reset", Trigger)
 
@@ -93,7 +109,7 @@ class Vrx(Navigator):
         pass
 
     @staticmethod
-    def init_front_left_camera():
+    async def init_front_left_camera():
         if Vrx.front_left_camera_sub is None:
             Vrx.front_left_camera_sub = Vrx.nh.subscribe(
                 "/wamv/sensors/cameras/front_left_camera/image_raw", Image
@@ -104,8 +120,12 @@ class Vrx(Navigator):
                 "/wamv/sensors/cameras/front_left_camera/camera_info", CameraInfo
             )
 
+        await asyncio.gather(
+            Vrx.front_left_camera_sub.setup(), Vrx.front_left_camera_info_sub.setup()
+        )
+
     @staticmethod
-    def init_front_right_camera():
+    async def init_front_right_camera():
         if Vrx.front_right_camera_sub is None:
             Vrx.front_right_camera_sub = Vrx.nh.subscribe(
                 "/wamv/sensors/cameras/front_right_camera/image_raw", Image
@@ -115,6 +135,10 @@ class Vrx(Navigator):
             Vrx.front_right_camera_info_sub = Vrx.nh.subscribe(
                 "/wamv/sensors/cameras/front_right_camera/camera_info", CameraInfo
             )
+
+        await asyncio.gather(
+            Vrx.front_right_camera_sub.setup(), Vrx.front_right_camera_info_sub.setup()
+        )
 
     async def geo_pose_to_enu_pose(self, geo):
         self.send_feedback("Waiting for LLA conversion")
@@ -128,8 +152,8 @@ class Vrx(Navigator):
         lla_msg = await self.to_lla(ToLLRequest(map_point=numpy_to_point(enu_array)))
         return lla_msg.ll_point
 
-    async def get_latching_msg(self, sub):
-        msg = await sub.get_last_message()
+    async def get_latching_msg(self, sub: txros.Subscriber):
+        msg = sub.get_last_message()
         if msg is None:
             msg = await sub.get_next_message()
         return msg

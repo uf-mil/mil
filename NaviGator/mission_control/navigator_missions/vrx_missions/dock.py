@@ -46,8 +46,8 @@ class Dock(Vrx):
 
         self.image_debug_pub = self.nh.advertise("/dock_mask_debug", Image)
         await self.image_debug_pub.setup()
-        self.init_front_left_camera()
-        self.init_front_right_camera()
+        await self.init_front_left_camera()
+        await self.init_front_right_camera()
         args = str.split(args, " ")
         self.color = args[0]
         self.shape = args[1]
