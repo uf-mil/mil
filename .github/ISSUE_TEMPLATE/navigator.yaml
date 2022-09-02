@@ -1,0 +1,69 @@
+---
+name: Software Issue
+description: Add a new software-related issue
+labels: ["software"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Hey, thanks for taking the time to add this software issue!
+  - type: input
+    id: assignee
+    attributes:
+      label: Assignee
+      description: >
+        Does this issue need to be completed by a specific person on the team?
+        If so, mention them below.
+      placeholder: ex. @torvalds is already working on this task!
+    validations:
+      required: false
+  - type: input
+    id: deadline
+    attributes:
+      label: Deadline
+      description: >
+        Does this task need a deadline? _If this task is related to a competition,
+        it should have a deadline._
+      placeholder: ex. 2023-12-25
+    validations:
+      required: false
+  - type: textarea
+    id: description
+    attributes:
+      label: What needs to change?
+      description: >
+        **Briefly**, tell us what needs to change. This should explain _what_
+        the task is about. This could include what breaks, what could be better,
+        or what needs to be researched.
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: How would this task be tested?
+      description: >
+        How does a new member go about testing this task? For example, what
+        launch files need to be executed, what scripts need to be ran, what needs
+        to be typed, etc.?
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: checkboxes
+    id: teams
+    attributes:
+      label: Contacts
+      description: When a member takes on this task, who else might they need to contact?
+      options:
+        - label: We need help from the mechanical team.
+          required: false
+        - label: We need help from the electrical team.
+          required: false
+        - label: We need help from Dr. Schwartz or other faculty.
+          required: false
+        - label: We need help from a company or an organization.
+          required: false
+        - label: We need help from another UF staff member or organization (ex, facilities).
+          required: false
