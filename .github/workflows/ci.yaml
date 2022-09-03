@@ -103,7 +103,7 @@ jobs:
     name: Deploy docs from master
     runs-on: ubuntu-latest
     needs:
-      - docs
+      - super-ci
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout
