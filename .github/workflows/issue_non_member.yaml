@@ -25,7 +25,7 @@ jobs:
               username: creator
             });
             console.log(`${creator} permission: ${response.data.permission}`);
-            if (closeableStates.includes(response.data.permission)) {
+            if (closeableStates.includes(response.data.permission) && context.payload.issue.user.type != "Bot") {
               github.issues.createComment({
                 issue_number: ${{ github.event.issue.number }},
                 owner: context.repo.owner,
