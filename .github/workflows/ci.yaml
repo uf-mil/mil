@@ -26,6 +26,7 @@ concurrency:
 jobs:
   super-ci:
     name: Run tests and build docs
+    runs-on: self-hosted
     steps:
       - name: Configure catkin workspace folder structure
         run: |
