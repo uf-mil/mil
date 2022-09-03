@@ -372,10 +372,10 @@ class KillInterface:
         Returns True or False depending on the response.
         With no `recv_str` passed in the raw result will be returned.
         """
-        self.ser.write(bytes(write_str, "utf-8"))
+        self.ser.write(write_str.encode())
         if expected_response is not None:
             for byte in expected_response:
-                self.expected_responses.append(bytes(byte, "utf-8"))
+                self.expected_responses.append(byte.encode())
 
     def kill_alarm_cb(self, alarm):
         """
