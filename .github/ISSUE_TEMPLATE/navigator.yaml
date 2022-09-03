@@ -33,12 +33,12 @@ body:
       label: What needs to change?
       description: >
         **Briefly**, tell us what needs to change. This should explain _what_
-        the task is about. This could include what breaks, what could be better,
+        the task is about. This could include what has broken, what could be better,
         or what needs to be researched.
     validations:
       required: true
   - type: textarea
-    id: description
+    id: testing
     attributes:
       label: How would this task be tested?
       description: >
