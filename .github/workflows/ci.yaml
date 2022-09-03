@@ -53,10 +53,6 @@ jobs:
         continue-on-error: true
         run: |
           ./scripts/install.sh
-      - name: Install system dependencies
-        continue-on-error: true
-        run: |
-          ./scripts/install.sh
       # We want to run a full test suite in CI - this includes the BlueView
       # tests!
       - name: Install BlueView Sonar SDK
