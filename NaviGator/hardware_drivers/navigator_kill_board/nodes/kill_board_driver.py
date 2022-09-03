@@ -222,12 +222,13 @@ class KillInterface:
             if msg == byte:
                 del self.expected_responses[index]
                 return
+        # GH-861: Figure out why this happens so much
         # Log a warning if an unexpected byte was received
-        rospy.logwarn(
-            "Received an unexpected byte {}, remaining expected_responses={}".format(
-                hex(ord(msg)), len(self.expected_responses)
-            )
-        )
+        # rospy.logwarn(
+        #    "Received an unexpected byte {}, remaining expected_responses={}".format(
+        #        hex(ord(msg)), len(self.expected_responses)
+        #    )
+        # )
 
     @thread_lock(lock)
     def receive(self):
@@ -367,10 +368,10 @@ class KillInterface:
         Returns True or False depending on the response.
         With no `recv_str` passed in the raw result will be returned.
         """
-        self.ser.write(write_str)
+        self.ser.write(bytes(write_str, "utf-8"))
         if expected_response is not None:
             for byte in expected_response:
-                self.expected_responses.append(byte)
+                self.expected_responses.append(bytes(byte, "utf-8"))
 
     @thread_lock(lock)
     def kill_alarm_cb(self, alarm):
