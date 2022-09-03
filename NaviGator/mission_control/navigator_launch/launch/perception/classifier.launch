@@ -20,7 +20,7 @@
     </include>
 
     <arg name="train" default="False" />
-    <node pkg="navigator_vision" type="vrx_classifier.py" name="vrx_classifier" output="screen">
+    <node pkg="navigator_vision" type="classifier.py" name="classifier" output="screen">
         <param name="debug" value="True" />
         <param name="image_topic" value="$(arg image_topic)" />
 	<param name="model_location" value="config/model" />

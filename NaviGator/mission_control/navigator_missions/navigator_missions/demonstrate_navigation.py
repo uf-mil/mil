@@ -4,6 +4,7 @@ import txros
 from mil_misc_tools import ThrowingArgumentParser
 from mil_tools import rosmsg_to_numpy
 from twisted.internet import defer
+from std_srvs.srv import SetBoolRequest
 
 from .navigator import Navigator
 
@@ -45,6 +46,8 @@ class DemonstrateNavigation(Navigator):
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
         # Go to autonomous mode
+        yield self.set_classifier_enabled.wait_for_service()
+        yield self.set_classifier_enabled(SetBoolRequest(data=True))
         yield self.change_wrench("autonomous")
         if not parameters.pcodar:
             self.send_feedback(
@@ -62,8 +65,9 @@ class DemonstrateNavigation(Navigator):
                 )
             defer.returnValue(True)
         else:
-            _, closest_reds = yield self.get_sorted_objects("totem_red", 2)
-            _, closest_greens = yield self.get_sorted_objects("totem_green", 2)
+            self.nh.sleep(1)
+            _, closest_reds = yield self.get_sorted_objects("mb_marker_buoy_red", 2)
+            _, closest_greens = yield self.get_sorted_objects("mb_marker_buoy_green", 2)
 
             # Rename the totems for their symantic name
             green_close = closest_greens[0]

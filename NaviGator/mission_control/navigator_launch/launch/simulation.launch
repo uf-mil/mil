@@ -27,9 +27,9 @@
     </include>
 
     <!-- Simulation Relevant Code -->
-    <include file="$(find navigator_launch)/launch/vrx/vrx_classifier.launch" >
+    <include file="$(find navigator_launch)/launch/perception/classifier.launch" >
         <arg name="image_topic" value="/wamv/sensors/camera/front_left_cam/image_raw"/>
-        <arg name="use_yolo" value="False"/>
+        <arg name="use_yolo" value="True"/>
     </include>
     <include file="$(find navigator_launch)/launch/vrx/vrx_tf.launch" />
     <include file="$(find navigator_launch)/launch/vrx/vrx_localization.launch" />

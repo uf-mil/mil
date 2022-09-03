@@ -28,7 +28,6 @@ from std_srvs.srv import SetBool, Trigger
 from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from tf.transformations import quaternion_matrix
 from vision_msgs.msg import Detection2DArray
-from vrx_gazebo.msg import Task
 
 lock = Lock()
 
@@ -44,7 +43,7 @@ def bbox_countour_from_rectangle(bbox):
     )
 
 
-class VrxClassifier:
+class Classifier:
     # Handle buoys / black totem specially, discrminating on volume as they have the same color
     # The black objects that we have trained the color classifier on
     BLACK_OBJECT_CLASSES = ["buoy", "black_totem"]
@@ -55,6 +54,7 @@ class VrxClassifier:
     BLACK_OBJECT_AREA = [0.0, 0.5, 0.0, 0.0]
     TOTEM_MIN_HEIGHT = 0.9
 
+    # TODO: Modify this for buoys in real life
     CLASSES = [
         "mb_marker_buoy_red",
         "mb_marker_buoy_green",
@@ -77,9 +77,6 @@ class VrxClassifier:
         self.get_params()
         self.last_panel_points_msg = None
         self.database_client = rospy.ServiceProxy("/database/requests", ObjectDBQuery)
-        self.task_info_sub = rospy.Subscriber(
-            "/vrx/task/info", Task, self.taskinfoSubscriber
-        )
         self.is_perception_task = False
         self.sub = Image_Subscriber(self.image_topic, self.image_cb)
         self.camera_info = self.sub.wait_for_camera_info()
@@ -153,13 +150,10 @@ class VrxClassifier:
     @thread_lock(lock)
     def process_boxes(self, msg):
         if not self.enabled:
-            print("1")
             return
         if self.camera_model is None:
-            print("2")
             return
         if self.last_objects is None or len(self.last_objects.objects) == 0:
-            print("3")
             return
         now = rospy.Time.now()
         if now - self.last_update_time < self.update_period:
@@ -299,6 +293,6 @@ class VrxClassifier:
 
 
 if __name__ == "__main__":
-    rospy.init_node("vrx_classifier")
-    c = VrxClassifier()
+    rospy.init_node("classifier")
+    c = Classifier()
     rospy.spin()

@@ -199,6 +199,9 @@ class Navigator(BaseMission):
         cls.tf_listener = txros_tf.TransformListener(cls.nh)
 
         # Vision
+        cls.set_classifier_enabled = cls.nh.get_service_client(
+            "/classifier/set_enabled", SetBool
+        )
         cls.obstacle_course_vision_enable = cls.nh.get_service_client(
             "/vision/obsc/enable", SetBool
         )
