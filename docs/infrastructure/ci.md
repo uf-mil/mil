@@ -10,6 +10,10 @@ because it causes problems.
 Currently, we use GitHub Actions as our CI provider. It provides quick check markers to
 show which specific tests failed for a given commit.
 
+## Architecture
+:::{graphviz} ci_architecture.dot
+:::
+
 ## Self-Hosted Runners
 
 Currently, we use self-hosted runners as our provider of CI. On Zobelisk,
