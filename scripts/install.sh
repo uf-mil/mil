@@ -305,4 +305,6 @@ $(color "$Pur")Compiling repository...
 $(hash_header)$(color "$Res")
 EOF
 
+echo "set -g default-terminal \"screen-256color\"" >> ~/.tmux.conf
+
 mil_user_setup_init_catkin
