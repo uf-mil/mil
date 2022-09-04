@@ -25,23 +25,23 @@
   <xacro:wamv_pinger name="hydrophones" position="1 0 -1"/>
 
   <!-- Add 4 thrusters -->
-  <xacro:include filename="$(find wamv_description)/urdf/thrusters/engine.xacro"/>
+  <xacro:include filename="$(find wamv_description)/urdf/thrusters/mil_engine.xacro"/>
   <xacro:property name="thruster_namespace" value="thrusters/"/>
   <!-- === engine === -->
-  <xacro:engine prefix="BL" position="-1.9304 1.016 0.318237" orientation="0.0 0.0 0.785398"/>
-  <xacro:engine prefix="BR" position="-1.9304 -1.016 0.318237" orientation="0.0 0.0 -0.785398"/>
-  <xacro:engine prefix="FL" position="1.5 0.6096 0.318237" orientation="0.0 0.0 -0.785398"/>
-  <xacro:engine prefix="FR" position="1.5 -0.6096 0.318237" orientation="0.0 0.0 0.785398"/>
+  <xacro:mil_engine prefix="BL" position="-1.9304 1.016 0.318237" orientation="0.0 0.0 0.785398"/>
+  <xacro:mil_engine prefix="BR" position="-1.9304 -1.016 0.318237" orientation="0.0 0.0 -0.785398"/>
+  <xacro:mil_engine prefix="FL" position="1.5 0.6096 0.318237" orientation="0.0 0.0 -0.785398"/>
+  <xacro:mil_engine prefix="FR" position="1.5 -0.6096 0.318237" orientation="0.0 0.0 0.785398"/>
 
   <gazebo>
     <plugin name="wamv_gazebo_thrust" filename="libusv_gazebo_thrust_plugin.so">
       <cmdTimeout>1.0</cmdTimeout>
       <robotNamespace>${namespace}</robotNamespace>
-      <xacro:include filename="$(find wamv_gazebo)/urdf/thruster_layouts/wamv_gazebo_thruster_config.xacro"/>
-      <xacro:wamv_gazebo_thruster_config name="BL"/>
-      <xacro:wamv_gazebo_thruster_config name="BR"/>
-      <xacro:wamv_gazebo_thruster_config name="FL"/>
-      <xacro:wamv_gazebo_thruster_config name="FR"/>
+      <xacro:include filename="$(find wamv_gazebo)/urdf/thruster_layouts/mil_gazebo_thruster_config.xacro"/>
+      <xacro:mil_gazebo_thruster_config name="BL"/>
+      <xacro:mil_gazebo_thruster_config name="BR"/>
+      <xacro:mil_gazebo_thruster_config name="FL"/>
+      <xacro:mil_gazebo_thruster_config name="FR"/>
     </plugin>
   </gazebo>
 

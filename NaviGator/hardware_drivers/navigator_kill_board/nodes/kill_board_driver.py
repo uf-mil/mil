@@ -9,6 +9,7 @@ import rospy
 import serial
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from mil_tools import thread_lock
+from navigator_alarm_handlers import NetworkLoss
 from navigator_kill_board import constants
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from sensor_msgs.msg import Joy
@@ -59,6 +60,8 @@ class KillInterface:
         for kill in constants["KILLS"]:
             self.board_status[kill] = False
         self.kills: list[str] = list(self.board_status.keys())
+        self.network_killed = False
+        self.software_killed = False
         self.expected_responses = []
         self.network_msg = None
         self.wrench = ""
@@ -89,12 +92,16 @@ class KillInterface:
 
         self._hw_kill_listener = AlarmListener("hw-kill", self.hw_kill_alarm_cb)
         self._kill_listener = AlarmListener("kill", self.kill_alarm_cb)
+        self.kill_broadcaster = AlarmBroadcaster("kill")
+        self.kill_broadcaster.wait_for_server()
+        self._network_kill_listener = AlarmListener(
+            "network-loss", self.network_kill_alarm_cb
+        )
         self._hw_kill_listener.wait_for_server()
         self._kill_listener.wait_for_server()
+        self._network_kill_listener.wait_for_server()
         rospy.Subscriber("/wrench/selected", String, self.wrench_cb)
-        rospy.Subscriber(
-            "/network", Header, self.network_cb
-        )  # Passes along network hearbeat to kill board
+        self.network_kill = NetworkLoss()
 
     def connect(self):
         if rospy.get_param(
@@ -215,12 +222,13 @@ class KillInterface:
             if msg == byte:
                 del self.expected_responses[index]
                 return
+        # GH-861: Figure out why this happens so much
         # Log a warning if an unexpected byte was received
-        rospy.logwarn(
-            "Received an unexpected byte {}, remaining expected_responses={}".format(
-                hex(ord(msg)), len(self.expected_responses)
-            )
-        )
+        # rospy.logwarn(
+        #    "Received an unexpected byte {}, remaining expected_responses={}".format(
+        #        hex(ord(msg)), len(self.expected_responses)
+        #    )
+        # )
 
     @thread_lock(lock)
     def receive(self):
@@ -267,12 +275,30 @@ class KillInterface:
                 )
             self.wrench = wrench
 
-    def network_cb(self, msg):
+    def network_kill_alarm_cb(self, alarm):
         """
         Pings kill board on every network hearbeat message. Pretends to be the rf-based hearbeat because
         real one does not work :(
         """
-        self.request(constants["PING"]["REQUEST"], constants["PING"]["RESPONSE"])
+        if alarm.raised:
+            self.network_killed = True
+            if self.software_killed:
+                return
+            self.kill_broadcaster.raise_alarm()
+            self.request(
+                constants["COMPUTER"]["KILL"]["REQUEST"],
+                constants["COMPUTER"]["KILL"]["RESPONSE"],
+            )
+        else:
+            self.network_killed = False
+            if self.software_killed:
+                return
+            self.kill_broadcaster.clear_alarm()
+            self.request(
+                constants["COMPUTER"]["CLEAR"]["REQUEST"],
+                constants["COMPUTER"]["CLEAR"]["RESPONSE"],
+            )
+        # self.request(constants["PING"]["REQUEST"], constants["PING"]["RESPONSE"])
 
     def publish_diagnostics(self, err=None):
         """
@@ -343,21 +369,28 @@ class KillInterface:
         Returns True or False depending on the response.
         With no `recv_str` passed in the raw result will be returned.
         """
-        self.ser.write(write_str)
+        self.ser.write(write_str.encode())
         if expected_response is not None:
             for byte in expected_response:
-                self.expected_responses.append(byte)
+                self.expected_responses.append(byte.encode())
 
     def kill_alarm_cb(self, alarm):
         """
         Informs kill board about software kills through ROS Alarms
         """
         if alarm.raised:
+            self.software_killed = True
+            if self.network_killed:
+                return
             self.request(
                 constants["COMPUTER"]["KILL"]["REQUEST"],
                 constants["COMPUTER"]["KILL"]["RESPONSE"],
             )
         else:
+            self.software_killed = False
+            if self.network_killed:
+                self.kill_broadcaster.raise_alarm()
+                return
             self.request(
                 constants["COMPUTER"]["CLEAR"]["REQUEST"],
                 constants["COMPUTER"]["CLEAR"]["RESPONSE"],
