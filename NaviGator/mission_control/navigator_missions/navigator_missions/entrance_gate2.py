@@ -7,20 +7,16 @@ from mil_misc_tools import ThrowingArgumentParser
 from mil_tools import rosmsg_to_numpy
 from navigator_msgs.srv import MessageEntranceExitGate, MessageEntranceExitGateRequest
 from std_srvs.srv import SetBoolRequest
-from twisted.internet import defer
-from txros import util
 
 from .navigator import Navigator
 
 
 class EntranceGate2(Navigator):
-
     @classmethod
     def init(cls):
         pass
 
-    @util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
 
         # Parameters:
         scan_code = False
@@ -29,19 +25,19 @@ class EntranceGate2(Navigator):
         circle_direction = "cw"
         self.traversal_distance = 2
 
-        yield self.set_classifier_enabled.wait_for_service()
-        yield self.set_classifier_enabled(SetBoolRequest(data=True))
+        await self.set_classifier_enabled.wait_for_service()
+        await self.set_classifier_enabled(SetBoolRequest(data=True))
 
         # Inspect Gates
         self.change_wrench("/wrench/autonomous")
-        yield self.move.yaw_left(20, 'deg').go()
-        yield self.move.yaw_right(40, 'deg').go()
+        await self.move.yaw_left(20, "deg").go()
+        await self.move.yaw_right(40, "deg").go()
 
-        self.initial_boat_pose = yield self.tx_pose
+        self.initial_boat_pose = await self.tx_pose
         self.initial_boat_pose = self.initial_boat_pose[0]
 
         # Find the gates
-        self.gate_results = yield self.find_gates()
+        self.gate_results = await self.find_gates()
         self.gate_centers = self.gate_results[0]
         self.gates_line = self.gate_results[1]
         self.gate_totems = self.gate_results[2]
@@ -50,44 +46,46 @@ class EntranceGate2(Navigator):
         self.pinger_gate = 2
 
         # Calculate traversal points
-        traversal_points = yield self.get_perpendicular_points(
-            self.gate_centers[self.pinger_gate],
-            self.traversal_distance
+        traversal_points = await self.get_perpendicular_points(
+            self.gate_centers[self.pinger_gate], self.traversal_distance
         )
 
         # Go through the gate
         self.send_feedback("Navigating through gate")
-        yield self.move.set_position(traversal_points[0]).look_at(
+        await self.move.set_position(traversal_points[0]).look_at(
             traversal_points[1]
         ).go()
-        yield self.move.set_position(traversal_points[1]).go()
-
+        await self.move.set_position(traversal_points[1]).go()
 
         if scan_code:
             pass
         elif return_to_start:
             # Approach buoy we will rotate around
-            buoy = yield self.get_sorted_objects("mb_marker_buoy_black", n=1)
+            buoy = await self.get_sorted_objects("mb_marker_buoy_black", n=1)
             buoy = buoy[1][0]
-            vect = self.unit_vector(self.gate_centers[0], self.gate_centers[1])*circle_radius
+            vect = (
+                self.unit_vector(self.gate_centers[0], self.gate_centers[1])
+                * circle_radius
+            )
             if self.pinger_gate > 0:
                 vect = -vect
                 circle_direction = "ccw"
             start = buoy + vect
-            yield self.move.set_position(start).look_at(buoy).go()
+            await self.move.set_position(start).look_at(buoy).go()
 
             # Rotate around buoy
-            points = self.move.d_spiral_point(buoy,circle_radius,8,0.75,circle_direction)
+            points = self.move.d_spiral_point(
+                buoy, circle_radius, 8, 0.75, circle_direction
+            )
             for p in points:
-                yield p.go()
+                await p.go()
 
             # Go back through start gate
             self.send_feedback("Navigating through gate")
-            yield self.move.set_position(traversal_points[1]).look_at(
+            await self.move.set_position(traversal_points[1]).look_at(
                 traversal_points[0]
             ).go()
-            yield self.move.set_position(traversal_points[0]).go()
-
+            await self.move.set_position(traversal_points[0]).go()
 
         self.send_feedback("Done with start gate!")
 
@@ -136,15 +134,14 @@ class EntranceGate2(Navigator):
 
     """
 
-    @util.cancellableInlineCallbacks
-    def find_gates(self):
+    async def find_gates(self):
         # Find each of the needed totems
-        t1 = yield self.get_sorted_objects("mb_marker_buoy_red", n=1)
+        t1 = await self.get_sorted_objects("mb_marker_buoy_red", n=1)
         t1 = t1[1][0][:2]
-        white_totems = yield self.get_sorted_objects("mb_marker_buoy_white", n=2)
+        white_totems = await self.get_sorted_objects("mb_marker_buoy_white", n=2)
         t2 = white_totems[1][0][:2]
         t3 = white_totems[1][1][:2]
-        t4 = yield self.get_sorted_objects("mb_marker_buoy_green", n=1)
+        t4 = await self.get_sorted_objects("mb_marker_buoy_green", n=1)
         t4 = t4[1][0][:2]
 
         # Make sure the two white totems get ordered properly
@@ -173,21 +170,22 @@ class EntranceGate2(Navigator):
 
         # Calculate the line that goes through the gates
         gates_line = self.line(gate_centers[0], gate_centers[2])
-        defer.returnValue((gate_centers, gates_line, gate_totems))
-    
+        return (gate_centers, gates_line, gate_totems)
+
     """
 
         Navigation Utilities
 
     """
 
-    @util.cancellableInlineCallbacks
-    def get_perpendicular_points(self, center_point, offset_distance, boat_pose=None):
+    async def get_perpendicular_points(
+        self, center_point, offset_distance, boat_pose=None
+    ):
         # Find the perpendicular line
         perpendicular_vector = self.perpendicular(self.gates_line)
 
         if boat_pose is None:
-            boat_pose = yield self.tx_pose
+            boat_pose = await self.tx_pose
             boat_pose = boat_pose[0]
 
         # Find the two points on either side of the line
@@ -218,4 +216,4 @@ class EntranceGate2(Navigator):
             point = np.append(point, [0])
             perpendicular_points_np.append(point)
 
-        defer.returnValue(perpendicular_points_np)
+        return perpendicular_points_np

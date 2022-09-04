@@ -610,16 +610,16 @@ class Navigator(BaseMission):
         cls.kill_listener = await TxAlarmListener.init(
             cls.nh, "kill", cls.kill_alarm_cb
         )
-        cls.odom_loss_listener = await TxAlarmListener.init(
-            cls.nh,
-            "odom-kill",
-            lambda _, alarm: setattr(cls, "odom_loss", alarm.raised),
-        )
+        # cls.odom_loss_listener = await TxAlarmListener.init(
+        #     cls.nh,
+        #     "odom-kill",
+        #     lambda _, alarm: setattr(cls, "odom_loss", alarm.raised),
+        # )
         fprint("Alarm listener created, listening to alarms: ", title="NAVIGATOR")
 
         cls.kill_alarm = await cls.kill_listener.get_alarm()
         cls.killed = cls.kill_alarm.raised
-        cls.odom_loss = await cls.odom_loss_listener.is_raised()
+        cls.odom_loss = False  # await cls.odom_loss_listener.is_raised()
         fprint("\tkill :", newline=False)
         fprint(cls.killed)
         fprint("\todom-kill :", newline=False)

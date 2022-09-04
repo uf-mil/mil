@@ -53,7 +53,7 @@ class DemonstrateNavigation(Navigator):
             )
             target_point = await self.rviz_point.get_next_message()
             target_point = rosmsg_to_numpy(target_point.point)
-            us = (self.tx_pose())[0]
+            us = (await self.tx_pose())[0]
             distance = np.linalg.norm(target_point - us) + self.END_MARGIN_METERS
             distance_per_move = distance / parameters.num_moves
             for i in range(parameters.num_moves):

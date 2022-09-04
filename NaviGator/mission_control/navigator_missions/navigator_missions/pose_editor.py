@@ -259,7 +259,7 @@ class PoseEditor2:
     def circle_point(self, point, *args, **kwargs):
         return self.spiral_point(point, *args, **kwargs)
 
-    def d_spiral_point(
+    async def d_spiral_point(
         self,
         point,
         radius,
@@ -290,10 +290,10 @@ class PoseEditor2:
             new = point + radius * next_point
             radius += radius_increment
 
-            yield self.set_position(new).look_at(point).yaw_left(theta_offset)
+            await self.set_position(new).look_at(point).yaw_left(theta_offset)
             next_point = sprinkles.dot(next_point)
 
-        yield self.set_position(new).look_at(point).yaw_left(theta_offset)
+        await self.set_position(new).look_at(point).yaw_left(theta_offset)
 
     def d_circle_point(self, *args, **kwargs):
         """
