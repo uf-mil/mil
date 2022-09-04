@@ -48,6 +48,7 @@ class DemonstrateNavigation(Navigator):
         # Go to autonomous mode
         yield self.set_classifier_enabled.wait_for_service()
         yield self.set_classifier_enabled(SetBoolRequest(data=True))
+        yield self.nh.sleep(4)
         yield self.change_wrench("autonomous")
         if not parameters.pcodar:
             self.send_feedback(
@@ -65,7 +66,6 @@ class DemonstrateNavigation(Navigator):
                 )
             defer.returnValue(True)
         else:
-            self.nh.sleep(1)
             _, closest_reds = yield self.get_sorted_objects("mb_marker_buoy_red", 2)
             _, closest_greens = yield self.get_sorted_objects("mb_marker_buoy_green", 2)
 

@@ -54,15 +54,6 @@ class Classifier:
     BLACK_OBJECT_AREA = [0.0, 0.5, 0.0, 0.0]
     TOTEM_MIN_HEIGHT = 0.9
 
-    # TODO: Modify this for buoys in real life
-    CLASSES = [
-        "mb_marker_buoy_red",
-        "mb_marker_buoy_green",
-        "mb_marker_buoy_black",
-        "mb_marker_buoy_white",
-        "mb_round_buoy_black",
-        "mb_round_buoy_orange",
-    ]
     Votes = {}
 
     def __init__(self):
@@ -102,6 +93,27 @@ class Classifier:
         if self.is_training:
             self.enabled = True
         self.queue = []
+
+        if self.is_simulation:
+            self.CLASSES = [
+                "mb_marker_buoy_red",
+                "mb_marker_buoy_green",
+                "mb_marker_buoy_black",
+                "mb_marker_buoy_white",
+                "mb_round_buoy_black",
+                "mb_round_buoy_orange",
+            ]
+        else:
+            self.CLASSES = [
+                "yellow_cylinder",
+                "black_round",
+                "white_cylinder",
+                "black_cylinder",
+                "red_cylinder",
+                "green_round",
+                "white_round",
+                "orange_round",
+            ]
 
         self.pcodar_reset = rospy.ServiceProxy("/pcodar/reset", Trigger)
         self.pcodar_reset()
@@ -265,6 +277,7 @@ class Classifier:
         from ROS params for runtime configurability.
         """
         self.is_training = rospy.get_param("~train", False)
+        self.is_simulation = rospy.get_param("/is_simulation", False)
         self.debug = rospy.get_param("~debug", True)
         self.image_topic = rospy.get_param(
             "~image_topic", "/camera/starboard/image_rect_color"
