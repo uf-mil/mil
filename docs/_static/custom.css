@@ -795,6 +795,10 @@ main img {
   max-width: 500px;
 }
 
+main img.graphviz {
+  max-width: 80%;
+}
+
 /* weird margins */
 li > p {
   margin: 2px;
