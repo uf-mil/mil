@@ -66,8 +66,8 @@ class DemonstrateNavigation(Navigator):
                 )
             defer.returnValue(True)
         else:
-            _, closest_reds = yield self.get_sorted_objects("mb_marker_buoy_red", 2)
-            _, closest_greens = yield self.get_sorted_objects("mb_marker_buoy_green", 2)
+            _, closest_reds = yield self.get_sorted_objects("white_cylinder", 2)
+            _, closest_greens = yield self.get_sorted_objects("red_cylinder", 2)
 
             # Rename the totems for their symantic name
             green_close = closest_greens[0]
@@ -86,5 +86,5 @@ class DemonstrateNavigation(Navigator):
             # Then move a little passed the exit
             yield self.move.look_at(end_midpoint).set_position(end_midpoint).forward(
                 self.END_MARGIN_METERS
-            ).go(blind=True)
+            ).go()
             defer.returnValue(True)
