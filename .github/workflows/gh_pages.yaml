@@ -14,6 +14,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Wait to let checks appear
+        run: sleep 1m
+        shell: bash
+
       # Wait for the CI to finish so we can download the docs artifact
       - name: Wait for CI
         uses: lewagon/wait-on-check-action@v1.0.0
