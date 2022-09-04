@@ -25,7 +25,6 @@ class killtest(unittest.TestCase):
         self.AlarmBroadcaster = AlarmBroadcaster("kill")
         self.network = NetworkLoss()
         super().__init__(*args)
-        # self.heartbeat = HeartbeatServer("/network", 1.0)
 
     @thread_lock(lock)
     def reset_update(self):
@@ -97,7 +96,6 @@ class killtest(unittest.TestCase):
         Tests remote kill by publishing hearbeat, stopping and checking alarm is raised, then
         publishing hearbeat again to ensure alarm gets cleared.
         """
-        # self.heartbeat = HeartbeatServer("/network", 0.5)
         # publishing msg to network
         pub = rospy.Publisher("/network", Header, queue_size=10)
         rate = rospy.Rate(10)

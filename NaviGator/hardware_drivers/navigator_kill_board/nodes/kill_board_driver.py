@@ -60,8 +60,8 @@ class KillInterface:
         for kill in constants["KILLS"]:
             self.board_status[kill] = False
         self.kills: list[str] = list(self.board_status.keys())
-        self.nw_killed = False
-        self.sw_killed = False
+        self.network_killed = False
+        self.software_killed = False
         self.expected_responses = []
         self.network_msg = None
         self.wrench = ""
@@ -101,9 +101,6 @@ class KillInterface:
         self._kill_listener.wait_for_server()
         self._network_kill_listener.wait_for_server()
         rospy.Subscriber("/wrench/selected", String, self.wrench_cb)
-        # rospy.Subscriber(
-        #     "/network", Header, self.network_cb
-        # )  # Passes along network hearbeat to kill board
         self.network_kill = NetworkLoss()
 
     def connect(self):
@@ -284,8 +281,8 @@ class KillInterface:
         real one does not work :(
         """
         if alarm.raised:
-            self.nw_killed = True
-            if self.sw_killed:
+            self.network_killed = True
+            if self.software_killed:
                 return
             self.kill_broadcaster.raise_alarm()
             self.request(
@@ -293,8 +290,8 @@ class KillInterface:
                 constants["COMPUTER"]["KILL"]["RESPONSE"],
             )
         else:
-            self.nw_killed = False
-            if self.sw_killed:
+            self.network_killed = False
+            if self.software_killed:
                 return
             self.kill_broadcaster.clear_alarm()
             self.request(
@@ -382,16 +379,16 @@ class KillInterface:
         Informs kill board about software kills through ROS Alarms
         """
         if alarm.raised:
-            self.sw_killed = True
-            if self.nw_killed:
+            self.software_killed = True
+            if self.network_killed:
                 return
             self.request(
                 constants["COMPUTER"]["KILL"]["REQUEST"],
                 constants["COMPUTER"]["KILL"]["RESPONSE"],
             )
         else:
-            self.sw_killed = False
-            if self.nw_killed:
+            self.software_killed = False
+            if self.network_killed:
                 self.kill_broadcaster.raise_alarm()
                 return
             self.request(
