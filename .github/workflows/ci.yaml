@@ -36,18 +36,13 @@ jobs:
         with:
           submodules: recursive
           path: catkin_ws/src/mil
-      - name: Setup Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4.1.0
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON }}
-          cache: "pip"
-      - name: Install pip dependencies
-        run:
-          pip install -r requirements.txt
       - name: Setup ROS Noetic
         uses: ros-tooling/setup-ros@v0.3
         with:
           required-ros-distributions: noetic
+      - name: Install pip dependencies
+        run:
+          pip install -r requirements.txt
       - name: Install system dependencies
         # GH-803: This should not need continue-on-error: true
         continue-on-error: true
