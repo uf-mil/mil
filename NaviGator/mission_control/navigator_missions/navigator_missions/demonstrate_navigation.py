@@ -48,11 +48,13 @@ class DemonstrateNavigation(Navigator):
         await self.nh.sleep(4)
         await self.change_wrench("autonomous")
         if not parameters.pcodar:
+            print(1)
             self.send_feedback(
                 "Please click between the end tower of the navigation pass."
             )
             target_point = await self.rviz_point.get_next_message()
             target_point = rosmsg_to_numpy(target_point.point)
+            us = (await self.tx_pose())[0]
             us = (await self.tx_pose())[0]
             distance = np.linalg.norm(target_point - us) + self.END_MARGIN_METERS
             distance_per_move = distance / parameters.num_moves
@@ -63,6 +65,7 @@ class DemonstrateNavigation(Navigator):
                 )
             return True
         else:
+            await self.nh.sleep(1)
             _, closest_reds = await self.get_sorted_objects("mb_marker_buoy_red", 2)
             _, closest_greens = await self.get_sorted_objects("mb_marker_buoy_green", 2)
 

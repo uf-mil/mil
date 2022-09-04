@@ -103,7 +103,10 @@ class TxAlarmListener:
         )
 
         if callback_funct is not None:
-            asyncio.create_task(self.add_callback(callback_funct, **kwargs))
+            self.add_callback(callback_funct, **kwargs)
+
+    async def setup(self):
+        await self.update_sub.setup()
 
     async def is_raised(self):
         """Returns whether this alarm is raised or not"""
@@ -133,7 +136,7 @@ class TxAlarmListener:
         # Not a tuple, just an int. The severities should match
         return self._last_alarm.severity == severity
 
-    async def add_callback(
+    def add_callback(
         self,
         funct,
         call_when_raised=True,
@@ -147,10 +150,6 @@ class TxAlarmListener:
             be triggered for different levels of severity.
         """
 
-        def _errback(err):
-            print("Error in alarm callback!")
-            print(err.getErrorMessage())
-
         if call_when_raised:
             self._raised_cbs.append((severity_required, funct))
 
@@ -159,25 +158,28 @@ class TxAlarmListener:
                 and self._last_alarm.raised
                 and self._severity_cb_check(severity_required)
             ):
-                await funct(self._nh, self._last_alarm)
+                funct(self._nh, self._last_alarm)
 
         if call_when_cleared:
             self._cleared_cbs.append(((0, 5), funct))  # Clear callbacks always run
 
             if self._last_alarm is not None and not self._last_alarm.raised:
-                await funct(self._nh, self._last_alarm)
+                funct(self._nh, self._last_alarm)
+
+        print(f"Callbacks: {self._raised_cbs}, {self._cleared_cbs}")
 
     def clear_callbacks(self):
         """Clears all callbacks"""
         self._raised_cbs = []
         self._cleared_cbs = []
 
-    async def _alarm_update(self, alarm):
+    def _alarm_update(self, alarm):
         if alarm.alarm_name == self._alarm_name:
             self._last_alarm = alarm
 
             # Run the callbacks if severity conditions are met
             cb_list = self._raised_cbs if alarm.raised else self._cleared_cbs
+            print(f"Callbacks: {cb_list}")
             for severity, cb in cb_list:
                 # If the cb severity is not valid for this alarm's severity, skip it
                 if not self._severity_cb_check(severity):
@@ -190,7 +192,7 @@ class TxAlarmListener:
                     except:
                         pass
 
-                    await cb(self._nh, alarm)
+                    cb(self._nh, alarm)
                 except Exception as e:
                     err_msg = "A callback function for the alarm: {} threw an error!\n{}\nException:{}"
                     print(err_msg.format(self._alarm_name, traceback.format_exc(), e))

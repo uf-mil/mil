@@ -210,6 +210,7 @@ class Navigator(BaseMission):
             )
 
         cls.tf_listener = txros_tf.TransformListener(cls.nh)
+        await cls.tf_listener.setup()
 
         # Vision
         cls.set_classifier_enabled = cls.nh.get_service_client(
@@ -602,6 +603,9 @@ class Navigator(BaseMission):
 
     @classmethod
     def kill_alarm_cb(cls, _, alarm):
+        import rospy
+
+        rospy.logerr(f"alarm is: {alarm.raised}")
         cls.killed = alarm.raised
         cls.kill_alarm = alarm
 
@@ -610,6 +614,8 @@ class Navigator(BaseMission):
         cls.kill_listener = await TxAlarmListener.init(
             cls.nh, "kill", cls.kill_alarm_cb
         )
+        await cls.kill_listener.setup()
+        # TODO: Enable node handle subscriber to topic to have multiple callbacks
         # cls.odom_loss_listener = await TxAlarmListener.init(
         #     cls.nh,
         #     "odom-kill",
