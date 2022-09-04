@@ -2,6 +2,7 @@
 import numpy as np
 from mil_misc_tools import ThrowingArgumentParser
 from mil_tools import rosmsg_to_numpy
+from std_srvs.srv import SetBoolRequest
 
 from .navigator import Navigator
 
@@ -42,6 +43,9 @@ class DemonstrateNavigation(Navigator):
 
     async def run(self, parameters):
         # Go to autonomous mode
+        await self.set_classifier_enabled.wait_for_service()
+        await self.set_classifier_enabled(SetBoolRequest(data=True))
+        await self.nh.sleep(4)
         await self.change_wrench("autonomous")
         if not parameters.pcodar:
             self.send_feedback(
@@ -49,7 +53,7 @@ class DemonstrateNavigation(Navigator):
             )
             target_point = await self.rviz_point.get_next_message()
             target_point = rosmsg_to_numpy(target_point.point)
-            us = (self.tx_pose)[0]
+            us = (self.tx_pose())[0]
             distance = np.linalg.norm(target_point - us) + self.END_MARGIN_METERS
             distance_per_move = distance / parameters.num_moves
             for i in range(parameters.num_moves):
@@ -59,8 +63,8 @@ class DemonstrateNavigation(Navigator):
                 )
             return True
         else:
-            _, closest_reds = await self.get_sorted_objects("totem_red", 2)
-            _, closest_greens = await self.get_sorted_objects("totem_green", 2)
+            _, closest_reds = await self.get_sorted_objects("mb_marker_buoy_red", 2)
+            _, closest_greens = await self.get_sorted_objects("mb_marker_buoy_green", 2)
 
             # Rename the totems for their symantic name
             green_close = closest_greens[0]

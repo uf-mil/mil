@@ -28,7 +28,6 @@ from std_srvs.srv import SetBool, Trigger
 from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from tf.transformations import quaternion_matrix
 from vision_msgs.msg import Detection2DArray
-from vrx_gazebo.msg import Task
 
 lock = Lock()
 
@@ -44,7 +43,7 @@ def bbox_countour_from_rectangle(bbox):
     )
 
 
-class VrxClassifier:
+class Classifier:
     # Handle buoys / black totem specially, discrminating on volume as they have the same color
     # The black objects that we have trained the color classifier on
     BLACK_OBJECT_CLASSES = ["buoy", "black_totem"]
@@ -55,14 +54,6 @@ class VrxClassifier:
     BLACK_OBJECT_AREA = [0.0, 0.5, 0.0, 0.0]
     TOTEM_MIN_HEIGHT = 0.9
 
-    CLASSES = [
-        "mb_marker_buoy_red",
-        "mb_marker_buoy_green",
-        "mb_marker_buoy_black",
-        "mb_marker_buoy_white",
-        "mb_round_buoy_black",
-        "mb_round_buoy_orange",
-    ]
     Votes = {}
 
     def __init__(self):
@@ -77,9 +68,6 @@ class VrxClassifier:
         self.get_params()
         self.last_panel_points_msg = None
         self.database_client = rospy.ServiceProxy("/database/requests", ObjectDBQuery)
-        self.task_info_sub = rospy.Subscriber(
-            "/vrx/task/info", Task, self.taskinfoSubscriber
-        )
         self.is_perception_task = False
         self.sub = Image_Subscriber(self.image_topic, self.image_cb)
         self.camera_info = self.sub.wait_for_camera_info()
@@ -105,6 +93,27 @@ class VrxClassifier:
         if self.is_training:
             self.enabled = True
         self.queue = []
+
+        if self.is_simulation:
+            self.CLASSES = [
+                "mb_marker_buoy_red",
+                "mb_marker_buoy_green",
+                "mb_marker_buoy_black",
+                "mb_marker_buoy_white",
+                "mb_round_buoy_black",
+                "mb_round_buoy_orange",
+            ]
+        else:
+            self.CLASSES = [
+                "yellow_cylinder",
+                "black_round",
+                "white_cylinder",
+                "black_cylinder",
+                "red_cylinder",
+                "green_round",
+                "white_round",
+                "orange_round",
+            ]
 
         self.pcodar_reset = rospy.ServiceProxy("/pcodar/reset", Trigger)
         self.pcodar_reset()
@@ -153,13 +162,10 @@ class VrxClassifier:
     @thread_lock(lock)
     def process_boxes(self, msg):
         if not self.enabled:
-            print("1")
             return
         if self.camera_model is None:
-            print("2")
             return
         if self.last_objects is None or len(self.last_objects.objects) == 0:
-            print("3")
             return
         now = rospy.Time.now()
         if now - self.last_update_time < self.update_period:
@@ -271,6 +277,7 @@ class VrxClassifier:
         from ROS params for runtime configurability.
         """
         self.is_training = rospy.get_param("~train", False)
+        self.is_simulation = rospy.get_param("/is_simulation", False)
         self.debug = rospy.get_param("~debug", True)
         self.image_topic = rospy.get_param(
             "~image_topic", "/camera/starboard/image_rect_color"
@@ -299,6 +306,6 @@ class VrxClassifier:
 
 
 if __name__ == "__main__":
-    rospy.init_node("vrx_classifier")
-    c = VrxClassifier()
+    rospy.init_node("classifier")
+    c = Classifier()
     rospy.spin()

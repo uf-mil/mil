@@ -19,6 +19,7 @@ from .detect_deliver_find import DetectDeliverFind
 from .discount_docking import DiscountDocking
 from .docking import Docking
 from .entrance_gate import EntranceGate
+from .entrance_gate2 import EntranceGate2
 from .example_mission import ExampleMission
 from .explore_towers import ExploreTowers
 from .fire_launcher import FireLauncher
@@ -28,6 +29,7 @@ from .grinch_deploy import GrinchDeploy
 from .grinch_retract import GrinchRetract
 from .killed import Killed
 from .move import Move
+from .navigation import Navigation
 from .obstacle_avoid import ObstacleAvoid
 from .pinger import PingerMission
 from .pinger_andy import PingerAndy
@@ -39,6 +41,7 @@ from .shoot_balls import ShootBalls
 from .station_hold import StationHold
 from .stc_jaxon import ScanTheCodeJaxon
 from .teleop import Teleop
+from .wildlife import Wildlife
 
 # Currently breaks mission server, TODO: fix or delete
 # from .track_target import TrackTarget

@@ -149,7 +149,7 @@ class PoseEditor2:
             return Res()
 
         if len(self.kwargs) > 0:
-            kwargs = dict(kwargs.items() + self.kwargs.items())
+            kwargs = dict(kwargs.items() | self.kwargs.items())
 
         goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
         self.result = goal.get_result()
@@ -284,8 +284,9 @@ class PoseEditor2:
         next_point = np.append(
             normalize(self.position[:2] - point[:2]), 0
         )  # Doing this in 2d
+        print(next_point)
         radius_increment = meters_per_rev / granularity
-        for i in range(granularity * revolutions + 1):
+        for i in range(int(granularity * revolutions + 1)):
             new = point + radius * next_point
             radius += radius_increment
 

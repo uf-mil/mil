@@ -9,6 +9,11 @@
     <include file="$(find navigator_launch)/launch/diagnostics.launch" />
     <include if="$(arg online-bagger)" file="$(find navigator_launch)/launch/online_bagger.launch" />
     <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/hardware.launch"/>
+    <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/perception/classifier.launch" >
+        <arg name="image_topic" value="/cameras/front/left/image_color"/>
+        <arg name="use_yolo" value="True"/>
+        <arg name="weights" value="$(find yolov7_ros)/src/mil_weights/robotx.pt" />
+    </include>
 
     <include file="$(find navigator_launch)/launch/gnc.launch">
        <arg name="simulation" value="$(arg simulation)" />
