@@ -39,7 +39,7 @@ def go():
 
     first = True
 
-    buf = ""
+    buf = b""
     count = 0
     while not rospy.is_shutdown():
         d = s.recv(2**12)
@@ -48,7 +48,7 @@ def go():
             break
         buf += d
 
-        lines = buf.split("\n")
+        lines = buf.split(b"\n")
         buf = lines[-1]
         for line in lines[:-1]:
             if first:
@@ -56,7 +56,7 @@ def go():
                 continue
 
             if count % decimation == 0:
-                d = json.loads(line)
+                d = json.loads(line.decode())
                 if not d["running"]:
                     rospy.logwarn_throttle(
                         10, "GPS not running: {}".format(d["running_reason"])

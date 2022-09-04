@@ -18,12 +18,13 @@ class ThrusterMapperNode:
 
     def __init__(self):
         self.is_vrx = rospy.get_param("/is_vrx", default=False)
+        self.is_sim = rospy.get_param("/is_simulation", default=False)
 
         # Used for mapping wrench to individual thrusts
         urdf = rospy.get_param("/robot_description", default=None)
         if urdf is None or len(urdf) == 0:
             raise Exception("robot description not set or empty")
-        if self.is_vrx:
+        if self.is_vrx or self.is_sim:
             self.thruster_map = ThrusterMap.from_vrx_urdf(urdf)
         else:
             self.thruster_map = ThrusterMap.from_urdf(urdf)
@@ -38,10 +39,13 @@ class ThrusterMapperNode:
         self.wrench = np.zeros(3)
 
         # Publisher for each thruster
-        if self.is_vrx:
+        thrust_string = 0
+        if self.is_vrx or self.is_sim:
+            if self.is_vrx:
+                thrust_string = 5
             self.publishers = [
                 rospy.Publisher(
-                    f"/wamv/thrusters/{name[5:]}_thrust_cmd",
+                    f"/wamv/thrusters/{name[thrust_string:]}_thrust_cmd",
                     Float32,
                     queue_size=1,
                 )
@@ -55,7 +59,7 @@ class ThrusterMapperNode:
 
         # Joint state publisher
         # TODO(ironmig):
-        if not self.is_vrx:
+        if not self.is_vrx and not self.is_sim:
             self.joint_state_pub = rospy.Publisher(
                 "/thruster_states", JointState, queue_size=1
             )
@@ -104,7 +108,7 @@ class ThrusterMapperNode:
                 return
             for i in range(len(self.publishers)):
                 commands[i].setpoint = thrusts[i]
-        if not self.is_vrx:
+        if not self.is_vrx and not self.is_sim:
             for i in range(len(self.publishers)):
                 self.joint_state_msg.effort[i] = commands[i].setpoint
                 self.publishers[i].publish(commands[i])
