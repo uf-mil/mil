@@ -8,7 +8,6 @@ Usage
   # Create test data:
   python generate_tfrecord.py --csv_input=test/test_labels.csv  --image_dir=test --output_path=test.record
 """
-from __future__ import absolute_import, division, print_function
 
 import io
 import os

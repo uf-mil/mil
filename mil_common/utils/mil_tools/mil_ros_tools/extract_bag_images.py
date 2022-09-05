@@ -12,7 +12,6 @@ See example_bag_image_config.yaml or the class documentation for how to form thi
 Essentially, the yaml file defines a project, which is a single labeling task or project on labelbox.io.
 Each project contains n datasets. Each dataset has a list of bags (sources) to get images from and represents a dataset on labelbox.io.
 """
-from __future__ import division
 
 import argparse
 import os

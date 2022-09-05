@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import division
 
 import job_runner
 import numpy as np

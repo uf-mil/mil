@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-from __future__ import division
 
 import math
 import operator

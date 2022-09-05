@@ -1,5 +1,4 @@
 #! /usr/bin/python3
-from __future__ import division
 
 from copy import deepcopy
 from typing import Dict, List, Optional, Tuple

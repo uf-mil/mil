@@ -1,5 +1,3 @@
-from __future__ import division
-
 import numpy as np
 from mil_ros_tools import compose_transformation, make_rotation
 from sub8_sim_tools import ShaderManager, Shaders

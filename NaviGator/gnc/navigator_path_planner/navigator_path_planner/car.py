@@ -2,7 +2,6 @@
 Constructs a planner that is good for being kinda like a car-boat thing!
 
 """
-from __future__ import division
 
 from typing import List, Tuple
 
