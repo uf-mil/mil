@@ -41,12 +41,14 @@ jobs:
         with:
           required-ros-distributions: noetic
       - name: Install pip dependencies
-        run:
+        run: |
+          cd $GITHUB_WORKSPACE/catkin_ws/src/mil
           pip install -r requirements.txt
       - name: Install system dependencies
         # GH-803: This should not need continue-on-error: true
         continue-on-error: true
         run: |
+          cd $GITHUB_WORKSPACE/catkin_ws/src/mil
           ./scripts/install.sh
       # We want to run a full test suite in CI - this includes the BlueView
       # tests!
