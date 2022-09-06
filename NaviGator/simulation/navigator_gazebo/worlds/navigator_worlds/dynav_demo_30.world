@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
   <!-- COORDINATE: {'constant': 0, 'environment': 0} -->
-  <world name="basic_navigation">
+  <world name="dynav_demo_30">
     <!-- Estimated latitude/longitude of sydneyregatta
 	 from satellite imagery -->
     <spherical_coordinates>
@@ -209,24 +209,24 @@
     </scene>
     <!-- The navigation course -->
     <include>
-      <name>buoy1</name>
+      <name>bouy_start_red</name>
       <uri>model://mb_marker_buoy_red</uri>
-      <pose> -530.155 176.9138 0 0 0 -1.44</pose>
+      <pose> -531.257 172.998 0 0 0 -1.44</pose>
     </include>
     <include>
-      <name>buoy2</name>
+      <name>buoy_start_green</name>
       <uri>model://mb_marker_buoy_green</uri>
-      <pose>-517.996 171.198 0 0 0 -1.44</pose>
+      <pose>-522.752 167.624 0 0 0 -1.44</pose>
     </include>
     <include>
-      <name>buoy3</name>
+      <name>buoy_end_red</name>
       <uri>model://mb_marker_buoy_red</uri>
-      <pose>-525.765 188.733 0 0 0 -1.44</pose>
+      <pose>-515.28 198.39 0 0 0 -1.44</pose>
     </include>
     <include>
-      <name>buoy4</name>
+      <name>buoy_end_green</name>
       <uri>model://mb_marker_buoy_green</uri>
-      <pose>-513.217 180.327 0 0 0 -1.44</pose>
+      <pose>-506.777 193.017 0 0 0 -1.44</pose>
     </include>
   </world>
 </sdf>
