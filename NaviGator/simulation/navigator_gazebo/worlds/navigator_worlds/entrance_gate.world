@@ -209,29 +209,29 @@
     </scene>
     <!-- The navigation course -->
     <include>
-      <name>buoy1</name>
+      <name>buoy_red</name>
       <uri>model://mb_marker_buoy_red</uri>
       <pose>-536.585 178.065 0 0 0 -1.44</pose>
     </include>
     <include>
-      <name>buoy2</name>
+      <name>buoy_whiteL</name>
       <uri>model://mb_marker_buoy_white</uri>
-      <pose>-526.55 174.346 0 0 0 -1.44</pose>
+      <pose>-527.087 174.582 0 0 0 -1.44</pose>
     </include>
     <include>
-      <name>buoy3</name>
+      <name>buoy_whiteR</name>
       <uri>model://mb_marker_buoy_white</uri>
-      <pose>-518.539 170.899 0 0 0 -1.44</pose>
+      <pose>-517.699 171.138 0 0 0 -1.44</pose>
     </include>
     <include>
-      <name>buoy4</name>
+      <name>buoy_green</name>
       <uri>model://mb_marker_buoy_green</uri>
-      <pose>-511.154 167.6 0 0 0 -1.44</pose>
+      <pose>-508.310 167.694 0 0 0 -1.44</pose>
     </include>
     <include>
-      <name>buoy5</name>
+      <name>buoy_black</name>
       <uri>model://mb_marker_buoy_black</uri>
-      <pose>-516.943 183.24 0 0 0 -1.44</pose>
+      <pose>-516.210 190.397 0 0 0 -1.44</pose>
     </include>
   </world>
 </sdf>
