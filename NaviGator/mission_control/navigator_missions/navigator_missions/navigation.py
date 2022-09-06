@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import asyncio
+
 import numpy as np
 import txros
 from mil_tools import quaternion_matrix, rosmsg_to_numpy
@@ -141,17 +143,15 @@ class Navigation(Navigator):
         init_boat_pos = self.pose[0]
         cone_buoys_investigated = 0  # max will be 2
         service_req = None
-        dl = None
+        fl = None
         investigated = set()
         while True:
             if move_id_tuple is not None:
                 if service_req is None:
                     service_req = self.database_query(name="all")
-                dl = defer.DeferredList(
-                    [service_req, move_id_tuple[0]], fireOnOneCallback=True
-                )
+                fl = asyncio.gather(service_req, move_id_tuple[0])
 
-                result, index = await dl
+                result, index = await fl
 
                 # Database query succeeded
                 if index == 0:
@@ -167,8 +167,8 @@ class Navigation(Navigator):
                                 move_id_tuple[1]
                             )
                         )
-                        await dl.cancel()
-                        await move_id_tuple[0].cancel()
+                        fl.cancel()
+                        # move_id_tuple[0].cancel()
                         await self.nh.sleep(1.0)
 
                         if (
@@ -224,11 +224,11 @@ class Navigation(Navigator):
             if ret is not None:
                 if move_id_tuple is not None:
                     self.send_feedback("Condition met. Canceling investigation")
-                    await dl.cancel()
-                    await move_id_tuple[0].cancel()
+                    fl.cancel()
+                    move_id_tuple[0].cancel()
                     move_id_tuple = None
 
-                defer.returnValue(ret)
+                return ret
 
             if move_id_tuple is not None:
                 continue
