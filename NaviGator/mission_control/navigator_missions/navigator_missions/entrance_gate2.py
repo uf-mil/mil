@@ -29,11 +29,11 @@ class EntranceGate2(Navigator):
         await self.set_classifier_enabled(SetBoolRequest(data=True))
 
         # Inspect Gates
-        self.change_wrench("/wrench/autonomous")
+        await self.change_wrench("/wrench/autonomous")
         await self.move.yaw_left(20, "deg").go()
         await self.move.yaw_right(40, "deg").go()
 
-        self.initial_boat_pose = await self.tx_pose
+        self.initial_boat_pose = await self.tx_pose()
         self.initial_boat_pose = self.initial_boat_pose[0]
 
         # Find the gates
@@ -185,7 +185,7 @@ class EntranceGate2(Navigator):
         perpendicular_vector = self.perpendicular(self.gates_line)
 
         if boat_pose is None:
-            boat_pose = await self.tx_pose
+            boat_pose = await self.tx_pose()
             boat_pose = boat_pose[0]
 
         # Find the two points on either side of the line

@@ -3,6 +3,8 @@ from __future__ import division
 
 from mil_misc_tools import text_effects
 
+from .sub_singleton import SubjuGator
+
 fprint = text_effects.FprintFactory(title="START_GATE", msg_color="cyan").fprint
 
 SPEED = 0.6
