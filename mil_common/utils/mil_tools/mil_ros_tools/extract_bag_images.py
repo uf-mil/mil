@@ -197,7 +197,7 @@ class BagImageExtractorSource:
         # If color, convert to bgr
         if self.encoding == ImageProc.COLOR or self.encoding == ImageProc.RECT_COLOR:
             img = cvtColor2(img, self.image_set.color_encoding, "bgr8")
-        
+
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         filename = os.path.join(image_dir, prefix + str(msg.header.stamp) + ".png")
         cv2.imwrite(filename, img)

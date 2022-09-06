@@ -603,9 +603,6 @@ class Navigator(BaseMission):
 
     @classmethod
     def kill_alarm_cb(cls, _, alarm):
-        import rospy
-
-        rospy.logerr(f"alarm is: {alarm.raised}")
         cls.killed = alarm.raised
         cls.kill_alarm = alarm
 
