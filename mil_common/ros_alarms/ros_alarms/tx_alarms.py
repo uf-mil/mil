@@ -1,3 +1,4 @@
+import asyncio
 import json
 import traceback
 
@@ -11,12 +12,11 @@ Alarms implementation for txros (https://github.com/txros/txros)
 """
 
 
-@txros.util.cancellableInlineCallbacks
-def _check_for_alarm(nh, alarm_name, nowarn=False):
+async def _check_for_alarm(nh: txros.NodeHandle, alarm_name: str, nowarn=False):
     if (
         not nowarn
-        and (yield nh.has_param("/known_alarms"))
-        and alarm_name not in (yield nh.get_param("/known_alarms"))
+        and (await nh.has_param("/known_alarms"))
+        and alarm_name not in (await nh.get_param("/known_alarms"))
     ):
         msg = "'{}' is not in the list of known alarms (as defined in the /known_alarms rosparam)"
         print(msg.format(alarm_name))
@@ -33,14 +33,13 @@ def _check_for_valid_name(alarm_name, nowarn=False):
 
 class TxAlarmBroadcaster:
     @classmethod
-    @txros.util.cancellableInlineCallbacks
-    def init(cls, nh, name, node_name=None, nowarn=False):
+    async def init(cls, nh: txros.NodeHandle, name: str, node_name=None, nowarn=False):
         _check_for_valid_name(name, nowarn)
-        yield _check_for_alarm(nh, name, nowarn)
+        await _check_for_alarm(nh, name, nowarn)
 
         node_name = nh.get_name() if node_name is None else node_name
 
-        defer.returnValue(cls(nh, name, node_name))
+        return cls(nh, name, node_name)
 
     def __init__(self, nh, name, node_name):
         """Don't invoke this function directly, use the `init` function above"""
@@ -77,18 +76,17 @@ class TxAlarmBroadcaster:
 
 class TxAlarmListener:
     @classmethod
-    @txros.util.cancellableInlineCallbacks
-    def init(cls, nh, name, callback_funct=None, nowarn=False, **kwargs):
+    async def init(cls, nh, name, callback_funct=None, nowarn=False, **kwargs):
         _check_for_valid_name(name, nowarn)
-        yield _check_for_alarm(nh, name, nowarn)
+        await _check_for_alarm(nh, name, nowarn)
 
         alarm_client = nh.get_service_client("/alarm/get", AlarmGet)
         try:
-            yield txros.util.wrap_timeout(alarm_client.wait_for_service(), 1)
-        except txros.util.TimeoutError:
+            await txros.util.wrap_timeout(alarm_client.wait_for_service(), 1)
+        except asyncio.TimeoutError:
             print("No alarm sever found! Alarm behaviours will be unpredictable.")
 
-        defer.returnValue(cls(nh, name, alarm_client, callback_funct))
+        return cls(nh, name, alarm_client, callback_funct)
 
     def __init__(self, nh, name, alarm_client, callback_funct, **kwargs):
         """Don't invoke this function directly, use the `init` function above"""
@@ -107,29 +105,29 @@ class TxAlarmListener:
         if callback_funct is not None:
             self.add_callback(callback_funct, **kwargs)
 
-    @txros.util.cancellableInlineCallbacks
-    def is_raised(self):
-        """Returns whether this alarm is raised or not"""
-        resp = yield self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
-        defer.returnValue(resp.alarm.raised)
+    async def setup(self):
+        await self.update_sub.setup()
 
-    @txros.util.cancellableInlineCallbacks
-    def is_cleared(self):
+    async def is_raised(self):
         """Returns whether this alarm is raised or not"""
-        resp = yield self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
-        defer.returnValue(not resp.alarm.raised)
+        resp = await self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
+        return resp.alarm.raised
 
-    @txros.util.cancellableInlineCallbacks
-    def get_alarm(self):
+    async def is_cleared(self):
+        """Returns whether this alarm is raised or not"""
+        resp = await self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
+        return not resp.alarm.raised
+
+    async def get_alarm(self):
         """Returns the alarm message
         Also worth noting, the alarm this returns has it's `parameter` field
             converted to a dictionary
         """
-        resp = yield self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
+        resp = await self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
 
         params = resp.alarm.parameters
         resp.alarm.parameters = params if params == "" else json.loads(params)
-        defer.returnValue(resp.alarm)
+        return resp.alarm
 
     def _severity_cb_check(self, severity):
         if isinstance(severity, tuple) or isinstance(severity, list):
@@ -138,7 +136,6 @@ class TxAlarmListener:
         # Not a tuple, just an int. The severities should match
         return self._last_alarm.severity == severity
 
-    @txros.util.cancellableInlineCallbacks
     def add_callback(
         self,
         funct,
@@ -153,10 +150,6 @@ class TxAlarmListener:
             be triggered for different levels of severity.
         """
 
-        def _errback(err):
-            print("Error in alarm callback!")
-            print(err.getErrorMessage())
-
         if call_when_raised:
             self._raised_cbs.append((severity_required, funct))
 
@@ -165,26 +158,28 @@ class TxAlarmListener:
                 and self._last_alarm.raised
                 and self._severity_cb_check(severity_required)
             ):
-                yield funct(self._nh, self._last_alarm).addErrback(_errback)
+                funct(self._nh, self._last_alarm)
 
         if call_when_cleared:
             self._cleared_cbs.append(((0, 5), funct))  # Clear callbacks always run
 
             if self._last_alarm is not None and not self._last_alarm.raised:
-                yield funct(self._nh, self._last_alarm).addErrback(_errback)
+                funct(self._nh, self._last_alarm)
+
+        print(f"Callbacks: {self._raised_cbs}, {self._cleared_cbs}")
 
     def clear_callbacks(self):
         """Clears all callbacks"""
         self._raised_cbs = []
         self._cleared_cbs = []
 
-    @txros.util.cancellableInlineCallbacks
     def _alarm_update(self, alarm):
         if alarm.alarm_name == self._alarm_name:
             self._last_alarm = alarm
 
             # Run the callbacks if severity conditions are met
             cb_list = self._raised_cbs if alarm.raised else self._cleared_cbs
+            print(f"Callbacks: {cb_list}")
             for severity, cb in cb_list:
                 # If the cb severity is not valid for this alarm's severity, skip it
                 if not self._severity_cb_check(severity):
@@ -197,7 +192,7 @@ class TxAlarmListener:
                     except:
                         pass
 
-                    yield cb(self._nh, alarm)
+                    cb(self._nh, alarm)
                 except Exception as e:
                     err_msg = "A callback function for the alarm: {} threw an error!\n{}\nException:{}"
                     print(err_msg.format(self._alarm_name, traceback.format_exc(), e))
@@ -205,21 +200,29 @@ class TxAlarmListener:
 
 class TxHeartbeatMonitor(TxAlarmBroadcaster):
     @classmethod
-    @txros.util.cancellableInlineCallbacks
-    def init(
-        cls, nh, alarm_name, topic_name, msg_class, prd=0.2, predicate=None, **kwargs
+    async def init(
+        cls,
+        nh: txros.NodeHandle,
+        alarm_name: str,
+        topic_name: str,
+        msg_class,
+        prd=0.2,
+        predicate=None,
+        **kwargs,
     ):
         """Used to trigger an alarm if a message on the topic `topic_name` isn't published
             at least every `prd` seconds. This alarm is self clearing.
 
         An alarm won't be triggered if no messages are initially received
         """
-        ab = yield TxAlarmBroadcaster.init(nh, alarm_name, **kwargs)
+        ab = await TxAlarmBroadcaster.init(nh, alarm_name, **kwargs)
         predicate = predicate if predicate is not None else lambda *args: True
         prd = txros.util.genpy.Duration(prd)
-        defer.returnValue(cls(nh, ab, topic_name, msg_class, predicate, prd))
+        obj = cls(nh, ab, topic_name, msg_class, predicate, prd)
+        await obj.sub.setup()
+        return obj
 
-    def __init__(self, nh, ab, topic_name, msg_class, predicate, prd):
+    def __init__(self, nh: txros.NodeHandle, ab, topic_name, msg_class, predicate, prd):
         """Don't invoke this function directly, use the `init` function above"""
         self._nh = nh
         self._predicate = predicate
@@ -234,8 +237,7 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
     def set_predicate(self, funct):
         self._predicate = funct
 
-    @txros.util.cancellableInlineCallbacks
-    def start_monitor(self, sample_prd=-1):
+    async def start_monitor(self, sample_prd: int = -1):
         """Starts monitoring the topic
         This separate function allows you to start and stop the heartbeat monitor
         """
@@ -243,20 +245,20 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
             sample_prd = self._prd.to_sec() / 2
 
         # Wait for that first messgae
-        yield self.sub.get_next_message()
+        await self.sub.get_next_message()
 
         while True:
-            yield self._nh.sleep(sample_prd)
+            await self._nh.sleep(sample_prd)
 
             last_time = self.sub.get_last_message_time()
             last_msg = self.sub.get_last_message()
             if (self._nh.get_time() - last_time > self._prd) and (
-                yield self._predicate(self._nh, last_msg)
+                await self._predicate(self._nh, last_msg)
             ):
                 if not self._dropped:
-                    yield self._ab.raise_alarm()
+                    await self._ab.raise_alarm()
                     self._dropped = True
 
             elif self._dropped:
-                yield self._ab.clear_alarm()
+                await self._ab.clear_alarm()
                 self._dropped = False

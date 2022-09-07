@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from twisted.internet import defer
-from txros.util import cancellableInlineCallbacks
-
 from .navigator import Navigator
 
 
@@ -26,8 +23,7 @@ class CircleTower(Navigator):
     def decode_parameters(cls, parameters):
         return parameters.split()
 
-    @cancellableInlineCallbacks
-    def run(self, parameters):
+    async def run(self, parameters):
         # Default to R G B pattern
         if len(parameters) == 0:
             colors = ["RED", "GREEN", "BLUE"]
@@ -59,7 +55,7 @@ class CircleTower(Navigator):
         # Get each totem's position
         targets = []
         for color in colors:
-            res = yield self.get_sorted_objects(
+            res = await self.get_sorted_objects(
                 "totem_" + color.lower(), n=1, throw=False
             )
             if res is None:
@@ -68,13 +64,13 @@ class CircleTower(Navigator):
             position = res[1][0]
             self.send_feedback(f"Totem {color} found!")
             targets.append((position, color))
-            yield self.nh.sleep(0.1)
+            await self.nh.sleep(0.1)
 
         # If none found, mission is failed
         if len(targets) == 0:
-            defer.returnValue(False)
+            return False
 
-        yield self.nh.sleep(0.1)
+        await self.nh.sleep(0.1)
 
         # Circle each totem
         for target in targets:
@@ -83,7 +79,7 @@ class CircleTower(Navigator):
             direction = self.DIRECTIONS[color]
             self.send_feedback(f"Attempting to circle {color} {direction}")
             self.send_feedback("Moving in front of totem")
-            yield self.nh.sleep(0.1)
+            await self.nh.sleep(0.1)
 
             # Move close to totem
             move = (
@@ -97,13 +93,13 @@ class CircleTower(Navigator):
                 move = move.yaw_left(1.57)
             else:
                 move = move.yaw_right(1.57)
-            yield move.go()
+            await move.go()
 
             self.send_feedback("Circling!")
-            yield self.nh.sleep(0.1)
-            res = yield self.move.circle_point(
+            await self.nh.sleep(0.1)
+            res = await self.move.circle_point(
                 position, direction=direction, revolutions=1.3
             ).go()
             self.send_feedback("Done circling")
-            yield self.nh.sleep(0.1)
-        defer.returnValue(True)
+            await self.nh.sleep(0.1)
+        return True

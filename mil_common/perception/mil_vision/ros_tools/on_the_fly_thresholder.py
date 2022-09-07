@@ -1,12 +1,13 @@
 #!/usr/bin/python3
 import argparse
+import asyncio
 import sys
 
 import cv2
 import numpy as np
+import uvloop
 from mil_ros_tools import image_helpers
 from sensor_msgs.msg import Image
-from twisted.internet import reactor
 from txros import NodeHandle, util
 
 
@@ -91,12 +92,13 @@ class Thresholder:
         }
 
 
-@util.cancellableInlineCallbacks
-def main(param_prefix, args):
-    nh = yield NodeHandle.from_argv("on_the_fly_mission_runner", anonymous=True)
+async def main(param_prefix, args):
+    nh = NodeHandle.from_argv("on_the_fly_mission_runner", anonymous=True)
+    await nh.setup()
 
-    image_sub = yield nh.subscribe(args.topic_name, Image)
-    img = yield util.wrap_timeout(image_sub.get_next_message(), 5).addErrback(errback)
+    image_sub = nh.subscribe(args.topic_name, Image)
+    await image_sub.setup()
+    img = await util.wrap_timeout(image_sub.get_next_message(), 5)
 
     np_img = image_helpers.get_image_msg(img, "bgr8")
     cv2.imshow(args.topic_name, np_img)
@@ -111,18 +113,11 @@ def main(param_prefix, args):
             print("Saving params:")
             temp = t.to_dict()
             print(temp)
-            nh.set_param(param_prefix, temp)
+            await nh.set_param(param_prefix, temp)
             break
 
     cv2.destroyAllWindows()
-    reactor.stop()
-
-
-def errback(e):
-    """Just for catching errors"""
-    print("Error when looking for image.")
-    print(" - You probably entered the wrong image topic.")
-    reactor.stop()
+    await nh.shutdown()
 
 
 def do_parsing():
@@ -151,5 +146,5 @@ def do_parsing():
 
 if __name__ == "__main__":
     param_prefix, args = do_parsing()
-    reactor.callWhenRunning(main, param_prefix, args)
-    reactor.run()
+    uvloop.install()
+    asyncio.run(main(param_prefix, args))

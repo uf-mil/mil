@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import asyncio
 from random import shuffle
 
 import cv2
 import mil_tools
 import numpy as np
 import tf.transformations as trns
-import txros
 from nav_msgs.msg import OccupancyGrid
-from twisted.internet import defer
 
 from . import pose_editor
 from .navigator import Navigator
@@ -25,13 +24,12 @@ shuffle(shapes)
 
 
 class CoralSurvey(Navigator):
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
+    async def run(self, parameters):
         # middle_point = np.array([-10, -70, 0])
-        est_coral_survey = yield self.database_query("CoralSurvey")
+        est_coral_survey = await self.database_query("CoralSurvey")
 
         # Going to get all the objects and using the closest one as the totem
-        totem = yield self.database_query("all")
+        totem = await self.database_query("all")
 
         # Get the closest totem object to the boat
         totems_np = map(
@@ -48,14 +46,16 @@ class CoralSurvey(Navigator):
 
         print("Totem sorted:", totems_np)
         print("Totem selected: ", totems_np[0])
-        quad = yield self.mission_params["acoustic_pinger_active_index_correct"].get()
+        quad = await self.mission_params["acoustic_pinger_active_index_correct"].get()
 
         waypoint_from_center = np.array([10 * np.sqrt(2)])
 
         # Publish ogrid with boundaries to stay inside
         ogrid = OgridFactory(middle_point, draw_borders=True)
         msg = ogrid.get_message()
-        latched = self.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
+        latched = asyncio.create_task(
+            self.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
+        )
 
         # Construct waypoint list along NSEW directions then rotate 45 degrees to get a good spot to go to.
         directions = [EAST, NORTH, WEST, SOUTH]
@@ -64,12 +64,12 @@ class CoralSurvey(Navigator):
         search_center = (
             mid.yaw_left(45, "deg").forward(waypoint_from_center).set_orientation(NORTH)
         )
-        yield search_center.left(6).go()
-        yield self.move.circle_point(search_center.position, direction="cw").go()
+        await search_center.left(6).go()
+        await self.move.circle_point(search_center.position, direction="cw").go()
 
-        yield self.mission_params["coral_survey_shape1"].set(shapes[0])
+        await self.mission_params["coral_survey_shape1"].set(shapes[0])
         latched.cancel()
-        defer.returnValue(None)
+        return None
 
 
 # This really shouldn't be here - it should be somewhere behind the scenes

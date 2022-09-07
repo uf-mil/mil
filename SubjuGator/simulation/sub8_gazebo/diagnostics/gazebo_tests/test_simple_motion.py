@@ -1,28 +1,24 @@
 import numpy as np
-import txros
 from diagnostics.gazebo_tests import common
-from twisted.internet import defer
 
 
 # TODO: Allow generic names
 class Job(common.Job):
     _job_name = "test_simple_motion"
 
-    @txros.util.cancellableInlineCallbacks
-    def setup(self):
+    async def setup(self):
         print("setting up")
         xy = (np.random.random(2) - 0.5) * 20
-        yield self.set_model_position(np.hstack([xy, -5]))
+        await self.set_model_position(np.hstack([xy, -5]))
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, sub):
+    async def run(self, sub):
         print("running")
         distance = 5.0
 
         initial_position = sub.pose.position
-        yield sub.move.forward(distance).go()
+        await sub.move.forward(distance).go()
         position_after_action = sub.pose.position
-        yield self.nh.sleep(3.0)
+        await self.nh.sleep(3.0)
         position_after_waiting = sub.pose.position
 
         motion_posthoc = np.linalg.norm(position_after_waiting - position_after_action)
@@ -39,4 +35,4 @@ class Job(common.Job):
         reason += f"\nMoved {motion_posthoc}m after reporting completion"
         reason += f"\nEnded {distance_to_target}m away from target"
 
-        yield defer.returnValue((success, reason))
+        return (success, reason)

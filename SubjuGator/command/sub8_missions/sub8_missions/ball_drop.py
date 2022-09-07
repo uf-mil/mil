@@ -5,10 +5,6 @@ from geometry_msgs.msg import Point
 from image_geometry import PinholeCameraModel
 from mil_misc_tools import text_effects
 from sensor_msgs.msg import CameraInfo
-from std_srvs.srv import SetBool, SetBoolRequest, Trigger
-from sub8_msgs.srv import GuessRequest, GuessRequestRequest
-from twisted.internet import defer
-from txros import util
 
 from .sub_singleton import SubjuGator
 
@@ -23,8 +19,7 @@ TRAVEL_DEPTH = 0.75  # 2
 
 
 class BallDrop(SubjuGator):
-    @util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
         try:
             ree = rospy.ServiceProxy("/vision/garlic/enable", SetBool)
             resp = ree(True)
@@ -36,14 +31,15 @@ class BallDrop(SubjuGator):
 
         fprint("Enabling cam_ray publisher")
 
-        yield self.nh.sleep(1)
+        await self.nh.sleep(1)
 
         fprint("Connecting camera")
 
-        cam_info_sub = yield self.nh.subscribe("/camera/down/camera_info", CameraInfo)
+        cam_info_sub = self.nh.subscribe("/camera/down/camera_info", CameraInfo)
+        await cam_info_sub.setup()
 
         fprint("Obtaining cam info message")
-        cam_info = yield cam_info_sub.get_next_message()
+        cam_info = await cam_info_sub.get_next_message()
         cam_center = np.array([cam_info.width / 2, cam_info.height / 2])
         cam_norm = np.sqrt(cam_center[0] ** 2 + cam_center[1] ** 2)
         fprint(f"Cam center: {cam_center}")
@@ -62,14 +58,15 @@ class BallDrop(SubjuGator):
                 fprint("Forgot to add ball_drop to guess?", msg_color="yellow")
             else:
                 fprint("Found ball_drop.", msg_color="green")
-                yield self.move.set_position(
+                await self.move.set_position(
                     np.array(rospy.get_param("/poi_server/initial_pois/ball_drop"))
                 ).depth(TRAVEL_DEPTH).go(speed=FAST_SPEED)
         except Exception as e:
             fprint(str(e) + "Forgot to run guess server?", msg_color="yellow")
 
-        ball_drop_sub = yield self.nh.subscribe("/bbox_pub", Point)
-        yield self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
+        ball_drop_sub = self.nh.subscribe("/bbox_pub", Point)
+        await ball_drop_sub.setup()
+        await self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
 
         while True:
             fprint("Getting location of ball drop...")
@@ -84,11 +81,11 @@ class BallDrop(SubjuGator):
                 break
             vec = np.append(vec, 0)
 
-            yield self.move.relative_depth(vec).go(speed=SPEED)
+            await self.move.relative_depth(vec).go(speed=SPEED)
 
         fprint(f"Centered, going to depth {HEIGHT_BALL_DROPER}")
-        yield self.move.to_height(HEIGHT_BALL_DROPER).zero_roll_and_pitch().go(
+        await self.move.to_height(HEIGHT_BALL_DROPER).zero_roll_and_pitch().go(
             speed=SPEED
         )
         fprint("Dropping marker")
-        yield self.actuators.drop_marker()
+        await self.actuators.drop_marker()

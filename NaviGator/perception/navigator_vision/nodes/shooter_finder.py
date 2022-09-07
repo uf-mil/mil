@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from __future__ import division
 
+import asyncio
 import math
 import operator
 import time
@@ -10,6 +11,7 @@ import cv2
 import numpy
 import sensor_msgs.point_cloud2 as pc2
 import txros
+import uvloop
 from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion, Vector3
 from mil_tools import msg_helpers
 from nav_msgs.msg import Odometry
@@ -17,11 +19,8 @@ from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import ColorRGBA, Header
 from tf import transformations
-from twisted.internet import defer
 from txros import txros_tf, util
 from visualization_msgs.msg import Marker, MarkerArray
-
-defer.setDebugging(True)
 
 
 def rect_lines(rect):
@@ -85,16 +84,15 @@ def fit(good_points, rect):
 center_holder = [None]
 
 
-@util.cancellableInlineCallbacks
-def poller(nh):
+async def poller(nh):
     db_srv = nh.get_service_client("/database/requests", ObjectDBQuery)
 
     while True:
-        yield util.wall_sleep(3)
+        await util.wall_sleep(3)
 
         while True:
             try:
-                db_res = yield db_srv(
+                db_res = await db_srv(
                     ObjectDBQueryRequest(
                         name="shooter",
                         cmd="",
@@ -102,7 +100,7 @@ def poller(nh):
                 )
             except BaseException:
                 traceback.print_exc()
-                yield util.wall_sleep(1)
+                await util.wall_sleep(1)
             else:
                 break
 
@@ -118,11 +116,11 @@ def poller(nh):
             center_holder[0] = numpy.mean(points, axis=0)
 
 
-@util.cancellableInlineCallbacks
-def main():
+async def main():
     try:
         center = None
-        nh = yield txros.NodeHandle.from_argv("shooter_finder", anonymous=True)
+        nh = txros.NodeHandle.from_argv("shooter_finder", anonymous=True)
+        await nh.setup()
 
         pc_sub = nh.subscribe("/velodyne_points", PointCloud2)
         tf_listener = txros_tf.TransformListener(nh)
@@ -130,19 +128,27 @@ def main():
         result_pub = nh.advertise("/shooter_pose", PoseStamped)
         odom_sub = nh.subscribe("/odom", Odometry)
 
-        poller(nh)
+        await asyncio.gather(
+            pc_sub.setup(),
+            tf_listener.setup(),
+            marker_pub.setup(),
+            result_pub.setup(),
+            odom_sub.setup(),
+        )
+
+        await poller(nh)
 
         while True:
             ts = [time.time()]
-            yield util.wall_sleep(0.1)
+            await util.wall_sleep(0.1)
             ts.append(time.time())
 
             center = center_holder[0]
-            odom = yield odom_sub.get_next_message()
-            cloud = yield pc_sub.get_next_message()
+            odom = await odom_sub.get_next_message()
+            cloud = await pc_sub.get_next_message()
 
             if center is None:
-                yield util.wall_sleep(1)
+                await util.wall_sleep(1)
                 continue
 
             # print center
@@ -155,7 +161,7 @@ def main():
             print("start")
             print(cloud.header.stamp)
             try:
-                transform = yield tf_listener.get_transform(
+                transform = await tf_listener.get_transform(
                     "/enu", cloud.header.frame_id, cloud.header.stamp
                 )
             except txros_tf.TooPastError:
@@ -197,7 +203,7 @@ def main():
 
             ts.append(time.time())
 
-            # rect = yield threads.deferToThread(fit, good_points, rect)
+            # rect = await threads.deferToThread(fit, good_points, rect)
             if rect is None:
                 print("bad fit")
                 continue
@@ -336,4 +342,6 @@ def main():
         traceback.print_exc()
 
 
-util.launch_main(main)
+if __name__ == "__main__":
+    uvloop.install()
+    asyncio.run(main())
