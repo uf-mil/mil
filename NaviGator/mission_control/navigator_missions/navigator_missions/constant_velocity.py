@@ -19,30 +19,30 @@ class ConstantVelocity(Navigator):
     CLEANUP_TIME = 0.5  # Time to publish zero velocity when command canceled
 
     @classmethod
-    def init(cls):
+    async def init(cls):
         cls.msg = Odometry()
         cls.msg.header.frame_id = "enu"
         cls.msg.child_frame_id = "base_link"
         cls.ref_pub = cls.nh.advertise("/trajectory/constant", Odometry)
+        await cls.ref_pub.setup()
 
     @classmethod
-    @util.cancellableInlineCallbacks
-    def cleanup(cls):
+    async def cleanup(cls):
         """
         When command is canceled, publish zero velocity for a while
         so controller doesn't "run of the tracks" and keep going
         """
-        odom = yield cls._odom_sub.get_next_message()
+        odom = await cls._odom_sub.get_next_message()
         cls.msg.pose = odom.pose
         cls.msg.header.stamp = odom.header.stamp
         cls.msg.twist.twist = Twist()
-        now = yield cls.nh.get_time()
+        now = cls.nh.get_time()
         done = now + Duration(cls.CLEANUP_TIME)
         while now < done:
             cls.msg.header.stamp = now
             cls.ref_pub.publish(cls.msg)
-            now = yield cls.nh.get_time()
-            yield cls.nh.sleep(0.1)
+            now = cls.nh.get_time()
+            await cls.nh.sleep(0.1)
 
     @classmethod
     def decode_parameters(cls, parameters):
@@ -62,30 +62,29 @@ class ConstantVelocity(Navigator):
                 raise err
         return parsed
 
-    @util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
         # Publish a velocity of zero for a while to stabalize navigator
         self.send_feedback("Switching trajectory to constant")
-        yield self.change_trajectory("constant")
-        yield self.nh.sleep(0.1)
-        done_zero = yield self.nh.get_time() + Duration(self.ZERO_TIME)
-        odom = yield self._odom_sub.get_next_message()
+        await self.change_trajectory("constant")
+        await self.nh.sleep(0.1)
+        done_zero = self.nh.get_time() + Duration(self.ZERO_TIME)
+        odom = await self._odom_sub.get_next_message()
         self.msg.header.stamp = odom.header.stamp
         self.msg.pose = odom.pose
         self.msg.twist.twist = Twist()
         self.send_feedback(f"Sending Zero Velocity for {self.ZERO_TIME} seconds")
-        while (yield self.nh.get_time()) < done_zero:
+        while (self.nh.get_time()) < done_zero:
             self.ref_pub.publish(self.msg)
-            yield self.nh.sleep(0.1)
+            await self.nh.sleep(0.1)
 
         # Publish user selected velocity until task is canceled or a new task is run
         self.send_feedback(f"Publishing constant velocity {args}. Cancel task to stop.")
         self.msg.twist.twist.linear.x = args[0]
         self.msg.twist.twist.linear.y = args[1]
         self.msg.twist.twist.angular.z = args[2]
-        original_odom = yield self._odom_sub.get_last_message()
+        original_odom = self._odom_sub.get_last_message()
         while True:
-            odom = yield self._odom_sub.get_next_message()
+            odom = await self._odom_sub.get_next_message()
             self.msg.header.stamp = odom.header.stamp
             self.msg.pose = odom.pose
             if args[0] == 0 and args[1] == 0:  # If only rotation, keep position same

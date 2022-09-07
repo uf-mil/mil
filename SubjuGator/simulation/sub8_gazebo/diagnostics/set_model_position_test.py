@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 
+import asyncio
+
 import job_runner
 import numpy as np
 import tf
 import txros
+import uvloop
 from mil_ros_tools import msg_helpers
 from nav_msgs.msg import Odometry
 from sub8_gazebo.srv import RunJobResponse
-from twisted.internet import defer, reactor
 
 
-@txros.util.cancellableInlineCallbacks
-def run_mission(srv, sub, nh):
+async def run_mission(srv, sub, nh):
     print("Running Mission")
     # Generate point to go to
     point = np.random.uniform(-20, 20, size=3)
@@ -25,8 +26,8 @@ def run_mission(srv, sub, nh):
     print(pose)
 
     # Go to point
-    yield job_runner.JobManager.set_model_position(nh, pose)
-    yield txros.util.wall_sleep(5.0)
+    await job_runner.JobManager.set_model_position(nh, pose)
+    await txros.util.wall_sleep(5.0)
     print("Movement should be complete.")
 
     excpeted_position = np.array([point, quat])
@@ -37,29 +38,26 @@ def run_mission(srv, sub, nh):
     print(excpeted_position, actual_position)
     print("Done, err:")
     print(np.abs(excpeted_position - actual_position))
-    print
 
     if (np.abs(excpeted_position[0] - actual_position[0]) < 0.5).all() and (
         np.abs(excpeted_position[1] - actual_position[1]) < 0.2
     ).all():
         print("PASS")
-        print
-        defer.returnValue(RunJobResponse(success=True, message=str(pose)))
+        return RunJobResponse(success=True, message=str(pose))
     else:
         print("FAIL")
-        print
         err_msg = str(excpeted_position) + "\n" + str(actual_position)
-        defer.returnValue(RunJobResponse(success=False, message=err_msg))
+        return RunJobResponse(success=False, message=err_msg)
 
 
-@txros.util.cancellableInlineCallbacks
-def main():
-    nh = yield txros.NodeHandle.from_argv("test")
-    world_position_actual = yield nh.subscribe("/world_odom", Odometry)
-    yield run_mission(None, world_position_actual, nh)
+async def main():
+    nh = await txros.NodeHandle.from_argv("test")
+    world_position_actual = nh.subscribe("/world_odom", Odometry)
+    await world_position_actual.setup()
+    run_mission(None, world_position_actual, nh)
     print("Waiting for service call.")
 
 
 if __name__ == "__main__":
-    reactor.callWhenRunning(main)
-    reactor.run()
+    uvloop.install()
+    asyncio.run(main())

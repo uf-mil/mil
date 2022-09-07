@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
+import asyncio
+
 import txros
+import uvloop
 from sensor_msgs.msg import CompressedImage, Image
 
 
@@ -29,9 +32,8 @@ def add_camera_feeds(nh, cam_name, image_type="image_raw"):
     )
 
 
-@txros.util.cancellableInlineCallbacks
-def main():
-    nh = yield txros.NodeHandle.from_argv("self_checker")
+async def main():
+    nh = await txros.NodeHandle.from_argv("self_checker")
     # Add deferreds to this dict to be yieleded on and checked later
     topics = {}
 
@@ -76,7 +78,7 @@ def main():
             print(f" - - - - Testing for {fancy_name}")
 
             # 2 second timeout should be good
-            result = yield txros.util.wrap_timeout(sub, 2)
+            result = await txros.util.wrap_timeout(sub, 2)
             if result is None:
                 FancyPrint.error(f"[ FAIL ] Response was None from {fancy_name}")
             else:
@@ -87,4 +89,5 @@ def main():
 
 
 if __name__ == "__main__":
-    txros.util.launch_main(main)
+    uvloop.install()
+    asyncio.run(main())

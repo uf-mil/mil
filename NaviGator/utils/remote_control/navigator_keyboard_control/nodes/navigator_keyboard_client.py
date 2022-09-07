@@ -12,7 +12,7 @@ import curses
 from typing import Optional
 
 import rospy
-from navigator_msgs.srv import KeyboardControl
+from navigator_msgs.srv import KeyboardControl, KeyboardControlRequest
 
 __author__ = "Anthony Olive"
 

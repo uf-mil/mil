@@ -18,43 +18,40 @@ class PingerExitMission(Navigator):
     MAX_CIRCLE_BUOY_ERROR = 30
     CIRCLE_RADIUS = 8
 
-    @txros.util.cancellableInlineCallbacks
-    def get_objects(self):
+    async def get_objects(self):
         """Get position of 3 gates from database"""
-        gate_1 = yield self.database_query("Gate_1")
+        gate_1 = await self.database_query("Gate_1")
         assert gate_1.found, "Gate 1 Not found"
         gate_1_pos = mil_tools.rosmsg_to_numpy(gate_1.objects[0].position)[:2]
 
-        gate_2 = yield self.database_query("Gate_2")
+        gate_2 = await self.database_query("Gate_2")
         assert gate_2.found, "Gate 2 Not found"
         gate_2_pos = mil_tools.rosmsg_to_numpy(gate_2.objects[0].position)[:2]
 
-        gate_3 = yield self.database_query("Gate_3")
+        gate_3 = await self.database_query("Gate_3")
         assert gate_3.found, "Gate 3 Not found"
         gate_3_pos = mil_tools.rosmsg_to_numpy(gate_3.objects[0].position)[:2]
 
         self.gate_poses = np.array([gate_1_pos, gate_2_pos, gate_3_pos])
 
-    @txros.util.cancellableInlineCallbacks
-    def set_side(self):
+    async def set_side(self):
         """Set 2 points to observe the pinger from, in front of gates 1 and 3"""
         self.get_gate_perp()
         # Make sure they are actually in a line
         if np.isnan(self.g_perp[0]) or np.isnan(self.g_perp[1]):
             raise Exception("Gates are not in a line")
-        neg = yield self.mission_params["pinger_negate"].get()
+        neg = await self.mission_params["pinger_negate"].get()
         self.negate = not neg
 
-    @txros.util.cancellableInlineCallbacks
-    def go_thru_gate(self):
+    async def go_thru_gate(self):
         """Move to the points needed to go through the correct gate"""
         self.get_gate_thru_points()
-        yield self.move.set_position(self.gate_thru_points[0]).look_at(
+        await self.move.set_position(self.gate_thru_points[0]).look_at(
             self.gate_thru_points[1]
         ).go()
-        yield self.move.set_position(self.gate_thru_points[1]).go()
+        await self.move.set_position(self.gate_thru_points[1]).go()
         # for p in self.gate_thru_points:
-        #    yield self.move.set_position(p).go(initial_plan_time=5)
+        #    await self.move.set_position(p).go(initial_plan_time=5)
 
     def get_gate_perp(self):
         """Calculate a perpendicular to the line formed by the three gates"""
@@ -83,15 +80,14 @@ class PingerExitMission(Navigator):
             )
         self.gate_thru_points = (np.append(pose1, 0), np.append(pose2, 0))
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
+    async def run(self, parameters):
         fprint("PINGER EXIT: Starting", msg_color="green")
-        self.gate_index = yield self.mission_params[
+        self.gate_index = await self.mission_params[
             "acoustic_pinger_active_index"
         ].get()
         self.gate_index = self.gate_index - 1
-        yield self.get_objects()
-        yield self.set_side()
+        await self.get_objects()
+        await self.set_side()
         self.get_gate_thru_points()
-        yield self.go_thru_gate()
+        await self.go_thru_gate()
         fprint("PINGER EXIT: Done", msg_color="green")

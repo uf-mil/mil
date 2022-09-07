@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 from copy import deepcopy
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import cv2
 import genpy
