@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import asyncio
+
 import numpy as np
 import txros
 from mil_tools import quaternion_matrix, rosmsg_to_numpy
@@ -14,11 +16,10 @@ class Navigation(Navigator):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    @txros.util.cancellableInlineCallbacks
-    def inspect_object(self, position):
+    async def inspect_object(self, position):
         # Go in front of the object, looking directly at it
-        yield self.move.look_at(position).set_position(position).backward(6.0).go()
-        yield self.nh.sleep(5.0)
+        await self.move.look_at(position).set_position(position).backward(6.0).go()
+        await self.nh.sleep(5.0)
 
     def get_index_of_type(self, objects, classifications):
         if type(classifications) == str:
@@ -62,18 +63,16 @@ class Navigation(Navigator):
             [perp_vec[0], perp_vec[1], 0.0]
         )
 
-    @txros.util.cancellableInlineCallbacks
-    def go_thru_gate(self, gate, BEFORE=5.0, AFTER=4.0):
+    async def go_thru_gate(self, gate, BEFORE=5.0, AFTER=4.0):
         center, vec = gate
         before_position = center - (vec * BEFORE)
         after_position = center + (vec * AFTER)
-        yield self.move.set_position(before_position).look_at(center).go()
+        await self.move.set_position(before_position).look_at(center).go()
         if AFTER > 0:
-            yield self.move.look_at(after_position).set_position(after_position).go()
+            await self.move.look_at(after_position).set_position(after_position).go()
 
-    @txros.util.cancellableInlineCallbacks
-    def do_next_gate(self):
-        pose = yield self.tx_pose
+    async def do_next_gate(self):
+        pose = await self.tx_pose()
         p = pose[0]
         q_mat = quaternion_matrix(pose[1])
 
@@ -84,18 +83,12 @@ class Navigation(Navigator):
                 [(q_mat.T.dot(position - p)) for position in positions]
             )
             positions_local_x = np.array(positions_local[:, 0])
-            forward_indicies = np.argwhere(
-                positions_local_x > filter_distance
-            ).flatten()
-            forward_indicies = np.array(
-                [
-                    i
-                    for i in forward_indicies
-                    if objects[i].id not in self.objects_passed
-                ]
+            forward_indices = np.argwhere(positions_local_x > filter_distance).flatten()
+            forward_indices = np.array(
+                [i for i in forward_indices if objects[i].id not in self.objects_passed]
             )
-            distances = np.linalg.norm(positions_local[forward_indicies], axis=1)
-            indices = forward_indicies[np.argsort(distances).flatten()].tolist()
+            distances = np.linalg.norm(positions_local[forward_indices], axis=1)
+            indices = forward_indices[np.argsort(distances).flatten()].tolist()
             # ids = [objects[i].id for i in indices]
             # self.send_feedback('Im attracted to {}'.format(ids))
             return indices
@@ -103,15 +96,15 @@ class Navigation(Navigator):
         def is_done(objects, positions):
             try:
                 left_index = self.get_index_of_type(
-                    objects, ("mb_marker_buoy_red","mb_marker_buoy_white")
+                    objects, ("mb_marker_buoy_red", "mb_marker_buoy_white")
                 )
                 if objects[left_index].labeled_classification != "mb_marker_buoy_white":
                     right_index = self.get_index_of_type(
-                        objects, ("mb_marker_buoy_green","mb_marker_buoy_white")
+                        objects, ("mb_marker_buoy_green", "mb_marker_buoy_white")
                     )
                 else:
-                    indicies = self.get_indices_of_type(objects,"mb_marker_buoy_white")
-                    right_index = indicies[1]
+                    indices = self.get_indices_of_type(objects, "mb_marker_buoy_white")
+                    right_index = indices[1]
 
             except StopIteration:
                 return None
@@ -125,7 +118,7 @@ class Navigation(Navigator):
                 end,
             )
 
-        left, left_obj, right, right_obj, end = yield self.explore_closest_until(
+        left, left_obj, right, right_obj, end = await self.explore_closest_until(
             is_done, filter_and_sort
         )
         self.send_feedback(
@@ -134,13 +127,12 @@ class Navigation(Navigator):
             )
         )
         gate = self.get_gate(left, right, p)
-        yield self.go_thru_gate(gate)
+        await self.go_thru_gate(gate)
         self.objects_passed.add(left_obj.id)
         self.objects_passed.add(right_obj.id)
-        defer.returnValue(end)
+        return end
 
-    @txros.util.cancellableInlineCallbacks
-    def explore_closest_until(self, is_done, filter_and_sort):
+    async def explore_closest_until(self, is_done, filter_and_sort):
         """
         @condition func taking in sorted objects, positions
         @object_filter func filters and sorts
@@ -151,17 +143,15 @@ class Navigation(Navigator):
         init_boat_pos = self.pose[0]
         cone_buoys_investigated = 0  # max will be 2
         service_req = None
-        dl = None
+        fl = None
         investigated = set()
         while True:
             if move_id_tuple is not None:
                 if service_req is None:
                     service_req = self.database_query(name="all")
-                dl = defer.DeferredList(
-                    [service_req, move_id_tuple[0]], fireOnOneCallback=True
-                )
+                fl = asyncio.gather(service_req, move_id_tuple[0])
 
-                result, index = yield dl
+                result, index = await fl
 
                 # Database query succeeded
                 if index == 0:
@@ -177,9 +167,9 @@ class Navigation(Navigator):
                                 move_id_tuple[1]
                             )
                         )
-                        yield dl.cancel()
-                        yield move_id_tuple[0].cancel()
-                        yield self.nh.sleep(1.0)
+                        fl.cancel()
+                        # move_id_tuple[0].cancel()
+                        await self.nh.sleep(1.0)
 
                         if (
                             "marker"
@@ -202,9 +192,9 @@ class Navigation(Navigator):
                                 ].labeled_classification
                                 and cone_buoys_investigated < 2
                             ):
-                                yield self.move.left(3).yaw_left(30, "deg").go()
+                                await self.move.left(3).yaw_left(30, "deg").go()
                             elif cone_buoys_investigated < 2:
-                                yield self.move.right(3).yaw_right(30, "deg").go()
+                                await self.move.right(3).yaw_right(30, "deg").go()
 
                         move_id_tuple = None
 
@@ -213,7 +203,7 @@ class Navigation(Navigator):
                     self.send_feedback(f"Investigated {move_id_tuple[1]}")
                     move_id_tuple = None
             else:
-                objects_msg = yield self.database_query(name="all")
+                objects_msg = await self.database_query(name="all")
             objects = objects_msg.objects
             positions = np.array(
                 [rosmsg_to_numpy(obj.pose.position) for obj in objects]
@@ -234,11 +224,11 @@ class Navigation(Navigator):
             if ret is not None:
                 if move_id_tuple is not None:
                     self.send_feedback("Condition met. Canceling investigation")
-                    yield dl.cancel()
-                    yield move_id_tuple[0].cancel()
+                    fl.cancel()
+                    move_id_tuple[0].cancel()
                     move_id_tuple = None
 
-                defer.returnValue(ret)
+                return ret
 
             if move_id_tuple is not None:
                 continue
@@ -320,11 +310,11 @@ class Navigation(Navigator):
                 self.send_feedback("!!!! NO MORE TO EXPLORE")
                 raise Exception("no more to explore")
 
-    def get_objects_indicies_for_start(self, objects):
+    def get_objects_indices_for_start(self, objects):
         try:
-            indicies = self.get_indices_of_type(objects,"mb_marker_buoy_white")
-            white_index1 = indicies[0]
-            white_index2 = indicies[1]
+            indices = self.get_indices_of_type(objects, "mb_marker_buoy_white")
+            white_index1 = indices[0]
+            white_index2 = indices[1]
         except StopIteration:
             return None
         return white_index1, white_index2
@@ -342,10 +332,9 @@ class Navigation(Navigator):
                     return i
         return -1
 
-    @txros.util.cancellableInlineCallbacks
-    def prepare_to_enter(self):
+    async def prepare_to_enter(self):
         closest = []
-        robot_position = (yield self.tx_pose)[0]
+        robot_position = (await self.tx_pose())[0]
 
         def filter_and_sort(objects, positions):
             distances = np.linalg.norm(positions - robot_position, axis=1)
@@ -353,7 +342,7 @@ class Navigation(Navigator):
             return argsort
 
         def is_done(objects, positions):
-            res = self.get_objects_indicies_for_start(objects)
+            res = self.get_objects_indices_for_start(objects)
             if res is None:
                 return None
             white_index1, white_index2 = res
@@ -364,7 +353,7 @@ class Navigation(Navigator):
                 positions[white_index2],
             )
 
-        white, white_position, red, red_position = yield self.explore_closest_until(
+        white, white_position, red, red_position = await self.explore_closest_until(
             is_done, filter_and_sort
         )
         self.objects_passed.add(white.id)
@@ -375,22 +364,21 @@ class Navigation(Navigator):
                 white.labeled_classification, red.labeled_classification
             )
         )
-        yield self.go_thru_gate(gate, AFTER=-2)
+        await self.go_thru_gate(gate, AFTER=-2)
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
+    async def run(self, parameters):
         """
         TODO: check for new objects in background, cancel move
               somefucking how handle case where gates litteraly loop back and head the other direction
         """
         self.objects_passed = set()
-        yield self.change_wrench("autonomous")
+        await self.change_wrench("autonomous")
         # Wait a bit for PCDAR to get setup
-        yield self.nh.sleep(3.0)
-        yield self.set_classifier_enabled(SetBoolRequest(data=True))
-        yield self.prepare_to_enter()
-        yield self.move.forward(7.0).go()
-        while not (yield self.do_next_gate()):
+        await self.nh.sleep(3.0)
+        await self.set_classifier_enabled(SetBoolRequest(data=True))
+        await self.prepare_to_enter()
+        await self.move.forward(7.0).go()
+        while not (await self.do_next_gate()):
             pass
         self.send_feedback("Exiting last gate!! Go NaviGator")
-        yield self.set_classifier_enabled(SetBoolRequest(data=False))
+        await self.set_classifier_enabled(SetBoolRequest(data=False))

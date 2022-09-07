@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-from txros import util
-
 from .detect_deliver_find import DetectDeliverFind
 from .navigator import Navigator
 from .track_target import TrackTarget
@@ -13,11 +11,10 @@ class DetectDeliver(Navigator):
         cls.track_target = TrackTarget()
         pass
 
-    @util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
         self.send_feedback("Starting detect deliver")
-        yield self.detect_deiliver_find.run(
+        await self.detect_deiliver_find.run(
             self.detect_deiliver_find.decode_parameters(args)
         )
-        yield self.track_target.run(self.track_target.decode_parameters(args))
+        await self.track_target.run(self.track_target.decode_parameters(args))
         self.send_feedback("Done with detect deliver")

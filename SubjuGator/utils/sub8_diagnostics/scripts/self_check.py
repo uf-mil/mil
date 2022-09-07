@@ -1,8 +1,10 @@
 #!/usr/bin/python3
+import asyncio
 import subprocess
 import sys
 
 import txros
+import uvloop
 from geometry_msgs.msg import PoseStamped
 from mil_misc_tools import text_effects
 from mil_msgs.msg import DepthStamped, RangeStamped, VelocityMeasurements
@@ -11,7 +13,6 @@ from sensor_msgs.msg import CameraInfo, Image, Imu, Joy, MagneticField
 from std_msgs.msg import Header
 from sub8_msgs.msg import ThrusterStatus
 from tf.msg import tfMessage
-from twisted.internet import defer, reactor
 
 MESSAGE_TIMEOUT = 1  # s
 
@@ -29,8 +30,7 @@ class TemplateChecker:
 
         self.p = text_effects.Printer()
 
-    @txros.util.cancellableInlineCallbacks
-    def tx_init(self):
+    async def tx_init(self):
         # Do txros initiation here
         yield
         pass
@@ -82,30 +82,29 @@ class TemplateChecker:
 
 
 class ThrusterChecker(TemplateChecker):
-    @txros.util.cancellableInlineCallbacks
-    def tx_init(self):
+    async def tx_init(self):
         self.thruster_topic = self.nh.subscribe(
             "thrusters/thruster_status", ThrusterStatus
         )
+        await self.thruster_topic.setup()
 
         thrusters = None
         try:
-            thrusters = yield self.nh.get_param("/thruster_layout/thrusters")
-        except txros.rosxmlrpc.Error as e:
-            raise OSError(e.message)
+            thrusters = await self.nh.get_param("/thruster_layout/thrusters")
+        except txros.XMLRPCException as e:
+            raise OSError(e)
 
         self.found_thrusters = {}
         for thruster_name in thrusters.keys():
             self.found_thrusters[thruster_name] = False
         print(self.p.bold("  >>>>   ").set_blue.bold("Thruster Check"))
 
-    @txros.util.cancellableInlineCallbacks
-    def do_check(self):
+    async def do_check(self):
         try:
-            passed = yield txros.util.wrap_timeout(
+            passed = await txros.util.wrap_timeout(
                 self.get_all_thrusters(), MESSAGE_TIMEOUT
             )
-        except txros.util.TimeoutError:
+        except asyncio.TimeoutError:
             lost_thrusters = [x[0] for x in self.found_thrusters.items() if not x[1]]
             err_msg = ""
             if not any(self.found_thrusters.values()):
@@ -121,26 +120,24 @@ class ThrusterChecker(TemplateChecker):
             else:
                 self.warn_check("unknown timeout reason.")
 
-            defer.returnValue(False)
+            return False
 
         if passed:
             self.pass_check("all thrusters up.")
         else:
             self.warn_check("unknown failure.")
 
-    @txros.util.cancellableInlineCallbacks
-    def get_all_thrusters(self):
+    async def get_all_thrusters(self):
         while True:
-            msg = yield self.thruster_topic.get_next_message()
+            msg = await self.thruster_topic.get_next_message()
             self.found_thrusters[msg.name] = True
 
             if all(self.found_thrusters.values()):
-                defer.returnValue(True)
+                return True
 
 
 class CameraChecker(TemplateChecker):
-    @txros.util.cancellableInlineCallbacks
-    def tx_init(self):
+    async def tx_init(self):
         self.front_cam_product_id = "1e10:3300"  # should be changed if cameras change
         self.right = self.nh.subscribe("/camera/front/right/image_rect_color", Image)
         self.right_info = self.nh.subscribe(
@@ -163,12 +160,19 @@ class CameraChecker(TemplateChecker):
             ("Down Image", self.down.get_next_message()),
             ("Down Info", self.down_info.get_next_message()),
         ]
+        await asyncio.gather(
+            self.right.setup(),
+            self.right_info.setup(),
+            self.left.setup(),
+            self.left_info.setup(),
+            self.down.setup(),
+            self.down_info.setup(),
+        )
 
         print(self.p.bold("\n  >>>>   ").set_blue.bold("Camera Check"))
-        yield self.nh.sleep(0.1)  # Try to get all the images
+        await self.nh.sleep(0.1)  # Try to get all the images
 
-    @txros.util.cancellableInlineCallbacks
-    def do_check(self):
+    async def do_check(self):
         # Check if front cameras are actually on usb bus
         command = f"lsusb -d {self.front_cam_product_id}"
         err_str = "{} front camera{} not connected to usb port"
@@ -183,7 +187,7 @@ class CameraChecker(TemplateChecker):
 
         for name, df in self.subs:
             try:
-                yield txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
+                await txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
             except txros.util.TimeoutError:
                 self.fail_check("no messages found.", name)
                 continue
@@ -192,8 +196,7 @@ class CameraChecker(TemplateChecker):
 
 
 class StateEstChecker(TemplateChecker):
-    @txros.util.cancellableInlineCallbacks
-    def tx_init(self):
+    async def tx_init(self):
         self.odom = self.nh.subscribe("/odom", Odometry)
         self.tf = self.nh.subscribe("/tf", tfMessage)
         self.dvl = self.nh.subscribe("/dvl", VelocityMeasurements)
@@ -211,16 +214,24 @@ class StateEstChecker(TemplateChecker):
             ("IMU", self.imu.get_next_message()),
             ("Mag", self.mag.get_next_message()),
         ]
+        await asyncio.gather(
+            self.odom.setup(),
+            self.tf.setup(),
+            self.dvl.setup(),
+            self.depth.setup(),
+            self.height.setup(),
+            self.imu.setup(),
+            self.mag.setup(),
+        )
 
         print(self.p.bold("\n  >>>>   ").set_blue.bold("State Estimation Check"))
-        yield self.nh.sleep(0.1)  # Try to get all the subs
+        await self.nh.sleep(0.1)  # Try to get all the subs
 
-    @txros.util.cancellableInlineCallbacks
-    def do_check(self):
+    async def do_check(self):
         for name, df in self.subs:
             try:
-                res = yield txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
-            except txros.util.TimeoutError:
+                res = await txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
+            except asyncio.TimeoutError:
                 self.fail_check("no messages found.", name)
                 continue
 
@@ -237,19 +248,23 @@ class StateEstChecker(TemplateChecker):
 
 
 class ShoreControlChecker(TemplateChecker):
-    @txros.util.cancellableInlineCallbacks
-    def tx_init(self):
+    async def tx_init(self):
         p = (
             self.p.bold("\n  >>>>")
             .text("   Press return when ")
             .negative("shore_control.launch")
             .text(" is running.\n")
         )
-        yield txros.util.nonblocking_raw_input(str(p))
+        txros.util.nonblocking_raw_input(str(p))
 
         self.network = self.nh.subscribe("/network", Header)
         self.spacenav = self.nh.subscribe("/spacenav/joy", Joy)
         self.posegoal = self.nh.subscribe("/posegoal", PoseStamped)
+        await asyncio.gather(
+            self.network.setup(),
+            self.spacenav.setup(),
+            self.posegoal.setup(),
+        )
 
         self.subs = [
             ("Network", self.network.get_next_message()),
@@ -258,23 +273,21 @@ class ShoreControlChecker(TemplateChecker):
         ]
 
         print(self.p.bold("  >>>>   ").set_blue.bold("Shore Control Check"))
-        yield self.nh.sleep(0.1)  # Try to get all the subs
+        await self.nh.sleep(0.1)  # Try to get all the subs
 
-    @txros.util.cancellableInlineCallbacks
-    def do_check(self):
+    async def do_check(self):
         for name, df in self.subs:
             try:
-                yield txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
-            except txros.util.TimeoutError:
+                await txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
+            except asyncio.TimeoutError:
                 self.fail_check("no messages found.", name)
                 continue
 
             self.pass_check("message found.", name)
 
 
-@txros.util.cancellableInlineCallbacks
-def main():
-    nh = yield txros.NodeHandle.from_argv("startup_checker")
+async def main():
+    nh = await txros.NodeHandle.from_argv("startup_checker")
     check_order = [
         ThrusterChecker(nh, "Thrusters"),
         CameraChecker(nh, "Cameras"),
@@ -283,7 +296,7 @@ def main():
     ]
 
     p = text_effects.Printer()
-    yield txros.util.nonblocking_raw_input(
+    txros.util.nonblocking_raw_input(
         str(
             p.bold("\n  >>>>")
             .text("   Press return when ")
@@ -295,9 +308,9 @@ def main():
 
     for check in check_order:
         try:
-            yield check.tx_init()
-            yield nh.sleep(0.1)
-            yield check.do_check()
+            await check.tx_init()
+            await nh.sleep(0.1)
+            await check.do_check()
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             check.err_msg(e, exc_tb.tb_lineno)
@@ -305,9 +318,8 @@ def main():
         del check
 
     print(p.newline().set_blue.bold("-------- Finished!").newline())
-    reactor.stop()
 
 
 if __name__ == "__main__":
-    reactor.callWhenRunning(main)
-    reactor.run()
+    uvloop.install()
+    asyncio.run(main())

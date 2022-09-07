@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Optional
 
 import numpy as np
@@ -73,11 +74,11 @@ class FireTorpedos(SubjuGator):
         self.moves = [[0, X, -z], [0, -X, 0], [0, X, z], [0, -X, 0]]
         self.move_index = 0
 
-    @util.cancellableInlineCallbacks
-    def search(self):
+    async def search(self):
         global markers
         markers = MarkerArray()
-        pub_markers = yield self.nh.advertise("/torpedo/rays", MarkerArray)
+        pub_markers = self.nh.advertise("/torpedo/rays", MarkerArray)
+        await pub_markers.setup()
         while True:
             info = "CURRENT TARGETS: "
 
@@ -91,7 +92,7 @@ class FireTorpedos(SubjuGator):
             targets.
             """
             print("REQUESTING POSE")
-            res = yield self.vision_proxies.xyz_points.get_pose(target="board")
+            res = self.vision_proxies.xyz_points.get_pose(target="board")
             if res.found:
                 print("POSE FOUND!")
                 self.ltime = res.pose.header.stamp
@@ -115,44 +116,42 @@ class FireTorpedos(SubjuGator):
             if self.targets[target].position is not None:
                 print("TARGET IS NOT NONE")
                 info += target + " "
-            yield self.nh.sleep(0.1)  # Throttle service calls
+            await self.nh.sleep(0.1)  # Throttle service calls
             self.print_info(info)
 
-    @util.cancellableInlineCallbacks
-    def pattern(self):
+    async def pattern(self):
         self.print_info("Descending to Depth...")
-        # yield self.move.depth(1.5).go(blind=self.BLIND, speed=0.1)
-        yield self.move.left(1).go(blind=self.BLIND, speed=0.5)
-        yield self.nh.sleep(2)
-        yield self.move.right(2).go(blind=self.BLIND, speed=0.5)
-        yield self.nh.sleep(2)
-        yield self.move.left(1).go(blind=self.BLIND, speed=0.5)
-        yield self.nh.sleep(2)
-        yield self.move.down(0.5).go(blind=self.BLIND, speed=0.5)
-        yield self.nh.sleep(2)
+        # await self.move.depth(1.5).go(blind=self.BLIND, speed=0.1)
+        await self.move.left(2).go(blind=self.BLIND, speed=0.5)
+        await self.nh.sleep(2)
+        await self.move.right(2).go(blind=self.BLIND, speed=0.5)
+        await self.nh.sleep(2)
+        await self.move.left(1).go(blind=self.BLIND, speed=0.5)
+        await self.nh.sleep(2)
+        await self.move.down(0.5).go(blind=self.BLIND, speed=0.5)
+        await self.nh.sleep(2)
         # def err():
         # self.print_info('Search pattern canceled')
 
         # self.pattern_done = False
         # for i, move in enumerate(self.moves[self.move_index:]):
         # move = self.move.relative(np.array(move)).go(blind=self.BLIND, speed=0.1)
-        # yield self.nh.sleep(2)
+        # await self.nh.sleep(2)
         # move.addErrback(err)
-        # yield move
+        # await move
         # self.move_index = i + 1
         # self.print_bad('Pattern finished. Firing at any locked targets.')
         # self.pattern_done = True
 
-    @util.cancellableInlineCallbacks
-    def fire(self, target: str):
+    async def fire(self, target: str):
         self.print_info(f"FIRING {target}")
         target_pose = self.targets[target].position
-        yield self.move.go(blind=self.BLIND, speed=0.1)  # Station hold
-        transform = yield self._tf_listener.get_transform("map", "/base_link")
+        await self.move.go(blind=self.BLIND, speed=0.1)  # Station hold
+        transform = await self._tf_listener.get_transform("map", "/base_link")
         # target_position = transform._q_mat.dot(
         #         target_pose - transform._p)
 
-        sub_pos = yield self.tx_pose()
+        sub_pos = await self.tx_pose()
         print("Current Sub Position: ", sub_pos)
 
         # sub_pos = transform._q_mat.dot(
@@ -160,11 +159,11 @@ class FireTorpedos(SubjuGator):
         # target_position = sub_pos[0] - target_pose
         print("Moving to Target Position: ", target_pose)
         target_position = target_pose + self.normal
-        # yield self.move.look_at_without_pitching(target_position).go(
+        # await self.move.look_at_without_pitching(target_position).go(
         #     blind=self.BLIND, speed=.25)
         print("Target normal: ", self.normal)
         print("Point: ", target_position)
-        yield self.move.set_position(
+        await self.move.set_position(
             np.array([target_position[0], target_position[1], target_position[2]])
         ).go(blind=True, speed=0.5)
 
@@ -173,10 +172,10 @@ class FireTorpedos(SubjuGator):
                 target
             )
         )
-        sub_pos = yield self.tx_pose()
+        sub_pos = await self.tx_pose()
         print("Current Sub Position: ", sub_pos)
-        yield self.actuators.shoot_torpedo1()
-        yield self.actuators.shoot_torpedo2()
+        await self.actuators.shoot_torpedo1()
+        await self.actuators.shoot_torpedo2()
         self.done = True
 
     def get_target(self) -> str | None:
@@ -200,29 +199,27 @@ class FireTorpedos(SubjuGator):
         else:
             return None
 
-    @util.cancellableInlineCallbacks
-    def run(self, args):
-        # start_time = yield self.nh.get_time()  # Store time mission
+    async def run(self, args):
+        # start_time = await self.nh.get_time()  # Store time mission
         # starts for timeout
 
         self.print_info("Enabling Perception")
         self.print_info(f"{self.vision_proxies.xyz_points}, Ree")
         self.vision_proxies.xyz_points.start()
         self.generate_pattern()
-        pattern = self.pattern()
-        self.do_search = True
-        search = self.search()
+        pattern = asyncio.create_task(self.pattern())
+        self.do_search()
         while not self.done:
             t = self.get_target()
             if t is not None:
                 pattern.cancel()
-                yield self.fire(t)
+                await self.fire(t)
                 self.targets[t].set_destroyed()
                 if not self.done:
                     pattern = self.pattern()
             elif self.pattern_done:
                 break
-            yield self.nh.sleep(0.1)
+            await self.nh.sleep(0.1)
         search.cancel()
         pattern.cancel()
         self.vision_proxies.xyz_points.stop()

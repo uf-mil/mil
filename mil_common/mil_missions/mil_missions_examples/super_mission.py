@@ -1,6 +1,3 @@
-from twisted.internet import defer
-from txros import util
-
 from .base_mission import ExampleBaseMission
 
 
@@ -12,19 +9,18 @@ class SuperMission(ExampleBaseMission):
     def init(cls):
         print("SuperMission init")
 
-    @util.cancellableInlineCallbacks
-    def run(self, parameters):
+    async def run(self, parameters):
         self.send_feedback("Going to run two missions")
-        yield self.nh.sleep(0.5)
+        await self.nh.sleep(0.5)
         self.send_feedback("Running PrintAndWait")
-        ret = yield self.run_submission("PrintAndWait")
+        ret = await self.run_submission("PrintAndWait")
         self.send_feedback(f"PrintAndWait returned {ret}")
         self.send_feedback("Running PublishThings")
-        ret = yield self.run_submission("PublishThings", "hello world")
+        ret = await self.run_submission("PublishThings", "hello world")
         self.send_feedback(f"PublishThings returned {ret}")
         if not self.parent:  # Only recurse once
             self.send_feedback("Oh boy! Its bout to get recursive in here.")
-            yield self.run_submission("SuperMission")
+            await self.run_submission("SuperMission")
             self.send_feedback("Recursion works! Thx kev")
-        yield self.nh.sleep(0.5)
-        defer.returnValue("Woo! Supermissions are awesome!")
+        await self.nh.sleep(0.5)
+        return "Woo! Supermissions are awesome!"

@@ -11,8 +11,7 @@ from nav_msgs.msg import Odometry
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from navigator_tools import CvDebug
 from sensor_msgs.msg import CameraInfo, Image
-from twisted.internet import defer
-from txros import tf, util
+from txros import tf
 
 ___author___ = "Tess Bianchi"
 
@@ -38,23 +37,23 @@ class LidarToImage:
 
         self.debug = CvDebug(nh)
 
-    @util.cancellableInlineCallbacks
-    def init_(self, cam):
+    async def init_(self, cam):
         image_sub = "/stereo/right/image_rect_color"
         cam_info = "/stereo/right/camera_info"
 
-        yield self.nh.subscribe(image_sub, Image, self._img_cb)
-        self._database = yield self.nh.get_service_client(
-            "/database/requests", ObjectDBQuery
-        )
-        self._odom_sub = yield self.nh.subscribe(
+        sub = self.nh.subscribe(image_sub, Image, self._img_cb)
+        await sub.setup()
+        self._database = self.nh.get_service_client("/database/requests", ObjectDBQuery)
+        self._odom_sub = self.nh.subscribe(
             "/odom",
             Odometry,
             lambda odom: setattr(self, "pose", odometry_to_numpy(odom)[0]),
         )
-        self.cam_info_sub = yield self.nh.subscribe(cam_info, CameraInfo, self._info_cb)
+        await self._odom_sub.setup()
+        self.cam_info_sub = self.nh.subscribe(cam_info, CameraInfo, self._info_cb)
+        await self.cam_info_sub.setup()
         self.tf_listener = tf.TransformListener(self.nh)
-        defer.returnValue(self)
+        return self
 
     def _info_cb(self, info):
         self.cam_info = info
@@ -89,25 +88,24 @@ class LidarToImage:
             ymax = h - 1
         return xmin, ymin, xmax, ymax
 
-    @util.cancellableInlineCallbacks
-    def get_object_rois(self, name=None):
+    async def get_object_rois(self, name=None):
         req = ObjectDBQueryRequest()
         if name is None:
             req.name = "all"
         else:
             req.name = name
-        obj = yield self._database(req)
+        obj = await self._database(req)
 
         if obj is None or not obj.found:
-            defer.returnValue((None, None))
+            return (None, None)
         rois = []
-        ros_img = yield self._get_closest_image(obj.objects[0].header.stamp)
+        ros_img = await self._get_closest_image(obj.objects[0].header.stamp)
         if ros_img is None:
-            defer.returnValue((None, None))
+            return (None, None)
         img = self.bridge.imgmsg_to_cv2(ros_img, "mono8")
         o = obj.objects[0]
 
-        points_3d = yield self.get_3d_points(o)
+        points_3d = await self.get_3d_points(o)
         points_2d_all = map(lambda x: self.camera_model.project3dToPixel(x), points_3d)
         points_2d = self._get_2d_points(points_3d)
         xmin, ymin, xmax, ymax = self._get_bounding_rect(points_2d, img)
@@ -121,7 +119,7 @@ class LidarToImage:
             or xmax - xmin == 0
             or ymax - ymin == 0
         ):
-            defer.returnValue((None, None))
+            return (None, None)
         if ymin < 0:
             ymin = 0
         roi = img[ymin:ymax, xmin:xmax]
@@ -134,7 +132,7 @@ class LidarToImage:
         ret_obj["name"] = o.name
         ret_obj["bbox"] = [xmin, ymin, xmax, ymax]
         rois.append(ret_obj)
-        defer.returnValue((img, rois))
+        return (img, rois)
 
     def img_cb(self, image_ros):
         """Add an image to the image cache."""
@@ -145,8 +143,7 @@ class LidarToImage:
 
         self.image_cache.append(image_ros)
 
-    @util.cancellableInlineCallbacks
-    def get_closest_image(self, time):
+    async def get_closest_image(self, time):
         min_img = None
         for i in range(0, 20):
             min_diff = genpy.Duration(sys.maxint)
@@ -156,8 +153,8 @@ class LidarToImage:
                     min_diff = diff
                     min_img = img
             if min_img is not None:
-                defer.returnValue(min_img)
-            yield self.nh.sleep(0.3)
+                return min_img
+            await self.nh.sleep(0.3)
 
     def _resize_image(self, img):
         h, w, r = img.shape
@@ -188,9 +185,8 @@ class LidarToImage:
         img = np.repeat(img, reph, axis=0)
         return np.repeat(img, rep, axis=1)
 
-    @txros.util.cancellableInlineCallbacks
-    def get_3d_points(self, perc_obj):
-        trans = yield self.my_tf.get_transform(
+    async def get_3d_points(self, perc_obj):
+        trans = await self.my_tf.get_transform(
             "/stereo_right_cam", "/enu", perc_obj.header.stamp
         )
 
@@ -206,4 +202,4 @@ class LidarToImage:
             p[1] /= p[3]
             p[2] /= p[3]
             points.append(p[:3])
-        defer.returnValue(points)
+        return points

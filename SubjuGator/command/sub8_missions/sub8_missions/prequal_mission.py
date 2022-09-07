@@ -6,9 +6,6 @@ import cv2
 import numpy as np
 import tf
 from cv_bridge import CvBridge
-from sensor_msgs.msg import CameraInfo, Image
-from twisted.internet import defer
-from txros import util
 
 from .sub_singleton import SubjuGator
 
@@ -16,8 +13,7 @@ SPEED_LIMIT = 0.5  # m/s
 
 
 class PrequalMission(SubjuGator):
-    @util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
 
         # obtain camera data
 
@@ -26,35 +22,35 @@ class PrequalMission(SubjuGator):
             "/camera/front/left/image_color", Image
         )
         self.image_debug_pub = self.nh.advertise("/prequal_image_debug", Image)
+        await self.image_debug_pub.setup()
 
         # submerge submarine
-        yield self.move.down(2).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
+        await self.move.down(2).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
 
         # look for start gate
-        yield self.find_start_gate()
+        await self.find_start_gate()
 
         # look for pole
-        yield self.find_marker()
+        await self.find_marker()
 
         # turn around
-        yield self.nh.sleep(5)
-        yield self.move.yaw_right(1.57).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
+        await self.nh.sleep(5)
+        await self.move.yaw_right(1.57).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
 
         # go through start gate again
-        yield self.nh.sleep(5)
-        yield self.find_start_gate()
+        await self.nh.sleep(5)
+        await self.find_start_gate()
 
         print("Done!")
 
     # returns center of first and last vertical lines
-    @util.cancellableInlineCallbacks
-    def find_start_gate(self):
+    async def find_start_gate(self):
 
         center_pixel = 480
 
         while True:
 
-            img = yield self.front_left_camera_sub.get_next_message()
+            img = await self.front_left_camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img)
 
             # obtain one image
@@ -93,7 +89,7 @@ class PrequalMission(SubjuGator):
                 ) / 2
             else:
                 print("Going through the gate!")
-                yield self.move.forward(5).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
+                await self.move.forward(5).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
                 break
 
             # move based on center pixel
@@ -110,25 +106,24 @@ class PrequalMission(SubjuGator):
 
                 if difference < 0:
                     print("Adjusting right", abs(meters))
-                    yield self.move.yaw_right(abs(meters)).zero_roll_and_pitch().go(
+                    await self.move.yaw_right(abs(meters)).zero_roll_and_pitch().go(
                         speed=SPEED_LIMIT
                     )
                 elif difference > 0:
                     print("Adjusting left", abs(meters))
-                    yield self.move.yaw_left(abs(meters)).zero_roll_and_pitch().go(
+                    await self.move.yaw_left(abs(meters)).zero_roll_and_pitch().go(
                         speed=SPEED_LIMIT
                     )
 
             print("Going forward and inspecting again")
-            yield self.move.forward(2).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
+            await self.move.forward(2).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
 
     # returns center of marker and width
-    @util.cancellableInlineCallbacks
-    def find_marker(self):
+    async def find_marker(self):
 
         while True:
 
-            img = yield self.front_left_camera_sub.get_next_message()
+            img = await self.front_left_camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img)
 
             # obtain one image
@@ -180,36 +175,35 @@ class PrequalMission(SubjuGator):
 
                 if difference < 0:
                     print("Adjusting right")
-                    yield self.move.yaw_right(abs(angle)).zero_roll_and_pitch().go(
+                    await self.move.yaw_right(abs(angle)).zero_roll_and_pitch().go(
                         speed=SPEED_LIMIT
                     )
                 elif difference > 0:
                     print("Adjusting left")
-                    yield self.move.yaw_left(abs(angle)).zero_roll_and_pitch().go(
+                    await self.move.yaw_left(abs(angle)).zero_roll_and_pitch().go(
                         speed=SPEED_LIMIT
                     )
 
             # if the width of the pole is bigger than a certain amount, rotate around pole
             if stop - start > 25:
                 # this is where we would call the rotation function
-                yield self.circle_marker()
+                await self.circle_marker()
                 break
 
-            yield self.move.forward(2).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
+            await self.move.forward(2).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
 
             print("Marker is in pixel: " + str(center_pixel))
             print("Pipe width: " + str(stop - start))
             print("\n")
 
-    @util.cancellableInlineCallbacks
-    def circle_marker(self):
+    async def circle_marker(self):
         print("Entering circle marker function")
 
         steps = 8
 
         # get vector between sub and estimated marker location
-        sub_position = yield self.pose.position
-        sub_orientation = yield self.pose.orientation
+        sub_position = await self.pose.position
+        sub_orientation = await self.pose.orientation
         center_point = self.get_point_in_front_of_sub(
             sub_position, sub_orientation, 2.5
         )
@@ -230,7 +224,7 @@ class PrequalMission(SubjuGator):
             # move to next spot in circle
             print(new_pos)
             print(vect)
-            yield self.move.set_position(new_pos).look_at_without_pitching(
+            await self.move.set_position(new_pos).look_at_without_pitching(
                 center_point
             ).go()
 

@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import numpy as np
 from mil_misc_tools import ThrowingArgumentParser
-from twisted.internet import defer
-from txros import util
 
 from .navigator import Navigator
 
@@ -41,28 +39,27 @@ class ExploreTowers(Navigator):
         )
         cls.parser = parser
 
-    @util.cancellableInlineCallbacks
-    def run(self, args):
-        initial_boat_pose = (yield self.tx_pose)[0]
+    async def run(self, args):
+        initial_boat_pose = (self.tx_pose)[0]
 
-        closest_unclassified = yield self.get_sorted_objects(
+        closest_unclassified = await self.get_sorted_objects(
             "UNKNOWN", n=args.count, throw=False
         )
         closest_unclassified = closest_unclassified[1]
 
         self.send_feedback("Enableling totem vision")
-        yield self.set_vision_obstacle_course()
+        await self.set_vision_obstacle_course()
 
         for unclass_obj in closest_unclassified:
             if np.linalg.norm(unclass_obj - initial_boat_pose) > args.dist:
                 self.send_feedback("Object is too far away, skpping.")
                 continue
             self.send_feedback("Exploring object")
-            yield self.move.look_at(unclass_obj).set_position(unclass_obj).backward(
+            await self.move.look_at(unclass_obj).set_position(unclass_obj).backward(
                 args.backup
             ).go()
-            yield self.nh.sleep(args.wait)
+            await self.nh.sleep(args.wait)
 
         self.send_feedback("Turning vision off")
-        yield self.set_vision_off()
-        defer.returnValue(True)
+        await self.set_vision_off()
+        return True

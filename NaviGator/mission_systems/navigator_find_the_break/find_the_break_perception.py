@@ -1,3 +1,4 @@
+import asyncio
 from collections import Counter
 
 import cv2
@@ -7,15 +8,14 @@ import txros
 from cv_bridge import CvBridge
 from mil_misc_tools.text_effects import CvDebug, fprint
 from sensor_msgs.msg import Image
-from twisted.internet import defer
-from txros import util
+from txros import NodeHandle
 
 # Perception
 # Params : direction
 
 
 class FindTheBreakPerception:
-    def __init__(self, nh):
+    def __init__(self, nh: NodeHandle):
         """Initialize FindTheBreakPerception class."""
         # PARAMS
         self.diff_thresh = 50
@@ -32,18 +32,17 @@ class FindTheBreakPerception:
         self.count = 0
         self.debug = CvDebug(nh=nh)
 
-    @util.cancellableInlineCallbacks
-    def init_(self):
+    async def init_(self):
         """Initialize the txros aspect of FindTheBreakPerception."""
-        self._image_sub = yield self.nh.subscribe(
+        self._image_sub = self.nh.subscribe(
             "/camera/down/image_rect_color", Image, lambda x: x
         )
+        await self._image_sub.setup()
 
     @property
-    @util.cancellableInlineCallbacks
-    def _curr_image(self):
-        img_msg = yield txros.util.wrap_timeout(self._image_sub.get_next_message(), 3)
-        defer.returnValue(self.bridge.imgmsg_to_cv2(img_msg, "bgr8"))
+    async def _curr_image(self):
+        img_msg = await txros.util.wrap_timeout(self._image_sub.get_next_message(), 3)
+        return self.bridge.imgmsg_to_cv2(img_msg, "bgr8")
 
     def _get_all_pipes(self, frame):
         frame
@@ -171,14 +170,13 @@ class FindTheBreakPerception:
                 new_pipes.append(h)
         return new_pipes
 
-    @util.cancellableInlineCallbacks
-    def count_pipes(self):
+    async def count_pipes(self):
         """Count the number of pipes in between the breaks."""
         second_hpipe_found = False
         while not second_hpipe_found:
             try:
-                frame = yield self.curr_image
-            except util.TimeoutError:
+                frame = self.curr_image
+            except asyncio.TimeoutError:
                 fprint("Image isn't being received, fail mission", msg_color="red")
                 raise Exception("Image isn't being received")
 
@@ -191,7 +189,7 @@ class FindTheBreakPerception:
 
             # the second hpipe is found
             if len(new_hpipes) > 0 and self.hpipe_found:
-                defer.returnValue(self.count)
+                return self.count
 
             # the first hpipe is found
             elif len(new_hpipes) > 0 and not self.hpipe_found:

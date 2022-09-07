@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
+import asyncio
 from typing import Callable
 
 from geometry_msgs.msg import PointStamped, Vector3Stamped
 from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
-from twisted.internet import defer
-from txros import NodeHandle, util
-from txros.serviceclient import ServiceClient
+from txros import NodeHandle
 
 
 class TxHydrophonesClient:
@@ -32,23 +31,23 @@ class TxHydrophonesClient:
         self._position_sub = nh.subscribe("/hydrophones/position", PointStamped)
         self.dir_callback = None
 
-    def get_direction(self) -> defer.Deferred:
+    def get_direction(self) -> asyncio.Future:
         """
         Get the next processed direction to the pinger.
 
         Returns:
-            defer.Deferred: A deferred object which can be used to get the next message
-                of the pinger's direction.
+            asycio.Future: A Future object which can be used to get the next message
+            of the pinger's direction.
         """
         return self._direction_sub.get_next_message()
 
-    def get_position(self) -> defer.Deferred:
+    def get_position(self) -> asyncio.Future:
         """
         Get the next processed position of the pinger.
 
         Returns:
-            defer.Deferred: A deferred object which can be used to get the next
-                message of the pinger's position.
+            asyncio.Future: A Future object which can be used to get the next
+            message of the pinger's position.
         """
         return self._position_sub.get_next_message()
 

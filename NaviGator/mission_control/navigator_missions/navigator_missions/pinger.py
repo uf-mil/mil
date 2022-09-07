@@ -37,7 +37,7 @@ class PingerMission(Navigator):
         self.color_wrong = False
 
     @classmethod
-    def init(cls):
+    async def init(cls):
         cls.listen_client = cls.nh.get_service_client(
             "/hydrophones/set_listen", SetBool
         )
@@ -48,6 +48,7 @@ class PingerMission(Navigator):
             "/hydrophones/set_freq", SetFrequency
         )
         cls.marker_pub = cls.nh.advertise("/pinger/debug_marker", MarkerArray)
+        await cls.marker_pub.setup()
 
     def reset_freq(self):
         return self.reset_client(SetFrequencyRequest(frequency=self.FREQ))
@@ -58,25 +59,23 @@ class PingerMission(Navigator):
     def stop_listen(self):
         return self.listen_client(SetBoolRequest(data=False))
 
-    @txros.util.cancellableInlineCallbacks
-    def get_objects(self):
+    async def get_objects(self):
         """Get position of 3 gates from database"""
-        gate_1 = yield self.database_query("Gate_1")
+        gate_1 = await self.database_query("Gate_1")
         assert gate_1.found, "Gate 1 Not found"
         gate_1_pos = mil_tools.rosmsg_to_numpy(gate_1.objects[0].position)[:2]
 
-        gate_2 = yield self.database_query("Gate_2")
+        gate_2 = await self.database_query("Gate_2")
         assert gate_2.found, "Gate 2 Not found"
         gate_2_pos = mil_tools.rosmsg_to_numpy(gate_2.objects[0].position)[:2]
 
-        gate_3 = yield self.database_query("Gate_3")
+        gate_3 = await self.database_query("Gate_3")
         assert gate_3.found, "Gate 3 Not found"
         gate_3_pos = mil_tools.rosmsg_to_numpy(gate_3.objects[0].position)[:2]
 
         self.gate_poses = np.array([gate_1_pos, gate_2_pos, gate_3_pos])
 
-    @txros.util.cancellableInlineCallbacks
-    def get_observation_poses(self):
+    async def get_observation_poses(self):
         """Set 2 points to observe the pinger from, in front of gates 1 and 3"""
         self.get_gate_perp()
         # Make sure they are actually in a line
@@ -99,7 +98,7 @@ class PingerMission(Navigator):
         )
         if np.argmin(distance_test) == 1:
             self.negate = True
-        yield self.mission_params["pinger_negate"].set(self.negate)
+        await self.mission_params["pinger_negate"].set(self.negate)
         if self.USE_CLOSE_POINTS:
             dis = (self.gate_poses[2] - self.gate_poses[0]) / 3.0
             branch_pt0 = self.gate_poses[0] + dis
@@ -163,22 +162,20 @@ class PingerMission(Navigator):
                 np.append(self.gate_poses[2], 0),
             )
 
-    @txros.util.cancellableInlineCallbacks
-    def search_samples(self):
+    async def search_samples(self):
         """Move to each observation point and listen to the pinger while sitting still"""
-        yield self.get_observation_poses()
+        await self.get_observation_poses()
         for i, p in enumerate(self.observation_points):
-            yield self.stop_listen()
-            yield self.move.set_position(p).look_at(self.look_at_points[i]).go()
-            yield self.start_listen()
+            await self.stop_listen()
+            await self.move.set_position(p).look_at(self.look_at_points[i]).go()
+            await self.start_listen()
             fprint(f"PINGER: Listening To Pinger at point {p}", msg_color="green")
-            yield self.nh.sleep(self.LISTEN_TIME)
-        yield self.stop_listen()
+            await self.nh.sleep(self.LISTEN_TIME)
+        await self.stop_listen()
 
-    @txros.util.cancellableInlineCallbacks
-    def get_pinger_pose(self):
+    async def get_pinger_pose(self):
         """Query pinger perception for the location of the pinger after observing"""
-        res = yield self.pinger_client(FindPingerRequest())
+        res = await self.pinger_client(FindPingerRequest())
         if res.pinger_position.x == 0:
             self.pinger_pose = self.gate_poses[1]
         pinger_pose = res.pinger_position
@@ -191,13 +188,12 @@ class PingerMission(Navigator):
             ]
         )
 
-    @txros.util.cancellableInlineCallbacks
-    def go_thru_gate(self):
+    async def go_thru_gate(self):
         """Move to the points needed to go through the correct gate"""
         self.gate_index = np.argmin(self.distances)
         self.get_gate_thru_points()
         for p in self.gate_thru_points:
-            yield self.move.set_position(p).go(initial_plan_time=5)
+            await self.move.set_position(p).go(initial_plan_time=5)
 
     def new_marker(
         self,
@@ -234,8 +230,7 @@ class PingerMission(Navigator):
         self.last_id += 1
         self.markers.markers.append(marker)
 
-    @txros.util.cancellableInlineCallbacks
-    def get_colored_buoys(self):
+    async def get_colored_buoys(self):
         estimated_3_endbuoy = self.gate_poses[2] + (self.g_line * 5.0)
         estimated_1_endbuoy = self.gate_poses[0] - (self.g_line * 5.0)
         if self.negate:
@@ -245,7 +240,7 @@ class PingerMission(Navigator):
             # should check on correct side (negate bool)
             estimated_circle_buoy = self.gate_poses[1] - (self.g_perp * 30.0)
 
-        cur_time = yield self.nh.get_time()
+        cur_time = self.nh.get_time()
         self.new_marker(
             position=np.append(estimated_3_endbuoy, 0), color=(1, 1, 1), time=cur_time
         )
@@ -254,7 +249,7 @@ class PingerMission(Navigator):
             position=np.append(estimated_1_endbuoy, 0), color=(1, 1, 1), time=cur_time
         )
 
-        totems = yield self.database_query("totem", raise_exception=False)
+        totems = await self.database_query("totem", raise_exception=False)
         if totems.found:
             sorted_1 = sorted(
                 totems.objects,
@@ -366,7 +361,7 @@ class PingerMission(Navigator):
                     f"PINGER: setting active pinger colors to {active_colors}",
                     msg_color="green",
                 )
-                yield self.mission_params["acoustic_pinger_active"].set(active_colors)
+                await self.mission_params["acoustic_pinger_active"].set(active_colors)
             else:
                 fprint(
                     f"PINGER: cannot determine gate colors",
@@ -376,44 +371,42 @@ class PingerMission(Navigator):
             #  fprint("PINGER: gate 1 color {}".format(sorted_1[0].color), msg_color='blue')
         else:
             fprint("PINGER: no totems found", msg_color="red")
-        yield self.marker_pub.publish(self.markers)
+        await self.marker_pub.publish(self.markers)
 
-    @txros.util.cancellableInlineCallbacks
-    def set_active_pinger(self):
+    async def set_active_pinger(self):
         """Set the parameter for the active pinger identified for use in other mission"""
         fprint(
             f"PINGER: setting active pinger to Gate_{int(self.gate_index) + 1}",
             msg_color="green",
         )
-        yield self.get_colored_buoys()
+        await self.get_colored_buoys()
         if self.color_wrong and self.gate_index == 2:
-            yield self.mission_params["acoustic_pinger_active_index_correct"].set(1)
+            await self.mission_params["acoustic_pinger_active_index_correct"].set(1)
         elif self.color_wrong and self.gate_index == 0:
-            yield self.mission_params["acoustic_pinger_active_index_correct"].set(3)
+            await self.mission_params["acoustic_pinger_active_index_correct"].set(3)
         else:
-            yield self.mission_params["acoustic_pinger_active_index_correct"].set(
+            await self.mission_params["acoustic_pinger_active_index_correct"].set(
                 int(self.gate_index) + 1
             )
 
-        yield self.mission_params["acoustic_pinger_active_index"].set(
+        await self.mission_params["acoustic_pinger_active_index"].set(
             int(self.gate_index) + 1
         )
-        # yield self.get_colored_buoys()
+        # await self.get_colored_buoys()
 
-    @txros.util.cancellableInlineCallbacks
-    def circle_buoy(self):
+    async def circle_buoy(self):
         if self.circle_totem is not None:
             # Circle around totem
-            yield self.move.look_at(self.circle_totem).set_position(
+            await self.move.look_at(self.circle_totem).set_position(
                 self.circle_totem
             ).backward(8).yaw_left(90, unit="deg").go()
-            yield self.move.circle_point(self.circle_totem).go()
+            await self.move.circle_point(self.circle_totem).go()
 
             (first, last) = reversed(self.gate_thru_points)
-            yield self.move.set_position(first).look_at(last).go(
+            await self.move.set_position(first).look_at(last).go(
                 initial_plan_time=5, move_type="drive"
             )
-            yield self.move.set_position(last).go(
+            await self.move.set_position(last).go(
                 initial_plan_time=5, move_type="drive"
             )
 
@@ -444,25 +437,23 @@ class PingerMission(Navigator):
             )
         self.gate_thru_points = (np.append(pose1, 0), np.append(pose2, 0))
 
-    @txros.util.cancellableInlineCallbacks
-    def cleanup(self):
-        yield self.mission_params["acoustic_pinger_active_index"].set(1)
-        yield self.mission_params["acoustic_pinger_active_index_correct"].set(1)
+    async def cleanup(self):
+        await self.mission_params["acoustic_pinger_active_index"].set(1)
+        await self.mission_params["acoustic_pinger_active_index_correct"].set(1)
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
+    async def run(self, parameters):
         fprint("PINGER: Starting Pinger Mission", msg_color="green")
         fprint("PINGER: Resetting Frequency", msg_color="green")
-        yield self.reset_freq()
+        await self.reset_freq()
         fprint("PINGER: Getting database objects", msg_color="green")
-        yield self.get_objects()
+        await self.get_objects()
         fprint("PINGER: Calculating observation points", msg_color="green")
         fprint("PINGER: Searching each sample", msg_color="green")
-        yield self.search_samples()
+        await self.search_samples()
         fprint("PINGER: Getting pinger position", msg_color="green")
-        yield self.get_pinger_pose()
+        await self.get_pinger_pose()
         fprint("PINGER: Going through gate", msg_color="green")
-        yield self.go_thru_gate()
-        yield self.set_active_pinger()
-        #  yield self.circle_buoy()
+        await self.go_thru_gate()
+        await self.set_active_pinger()
+        #  await self.circle_buoy()
         fprint("PINGER: Ended Pinger Mission", msg_color="green")

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import warnings
+from typing import TYPE_CHECKING
 
 import mil_tools
 import numpy as np
@@ -11,6 +13,9 @@ from mil_tools import make_header, normalize
 from navigator_path_planner.msg import MoveGoal
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 from tf import transformations
+
+if TYPE_CHECKING:
+    from .navigator import Navigator
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = (
@@ -104,7 +109,7 @@ class PoseEditor2:
         radius by `meters_per_rev` meters per revolution.
     """
 
-    def __init__(self, nav, pose, **kwargs):
+    def __init__(self, nav: Navigator, pose: Pose, **kwargs):
         self.nav = nav
 
         # Position and kwargs ultimately passed into the final function
@@ -129,7 +134,7 @@ class PoseEditor2:
     def distance(self):
         return np.linalg.norm(self.position - self.nav.pose[0])
 
-    def go(self, *args, **kwargs):
+    def go(self, *args, **kwargs) -> asyncio.Future:
         if self.nav.killed is True or self.nav.odom_loss is True:
             # What do we want to do with missions when the boat is killed
             fprint(
@@ -254,7 +259,7 @@ class PoseEditor2:
     def circle_point(self, point, *args, **kwargs):
         return self.spiral_point(point, *args, **kwargs)
 
-    def d_spiral_point(
+    async def d_spiral_point(
         self,
         point,
         radius,
@@ -285,10 +290,10 @@ class PoseEditor2:
             new = point + radius * next_point
             radius += radius_increment
 
-            yield self.set_position(new).look_at(point).yaw_left(theta_offset)
+            await self.set_position(new).look_at(point).yaw_left(theta_offset)
             next_point = sprinkles.dot(next_point)
 
-        yield self.set_position(new).look_at(point).yaw_left(theta_offset)
+        await self.set_position(new).look_at(point).yaw_left(theta_offset)
 
     def d_circle_point(self, *args, **kwargs):
         """

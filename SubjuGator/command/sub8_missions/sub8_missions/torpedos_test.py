@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
-from twisted.internet import defer
-from txros import util
-
 from .sub_singleton import SubjuGator
 
 
 class TorpedosTest(SubjuGator):
-    @util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
         self.send_feedback("Shooting Torpedo 1")
-        yield self.actuators.shoot_torpedo1()
+        await self.actuators.shoot_torpedo1()
         self.send_feedback("Done! Shooting Torpedo 2 in 1 second")
-        yield self.nh.sleep(1)
-        yield self.actuators.shoot_torpedo2()
-        defer.returnValue("Success!")
+        await self.nh.sleep(1)
+        await self.actuators.shoot_torpedo2()
+        return "Success!"

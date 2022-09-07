@@ -9,7 +9,6 @@ from mil_tools import rosmsg_to_numpy
 from nav_msgs.msg import Odometry
 from navigator_msgs.srv import ChooseAnimal, ChooseAnimalRequest, ChooseAnimalResponse
 from tsp_solver.greedy import solve_tsp
-from twisted.internet import defer
 
 from .vrx import Vrx
 
@@ -32,17 +31,17 @@ class VrxWildlife(Vrx):
             0,
         ]
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
+    async def run(self, parameters):
         self.send_feedback("Waiting for task to start")
-        yield self.wait_for_task_such_that(
+        await self.wait_for_task_such_that(
             lambda task: task.state in ["ready", "running"]
         )
-        path_msg = yield self.get_latching_msg(self.animal_landmarks)
+        await self.reset_pcodar()
+        path_msg = await self.get_latching_msg(self.animal_landmarks)
 
         poses = []
         for geo_pose in path_msg.poses:
-            pose = yield self.geo_pose_to_enu_pose(geo_pose.pose)
+            pose = await self.geo_pose_to_enu_pose(geo_pose.pose)
             poses.append(pose)
 
         position = self.pose[0]
@@ -72,7 +71,7 @@ class VrxWildlife(Vrx):
         print(path)
 
         # self.send_feedback('Sorted poses' + str(poses))
-        yield self.wait_for_task_such_that(lambda task: task.state in ["running"])
+        await self.wait_for_task_such_that(lambda task: task.state in ["running"])
 
         # important parameters
         radius = 7
@@ -99,13 +98,13 @@ class VrxWildlife(Vrx):
             # update crocodile pose
             for geo_pose in path_msg.poses:
                 if geo_pose.header.frame_id == "crocodile":
-                    animal_pose_croc = yield self.geo_pose_to_enu_pose(
+                    animal_pose_croc = await self.geo_pose_to_enu_pose(
                         path_msg.poses[croc_index].pose
                     )
 
             # get animal msgs
-            path_msg = yield self.get_latching_msg(self.animal_landmarks)
-            animal_pose_next = yield self.geo_pose_to_enu_pose(
+            path_msg = await self.get_latching_msg(self.animal_landmarks)
+            animal_pose_next = await self.geo_pose_to_enu_pose(
                 path_msg.poses[path[i]].pose
             )
 
@@ -114,7 +113,7 @@ class VrxWildlife(Vrx):
             )
 
             # first point at goal
-            yield self.point_at_goal(start_circle_pos)
+            await self.point_at_goal(start_circle_pos)
 
             req = ChooseAnimalRequest()
             if croc_is_present:
@@ -156,7 +155,7 @@ class VrxWildlife(Vrx):
                     req.target_animal = "crocodile"
                     req.circle_direction = "ccw"
                     left_rect = True
-                    yield self.circle_animal(req)
+                    await self.circle_animal(req)
 
                 # determine if croc is in right rect
                 AM = animal_pose_croc[0][0:2] - p2_l
@@ -174,7 +173,7 @@ class VrxWildlife(Vrx):
 
                     req.target_animal = "crocodile"
                     req.circle_direction = "cw"
-                    yield self.circle_animal(req)
+                    await self.circle_animal(req)
 
             if current_animal == "platypus":
                 req.target_animal = current_animal
@@ -182,4 +181,4 @@ class VrxWildlife(Vrx):
             if current_animal == "turtle":
                 req.target_animal = current_animal
                 req.circle_direction = "ccw"
-            yield self.circle_animal(req)
+            await self.circle_animal(req)

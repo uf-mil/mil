@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
-import txros
 from mil_misc_tools import ThrowingArgumentParser
 from mil_tools import rosmsg_to_numpy
-from twisted.internet import defer
 from std_srvs.srv import SetBoolRequest
 
 from .navigator import Navigator
@@ -43,31 +41,33 @@ class DemonstrateNavigation(Navigator):
         argv = parameters.split()
         return cls.parser.parse_args(argv)
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
+    async def run(self, parameters):
         # Go to autonomous mode
-        yield self.set_classifier_enabled.wait_for_service()
-        yield self.set_classifier_enabled(SetBoolRequest(data=True))
-        yield self.nh.sleep(4)
-        yield self.change_wrench("autonomous")
+        await self.set_classifier_enabled.wait_for_service()
+        await self.set_classifier_enabled(SetBoolRequest(data=True))
+        await self.nh.sleep(4)
+        await self.change_wrench("autonomous")
         if not parameters.pcodar:
+            print(1)
             self.send_feedback(
                 "Please click between the end tower of the navigation pass."
             )
-            target_point = yield self.rviz_point.get_next_message()
+            target_point = await self.rviz_point.get_next_message()
             target_point = rosmsg_to_numpy(target_point.point)
-            us = (yield self.tx_pose)[0]
+            us = (await self.tx_pose())[0]
+            us = (await self.tx_pose())[0]
             distance = np.linalg.norm(target_point - us) + self.END_MARGIN_METERS
             distance_per_move = distance / parameters.num_moves
             for i in range(parameters.num_moves):
                 self.send_feedback(f"Doing move {i + 1}/{parameters.num_moves}")
-                yield self.move.look_at(target_point).forward(distance_per_move).go(
+                await self.move.look_at(target_point).forward(distance_per_move).go(
                     blind=True
                 )
-            defer.returnValue(True)
+            return True
         else:
-            _, closest_reds = yield self.get_sorted_objects("white_cylinder", 2)
-            _, closest_greens = yield self.get_sorted_objects("red_cylinder", 2)
+            await self.nh.sleep(1)
+            _, closest_reds = await self.get_sorted_objects("mb_marker_buoy_red", 2)
+            _, closest_greens = await self.get_sorted_objects("mb_marker_buoy_green", 2)
 
             # Rename the totems for their symantic name
             green_close = closest_greens[0]
@@ -80,11 +80,11 @@ class DemonstrateNavigation(Navigator):
             end_midpoint = (green_far + red_far) / 2.0
 
             # Start a little behind the entrance
-            yield self.move.set_position(begin_midpoint).look_at(end_midpoint).backward(
+            await self.move.set_position(begin_midpoint).look_at(end_midpoint).backward(
                 self.START_MARGIN_METERS
             ).go()
             # Then move a little passed the exit
-            yield self.move.look_at(end_midpoint).set_position(end_midpoint).forward(
+            await self.move.look_at(end_midpoint).set_position(end_midpoint).forward(
                 self.END_MARGIN_METERS
-            ).go()
-            defer.returnValue(True)
+            ).go(blind=True)
+            return True

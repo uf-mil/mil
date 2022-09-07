@@ -1,5 +1,5 @@
 import genpy
-from txros import util
+from txros import NodeHandle, util
 
 
 class SpoofPubilsher:
@@ -10,9 +10,8 @@ class SpoofPubilsher:
         self.message_type = message_type
         self.total = len(self.responses)
 
-    @util.cancellableInlineCallbacks
-    def start(self, nh):
-        self.my_pub = yield nh.advertise(self.topic_name, self.message_type)
+    async def start(self, nh):
+        self.my_pub = await nh.advertise(self.topic_name, self.message_type)
         i = 0
         started = nh.get_time()
         while True:
@@ -22,11 +21,10 @@ class SpoofPubilsher:
                 i += 1
                 started = nh.get_time()
             self.my_pub.publish(self.responses[i % self.total])
-            yield nh.sleep(0.3)
+            await nh.sleep(0.3)
 
-    @util.cancellableInlineCallbacks
-    def stop(self):
-        yield self.my_pub.shutdown()
+    async def stop(self):
+        await self.my_pub.shutdown()
 
 
 class SpoofService:
@@ -38,20 +36,19 @@ class SpoofService:
         self.count = 0
         self.serv = None
 
-    @util.cancellableInlineCallbacks
-    def start(self, nh):
-        self.serv = yield nh.advertise_service(
+    async def start(self, nh: NodeHandle):
+        self.serv = nh.advertise_service(
             self.service_name, self.message_type, self._service_cb
         )
+        await self.serv.setup()
 
     def _service_cb(self, req):
         ans = self.responses[self.count % self.total]
         self.count += 1
         return ans
 
-    @util.cancellableInlineCallbacks
-    def stop(self):
-        yield self.serv.shutdown()
+    async def stop(self):
+        await self.serv.shutdown()
 
 
 class SpoofGenerator:

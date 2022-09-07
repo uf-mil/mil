@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import asyncio
 import os
-from typing import Optional, Type
+from typing import Callable, Optional, Type
 
 import genpy
 import mil_tools
 import navigator_msgs.srv as navigator_srvs
 import numpy as np
 import rospkg
+import uvloop
 import yaml
 from dynamic_reconfigure.msg import Config
 from dynamic_reconfigure.srv import Reconfigure, ReconfigureRequest
@@ -33,8 +35,7 @@ from std_srvs.srv import (
     TriggerRequest,
 )
 from topic_tools.srv import MuxSelect, MuxSelectRequest
-from twisted.internet import defer
-from txros import NodeHandle, ServiceClient, action, txros_tf, util
+from txros import NodeHandle, ROSMasterException, ServiceClient, action, txros_tf, util
 
 from .pose_editor import PoseEditor2
 
@@ -89,21 +90,27 @@ class Navigator(BaseMission):
     net_entrance_results = None
     max_grinch_effort = 500
 
+    nh: NodeHandle
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     @classmethod
-    @util.cancellableInlineCallbacks
-    def _init(cls, mission_runner):
+    async def _init(cls, mission_runner):
         super()._init(mission_runner)
 
-        cls.is_vrx = yield cls.nh.get_param("/is_vrx")
+        try:
+            cls.is_vrx = await cls.nh.get_param("/is_vrx")
+        except ROSMasterException:
+            cls.is_vrx = False
 
         cls._moveto_client = action.ActionClient(cls.nh, "move_to", MoveAction)
+        await cls._moveto_client.setup()
 
         # For missions to access clicked points / poses
         cls.rviz_goal = cls.nh.subscribe("/move_base_simple/goal", PoseStamped)
         cls.rviz_point = cls.nh.subscribe("/clicked_point", PointStamped)
+        await asyncio.gather(cls.rviz_goal.setup(), cls.rviz_point.setup())
 
         cls._change_wrench = cls.nh.get_service_client("/wrench/select", MuxSelect)
         cls._change_trajectory = cls.nh.get_service_client(
@@ -119,15 +126,16 @@ class Navigator(BaseMission):
 
         cls.pose = None
 
-        def odom_set(odom):
+        def odom_set(odom: Odometry):
             return setattr(cls, "pose", mil_tools.odometry_to_numpy(odom)[0])
 
         cls._odom_sub = cls.nh.subscribe("odom", Odometry, odom_set)
+        await cls._odom_sub.setup()
 
         if cls.is_vrx:
-            yield cls._init_vrx()
+            cls._init_vrx()
         else:
-            yield cls._init_not_vrx()
+            await cls._init_not_vrx()
 
     @classmethod
     def _init_vrx(cls):
@@ -138,13 +146,12 @@ class Navigator(BaseMission):
         )
 
     @classmethod
-    @util.cancellableInlineCallbacks
-    def _init_not_vrx(cls):
+    async def _init_not_vrx(cls):
         cls.vision_proxies = {}
         cls._load_vision_services()
 
         cls.launcher_state = "inactive"
-        cls._actuator_timing = yield cls.nh.get_param("~actuator_timing")
+        cls._actuator_timing = await cls.nh.get_param("~actuator_timing")
 
         cls.mission_params = {}
         cls._load_mission_params()
@@ -155,8 +162,8 @@ class Navigator(BaseMission):
         cls.killed = "?"
         cls.odom_loss = "?"
 
-        if (yield cls.nh.has_param("/is_simulation")):
-            cls.sim = yield cls.nh.get_param("/is_simulation")
+        if await cls.nh.has_param("/is_simulation"):
+            cls.sim = await cls.nh.get_param("/is_simulation")
         else:
             cls.sim = False
 
@@ -164,19 +171,25 @@ class Navigator(BaseMission):
             return setattr(cls, "ecef_pose", mil_tools.odometry_to_numpy(odom)[0])
 
         cls._ecef_odom_sub = cls.nh.subscribe("absodom", Odometry, enu_odom_set)
+        await cls._ecef_odom_sub.setup()
 
         cls.hydrophones = TxHydrophonesClient(cls.nh)
 
         cls.poi = TxPOIClient(cls.nh)
 
-        cls._grinch_lower_time = yield cls.nh.get_param("~grinch_lower_time")
-        cls._grinch_raise_time = yield cls.nh.get_param("~grinch_raise_time")
+        cls._grinch_lower_time = await cls.nh.get_param("~grinch_lower_time")
+        cls._grinch_raise_time = await cls.nh.get_param("~grinch_raise_time")
         cls.grinch_limit_switch_pressed = False
-        cls._grinch_limit_switch_sub = yield cls.nh.subscribe(
+        cls._grinch_limit_switch_sub = cls.nh.subscribe(
             "/limit_switch", Bool, cls._grinch_limit_switch_cb
         )
         cls._winch_motor_pub = cls.nh.advertise("/grinch_winch/cmd", Command)
         cls._grind_motor_pub = cls.nh.advertise("/grinch_spin/cmd", Command)
+        await asyncio.gather(
+            cls._grinch_limit_switch_sub.setup(),
+            cls._winch_motor_pub.setup(),
+            cls._grind_motor_pub.setup(),
+        )
 
         try:
             cls._actuator_client = cls.nh.get_service_client(
@@ -197,6 +210,7 @@ class Navigator(BaseMission):
             )
 
         cls.tf_listener = txros_tf.TransformListener(cls.nh)
+        await cls.tf_listener.setup()
 
         # Vision
         cls.set_classifier_enabled = cls.nh.get_service_client(
@@ -209,18 +223,18 @@ class Navigator(BaseMission):
             "/vision/docks/enable", SetBool
         )
 
-        yield cls._make_alarms()
+        await cls._make_alarms()
 
         if cls.sim:
             fprint("Sim mode active!", title="NAVIGATOR")
-            yield cls.nh.sleep(0.5)
+            await cls.nh.sleep(0.5)
         else:
             # We want to make sure odom is working before we continue
-            fprint("Action client do you yield?", title="NAVIGATOR")
-            yield util.wrap_time_notice(
+            fprint("Action client do you await?", title="NAVIGATOR")
+            await util.wrap_time_notice(
                 cls._moveto_client.wait_for_server(), 2, "Lqrrt action server"
             )
-            fprint("Yes he yields!", title="NAVIGATOR")
+            fprint("Yes he await!", title="NAVIGATOR")
 
             fprint("Waiting for odom...", title="NAVIGATOR")
             odom = util.wrap_time_notice(
@@ -229,43 +243,37 @@ class Navigator(BaseMission):
             enu_odom = util.wrap_time_notice(
                 cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener"
             )
-            yield defer.gatherResults([odom, enu_odom])  # Wait for all those to finish
+            await asyncio.gather(odom, enu_odom)  # Wait for all those to finish
 
         cls.docking_scan = "NA"
 
     @classmethod
-    @util.cancellableInlineCallbacks
-    def reset_pcodar(cls):
-        res = yield cls._reset_pcodar(TriggerRequest())
-        defer.returnValue(res)
+    async def reset_pcodar(cls):
+        res = await cls._reset_pcodar(TriggerRequest())
+        return res
 
     @classmethod
-    @util.cancellableInlineCallbacks
-    def pcodar_set_params(self, **kwargs):
-        result = yield self._pcodar_set_params(ReconfigureRequest(Config(**kwargs)))
-        defer.returnValue(result)
+    async def pcodar_set_params(self, **kwargs):
+        result = await self._pcodar_set_params(ReconfigureRequest(Config(**kwargs)))
+        return result
 
     @classmethod
-    @util.cancellableInlineCallbacks
-    def pcodar_label(cls, idx: int, name: str):
+    async def pcodar_label(cls, idx: int, name: str):
         cmd = "%d=%s" % (idx, name)
-        yield cls._database_query(ObjectDBQueryRequest(name="", cmd=cmd))
+        await cls._database_query(ObjectDBQueryRequest(name="", cmd=cmd))
 
     @classmethod
     def _grinch_limit_switch_cb(cls, data):
         cls.grinch_limit_switch_pressed = data.data
 
-    @property
-    @util.cancellableInlineCallbacks
-    def tx_pose(self):
-        last_odom_msg = yield self._odom_sub.get_next_message()
-        defer.returnValue(mil_tools.odometry_to_numpy(last_odom_msg)[0])
+    async def tx_pose(self):
+        last_odom_msg = await self._odom_sub.get_next_message()
+        return mil_tools.odometry_to_numpy(last_odom_msg)[0]
 
     @property
-    @util.cancellableInlineCallbacks
-    def tx_ecef_pose(self):
-        last_odom_msg = yield self._ecef_odom_sub.get_next_message()
-        defer.returnValue(mil_tools.odometry_to_numpy(last_odom_msg)[0])
+    async def tx_ecef_pose(self):
+        last_odom_msg = await self._ecef_odom_sub.get_next_message()
+        return mil_tools.odometry_to_numpy(last_odom_msg)[0]
 
     @property
     def move(self) -> PoseEditor2:
@@ -279,23 +287,19 @@ class Navigator(BaseMission):
         # For a unified result class
         return MissionResult(*args, **kwargs)
 
-    @util.cancellableInlineCallbacks
-    def set_vision_dock(self):
-        yield self.obstacle_course_vision_enable(SetBoolRequest(data=False))
-        yield self.docks_vision_enable(SetBoolRequest(data=True))
+    async def set_vision_dock(self):
+        await self.obstacle_course_vision_enable(SetBoolRequest(data=False))
+        await self.docks_vision_enable(SetBoolRequest(data=True))
 
-    @util.cancellableInlineCallbacks
-    def set_vision_obstacle_course(self):
-        yield self.docks_vision_enable(SetBoolRequest(data=False))
-        yield self.obstacle_course_vision_enable(SetBoolRequest(data=True))
+    async def set_vision_obstacle_course(self):
+        await self.docks_vision_enable(SetBoolRequest(data=False))
+        await self.obstacle_course_vision_enable(SetBoolRequest(data=True))
 
-    @util.cancellableInlineCallbacks
-    def set_vision_off(self):
-        yield self.obstacle_course_vision_enable(SetBoolRequest(data=False))
-        yield self.docks_vision_enable(SetBoolRequest(data=False))
+    async def set_vision_off(self):
+        await self.obstacle_course_vision_enable(SetBoolRequest(data=False))
+        await self.docks_vision_enable(SetBoolRequest(data=False))
 
-    @util.cancellableInlineCallbacks
-    def spin_grinch(self, speed: float = 1.0, interval: float = 0.1):
+    async def spin_grinch(self, speed: float = 1.0, interval: float = 0.1):
         """
         Spin the grinch mechnaism. To avoid watchdog timeout, this is sent
         in a loop at the specified interface. So to stop spinning,
@@ -313,10 +317,9 @@ class Navigator(BaseMission):
             self._grind_motor_pub.publish(
                 Command(setpoint=speed * self.max_grinch_effort)
             )
-            yield self.nh.sleep(interval)
+            await self.nh.sleep(interval)
 
-    @util.cancellableInlineCallbacks
-    def spin_winch(self, speed: float = -1.0, interval: float = 0.1):
+    async def spin_winch(self, speed: float = -1.0, interval: float = 0.1):
         """
         Spin the grinch raise/lower mechanism. To avoid watchdog timeout, this is sent
         in a loop at the specified interface. So to stop spinning,
@@ -326,40 +329,37 @@ class Navigator(BaseMission):
             self._winch_motor_pub.publish(
                 Command(setpoint=speed * self.max_grinch_effort)
             )
-            yield self.nh.sleep(interval)
+            await self.nh.sleep(interval)
 
-    @util.cancellableInlineCallbacks
-    def deploy_grinch(self):
+    async def deploy_grinch(self):
         """
         Deploy the grinch mechanism
         """
-        winch_defer = self.spin_winch(speed=1.0)
-        yield self.nh.sleep(self._grinch_lower_time)
+        winch_defer = asyncio.create_task(self.spin_winch(speed=1.0))
+        await self.nh.sleep(self._grinch_lower_time)
         self._winch_motor_pub.publish(Command(setpoint=0))
         winch_defer.cancel()
 
-    @util.cancellableInlineCallbacks
-    def retract_grinch(self):
+    async def retract_grinch(self):
         """
         Retract the grinch mechanism
         """
-        now = yield self.nh.get_time()
+        now = self.nh.get_time()
         end = now + genpy.Duration(self._grinch_raise_time)
-        winch_defer = self.spin_winch(speed=-1.0)
+        winch_defer = asyncio.create_task(self.spin_winch(speed=-1.0))
         while True:
-            now = yield self.nh.get_time()
+            now = await self.nh.get_time()
             if self.grinch_limit_switch_pressed:
                 print("limit switch pressed, stopping")
                 break
             elif now >= end:
                 print("retract timed out")
                 break
-            yield self.nh.sleep(0.1)
+            await self.nh.sleep(0.1)
         winch_defer.cancel()
         self._winch_motor_pub.publish(Command(setpoint=0))
 
-    @util.cancellableInlineCallbacks
-    def deploy_thruster(self, name: str):
+    async def deploy_thruster(self, name: str):
         """
         Execute sequence to deploy one thruster
         """
@@ -367,87 +367,84 @@ class Navigator(BaseMission):
         retract = name + "_retract"
         unlock = name + "_unlock"
         # Pull thruster up a bit to remove pressure from lock
-        yield self.set_valve(retract, True)
-        yield self.nh.sleep(self._actuator_timing["deploy_loosen_time"])
+        await self.set_valve(retract, True)
+        await self.nh.sleep(self._actuator_timing["deploy_loosen_time"])
         # Stop pulling thruster up and unlock
-        yield self.set_valve(retract, False)
-        yield self.set_valve(unlock, True)
+        await self.set_valve(retract, False)
+        await self.set_valve(unlock, True)
         # Beging extending piston to push thruster down
-        yield self.set_valve(extend, True)
-        yield self.nh.sleep(self._actuator_timing["deploy_wait_time"])
+        await self.set_valve(extend, True)
+        await self.nh.sleep(self._actuator_timing["deploy_wait_time"])
         # Lock and stop extending after waiting a time for lock to engage
-        yield self.set_valve(unlock, False)
-        yield self.nh.sleep(self._actuator_timing["deploy_lock_time"])
-        yield self.set_valve(extend, False)
+        await self.set_valve(unlock, False)
+        await self.nh.sleep(self._actuator_timing["deploy_lock_time"])
+        await self.set_valve(extend, False)
 
-    @util.cancellableInlineCallbacks
-    def retract_thruster(self, name: str):
+    async def retract_thruster(self, name: str):
         """
         Execute sequence to retract one thruster
         """
         retract = name + "_retract"
         unlock = name + "_unlock"
         # Unlock and begin pulling thruster up
-        yield self.set_valve(unlock, True)
-        yield self.set_valve(retract, True)
+        await self.set_valve(unlock, True)
+        await self.set_valve(retract, True)
         # Wait time for piston to fully retract
-        yield self.nh.sleep(self._actuator_timing["retract_wait_time"])
+        await self.nh.sleep(self._actuator_timing["retract_wait_time"])
         # Lock thruster in place
-        yield self.set_valve(unlock, False)
+        await self.set_valve(unlock, False)
         # Wait some time for lock to engage
-        yield self.nh.sleep(self._actuator_timing["retract_lock_time"])
+        await self.nh.sleep(self._actuator_timing["retract_lock_time"])
         # Stop pulling up
-        yield self.set_valve(retract, False)
+        await self.set_valve(retract, False)
 
-    def deploy_thrusters(self) -> defer.DeferredList:
+    async def deploy_thrusters(self) -> None:
         """
         Deploy all 4 thrusters simultaneously.
         TODO: perform in sequence after testing has been done to see if this is needed
         """
-        return defer.DeferredList(
-            [self.deploy_thruster(name) for name in ["FL", "FR", "BL", "BR"]]
+        await asyncio.gather(
+            self.deploy_thruster(name) for name in ["FL", "FR", "BL", "BR"]
         )
 
-    def retract_thrusters(self) -> defer.DeferredList:
+    async def retract_thrusters(self) -> None:
         """
         Retract all 4 thrusters simultaneously.
         TODO: perform in sequence after testing has been done to see if this is needed
         """
-
-        return defer.DeferredList(
-            [self.retract_thruster(name) for name in ["FL", "FR", "BL", "BR"]]
+        await asyncio.gather(
+            self.retract_thruster(name) for name in ["FL", "FR", "BL", "BR"]
         )
 
-    @util.cancellableInlineCallbacks
-    def reload_launcher(self):
+    async def reload_launcher(self):
         if self.launcher_state != "inactive":
             raise Exception(f"Launcher is {self.launcher_state}")
         self.launcher_state = "reloading"
-        yield self.set_valve("LAUNCHER_RELOAD_EXTEND", True)
-        yield self.set_valve("LAUNCHER_RELOAD_RETRACT", False)
-        yield self.nh.sleep(self._actuator_timing["launcher_reload_extend_time"])
-        yield self.set_valve("LAUNCHER_RELOAD_EXTEND", False)
-        yield self.set_valve("LAUNCHER_RELOAD_RETRACT", True)
-        yield self.nh.sleep(self._actuator_timing["launcher_reload_retract_time"])
-        yield self.set_valve("LAUNCHER_RELOAD_EXTEND", False)
-        yield self.set_valve("LAUNCHER_RELOAD_RETRACT", False)
+        await self.set_valve("LAUNCHER_RELOAD_EXTEND", True)
+        await self.set_valve("LAUNCHER_RELOAD_RETRACT", False)
+        await self.nh.sleep(self._actuator_timing["launcher_reload_extend_time"])
+        await self.set_valve("LAUNCHER_RELOAD_EXTEND", False)
+        await self.set_valve("LAUNCHER_RELOAD_RETRACT", True)
+        await self.nh.sleep(self._actuator_timing["launcher_reload_retract_time"])
+        await self.set_valve("LAUNCHER_RELOAD_EXTEND", False)
+        await self.set_valve("LAUNCHER_RELOAD_RETRACT", False)
         self.launcher_state = "inactive"
 
-    @util.cancellableInlineCallbacks
-    def fire_launcher(self):
+    async def fire_launcher(self):
         if self.launcher_state != "inactive":
             raise Exception(f"Launcher is {self.launcher_state}")
         self.launcher_state = "firing"
-        yield self.set_valve("LAUNCHER_FIRE", True)
-        yield self.nh.sleep(0.5)
+        await self.set_valve("LAUNCHER_FIRE", True)
+        await self.nh.sleep(0.5)
         self.launcher_state = "inactive"
 
     def set_valve(self, name, state):
         req = SetValveRequest(actuator=name, opened=state)
         return self._actuator_client(req)
 
-    @util.cancellableInlineCallbacks
-    def get_sorted_objects(self, name: str, n: int = -1, throw: bool = True, **kwargs):
+    async def get_sorted_objects(
+        self, name: str, n: int = -1, throw: bool = True, **kwargs
+    ):
         """
         Get the closest N objects with a particular name from the PCODAR database
         @param name: the name of the object
@@ -457,53 +454,51 @@ class Navigator(BaseMission):
         @return tuple([sorted_object_messages, [object_positions]) of sorted object messages
                 and their positions as a Nx3 numpy array.
         """
-        objects = (yield self.database_query(object_name=name, **kwargs)).objects
+        objects = (await self.database_query(object_name=name, **kwargs)).objects
         if n != -1 and len(objects) < n:
             if throw:
                 raise Exception(f"Could not get {n} {name} objects")
             else:
                 n = len(objects)
         if n == 0:
-            defer.returnValue(None)
+            return None
         positions = np.empty((len(objects), 3))
         for i, obj in enumerate(objects):
             positions[i, :] = mil_tools.rosmsg_to_numpy(obj.pose.position)
-        nav_pose = (yield self.tx_pose)[0]
+        nav_pose = (self.tx_pose)[0]
         distances = np.linalg.norm(positions - nav_pose, axis=1)
         distances_argsort = np.argsort(distances)
         if n != -1:
             distances_argsort = distances_argsort[:n]
         objects_sorted = [objects[i] for i in distances_argsort]
-        defer.returnValue((objects_sorted, positions[distances_argsort, :]))
+        return (objects_sorted, positions[distances_argsort, :])
 
-    @util.cancellableInlineCallbacks
-    def database_query(
+    async def database_query(
         self, object_name: str | None = None, raise_exception: bool = True, **kwargs
     ):
         if object_name is not None:
             kwargs["name"] = object_name
-            res = yield self._database_query(ObjectDBQueryRequest(**kwargs))
+            res = await self._database_query(ObjectDBQueryRequest(**kwargs))
 
             if not res.found and raise_exception:
                 raise MissingPerceptionObject(kwargs["name"])
 
-            defer.returnValue(res)
+            return res
 
-        res = yield self._database_query(ObjectDBQueryRequest(**kwargs))
-        defer.returnValue(res)
+        res = await self._database_query(ObjectDBQueryRequest(**kwargs))
+        return res
 
-    @util.cancellableInlineCallbacks
-    def camera_database_query(self, object_name: str | None = None, **kwargs):
+    async def camera_database_query(self, object_name: str | None = None, **kwargs):
         if object_name is not None:
             kwargs["name"] = object_name
-            res = yield self._camera_database_query(
+            res = await self._camera_database_query(
                 navigator_srvs.CameraDBQueryRequest(**kwargs)
             )
 
-            defer.returnValue(res)
+            return res
 
-        res = yield self._database_query(navigator_srvs.CameraDBQueryRequest(**kwargs))
-        defer.returnValue(res)
+        res = await self._database_query(navigator_srvs.CameraDBQueryRequest(**kwargs))
+        return res
 
     def vision_request(self, request_name, **kwargs):
         fprint("DEPRECATED: Please use new dictionary based system.")
@@ -528,14 +523,13 @@ class Navigator(BaseMission):
         return cls.change_wrench("autonomous")
 
     @classmethod
-    def change_trajectory(cls, source: str):
-        return cls._change_trajectory(MuxSelectRequest(source))
+    async def change_trajectory(cls, source: str):
+        return await cls._change_trajectory(MuxSelectRequest(source))
 
     def search(self, *args, **kwargs):
         return Searcher(self, *args, **kwargs)
 
-    @util.cancellableInlineCallbacks
-    def latching_publisher(
+    async def latching_publisher(
         self,
         topic: str,
         msg_type: type[genpy.Message],
@@ -551,7 +545,8 @@ class Navigator(BaseMission):
             # If you want to cancel the publisher:
             latched.cancel()
         """
-        pub = yield self.nh.advertise(topic, msg_type)
+        pub = self.nh.advertise(topic, msg_type)
+        await pub.setup()
 
         while True:
             # Update timestamps if the msg has a header
@@ -559,7 +554,7 @@ class Navigator(BaseMission):
                 msg.header.stamp = self.nh.get_time()
 
             pub.publish(msg)
-            yield self.nh.sleep(1.0 / freq)
+            await self.nh.sleep(1.0 / freq)
 
     @classmethod
     def _load_vision_services(cls, fname: str = "vision_services.yaml"):
@@ -612,21 +607,22 @@ class Navigator(BaseMission):
         cls.kill_alarm = alarm
 
     @classmethod
-    @util.cancellableInlineCallbacks
-    def _make_alarms(cls):
-        cls.kill_listener = yield TxAlarmListener.init(
+    async def _make_alarms(cls):
+        cls.kill_listener = await TxAlarmListener.init(
             cls.nh, "kill", cls.kill_alarm_cb
         )
-        cls.odom_loss_listener = yield TxAlarmListener.init(
-            cls.nh,
-            "odom-kill",
-            lambda _, alarm: setattr(cls, "odom_loss", alarm.raised),
-        )
+        await cls.kill_listener.setup()
+        # TODO: Enable node handle subscriber to topic to have multiple callbacks
+        # cls.odom_loss_listener = await TxAlarmListener.init(
+        #     cls.nh,
+        #     "odom-kill",
+        #     lambda _, alarm: setattr(cls, "odom_loss", alarm.raised),
+        # )
         fprint("Alarm listener created, listening to alarms: ", title="NAVIGATOR")
 
-        cls.kill_alarm = yield cls.kill_listener.get_alarm()
+        cls.kill_alarm = await cls.kill_listener.get_alarm()
         cls.killed = cls.kill_alarm.raised
-        cls.odom_loss = yield cls.odom_loss_listener.is_raised()
+        cls.odom_loss = False  # await cls.odom_loss_listener.is_raised()
         fprint("\tkill :", newline=False)
         fprint(cls.killed)
         fprint("\todom-kill :", newline=False)
@@ -647,7 +643,6 @@ class VisionProxy:
         self.switch = switch
 
     def start(self):
-        # Returns deferred object, make sure to yield on this (same for below)
         return self.switch(SetBoolRequest(data=True))
 
     def stop(self):
@@ -668,18 +663,16 @@ class MissionParam:
         self.description = desc
         self.default = default
 
-    @util.cancellableInlineCallbacks
-    def get(self, raise_exception: bool = True):
-        # Returns deferred object, make sure to yield on this (same for below)
-        if not (yield self.exists()):
+    async def get(self, raise_exception: bool = True):
+        if not (await self.exists()):
             if self.default is not None:
-                yield self.set(self.default)
-                defer.returnValue(self.default)
+                await self.set(self.default)
+                return self.default
             if raise_exception:
                 raise Exception(f"Mission Param {self.param} not yet set")
             else:
-                defer.returnValue(False)
-        value = yield self.nh.get_param(self.param)
+                return False
+        value = await self.nh.get_param(self.param)
         if not self._valid(value):
             raise Exception(
                 "Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
@@ -687,38 +680,35 @@ class MissionParam:
                 )
             )
         else:
-            defer.returnValue(value)
+            return value
 
-    def exists(self) -> bool:
-        return self.nh.has_param(self.param)
+    async def exists(self) -> bool:
+        return await self.nh.has_param(self.param)
 
-    @util.cancellableInlineCallbacks
-    def set(self, value):
+    async def set(self, value):
         if not self._valid(value):
             raise Exception(
                 "Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
                     value, self.param, self.options, self.description
                 )
             )
-        yield self.nh.set_param(self.param, value)
+        await self.nh.set_param(self.param, value)
 
-    @util.cancellableInlineCallbacks
-    def valid(self):
-        exists = yield self.exists()
+    async def valid(self):
+        exists = await self.exists()
         if not exists:
-            defer.returnValue(False)
-        value = yield self.nh.get_param(self.param)
+            return False
+        value = await self.nh.get_param(self.param)
         if not self._valid(value):
-            defer.returnValue(False)
-        defer.returnValue(True)
+            return False
+        return True
 
-    @util.cancellableInlineCallbacks
-    def reset(self):
-        if (yield self.exists()):
+    async def reset(self):
+        if await self.exists():
             if self.default is not None:
-                yield self.set(self.default)
+                await self.set(self.default)
             else:
-                yield self.nh.delete_param(self.param)
+                await self.nh.delete_param(self.param)
 
     def _valid(self, value) -> bool:
         for x in self.options:
@@ -739,7 +729,7 @@ class Searcher:
         self.nav = nav
         self.looker = looker
         if looker is None:
-            self.looker = self._vision_proxy_look
+            self.looker = asyncio.create_task(self._vision_proxy_look)
             self.vision_proxy = vision_proxy
         self.looker_kwargs = kwargs
         self.search_pattern = search_pattern
@@ -749,19 +739,10 @@ class Searcher:
         self.response = None
         print("dfdf")
 
-    def catch_error(self, failure):
-        if failure.check(defer.CancelledError):
-            fprint("Cancelling defer.", title="SEARCHER")
-        else:
-            fprint("There was an error.", title="SEARCHER", msg_color="red")
-            fprint(failure.printTraceback())
-            # Handle error
-
-    @util.cancellableInlineCallbacks
-    def start_search(self, timeout=120, loop=True, spotings_req=2, **kwargs):
+    async def start_search(self, timeout=120, loop=True, spotings_req=2, **kwargs):
         fprint("Starting.", title="SEARCHER")
-        looker = self._run_look(spotings_req).addErrback(self.catch_error)
-        finder = self._run_search_pattern(loop, **kwargs).addErrback(self.catch_error)
+        looker = asyncio.create_task(self._run_look(spotings_req))
+        finder = asyncio.create_task(self._run_search_pattern(loop, **kwargs))
 
         start_pose = self.nav.move.forward(0)
         start_time = self.nav.nh.get_time()
@@ -770,11 +751,11 @@ class Searcher:
                 if self.object_found:
                     finder.cancel()
                     fprint("Object found.", title="SEARCHER")
-                    defer.returnValue(True)
+                    return True
                 if self.pattern_done and not loop:
                     finder.cancel()
-                    defer.returnValue(False)
-                yield self.nav.nh.sleep(0.1)
+                    return False
+                await self.nav.nh.sleep(0.1)
 
         except KeyboardInterrupt:
             # This doesn't work...
@@ -784,10 +765,9 @@ class Searcher:
         finder.cancel()
         looker.cancel()
 
-        yield start_pose.go()
+        start_pose.go()
 
-    @util.cancellableInlineCallbacks
-    def _run_search_pattern(self, loop, **kwargs):
+    async def _run_search_pattern(self, loop, **kwargs):
         """
         Look around using the search pattern.
         If `loop` is true, then keep iterating over the list until timeout is reached or we find it.
@@ -795,15 +775,15 @@ class Searcher:
         if self.search_pattern is None:
             return
 
-        def pattern():
+        async def pattern():
             for pose in self.search_pattern:
                 fprint("Going to next position.", title="SEARCHER")
                 if type(pose) == list or type(pose) == np.ndarray:
-                    yield self.nav.move.relative(pose).go(**kwargs)
+                    await self.nav.move.relative(pose).go(**kwargs)
                 else:
-                    yield pose.go(**kwargs)
+                    await pose.go(**kwargs)
 
-                yield self.nav.nh.sleep(2)
+                await self.nav.nh.sleep(2)
             if not loop:
                 fprint("Search Pattern Over", title="SEARCHER")
                 self.pattern_done = True
@@ -812,19 +792,17 @@ class Searcher:
 
         if loop:
             while True:
-                yield util.cancellableInlineCallbacks(pattern)()
+                await pattern()
         else:
-            yield util.cancellableInlineCallbacks(pattern)()
+            await pattern()
 
-    @util.cancellableInlineCallbacks
-    def _vision_proxy_look(self):
-        resp = yield self.nav.vision_proxies[self.vision_proxy].get_response(
+    async def _vision_proxy_look(self):
+        resp = await self.nav.vision_proxies[self.vision_proxy].get_response(
             **self.looker_kwargs
         )
-        defer.returnValue(resp.found)
+        return resp.found
 
-    @util.cancellableInlineCallbacks
-    def _run_look(self, spotings_req):
+    async def _run_look(self, spotings_req):
         """
         Look for the object using the vision proxy.
         Only return true when we spotted the objects `spotings_req` many times (for false positives).
@@ -832,7 +810,7 @@ class Searcher:
         spotings = 0
         fprint("Looking for object.", title="SEARCHER")
         while spotings < spotings_req:
-            if (yield self.looker(**self.looker_kwargs)):
+            if await self.looker(**self.looker_kwargs):
                 fprint(
                     f"Object found! {spotings + 1}/{spotings_req}",
                     title="SEARCHER",
@@ -841,21 +819,19 @@ class Searcher:
             else:
                 spotings = 0
 
-            yield self.nav.nh.sleep(0.5)
+            await self.nav.nh.sleep(0.5)
 
         if spotings >= spotings_req:
             self.object_found = True
 
 
-@util.cancellableInlineCallbacks
-def main():
-    nh = yield NodeHandle.from_argv("navigator_singleton")
-    n = yield Navigator(nh)._init()
-    fprint((yield n.vision_proxies["start_gate"].get_response()))
+async def main():
+    nh = NodeHandle.from_argv("navigator_singleton")
+    await nh.setup()
+    n = await Navigator(nh)._init()
+    fprint(await n.vision_proxies["start_gate"].get_response())
 
 
 if __name__ == "__main__":
-    from twisted.internet import reactor
-
-    reactor.callWhenRunning(main)
-    reactor.run()
+    uvloop.install()
+    asyncio.run(main())
