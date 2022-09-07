@@ -6,7 +6,6 @@ averaging the supply voltage to each of the four thrusters.
 """
 
 
-
 import message_filters
 import rospy
 from roboteq_msgs.msg import Feedback, Status

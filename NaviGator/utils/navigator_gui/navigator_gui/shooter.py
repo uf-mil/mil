@@ -6,7 +6,6 @@ mechanism.
 """
 
 
-
 import os
 
 import rospkg
