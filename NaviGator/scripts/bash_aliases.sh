@@ -77,7 +77,7 @@ nvalvereset()
 alias nhold="rosrun ros_alarms raise station-hold"
 
 # Visualization
-alias nviz="rviz -d \$CATKIN_DIR/src/NaviGator/navigator.rviz"
+alias nviz="rviz -d \$MIL_REPO/NaviGator/navigator.rviz"
 
 # Development
 alias navfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 \$(rosrun mil_tools list_python_files \$CATKIN_DIR/src/NaviGator __init__.py deprecated/ gnc/navigator_path_planner/lqRRT .cfg simulation/vmrc)"

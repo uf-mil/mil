@@ -20,7 +20,7 @@ class SimulatedPnuematicActuatorBoard(SimulatedSerial):
         request = Constants.deserialize_packet(data)
         request = request[0]
         if request == Constants.PING_REQUEST:
-            rospy.loginfo("Ping received")
+            # rospy.loginfo("Ping received")
             byte = Constants.PING_RESPONSE
         elif request > 0x20 and request < 0x30:
             rospy.loginfo(f"Open port {request - 0x20}")

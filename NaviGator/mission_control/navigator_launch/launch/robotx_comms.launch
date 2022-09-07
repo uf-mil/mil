@@ -1,10 +1,34 @@
 <launch>
+
+    <!-- The IP address of the tournament director server. -->
+    <!-- Currently, this is just set to a random IP. -->
+    <arg name="td_ip" default="192.168.37.90" />
+    <!-- The port to connect to for the tournament director server. -->
+    <arg name="td_port" default="1337" />
+    <!-- The team ID given to us by the tournament director. -->
+    <arg name="team_id" default="GATR" />
+    <arg name="simulation" default="False"/>
+
     <!-- start robotx_comms node -->
-    <node name="navigator_robotx_comms" pkg="navigator_robotx_comms" type="robotx_comms_client.py" >
-        <param name="~td_ip" value="robot.server" />
-        <param name="~td_port" value="9000" />
-        <param name="~team_id" value="GATR" />
-        <!-- sets data to protocol sample data - KEEP FALSE-->
-        <param name="~use_test_data" value="false" />
-    </node>
+
+    <group unless="$(arg simulation)">
+        <node name="navigator_robotx_comms" pkg="navigator_robotx_comms" type="robotx_comms_client.py" >
+            <param name="~td_ip" value="$(arg td_ip)" />
+            <param name="~td_port" value="$(arg td_port)" />
+            <param name="~team_id" value="$(arg team_id)" />
+            <!-- sets data to protocol sample data - KEEP FALSE-->
+            <param name="~use_test_data" value="false" />
+        </node>
+    </group>
+
+    <group if="$(arg simulation)">
+        <node name="navigator_robotx_comms" pkg="navigator_robotx_comms" type="robotx_comms_client.py" >
+            <param name="~td_ip" value="127.0.0.1" />
+            <param name="~td_port" value="1337" />
+            <param name="~team_id" value="GATOR" />
+            <!-- sets data to protocol sample data - KEEP FALSE-->
+            <param name="~use_test_data" value="false" />
+        </node>
+    </group>
+
 </launch>

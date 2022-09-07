@@ -24,414 +24,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  info:
-    name: Collect information about changes
+  super-ci:
+    name: Run tests and build docs
     runs-on: self-hosted
-    outputs:
-      py_modified: ${{ steps.changes.outputs.python_files }}
-      docs_modified: ${{ steps.changes.outputs.docs }}
-      code_modified: ${{ steps.changes.outputs.code }}
-      pre-commit_cache_key: ${{ steps.pre-commit_cache_key.outputs.key }}
-    steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-        with:
-          fetch-depth: 0  # For fetching history for branch comparison below
-          token: ${{ secrets.INVESTIGATOR_BOT_TOKEN || github.token }}
-          submodules: recursive
-      - name: Check which targets changed
-        uses: dorny/paths-filter@v2
-        id: changes
-        with:
-          # Currently, the only code files examined by CI are those that are
-          # listed below in the code filter. This means that the CI will focus
-          # solely on code changes found in these folders. If significant
-          # changes to code are made in other places, either those places
-          # should be moved, or the CI should be updated to account for those
-          # locations.
-          filters: |
-            docs:
-              - 'docs/**'
-            code:
-              - 'NaviGator/**'
-              - 'SubjuGator/**'
-              - 'mil_common/**'
-              - 'scripts/**'
-            python:
-              - added|modified: '**.py'
-
-          list-files: 'shell'
-      # The cache key used for the pre-commit cache is meant to identify one
-      # cache of related pre-commit tooling. Changes to the Python version used
-      # or the pre-commit config file should cause the hash to change and a
-      # different cache to be used/generated.
-      - name: Generate pre-commit cache key
-        id: pre-commit_cache_key
-        run: >
-          echo "::set-output
-          name=key::${{ env.CACHE_VERSION }}-${{ env.DEFAULT_PYTHON }}-${{
-          hashFiles('.pre-commit-config.yaml') }}"
-
-  # Why do we use pre-commit for linting instead of just installing the
-  # individual linters? Good question!
-  # The pre-commit config file can be hashed in order to determine changes,
-  # the pre-commit config file makes it easy to install the same version of a
-  # tool across everyone's computer, and we know where pre-commit stores its
-  # cache, making it easy to speed up CI builds by using the same tool.
-  pre-commit:
-    name: Set up pre-commit
-    runs-on: self-hosted
-    needs:
-      - info
-    if: >
-      ${{ needs.info.outputs.code_modified ||
-      needs.info.outputs.docs_modified }}
-    steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4.1.0
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON }}
-          cache: "pip"
-      - name: Install pre-commit hooks
-        run: |
-          python --version
-          pip install "$(cat requirements.txt | grep pre-commit)"
-      - name: Restore base pre-commit environment
-        id: cache-pre-commmit
-        uses: actions/cache@v3.0.4
-        with:
-          path: ${{ env.PRE_COMMIT_CACHE }}
-          key: >
-            ${{ runner.os
-            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
-      - name: Install pre-commit dependencies if no cache
-        if: steps.cache-precommit.outputs.cache-hit != 'true'
-        run: |
-          pre-commit install-hooks
-
-  isort:
-    name: Run isort
-    runs-on: self-hosted
-    needs:
-      - info
-      - pre-commit
-    if: ${{ needs.info.outputs.code_modified }}
-    steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4.1.0
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON }}
-          cache: "pip"
-      - name: Initialize pre-commit for use
-        run: |
-          python --version
-          pip install "$(cat requirements.txt | grep pre-commit)"
-      - name: Restore pre-commit environment from cache
-        id: cache-precommit
-        uses: actions/cache@v3.0.4
-        with:
-          path: ${{ env.PRE_COMMIT_CACHE }}
-          key: >
-            ${{ runner.os
-            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
-      - name: Fail job if pre-commit cache restore failed
-        if: steps.cache-precommit.outputs.cache-hit != 'true'
-        run: |
-          echo "Failed to restore pre-commit environment from cache"
-          exit 1
-      - name: Run isort
-        run: |
-          pre-commit run isort --all-files --show-diff-on-failure
-
-  yamllint:
-    name: Run yamllint
-    runs-on: self-hosted
-    needs:
-      - info
-      - pre-commit
-    if: ${{ needs.info.outputs.code_modified }}
-    steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4.1.0
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON }}
-          cache: "pip"
-      - name: Initialize pre-commit for use
-        run: |
-          python --version
-          pip install "$(cat requirements.txt | grep pre-commit)"
-      - name: Restore pre-commit environment from cache
-        id: cache-precommit
-        uses: actions/cache@v3.0.4
-        with:
-          path: ${{ env.PRE_COMMIT_CACHE }}
-          key: >
-            ${{ runner.os
-            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
-      - name: Fail job if pre-commit cache restore failed
-        if: steps.cache-precommit.outputs.cache-hit != 'true'
-        run: |
-          echo "Failed to restore pre-commit environment from cache"
-          exit 1
-      - name: Register yamllint problem matcher
-        run: |
-          echo "::add-matcher::.github/workflows/matchers/yamllint.json"
-      - name: Run yamllint
-        run: |
-          pre-commit run yamllint --all-files --show-diff-on-failure
-
-  black:
-    name: Run black
-    runs-on: self-hosted
-    needs:
-      - info
-      - pre-commit
-    if: ${{ needs.info.outputs.code_modified }}
-    steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4.1.0
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON }}
-          cache: "pip"
-      - name: Initialize pre-commit for use
-        run: |
-          python --version
-          pip install "$(cat requirements.txt | grep pre-commit)"
-      - name: Restore pre-commit environment from cache
-        id: cache-precommit
-        uses: actions/cache@v3.0.4
-        with:
-          path: ${{ env.PRE_COMMIT_CACHE }}
-          key: >
-            ${{ runner.os
-            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
-      - name: Fail job if pre-commit cache restore failed
-        if: steps.cache-precommit.outputs.cache-hit != 'true'
-        run: |
-          echo "Failed to restore pre-commit environment from cache"
-          exit 1
-      - name: Run black
-        run: |
-          pre-commit run black --all-files --show-diff-on-failure
-
-  clang-format:
-    name: Run clang-format
-    runs-on: self-hosted
-    needs:
-      - info
-      - pre-commit
-    if: ${{ needs.info.outputs.code_modified }}
-    steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4.1.0
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON }}
-          cache: "pip"
-      - name: Initialize pre-commit for use
-        run: |
-          python --version
-          pip install "$(cat requirements.txt | grep pre-commit)"
-      - name: Restore pre-commit environment from cache
-        id: cache-precommit
-        uses: actions/cache@v3.0.4
-        with:
-          path: ${{ env.PRE_COMMIT_CACHE }}
-          key: >
-            ${{ runner.os
-            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
-      - name: Fail job if pre-commit cache restore failed
-        if: steps.cache-precommit.outputs.cache-hit != 'true'
-        run: |
-          echo "Failed to restore pre-commit environment from cache"
-          exit 1
-      - name: Run clang-format
-        run: |
-          pre-commit run clang-format --all-files --show-diff-on-failure
-
-  pyupgrade:
-    name: Run pyupgrade
-    runs-on: self-hosted
-    needs:
-      - info
-      - pre-commit
-    if: ${{ needs.info.outputs.code_modified }}
-    steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4.1.0
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON }}
-          cache: "pip"
-      - name: Initialize pre-commit for use
-        run: |
-          python --version
-          pip install "$(cat requirements.txt | grep pre-commit)"
-      - name: Restore pre-commit environment from cache
-        id: cache-precommit
-        uses: actions/cache@v3.0.4
-        with:
-          path: ${{ env.PRE_COMMIT_CACHE }}
-          key: >
-            ${{ runner.os
-            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
-      - name: Fail job if pre-commit cache restore failed
-        if: steps.cache-precommit.outputs.cache-hit != 'true'
-        run: |
-          echo "Failed to restore pre-commit environment from cache"
-          exit 1
-      - name: Run pyupgrade
-        run: |
-          pre-commit run pyupgrade --all-files --show-diff-on-failure
-
-  codespell:
-    name: Run codespell
-    runs-on: self-hosted
-    needs:
-      - info
-      - pre-commit
-    if: >
-      ${{ needs.info.outputs.code_modified
-      || needs.info.outputs.docs_modified }}
-    steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4.1.0
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON }}
-          cache: "pip"
-      - name: Initialize pre-commit for use
-        run: |
-          python --version
-          pip install "$(cat requirements.txt | grep pre-commit)"
-      - name: Restore pre-commit environment from cache
-        id: cache-precommit
-        uses: actions/cache@v3.0.4
-        with:
-          path: ${{ env.PRE_COMMIT_CACHE }}
-          key: >
-            ${{ runner.os
-            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
-      - name: Fail job if pre-commit cache restore failed
-        if: steps.cache-precommit.outputs.cache-hit != 'true'
-        run: |
-          echo "Failed to restore pre-commit environment from cache"
-          exit 1
-      - name: Run pyupgrade
-        run: |
-          pre-commit run codespell --all-files --show-diff-on-failure
-
-  pre-commit-ros:
-    name: Run ROS hooks
-    runs-on: self-hosted
-    needs:
-      - info
-      - pre-commit
-    if: >
-      ${{ needs.info.outputs.code_modified
-      || needs.info.outputs.docs_modified }}
-    steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4.1.0
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON }}
-          cache: "pip"
-      - name: Initialize pre-commit for use
-        run: |
-          python --version
-          pip install "$(cat requirements.txt | grep pre-commit)"
-      - name: Restore pre-commit environment from cache
-        id: cache-precommit
-        uses: actions/cache@v3.0.4
-        with:
-          path: ${{ env.PRE_COMMIT_CACHE }}
-          key: >
-            ${{ runner.os
-            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
-      - name: Fail job if pre-commit cache restore failed
-        if: steps.cache-precommit.outputs.cache-hit != 'true'
-        run: |
-          echo "Failed to restore pre-commit environment from cache"
-          exit 1
-      - name: Run pre-commit ROS hooks
-        run: |
-          pre-commit run prettier-xacro --all-files --show-diff-on-failure
-          pre-commit run prettier-launch-xml --all-files --show-diff-on-failure
-          pre-commit run prettier-package-xml --all-files --show-diff-on-failure
-          pre-commit run sort-package-xml --all-files --show-diff-on-failure
-
-  pre-commit-hooks:
-    name: Run generic hooks
-    runs-on: self-hosted
-    needs:
-      - info
-      - pre-commit
-    if: >
-      ${{ needs.info.outputs.code_modified
-      || needs.info.outputs.docs_modified }}
-    steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4.1.0
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON }}
-          cache: "pip"
-      - name: Initialize pre-commit for use
-        run: |
-          python --version
-          pip install "$(cat requirements.txt | grep pre-commit)"
-      - name: Restore pre-commit environment from cache
-        id: cache-precommit
-        uses: actions/cache@v3.0.4
-        with:
-          path: ${{ env.PRE_COMMIT_CACHE }}
-          key: >
-            ${{ runner.os
-            }}-pre-commit-${{ needs.info.outputs.pre-commit_cache_key }}
-      - name: Fail job if pre-commit cache restore failed
-        if: steps.cache-precommit.outputs.cache-hit != 'true'
-        run: |
-          echo "Failed to restore pre-commit environment from cache"
-          exit 1
-      - name: Run generic pre-commit hooks
-        run: |
-          pre-commit run end-of-file-fixer --all-files --show-diff-on-failure
-          pre-commit run check-case-conflict --all-files --show-diff-on-failure
-          pre-commit run trailing-whitespace --all-files --show-diff-on-failure
-          pre-commit run mixed-line-ending --all-files --show-diff-on-failure
-          pre-commit run check-json --all-files --show-diff-on-failure
-          pre-commit run alex --all-files --show-diff-on-failure
-          pre-commit run check-executables-have-shebangs --all-files --show-diff-on-failure
-
-  catkin_test:
-    name: Run catkin_make tests
-    runs-on: self-hosted
-    needs:
-      - info
-      - clang-format
-      - codespell
-      - pyupgrade
-      - black
-      - yamllint
-      - isort
-      - pre-commit-ros
-      - pre-commit-hooks
-    if: >
-      ${{ needs.info.outputs.code_modified }}
     steps:
       - name: Configure catkin workspace folder structure
         run: |
@@ -445,17 +40,11 @@ jobs:
         uses: ros-tooling/setup-ros@v0.3
         with:
           required-ros-distributions: noetic
-      - name: Install the latest dependencies
-        run: |
-          ls $GITHUB_WORKSPACE/catkin_ws/src/mil; ls catkin_ws/src/mil
-          sudo apt-get update -y
-          sudo apt-get upgrade -y
       - name: Install pip dependencies
-        run: |
-          # Ignore installations provided by ros-tooling; they can cause
-          # conflicts
-          sudo pip install -I -r requirements.txt
+        run:
+          pip install -r requirements.txt
       - name: Install system dependencies
+        # GH-803: This should not need continue-on-error: true
         continue-on-error: true
         run: |
           ./scripts/install.sh
@@ -473,116 +62,25 @@ jobs:
           cd $GITHUB_WORKSPACE/catkin_ws
           ls src/mil/mil_common/drivers/mil_blueview_driver
           source /opt/ros/noetic/setup.bash
-          catkin_make -j5
+          catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3 \
+                      -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 \
+                      -j6
       - name: Run catkin_make tests
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
           cd $GITHUB_WORKSPACE/catkin_ws
           source /opt/ros/noetic/setup.bash
           source devel/setup.bash
-          catkin_make -j5 run_tests
+          catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3 \
+                      -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 \
+                      -j6 \
+                      run_tests
       - name: Get test results
         run: >
           source /opt/ros/noetic/setup.bash
 
           catkin_test_results $GITHUB_WORKSPACE/catkin_ws/build/test_results
           --verbose
-
-  pyright:
-    name: Run pyright
-    runs-on: self-hosted
-    needs:
-      - info
-    if: ${{ needs.info.outputs.code_modified }}
-    steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-      - name: Run pyright
-        uses: jakebailey/pyright-action@v1.4.0
-        continue-on-error: true  # Currently broken
-        with:
-          version: 1.1.260
-          python-version: ${{ env.DEFAULT_PYTHON }}
-          python-platform: Linux
-          extra-args: ${{ needs.info.outputs.py_modified }}
-
-  pylint:
-    name: Run pylint
-    runs-on: self-hosted
-    needs:
-      - info
-    if: ${{ needs.info.outputs.code_modified }}
-    steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4.1.0
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON }}
-          cache: "pip"
-      - name: Install test dependencies
-        run: |
-          pip install -r requirements.txt
-      - name: Register pylint problem matcher
-        run: |
-          echo "::add-matcher::.github/workflows/matchers/pylint.json"
-      - name: Run pylint
-        continue-on-error: true  # Not currently enforced
-        run: |
-          pylint $(git ls-files "*.py")
-
-  docs:
-    name: Build docs
-    runs-on: self-hosted
-    needs:
-      - info
-    if: >
-      ${{ needs.info.outputs.code_modified ||
-      needs.info.outputs.docs_modified }}
-    steps:
-      - name: Configure catkin workspace folder structure
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/catkin_ws/src
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-        with:
-          submodules: recursive
-          path: catkin_ws/src/mil
-      - name: Setup ROS Noetic
-        uses: ros-tooling/setup-ros@v0.3
-        with:
-          required-ros-distributions: noetic
-      - name: Install the latest dependencies
-        run: |
-          ls $GITHUB_WORKSPACE/catkin_ws/src/mil; ls catkin_ws/src/mil
-          sudo apt-get update -y
-          sudo apt-get upgrade -y
-      - name: Install pip dependencies
-        run: |
-          # Ignore installations provided by ros-tooling; they can cause
-          # conflicts
-          cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          sudo pip install -I -r requirements.txt
-      - name: Install system dependencies
-        continue-on-error: true
-        run: |
-          cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          ./scripts/install.sh
-      - name: Install BlueView Sonar SDK
-        run: |
-          cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          ./scripts/install_bvtsdk --pass ${{ secrets.ZOBELISK_PASSWORD }}
-          ls mil_common/drivers/mil_blueview_driver
-          echo $PWD
-      - name: Run catkin_make
-        run: >
-          export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
-
-          cd $GITHUB_WORKSPACE/catkin_ws
-
-          source /opt/ros/noetic/setup.bash
-
-          catkin_make -j5
       - name: Build docs
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
@@ -594,6 +92,41 @@ jobs:
       - name: Publish docs artifact
         uses: actions/upload-artifact@v3
         with:
-          name: >
-            docs-ci-html-${{ github.sha }}
+          name: docs-ci-html-${{ github.sha }}
           path: ${{ github.workspace }}/.mil/docs/html
+
+  deploy-docs:
+    name: Deploy docs from master
+    runs-on: ubuntu-latest
+    needs:
+      - super-ci
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Make folders
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/build/docs
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: docs-ci-html-${{ github.sha }}
+          path: ${{ github.workspace }}/build/docs
+
+      # We need to install rsync for GitHub Pages deploy action
+      - name: Install rsync
+        run: |
+          sudo apt-get upgrade && sudo apt-get update && sudo apt-get install -y rsync
+
+      # Publish the artifact to the GitHub Pages branch
+      - name: Push docs to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
+          branch: main
+          repository-name: uf-mil/uf-mil.github.io
+          folder: ${{ github.workspace }}/build/docs
+          target-folder: docs
+          commit-message: Updating docs to ${{ github.sha }}
