@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
   <!-- COORDINATE: {'constant': 0, 'environment': 0} -->
-  <world name="basic_navigation">
+  <world name="path2_obs">
     <!-- Estimated latitude/longitude of sydneyregatta
 	 from satellite imagery -->
     <spherical_coordinates>
@@ -209,45 +209,114 @@
     </scene>
     <!-- The navigation course -->
     <include>
-      <name>buoy1</name>
-      <uri>model://mb_marker_buoy_white</uri>
-      <pose> -531.2 176.364 0 0 0 -1.44</pose>
-    </include>
-    <include>
-      <name>buoy2</name>
+      <name>buoy_start_r</name>
       <uri>model://mb_marker_buoy_white</uri>
       <pose>-520.338 168.871 0 0 0 -1.44</pose>
     </include>
     <include>
-      <name>buoy3</name>
-      <uri>model://mb_marker_buoy_red</uri>
-      <pose>-524.285 189.04 0 0 0 -1.44</pose>
-    </include>
-    <include>
-      <name>buoy4</name>
-      <uri>model://mb_marker_buoy_green</uri>
-      <pose>-513.217 180.327 0 0 0 -1.44</pose>
-    </include>
-    <include>
-      <name>buoy5</name>
-      <uri>model://mb_marker_buoy_red</uri>
-      <pose> -513.215 202.233 0 0 0 -1.44</pose>
-    </include>
-    <include>
-      <name>buoy6</name>
-      <uri>model://mb_marker_buoy_green</uri>
-      <pose>-506.625 187.93 0 0 0 -1.44</pose>
-    </include>
-    <include>
-      <name>buoy7</name>
+      <name>buoy_start_l</name>
       <uri>model://mb_marker_buoy_white</uri>
-      <pose>-497.434 208.64 0 0 0 -1.44</pose>
+      <pose>-531.2 176.364 0 0 0 -1.44</pose>
     </include>
     <include>
-      <name>buoy8</name>
-      <uri>model://mb_marker_buoy_white</uri>
-      <pose>-497.841 190.616 0 0 0 -1.44</pose>
+      <name>buoy_green1</name>
+      <uri>model://mb_marker_buoy_green</uri>
+      <pose>-516.374756 177.306625 0 0 0 -1.44</pose>
     </include>
-
+    <include>
+      <name>buoy_green2</name>
+      <uri>model://mb_marker_buoy_green</uri>
+      <pose>-514.688416 187.756653 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_green3</name>
+      <uri>model://mb_marker_buoy_green</uri>
+      <pose>-518.625366 196.498108 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_green4</name>
+      <uri>model://mb_marker_buoy_green</uri>
+      <pose>-517.745789 198.855286 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_green5</name>
+      <uri>model://mb_marker_buoy_green</uri>
+      <pose>-514.274475 200.975876 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_green6</name>
+      <uri>model://mb_marker_buoy_green</uri>
+      <pose>-507.654022 203.257477 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_red1</name>
+      <uri>model://mb_marker_buoy_red</uri>
+      <pose>-527.416931 181.589172 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_red2</name>
+      <uri>model://mb_marker_buoy_red</uri>
+      <pose>-526.160034 188.481873 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_red3</name>
+      <uri>model://mb_marker_buoy_red</uri>
+      <pose>-529.495667 192.917435 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_red4</name>
+      <uri>model://mb_marker_buoy_red</uri>
+      <pose>-527.068420 203.460358 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_red5</name>
+      <uri>model://mb_marker_buoy_red</uri>
+      <pose>-518.008362 209.496399 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_red6</name>
+      <uri>model://mb_marker_buoy_red</uri>
+      <pose>-509.021057 211.978912 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_end_r</name>
+      <uri>model://mb_marker_buoy_white</uri>
+      <pose>-501.999146 201.727905 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_end_l</name>
+      <uri>model://mb_round_buoy_white</uri>
+      <pose>-499.310181 210.086487 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_black1</name>
+      <uri>model://mb_round_buoy_black</uri>
+      <pose>-521.857000 179.628000 0 0 0 -1.44</pose>
+    </include>
+        <include>
+      <name>buoy_black2</name>
+      <uri>model://mb_round_buoy_black</uri>
+      <pose>-522.867000 187.279000 0 0 0 -1.44</pose>
+    </include>
+        <include>
+      <name>buoy_black3</name>
+      <uri>model://mb_round_buoy_black</uri>
+      <pose>-521.871000 194.371000 0 0 0 -1.44</pose>
+    </include>
+        <include>
+      <name>buoy_black4</name>
+      <uri>model://mb_round_buoy_black</uri>
+      <pose>-524.433000 200.202000 0 0 0 -1.44</pose>
+    </include>
+        <include>
+      <name>buoy_black5</name>
+      <uri>model://mb_round_buoy_black</uri>
+      <pose>-518.218000 204.242000 0 0 0 -1.44</pose>
+    </include>
+        <include>
+      <name>buoy_black6</name>
+      <uri>model://mb_round_buoy_black</uri>
+      <pose>-511.395000 204.727000 0 0 0 -1.44</pose>
+    </include>
   </world>
 </sdf>
