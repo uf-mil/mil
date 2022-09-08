@@ -10,14 +10,14 @@
     <arg name="use_yolo" default="True"/>
 
     <!-- Use YOLOv7 -->
-    <!--<include if="$(arg use_yolo)" file="$(find yolov7_ros)/launch/yolov7.launch">
+    <include if="$(arg use_yolo)" file="$(find yolov7_ros)/launch/yolov7.launch">
         <arg name="weights" value="$(arg weights)"/>
         <arg name="image_topic" value="$(arg image_topic)"/>
         <arg name="out_topic" value="$(arg out_topic)"/>
         <arg name="conf_thresh" value="$(arg conf_thresh)"/>
         <arg name="image_size" value="$(arg image_size)"/>
         <arg name="device" value="$(arg device)"/>
-    </include>-->
+    </include>
 
     <arg name="train" default="False" />
     <node pkg="navigator_vision" type="classifier.py" name="classifier" output="screen">
