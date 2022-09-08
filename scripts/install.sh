@@ -305,6 +305,10 @@ $(color "$Pur")Compiling repository...
 $(hash_header)$(color "$Res")
 EOF
 
-echo "set -g default-terminal \"screen-256color\"" >> ~/.tmux.conf
+if grep  'set -g default-terminal "screen-256color"' ~/tmux.conf; then
+        echo "Tmux already has 256 color support, skip this stepseti"
+else
+        echo "set -g default-terminal \"screen-256color\"" >> ~/.tmux.conf
+fi
 
 mil_user_setup_init_catkin
