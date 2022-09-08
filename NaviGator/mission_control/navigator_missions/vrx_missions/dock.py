@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import asyncio
 import os
 
 import cv2
@@ -18,7 +19,6 @@ from std_msgs.msg import Empty
 from std_srvs.srv import SetBoolRequest
 from tf import transformations
 from tf.transformations import quaternion_matrix
-from twisted.internet import defer
 
 from .vrx import Vrx
 
@@ -40,46 +40,46 @@ class Dock(Vrx):
         self.camera_model = PinholeCameraModel()
         self.rospack = RosPack()
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
 
         self.bridge = CvBridge()
 
         self.image_debug_pub = self.nh.advertise("/dock_mask_debug", Image)
-        self.init_front_left_camera()
-        self.init_front_right_camera()
+        await self.image_debug_pub.setup()
+        await self.init_front_left_camera()
+        await self.init_front_right_camera()
         args = str.split(args, " ")
         self.color = args[0]
         self.shape = args[1]
 
         print("entered docking task", self.color, self.shape)
 
-        yield self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
-        info = yield self.front_left_camera_info_sub.get_next_message()
+        await self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
+        info = await self.front_left_camera_info_sub.get_next_message()
         self.camera_model.fromCameraInfo(info)
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = "cluster_tolerance_m"
         pcodar_cluster_tol.value = 10
-        yield self.pcodar_set_params(doubles=[pcodar_cluster_tol])
-        self.nh.sleep(5)
+        await self.pcodar_set_params(doubles=[pcodar_cluster_tol])
+        await self.nh.sleep(5)
 
         # find dock approach it
-        pos = yield self.find_dock()
+        pos = await self.find_dock()
 
         print("going towards dock")
-        yield self.move.look_at(pos).set_position(pos).backward(20).go()
+        await self.move.look_at(pos).set_position(pos).backward(20).go()
 
         # Decrease cluster tolerance as we approach dock since lidar points are more dense
         # This helps scenario where stc buoy is really close to dock
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = "cluster_tolerance_m"
         pcodar_cluster_tol.value = 4
-        yield self.pcodar_set_params(doubles=[pcodar_cluster_tol])
-        self.nh.sleep(5)
+        await self.pcodar_set_params(doubles=[pcodar_cluster_tol])
+        await self.nh.sleep(5)
 
         # get a vector to the longer side of the dock
-        dock, pos = yield self.get_sorted_objects(name="dock", n=1)
+        dock, pos = await self.get_sorted_objects(name="dock", n=1)
         dock = dock[0]
         position, quat = pose_to_numpy(dock.pose)
         rotation = quaternion_matrix(quat)
@@ -97,7 +97,7 @@ class Dock(Vrx):
         # move to first attempt
         print("moving in front of dock")
         goal_pos = None
-        curr_pose = yield self.tx_pose
+        curr_pose = await self.tx_pose()
         side_a_bool = False
         side_b_bool = False
         side_a = bbox_enu + position
@@ -116,16 +116,16 @@ class Dock(Vrx):
             goal_pos = side_b
             side_b_bool = True
 
-        yield self.move.set_position(goal_pos).look_at(position).go()
+        await self.move.set_position(goal_pos).look_at(position).go()
 
         # at this moment, we are directly facing the middle of a long side of the dock
         # check if the dock is the correct side.
-        yield self.nh.sleep(1)
-        pixel_diff = yield self.dock_checks()
+        await self.nh.sleep(1)
+        pixel_diff = await self.dock_checks()
 
         # if we are on the wrong side, try going to other side of dock
         if pixel_diff is None:
-            yield self.move.backward(7).go(blind=True, move_type="skid")
+            await self.move.backward(7).go(blind=True, move_type="skid")
             if side_a_bool:
                 print("switching to side_b")
                 goal_pos = side_b
@@ -137,17 +137,17 @@ class Dock(Vrx):
                 side_b_bool = False
                 side_a_bool = True
 
-            yield self.move.set_position(goal_pos).look_at(position).go()
-            yield self.nh.sleep(1)
-            pixel_diff = yield self.dock_checks()
+            await self.move.set_position(goal_pos).look_at(position).go()
+            await self.nh.sleep(1)
+            pixel_diff = await self.dock_checks()
 
             if pixel_diff is None:
                 print("Could not find any viable options for docking")
-                defer.returnValue(None)
+                return None
 
         # do we see any symbols?
         target_symbol = self.color + "_" + self.shape
-        symbol_position = yield self.get_symbol_position(target_symbol)
+        symbol_position = await self.get_symbol_position(target_symbol)
 
         # define how far left and right we want to do
         rot = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
@@ -171,30 +171,29 @@ class Dock(Vrx):
 
         # position boat in front of correct symbol
         if symbol_position == "left":
-            yield self.move.set_position(self.left_position).look_at(
+            await self.move.set_position(self.left_position).look_at(
                 self.dock_point_left
             ).go(blind=True, move_type="skid")
             position = self.dock_point_left
         elif symbol_position == "right":
-            yield self.move.set_position(self.right_position).look_at(
+            await self.move.set_position(self.right_position).look_at(
                 self.dock_point_right
             ).go(blind=True, move_type="skid")
             position = self.dock_point_right
 
         # enter dock
-        yield self.nh.sleep(1)
+        await self.nh.sleep(1)
 
         if symbol_position == "foggy":
             print("It seems to be a little foggy")
-            yield self.dock_fire_undock(foggy=True)
+            await self.dock_fire_undock(foggy=True)
         else:
-            yield self.dock_fire_undock(foggy=False)
+            await self.dock_fire_undock(foggy=False)
 
-        defer.returnValue(True)
+        return True
 
     # This function is used to see if we see the target symbol in the current image
-    @txros.util.cancellableInlineCallbacks
-    def get_symbol_position(self, target_symbol):
+    async def get_symbol_position(self, target_symbol):
 
         print("entering get symbol position function")
 
@@ -226,7 +225,7 @@ class Dock(Vrx):
             # loop through ten pictures
             for i in range(10):
 
-                img = yield self.front_left_camera_sub.get_next_message()
+                img = await self.front_left_camera_sub.get_next_message()
 
                 img = self.bridge.imgmsg_to_cv2(img)
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -315,11 +314,11 @@ class Dock(Vrx):
                 break
 
         if foggy:
-            defer.returnValue("foggy")
+            return "foggy"
 
         symbol_position = None
         if vote[0] <= 5 and vote[1] <= 5 and vote[2] <= 5:
-            defer.returnValue(symbol_position)
+            return symbol_position
 
         if most_likely_index == 0:
             symbol_position = "left"
@@ -328,13 +327,12 @@ class Dock(Vrx):
         elif most_likely_index == 2:
             symbol_position = "right"
 
-        defer.returnValue(symbol_position)
+        return symbol_position
 
     # This function is used to help aim_and_fire you know... aim
-    @txros.util.cancellableInlineCallbacks
-    def get_black_square_center(self, foggy=False):
+    async def get_black_square_center(self, foggy=False):
 
-        img = yield self.front_right_camera_sub.get_next_message()
+        img = await self.front_right_camera_sub.get_next_message()
         img = self.bridge.imgmsg_to_cv2(img)
         image = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
         _, width, height = image.shape[::-1]
@@ -386,7 +384,7 @@ class Dock(Vrx):
 
         print("The new size of cnts is: ", len(cnts))
         if len(cnts) == 0:
-            defer.returnValue(None)
+            return None
 
         # get the center pixel of the black square
         # center_pixel_row and center_pixel_col are defined as
@@ -409,17 +407,16 @@ class Dock(Vrx):
         mask_msg = self.bridge.cv2_to_imgmsg(mask, "mono8")
         self.image_debug_pub.publish(mask_msg)
 
-        defer.returnValue(symbol_position)
+        return symbol_position
 
     # this function moves the boat until it is aiming at the big black square
     # once the boat is lined up, it fires the balls
-    @txros.util.cancellableInlineCallbacks
-    def aim_and_fire(self, foggy=False):
+    async def aim_and_fire(self, foggy=False):
 
         for i in range(3):
 
             # obtain the pixel position of the small black square
-            square_pix = yield self.get_black_square_center(foggy=foggy)
+            square_pix = await self.get_black_square_center(foggy=foggy)
 
             # ensure boat is lined up to be able to hit the target
             # by making sure the black box is in correct part of image
@@ -453,20 +450,20 @@ class Dock(Vrx):
                 print(square_pix)
                 adjustment = (mid_x - square_pix[1]) / pixel_to_meter
                 print("Adjustment: ", adjustment)
-                yield self.move.left(adjustment).go(blind=True, move_type="skid")
+                await self.move.left(adjustment).go(blind=True, move_type="skid")
             elif square_pix[1] > max_x:
                 print("adjusting right")
                 print(square_pix)
                 adjustment = (square_pix[1] - mid_x) / pixel_to_meter
                 print("Adjustment: ", adjustment)
-                yield self.move.right(adjustment).go(blind=True, move_type="skid")
+                await self.move.right(adjustment).go(blind=True, move_type="skid")
 
-            yield self.nh.sleep(1)
+            await self.nh.sleep(1)
 
         # loop here to double check that box is still in place in case of crazy waves
         #   if undershooting, shift range right, if overshooting, shift range left
         while True:
-            square_pix = yield self.get_black_square_center(foggy=foggy)
+            square_pix = await self.get_black_square_center(foggy=foggy)
             if square_pix is None:
                 print("square pix is none")
                 continue
@@ -484,11 +481,10 @@ class Dock(Vrx):
     # This function will tell us if we are on the correct side of the dock.
     # It will also tell us (assuming we are on the correct side of the dock)
     # how many pixels (left or right) the center of the docking area is.
-    @txros.util.cancellableInlineCallbacks
-    def dock_checks(self):
+    async def dock_checks(self):
 
         # obtain one image
-        img = yield self.front_left_camera_sub.get_next_message()
+        img = await self.front_left_camera_sub.get_next_message()
         img = self.bridge.imgmsg_to_cv2(img)
         hsv_img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
         _, width, height = hsv_img.shape[::-1]
@@ -512,7 +508,7 @@ class Dock(Vrx):
         # if we hit something not blue before reaching halfway through the image, we are on the wrong side
         if base_of_dock > height / 2:
             print("we are on wrong side")
-            defer.returnValue(None)
+            return None
 
         # find left wall of docking area
         for i in range(width / 2):
@@ -525,7 +521,7 @@ class Dock(Vrx):
 
             if i == width / 2 - 1:
                 print("there is no left side of docking area")
-                defer.returnValue(None)
+                return None
 
         # find right wall of docking area
         for i in range(width / 2):
@@ -538,7 +534,7 @@ class Dock(Vrx):
 
             if i == width / 2 - 1:
                 print("there is no right side of docking area")
-                defer.returnValue(None)
+                return None
 
         midpoint = (left_wall + right_wall) / 2
 
@@ -553,21 +549,20 @@ class Dock(Vrx):
         # return that we are on the correct side and the difference in pixels between
         # midpoint of docking area and center of image
         print("This is the pixel diff: ", width / 2 - midpoint)
-        defer.returnValue(width / 2 - midpoint)
+        return width / 2 - midpoint
 
     # This function is used to:
     #   - center the boat before docking (or at least try to)
     #   - dock the boat
     #   - shoot the balls at the black square
     #   - undock
-    @txros.util.cancellableInlineCallbacks
-    def dock_fire_undock(self, foggy=False):
+    async def dock_fire_undock(self, foggy=False):
 
-        pixel_diff = yield self.dock_checks()
+        pixel_diff = await self.dock_checks()
 
         if pixel_diff is None:
             print("something is wrong")
-            defer.returnValue(False)
+            return False
 
         # magic number that determines how far left or right we should move so that we can center
         # calculated from average pixel width of docking area / width of docking area in meters
@@ -576,61 +571,59 @@ class Dock(Vrx):
 
         if adjustment > 0:
             print("adjusting left", adjustment)
-            self.nh.sleep(1)
-            yield self.move.left(adjustment).go(blind=True, move_type="skid")
+            await self.nh.sleep(1)
+            await self.move.left(adjustment).go(blind=True, move_type="skid")
         elif pixel_diff < 0:
             print("adjusting right", adjustment)
-            self.nh.sleep(1)
-            yield self.move.right(abs(adjustment)).go(blind=True, move_type="skid")
+            await self.nh.sleep(1)
+            await self.move.right(abs(adjustment)).go(blind=True, move_type="skid")
 
         # dock the boat
-        yield self.move.forward(7).go(blind=True, move_type="skid")
+        await self.move.forward(7).go(blind=True, move_type="skid")
 
         # fire ball
         print("Aim and Fire!")
-        yield self.nh.sleep(1)
+        await self.nh.sleep(1)
         for i in range(4):
             try:
-                yield txros.util.wrap_timeout(
+                await txros.util.wrap_timeout(
                     self.aim_and_fire(foggy=foggy), 15, "Trying to shoot"
                 )
-            except txros.util.TimeoutError:
+            except asyncio.TimeoutError:
                 print("Let's just take the shot anyways")
                 self.fire_ball.publish(Empty())
 
         # Exit dock
-        yield self.move.backward(7).go(blind=True, move_type="skid")
+        await self.move.backward(7).go(blind=True, move_type="skid")
 
-        yield self.send_feedback("Done!")
+        await self.send_feedback("Done!")
 
-        defer.returnValue(True)
+        return True
 
     # This function is used to find the position of the dock at the beginning of this mission
-    @txros.util.cancellableInlineCallbacks
-    def find_dock(self):
+    async def find_dock(self):
 
         msgs = None
         while msgs is None:
             try:
-                msgs, poses = yield self.get_sorted_objects(name="UNKNOWN", n=-1)
+                msgs, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
             except Exception as e:
-                yield self.move.forward(10).go()
-        yield self.pcodar_label(msgs[0].id, "dock")
+                await self.move.forward(10).go()
+        await self.pcodar_label(msgs[0].id, "dock")
         # if no pcodar objects, throw error, exit mission
         pose = poses[0]
 
-        defer.returnValue(pose)
+        return pose
 
     # Potentially deprecated
-    @txros.util.cancellableInlineCallbacks
-    def prepare_for_docking(self):
+    async def prepare_for_docking(self):
         # This function looks at the two squares in front of the boat
         # and it gets the middle pixel between the two squares.
         # If the middle pixel is for some reason not in the middle of our camera...
         # adjust the boat postiion before docking
         print("prepare for landing!")
 
-        img = yield self.front_left_camera_sub.get_next_message()
+        img = await self.front_left_camera_sub.get_next_message()
         img = self.bridge.imgmsg_to_cv2(img)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
@@ -712,7 +705,7 @@ class Dock(Vrx):
 
             if middle_of_squares_x > middle_of_image:
                 print("adjusting right")
-                yield self.move.right(adjustment).go(blind=True, move_type="skid")
+                await self.move.right(adjustment).go(blind=True, move_type="skid")
             elif middle_of_squares_x < middle_of_image:
                 print("adjusting left")
-                yield self.move.left(adjustment).go(blind=True, move_type="skid")
+                await self.move.left(adjustment).go(blind=True, move_type="skid")

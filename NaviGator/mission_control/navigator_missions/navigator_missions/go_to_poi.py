@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-import txros
-from twisted.internet import defer
-
 from .navigator import Navigator
 
 
@@ -17,11 +14,10 @@ class GoToPOI(Navigator):
             raise Exception("Only one parameter accepted")
         return parameters[0]
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, poi):
+    async def run(self, poi):
         self.send_feedback("Waiting for " + poi)
-        position = yield self.poi.get(poi)
+        position = await self.poi.get(poi)
         self.send_feedback(f"Moving to {poi} at {position[0:2]}")
-        yield self.change_wrench("autonomous")
-        yield self.move.look_at(position).set_position(position).go()
-        defer.returnValue("Success")
+        await self.change_wrench("autonomous")
+        await self.move.look_at(position).set_position(position).go()
+        return "Success"

@@ -8,19 +8,17 @@ import txros
 from diagnostics.gazebo_tests import common
 from gazebo_msgs.srv import DeleteModelRequest, SpawnModelRequest
 from mil_ros_tools import msg_helpers
-from twisted.internet import defer
 
 
 class Job(common.Job):
     _job_name = "Marker test"
 
-    @txros.util.cancellableInlineCallbacks
-    def initial_setup(self):
+    async def initial_setup(self):
         """
         Remove all the models in the sim and spawn a ground plane to run tests with.
         TODO: Sometimes all the models don't get deleted correctly - probably a gazeb problem.
         """
-        models = yield self.model_states.get_next_message()
+        models = await self.model_states.get_next_message()
 
         if "ground_plane" not in models.name:
             s = SpawnModelRequest()
@@ -29,7 +27,7 @@ class Job(common.Job):
             s.initial_pose = msg_helpers.numpy_quat_pair_to_pose(
                 [0, 0, -5], [0, 0, 0, 1]
             )
-            yield self.spawn_model(s)
+            await self.spawn_model(s)
 
         for model in models.name:
             if (
@@ -41,10 +39,9 @@ class Job(common.Job):
             print(f"MARKER_TEST - Deleting {model}")
             self.delete_model(DeleteModelRequest(model_name=model))
 
-        self.nh.sleep(1)
+        await self.nh.sleep(1)
 
-    @txros.util.cancellableInlineCallbacks
-    def setup(self):
+    async def setup(self):
         # Set sub position
         sub_point = np.random.uniform(-5, 5, size=3)
         sub_point[2] = -np.abs(sub_point[2]) / 2.1
@@ -52,7 +49,7 @@ class Job(common.Job):
             0, 0, np.random.uniform(-7, 7, size=1)
         )
         sub_pose = msg_helpers.numpy_quat_pair_to_pose(sub_point, sub_quat)
-        yield self.set_model_pose(sub_pose)
+        await self.set_model_pose(sub_pose)
         print(f"MARKER_TEST - Sub at {sub_pose}")
 
         # Set marker position
@@ -64,25 +61,24 @@ class Job(common.Job):
             np.append(self.marker_point, -4.9), self.marker_quat
         )
         print(f"MARKER_TEST - Marker at {self.marker_pose}")
-        self.set_model_pose(self.marker_pose, model="channel_marker_1")
+        await self.set_model_pose(self.marker_pose, model="channel_marker_1")
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, sub):
+    async def run(self, sub):
         print("Running Mission")
 
         # Call actual mission
         start_time = self.nh.get_time()
         try:
-            resp = yield txros.util.wrap_timeout(
+            resp = await txros.util.wrap_timeout(
                 missions.align_channel.run(sub), 600
             )  # 10 minute timeout
         except txros.util.TimeoutError:
             print("MARKER_TEST - TIMEOUT")
-            defer.returnValue((False, "Timeout"))
+            return (False, "Timeout")
         else:
             if resp is None:
                 print("MARKER_TEST - ERROR")
-                defer.returnValue((False, "Error"))
+                return (False, "Error")
             print("MARKER_TEST - No timeout.")
 
         print(
@@ -123,16 +119,15 @@ class Job(common.Job):
 
         if 0.01 < np.abs(np.dot(sub_odom[1], self.marker_quat)) < 0.99:
             print("MARKER_TEST - FAIL")
-            defer.returnValue((False, resp_msg))
+            return (False, resp_msg)
 
         if np.linalg.norm(sub_odom[0][:2] - self.marker_point) > 0.5:
             print("MARKER_TEST - FAIL")
-            defer.returnValue((False, "POSITION\n" + resp_msg))
+            return (False, "POSITION\n" + resp_msg)
 
         print("MARKER_TEST - PASS")
-        print
 
-        defer.returnValue((True, resp_msg))
+        return (True, resp_msg)
 
 
 ground_plane = '<?xml version="1.0" ?> <sdf version="1.5"> <model name="ground_plane"> <static>true</static> <link name="link"> <collision name="collision"> <geometry> <plane> <normal>0 0 1</normal> <size>100 100</size> </plane> </geometry> <surface> <friction> <ode> <mu>100</mu> <mu2>50</mu2> </ode> </friction> </surface> </collision> <visual name="visual"> <cast_shadows>false</cast_shadows> <geometry> <plane> <normal>0 0 1</normal> <size>1000 1000</size> </plane> </geometry> <material> <script> <uri>file://media/materials/scripts/gazebo.material</uri> <name>Gazebo/Grey</name> </script> </material> </visual> </link> </model> </sdf>'  # noqa: E501

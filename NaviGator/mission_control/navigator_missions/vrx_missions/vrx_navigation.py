@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+import asyncio
+
 import numpy as np
 import txros
 from mil_tools import quaternion_matrix, rosmsg_to_numpy
+from rospy.impl.tcpros_service import service_connection_handler
 from std_srvs.srv import SetBoolRequest
-from twisted.internet import defer
 
 from .vrx import Vrx
 
@@ -14,11 +16,10 @@ class VrxNavigation(Vrx):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    @txros.util.cancellableInlineCallbacks
-    def inspect_object(self, position):
+    async def inspect_object(self, position):
         # Go in front of the object, looking directly at it
-        yield self.move.look_at(position).set_position(position).backward(6.0).go()
-        yield self.nh.sleep(5.0)
+        await self.move.look_at(position).set_position(position).backward(6.0).go()
+        await self.nh.sleep(5.0)
 
     def get_index_of_type(self, objects, classifications):
         if type(classifications) == str:
@@ -52,18 +53,16 @@ class VrxNavigation(Vrx):
             [perp_vec[0], perp_vec[1], 0.0]
         )
 
-    @txros.util.cancellableInlineCallbacks
-    def go_thru_gate(self, gate, BEFORE=5.0, AFTER=4.0):
+    async def go_thru_gate(self, gate, BEFORE=5.0, AFTER=4.0):
         center, vec = gate
         before_position = center - (vec * BEFORE)
         after_position = center + (vec * AFTER)
-        yield self.move.set_position(before_position).look_at(center).go()
+        await self.move.set_position(before_position).look_at(center).go()
         if AFTER > 0:
-            yield self.move.look_at(after_position).set_position(after_position).go()
+            await self.move.look_at(after_position).set_position(after_position).go()
 
-    @txros.util.cancellableInlineCallbacks
-    def do_next_gate(self):
-        pose = yield self.tx_pose
+    async def do_next_gate(self):
+        pose = await self.tx_pose()
         p = pose[0]
         q_mat = quaternion_matrix(pose[1])
 
@@ -108,7 +107,7 @@ class VrxNavigation(Vrx):
                 end,
             )
 
-        left, left_obj, right, right_obj, end = yield self.explore_closest_until(
+        left, left_obj, right, right_obj, end = await self.explore_closest_until(
             is_done, filter_and_sort
         )
         self.send_feedback(
@@ -117,13 +116,12 @@ class VrxNavigation(Vrx):
             )
         )
         gate = self.get_gate(left, right, p)
-        yield self.go_thru_gate(gate)
+        await self.go_thru_gate(gate)
         self.objects_passed.add(left_obj.id)
         self.objects_passed.add(right_obj.id)
-        defer.returnValue(end)
+        return end
 
-    @txros.util.cancellableInlineCallbacks
-    def explore_closest_until(self, is_done, filter_and_sort):
+    async def explore_closest_until(self, is_done, filter_and_sort):
         """
         @condition func taking in sorted objects, positions
         @object_filter func filters and sorts
@@ -140,11 +138,9 @@ class VrxNavigation(Vrx):
             if move_id_tuple is not None:
                 if service_req is None:
                     service_req = self.database_query(name="all")
-                dl = defer.DeferredList(
-                    [service_req, move_id_tuple[0]], fireOnOneCallback=True
-                )
+                tasks = [service_req, move_id_tuple[0]]
 
-                result, index = yield dl
+                result, index = await asyncio.gather(*tasks)
 
                 # Database query succeeded
                 if index == 0:
@@ -160,9 +156,8 @@ class VrxNavigation(Vrx):
                                 move_id_tuple[1]
                             )
                         )
-                        yield dl.cancel()
-                        yield move_id_tuple[0].cancel()
-                        yield self.nh.sleep(1.0)
+                        move_id_tuple[0].cancel()
+                        await self.nh.sleep(1.0)
 
                         if (
                             "marker"
@@ -185,9 +180,9 @@ class VrxNavigation(Vrx):
                                 ].labeled_classification
                                 and cone_buoys_investigated < 2
                             ):
-                                yield self.move.left(3).yaw_left(30, "deg").go()
+                                await self.move.left(3).yaw_left(30, "deg").go()
                             elif cone_buoys_investigated < 2:
-                                yield self.move.right(3).yaw_right(30, "deg").go()
+                                await self.move.right(3).yaw_right(30, "deg").go()
 
                         move_id_tuple = None
 
@@ -196,7 +191,7 @@ class VrxNavigation(Vrx):
                     self.send_feedback(f"Investigated {move_id_tuple[1]}")
                     move_id_tuple = None
             else:
-                objects_msg = yield self.database_query(name="all")
+                objects_msg = await self.database_query(name="all")
             objects = objects_msg.objects
             # print(len(objects))
             positions = np.array(
@@ -218,11 +213,11 @@ class VrxNavigation(Vrx):
             if ret is not None:
                 if move_id_tuple is not None:
                     self.send_feedback("Condition met. Canceling investigation")
-                    yield dl.cancel()
-                    yield move_id_tuple[0].cancel()
+                    dl.cancel()
+                    move_id_tuple[0].cancel()
                     move_id_tuple = None
 
-                defer.returnValue(ret)
+                return ret
 
             if move_id_tuple is not None:
                 continue
@@ -325,10 +320,9 @@ class VrxNavigation(Vrx):
                     return i
         return -1
 
-    @txros.util.cancellableInlineCallbacks
-    def prepare_to_enter(self):
+    async def prepare_to_enter(self):
         closest = []
-        robot_position = (yield self.tx_pose)[0]
+        robot_position = (await self.tx_pose())[0]
 
         def filter_and_sort(objects, positions):
             distances = np.linalg.norm(positions - robot_position, axis=1)
@@ -347,7 +341,7 @@ class VrxNavigation(Vrx):
                 positions[red_index],
             )
 
-        white, white_position, red, red_position = yield self.explore_closest_until(
+        white, white_position, red, red_position = await self.explore_closest_until(
             is_done, filter_and_sort
         )
         self.objects_passed.add(white.id)
@@ -358,22 +352,21 @@ class VrxNavigation(Vrx):
                 white.labeled_classification, red.labeled_classification
             )
         )
-        yield self.go_thru_gate(gate, AFTER=-2)
+        await self.go_thru_gate(gate, AFTER=-2)
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
+    async def run(self, parameters):
         """
         TODO: check for new objects in background, cancel move
               somefucking how handle case where gates litteraly loop back and head the other direction
         """
         self.objects_passed = set()
         # Wait a bit for PCDAR to get setup
-        yield self.nh.sleep(3.0)
-        yield self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
-        yield self.prepare_to_enter()
-        yield self.wait_for_task_such_that(lambda task: task.state == "running")
-        yield self.move.forward(7.0).go()
-        while not (yield self.do_next_gate()):
+        await self.nh.sleep(3.0)
+        await self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
+        await self.prepare_to_enter()
+        await self.wait_for_task_such_that(lambda task: task.state == "running")
+        await self.move.forward(7.0).go()
+        while not (await self.do_next_gate()):
             pass
         self.send_feedback("Exiting last gate!! Go NaviGator")
-        yield self.set_vrx_classifier_enabled(SetBoolRequest(data=False))
+        await self.set_vrx_classifier_enabled(SetBoolRequest(data=False))

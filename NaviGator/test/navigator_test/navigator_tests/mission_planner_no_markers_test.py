@@ -64,67 +64,65 @@ class MissionPlannerTest(TestUnit):
             "/database/objects", PerceptionObjectArray, [empty, stc], [3, 10000]
         )
 
-    @util.cancellableInlineCallbacks
-    def run_tests(self):
+    async def run_tests(self):
         base_file = (
             "/".join(__file__.split("/")[0:-1]) + "/mission_planner_no_markers_yamls"
         )
-        yield self._run_mission(
+        await self._run_mission(
             base_file + "/mission_fails.yaml",
             self.pub_fail_mission,
             self.service,
             "Testing what happens when a mission fails / safe exit",
         )
-        yield self._run_mission(
+        await self._run_mission(
             base_file + "/missing_object.yaml",
             self.pub_missing_objects,
             self.service_missing,
             "Testing what happens when a mission loses an object dependency in the middle of the run.\
             Also, when a mission runs and returns a MissingPerceptionObject",
         )
-        yield self._run_mission(
+        await self._run_mission(
             base_file + "/base_mission.yaml",
             self.pub_base_mission,
             self.service,
             "Testing that the base mission stops when a new object is found",
         )
-        yield self._run_mission(
+        await self._run_mission(
             base_file + "/normal_behavior_1.yaml",
             self.pub_normal_1,
             self.service,
             "Testing normal behavior",
         )
-        yield self._run_mission(
+        await self._run_mission(
             base_file + "/normal_behavior_2.yaml",
             self.pub_normal_2,
             self.service,
             "Testing normal behavior",
         )
-        yield self._run_mission(
+        await self._run_mission(
             base_file + "/timeout.yaml", self.timeout, self.service, "Testing timeouts"
         )
-        yield self._run_mission(
+        await self._run_mission(
             base_file + "/object_appears.yaml",
             self.obj_appear,
             self.service,
             "Testing what happens when an object appears in the middle of a run",
         )
-        yield self.pub_missing_objects
+        await self.pub_missing_objects
 
-    @util.cancellableInlineCallbacks
-    def _run_mission(self, yaml_file, spoof_pub, spoof_service, desc):
+    async def _run_mission(self, yaml_file, spoof_pub, spoof_service, desc):
         with open(yaml_file) as stream:
             try:
                 spoof_pub.start(self.nh)
-                yield spoof_service.start(self.nh)
+                await spoof_service.start(self.nh)
                 fprint(desc, msg_color="green", title="STARTING TEST")
-                yield self.nh.sleep(2)
-                yaml_text = yaml.load(stream)
+                await self.nh.sleep(2)
+                yaml_text = yaml.safe_load(stream)
                 init = MissionPlanner(yaml_text, "t").init_(sim_mode=True)
-                planner = yield init
-                yield planner.empty_queue()
-                yield spoof_pub.stop()
-                yield spoof_service.stop()
-                yield planner.nh.shutdown()
+                planner = await init
+                await planner.empty_queue()
+                await spoof_pub.stop()
+                await spoof_service.stop()
+                await planner.nh.shutdown()
             except yaml.YAMLError as exc:
                 print(exc)

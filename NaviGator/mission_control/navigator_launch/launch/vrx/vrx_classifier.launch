@@ -1,15 +1,16 @@
 <?xml version="1.0"?>
 <launch>
 
-    <arg name="weights" default="$(find yolov7_ros)/src/best.pt" />
+    <arg name="weights" default="$(find yolov7_ros)/src/mil_weights/best.pt" />
     <arg name="image_topic" default="/wamv/sensors/cameras/front_left_camera/image_raw" />
     <arg name="out_topic" default="detections" />
     <arg name="conf_thresh" default="0.75" />
     <arg name="image_size" default="640" />
-    <arg name="device" default="cpu" />
+    <arg name="device" default="cuda" />
+    <arg name="use_yolo" default="True"/>
 
     <!-- Use YOLOv7 -->
-    <include file="$(find yolov7_ros)/launch/yolov7.launch">
+    <include if="$(arg use_yolo)" file="$(find yolov7_ros)/launch/yolov7.launch">
         <arg name="weights" value="$(arg weights)"/>
         <arg name="image_topic" value="$(arg image_topic)"/>
         <arg name="out_topic" value="$(arg out_topic)"/>

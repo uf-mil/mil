@@ -3,8 +3,6 @@ import math
 
 import numpy as np
 from mil_misc_tools import ThrowingArgumentParser
-from twisted.internet import defer
-from txros import util
 
 from .navigator import Navigator
 
@@ -49,15 +47,14 @@ class ObstacleAvoid(Navigator):
 
         cls.parser = parser
 
-    @util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
         # Parse Arguments
         num_passes = args.numpasses
         out_offset = args.outoffset
         speed_factor = args.speed
 
         # Determine the area of the gate
-        yield self.find_area(args.usepoi)
+        await self.find_area(args.usepoi)
 
         if self.square is None:
             self.send_feedback("Didn't find a square; cancelling.")
@@ -75,10 +72,10 @@ class ObstacleAvoid(Navigator):
         # Iterate through passes
         for i in range(0, num_passes):
             # Calculate the points at offset away from the square edges
-            ppoints_close = yield self.get_perpendicular_points(
+            ppoints_close = await self.get_perpendicular_points(
                 self.square[0], self.square[1], midpoints_close[i], out_offset
             )
-            ppoints_far = yield self.get_perpendicular_points(
+            ppoints_far = await self.get_perpendicular_points(
                 self.square[3], self.square[2], midpoints_far[i], out_offset
             )
 
@@ -93,25 +90,24 @@ class ObstacleAvoid(Navigator):
         # Traverse each point, looking at the next
         for i in range(0, len(traverse_points)):
             if i + 1 != len(traverse_points):
-                yield self.move.set_position(traverse_points[i]).look_at(
+                await self.move.set_position(traverse_points[i]).look_at(
                     traverse_points[i + 1]
                 ).go(speed_factor=speed_factor)
             else:
-                yield self.move.set_position(traverse_points[i]).go(
+                await self.move.set_position(traverse_points[i]).go(
                     speed_factor=speed_factor
                 )
 
         self.send_feedback("Done with obstacle avoid!")
 
-    @util.cancellableInlineCallbacks
-    def find_area(self, usepoi):
+    async def find_area(self, usepoi):
         self.square = None
 
         if usepoi:
-            t1 = yield self.poi.get("ocp1")
-            t2 = yield self.poi.get("ocp2")
-            t3 = yield self.poi.get("ocp3")
-            t4 = yield self.poi.get("ocp4")
+            t1 = await self.poi.get("ocp1")
+            t2 = await self.poi.get("ocp2")
+            t3 = await self.poi.get("ocp3")
+            t4 = await self.poi.get("ocp4")
             self.square = np.array([t1, t2, t3, t4])
         else:
             """
@@ -121,7 +117,7 @@ class ObstacleAvoid(Navigator):
             Skip if the difference between the shortest and longest diagonal is greater than a threshold.
             First time these filters pass it should be the closest square.
             """
-            white_totems = yield self.get_sorted_objects("totem_white")
+            white_totems = await self.get_sorted_objects("totem_white")
             white_totems = white_totems[1]
             for totem1 in white_totems:
                 for totem2 in white_totems:
@@ -214,13 +210,12 @@ class ObstacleAvoid(Navigator):
         r = math.sqrt(pvec[0] ** 2 + pvec[1] ** 2)
         return [pvec[0] / r, pvec[1] / r, 0]
 
-    @util.cancellableInlineCallbacks
-    def get_perpendicular_points(self, linep1, linep2, point, offset_distance):
+    async def get_perpendicular_points(self, linep1, linep2, point, offset_distance):
         # Find the perpendicular line
         line = self.line(linep1, linep2)
         perpendicular_vector = self.perpendicular(line)
 
-        boat_pose = yield self.tx_pose
+        boat_pose = await self.tx_pose()
         boat_pose = boat_pose[0]
 
         # Find the two points on either side of the line
@@ -251,4 +246,4 @@ class ObstacleAvoid(Navigator):
             point = np.append(point, [0])
             perpendicular_points_np.append(point)
 
-        defer.returnValue(perpendicular_points_np)
+        return perpendicular_points_np

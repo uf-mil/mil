@@ -1,48 +1,51 @@
 #!/usr/bin/env python3
+import asyncio
+
 import txros
+import uvloop
 from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
 
 
-@txros.util.cancellableInlineCallbacks
-def main():
-    nh = yield txros.NodeHandle.from_argv("tx_alarm_test")
+async def main():
+    nh = await txros.NodeHandle.from_argv("tx_alarm_test")
 
     alarm_name = "tx"
-    ab = yield TxAlarmBroadcaster.init(nh, alarm_name)
-    al = yield TxAlarmListener.init(nh, alarm_name, nowarn=True)
+    ab = await TxAlarmBroadcaster.init(nh, alarm_name)
+    al = await TxAlarmListener.init(nh, alarm_name, nowarn=True)
 
-    assert (yield al.is_cleared())
+    assert await al.is_cleared()
 
-    yield ab.raise_alarm()
-    assert (yield al.is_raised())
+    await ab.raise_alarm()
+    assert await al.is_raised()
 
-    yield ab.raise_alarm()
-    assert (yield al.is_raised())
+    await ab.raise_alarm()
+    assert await al.is_raised()
 
-    yield ab.clear_alarm()
-    assert (yield al.is_cleared())
+    await ab.clear_alarm()
+    assert await al.is_cleared()
 
     var = False
 
-    @txros.util.cancellableInlineCallbacks
-    def cb(nh, alarm):
+    async def cb(nh, alarm):
         global var
         var = True
-        yield nh.sleep(1)
+        await nh.sleep(1)
         print("DONE SLEEPING")
 
-    yield al.add_callback(cb, call_when_raised=False)
-    yield nh.sleep(0.1)
+    await al.add_callback(cb, call_when_raised=False)
+    await nh.sleep(0.1)
     assert not var
 
-    yield ab.raise_alarm()
+    await ab.raise_alarm()
     assert not var
 
-    yield ab.clear_alarm()
+    await ab.clear_alarm()
     assert not var
 
     print("\nPassed")
-    yield nh.sleep(2)
+    await nh.sleep(2)
 
 
-txros.util.launch_main(main)
+if __name__ == "__main__":
+    uvloop.install()
+    asyncio.run(main())

@@ -75,8 +75,7 @@ class Move(SubjuGator):
         )
         cls.parser = parser
 
-    @util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
         commands = args.commands
         # Split into commands and arguments, every other index
         arguments = commands[1::2]
@@ -85,7 +84,7 @@ class Move(SubjuGator):
             command = commands[i]
             argument = arguments[i]
             self.send_feedback("Waiting for odom...")
-            yield self.tx_pose()
+            await self.tx_pose()
             self.send_feedback("Odom found!")
             action_kwargs = {"speed": float(args.speed), "blind": bool(args.blind)}
 
@@ -93,14 +92,15 @@ class Move(SubjuGator):
                 # Let the user input custom commands, the eval may be dangerous
                 # so do away with that at some point.
                 self.send_feedback(f"Moving with the command: {argument}")
-                res = yield eval("self.move.{}.go()".format(argument, **action_kwargs))
+                res = await eval("self.move.{}.go()".format(argument, **action_kwargs))
 
             elif command in ["tp", "teleport"]:
                 try:
                     rospack = rospkg.RosPack()
-                    state_set_pub = yield self.nh.advertise(
+                    state_set_pub = self.nh.advertise(
                         "gazebo/set_model_state", ModelState
                     )
+                    await state_set_pub.setup()
                     config_file = os.path.join(
                         rospack.get_path("sub8_gazebo"), "config", "teleport_locs.yaml"
                     )
@@ -162,13 +162,13 @@ class Move(SubjuGator):
                         # the trajectory from overriding our teleport and
                         # bringing it back to its expected position.
                         ab = TxAlarmBroadcaster(self.nh, "kill", node_name="kill")
-                        yield ab.raise_alarm(
+                        await ab.raise_alarm(
                             problem_description="TELEPORTING: KILLING SUB", severity=5
                         )
-                        yield self.nh.sleep(1)
-                        yield state_set_pub.publish(modelstate)
-                        yield self.nh.sleep(1)
-                        yield ab.clear_alarm()
+                        await self.nh.sleep(1)
+                        await state_set_pub.publish(modelstate)
+                        await self.nh.sleep(1)
+                        await ab.clear_alarm()
 
                 except KeyboardInterrupt:
                     # Catches a ctrl-c situation and ends the program. Break
@@ -177,18 +177,18 @@ class Move(SubjuGator):
 
             elif command in ["zrp", "level_off", "zpr"]:
                 self.send_feedback("Zeroing roll and pitch")
-                res = yield self.move.zero_roll_and_pitch().go(**action_kwargs)
+                res = await self.move.zero_roll_and_pitch().go(**action_kwargs)
 
             elif command == "stop":
                 self.send_feedback("Stopping...")
                 if args.zrp:
                     res = (
-                        yield self.move.forward(0)
+                        await self.move.forward(0)
                         .zero_roll_and_pitch()
                         .go(**action_kwargs)
                     )
                 else:
-                    res = yield self.move.forward(0).go(**action_kwargs)
+                    res = await self.move.forward(0).go(**action_kwargs)
 
             else:
                 # Get the command from shorthand if it's there
@@ -219,7 +219,7 @@ class Move(SubjuGator):
                     break
                 goal = movement(float(amount) * UNITS.get(unit, 1))
                 if args.zrp:
-                    res = yield goal.zero_roll_and_pitch().go(**action_kwargs)
+                    res = await goal.zero_roll_and_pitch().go(**action_kwargs)
                 else:
-                    res = yield goal.go(**action_kwargs)
-                self.send_feedback(f"Result: {res.error}")
+                    res = await goal.go(**action_kwargs)
+                return f"Result: {res.error}"

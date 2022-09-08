@@ -11,7 +11,6 @@ from mil_tools import rosmsg_to_numpy
 from nav_msgs.msg import Odometry
 from navigator_msgs.srv import ChooseAnimal, ChooseAnimalRequest, ChooseAnimalResponse
 from robot_localization.srv import FromLL
-from twisted.internet import defer
 
 
 # Defines a service that returns the position of the acoustic beacon from odom and the range_bearing topic
