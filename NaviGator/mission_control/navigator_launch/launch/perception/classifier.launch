@@ -3,6 +3,8 @@
 
     <arg name="weights_model1" default="$(find yolov7_ros)/src/mil_weights/robotx.pt" />
     <arg name="weights_model2" default="$(find yolov7_ros)/src/mil_weights/robotx.pt" />
+    <arg name="data_yaml_model1" default="$(find yolov7_ros)/src/data/vrx_buoys.yaml" />
+    <arg name="data_yaml_model2" default="$(find yolov7_ros)/src/data/vrx_buoys.yaml" />
     <arg name="main_image_topic" default="/camera/front/left/image_color"/>
     <arg name="image_topic_model1" default="/yolov7/model1" />
     <arg name="image_topic_model2" default="/yolov7/model2" />
@@ -26,7 +28,8 @@
         <arg name="out_topic" value="$(arg out_topic_model1)"/>
         <arg name="conf_thresh" value="$(arg conf_thresh)"/>
         <arg name="image_size" value="$(arg image_size)"/>
-        <arg name="device" value="$(arg device)"/>
+	<arg name="device" value="$(arg device)"/>
+	<arg name="data_yaml" value="$(arg data_yaml_model1)"/>
     </include>
 
     <!-- Use YOLOv7 -->
@@ -36,7 +39,8 @@
         <arg name="out_topic" value="$(arg out_topic_model2)"/>
         <arg name="conf_thresh" value="$(arg conf_thresh)"/>
         <arg name="image_size" value="$(arg image_size)"/>
-        <arg name="device" value="$(arg device)"/>
+	<arg name="device" value="$(arg device)"/>
+	<arg name="data_yaml" value="$(arg data_yaml_model2)"/>
     </include>
 
     <arg name="train" default="False" />
