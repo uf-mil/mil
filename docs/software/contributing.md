@@ -80,7 +80,7 @@ Be sure to only change the files you intend to and don't add any files that aren
 ## Committing changes
 After a while, you'll want to make a **commit**. A commit is a point in time in the repository.
 It holds the status of every file in the repository at a particular time. This is
-super helpful - let's say you acidentally deleted an important file. You can go
+super helpful - let's say you accidentally deleted an important file. You can go
 back to the previous commit, and grab the file again.
 
 You will need to provide a short description of your change when you commit it.

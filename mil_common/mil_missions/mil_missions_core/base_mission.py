@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 import json
-from typing import Union
-
-from twisted.internet import defer
 
 
 class BaseMission:
@@ -115,7 +112,7 @@ class BaseMission:
         """
         return self.mission_runner.get_mission(name)
 
-    def run_submission(self, name: str, parameters: str = "") -> defer.Deferred:
+    async def run_submission(self, name: str, parameters: str = "") -> None:
         """
         Runs another mission available to the mission server, returning the deferred object for the
         missions execution.
@@ -138,7 +135,7 @@ class BaseMission:
         if not self.has_mission(name):
             raise Exception(f"Cannot run_submission, '{name}' unrecognized")
         mission = self.mission_runner.missions[name](parent=self)
-        return defer.maybeDeferred(mission.run, parameters)
+        return await mission.run(parameters)
 
     @classmethod
     def decode_parameters(cls, parameters: str) -> dict | str:

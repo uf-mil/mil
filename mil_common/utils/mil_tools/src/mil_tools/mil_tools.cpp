@@ -15,7 +15,8 @@ vector<string> getRectifiedImageTopics(bool color)
   // Define lambda to determine if a topic is a rectified img topic
   string target_pattern;
   target_pattern = color ? "image_rect_color" : "image_rect";
-  auto isRectImgTopic = [&target_pattern](ros::master::TopicInfo topic_info) {
+  auto isRectImgTopic = [&target_pattern](ros::master::TopicInfo topic_info)
+  {
     // Find last slash
     size_t final_slash = topic_info.name.rfind('/');
 
@@ -41,13 +42,10 @@ vector<string> getRectifiedImageTopics(bool color)
 
 void sortContours(vector<vector<cv::Point2i>> &contour_vec, bool ascending)
 {
-  auto comp_length = ascending ?
-                         [](vector<cv::Point2i> const &contour1, vector<cv::Point2i> const &contour2) {
-                           return fabs(arcLength(contour1, true)) < fabs(arcLength(contour2, true));
-                         } :
-                         [](vector<cv::Point2i> const &contour1, vector<cv::Point2i> const &contour2) {
-                           return fabs(arcLength(contour1, true)) > fabs(arcLength(contour2, true));
-                         };
+  auto comp_length = ascending ? [](vector<cv::Point2i> const &contour1, vector<cv::Point2i> const &contour2)
+  { return fabs(arcLength(contour1, true)) < fabs(arcLength(contour2, true)); } :
+                                 [](vector<cv::Point2i> const &contour1, vector<cv::Point2i> const &contour2)
+  { return fabs(arcLength(contour1, true)) > fabs(arcLength(contour2, true)); };
 
   sort(contour_vec.begin(), contour_vec.end(), comp_length);
 }

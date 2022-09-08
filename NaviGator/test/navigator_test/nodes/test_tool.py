@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 import argparse
+import asyncio
 import inspect
 
 import navigator_tests
+import uvloop
 from mil_misc_tools.text_effects import fprint
 from navigator_test_lib import TestUnit
-from twisted.internet import defer, reactor
-from txros import NodeHandle, util
+from txros import NodeHandle
 
 
 def _import(module):
@@ -16,10 +17,10 @@ def _import(module):
             return i[1]
 
 
-@util.cancellableInlineCallbacks
-def main():
+async def main():
     """Main method to the test node"""
-    nh, args = yield NodeHandle.from_argv_with_remaining("navigator_test")
+    nh, args = NodeHandle.from_argv_with_remaining("navigator_test")
+    await nh.setup()
     available_missions = [
         mission_name for mission_name in dir(navigator_tests) if mission_name[0] != "_"
     ]
@@ -39,7 +40,7 @@ def main():
         )
         print("\n   * ".join(available_missions))
         print()
-        defer.returnValue(reactor.stop())
+        return
 
     for test in args.tests:
         # Make sure all missions exist before we run
@@ -51,21 +52,20 @@ def main():
         to_run = _import(to_run)
         to_run = to_run(nh)
         to_run.create_spoofs()
-        result = yield to_run.run_tests()
+        result = to_run.run_tests()
 
         if result is None:
             fprint(f"{test} finished with no result.", title="TEST")
         else:
             for r in result:
                 fprint(f"{test} finished with:", title="TEST")
-            print(r)
+                print(r)
 
-    defer.returnValue(reactor.stop())
+    return
 
 
 if __name__ == "__main__":
-    reactor.callWhenRunning(main)
-    reactor.run()
-
+    uvloop.install()
+    asyncio.run(main())
     print("\n")
     fprint("Done!", title="TEST")

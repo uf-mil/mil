@@ -37,7 +37,7 @@
 
     --> DEBUGGING PROBLEM: Too many things are showing up
         --> Get the proper background
-        --> Non Maximal suppresion
+        --> Non Maximal suppression
         --> normalizing the hog
 
 

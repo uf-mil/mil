@@ -93,15 +93,12 @@ TEST(ListenerTest, listenerTest)
   int clear_count = 0;                 // any clears
   function<void(AlarmProxy)>           // All cb funcs for this listener need to have this signature
       update_cb = [&update_count](AlarmProxy pxy) -> void { ++update_count; };
-  function<void(AlarmProxy)> lo_raise_cb = [&lo_priority_raise_count](AlarmProxy pxy) -> void {
-    ++lo_priority_raise_count;
-  };
-  function<void(AlarmProxy)> hi_raise_cb = [&hi_priority_raise_count](AlarmProxy pxy) -> void {
-    ++hi_priority_raise_count;
-  };
-  function<void(AlarmProxy)> exact_raise_cb = [&exact_priority_raise_count](AlarmProxy pxy) -> void {
-    ++exact_priority_raise_count;
-  };
+  function<void(AlarmProxy)> lo_raise_cb = [&lo_priority_raise_count](AlarmProxy pxy) -> void
+  { ++lo_priority_raise_count; };
+  function<void(AlarmProxy)> hi_raise_cb = [&hi_priority_raise_count](AlarmProxy pxy) -> void
+  { ++hi_priority_raise_count; };
+  function<void(AlarmProxy)> exact_raise_cb = [&exact_priority_raise_count](AlarmProxy pxy) -> void
+  { ++exact_priority_raise_count; };
   function<void(AlarmProxy)> raise_cb = [&raise_count](AlarmProxy pxy) -> void { ++raise_count; };
   function<void(AlarmProxy)> clear_cb = [&clear_count](AlarmProxy pxy) -> void { ++clear_count; };
 

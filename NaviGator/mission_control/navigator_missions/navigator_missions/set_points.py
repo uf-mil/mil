@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import asyncio
 import itertools
 
 from geometry_msgs.msg import PoseArray
@@ -7,20 +8,22 @@ from sensor_msgs.msg import Joy
 from std_msgs.msg import Header
 from txros import util
 
+from .navigator import Navigator
 
-@util.cancellableInlineCallbacks
-def main(navigator):
+
+async def main(navigator: Navigator):
     waypoints = []
     poses = []
 
-    joy = yield navigator.nh.subscribe("/joy", Joy)
-    waypoint_pub = yield navigator.nh.advertise("/mission_waypoints", PoseArray)
+    joy = navigator.nh.subscribe("/joy", Joy)
+    waypoint_pub = navigator.nh.advertise("/mission_waypoints", PoseArray)
+    await asyncio.gather(joy.setup(), waypoint_pub.setup())
 
     last_set = False
     print("Waiting for input. RB to set waypoint, right D-Pad to go.")
-    navigator.change_wrench("rc")
+    await navigator.change_wrench("rc")
     while True:
-        joy_msg = yield joy.get_next_message()
+        joy_msg = await joy.get_next_message()
         b_set = bool(joy_msg.buttons[5])  # RB
         b_go = bool(joy_msg.buttons[12])  # Right D-Pad
 
@@ -32,7 +35,7 @@ def main(navigator):
             poses.append(numpy_quat_pair_to_pose(*navigator.pose))
             pa = PoseArray(header=Header(frame_id="enu"), poses=poses)
             print("SET")
-            yield waypoint_pub.publish(pa)
+            waypoint_pub.publish(pa)
 
         last_set = b_set
 
@@ -41,6 +44,6 @@ def main(navigator):
             break
 
     for waypoint in itertools.cycle(waypoints):
-        yield waypoint.go()
+        await waypoint.go()
         print("Arrived!")
-        yield navigator.nh.sleep(5)
+        await navigator.nh.sleep(5)

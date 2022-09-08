@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import division
 
 import geometry_msgs.msg
 import numpy as np

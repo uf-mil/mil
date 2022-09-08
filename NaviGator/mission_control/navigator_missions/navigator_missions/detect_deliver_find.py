@@ -6,8 +6,6 @@ import tf.transformations as tform
 from mil_misc_tools import ThrowingArgumentParser
 from mil_msgs.msg import ObjectsInImage
 from mil_tools import rosmsg_to_numpy
-from twisted.internet import defer
-from txros import util
 
 from .navigator import Navigator
 
@@ -76,8 +74,7 @@ class DetectDeliverFind(Navigator):
 
         cls.bboxsub = cls.nh.subscribe("/bbox_pub", ObjectsInImage)
 
-    @util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
         # Parse Arguments
         self.long_scan = args.longscan
         self.short_scan = args.shortscan
@@ -88,13 +85,13 @@ class DetectDeliverFind(Navigator):
         end_dist = args.enddist
 
         # Turn on ML classifier for docks
-        yield self.set_vision_dock()
+        await self.set_vision_dock()
 
         # Find the dock
-        yield self.find_dock(override_scale)
+        await self.find_dock(override_scale)
 
         # Get the boat pose
-        boat_pose = yield self.tx_pose
+        boat_pose = await self.tx_pose()
         boat_pose = boat_pose[0]
 
         # If extra scanning circle is enabled, circle
@@ -103,16 +100,16 @@ class DetectDeliverFind(Navigator):
                 boat_pose - self.dock_position
             )
             start_pt = self.dock_position + start_vect * self.CIRCLE_DISTANCE
-            yield self.move.set_position(start_pt).look_at(
+            await self.move.set_position(start_pt).look_at(
                 self.dock_position
             ).yaw_right(1.57).go()
-            yield self.move.circle_point(self.dock_position).go()
+            await self.move.circle_point(self.dock_position).go()
 
         # Find the dock
-        yield self.find_dock(override_scale)
+        await self.find_dock(override_scale)
 
         # Get the boat pose
-        boat_pose = yield self.tx_pose
+        boat_pose = await self.tx_pose()
         boat_pose = boat_pose[0]
 
         # Determine scan points
@@ -134,11 +131,11 @@ class DetectDeliverFind(Navigator):
         correct = False
         correct_scan_idx = -1
         for i in range(closest_scan, len(self.scans)) + range(0, closest_scan):
-            # yield self.move.set_position(self.scans[i][0]).look_at(self.scans[i][1]).go()
-            yield self.move.set_position(self.scans[i][0]).look_at(
+            # await self.move.set_position(self.scans[i][0]).look_at(self.scans[i][1]).go()
+            await self.move.set_position(self.scans[i][0]).look_at(
                 self.dock_position
             ).go()
-            correct = yield self.scan_image()
+            correct = await self.scan_image()
             if correct:
                 correct_scan_idx = i
                 break
@@ -168,14 +165,13 @@ class DetectDeliverFind(Navigator):
             lpt = pt + np.array([math.sin(angle), -math.cos(angle), 0])
 
         # Go to closer location
-        yield self.move.set_position(pt).look_at(lpt).go(blind=True)
+        await self.move.set_position(pt).look_at(lpt).go(blind=True)
 
         self.send_feedback("Done! In position to line up for shot.")
 
-    @util.cancellableInlineCallbacks
-    def find_dock(self, override_scale):
+    async def find_dock(self, override_scale):
         # Get Dock
-        self.dock = yield self.get_sorted_objects(name="dock", n=1)
+        self.dock = await self.get_sorted_objects(name="dock", n=1)
         self.dock = self.dock[0][0]
 
         # Get dock parameters
@@ -222,9 +218,8 @@ class DetectDeliverFind(Navigator):
             # 4 sides to dock
             angle -= math.pi / 2
 
-    @util.cancellableInlineCallbacks
-    def scan_image(self):
-        msgf = yield self.bboxsub.get_next_message()
+    async def scan_image(self):
+        msgf = await self.bboxsub.get_next_message()
         for msg in msgf.objects:
             if not (
                 ("circle" in msg.name)
@@ -235,8 +230,8 @@ class DetectDeliverFind(Navigator):
 
             if self.long_scan:
                 self.docking_scan = msg.name
-                defer.returnValue(True)
+                return True
             elif self.short_scan:
                 if self.docking_scan is msg.name:
-                    defer.returnValue(True)
-        defer.returnValue(False)
+                    return True
+        return False

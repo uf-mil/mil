@@ -6,7 +6,7 @@ import urllib2
 
 """
 Generate a random name from a wikipedia article.
-Before you freak out - I want to do this so I dont overwrite segemented images.
+Before you freak out - I want to do this so I dont overwrite segmented images.
 I want to arbitrarily add and remove images without having to scan the folder every time.
 Plus this is more entertaining.
 """

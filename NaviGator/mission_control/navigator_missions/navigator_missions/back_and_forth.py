@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 import numpy as np
-import txros
 
 from .navigator import Navigator
 
 
 class BackAndForth(Navigator):
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
-        self.change_wrench("autonomous")
+    async def run(self, parameters):
+        await self.change_wrench("autonomous")
         while True:
             home = self.move
             """
@@ -22,4 +20,4 @@ class BackAndForth(Navigator):
                     [30, 30, 3.14]
                 )
                 rand = home.forward(amts[0]).left(amts[1]).yaw_left(amts[2])
-                yield rand.go()
+                await rand.go()

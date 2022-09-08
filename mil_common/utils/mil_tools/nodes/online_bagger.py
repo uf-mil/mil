@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from __future__ import division
 
 import argparse
 import datetime
@@ -120,7 +119,7 @@ class OnlineBagger:
 
     def make_dicts(self):
         """
-        Make dictionary with sliceable deques() that will be filled with messages and time stamps.
+        Make dictionary with sliceable dequeues() that will be filled with messages and time stamps.
 
         Subscriber list contains all of the topics, their stream time and their subscription status:
         A True status for a given topic corresponds to a successful subscription
@@ -133,7 +132,7 @@ class OnlineBagger:
 
         Indicates that '/odom' has not been subscribed to, but '/absodom' has been subscribed to
 
-        self.topic_messages is a dictionary of deques containing a list of tuples.
+        self.topic_messages is a dictionary of dequeues containing a list of tuples.
         Dictionary Keys contain topic names
         Each value for each topic contains a deque
         Each deque contains a list of tuples

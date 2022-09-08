@@ -102,7 +102,7 @@ private:
   // Subscriber
   ros::Subscriber pc_sub;
 
-  // Model (It eventually will be obeject tracker, but for now just detections)
+  // Model (It eventually will be object tracker, but for now just detections)
   InputCloudFilter input_cloud_filter_;
   PersistentCloudFilter persistent_cloud_filter_;
   PointCloudCircularBuffer persistent_cloud_builder_;

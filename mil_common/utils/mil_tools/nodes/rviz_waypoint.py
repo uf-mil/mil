@@ -1,50 +1,57 @@
 #!/usr/bin/env python3
-from __future__ import division
+
+import asyncio
 
 import txros
+import uvloop
 from geometry_msgs.msg import PointStamped, PoseStamped
-from twisted.internet import defer
 
 
 class RvizRepublisher:
-    @txros.util.cancellableInlineCallbacks
-    def init(self):
-        self.nh = yield txros.NodeHandle.from_argv("rviz_republisher")
+    async def init(self):
+        self.nh = txros.NodeHandle.from_argv("rviz_republisher")
+        await self.nh.setup()
         self.point_republish = self.nh.advertise("/rviz_point", PointStamped)
         self.pose_republish = self.nh.advertise("/rviz_goal", PoseStamped)
 
         self.rviz_goal = self.nh.subscribe("/move_base_simple/goal", PoseStamped)
         self.clicked_point = self.nh.subscribe("/clicked_point", PointStamped)
 
-        self.delay = 0.1  # s
-        self.publish_point()
-        self.publish_pose()
+        await asyncio.gather(
+            self.point_republish.setup(),
+            self.pose_republish.setup(),
+            self.rviz_goal.setup(),
+            self.clicked_point.setup(),
+        )
 
-    @txros.util.cancellableInlineCallbacks
-    def publish_point(self):
-        yield self.clicked_point.get_next_message()
+        self.delay = 0.1  # s
+        await self.publish_point()
+        await self.publish_pose()
+
+    async def publish_point(self):
+        await self.clicked_point.get_next_message()
 
         while True:
-            yield self.nh.sleep(self.delay)
-            last_point = yield self.clicked_point.get_last_message()
+            await self.nh.sleep(self.delay)
+            last_point = self.clicked_point.get_last_message()
             self.point_republish.publish(last_point)
 
-    @txros.util.cancellableInlineCallbacks
-    def publish_pose(self):
-        yield self.rviz_goal.get_next_message()
+    async def publish_pose(self):
+        await self.rviz_goal.get_next_message()
 
         while True:
-            yield self.nh.sleep(self.delay)
-            last_pose = yield self.rviz_goal.get_last_message()
+            await self.nh.sleep(self.delay)
+            last_pose = self.rviz_goal.get_last_message()
             self.pose_republish.publish(last_pose)
 
 
-@txros.util.cancellableInlineCallbacks
-def main():
+async def main():
     rr = RvizRepublisher()
-    yield rr.init()
+    await rr.init()
+    await asyncio.Future()
+    await rr.nh.shutdown()
 
-    yield defer.Deferred()
 
-
-txros.util.launch_main(main)
+if __name__ == "__main__":
+    uvloop.install()
+    asyncio.run(main())
