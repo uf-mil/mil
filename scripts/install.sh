@@ -306,7 +306,7 @@ $(hash_header)$(color "$Res")
 EOF
 
 if grep  'set -g default-terminal "screen-256color"' ~/tmux.conf; then
-        echo "Tmux already has 256 color support, skip this stepseti"
+        echo "Tmux already has 256 color support, skip this step"
 else
         echo "set -g default-terminal \"screen-256color\"" >> ~/.tmux.conf
 fi
