@@ -45,8 +45,8 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         self._unkill_service = rospy.Service(
             "/set_mobo_kill", SetBool, self.set_mobo_kill
         )
-        # Sends hearbeat to board
-        self._hearbeat_timer = rospy.Timer(rospy.Duration(0.4), self.send_heartbeat)
+        # Sends heartbeat to board
+        self._heartbeat_timer = rospy.Timer(rospy.Duration(0.4), self.send_heartbeat)
         # Create a subscribe for thruster commands
         self._sub = rospy.Subscriber(
             "/thrusters/thrust", Thrust, self.on_command, queue_size=10
@@ -133,7 +133,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             if status.mobo_soft_kill:
                 reasons.append("mobo")
             if status.heartbeat_lost:
-                reasons.append("hearbeat")
+                reasons.append("heartbeat")
             message = "Soft kill from: " + ",".join(reasons)
         raised = severity != 0
 

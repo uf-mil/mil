@@ -339,7 +339,7 @@ class Colorama:
 
     def _get_quaternion_error(self, q, target_q):
         """
-        Returns an angluar difference between q and target_q in radians
+        Returns an angular difference between q and target_q in radians
         """
         dq = trns.quaternion_multiply(
             np.array(target_q), trns.quaternion_inverse(np.array(q))

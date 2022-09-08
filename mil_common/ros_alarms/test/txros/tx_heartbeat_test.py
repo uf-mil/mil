@@ -21,7 +21,7 @@ async def do_publishing(nh):
 
 async def main():
     global publish
-    nh = await txros.NodeHandle.from_argv("tx_hearbeat_test")
+    nh = await txros.NodeHandle.from_argv("tx_heartbeat_test")
 
     alarm_name = "test_alarm123"
     hbm = await TxHeartbeatMonitor.init(
@@ -43,7 +43,7 @@ async def main():
     assert await al.is_raised()
     await nh.sleep(0.5)
 
-    print("Hearbeat clear test")
+    print("Heartbeat clear test")
     publish = True
     await nh.sleep(1)
     assert await al.is_cleared()

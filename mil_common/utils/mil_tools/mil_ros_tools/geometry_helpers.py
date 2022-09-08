@@ -15,7 +15,7 @@ def rotate_vect_by_quat(v: List[float], q: List[float]) -> np.ndarray:
 
     Args:
         v (List[float]): The vector to perform the multiplication on.
-        q (List[float]): The quaternion to mulitply the vector by.
+        q (List[float]): The quaternion to multiply the vector by.
 
     Returns:
         np.ndarray: The numpy array representing the new calculated quaternion.
