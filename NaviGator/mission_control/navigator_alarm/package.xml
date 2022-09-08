@@ -2,7 +2,7 @@
 <package format="2">
   <name>navigator_alarm</name>
   <version>1.0.0</version>
-  <description>Scripts to intergrate ROS Alarms into Navigators kill and diagnostics systems</description>
+  <description>Scripts to integrate ROS Alarms into Navigators kill and diagnostics systems</description>
   <maintainer email="kma1660@gmail.com">Kevin Allen</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
