@@ -118,6 +118,7 @@ class Classifier:
         self.pcodar_reset = rospy.ServiceProxy("/pcodar/reset", Trigger)
         self.pcodar_reset()
 
+    # GH-880
     # @thread_lock(lock)
     def set_enable_srv(self, req):
         self.enabled = req.data
@@ -139,6 +140,7 @@ class Classifier:
             and pixel[1] < self.camera_info.height
         )
 
+    # GH-880
     # @thread_lock(lock)
     def process_objects(self, msg):
         self.last_objects = msg
