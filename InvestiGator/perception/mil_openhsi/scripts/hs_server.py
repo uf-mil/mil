@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 import os
+import numpy as np
+from datetime import datetime
+from Py6S import *
+from scipy.interpolate import interp1d
 import rospy
 from mil_openhsi.srv import specSig
 from openhsi_deps.cameras import *
@@ -41,11 +45,23 @@ class OpenHSIServer:
 		print("4")
 		dc2process.save("dn2rad")
 		print('4')
-		print(dc2process.dc)
-		
+		print(dc2process.dc.size)
 		radiances = []
-		 
-		return ([1,1,1,1,1],)
+		for i in range(dc2process.dc.size[2]):
+			radiances.append(dc2process.dc[220][500][i])
+		print(radiances)
+		
+		print(dc2process.settings)
+		model = Model6SV(lat = dc2process.settings["latitude"], lon = dc2process.settings["longitude"],
+		z_time = datetime.strptime(dc2process.settings["datetime_str"], "%Y-%m-%d %H:%M"),
+		station_num = dc2process.settings["radiosonde_station_num"],region = dc2process.settings["radiosonde_region"],
+		alt = dc2process.settings["altitude"], zen = 0, azi = 0,
+		aero_profile = AeroProfile.Maritime,
+		wavelength_array = np.linspace(350,900,num=2000),
+		sixs_path = dc2process.settings["sixs_path"])
+		dc2process.calibration["rad_fit"] = interp1d(np.linspace(350,900,num=2000),  model.radiance/10, kind='cubic')
+		print(size(dc2process.dc))
+		return (radiances,)
 
         # Request is nothing (above line), Repsonse is below line (what we fill out)
         #---
