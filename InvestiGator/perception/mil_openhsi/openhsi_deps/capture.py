@@ -252,8 +252,10 @@ class ProcessRawDatacube(OpenHSI):
 class ProcessDatacube(ProcessRawDatacube):
     """Post-process datacubes"""
     def __init__(self, fname:str, processing_lvl:int, json_path:str, pkl_path:str, old_style:bool=False, **kwargs):
+        print(fname, processing_lvl, json_path, pkl_path)
         """Post-process datacubes further!"""
-        super().__init__(**kwargs)
+        print(**kwargs)
+        super().__init__(fname, processing_lvl, json_path, pkl_path)
 
     def load_next_tfms(self, next_tfms:List[Callable[[np.ndarray],np.ndarray]] = []):
         """provide the transforms you want to apply to this dataset"""

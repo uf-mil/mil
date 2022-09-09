@@ -1,0 +1,14 @@
+from openhsi.cameras import *
+
+json_path = "deps//home/nico/catkin_ws/src/mil/InvestiGator/perception/openhsi/scripts/deps/OpenHSI-18_calibration_Mono12_bin2.pkl"
+pkl_path  = "path_to_calibration_file.pkl"
+
+with LucidCamera(n_lines        = 1_000, 
+                 processing_lvl = 2, 
+                 pkl_path       = pkl_path,
+                 json_path      = json_path,
+                 exposure_ms    = 10
+                ) as cam:
+    cam.collect()
+    cam.save("hs_scan")
+    fig = cam.show(plot_lib="matplotlib", robust=True)

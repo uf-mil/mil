@@ -282,7 +282,7 @@ def slow_bin(self:CameraProperties, x:np.ndarray) -> np.ndarray:
 @patch
 def dn2rad(self:CameraProperties, x:"Array['λ,x',np.int32]") -> "Array['λ,x',np.float32]":
     """Converts digital numbers to radiance (uW/cm^2/sr/nm). Use after cropping to useable area."""
-
+    #print((self.settings["luminance"] * (x-self.dark_current)/self.ref_luminance*self.spec_rad_ref/self.calibration['spec_rad_ref_luminance']).shape)
     return np.float32( (x - self.dark_current) * self.settings["luminance"]/self.ref_luminance  *  self.spec_rad_ref/self.calibration['spec_rad_ref_luminance'] )
 
 @patch
@@ -482,7 +482,8 @@ def save(self:DataCube,
     elif self.proc_lvl in (6,8): self.nc.datacube.attrs["units"] = "percentage reflectance"
     self.nc.datacube.attrs["description"] = "hyperspectral datacube"
 
-    self.nc.to_netcdf(f"{self.directory}/{prefix}{self.timestamps[0].strftime('%Y_%m_%d-%H_%M_%S')}{suffix}.nc")
+    #self.nc.to_netcdf(f"{self.directory}/{prefix}{self.timestamps[0].strftime('%Y_%m_%d-%H_%M_%S')}{suffix}.nc")
+    self.nc.to_netcdf(f"{self.directory}/scan2.nc")
 
     fig = self.show("matplotlib",hist_eq=True,quick_imshow=True)
     fig.savefig(f"{self.directory}/{prefix}{self.timestamps[0].strftime('%Y_%m_%d-%H_%M_%S')}{suffix}.png",
