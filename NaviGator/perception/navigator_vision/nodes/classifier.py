@@ -118,7 +118,8 @@ class Classifier:
         self.pcodar_reset = rospy.ServiceProxy("/pcodar/reset", Trigger)
         self.pcodar_reset()
 
-    @thread_lock(lock)
+    # GH-880
+    # @thread_lock(lock)
     def set_enable_srv(self, req):
         self.enabled = req.data
         return {"success": True}
@@ -139,7 +140,8 @@ class Classifier:
             and pixel[1] < self.camera_info.height
         )
 
-    @thread_lock(lock)
+    # GH-880
+    # @thread_lock(lock)
     def process_objects(self, msg):
         self.last_objects = msg
 
@@ -159,7 +161,6 @@ class Classifier:
         y_diff = second[1] - first[1]
         return math.sqrt(x_diff * x_diff + y_diff * y_diff)
 
-    @thread_lock(lock)
     def process_boxes(self, msg):
         if not self.enabled:
             return
@@ -211,6 +212,7 @@ class Classifier:
         classified = set()
 
         # for each bounding box,check which buoy is closest to boat within pixel range of bounding box
+
         for a in msg.detections:
             buoys = []
 

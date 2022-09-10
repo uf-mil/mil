@@ -73,7 +73,7 @@ def go():
                     Odometry(
                         header=Header(
                             stamp=t,
-                            frame_id="/ecef",
+                            frame_id="ecef",
                         ),
                         child_frame_id=child_frame_id,
                         pose=PoseWithCovariance(
@@ -120,7 +120,7 @@ def go():
                     Odometry(
                         header=Header(
                             stamp=t,
-                            frame_id="/enu",
+                            frame_id="enu",
                         ),
                         child_frame_id=child_frame_id,
                         pose=PoseWithCovariance(
