@@ -1,7 +1,6 @@
 # Missions
-alias runmission="rosrun mil_missions mission_client run"
-alias cancelmission="rosrun mil_missions mission_client cancel"
-alias listmissions="rosrun mil_missions mission_client list"
+alias mission="rosrun mil_missions mission_client"
+
 _mission_complete() {
 	local MISSION
 

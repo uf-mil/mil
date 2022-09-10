@@ -138,6 +138,17 @@ class Navigator(BaseMission):
             await cls._init_not_vrx()
 
     @classmethod
+    async def _shutdown(cls):
+        await asyncio.gather(
+            cls._moveto_client.shutdown(),
+            cls.rviz_goal.shutdown(),
+            cls.rviz_point.shutdown(),
+            cls._odom_sub.shutdown(),
+        )
+        if not cls.is_vrx:
+            await cls._shutdown_not_vrx()
+
+    @classmethod
     def _init_vrx(cls):
         cls.killed = False
         cls.odom_loss = False
@@ -246,6 +257,17 @@ class Navigator(BaseMission):
             await asyncio.gather(odom, enu_odom)  # Wait for all those to finish
 
         cls.docking_scan = "NA"
+
+    @classmethod
+    async def _shutdown_not_vrx(cls):
+        await asyncio.gather(
+            cls._ecef_odom_sub.shutdown(),
+            cls._grinch_limit_switch_sub.shutdown(),
+            cls._winch_motor_pub.shutdown(),
+            cls._grind_motor_pub.shutdown(),
+            cls.tf_listener.shutdown(),
+            cls.kill_listener.shutdown(),
+        )
 
     @classmethod
     async def reset_pcodar(cls):
