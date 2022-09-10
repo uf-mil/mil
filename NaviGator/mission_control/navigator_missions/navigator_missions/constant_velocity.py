@@ -27,6 +27,10 @@ class ConstantVelocity(Navigator):
         await cls.ref_pub.setup()
 
     @classmethod
+    async def shutdown(cls):
+        await cls.ref_pub.shutdown()
+
+    @classmethod
     async def cleanup(cls):
         """
         When command is canceled, publish zero velocity for a while

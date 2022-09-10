@@ -49,6 +49,10 @@ class PingerMission(Navigator):
         cls.marker_pub = cls.nh.advertise("/pinger/debug_marker", MarkerArray)
         await cls.marker_pub.setup()
 
+    @classmethod
+    async def shutdown(cls):
+        await cls.marker_pub.shutdown()
+
     def reset_freq(self):
         return self.reset_client(SetFrequencyRequest(frequency=self.FREQ))
 
