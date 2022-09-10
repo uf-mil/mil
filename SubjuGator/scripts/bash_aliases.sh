@@ -33,7 +33,7 @@ subvalveopenclose()
 }
 
 # Missions
-alias submove="runmission Move"
+alias submove="mission run Move"
 
 # Cameras
 alias subfps="rostopic hz $bag_front_cams $bag_down_cam"

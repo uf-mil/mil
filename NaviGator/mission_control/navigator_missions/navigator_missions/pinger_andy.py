@@ -18,6 +18,10 @@ class PingerAndy(Navigator):
         )
         await cls.pinger_heading.setup()
 
+    @classmethod
+    async def shutdown(cls):
+        await cls.pinger_heading.shutdown()
+
     @staticmethod
     def line(p1, p2):
         """

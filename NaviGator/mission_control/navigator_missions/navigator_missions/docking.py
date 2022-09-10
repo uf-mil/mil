@@ -31,6 +31,10 @@ class Docking(Navigator):
             "/camera_to_lidar/front_right_cam", CameraToLidarTransform
         )
 
+    @classmethod
+    async def shutdown(cls):
+        await cls.bboxsub.shutdown()
+
     async def run(self, args):
         # Parse Arguments
         wait_time = args.time
