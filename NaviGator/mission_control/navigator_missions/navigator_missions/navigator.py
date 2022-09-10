@@ -232,7 +232,7 @@ class Navigator(BaseMission):
             # We want to make sure odom is working before we continue
             fprint("Action client do you await?", title="NAVIGATOR")
             await util.wrap_time_notice(
-                cls._moveto_client.wait_for_server(), 2, "Lqrrt action server"
+                    cls._moveto_client.wait_for_server(), 2, "Lqrrt action server"
             )
             fprint("Yes he await!", title="NAVIGATOR")
 
