@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find navigator_launch)/launch/hardware/cameras.launch" />
+  <group ns="calibration">
+    <node pkg="mil_vision" type="camera_calibration.py" name="camera_calibration" output="screen" />
+  </group>
+</launch>
