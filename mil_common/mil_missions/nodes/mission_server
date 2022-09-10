@@ -71,6 +71,7 @@ class MissionRunner:
     async def refresh_missions_cb(self, _: TriggerRequest) -> TriggerResponse:
         try:
             await self.load_missions()
+            await self.load_missions()
             return TriggerResponse(True, "The missions were refreshed!")
         except Exception as e:
             traceback.print_exc()
