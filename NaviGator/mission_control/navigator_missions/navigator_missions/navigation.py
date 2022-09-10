@@ -374,8 +374,9 @@ class Navigation(Navigator):
         self.objects_passed = set()
         await self.change_wrench("autonomous")
         # Wait a bit for PCDAR to get setup
-        await self.nh.sleep(3.0)
+        await self.set_classifier_enabled.wait_for_service()
         await self.set_classifier_enabled(SetBoolRequest(data=True))
+        await self.nh.sleep(3.0)
         await self.prepare_to_enter()
         await self.move.forward(7.0).go()
         while not (await self.do_next_gate()):

@@ -23,7 +23,8 @@ class EntranceGate2(Navigator):
         return_to_start = True
         circle_radius = 5
         circle_direction = "cw"
-        self.traversal_distance = 2
+        yaw_offset = 1.57
+        self.traversal_distance = 3
 
         await self.set_classifier_enabled.wait_for_service()
         await self.set_classifier_enabled(SetBoolRequest(data=True))
@@ -37,15 +38,18 @@ class EntranceGate2(Navigator):
         self.initial_boat_pose = self.initial_boat_pose[0]
 
         # Find the gates
+        print("finding gates")
         self.gate_results = await self.find_gates()
         self.gate_centers = self.gate_results[0]
         self.gates_line = self.gate_results[1]
         self.gate_totems = self.gate_results[2]
+        print("defined gates")
 
         # Which gate do we go through?
-        self.pinger_gate = 2
+        self.pinger_gate = 0
 
         # Calculate traversal points
+        print("get perp points")
         traversal_points = await self.get_perpendicular_points(
             self.gate_centers[self.pinger_gate], self.traversal_distance
         )
@@ -70,15 +74,15 @@ class EntranceGate2(Navigator):
             if self.pinger_gate > 0:
                 vect = -vect
                 circle_direction = "ccw"
+                yaw_offset = -1.57
             start = buoy + vect
-            await self.move.set_position(start).look_at(buoy).go()
+            await self.move.set_position(start).go()
 
             # Rotate around buoy
-            points = self.move.d_spiral_point(
-                buoy, circle_radius, 8, 0.75, circle_direction
+            print("beginning spiral movement")
+            points = await self.move.d_spiral_point(
+                buoy, circle_radius, 4, 0.75, circle_direction, yaw_offset
             )
-            for p in points:
-                await p.go()
 
             # Go back through start gate
             self.send_feedback("Navigating through gate")
@@ -86,6 +90,10 @@ class EntranceGate2(Navigator):
                 traversal_points[0]
             ).go()
             await self.move.set_position(traversal_points[0]).go()
+
+            # Then move a little passed the exit
+            await self.move.forward(5).go()
+            print("GO NAVIGATOR")
 
         self.send_feedback("Done with start gate!")
 

@@ -465,7 +465,7 @@ class Navigator(BaseMission):
         positions = np.empty((len(objects), 3))
         for i, obj in enumerate(objects):
             positions[i, :] = mil_tools.rosmsg_to_numpy(obj.pose.position)
-        nav_pose = (self.tx_pose)[0]
+        nav_pose = (await self.tx_pose())[0]
         distances = np.linalg.norm(positions - nav_pose, axis=1)
         distances_argsort = np.argsort(distances)
         if n != -1:

@@ -284,16 +284,15 @@ class PoseEditor2:
         next_point = np.append(
             normalize(self.position[:2] - point[:2]), 0
         )  # Doing this in 2d
-        print(next_point)
         radius_increment = meters_per_rev / granularity
         for i in range(int(granularity * revolutions + 1)):
             new = point + radius * next_point
             radius += radius_increment
 
-            await self.set_position(new).look_at(point).yaw_left(theta_offset)
+            await self.set_position(new).look_at(point).yaw_left(theta_offset).go()
             next_point = sprinkles.dot(next_point)
 
-        await self.set_position(new).look_at(point).yaw_left(theta_offset)
+        await self.set_position(new).look_at(point).yaw_left(theta_offset).go()
 
     def d_circle_point(self, *args, **kwargs):
         """

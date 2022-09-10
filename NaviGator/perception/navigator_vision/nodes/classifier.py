@@ -86,7 +86,7 @@ class Classifier:
             "/pcodar/objects", PerceptionObjectArray, self.process_objects, queue_size=2
         )
         self.boxes_sub = rospy.Subscriber(
-            "/yolov7/detections", Detection2DArray, self.process_boxes
+            "/yolov7/detections_model1", Detection2DArray, self.process_boxes
         )
         self.enabled_srv = rospy.Service("~set_enabled", SetBool, self.set_enable_srv)
         self.last_image = None
