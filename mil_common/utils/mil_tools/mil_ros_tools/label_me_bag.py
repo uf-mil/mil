@@ -17,7 +17,6 @@ back into a bag.
 
 """
 
-from __future__ import division
 
 import argparse
 import os

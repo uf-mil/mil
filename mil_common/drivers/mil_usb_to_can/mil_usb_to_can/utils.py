@@ -97,7 +97,7 @@ class Packet:
 
     def to_bytes(self) -> bytes:
         """
-        Returns the binary represnetation of this packet to be sent across the CAN network.
+        Returns the binary representation of this packet to be sent across the CAN network.
         Uses :meth:`struct.Struct.pack` to pack the payload between the :attr:`.SOF` and
         :attr:`.EOF`.
 

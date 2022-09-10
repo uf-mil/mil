@@ -21,20 +21,20 @@ repos:
     hooks:
       - id: yamllint
   - repo: https://github.com/psf/black
-    rev: 22.3.0
+    rev: 22.8.0
     hooks:
       - id: black
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: 732c271
+    rev: v14.0.6
     hooks:
       - id: clang-format
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.37.1
+    rev: v2.37.3
     hooks:
       - id: pyupgrade
         args: [--py38-plus]
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.1.0
+    rev: v2.2.1
     hooks:
       - id: codespell
         args:
@@ -55,14 +55,14 @@ repos:
         #                  mil_common/gnc/odometry_utils/nodelet.xml
         #                )$
   - repo: https://github.com/tier4/pre-commit-hooks-ros
-    rev: v0.7.0
+    rev: v0.7.1
     hooks:
       - id: prettier-xacro
       - id: prettier-launch-xml
       - id: prettier-package-xml
       - id: sort-package-xml
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.4.0
+    rev: v4.3.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict

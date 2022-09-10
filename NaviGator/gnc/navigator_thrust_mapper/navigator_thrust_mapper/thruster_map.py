@@ -111,7 +111,7 @@ class ThrusterMap:
         self.thruster_matrix = np.hstack(thruster_matrix)
         self.thruster_matrix_inv = np.linalg.pinv(
             self.thruster_matrix
-        )  # Magical numpy psuedoinverse
+        )  # Magical numpy pseudoinverse
 
     @classmethod
     def from_vrx_urdf(cls, urdf_string: str):

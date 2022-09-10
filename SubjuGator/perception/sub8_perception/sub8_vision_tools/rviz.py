@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import division
 
 import mil_ros_tools
 import numpy as np

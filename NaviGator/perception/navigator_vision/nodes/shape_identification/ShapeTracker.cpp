@@ -31,7 +31,8 @@ void ShapeTracker::addShapes(navigator_msgs::DockShapes& newShapes)
     addShape(shape);
   }
   shapes.erase(std::remove_if(shapes.begin(), shapes.end(),
-                              [](TrackedShape& s) {
+                              [](TrackedShape& s)
+                              {
                                 //  if (s.isStale()) printf("Shape is stale, removing\n");
                                 return s.isStale();
                               }),

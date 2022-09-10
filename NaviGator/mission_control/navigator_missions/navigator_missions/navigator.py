@@ -394,7 +394,7 @@ class Navigator(BaseMission):
         # Stop pulling thruster up and unlock
         await self.set_valve(retract, False)
         await self.set_valve(unlock, True)
-        # Beging extending piston to push thruster down
+        # Begging extending piston to push thruster down
         await self.set_valve(extend, True)
         await self.nh.sleep(self._actuator_timing["deploy_wait_time"])
         # Lock and stop extending after waiting a time for lock to engage

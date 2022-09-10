@@ -144,7 +144,8 @@ std::vector<cv::Point> Sub8StartGateDetector::get_corner_center_points(const std
 
   // Order pairs of points based of shortest distance. store that in id_comb
   std::sort(id_comb.begin(), id_comb.end(),
-            [&features](const std::vector<uint8_t> &a, const std::vector<uint8_t> &b) -> bool {
+            [&features](const std::vector<uint8_t> &a, const std::vector<uint8_t> &b) -> bool
+            {
               auto diffx = features[a[0]].x - features[a[1]].x;
               auto diffy = features[a[0]].y - features[a[1]].y;
               auto distanceA = std::sqrt(std::pow(diffx, 2) + std::pow(diffy, 2));
