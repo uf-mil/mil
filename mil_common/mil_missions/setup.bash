@@ -15,4 +15,4 @@ _mission_complete() {
 
 
 # Registers the autocompletion function to be invoked for ros_connect
-complete -F _mission_complete runmission
+complete -F _mission_complete mission run
