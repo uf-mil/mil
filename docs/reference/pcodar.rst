@@ -1,4 +1,4 @@
-``point_cloud_object_detection_and_recognition`` - Point Cloud Object Detection
+``pcodar`` - Point Cloud Object Detection
 ===============================================================================
 
 The PCODAR system is responsible for coordinating LIDAR data into a database of
