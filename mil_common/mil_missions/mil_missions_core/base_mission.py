@@ -80,6 +80,14 @@ class BaseMission:
         cls.mission_runner = mission_runner
         cls.nh = cls.mission_runner.nh
 
+    @classmethod
+    async def shutdown(cls) -> None:
+        pass
+
+    @classmethod
+    async def _shutdown(cls) -> None:
+        pass
+
     def send_feedback(self, message: str) -> None:
         """
         Send a string as feedback to any clients monitoring this mission. If the

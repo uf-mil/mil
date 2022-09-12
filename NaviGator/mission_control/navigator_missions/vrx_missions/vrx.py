@@ -105,6 +105,22 @@ class Vrx(Navigator):
 
         Vrx._vrx_init = True
 
+    @staticmethod
+    async def shutdown():
+        await asyncio.gather(
+            Vrx.task_info_sub.shutdown(),
+            Vrx.animal_landmarks.shutdown(),
+            Vrx.yolo_objects.shutdown(),
+            Vrx.fire_ball.shutdown(),
+            Vrx.station_keep_goal.shutdown(),
+            Vrx.wayfinding_path_sub.shutdown(),
+            Vrx.station_keeping_pose_error.shutdown(),
+            Vrx.station_keeping_rms_error.shutdown(),
+            Vrx.wayfinding_min_errors.shutdown(),
+            Vrx.wayfinding_mean_error.shutdown(),
+            Vrx.perception_landmark.shutdown(),
+        )
+
     def cleanup(self):
         pass
 

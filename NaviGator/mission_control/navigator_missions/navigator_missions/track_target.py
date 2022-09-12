@@ -31,6 +31,11 @@ class TrackTarget(Navigator):
         cls.target_pose_sub = cls.nh.subscribe(
             "/detect_deliver_target_detector/pose", PoseStamped
         )
+        await cls.target_pose_sub.setup()
+
+    @classmethod
+    async def shutdown(cls):
+        await cls.target_pose_sub.shutdown()
 
     async def run(self, parameters):
         goal = None

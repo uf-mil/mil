@@ -16,6 +16,10 @@ class ScanTheCodeJaxon(Navigator):
         cls.stcpub = cls.nh.advertise("/scan_the_code", ScanTheCode)
         await asyncio.gather(cls.stcsub.setup(), cls.stcpub.setup())
 
+    @classmethod
+    async def shutdown(cls):
+        await asyncio.gather(cls.stcpub.shutdown(), cls.stcsub.shutdown())
+
     async def run(self, args):
         # Parse Arguments
 
@@ -30,7 +34,7 @@ class ScanTheCodeJaxon(Navigator):
 
         # Get scan the code stuff
         try:
-            result = await util.wrap_timeout(
+            result = await util.wrap_time_notice(
                 self.stcsub.get_next_message(), self.TIMEOUT_SECONDS, "test"
             )
             stc_result = result.color_pattern
