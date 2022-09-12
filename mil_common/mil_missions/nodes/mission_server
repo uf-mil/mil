@@ -64,9 +64,12 @@ class MissionRunner:
         self.server.start()
 
     async def shutdown(self) -> None:
-        await self.refresh_service.shutdown()
-        await self.server.shutdown()
-        await self.nh.shutdown()
+        # If the node was shutdown by another program, then there is no reason to
+        # shut it down again.
+        if self.nh._is_running:
+            await self.refresh_service.shutdown()
+            await self.server.shutdown()
+            await self.nh.shutdown()
 
     async def refresh_missions_cb(self, _: TriggerRequest) -> TriggerResponse:
         try:

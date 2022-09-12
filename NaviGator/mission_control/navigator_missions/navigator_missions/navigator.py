@@ -35,7 +35,7 @@ from std_srvs.srv import (
     TriggerRequest,
 )
 from topic_tools.srv import MuxSelect, MuxSelectRequest
-from txros import NodeHandle, ROSMasterException, ServiceClient, action, txros_tf, util
+from txros import NodeHandle, ROSMasterError, ServiceClient, action, txros_tf, util
 
 from .pose_editor import PoseEditor2
 
@@ -101,7 +101,7 @@ class Navigator(BaseMission):
 
         try:
             cls.is_vrx = await cls.nh.get_param("/is_vrx")
-        except ROSMasterException:
+        except ROSMasterError:
             cls.is_vrx = False
 
         cls._moveto_client = action.ActionClient(cls.nh, "move_to", MoveAction)
