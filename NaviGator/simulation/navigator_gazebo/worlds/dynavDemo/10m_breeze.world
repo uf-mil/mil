@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
   <!-- COORDINATE: {'constant': 0, 'environment': 0} -->
-  <world name="dynav_demo_10">
+  <world name="dynav_demo_10m_breeze">
     <!-- Estimated latitude/longitude of sydneyregatta
 	 from satellite imagery -->
     <spherical_coordinates>
@@ -176,6 +176,25 @@
     </model>
     <!--Gazebo Plugin for simulating WAM-V dynamics-->
     <plugin filename="libusv_gazebo_wind_plugin.so" name="wind">
+      <!-- models to be effected by the wind -->
+      <wind_obj>
+        <name>wamv</name>
+        <link_name>wamv/base_link</link_name>
+        <coeff_vector>.5 .5 .33</coeff_vector>
+      </wind_obj>
+      <!-- Wind -->
+      <wind_direction>190</wind_direction>
+      <!-- in degrees -->
+      <wind_mean_velocity>6</wind_mean_velocity>
+      <var_wind_gain_constants>1</var_wind_gain_constants>
+      <var_wind_time_constants>2</var_wind_time_constants>
+      <random_seed>10</random_seed>
+      <!-- set to zero/empty to randomize -->
+      <update_rate>10</update_rate>
+      <topic_wind_speed>/vrx/debug/wind/speed</topic_wind_speed>
+      <topic_wind_direction>/vrx/debug/wind/direction</topic_wind_direction>
+    </plugin>
+     <plugin filename="libusv_gazebo_wind_plugin.so" name="wind">
       <!-- models to be effected by the wind -->
       <wind_obj>
         <name>wamv</name>
