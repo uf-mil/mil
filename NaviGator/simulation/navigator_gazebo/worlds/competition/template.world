@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
   <!-- COORDINATE: {'constant': 0, 'environment': 0} -->
-  <world name="robotx_example_course">
+  <world name="template">
     <!-- Estimated latitude/longitude of sydneyregatta
 	 from satellite imagery -->
     <spherical_coordinates>
