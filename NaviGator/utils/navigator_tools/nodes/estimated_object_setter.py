@@ -29,7 +29,7 @@ async def main(name, lla):
 
 if __name__ == "__main__":
     usage_msg = "Used to set the estimated position of objects in the database with lla positions."
-    desc_msg = 'Pass the name of the database object and the lla position and this will set it\'s esimated position in the database. \n\
+    desc_msg = 'Pass the name of the database object and the lla position and this will set it\'s estimated position in the database. \n\
     ex. rosrun navigator_tools estimated_object_setter.py scan_the_code "[85.3, -25.6]" \n\
     ex. rosrun navigator_tools estimated_object_setter.py Shooter "[82.32, -26.87, 2]"'
 

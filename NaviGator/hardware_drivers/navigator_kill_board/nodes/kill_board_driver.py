@@ -21,7 +21,7 @@ lock = threading.Lock()
 class KillInterface:
     """
     Driver to interface with NaviGator's kill handling board, which disconnects power to actuators
-    if any of 4 emergency buttons is pressed, a software kill command is sent, or the network hearbeat
+    if any of 4 emergency buttons is pressed, a software kill command is sent, or the network heartbeat
     stops. This driver enables the software kill option via ros_alarms and outputs diagnostics
     data about the board to ROS. The driver can handle the board's asynchronous updates of kill statuses
     and will also periodicly request updates in case the async is not working (it often doesn't).
@@ -277,7 +277,7 @@ class KillInterface:
 
     def network_kill_alarm_cb(self, alarm):
         """
-        Pings kill board on every network hearbeat message. Pretends to be the rf-based hearbeat because
+        Pings kill board on every network heartbeat message. Pretends to be the rf-based heartbeat because
         real one does not work :(
         """
         if alarm.raised:

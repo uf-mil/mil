@@ -108,6 +108,9 @@ class TxAlarmListener:
     async def setup(self):
         await self.update_sub.setup()
 
+    async def shutdown(self):
+        await self.update_sub.shutdown()
+
     async def is_raised(self):
         """Returns whether this alarm is raised or not"""
         resp = await self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
@@ -244,7 +247,7 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
         if sample_prd == -1:
             sample_prd = self._prd.to_sec() / 2
 
-        # Wait for that first messgae
+        # Wait for that first message
         await self.sub.get_next_message()
 
         while True:

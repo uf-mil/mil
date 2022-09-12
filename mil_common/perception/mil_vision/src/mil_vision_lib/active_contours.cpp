@@ -96,9 +96,10 @@ vector<uint8_t> getHoodIdxs(uint8_t idx, bool include_border)
     hood = vector<uint8_t>(
         hood.begin(), remove_if(hood.begin(), hood.end(), [](uint8_t x) { return x < 0 || x >= 39 || x % 8 > 4; }));
   else
-    hood = vector<uint8_t>(hood.begin(), remove_if(hood.begin(), hood.end(), [](uint8_t x) {
-                             return x < 0 || x >= 39 || x / 8 == 0 || x / 8 == 4 || x % 8 == 0 || x % 8 > 3;
-                           }));
+    hood = vector<uint8_t>(
+        hood.begin(),
+        remove_if(hood.begin(), hood.end(),
+                  [](uint8_t x) { return x < 0 || x >= 39 || x / 8 == 0 || x / 8 == 4 || x % 8 == 0 || x % 8 > 3; }));
 
   return hood;
 }
@@ -120,10 +121,10 @@ void growRoute(const vector<uint8_t>& partial, const vector<uint8_t>& occupied, 
   auto candidates = getHoodIdxs(tail, false);
 
   // remove candidates that were neighbors of prev tail
-  candidates =
-      vector<uint8_t>(candidates.begin(), remove_if(candidates.begin(), candidates.end(), [&occupied](uint8_t x) {
-                        return find(occupied.begin(), occupied.end(), x) != occupied.end();
-                      }));
+  candidates = vector<uint8_t>(candidates.begin(),
+                               remove_if(candidates.begin(), candidates.end(),
+                                         [&occupied](uint8_t x)
+                                         { return find(occupied.begin(), occupied.end(), x) != occupied.end(); }));
 
   auto next_occupied = occupied;  // neighbors of current tailed should be blacklisted for next route growth
   for (auto cand : candidates)
@@ -225,9 +226,9 @@ bool ClosedCurve::validateCurve(std::vector<cv::Point2i>& curve)
     {
       if (count > 1)
       {
-        auto conflict_pt = find_if(forbidden_neighbors.begin(), forbidden_neighbors.end(), [pt](Point2i test_pt) {
-          return mil_vision::Perturbations::isNeighborPoint(pt, test_pt);
-        });
+        auto conflict_pt =
+            find_if(forbidden_neighbors.begin(), forbidden_neighbors.end(),
+                    [pt](Point2i test_pt) { return mil_vision::Perturbations::isNeighborPoint(pt, test_pt); });
         cout << "failure pts: " << curve[1] << "\t"
              << (conflict_pt != forbidden_neighbors.end() ? Point2i(0, 0) : *conflict_pt) << endl;
         return false;
@@ -237,9 +238,9 @@ bool ClosedCurve::validateCurve(std::vector<cv::Point2i>& curve)
     {
       if (count > 0)
       {
-        auto conflict_pt = find_if(forbidden_neighbors.begin(), forbidden_neighbors.end(), [pt](Point2i test_pt) {
-          return mil_vision::Perturbations::isNeighborPoint(pt, test_pt);
-        });
+        auto conflict_pt =
+            find_if(forbidden_neighbors.begin(), forbidden_neighbors.end(),
+                    [pt](Point2i test_pt) { return mil_vision::Perturbations::isNeighborPoint(pt, test_pt); });
         cout << "failure pts: " << curve[1] << "\t"
              << (conflict_pt != forbidden_neighbors.end() ? Point2i(0, 0) : *conflict_pt) << endl;
         return false;

@@ -53,9 +53,13 @@ class DetectDeliver(Navigator):
         cls.shooterFire = txros.action.ActionClient(
             cls.nh, "/shooter/fire", ShooterDoAction
         )
-        cls.shooter_baselink_tf = yield cls.tf_listener.get_transform(
+        cls.shooter_baselink_tf = await cls.tf_listener.get_transform(
             "/base_link", "/shooter"
         )
+
+    @classmethod
+    async def shutdown(cls):
+        await cls.shooter_pose_sub.shutdown()
 
     def _bounding_rect(self, points):
         np_points = map(mil_tools.rosmsg_to_numpy, points)

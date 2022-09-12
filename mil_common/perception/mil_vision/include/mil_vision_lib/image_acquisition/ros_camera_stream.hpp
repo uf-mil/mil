@@ -173,8 +173,9 @@ bool ROSCameraStream<img_scalar_t, float_t>::init(std::string &camera_topic)
   image_transport::CameraSubscriber cam_sub;
 
   // subscribes to image msg and camera info and initializes CameraModel Object then disconnects subscriber
-  auto init_lambda = [&](const sensor_msgs::ImageConstPtr &image_msg_ptr,
-                         const sensor_msgs::CameraInfoConstPtr &info_msg_ptr) mutable {
+  auto init_lambda =
+      [&](const sensor_msgs::ImageConstPtr &image_msg_ptr, const sensor_msgs::CameraInfoConstPtr &info_msg_ptr) mutable
+  {
     std::string init_msg{ "ROSCameraStream: Initializing with " };
     init_msg += _img_topic;
     // ROS_INFO_NAMED("ROSCameraStream", init_msg.c_str());

@@ -93,8 +93,8 @@ class killtest(unittest.TestCase):
 
     def test_4_remote(self):
         """
-        Tests remote kill by publishing hearbeat, stopping and checking alarm is raised, then
-        publishing hearbeat again to ensure alarm gets cleared.
+        Tests remote kill by publishing heartbeat, stopping and checking alarm is raised, then
+        publishing heartbeat again to ensure alarm gets cleared.
         """
         # publishing msg to network
         pub = rospy.Publisher("/network", Header, queue_size=10)

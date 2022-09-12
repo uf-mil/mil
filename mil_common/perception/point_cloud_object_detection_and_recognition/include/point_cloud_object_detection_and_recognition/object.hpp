@@ -36,7 +36,7 @@ private:
   point_cloud_ptr points_;
   /// Search tree, always kept up to date
   KdTreePtr search_tree_;
-  /// The center of the minimum area bounding box aroudn the object
+  /// The center of the minimum area bounding box around the object
   point_t center_;
   /// Update points_ and center_, called after a call to update_points
   void update_msg();

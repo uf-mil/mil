@@ -45,7 +45,7 @@ void mil_tools::TopicPlayer<MSG>::Play(const ros::TimerEvent& event)
     }
     else
     {
-      ROS_WARN("topic player, wrong messgae type in bag file, skipping");
+      ROS_WARN("topic player, wrong message type in bag file, skipping");
     }
   }
   bag_.close();
