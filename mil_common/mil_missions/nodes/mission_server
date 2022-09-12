@@ -71,16 +71,8 @@ class MissionRunner:
     async def shutdown(self) -> None:
         # If the node was shutdown by another program, then there is no reason to
         # shut it down again.
-        try:
-            if self.nh._is_running:
-                await self.refresh_service.shutdown()
-                await self.server.shutdown()
-                await self.nh.shutdown()
-        except AttributeError:
-            # Likely means that one of the above attributes does not exist
-            raise RuntimeError(
-                "The mission runner never completely initialized, and therefore cannot be shutdown. Ensure that a mission init() did not prevent the mission runner from completely initializing."
-            )
+        if self.nh._is_running:
+            await self.nh.shutdown()
 
     async def refresh_missions_cb(self, _: TriggerRequest) -> TriggerResponse:
         try:
