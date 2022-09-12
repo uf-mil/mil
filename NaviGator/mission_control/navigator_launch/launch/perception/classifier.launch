@@ -12,7 +12,7 @@
     <arg name="out_topic_model2" default="detections_model2" />
     <arg name="conf_thresh" default="0.75" />
     <arg name="image_size" default="640" />
-    <arg name="device" default="cpu" />
+    <arg name="device" default="cuda" />
     <arg name="use_yolo_model1" default="True"/>
     <arg name="use_yolo_model2" default="True"/>
 
