@@ -1,7 +1,7 @@
-# /home/$(USER)/.config/tmuxinator/testing.yml
-# Testing
+# /home/$(USER)/.config/tmuxinator/example.yml
+# This is an example of how a tmuxinator config can be used
 
-name: testing
+name: example
 root: ~/
 windows:
   - editor:

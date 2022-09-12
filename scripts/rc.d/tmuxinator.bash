@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
 #Setting for the editor to use with tmuxinator edit <config>
-export EDITOR=$(which vim)
+# If the user has already set an editor, this will not override it
+# This assumes that the editor being set to "" means unset as well
+if [[ -z $EDITOR ]]; then
+    export EDITOR=$(which vim)
+fi
 alias tx=tmuxinator
 
 # add completion for the tmuxinator alias
