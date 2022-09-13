@@ -61,7 +61,7 @@ class RobotXHeartbeatMessage:
 
     def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
         """
-        From a message represeting a message as a string, return the data and checksum
+        From a message representing a message as a string, return the data and checksum
         lists encoded in the string.
 
         Args:

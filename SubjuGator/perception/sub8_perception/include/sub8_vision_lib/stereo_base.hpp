@@ -118,7 +118,7 @@ private:
   /**
    * Finds the plane of 4 points in standard form
    * @param feature_pts_3d a set of 3D points (currently supports only 4)
-   * @return a vector that contains plane constans in standard form (A, B, C, D)
+   * @return a vector that contains plane constants in standard form (A, B, C, D)
    */
   std::vector<double> best_fit_plane_standard(const std::vector<Eigen::Vector3d> &feature_pts_3d);
 

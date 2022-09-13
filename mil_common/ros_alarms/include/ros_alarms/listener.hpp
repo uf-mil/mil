@@ -320,10 +320,8 @@ private:
 
 template <typename callable_t>
 AlarmListener<callable_t>::AlarmListener(ros::NodeHandle &nh, std::string alarm_name)
-try : __nh(nh),
-      __alarm_name(alarm_name),
-      __get_alarm(__nh.serviceClient<ros_alarms::AlarmGet>("/alarm/get")),
-      __async_spinner(1, &__cb_queue)
+try : __nh(nh), __alarm_name(alarm_name), __get_alarm(__nh.serviceClient<ros_alarms::AlarmGet>("/alarm/get")),
+    __async_spinner(1, &__cb_queue)
 
 {
   std::stringstream obj_name;  // For better error msgs

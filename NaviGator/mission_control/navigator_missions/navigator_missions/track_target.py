@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
+import asyncio
+
 import numpy as np
-import txros
 from geometry_msgs.msg import PoseStamped
 from mil_tools import pose_to_numpy
-from twisted.internet import defer
 
 from .navigator import Navigator
 
@@ -21,20 +21,23 @@ class TrackTarget(Navigator):
     DISTANCE_TOLERANCE = 0.1
 
     @classmethod
-    @txros.util.cancellableInlineCallbacks
-    def init(cls):
+    async def init(cls):
         # Store pose of shooter for later
         cls.base_link_to_shooter = -(
-            yield cls.tf_listener.get_transform("base_link", "shooter")
+            await cls.tf_listener.get_transform("base_link", "shooter")
         )._p
         cls.base_link_to_shooter[2] = 0.0
         # Subscribe to pose
         cls.target_pose_sub = cls.nh.subscribe(
             "/detect_deliver_target_detector/pose", PoseStamped
         )
+        await cls.target_pose_sub.setup()
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
+    @classmethod
+    async def shutdown(cls):
+        await cls.target_pose_sub.shutdown()
+
+    async def run(self, parameters):
         goal = None
         reload_wait = None
         fired = 0
@@ -42,22 +45,14 @@ class TrackTarget(Navigator):
         # Continuously align until all shots are fired
         while fired < self.NUMBER_SHOTS:
             if reload_wait is not None:
-                select = defer.DeferredList(
-                    [
-                        self.target_pose_sub.get_next_message(),
-                        self.tx_pose,
-                        reload_wait,
-                    ],
-                    fireOnOneCallback=True,
-                    fireOnOneErrback=True,
-                )
+                select = [
+                    self.target_pose_sub.get_next_message(),
+                    self.tx_pose,
+                    reload_wait,
+                ]
             else:
-                select = defer.DeferredList(
-                    [self.target_pose_sub.get_next_message(), self.tx_pose],
-                    fireOnOneCallback=True,
-                    fireOnOneErrback=True,
-                )
-            result, index = yield select
+                select = [self.target_pose_sub.get_next_message(), self.tx_pose]
+            result, index = await asyncio.gather(*select)
 
             # New target pose
             if index == 0:
@@ -69,7 +64,7 @@ class TrackTarget(Navigator):
                 quat = np.abs(quat)
 
                 # Transform pose to ENU
-                transform = yield self.tf_listener.get_transform(
+                transform = await self.tf_listener.get_transform(
                     "enu", pose.header.frame_id, pose.header.stamp
                 )
                 pos, quat = transform.transform_point(
@@ -89,7 +84,7 @@ class TrackTarget(Navigator):
                 # Set new goal
                 goal = move.position
                 # Command move to this goal
-                yield move.go(move_type="bypass")
+                await move.go(move_type="bypass")
 
             # New odometry, see if we are close enough to goal to fire
             elif index == 1:
@@ -99,27 +94,27 @@ class TrackTarget(Navigator):
                 # Get distance from boat to goal
                 result[0][2] = 0.0
                 distance = np.linalg.norm(goal - result[0])
-                yield self.send_feedback(f"{distance} from goal")
+                await self.send_feedback(f"{distance} from goal")
 
                 # If close enough, fire
                 if distance < self.DISTANCE_TOLERANCE:
                     # If still reloading, wait
                     if reload_wait is not None:
-                        yield self.send_feedback("Aligned and waiting for reload")
+                        await self.send_feedback("Aligned and waiting for reload")
                         continue
                     # Otherwise fire
-                    yield self.send_feedback("Aligned. Firing!")
-                    yield self.fire_launcher()
+                    await self.send_feedback("Aligned. Firing!")
+                    await self.fire_launcher()
                     fired += 1
                     reload_wait = self.reload_launcher()
 
             # Reload finished
             elif index == 2:
-                yield self.send_feedback("Reloaded.")
+                await self.send_feedback("Reloaded.")
                 reload_wait = None
 
         # Ensure mission exits after having reloaded
         if reload_wait is not None:
             self.send_feedback("Waiting for final reload.")
-            yield reload_wait
-        defer.returnValue("All balls fired.")
+            await reload_wait
+        return "All balls fired."

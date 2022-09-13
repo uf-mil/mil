@@ -1,66 +1,157 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
+import asyncio
+import importlib
 import inspect
 import json
+import time
+import traceback
+import types
+from typing import Any
 
-import twisted.python
+import uvloop
 from mil_missions.msg import DoMissionAction, DoMissionFeedback, DoMissionResult
-from mil_missions_core import MissionException, MissionResult
-from twisted.internet import defer, reactor
-from txros import NodeHandle, action, util
+from mil_missions_core import BaseMission, MissionException, MissionResult
+from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
+from txros import NodeHandle, Service, action, rosxmlrpc, util
 
 
 class MissionRunner:
     """
     Node which runs the missions server, receiving goals from a client
     to run a mission, cancel a mission, and publish feedback.
+
+    Args:
+        missions_loaded (bool): Whether the mission classes have been loaded.
     """
+
+    missions_loaded: bool
+    base_mission: type[BaseMission]
+    missions: dict[str, type[BaseMission]]
 
     def __init__(self):
         pass
 
-    @defer.inlineCallbacks
-    def init(self):
+    async def init(self):
         """
         Initialize the action server, import the missions from the mission module, call init, functions
         and prepare for the first mission goal.
         """
         # Create NodeHandle and action server
-        self.nh = yield NodeHandle.from_argv("mission_runner")
+        self.nh = NodeHandle.from_argv("mission_runner")
+        await self.nh.setup()
         self.server = action.SimpleActionServer(self.nh, "/mission", DoMissionAction)
+        await self.server.setup()
 
-        # Get mission_module and base_mission from params, if not set just crash
-        mission_module_name = yield self.nh.get_param("~missions_module")
-        base_mission_name = yield self.nh.get_param("~base_mission")
-        mission_module = __import__(mission_module_name)
-
-        # Import and init the base mission
-        if not hasattr(mission_module, base_mission_name):
-            raise Exception("Base mission not in module")
-        base_mission = getattr(mission_module, base_mission_name)
-        yield base_mission._init(self)
-
-        # Import all missions which extend the base class and initialize them
-        self.missions = {}
-        for name, cls in inspect.getmembers(mission_module):
-            if (
-                inspect.isclass(cls)
-                and issubclass(cls, base_mission)
-                and name != base_mission_name
-            ):
-                yield cls.init()
-                self.missions[cls.name()] = cls
-
-        # Set available missions param with list of all imported missions
-        yield self.nh.set_param("/available_missions", list(self.missions.keys()))
+        # Load in all missions for the first time
+        self.missions_loaded = False
+        await self.load_missions()
 
         # Set current mission to None
-        self.mission_defer = None
+        self.mission_future = None
         self.mission = None
+
+        # Start a service to refresh missions
+        self.refresh_service = Service(
+            self.nh, "~refresh_missions", Trigger, self.refresh_missions_cb
+        )
+        await self.refresh_service.setup()
 
         # Register callbacks for new goals and start the action server
         self.server.register_preempt_callback(self.check_new_mission)
         self.server.register_goal_callback(self.check_new_mission)
         self.server.start()
+
+    async def shutdown(self) -> None:
+        await self.refresh_service.shutdown()
+        await self.server.shutdown()
+        await self.nh.shutdown()
+
+    async def refresh_missions_cb(self, _: TriggerRequest) -> TriggerResponse:
+        try:
+            await self.load_missions()
+            await self.load_missions()
+            return TriggerResponse(True, "The missions were refreshed!")
+        except Exception as e:
+            traceback.print_exc()
+            return TriggerResponse(
+                False,
+                f"An error of type {e.__class__.__name__} occurred while refreshing: {e}",
+            )
+
+    async def load_missions(self):
+        """
+        Gets the name of the missions module and base mission from ROS parameters
+        before importing the module and the base mission, and calling the base
+        missions' _init() method.
+
+        All missions from the module are saved to ``self.missions``.
+        """
+        # If we've already loaded missions, we need to shutdown existing missions
+        if self.missions_loaded:
+            try:
+                await self.base_mission._shutdown()
+            except AttributeError:
+                pass
+
+            for name, mission in self.missions.items():
+                try:
+                    if inspect.iscoroutinefunction(mission.shutdown):
+                        await mission.shutdown()
+                    else:
+                        mission.shutdown()
+                except AttributeError:
+                    # The mission class may not need to be shutdown (this is okay!)
+                    pass
+
+        self.missions = {}
+
+        # Get mission_module and base_mission from params, if not set just crash
+        mission_module_name = await self.nh.get_param("~missions_module")
+        base_mission_name = await self.nh.get_param("~base_mission")
+        assert isinstance(mission_module_name, str) and isinstance(
+            base_mission_name, str
+        )
+        if self.missions_loaded:
+            self.mission_module = importlib.reload(self.mission_module)
+            self.imported_modules = [self.mission_module]
+            for attribute_name in dir(self.mission_module):
+                attribute = getattr(self.mission_module, attribute_name)
+                if type(attribute) is types.ModuleType:
+                    self.imported_modules.append(importlib.reload(attribute))
+        else:
+            self.mission_module = importlib.import_module(mission_module_name)
+            self.imported_modules = [self.mission_module]
+
+        # Import and init the base mission
+        if not hasattr(self.mission_module, base_mission_name):
+            raise Exception("Base mission not in module")
+        self.base_mission = getattr(self.mission_module, base_mission_name)
+
+        # Import all missions which extend the base class and initialize them
+        if inspect.iscoroutinefunction(self.base_mission._init):
+            await self.base_mission._init(self)
+        else:
+            self.base_mission._init(self)
+
+        for mod in self.imported_modules:
+            for name, cls in inspect.getmembers(mod):
+                if (
+                    inspect.isclass(cls)
+                    and issubclass(cls, self.base_mission)
+                    and name != base_mission_name
+                    and name not in self.missions
+                ):
+                    if inspect.iscoroutinefunction(cls.init):
+                        await cls.init()
+                    else:
+                        cls.init()
+                    self.missions[cls.name()] = cls
+
+        # Set available missions param with list of all imported missions
+        await self.nh.set_param("/available_missions", list(self.missions.keys()))
+        self.missions_loaded = True
 
     def has_mission(self, mission: str) -> bool:
         """
@@ -109,21 +200,23 @@ class MissionRunner:
 
         # Start mission, and create callbacks even if it is not a deferred
         self.mission = self.missions[goal.mission]()
-        self.mission_defer = defer.maybeDeferred(self.mission.run, parameters)
-        self.mission_defer.addBoth(self.mission_finished_cb)
+        self.mission_future = asyncio.create_task(self.run_with_callback(parameters))
 
-    @util.cancellableInlineCallbacks
+    async def run_with_callback(self, parameters):
+        result = await self.mission.run(parameters)
+        await self.mission_finished_cb(result)
+
     def check_new_mission(self):
         """
         Called by SimpleActionServer when a new goal is available or cancel request
         comes in.
         """
         # If cancel request came in, cancel current mission
-        if self.mission_defer is not None and self.server.is_cancel_requested():
-            yield self.mission_defer.cancel()
+        if self.mission_future is not None and self.server.is_cancel_requested():
+            self.mission_future.cancel()
         # If a new mission came in, cancel current mission
-        elif self.mission_defer is not None and self.server.is_preempt_requested():
-            yield self.mission_defer.cancel()
+        elif self.mission_future is not None and self.server.is_preempt_requested():
+            self.mission_future.cancel()
         # Try to accept a new mission
         self.do_new_mission()
 
@@ -132,34 +225,27 @@ class MissionRunner:
         print(f"Clean up for {missionname} failed!")
         print(final.getTraceback())
 
-    @util.cancellableInlineCallbacks
-    def mission_finished_cb(self, final):
+    async def mission_finished_cb(self, task: Any):
         """
         Called when the current mission finishes successfully, is canceled, is preempted by another
         mission, or raises an exception. Publishes the correct result to the action clients.
         """
         result = DoMissionResult()
 
-        # If mission failed / was canceled, abort mission
-        if isinstance(final, twisted.python.failure.Failure):
+        try:
+            task_result = task
+        except Exception as e:
+            # If mission failed / was canceled, abort mission
             result.success = False
 
             # If mission was canceled, just set result to cancelled
-            if final.check(defer.CancelledError):
+            if isinstance(e, asyncio.CancelledError):
                 result.result = "mission cancelled"
-            elif final.check(
-                MissionException
-            ):  # If a mission exception, return error message and params
-                exception = final.value
-                result.result = exception.message
-                result.parameters = json.dumps(exception.parameters)
             else:  # If mission raised another kind of exception (like key error), return message and traceback
-                result.result = final.getErrorMessage()
-                result.parameters = json.dumps({"traceback": final.getTraceback()})
-            # Call mission cleanup functio
-            cleanup = defer.maybeDeferred(self.mission.cleanup)
-            cleanup.addErrback(self.cleanup_fail, self.mission.name())
-            yield cleanup
+                result.result = str(e)
+                result.parameters = json.dumps({"traceback": traceback.format_exc()})
+            # Call mission cleanup function
+            await self.mission.cleanup()
             self.server.set_aborted(
                 result=result, text=result.result
             )  # Set mission aborted in either case
@@ -167,39 +253,33 @@ class MissionRunner:
         # If mission was successful, set goal to succeeded with specified result
         else:
             result.success = True
-            if isinstance(final, MissionResult):
-                result.result = final.message
-                result.parameters = json.dumps(final.parameters)
+            if isinstance(task_result, MissionResult):
+                result.result = task_result.message
+                result.parameters = json.dumps(task_result.parameters)
             else:
-                result.result = str(final)
+                result.result = str(task_result)
             result.success = True
             self.server.set_succeeded(result=result, text=result.result)
 
         # Result mission variables and see if a new mission is available
         self.mission = None
-        self.mission_defer = None
-        yield self.check_new_mission()
+        self.mission_future = None
+        self.check_new_mission()
 
 
-@defer.inlineCallbacks
-def main():
+async def main():
     """
     Start the mission server, crashing if the init function fails.
     """
     t = MissionRunner()
-
-    def err(err):
-        print(err.getTraceback())
-        print("Error initializing mission runnner")
-        print(err.getErrorMessage())
-        reactor.stop()
-
-    d = t.init()
-    d.addErrback(err)
-    yield d
+    try:
+        await t.init()
+        await asyncio.Future()
+    except asyncio.CancelledError:
+        await t.shutdown()
 
 
 if __name__ == "__main__":
     t = MissionRunner()
-    reactor.callWhenRunning(main)
-    reactor.run()
+    uvloop.install()
+    asyncio.run(main())

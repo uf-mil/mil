@@ -51,7 +51,7 @@ class BagFixer:
             stop = first_time + rospy.Duration(self.stop)
         total_messages = bag.get_message_count()
         # This could be made significantly faster by using ag.get_type_and_topic_info
-        # to do some preprocessing on what topics will be used / remaped /
+        # to do some preprocessing on what topics will be used / remapped /
         # processed
         for topic, msg, time in tqdm(
             bag.read_messages(start_time=start, end_time=stop),
@@ -127,7 +127,7 @@ if __name__ == "__main__":
         metavar="oldtopic:newtopic",
         help="list of topics to remap, separated by a colon, ex /down_cam/:/camera/down/\
                               /my_odom:/odom\nIf ends in a slash (ex: /cameras/:/cams/,\
-                              all topics after slash will be remaped",
+                              all topics after slash will be remapped",
     )
     parser.add_argument(
         "--remap-frames",

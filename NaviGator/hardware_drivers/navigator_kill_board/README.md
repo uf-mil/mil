@@ -30,7 +30,7 @@ If you do not have physical access to the kill board hardware, but would like to
 | Topic  |   Type | Description |
 |--|--|--|
 | /wrench/current | std_msgs/String |  turns NaviGator's control indicator light green in autonomous mode and yellow in rc mode |
-| /network | std_msgs/Header | passes network hearbeat messages to board to prevent board's network kill |
+| /network | std_msgs/Header | passes network heartbeat messages to board to prevent board's network kill |
 
 ### Publishers
 | Topic | Type | Description |

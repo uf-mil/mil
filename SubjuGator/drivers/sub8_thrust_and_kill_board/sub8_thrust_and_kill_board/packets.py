@@ -189,7 +189,7 @@ class StatusMessage(KillStatus):
 
 class HeartbeatMessage(ApplicationPacket):
     """
-    Represents the special hearbeat packet send to kill and thruster board.
+    Represents the special heartbeat packet send to kill and thruster board.
 
     Inherits from :class:`~mil_usb_to_can.ApplicationPacket`.
 

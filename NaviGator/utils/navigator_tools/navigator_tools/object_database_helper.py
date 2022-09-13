@@ -1,4 +1,5 @@
 """Use the DBHelper class to interface with the Database without having to deal with ROS things."""
+import asyncio
 import sys
 import time
 
@@ -6,8 +7,6 @@ import mil_tools as nt
 import numpy as np
 from nav_msgs.msg import Odometry
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
-from twisted.internet import defer, threads
-from txros import util
 
 from .missing_perception_object import MissingPerceptionObject
 
@@ -30,35 +29,31 @@ class DBHelper:
         self.looking_for = None
         self.is_found = False
 
-    @util.cancellableInlineCallbacks
-    def init_(self, navigator=None):
+    async def init_(self, navigator=None):
         """Initialize the txros parts of the DBHelper."""
         # self._sub_database = yield self.nh.subscribe('/database/objects', PerceptionObjectArray, self.object_cb)
-        self._database = yield self.nh.get_service_client(
-            "/database/requests", ObjectDBQuery
-        )
+        self._database = self.nh.get_service_client("/database/requests", ObjectDBQuery)
         self.navigator = navigator
         if navigator is None:
-            self._odom_sub = yield self.nh.subscribe("/odom", Odometry, self._odom_cb)
+            self._odom_sub = self.nh.subscribe("/odom", Odometry, self._odom_cb)
+            await self._odom_sub.setup()
         else:
-            self.position = yield navigator.tx_pose
+            self.position = await navigator.tx_pose()
             self.position = self.position[0]
-        defer.returnValue(self)
+        return self
 
     def _odom_cb(self, odom):
         self.position, self.rot = nt.odometry_to_numpy(odom)[0]
 
-    @util.cancellableInlineCallbacks
-    def get_object_by_id(self, my_id):
+    async def get_object_by_id(self, my_id):
         print(my_id)
         req = ObjectDBQueryRequest()
         req.name = "all"
-        resp = yield self._database(req)
+        resp = await self._database(req)
         ans = [obj for obj in resp.objects if obj.id == my_id][0]
-        defer.returnValue(ans)
+        return ans
 
-    @util.cancellableInlineCallbacks
-    def begin_observing(self, cb):
+    async def begin_observing(self, cb):
         """
         Get notified when a new object is added to the database.
 
@@ -67,9 +62,9 @@ class DBHelper:
         self.new_object_subscriber = cb
         req = ObjectDBQueryRequest()
         req.name = "all"
-        resp = yield self._database(req)
+        resp = await self._database(req)
         req.name = "All"
-        resp1 = yield self._database(req)
+        resp1 = await self._database(req)
         for o in resp.objects:
             # The is upper call is because the first case is upper case if it is a 'fake' object... WHYYYYY
             if o.name not in self.found:
@@ -82,11 +77,10 @@ class DBHelper:
                 self.found.add(o.name)
                 self.new_object_subscriber(o)
 
-    @util.cancellableInlineCallbacks
-    def get_unknown_and_low_conf(self):
+    async def get_unknown_and_low_conf(self):
         req = ObjectDBQueryRequest()
         req.name = "all"
-        resp = yield self._database(req)
+        resp = await self._database(req)
         m = []
         for o in resp.objects:
             if o.name == "unknown":
@@ -94,7 +88,7 @@ class DBHelper:
             elif o.confidence < 50:
                 pass
                 # m.append(o)
-        defer.returnValue(m)
+        return m
 
     def set_looking_for(self, name):
         self.looking_for = name
@@ -153,14 +147,13 @@ class DBHelper:
             time.sleep(1)
         return True
 
-    @util.cancellableInlineCallbacks
-    def get_closest_object(self, objects):
+    async def get_closest_object(self, objects):
         """Get the closest mission."""
         pobjs = []
         for obj in objects:
             req = ObjectDBQueryRequest()
             req.name = obj.name
-            resp = yield self._database(req)
+            resp = await self._database(req)
             if len(resp.objects) != 0:
                 pobjs.extend(resp.objects)
 
@@ -170,46 +163,44 @@ class DBHelper:
         min_dist = sys.maxsize
         min_obj = None
         for o in pobjs:
-            dist = yield self._dist(o)
+            dist = await self._dist(o)
             if dist < min_dist:
                 min_dist = dist
                 min_obj = o
 
-        defer.returnValue(min_obj)
+        return min_obj
 
-    @util.cancellableInlineCallbacks
-    def _dist(self, x):
+    async def _dist(self, x):
         if self.position is None:
-            success = yield threads.deferToThread(self._wait_for_position)
+            success = asyncio.create_task(self._wait_for_position)
             if not success:
                 raise Exception("There is a problem with odom.")
         if self.navigator is not None:
-            position = yield self.navigator.tx_pose
+            position = await self.navigator.tx_pose()
             position = position[0]
             self.position = position
-        defer.returnValue(
-            np.linalg.norm(nt.rosmsg_to_numpy(x.position) - self.position)
-        )
+        return np.linalg.norm(nt.rosmsg_to_numpy(x.position) - self.position)
 
-    @util.cancellableInlineCallbacks
-    def get_object(self, object_name, volume_only=False, thresh=50, thresh_strict=50):
+    async def get_object(
+        self, object_name, volume_only=False, thresh=50, thresh_strict=50
+    ):
         """Get an object from the database."""
         if volume_only:
             req = ObjectDBQueryRequest()
             req.name = object_name
-            resp = yield self._database(req)
+            resp = await self._database(req)
             if not resp.found:
                 raise MissingPerceptionObject(object_name)
-            defer.returnValue(resp.objects)
+            return resp.objects
         else:
             req = ObjectDBQueryRequest()
             req.name = "all"
-            resp = yield self._database(req)
+            resp = await self._database(req)
             closest_potential_object = None
             min_dist = sys.maxsize
             actual_objects = []
             for o in resp.objects:
-                distance = yield self._dist(o)
+                distance = await self._dist(o)
                 if o.name == object_name and distance < thresh_strict:
                     actual_objects.append(o)
                 if distance < thresh and distance < min_dist:
@@ -226,21 +217,21 @@ class DBHelper:
                 min_dist = sys.maxsize
                 min_obj = None
                 for o in actual_objects:
-                    dist = yield self._dist(o)
+                    dist = await self._dist(o)
                     if dist < min_dist:
                         min_dist = dist
                         min_obj = o
-                defer.returnValue(min_obj)
+                return min_obj
 
             if len(actual_objects) == 1:
-                defer.returnValue(actual_objects[0])
+                return actual_objects[0]
 
-            defer.returnValue(closest_potential_object)
+            return closest_potential_object
 
     def wait_for_additional_objects(self, timeout=60):
         num_items = self.num_items
-        start = time()
-        while timeout < time() - start:
+        start = time.time()
+        while timeout < time.time() - start:
             if self.num_items > num_items:
                 return True
         return False
@@ -253,19 +244,18 @@ class DBHelper:
         """Set the position of a fake perception object."""
         raise NotImplementedError()
 
-    @util.cancellableInlineCallbacks
-    def get_objects_in_radius(self, pos, radius, objects="all"):
+    async def get_objects_in_radius(self, pos, radius, objects="all"):
         req = ObjectDBQueryRequest()
         req.name = "all"
-        resp = yield self._database(req)
+        resp = await self._database(req)
         ans = []
 
         if not resp.found:
-            defer.returnValue(ans)
+            return ans
 
         for o in resp.objects:
             if objects == "all" or o.name in objects:
                 dist = np.linalg.norm(pos - nt.rosmsg_to_numpy(o.position))
                 if dist < radius:
                     ans.append(o)
-        defer.returnValue(ans)
+        return ans

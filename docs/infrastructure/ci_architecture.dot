@@ -1,0 +1,127 @@
+digraph CIDiagram {
+    fontname="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif"
+    node [
+        shape=rounded
+        fontname="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif"
+        penwidth="2"
+        margin=0.25
+    ]
+    graph [
+        fontname="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif"
+        labeljust = l;
+        color = lightgrey;
+    ]
+    edge [
+        fontname="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif"
+    ]
+
+    subgraph blue_nodes {
+        node [
+            style="rounded,filled"
+            fillcolor="#aed6f5"
+            color="#349be8"
+        ]
+        b1 [label="Commit is pushed\n to any branch"]
+        b2 [label="Pull request is opened"]
+    }
+
+    subgraph green_nodes {
+        node [
+            style="rounded,filled"
+            fillcolor="#cce6bc"
+            color="#7fc256"
+        ]
+        green1 [label="Commit is marked\nas passing"];
+        green2 [label="Test passes"];
+        green3 [label="Docs preview\nis published"];
+    }
+
+    subgraph red_nodes {
+        node [
+            style="rounded,filled"
+            fillcolor="#f7bbba"
+            color="#ee5453"
+        ]
+        red1 [label = "Commit is marked as\nnon-passing"];
+        red2 [label = "Test fails"];
+        red3 [label = "Bot stops waiting\nand marks job as\nfailed"];
+        red4 [label = "Pull request is closed"];
+    }
+
+    subgraph gray_nodes {
+        node [
+            style="rounded,filled"
+            fillcolor="#d8dae3"
+            color="#666d80"
+        ]
+        gray1 [label = "Ensure that PR is\nopened by MIL members"];
+        gray2 [label = "Bot waits for CI\nto finish"];
+        gray3 [label = "Deploy docs to main\ndocumentation site"]
+    }
+
+    subgraph decision_nodes {
+        node [
+            shape=diamond
+            style="rounded,filled"
+            fillcolor="#f7f7f7"
+            color="#d6d6db"
+            penwidth="4"
+            margin=0.15
+        ]
+        d1 [label = "Job succeeded?"];
+        d2 [label = "pre-commit passes?"];
+        d3 [label = "CI passes?"];
+        d4 [label = "PR is opened\nby MIL member?"];
+        d5 [label = "Is master branch?"];
+    }
+
+    subgraph cluster_0 {
+        label = "GitHub Actions";
+        margin = 30;
+        node [
+            style="rounded,filled"
+            fillcolor="#d8dae3"
+            color="#666d80"
+        ]
+        g1 [label="Install dependencies"]
+        g2 [label="Build repository\nthrough catkin_make"]
+        g3 [label="Run catkin_make and\nensure tests pass"]
+        g4 [label = "Build documentation and\npublish as artifact"]
+        // g2 [label="pre-commit.ci"]
+        g1 -> g2 -> g3 -> g4;
+    }
+
+    subgraph cluster_1 {
+        // Labels
+        label = "pre-commit.ci";
+        margin = 30;
+
+        node [
+            style="rounded,filled"
+            fillcolor="#d8dae3"
+            color="#666d80"
+        ]
+
+        p1 [label = "Queue is loaded"];
+        p2 [label = "pre-commit hooks\nare evaluated"];
+        p1 -> p2;
+    }
+
+    b1 -> g1;
+    b2 -> p1;
+    b2 -> gray1;
+    b2 -> gray2;
+    g4 -> d1;
+    p2 -> d2;
+    gray1 -> d3;
+    d3 -> green3 [label = "Yes"];
+    d3 -> red3 [label = "No"];
+    gray2 -> d4;
+    d4 -> red4 [label = "No"];
+    d2 -> green2 [label = "Yes"];
+    d2 -> red2 [label = "No"];
+    d1 -> green1 [label = "Yes"];
+    green1 -> d5;
+    d5 -> gray3 [label = "Yes"];
+    d1 -> red1 [label = "No"];
+}

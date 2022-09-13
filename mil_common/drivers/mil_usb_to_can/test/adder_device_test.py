@@ -8,7 +8,7 @@ from rospy_tutorials.srv import AddTwoInts, AddTwoIntsRequest
 class AdderDeviceTest(unittest.TestCase):
     """
     Integration test for CAN2USB board driver. Talks
-    to a simualted CAN device which should add two integers
+    to a simulated CAN device which should add two integers
     """
 
     def __init__(self, *args):

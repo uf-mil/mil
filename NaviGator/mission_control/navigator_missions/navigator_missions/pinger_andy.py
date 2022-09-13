@@ -2,8 +2,6 @@
 import numpy as np
 from geometry_msgs.msg import Vector3Stamped
 from mil_tools import rosmsg_to_numpy
-from twisted.internet import defer
-from txros import util
 
 from .navigator import Navigator
 
@@ -14,10 +12,15 @@ class PingerAndy(Navigator):
     """
 
     @classmethod
-    def init(cls):
+    async def init(cls):
         cls.pinger_heading = cls.nh.subscribe(
             "/hydrophones/ping_direction", Vector3Stamped
         )
+        await cls.pinger_heading.setup()
+
+    @classmethod
+    async def shutdown(cls):
+        await cls.pinger_heading.shutdown()
 
     @staticmethod
     def line(p1, p2):
@@ -46,13 +49,12 @@ class PingerAndy(Navigator):
         else:
             return None
 
-    @util.cancellableInlineCallbacks
-    def get_gates(self):
+    async def get_gates(self):
         totems = []
         for i in range(4):
             while True:
                 self.send_feedback(f"Click on totem {i + 1} in rviz")
-                point = yield self.rviz_point.get_next_message()
+                point = await self.rviz_point.get_next_message()
                 if point.header.frame_id != "enu":
                     self.send_feedback(
                         "Point is not in ENU.\
@@ -68,20 +70,19 @@ class PingerAndy(Navigator):
         gates = []
         for i in range(3):
             gates.append((totems[i] + totems[i + 1]) / 2.0)
-        defer.returnValue(gates)
+        return gates
 
-    @util.cancellableInlineCallbacks
-    def run(self, args):
+    async def run(self, args):
         # Get position of 3 gates based on position of totems
-        gates = yield self.get_gates()
+        gates = await self.get_gates()
 
         # Get heading towards pinger from Andy hydrophone system
         self.send_feedback("All gates clicked on! Waiting for pinger heading...")
-        heading = yield self.pinger_heading.get_next_message()
+        heading = await self.pinger_heading.get_next_message()
         self.send_feedback("Received pinger heading")
 
         # Convert heading and hydophones from to enu
-        hydrophones_to_enu = yield self.tf_listener.get_transform(
+        hydrophones_to_enu = await self.tf_listener.get_transform(
             "enu", heading.header.frame_id
         )
         hydrophones_origin = hydrophones_to_enu._p[0:2]
@@ -125,8 +126,8 @@ class PingerAndy(Navigator):
         after = np.append(gate - direction_vector * after_distance, 0)
 
         self.send_feedback("Moving in front of gate")
-        yield self.move.set_position(before).look_at(after).go()
+        await self.move.set_position(before).look_at(after).go()
         self.send_feedback("Going through")
-        yield self.move.set_position(after).go()
+        await self.move.set_position(after).go()
 
-        defer.returnValue("My god it actually worked!")
+        return "My god it actually worked!"

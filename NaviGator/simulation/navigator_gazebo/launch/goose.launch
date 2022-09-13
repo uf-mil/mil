@@ -7,13 +7,13 @@
   <arg name="extra_gazebo_args" default=""/>
   <arg name="urdf" default="$(find navigator_gazebo)/urdf/navigator.urdf" />
 
-  <include if="$(eval use_mil_world == False)" file="$(find vrx_gazebo)/launch/vrx.launch">
+  <include unless="$(arg use_mil_world)" file="$(find vrx_gazebo)/launch/vrx.launch">
     <arg name="gui" value="false"/>
     <arg name="urdf" value="$(find navigator_gazebo)/urdf/navigator.urdf"/>
     <arg name="world" value="$(find vrx_gazebo)/worlds/$(arg world).world" />
     <arg name="extra_gazebo_args" default="--verbose"/>
   </include>
-  <include if="$(eval use_mil_world == True)" file="$(find vrx_gazebo)/launch/vrx.launch">
+  <include if="$(arg use_mil_world)" file="$(find vrx_gazebo)/launch/vrx.launch">
     <arg name="gui" value="false"/>
     <arg name="urdf" value="$(find navigator_gazebo)/urdf/navigator.urdf"/>
     <arg name="world" value="$(find navigator_gazebo)/worlds/$(arg world).world" />

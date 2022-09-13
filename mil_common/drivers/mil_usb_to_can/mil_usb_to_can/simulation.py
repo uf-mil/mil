@@ -80,7 +80,7 @@ class ExampleSimulatedAdderDevice(SimulatedCANDevice):
 
 class SimulatedUSBtoCAN(SimulatedSerial):
     """
-    Simulates the USB to CAN board. Is supplied with a dictionary of simualted
+    Simulates the USB to CAN board. Is supplied with a dictionary of simulated
     CAN devices to simulate the behavior of the whole CAN network.
     """
 

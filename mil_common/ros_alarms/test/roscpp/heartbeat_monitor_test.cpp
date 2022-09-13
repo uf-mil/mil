@@ -38,9 +38,8 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
   AlarmListener<> listener{ nh, alarm_name };
 
   // Create callbacks
-  function<bool(std_msgs::String)> predicate = [](std_msgs::String msg) {
-    return (msg.data.size() == 0 ? false : true);
-  };
+  function<bool(std_msgs::String)> predicate = [](std_msgs::String msg)
+  { return (msg.data.size() == 0 ? false : true); };
 
   // Initialize HertbeatMonitor with topic name, alarm name, period
   HeartbeatMonitor<std_msgs::String> hb_monitor(nh, alarm_name, heartbeat_topic, predicate, time_to_raise,
@@ -59,7 +58,8 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
   hb_monitor.startMonitoring();
 
   // Timing utility function for this test
-  auto sleep_until = [](ros::Duration offset, ros::Time reference) {
+  auto sleep_until = [](ros::Duration offset, ros::Time reference)
+  {
     auto sleep_time = reference + offset - ros::Time::now();
     return sleep_time > ros::Duration(0.0) ? sleep_time.sleep() : false;
   };

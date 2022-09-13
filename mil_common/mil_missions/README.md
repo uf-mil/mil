@@ -20,15 +20,15 @@ MIL Missions provides a command line interface to trigger a new mission, list av
 
 ### Running a new mission
 To run the Wait mission (which sleeps for a specified time) with parameters "5" (to run for 5 seconds)
-```runmission Wait 5```
+```mission run Wait 5```
 
 ### Listing available missions
 To see what missions are available, run
-```listmissions```
+```mission list```
 
 ### Canceling the current mission
 To stop execution of the current mission prematurely, run
-```cancelmission```
+```mission cancel```
 
 ## Integrating with a new Robot
 To use MIL missions on a new Robotic platform, you need to do the following:

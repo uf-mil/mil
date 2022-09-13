@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import asyncio
+
 import txros
 from mil_ros_tools.msg_helpers import rosmsg_to_numpy
 from twisted.internet import defer
@@ -19,8 +21,11 @@ class TxPOIClient:
         Create a TxPOIClient with a txros nodehandle object
         """
         self.last_msg = None
-        self.defers = {}
+        self.futures = {}
         self._poi_sub = nh.subscribe("/points_of_interest", POIArray, callback=self._cb)
+
+    async def setup(self):
+        await self._poi_sub.setup()
 
     def _cb(self, msg):
         """
@@ -28,15 +33,14 @@ class TxPOIClient:
         """
         self.last_msg = msg
         for poi in self.last_msg.pois:
-            if poi.name not in self.defers:
+            if poi.name not in self.futures:
                 continue
             position = rosmsg_to_numpy(poi.position)
-            defers = self.defers.pop(poi.name)
-            while len(defers):
-                defers.pop().callback(position)
+            futures = self.futures.pop(poi.name)
+            while len(futures):
+                futures.pop().set_result(position)
 
-    @txros.util.cancellableInlineCallbacks
-    def get(self, name, only_fresh=False):
+    async def get(self, name, only_fresh=False):
         """
         Get the position of POI in the global frame as a 3x1 numpy array.
         Note: returns a deferred object which will be calledback when the POI is found, which
@@ -48,11 +52,11 @@ class TxPOIClient:
         if self.last_msg is not None and not only_fresh:
             for poi in self.last_msg.pois:
                 if poi.name == name:
-                    yield defer.returnValue(rosmsg_to_numpy(poi.position))
-        res = defer.Deferred()
-        if name in self.defers:
-            self.defers[name].append(res)
+                    return rosmsg_to_numpy(poi.position)
+        res = asyncio.Future()
+        if name in self.futures:
+            self.futures[name].append(res)
         else:
-            self.defers[name] = [res]
-        poi = yield res
-        defer.returnValue(poi)
+            self.futures[name] = [res]
+        poi = await res
+        return poi

@@ -14,13 +14,17 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Wait to let checks appear
+        run: sleep 1m
+        shell: bash
+
       # Wait for the CI to finish so we can download the docs artifact
       - name: Wait for CI
         uses: lewagon/wait-on-check-action@v1.0.0
         if: github.event.action != 'closed'
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-          check-regexp: (Build docs)|(Run catkin_make tests)
+          check-regexp: Run tests and build docs
           repo-token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
           allowed-conclusions: success
           verbose: true

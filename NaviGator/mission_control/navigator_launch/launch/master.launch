@@ -1,6 +1,6 @@
 <launch>
     <arg name="simulation" default="False" />
-    <param name="is_vrx" value="$(arg simulation)"/>
+    <param name="is_vrx" value="False"/>
     <arg name="online-bagger" default="True" />
 
     <!-- Load model into rviz -->
@@ -9,6 +9,13 @@
     <include file="$(find navigator_launch)/launch/diagnostics.launch" />
     <include if="$(arg online-bagger)" file="$(find navigator_launch)/launch/online_bagger.launch" />
     <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/hardware.launch"/>
+    <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/perception/classifier.launch" >
+        <arg name="main_image_topic" value="/cameras/front/left/image_color"/>
+        <arg name="use_yolo_model1" value="True"/>
+        <arg name="use_yolo_model2" value="True"/>
+        <arg name="weights_model1" value="$(find yolov7_ros)/src/mil_weights/robotx.pt" />
+        <arg name="weights_model2" value="$(find yolov7_ros)/src/mil_weights/robotx.pt" />
+    </include>
 
     <include file="$(find navigator_launch)/launch/gnc.launch">
        <arg name="simulation" value="$(arg simulation)" />

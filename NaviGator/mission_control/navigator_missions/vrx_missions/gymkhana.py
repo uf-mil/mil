@@ -10,11 +10,10 @@ class Gymkhana(Vrx):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, args):
-        yield self.nh.sleep(5)
+    async def run(self, args):
+        await self.nh.sleep(5)
 
-        yield self.run_submission("VrxNavigation")
-        yield self.run_submission("VrxBeacon")
-        yield self.run_submission("VrxBeacon")
-        yield self.send_feedback("Done!")
+        await self.run_submission("VrxNavigation")
+        await self.run_submission("VrxBeacon")
+        await self.run_submission("VrxBeacon")
+        await self.send_feedback("Done!")

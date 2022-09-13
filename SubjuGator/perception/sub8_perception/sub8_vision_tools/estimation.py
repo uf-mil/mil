@@ -1,5 +1,3 @@
-from __future__ import division
-
 import image_geometry
 import mayavi
 import numpy as np

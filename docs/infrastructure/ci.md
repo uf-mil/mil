@@ -10,20 +10,21 @@ because it causes problems.
 Currently, we use GitHub Actions as our CI provider. It provides quick check markers to
 show which specific tests failed for a given commit.
 
-## Self-Hosted Runners
+## Architecture and Terminology
+:::{graphviz} ci_architecture.dot
+:::
 
-Currently, we use self-hosted runners as our provider of CI. On Zobelisk,
-we run 12 Docker containers that each serve as a separate runner. Each runner
-can handle on job at a time. This means that a lot of CI jobs are automatically
-run in parallel. If too many CI jobs are requested at once, a queue will begin
-to form.
+### Runner Environment
 
-These runners run in the background, and should not be killed. If the Docker
-containers are for some reason killed, you will need to launch the `docker-compose.yaml`
-file with `docker-compose up -d`. You will need to get a valid auth token to add
-GitHub self-hosted runners from the GitHub Actions self-hosted runner adder GUI.
+Currently, our continuous integration is run in a Docker container on one of our
+computers, Shuttle. This container is given unlimited resources to the host
+machine in order to help jobs complete quickly.
 
-## Runs, Jobs, Steps
+The Docker Compose file for this container is stored locally on Shuttle. To start
+up the Docker container, you will need to run `docker-compose up -d` inside
+`~/runners` (where the compose file is stored).
+
+### Runs, Jobs, Steps
 
 There are multiple pieces to the GitHub Actions CI. The largest piece is the run.
 This is the sum of all jobs in the run. Some runs may run more jobs than others.
@@ -35,6 +36,20 @@ separate steps. Steps are shared between jobs.
 Each run is also associated with a graph showing the relationship between the
 jobs in the run. This is helpful to see what jobs other jobs depend on, as well
 as why a job might be failing.
+
+## Using CI
+
+Continuous integration aims to be functional and automatic, and fulfills this mission
+by automatically running when you push a new commit to any branch. However,
+sometimes you may want more control over the CI process.
+
+To view the output of a job more closely, click on the "Details" tab next to
+the status check of an action. You will then see each step of the job. You can
+view the logs of these steps to see what exactly the job executed.
+
+If you want to restart a job, click on the "Re-run all jobs" button. This will allow
+you to re-run the jobs. If the job is currently running (or stuck), you will likely
+need to cancel it before you will be allowed to re-run it.
 
 ## Updating CI
 
