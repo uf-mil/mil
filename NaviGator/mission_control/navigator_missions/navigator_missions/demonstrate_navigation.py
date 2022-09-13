@@ -45,7 +45,6 @@ class DemonstrateNavigation(Navigator):
         # Go to autonomous mode
         await self.set_classifier_enabled.wait_for_service()
         await self.set_classifier_enabled(SetBoolRequest(data=True))
-        await self.nh.sleep(4)
         await self.change_wrench("autonomous")
         if not parameters.pcodar:
             print(1)
@@ -65,7 +64,7 @@ class DemonstrateNavigation(Navigator):
                 )
             return True
         else:
-            await self.nh.sleep(1)
+            await self.nh.sleep(3)
             _, closest_reds = await self.get_sorted_objects("mb_marker_buoy_red", 2)
             _, closest_greens = await self.get_sorted_objects("mb_marker_buoy_green", 2)
 
@@ -86,5 +85,6 @@ class DemonstrateNavigation(Navigator):
             # Then move a little passed the exit
             await self.move.look_at(end_midpoint).set_position(end_midpoint).forward(
                 self.END_MARGIN_METERS
-            ).go(blind=True)
+            ).go()
+            print("GO NAVIGATOR")
             return True
