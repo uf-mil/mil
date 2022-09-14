@@ -65,7 +65,7 @@ class EntranceGate2(Navigator):
             pass
         elif return_to_start:
             # Approach buoy we will rotate around
-            buoy = await self.get_sorted_objects("mb_marker_buoy_black", n=1)
+            buoy = await self.get_sorted_objects("black_cylinder", n=1)
             buoy = buoy[1][0]
             vect = (
                 self.unit_vector(self.gate_centers[0], self.gate_centers[1])
@@ -144,12 +144,12 @@ class EntranceGate2(Navigator):
 
     async def find_gates(self):
         # Find each of the needed totems
-        t1 = await self.get_sorted_objects("mb_marker_buoy_red", n=1)
+        t1 = await self.get_sorted_objects("red_cylinder", n=1)
         t1 = t1[1][0][:2]
-        white_totems = await self.get_sorted_objects("mb_marker_buoy_white", n=2)
+        white_totems = await self.get_sorted_objects("white_cylinder", n=2)
         t2 = white_totems[1][0][:2]
         t3 = white_totems[1][1][:2]
-        t4 = await self.get_sorted_objects("mb_marker_buoy_green", n=1)
+        t4 = await self.get_sorted_objects("green_cylinder", n=1)
         t4 = t4[1][0][:2]
 
         # Make sure the two white totems get ordered properly

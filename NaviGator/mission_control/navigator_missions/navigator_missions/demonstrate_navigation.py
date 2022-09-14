@@ -65,23 +65,31 @@ class DemonstrateNavigation(Navigator):
             return True
         else:
             await self.nh.sleep(3)
-            _, closest_reds = await self.get_sorted_objects("mb_marker_buoy_red", 2)
-            _, closest_greens = await self.get_sorted_objects("mb_marker_buoy_green", 2)
+            _, closest_reds = await self.get_sorted_objects("red_cylinder", 1)
+            _, closest_greens = await self.get_sorted_objects("green_cylinder", 1)
 
             # Rename the totems for their symantic name
             green_close = closest_greens[0]
-            green_far = closest_greens[1]
             red_close = closest_reds[0]
-            red_far = closest_reds[1]
 
             # Get the two center points between gata markers
             begin_midpoint = (green_close + red_close) / 2.0
-            end_midpoint = (green_far + red_far) / 2.0
 
             # Start a little behind the entrance
-            await self.move.set_position(begin_midpoint).look_at(end_midpoint).backward(
+            await self.move.set_position(begin_midpoint).backward(
                 self.START_MARGIN_METERS
             ).go()
+
+            _, closest_reds = await self.get_sorted_objects("red_cylinder", 2)
+            _, closest_greens = await self.get_sorted_objects("green_cylinder", 2)
+
+            # Rename the totems for their symantic name
+            green_far = closest_greens[1]
+            red_far = closest_reds[1]
+
+            # Get the two center points between gata markers
+            end_midpoint = (green_far + red_far) / 2.0
+
             # Then move a little passed the exit
             await self.move.look_at(end_midpoint).set_position(end_midpoint).forward(
                 self.END_MARGIN_METERS

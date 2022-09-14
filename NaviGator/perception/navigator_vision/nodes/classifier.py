@@ -96,23 +96,19 @@ class Classifier:
 
         if self.is_simulation:
             self.CLASSES = [
-                "mb_marker_buoy_red",
-                "mb_marker_buoy_green",
-                "mb_marker_buoy_black",
-                "mb_marker_buoy_white",
+                "red_cylinder",
+                "green_cylinder",
+                "black_cylinder",
+                "white_cylinder",
                 "mb_round_buoy_black",
                 "mb_round_buoy_orange",
             ]
         else:
             self.CLASSES = [
-                "yellow_cylinder",
-                "black_round",
                 "white_cylinder",
                 "black_cylinder",
                 "red_cylinder",
-                "green_round",
-                "white_round",
-                "orange_round",
+                "green_cylinder",
             ]
 
         self.pcodar_reset = rospy.ServiceProxy("/pcodar/reset", Trigger)
@@ -230,12 +226,12 @@ class Classifier:
                         closest_to_boat = i
 
                 classified.add(self.last_objects.objects[closest_to_box].id)
-                print(
-                    "Object {} classified as {}".format(
-                        self.last_objects.objects[closest_to_box].id,
-                        self.CLASSES[a.results[0].id],
-                    )
-                )
+                # print(
+                #    "Object {} classified as {}".format(
+                #        self.last_objects.objects[closest_to_box].id,
+                #        self.CLASSES[a.results[0].id],
+                #    )
+                # )
                 cmd = "{}={}".format(
                     self.last_objects.objects[closest_to_box].id,
                     self.CLASSES[a.results[0].id],

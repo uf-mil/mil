@@ -96,20 +96,20 @@ class Navigation(Navigator):
         def is_done(objects, positions):
             try:
                 left_index = self.get_index_of_type(
-                    objects, ("mb_marker_buoy_red", "mb_marker_buoy_white")
+                    objects, ("red_cylinder", "white_cylinder")
                 )
-                if objects[left_index].labeled_classification != "mb_marker_buoy_white":
+                if objects[left_index].labeled_classification != "white_cylinder":
                     right_index = self.get_index_of_type(
-                        objects, ("mb_marker_buoy_green", "mb_marker_buoy_white")
+                        objects, ("green_cylinder", "white_cylinder")
                     )
                 else:
-                    indices = self.get_indices_of_type(objects, "mb_marker_buoy_white")
+                    indices = self.get_indices_of_type(objects, "white_cylinder")
                     right_index = indices[1]
 
             except StopIteration:
                 return None
 
-            end = objects[left_index].labeled_classification == "mb_marker_buoy_white"
+            end = objects[left_index].labeled_classification == "white_cylinder"
             return (
                 positions[left_index],
                 objects[left_index],
@@ -312,7 +312,7 @@ class Navigation(Navigator):
 
     def get_objects_indices_for_start(self, objects):
         try:
-            indices = self.get_indices_of_type(objects, "mb_marker_buoy_white")
+            indices = self.get_indices_of_type(objects, "white_cylinder")
             white_index1 = indices[0]
             white_index2 = indices[1]
         except StopIteration:

@@ -22,7 +22,7 @@ class Wildlife(Navigator):
         await self.change_wrench("autonomous")
 
         try:
-            t1 = await self.get_sorted_objects("mb_marker_buoy_red", n=1)
+            t1 = await self.get_sorted_objects("red_cylinder", n=1)
             t1 = t1[1][0]
         except Exception as e:
             print("could not find stc_platform")
