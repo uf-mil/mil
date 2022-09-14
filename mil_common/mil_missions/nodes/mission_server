@@ -46,7 +46,12 @@ class MissionRunner:
 
         # Load in all missions for the first time
         self.missions_loaded = False
-        await self.load_missions()
+        # If loading missions istaking too long, then it might be the case:
+        #   1) The missions module can not be imported quickly.
+        #   2) The base mission is not being initialized fully.
+        await util.wrap_time_notice(
+            self.load_missions(), 10, "Loading missions in mission runner"
+        )
 
         # Set current mission to None
         self.mission_future = None
@@ -64,9 +69,10 @@ class MissionRunner:
         self.server.start()
 
     async def shutdown(self) -> None:
-        await self.refresh_service.shutdown()
-        await self.server.shutdown()
-        await self.nh.shutdown()
+        # If the node was shutdown by another program, then there is no reason to
+        # shut it down again.
+        if self.nh._is_running:
+            await self.nh.shutdown()
 
     async def refresh_missions_cb(self, _: TriggerRequest) -> TriggerResponse:
         try:
@@ -276,10 +282,14 @@ async def main():
         await t.init()
         await asyncio.Future()
     except asyncio.CancelledError:
+        print("Mission runner received KeyboardInterrupt, shutting down...")
         await t.shutdown()
 
 
 if __name__ == "__main__":
     t = MissionRunner()
-    uvloop.install()
-    asyncio.run(main())
+    try:
+        uvloop.install()
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("...all mission runner tasks were cancelled.")

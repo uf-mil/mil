@@ -35,7 +35,7 @@ from std_srvs.srv import (
     TriggerRequest,
 )
 from topic_tools.srv import MuxSelect, MuxSelectRequest
-from txros import NodeHandle, ROSMasterException, ServiceClient, action, txros_tf, util
+from txros import NodeHandle, ROSMasterError, ServiceClient, action, txros_tf, util
 
 from .pose_editor import PoseEditor2
 
@@ -101,7 +101,7 @@ class Navigator(BaseMission):
 
         try:
             cls.is_vrx = await cls.nh.get_param("/is_vrx")
-        except ROSMasterException:
+        except ROSMasterError:
             cls.is_vrx = False
 
         cls._moveto_client = action.ActionClient(cls.nh, "move_to", MoveAction)
@@ -236,25 +236,23 @@ class Navigator(BaseMission):
 
         await cls._make_alarms()
 
-        if cls.sim:
-            fprint("Sim mode active!", title="NAVIGATOR")
-            await cls.nh.sleep(0.5)
-        else:
-            # We want to make sure odom is working before we continue
-            fprint("Action client do you await?", title="NAVIGATOR")
-            await util.wrap_time_notice(
-                    cls._moveto_client.wait_for_server(), 2, "Lqrrt action server"
-            )
-            fprint("Yes he await!", title="NAVIGATOR")
+        # We want to make sure odom is working before we continue
+        fprint("Action client do you await?", title="NAVIGATOR")
+        await util.wrap_time_notice(
+            cls._moveto_client.wait_for_server(), 2, "Lqrrt action server"
+        )
+        fprint("Yes he await!", title="NAVIGATOR")
 
-            fprint("Waiting for odom...", title="NAVIGATOR")
-            odom = util.wrap_time_notice(
-                cls._odom_sub.get_next_message(), 2, "Odom listener"
-            )
-            enu_odom = util.wrap_time_notice(
+        fprint("Waiting for odom...", title="NAVIGATOR")
+        await util.wrap_time_notice(
+            cls._odom_sub.get_next_message(), 2, "Odom listener"
+        )
+
+        if not cls.sim:
+            await util.wrap_time_notice(
                 cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener"
             )
-            await asyncio.gather(odom, enu_odom)  # Wait for all those to finish
+        print("Odom has been received!")
 
         cls.docking_scan = "NA"
 

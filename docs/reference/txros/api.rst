@@ -5,8 +5,10 @@ Exception Hierarchy
 ~~~~~~~~~~~~~~~~~~~
 .. exception_hierarchy::
 
-    - :exc:`~txros.XMLRPCException`
-    - :exc:`~txros.ROSMasterException`
+    - :exc:`~txros.TxrosException`
+        - :exc:`~txros.XMLRPCException`
+        - :exc:`~txros.ROSMasterError`
+        - :exc:`~txros.ROSMasterFailure`
     - :exc:`~txros.ServiceError`
     - :exc:`~txros.TooPastError`
 
@@ -17,9 +19,19 @@ Exceptions
 .. autoclass:: txros.XMLRPCException
     :members:
 
-.. attributetable:: txros.ROSMasterException
+.. attributetable:: txros.TxrosException
 
-.. autoclass:: txros.ROSMasterException
+.. autoclass:: txros.TxrosException
+    :members:
+
+.. attributetable:: txros.ROSMasterError
+
+.. autoclass:: txros.ROSMasterError
+    :members:
+
+.. attributetable:: txros.ROSMasterFailure
+
+.. autoclass:: txros.ROSMasterFailure
     :members:
 
 .. attributetable:: txros.ServiceError
