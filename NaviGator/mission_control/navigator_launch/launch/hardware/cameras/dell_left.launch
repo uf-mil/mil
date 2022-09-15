@@ -4,7 +4,7 @@
   <group ns="camera/front/left" >
     <node pkg="usb_cam" type="usb_cam_node" name="dell_driver" unless="$(arg simulation)" >
       <param name="video_device" value="/dev/v4l/by-id/usb-Alpha_Imaging_Tech._Corp._Dell_Webcam_WB7022_01463434BD2D-video-index0" />
-      <param name="camera_frame_id" value="front_left_cam_optical" />
+      <param name="camera_frame_id" value="wamv/front_left_cam_link_optical" />
       <param name="camera_info_url" value="file://$(find navigator_launch)/config/camera_calibration/dell.yaml" />
       <param name="pixel_format" value="yuyv" />
       <param name="image_width"  value="1920" />
