@@ -5,6 +5,7 @@ import json
 import rospy
 from actionlib import TerminalState
 from mil_missions_core import MissionClient
+from std_srvs.srv import Trigger
 
 
 class MissionClientCli:
@@ -37,6 +38,10 @@ class MissionClientCli:
         print("Available Missions:")
         for mission in missions:
             print("- ", mission)
+
+    @classmethod
+    def refresh(self) -> None:
+        rospy.ServiceProxy("/mission_runner/refresh_missions", Trigger).call()
 
     def cancel_all(self) -> None:
         self.client.cancel_all_goals()
@@ -96,6 +101,9 @@ def main():
     cancel_parser = subparser.add_parser("cancel", help="Cancel current mission")
     cancel_parser.set_defaults(cmd="cancel")
 
+    refresh_parser = subparser.add_parser("refresh", help="Refresh available missions")
+    refresh_parser.set_defaults(cmd="refresh")
+
     run_parser = subparser.add_parser("run", help="Start a new mission")
     run_parser.set_defaults(cmd="run")
     run_parser.add_argument("mission", help="name of mission to run")
@@ -110,6 +118,12 @@ def main():
     if args.cmd == "list":
         MissionClientCli.list()
         return
+    if args.cmd == "refresh":
+        print("Reimporting...")
+        MissionClientCli.refresh()
+        print("All missions were reimported.")
+        return
+
     rospy.init_node("mission_client", anonymous=True)
     client = MissionClientCli()
     if args.cmd == "cancel":

@@ -150,13 +150,13 @@ class MissionPlannerTest(TestUnit):
             "/database/objects", PerceptionObjectArray, [empty], [1000]
         )
 
-    @util.cancellableInlineCallbacks
-    def run_tests(self):
-        self.pub_base_mission.start(self.nh)
-        yield self.nh.subscribe("/mission_planner/mission", String, self.mission_cb)
+    async def run_tests(self):
+        await self.pub_base_mission.start(self.nh)
+        sub = self.nh.subscribe("/mission_planner/mission", String, self.mission_cb)
+        await sub.setup()
         base_file = "/".join(__file__.split("/")[0:-1]) + "/mission_planner_yamls"
 
-        yield self._run_mission(
+        await self._run_mission(
             base_file + "/shooter_in_database.yaml",
             self.empty,
             self.serv_markers,
@@ -170,7 +170,7 @@ class MissionPlannerTest(TestUnit):
             ],
         )
 
-        yield self._run_mission(
+        await self._run_mission(
             base_file + "/shooter_not_in_database.yaml",
             self.empty,
             self.serv_markers,
@@ -183,7 +183,7 @@ class MissionPlannerTest(TestUnit):
             ],
         )
 
-        yield self._run_mission(
+        await self._run_mission(
             base_file + "/safe_exit.yaml",
             self.empty,
             self.serv_markers,
@@ -198,7 +198,7 @@ class MissionPlannerTest(TestUnit):
             ],
         )
 
-        yield self._run_mission(
+        await self._run_mission(
             base_file + "/timeout_repeat.yaml",
             self.empty,
             self.serv_markers,
@@ -215,7 +215,7 @@ class MissionPlannerTest(TestUnit):
             ],
         )
 
-        yield self._run_mission(
+        await self._run_mission(
             base_file + "/normal_behavior_s1.yaml",
             self.empty,
             self.serv_markers,
@@ -237,7 +237,7 @@ class MissionPlannerTest(TestUnit):
             ],
         )
 
-        yield self._run_mission(
+        await self._run_mission(
             base_file + "/missing_marker_s2.yaml",
             self.empty,
             self.serv_markers_empty,
@@ -261,23 +261,22 @@ class MissionPlannerTest(TestUnit):
 
         fprint(f"{self.count} Missions passed", msg_color="green")
 
-    @util.cancellableInlineCallbacks
-    def _run_mission(self, yaml_file, spoof_pub, spoof_service, time, desc, res):
+    async def _run_mission(self, yaml_file, spoof_pub, spoof_service, time, desc, res):
         with open(yaml_file) as stream:
             try:
                 spoof_pub.start(self.nh)
-                yield spoof_service.start(self.nh)
+                await spoof_service.start(self.nh)
                 fprint(desc, msg_color="green", title="STARTING TEST")
-                yield self.nh.sleep(0.5)
-                yaml_text = yaml.load(stream)
+                await self.nh.sleep(0.5)
+                yaml_text = yaml.safe_load(stream)
                 init = MissionPlanner(total_minutes=time, mode="t").init_(
                     yaml_text, sim_mode=True
                 )
-                planner = yield init
-                yield planner.empty_queue()
-                yield spoof_pub.stop()
-                yield spoof_service.stop()
-                yield planner.nh.shutdown()
+                planner = await init
+                await planner.empty_queue()
+                await spoof_pub.stop()
+                await spoof_service.stop()
+                await planner.nh.shutdown()
                 self.myassert(res)
             except yaml.YAMLError as exc:
                 print(exc)

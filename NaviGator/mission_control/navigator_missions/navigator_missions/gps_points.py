@@ -25,8 +25,7 @@ class GPSWaypoints(Navigator):
             raise Exception("parameters must be a Nx2 array")
         return arr
 
-    @txros.util.cancellableInlineCallbacks
-    def run(self, parameters):
+    async def run(self, parameters):
         if parameters == "":
             parameters = self.DEFAULT_WAYPOINTS
         points = self.verify_parameters(parameters)
@@ -34,5 +33,5 @@ class GPSWaypoints(Navigator):
             self.send_feedback(f"Going to point {point}")
             m = self.move.to_lat_long(*point)
             lookat = self.move.look_at(m.pose[0])
-            yield lookat.go()
-            yield m.set_orientation(lookat.pose[1]).go()
+            await lookat.go()
+            await m.set_orientation(lookat.pose[1]).go()

@@ -2,7 +2,6 @@
 Constructs a planner that is good for getting out of sticky situations!
 
 """
-from __future__ import division
 
 import lqrrt
 import numpy as np

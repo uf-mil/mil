@@ -3,7 +3,6 @@
 Physics components for the Sub8 simulator, Simul8
 Original Author: Annie Luc
 """
-from __future__ import division
 
 from typing import TypeVar
 

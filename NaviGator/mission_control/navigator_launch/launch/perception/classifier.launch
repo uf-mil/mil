@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="weights_model1" default="$(find yolov7_ros)/src/mil_weights/robotx.pt" />
+    <arg name="weights_model2" default="$(find yolov7_ros)/src/mil_weights/robotx.pt" />
+    <arg name="data_yaml_model1" default="$(find yolov7_ros)/src/data/vrx_buoys.yaml" />
+    <arg name="data_yaml_model2" default="$(find yolov7_ros)/src/data/vrx_buoys.yaml" />
+    <arg name="main_image_topic" default="/camera/front/left/image_color"/>
+    <arg name="image_topic_model1" default="/yolov7/model1" />
+    <arg name="image_topic_model2" default="/yolov7/model2" />
+    <arg name="out_topic_model1" default="detections_model1" />
+    <arg name="out_topic_model2" default="detections_model2" />
+    <arg name="conf_thresh" default="0.75" />
+    <arg name="image_size" default="640" />
+    <arg name="device" default="cpu" />
+    <arg name="use_yolo_model1" default="True"/>
+    <arg name="use_yolo_model2" default="True"/>
+
+    <node name="testing_arbiter" pkg="topic_tools" type="demux"
+		args="$(arg main_image_topic) $(arg image_topic_model1) $(arg image_topic_model2) /yolov7/none">
+		<remap from="demux" to="/yolov7"/>
+	</node>
+
+    <!-- Use YOLOv7 -->
+    <include if="$(arg use_yolo_model1)" file="$(find yolov7_ros)/launch/yolov7.launch">
+        <arg name="weights" value="$(arg weights_model1)"/>
+        <arg name="image_topic" value="$(arg image_topic_model1)"/>
+        <arg name="out_topic" value="$(arg out_topic_model1)"/>
+        <arg name="conf_thresh" value="$(arg conf_thresh)"/>
+        <arg name="image_size" value="$(arg image_size)"/>
+	<arg name="device" value="$(arg device)"/>
+	<arg name="data_yaml" value="$(arg data_yaml_model1)"/>
+    </include>
+
+    <!-- Use YOLOv7 -->
+    <include if="$(arg use_yolo_model2)" file="$(find yolov7_ros)/launch/yolov7.launch">
+        <arg name="weights" value="$(arg weights_model2)"/>
+        <arg name="image_topic" value="$(arg image_topic_model2)"/>
+        <arg name="out_topic" value="$(arg out_topic_model2)"/>
+        <arg name="conf_thresh" value="$(arg conf_thresh)"/>
+        <arg name="image_size" value="$(arg image_size)"/>
+	<arg name="device" value="$(arg device)"/>
+	<arg name="data_yaml" value="$(arg data_yaml_model2)"/>
+    </include>
+
+    <arg name="train" default="False" />
+    <node pkg="navigator_vision" type="classifier.py" name="classifier" output="screen">
+        <param name="debug" value="True" />
+        <param name="image_topic" value="$(arg main_image_topic)" />
+	    <param name="model_location" value="config/model" />
+        <param name="train" value="$(arg train)" />
+    </node>
+</launch>

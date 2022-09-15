@@ -5,7 +5,6 @@ Subscribes to Image topic
 Publishes Image and Points
 """
 
-from __future__ import print_function
 
 import sys
 
