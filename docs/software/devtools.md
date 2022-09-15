@@ -128,37 +128,34 @@ walkthrough the process here. However, here are some things you may want to setu
 * Finding a beautiful colorscheme!
 * Setting up extensions to make your life easier (A lot of great ones can be found at [vimawesome](https://vimawesome.com/))
 
-
 ## Tmux
-When working on our robots, you will often have the need to load up the same
-programs over and over. To make this process more convenient, we use tmux.
-Tmux is "a terminal multiplexer. It lets you switch easily between several
-programs in one terminal, detach them (they keep running in the background)
-and reattach them to a different terminal." To learn more about Tmux in general,
-check out the [Tmux Wiki](https://github.com/tmux/tmux/wiki). A quick reference
-sheet can be found [here](https://tmuxcheatsheet.com/).
+Tmux is a famous terminal multiplexer that allows for more flexibility over your
+terminal environment. Specifically, the program can enable you to pause terminal
+environments when your terminal session closes, switch between terminals quickly,
+and view multiple terminal panes at once. If you are going to work on the live robots,
+you should have the program installed, as it allows multiple members to share the
+same terminal environment on the robot at the same time.
+
+To learn more about Tmux in general, check out the [Tmux GitHub wiki](https://github.com/tmux/tmux/wiki).
+A quick reference sheet can be found at [https://tmuxcheatsheet.com](https://tmuxcheatsheet.com/).
 
 ### Tmuxinator
 Managing Tmux sessions manually can be exteremly time consuming, so we use
-tmuxiator to provide a version controlled interface for our robots and
+tmuxinator to provide a version controlled interface for our robots and
 simulators. Basic commands are:
 
 ```sh
 $ tx list # show configs available to start
-
 $ tx start <config> # start (or join if already started) a tmuxinator session
-
 $ tmux ls # Show active all tmux sessions ( not only ones started by tmuxinator )
-
 $ tx stop <config> # stop a session that is running
 ```
+
 The MIL configs for tmuxinator are hard linked from
 `$MIL_REPO/.tmuxinatorConfigs/<name>.yaml` to `~/.config/tmuxinator/<name>.yaml`.
-If you want, you can add personal tmuxinator configs you should add them in
-`.config/tmuxinator/`.
-If you need to add MIL-wide configs, place them in `.tmuxinatorConfigs`
-
-
+If you want to add personal tmuxinator configurations you, should add them in
+`.config/tmuxinator/`. If you want to add MIL-wide configs, place them in
+`$MIL_REPO/.tmuxinatorConfigs`.
 
 ## Bash and Zsh
 
