@@ -462,6 +462,11 @@ class Navigator(BaseMission):
         req = SetValveRequest(actuator=name, opened=state)
         return self._actuator_client(req)
 
+    async def get_largest_object(self, name: str = "UNKNOWN", **kwargs):
+        objects = (await self.database_query(object_name=name, **kwargs)).objects
+        largest_object = max(objects, key=lambda x: x.scale.x * x.scale.y)
+        return largest_object
+
     async def get_sorted_objects(
         self, name: str, n: int = -1, throw: bool = True, **kwargs
     ):
