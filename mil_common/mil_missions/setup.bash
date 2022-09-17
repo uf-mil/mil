@@ -2,6 +2,7 @@
 alias runmission="rosrun mil_missions mission_client run"
 alias cancelmission="rosrun mil_missions mission_client cancel"
 alias listmissions="rosrun mil_missions mission_client list"
+alias mission="rosrun mil_missions mission_client run"
 _mission_complete() {
 	local MISSION
 
@@ -17,3 +18,4 @@ _mission_complete() {
 
 # Registers the autocompletion function to be invoked for ros_connect
 complete -F _mission_complete runmission
+complete -F _mission_complete mission
