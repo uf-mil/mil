@@ -110,7 +110,6 @@ class Dock(Navigator):
         goal_pos = None
         # curr_pose = await self.tx_pose()
         side_a_bool = False
-        side_b_bool = False
         side_a = bbox_enu + position
         side_b = -bbox_enu + position
 
@@ -122,6 +121,7 @@ class Dock(Navigator):
             bbox2,
         )
 
+        # TODO, add check to recaluclate position once we get on either side of the dock
         await self.move.set_position(side_a if side_a_bool else side_b).look_at(
             position
         ).go()
@@ -142,6 +142,10 @@ class Dock(Navigator):
             self.right_position = np.dot(rot, -side_vect) + side_b
             self.dock_point_left = np.dot(rot, side_vect) + position
             self.dock_point_right = np.dot(rot, -side_vect) + position
+
+        await self.move.set_position(self.left_position).look_at(
+            self.dock_point_left
+        ).go(blind=True, move_type="skid")
 
     # returns True if side a is closest, False is side b is closest
     def calculate_correct_side(
@@ -195,15 +199,17 @@ class Dock(Navigator):
         side_a = np.asarray(side_a)
         side_b = np.asarray(side_b)
         center = np.asarray(center)
-        side_a = self.intup(self.ogrid_cpm * side_a - self.ogrid_origin)[:2]
-        side_b = self.intup(self.ogrid_cpm * side_b - self.ogrid_origin)[:2]
+        side_a = self.intup(self.ogrid_cpm * (side_a - self.ogrid_origin))[:2]
+        side_b = self.intup(self.ogrid_cpm * (side_b - self.ogrid_origin))[:2]
         dist_a = np.linalg.norm(side_a - center)
         dist_b = np.linalg.norm(side_b - center)
         # cv2.fillPoly(self.last_image, pts=[contours], color=(255, 0, 0))
         cv2.circle(self.last_image, center, radius=3, color=(255, 0, 0))
+        cv2.circle(self.last_image, side_a, radius=3, color=(0, 255, 0))
+        cv2.circle(self.last_image, side_b, radius=3, color=(0, 0, 255))
         print("Center of mass found")
         self.setBool = True
-        return True if dist_a < dist_b else False
+        return dist_a > dist_b
 
     def calculate_center_of_mass(self, points):
         bounding_rect = cv2.boundingRect(points)
