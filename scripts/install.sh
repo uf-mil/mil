@@ -237,7 +237,8 @@ mil_user_install_dependencies()
     awscli \
     net-tools \
     cifs-utils \
-    nmap
+    nmap \
+    tmuxinator
 }
 
 # Add line to user's bashrc which source the repo's setup files
@@ -304,5 +305,12 @@ $(color "$Gre")Setup user tools and shell.
 $(color "$Pur")Compiling repository...
 $(hash_header)$(color "$Res")
 EOF
+
+touch ~/tmux.conf
+if grep  'set -g default-terminal "screen-256color"' ~/tmux.conf; then
+        echo "Tmux already has 256 color support, skip this step"
+else
+        echo "set -g default-terminal \"screen-256color\"" >> ~/.tmux.conf
+fi
 
 mil_user_setup_init_catkin
