@@ -50,6 +50,10 @@ class Dock(Navigator):
         self.last_image = None
         self.setBool = False
 
+    async def shutdown(cls):
+        await cls.image_debug_pub.shutdown()
+        await cls.ogrid_sub.shutdown()
+
     async def run(self, args):
         await self.ogrid_sub.setup()
 
@@ -110,11 +114,17 @@ class Dock(Navigator):
         side_a = bbox_enu + position
         side_b = -bbox_enu + position
 
-        correct_side = self.calculate_ogrid_mass_center(
-            side_a, side_b, position, rotation[:3, :3], bbox2
+        side_a_bool = self.calculate_correct_side(
+            copy.deepcopy(side_a),
+            copy.deepcopy(side_b),
+            position,
+            rotation[:3, :3],
+            bbox2,
         )
 
-        await self.move.set_position(correct_side).look_at(position).go()
+        await self.move.set_position(side_a if side_a_bool else side_b).look_at(
+            position
+        ).go()
 
         # define how far left and right we want to do
         rot = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
@@ -133,14 +143,15 @@ class Dock(Navigator):
             self.dock_point_left = np.dot(rot, side_vect) + position
             self.dock_point_right = np.dot(rot, -side_vect) + position
 
-    def calculate_ogrid_mass_center(
+    # returns True if side a is closest, False is side b is closest
+    def calculate_correct_side(
         self,
         side_a: [float],
         side_b: [float],
         position: [float],
         rotation: [[float]],
         scale: [float],
-    ) -> [float]:
+    ) -> bool:
         print("Finding ogrid center of mass")
         self.ogrid_origin = np.asarray(self.ogrid_origin)
         point1 = self.intup(
@@ -180,11 +191,38 @@ class Dock(Navigator):
             )[:2]
         )
         contours = np.array([point1, point2, point3, point4])
-        print(contours)
-        cv2.fillPoly(self.last_image, pts=[contours], color=(255, 0, 0))
+        center = self.calculate_center_of_mass(contours)
+        side_a = np.asarray(side_a)
+        side_b = np.asarray(side_b)
+        center = np.asarray(center)
+        side_a = self.intup(self.ogrid_cpm * side_a - self.ogrid_origin)[:2]
+        side_b = self.intup(self.ogrid_cpm * side_b - self.ogrid_origin)[:2]
+        dist_a = np.linalg.norm(side_a - center)
+        dist_b = np.linalg.norm(side_b - center)
+        # cv2.fillPoly(self.last_image, pts=[contours], color=(255, 0, 0))
+        cv2.circle(self.last_image, center, radius=3, color=(255, 0, 0))
         print("Center of mass found")
         self.setBool = True
-        return None
+        return True if dist_a < dist_b else False
+
+    def calculate_center_of_mass(self, points):
+        bounding_rect = cv2.boundingRect(points)
+        x, y, w, h = bounding_rect
+        mask = np.zeros(self.last_image.shape, np.uint8)
+        cv2.drawContours(mask, [points], -1, (255, 255, 255), -1, cv2.LINE_AA)
+        masked = cv2.bitwise_and(self.last_image, mask)
+        count = 0
+        x_sum = 0
+        y_sum = 0
+        for i in range(x, x + w):
+            for j in range(y, y + h):
+                if (masked[j, i] == [255, 255, 255]).all():
+                    x_sum = x_sum + i
+                    y_sum = y_sum + j
+                    count = count + 1
+        x_sum = int(x_sum / count)
+        y_sum = int(y_sum / count)
+        return (x_sum, y_sum)
 
     def get_point(self, corner, rotation_matrix, center):
         return np.matmul(rotation_matrix, np.asarray(corner)) + np.asarray(center)
@@ -194,6 +232,7 @@ class Dock(Navigator):
 
     # This function is used to find the position of the dock after the boat is near a POI
     async def find_dock(self):
+        print("Searching for dock")
         msg = None
         while msg is None:
             try:
@@ -211,13 +250,7 @@ class Dock(Navigator):
     def ogrid_cb(self, msg):
         if not self.setBool:
             self.ogrid = np.array(msg.data).reshape((msg.info.height, msg.info.width))
-            self.ogrid_origin = np.array(
-                [
-                    msg.info.origin.position.x,
-                    msg.info.origin.position.y,
-                    msg.info.origin.position.z,
-                ]
-            )
+            self.ogrid_origin = rosmsg_to_numpy(msg.info.origin.position)
             self.ogrid_cpm = 1 / msg.info.resolution
 
             image = 255 * np.greater(self.ogrid, 90).astype(np.uint8)
