@@ -4,6 +4,17 @@ Welcome to documentation regarding the NaviGator autonomous vehicle at MIL. The 
 documentation is not restricted to any particular team, and instead is simply connected
 by the relationship to this specific robot.
 
+
+Procedures
+----------------
+Procedures related to operation of the NaviGator AMS
+
+.. toctree::
+   :maxdepth: 2
+
+   Testing Day Checklist <procedures/testing_checklist>
+
+
 Current Projects
 ----------------
 We have documentation on projects which are current. Many of the following systems
