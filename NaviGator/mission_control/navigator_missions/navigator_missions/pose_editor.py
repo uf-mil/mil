@@ -13,6 +13,7 @@ from mil_tools import make_header, normalize
 from navigator_path_planner.msg import MoveGoal
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 from tf import transformations
+from txros import types
 
 if TYPE_CHECKING:
     from .navigator import Navigator
@@ -134,7 +135,7 @@ class PoseEditor2:
     def distance(self):
         return np.linalg.norm(self.position - self.nav.pose[0])
 
-    def go(self, *args, **kwargs) -> asyncio.Future:
+    async def go(self, *args, **kwargs) -> types.ActionResult | None:
         if self.nav.killed is True or self.nav.odom_loss is True:
             # What do we want to do with missions when the boat is killed
             fprint(
@@ -152,7 +153,12 @@ class PoseEditor2:
             kwargs = dict(kwargs.items() | self.kwargs.items())
 
         goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
-        self.result = goal.get_result()
+        try:
+            self.result = await goal.get_result()
+        except asyncio.CancelledError:
+            print("cancelled go movement")
+            goal.cancel()
+            return None
         return self.result
 
     def set_position(self, position):
