@@ -15,11 +15,15 @@ ___author___ = "Kevin Allen and Alex Perez"
 class Navigation(Navigator):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.move_finished = False
 
     async def inspect_object(self, position):
         # Go in front of the object, looking directly at it
-        await self.move.look_at(position).set_position(position).backward(6.0).go()
-        await self.nh.sleep(5.0)
+        try:
+            await self.move.look_at(position).set_position(position).backward(6.0).go()
+            await self.nh.sleep(5.0)
+        except asyncio.CancelledError:
+            print("cancelled")
 
     def get_index_of_type(self, objects, classifications):
         if type(classifications) == str:
@@ -132,6 +136,9 @@ class Navigation(Navigator):
         self.objects_passed.add(right_obj.id)
         return end
 
+    def movement_finished(self, task):
+        self.move_finished = True
+
     async def explore_closest_until(self, is_done, filter_and_sort):
         """
         @condition func taking in sorted objects, positions
@@ -145,16 +152,20 @@ class Navigation(Navigator):
         service_req = None
         fl = None
         investigated = set()
+        move_task = None
         while True:
             if move_id_tuple is not None:
-                if service_req is None:
-                    service_req = self.database_query(name="all")
-                fl = asyncio.gather(service_req, move_id_tuple[0])
 
-                result, index = await fl
+                service_req = self.database_query(name="all")
+                # fl = asyncio.gather(service_req, move_id_tuple[0])
+
+                result = await service_req
+                if move_task is None:
+                    move_task = asyncio.create_task(move_id_tuple[0])
+                    move_task.add_done_callback(self.movement_finished)
 
                 # Database query succeeded
-                if index == 0:
+                if not self.move_finished:
                     service_req = None
                     objects_msg = result
                     classification_index = self.object_classified(
@@ -167,8 +178,10 @@ class Navigation(Navigator):
                                 move_id_tuple[1]
                             )
                         )
-                        fl.cancel()
+                        self.send_feedback("fl has been cancelled!")
+                        move_task.cancel()
                         # move_id_tuple[0].cancel()
+
                         await self.nh.sleep(1.0)
 
                         if (
@@ -184,6 +197,7 @@ class Navigation(Navigator):
                             print(init_boat_pos)
                             cone_buoys_investigated += 1
 
+                            """
                             if (
                                 "red"
                                 in objects_msg.objects[
@@ -194,6 +208,7 @@ class Navigation(Navigator):
                                 await self.move.left(3).yaw_left(30, "deg").go()
                             elif cone_buoys_investigated < 2:
                                 await self.move.right(3).yaw_right(30, "deg").go()
+                            """
 
                         move_id_tuple = None
 
@@ -201,6 +216,8 @@ class Navigation(Navigator):
                 else:
                     self.send_feedback(f"Investigated {move_id_tuple[1]}")
                     move_id_tuple = None
+                    self.move_finished = False
+                    move_task = None
             else:
                 objects_msg = await self.database_query(name="all")
             objects = objects_msg.objects
@@ -222,7 +239,7 @@ class Navigation(Navigator):
             if ret is not None:
                 if move_id_tuple is not None:
                     self.send_feedback("Condition met. Canceling investigation")
-                    fl.cancel()
+                    move_task.cancel()
                     move_id_tuple[0].cancel()
                     move_id_tuple = None
 
@@ -314,10 +331,10 @@ class Navigation(Navigator):
             white_index1 = indices[0]
             white_index2 = indices[1]
         except IndexError:
-            print("exception")
             return None
         except Exception as e:
             import traceback
+
             traceback.print_exc()
         return white_index1, white_index2
 
