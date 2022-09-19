@@ -266,6 +266,7 @@ class Navigator(BaseMission):
             cls._grind_motor_pub.shutdown(),
             cls.tf_listener.shutdown(),
             cls.kill_listener.shutdown(),
+            cls.poi.shutdown(),
         )
 
     @classmethod

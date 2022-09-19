@@ -106,7 +106,7 @@ class Navigation(Navigator):
                     indices = self.get_indices_of_type(objects, "white_cylinder")
                     right_index = indices[1]
 
-            except StopIteration:
+            except IndexError:
                 return None
 
             end = objects[left_index].labeled_classification == "white_cylinder"
@@ -172,13 +172,12 @@ class Navigation(Navigator):
                         await self.nh.sleep(1.0)
 
                         if (
-                            "marker"
+                            "cylinder"
                             in objects_msg.objects[
                                 classification_index
                             ].labeled_classification
                         ):
                             previous_cone = previous_index
-                            print("updating initial boat pos...")
                             init_boat_pos = rosmsg_to_numpy(
                                 objects_msg.objects[classification_index].pose.position
                             )
@@ -216,7 +215,6 @@ class Navigation(Navigator):
                 self.send_feedback("No objects")
                 continue
             objects = [objects[i] for i in indices]
-            # print(len(objects))
             positions = positions[indices]
 
             # Exit if done
@@ -242,7 +240,7 @@ class Navigation(Navigator):
             # check if there are any buoys that have "marker" in the name that haven't been investigated
             # obtain the closest one to the previous gate and deem that the next buoy to investigate
             for i in range(len(objects)):
-
+                print(f"Object {i}")
                 if (
                     "marker" in objects[i].labeled_classification
                     and objects[i].id not in investigated
@@ -315,8 +313,12 @@ class Navigation(Navigator):
             indices = self.get_indices_of_type(objects, "white_cylinder")
             white_index1 = indices[0]
             white_index2 = indices[1]
-        except StopIteration:
+        except IndexError:
+            print("exception")
             return None
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
         return white_index1, white_index2
 
     @staticmethod
