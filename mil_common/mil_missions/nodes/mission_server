@@ -214,6 +214,7 @@ class MissionRunner:
         except Exception as e:
             # print(f"Exception occurred in {goal.mission}: {e.__class__.__name__}")
             import traceback
+
             traceback.print_exc()
         await self.mission_finished_cb(result)
 

@@ -19,7 +19,7 @@
   <xacro:wamv_camera name="front_left_cam" x="0.97" y="0.1" P="${radians(12)}"/>
   <xacro:wamv_camera name="front_right_cam" x="0.97" y="-0.1" P="${radians(12)}"/>
   <xacro:mil_lidar name="velodyne" x="0.774" y="0" z="2.0" type="16_beam" P="${radians(15)}"/>
-  <xacro:wamv_gps name="ins" x="0.24" y="0.17" z="1.5" />
+  <xacro:wamv_gps name="ins" x="0.24" y="0.17" z="1.5"/>
   <xacro:wamv_imu name="imu_wamv" x="0.24" y="0.17" z="1.5"/>
   <xacro:wamv_ball_shooter name="ball_shooter" x="0.54" y="0.3" z="1.3" pitch="-0.8" yaw="0.1"/>
   <xacro:wamv_pinger name="hydrophones" position="1 0 -1"/>
