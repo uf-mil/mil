@@ -31,6 +31,9 @@ class TxPOIClient:
         """
         await self._poi_sub.setup()
 
+    async def shutdown(self) -> None:
+        await self._poi_sub.shutdown()
+
     def _cb(self, msg):
         """
         Internal callback on new points_of_interest updates

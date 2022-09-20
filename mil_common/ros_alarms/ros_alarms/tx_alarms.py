@@ -169,8 +169,6 @@ class TxAlarmListener:
             if self._last_alarm is not None and not self._last_alarm.raised:
                 funct(self._nh, self._last_alarm)
 
-        print(f"Callbacks: {self._raised_cbs}, {self._cleared_cbs}")
-
     def clear_callbacks(self):
         """Clears all callbacks"""
         self._raised_cbs = []
@@ -182,7 +180,6 @@ class TxAlarmListener:
 
             # Run the callbacks if severity conditions are met
             cb_list = self._raised_cbs if alarm.raised else self._cleared_cbs
-            print(f"Callbacks: {cb_list}")
             for severity, cb in cb_list:
                 # If the cb severity is not valid for this alarm's severity, skip it
                 if not self._severity_cb_check(severity):
