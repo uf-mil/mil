@@ -188,7 +188,7 @@ class Classifier:
             self.camera_model.project3dToPixel(point) for point in positions_camera
         ]
         distances = np.linalg.norm(positions_camera, axis=1)
-        CUTOFF_METERS = 10
+        CUTOFF_METERS = 100
 
         if self.is_perception_task:
             CUTOFF_METERS = 100

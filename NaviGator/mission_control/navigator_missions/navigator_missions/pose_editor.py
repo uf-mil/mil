@@ -155,10 +155,10 @@ class PoseEditor2:
         goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
         try:
             self.result = await goal.get_result()
-        except asyncio.CancelledError:
+        except asyncio.CancelledError as e:
             print("cancelled go movement")
             goal.cancel()
-            return None
+            raise e
         return self.result
 
     def set_position(self, position):

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import asyncio
+from enum import Enum
 
 import numpy as np
 import txros
@@ -9,13 +10,21 @@ from twisted.internet import defer
 
 from .navigator import Navigator
 
-___author___ = "Kevin Allen and Alex Perez"
+___author___ = "Alex Perez and Cameron Brown"
+
+
+class MoveState(Enum):
+    NOT_STARTED = 1
+    RUNNING = 2
+    CANCELLED = 3
+    FINISHED = 4
 
 
 class Navigation(Navigator):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.move_finished = False
+        self.current_move_task_state = MoveState.NOT_STARTED
+        self.last_move_task_state = MoveState.NOT_STARTED
 
     async def inspect_object(self, position):
         # Go in front of the object, looking directly at it
@@ -23,7 +32,7 @@ class Navigation(Navigator):
             await self.move.look_at(position).set_position(position).backward(6.0).go()
             await self.nh.sleep(5.0)
         except asyncio.CancelledError:
-            print("cancelled")
+            print("Cancelled Inspection")
 
     def get_index_of_type(self, objects, classifications):
         if type(classifications) == str:
@@ -110,7 +119,7 @@ class Navigation(Navigator):
                     indices = self.get_indices_of_type(objects, "white_cylinder")
                     right_index = indices[1]
 
-            except IndexError:
+            except (StopIteration, IndexError):
                 return None
 
             end = objects[left_index].labeled_classification == "white_cylinder"
@@ -137,7 +146,9 @@ class Navigation(Navigator):
         return end
 
     def movement_finished(self, task):
-        self.move_finished = True
+        if not task.cancelled():
+            print("THE MOVEMENT HAS FINISHED")
+            self.current_move_task_state = MoveState.FINISHED
 
     async def explore_closest_until(self, is_done, filter_and_sort):
         """
@@ -157,15 +168,15 @@ class Navigation(Navigator):
             if move_id_tuple is not None:
 
                 service_req = self.database_query(name="all")
-                # fl = asyncio.gather(service_req, move_id_tuple[0])
 
                 result = await service_req
                 if move_task is None:
+                    self.current_move_task_state = MoveState.RUNNING
                     move_task = asyncio.create_task(move_id_tuple[0])
                     move_task.add_done_callback(self.movement_finished)
 
                 # Database query succeeded
-                if not self.move_finished:
+                if self.current_move_task_state != MoveState.FINISHED:
                     service_req = None
                     objects_msg = result
                     classification_index = self.object_classified(
@@ -178,8 +189,11 @@ class Navigation(Navigator):
                                 move_id_tuple[1]
                             )
                         )
-                        self.send_feedback("fl has been cancelled!")
                         move_task.cancel()
+
+                        move_task = None
+                        self.last_move_task_state = MoveState.CANCELLED
+                        self.current_move_task_state = MoveState.NOT_STARTED
                         # move_id_tuple[0].cancel()
 
                         await self.nh.sleep(1.0)
@@ -197,26 +211,32 @@ class Navigation(Navigator):
                             print(init_boat_pos)
                             cone_buoys_investigated += 1
 
-                            """
                             if (
+                                "green"
+                                in objects_msg.objects[
+                                    classification_index
+                                ].labeled_classification
+                                and cone_buoys_investigated < 2
+                            ):
+                                await self.move.left(4).yaw_left(30, "deg").go()
+                            elif (
                                 "red"
                                 in objects_msg.objects[
                                     classification_index
                                 ].labeled_classification
                                 and cone_buoys_investigated < 2
                             ):
-                                await self.move.left(3).yaw_left(30, "deg").go()
-                            elif cone_buoys_investigated < 2:
-                                await self.move.right(3).yaw_right(30, "deg").go()
-                            """
+                                await self.move.right(4).yaw_right(30, "deg").go()
 
+                        self.send_feedback(f"Investigated {move_id_tuple[1]}")
                         move_id_tuple = None
 
                 # Move succeeded:
                 else:
                     self.send_feedback(f"Investigated {move_id_tuple[1]}")
                     move_id_tuple = None
-                    self.move_finished = False
+                    self.last_move_task_state = MoveState.FINISHED
+                    self.current_move_task_state = MoveState.NOT_STARTED
                     move_task = None
             else:
                 objects_msg = await self.database_query(name="all")
@@ -240,7 +260,8 @@ class Navigation(Navigator):
                 if move_id_tuple is not None:
                     self.send_feedback("Condition met. Canceling investigation")
                     move_task.cancel()
-                    move_id_tuple[0].cancel()
+                    self.last_move_task_state = MoveState.NOT_STARTED
+                    self.current_move_task_state = MoveState.NOT_STARTED
                     move_id_tuple = None
 
                 return ret
@@ -254,12 +275,12 @@ class Navigation(Navigator):
             potential_candidate = None
             shortest_distance = 1000
 
-            # check if there are any buoys that have "marker" in the name that haven't been investigated
+            # check if there are any buoys that have "cylinder" in the name that haven't been investigated
             # obtain the closest one to the previous gate and deem that the next buoy to investigate
             for i in range(len(objects)):
                 print(f"Object {i}")
                 if (
-                    "marker" in objects[i].labeled_classification
+                    "cylinder" in objects[i].labeled_classification
                     and objects[i].id not in investigated
                 ):
                     distance = np.linalg.norm(positions[i] - init_boat_pos)
@@ -281,7 +302,7 @@ class Navigation(Navigator):
                         objects[i].id not in investigated
                         and "round" not in objects[i].labeled_classification
                     ):
-                        distance = np.linalg.norm(positions[i] - init_boat_pos)
+                        distance = np.linalg.norm(positions[i] - self.pose[0])
                         if distance < shortest_distance and distance <= 25:
                             shortest_distance = distance
                             print(shortest_distance)
@@ -299,13 +320,14 @@ class Navigation(Navigator):
                         objects[i].id not in investigated
                         and "round" not in objects[i].labeled_classification
                     ):
-                        distance = np.linalg.norm(positions[i] - init_boat_pos)
+                        distance = np.linalg.norm(positions[i] - self.pose[0])
                         if distance < shortest_distance:
                             shortest_distance = distance
                             print(shortest_distance)
                             print(positions[i])
                             print(
-                                "POTENTIAL CANDIDATE: IDENTIFIED BY FINDING CLOSEST CONE TO INIT BOAT POS"
+                                "POTENTIAL CANDIDATE: IDENTIFIED BY FINDING CLOSEST CONE TO INIT BOAT POS",
+                                distance,
                             )
                             potential_candidate = i
                             print(positions[i])
