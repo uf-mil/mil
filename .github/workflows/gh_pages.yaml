@@ -67,6 +67,7 @@ jobs:
           token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
           branch: main
           git-config-name: uf-mil-bot
+          git-config-email: <>
           repository-name: uf-mil/uf-mil.github.io
           folder: ${{ github.workspace }}/pr-docs/${{ github.event.number }}
           target-folder: pr-docs/${{ github.event.number }}
