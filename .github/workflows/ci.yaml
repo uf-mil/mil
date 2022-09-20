@@ -64,6 +64,7 @@ jobs:
           cd $GITHUB_WORKSPACE/catkin_ws
           ls src/mil/mil_common/drivers/mil_blueview_driver
           source /opt/ros/noetic/setup.bash
+          rm -rf build devel
           catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3 \
                       -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 \
                       -j6

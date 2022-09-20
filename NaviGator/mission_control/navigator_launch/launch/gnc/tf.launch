@@ -13,7 +13,7 @@
     <!-- Republishes ins-frame odom in base_link frame -->
     <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry">
         <rosparam>
-            frame_id: /enu
+            frame_id: enu
             child_frame_id: wamv/base_link
         </rosparam>
         <remap from="orig_odom" to="ins_odom"/>
@@ -22,8 +22,8 @@
     <!-- Republishes ins-frame absodom in enu frame -->
     <node pkg="nodelet" type="nodelet" name="transform_odometry_absodom" args="standalone odometry_utils/transform_odometry">
         <rosparam>
-            frame_id: /ecef
-            child_frame_id: /enu
+            frame_id: ecef
+            child_frame_id: enu
         </rosparam>
         <remap from="orig_odom" to="absodom"/>
         <remap from="odom" to="enu_odom"/>

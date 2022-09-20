@@ -16,6 +16,5 @@ catkin_package()
 if(CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
     add_rostest(test/import_mil_missions_examples.test)
-    # GH-877
-    # add_rostest(test/run_mission.test)
+    add_rostest(test/run_mission.test)
 endif()
