@@ -67,7 +67,10 @@ jobs:
           token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
           branch: main
           git-config-name: uf-mil-bot
+<<<<<<< HEAD
           git-config-email: 108953868+uf-mil-bot@users.noreply.github.com
+=======
+>>>>>>> parent of da133c79... Removed email from push
           repository-name: uf-mil/uf-mil.github.io
           folder: ${{ github.workspace }}/pr-docs/${{ github.event.number }}
           target-folder: pr-docs/${{ github.event.number }}
