@@ -81,6 +81,15 @@ def look_at_camera(forward, upish=UP):
     return triad((forward, upish), (UP, [0, -1, 0]))
 
 
+class KilledException(Exception):
+    """
+    Represents that an action could not be taken because the boat was killed.
+    """
+
+    def __init__(self):
+        super().__init__("The boat is currently killed.")
+
+
 class PoseEditor2:
     """
     Used to chain movements together
@@ -143,11 +152,7 @@ class PoseEditor2:
                 title="POSE_EDITOR",
                 msg_color="red",
             )
-
-            class Res:
-                failure_reason = "boat_killed"
-
-            return Res()
+            raise KilledException()
 
         if len(self.kwargs) > 0:
             kwargs = dict(kwargs.items() | self.kwargs.items())
