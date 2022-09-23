@@ -104,5 +104,31 @@ def keyboard():
     pass
 
 
+@nav.group()
+def mission():
+    """
+    Manage NaviGator missions commands
+    """
+    pass
+
+
+@mission.command()
+def run():
+    """ """
+    pass
+
+
+@mission.command()
+def refresh():
+    """ """
+    pass
+
+
+@mission.command()
+def list():
+    """ """
+    pass
+
+
 if __name__ == "__main__":
     nav()
