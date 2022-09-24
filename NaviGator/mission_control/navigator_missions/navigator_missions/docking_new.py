@@ -2,6 +2,7 @@
 import asyncio
 import copy
 import os
+import random
 from typing import Optional
 
 import cv2
@@ -46,22 +47,46 @@ class Dock(Navigator):
         self.ogrid_sub = self.nh.subscribe(
             "/ogrid", OccupancyGrid, callback=self.ogrid_cb
         )
+        self.image_sub = self.nh.subscribe(
+            "/wamv/sensors/camera/front_left_cam/image_raw", Image
+        )
+        self.cam_frame = None
+        self.image_info_sub = self.nh.subscribe(
+            "/wamv/sensors/camera/front_left_cam/camera_info", CameraInfo
+        )
+        self.model = PinholeCameraModel()
+        self.center = None
         self.intup = lambda arr: tuple(np.array(arr, dtype=np.int64))
         self.last_image = None
         self.setBool = False
 
+    @classmethod
+    async def init(cls):
+        cls.image_debug_pub = cls.nh.advertise("/dock_mask_debug", Image)
+        await cls.image_debug_pub.setup()
+        cls.contour_pub = cls.nh.advertise("/contour_pub", Image)
+        await cls.contour_pub.setup()
+
+    @classmethod
     async def shutdown(cls):
         await cls.image_debug_pub.shutdown()
+        await cls.contour_pub.shutdown()
         await cls.ogrid_sub.shutdown()
+        await cls.image_sub.shutdown()
+        await cls.image_info_sub.shutdown()
 
     async def run(self, args):
         await self.ogrid_sub.setup()
+        await self.image_sub.setup()
+        await self.image_info_sub.setup()
 
         self.bridge = CvBridge()
+        msg = await self.image_info_sub.get_next_message()
+        self.model.fromCameraInfo(msg)
+
+        self.cam_frame = (await self.image_sub.get_next_message()).header.frame_id
 
         # debug image for occupancy grid
-        self.image_debug_pub = self.nh.advertise("/dock_mask_debug", Image)
-        await self.image_debug_pub.setup()
 
         print("starting docking task")
 
@@ -71,6 +96,8 @@ class Dock(Navigator):
         await self.pcodar_set_params(doubles=[pcodar_cluster_tol])
         await self.nh.sleep(5)
 
+        pos = await self.poi.get("dock")
+        await self.move.look_at(pos).set_position(pos).go()
         # find dock approach it
         # pos = await self.find_dock_poi()
 
@@ -88,7 +115,13 @@ class Dock(Navigator):
         await self.find_dock()
 
         # get a vector to the longer side of the dock
-        dock, pos = await self.get_sorted_objects(name="dock", n=1)
+        dock, pos = None, None
+        while dock is None or pos is None:
+            try:
+                dock, pos = await self.get_sorted_objects(name="dock", n=1)
+            except:
+                await self.find_dock()
+                dock, pos = await self.get_sorted_objects(name="dock", n=1)
         # dock is PerceptionObject
         dock = dock[0]
         position, quat = pose_to_numpy(dock.pose)
@@ -126,26 +159,181 @@ class Dock(Navigator):
             position
         ).go()
 
+        # recalculate dock position once on correct side
+        await self.find_dock()
+
+        dock, pos = await self.get_sorted_objects(name="dock", n=1)
+        # dock is PerceptionObject
+        dock = dock[0]
+        position, quat = pose_to_numpy(dock.pose)
+        rotation = quaternion_matrix(quat)
+        points = rosmsg_to_numpy(dock.points)
+        centers = self.get_cluster_centers(points)
+        enu_to_boat = await self.tf_listener.get_transform("wamv/base_link", "enu")
+        left = enu_to_boat.transform_point(centers[0])
+        left[0] = 0
+        forward = enu_to_boat.transform_point(centers[0])
+        forward[0] = forward[0] - 5
+        boat_to_enu = await self.tf_listener.get_transform("enu", "wamv/base_link")
+        centers[0] = boat_to_enu.transform_point(left)
+        nextPt = boat_to_enu.transform_point(forward)
+        await self.move.set_position(centers[0]).look_at(centers[0]).go(
+            blind=True, move_type="skid"
+        )
+        await self.move.set_position(nextPt).look_at(nextPt).go(
+            blind=True, move_type="skid"
+        )
+
+        await self.crop_image()
+
         # define how far left and right we want to do
         rot = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
 
         side_vect = 0.80 * bbox_enu
-        if side_a_bool:
-            print("creating side a left and right position")
-            self.left_position = np.dot(rot, -side_vect) + side_a
-            self.right_position = np.dot(rot, side_vect) + side_a
-            self.dock_point_left = np.dot(rot, -side_vect) + position
-            self.dock_point_right = np.dot(rot, side_vect) + position
-        else:
-            print("creating side b left and right position")
-            self.left_position = np.dot(rot, side_vect) + side_b
-            self.right_position = np.dot(rot, -side_vect) + side_b
-            self.dock_point_left = np.dot(rot, side_vect) + position
-            self.dock_point_right = np.dot(rot, -side_vect) + position
+        # if side_a_bool:
+        #     print("creating side a left and right position")
+        #     self.left_position = np.dot(rot, -side_vect) + side_a
+        #     self.right_position = np.dot(rot, side_vect) + side_a
+        #     self.dock_point_left = np.dot(rot, -side_vect) + position
+        #     self.dock_point_right = np.dot(rot, side_vect) + position
+        # else:
+        #     print("creating side b left and right position")
+        #     self.left_position = np.dot(rot, side_vect) + side_b
+        #     self.right_position = np.dot(rot, -side_vect) + side_b
+        #     self.dock_point_left = np.dot(rot, side_vect) + position
+        #     self.dock_point_right = np.dot(rot, -side_vect) + position
 
-        await self.move.set_position(self.left_position).look_at(
-            self.dock_point_left
-        ).go(blind=True, move_type="skid")
+        # await self.move.set_position(self.left_position).look_at(
+        #     self.dock_point_left
+        # ).go(blind=True, move_type="skid")
+
+    def get_cluster_centers(self, data):
+        mean = np.mean(data, axis=0)[2]
+        data = data[data[:, 2] > mean]
+        centroids = []
+
+        # Sample initial centroids
+        random_indices = random.sample(range(data.shape[0]), 3)
+        for i in random_indices:
+            centroids.append(data[i])
+
+        # Create a list to store which centroid is assigned to each dataset
+        assigned_centroids = [0] * len(data)
+
+        def compute_l2_distance(x, centroid):
+            # Initialise the distance to 0
+            dist = 0
+
+            # Loop over the dimensions. Take squared difference and add to dist
+
+            for i in range(len(x)):
+                dist += (centroid[i] - x[i]) ** 2
+
+            return dist
+
+        def get_closest_centroid(x, centroids):
+            # Initialise the list to keep distances from each centroid
+            centroid_distances = []
+
+            # Loop over each centroid and compute the distance from data point.
+            for centroid in centroids:
+                dist = compute_l2_distance(x, centroid)
+                centroid_distances.append(dist)
+
+            # Get the index of the centroid with the smallest distance to the data point
+            closest_centroid_index = min(
+                range(len(centroid_distances)), key=lambda x: centroid_distances[x]
+            )
+
+            return closest_centroid_index
+
+        def compute_sse(data, centroids, assigned_centroids):
+            # Initialise SSE
+            sse = 0
+
+            # Compute the squared distance for each data point and add.
+            for i, x in enumerate(data):
+                # Get the associated centroid for data point
+                centroid = centroids[assigned_centroids[i]]
+
+                # Compute the Distance to the centroid
+                dist = compute_l2_distance(x, centroid)
+
+                # Add to the total distance
+                sse += dist
+
+            sse /= len(data)
+            return sse
+
+        # Number of dimensions in centroid
+        num_centroid_dims = data.shape[1]
+
+        # List to store SSE for each iteration
+        sse_list = []
+
+        # Loop over iterations
+        for n in range(10):
+
+            # Loop over each data point
+            for i in range(len(data)):
+                x = data[i]
+
+                # Get the closest centroid
+                closest_centroid = get_closest_centroid(x, centroids)
+
+                # Assign the centroid to the data point.
+                assigned_centroids[i] = closest_centroid
+
+            # Loop over centroids and compute the new ones.
+            for c in range(len(centroids)):
+                # Get all the data points belonging to a particular cluster
+                cluster_data = [
+                    data[i] for i in range(len(data)) if assigned_centroids[i] == c
+                ]
+
+                # Initialise the list to hold the new centroid
+                new_centroid = [0] * len(centroids[0])
+
+                # Compute the average of cluster members to compute new centroid
+                # Loop over dimensions of data
+                for dim in range(num_centroid_dims):
+                    dim_sum = [x[dim] for x in cluster_data]
+                    dim_sum = sum(dim_sum) / len(dim_sum)
+                    new_centroid[dim] = dim_sum
+
+                # assign the new centroid
+                centroids[c] = new_centroid
+
+            # Compute the SSE for the iteration
+            sse = compute_sse(data, centroids, assigned_centroids)
+            sse_list.append(sse)
+
+        cluster_members = []
+
+        for c in range(len(centroids)):
+            cluster_member = [
+                data[i] for i in range(len(data)) if assigned_centroids[i] == c
+            ]
+            cluster_members.append(np.array(cluster_member))
+
+        means = []
+
+        for c in range(len(cluster_members)):
+            means.append(np.mean(cluster_members[c], axis=0))
+
+        print(means)
+        return np.asarray(means)
+
+    async def crop_image(self):
+        image = await self.image_sub.get_next_message()
+        enu_to_cam = await self.tf_listener.get_transform(self.cam_frame, "enu")
+        transform = enu_to_cam.transform_point(self.center)
+        rect = self.model.project3dToPixel(transform)
+        image = self.bridge.imgmsg_to_cv2(image)
+        height = image.shape[0]
+        image = image[: int(rect[1]), :]
+        msg = self.bridge.cv2_to_imgmsg(image, encoding="rgb8")
+        self.contour_pub.publish(msg)
 
     # returns True if side a is closest, False is side b is closest
     def calculate_correct_side(
@@ -196,6 +384,8 @@ class Dock(Navigator):
         )
         contours = np.array([point1, point2, point3, point4])
         center = self.calculate_center_of_mass(contours)
+        center_coordinate = self.ogrid_to_position(center)
+        self.center = [center_coordinate[0], center_coordinate[1], position[2] - 1]
         side_a = np.asarray(side_a)
         side_b = np.asarray(side_b)
         center = np.asarray(center)
@@ -210,6 +400,12 @@ class Dock(Navigator):
         print("Center of mass found")
         self.setBool = True
         return dist_a > dist_b
+
+    def ogrid_to_position(self, ogrid):
+        ogrid = np.array(ogrid, dtype=np.float64)
+        ogrid = ogrid / self.ogrid_cpm
+        ogrid = ogrid + self.ogrid_origin[:2]
+        return tuple(ogrid)
 
     def calculate_center_of_mass(self, points):
         bounding_rect = cv2.boundingRect(points)
