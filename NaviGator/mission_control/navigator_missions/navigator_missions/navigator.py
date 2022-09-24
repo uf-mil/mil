@@ -133,7 +133,7 @@ class Navigator(BaseMission):
         await cls._odom_sub.setup()
 
         if cls.is_vrx:
-            cls._init_vrx()
+            await cls._init_vrx()
         else:
             await cls._init_not_vrx()
 
@@ -144,17 +144,24 @@ class Navigator(BaseMission):
             cls.rviz_goal.shutdown(),
             cls.rviz_point.shutdown(),
             cls._odom_sub.shutdown(),
+            cls.poi.shutdown(),
+            cls.tf_listener.shutdown(),
         )
         if not cls.is_vrx:
             await cls._shutdown_not_vrx()
 
     @classmethod
-    def _init_vrx(cls):
+    async def _init_vrx(cls):
         cls.killed = False
         cls.odom_loss = False
         cls.set_vrx_classifier_enabled = cls.nh.get_service_client(
             "/vrx_classifier/set_enabled", SetBool
         )
+        cls.poi = TxPOIClient(cls.nh)
+        await cls.poi.setup()
+
+        cls.tf_listener = txros_tf.TransformListener(cls.nh)
+        await cls.tf_listener.setup()
 
     @classmethod
     async def _init_not_vrx(cls):
@@ -264,9 +271,7 @@ class Navigator(BaseMission):
             cls._grinch_limit_switch_sub.shutdown(),
             cls._winch_motor_pub.shutdown(),
             cls._grind_motor_pub.shutdown(),
-            cls.tf_listener.shutdown(),
             cls.kill_listener.shutdown(),
-            cls.poi.shutdown(),
         )
 
     @classmethod

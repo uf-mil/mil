@@ -48,11 +48,11 @@ class Dock(Navigator):
             "/ogrid", OccupancyGrid, callback=self.ogrid_cb
         )
         self.image_sub = self.nh.subscribe(
-            "/wamv/sensors/camera/front_left_cam/image_raw", Image
+            "/wamv/sensors/cameras/front_left_camera/image_raw", Image
         )
         self.cam_frame = None
         self.image_info_sub = self.nh.subscribe(
-            "/wamv/sensors/camera/front_left_cam/camera_info", CameraInfo
+            "/wamv/sensors/cameras/front_left_camera/camera_info", CameraInfo
         )
         self.model = PinholeCameraModel()
         self.center = None
@@ -87,8 +87,6 @@ class Dock(Navigator):
         self.cam_frame = (await self.image_sub.get_next_message()).header.frame_id
 
         # debug image for occupancy grid
-
-        print("starting docking task")
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = "cluster_tolerance_m"

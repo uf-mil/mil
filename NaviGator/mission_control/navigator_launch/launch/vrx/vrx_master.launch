@@ -31,4 +31,9 @@
     <node if="$(arg run_task)" name="run_vrx_task" pkg="mil_missions" type="mission_client"
           args="run Vrx" output="screen" />
     <include file="$(find navigator_launch)/launch/vrx/vrx_classifier.launch" />
+
+    <!-- POI (point of interest) server -->
+    <include file="$(find navigator_launch)/launch/poi.launch">
+      <arg name="simulation" value="True" />
+    </include>
 </launch>
