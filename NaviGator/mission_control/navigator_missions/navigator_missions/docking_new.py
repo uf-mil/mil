@@ -177,12 +177,8 @@ class Dock(Navigator):
         boat_to_enu = await self.tf_listener.get_transform("enu", "wamv/base_link")
         centers[0] = boat_to_enu.transform_point(left)
         nextPt = boat_to_enu.transform_point(forward)
-        await self.move.set_position(centers[0]).look_at(centers[0]).go(
-            blind=True, move_type="skid"
-        )
-        await self.move.set_position(nextPt).look_at(nextPt).go(
-            blind=True, move_type="skid"
-        )
+        await self.move.set_position(centers[0]).go(blind=True, move_type="skid")
+        await self.move.set_position(nextPt).go(blind=True, move_type="skid")
 
         await self.crop_image()
 
