@@ -484,6 +484,15 @@ Visualization Manager:
       Show Visual Aids: false
       Update Topic: /pcodar_objects/update
       Value: true
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: POI Server
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /points_of_interest/update
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

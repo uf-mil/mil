@@ -5,20 +5,23 @@ camera_name: head_camera
 camera_matrix:
   rows: 3
   cols: 3
-  # yamllint disable-line rule:line-length
-  data: [722.25663718, 0, 652.46372445, 0, 722.68908779, 374.64826018, 0, 0, 1]
+  data: [1137.98804, 0., 969.70439,
+         0., 1135.58547, 522.05503,
+         0., 0., 1.]
 distortion_model: plumb_bob
 distortion_coefficients:
   rows: 1
   cols: 5
-  data: [0.06689877, -0.13360559, 0.0073066, -0.00161229, 0.07727962]
+  data: [0.086519, -0.082546, 0.001258, -0.004802, 0.000000]
 rectification_matrix:
   rows: 3
   cols: 3
-  # yamllint disable-line rule:line-length
-  data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+  data: [1., 0., 0.,
+         0., 1., 0.,
+         0., 0., 1.]
 projection_matrix:
   rows: 3
   cols: 4
-  # yamllint disable-line rule:line-length
-  data: [854.45606813, -192.76333133, 424.39449502, 238766.12252092, 323.41079702, 705.5918928, 245.32911294, 84831.3213676, 0.30526183, 0.06062721, 0.95033655, 626.15423135]
+  data: [1160.79333, 0., 957.94965, 0.,
+         0., 1166.58521, 522.95335, 0.,
+         0., 0., 1., 0.]

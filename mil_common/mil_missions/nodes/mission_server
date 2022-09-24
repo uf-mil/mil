@@ -209,7 +209,13 @@ class MissionRunner:
         self.mission_future = asyncio.create_task(self.run_with_callback(parameters))
 
     async def run_with_callback(self, parameters):
-        result = await self.mission.run(parameters)
+        try:
+            result = await self.mission.run(parameters)
+        except Exception as e:
+            # print(f"Exception occurred in {goal.mission}: {e.__class__.__name__}")
+            import traceback
+
+            traceback.print_exc()
         await self.mission_finished_cb(result)
 
     def check_new_mission(self):

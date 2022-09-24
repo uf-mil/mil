@@ -187,6 +187,7 @@ class Navigator(BaseMission):
         cls.hydrophones = TxHydrophonesClient(cls.nh)
 
         cls.poi = TxPOIClient(cls.nh)
+        await cls.poi.setup()
 
         cls._grinch_lower_time = await cls.nh.get_param("~grinch_lower_time")
         cls._grinch_raise_time = await cls.nh.get_param("~grinch_raise_time")
@@ -265,6 +266,7 @@ class Navigator(BaseMission):
             cls._grind_motor_pub.shutdown(),
             cls.tf_listener.shutdown(),
             cls.kill_listener.shutdown(),
+            cls.poi.shutdown(),
         )
 
     @classmethod

@@ -4,7 +4,7 @@ import math
 import numpy as np
 import tf2_ros
 from mil_misc_tools import ThrowingArgumentParser
-from mil_tools import rosmsg_to_numpy
+from mil_tools import quaternion_matrix, rosmsg_to_numpy
 from navigator_msgs.srv import MessageEntranceExitGate, MessageEntranceExitGateRequest
 from std_srvs.srv import SetBoolRequest
 
@@ -34,9 +34,6 @@ class EntranceGate2(Navigator):
         await self.move.yaw_left(20, "deg").go()
         await self.move.yaw_right(40, "deg").go()
 
-        self.initial_boat_pose = await self.tx_pose()
-        self.initial_boat_pose = self.initial_boat_pose[0]
-
         # Find the gates
         print("finding gates")
         self.gate_results = await self.find_gates()
@@ -46,10 +43,9 @@ class EntranceGate2(Navigator):
         print("defined gates")
 
         # Which gate do we go through?
-        self.pinger_gate = 0
+        self.pinger_gate = 2
 
         # Calculate traversal points
-        print("get perp points")
         traversal_points = await self.get_perpendicular_points(
             self.gate_centers[self.pinger_gate], self.traversal_distance
         )
@@ -143,14 +139,58 @@ class EntranceGate2(Navigator):
     """
 
     async def find_gates(self):
-        # Find each of the needed totems
-        t1 = await self.get_sorted_objects("red_cylinder", n=1)
-        t1 = t1[1][0][:2]
-        white_totems = await self.get_sorted_objects("white_cylinder", n=2)
-        t2 = white_totems[1][0][:2]
-        t3 = white_totems[1][1][:2]
-        t4 = await self.get_sorted_objects("green_cylinder", n=1)
-        t4 = t4[1][0][:2]
+
+        # This mission assumes we are starting off looking at the start gate task
+
+        # Get five closest buoys
+        buoys = await self.get_sorted_objects("all", n=5)
+
+        # Determine their locations relative to boat
+        pose = self.pose
+        p = pose[0]
+        q_mat = quaternion_matrix(pose[1])
+        positions_local = np.array(
+            [(q_mat.T.dot(position - p)) for position in buoys[1]]
+        )
+        positions_local_x = np.array(positions_local[:, 0])  # positive is forward
+        positions_local_y = np.array(positions_local[:, 1])  # positive is to the left
+
+        # Sort the x and y axes and delete the black buoy from y axis
+        argsort_x = np.argsort(np.array(positions_local_x))
+        argsort_y = np.argsort(np.array(positions_local_y))
+        argsort_y = np.delete(argsort_y, np.where(argsort_y == argsort_x[-1]))
+
+        # Label buoys
+        await self.pcodar_label(buoys[0][argsort_x[-1]].id, "black_cylinder")
+        for i, buoy_index in enumerate(argsort_y):
+            if i == 0:
+                try:
+                    t4 = await self.get_sorted_objects("green_cylinder", n=1)
+                    t4 = t4[1][0][:2]
+                except:
+                    t4 = buoys[1][buoy_index][:2]
+                    await self.pcodar_label(buoys[0][buoy_index].id, "green_cylinder")
+            elif i == 1:
+                try:
+                    white_totems = await self.get_sorted_objects("white_cylinder", n=2)
+                    t3 = white_totems[1][0][:2]
+                except:
+                    t3 = buoys[1][buoy_index][:2]
+                    await self.pcodar_label(buoys[0][buoy_index].id, "white_cylinder")
+            elif i == 2:
+                try:
+                    white_totems = await self.get_sorted_objects("white_cylinder", n=2)
+                    t2 = white_totems[1][1][:2]
+                except:
+                    t2 = buoys[1][buoy_index][:2]
+                    await self.pcodar_label(buoys[0][buoy_index].id, "white_cylinder")
+            elif i == 3:
+                try:
+                    t1 = await self.get_sorted_objects("red_cylinder", n=1)
+                    t1 = t1[1][0][:2]
+                except:
+                    t1 = buoys[1][buoy_index][:2]
+                    await self.pcodar_label(buoys[0][buoy_index].id, "red_cylinder")
 
         # Make sure the two white totems get ordered properly
         if (t2[0] - t1[0]) ** 2 + (t2[1] - t1[1]) ** 2 < (t3[0] - t1[0]) ** 2 + (

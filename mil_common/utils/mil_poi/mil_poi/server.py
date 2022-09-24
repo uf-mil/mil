@@ -294,6 +294,9 @@ class POIServer:
             if poi.name == name:
                 pose = Pose()
                 pose.orientation.w = 1.0
+                pose.orientation.x = 0.0
+                pose.orientation.y = 1.0
+                pose.orientation.z = 0.0
                 pose.position = position
                 if not self.interactive_marker_server.setPose(name, pose):
                     return False
@@ -342,6 +345,9 @@ class POIServer:
         text_marker = Marker()
         text_marker.type = Marker.TEXT_VIEW_FACING
         text_marker.pose.orientation.w = 1.0
+        text_marker.pose.orientation.x = 0.0
+        text_marker.pose.orientation.y = 1.0
+        text_marker.pose.orientation.z = 0.0
         text_marker.pose.position.x = 1.5
         text_marker.text = poi.name
         text_marker.scale.z = 1.0
@@ -353,6 +359,9 @@ class POIServer:
         int_marker = InteractiveMarker()
         int_marker.header.frame_id = self.global_frame
         int_marker.pose.orientation.w = 1.0
+        int_marker.pose.orientation.x = 0.0
+        int_marker.pose.orientation.y = 1.0
+        int_marker.pose.orientation.z = 0.0
         int_marker.pose.position = poi.position
         int_marker.scale = 1
 
@@ -360,7 +369,7 @@ class POIServer:
 
         # insert a box
         control = InteractiveMarkerControl()
-        control.interaction_mode = InteractiveMarkerControl.MOVE_3D
+        control.interaction_mode = InteractiveMarkerControl.MOVE_PLANE
         control.always_visible = True
         control.markers.append(point_marker)
         control.markers.append(text_marker)
