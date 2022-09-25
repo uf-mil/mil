@@ -12,7 +12,7 @@ sudo usermod -a -G dialout "$USER"
 # Make udev rules directory if it doesn't exist
 sudo mkdir -p /etc/udev/rules.d
 # Copy rules file from repo to udev config
-sudo cp $(realpath $(dirname $BASH_SOURCE)/../provisioning/99-mil.rules) /etc/udev/rules.d/
+sudo cp $(realpath $(dirname $BASH_SOURCE)/../../provisioning/99-mil.rules) /etc/udev/rules.d/
 # Reload udev rules so they take effect
 sudo udevadm control --reload-rules
 
