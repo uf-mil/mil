@@ -18,6 +18,7 @@ from .detect_deliver import DetectDeliver
 from .detect_deliver_find import DetectDeliverFind
 from .discount_docking import DiscountDocking
 from .docking import Docking
+from .docking_new import Dock
 from .entrance_gate import EntranceGate
 from .entrance_gate2 import EntranceGate2
 from .example_mission import ExampleMission
