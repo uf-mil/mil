@@ -8,7 +8,7 @@ from rich.console import Console
 @click.group()
 def nav():
     """
-    Command-line interface to all tools for NaviGator.
+    Manage a running instance of NaviGator
     """
     pass
 

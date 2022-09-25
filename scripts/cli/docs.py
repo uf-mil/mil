@@ -8,6 +8,6 @@ from rich.console import Console
 @click.group()
 def docs():
     """
-    Command-line interface to all tools for NaviGator.
+    Manage building of MIL documentation
     """
     pass

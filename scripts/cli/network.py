@@ -8,6 +8,6 @@ from rich.console import Console
 @click.group()
 def network():
     """
-    Command-line interface to all tools for NaviGator.
+    Manage the local MIL network
     """
     pass

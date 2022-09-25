@@ -8,7 +8,7 @@ from rich.console import Console
 @click.group()
 def mission():
     """
-    Manage NaviGator missions commands
+    Run and manage available missions for a robotic system
     """
     pass
 
