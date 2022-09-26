@@ -1,5 +1,6 @@
 import functools
 import importlib
+import os
 import re
 import time
 
@@ -8,6 +9,17 @@ import rich_click as click
 import rosbag
 import rospy
 from rich.console import Console
+from rich.progress import (
+    BarColumn,
+    DownloadColumn,
+    FileSizeColumn,
+    Progress,
+    TaskID,
+    TextColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+    TransferSpeedColumn,
+)
 
 
 @click.group()
@@ -20,7 +32,6 @@ def bag():
 
 def validate_name(ctx, param, values):
     topic_names = [t[0] for t in rospy.get_published_topics()]
-    print(rospy.get_published_topics())
     for value in values:
         if value not in topic_names:
             raise click.BadParameter(f"{value} is not a valid ROS topic.")
@@ -60,8 +71,16 @@ def validate_filesize(ctx, param, value):
 
 
 def write_to_bag(bag, msg):
-    print(f"Writing {msg}...")
     bag.write("test", msg)
+
+
+# Thanks Fred! https://stackoverflow.com/a/1094933
+def sizeof_fmt(num, suffix="B"):
+    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
+        if abs(num) < 1000.0:
+            return f"{num:3.1f}{unit}{suffix}"
+        num /= 1000.0
+    return f"{num:.1f}Y{suffix}"
 
 
 @bag.command()
@@ -90,8 +109,24 @@ def record(filename, names, all, timeout, filesize):
         f"Doing something with {names} using {filename}... (all: {all}, timeout: {timeout}, filesize: {filesize})"
     )
     bag = rosbag.Bag(filename, "w")
+
+    progress = Progress(
+        TextColumn("[bold blue]{task.fields[filename]}", justify="right"),
+        BarColumn(),
+        "[progress.percentage]{task.percentage:>3.1f}%",
+        "•",
+        FileSizeColumn(),
+        "•",
+        TextColumn("[bold blue]{task.fields[messages]}"),
+        "•",
+        TransferSpeedColumn(),
+        "•",
+        TimeElapsedColumn(),
+    )
+    task_id = progress.add_task("download", filename=filename, messages=0, start=False)
+
     subs = []
-    node = rospy.init_node("mil_cli_listener", anonymous=True)
+    rospy.init_node("mil_cli_listener", anonymous=True)
     for topic_name, msg_name in names:
         msg_mod, class_name = msg_name.split("/")
         ros_pkg = importlib.import_module(".msg", package=msg_mod)
@@ -102,8 +137,15 @@ def record(filename, names, all, timeout, filesize):
                 functools.partial(write_to_bag, bag),
             )
         )
-    print("recording..")
-    rospy.spin()
+    progress.update(task_id, completed=0)
+    messages = 0
+    with progress:
+        while True:
+            size = sizeof_fmt(os.path.getsize("test.bag"))
+            # rich.print(f"Current file size: {size}", end = "\r")
+            progress.update(
+                task_id, completed=os.path.getsize("test.bag"), messages=messages
+            )
 
 
 @bag.command()
