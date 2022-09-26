@@ -141,11 +141,14 @@ def record(filename, names, all, timeout, filesize):
 
     trackers = {}  # topic_name: (task_id, msg_count)
 
+    is_shutdown = False
+
     def write_to_bag(bag, topic_name, msg):
         try:
-            bag.write("test", msg)
-            nonlocal trackers
-            trackers[topic_name][1] += 1
+            if not is_shutdown:
+                bag.write(topic_name, msg)
+                nonlocal trackers
+                trackers[topic_name][1] += 1
         except:  # Avoid showing writing issues, breaking output
             pass
 
@@ -168,8 +171,8 @@ def record(filename, names, all, timeout, filesize):
 
     start_time = time.time()
     with Live(progress_table, refresh_per_second=10):
-        while not overall_progress.finished and time.time() - start_time < (
-            timeout[0] * 60 + timeout[1]
+        while not overall_progress.finished and (
+            timeout is None or time.time() - start_time < (timeout[0] * 60 + timeout[1])
         ):
             size = sizeof_fmt(os.path.getsize("test.bag"))
             # rich.print(f"Current file size: {size}", end = "\r")
@@ -181,7 +184,12 @@ def record(filename, names, all, timeout, filesize):
                 task_id, msg_count = v
                 job_progress.update(task_id, completed=msg_count, total=total_msgs)
 
+    print("closing bag!")
+    for sub in subs:
+        sub.unregister()
+
     bag.close()
+    print("done!")
 
 
 @bag.command()
