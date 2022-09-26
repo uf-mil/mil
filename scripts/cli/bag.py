@@ -49,6 +49,7 @@ def validate_timeout(ctx, param, value):
         min, sec = int(min), int(sec)
         if min < 0 or min > 60 or sec < 0 or sec > 60:  # Prevent 90:82 as "duration"
             raise ValueError()
+        return min, sec
     except:  # Unable to parse
         raise click.BadParameter(
             f"{value} is not a valid timeout. Please format as mm:ss, such as 01:30."
@@ -99,7 +100,7 @@ def sizeof_fmt(num, suffix="B"):
     callback=validate_filesize,
     required=False,
     default="50GB",
-    help="A limit on the recorded bag. Format as xx{MB,GB}; for example, 50MB or 4.1GB.",
+    help="A limit on the recorded bag. Format as xx{MB,GB}; for example, 50MB or 4.1GB. Defaults to 50GB.",
 )
 def record(filename, names, all, timeout, filesize):
     """
@@ -122,7 +123,10 @@ def record(filename, names, all, timeout, filesize):
         transient=True,
     )
     job_progress = Progress(
-        TextColumn("[chartreuse1]{task.fields[topic_name]}", justify="right"),
+        TextColumn(
+            "[chartreuse1 bold]{task.fields[topic_name]}[/] ([turquoise2]{task.fields[msg_name]}[/])",
+            justify="right",
+        ),
         BarColumn(),
         "[progress.percentage]{task.percentage:>3.1f}%",
         "•",
@@ -132,28 +136,24 @@ def record(filename, names, all, timeout, filesize):
     overall_task = overall_progress.add_task(filename, total=filesize, messages=0)
 
     progress_table = Table.grid()
-    progress_table.add_row(
-        Panel.fit(
-            overall_progress,
-            title="Overall Progress",
-            border_style="green",
-            padding=(2, 2),
-        ),
-        Panel.fit(job_progress, title="[b]Jobs", border_style="red", padding=(1, 2)),
-    )
+    progress_table.add_row(overall_progress)
+    progress_table.add_row(job_progress)
 
     trackers = {}  # topic_name: (task_id, msg_count)
 
     def write_to_bag(bag, topic_name, msg):
-        bag.write("test", msg)
-        nonlocal trackers
-        trackers[topic_name][1] += 1
+        try:
+            bag.write("test", msg)
+            nonlocal trackers
+            trackers[topic_name][1] += 1
+        except:  # Avoid showing writing issues, breaking output
+            pass
 
     subs = []
     rospy.init_node("mil_cli_listener", anonymous=True)
     for topic_name, msg_name in names:
         task_id = job_progress.add_task(
-            "download", topic_name=topic_name, messages=0, start=True
+            "download", topic_name=topic_name, msg_name=msg_name, messages=0, start=True
         )
         trackers[topic_name] = [task_id, 0]
         msg_mod, class_name = msg_name.split("/")
@@ -166,8 +166,11 @@ def record(filename, names, all, timeout, filesize):
             )
         )
 
+    start_time = time.time()
     with Live(progress_table, refresh_per_second=10):
-        while not overall_progress.finished:
+        while not overall_progress.finished and time.time() - start_time < (
+            timeout[0] * 60 + timeout[1]
+        ):
             size = sizeof_fmt(os.path.getsize("test.bag"))
             # rich.print(f"Current file size: {size}", end = "\r")
             total_msgs = sum(v[1] for v in trackers.values())
@@ -177,6 +180,8 @@ def record(filename, names, all, timeout, filesize):
             for topic_name, v in trackers.items():
                 task_id, msg_count = v
                 job_progress.update(task_id, completed=msg_count, total=total_msgs)
+
+    bag.close()
 
 
 @bag.command()
