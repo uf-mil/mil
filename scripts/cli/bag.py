@@ -9,6 +9,8 @@ import rich_click as click
 import rosbag
 import rospy
 from rich.console import Console
+from rich.live import Live
+from rich.panel import Panel
 from rich.progress import (
     BarColumn,
     DownloadColumn,
@@ -20,6 +22,7 @@ from rich.progress import (
     TimeRemainingColumn,
     TransferSpeedColumn,
 )
+from rich.table import Table
 
 
 @click.group()
@@ -70,10 +73,6 @@ def validate_filesize(ctx, param, value):
         )
 
 
-def write_to_bag(bag, msg):
-    bag.write("test", msg)
-
-
 # Thanks Fred! https://stackoverflow.com/a/1094933
 def sizeof_fmt(num, suffix="B"):
     for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
@@ -99,53 +98,85 @@ def sizeof_fmt(num, suffix="B"):
     "--filesize",
     callback=validate_filesize,
     required=False,
+    default="50GB",
     help="A limit on the recorded bag. Format as xx{MB,GB}; for example, 50MB or 4.1GB.",
 )
 def record(filename, names, all, timeout, filesize):
     """
     Record the output of a list of topics named NAMES to a bag named FILENAME.
     """
-    click.echo(
-        f"Doing something with {names} using {filename}... (all: {all}, timeout: {timeout}, filesize: {filesize})"
-    )
     bag = rosbag.Bag(filename, "w")
 
-    progress = Progress(
-        TextColumn("[bold blue]{task.fields[filename]}", justify="right"),
+    overall_progress = Progress(
+        TextColumn(f"[bold blue]{filename}", justify="right"),
         BarColumn(),
         "[progress.percentage]{task.percentage:>3.1f}%",
         "•",
         FileSizeColumn(),
         "•",
-        TextColumn("[bold blue]{task.fields[messages]}"),
+        TextColumn("[chartreuse1]{task.fields[messages]} messages"),
         "•",
         TransferSpeedColumn(),
         "•",
         TimeElapsedColumn(),
+        transient=True,
     )
-    task_id = progress.add_task("download", filename=filename, messages=0, start=False)
+    job_progress = Progress(
+        TextColumn("[chartreuse1]{task.fields[topic_name]}", justify="right"),
+        BarColumn(),
+        "[progress.percentage]{task.percentage:>3.1f}%",
+        "•",
+        TextColumn("[chartreuse1]{task.completed} messages"),
+    )
+
+    overall_task = overall_progress.add_task(filename, total=filesize, messages=0)
+
+    progress_table = Table.grid()
+    progress_table.add_row(
+        Panel.fit(
+            overall_progress,
+            title="Overall Progress",
+            border_style="green",
+            padding=(2, 2),
+        ),
+        Panel.fit(job_progress, title="[b]Jobs", border_style="red", padding=(1, 2)),
+    )
+
+    trackers = {}  # topic_name: (task_id, msg_count)
+
+    def write_to_bag(bag, topic_name, msg):
+        bag.write("test", msg)
+        nonlocal trackers
+        trackers[topic_name][1] += 1
 
     subs = []
     rospy.init_node("mil_cli_listener", anonymous=True)
     for topic_name, msg_name in names:
+        task_id = job_progress.add_task(
+            "download", topic_name=topic_name, messages=0, start=True
+        )
+        trackers[topic_name] = [task_id, 0]
         msg_mod, class_name = msg_name.split("/")
         ros_pkg = importlib.import_module(".msg", package=msg_mod)
         subs.append(
             rospy.Subscriber(
                 topic_name,
                 getattr(ros_pkg, class_name),
-                functools.partial(write_to_bag, bag),
+                functools.partial(write_to_bag, bag, topic_name),
             )
         )
-    progress.update(task_id, completed=0)
-    messages = 0
-    with progress:
-        while True:
+
+    with Live(progress_table, refresh_per_second=10):
+        while not overall_progress.finished:
             size = sizeof_fmt(os.path.getsize("test.bag"))
             # rich.print(f"Current file size: {size}", end = "\r")
-            progress.update(
-                task_id, completed=os.path.getsize("test.bag"), messages=messages
+            total_msgs = sum(v[1] for v in trackers.values())
+            overall_progress.update(
+                overall_task, completed=os.path.getsize("test.bag"), messages=total_msgs
             )
+            for topic_name, v in trackers.items():
+                task_id, msg_count = v
+                job_progress.update(task_id, completed=msg_count, total=total_msgs)
 
 
 @bag.command()
@@ -158,4 +189,9 @@ def retopic(input_bag, input_topic, output_bag, output_topic):
     Rename the INPUT_TOPIC of INPUT_BAG to OUTPUT_TOPIC in OUTPUT_BAG. The original
     bag is not overwritten.
     """
+    try:
+        while True:
+            pass
+    except KeyboardInterrupt:
+        print("interrupted...")
     click.echo(f"{input_bag, input_topic, output_bag, output_topic}")
