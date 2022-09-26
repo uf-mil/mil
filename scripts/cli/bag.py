@@ -1,8 +1,11 @@
+import functools
+import importlib
 import re
 import time
 
 import rich
 import rich_click as click
+import rosbag
 import rospy
 from rich.console import Console
 
@@ -17,10 +20,11 @@ def bag():
 
 def validate_name(ctx, param, values):
     topic_names = [t[0] for t in rospy.get_published_topics()]
+    print(rospy.get_published_topics())
     for value in values:
         if value not in topic_names:
             raise click.BadParameter(f"{value} is not a valid ROS topic.")
-    return values
+    return [t for t in rospy.get_published_topics() if t[0] in values]
 
 
 def validate_timeout(ctx, param, value):
@@ -55,7 +59,13 @@ def validate_filesize(ctx, param, value):
         )
 
 
+def write_to_bag(bag, msg):
+    print(f"Writing {msg}...")
+    bag.write("test", msg)
+
+
 @bag.command()
+@click.argument("filename", type=str, required=True)
 @click.argument("names", callback=validate_name, required=False, nargs=-1)
 @click.option(
     "--all", help="Record all topics", default=False, required=False, is_flag=True
@@ -72,13 +82,28 @@ def validate_filesize(ctx, param, value):
     required=False,
     help="A limit on the recorded bag. Format as xx{MB,GB}; for example, 50MB or 4.1GB.",
 )
-def record(names, all, timeout, filesize):
+def record(filename, names, all, timeout, filesize):
     """
-    Record the output of a list of topics named NAMES.
+    Record the output of a list of topics named NAMES to a bag named FILENAME.
     """
     click.echo(
-        f"Doing something with {names}... (all: {all}, timeout: {timeout}, filesize: {filesize})"
+        f"Doing something with {names} using {filename}... (all: {all}, timeout: {timeout}, filesize: {filesize})"
     )
+    bag = rosbag.Bag(filename, "w")
+    subs = []
+    node = rospy.init_node("mil_cli_listener", anonymous=True)
+    for topic_name, msg_name in names:
+        msg_mod, class_name = msg_name.split("/")
+        ros_pkg = importlib.import_module(".msg", package=msg_mod)
+        subs.append(
+            rospy.Subscriber(
+                topic_name,
+                getattr(ros_pkg, class_name),
+                functools.partial(write_to_bag, bag),
+            )
+        )
+    print("recording..")
+    rospy.spin()
 
 
 @bag.command()
