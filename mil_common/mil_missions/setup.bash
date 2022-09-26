@@ -1,5 +1,5 @@
 # Missions
-alias runmission="rosrun mil_missions mission_client run"
+alias mission="rosrun mil_missions mission_client"
 alias cancelmission="rosrun mil_missions mission_client cancel"
 alias listmissions="rosrun mil_missions mission_client list"
 alias mission="rosrun mil_missions mission_client run"
