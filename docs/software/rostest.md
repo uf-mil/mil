@@ -24,3 +24,34 @@ Here's a great answer, from the [ROS wiki page on Unit Testing](http://wiki.ros.
 > 1. **It is much easier to become a contributor to ROS if we have automated unit tests.** It is very difficult for new external developers to contribute to your components. When they make changes to code, they are often doing it in the blind, driven by a lot of guesswork. By providing a harness of automated tests, you help them in the task. They get immediate feedback for their changes. It becomes easier to contribute to a project, and new contributors to join more easily. Also their first contributions are of higher quality, which decreases the workload on maintainers. A win-win!
 > 1. **Automatic tests simplify maintainer-ship.** Especially for mature packages, which change more slowly, and mostly need to be updated to new dependencies, an automatic test suite helps to very quickly establish whether the package still works. This makes it much easier to decide whether the package is still supported or not.
 > 1. **Automatic tests amplifying Value of Continuous Integration.** Regression tests, along with normal scenario-based requirements tests contribute to overall body of automated tests for your component. This increases effectiveness of the build system and of continuous integration (CI). Your component is better tested against evolution of other APIs that it depends on (CI servers will tell you better and more precisely what problems develop in your code).
+
+## Good testing practices
+
+While testing at all is awesome, having especially extensive unit tests can be
+very helpful in catching errors quickly. Unit tests can be improved by incorporating
+more of these principles.
+
+### Fuzzy and mutation testing
+
+One practice for writing strong unit tests includes the use of mutation and/or
+fuzzy testing. In this testing practice, you purposefully "break" the program with
+the hope that the tests catch the error successfully. You can do this manually,
+or with the help of tools.
+
+To manually fizz code, begin by thinking what could easily break your code. For example,
+if you use a string as an argument to a function or class' constructor, what if you
+supply a string that's 20,000 lines long? Does the class completely crash unexpectedly,
+or does it fail in an expected way? What if you use an empty string, or if you
+use a number instead of a string?
+
+Furthermore, you can use tools to help you catch errors that should be added. `mutmut`
+is a Python tool that implements a mutation testing framework. You can run the tool
+over a specific package and its tests to identify areas that are not covered by tests.
+
+```bash
+$ mutmut run --runner "rostest package_name package_test.test" \
+             --paths-to-mutate src \
+             --tests-dir test # Run mutation tester
+$ mutmut html # Create an HTML file showing what happened during testing
+$ xdg-open html/index.html # Browse the HTML file to determine what needs to be improved
+```
