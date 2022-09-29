@@ -29,3 +29,20 @@ modern approach to this behavior includes using `Dynamic Reconfigure <https://wi
 Dynamic Reconfigure is more efficient than using the parameter subscriber feature
 previously mentioned, as dynamic reconfigure uses callbacks to indicate new changes,
 while nodes use a consistent polling feature to get updates on parameters.
+
+Subscribing to high-rate publishers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some publishers publish messages at very fast rates, which can add reliability
+and speed to a robotic system. However, txros may not be able to keep up with the
+high rate of incoming messages if the client code is constructed in particular
+ways.
+
+To ensure that the subscriber is able to read all incoming messages, ensure the following:
+
+1. Supply a callback to the subscriber that receives all incoming messages; do
+   not depend on using :meth:`txros.Subscriber.get_next_message`. The latter method
+   will cause messages to never be read if a callback is not supplied.
+2. When attempting to read all messages published by a publisher over a specific
+   period, use :meth:`txros.Subscriber.recently_read` to determine if more messages
+   still need to be read before the subscriber can be closed.
