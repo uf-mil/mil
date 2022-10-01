@@ -55,3 +55,73 @@ $ mutmut run --runner "rostest package_name package_test.test" \
 $ mutmut html # Create an HTML file showing what happened during testing
 $ xdg-open html/index.html # Browse the HTML file to determine what needs to be improved
 ```
+
+## Python unit tests with {mod}`unittest`
+
+To write unit tests in python, you should use {mod}`unittest`. The structure of a unit
+test looks like this:
+
+```python
+import unittest
+import rostest
+from calculator_package import Calculator
+
+class NumTest(unittest.TestCase):
+    def setUp(self):
+        self.calculator = Calculator()
+
+    def test_add(self):
+        self.assertEqual(self.calculator.add(1, 2), 3)
+        self.assertEqual(self.calculator.add(-1, 0), -1)
+
+    def test_sub(self):
+        self.assertEqual(self.calculator.subtract(1, 2), -1)
+        self.assertEqual(self.calculator.subtract(10, 7), 3)
+
+    def tearDown(self):
+        self.calculator.cleanup()
+
+if __name__ == "__main__":
+    rostest.rosrun("calculator_package", "test_basic_operations", NumTest)
+    unittest.main()
+```
+
+In the example, there are several important pieces:
+1. {meth}`~.unittest.TestCase.setUp()` and {meth}`~.unittest.TestCase.tearDown()`
+   are called before and after each test, respectively. These methods can be used
+   to set up and clean up resources, as needed.
+1. Each test is a method that begins with `test_`. Methods that do not begin with
+   `test_` will not register as tests.
+1. You can use `assertX` methods to assert that the results of operations are
+   expected. Example method names include {meth}`~.unittest.TestCase.assertEqual`,
+   {meth}`~.unittest.TestCase.assertTrue`, and {meth}`~.unittest.TestCase.assertIn`.
+
+You can also write unit tests for asynchronous operations. Check out our example
+from our {mod}`txros` module:
+
+```python
+import txros
+import unittest
+import rostest
+
+class BasicNodeHandleTest(unittest.IsolatedAsyncioTestCase):
+    """
+    Tests basic nodehandle functionality.
+    """
+
+    nh: txros.NodeHandle
+
+    async def asyncSetUp(self):
+        self.nh = txros.NodeHandle.from_argv("basic", always_default_name = True)
+        await self.nh.setup()
+
+    async def test_name(self):
+        self.assertEqual(self.nh.get_name(), "/basic")
+
+    async def asyncTearDown(self):
+        await self.nh.shutdown()
+
+if __name__ == "__main__":
+    rostest.rosrun("txros", "test_basic_nodehandle", BasicNodeHandleTest)
+    unittest.main()
+```
