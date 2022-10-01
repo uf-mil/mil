@@ -125,3 +125,48 @@ if __name__ == "__main__":
     rostest.rosrun("txros", "test_basic_nodehandle", BasicNodeHandleTest)
     unittest.main()
 ```
+
+## Integrating tests with ROS
+
+After writing tests with `unittest` or `gtest`, you need to actually integrate
+them with ROS. This allows them to be tested in our continuous integration systems.
+
+To begin, make a `test/` directory in the package where the test lies. In this test
+folder, write a `.test` file in XML. This test file is actually a launch
+file, so you have a lot of flexibility in what launches when the test is executed.
+However, the most important tag is the `<test>` tag. This specifies what tests
+are actually ran and analyzed for their output.
+
+Below is an example test file named `txros.test`. This test file launches one test
+file named `test_basic_nodehandle.py`. At its core, this is all you need to run
+tests from a test file. You can optionally also launch nodes, set parameters, and
+use conditionals, as you can with any launch file.
+
+```xml
+<launch>
+    <test test-name="test_basic_nodehandle" pkg="txros" type="test_basic_nodehandle.py" time-limit="180.0"/>
+</launch>
+```
+
+You can see that the `<test>` tag allows us to specify the name of the test, the package
+where the test can be found, and most importantly its `type`, or the name of the
+executable that runs the test. We can also add a time limit to the test to ensure
+that it doesn't run forever.
+
+The next step is to add recognition of this test file into your package's `CMakeLists.txt`
+file. You can do so by adding a few lines to this file:
+
+```cmake
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest(test/txros.test)
+endif()
+```
+
+The argument to the `add_rostest` function is the name of your package's test file.
+
+Now, you should be able to see your tests when you compile:
+```
+$ catkin_make # Run catkin_make to compile everything
+$ catkin_make run_tests # Now, run all tests! In the output, you should see your test being ran.
+```
