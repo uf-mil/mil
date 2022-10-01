@@ -1,8 +1,11 @@
+import asyncio
 import functools
 import importlib
 import os
 import re
+import subprocess
 import time
+import traceback
 
 import rich
 import rich_click as click
@@ -34,7 +37,13 @@ def bag():
 
 
 def validate_name(ctx, param, values):
-    topic_names = [t[0] for t in rospy.get_published_topics()]
+    try:
+        topic_names = [t[0] for t in rospy.get_published_topics()]
+    except ConnectionRefusedError:
+        raise click.ClickException(
+            "Cannot connect to ROS. Please ensure that ROS is running."
+        )
+
     for value in values:
         if value not in topic_names:
             raise click.BadParameter(f"{value} is not a valid ROS topic.")
@@ -90,6 +99,13 @@ def sizeof_fmt(num, suffix="B"):
     "--all", help="Record all topics", default=False, required=False, is_flag=True
 )
 @click.option(
+    "--perf",
+    help="Use performance mode (~40% faster, less control/readability, not needed in most cases)",
+    default=False,
+    required=False,
+    is_flag=True,
+)
+@click.option(
     "--timeout",
     callback=validate_timeout,
     required=False,
@@ -102,10 +118,56 @@ def sizeof_fmt(num, suffix="B"):
     default="50GB",
     help="A limit on the recorded bag. Format as xx{MB,GB}; for example, 50MB or 4.1GB. Defaults to 50GB.",
 )
-def record(filename, names, all, timeout, filesize):
+def record(filename, names, all, perf, timeout, filesize):
     """
     Record the output of a list of topics named NAMES to a bag named FILENAME.
     """
+    # If performance is desired, use original rosbag record functionality
+    if perf:
+        cmd = f"rosbag record -O {filename} {' '.join([n[0] for n in names])}"
+        proc = subprocess.Popen(
+            cmd.split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        print("Recording has begun!")
+        orig_time = time.time()
+        try:
+            while True:
+                try:
+                    size = os.path.getsize(f"{filename}.active")
+                except FileNotFoundError:
+                    size = 0
+                    orig_time = time.time()
+                rich.print(
+                    f"Recording in the background using performant mode... Current size: [chartreuse1 bold]{sizeof_fmt(size)}[/]",
+                    end="\r",
+                )
+                if size > filesize:
+                    print()
+                    print("Cancelling recording because of filesize limit...")
+                    proc.terminate()
+                    print("Cancelled!")
+                    break
+                if timeout is not None and time.time() - orig_time > (
+                    timeout[0] * 60 + timeout[1]
+                ):
+                    print()
+                    print("Cancelling recording because of timeout limit...")
+                    proc.terminate()
+                    print("Cancelled!")
+                    break
+        except KeyboardInterrupt:
+            print()
+            print("Cancelling recording because of CTRL-C...")
+            proc.terminate()
+            print("Cancelled!")
+        except Exception as e:
+            print()
+            print(f"Cancelling due to exception:")
+            traceback.print_exc()
+            proc.terminate()
+            print("Cancelled!")
+        return
+
     bag = rosbag.Bag(filename, "w")
 
     overall_progress = Progress(
@@ -146,7 +208,11 @@ def record(filename, names, all, timeout, filesize):
     def write_to_bag(bag, topic_name, msg):
         try:
             if not is_shutdown:
-                bag.write(topic_name, msg)
+                try:
+                    bag.write(topic_name, msg, msg.header.stamp)
+                except AttributeError:
+                    bag.write(topic_name, msg)
+
                 nonlocal trackers
                 trackers[topic_name][1] += 1
         except:  # Avoid showing writing issues, breaking output
@@ -174,8 +240,7 @@ def record(filename, names, all, timeout, filesize):
         while not overall_progress.finished and (
             timeout is None or time.time() - start_time < (timeout[0] * 60 + timeout[1])
         ):
-            size = sizeof_fmt(os.path.getsize("test.bag"))
-            # rich.print(f"Current file size: {size}", end = "\r")
+            size = sizeof_fmt(os.path.getsize(filename))
             total_msgs = sum(v[1] for v in trackers.values())
             overall_progress.update(
                 overall_task, completed=os.path.getsize("test.bag"), messages=total_msgs
@@ -184,12 +249,14 @@ def record(filename, names, all, timeout, filesize):
                 task_id, msg_count = v
                 job_progress.update(task_id, completed=msg_count, total=total_msgs)
 
-    print("closing bag!")
-    for sub in subs:
-        sub.unregister()
+    console = Console()
+    with console.status(f"[violet]Attempting to close up bag..."):
+        for sub in subs:
+            sub.unregister()
 
-    bag.close()
-    print("done!")
+        bag.close()
+
+    rich.print("[chartreuse1]All done!")
 
 
 @bag.command()
