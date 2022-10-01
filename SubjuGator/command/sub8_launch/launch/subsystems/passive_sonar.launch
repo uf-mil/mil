@@ -23,7 +23,7 @@
   <group ns="$(arg ns)">
     <rosparam command="load" file="$(find sub8_launch)/config/$(arg config_file)" />
     <node pkg="mil_passive_sonar" type="triggering.py" output="screen" name="triggering" respawn="true"/>
-    <node pkg="mil_passive_sonar" type="ping_locator.py" output="screen" name="ping_locator" respawn="true"/>
+    <node pkg="mil_passive_sonar" type="ping_direction.py" output="screen" name="ping_direction" respawn="true"/>
     <node pkg="mil_tools" type="vector_to_marker.py" name="hydrophones_visualization"
           args="$(arg ns)/direction $(arg ns)/direction_marker --length 4" />
   </group>

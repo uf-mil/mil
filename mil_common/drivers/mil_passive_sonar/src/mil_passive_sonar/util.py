@@ -198,3 +198,30 @@ def calculate_dir_pinger(deltas, h_dist, v_sound):
     if True in numpy.isnan(x):
         raise Exception("nans: ", x)
     return -1 * x
+
+
+def calculate_pinger_direction(deltas, h_dist, v_sound):
+    """
+    deltas:
+        numpy array of shape (2,) where data[i] = time delay from h_0 to h_i
+
+    h_dist:
+        the unit distance from any hydrophone_i(i!=0) to hydrophone_0 in meters
+
+    v_sound:
+        speed of sound in water (meters / sec)
+
+
+    returns:
+        numpy array of unit vector towards the pinger (in hydrophone frame) *NOTE: the hydrophone
+            array has symmetry along the z axis, so we always assume the pinger is below us*
+
+    assumes hydrophone arrangement:
+        h_1 = (-1,0, 0) * h_dist
+        h_0 = (0, 1, 0) * h_dist
+
+    returns:
+        theta, an angle relative to the pinger of where the sound is coming from
+    """
+    delta = deltas[1] - deltas[0]
+    return math.acos((v_sound * delta) / h_dist) * 180 / math.pi

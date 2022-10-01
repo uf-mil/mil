@@ -17,7 +17,7 @@ public:
   /// Sampling frequency of the Sylphase board
   const size_t SAMPLES_PER_SECOND = 1.2E6;
   /// Number of channels in the Sylphase board
-  const size_t CHANNELS = 4;
+  const size_t CHANNELS = 2;
 
   SylphaseSonarToRosNode(ros::NodeHandle nh, ros::NodeHandle private_nh);
 
