@@ -45,7 +45,7 @@ source $MIL_WS/src/mil/mil_common/perception/point_cloud_object_detection_and_re
 source $MIL_WS/src/mil/NaviGator/scripts/bash_aliases.sh
 
 # Repo aliases
-alias mil="cd $MIL_REPO"
+alias mmm="cd $MIL_REPO"
 alias cm="catkin_make -C $MIL_WS"
 alias vrx="cd $MIL_REPO/NaviGator/simulation/VRX/vrx"
 
