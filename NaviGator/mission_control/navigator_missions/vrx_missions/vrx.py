@@ -85,6 +85,7 @@ class Vrx(Navigator):
         )
         Vrx.yolo_objects = Vrx.nh.subscribe("/yolov7/detections", Detection2DArray)
         Vrx.tf_listener = txros_tf.TransformListener(Vrx.nh)
+        await Vrx.tf_listener.setup()
         Vrx.database_response = Vrx.nh.get_service_client(
             "/database/requests", ObjectDBQuery
         )

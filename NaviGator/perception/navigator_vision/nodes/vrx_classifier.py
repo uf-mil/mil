@@ -153,13 +153,10 @@ class VrxClassifier:
     @thread_lock(lock)
     def process_boxes(self, msg):
         if not self.enabled:
-            print("1")
             return
         if self.camera_model is None:
-            print("2")
             return
         if self.last_objects is None or len(self.last_objects.objects) == 0:
-            print("3")
             return
         now = rospy.Time.now()
         if now - self.last_update_time < self.update_period:
