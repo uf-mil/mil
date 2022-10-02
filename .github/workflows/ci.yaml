@@ -55,7 +55,7 @@ jobs:
       - name: Install BlueView Sonar SDK
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          ./scripts/install_bvtsdk --pass ${{ secrets.ZOBELISK_PASSWORD }}
+          ./scripts/hardware_installers/install_bvtsdk --pass ${{ secrets.ZOBELISK_PASSWORD }}
           ls mil_common/drivers/mil_blueview_driver
           echo $PWD
       - name: Run catkin_make

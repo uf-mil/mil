@@ -277,10 +277,10 @@ mil_user_setup_rc()
 
 # Sets up the catkin workspace so that user can build
 # If the repo is already cloned here, it will build the MIL code
+# catkin_init_workspace is superfluous, catkin_make is all you need
 mil_user_setup_init_catkin()
 {
   mkdir -p $CATKIN_SOURCE_DIR
-  catkin_init_workspace $CATKIN_SOURCE_DIR
   catkin_make -C $CATKIN_DIR
 }
 
