@@ -40,7 +40,7 @@ vrx_force_to_command = np.vectorize(vrx_force_to_command_scalar)
 
 def generate_linear_force_to_command(ratio):
     def force_to_command(force):
-        return force * ratio
+        return np.multiply(force, ratio)
 
     return force_to_command
 
@@ -156,8 +156,8 @@ class ThrusterMap:
         positions = []
         angles = []
         limit = -1
-        ratio = -1
-        for transmission in urdf.transmissions:
+        ratio = np.array([1.0,1.0,1.0,1.0])
+        for i, transmission in enumerate(urdf.transmissions):
             find = transmission.name.find(transmission_suffix)
             if find != -1 and find + len(transmission_suffix) == len(transmission.name):
                 if len(transmission.joints) != 1:
@@ -172,14 +172,16 @@ class ThrusterMap:
                             transmission.name
                         )
                     )
+
                 t_ratio = transmission.actuators[0].mechanicalReduction
-                if ratio != -1 and ratio != t_ratio:
+
+                if t_ratio < 0:
                     raise Exception(
-                        "Transmission {} has a different reduction ratio (not supported)".format(
-                            t_ratio
-                        )
+                        "Thruster mapper does not allow negative mechanical reduction."
                     )
-                ratio = t_ratio
+                
+                ratio[i] = t_ratio
+
                 joint = None
                 for t_joint in urdf.joints:
                     if t_joint.name == transmission.joints[0].name:
