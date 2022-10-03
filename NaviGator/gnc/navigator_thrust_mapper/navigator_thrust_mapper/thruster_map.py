@@ -156,7 +156,7 @@ class ThrusterMap:
         positions = []
         angles = []
         limit = -1
-        ratio = np.array([1.0,1.0,1.0,1.0])
+        ratio = np.array([1.0, 1.0, 1.0, 1.0])
         for i, transmission in enumerate(urdf.transmissions):
             find = transmission.name.find(transmission_suffix)
             if find != -1 and find + len(transmission_suffix) == len(transmission.name):
@@ -179,7 +179,7 @@ class ThrusterMap:
                     raise Exception(
                         "Thruster mapper does not allow negative mechanical reduction."
                     )
-                
+
                 ratio[i] = t_ratio
 
                 joint = None
