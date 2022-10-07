@@ -10,6 +10,7 @@ import traceback
 import types
 from typing import Any
 
+import txros
 import uvloop
 from mil_missions.msg import DoMissionAction, DoMissionFeedback, DoMissionResult
 from mil_missions_core import BaseMission, MissionException, MissionResult
@@ -68,6 +69,9 @@ class MissionRunner:
         self.server.register_goal_callback(self.check_new_mission)
         self.server.start()
 
+        # Reload missions one more time
+        await self.load_missions()
+
     async def shutdown(self) -> None:
         # If the node was shutdown by another program, then there is no reason to
         # shut it down again.
@@ -77,7 +81,6 @@ class MissionRunner:
     async def refresh_missions_cb(self, _: TriggerRequest) -> TriggerResponse:
         try:
             await self.load_missions()
-            await self.load_missions()
             return TriggerResponse(True, "The missions were refreshed!")
         except Exception as e:
             traceback.print_exc()
@@ -86,18 +89,11 @@ class MissionRunner:
                 f"An error of type {e.__class__.__name__} occurred while refreshing: {e}",
             )
 
-    async def load_missions(self):
-        """
-        Gets the name of the missions module and base mission from ROS parameters
-        before importing the module and the base mission, and calling the base
-        missions' _init() method.
-
-        All missions from the module are saved to ``self.missions``.
-        """
+    async def _shutdown_missions(self):
         # If we've already loaded missions, we need to shutdown existing missions
         if self.missions_loaded:
             try:
-                await self.base_mission._shutdown()
+                await asyncio.wait_for(self.base_mission._shutdown(), timeout=10)
             except AttributeError:
                 pass
 
@@ -111,6 +107,17 @@ class MissionRunner:
                     # The mission class may not need to be shutdown (this is okay!)
                     pass
 
+    async def load_missions(self):
+        """
+        Gets the name of the missions module and base mission from ROS parameters
+        before importing the module and the base mission, and calling the base
+        missions' _init() method.
+
+        All missions from the module are saved to ``self.missions``.
+        """
+        await txros.wrap_time_notice(
+            self._shutdown_missions(), 3, "Shutting down missions"
+        )
         self.missions = {}
 
         # Get mission_module and base_mission from params, if not set just crash
@@ -150,7 +157,9 @@ class MissionRunner:
                     and name not in self.missions
                 ):
                     if inspect.iscoroutinefunction(cls.init):
-                        await cls.init()
+                        await txros.wrap_time_notice(
+                            cls.init(), 1, f"Setting up the {name} mission"
+                        )
                     else:
                         cls.init()
                     self.missions[cls.name()] = cls
