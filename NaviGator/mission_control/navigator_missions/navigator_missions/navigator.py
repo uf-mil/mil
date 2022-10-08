@@ -37,6 +37,7 @@ from std_srvs.srv import (
 )
 from topic_tools.srv import MuxSelect, MuxSelectRequest
 from txros import NodeHandle, ROSMasterError, ServiceClient, action, txros_tf, util
+from vision_msgs.msg import Detection2DArray
 
 from .pose_editor import PoseEditor2
 
@@ -265,6 +266,15 @@ class Navigator(BaseMission):
         cls.front_right_camera_sub = None
         await cls.init_front_right_camera()
 
+        cls.yolo_objects = cls.nh.subscribe(
+            "/yolov7/detections_model1", Detection2DArray
+        )
+        cls.stc_objects = cls.nh.subscribe(
+            "/yolov7/stc_detections_model", Detection2DArray
+        )
+        await cls.yolo_objects.setup()
+        await cls.stc_objects.setup()
+
     @classmethod
     async def _shutdown_not_vrx(cls):
         await asyncio.gather(
@@ -279,6 +289,8 @@ class Navigator(BaseMission):
             cls.front_left_camera_info_sub.shutdown(),
             cls.front_right_camera_sub.shutdown(),
             cls.front_right_camera_info_sub.shutdown(),
+            cls.yolo_objects.shutdown(),
+            cls.stc_objects.shutdown(),
         )
 
     @classmethod

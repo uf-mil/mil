@@ -28,7 +28,9 @@ CAMERA_LINK_OPTICAL = "wamv/front_left_cam_link_optical"
 
 COLOR_SEQUENCE_SERVICE = "/vrx/scan_dock/color_sequence"
 
-TIMEOUT_SECONDS = 30
+TIMEOUT_SECONDS = 120
+
+COLORS = ["red", "green", "black", "blue"]
 
 
 class ScanTheCode(Navigator):
@@ -38,8 +40,8 @@ class ScanTheCode(Navigator):
 
     @classmethod
     async def shutdown(cls):
-        await self.debug_points_pub.shutdown()
-        await self.image_debug_pub.shutdown()
+        await cls.debug_points_pub.shutdown()
+        await cls.image_debug_pub.shutdown()
 
     async def run(self, args):
         self.debug_points_pub = self.nh.advertise("/stc_led_points", PointCloud2)
@@ -107,7 +109,9 @@ class ScanTheCode(Navigator):
 
     async def get_sequence(self, contour):
         sequence = []
+        print("GETTING SEQUENCE")
         while len(sequence) < 3:
+
             img = await self.front_left_camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img)
 
@@ -118,18 +122,27 @@ class ScanTheCode(Navigator):
                 bitwise_and(img, img, mask=mask), "bgr8"
             )
 
+            print("PUBLISHING MASK")
             self.image_debug_pub.publish(mask_msg)
-            # features = np.array(self.classifier.get_features(img, mask)).reshape(1, 9)
-            # print features
-            # class_probabilities = self.classifier.feature_probabilities(features)[0]
-            # most_likely_index = np.argmax(class_probabilities)
-            # most_likely_name = self.classifier.CLASSES[most_likely_index]
-            # probability = class_probabilities[most_likely_index]
-            # print(most_likely_name)
-            # if most_likely_name == 'off':
-            #    sequence = []
-            # elif sequence == [] or most_likely_name != sequence[-1]:
-            #    sequence.append(most_likely_name)
+
+            print("WAITING FOR STC BOUNDING BOX")
+            bounding_box_msg = await self.stc_objects.get_next_message()
+            if len(bounding_box_msg.detections) == 0:
+                print("Nothing Detected")
+                continue
+            print("STC BOUNDING BOX FOUND")
+
+            ##############
+
+            most_likely_name = COLORS[bounding_box_msg.detections[0].results[0].id]
+
+            if most_likely_name == "black":
+                sequence = []
+            elif sequence == [] or most_likely_name != sequence[-1]:
+                sequence.append(most_likely_name)
+
+            print(sequence)
+
         return sequence
 
     async def report_sequence(self, sequence):
@@ -199,10 +212,10 @@ def bbox_from_rect(rect):
     print("This is the rect: ", rect)
     bbox = np.array(
         [
-            [rect[0][0] + 10, rect[0][1] - 30],
-            [rect[1][0] + 10, rect[0][1] - 30],
-            [rect[1][0] + 10, rect[1][1] - 10],
-            [rect[0][0] + 10, rect[1][1] - 10],
+            [rect[0][0] - 20, rect[0][1] - rect[0][1]],
+            [rect[1][0] + 20, rect[0][1] - rect[0][1]],
+            [rect[1][0] + 20, rect[1][1] + 20],
+            [rect[0][0] - 20, rect[1][1] + 20],
         ]
     )
     return bbox

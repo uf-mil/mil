@@ -13,12 +13,12 @@
     <arg name="out_topic_model1" default="detections_model1" />
     <arg name="out_topic_model2" default="detections_model2" />
     <arg name="out_topic_model3" default="stc_detections_model" />
-    <arg name="conf_thresh" default="0.75" />
+    <arg name="conf_thresh" default="0.25" />
     <arg name="image_size" default="640" />
     <arg name="device" default="cpu" />
     <arg name="use_yolo_model1" default="False"/>
     <arg name="use_yolo_model2" default="False"/>
-    <arg name="use_yolo_model3" default="False"/>
+    <arg name="use_yolo_model3" default="True"/>
 
     <node name="testing_arbiter" pkg="topic_tools" type="demux"
 		args="$(arg main_image_topic) $(arg image_topic_model1) $(arg image_topic_model2) /yolov7/none">
@@ -50,7 +50,7 @@
     <!-- Use YOLOv7 -->
     <include if="$(arg use_yolo_model3)" file="$(find yolov7_ros)/launch/yolov7.launch">
         <arg name="weights" value="$(arg weights_model3)"/>
-        <arg name="image_topic" value="$(arg image_topic_model3)"/>
+        <arg name="image_topic" value="/stc_mask_debug"/>
         <arg name="out_topic" value="$(arg out_topic_model3)"/>
         <arg name="conf_thresh" value="$(arg conf_thresh)"/>
         <arg name="image_size" value="$(arg image_size)"/>
