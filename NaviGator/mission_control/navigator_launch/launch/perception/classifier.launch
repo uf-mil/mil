@@ -3,10 +3,10 @@
 
     <arg name="weights_model1" default="$(find yolov7_ros)/src/mil_weights/robotx.pt" />
     <arg name="weights_model2" default="$(find yolov7_ros)/src/mil_weights/robotx.pt" />
-    <arg name="weights_model3" default="$(find yolov7_ros)/src/mil_weights/robotx.pt" />
+    <arg name="weights_model3" default="$(find yolov7_ros)/src/mil_weights/stc.pt" />
     <arg name="data_yaml_model1" default="$(find yolov7_ros)/src/data/vrx_buoys.yaml" />
     <arg name="data_yaml_model2" default="$(find yolov7_ros)/src/data/vrx_buoys.yaml" />
-    <arg name="data_yaml_model3" default="$(find yolov7_ros)/src/data/vrx_buoys.yaml" />
+    <arg name="data_yaml_model3" default="$(find yolov7_ros)/src/data/stc.yaml" />
     <arg name="main_image_topic" default="/camera/front/left/image_color"/>
     <arg name="image_topic_model1" default="/yolov7/model1" />
     <arg name="image_topic_model2" default="/yolov7/model2" />
