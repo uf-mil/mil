@@ -103,3 +103,6 @@ startxbox()
 }
 
 alias xbox=startxbox
+
+# PYTHONPATH modifications
+export PYTHONPATH="/home/parallels/catkin_ws/src/mil/mil_common/txros/txros/src:${PYTHONPATH}"
