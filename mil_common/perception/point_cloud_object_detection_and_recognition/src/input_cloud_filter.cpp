@@ -8,6 +8,8 @@ InputCloudFilter::InputCloudFilter()
   bounds_filter_.setCropOutside(true);
 
   robot_filter_.setNegative(true);
+
+  z_filter_.setFilterFieldName("z");
 }
 
 void InputCloudFilter::filter(point_cloud_const_ptr in, point_cloud& pc)
@@ -16,6 +18,10 @@ void InputCloudFilter::filter(point_cloud_const_ptr in, point_cloud& pc)
   point_cloud_ptr tmp(boost::make_shared<point_cloud>());
   bounds_filter_.setInputCloud(in);
   bounds_filter_.filter(*tmp);
+
+  point_cloud_ptr tmp2(boost::make_shared<point_cloud>());
+  z_filter_.setInputCloud(tmp);
+  z_filter_.filter(*tmp2);
 
   robot_filter_.setInputCloud(tmp);
   robot_filter_.filter(pc);
@@ -43,6 +49,7 @@ void InputCloudFilter::set_robot_pose(Eigen::Affine3d const& transform)
 {
   Eigen::Affine3f transform_float = transform.inverse().cast<float>();
   robot_filter_.setTransform(transform_float);
+  z_filter_.setFilterLimits(transform_float.translation().z(), 1e308);
 }
 
 }  // namespace pcodar

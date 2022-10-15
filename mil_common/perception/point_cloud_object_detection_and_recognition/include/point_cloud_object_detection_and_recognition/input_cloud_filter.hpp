@@ -2,6 +2,7 @@
 
 #include <pcl/filters/crop_box.h>
 #include <pcl/filters/crop_hull.h>
+#include <pcl/filters/passthrough.h>
 #include <pcl/point_types.h>
 
 #include "pcodar_types.hpp"
@@ -30,6 +31,7 @@ private:
   point_cloud robot_footprint_;
   pcl::CropHull<pcl::PointXYZ> bounds_filter_;
   pcl::CropBox<pcl::PointXYZ> robot_filter_;
+  pcl::PassThrough<pcl::PointXYZ> z_filter_;
 };
 
 }  // namespace pcodar
