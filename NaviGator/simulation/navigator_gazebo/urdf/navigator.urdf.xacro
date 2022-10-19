@@ -28,10 +28,10 @@
   <xacro:include filename="$(find wamv_description)/urdf/thrusters/mil_engine.xacro"/>
   <xacro:property name="thruster_namespace" value="thrusters/"/>
   <!-- === engine === -->
-  <xacro:mil_engine prefix="BL" position="-1.9304 1.1 0.318237" orientation="0.0 0.0 0.785398"/>
-  <xacro:mil_engine prefix="BR" position="-1.9304 -1.1 0.318237" orientation="0.0 0.0 -0.785398"/>
-  <xacro:mil_engine prefix="FL" position="1.46 0.54 0.49675" orientation="0.0 0.0 -0.785398"/>
-  <xacro:mil_engine prefix="FR" position="1.46 -0.54 0.49657" orientation="0.0 0.0 0.785398"/>
+  <xacro:mil_engine prefix="BL" position="-1.9304 1.1 0.318237" orientation="0.0 0.0 0.785398" mech_reduction="1.35"/>
+  <xacro:mil_engine prefix="BR" position="-1.9304 -1.1 0.318237" orientation="0.0 0.0 -0.785398" mech_reduction="1.35"/>
+  <xacro:mil_engine prefix="FL" position="1.46 0.54 0.49675" orientation="0.0 0.0 -0.785398" mech_reduction="1.35"/>
+  <xacro:mil_engine prefix="FR" position="1.46 -0.54 0.49657" orientation="0.0 0.0 0.785398" mech_reduction="1.35"/>
 
   <gazebo>
     <plugin name="wamv_gazebo_thrust" filename="libusv_gazebo_thrust_plugin.so">
