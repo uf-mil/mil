@@ -31,13 +31,20 @@ ensure that you have a backup of the device configuration.
 :::
 
 ## Rocket AC Base Station and Antenna
+
 A critical component of the network infrastructure is the Rocket AC base station
 and connected antenna. This large standing device is connected to the network
 box through POE.
 
 The device should be aimed towards the boat to receive the best connection, although
-this does not need to be a perfectly straight line. To configure the Rocket AC
-device, you can use a web UI known as airOS, provided by the device. To connect,
-set your own IP to `192.168.1.XXX`, where `XXX` is some number that is not 20. Then,
-connect to the device through `192.168.1.20`. This also works for the Rocket AC
-access point located on the boat.
+this does not need to be a perfectly straight line.
+
+To configure the Rocket AC device after a reset, you can use a web UI known as airOS, provided
+by the device. To connect, set your own IP to `192.168.1.XXX`, where `XXX` is some
+number that is not 20. Then, connect to the device through `192.168.1.20`. This
+also works for the Rocket AC access point located on the boat.
+
+To access the airOS interface of the Rocket AC device after having setup the device,
+visit the IP address of the device (commonly `192.168.37.80` for the Rocket AC on
+shore and `192.168.37.81` for the Rocket AC on NaviGator) in your browser. The
+credentials for the device are physically located near the device.
