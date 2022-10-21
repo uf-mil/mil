@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <!-- To run in simulated mode, set /is_simulation param True -->
+  <include file="$(find navigator_launch)/launch/alarms.launch"/>
+  <node pkg="mil_usb_to_can" type="driver.py" name="usb_to_can_driver">
+    <rosparam command="delete" />
+    <rosparam>
+    # Path of serial device
+    port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A800GHCF-if00-port0
+    # Baudrate of device, should leave as is
+    baudrate: 115200
+    # The CAN device id of the usb-can board
+    can_id: 0
+    # List of python device handle classes
+    device_handles:
+      "18": navigator_kill_board.KillInterface
+    simulated_devices:
+      "18": navigator_kill_board.KillInterfaceSimulation
+    </rosparam>
+  </node>
+</launch>

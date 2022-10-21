@@ -26,6 +26,7 @@
     <include file="$(find navigator_launch)/launch/robotx_comms.launch">
       <arg name="simulation" value="$(arg simulation)"/>
     </include>
+    <include file="$(find navigator_launch)/launch/can.launch" />
 
     <!-- POI (point of interest) server -->
     <include file="$(find navigator_launch)/launch/poi.launch">

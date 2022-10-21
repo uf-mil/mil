@@ -66,4 +66,5 @@ class USBtoCANBoard:
         with self.lock:
             p_bytes = p.to_bytes()
             # print 'SENDING ', hexify(p_bytes)
+            print(str(p_bytes))
             self.ser.write(p_bytes)

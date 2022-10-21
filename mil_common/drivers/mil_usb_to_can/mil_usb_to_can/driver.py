@@ -75,6 +75,7 @@ class USBtoCANDriver:
             return False
         if packet is None:
             return False
+        print("data")
         if packet.device in self.handles:
             self.handles[packet.device].on_data(packet.data)
         else:

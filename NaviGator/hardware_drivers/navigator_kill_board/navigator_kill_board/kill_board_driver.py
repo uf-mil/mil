@@ -91,7 +91,7 @@ class KillInterface(CANDeviceHandle):
         while not rospy.is_shutdown():
             if self.last_request is None:
                 self.request_next()
-            self.receive()
+            # self.receive()
             self.update_ros()
             rate.sleep()
 
@@ -107,6 +107,7 @@ class KillInterface(CANDeviceHandle):
         React to a byte received from the board. This could by an async update of a kill status or
         a known response to a recent request
         """
+        print("data received")
         if self.last_request is not None:
             if msg == constants["RESPONSE_FALSE"]:
                 if self.board_status[self.last_request] is True:
@@ -262,7 +263,7 @@ class KillInterface(CANDeviceHandle):
         self.send_data(bytes, can_id=int.from_bytes(constants["CAN_ID"], "big"))
         if expected_response is not None:
             for byte in expected_response:
-                self.expected_responses.append(byte.encode())
+                self.expected_responses.append(byte)
 
     def kill_alarm_cb(self, alarm):
         """
@@ -293,6 +294,7 @@ class KillInterface(CANDeviceHandle):
         Send a special heartbeat packet. Called by a recurring timer set upon
         initialization.
         """
+        # self.send_data(constants["REQUEST"]["HEARTBEAT"], can_id=b"\x12")
         self.request(constants["REQUEST"]["HEARTBEAT"])
 
 
