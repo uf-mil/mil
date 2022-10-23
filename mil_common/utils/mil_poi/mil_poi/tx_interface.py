@@ -66,9 +66,10 @@ class TxPOIClient:
         if self.last_msg is not None and not only_fresh:
             for poi in self.last_msg.pois:
                 if poi.name == name:
-                    return rosmsg_to_numpy(poi.pose.position), rosmsg_to_numpy(
-                        poi.pose.orientation
-                    )
+                    position, orientation = rosmsg_to_numpy(
+                        poi.pose.position
+                    ), rosmsg_to_numpy(poi.pose.orientation)
+                    return (position, orientation)
         res = asyncio.Future()
         if name in self.futures:
             self.futures[name].append(res)
