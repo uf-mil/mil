@@ -23,6 +23,7 @@ Procedures related to operation of the NaviGator AMS.
    :maxdepth: 2
 
    Testing Day Checklist <testing_checklist>
+   networking
 
 Past Projects
 -------------
