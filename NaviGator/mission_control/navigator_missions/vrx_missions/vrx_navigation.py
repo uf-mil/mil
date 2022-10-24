@@ -2,9 +2,7 @@
 import asyncio
 
 import numpy as np
-import txros
 from mil_tools import quaternion_matrix, rosmsg_to_numpy
-from rospy.impl.tcpros_service import service_connection_handler
 from std_srvs.srv import SetBoolRequest
 
 from .vrx import Vrx

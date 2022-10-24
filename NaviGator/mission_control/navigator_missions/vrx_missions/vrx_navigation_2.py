@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-from inspect import stack
 
 import numpy as np
-import txros
-from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest, ObjectDBQueryResponse
-from mil_tools import quaternion_matrix, rosmsg_to_numpy
+from mil_tools import rosmsg_to_numpy
 from navigator_msgs.srv import MoveToWaypointRequest, TwoClosestConesRequest
 from std_srvs.srv import SetBoolRequest
 

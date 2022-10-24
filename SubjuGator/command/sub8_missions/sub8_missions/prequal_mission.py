@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 import math
-from distutils.util import subst_vars
 
 import cv2
 import numpy as np

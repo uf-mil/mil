@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import os
 import traceback
-from typing import Any, Callable, Coroutine, Optional, Sequence
+from typing import Any, Callable, Coroutine, Sequence
 
 import genpy
 import mil_ros_tools

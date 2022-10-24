@@ -40,7 +40,6 @@ class SimulatedCANDevice:
         Args:
             data (bytes): The data payload as a string/bytes object.
         """
-        pass
 
 
 class ExampleSimulatedEchoDevice(SimulatedCANDevice):

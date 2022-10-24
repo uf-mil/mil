@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import struct
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 import serial
 
@@ -14,8 +14,6 @@ class USB2CANException(Exception):
     """
     Base class for exception in USB2CAN board functionality. Inherits from :class:`Exception`.
     """
-
-    pass
 
 
 class ChecksumException(USB2CANException):

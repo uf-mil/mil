@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import numpy as np
-import txros
 from std_msgs.msg import String
 
 from .vrx import Vrx

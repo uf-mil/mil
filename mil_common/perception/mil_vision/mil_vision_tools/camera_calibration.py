@@ -5,7 +5,6 @@ import cv2
 import numpy as np
 import rospy
 from mil_ros_tools import Image_Publisher, Image_Subscriber
-from sensor_msgs.msg import Image
 
 
 class CameraCalibration:

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-from typing import Optional
 
 import numpy as np
 import rospy

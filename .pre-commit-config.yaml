@@ -28,6 +28,19 @@ repos:
     rev: v14.0.6
     hooks:
       - id: clang-format
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v1.7.7
+    hooks:
+      - id: autoflake
+        args: [--remove-all-unused-imports, --ignore-init-module-imports]
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        args: [--disable=all, --enable=R1711]
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.38.2
     hooks:

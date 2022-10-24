@@ -14,7 +14,7 @@ from navigator_msgs.srv import (
     ObjectDBQueryRequest,
     ObjectDBQueryResponse,
 )
-from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
+from std_srvs.srv import Trigger, TriggerRequest
 
 fprint = lambda *args, **kwargs: _fprint(time="", title="SIM", *args, **kwargs)
 

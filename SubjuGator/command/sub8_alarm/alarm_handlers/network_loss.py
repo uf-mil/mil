@@ -23,10 +23,8 @@ class NetworkLoss(HandlerBase):
         """
         Called when the alarm is raised. Does nothing.
         """
-        pass
 
     def cleared(self, alarm) -> None:
         """
         Called when the alarm is cleared. Does nothing.
         """
-        pass

@@ -3,10 +3,8 @@ import asyncio
 from enum import Enum
 
 import numpy as np
-import txros
 from mil_tools import quaternion_matrix, rosmsg_to_numpy
 from std_srvs.srv import SetBoolRequest
-from twisted.internet import defer
 
 from .navigator import Navigator
 

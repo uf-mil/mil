@@ -2,7 +2,6 @@
 # See argparse description
 import argparse
 import socket
-import sys
 import time
 
 parser = argparse.ArgumentParser(

@@ -3,7 +3,6 @@ import json
 from typing import Any, Dict, List, Type
 
 from twisted.python import failure
-from txros import util
 
 from .exceptions import ParametersException, SubmissionException, TimeoutException
 

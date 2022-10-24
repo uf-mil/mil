@@ -33,7 +33,6 @@ class TemplateChecker:
     async def tx_init(self):
         # Do txros initiation here
         yield
-        pass
 
     def do_check(self):
         # Do actual checking here, either pass or fail
