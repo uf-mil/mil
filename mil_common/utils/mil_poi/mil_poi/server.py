@@ -6,7 +6,7 @@ from typing import Optional
 import rospy
 import tf2_geometry_msgs  # noqa
 import tf2_ros
-from geometry_msgs.msg import Point, PointStamped, Pose
+from geometry_msgs.msg import Point, PointStamped, Pose, Quaternion
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 from mil_poi.msg import POI, POIArray
 from mil_poi.srv import (
@@ -73,8 +73,10 @@ class POIServer:
                 assert type(value) == list
                 assert len(value) == 3
                 name = key
-                position = numpy_to_point(value)
-                self._add_poi(name, position)
+                pose = Pose()
+                pose.position = numpy_to_point(value)
+                pose.orientation = Quaternion(0.0, 0.0, 0.0, 0.0)
+                self._add_poi(name, pose)
 
         # Update clients / markers of changes from param
         self.update()
@@ -137,7 +139,7 @@ class POIServer:
             return
 
         # Update position of marker
-        self.update_position(feedback.marker_name, feedback.pose.position)
+        self.update_position(feedback.marker_name, feedback.pose)
 
     @thread_lock(lock)
     def save_to_param_cb(self, req: TriggerRequest) -> TriggerResponse:
@@ -176,15 +178,20 @@ class POIServer:
             indicating why.
         """
         name = req.name
+        pose = Pose()
         # If frame is empty, just initialize it to zero
         if len(req.position.header.frame_id) == 0:
-            position = numpy_to_point([0.0, 0.0, 0.0])
+            position = Point(0.0, 0.0, 0.0)
+
         # Otherwise transform position into global frame
         else:
             position = self.transform_position(req.position)
             if position is None:
                 return AddPOIResponse(success=False, message="tf error (bad poi)")
-        if not self.add_poi(name, position):
+
+        orientation = Quaternion(0.0, 0.0, 0.0, 0.0)
+        pose.position, pose.orientation = position, orientation
+        if not self.add_poi(name, pose):
             return AddPOIResponse(success=True, message="already exists (bad poi)")
         return AddPOIResponse(success=True, message="good poi")
 
@@ -221,12 +228,12 @@ class POIServer:
         if position is None:
             return MovePOIResponse(success=False, message="tf error (bad poi)")
         # Return error if marker did not exist
-        if not self.update_position(name, position):
+        if not self.update_position(name, Pose(position, Quaternion(0, 0, 0, 0))):
             return MovePOIResponse(success=False, message="does not exist (bad poi)")
         return MovePOIResponse(success=True, message="good poi")
 
     @thread_lock(lock)
-    def add_poi(self, name: str, position: Point) -> bool:
+    def add_poi(self, name: str, position: Pose) -> bool:
         """
         Add a POI, updating clients and Rviz when done.
 
@@ -259,7 +266,7 @@ class POIServer:
         return True
 
     @thread_lock(lock)
-    def update_position(self, name: str, position: Point) -> bool:
+    def update_position(self, name: str, position: Pose) -> bool:
         """
         Update the position of a POI, updating clients and Rviz when done.
 
@@ -284,7 +291,7 @@ class POIServer:
         self.pub.publish(self.pois)
         self.interactive_marker_server.applyChanges()
 
-    def _update_position(self, name: str, position: Point) -> bool:
+    def _update_position(self, name: str, position: Pose) -> bool:
         """
         Internal implementation of update_position, which is NOT thread safe
         and does NOT update clients of change.
@@ -292,16 +299,10 @@ class POIServer:
         # Find poi with specified name
         for poi in self.pois.pois:
             if poi.name == name:
-                pose = Pose()
-                pose.orientation.w = 1.0
-                pose.orientation.x = 0.0
-                pose.orientation.y = 1.0
-                pose.orientation.z = 0.0
-                pose.position = position
-                if not self.interactive_marker_server.setPose(name, pose):
+                if not self.interactive_marker_server.setPose(name, position):
                     return False
                 # Set pose in message
-                poi.position = position
+                poi.pose = position
                 return True
         return False
 
@@ -320,7 +321,7 @@ class POIServer:
                 return True
         return False
 
-    def _add_poi(self, name: str, position: Point) -> bool:
+    def _add_poi(self, name: str, position: Pose) -> bool:
         """
         Internal implementation of add_poi, which is NOT thread safe and does
         NOT update clients of change.
@@ -329,18 +330,22 @@ class POIServer:
             return False
         poi = POI()
         poi.name = name
-        poi.position = position
+        poi.pose = position
         self.pois.pois.append(poi)
 
         point_marker = Marker()
-        point_marker.type = Marker.SPHERE
-        point_marker.scale.x = self.marker_scale
-        point_marker.scale.y = self.marker_scale
-        point_marker.scale.z = self.marker_scale
+        point_marker.type = Marker.ARROW
+        point_marker.scale.x = self.marker_scale * 1
+        point_marker.scale.y = self.marker_scale * 0.25
+        point_marker.scale.z = self.marker_scale * 0.25
         point_marker.color.r = 1.0
         point_marker.color.g = 1.0
         point_marker.color.b = 1.0
         point_marker.color.a = 1.0
+        point_marker.pose.orientation.w = 1.0
+        point_marker.pose.orientation.x = 0.0
+        point_marker.pose.orientation.y = 1.0
+        point_marker.pose.orientation.z = 0.0
 
         text_marker = Marker()
         text_marker.type = Marker.TEXT_VIEW_FACING
@@ -362,18 +367,19 @@ class POIServer:
         int_marker.pose.orientation.x = 0.0
         int_marker.pose.orientation.y = 1.0
         int_marker.pose.orientation.z = 0.0
-        int_marker.pose.position = poi.position
+        int_marker.pose.position = poi.pose.position
         int_marker.scale = 1
 
         int_marker.name = poi.name
 
         # insert a box
         control = InteractiveMarkerControl()
-        control.interaction_mode = InteractiveMarkerControl.MOVE_PLANE
-        control.always_visible = True
+        control.interaction_mode = InteractiveMarkerControl.MOVE_ROTATE
         control.markers.append(point_marker)
         control.markers.append(text_marker)
+        control.always_visible = True
         int_marker.controls.append(control)
+
         self.interactive_marker_server.insert(int_marker, self.process_feedback)
 
         return True
