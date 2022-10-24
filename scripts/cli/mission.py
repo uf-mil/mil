@@ -1,64 +1,53 @@
-from __future__ import division, print_function
-
+import os
+import socket
+import subprocess
+import sys
 import time
-
-import rospy
 
 import rich
 import rich_click as click
+import rosgraph
+import rosgraph.masterapi
+import rospy
 from rich.console import Console
-
 from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
 from txros import NodeHandle, Service, action, rosxmlrpc, util
 
-import subprocess
-import rosgraph
-import rosgraph.masterapi
-
-import os
-import socket
-import sys
-
-
-
-#---------------
+# ---------------
 
 
 @click.group()
 def mission():
     """
-    Run and manage available missions for a robotic system
+    Run and manage available missions for a robotic system.
     """
     pass
 
 
 @mission.command()
 def run():
-    """ """
+    """
+    Run a specific mission listed in the mission server.
+    """
     pass
 
 
 @mission.command()
 def refresh():
-    """ """
+    """
+    Refresh the list of available missions.
+    """
     # run mission_client, to execute it's refresh command
     # first, check if the ROS master is running- nothing will work without it
-    
-    isOnline = False
-    
-    if rosgraph.is_master_online(): # Checks the master uri and results boolean (True or False)
-        print('ROS MASTER is Online')
-        isOnline = True
-    else:
-        print('ROS MASTER is Offline')
-        
-    if isOnline == True:
+    if rosgraph.is_master_online():
         subprocess.call("rosrun mil_missions mission_client refresh", shell=True)
-    
-    
+    else:
+        rich.print("[red1 bold]Cannot find a running ROS instance...")
+
 
 @mission.command()
 def list():
-    """ """
+    """
+    List all missions that can be run.
+    """
     pass
-    
