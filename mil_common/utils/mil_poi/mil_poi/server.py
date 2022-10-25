@@ -4,7 +4,6 @@ from threading import Lock
 from typing import Optional
 
 import rospy
-import tf2_geometry_msgs  # noqa
 import tf2_ros
 from geometry_msgs.msg import Point, PointStamped, Pose, Quaternion
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
@@ -69,8 +68,8 @@ class POIServer:
             pois = rospy.get_param("~initial_pois")
             assert isinstance(pois, dict)
             for key, value in pois.items():
-                assert type(key) == str
-                assert type(value) == list
+                assert isinstance(key, str)
+                assert isinstance(value, list)
                 assert len(value) == 3
                 name = key
                 pose = Pose()

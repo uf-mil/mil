@@ -41,6 +41,7 @@ repos:
         entry: pylint
         language: system
         types: [python]
+        args: [--jobs=0]
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.38.2
     hooks:

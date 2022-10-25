@@ -20,7 +20,7 @@ class VrxNavigation(Vrx):
         await self.nh.sleep(5.0)
 
     def get_index_of_type(self, objects, classifications):
-        if type(classifications) == str:
+        if isinstance(classifications, str):
             classifications = [classifications]
         return next(
             i

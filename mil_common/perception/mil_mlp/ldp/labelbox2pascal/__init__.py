@@ -113,7 +113,7 @@ def write_label(
 
 def _add_pascal_object_from_wkt(xml_writer, img_height, wkt_data, label):
     polygons = []
-    if type(wkt_data) is list:  # V3+
+    if isinstance(wkt_data, list):  # V3+
         polygons = map(lambda x: wkt.loads(x["geometry"]), wkt_data)
     else:  # V2
         polygons = wkt.loads(wkt_data)
@@ -134,7 +134,7 @@ def _add_pascal_object_from_xy(xml_writer, img_height, polygons, label):
         if "geometry" in polygon:  # V3
             polygon = polygon["geometry"]
         try:
-            assert type(polygon) is list  # V2 and V3
+            assert isinstance(polygon, list)  # V2 and V3
         except:
             print("Only one value of polygon, skipping...")
             continue

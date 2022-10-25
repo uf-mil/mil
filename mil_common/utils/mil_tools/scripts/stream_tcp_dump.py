@@ -49,7 +49,7 @@ if args.rate != 0:
 
 conn, addr = s.accept()
 try:
-    if args.advance_on_arrow == False:
+    if args.advance_on_arrow is False:
         if args.batch_size == 0:
             while True:
                 conn.send(data)

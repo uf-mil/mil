@@ -11,7 +11,6 @@ from typing import List
 import sphinx.errors
 from docutils import nodes
 from docutils.nodes import Node
-from docutils.parsers.rst.directives import unchanged  # type: ignore
 from sphinx import addnodes
 from sphinx.locale import _
 from sphinx.util.docutils import SphinxDirective

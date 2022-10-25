@@ -102,8 +102,8 @@ enable=c-extension-no-member,
        unused-import, # R1711
        yield-inside-async-function, # E1700
        not-async-context-manager, # E1701
-       blacklisted-name, # C0102
-       singleton-comparison, #C0121
+       singleton-comparison, # C0121
+       unidiomatic-typecheck, # C0123
 
 
 [REPORTS]
