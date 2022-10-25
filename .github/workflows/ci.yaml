@@ -50,12 +50,6 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
           ./scripts/install.sh
-      # We want to run a full test suite in CI - this includes the BlueView
-      # tests!
-      - name: Run pylint
-        run: |
-          cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          pylint $(git ls-files "*.py")
       - name: Install BlueView Sonar SDK
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
@@ -72,6 +66,12 @@ jobs:
           catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3 \
                       -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 \
                       -j6
+      # We want to run a full test suite in CI - this includes the BlueView
+      # tests!
+      - name: Run pylint
+        run: |
+          cd $GITHUB_WORKSPACE/catkin_ws/src/mil
+          pylint $(git ls-files "*.py")
       - name: Run catkin_make tests
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
