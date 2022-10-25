@@ -73,7 +73,7 @@ jobs:
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
           source /opt/ros/noetic/setup.bash
           source ../../devel/setup.bash
-          pylint $(git ls-files "*.py")
+          pylint $(git ls-files "*.py") --jobs=0
       - name: Run catkin_make tests
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
