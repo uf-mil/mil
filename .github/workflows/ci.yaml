@@ -72,7 +72,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
           source /opt/ros/noetic/setup.bash
-          source devel/setup.bash
+          source ../../devel/setup.bash
           pylint $(git ls-files "*.py")
       - name: Run catkin_make tests
         run: |
