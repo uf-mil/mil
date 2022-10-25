@@ -54,6 +54,7 @@ jobs:
       # tests!
       - name: Run pylint
         run: |
+          cd $GITHUB_WORKSPACE/catkin_ws/src/mil
           pylint $(git ls-files "*.py")
       - name: Install BlueView Sonar SDK
         run: |
