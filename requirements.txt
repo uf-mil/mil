@@ -40,7 +40,7 @@ modernize==0.8.0 # This can be removed after Noetic Migration is complete.
 
 # Testing
 pre-commit==2.20.0
-pylint==2.13.5
+pylint==2.15.5
 
 # YOLOv7
 torch>=1.10.0
