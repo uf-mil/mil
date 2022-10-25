@@ -83,21 +83,27 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-disable=raw-checker-failed,
-        bad-inline-option,
-        locally-disabled,
-        file-ignored,
-        suppressed-message,
-        useless-suppression,
-        deprecated-pragma,
-        use-symbolic-message-instead,
-        unsubscriptable-object
+# disable=raw-checker-failed,
+#         bad-inline-option,
+#         locally-disabled,
+#         file-ignored,
+#         suppressed-message,
+#         useless-suppression,
+#         deprecated-pragma,
+#         use-symbolic-message-instead,
+#         unsubscriptable-object
+disable=all
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
 # multiple time (only on the command line, not in the configuration file where
 # it should appear only once). See also the "--disable" option for examples.
-enable=c-extension-no-member
+enable=c-extension-no-member,
+       unused-import, # R1711
+       yield-inside-async-function, # E1700
+       not-async-context-manager, # E1701
+       blacklisted-name, # C0102
+       singleton-comparison, #C0121
 
 
 [REPORTS]

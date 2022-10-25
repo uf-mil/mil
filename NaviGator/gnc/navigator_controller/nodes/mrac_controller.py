@@ -392,7 +392,7 @@ class MRAC_Controller:
 
         # Adjust kp_body and kd_body based on p_err if heavy_pid was set
         if (
-            (self.heavy_pid == True)
+            (self.heavy_pid is True)
             and (abs(p_err[0]) < self.x_thresh)
             and (abs(p_err[1]) < self.y_thresh)
             and (abs(y_err) < self.yaw_thresh)

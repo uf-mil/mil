@@ -8,6 +8,7 @@ ci:
   autofix_prs: false
   autoupdate_commit_msg: 'Update pre-commit hooks to latest versions'
   autoupdate_schedule: monthly
+  skip: [pylint]
 
 repos:
   - repo: https://github.com/pycqa/isort
@@ -40,7 +41,6 @@ repos:
         entry: pylint
         language: system
         types: [python]
-        args: [--disable=all, --enable=R1711]
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.38.2
     hooks:

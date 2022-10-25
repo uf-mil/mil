@@ -41,7 +41,7 @@ class CircleAnimal:
 
     def animalSubscriber(self, msg: GeoPath) -> None:
         # if target animal hasn't been selected, do not provide more data
-        if self.target_animal == "" or self.new_animal_pose == True:
+        if self.target_animal == "" or self.new_animal_pose is True:
             return
 
         poses: list[GeoPoseStamped] = msg.poses

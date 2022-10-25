@@ -52,6 +52,9 @@ jobs:
           ./scripts/install.sh
       # We want to run a full test suite in CI - this includes the BlueView
       # tests!
+      - name: Run pylint
+        run: |
+          pylint $(git ls-files "*.py")
       - name: Install BlueView Sonar SDK
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
