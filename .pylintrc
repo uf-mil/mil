@@ -104,6 +104,9 @@ enable=c-extension-no-member,
        not-async-context-manager, # E1701
        singleton-comparison, # C0121
        unidiomatic-typecheck, # C0123
+       misplaced-comparison-constant, # C0122
+       init-is-generator, # E0100
+       return-in-init, # E0101
 
 
 [REPORTS]
