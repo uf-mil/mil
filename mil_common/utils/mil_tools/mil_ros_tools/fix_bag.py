@@ -71,12 +71,12 @@ class BagFixer:
         out.close()
 
     def _fix_strings(self, strings):
-        if type(strings) == dict:
+        if isinstance(strings, dict):
             return strings
         d = {}
         if strings is None:
             return d
-        assert type(strings) == list
+        assert isinstance(strings, list)
         for s in strings:
             split = s.split(":")
             assert len(split) == 2

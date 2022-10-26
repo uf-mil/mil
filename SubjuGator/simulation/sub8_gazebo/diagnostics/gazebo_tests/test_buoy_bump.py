@@ -1,5 +1,4 @@
 import numpy as np
-import txros
 from diagnostics.gazebo_tests import common
 from missions import buoy
 from sub8 import pose_editor

@@ -4,7 +4,6 @@ from __future__ import annotations
 import genpy
 import mil_tools
 import numpy as np
-import txros
 from geometry_msgs.msg import Point
 from mil_misc_tools.text_effects import fprint
 from navigator_msgs.srv import (

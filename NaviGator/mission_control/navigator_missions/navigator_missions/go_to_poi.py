@@ -6,7 +6,6 @@ from geometry_msgs.msg import Point, Pose, Quaternion
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 from .navigator import Navigator
-from .pose_editor import PoseEditor2
 
 
 class GoToPOI(Navigator):

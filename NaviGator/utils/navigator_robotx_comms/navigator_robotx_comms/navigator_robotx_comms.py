@@ -7,25 +7,16 @@ of messages for the RobotX Communication Protocol
 import math
 from typing import Any, List, Optional, Tuple
 
-import rospy
 import tf.transformations as trans
 from mil_tools import rosmsg_to_numpy
 from nav_msgs.msg import Odometry
 from navigator_msgs.srv import (
     MessageDetectDockRequest,
-    MessageDetectDockResponse,
     MessageEntranceExitGateRequest,
-    MessageEntranceExitGateResponse,
     MessageFindFlingRequest,
-    MessageFindFlingResponse,
     MessageFollowPathRequest,
-    MessageFollowPathResponse,
     MessageReactReportRequest,
-    MessageReactReportResponse,
     MessageUAVReplenishmentRequest,
-    MessageUAVReplenishmentResponse,
-    MessageUAVSearchReportRequest,
-    MessageUAVSearchReportResponse,
 )
 
 

@@ -4,7 +4,6 @@ import argparse
 
 import rospy
 from geometry_msgs.msg import Vector3, Wrench, WrenchStamped
-from mil_misc_tools import text_effects
 from std_msgs.msg import Header
 
 

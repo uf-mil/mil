@@ -6,7 +6,6 @@ from geometry_msgs.msg import PoseArray
 from mil_tools import numpy_quat_pair_to_pose
 from sensor_msgs.msg import Joy
 from std_msgs.msg import Header
-from txros import util
 
 from .navigator import Navigator
 

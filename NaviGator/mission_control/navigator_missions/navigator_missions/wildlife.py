@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-import numpy as np
-import txros
-from mil_misc_tools import ThrowingArgumentParser
-from mil_tools import rosmsg_to_numpy
 from std_srvs.srv import SetBoolRequest
-from twisted.internet import defer
 
 from .navigator import Navigator
 

@@ -7,8 +7,7 @@ from mil_passive_sonar.msg import Triggered
 from mil_ros_tools import Plotter, interweave
 from mil_tools import numpy_to_vector3
 from rospy.numpy_msg import numpy_msg
-from scipy.signal import correlate, decimate, resample
-from std_msgs.msg import Header
+from scipy.signal import correlate
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 
 

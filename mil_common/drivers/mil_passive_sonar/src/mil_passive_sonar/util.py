@@ -3,7 +3,6 @@ import math
 import numpy
 import scipy
 import scipy.signal
-from mil_passive_sonar.msg import Ping  # noqa
 
 
 def resample(x, p, q):

@@ -50,4 +50,3 @@ class BusVoltage(HandlerBase):
         """
         Called when the alarm is cleared. Does nothing.
         """
-        pass

@@ -147,7 +147,6 @@ class VisionNode(metaclass=abc.ABCMeta):
         Returns:
             List[ObjectInImage]: A list of the objects found in the image.
         """
-        pass
 
 
 if __name__ == "__main__":

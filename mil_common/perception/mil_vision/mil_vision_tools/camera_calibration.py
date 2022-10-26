@@ -5,7 +5,6 @@ import cv2
 import numpy as np
 import rospy
 from mil_ros_tools import Image_Publisher, Image_Subscriber
-from sensor_msgs.msg import Image
 
 
 class CameraCalibration:
@@ -42,7 +41,7 @@ class CameraCalibration:
             + cv2.CALIB_CB_NORMALIZE_IMAGE,
         )
 
-        if ret == True:
+        if ret is True:
             corners2 = cv2.cornerSubPix(
                 gray, corners, (11, 11), (-1, -1), self.criteria
             )

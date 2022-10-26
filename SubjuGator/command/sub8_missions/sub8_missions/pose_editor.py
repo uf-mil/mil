@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import Iterable, Sequence
+from typing import Sequence
 
 import numpy as np
 import rospy

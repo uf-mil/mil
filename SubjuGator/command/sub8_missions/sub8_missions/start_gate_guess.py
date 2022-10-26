@@ -1,9 +1,7 @@
-import mil_ros_tools
 import numpy as np
 import rospy
 from mil_misc_tools import text_effects
 from std_srvs.srv import Trigger
-from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 
 from .sub_singleton import SubjuGator
 

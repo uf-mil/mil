@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from collections import deque
-from typing import Optional
 
 import cv2
 import numpy as np

@@ -3,7 +3,6 @@ import yaml
 from genpy import Duration
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
-from txros import util
 
 from .navigator import Navigator
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import os
-from typing import Callable, Optional, Type
+from typing import Callable
 
 import genpy
 import mil_tools
@@ -800,7 +800,7 @@ class Searcher:
         async def pattern():
             for pose in self.search_pattern:
                 fprint("Going to next position.", title="SEARCHER")
-                if type(pose) == list or type(pose) == np.ndarray:
+                if isinstance(pose, list) or isinstance(pose, np.ndarray):
                     await self.nav.move.relative(pose).go(**kwargs)
                 else:
                     await pose.go(**kwargs)

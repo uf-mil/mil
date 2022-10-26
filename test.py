@@ -1,7 +1,5 @@
 import asyncio
 
-import uvloop
-
 
 async def main():
     count = 0

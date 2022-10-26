@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
     try:
         import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D
+        from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-import
 
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot("111", projection="3d")
@@ -168,7 +168,7 @@ if __name__ == "__main__":
 
     try:
         import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D  # noqa
+        from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-import
 
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot("111", projection="3d")

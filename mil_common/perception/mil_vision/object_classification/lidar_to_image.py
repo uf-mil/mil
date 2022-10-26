@@ -4,7 +4,6 @@ from collections import deque
 import cv2
 import genpy
 import numpy as np
-import txros
 from cv_bridge import CvBridge
 from mil_ros_tools import odometry_to_numpy
 from nav_msgs.msg import Odometry

@@ -40,11 +40,9 @@ def do_mission(sub):
                 if (yield sub.nh.get_param('pinger_where')) == 0:
                     fprint('Running roulette')
                     # do roulette
-                    pass
                 if (yield sub.nh.get_param('pinger_where')) == 1:
                     fprint('Running cash in')
                     # do cash in challenge
-                    pass
 
     except Exception as e:
         fprint("Error in Chain 1 missions!", msg_color="red")

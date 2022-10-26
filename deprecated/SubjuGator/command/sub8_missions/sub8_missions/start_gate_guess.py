@@ -1,5 +1,4 @@
 import mil_ros_tools
-import numpy as np
 from mil_misc_tools import text_effects
 from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 from txros import util

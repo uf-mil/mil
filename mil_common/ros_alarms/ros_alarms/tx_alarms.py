@@ -5,7 +5,6 @@ import traceback
 import txros
 from ros_alarms.msg import Alarm
 from ros_alarms.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
-from twisted.internet import defer
 
 """
 Alarms implementation for txros (https://github.com/txros/txros)

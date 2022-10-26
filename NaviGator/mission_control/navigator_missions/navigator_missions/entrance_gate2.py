@@ -2,10 +2,7 @@
 import math
 
 import numpy as np
-import tf2_ros
-from mil_misc_tools import ThrowingArgumentParser
-from mil_tools import quaternion_matrix, rosmsg_to_numpy
-from navigator_msgs.srv import MessageEntranceExitGate, MessageEntranceExitGateRequest
+from mil_tools import quaternion_matrix
 from std_srvs.srv import SetBoolRequest
 
 from .navigator import Navigator

@@ -2,12 +2,10 @@
 import asyncio
 import math
 
-import numpy as np
 import txros
 from geographic_msgs.msg import GeoPath, GeoPoseStamped
-from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+from mil_msgs.srv import ObjectDBQuery
 from mil_tools import numpy_to_point, rosmsg_to_numpy
-from nav_msgs.msg import Odometry
 from navigator_missions import Navigator
 from navigator_msgs.srv import (
     AcousticBeacon,
@@ -20,7 +18,7 @@ from robot_localization.srv import FromLL, FromLLRequest, ToLL, ToLLRequest
 from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import Empty, Float64, Float64MultiArray
 from std_srvs.srv import Trigger
-from txros import NodeHandle, action, txros_tf, util
+from txros import NodeHandle, txros_tf
 from vision_msgs.msg import Detection2DArray
 from vrx_gazebo.msg import Task
 from vrx_gazebo.srv import ColorSequence

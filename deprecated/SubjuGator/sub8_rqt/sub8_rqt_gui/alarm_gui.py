@@ -198,8 +198,6 @@ class AlarmPlugin(Plugin):
 
     def save_settings(self, plugin_settings, instance_settings):
         rospy.logwarn('Saving does not currently do anything')
-        pass
 
     def restore_settings(self, plugin_settings, instance_settings):
         rospy.logwarn('Restoring does not currently do anything')
-        pass

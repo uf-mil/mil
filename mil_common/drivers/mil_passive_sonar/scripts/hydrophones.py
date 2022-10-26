@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import math
-import sys
 
 import numpy
 import rosbag
@@ -9,7 +8,6 @@ from geometry_msgs.msg import Point, Vector3Stamped
 from mil_passive_sonar import algorithms, util
 from mil_passive_sonar.msg import Debug, Ping, ProcessedPing
 from mil_tools import numpy_to_vector3
-from std_msgs.msg import Header
 
 
 def process_ping(ping: Ping):

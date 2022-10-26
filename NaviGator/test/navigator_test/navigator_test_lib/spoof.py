@@ -1,5 +1,5 @@
 import genpy
-from txros import NodeHandle, util
+from txros import NodeHandle
 
 
 class SpoofPubilsher:
