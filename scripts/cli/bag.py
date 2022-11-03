@@ -1,31 +1,6 @@
-import asyncio
-import functools
-import importlib
-import os
-import re
-import subprocess
-import time
-import traceback
-
 import rich
 import rich_click as click
-import rosbag
 import rospy
-from rich.console import Console
-from rich.live import Live
-from rich.panel import Panel
-from rich.progress import (
-    BarColumn,
-    DownloadColumn,
-    FileSizeColumn,
-    Progress,
-    TaskID,
-    TextColumn,
-    TimeElapsedColumn,
-    TimeRemainingColumn,
-    TransferSpeedColumn,
-)
-from rich.table import Table
 
 
 @click.group()
@@ -50,6 +25,10 @@ def validate_name(ctx, param, values):
     return [t for t in rospy.get_published_topics() if t[0] in values]
 
 
+def complete_topics(ctx, param, incomplete):
+    return [t[0] for t in rospy.get_published_topics() if t[0].startswith(incomplete)]
+
+
 def validate_timeout(ctx, param, value):
     if value is None:
         return None
@@ -66,6 +45,8 @@ def validate_timeout(ctx, param, value):
 
 
 def validate_filesize(ctx, param, value):
+    import re
+
     if value is None:
         return None
     try:
@@ -94,7 +75,13 @@ def sizeof_fmt(num, suffix="B"):
 
 @bag.command()
 @click.argument("filename", type=str, required=True)
-@click.argument("names", callback=validate_name, required=False, nargs=-1)
+@click.argument(
+    "names",
+    callback=validate_name,
+    required=False,
+    nargs=-1,
+    shell_complete=complete_topics,
+)
 @click.option(
     "--all", help="Record all topics", default=False, required=False, is_flag=True
 )
@@ -122,6 +109,30 @@ def record(filename, names, all, perf, timeout, filesize):
     """
     Record the output of a list of topics named NAMES to a bag named FILENAME.
     """
+    import functools
+    import importlib
+    import os
+    import subprocess
+    import time
+    import traceback
+
+    import rosbag
+    from rich.console import Console
+    from rich.live import Live
+    from rich.panel import Panel
+    from rich.progress import (
+        BarColumn,
+        DownloadColumn,
+        FileSizeColumn,
+        Progress,
+        TaskID,
+        TextColumn,
+        TimeElapsedColumn,
+        TimeRemainingColumn,
+        TransferSpeedColumn,
+    )
+    from rich.table import Table
+
     # If performance is desired, use original rosbag record functionality
     if perf:
         cmd = f"rosbag record -O {filename} {' '.join([n[0] for n in names])}"

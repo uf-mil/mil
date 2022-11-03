@@ -1,5 +1,3 @@
-import time
-
 import rich
 import rich_click as click
 from rich.console import Console

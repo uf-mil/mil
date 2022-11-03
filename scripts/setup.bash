@@ -9,9 +9,11 @@ if [[ "$SHELL" == "/usr/bin/zsh" ]]
 then
     source /opt/ros/noetic/setup.zsh
     source $MIL_WS/devel/setup.zsh
+    eval "$(_MIL_COMPLETE=zsh_source mil)"
 else
     source /opt/ros/noetic/setup.bash
     source $MIL_WS/devel/setup.bash
+    eval "$(_MIL_COMPLETE=bash_source mil)"
 fi
 
 

@@ -1,17 +1,8 @@
-import os
-import socket
 import subprocess
-import sys
-import time
 
 import rich
 import rich_click as click
 import rosgraph
-import rosgraph.masterapi
-import rospy
-from rich.console import Console
-from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
-from txros import NodeHandle, Service, action, rosxmlrpc, util
 
 # ---------------
 

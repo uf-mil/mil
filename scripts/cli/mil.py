@@ -1,13 +1,8 @@
-from operator import ne
-
-import click
-import rich
 import rich_click as click
 from bag import bag
 from mission import mission
 from nav import nav
 from network import network
-from rich.console import Console
 
 from docs import docs
 
