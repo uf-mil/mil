@@ -6,7 +6,7 @@ import rospy
 @click.group()
 def bag():
     """
-    Manage building of MIL documentation
+    Utilities for recording and manipulating rosbag files
     """
     pass
 
