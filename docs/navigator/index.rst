@@ -15,6 +15,16 @@ are being created in preparation for the November 2022 competition in Sydney, Au
    Drone <drone>
    lidar
 
+Procedures
+----------
+Procedures related to operation of the NaviGator AMS.
+
+.. toctree::
+   :maxdepth: 2
+
+   Testing Day Checklist <testing_checklist>
+   networking
+
 Past Projects
 -------------
 We also have documentation on projects which we competed in in the past.

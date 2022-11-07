@@ -5,7 +5,6 @@ import traceback
 import txros
 from ros_alarms.msg import Alarm
 from ros_alarms.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
-from twisted.internet import defer
 
 """
 Alarms implementation for txros (https://github.com/txros/txros)
@@ -108,6 +107,9 @@ class TxAlarmListener:
     async def setup(self):
         await self.update_sub.setup()
 
+    async def shutdown(self):
+        await self.update_sub.shutdown()
+
     async def is_raised(self):
         """Returns whether this alarm is raised or not"""
         resp = await self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
@@ -166,8 +168,6 @@ class TxAlarmListener:
             if self._last_alarm is not None and not self._last_alarm.raised:
                 funct(self._nh, self._last_alarm)
 
-        print(f"Callbacks: {self._raised_cbs}, {self._cleared_cbs}")
-
     def clear_callbacks(self):
         """Clears all callbacks"""
         self._raised_cbs = []
@@ -179,7 +179,6 @@ class TxAlarmListener:
 
             # Run the callbacks if severity conditions are met
             cb_list = self._raised_cbs if alarm.raised else self._cleared_cbs
-            print(f"Callbacks: {cb_list}")
             for severity, cb in cb_list:
                 # If the cb severity is not valid for this alarm's severity, skip it
                 if not self._severity_cb_check(severity):

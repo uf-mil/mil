@@ -237,7 +237,8 @@ mil_user_install_dependencies()
     awscli \
     net-tools \
     cifs-utils \
-    nmap
+    nmap \
+    tmuxinator
 }
 
 # Add line to user's bashrc which source the repo's setup files
@@ -276,10 +277,10 @@ mil_user_setup_rc()
 
 # Sets up the catkin workspace so that user can build
 # If the repo is already cloned here, it will build the MIL code
+# catkin_init_workspace is superfluous, catkin_make is all you need
 mil_user_setup_init_catkin()
 {
   mkdir -p $CATKIN_SOURCE_DIR
-  catkin_init_workspace $CATKIN_SOURCE_DIR
   catkin_make -C $CATKIN_DIR
 }
 
@@ -304,5 +305,12 @@ $(color "$Gre")Setup user tools and shell.
 $(color "$Pur")Compiling repository...
 $(hash_header)$(color "$Res")
 EOF
+
+touch ~/tmux.conf
+if grep  'set -g default-terminal "screen-256color"' ~/tmux.conf; then
+        echo "Tmux already has 256 color support, skip this step"
+else
+        echo "set -g default-terminal \"screen-256color\"" >> ~/.tmux.conf
+fi
 
 mil_user_setup_init_catkin

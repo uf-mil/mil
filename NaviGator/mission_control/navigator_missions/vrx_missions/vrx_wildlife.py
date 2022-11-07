@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
 import math
-from dis import dis
 
 import numpy as np
-import tf
-import txros
-from mil_tools import rosmsg_to_numpy
-from nav_msgs.msg import Odometry
-from navigator_msgs.srv import ChooseAnimal, ChooseAnimalRequest, ChooseAnimalResponse
+from navigator_msgs.srv import ChooseAnimalRequest
 from tsp_solver.greedy import solve_tsp
 
 from .vrx import Vrx

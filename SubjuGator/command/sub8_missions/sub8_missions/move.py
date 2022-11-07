@@ -7,7 +7,6 @@ from gazebo_msgs.msg import ModelState
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist
 from mil_misc_tools import ThrowingArgumentParser
 from ros_alarms import TxAlarmBroadcaster
-from txros import util
 
 from .sub_singleton import SubjuGator
 

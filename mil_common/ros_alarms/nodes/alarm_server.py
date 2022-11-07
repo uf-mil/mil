@@ -119,7 +119,7 @@ class AlarmServer:
         if isinstance(res, Alarm):
             alarm = res
             alarm.alarm_name = meta_alarm  # Ensure alarm name is correct
-        elif type(res) == bool:
+        elif isinstance(res, bool):
             # If it is a boolean, only update if it changes the raised status
             raised_status = res
             if raised_status == meta.raised:

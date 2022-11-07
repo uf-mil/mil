@@ -3,7 +3,6 @@ import yaml
 from genpy import Duration
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
-from txros import util
 
 from .navigator import Navigator
 
@@ -25,6 +24,10 @@ class ConstantVelocity(Navigator):
         cls.msg.child_frame_id = "base_link"
         cls.ref_pub = cls.nh.advertise("/trajectory/constant", Odometry)
         await cls.ref_pub.setup()
+
+    @classmethod
+    async def shutdown(cls):
+        await cls.ref_pub.shutdown()
 
     @classmethod
     async def cleanup(cls):

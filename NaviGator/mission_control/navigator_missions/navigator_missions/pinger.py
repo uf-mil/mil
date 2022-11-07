@@ -2,7 +2,6 @@
 
 import mil_tools
 import numpy as np
-import txros
 from mil_misc_tools.text_effects import fprint
 from navigator_msgs.srv import (
     FindPinger,
@@ -48,6 +47,10 @@ class PingerMission(Navigator):
         )
         cls.marker_pub = cls.nh.advertise("/pinger/debug_marker", MarkerArray)
         await cls.marker_pub.setup()
+
+    @classmethod
+    async def shutdown(cls):
+        await cls.marker_pub.shutdown()
 
     def reset_freq(self):
         return self.reset_client(SetFrequencyRequest(frequency=self.FREQ))

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import os
-from typing import Callable, Optional, Type
+from typing import Callable
 
 import genpy
 import mil_tools
@@ -35,7 +35,7 @@ from std_srvs.srv import (
     TriggerRequest,
 )
 from topic_tools.srv import MuxSelect, MuxSelectRequest
-from txros import NodeHandle, ROSMasterException, ServiceClient, action, txros_tf, util
+from txros import NodeHandle, ROSMasterError, ServiceClient, action, txros_tf, util
 
 from .pose_editor import PoseEditor2
 
@@ -101,7 +101,7 @@ class Navigator(BaseMission):
 
         try:
             cls.is_vrx = await cls.nh.get_param("/is_vrx")
-        except ROSMasterException:
+        except ROSMasterError:
             cls.is_vrx = False
 
         cls._moveto_client = action.ActionClient(cls.nh, "move_to", MoveAction)
@@ -136,6 +136,17 @@ class Navigator(BaseMission):
             cls._init_vrx()
         else:
             await cls._init_not_vrx()
+
+    @classmethod
+    async def _shutdown(cls):
+        await asyncio.gather(
+            cls._moveto_client.shutdown(),
+            cls.rviz_goal.shutdown(),
+            cls.rviz_point.shutdown(),
+            cls._odom_sub.shutdown(),
+        )
+        if not cls.is_vrx:
+            await cls._shutdown_not_vrx()
 
     @classmethod
     def _init_vrx(cls):
@@ -176,6 +187,7 @@ class Navigator(BaseMission):
         cls.hydrophones = TxHydrophonesClient(cls.nh)
 
         cls.poi = TxPOIClient(cls.nh)
+        await cls.poi.setup()
 
         cls._grinch_lower_time = await cls.nh.get_param("~grinch_lower_time")
         cls._grinch_raise_time = await cls.nh.get_param("~grinch_raise_time")
@@ -225,27 +237,37 @@ class Navigator(BaseMission):
 
         await cls._make_alarms()
 
-        if cls.sim:
-            fprint("Sim mode active!", title="NAVIGATOR")
-            await cls.nh.sleep(0.5)
-        else:
-            # We want to make sure odom is working before we continue
-            fprint("Action client do you await?", title="NAVIGATOR")
-            await util.wrap_time_notice(
-                cls._moveto_client.wait_for_server(), 2, "Lqrrt action server"
-            )
-            fprint("Yes he await!", title="NAVIGATOR")
+        # We want to make sure odom is working before we continue
+        fprint("Action client do you await?", title="NAVIGATOR")
+        await util.wrap_time_notice(
+            cls._moveto_client.wait_for_server(), 2, "Lqrrt action server"
+        )
+        fprint("Yes he await!", title="NAVIGATOR")
 
-            fprint("Waiting for odom...", title="NAVIGATOR")
-            odom = util.wrap_time_notice(
-                cls._odom_sub.get_next_message(), 2, "Odom listener"
-            )
-            enu_odom = util.wrap_time_notice(
+        fprint("Waiting for odom...", title="NAVIGATOR")
+        await util.wrap_time_notice(
+            cls._odom_sub.get_next_message(), 2, "Odom listener"
+        )
+
+        if not cls.sim:
+            await util.wrap_time_notice(
                 cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener"
             )
-            await asyncio.gather(odom, enu_odom)  # Wait for all those to finish
+        print("Odom has been received!")
 
         cls.docking_scan = "NA"
+
+    @classmethod
+    async def _shutdown_not_vrx(cls):
+        await asyncio.gather(
+            cls._ecef_odom_sub.shutdown(),
+            cls._grinch_limit_switch_sub.shutdown(),
+            cls._winch_motor_pub.shutdown(),
+            cls._grind_motor_pub.shutdown(),
+            cls.tf_listener.shutdown(),
+            cls.kill_listener.shutdown(),
+            cls.poi.shutdown(),
+        )
 
     @classmethod
     async def reset_pcodar(cls):
@@ -465,7 +487,7 @@ class Navigator(BaseMission):
         positions = np.empty((len(objects), 3))
         for i, obj in enumerate(objects):
             positions[i, :] = mil_tools.rosmsg_to_numpy(obj.pose.position)
-        nav_pose = (self.tx_pose)[0]
+        nav_pose = (await self.tx_pose())[0]
         distances = np.linalg.norm(positions - nav_pose, axis=1)
         distances_argsort = np.argsort(distances)
         if n != -1:
@@ -778,7 +800,7 @@ class Searcher:
         async def pattern():
             for pose in self.search_pattern:
                 fprint("Going to next position.", title="SEARCHER")
-                if type(pose) == list or type(pose) == np.ndarray:
+                if isinstance(pose, list) or isinstance(pose, np.ndarray):
                     await self.nav.move.relative(pose).go(**kwargs)
                 else:
                     await pose.go(**kwargs)

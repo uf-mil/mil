@@ -6,12 +6,9 @@ from collections import deque
 import numpy as np
 import rospy
 import tf2_ros
-from geometry_msgs.msg import PointStamped, Vector3, Vector3Stamped
-from mil_passive_sonar.srv import FindPinger, FindPingerResponse
+from geometry_msgs.msg import PointStamped, Vector3Stamped
 from mil_ros_tools import numpy_to_point, rosmsg_to_numpy
-from nav_msgs.msg import Odometry
-from std_msgs.msg import Header
-from std_srvs.srv import SetBool, SetBoolResponse, Trigger, TriggerResponse
+from std_srvs.srv import SetBool, SetBoolResponse, Trigger
 from tf2_geometry_msgs import PointStamped, Vector3Stamped
 
 

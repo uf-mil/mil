@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import numpy as np
-from navigator_msgs.srv import MoveToWaypointRequest
 from tsp_solver.greedy import solve_tsp
 
 from .vrx import Vrx

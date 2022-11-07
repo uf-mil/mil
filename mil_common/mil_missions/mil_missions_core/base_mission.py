@@ -60,7 +60,6 @@ class BaseMission:
         target might subscribe to the perception node's topic in init() so that
         when the mission is run it already has the latest position.
         """
-        pass
 
     @classmethod
     def _init(cls, mission_runner) -> None:
@@ -79,6 +78,14 @@ class BaseMission:
         """
         cls.mission_runner = mission_runner
         cls.nh = cls.mission_runner.nh
+
+    @classmethod
+    async def shutdown(cls) -> None:
+        pass
+
+    @classmethod
+    async def _shutdown(cls) -> None:
+        pass
 
     def send_feedback(self, message: str) -> None:
         """
@@ -161,7 +168,6 @@ class BaseMission:
         things like set default parameters for future missions, turn off
         perception, etc.
         """
-        pass
 
     def run(self, parameters):
         """
@@ -182,4 +188,3 @@ class BaseMission:
                 will be a json decoded object from the string passed in the goal,
                 but can be changed by overriding decode_parameters.
         """
-        pass

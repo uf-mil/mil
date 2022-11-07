@@ -6,7 +6,7 @@ from .navigator import Navigator
 class StationHold(Navigator):
     async def run(self, parameters):
         self.send_feedback("Setting hold waypoint")
-        await self.hold()
+        self.hold()
         self.send_feedback("Setting Trajectory to lqrrt")
         await self.change_trajectory("lqrrt")
         self.send_feedback("Switching wrench to autonomous")

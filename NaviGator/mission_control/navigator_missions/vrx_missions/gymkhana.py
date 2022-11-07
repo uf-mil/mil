@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-import numpy as np
-import rospy
-import txros
 
 from .vrx import Vrx
 

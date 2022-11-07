@@ -2,9 +2,7 @@
 import asyncio
 
 import numpy as np
-import txros
 from mil_tools import quaternion_matrix, rosmsg_to_numpy
-from rospy.impl.tcpros_service import service_connection_handler
 from std_srvs.srv import SetBoolRequest
 
 from .vrx import Vrx
@@ -22,7 +20,7 @@ class VrxNavigation(Vrx):
         await self.nh.sleep(5.0)
 
     def get_index_of_type(self, objects, classifications):
-        if type(classifications) == str:
+        if isinstance(classifications, str):
             classifications = [classifications]
         return next(
             i

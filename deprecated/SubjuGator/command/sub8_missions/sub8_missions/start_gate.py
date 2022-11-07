@@ -102,7 +102,6 @@ def find_gate(
             perp = perp / np.linalg.norm(perp)
             if not (-perp_threshold <= perp <= perp_threshold):
                 fprint("Not perpendicular. Dot {}".format(perp))
-                pass
                 # continue
             print("Dist {}".format(line))
             if abs(line[2] > depth_threshold):

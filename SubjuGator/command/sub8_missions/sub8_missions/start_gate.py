@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from typing import Optional
-
 import numpy as np
 from mil_misc_tools import text_effects
 from mil_ros_tools import rosmsg_to_numpy
@@ -168,7 +166,6 @@ class StartGate(SubjuGator):
                 perp = perp / np.linalg.norm(perp)
                 if not (-perp_threshold <= perp <= perp_threshold):
                     fprint(f"Not perpendicular. Dot {perp}")
-                    pass
                     # continue
                 print(f"Dist {line}")
                 if abs(line[2] > depth_threshold):

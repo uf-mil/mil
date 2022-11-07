@@ -3,7 +3,7 @@ import numpy as np
 from dynamic_reconfigure.msg import BoolParameter, DoubleParameter, IntParameter
 from geographic_msgs.msg import GeoPoseStamped
 from mil_tools import rosmsg_to_numpy
-from std_srvs.srv import SetBoolRequest, TriggerRequest
+from std_srvs.srv import SetBoolRequest
 
 from .vrx import Vrx
 

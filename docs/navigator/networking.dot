@@ -1,0 +1,35 @@
+digraph G {
+  rankdir=LR
+
+  subgraph cluster_0 {
+    style=filled;
+    color=lightgrey;
+    node [style=filled,color=white];
+    a0 [label = "User X"];
+    a1 [label = "User 2"];
+    a2 [label = "User 1"];
+    aa [label = "Network Box"]
+    au [label = "Rocket AC Base Station"]
+    an [label = "Rocket AC Antenna"]
+    label = "shore";
+  }
+
+  subgraph cluster_1 {
+    style=filled;
+    color=lightgrey;
+    node [style=filled,color=white];
+    n0 [label = "Rocket AC Access Point"]
+    n1 [label = "Computer"]
+    label = "navigator";
+  }
+
+  a0 -> aa [style="dashed", label = "Ethernet", dir=both]
+  a1 -> aa [dir=both]
+  a2 -> aa [dir=both]
+  aa -> au [dir=both, label = "POE"]
+  au -> an [dir=both, label = "Physical Connection"]
+
+  n0 -> n1 [label = "Ethernet", dir=both]
+
+  an -> n0 [dir = both, label = "5GHz Band"]
+}

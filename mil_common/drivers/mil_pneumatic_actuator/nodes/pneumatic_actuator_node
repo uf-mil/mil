@@ -28,7 +28,7 @@ class Actuator:
 
     @classmethod
     def from_dict(cls, config):
-        if type(config) == int:
+        if isinstance(config, int):
             return cls.from_int(config)
         type_str = config["type"]
         pulse_time = config["pulse_time"] if "pulse_time" in config else None

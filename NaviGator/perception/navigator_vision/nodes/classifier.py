@@ -1,31 +1,18 @@
 #!/usr/bin/env python3
 import math
-from collections import deque
 from threading import Lock
 
-import cv2
 import numpy as np
-import pandas
 import rospy
-import sensor_msgs.point_cloud2
 import tf2_ros
 from image_geometry import PinholeCameraModel
 from mil_msgs.msg import PerceptionObjectArray
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from mil_ros_tools import Image_Publisher, Image_Subscriber, rosmsg_to_numpy
-from mil_tools import thread_lock
-from mil_vision_tools import (
-    ImageMux,
-    contour_mask,
-    putText_ul,
-    rect_from_roi,
-    roi_enclosing_points,
-)
+from mil_vision_tools import ImageMux, rect_from_roi, roi_enclosing_points
 from PIL import Image
-from sensor_msgs.msg import Image, PointCloud2
-from std_msgs.msg import Int32
+from sensor_msgs.msg import Image
 from std_srvs.srv import SetBool, Trigger
-from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from tf.transformations import quaternion_matrix
 from vision_msgs.msg import Detection2DArray
 
@@ -86,7 +73,7 @@ class Classifier:
             "/pcodar/objects", PerceptionObjectArray, self.process_objects, queue_size=2
         )
         self.boxes_sub = rospy.Subscriber(
-            "/yolov7/detections", Detection2DArray, self.process_boxes
+            "/yolov7/detections_model1", Detection2DArray, self.process_boxes
         )
         self.enabled_srv = rospy.Service("~set_enabled", SetBool, self.set_enable_srv)
         self.last_image = None
@@ -96,36 +83,32 @@ class Classifier:
 
         if self.is_simulation:
             self.CLASSES = [
-                "mb_marker_buoy_red",
-                "mb_marker_buoy_green",
-                "mb_marker_buoy_black",
-                "mb_marker_buoy_white",
+                "red_cylinder",
+                "green_cylinder",
+                "black_cylinder",
+                "white_cylinder",
                 "mb_round_buoy_black",
                 "mb_round_buoy_orange",
             ]
         else:
             self.CLASSES = [
-                "yellow_cylinder",
-                "black_round",
                 "white_cylinder",
                 "black_cylinder",
                 "red_cylinder",
-                "green_round",
-                "white_round",
-                "orange_round",
+                "green_cylinder",
             ]
 
         self.pcodar_reset = rospy.ServiceProxy("/pcodar/reset", Trigger)
         self.pcodar_reset()
 
-    @thread_lock(lock)
+    # GH-880
+    # @thread_lock(lock)
     def set_enable_srv(self, req):
         self.enabled = req.data
         return {"success": True}
 
     def image_cb(self, msg: Image):
         self.last_image = msg
-        return
 
     def taskinfoSubscriber(self, msg):
         self.is_perception_task = msg.name == "perception"
@@ -139,7 +122,8 @@ class Classifier:
             and pixel[1] < self.camera_info.height
         )
 
-    @thread_lock(lock)
+    # GH-880
+    # @thread_lock(lock)
     def process_objects(self, msg):
         self.last_objects = msg
 
@@ -159,7 +143,6 @@ class Classifier:
         y_diff = second[1] - first[1]
         return math.sqrt(x_diff * x_diff + y_diff * y_diff)
 
-    @thread_lock(lock)
     def process_boxes(self, msg):
         if not self.enabled:
             return
@@ -191,7 +174,7 @@ class Classifier:
             self.camera_model.project3dToPixel(point) for point in positions_camera
         ]
         distances = np.linalg.norm(positions_camera, axis=1)
-        CUTOFF_METERS = 30
+        CUTOFF_METERS = 100
 
         if self.is_perception_task:
             CUTOFF_METERS = 100
@@ -211,6 +194,7 @@ class Classifier:
         classified = set()
 
         # for each bounding box,check which buoy is closest to boat within pixel range of bounding box
+
         for a in msg.detections:
             buoys = []
 
@@ -228,12 +212,12 @@ class Classifier:
                         closest_to_boat = i
 
                 classified.add(self.last_objects.objects[closest_to_box].id)
-                print(
-                    "Object {} classified as {}".format(
-                        self.last_objects.objects[closest_to_box].id,
-                        self.CLASSES[a.results[0].id],
-                    )
-                )
+                # print(
+                #    "Object {} classified as {}".format(
+                #        self.last_objects.objects[closest_to_box].id,
+                #        self.CLASSES[a.results[0].id],
+                #    )
+                # )
                 cmd = "{}={}".format(
                     self.last_objects.objects[closest_to_box].id,
                     self.CLASSES[a.results[0].id],
@@ -280,7 +264,7 @@ class Classifier:
         self.is_simulation = rospy.get_param("/is_simulation", False)
         self.debug = rospy.get_param("~debug", True)
         self.image_topic = rospy.get_param(
-            "~image_topic", "/camera/starboard/image_rect_color"
+            "~image_topic", "/camera/front/left/image_color"
         )
         self.model_loc = rospy.get_param("~model_location", "config/model")
         self.update_period = rospy.Duration(1.0 / rospy.get_param("~update_hz", 5))

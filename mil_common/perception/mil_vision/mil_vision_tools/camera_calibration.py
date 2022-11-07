@@ -1,16 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from collections import deque
 
 import cv2
 import numpy as np
 import rospy
 from mil_ros_tools import Image_Publisher, Image_Subscriber
-from sensor_msgs.msg import Image
 
 
 class CameraCalibration:
     def __init__(self):
-        self.camera = "/camera/front/left/image_raw"
+        self.camera = "/usb_cam/image_raw"
         self.image_sub = Image_Subscriber(self.camera, self.image_cb)
         self.image_pub = Image_Publisher("/image/checkerboard")
         self.count = 0
@@ -42,7 +41,7 @@ class CameraCalibration:
             + cv2.CALIB_CB_NORMALIZE_IMAGE,
         )
 
-        if ret == True:
+        if ret is True:
             corners2 = cv2.cornerSubPix(
                 gray, corners, (11, 11), (-1, -1), self.criteria
             )
@@ -50,15 +49,38 @@ class CameraCalibration:
             self.image_pub.publish(img)
             self.height, self.width = img.shape[:2]
             self.shape = gray.shape[::-1]
-            if self.count >= 7:
+            if self.count >= 2:
                 self.imgpoints.append(corners2)
                 self.objpoints.append(self.objp)
                 self.count = 0
                 print(len(self.imgpoints))
-                if len(self.imgpoints) > 50:
+                if len(self.imgpoints) > 100:
                     self.calculate_matrix()
 
+    def undistort(self, image):
+        h, w = image.shape[:2]
+        mtx = np.asarray(
+            [
+                [722.25663718, 0, 652.46372445],
+                [0, 722.68908779, 374.64826018],
+                [
+                    0,
+                    0,
+                    1,
+                ],
+            ]
+        )
+        dst = np.asarray(
+            [[0.06689877, -0.13360559, 0.0073066, -0.00161229, 0.07727962]]
+        )
+        newmtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dst, (w, h), 1, (w, h))
+        dist = cv2.undistort(image, mtx, dst, None, newmtx)
+        x, y, w, h = roi
+        dist = dist[y : y + h, x : x + w]
+        self.image_pub.publish(dist)
+
     def image_cb(self, image):
+        # self.undistort(image)
         self.calculatePoints(image)
 
     def calculate_matrix(self):
@@ -71,6 +93,8 @@ class CameraCalibration:
         print("done")
         print(mtx)
         print(dist)
+        print(rvecs)
+        print(tvecs)
 
 
 def main():

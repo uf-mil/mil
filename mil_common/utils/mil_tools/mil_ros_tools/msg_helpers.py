@@ -41,7 +41,7 @@ def rosmsg_to_numpy(rosmsg, keys=None):
     """
 
     # Recurse for lists like geometry_msgs/Polygon, Pointclou
-    if type(rosmsg) == list:
+    if isinstance(rosmsg, list):
         output_array = []
         for item in rosmsg:
             output_array.append(rosmsg_to_numpy(item, keys=keys))

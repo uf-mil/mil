@@ -50,12 +50,10 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
           ./scripts/install.sh
-      # We want to run a full test suite in CI - this includes the BlueView
-      # tests!
       - name: Install BlueView Sonar SDK
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          ./scripts/install_bvtsdk --pass ${{ secrets.ZOBELISK_PASSWORD }}
+          ./scripts/hardware_installers/install_bvtsdk --pass ${{ secrets.ZOBELISK_PASSWORD }}
           ls mil_common/drivers/mil_blueview_driver
           echo $PWD
       - name: Run catkin_make
@@ -64,9 +62,18 @@ jobs:
           cd $GITHUB_WORKSPACE/catkin_ws
           ls src/mil/mil_common/drivers/mil_blueview_driver
           source /opt/ros/noetic/setup.bash
+          rm -rf build devel
           catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3 \
                       -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 \
                       -j6
+      # We want to run a full test suite in CI - this includes the BlueView
+      # tests!
+      - name: Run pylint
+        run: |
+          cd $GITHUB_WORKSPACE/catkin_ws/src/mil
+          source /opt/ros/noetic/setup.bash
+          source ../../devel/setup.bash
+          pylint $(git ls-files "*.py") --jobs=0
       - name: Run catkin_make tests
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts

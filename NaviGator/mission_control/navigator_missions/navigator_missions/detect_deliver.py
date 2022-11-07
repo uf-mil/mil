@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 from .detect_deliver_find import DetectDeliverFind
 from .navigator import Navigator
-from .track_target import TrackTarget
+
+# from .track_target import TrackTarget
 
 
 class DetectDeliver(Navigator):
     @classmethod
     def init(cls):
         cls.detect_deiliver_find = DetectDeliverFind()
-        cls.track_target = TrackTarget()
-        pass
+        # cls.track_target = TrackTarget()
 
     async def run(self, args):
         self.send_feedback("Starting detect deliver")

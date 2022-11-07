@@ -7,7 +7,6 @@ import rospy
 import visualization_msgs.msg as visualization_msgs
 from geometry_msgs.msg import Point, Vector3
 from mil_misc_tools import text_effects
-from mil_passive_sonar.msg import ProcessedPing
 
 # from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 from std_srvs.srv import Trigger

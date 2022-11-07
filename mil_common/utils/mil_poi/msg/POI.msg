@@ -2,4 +2,4 @@
 string name
 
 # Position of the point of interest
-geometry_msgs/Point position
+geometry_msgs/Pose pose

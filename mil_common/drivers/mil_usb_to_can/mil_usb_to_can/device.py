@@ -35,7 +35,6 @@ class CANDeviceHandle:
         Args:
             data (bytes): The data received.
         """
-        pass
 
     def send_data(self, data: bytes, can_id: int = 0):
         """
