@@ -47,10 +47,16 @@ class Dock(Navigator):
         self.ogrid_sub = self.nh.subscribe(
             "/ogrid", OccupancyGrid, callback=self.ogrid_cb
         )
+        # self.image_sub = self.nh.subscribe(
+        #     "/wamv/sensors/cameras/front_left_camera/image_raw", Image
+        # )
         self.image_sub = self.nh.subscribe(
             "/wamv/sensors/cameras/front_left_camera/image_raw", Image
         )
         self.cam_frame = None
+        # self.image_info_sub = self.nh.subscribe(
+        #     "/wamv/sensors/cameras/front_left_camera/camera_info", CameraInfo
+        # )
         self.image_info_sub = self.nh.subscribe(
             "/wamv/sensors/cameras/front_left_camera/camera_info", CameraInfo
         )
@@ -58,18 +64,14 @@ class Dock(Navigator):
         self.center = None
         self.intup = lambda arr: tuple(np.array(arr, dtype=np.int64))
         self.last_image = None
-        self.setBool = False
 
     @classmethod
     async def init(cls):
-        cls.image_debug_pub = cls.nh.advertise("/dock_mask_debug", Image)
-        await cls.image_debug_pub.setup()
         cls.contour_pub = cls.nh.advertise("/contour_pub", Image)
         await cls.contour_pub.setup()
 
     @classmethod
     async def shutdown(cls):
-        await cls.image_debug_pub.shutdown()
         await cls.contour_pub.shutdown()
         await cls.ogrid_sub.shutdown()
         await cls.image_sub.shutdown()
@@ -83,10 +85,9 @@ class Dock(Navigator):
         self.bridge = CvBridge()
         msg = await self.image_info_sub.get_next_message()
         self.model.fromCameraInfo(msg)
+        rospy.logerr("HERE")
 
         self.cam_frame = (await self.image_sub.get_next_message()).header.frame_id
-
-        # debug image for occupancy grid
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = "cluster_tolerance_m"
@@ -96,11 +97,6 @@ class Dock(Navigator):
 
         pos = await self.poi.get("dock")
         await self.move.look_at(pos).set_position(pos).go()
-        # find dock approach it
-        # pos = await self.find_dock_poi()
-
-        # print("going towards dock")
-        # await self.move.look_at(pos).set_position(pos).backward(20).go()
 
         # Decrease cluster tolerance as we approach dock since lidar points are more dense
         # This helps scenario where stc buoy is really close to dock
@@ -110,6 +106,40 @@ class Dock(Navigator):
         await self.pcodar_set_params(doubles=[pcodar_cluster_tol])
         await self.nh.sleep(5)
 
+        await self.move_to_correct_side()
+
+        # recalculate dock position once on correct side
+        await self.find_dock()
+
+        dock, pos = await self.get_sorted_objects(name="dock", n=1)
+        # dock is PerceptionObject
+        position, rotation, dock = self.get_dock_data(dock)
+        points = rosmsg_to_numpy(dock.points)
+        enu_to_boat = await self.tf_listener.get_transform("wamv/base_link", "enu")
+        corrected = np.empty(points.shape)
+        for i in range(points.shape[0]):
+            corrected[i] = enu_to_boat.transform_point(points[i])
+
+        centers, clusters = self.get_cluster_centers(corrected)
+        await self.crop_images(clusters)
+
+        left = centers[0]
+        left[0] = 0
+        forward = centers[0]
+        forward[0] = forward[0] - 5
+        boat_to_enu = await self.tf_listener.get_transform("enu", "wamv/base_link")
+        centers[0] = boat_to_enu.transform_point(left)
+        nextPt = boat_to_enu.transform_point(forward)
+        await self.move.set_position(centers[0]).go(blind=True, move_type="skid")
+        await self.move.set_position(nextPt).go(blind=True, move_type="skid")
+
+    def get_dock_data(self, dock):
+        dock = dock[0]
+        position, quat = pose_to_numpy(dock.pose)
+        rotation = quaternion_matrix(quat)
+        return position, rotation, dock
+
+    async def move_to_correct_side(self):
         await self.find_dock()
 
         # get a vector to the longer side of the dock
@@ -120,16 +150,28 @@ class Dock(Navigator):
             except:
                 await self.find_dock()
                 dock, pos = await self.get_sorted_objects(name="dock", n=1)
+
+        side, position = self.get_correct_side(dock)
+
+        # TODO, add check to recaluclate position once we get on either side of the dock
+        await self.move.set_position(side).look_at(position).backward(2).go()
+
+    def get_correct_side(self, dock):
         # dock is PerceptionObject
-        dock = dock[0]
-        position, quat = pose_to_numpy(dock.pose)
-        rotation = quaternion_matrix(quat)
-        bbox = rosmsg_to_numpy(dock.scale)
-        bbox2 = copy.deepcopy(bbox)
-        bbox[2] = 0
-        max_dim = np.argmax(bbox[:2])
-        bbox[max_dim] = 0
-        bbox_enu = np.dot(rotation[:3, :3], bbox)
+        position, rotation, dock = self.get_dock_data(dock)
+        bbox_large = rosmsg_to_numpy(dock.scale)
+        bbox_copy = copy.deepcopy(bbox_large)
+
+        bbox_large[2] = 0
+        bbox_small = copy.deepcopy(bbox_large)
+
+        max_dim = np.argmax(bbox_large[:2])
+        bbox_large[max_dim] = 0
+        bbox_enu = np.dot(rotation[:3, :3], bbox_large)
+
+        min_dim = np.argmin(bbox_small[:2])
+        bbox_small[min_dim] = 0
+        bbox_enu_small = np.dot(rotation[:3, :3], bbox_small)
         # this black magic uses the property that a rotation matrix is just a
         # rotated cartesian frame and only gets the vector that points towards
         # the longest side since the vector pointing that way will be at the
@@ -143,63 +185,21 @@ class Dock(Navigator):
         side_a_bool = False
         side_a = bbox_enu + position
         side_b = -bbox_enu + position
+        side_c = bbox_enu_small + position
+        side_d = -bbox_enu_small + position
 
-        side_a_bool = self.calculate_correct_side(
-            copy.deepcopy(side_a),
-            copy.deepcopy(side_b),
+        return (
+            self.calculate_correct_side(
+                copy.deepcopy(side_a),
+                copy.deepcopy(side_b),
+                copy.deepcopy(side_c),
+                copy.deepcopy(side_d),
+                position,
+                rotation[:3, :3],
+                bbox_copy,
+            ),
             position,
-            rotation[:3, :3],
-            bbox2,
         )
-
-        # TODO, add check to recaluclate position once we get on either side of the dock
-        await self.move.set_position(side_a if side_a_bool else side_b).look_at(
-            position
-        ).go()
-
-        # recalculate dock position once on correct side
-        await self.find_dock()
-
-        dock, pos = await self.get_sorted_objects(name="dock", n=1)
-        # dock is PerceptionObject
-        dock = dock[0]
-        position, quat = pose_to_numpy(dock.pose)
-        rotation = quaternion_matrix(quat)
-        points = rosmsg_to_numpy(dock.points)
-        centers = self.get_cluster_centers(points)
-        enu_to_boat = await self.tf_listener.get_transform("wamv/base_link", "enu")
-        left = enu_to_boat.transform_point(centers[0])
-        left[0] = 0
-        forward = enu_to_boat.transform_point(centers[0])
-        forward[0] = forward[0] - 5
-        boat_to_enu = await self.tf_listener.get_transform("enu", "wamv/base_link")
-        centers[0] = boat_to_enu.transform_point(left)
-        nextPt = boat_to_enu.transform_point(forward)
-        await self.move.set_position(centers[0]).go(blind=True, move_type="skid")
-        await self.move.set_position(nextPt).go(blind=True, move_type="skid")
-
-        await self.crop_image()
-
-        # define how far left and right we want to do
-        rot = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
-
-        side_vect = 0.80 * bbox_enu
-        # if side_a_bool:
-        #     print("creating side a left and right position")
-        #     self.left_position = np.dot(rot, -side_vect) + side_a
-        #     self.right_position = np.dot(rot, side_vect) + side_a
-        #     self.dock_point_left = np.dot(rot, -side_vect) + position
-        #     self.dock_point_right = np.dot(rot, side_vect) + position
-        # else:
-        #     print("creating side b left and right position")
-        #     self.left_position = np.dot(rot, side_vect) + side_b
-        #     self.right_position = np.dot(rot, -side_vect) + side_b
-        #     self.dock_point_left = np.dot(rot, side_vect) + position
-        #     self.dock_point_right = np.dot(rot, -side_vect) + position
-
-        # await self.move.set_position(self.left_position).look_at(
-        #     self.dock_point_left
-        # ).go(blind=True, move_type="skid")
 
     def get_cluster_centers(self, data):
         mean = np.mean(data, axis=0)[2]
@@ -316,84 +316,131 @@ class Dock(Navigator):
             means.append(np.mean(cluster_members[c], axis=0))
 
         print(means)
-        return np.asarray(means)
+        return np.asarray(means), cluster_members
 
-    async def crop_image(self):
+    def crop_image(self, pts, transform, img):
+        pts = [self.model.project3dToPixel(transform.transform_point(a)) for a in pts]
+        pts = np.array([[int(a[0]), int(a[1])] for a in pts], dtype=np.int32)
+        rospy.logerr(pts)
+        mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
+        cv2.fillPoly(mask, pts, (255))
+        res = cv2.bitwise_and(img, img, mask=mask)
+        rect = cv2.boundingRect(pts)
+        cropped = res[rect[1] : rect[1] + rect[3], rect[0] : rect[0] + rect[2]]
+        return cropped
+
+    def get_cluster_corners(self, cluster):
+        avg_x = np.mean(cluster[:, 0])
+        min_y = np.amin(cluster[:, 1])
+        max_y = np.amax(cluster[:, 1])
+        min_z = np.amin(cluster[:, 2])
+        max_z = np.amax(cluster[:, 2])
+        return np.asarray(
+            [
+                [avg_x, min_y, min_z],
+                [avg_x, min_y, max_z],
+                [avg_x, max_y, max_z],
+                [avg_x, max_y, min_z],
+            ]
+        )
+
+    async def crop_images(self, clusters):
         image = await self.image_sub.get_next_message()
-        enu_to_cam = await self.tf_listener.get_transform(self.cam_frame, "enu")
-        transform = enu_to_cam.transform_point(self.center)
-        rect = self.model.project3dToPixel(transform)
         image = self.bridge.imgmsg_to_cv2(image)
-        height = image.shape[0]
-        image = image[: int(rect[1]), :]
-        msg = self.bridge.cv2_to_imgmsg(image, encoding="rgb8")
+        boat_to_cam = await self.tf_listener.get_transform(
+            self.cam_frame, "wamv/base_link"
+        )
+
+        left = self.crop_image(
+            self.get_cluster_corners(clusters[0]), boat_to_cam, image
+        )
+        middle = self.crop_image(
+            self.get_cluster_corners(clusters[1]), boat_to_cam, image
+        )
+        right = self.crop_image(
+            self.get_cluster_corners(clusters[2]), boat_to_cam, image
+        )
+        list = [left, middle, right]
+
+        h_min = min(a.shape[0] for a in list)
+        resized = [
+            cv2.resize(
+                im,
+                (int(im.shape[1] * h_min / im.shape[0]), h_min),
+                interpolation=cv2.INTER_CUBIC,
+            )
+            for im in list
+        ]
+        concat = cv2.hconcat(resized)
+        msg = self.bridge.cv2_to_imgmsg(concat, encoding="rgb8")
         self.contour_pub.publish(msg)
+        return list
+
+    def get_ogrid_coords(self, arr):
+        return self.intup(self.ogrid_cpm * (np.asarray(arr) - self.ogrid_origin))[:2]
+
+    def bbox_to_point(self, scale, rot, pos, xmul, ymul):
+        return self.intup(
+            self.ogrid_cpm
+            * (
+                self.get_point(
+                    [(xmul * scale[0]) / 2, (ymul * scale[1]) / 2, scale[2]], rot, pos
+                )
+                - self.ogrid_origin
+            )[:2]
+        )
 
     # returns True if side a is closest, False is side b is closest
     def calculate_correct_side(
         self,
         side_a: [float],
         side_b: [float],
+        side_c: [float],
+        side_d: [float],
         position: [float],
         rotation: [[float]],
         scale: [float],
-    ) -> bool:
+    ) -> [float]:
         print("Finding ogrid center of mass")
-        self.ogrid_origin = np.asarray(self.ogrid_origin)
-        point1 = self.intup(
-            self.ogrid_cpm
-            * (
-                self.get_point(
-                    [-scale[0] / 2, scale[1] / 2, scale[2]], rotation, position
-                )
-                - self.ogrid_origin
-            )[:2]
-        )
-        point2 = self.intup(
-            self.ogrid_cpm
-            * (
-                self.get_point(
-                    [scale[0] / 2, scale[1] / 2, scale[2]], rotation, position
-                )
-                - self.ogrid_origin
-            )[:2]
-        )
-        point3 = self.intup(
-            self.ogrid_cpm
-            * (
-                self.get_point(
-                    [scale[0] / 2, -scale[1] / 2, scale[2]], rotation, position
-                )
-                - self.ogrid_origin
-            )[:2]
-        )
-        point4 = self.intup(
-            self.ogrid_cpm
-            * (
-                self.get_point(
-                    [-scale[0] / 2, -scale[1] / 2, scale[2]], rotation, position
-                )
-                - self.ogrid_origin
-            )[:2]
-        )
+
+        point1 = self.bbox_to_point(scale, rotation, position, -1, 1)
+        point2 = self.bbox_to_point(scale, rotation, position, 1, 1)
+        point3 = self.bbox_to_point(scale, rotation, position, 1, -1)
+        point4 = self.bbox_to_point(scale, rotation, position, -1, -1)
         contours = np.array([point1, point2, point3, point4])
+
         center = self.calculate_center_of_mass(contours)
+        mask = np.zeros(self.last_image.shape, np.uint8)
+
+        bounding_rect = cv2.boundingRect(contours)
+        x, y, w, h = bounding_rect
+
         center_coordinate = self.ogrid_to_position(center)
-        self.center = [center_coordinate[0], center_coordinate[1], position[2] - 1]
-        side_a = np.asarray(side_a)
-        side_b = np.asarray(side_b)
-        center = np.asarray(center)
-        side_a = self.intup(self.ogrid_cpm * (side_a - self.ogrid_origin))[:2]
-        side_b = self.intup(self.ogrid_cpm * (side_b - self.ogrid_origin))[:2]
-        dist_a = np.linalg.norm(side_a - center)
-        dist_b = np.linalg.norm(side_b - center)
-        # cv2.fillPoly(self.last_image, pts=[contours], color=(255, 0, 0))
-        cv2.circle(self.last_image, center, radius=3, color=(255, 0, 0))
-        cv2.circle(self.last_image, side_a, radius=3, color=(0, 255, 0))
-        cv2.circle(self.last_image, side_b, radius=3, color=(0, 0, 255))
+
+        cv2.line(mask, self.get_ogrid_coords(side_a), center, (255, 255, 255), 2)
+        side_a_and = cv2.bitwise_and(self.last_image, mask)
+        cv2.line(mask, self.get_ogrid_coords(side_b), center, (255, 255, 255), 2)
+        side_b_and = cv2.bitwise_and(self.last_image, mask)
+        cv2.line(mask, self.get_ogrid_coords(side_c), center, (255, 255, 255), 2)
+        side_c_and = cv2.bitwise_and(self.last_image, mask)
+        cv2.line(mask, self.get_ogrid_coords(side_d), center, (255, 255, 255), 2)
+        side_d_and = cv2.bitwise_and(self.last_image, mask)
+
+        side_a_count = np.count_nonzero(side_a_and == np.asarray([255, 255, 255]))
+        side_b_count = np.count_nonzero(side_b_and == np.asarray([255, 255, 255]))
+        side_c_count = np.count_nonzero(side_c_and == np.asarray([255, 255, 255]))
+        side_d_count = np.count_nonzero(side_d_and == np.asarray([255, 255, 255]))
+
+        lowest = min([side_a_count, side_b_count, side_c_count, side_d_count])
         print("Center of mass found")
-        self.setBool = True
-        return dist_a > dist_b
+        if lowest == side_a_count:
+            return side_a
+        elif lowest == side_b_count:
+            return side_b
+        elif lowest == side_c_count:
+            return side_c
+        else:
+            return side_d
 
     def ogrid_to_position(self, ogrid):
         ogrid = np.array(ogrid, dtype=np.float64)
@@ -444,16 +491,12 @@ class Dock(Navigator):
         return pose
 
     def ogrid_cb(self, msg):
-        if not self.setBool:
-            self.ogrid = np.array(msg.data).reshape((msg.info.height, msg.info.width))
-            self.ogrid_origin = rosmsg_to_numpy(msg.info.origin.position)
-            self.ogrid_cpm = 1 / msg.info.resolution
+        self.ogrid = np.array(msg.data).reshape((msg.info.height, msg.info.width))
+        self.ogrid_origin = rosmsg_to_numpy(msg.info.origin.position)
+        self.ogrid_cpm = 1 / msg.info.resolution
 
-            image = 255 * np.greater(self.ogrid, 90).astype(np.uint8)
-            grayImage = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+        image = 255 * np.greater(self.ogrid, 90).astype(np.uint8)
+        grayImage = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
 
-            self.last_image = grayImage
-        self.image_debug_pub.publish(
-            self.bridge.cv2_to_imgmsg(self.last_image, encoding="rgb8")
-        )
+        self.last_image = grayImage
         return
