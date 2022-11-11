@@ -4,7 +4,7 @@ set -euo pipefail
 
 # Path to encrypted, tared flycapture sdk
 FLYCAP=$(realpath $(dirname $BASH_SOURCE)/../../proprietary/flycapture-latest-amd64.tar.gz.enc)
-# Random tmp directory to unpack to to instlal
+# Random tmp directory to unpack to to install
 UNPACK_DIR=$(mktemp -d)
 
 # Prompt user for password and untar
