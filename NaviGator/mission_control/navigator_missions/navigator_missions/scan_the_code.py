@@ -8,13 +8,12 @@ from cv2 import bitwise_and
 from cv_bridge import CvBridge
 from dynamic_reconfigure.msg import DoubleParameter
 from image_geometry import PinholeCameraModel
-from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from mil_tools import numpy_to_pointcloud2 as np2pc2
 from mil_tools import rosmsg_to_numpy
 from mil_vision_tools.cv_tools import contour_mask, rect_from_roi, roi_enclosing_points
-from sensor_msgs.msg import CameraInfo, Image, PointCloud2
+from navigator_msgs.msg import ScanTheCode
+from sensor_msgs.msg import Image, PointCloud2
 from std_srvs.srv import SetBoolRequest
-from vrx_gazebo.srv import ColorSequence, ColorSequenceRequest
 
 from .navigator import Navigator
 
@@ -25,8 +24,6 @@ STC_HEIGHT = 2.3
 STC_WIDTH = 2
 
 CAMERA_LINK_OPTICAL = "wamv/front_left_cam_link_optical"
-
-COLOR_SEQUENCE_SERVICE = "/vrx/scan_dock/color_sequence"
 
 TIMEOUT_SECONDS = 120
 
@@ -42,11 +39,13 @@ class ScanTheCode(Navigator):
     async def shutdown(cls):
         await cls.debug_points_pub.shutdown()
         await cls.image_debug_pub.shutdown()
+        await cls.report_sequence.shutdown()
 
     async def run(self, args):
         self.debug_points_pub = self.nh.advertise("/stc_led_points", PointCloud2)
         self.bridge = CvBridge()
         self.image_debug_pub = self.nh.advertise("/stc_mask_debug", Image)
+        self.sequence_report = self.nh.advertise("/stc_sequence", ScanTheCode)
 
         await asyncio.gather(
             self.debug_points_pub.setup(),
@@ -146,15 +145,9 @@ class ScanTheCode(Navigator):
         return sequence
 
     async def report_sequence(self, sequence):
-        color_sequence = ColorSequenceRequest()
-        color_sequence.color1 = sequence[0]
-        color_sequence.color2 = sequence[1]
-        color_sequence.color3 = sequence[2]
-
-        # try:
-        #    await self.sequence_report(color_sequence)
-        # except Exception as e: #catch error in case vrx scroing isn't running
-        #    print(e)
+        colors = ScanTheCode()
+        colors.color_pattern = sequence[0][0] + sequence[1][0] + sequence[2][0]
+        await self.sequence_report(colors)
 
     async def find_stc(self):
         pose = None
