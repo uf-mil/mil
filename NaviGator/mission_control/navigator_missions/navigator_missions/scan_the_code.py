@@ -17,15 +17,15 @@ from std_srvs.srv import SetBoolRequest
 
 from .navigator import Navigator
 
-LED_PANEL_MAX = 0.1
-LED_PANEL_MIN = 0.5
+LED_PANEL_MAX = 0.1  # meters
+LED_PANEL_MIN = 0.5  # meters
 
-STC_HEIGHT = 2.3
-STC_WIDTH = 2
+STC_HEIGHT = 2.3  # meters
+STC_WIDTH = 2  # meters
 
 CAMERA_LINK_OPTICAL = "wamv/front_left_cam_link_optical"
 
-TIMEOUT_SECONDS = 120
+TIMEOUT_SECONDS = 120  # seconds
 
 COLORS = ["red", "green", "black", "blue"]
 
