@@ -107,6 +107,11 @@ enable=c-extension-no-member,
        misplaced-comparison-constant, # C0122
        init-is-generator, # E0100
        return-in-init, # E0101
+       function-redefined, # E0102
+       not-in-loop, # E0103
+       return-outside-function, # E0104
+       yield-outside-function, # E0105
+       nonexistent-operator, # E0107
 
 
 [REPORTS]
