@@ -28,4 +28,18 @@
       <statustip>I am not throwing away my shot.</statustip>
     </qtgui>
   </class>
+  <class name="StcDisplay" type="navigator_gui.StcDisplay" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      Shows the prediction of the Scan the Code mission
+    </description>
+    <qtgui>
+      <group>
+        <icon type="file">resource/mil_logo.png</icon>
+        <label>MIL</label>
+      </group>
+      <icon type="file">resource/shooter.png</icon>
+      <label>STC Display</label>
+      <statustip>It's STC time bitchess</statustip>
+    </qtgui>
+  </class>
 </library>
