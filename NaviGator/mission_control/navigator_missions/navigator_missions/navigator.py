@@ -26,6 +26,7 @@ from navigator_path_planner.msg import MoveAction, MoveGoal
 from navigator_tools import MissingPerceptionObject
 from roboteq_msgs.msg import Command
 from ros_alarms import TxAlarmListener
+from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import Bool
 from std_srvs.srv import (
     SetBool,
@@ -36,6 +37,7 @@ from std_srvs.srv import (
 )
 from topic_tools.srv import MuxSelect, MuxSelectRequest
 from txros import NodeHandle, ROSMasterError, ServiceClient, action, txros_tf, util
+from vision_msgs.msg import Detection2DArray
 
 from .pose_editor import PoseEditor2
 
@@ -257,6 +259,22 @@ class Navigator(BaseMission):
 
         cls.docking_scan = "NA"
 
+        cls.front_left_camera_info_sub = None
+        cls.front_left_camera_sub = None
+        await cls.init_front_left_camera()
+        cls.front_right_camera_info_sub = None
+        cls.front_right_camera_sub = None
+        await cls.init_front_right_camera()
+
+        cls.yolo_objects = cls.nh.subscribe(
+            "/yolov7/detections_model1", Detection2DArray
+        )
+        cls.stc_objects = cls.nh.subscribe(
+            "/yolov7/stc_detections_model", Detection2DArray
+        )
+        await cls.yolo_objects.setup()
+        await cls.stc_objects.setup()
+
     @classmethod
     async def _shutdown_not_vrx(cls):
         await asyncio.gather(
@@ -267,6 +285,44 @@ class Navigator(BaseMission):
             cls.tf_listener.shutdown(),
             cls.kill_listener.shutdown(),
             cls.poi.shutdown(),
+            cls.front_left_camera_sub.shutdown(),
+            cls.front_left_camera_info_sub.shutdown(),
+            cls.front_right_camera_sub.shutdown(),
+            cls.front_right_camera_info_sub.shutdown(),
+            cls.yolo_objects.shutdown(),
+            cls.stc_objects.shutdown(),
+        )
+
+    @classmethod
+    async def init_front_left_camera(cls):
+        if cls.front_left_camera_sub is None:
+            cls.front_left_camera_sub = cls.nh.subscribe(
+                "/wamv/sensors/camera/front_left_cam/image_raw", Image
+            )
+
+        if cls.front_left_camera_info_sub is None:
+            cls.front_left_camera_info_sub = cls.nh.subscribe(
+                "/wamv/sensors/camera/front_left_cam/camera_info", CameraInfo
+            )
+
+        await asyncio.gather(
+            cls.front_left_camera_sub.setup(), cls.front_left_camera_info_sub.setup()
+        )
+
+    @classmethod
+    async def init_front_right_camera(cls):
+        if cls.front_right_camera_sub is None:
+            cls.front_right_camera_sub = cls.nh.subscribe(
+                "/wamv/sensors/camera/front_right_cam/image_raw", Image
+            )
+
+        if cls.front_right_camera_info_sub is None:
+            cls.front_right_camera_info_sub = cls.nh.subscribe(
+                "/wamv/sensors/camera/front_right_cam/camera_info", CameraInfo
+            )
+
+        await asyncio.gather(
+            cls.front_right_camera_sub.setup(), cls.front_right_camera_info_sub.setup()
         )
 
     @classmethod
