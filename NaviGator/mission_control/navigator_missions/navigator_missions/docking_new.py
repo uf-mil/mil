@@ -88,14 +88,17 @@ class Dock(Navigator):
         rospy.logerr("HERE")
 
         self.cam_frame = (await self.image_sub.get_next_message()).header.frame_id
+        rospy.logerr("HERE2")
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = "cluster_tolerance_m"
         pcodar_cluster_tol.value = 10
         await self.pcodar_set_params(doubles=[pcodar_cluster_tol])
+        rospy.logerr("HERE3")
         await self.nh.sleep(5)
 
         pos = await self.poi.get("dock")
+        rospy.logerr("HERE4")
         await self.move.look_at(pos).set_position(pos).go()
 
         # Decrease cluster tolerance as we approach dock since lidar points are more dense
@@ -121,17 +124,26 @@ class Dock(Navigator):
             corrected[i] = enu_to_boat.transform_point(points[i])
 
         centers, clusters = self.get_cluster_centers(corrected)
+        centers = centers[centers[:, 1].argsort()][::-1]
         await self.crop_images(clusters)
 
-        left = centers[0]
+        left = copy.deepcopy(centers[0])
+        rospy.logerr(centers[0])
+        rospy.logerr(centers[1])
+        rospy.logerr(centers[2])
         left[0] = 0
-        forward = centers[0]
+        forward = copy.deepcopy(centers[0])
         forward[0] = forward[0] - 5
         boat_to_enu = await self.tf_listener.get_transform("enu", "wamv/base_link")
         centers[0] = boat_to_enu.transform_point(left)
         nextPt = boat_to_enu.transform_point(forward)
         await self.move.set_position(centers[0]).go(blind=True, move_type="skid")
         await self.move.set_position(nextPt).go(blind=True, move_type="skid")
+
+        await self.contour_pub.shutdown()
+        await self.ogrid_sub.shutdown()
+        await self.image_sub.shutdown()
+        await self.image_info_sub.shutdown()
 
     def get_dock_data(self, dock):
         dock = dock[0]
@@ -321,6 +333,7 @@ class Dock(Navigator):
     def crop_image(self, pts, transform, img):
         pts = [self.model.project3dToPixel(transform.transform_point(a)) for a in pts]
         pts = np.array([[int(a[0]), int(a[1])] for a in pts], dtype=np.int32)
+        pts = np.int32([pts])
         rospy.logerr(pts)
         mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
         cv2.fillPoly(mask, pts, (255))

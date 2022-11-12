@@ -13,6 +13,7 @@ public:
   PersistentCloudFilter();
   void filter(point_cloud_const_ptr in, point_cloud& pc);
   void update_config(Config const& config);
+  void get_config(Config& config);
 
 private:
   pcl::RadiusOutlierRemoval<point_t> outlier_filter_;

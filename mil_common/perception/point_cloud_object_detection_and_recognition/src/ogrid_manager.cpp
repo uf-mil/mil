@@ -110,4 +110,12 @@ void OgridManager::update_config(Config const& config)
   ogrid_mat_ = cv::Mat(cv::Size(ogrid_.info.width, ogrid_.info.height), CV_8UC1, ogrid_.data.data());
 }
 
+void OgridManager::get_config(Config& config)
+{
+  config.ogrid_width_meters = width_meters_;
+  config.ogrid_height_meters = height_meters_;
+  config.ogrid_resolution_meters_per_cell = resolution_meters_per_cell_;
+  config.ogrid_inflation_meters = inflation_cells_ * resolution_meters_per_cell_;
+}
+
 }  // namespace pcodar

@@ -34,6 +34,11 @@ void PointCloudCircularBuffer::update_config(Config const& config)
   prev_clouds_.set_capacity(config.accumulator_number_persistant_clouds);
 }
 
+void PointCloudCircularBuffer::get_config(Config& config)
+{
+  config.accumulator_number_persistant_clouds = prev_clouds_.capacity();
+}
+
 point_cloud_ptr PointCloudCircularBuffer::get_point_cloud()
 {
   return mega_cloud_;

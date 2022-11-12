@@ -24,6 +24,7 @@
 #include "pcodar_types.hpp"
 #include "persistent_cloud_filter.hpp"
 #include "point_cloud_builder.hpp"
+#include "std_srvs/SetBool.h"
 
 namespace pcodar
 {
@@ -47,6 +48,7 @@ protected:
   bool DBQuery_cb(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::ObjectDBQuery::Response& res);
   /// Reset PCODAR
   virtual bool Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res);
+
   /// Transform
   bool transform_to_global(std::string const& frame, ros::Time const& time, Eigen::Affine3d& out,
                            ros::Duration timeout = ros::Duration(1, 0));
@@ -54,6 +56,8 @@ protected:
   bool transform_point_cloud(const sensor_msgs::PointCloud2& pcloud2, point_cloud& out);
   virtual bool bounds_update_cb(const mil_bounds::BoundsConfig& config);
   virtual void ConfigCallback(Config const& config, uint32_t level);
+  virtual void save_config();
+  virtual void restore_config();
 
 public:
   std::shared_ptr<ObjectMap> objects_;
@@ -79,6 +83,8 @@ protected:
   // Visualization
   MarkerManager marker_manager_;
   OgridManager ogrid_manager_;
+
+  Config saved_config_;
 };
 
 class Node : public NodeBase
@@ -91,16 +97,20 @@ public:
   void initialize() override;
 
 private:
+  void save_config() override;
+  void restore_config() override;
   bool bounds_update_cb(const mil_bounds::BoundsConfig& config) override;
   void ConfigCallback(Config const& config, uint32_t level) override;
   /// Reset PCODAR
   bool Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) override;
+  bool StoreParameters(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res);
 
 private:
   ros::Publisher pub_pcl_;
 
   // Subscriber
   ros::Subscriber pc_sub;
+  ros::ServiceServer store_parameters_service_;
 
   // Model (It eventually will be object tracker, but for now just detections)
   InputCloudFilter input_cloud_filter_;
