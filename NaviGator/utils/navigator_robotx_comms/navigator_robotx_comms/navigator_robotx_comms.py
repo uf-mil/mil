@@ -107,8 +107,12 @@ class RobotXHeartbeatMessage:
             latitude = gps_array.point.x
             longitude = gps_array.point.y
         else:
-            latitude = ""
-            longitude = ""
+            # latitude = ""
+            # longitude = ""
+
+            # use only for qualifying, delete later and uncomment above!!
+            latitude = odom.pose.pose.position.x
+            longitude = odom.pose.pose.position.y
 
         if odom is not None:
             quaternion = odom.pose.pose.orientation

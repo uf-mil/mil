@@ -66,6 +66,16 @@ class SystemModes(IntEnum):
     REMOTE_CONTROLLED = 1
 
 
+class UAVModes(IntEnum):
+    """
+    Enumerates constants of friendly uav mode names to ints
+    """
+
+    STOWED = 1
+    DEPLOYED = 2
+    FAULTED = 3
+
+
 class RobotXStartServices:
     """
     Initializes services and subscribes to necessary publishers in order to facilitate
