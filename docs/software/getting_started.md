@@ -31,12 +31,12 @@ storage to a new operating system, which will be installed on your computer dire
 This dual-booted solution will not run on top of your current operating system, but
 will instead run by directly using your computer's resources.
 
-3. Use **Distrobox**. If you have Linux, but don't want to use an old LTS as your daily driver, 
+3. Use **Distrobox**. If you have Linux, but don't want to use an old LTS as your daily driver,
 you can try installing the system in [Distrobox](https://github.com/89luca89/distrobox). It's a bit more
 advanced, so if you're not comfortable around Linux, you'd be better off using one of the other options.
-To start, create a distrobox environment using `distrobox create --name mil --image ubuntu:focal --home ~/mil-home`. 
+To start, create a distrobox environment using `distrobox create --name mil --image ubuntu:focal --home ~/mil-home`.
 This will allow you to keep an MIL only environment. You will also have to set the hostname to localhost manually by
-running `sudo hostname localhost` before running setup. 
+running `sudo hostname localhost` before running setup.
 
 Dual-booting your computer is highly recommended over using a virtual machine,
 as it allows your Ubuntu setup to tap directly into your computer's resources.
