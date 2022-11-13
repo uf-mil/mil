@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 
 import asyncio
 
 import numpy as np
+from mil_poi.msg import POIArray
 from mil_ros_tools.msg_helpers import rosmsg_to_numpy
 from txros import NodeHandle
-
-from .msg import POIArray
 
 
 class TxPOIClient:
@@ -32,6 +32,9 @@ class TxPOIClient:
         await self._poi_sub.setup()
 
     async def shutdown(self) -> None:
+        """
+        Shuts the client down. Should be called before deconstructing the class.
+        """
         await self._poi_sub.shutdown()
 
     def _cb(self, msg):
@@ -42,12 +45,16 @@ class TxPOIClient:
         for poi in self.last_msg.pois:
             if poi.name not in self.futures:
                 continue
-            position = rosmsg_to_numpy(poi.position)
+            position, orientation = rosmsg_to_numpy(poi.pose.position), rosmsg_to_numpy(
+                poi.pose.orientation
+            )
             futures = self.futures.pop(poi.name)
             while len(futures):
-                futures.pop().set_result(position)
+                futures.pop().set_result((position, orientation))
 
-    async def get(self, name: str, only_fresh: bool = False) -> np.ndarray:
+    async def get(
+        self, name: str, only_fresh: bool = False
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Get the position of POI in the global frame as a 3x1 numpy array.
 
@@ -59,7 +66,10 @@ class TxPOIClient:
         if self.last_msg is not None and not only_fresh:
             for poi in self.last_msg.pois:
                 if poi.name == name:
-                    return rosmsg_to_numpy(poi.position)
+                    position, orientation = rosmsg_to_numpy(
+                        poi.pose.position
+                    ), rosmsg_to_numpy(poi.pose.orientation)
+                    return (position, orientation)
         res = asyncio.Future()
         if name in self.futures:
             self.futures[name].append(res)

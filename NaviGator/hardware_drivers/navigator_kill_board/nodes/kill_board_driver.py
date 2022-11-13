@@ -13,7 +13,7 @@ from navigator_alarm_handlers import NetworkLoss
 from navigator_kill_board import constants
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from sensor_msgs.msg import Joy
-from std_msgs.msg import Header, String
+from std_msgs.msg import String
 
 lock = threading.Lock()
 

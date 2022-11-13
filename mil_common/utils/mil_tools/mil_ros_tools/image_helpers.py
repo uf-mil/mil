@@ -7,7 +7,6 @@ cvbridge, and to avoid reinstantiating a CvBrige for each use.
 from os import path
 from typing import Callable, List, Optional, Tuple
 
-import cv2
 import message_filters
 import numpy as np
 import rospy

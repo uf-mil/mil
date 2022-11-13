@@ -1,31 +1,19 @@
 #!/usr/bin/env python3
 import math
-from collections import deque
 from threading import Lock
 
-import cv2
 import numpy as np
-import pandas
 import rospy
-import sensor_msgs.point_cloud2
 import tf2_ros
 from image_geometry import PinholeCameraModel
 from mil_msgs.msg import PerceptionObjectArray
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from mil_ros_tools import Image_Publisher, Image_Subscriber, rosmsg_to_numpy
 from mil_tools import thread_lock
-from mil_vision_tools import (
-    ImageMux,
-    contour_mask,
-    putText_ul,
-    rect_from_roi,
-    roi_enclosing_points,
-)
+from mil_vision_tools import ImageMux, rect_from_roi, roi_enclosing_points
 from PIL import Image
-from sensor_msgs.msg import Image, PointCloud2
-from std_msgs.msg import Int32
+from sensor_msgs.msg import Image
 from std_srvs.srv import SetBool, Trigger
-from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from tf.transformations import quaternion_matrix
 from vision_msgs.msg import Detection2DArray
 from vrx_gazebo.msg import Task
@@ -116,7 +104,6 @@ class VrxClassifier:
 
     def image_cb(self, msg: Image):
         self.last_image = msg
-        return
 
     def taskinfoSubscriber(self, msg):
         self.is_perception_task = msg.name == "perception"
@@ -153,13 +140,10 @@ class VrxClassifier:
     @thread_lock(lock)
     def process_boxes(self, msg):
         if not self.enabled:
-            print("1")
             return
         if self.camera_model is None:
-            print("2")
             return
         if self.last_objects is None or len(self.last_objects.objects) == 0:
-            print("3")
             return
         now = rospy.Time.now()
         if now - self.last_update_time < self.update_period:

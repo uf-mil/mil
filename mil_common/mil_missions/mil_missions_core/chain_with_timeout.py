@@ -3,7 +3,6 @@ import json
 from typing import Any, Dict, List, Type
 
 from twisted.python import failure
-from txros import util
 
 from .exceptions import ParametersException, SubmissionException, TimeoutException
 
@@ -85,7 +84,7 @@ def MakeChainWithTimeout(base: Type):
             """
             parameters = json.loads(parameters)
 
-            if type(parameters) != dict:
+            if not isinstance(parameters, dict):
                 raise ParametersException("must be a dictionary")
             if "missions" not in parameters:
                 raise ParametersException('must have "missions" list')

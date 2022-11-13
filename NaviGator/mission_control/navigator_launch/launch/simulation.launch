@@ -29,7 +29,7 @@
     <!-- Simulation Relevant Code -->
     <include file="$(find navigator_launch)/launch/perception/classifier.launch" >
         <arg name="main_image_topic" value="/wamv/sensors/camera/front_left_cam/image_raw"/>
-        <arg name="use_yolo_model1" value="False"/>
+        <arg name="use_yolo_model1" value="True"/>
         <arg name="use_yolo_model2" value="False"/>
         <arg name="weights_model1" value="$(find yolov7_ros)/src/mil_weights/best.pt" />
     </include>

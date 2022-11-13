@@ -4,7 +4,6 @@ https://github.com/Rapptz/discord.py/blob/master/docs/extensions/attributetable.
 """
 import importlib
 import inspect
-import os
 import re
 from collections import OrderedDict, namedtuple
 from typing import List
@@ -12,8 +11,6 @@ from typing import List
 import sphinx.errors
 from docutils import nodes
 from docutils.nodes import Node
-from docutils.parsers.rst.directives import unchanged  # type: ignore
-from docutils.parsers.rst.directives import flag, unchanged_required
 from sphinx import addnodes
 from sphinx.locale import _
 from sphinx.util.docutils import SphinxDirective

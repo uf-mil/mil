@@ -3,10 +3,8 @@ import asyncio
 from enum import Enum
 
 import numpy as np
-import txros
 from mil_tools import quaternion_matrix, rosmsg_to_numpy
 from std_srvs.srv import SetBoolRequest
-from twisted.internet import defer
 
 from .navigator import Navigator
 
@@ -35,7 +33,7 @@ class Navigation(Navigator):
             print("Cancelled Inspection")
 
     def get_index_of_type(self, objects, classifications):
-        if type(classifications) == str:
+        if isinstance(classifications, str):
             classifications = [classifications]
         return next(
             i
@@ -45,7 +43,7 @@ class Navigation(Navigator):
         )
 
     def get_indices_of_type(self, objects, classifications):
-        if type(classifications) == str:
+        if isinstance(classifications, str):
             classifications = [classifications]
         return [
             i

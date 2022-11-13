@@ -11,31 +11,16 @@ import unittest
 
 import rospy
 import rostest
-import rosunit
 from mil_tools import thread_lock
 from navigator_msgs.msg import ScanTheCode
 from navigator_msgs.srv import (
     MessageDetectDock,
-    MessageDetectDockRequest,
-    MessageDetectDockResponse,
     MessageEntranceExitGate,
-    MessageEntranceExitGateRequest,
-    MessageEntranceExitGateResponse,
     MessageFindFling,
-    MessageFindFlingRequest,
-    MessageFindFlingResponse,
     MessageFollowPath,
-    MessageFollowPathRequest,
-    MessageFollowPathResponse,
     MessageReactReport,
-    MessageReactReportRequest,
-    MessageReactReportResponse,
     MessageUAVReplenishment,
-    MessageUAVReplenishmentRequest,
-    MessageUAVReplenishmentResponse,
     MessageUAVSearchReport,
-    MessageUAVSearchReportRequest,
-    MessageUAVSearchReportResponse,
 )
 from navigator_robotx_comms.navigator_robotx_comms import (
     BitwiseXORChecksum,

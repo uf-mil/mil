@@ -8,6 +8,7 @@ ci:
   autofix_prs: false
   autoupdate_commit_msg: 'Update pre-commit hooks to latest versions'
   autoupdate_schedule: monthly
+  skip: [pylint]
 
 repos:
   - repo: https://github.com/pycqa/isort
@@ -21,20 +22,33 @@ repos:
     hooks:
       - id: yamllint
   - repo: https://github.com/psf/black
-    rev: 22.8.0
+    rev: 22.10.0
     hooks:
       - id: black
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v14.0.6
     hooks:
       - id: clang-format
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v1.7.7
+    hooks:
+      - id: autoflake
+        args: [--remove-all-unused-imports, --ignore-init-module-imports]
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        args: [--jobs=0]
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.38.2
+    rev: v3.2.0
     hooks:
       - id: pyupgrade
         args: [--py38-plus]
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.1
+    rev: v2.2.2
     hooks:
       - id: codespell
         args:

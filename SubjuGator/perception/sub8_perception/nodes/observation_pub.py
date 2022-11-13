@@ -8,12 +8,12 @@ import mil_ros_tools
 import numpy as np
 import rospy
 import tf
-from cv_bridge import CvBridge, CvBridgeError
+from cv_bridge import CvBridge
 from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion
 from image_geometry import PinholeCameraModel
 from mil_misc_tools import FprintFactory
-from mil_ros_tools import Image_Publisher, Image_Subscriber
-from sensor_msgs.msg import Image, RegionOfInterest
+from mil_ros_tools import Image_Subscriber
+from sensor_msgs.msg import RegionOfInterest
 from std_msgs.msg import Header
 from std_srvs.srv import SetBool, SetBoolResponse
 from sub8_msgs.srv import VisionRequest, VisionRequestResponse

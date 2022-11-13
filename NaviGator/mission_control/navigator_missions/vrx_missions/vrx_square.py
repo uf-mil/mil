@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-import numpy as np
-import txros
-from mil_tools import rosmsg_to_numpy
 
 from .vrx import Vrx
 

@@ -2,7 +2,6 @@
 
 import mil_tools
 import numpy as np
-import txros
 from mil_misc_tools.text_effects import fprint
 from navigator_msgs.srv import (
     FindPinger,

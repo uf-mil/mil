@@ -119,7 +119,7 @@ class PoseEditor2:
         radius by `meters_per_rev` meters per revolution.
     """
 
-    def __init__(self, nav: Navigator, pose: Pose, **kwargs):
+    def __init__(self, nav: Navigator, pose: tuple[np.ndarray, np.ndarray], **kwargs):
         self.nav = nav
 
         # Position and kwargs ultimately passed into the final function

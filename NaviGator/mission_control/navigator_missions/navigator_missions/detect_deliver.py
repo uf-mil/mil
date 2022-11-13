@@ -10,7 +10,6 @@ class DetectDeliver(Navigator):
     def init(cls):
         cls.detect_deiliver_find = DetectDeliverFind()
         # cls.track_target = TrackTarget()
-        pass
 
     async def run(self, args):
         self.send_feedback("Starting detect deliver")

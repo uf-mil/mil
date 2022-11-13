@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import os
 import traceback
-from typing import Any, Callable, Coroutine, Optional, Sequence
+from typing import Any, Callable, Coroutine, Sequence
 
 import genpy
 import mil_ros_tools
@@ -413,7 +413,7 @@ class Searcher:
                 while True:
                     for pose in self.search_pattern:
                         print("SEARCHER - going to next position.")
-                        if type(pose) == list or type(pose) == np.ndarray:
+                        if isinstance(pose, list) or isinstance(pose, np.ndarray):
                             await self.sub.move.relative(pose).go(speed=speed)
                         else:
                             await pose.go()
@@ -422,7 +422,7 @@ class Searcher:
 
             else:
                 for pose in self.search_pattern:
-                    if type(pose) == list or type(pose) == np.ndarray:
+                    if isinstance(pose, list) or isinstance(pose, np.ndarray):
                         await self.sub.move.relative(np.array(pose)).go(speed=speed)
                     else:
                         await pose.go()
@@ -776,7 +776,7 @@ class SonarPointcloud:
 
     async def _run_move_pattern(self, speed: float):
         for pose in self.pattern:
-            if type(pose) == list or type(pose) == np.ndarray:
+            if isinstance(pose, list) or isinstance(pose, np.ndarray):
                 await self.sub.move.relative(np.array(pose)).go(speed=speed)
             else:
                 await pose.go()

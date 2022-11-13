@@ -5,7 +5,6 @@ import asyncio
 import importlib
 import inspect
 import json
-import time
 import traceback
 import types
 from typing import Any
@@ -13,9 +12,9 @@ from typing import Any
 import txros
 import uvloop
 from mil_missions.msg import DoMissionAction, DoMissionFeedback, DoMissionResult
-from mil_missions_core import BaseMission, MissionException, MissionResult
+from mil_missions_core import BaseMission, MissionResult
 from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
-from txros import NodeHandle, Service, action, rosxmlrpc, util
+from txros import NodeHandle, Service, action, util
 
 
 class MissionRunner:
@@ -131,7 +130,7 @@ class MissionRunner:
             self.imported_modules = [self.mission_module]
             for attribute_name in dir(self.mission_module):
                 attribute = getattr(self.mission_module, attribute_name)
-                if type(attribute) is types.ModuleType:
+                if isinstance(attribute, types.ModuleType):
                     self.imported_modules.append(importlib.reload(attribute))
         else:
             self.mission_module = importlib.import_module(mission_module_name)

@@ -2,9 +2,7 @@
 # https://github.com/Rapptz/discord.py/blob/3aa55ba1edf94bfbc8423bd4cbc2adbebc12ab9d/docs/extensions/exception_hierarchy.py
 
 from docutils import nodes
-from docutils.parsers.rst import Directive, directives, states
-from docutils.parsers.rst.roles import set_classes
-from sphinx.locale import _
+from docutils.parsers.rst import Directive
 
 
 class exception_hierarchy(nodes.General, nodes.Element):

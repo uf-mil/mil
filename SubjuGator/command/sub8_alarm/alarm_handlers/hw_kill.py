@@ -1,4 +1,4 @@
-from ros_alarms import Alarm, HandlerBase
+from ros_alarms import HandlerBase
 
 
 class HwKill(HandlerBase):

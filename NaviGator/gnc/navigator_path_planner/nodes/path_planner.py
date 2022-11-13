@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from types import ModuleType
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 import actionlib
 import cv2  # for occupancy grid analysis
