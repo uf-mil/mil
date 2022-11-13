@@ -1,0 +1,20 @@
+<launch>
+  <node pkg="navigator_kill_board" type="kill_board_driver.py" name="kill_board_interface">
+    <param name="port" value="/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0" />
+    <param name="baud" value="9600" />
+  </node>
+  <node pkg="ros_alarms" type="alarm_server.py" name="alarm_server" output="screen">
+    <param name="handler_module" type="string" value="navigator_alarm_handlers" />
+    <rosparam>
+        battery-voltage:
+            low: 26
+            critical: 20
+    </rosparam>
+  </node>
+  <rosparam ns="meta_alarms">
+    kill: ['odom-kill', 'hw-kill']
+  </rosparam>
+  <rosparam ns="known_alarms">
+    kill, odom-kill, network-loss, station-hold, battery-voltage, hw-kill, thruster-fault
+  </rosparam>
+</launch>

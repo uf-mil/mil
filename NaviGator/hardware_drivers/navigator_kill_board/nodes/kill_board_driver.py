@@ -11,6 +11,7 @@ from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from mil_tools import thread_lock
 from navigator_alarm_handlers import NetworkLoss
 from navigator_kill_board import constants
+from roboteq_msgs.msg import Command
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
@@ -82,6 +83,15 @@ class KillInterface:
             "CTRL_STICKS"
         ]:  # These are 3 signed 16-bit values for stick positions
             self.sticks[stick] = 0x0000
+        self.thrusters = {}
+        for thruster in ["BL", "BR", "FL", "FR"]:
+            self.thrusters[thruster] = 0x00
+        self.rc_pub = rospy.Publisher("/wrench/selected", String)
+        self.motor_pubs = {}
+        for thruster in self.thrusters:
+            self.motor_pubs = rospy.Publisher(
+                f"/{thruster}_motor/cmd", Command, queue_size=1
+            )
         self.sticks_temp = 0x0000
         self.buttons = {}
         for button in constants[
@@ -131,7 +141,8 @@ class KillInterface:
         self.update_hw_kill()
         self.publish_diagnostics()
         if self.ctrl_msg_received is True:
-            self.publish_joy()
+            # self.publish_joy()
+            self.publish_thrust()
             self.ctrl_msg_received = False
 
     def handle_byte(self, msg):
@@ -140,12 +151,14 @@ class KillInterface:
         a known response to a recent request
         """
         # If the controller message start byte is received, next 8 bytes are the controller data
+        # print("here")
+        # print(msg)
         if msg == constants["CONTROLLER"]:
-            self.ctrl_msg_count = 8
+            self.ctrl_msg_count = 4
             self.ctrl_msg_timeout = rospy.Time.now()
             return
         # If receiving the controller message, record the byte as stick/button data
-        if (self.ctrl_msg_count > 0) and (self.ctrl_msg_count <= 8):
+        if (self.ctrl_msg_count > 0) and (self.ctrl_msg_count <= 4):
             # If 1 second has passed since the message began, timeout and report warning
             if (rospy.Time.now() - self.ctrl_msg_timeout) >= rospy.Duration(1):
                 self.ctrl_msg_received = False
@@ -153,55 +166,65 @@ class KillInterface:
                 rospy.logwarn(
                     "Timeout receiving controller message. Please disconnect controller."
                 )
-            if (
-                self.ctrl_msg_count > 2
-            ):  # The first 6 bytes in the message are stick data bytes
-                if (
-                    self.ctrl_msg_count % 2
-                ) == 0:  # Even number byte: first byte in data word
-                    self.sticks_temp = int(msg.encode("hex"), 16) << 8
-                else:  # Odd number byte: combine two bytes into a stick's data word
-                    self.sticks_temp += int(msg.encode("hex"), 16)
-                    if self.ctrl_msg_count > 6:
-                        self.sticks["UD"] = self.sticks_temp
-                    elif self.ctrl_msg_count > 4:
-                        self.sticks["LR"] = self.sticks_temp
-                    else:
-                        self.sticks["TQ"] = self.sticks_temp
-                    self.sticks_temp = 0x0000
-            else:  # The last 2 bytes are button data bytes
-                if (self.ctrl_msg_count % 2) == 0:
-                    self.buttons_temp = int(msg.encode("hex"), 16) << 8
-                else:  # Combine two bytes into the button data word
-                    self.buttons_temp += int(msg.encode("hex"), 16)
-                    for (
-                        button
-                    ) in (
-                        self.buttons
-                    ):  # Each of the 16 bits represents a button on/off state
-                        button_check = int(
-                            constants["CTRL_BUTTONS_VALUES"][button].encode("hex"), 16
-                        )
-                        self.buttons[button] = (
-                            self.buttons_temp & button_check
-                        ) == button_check
-                    self.buttons_temp = 0x0000
-                    self.ctrl_msg_received = (
-                        True  # After receiving last byte, trigger joy update
-                    )
+            # [HEADER] [BL] [BR] [FL] [FR]
+            if self.ctrl_msg_count == 4:
+                self.thrusters["BL"] = int(msg.encode("hex", 16))
+            elif self.ctrl_msg_count == 3:
+                self.thrusters["BR"] = int(msg.encode("hex", 16))
+            elif self.ctrl_msg_count == 2:
+                self.thrusters["FL"] = int(msg.encode("hex", 16))
+            elif self.ctrl_msg_count == 1:
+                self.thrusters["FR"] = int(msg.encode("hex", 16))
+                self.ctrl_msg_received = True
+            # if (
+            #     self.ctrl_msg_count > 2
+            # ):  # The first 6 bytes in the message are stick data bytes
+            #     if (
+            #         self.ctrl_msg_count % 2
+            #     ) == 0:  # Even number byte: first byte in data word
+            #         self.sticks_temp = int(msg.encode("hex"), 16) << 8
+            #     else:  # Odd number byte: combine two bytes into a stick's data word
+            #         self.sticks_temp += int(msg.encode("hex"), 16)
+            #         if self.ctrl_msg_count > 6:
+            #             self.sticks["UD"] = self.sticks_temp
+            #         elif self.ctrl_msg_count > 4:
+            #             self.sticks["LR"] = self.sticks_temp
+            #         else:
+            #             self.sticks["TQ"] = self.sticks_temp
+            #         self.sticks_temp = 0x0000
+            # else:  # The last 2 bytes are button data bytes
+            #     if (self.ctrl_msg_count % 2) == 0:
+            #         self.buttons_temp = int(msg.encode("hex"), 16) << 8
+            #     else:  # Combine two bytes into the button data word
+            #         self.buttons_temp += int(msg.encode("hex"), 16)
+            #         for (
+            #             button
+            #         ) in (
+            #             self.buttons
+            #         ):  # Each of the 16 bits represents a button on/off state
+            #             button_check = int(
+            #                 constants["CTRL_BUTTONS_VALUES"][button].encode("hex"), 16
+            #             )
+            #             self.buttons[button] = (
+            #                 self.buttons_temp & button_check
+            #             ) == button_check
+            #         self.buttons_temp = 0x0000
+            #         self.ctrl_msg_received = (
+            #             True  # After receiving last byte, trigger joy update
+            #         )
             self.ctrl_msg_count -= 1
             return
         # If a response has been received to a requested status (button, remove, etc), update internal state
         if self.last_request is not None:
             if msg == constants["RESPONSE_FALSE"]:
                 if self.board_status[self.last_request] is True:
-                    rospy.logdebug(f"SYNC FALSE for {self.last_request}")
+                    rospy.logerr(f"SYNC FALSE for {self.last_request}")
                 self.board_status[self.last_request] = False
                 self.last_request = None
                 return
             if msg == constants["RESPONSE_TRUE"]:
                 if self.board_status[self.last_request] is False:
-                    rospy.logdebug(f"SYNC TRUE for {self.last_request}")
+                    rospy.logerr(f"SYNC TRUE for {self.last_request}")
                 self.board_status[self.last_request] = True
                 self.last_request = None
                 return
@@ -209,12 +232,12 @@ class KillInterface:
         for kill in self.board_status:
             if msg == constants[kill]["FALSE"]:
                 if self.board_status[kill] is True:
-                    rospy.logdebug(f"ASYNC FALSE for {self.last_request}")
+                    rospy.logerr(f"ASYNC FALSE for {kill}")
                 self.board_status[kill] = False
                 return
             if msg == constants[kill]["TRUE"]:
                 if self.board_status[kill] is False:
-                    rospy.logdebug(f"ASYNC TRUE FOR {kill}")
+                    rospy.logerr(f"ASYNC TRUE FOR {kill}")
                 self.board_status[kill] = True
                 return
         # If a response to another request, like ping or computer kill/clear is received
@@ -249,6 +272,7 @@ class KillInterface:
         if self.request_index == len(self.kills):
             self.request_index = 0
         self.last_request = self.kills[self.request_index]
+        rospy.logdebug(f"Requesting {self.last_request}")
         self.request(constants[self.last_request]["REQUEST"])
 
     def wrench_cb(self, msg):
@@ -320,6 +344,20 @@ class KillInterface:
         msg.status.append(status)
         self.diagnostics_pub.publish(msg)
 
+    def publish_thrust(self):
+        data = String()
+        data.data = "/wrench/rc"
+        self.rc_pub.publish(data)
+
+        def convert(int_val):
+            return ((int_val - 128) / 128) * 500
+
+        for thruster in self.thrusters:
+            converted = convert(self.thrusters[thruster])
+            msg = Command()
+            msg.setpoint = converted
+            self.motor_pubs[thruster].publish(msg)
+
     def publish_joy(self):
         """
         Publishes current stick/button state as a Joy object, to be handled by navigator_emergency.py node
@@ -347,14 +385,21 @@ class KillInterface:
         current_joy.header.stamp = rospy.Time.now()
         self.joy_pub.publish(current_joy)
 
+    def get_hw_kills(self):
+        return [
+            self.board_status[b]
+            for b in self.board_status
+            if b != "OVERALL" or b != "COMPUTER"
+        ]
+
     def update_hw_kill(self):
         """
         Raise/Clear hw-kill ROS Alarm is necessary (any kills on board are engaged)
         """
         killed = self.board_status["OVERALL"]
-        if (killed and not self._hw_killed) or (
-            killed and self.board_status != self._last_hw_kill_paramaters
-        ):
+        kills = self.get_hw_kills()
+        if killed and not self._hw_killed and any(kills):
+            rospy.logerr("here")
             self._hw_killed = True
             self.hw_kill_broadcaster.raise_alarm(parameters=self.board_status)
             self._last_hw_kill_paramaters = copy.copy(self.board_status)
@@ -369,10 +414,10 @@ class KillInterface:
         Returns True or False depending on the response.
         With no `recv_str` passed in the raw result will be returned.
         """
-        self.ser.write(write_str.encode())
+        self.ser.write(write_str)
         if expected_response is not None:
             for byte in expected_response:
-                self.expected_responses.append(byte.encode())
+                self.expected_responses.append(byte)
 
     def kill_alarm_cb(self, alarm):
         """
