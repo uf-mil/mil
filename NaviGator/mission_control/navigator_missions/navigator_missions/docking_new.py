@@ -22,7 +22,7 @@ from navigator_vision import VrxStcColorClassifier
 from rospkg import RosPack
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2
 from std_msgs.msg import Empty
-from std_srvs.srv import SetBoolRequest
+from std_srvs.srv import SetBool, SetBoolRequest
 from tf import transformations
 from tf.transformations import quaternion_matrix
 
@@ -47,6 +47,8 @@ class Dock(Navigator):
         self.ogrid_sub = self.nh.subscribe(
             "/ogrid", OccupancyGrid, callback=self.ogrid_cb
         )
+
+        self.pcodar_save = self.nh.get_service_client("/pcodar/save", SetBool)
         # self.image_sub = self.nh.subscribe(
         #     "/wamv/sensors/cameras/front_left_camera/image_raw", Image
         # )
@@ -81,6 +83,7 @@ class Dock(Navigator):
         await self.ogrid_sub.setup()
         await self.image_sub.setup()
         await self.image_info_sub.setup()
+        await self.pcodar_save.wait_for_service()
 
         self.bridge = CvBridge()
         msg = await self.image_info_sub.get_next_message()
@@ -89,6 +92,7 @@ class Dock(Navigator):
 
         self.cam_frame = (await self.image_sub.get_next_message()).header.frame_id
         rospy.logerr("HERE2")
+        await self.pcodar_save(SetBoolRequest(True))
 
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = "cluster_tolerance_m"
@@ -112,7 +116,9 @@ class Dock(Navigator):
         await self.move_to_correct_side()
 
         # recalculate dock position once on correct side
-        await self.find_dock()
+        # await self.find_dock()
+
+        await self.move_to_correct_side()
 
         dock, pos = await self.get_sorted_objects(name="dock", n=1)
         # dock is PerceptionObject
@@ -125,7 +131,8 @@ class Dock(Navigator):
 
         centers, clusters = self.get_cluster_centers(corrected)
         centers = centers[centers[:, 1].argsort()][::-1]
-        await self.crop_images(clusters)
+        images = await self.crop_images(clusters)
+        self.find_color(images, 1)
 
         left = copy.deepcopy(centers[0])
         rospy.logerr(centers[0])
@@ -139,11 +146,13 @@ class Dock(Navigator):
         nextPt = boat_to_enu.transform_point(forward)
         await self.move.set_position(centers[0]).go(blind=True, move_type="skid")
         await self.move.set_position(nextPt).go(blind=True, move_type="skid")
+        await self.pcodar_save(SetBoolRequest(False))
 
         await self.contour_pub.shutdown()
         await self.ogrid_sub.shutdown()
         await self.image_sub.shutdown()
         await self.image_info_sub.shutdown()
+        await self.pcodar_save.shutdown()
 
     def get_dock_data(self, dock):
         dock = dock[0]
@@ -389,6 +398,23 @@ class Dock(Navigator):
         self.contour_pub.publish(msg)
         return list
 
+    def find_color(self, images, color):
+        for img in images:
+            img = img.astype("uint8")
+            ret3, th3 = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
+            img = cv2.cvtColor(th3, cv2.COLOR_GRAY2RGB)
+            # edges = cv2.Canny(img, 100, 200)
+            # contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            # img = cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB)
+            # largestContour = (0, None)
+            # for contour in contours:
+            #     area = cv2.contourArea(contour)
+            #     if area > largestContour[0]:
+            #         largestContour = (area, contour)
+            # cv2.drawContours(img, contours, -1, (0, 255, 0), 3)
+            msg = self.bridge.cv2_to_imgmsg(img, encoding="rgb8")
+            self.contour_pub.publish(msg)
+
     def get_ogrid_coords(self, arr):
         return self.intup(self.ogrid_cpm * (np.asarray(arr) - self.ogrid_origin))[:2]
 
@@ -429,20 +455,38 @@ class Dock(Navigator):
         x, y, w, h = bounding_rect
 
         center_coordinate = self.ogrid_to_position(center)
+        image_or = np.zeros(self.last_image.shape, np.uint8)
 
         cv2.line(mask, self.get_ogrid_coords(side_a), center, (255, 255, 255), 2)
-        side_a_and = cv2.bitwise_and(self.last_image, mask)
+        side_a_and = cv2.bitwise_and(copy.deepcopy(self.last_image), mask)
+        image_or = cv2.bitwise_or(image_or, side_a_and)
+        mask = np.zeros(self.last_image.shape, np.uint8)
+
         cv2.line(mask, self.get_ogrid_coords(side_b), center, (255, 255, 255), 2)
-        side_b_and = cv2.bitwise_and(self.last_image, mask)
+        side_b_and = cv2.bitwise_and(copy.deepcopy(self.last_image), mask)
+        image_or = cv2.bitwise_or(image_or, side_b_and)
+        mask = np.zeros(self.last_image.shape, np.uint8)
+
         cv2.line(mask, self.get_ogrid_coords(side_c), center, (255, 255, 255), 2)
-        side_c_and = cv2.bitwise_and(self.last_image, mask)
+        side_c_and = cv2.bitwise_and(copy.deepcopy(self.last_image), mask)
+        image_or = cv2.bitwise_or(image_or, side_c_and)
+        mask = np.zeros(self.last_image.shape, np.uint8)
+
         cv2.line(mask, self.get_ogrid_coords(side_d), center, (255, 255, 255), 2)
-        side_d_and = cv2.bitwise_and(self.last_image, mask)
+        side_d_and = cv2.bitwise_and(copy.deepcopy(self.last_image), mask)
+        image_or = cv2.bitwise_or(image_or, side_d_and)
+
+        msg = self.bridge.cv2_to_imgmsg(image_or, encoding="rgb8")
+        self.contour_pub.publish(msg)
 
         side_a_count = np.count_nonzero(side_a_and == np.asarray([255, 255, 255]))
+        print(side_a_count)
         side_b_count = np.count_nonzero(side_b_and == np.asarray([255, 255, 255]))
+        print(side_b_count)
         side_c_count = np.count_nonzero(side_c_and == np.asarray([255, 255, 255]))
+        print(side_c_count)
         side_d_count = np.count_nonzero(side_d_and == np.asarray([255, 255, 255]))
+        print(side_d_count)
 
         lowest = min([side_a_count, side_b_count, side_c_count, side_d_count])
         print("Center of mass found")
