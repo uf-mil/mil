@@ -5,14 +5,17 @@ export MIL_WS="$HOME/catkin_ws"
 MIL_REPO="$MIL_WS/src/mil"
 
 # Source ROS and local catkin
-if [[ "$SHELL" == "/usr/bin/zsh" ]]
+if [[ "ps -p $$ | tail -n 1 | awk '{ print $4 }'" == "/usr/bin/zsh" ]]
 then
+    echo "Zsh Detected, sourcing appropriate setup scripts"
     source /opt/ros/noetic/setup.zsh
     source $MIL_WS/devel/setup.zsh
 else
+    echo "Bash Detected, sourcing appropriate setup scripts"
     source /opt/ros/noetic/setup.bash
     source $MIL_WS/devel/setup.bash
 fi
+
 
 
 # Script tools
