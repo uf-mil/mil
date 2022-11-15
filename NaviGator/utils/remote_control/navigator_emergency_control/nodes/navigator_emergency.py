@@ -10,6 +10,9 @@ __license__ = "MIT"
 
 
 class Joystick:
+    """
+    TODO: document
+    """
     def __init__(self):
         self.force_scale = rospy.get_param("/joystick_wrench/force_scale", 600)
         self.torque_scale = rospy.get_param("/joystick_wrench/torque_scale", 500)
