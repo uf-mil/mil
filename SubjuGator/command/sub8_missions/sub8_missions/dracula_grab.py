@@ -47,7 +47,7 @@ class DraculaGrabber(SubjuGator):
             save_pois = rospy.ServiceProxy("/poi_server/save_to_param", Trigger)
             save_pois()
             if not rospy.has_param("/poi_server/initial_pois/dracula"):
-                dracula_req = await vamp_txros(GuessRequestRequest(item="dracula"))
+                dracula_req = await vamp_axros(GuessRequestRequest(item="dracula"))
                 use_prediction = False
                 fprint("Forgot to add dracula to guess?", msg_color="yellow")
             else:

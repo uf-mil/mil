@@ -22,7 +22,7 @@ In Twisted, coroutines were specified through the following syntax:
 
 ```python
 from twisted.internet import defer
-from txros.util import cancellableInlineCallbacks
+from axros.util import cancellableInlineCallbacks
 
 class Example():
     @defer.inlineCallbacks()
@@ -177,14 +177,14 @@ async def test() -> asyncio.Future[int]:
     return fut
 ```
 
-### {mod}`txros`
-{mod}`txros` now has a lot of great typing support for its asynchronous pieces.
-{class}`txros.Subscriber` and {class}`txros.Publisher` are generics which accept
+### {mod}`axros`
+{mod}`axros` now has a lot of great typing support for its asynchronous pieces.
+{class}`axros.Subscriber` and {class}`axros.Publisher` are generics which accept
 the message type that they are receiving and publishing.
 
 ```python
 import asyncio
-from txros import NodeHandle
+from axros import NodeHandle
 from geometry_msgs.msg import Point, PointStamped
 
 async def main():

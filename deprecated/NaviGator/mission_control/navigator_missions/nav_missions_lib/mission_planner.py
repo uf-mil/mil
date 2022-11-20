@@ -8,7 +8,7 @@ from navigator_tools import DBHelper
 from std_msgs.msg import String
 from timeout_manager import TimeoutManager
 from twisted.internet import defer
-from txros import NodeHandle, util
+from axros import NodeHandle, util
 from YAML_parser import yaml_parse
 
 __author__ = "Tess Bianchi"
@@ -40,7 +40,7 @@ class MissionPlanner:
 
     @util.cancellableInlineCallbacks
     def init_(self, yaml_text, sim_mode=False):
-        """Initialize the txros aspects of the MissionPlanner."""
+        """Initialize the axros aspects of the MissionPlanner."""
         self.sim_mode = sim_mode
         assert yaml_text is not None, "YOU NEED A YAML TEXT TO RUN A MISSION"
         self.nh = yield NodeHandle.from_argv("mission_planner")

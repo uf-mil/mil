@@ -1,7 +1,7 @@
+from axros import NodeHandle
 from geometry_msgs.msg import Point
 from nav_msgs.msg import Odometry
 from navigator_test_lib import SpoofGenerator, TestUnit
-from txros import NodeHandle
 
 
 class MissionPlannerTest(TestUnit):

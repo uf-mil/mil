@@ -2,10 +2,10 @@
 
 import asyncio
 
+import axros
 import job_runner
 import numpy as np
 import tf
-import txros
 import uvloop
 from mil_ros_tools import msg_helpers
 from nav_msgs.msg import Odometry
@@ -27,7 +27,7 @@ async def run_mission(srv, sub, nh):
 
     # Go to point
     await job_runner.JobManager.set_model_position(nh, pose)
-    await txros.util.wall_sleep(5.0)
+    await axros.util.wall_sleep(5.0)
     print("Movement should be complete.")
 
     excpeted_position = np.array([point, quat])
@@ -51,7 +51,7 @@ async def run_mission(srv, sub, nh):
 
 
 async def main():
-    nh = await txros.NodeHandle.from_argv("test")
+    nh = await axros.NodeHandle.from_argv("test")
     world_position_actual = nh.subscribe("/world_odom", Odometry)
     await world_position_actual.setup()
     run_mission(None, world_position_actual, nh)

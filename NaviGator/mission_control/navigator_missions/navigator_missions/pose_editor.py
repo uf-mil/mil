@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import mil_tools
 import numpy as np
+from axros import types
 from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion, Twist, Vector3
 from mil_misc_tools.text_effects import fprint
 from mil_msgs.msg import MoveToGoal, PoseTwist
@@ -13,7 +14,6 @@ from mil_tools import make_header, normalize
 from navigator_path_planner.msg import MoveGoal
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 from tf import transformations
-from txros import types
 
 if TYPE_CHECKING:
     from .navigator import Navigator

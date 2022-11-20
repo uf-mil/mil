@@ -5,7 +5,7 @@ import cv2
 import mil_tools
 import numpy as np
 import tf.transformations as trns
-import txros
+import axros
 from nav_msgs.msg import OccupancyGrid
 from navigator import Navigator
 from twisted.internet import defer
@@ -40,14 +40,14 @@ class StartGate(Navigator):
 
         return between_vector, direction_vector
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def two_buoys(self, buoys, setup_dist, channel_length=30):
         # We only have the front two buoys in view
         pose = yield self.tx_pose
         # Get the ones closest to us and assume those are the front
         front = buoys
 
-        t = txros.tf.Transform.from_Pose_message(mil_tools.numpy_quat_pair_to_pose(*pose))
+        t = axros.tf.Transform.from_Pose_message(mil_tools.numpy_quat_pair_to_pose(*pose))
         t_mat44 = np.linalg.inv(t.as_matrix())
         f_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in front]
 
@@ -67,7 +67,7 @@ class StartGate(Navigator):
                              target.position, channel_length=channel_length)
         defer.returnValue([ogrid, setup, target])
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def four_buoys(self, buoys, setup_dist):
         pose = yield self.tx_pose
         # Get the ones closest to us and assume those are the front
@@ -79,7 +79,7 @@ class StartGate(Navigator):
         # print "back", back
 
         # Made it this far, make sure the red one is on the left and green on the right ================
-        t = txros.tf.Transform.from_Pose_message(mil_tools.numpy_quat_pair_to_pose(*pose))
+        t = axros.tf.Transform.from_Pose_message(mil_tools.numpy_quat_pair_to_pose(*pose))
         t_mat44 = np.linalg.inv(t.as_matrix())
         f_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in front]
         b_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in back]
@@ -107,7 +107,7 @@ class StartGate(Navigator):
 
         defer.returnValue([ogrid, setup, target])
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def run(self, parameters):
         result = self.fetch_result()
 

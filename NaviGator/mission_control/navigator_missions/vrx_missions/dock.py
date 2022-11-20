@@ -2,9 +2,9 @@
 import asyncio
 import os
 
+import axros
 import cv2
 import numpy as np
-import txros
 from cv_bridge import CvBridge
 from dynamic_reconfigure.msg import DoubleParameter
 from image_geometry import PinholeCameraModel
@@ -582,7 +582,7 @@ class Dock(Vrx):
         await self.nh.sleep(1)
         for i in range(4):
             try:
-                await txros.util.wrap_timeout(
+                await axros.util.wrap_timeout(
                     self.aim_and_fire(foggy=foggy), 15, "Trying to shoot"
                 )
             except asyncio.TimeoutError:
