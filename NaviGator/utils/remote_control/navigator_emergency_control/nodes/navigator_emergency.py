@@ -11,9 +11,12 @@ __license__ = "MIT"
 
 class Joystick:
     """
-    TODO: document
+    Used to interpret messages coming from the controller
     """
     def __init__(self):
+        """
+        Used to initialize the variables for the controller
+        """
         self.force_scale = rospy.get_param("/joystick_wrench/force_scale", 600)
         self.torque_scale = rospy.get_param("/joystick_wrench/torque_scale", 500)
 
@@ -41,7 +44,11 @@ class Joystick:
         self.active = False
         self.remote.clear_wrench()
 
-    def check_for_timeout(self, joy):
+    def check_for_timeout(self, joy: Joy):
+        """
+        Used to check if the controller is being used or if it should time out after 15 minutes 
+        by checking the buttons clicked last match with the same buttons clicked 15 minutes before.
+        """
         if self.last_joy is None:
             self.last_joy = joy
             return
@@ -63,6 +70,10 @@ class Joystick:
             self.last_joy = joy
 
     def joy_recieved(self, joy: Joy) -> None:
+        """
+        Used when buttons are clicked on the controller. 
+        Values are assigned based on the buttons clicked and those values are interpreted
+        """
         self.last_time = rospy.Time.now()
         self.check_for_timeout(joy)
 
