@@ -8,7 +8,7 @@ from mil_misc_tools import text_effects
 from sub8_hydrophones.msg import ProcessedPing
 from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 from twisted.internet import defer
-from txros import util
+from axros import util
 from visualization_msgs.msg import Marker, MarkerArray
 
 fprint = text_effects.FprintFactory(title="PINGER", msg_color="cyan").fprint
@@ -31,9 +31,9 @@ def run(sub):
 
     fprint("Getting Guess Locations")
 
-    pinger_txros = yield sub.nh.get_service_client("/guess_location", GuessRequest)
-    pinger_1_req = yield pinger_txros(GuessRequestRequest(item="pinger1"))
-    pinger_2_req = yield pinger_txros(GuessRequestRequest(item="pinger2"))
+    pinger_axros = yield sub.nh.get_service_client("/guess_location", GuessRequest)
+    pinger_1_req = yield pinger_axros(GuessRequestRequest(item="pinger1"))
+    pinger_2_req = yield pinger_axros(GuessRequestRequest(item="pinger2"))
 
     use_prediction = True
     if pinger_1_req.found is False or pinger_2_req.found is False:

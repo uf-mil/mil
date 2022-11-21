@@ -1,7 +1,7 @@
 import numpy as np
 from mil_misc_tools import FprintFactory
 from mil_ros_tools import rosmsg_to_numpy
-from txros import util
+from axros import util
 
 MISSION = "BUMP BUOYS"
 
@@ -22,7 +22,7 @@ class BumpBuoysMission(object):
     """
     Mission to solve the recurring bump buoys RoboSub challenge.
 
-    Designed to use the async features of txros to solve the mission in as little
+    Designed to use the async features of axros to solve the mission in as little
     time as possible. One async function constantly pings the percption node for
     the latest pose, if available, for each color buoy. Another function continually
     checks if a new buoy has been found and performs moves to bump it. Another function

@@ -2,8 +2,8 @@
 import asyncio
 from operator import attrgetter
 
+import axros
 import numpy as np
-import txros
 from cv2 import bitwise_and
 from cv_bridge import CvBridge
 from dynamic_reconfigure.msg import DoubleParameter
@@ -96,7 +96,7 @@ class ScanTheCode(Navigator):
             dtype=int,
         )
         try:
-            sequence = await txros.util.wrap_timeout(
+            sequence = await axros.util.wrap_timeout(
                 self.get_sequence(contour), TIMEOUT_SECONDS
             )
         except asyncio.TimeoutError:

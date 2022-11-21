@@ -2,14 +2,14 @@
 
 import asyncio
 
-import txros
+import axros
 import uvloop
 from geometry_msgs.msg import PointStamped, PoseStamped
 
 
 class RvizRepublisher:
     async def init(self):
-        self.nh = txros.NodeHandle.from_argv("rviz_republisher")
+        self.nh = axros.NodeHandle.from_argv("rviz_republisher")
         await self.nh.setup()
         self.point_republish = self.nh.advertise("/rviz_point", PointStamped)
         self.pose_republish = self.nh.advertise("/rviz_goal", PoseStamped)

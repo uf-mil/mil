@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 import asyncio
 
-import txros
+import axros
 import uvloop
 from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
 
 
 async def main():
-    nh = await txros.NodeHandle.from_argv("tx_alarm_test")
+    nh = await axros.NodeHandle.from_argv("tx_alarm_test")
 
     alarm_name = "tx"
     ab = await TxAlarmBroadcaster.init(nh, alarm_name)

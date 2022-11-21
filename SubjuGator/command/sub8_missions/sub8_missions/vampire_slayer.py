@@ -46,9 +46,9 @@ class VampireSlayer(SubjuGator):
         #   await enable_service(SetBoolRequest(data=True))
 
         #        try:
-        #            vamp_txros = await self.nh.get_service_client('/guess_location',
+        #            vamp_axros = await self.nh.get_service_client('/guess_location',
         #                                                          GuessRequest)
-        #            vamp_req = await vamp_txros(GuessRequestRequest(item='vampire_slayer'))
+        #            vamp_req = await vamp_axros(GuessRequestRequest(item='vampire_slayer'))
         #            if vamp_req.found is False:
         #                use_prediction = False
         #                fprint(

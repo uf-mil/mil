@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import numpy as np
+from axros import types, util
 from mil_misc_tools import ThrowingArgumentParser
 from mil_tools import numpy_to_point, rosmsg_to_numpy
 from navigator_path_planner.msg import MoveGoal
-from txros import types, util
 
 from .navigator import Navigator
 

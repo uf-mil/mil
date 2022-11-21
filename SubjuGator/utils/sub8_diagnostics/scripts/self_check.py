@@ -3,7 +3,7 @@ import asyncio
 import subprocess
 import sys
 
-import txros
+import axros
 import uvloop
 from geometry_msgs.msg import PoseStamped
 from mil_misc_tools import text_effects
@@ -31,7 +31,7 @@ class TemplateChecker:
         self.p = text_effects.Printer()
 
     async def tx_init(self):
-        # Do txros initiation here
+        # Do axros initiation here
         yield
 
     def do_check(self):
@@ -90,7 +90,7 @@ class ThrusterChecker(TemplateChecker):
         thrusters = None
         try:
             thrusters = await self.nh.get_param("/thruster_layout/thrusters")
-        except txros.XMLRPCException as e:
+        except axros.XMLRPCException as e:
             raise OSError(e)
 
         self.found_thrusters = {}
@@ -100,7 +100,7 @@ class ThrusterChecker(TemplateChecker):
 
     async def do_check(self):
         try:
-            passed = await txros.util.wrap_timeout(
+            passed = await axros.util.wrap_timeout(
                 self.get_all_thrusters(), MESSAGE_TIMEOUT
             )
         except asyncio.TimeoutError:
@@ -186,8 +186,8 @@ class CameraChecker(TemplateChecker):
 
         for name, df in self.subs:
             try:
-                await txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
-            except txros.util.TimeoutError:
+                await axros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
+            except axros.util.TimeoutError:
                 self.fail_check("no messages found.", name)
                 continue
 
@@ -229,7 +229,7 @@ class StateEstChecker(TemplateChecker):
     async def do_check(self):
         for name, df in self.subs:
             try:
-                res = await txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
+                res = await axros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
             except asyncio.TimeoutError:
                 self.fail_check("no messages found.", name)
                 continue
@@ -254,7 +254,7 @@ class ShoreControlChecker(TemplateChecker):
             .negative("shore_control.launch")
             .text(" is running.\n")
         )
-        txros.util.nonblocking_raw_input(str(p))
+        axros.util.nonblocking_raw_input(str(p))
 
         self.network = self.nh.subscribe("/network", Header)
         self.spacenav = self.nh.subscribe("/spacenav/joy", Joy)
@@ -277,7 +277,7 @@ class ShoreControlChecker(TemplateChecker):
     async def do_check(self):
         for name, df in self.subs:
             try:
-                await txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
+                await axros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
             except asyncio.TimeoutError:
                 self.fail_check("no messages found.", name)
                 continue
@@ -286,7 +286,7 @@ class ShoreControlChecker(TemplateChecker):
 
 
 async def main():
-    nh = await txros.NodeHandle.from_argv("startup_checker")
+    nh = await axros.NodeHandle.from_argv("startup_checker")
     check_order = [
         ThrusterChecker(nh, "Thrusters"),
         CameraChecker(nh, "Cameras"),
@@ -295,7 +295,7 @@ async def main():
     ]
 
     p = text_effects.Printer()
-    txros.util.nonblocking_raw_input(
+    axros.util.nonblocking_raw_input(
         str(
             p.bold("\n  >>>>")
             .text("   Press return when ")

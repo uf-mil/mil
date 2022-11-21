@@ -12,6 +12,7 @@ import numpy as np
 import rospkg
 import uvloop
 import yaml
+from axros import NodeHandle, ROSMasterError, ServiceClient, action, axros_tf, util
 from dynamic_reconfigure.msg import Config
 from dynamic_reconfigure.srv import Reconfigure, ReconfigureRequest
 from geometry_msgs.msg import PointStamped, PoseStamped
@@ -36,7 +37,6 @@ from std_srvs.srv import (
     TriggerRequest,
 )
 from topic_tools.srv import MuxSelect, MuxSelectRequest
-from txros import NodeHandle, ROSMasterError, ServiceClient, action, txros_tf, util
 from vision_msgs.msg import Detection2DArray
 
 from .pose_editor import PoseEditor2
@@ -169,7 +169,7 @@ class Navigator(BaseMission):
         cls.mission_params = {}
         cls._load_mission_params()
 
-        # If you don't want to use txros
+        # If you don't want to use axros
         cls.ecef_pose = None
 
         cls.killed = "?"
@@ -223,7 +223,7 @@ class Navigator(BaseMission):
                 msg_color="red",
             )
 
-        cls.tf_listener = txros_tf.TransformListener(cls.nh)
+        cls.tf_listener = axros_tf.TransformListener(cls.nh)
         await cls.tf_listener.setup()
 
         # Vision
