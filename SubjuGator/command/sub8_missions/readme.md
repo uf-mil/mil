@@ -39,7 +39,7 @@ Here are some examples of missions you might run. Ex: "stop" stops the sub where
 ```
 
 
-# Why we're using TXROS
+# Why we're using axros
 
 * We want to be able to wait for the next message from a topic without having to loop-and-wait
 
@@ -57,7 +57,7 @@ In that file, write a run, like this (Be sure to use @util.cancellableInlineCall
 ```python
     # move_right.py
 
-    from txros import util
+    from axros import util
     @util.cancellableInlineCallbacks
     def run(sub):
         yield sub.move.right(5).go()
@@ -69,7 +69,7 @@ In that file, write a run, like this (Be sure to use @util.cancellableInlineCall
 ```python
     # move_right_asynchronous.py
 
-    from txros import util
+    from axros import util
     @util.cancellableInlineCallbacks
     def run(sub):
         sub.move.right(5).go()
@@ -84,7 +84,7 @@ We haven't fully decided how vision data, etc will be shared with the mission ma
 ```python
     # bump_buoy.py
 
-    from txros import util
+    from axros import util
     @util.cancellableInlineCallbacks
     def run(sub):
         # buoy_search is a Deferred

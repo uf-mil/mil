@@ -8,8 +8,8 @@ import time
 import traceback
 from collections import deque
 
+import axros
 import rospkg
-import txros
 from diagnostics import gazebo_tests
 from sub8 import tx_sub
 from sub8_gazebo_tools import BagManager
@@ -43,13 +43,13 @@ class JobManager:
         self.fails = 0
         # TODO: append-to-queue service
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def run(self):
         """Let the JobManager free-run"""
         while len(self.job_queue) > 0:
             yield self.run_next_job()
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def run_next_job(self):
         """Run the next job in the job queue"""
 
@@ -168,9 +168,9 @@ class JobManager:
         self.job_queue.append((job, runs))
 
 
-@txros.util.cancellableInlineCallbacks
+@axros.util.cancellableInlineCallbacks
 def main(args):
-    nh = yield txros.NodeHandle.from_argv("job_runner_controller")
+    nh = yield axros.NodeHandle.from_argv("job_runner_controller")
 
     print("JOB - getting sub")
     sub = yield tx_sub.get_sub(nh)

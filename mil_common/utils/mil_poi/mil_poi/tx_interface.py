@@ -4,9 +4,9 @@ from __future__ import annotations
 import asyncio
 
 import numpy as np
+from axros import NodeHandle
 from mil_poi.msg import POIArray
 from mil_ros_tools.msg_helpers import rosmsg_to_numpy
-from txros import NodeHandle
 
 
 class TxPOIClient:
@@ -19,7 +19,7 @@ class TxPOIClient:
     def __init__(self, nh: NodeHandle):
         """
         Args:
-            nh (txros.NodeHandle): The node handle to use.
+            nh (axros.NodeHandle): The node handle to use.
         """
         self.last_msg = None
         self.futures = {}

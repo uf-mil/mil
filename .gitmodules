@@ -11,9 +11,9 @@
 [submodule "drivers/LMS1xx"]
 	path = mil_common/drivers/LMS1xx
 	url = https://github.com/uf-mil/LMS1xx.git
-[submodule "mil_common/txros"]
-	path = mil_common/txros
-	url = https://github.com/uf-mil/txros.git
+[submodule "mil_common/axros"]
+	path = mil_common/axros
+	url = https://github.com/uf-mil/axros.git
 [submodule "NaviGator/simulation/VRX/vrx"]
 	path = NaviGator/simulation/VRX/vrx
 	url = https://github.com/uf-mil/vrx.git

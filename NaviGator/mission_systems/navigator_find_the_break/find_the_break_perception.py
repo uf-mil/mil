@@ -1,14 +1,14 @@
 import asyncio
 from collections import Counter
 
+import axros
 import cv2
 import numpy as np
 import numpy.ma as ma
-import txros
+from axros import NodeHandle
 from cv_bridge import CvBridge
 from mil_misc_tools.text_effects import CvDebug, fprint
 from sensor_msgs.msg import Image
-from txros import NodeHandle
 
 # Perception
 # Params : direction
@@ -33,7 +33,7 @@ class FindTheBreakPerception:
         self.debug = CvDebug(nh=nh)
 
     async def init_(self):
-        """Initialize the txros aspect of FindTheBreakPerception."""
+        """Initialize the axros aspect of FindTheBreakPerception."""
         self._image_sub = self.nh.subscribe(
             "/camera/down/image_rect_color", Image, lambda x: x
         )
@@ -41,7 +41,7 @@ class FindTheBreakPerception:
 
     @property
     async def _curr_image(self):
-        img_msg = await txros.util.wrap_timeout(self._image_sub.get_next_message(), 3)
+        img_msg = await axros.util.wrap_timeout(self._image_sub.get_next_message(), 3)
         return self.bridge.imgmsg_to_cv2(img_msg, "bgr8")
 
     def _get_all_pipes(self, frame):

@@ -12,6 +12,7 @@ import numpy as np
 import rospkg
 import sensor_msgs.point_cloud2 as pc2
 import yaml
+from axros import NodeHandle, ServiceClient, action, axros_tf, serviceclient, types
 from mil_missions_core import BaseMission
 from mil_msgs.msg import MoveToAction, PoseTwistStamped, RangeStamped
 from mil_msgs.srv import (
@@ -35,7 +36,6 @@ from sub8_msgs.srv import (
     VisionRequestRequest,
 )
 from tf.transformations import quaternion_from_euler, quaternion_multiply
-from txros import NodeHandle, ServiceClient, action, serviceclient, txros_tf, types
 from vision_msgs.msg import Detection2DArray
 
 from . import pose_editor
@@ -296,7 +296,7 @@ class SubjuGator(BaseMission):
         cls._trajectory_sub = cls.nh.subscribe("trajectory", PoseTwistStamped)
         cls._trajectory_pub = cls.nh.advertise("trajectory", PoseTwistStamped)
         cls._dvl_range_sub = cls.nh.subscribe("dvl/range", RangeStamped)
-        cls._tf_listener = txros_tf.TransformListener(cls.nh)
+        cls._tf_listener = axros_tf.TransformListener(cls.nh)
         cls.vision_proxies = _VisionProxies(cls.nh, "vision_proxies.yaml")
         cls.actuators = _ActuatorProxy(cls.nh)
         cls.test_mode = False
@@ -349,7 +349,7 @@ class SubjuGator(BaseMission):
         transform = await self._tf_listener.get_transform(
             frame, pose_stamped.header.frame_id, pose_stamped.header.stamp
         )
-        tft = txros_tf.Transform.from_Pose_message(pose_stamped.pose)
+        tft = axros_tf.Transform.from_Pose_message(pose_stamped.pose)
         full_transform = transform * tft
         position = np.array(full_transform._p)
         orientation = np.array(full_transform._q)

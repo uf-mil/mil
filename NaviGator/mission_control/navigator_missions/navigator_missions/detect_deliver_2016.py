@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import axros
 import genpy
 import mil_tools
 import numpy as np
 import tf.transformations as trns
-import txros
 from geometry_msgs.msg import Point, PoseStamped
 from mil_misc_tools.text_effects import fprint
 from navigator import Navigator
@@ -30,7 +30,7 @@ class DetectDeliver(Navigator):
     FOREST_SLEEP = 15
     BACKUP_DISTANCE = 5
 
-    nh: txros.NodeHandle
+    nh: axros.NodeHandle
 
     def __init__(self):
         super().__init__()
@@ -47,10 +47,10 @@ class DetectDeliver(Navigator):
         cls.cameraLidarTransformer = cls.nh.get_service_client(
             "/camera_to_lidar/right_right_cam", CameraToLidarTransform
         )
-        cls.shooterLoad = txros.action.ActionClient(
+        cls.shooterLoad = axros.action.ActionClient(
             cls.nh, "/shooter/load", ShooterDoAction
         )
-        cls.shooterFire = txros.action.ActionClient(
+        cls.shooterFire = axros.action.ActionClient(
             cls.nh, "/shooter/fire", ShooterDoAction
         )
         cls.shooter_baselink_tf = await cls.tf_listener.get_transform(

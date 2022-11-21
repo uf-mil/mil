@@ -2,7 +2,8 @@
 import asyncio
 import math
 
-import txros
+import axros
+from axros import NodeHandle, axros_tf
 from geographic_msgs.msg import GeoPath, GeoPoseStamped
 from mil_msgs.srv import ObjectDBQuery
 from mil_tools import numpy_to_point, rosmsg_to_numpy
@@ -18,7 +19,6 @@ from robot_localization.srv import FromLL, FromLLRequest, ToLL, ToLLRequest
 from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import Empty, Float64, Float64MultiArray
 from std_srvs.srv import Trigger
-from txros import NodeHandle, txros_tf
 from vision_msgs.msg import Detection2DArray
 from vrx_gazebo.msg import Task
 from vrx_gazebo.srv import ColorSequence
@@ -82,7 +82,7 @@ class Vrx(Navigator):
             "/set_long_waypoint", MoveToWaypoint
         )
         Vrx.yolo_objects = Vrx.nh.subscribe("/yolov7/detections", Detection2DArray)
-        Vrx.tf_listener = txros_tf.TransformListener(Vrx.nh)
+        Vrx.tf_listener = axros_tf.TransformListener(Vrx.nh)
         await Vrx.tf_listener.setup()
         Vrx.database_response = Vrx.nh.get_service_client(
             "/database/requests", ObjectDBQuery
@@ -167,7 +167,7 @@ class Vrx(Navigator):
         lla_msg = await self.to_lla(ToLLRequest(map_point=numpy_to_point(enu_array)))
         return lla_msg.ll_point
 
-    async def get_latching_msg(self, sub: txros.Subscriber):
+    async def get_latching_msg(self, sub: axros.Subscriber):
         msg = sub.get_last_message()
         if msg is None:
             msg = await sub.get_next_message()
@@ -182,7 +182,7 @@ class Vrx(Navigator):
     async def point_at_goal(self, goal_pos):
         vect = [goal_pos[0] - self.pose[0][0], goal_pos[1] - self.pose[0][1]]
         theta = math.atan2(vect[1], vect[0])
-        orientation_fix = txros_tf.transformations.quaternion_from_euler(0, 0, theta)
+        orientation_fix = axros_tf.transformations.quaternion_from_euler(0, 0, theta)
         await self.move.set_orientation(orientation_fix).go(blind=True)
 
     async def send_trajectory_without_path(self, goal_pose):

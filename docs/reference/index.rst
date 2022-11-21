@@ -16,7 +16,7 @@ by MIL. These subsystems relate to a variety of processes.
     images
     serial
     msghandlers
-    txros/index
+    axros/index
     rviz
     pcodar
     resources

@@ -97,10 +97,10 @@ In the example, there are several important pieces:
    {meth}`~.unittest.TestCase.assertTrue`, and {meth}`~.unittest.TestCase.assertIn`.
 
 You can also write unit tests for asynchronous operations. Check out our example
-from our {mod}`txros` module:
+from our {mod}`axros` module:
 
 ```python
-import txros
+import axros
 import unittest
 import rostest
 
@@ -109,10 +109,10 @@ class BasicNodeHandleTest(unittest.IsolatedAsyncioTestCase):
     Tests basic nodehandle functionality.
     """
 
-    nh: txros.NodeHandle
+    nh: axros.NodeHandle
 
     async def asyncSetUp(self):
-        self.nh = txros.NodeHandle.from_argv("basic", always_default_name = True)
+        self.nh = axros.NodeHandle.from_argv("basic", always_default_name = True)
         await self.nh.setup()
 
     async def test_name(self):
@@ -122,7 +122,7 @@ class BasicNodeHandleTest(unittest.IsolatedAsyncioTestCase):
         await self.nh.shutdown()
 
 if __name__ == "__main__":
-    rostest.rosrun("txros", "test_basic_nodehandle", BasicNodeHandleTest)
+    rostest.rosrun("axros", "test_basic_nodehandle", BasicNodeHandleTest)
     unittest.main()
 ```
 
@@ -137,14 +137,14 @@ file, so you have a lot of flexibility in what launches when the test is execute
 However, the most important tag is the `<test>` tag. This specifies what tests
 are actually ran and analyzed for their output.
 
-Below is an example test file named `txros.test`. This test file launches one test
+Below is an example test file named `axros.test`. This test file launches one test
 file named `test_basic_nodehandle.py`. At its core, this is all you need to run
 tests from a test file. You can optionally also launch nodes, set parameters, and
 use conditionals, as you can with any launch file.
 
 ```xml
 <launch>
-    <test test-name="test_basic_nodehandle" pkg="txros" type="test_basic_nodehandle.py" time-limit="180.0"/>
+    <test test-name="test_basic_nodehandle" pkg="axros" type="test_basic_nodehandle.py" time-limit="180.0"/>
 </launch>
 ```
 
@@ -159,7 +159,7 @@ file. You can do so by adding a few lines to this file:
 ```cmake
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  add_rostest(test/txros.test)
+  add_rostest(test/axros.test)
 endif()
 ```
 

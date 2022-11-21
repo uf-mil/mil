@@ -1,7 +1,7 @@
 #!usr/bin/env python3
 import asyncio
 
-import txros
+import axros
 import uvloop
 from ros_alarms import TxAlarmListener, TxHeartbeatMonitor
 from std_msgs.msg import String
@@ -21,7 +21,7 @@ async def do_publishing(nh):
 
 async def main():
     global publish
-    nh = await txros.NodeHandle.from_argv("tx_heartbeat_test")
+    nh = await axros.NodeHandle.from_argv("tx_heartbeat_test")
 
     alarm_name = "test_alarm123"
     hbm = await TxHeartbeatMonitor.init(
