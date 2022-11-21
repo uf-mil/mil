@@ -2,10 +2,7 @@
 import math
 
 import numpy as np
-import tf2_ros
-from mil_misc_tools import ThrowingArgumentParser
-from mil_tools import rosmsg_to_numpy
-from navigator_msgs.srv import MessageEntranceExitGate, MessageEntranceExitGateRequest
+from mil_tools import quaternion_matrix
 from std_srvs.srv import SetBoolRequest
 
 from .navigator import Navigator
@@ -23,7 +20,8 @@ class EntranceGate2(Navigator):
         return_to_start = True
         circle_radius = 5
         circle_direction = "cw"
-        self.traversal_distance = 2
+        yaw_offset = 1.57
+        self.traversal_distance = 3
 
         await self.set_classifier_enabled.wait_for_service()
         await self.set_classifier_enabled(SetBoolRequest(data=True))
@@ -33,14 +31,13 @@ class EntranceGate2(Navigator):
         await self.move.yaw_left(20, "deg").go()
         await self.move.yaw_right(40, "deg").go()
 
-        self.initial_boat_pose = await self.tx_pose()
-        self.initial_boat_pose = self.initial_boat_pose[0]
-
         # Find the gates
+        print("finding gates")
         self.gate_results = await self.find_gates()
         self.gate_centers = self.gate_results[0]
         self.gates_line = self.gate_results[1]
         self.gate_totems = self.gate_results[2]
+        print("defined gates")
 
         # Which gate do we go through?
         self.pinger_gate = 2
@@ -61,7 +58,7 @@ class EntranceGate2(Navigator):
             pass
         elif return_to_start:
             # Approach buoy we will rotate around
-            buoy = await self.get_sorted_objects("mb_marker_buoy_black", n=1)
+            buoy = await self.get_sorted_objects("black_cylinder", n=1)
             buoy = buoy[1][0]
             vect = (
                 self.unit_vector(self.gate_centers[0], self.gate_centers[1])
@@ -70,15 +67,15 @@ class EntranceGate2(Navigator):
             if self.pinger_gate > 0:
                 vect = -vect
                 circle_direction = "ccw"
+                yaw_offset = -1.57
             start = buoy + vect
-            await self.move.set_position(start).look_at(buoy).go()
+            await self.move.set_position(start).go()
 
             # Rotate around buoy
-            points = self.move.d_spiral_point(
-                buoy, circle_radius, 8, 0.75, circle_direction
+            print("beginning spiral movement")
+            points = await self.move.d_spiral_point(
+                buoy, circle_radius, 4, 0.75, circle_direction, yaw_offset
             )
-            for p in points:
-                await p.go()
 
             # Go back through start gate
             self.send_feedback("Navigating through gate")
@@ -86,6 +83,10 @@ class EntranceGate2(Navigator):
                 traversal_points[0]
             ).go()
             await self.move.set_position(traversal_points[0]).go()
+
+            # Then move a little passed the exit
+            await self.move.forward(5).go()
+            print("GO NAVIGATOR")
 
         self.send_feedback("Done with start gate!")
 
@@ -135,14 +136,58 @@ class EntranceGate2(Navigator):
     """
 
     async def find_gates(self):
-        # Find each of the needed totems
-        t1 = await self.get_sorted_objects("mb_marker_buoy_red", n=1)
-        t1 = t1[1][0][:2]
-        white_totems = await self.get_sorted_objects("mb_marker_buoy_white", n=2)
-        t2 = white_totems[1][0][:2]
-        t3 = white_totems[1][1][:2]
-        t4 = await self.get_sorted_objects("mb_marker_buoy_green", n=1)
-        t4 = t4[1][0][:2]
+
+        # This mission assumes we are starting off looking at the start gate task
+
+        # Get five closest buoys
+        buoys = await self.get_sorted_objects("all", n=5)
+
+        # Determine their locations relative to boat
+        pose = self.pose
+        p = pose[0]
+        q_mat = quaternion_matrix(pose[1])
+        positions_local = np.array(
+            [(q_mat.T.dot(position - p)) for position in buoys[1]]
+        )
+        positions_local_x = np.array(positions_local[:, 0])  # positive is forward
+        positions_local_y = np.array(positions_local[:, 1])  # positive is to the left
+
+        # Sort the x and y axes and delete the black buoy from y axis
+        argsort_x = np.argsort(np.array(positions_local_x))
+        argsort_y = np.argsort(np.array(positions_local_y))
+        argsort_y = np.delete(argsort_y, np.where(argsort_y == argsort_x[-1]))
+
+        # Label buoys
+        await self.pcodar_label(buoys[0][argsort_x[-1]].id, "black_cylinder")
+        for i, buoy_index in enumerate(argsort_y):
+            if i == 0:
+                try:
+                    t4 = await self.get_sorted_objects("green_cylinder", n=1)
+                    t4 = t4[1][0][:2]
+                except:
+                    t4 = buoys[1][buoy_index][:2]
+                    await self.pcodar_label(buoys[0][buoy_index].id, "green_cylinder")
+            elif i == 1:
+                try:
+                    white_totems = await self.get_sorted_objects("white_cylinder", n=2)
+                    t3 = white_totems[1][0][:2]
+                except:
+                    t3 = buoys[1][buoy_index][:2]
+                    await self.pcodar_label(buoys[0][buoy_index].id, "white_cylinder")
+            elif i == 2:
+                try:
+                    white_totems = await self.get_sorted_objects("white_cylinder", n=2)
+                    t2 = white_totems[1][1][:2]
+                except:
+                    t2 = buoys[1][buoy_index][:2]
+                    await self.pcodar_label(buoys[0][buoy_index].id, "white_cylinder")
+            elif i == 3:
+                try:
+                    t1 = await self.get_sorted_objects("red_cylinder", n=1)
+                    t1 = t1[1][0][:2]
+                except:
+                    t1 = buoys[1][buoy_index][:2]
+                    await self.pcodar_label(buoys[0][buoy_index].id, "red_cylinder")
 
         # Make sure the two white totems get ordered properly
         if (t2[0] - t1[0]) ** 2 + (t2[1] - t1[1]) ** 2 < (t3[0] - t1[0]) ** 2 + (

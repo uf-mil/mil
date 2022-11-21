@@ -3,7 +3,7 @@
 import sys
 from argparse import ArgumentParser, RawTextHelpFormatter
 
-import txros
+import axros
 from coordinate_conversion_server import Converter
 from navigator_msgs.srv import (
     CoordinateConversionRequest,
@@ -13,7 +13,7 @@ from navigator_msgs.srv import (
 
 
 async def main(name, lla):
-    nh = txros.NodeHandle.from_argv("esitmated_object_setter")
+    nh = axros.NodeHandle.from_argv("esitmated_object_setter")
     await nh.setup()
     db = nh.get_service_client("/database/requests", ObjectDBQuery)
 
@@ -58,4 +58,4 @@ if __name__ == "__main__":
     lon = args.long  # `long` is python reserved :(
     alt = args.alt
 
-    txros.util.launch_main(lambda: main(name, [lat, lon, alt]))
+    axros.util.launch_main(lambda: main(name, [lat, lon, alt]))

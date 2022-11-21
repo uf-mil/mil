@@ -1,7 +1,7 @@
-:mod:`txros` - Independent extensions for ROS
+:mod:`axros` - Independent extensions for ROS
 ---------------------------------------------
 
-.. automodule:: txros
+.. automodule:: axros
 
 .. toctree::
    :maxdepth: 1

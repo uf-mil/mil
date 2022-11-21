@@ -4,7 +4,6 @@ from nav_missions_lib import MissionPlanner
 from navigator_msgs.msg import PerceptionObject, PerceptionObjectArray
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryResponse
 from navigator_test_lib import SpoofGenerator, TestUnit
-from txros import util
 
 
 class MissionPlannerTest(TestUnit):

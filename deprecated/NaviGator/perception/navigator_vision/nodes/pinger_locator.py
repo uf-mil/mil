@@ -2,7 +2,7 @@
 import navigator_tools
 import numpy as np
 import tf
-import txros
+import axros
 from geometry_msgs.msg import Point, Pose, PoseStamped
 from hydrophones.msg import ProcessedPing
 from navigator_alarm import AlarmBroadcaster, AlarmListener, single_alarm
@@ -34,12 +34,12 @@ while True:
         print "Expected ProcessedPing, got {}".format(type(processed_ping))
 
 # Hydrophone locate mission
-@txros.util.cancellableInlineCallbacks
+@axros.util.cancellableInlineCallbacks
 def main(navigator):
     kill_alarm_broadcaster, kill_alarm = single_alarm('kill', action_required=True, problem_description="Killing wamv to listen to pinger")
     df = defer.Deferred().addCallback(head_for_pinger)
     df.callback(navigator)
     try:
-        yield txros.util.wrap_timeout(df, 15, cancel_df_on_timeout=True)
-    except txros.util.TimeoutError:
+        yield axros.util.wrap_timeout(df, 15, cancel_df_on_timeout=True)
+    except axros.util.TimeoutError:
         print "Done heading towards pinger"

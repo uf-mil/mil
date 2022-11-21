@@ -2,7 +2,7 @@
 from __future__ import division
 
 import numpy as np
-import txros
+import axros
 from mil_misc_tools import text_effects
 from mil_ros_tools import rosmsg_to_numpy
 from scipy.spatial import distance
@@ -16,7 +16,7 @@ SPEED = 0.3
 DIST_AFTER_GATE = 3
 
 
-@txros.util.cancellableInlineCallbacks
+@axros.util.cancellableInlineCallbacks
 def run(sub):
     fprint("Begin search for gates")
     rotate_start = sub.move.zero_roll_and_pitch()
@@ -102,7 +102,6 @@ def find_gate(
             perp = perp / np.linalg.norm(perp)
             if not (-perp_threshold <= perp <= perp_threshold):
                 fprint("Not perpendicular. Dot {}".format(perp))
-                pass
                 # continue
             print("Dist {}".format(line))
             if abs(line[2] > depth_threshold):

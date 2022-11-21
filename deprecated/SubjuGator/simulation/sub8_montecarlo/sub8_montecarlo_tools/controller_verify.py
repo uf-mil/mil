@@ -9,7 +9,6 @@ import mil_ros_tools
 import nav_msgs.msg as nav_msgs
 import numpy as np
 import rospy
-from mpl_toolkits.mplot3d import Axes3D  # noqa
 from sub8_msgs.msg import Trajectory, Waypoint
 from sub8_simulation.srv import SimSetPose
 

@@ -5,7 +5,7 @@ import sys
 import yaml
 from nav_missions_lib import MissionPlanner
 from twisted.internet import reactor
-from txros import util
+from axros import util
 
 
 @util.cancellableInlineCallbacks

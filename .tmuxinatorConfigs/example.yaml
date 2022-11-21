@@ -1,0 +1,13 @@
+# /home/$(USER)/.config/tmuxinator/example.yml
+# This is an example of how a tmuxinator config can be used
+
+name: example
+root: ~/
+windows:
+  - editor:
+      layout: main-vertical
+      panes:
+        - vim
+        - ls
+  - hwinfo: htop
+  - sysinfo: uname -a

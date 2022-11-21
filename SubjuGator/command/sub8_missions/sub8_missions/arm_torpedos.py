@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Optional
 
 import numpy as np
 import visualization_msgs.msg as visualization_msgs
 from geometry_msgs.msg import Point, Vector3
 from mil_misc_tools import FprintFactory
 from mil_ros_tools import rosmsg_to_numpy
-from txros import util
 from visualization_msgs.msg import Marker, MarkerArray
 
 from .sub_singleton import SubjuGator

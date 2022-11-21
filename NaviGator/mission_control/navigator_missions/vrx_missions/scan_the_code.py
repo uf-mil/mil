@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
 import asyncio
 from operator import attrgetter
-from turtle import width
 
-import cv2
+import axros
 import numpy as np
-import txros
 from cv_bridge import CvBridge
 from dynamic_reconfigure.msg import DoubleParameter
 from image_geometry import PinholeCameraModel
-from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
-from mil_tools import numpy_to_pointcloud2 as np2pc2
 from mil_tools import rosmsg_to_numpy
-from mil_vision_tools.cv_tools import contour_mask, rect_from_roi, roi_enclosing_points
 from navigator_vision import VrxStcColorClassifier
-from sensor_msgs.msg import CameraInfo, Image, PointCloud2
+from sensor_msgs.msg import Image, PointCloud2
 from std_srvs.srv import SetBoolRequest
 from vrx_gazebo.srv import ColorSequence, ColorSequenceRequest
 
@@ -74,7 +69,7 @@ class ScanTheCode(Vrx):
         await self.nh.sleep(5)
 
         try:
-            sequence = await txros.util.wrap_timeout(
+            sequence = await axros.util.wrap_timeout(
                 self.get_sequence(), TIMEOUT_SECONDS, "Guessing RGB"
             )
         except asyncio.TimeoutError:

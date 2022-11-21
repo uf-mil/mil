@@ -1,6 +1,6 @@
 Managing Resources
 ^^^^^^^^^^^^^^^^^^
-When using resources in txros, you must be mindful of how you start the resource,
+When using resources in axros, you must be mindful of how you start the resource,
 and how you clean the resource up. Many times, these actions are not done for you
 (to give you more control), and you must be mindful of when you plan to do them
 yourself. Doing these actions in the improper order or not doing them at all can result

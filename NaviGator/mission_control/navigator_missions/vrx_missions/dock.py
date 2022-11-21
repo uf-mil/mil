@@ -2,22 +2,18 @@
 import asyncio
 import os
 
+import axros
 import cv2
 import numpy as np
-import txros
 from cv_bridge import CvBridge
 from dynamic_reconfigure.msg import DoubleParameter
 from image_geometry import PinholeCameraModel
-from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
-from mil_tools import numpy_to_pointcloud2 as np2pc2
 from mil_tools import pose_to_numpy, rosmsg_to_numpy
-from mil_vision_tools.cv_tools import contour_mask, rect_from_roi, roi_enclosing_points
 from navigator_vision import VrxStcColorClassifier
 from rospkg import RosPack
-from sensor_msgs.msg import CameraInfo, Image, PointCloud2
+from sensor_msgs.msg import Image
 from std_msgs.msg import Empty
 from std_srvs.srv import SetBoolRequest
-from tf import transformations
 from tf.transformations import quaternion_matrix
 
 from .vrx import Vrx
@@ -586,7 +582,7 @@ class Dock(Vrx):
         await self.nh.sleep(1)
         for i in range(4):
             try:
-                await txros.util.wrap_timeout(
+                await axros.util.wrap_timeout(
                     self.aim_and_fire(foggy=foggy), 15, "Trying to shoot"
                 )
             except asyncio.TimeoutError:

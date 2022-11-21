@@ -1,7 +1,7 @@
 import asyncio
 
+import axros
 import genpy
-import txros
 from mil_misc_tools import text_effects
 from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
 
@@ -82,7 +82,7 @@ class Autonomous(SubjuGator):
         await ab.raise_alarm()
         fprint("MISSION COMPLETE", msg_color="green")
 
-    async def _check_for_run(self, nh: txros.NodeHandle, _):
+    async def _check_for_run(self, nh: axros.NodeHandle, _):
         """Waits for the network loss alarm to trigger before"""
         if (await nh.has_param("autonomous")) and (await nh.get_param("autonomous")):
             fprint(f"Waiting {WAIT_SECONDS} seconds before running missions...")
@@ -92,7 +92,7 @@ class Autonomous(SubjuGator):
         else:
             fprint("Network loss deteceted but NOT starting mission.", msg_color="red")
 
-    async def _auto_param_watchdog(self, nh: txros.NodeHandle):
+    async def _auto_param_watchdog(self, nh: axros.NodeHandle):
         """
         Watch the `autonomous` param and notify the user when events happen.
         """

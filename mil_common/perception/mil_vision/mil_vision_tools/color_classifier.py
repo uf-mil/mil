@@ -76,7 +76,6 @@ class ContourClassifier:
         Returns:
             np.ndarray: An array of numerical features found.
         """
-        pass
 
     @abstractmethod
     def classify_features(self, features: np.ndarray) -> int:
@@ -92,7 +91,6 @@ class ContourClassifier:
             The index of the class which is the most probabable classification
             based on the features.
         """
-        pass
 
     def feature_probabilities(self, features: np.ndarray) -> List[float]:
         """
@@ -121,7 +119,6 @@ class ContourClassifier:
             classes (np.ndarray): List with shape ``(n_samples)`` of labeled class index
                 corresponding to each row of features.
         """
-        pass
 
     def score(self, features: np.ndarray, classes: np.ndarray) -> float:
         """

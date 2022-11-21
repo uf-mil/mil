@@ -18,5 +18,8 @@
     <arg name="urdf" value="$(find navigator_gazebo)/urdf/navigator.urdf"/>
     <arg name="world" value="$(find navigator_gazebo)/worlds/$(arg world).world" />
     <arg name="extra_gazebo_args" default="--verbose"/>
+    <arg name="x" default="-527" />
+    <arg name="y" default="167" />
+    <arg name="z" default="0.1" />
   </include>
 </launch>

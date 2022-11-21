@@ -190,13 +190,13 @@ class HydrophoneTrigger:
         """
         # Record start time of cb to make sure we are running in real time
         start_cb = rospy.get_rostime()
-        if type(msg) == numpy_msg(Ping):
+        if isinstance(msg, numpy_msg(Ping)):
             msg_header = msg.header
             msg_channels = msg.channels
             msg_samples = msg.samples
             msg_sample_rate = msg.sample_rate
             msg_data = msg.data
-        elif type(msg) == numpy_msg(HydrophoneSamplesStamped):
+        elif isinstance(msg, numpy_msg(HydrophoneSamplesStamped)):
             msg_header = msg.header
             msg_channels = msg.hydrophone_samples.channels
             msg_samples = msg.hydrophone_samples.samples

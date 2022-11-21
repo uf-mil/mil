@@ -37,9 +37,11 @@ from .pinger_exit import PingerExitMission
 from .reload_launcher import ReloadLauncher
 from .retract_thrusters import RetractThrusters
 from .ring_recovery import RingRecovery
+from .scan_the_code import ScanTheCode
 from .shoot_balls import ShootBalls
 from .station_hold import StationHold
-from .stc_jaxon import ScanTheCodeJaxon
+
+# from .stc_jaxon import ScanTheCodeJaxon
 from .teleop import Teleop
 from .wildlife import Wildlife
 

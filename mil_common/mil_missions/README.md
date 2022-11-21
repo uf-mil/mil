@@ -5,7 +5,7 @@ MIL Missions is a system for managing the highest level decision making programs
 
 The system is server-client based, using actionlib, with one server managing the current mission and any number of clients connected to monitor the mission, cancel the mission, or start a new mission.
 
-Missions are written in python as classes inheriting from a base class. The system's base class provides member functions / variables for the systems's current state, perception nodes, and actuators. To provide asynchronous execution, missions use the alternative ROS client library txros.
+Missions are written in python as classes inheriting from a base class. The system's base class provides member functions / variables for the systems's current state, perception nodes, and actuators. To provide asynchronous execution, missions use the alternative ROS client library axros.
 
 ## Usage
 ### GUI
@@ -44,7 +44,7 @@ from mil_missions_core import BaseMission
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose
 from my_robot.msg import MoveToAction, MoveToGoal
-from txros import util
+from axros import util
 
 
 class MyRobotBaseMission(BaseMission):
@@ -87,7 +87,7 @@ Some things to note with the above example:
 Here is an example of a Mission for the same example system we used above:
 ```
 from twisted.internet import defer
-from txros import util
+from axros import util
 from my_robot_base_mission import MyRobotBaseMission
 from geometry_msgs.msg import Position, Quaternion, Pose
 
@@ -127,7 +127,7 @@ Now that we have a base mission and at least one mission, we can run the mission
 </launch>
 ```
 This assumes the above code was written in a python module called ```myrobot_missions```, which contains the ```MyRobotBaseMission``` we created earlier. When this launch file is run, the mission server does the following:
-* Connects to ros, creates a txros node handle object
+* Connects to ros, creates a axros node handle object
 * Imports ```MyRobotBaseMission```
 * Calls ```MyRobotBaseMission._init(self)```, passing it the mission runner object (which contains the node handle) to the base mission. If this init function fails, the mission server will crash
 * Imports all other classes in the ```myrobot_missions``` module which extend ```MyRobotBaseMission```, including our example ```MoveToWaypoint``` mission

@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-import numpy as np
-import txros
+import axros
 from mil_misc_tools.text_effects import fprint
 
 
-@txros.util.cancellableInlineCallbacks
+@axros.util.cancellableInlineCallbacks
 def main(navigator, **kwargs):
     fprint("STARTING EMPTY TEST", msg_color="green")
     yield navigator.nh.sleep(5)

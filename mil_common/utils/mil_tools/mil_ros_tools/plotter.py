@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import threading
-from typing import Optional
 
-import cv2
 import matplotlib
 import numpy as np
 import rospy

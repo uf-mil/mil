@@ -13,7 +13,7 @@ from Queue import Queue
 from sets import Set
 from std_msgs.msg import String
 from twisted.internet import defer
-from txros import NodeHandle, util
+from axros import NodeHandle, util
 
 __author__ = "Tess Bianchi"
 
@@ -89,7 +89,7 @@ class MissionPlanner:
 
     @util.cancellableInlineCallbacks
     def init_(self, sim_mode=False):
-        """Initialize the txros aspects of the MissionPlanner."""
+        """Initialize the axros aspects of the MissionPlanner."""
         self.nh = yield NodeHandle.from_argv("mission_planner")
         self.navigator = yield Navigator(self.nh)._init(sim_mode)
 

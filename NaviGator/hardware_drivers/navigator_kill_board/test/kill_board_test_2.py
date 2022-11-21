@@ -6,10 +6,8 @@ from threading import Lock
 import rospy
 from mil_tools import thread_lock
 from navigator_alarm_handlers import NetworkLoss
-from navigator_kill_board import HeartbeatServer
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from std_msgs.msg import Header
-from std_srvs.srv import SetBool
 
 lock = Lock()
 

@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import numpy as np
-from navigator_msgs.srv import MoveToWaypointRequest
 
 from .vrx import Vrx
 

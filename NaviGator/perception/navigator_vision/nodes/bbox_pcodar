@@ -5,7 +5,7 @@ import tf2_ros
 from geometry_msgs.msg import Point, PointStamped
 from image_geometry import PinholeCameraModel
 from mil_msgs.msg import ObjectInImage, ObjectsInImage, PerceptionObject
-from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest, ObjectDBQueryResponse
+from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from mil_tools import rosmsg_to_numpy
 from sensor_msgs.msg import CameraInfo
 from tf2_geometry_msgs import do_transform_point

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import txros
 
 from .navigator import Navigator
 

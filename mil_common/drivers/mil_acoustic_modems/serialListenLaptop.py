@@ -52,7 +52,6 @@ def main(args):
         print("Exiting program now")
     finally:
         ser.close()
-        pass
     return 0
 
 

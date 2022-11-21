@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-import numpy as np
-import txros
-from mil_misc_tools import ThrowingArgumentParser
-from mil_tools import rosmsg_to_numpy
 from std_srvs.srv import SetBoolRequest
-from twisted.internet import defer
 
 from .navigator import Navigator
 
@@ -22,7 +17,7 @@ class Wildlife(Navigator):
         await self.change_wrench("autonomous")
 
         try:
-            t1 = await self.get_sorted_objects("mb_marker_buoy_red", n=1)
+            t1 = await self.get_sorted_objects("red_cylinder", n=1)
             t1 = t1[1][0]
         except Exception as e:
             print("could not find stc_platform")
@@ -43,6 +38,4 @@ class Wildlife(Navigator):
 
             print("going to nearest small object")
 
-        points = self.move.d_spiral_point(t1, 5, 8, 1, "ccw")
-        for p in points:
-            await p.go()
+        points = await self.move.d_spiral_point(t1, 5, 4, 1, "ccw", theta_offset=-1.57)

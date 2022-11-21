@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import mil_tools
 import numpy as np
+from axros import types
 from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion, Twist, Vector3
 from mil_misc_tools.text_effects import fprint
 from mil_msgs.msg import MoveToGoal, PoseTwist
@@ -80,6 +81,15 @@ def look_at_camera(forward, upish=UP):
     return triad((forward, upish), (UP, [0, -1, 0]))
 
 
+class KilledException(Exception):
+    """
+    Represents that an action could not be taken because the boat was killed.
+    """
+
+    def __init__(self):
+        super().__init__("The boat is currently killed.")
+
+
 class PoseEditor2:
     """
     Used to chain movements together
@@ -109,7 +119,7 @@ class PoseEditor2:
         radius by `meters_per_rev` meters per revolution.
     """
 
-    def __init__(self, nav: Navigator, pose: Pose, **kwargs):
+    def __init__(self, nav: Navigator, pose: tuple[np.ndarray, np.ndarray], **kwargs):
         self.nav = nav
 
         # Position and kwargs ultimately passed into the final function
@@ -134,7 +144,7 @@ class PoseEditor2:
     def distance(self):
         return np.linalg.norm(self.position - self.nav.pose[0])
 
-    def go(self, *args, **kwargs) -> asyncio.Future:
+    async def go(self, *args, **kwargs) -> types.ActionResult | None:
         if self.nav.killed is True or self.nav.odom_loss is True:
             # What do we want to do with missions when the boat is killed
             fprint(
@@ -142,17 +152,18 @@ class PoseEditor2:
                 title="POSE_EDITOR",
                 msg_color="red",
             )
-
-            class Res:
-                failure_reason = "boat_killed"
-
-            return Res()
+            raise KilledException()
 
         if len(self.kwargs) > 0:
             kwargs = dict(kwargs.items() | self.kwargs.items())
 
         goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
-        self.result = goal.get_result()
+        try:
+            self.result = await goal.get_result()
+        except asyncio.CancelledError as e:
+            print("cancelled go movement")
+            goal.cancel()
+            raise e
         return self.result
 
     def set_position(self, position):
@@ -284,16 +295,15 @@ class PoseEditor2:
         next_point = np.append(
             normalize(self.position[:2] - point[:2]), 0
         )  # Doing this in 2d
-        print(next_point)
         radius_increment = meters_per_rev / granularity
         for i in range(int(granularity * revolutions + 1)):
             new = point + radius * next_point
             radius += radius_increment
 
-            await self.set_position(new).look_at(point).yaw_left(theta_offset)
+            await self.set_position(new).look_at(point).yaw_left(theta_offset).go()
             next_point = sprinkles.dot(next_point)
 
-        await self.set_position(new).look_at(point).yaw_left(theta_offset)
+        await self.set_position(new).look_at(point).yaw_left(theta_offset).go()
 
     def d_circle_point(self, *args, **kwargs):
         """

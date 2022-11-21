@@ -1,25 +1,16 @@
 #!/usr/bin/python3
 import argparse
 import datetime
-import multiprocessing
-import os
-import sys
 
 import cv2
 import image_geometry
 import mil_tools
-import numpy as np
 import rospkg
 import rospy
 import tf
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Point
-from mil_msgs.msg import ObjectInImage, ObjectsInImage, PerceptionObject
-from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryResponse
-from mil_ros_tools import numpy_to_point2d
-from mil_vision_tools import VisionNode, create_object_msg
-from sensor_msgs.msg import CameraInfo, Image, RegionOfInterest
-from std_msgs.msg import String
+from sensor_msgs.msg import Image, RegionOfInterest
 from utils import detector_utils  # noqa
 
 rospack = rospkg.RosPack()

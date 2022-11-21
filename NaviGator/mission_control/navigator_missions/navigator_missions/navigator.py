@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import os
-from typing import Callable, Optional, Type
+from typing import Callable
 
 import genpy
 import mil_tools
@@ -12,6 +12,7 @@ import numpy as np
 import rospkg
 import uvloop
 import yaml
+from axros import NodeHandle, ROSMasterError, ServiceClient, action, axros_tf, util
 from dynamic_reconfigure.msg import Config
 from dynamic_reconfigure.srv import Reconfigure, ReconfigureRequest
 from geometry_msgs.msg import PointStamped, PoseStamped
@@ -26,6 +27,7 @@ from navigator_path_planner.msg import MoveAction, MoveGoal
 from navigator_tools import MissingPerceptionObject
 from roboteq_msgs.msg import Command
 from ros_alarms import TxAlarmListener
+from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import Bool
 from std_srvs.srv import (
     SetBool,
@@ -35,7 +37,7 @@ from std_srvs.srv import (
     TriggerRequest,
 )
 from topic_tools.srv import MuxSelect, MuxSelectRequest
-from txros import NodeHandle, ROSMasterException, ServiceClient, action, txros_tf, util
+from vision_msgs.msg import Detection2DArray
 
 from .pose_editor import PoseEditor2
 
@@ -101,7 +103,7 @@ class Navigator(BaseMission):
 
         try:
             cls.is_vrx = await cls.nh.get_param("/is_vrx")
-        except ROSMasterException:
+        except ROSMasterError:
             cls.is_vrx = False
 
         cls._moveto_client = action.ActionClient(cls.nh, "move_to", MoveAction)
@@ -167,7 +169,7 @@ class Navigator(BaseMission):
         cls.mission_params = {}
         cls._load_mission_params()
 
-        # If you don't want to use txros
+        # If you don't want to use axros
         cls.ecef_pose = None
 
         cls.killed = "?"
@@ -187,6 +189,7 @@ class Navigator(BaseMission):
         cls.hydrophones = TxHydrophonesClient(cls.nh)
 
         cls.poi = TxPOIClient(cls.nh)
+        await cls.poi.setup()
 
         cls._grinch_lower_time = await cls.nh.get_param("~grinch_lower_time")
         cls._grinch_raise_time = await cls.nh.get_param("~grinch_raise_time")
@@ -220,7 +223,7 @@ class Navigator(BaseMission):
                 msg_color="red",
             )
 
-        cls.tf_listener = txros_tf.TransformListener(cls.nh)
+        cls.tf_listener = axros_tf.TransformListener(cls.nh)
         await cls.tf_listener.setup()
 
         # Vision
@@ -236,27 +239,41 @@ class Navigator(BaseMission):
 
         await cls._make_alarms()
 
-        if cls.sim:
-            fprint("Sim mode active!", title="NAVIGATOR")
-            await cls.nh.sleep(0.5)
-        else:
-            # We want to make sure odom is working before we continue
-            fprint("Action client do you await?", title="NAVIGATOR")
-            await util.wrap_time_notice(
-                cls._moveto_client.wait_for_server(), 2, "Lqrrt action server"
-            )
-            fprint("Yes he await!", title="NAVIGATOR")
+        # We want to make sure odom is working before we continue
+        fprint("Action client do you await?", title="NAVIGATOR")
+        await util.wrap_time_notice(
+            cls._moveto_client.wait_for_server(), 2, "Lqrrt action server"
+        )
+        fprint("Yes he await!", title="NAVIGATOR")
 
-            fprint("Waiting for odom...", title="NAVIGATOR")
-            odom = util.wrap_time_notice(
-                cls._odom_sub.get_next_message(), 2, "Odom listener"
-            )
-            enu_odom = util.wrap_time_notice(
+        fprint("Waiting for odom...", title="NAVIGATOR")
+        await util.wrap_time_notice(
+            cls._odom_sub.get_next_message(), 2, "Odom listener"
+        )
+
+        if not cls.sim:
+            await util.wrap_time_notice(
                 cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener"
             )
-            await asyncio.gather(odom, enu_odom)  # Wait for all those to finish
+        print("Odom has been received!")
 
         cls.docking_scan = "NA"
+
+        cls.front_left_camera_info_sub = None
+        cls.front_left_camera_sub = None
+        await cls.init_front_left_camera()
+        cls.front_right_camera_info_sub = None
+        cls.front_right_camera_sub = None
+        await cls.init_front_right_camera()
+
+        cls.yolo_objects = cls.nh.subscribe(
+            "/yolov7/detections_model1", Detection2DArray
+        )
+        cls.stc_objects = cls.nh.subscribe(
+            "/yolov7/stc_detections_model", Detection2DArray
+        )
+        await cls.yolo_objects.setup()
+        await cls.stc_objects.setup()
 
     @classmethod
     async def _shutdown_not_vrx(cls):
@@ -267,6 +284,45 @@ class Navigator(BaseMission):
             cls._grind_motor_pub.shutdown(),
             cls.tf_listener.shutdown(),
             cls.kill_listener.shutdown(),
+            cls.poi.shutdown(),
+            cls.front_left_camera_sub.shutdown(),
+            cls.front_left_camera_info_sub.shutdown(),
+            cls.front_right_camera_sub.shutdown(),
+            cls.front_right_camera_info_sub.shutdown(),
+            cls.yolo_objects.shutdown(),
+            cls.stc_objects.shutdown(),
+        )
+
+    @classmethod
+    async def init_front_left_camera(cls):
+        if cls.front_left_camera_sub is None:
+            cls.front_left_camera_sub = cls.nh.subscribe(
+                "/wamv/sensors/camera/front_left_cam/image_raw", Image
+            )
+
+        if cls.front_left_camera_info_sub is None:
+            cls.front_left_camera_info_sub = cls.nh.subscribe(
+                "/wamv/sensors/camera/front_left_cam/camera_info", CameraInfo
+            )
+
+        await asyncio.gather(
+            cls.front_left_camera_sub.setup(), cls.front_left_camera_info_sub.setup()
+        )
+
+    @classmethod
+    async def init_front_right_camera(cls):
+        if cls.front_right_camera_sub is None:
+            cls.front_right_camera_sub = cls.nh.subscribe(
+                "/wamv/sensors/camera/front_right_cam/image_raw", Image
+            )
+
+        if cls.front_right_camera_info_sub is None:
+            cls.front_right_camera_info_sub = cls.nh.subscribe(
+                "/wamv/sensors/camera/front_right_cam/camera_info", CameraInfo
+            )
+
+        await asyncio.gather(
+            cls.front_right_camera_sub.setup(), cls.front_right_camera_info_sub.setup()
         )
 
     @classmethod
@@ -487,7 +543,7 @@ class Navigator(BaseMission):
         positions = np.empty((len(objects), 3))
         for i, obj in enumerate(objects):
             positions[i, :] = mil_tools.rosmsg_to_numpy(obj.pose.position)
-        nav_pose = (self.tx_pose)[0]
+        nav_pose = (await self.tx_pose())[0]
         distances = np.linalg.norm(positions - nav_pose, axis=1)
         distances_argsort = np.argsort(distances)
         if n != -1:
@@ -800,7 +856,7 @@ class Searcher:
         async def pattern():
             for pose in self.search_pattern:
                 fprint("Going to next position.", title="SEARCHER")
-                if type(pose) == list or type(pose) == np.ndarray:
+                if isinstance(pose, list) or isinstance(pose, np.ndarray):
                     await self.nav.move.relative(pose).go(**kwargs)
                 else:
                     await pose.go(**kwargs)

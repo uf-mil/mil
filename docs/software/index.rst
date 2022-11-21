@@ -13,6 +13,7 @@ Various documentation related to practices followed by the MIL Software team.
    help
    zobelisk
    asyncio
+   rostest
    Bash Style Guide <bash_style.md>
    C++ Style Guide <cpp_style.md>
    Python Style Guide <python_style.md>
@@ -21,6 +22,7 @@ Various documentation related to practices followed by the MIL Software team.
    Installing Ubuntu 18.04 on an M-series Apple computer <apple_mseries_ubuntu_setup.md>
    Resetting Ubuntu Administrative Password <resetubuntupass.md>
    Network with Vehicles and Simulation Servers <../infrastructure/network.md>
+   calibrating_cams
    Developing with Submodules <submodule.md>
    Optional Extensions <extension_support.md>
    Helpful Scripts <scripts>

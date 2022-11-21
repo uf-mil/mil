@@ -1,8 +1,7 @@
 import mil_ros_tools
-import numpy as np
 from mil_misc_tools import text_effects
 from sub8_msgs.srv import GuessRequest, GuessRequestRequest
-from txros import util
+from axros import util
 
 fprint = text_effects.FprintFactory(title="PINGER", msg_color="cyan").fprint
 
@@ -19,9 +18,9 @@ def run(sub):
 
     sub_start_position, sub_start_orientation = yield sub.tx_pose()
 
-    gate_txros = yield sub.nh.get_service_client("/guess_location", GuessRequest)
-    gate_1_req = yield gate_txros(GuessRequestRequest(item="start_gate1"))
-    gate_2_req = yield gate_txros(GuessRequestRequest(item="start_gate2"))
+    gate_axros = yield sub.nh.get_service_client("/guess_location", GuessRequest)
+    gate_1_req = yield gate_axros(GuessRequestRequest(item="start_gate1"))
+    gate_2_req = yield gate_axros(GuessRequestRequest(item="start_gate2"))
 
     gate_1 = mil_ros_tools.rosmsg_to_numpy(gate_1_req.location.pose.position)
     gate_2 = mil_ros_tools.rosmsg_to_numpy(gate_2_req.location.pose.position)

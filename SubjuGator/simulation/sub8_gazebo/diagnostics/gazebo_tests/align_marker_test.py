@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
+import axros
 import missions
 import numpy as np
 import tf
-import txros
 from diagnostics.gazebo_tests import common
 from gazebo_msgs.srv import DeleteModelRequest, SpawnModelRequest
 from mil_ros_tools import msg_helpers
@@ -68,10 +68,10 @@ class Job(common.Job):
         # Call actual mission
         start_time = self.nh.get_time()
         try:
-            resp = await txros.util.wrap_timeout(
+            resp = await axros.util.wrap_timeout(
                 missions.align_channel.run(sub), 600
             )  # 10 minute timeout
-        except txros.util.TimeoutError:
+        except axros.util.TimeoutError:
             print("MARKER_TEST - TIMEOUT")
             return (False, "Timeout")
         else:

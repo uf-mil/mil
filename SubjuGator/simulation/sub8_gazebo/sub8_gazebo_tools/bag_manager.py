@@ -3,7 +3,6 @@ import time
 
 import rosbag
 import rospy
-import txros
 import yaml
 
 

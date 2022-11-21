@@ -1,4 +1,3 @@
-import txros
 from gazebo_msgs.msg import ModelState, ModelStates
 from gazebo_msgs.srv import DeleteModel, SetModelState, SetModelStateRequest, SpawnModel
 from geometry_msgs.msg import Pose, Vector3
