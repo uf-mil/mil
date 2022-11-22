@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
   <!-- COORDINATE: {'constant': 0, 'environment': 0} -->
-  <world name="basic_navigation">
+  <world name="dynav_demo_20">
     <!-- Estimated latitude/longitude of sydneyregatta
 	 from satellite imagery -->
     <spherical_coordinates>
@@ -72,6 +72,33 @@
       <pose>-545 60 0.03 0 0 0</pose>
       <uri>model://blue_projectile</uri>
     </include>
+    <plugin filename="libstationkeeping_scoring_plugin.so" name="stationkeeping_scoring_plugin">
+      <vehicle>wamv</vehicle>
+      <task_name>station_keeping</task_name>
+      <rms_error_topic>/vrx/station_keeping/rms_error</rms_error_topic>
+      <pose_error_topic>/vrx/station_keeping/pose_error</pose_error_topic>
+      <goal_topic>/vrx/station_keeping/goal</goal_topic>
+      <task_info_topic>/vrx/task/info</task_info_topic>
+      <contact_debug_topic>/vrx/debug/contact</contact_debug_topic>
+      <per_plugin_exit_on_completion>true</per_plugin_exit_on_completion>
+      <!-- Goal as Latitude, Longitude, Yaw -->
+      <goal_pose>-33.722718 150.674031 0.0</goal_pose>
+      <initial_state_duration>10</initial_state_duration>
+      <ready_state_duration>10</ready_state_duration>
+      <running_state_duration>300</running_state_duration>
+      <release_joints>
+        <joint>
+          <name>wamv_external_pivot_joint</name>
+        </joint>
+        <joint>
+          <name>wamv_external_riser</name>
+        </joint>
+      </release_joints>
+      <markers>
+        <scaling>0.2 0.2 2.0</scaling>
+        <height>0.5</height>
+      </markers>
+    </plugin>
     <model name="ocean_waves">
       <static>true</static>
       <plugin filename="libWavefieldModelPlugin.so" name="wavefield_plugin">
@@ -156,10 +183,10 @@
         <coeff_vector>.5 .5 .33</coeff_vector>
       </wind_obj>
       <!-- Wind -->
-      <wind_direction>240</wind_direction>
+      <wind_direction>190</wind_direction>
       <!-- in degrees -->
-      <wind_mean_velocity>0.0</wind_mean_velocity>
-      <var_wind_gain_constants>0</var_wind_gain_constants>
+      <wind_mean_velocity>6</wind_mean_velocity>
+      <var_wind_gain_constants>1</var_wind_gain_constants>
       <var_wind_time_constants>2</var_wind_time_constants>
       <random_seed>10</random_seed>
       <!-- set to zero/empty to randomize -->
@@ -180,76 +207,26 @@
 0.85 0.85 0.85 1
       </ambient>
     </scene>
-
-    <plugin filename="libstationkeeping_scoring_plugin.so" name="stationkeeping_scoring_plugin">
-      <vehicle>wamv</vehicle>
-      <task_name>station_keeping</task_name>
-      <rms_error_topic>/vrx/station_keeping/rms_error</rms_error_topic>
-      <pose_error_topic>/vrx/station_keeping/pose_error</pose_error_topic>
-      <goal_topic>/vrx/station_keeping/goal</goal_topic>
-      <task_info_topic>/vrx/task/info</task_info_topic>
-      <contact_debug_topic>/vrx/debug/contact</contact_debug_topic>
-      <per_plugin_exit_on_completion>true</per_plugin_exit_on_completion>
-      <!-- Goal as Latitude, Longitude, Yaw -->
-      <goal_pose>-33.722718 150.674031 0.0</goal_pose>
-      <initial_state_duration>10</initial_state_duration>
-      <ready_state_duration>10</ready_state_duration>
-      <running_state_duration>300</running_state_duration>
-      <release_joints>
-        <joint>
-          <name>wamv_external_pivot_joint</name>
-        </joint>
-        <joint>
-          <name>wamv_external_riser</name>
-        </joint>
-      </release_joints>
-      <markers>
-        <scaling>0.2 0.2 2.0</scaling>
-        <height>0.5</height>
-      </markers>
-    </plugin>
-
     <!-- The navigation course -->
     <include>
-      <name>buoy1</name>
-      <uri>model://mb_marker_buoy_white</uri>
-      <pose> -531.2 176.364 0 0 0 -1.44</pose>
-    </include>
-    <include>
-      <name>buoy2</name>
-      <uri>model://mb_marker_buoy_white</uri>
-      <pose>-520.338 168.871 0 0 0 -1.44</pose>
-    </include>
-    <include>
-      <name>buoy3</name>
+      <name>bouy_start_red</name>
       <uri>model://mb_marker_buoy_red</uri>
-      <pose>-524.285 189.04 0 0 0 -1.44</pose>
+      <pose> -531.257 172.998 0 0 0 -1.44</pose>
     </include>
     <include>
-      <name>buoy4</name>
+      <name>buoy_start_green</name>
       <uri>model://mb_marker_buoy_green</uri>
-      <pose>-513.217 180.327 0 0 0 -1.44</pose>
+      <pose>-522.752 167.624 0 0 0 -1.44</pose>
     </include>
     <include>
-      <name>buoy5</name>
+      <name>buoy_end_red</name>
       <uri>model://mb_marker_buoy_red</uri>
-      <pose> -513.215 202.233 0 0 0 -1.44</pose>
+      <pose>-520.607 189.927 0 0 0 -1.44</pose>
     </include>
     <include>
-      <name>buoy6</name>
+      <name>buoy_end_green</name>
       <uri>model://mb_marker_buoy_green</uri>
-      <pose>-506.625 187.93 0 0 0 -1.44</pose>
+      <pose>-512.102 184.553 0 0 0 -1.44</pose>
     </include>
-    <include>
-      <name>buoy7</name>
-      <uri>model://mb_marker_buoy_white</uri>
-      <pose>-497.434 208.64 0 0 0 -1.44</pose>
-    </include>
-    <include>
-      <name>buoy8</name>
-      <uri>model://mb_marker_buoy_white</uri>
-      <pose>-497.841 190.616 0 0 0 -1.44</pose>
-    </include>
-
   </world>
 </sdf>

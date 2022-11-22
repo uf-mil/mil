@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
   <!-- COORDINATE: {'constant': 0, 'environment': 0} -->
-  <world name="robotx_example_course">
+  <world name="dynav_demo_20">
     <!-- Estimated latitude/longitude of sydneyregatta
 	 from satellite imagery -->
     <spherical_coordinates>
@@ -183,10 +183,10 @@
         <coeff_vector>.5 .5 .33</coeff_vector>
       </wind_obj>
       <!-- Wind -->
-      <wind_direction>240</wind_direction>
+      <wind_direction>190</wind_direction>
       <!-- in degrees -->
-      <wind_mean_velocity>0.0</wind_mean_velocity>
-      <var_wind_gain_constants>0</var_wind_gain_constants>
+      <wind_mean_velocity>13</wind_mean_velocity>
+      <var_wind_gain_constants>1</var_wind_gain_constants>
       <var_wind_time_constants>2</var_wind_time_constants>
       <random_seed>10</random_seed>
       <!-- set to zero/empty to randomize -->
@@ -204,8 +204,29 @@
       <origin_visual>0</origin_visual>
       <ambient>
 
-1 1 1 1
+0.85 0.85 0.85 1
       </ambient>
     </scene>
+    <!-- The navigation course -->
+    <include>
+      <name>bouy_start_red</name>
+      <uri>model://mb_marker_buoy_red</uri>
+      <pose> -531.257 172.998 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_start_green</name>
+      <uri>model://mb_marker_buoy_green</uri>
+      <pose>-522.752 167.624 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_end_red</name>
+      <uri>model://mb_marker_buoy_red</uri>
+      <pose>-520.607 189.927 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_end_green</name>
+      <uri>model://mb_marker_buoy_green</uri>
+      <pose>-512.102 184.553 0 0 0 -1.44</pose>
+    </include>
   </world>
 </sdf>
