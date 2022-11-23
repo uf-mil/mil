@@ -34,8 +34,8 @@ repos:
     hooks:
       - id: autoflake
         args: [--remove-all-unused-imports, --ignore-init-module-imports]
-  - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.8.0
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.8.0.4
     hooks:
       - id: shellcheck
         exclude: ^docker|deprecated|NaviGator/simulation/VRX
