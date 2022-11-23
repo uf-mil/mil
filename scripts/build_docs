@@ -10,12 +10,12 @@ where:
     -d  build doxygen documentation cache"
 
 # Get root directory of MIL repo
-MIL_DIR="$(realpath $(dirname $BASH_SOURCE)/..)"
+MIL_DIR="$(realpath "$(dirname "${BASH_SOURCE[@]}")/..")"
 
 # Directory to build docs into
 BUILD_DIR=$HOME/.mil/docs
-mkdir -p $BUILD_DIR/doctrees
-mkdir -p $BUILD_DIR/html
+mkdir -p "$BUILD_DIR"/doctrees
+mkdir -p "$BUILD_DIR"/html
 
 DOXYGEN=false
 SCRATCH=false
@@ -40,7 +40,7 @@ while [[ $# -gt 0 ]]; do
       exit
       shift # past argument
       ;;
-    -*|--*)
+    -*)
       echo "Unknown option $1"
       exit 1
       ;;
@@ -49,16 +49,16 @@ done
 
 if [ "$DOXYGEN" = true ]; then
     #Doxygen
-    cd $HOME/.mil
-    doxygen $MIL_DIR/docs/Doxyfile
-    cd -
+    cd "$HOME"/.mil || echo "Could not find .mil output folder: Use mkdir ~/.mil to create!"
+    doxygen "$MIL_DIR"/docs/Doxyfile
+    cd - || exit 1
 fi
 
 if [ "$SCRATCH" = true ]; then
     #Doxygen
-    NO_SOURCE="$NO_SOURCE" sphinx-build -E -b html -d $BUILD_DIR/doctrees $MIL_DIR/docs $BUILD_DIR/html
+    NO_SOURCE="$NO_SOURCE" sphinx-build -E -b html -d "$BUILD_DIR"/doctrees "$MIL_DIR"/docs "$BUILD_DIR"/html
 else
-    NO_SOURCE="$NO_SOURCE" sphinx-build -b html -d $BUILD_DIR/doctrees $MIL_DIR/docs $BUILD_DIR/html
+    NO_SOURCE="$NO_SOURCE" sphinx-build -b html -d "$BUILD_DIR"/doctrees "$MIL_DIR"/docs "$BUILD_DIR"/html
 fi
 
 # Then Sphinx build

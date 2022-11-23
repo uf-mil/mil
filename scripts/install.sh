@@ -2,6 +2,7 @@
 set -euo pipefail
 
 Res='\e[0;0m';
+# shellcheck disable=SC2034
 Red='\e[0;31m';
 Gre='\e[0;32m';
 Yel='\e[0;33m';
@@ -60,7 +61,7 @@ sleep 2
 
 mil_system_install()
 {
-  sudo apt install -y $@
+  sudo apt install -y "$@"
 }
 
 cat << EOF
@@ -257,9 +258,11 @@ mil_user_setup_rc()
         echo "milrc is already sourced in ~/.zshrc, skipping"
     else
         echo "Adding source of milrc to ~/.zshrc"
-        echo "" >> ~/.zshrc
-        echo "# Setup environment for MIL development" >> ~/.zshrc
-        echo "$BASH_RC_LINES" >> ~/.zshrc
+        {
+            echo "";
+            echo "# Setup environment for MIL development";
+            echo "$BASH_RC_LINES";
+        } >> ~/.zshrc
     fi
   else
     # User is using zsh
@@ -268,9 +271,11 @@ mil_user_setup_rc()
         echo "milrc is already sourced in ~/.bashrc, skipping"
     else
         echo "Adding source of milrc to ~/.bashrc"
-        echo "" >> ~/.bashrc
-        echo "# Setup environment for MIL development" >> ~/.bashrc
-        echo "$BASH_RC_LINES" >> ~/.bashrc
+        {
+            echo "";
+            echo "# Setup environment for MIL development";
+            echo "$BASH_RC_LINES";
+        } >> ~/.bashrc
     fi
   fi
 }
@@ -280,8 +285,8 @@ mil_user_setup_rc()
 # catkin_init_workspace is superfluous, catkin_make is all you need
 mil_user_setup_init_catkin()
 {
-  mkdir -p $CATKIN_SOURCE_DIR
-  catkin_make -C $CATKIN_DIR
+  mkdir -p "$CATKIN_SOURCE_DIR"
+  catkin_make -C "$CATKIN_DIR"
 }
 
 cat << EOF

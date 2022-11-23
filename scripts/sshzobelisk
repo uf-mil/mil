@@ -41,7 +41,7 @@ fi
 LOCAL_USER=$USER
 SERVER_USERNAME=$1
 SERVER_UID=$2
-LOCAL_REPO=$(realpath $(dirname $BASH_SOURCE)/../)
+LOCAL_REPO=$(realpath "$(dirname "${BASH_SOURCE[@]}")/../")
 ZOBELISK_IP=192.168.37.176
 
 EXEC_ON_SERVER=""
@@ -49,9 +49,9 @@ EXIT_SCRIPT=""
 ROS_PORT=${SERVER_UID}0
 if [ $OPEN_SSH == true ]; then
 
-    IP=`hostname -I | head -n1 | awk '{print $1;}'`
+    IP=$(hostname -I | head -n1 | awk '{print $1;}')
 
-    read -n 1 -p "WARNING: This script requires you to run an ssh server on your computer while you are on the development server. Some people consider this to be insecure, but this is the price of using GUI text editors with a remote system. If you do not want to run an ssh server, kill this script now and re-run with --safe -s (does not support file sharing between the machines). The script will automatically close the ssh server upon exiting. Press Ctrl + c if you do not consent. Otherwise, press any key to continue." PLACEHOLDER
+    read -r -n 1 -p "WARNING: This script requires you to run an ssh server on your computer while you are on the development server. Some people consider this to be insecure, but this is the price of using GUI text editors with a remote system. If you do not want to run an ssh server, kill this script now and re-run with --safe -s (does not support file sharing between the machines). The script will automatically close the ssh server upon exiting. Press Ctrl + c if you do not consent. Otherwise, press any key to continue."
 
     sudo apt install openssh-server
 
@@ -85,10 +85,10 @@ tmux new-session -d
 if [ ! -f ~/.ssh/zobelisk-key ]; then
     echo "Generating you a key for zobelisk so less password typing"
     ssh-keygen -b 4096 -t rsa -f ~/.ssh/zobelisk-key
-    ssh-copy-id -i ~/.ssh/zobelisk-key.pub $SERVER_USERNAME@$ZOBELISK_IP
+    ssh-copy-id -i ~/.ssh/zobelisk-key.pub "$SERVER_USERNAME"@$ZOBELISK_IP
 fi
 
 set +e
-ssh $SERVER_USERNAME@$ZOBELISK_IP -i ~/.ssh/zobelisk-key \
-    -t $EXEC_ON_SERVER
+ssh "$SERVER_USERNAME"@$ZOBELISK_IP -i ~/.ssh/zobelisk-key \
+    -t "$EXEC_ON_SERVER"
 $EXIT_SCRIPT

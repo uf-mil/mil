@@ -35,8 +35,8 @@ subvalveopenclose()
 # Missions
 alias submove="mission run Move"
 
-# Cameras
-alias subfps="rostopic hz $bag_front_cams $bag_down_cam"
+# Cameras - broken
+# alias subfps="rostopic hz $bag_front_cams $bag_down_cam"
 
 # Visualization
 alias subviz="rviz -d \$CATKIN_DIR/src/mil/SubjuGator/sub.rviz"

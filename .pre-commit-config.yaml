@@ -34,6 +34,12 @@ repos:
     hooks:
       - id: autoflake
         args: [--remove-all-unused-imports, --ignore-init-module-imports]
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.8.0
+    hooks:
+      - id: shellcheck
+        exclude: ^docker|deprecated|NaviGator/simulation/VRX
+        args: [--severity=warning, --exclude=SC1090]
   - repo: local
     hooks:
       - id: pylint

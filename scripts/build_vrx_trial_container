@@ -30,17 +30,17 @@ MIL_DOCKER_TAG_ROOT=${MIL_DOCKER_TAG_ROOT:-"uf-mil"}
 DOCKER_ARGS=""
 
 # Cache path in repo where dockerfiles are
-DOCKER_BASE_PATH="$(realpath $(dirname $BASH_SOURCE)/../docker)"
+DOCKER_BASE_PATH="$(realpath "$(dirname "${BASH_SOURCE[@]}")/../docker")"
 
 build_mil_docker_image()
 {
-  docker build $DOCKER_ARGS \
+  docker build "$DOCKER_ARGS" \
     --no-cache \
-    -t $MIL_DOCKER_TAG_ROOT:vrx-trial-${BRANCH} \
-    --build-arg MIL_DOCKER_TAG_ROOT=${MIL_DOCKER_TAG_ROOT} \
-    --build-arg BRANCH=${BRANCH} \
+    -t "$MIL_DOCKER_TAG_ROOT:vrx-trial-${BRANCH}" \
+    --build-arg MIL_DOCKER_TAG_ROOT="${MIL_DOCKER_TAG_ROOT}" \
+    --build-arg BRANCH="${BRANCH}" \
     --build-arg GIT_URL=${GIT_URL} \
-    $DOCKER_BASE_PATH/vrx_trial
+    "$DOCKER_BASE_PATH/vrx_trial"
 }
 
 build_mil_docker_image vrx_trial

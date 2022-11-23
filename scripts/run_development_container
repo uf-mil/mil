@@ -25,26 +25,26 @@ NAME=""
 
 if [[ $* == *--dev-server* ]]; then
     ROS_PORT=${UID}0
-    CONTAINER_IP=`hostname -I`
-    CONTAINER_IP=`echo $CONTAINER_IP | head -n1 | awk '{print $1;}'`
+    CONTAINER_IP=$(hostname -I)
+    CONTAINER_IP=$(echo "$CONTAINER_IP" | head -n1 | awk '{print $1;}')
     ROS_ENV="\
       --env ROS_MASTER_URI=http://localhost:$ROS_PORT \
       --env ROS_HOSTNAME=$CONTAINER_IP \
       --env ROS_PORT=$ROS_PORT"
     NAME="--name dev-$USER-$UID"
 
-    COMMAND_WITHIN_CONTAINER="${@:2}"
+    COMMAND_WITHIN_CONTAINER="${*:2}"
 elif
     [[ $* == *--help* ]] || [[ $* == *-h* ]]; then
     usage
 
-    COMMAND_WITHIN_CONTAINER="${@:2}"
+    COMMAND_WITHIN_CONTAINER="${*:2}"
 else
-    COMMAND_WITHIN_CONTAINER="${@:1}"
+    COMMAND_WITHIN_CONTAINER="${*:1}"
 fi
 
 VIM_CONFIG=""
-if [ -f $HOME/.vimrc ]; then
+if [ -f "$HOME"/.vimrc ]; then
     VIM_CONFIG="-v $HOME/.vimrc:/home/mil-dev/.vimrc"
 fi
 
@@ -62,12 +62,12 @@ else
 fi
 
 docker run -it \
-    -v $(realpath $(dirname $BASH_SOURCE)/../):/home/mil-dev/catkin_ws/src/mil/ \
-    $BUILD_VOLUME_FLAGS \
-    $VIM_CONFIG \
+    -v "$(realpath "$(dirname "${BASH_SOURCE[@]}")/../")":/home/mil-dev/catkin_ws/src/mil/ \
+    "$BUILD_VOLUME_FLAGS" \
+    "$VIM_CONFIG" \
     --net host \
-    $ROS_ENV \
-    $NAME \
+    "$ROS_ENV" \
+    "$NAME" \
     --rm \
     uf-mil:dev \
     "$COMMAND_WITHIN_CONTAINER"

@@ -15,7 +15,7 @@ VARIABLE_PREFIX="bag_"
 
 _bagging_complete() {
 	local ITEM
-	if [[ ! -z "$COMP_CWORD" ]]; then
+	if [[ -n "$COMP_CWORD" ]]; then
 		local PREVIOUS="${COMP_WORDS[$((COMP_CWORD - 1))]}"
 	fi
 
@@ -54,7 +54,7 @@ _bagging_complete() {
 	else
 
 		# Otherwise, iterate over all of the bagging variables in the environment with the prefix removed
-		for ITEM in "$(env | grep "$VARIABLE_PREFIX$2" | cut -d '=' -f1 | sed "s@$VARIABLE_PREFIX@@")"; do
+		for ITEM in $(env | grep "$VARIABLE_PREFIX$2" | cut -d '=' -f1 | sed "s@$VARIABLE_PREFIX@@"); do
 
 			# Append the variable to the autocomplete list
 			COMPREPLY+=( "$ITEM" )
@@ -63,7 +63,8 @@ _bagging_complete() {
 }
 
 generate_configuration() {
-	local BAGGING_VARIABLES="$(env | grep 'bag_' | cut -d '=' -f1 | cut -d ' ' -f2)"
+    local BAGGING_VARIABLES
+	BAGGING_VARIABLES="$(env | grep 'bag_' | cut -d '=' -f1 | cut -d ' ' -f2)"
 	local VARIABLE
 
 	echo "#!/bin/bash"
@@ -89,7 +90,8 @@ generate_configuration() {
 }
 
 bag() {
-	local BAGGING_VARIABLES="$(env | grep 'bag_' | cut -d '=' -f1 | cut -d ' ' -f2)"
+    local BAGGING_VARIABLES
+	BAGGING_VARIABLES="$(env | grep 'bag_' | cut -d '=' -f1 | cut -d ' ' -f2)"
 	local WORKING_DIRECTORY=$PWD
 	local NOTE_TEXT="false"
 	local MODE="bag"
@@ -99,7 +101,7 @@ bag() {
 	local ARGS
 
 	# Get the list of bagging variables
-	_bagging_complete
+	_bagging_complete "$@"
 
 	# Handles command line arguments
 	while (( $# > 0 )); do
@@ -116,7 +118,7 @@ bag() {
 				done
 				;;
 			-c|--clear)
-				if [[ ! -z "$BAGGING_VARIABLES" ]]; then
+				if [[ -n "$BAGGING_VARIABLES" ]]; then
 					for VARIABLE in "${BAGGING_VARIABLES[@]}"; do
 						unset "$VARIABLE"
 					done
@@ -189,8 +191,8 @@ bag() {
 				shift 1
 				;;
 			-l|--list)
-				if [[ ! -z "$COMPREPLY" ]]; then
-					echo "${COMPREPLY[@]}" | sed 's/ /  /g'
+				if [[ -n "${COMPREPLY[*]}" ]]; then
+					echo "${COMPREPLY[@]// /  }"
 				else
 					echo "No bagging variables have been loaded"
 					echo "Try 'bag --help' for more information."
@@ -210,7 +212,7 @@ bag() {
 				shift 2
 				;;
 			-s|--show)
-				if [[ ! -z "$COMPREPLY" ]]; then
+				if [[ -n "$COMPREPLY" ]]; then
 					echo "Bag storage directory:	$BAG_DIR"
 					echo "Always bag topics:	$BAG_ALWAYS"
 					echo ""
@@ -235,7 +237,7 @@ bag() {
 				;;
 			*)
 				if [[ "$MODE" != "false" ]]; then
-					if [[ ! -z "$(eval echo \$"$VARIABLE_PREFIX${1}")" || "${1:0:1}" == '/' ]]; then
+					if [[ -n "$(eval echo \$"$VARIABLE_PREFIX${1}")" || "${1:0:1}" == '/' ]]; then
 						if [[ -z "$TOPICS" ]]; then
 							TOPICS=$(eval echo \$"$VARIABLE_PREFIX${1}")
 						else
@@ -253,11 +255,11 @@ bag() {
 	done
 
 	# If grouping mode was selected, create a new bagging variable
-	if [[ "$MODE" == "group" && ! -z "$TOPICS" ]]; then
+	if [[ "$MODE" == "group" && -n "$TOPICS" ]]; then
 
 		# Retrieve a variable name if one was not passed
 		while [[ -z "$NAME" ]]; do
-			echo -n "What should this group be called? " && read NAME
+			echo -n "What should this group be called? " && read -r NAME
 		done
 		export "${VARIABLE_PREFIX}${NAME}"="$TOPICS"
 
@@ -266,12 +268,12 @@ bag() {
 
 		# Retrieve a bag name if one was not passed
 		while [[ -z "$NAME" ]]; do
-			echo -n "What should this bag be called? " && read NAME
+			echo -n "What should this bag be called? " && read -r NAME
 		done
 
 		# Store the bag in the correct dated folder
 		mkdir -p "$BAG_DIR/$(date +%Y-%m-%d)"
-		cd "$BAG_DIR/$(date +%Y-%m-%d)"
+		cd "$BAG_DIR/$(date +%Y-%m-%d)" || echo "Error occurred."
 		rosbag record -O "$NAME" "$ARGS" "$BAG_ALWAYS" "$TOPICS"
 
 		# If the text flag was passed in, create a notes file of the same name
@@ -280,14 +282,14 @@ bag() {
 		fi
 
 		# Return the user to the directory they ran the command from
-		cd "$WORKING_DIRECTORY"
+		cd "$WORKING_DIRECTORY" || echo "Could not find working directory."
 
 	# If online mode was selected, call the online bagger service
 	elif [[ "$MODE" == "online" ]]; then
 
 		# Retrieve a bag name if one was not passed
 		while [[ -z "$NAME" ]]; do
-			echo -n "What should this bag be called? " && read NAME
+			echo -n "What should this bag be called? " && read -r NAME
 		done
 
 		# Call to the online bagger with what topics to dump and where

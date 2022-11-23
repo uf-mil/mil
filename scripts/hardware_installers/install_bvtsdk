@@ -2,8 +2,8 @@
 # Script to decrypt and untar blueview sdk for use in mil_blueview_driver
 set -euo pipefail
 
-BVTSDK=$(realpath $(dirname $BASH_SOURCE)/../../proprietary/libbvtsdk.tar.gz.enc)
-DESTINATION=$(realpath $(dirname $BASH_SOURCE)/../../mil_common/drivers/mil_blueview_driver)
+BVTSDK=$(realpath "$(dirname "${BASH_SOURCE[@]}")/../../proprietary/libbvtsdk.tar.gz.enc")
+DESTINATION=$(realpath "$(dirname "${BASH_SOURCE[@]}")/../../mil_common/drivers/mil_blueview_driver")
 PASS=""
 
 echo "Enter proprietary software password to decrypt BlueView Sonar SDK."

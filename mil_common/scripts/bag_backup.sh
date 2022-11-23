@@ -34,7 +34,7 @@ if [[ -d $REMOTE_BAGS_DIR ]]; then
 
 	# Transfers bags to the fileserver with rsync
 	rsync --archive --recursive --compress --times --progress\
-	--human-readable --verbose $LOCAL_BAGS_DIR/* $REMOTE_BAGS_DIR/
+	--human-readable --verbose "$LOCAL_BAGS_DIR/*" "$REMOTE_BAGS_DIR/"
 else
 	echo "Bag backup has been aborted because the MIL fileserver share is not mounted"
 fi

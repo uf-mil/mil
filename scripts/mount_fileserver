@@ -18,6 +18,6 @@ SHARE=$2
 MOUNTDIR_BASE=$HOME/.mil/fileserver
 MOUNTDIR_FULL="$MOUNTDIR_BASE/$SHARE"
 
-mkdir -p $MOUNTDIR_FULL
-sudo mount -t cifs -o uid=$(id -u),gid=$(id -g),user=$AD_USERNAME //fs.mil.ufl.edu/$SHARE $MOUNTDIR_FULL
+mkdir -p "$MOUNTDIR_FULL"
+sudo mount -t cifs -o uid="$(id -u)",gid="$(id -g)",user="$AD_USERNAME" //fs.mil.ufl.edu/"$SHARE" "$MOUNTDIR_FULL"
 echo "Share $SHARE successfully mounted at $MOUNTDIR_FULL"
