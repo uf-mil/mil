@@ -6,7 +6,7 @@ MIL_REPO="$MIL_WS/src/mil"
 
 # Source ROS and local catkin
 # finds command that initiated the current process
-if [[ "ps -p $$ | tail -n 1 | awk '{ print $4 }'" == "zsh" ]]
+if [[ $(ps -p $$ | tail -n 1 | awk '{ print $4 }') == "zsh" ]]
 then
     # zsh detected, sourcing appropriate setup scripts"
     source /opt/ros/noetic/setup.zsh
