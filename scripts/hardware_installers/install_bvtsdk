@@ -10,18 +10,17 @@ echo "Enter proprietary software password to decrypt BlueView Sonar SDK."
 echo "Ask a MIL leader for the password if you don't know it."
 
 while [[ $# -gt 0 ]]; do
-  case $1 in
-    --pass)
-      PASS="$2"
-      shift # past argument
-      shift # past value
-      ;;
-  esac
+	case $1 in
+	--pass)
+		PASS="$2"
+		shift # past argument
+		shift # past value
+		;;
+	esac
 done
 
-if [[ -n "$PASS" ]]
-then
-    cat "$BVTSDK" | openssl enc -aes-256-cbc -md md5 -d -pass pass:"$PASS" | tar -xpzC "$DESTINATION"
+if [[ -n $PASS ]]; then
+	cat "$BVTSDK" | openssl enc -aes-256-cbc -md md5 -d -pass pass:"$PASS" | tar -xpzC "$DESTINATION"
 else
-    cat "$BVTSDK" | openssl enc -aes-256-cbc -md md5 -d | tar -xpzC "$DESTINATION"
+	cat "$BVTSDK" | openssl enc -aes-256-cbc -md md5 -d | tar -xpzC "$DESTINATION"
 fi

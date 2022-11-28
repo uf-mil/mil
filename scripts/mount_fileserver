@@ -1,11 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-usage()
-{
-  echo "Usage: <ad username> <share>"
-  echo "Example ./mount_fileserver kallen navigator"
-  exit 1
+usage() {
+	echo "Usage: <ad username> <share>"
+	echo "Example ./mount_fileserver kallen navigator"
+	exit 1
 }
 # Call usage() function if arguments not supplied.
 [[ $# -lt 2 ]] && usage

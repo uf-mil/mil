@@ -23,18 +23,15 @@
 # the bags directory. It will simply exit if the fileserver share is not
 # mounted.
 
-
 # The directories to sync are set in the command to run the script
 LOCAL_BAGS_DIR=$1
 REMOTE_BAGS_DIR=$2
-
 
 if [[ -d $REMOTE_BAGS_DIR ]]; then
 	echo "Synchronizing bags to the MIL fileserver share mounted at $REMOTE_BAGS_DIR"
 
 	# Transfers bags to the fileserver with rsync
-	rsync --archive --recursive --compress --times --progress\
-	--human-readable --verbose "$LOCAL_BAGS_DIR/*" "$REMOTE_BAGS_DIR/"
+	rsync --archive --recursive --compress --times --progress --human-readable --verbose "$LOCAL_BAGS_DIR/*" "$REMOTE_BAGS_DIR/"
 else
 	echo "Bag backup has been aborted because the MIL fileserver share is not mounted"
 fi

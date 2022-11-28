@@ -5,17 +5,14 @@
 # deliniated list of ROS topics. The only two exceptions to this rule are the
 # BAG_ALWAYS and BAG_DIR variables.
 
-
 # Define topics that should be in every bag
 export BAG_ALWAYS="/odom /absodom /clock /tf /tf_static /dvl/range"
 
 # Define the directory that the bags will be stored in
 export BAG_DIR=~/bags
 
-
 # Define the type of image to use for camera topics
 export CAM_SUFFIX="image_rect_color"
-
 
 # Topic variables that can be used from the bag command
 export bag_front_left_cam="/camera/front/left/camera_info /camera/front/left/$CAM_SUFFIX"

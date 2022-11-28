@@ -1,11 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-usage()
-{
-    echo "Usage: $0 [OPTION] [COMMAND ARGS...]"
+usage() {
+	echo "Usage: $0 [OPTION] [COMMAND ARGS...]"
 
-    echo "OPTIONS:
+	echo "OPTIONS:
 
         --help -h
 
@@ -17,35 +16,36 @@ usage()
 
         [COMMAND ARG...] If additional arguments are given, they will be passed as the command to run inside the container. Be default, it will open an interactive bash terminal"
 
-exit 1
+	exit 1
 }
 
 ROS_ENV=""
 NAME=""
 
 if [[ $* == *--dev-server* ]]; then
-    ROS_PORT=${UID}0
-    CONTAINER_IP=$(hostname -I)
-    CONTAINER_IP=$(echo "$CONTAINER_IP" | head -n1 | awk '{print $1;}')
-    ROS_ENV="\
+	ROS_PORT=${UID}0
+	CONTAINER_IP=$(hostname -I)
+	CONTAINER_IP=$(echo "$CONTAINER_IP" | head -n1 | awk '{print $1;}')
+	ROS_ENV="\
       --env ROS_MASTER_URI=http://localhost:$ROS_PORT \
       --env ROS_HOSTNAME=$CONTAINER_IP \
       --env ROS_PORT=$ROS_PORT"
-    NAME="--name dev-$USER-$UID"
+	NAME="--name dev-$USER-$UID"
 
-    COMMAND_WITHIN_CONTAINER="${*:2}"
+	COMMAND_WITHIN_CONTAINER="${*:2}"
 elif
-    [[ $* == *--help* ]] || [[ $* == *-h* ]]; then
-    usage
+	[[ $* == *--help* ]] || [[ $* == *-h* ]]
+then
+	usage
 
-    COMMAND_WITHIN_CONTAINER="${*:2}"
+	COMMAND_WITHIN_CONTAINER="${*:2}"
 else
-    COMMAND_WITHIN_CONTAINER="${*:1}"
+	COMMAND_WITHIN_CONTAINER="${*:1}"
 fi
 
 VIM_CONFIG=""
 if [ -f "$HOME"/.vimrc ]; then
-    VIM_CONFIG="-v $HOME/.vimrc:/home/mil-dev/.vimrc"
+	VIM_CONFIG="-v $HOME/.vimrc:/home/mil-dev/.vimrc"
 fi
 
 # Default command is an interactive shell
@@ -55,19 +55,19 @@ COMMAND_WITHIN_CONTAINER=${COMMAND_WITHIN_CONTAINER:-"bash"}
 # build and devel so you can make sure a clean build works
 CLEAN_BUILD=${CLEAN_BUILD:-""}
 if [ -z "$CLEAN_BUILD" ]; then
-    BUILD_VOLUME_FLAGS="-v $HOME/.mil/dev-docker-ws/build:/home/mil-dev/catkin_ws/build/
+	BUILD_VOLUME_FLAGS="-v $HOME/.mil/dev-docker-ws/build:/home/mil-dev/catkin_ws/build/
     -v $HOME/.mil/dev-docker-ws/devel:/home/mil-dev/catkin_ws/devel/"
 else
-   BUILD_VOLUME_FLAGS=""
+	BUILD_VOLUME_FLAGS=""
 fi
 
 docker run -it \
-    -v "$(realpath "$(dirname "${BASH_SOURCE[@]}")/../")":/home/mil-dev/catkin_ws/src/mil/ \
-    "$BUILD_VOLUME_FLAGS" \
-    "$VIM_CONFIG" \
-    --net host \
-    "$ROS_ENV" \
-    "$NAME" \
-    --rm \
-    uf-mil:dev \
-    "$COMMAND_WITHIN_CONTAINER"
+	-v "$(realpath "$(dirname "${BASH_SOURCE[@]}")/../")":/home/mil-dev/catkin_ws/src/mil/ \
+	"$BUILD_VOLUME_FLAGS" \
+	"$VIM_CONFIG" \
+	--net host \
+	"$ROS_ENV" \
+	"$NAME" \
+	--rm \
+	uf-mil:dev \
+	"$COMMAND_WITHIN_CONTAINER"

@@ -40,6 +40,11 @@ repos:
       - id: shellcheck
         exclude: ^docker|deprecated|NaviGator/simulation/VRX
         args: [--severity=warning, --exclude=SC1090]
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.5.1-1
+    hooks:
+      - id: shfmt
+        exclude: ^docker|deprecated|NaviGator/simulation/VRX
   - repo: local
     hooks:
       - id: pylint

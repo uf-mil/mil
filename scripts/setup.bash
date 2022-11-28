@@ -6,37 +6,32 @@ MIL_REPO="$MIL_WS/src/mil"
 
 # Source ROS and local catkin
 # finds command that initiated the current process
-if [[ $(ps -p $$ | tail -n 1 | awk '{ print $4 }') == "zsh" ]]
-then
-    # zsh detected, sourcing appropriate setup scripts"
-    source /opt/ros/noetic/setup.zsh
-    source "$MIL_WS/devel/setup.zsh"
+if [[ $(ps -p $$ | tail -n 1 | awk '{ print $4 }') == "zsh" ]]; then
+	# zsh detected, sourcing appropriate setup scripts"
+	source /opt/ros/noetic/setup.zsh
+	source "$MIL_WS/devel/setup.zsh"
 else
-    # bash detected, sourcing appropriate setup scripts"
-    source /opt/ros/noetic/setup.bash
-    source "$MIL_WS/devel/setup.bash"
+	# bash detected, sourcing appropriate setup scripts"
+	source /opt/ros/noetic/setup.bash
+	source "$MIL_WS/devel/setup.bash"
 fi
-
-
 
 # Script tools
 # Helper for autocompleting given a list of choices for the first argument
-_list_complete()
-{
-    local THING
-    THINGS=("$1")
-    for THING in "${THINGS[@]}"; do
-            # Skip any entry that does not match the string to complete
-            if [[ -z "$2" || -n "$(echo "${THING:0:${#2}}" | grep "$2")" ]]; then
-                            COMPREPLY+=( "$THING" )
-            fi
-    done
+_list_complete() {
+	local THING
+	THINGS=("$1")
+	for THING in "${THINGS[@]}"; do
+		# Skip any entry that does not match the string to complete
+		if [[ -z $2 || -n "$(echo "${THING:0:${#2}}" | grep "$2")" ]]; then
+			COMPREPLY+=("$THING")
+		fi
+	done
 }
 
 # Source anything in scripts/rc.d. This allows
 # us to organize out aliases/rc so its not all in this script
-for f in "$MIL_REPO"/scripts/rc.d/*
-do
+for f in "$MIL_REPO"/scripts/rc.d/*; do
 	. "$f"
 done
 
@@ -61,13 +56,11 @@ ros_env() {
 }
 
 # Camera helpers
-imageproc() # Example usage: imageproc /camera/seecam
-{
-    ROS_NAMESPACE="$1" rosrun image_proc image_proc
+imageproc() { # Example usage: imageproc /camera/seecam
+	ROS_NAMESPACE="$1" rosrun image_proc image_proc
 }
-calibratecamera()
-{
-  rosrun camera_calibration cameracalibrator.py --no-service-check --pattern=chessboard --square=0.063 --size=8x6 --disable_calib_cb_fast_check camera:="$1" image:="$1"/image_raw
+calibratecamera() {
+	rosrun camera_calibration cameracalibrator.py --no-service-check --pattern=chessboard --square=0.063 --size=8x6 --disable_calib_cb_fast_check camera:="$1" image:="$1"/image_raw
 }
 
 # Bash sourcing
@@ -100,10 +93,9 @@ alias killgazebo="killall -9 gzserver && killall -9 gzclient"
 alias killros='$MIL_REPO/scripts/kill_ros.sh'
 alias killprocess='$MIL_REPO/scripts/kill_process.sh'
 
-startxbox()
-{
-    rosservice call /wrench/select "topic: '/wrench/rc'"
-    roslaunch navigator_launch shore.launch
+startxbox() {
+	rosservice call /wrench/select "topic: '/wrench/rc'"
+	roslaunch navigator_launch shore.launch
 }
 
 alias xbox=startxbox

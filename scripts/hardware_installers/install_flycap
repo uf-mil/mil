@@ -14,4 +14,7 @@ echo "Ask a MIL leader for the password if you don't know it"
 openssl enc -aes-256-cbc -salt -pbkdf2 -in "$FLYCAP" -d | tar -xzpC "$UNPACK_DIR"
 
 # Install flycap, passing in yes to confirm prompt and no to prompt for udev rules
-(cd "$UNPACK_DIR"/*; sudo echo "y\nn\n" | ./install_flycapture.sh)
+(
+	cd "$UNPACK_DIR"/*
+	sudo echo "y\nn\n" | ./install_flycapture.sh
+)

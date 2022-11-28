@@ -22,43 +22,43 @@ SCRATCH=false
 NO_SOURCE=false
 
 while [[ $# -gt 0 ]]; do
-  case $1 in
-    -d|--doxygen)
-      DOXYGEN=true
-      shift # past argument
-      ;;
-    -s|--scratch)
-      SCRATCH=true
-      shift # past argument
-      ;;
-    -n|--no-source)
-      NO_SOURCE=true
-      shift # past argument
-      ;;
-    -h|--help)
-      echo "$usage"
-      exit
-      shift # past argument
-      ;;
-    -*)
-      echo "Unknown option $1"
-      exit 1
-      ;;
-  esac
+	case $1 in
+	-d | --doxygen)
+		DOXYGEN=true
+		shift # past argument
+		;;
+	-s | --scratch)
+		SCRATCH=true
+		shift # past argument
+		;;
+	-n | --no-source)
+		NO_SOURCE=true
+		shift # past argument
+		;;
+	-h | --help)
+		echo "$usage"
+		exit
+		shift # past argument
+		;;
+	-*)
+		echo "Unknown option $1"
+		exit 1
+		;;
+	esac
 done
 
 if [ "$DOXYGEN" = true ]; then
-    #Doxygen
-    cd "$HOME"/.mil || echo "Could not find .mil output folder: Use mkdir ~/.mil to create!"
-    doxygen "$MIL_DIR"/docs/Doxyfile
-    cd - || exit 1
+	#Doxygen
+	cd "$HOME"/.mil || echo "Could not find .mil output folder: Use mkdir ~/.mil to create!"
+	doxygen "$MIL_DIR"/docs/Doxyfile
+	cd - || exit 1
 fi
 
 if [ "$SCRATCH" = true ]; then
-    #Doxygen
-    NO_SOURCE="$NO_SOURCE" sphinx-build -E -b html -d "$BUILD_DIR"/doctrees "$MIL_DIR"/docs "$BUILD_DIR"/html
+	#Doxygen
+	NO_SOURCE="$NO_SOURCE" sphinx-build -E -b html -d "$BUILD_DIR"/doctrees "$MIL_DIR"/docs "$BUILD_DIR"/html
 else
-    NO_SOURCE="$NO_SOURCE" sphinx-build -b html -d "$BUILD_DIR"/doctrees "$MIL_DIR"/docs "$BUILD_DIR"/html
+	NO_SOURCE="$NO_SOURCE" sphinx-build -b html -d "$BUILD_DIR"/doctrees "$MIL_DIR"/docs "$BUILD_DIR"/html
 fi
 
 # Then Sphinx build
