@@ -186,6 +186,9 @@ EOF
 # Documentation dependencies
 mil_system_install python3-pip python3-setuptools
 
+# Disable "automatic updates" Ubuntu prompt (thanks to https://askubuntu.com/a/610623!)
+sudo sed -i 's/Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades
+
 # Install Python 3 dependencies
 sudo pip3 install -r requirements.txt
 
