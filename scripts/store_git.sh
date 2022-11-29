@@ -1,13 +1,13 @@
 #! /bin/bash
 # Author: Cameron Brown
 
-Red='\e[0;31m';
-Gre='\e[0;32m';
-Yel='\e[0;33m';
-Pur='\e[0;35m';
+Red='\e[0;31m'
+Gre='\e[0;32m'
+Yel='\e[0;33m'
+Pur='\e[0;35m'
 
 color() {
-    printf "%b" "$1"
+	printf "%b" "$1"
 }
 
 # header display functions
@@ -15,7 +15,7 @@ hash_header() { echo "########################################"; }
 
 # Display header
 clear
-cat << EOF
+cat <<EOF
 $(color "$Pur")
          &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
        @@@@@@*,...................................................,/@@@@@@
@@ -53,11 +53,11 @@ EOF
 
 read -r -p "$(color "$Gre")Ready to start? [y/N] " response
 case "$response" in
-    [yY][eE][sS]|[yY])
-        ;;
-    *)
-        exit 1
-        ;;
+[yY][eE][sS] | [yY]) ;;
+
+*)
+	exit 1
+	;;
 esac
 
 ###################
@@ -71,9 +71,8 @@ GitEmail="$(git config --global user.email)"
 GitFixNeeded=0
 
 # Configure both if needed
-if [ "$GitName" != "" ]
-then
-cat << EOF
+if [ "$GitName" != "" ]; then
+	cat <<EOF
 $(hash_header)
 $(color "$Yel")You appear to have your Git name/email setup. Are the following
 values correct? The name should be your first name, followed by your last name.
@@ -83,40 +82,38 @@ The email shown below should be linked to your GitHub account.
     Email: ${GitEmail}
 
 EOF
-read -r -p "$(color "$Gre")Are the values correct? [y/N] " response
-case "$response" in
-    [yY][eE][sS]|[yY])
-        ;;
-    *)
-        clear
-        hash_header
-        GitFixNeeded=1
-        ;;
-esac
+	read -r -p "$(color "$Gre")Are the values correct? [y/N] " response
+	case "$response" in
+	[yY][eE][sS] | [yY]) ;;
+
+	*)
+		clear
+		hash_header
+		GitFixNeeded=1
+		;;
+	esac
 else
-cat << EOF
+	cat <<EOF
 $(hash_header)
 $(color "$Yel")You do not have your Git name/email set up. These values are used
 to link your commits to you and your GitHub account.
 
 EOF
-GitFixNeeded=1
+	GitFixNeeded=1
 fi
 
-if [ $GitFixNeeded = 1 ]
-then
-cat << EOF
+if [ $GitFixNeeded = 1 ]; then
+	cat <<EOF
 $(color "$Yel")Enter your Git credentials below.
 
 EOF
 
-Done=1
-while [ $Done = 1 ]
-do
-    read -r -p "$(color "$Gre")Enter your name (First Last): " GitNameResponse
-    read -r -p "$(color "$Gre")Enter your email: " GitEmailResponse
+	Done=1
+	while [ $Done = 1 ]; do
+		read -r -p "$(color "$Gre")Enter your name (First Last): " GitNameResponse
+		read -r -p "$(color "$Gre")Enter your email: " GitEmailResponse
 
-cat << EOF
+		cat <<EOF
 $(color "$Yel")Please verify that the values below are correct for your name
 and email.
 
@@ -124,19 +121,19 @@ and email.
     Email: ${GitEmailResponse}
 
 EOF
-read -r -p "$(color "$Gre")Are the values correct? [y/N] " GitNameVerifyResponse
-case "$GitNameVerifyResponse" in
-    [yY][eE][sS]|[yY])
-        clear
-        hash_header
-        echo "$(color "$Gre")The values have been saved. Proceeding to the next step in 5 seconds."
-        sleep 5;
-        Done=0
-        ;;
-    *)
-        ;;
-esac
-done
+		read -r -p "$(color "$Gre")Are the values correct? [y/N] " GitNameVerifyResponse
+		case "$GitNameVerifyResponse" in
+		[yY][eE][sS] | [yY])
+			clear
+			hash_header
+			echo "$(color "$Gre")The values have been saved. Proceeding to the next step in 5 seconds."
+			sleep 5
+			Done=0
+			;;
+		*) ;;
+
+		esac
+	done
 
 fi
 
@@ -144,54 +141,52 @@ fi
 # gh setup
 #####################
 
-if ! type "gh" > /dev/null
-then
-clear
-cat << EOF
+if ! type "gh" >/dev/null; then
+	clear
+	cat <<EOF
 $(hash_header)
 $(color "$Yel")We will now setup your device authentication with GitHub using the GitHub CLI.
 You do not appear to have the CLI installed.
 EOF
 
-read -r -p "$(color "$Gre")May we install it? [y/N] " response
-case "$response" in
-    [yY][eE][sS]|[yY])
-        ;;
-    *)
-        exit 1
-        ;;
-esac
+	read -r -p "$(color "$Gre")May we install it? [y/N] " response
+	case "$response" in
+	[yY][eE][sS] | [yY]) ;;
 
-curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-sudo apt update
-sudo apt install gh
+	*)
+		exit 1
+		;;
+	esac
 
-GhInstalledAgain=$(gh --version)
-if [ "$GhInstalledAgain" != 0 ]
-then
+	curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+	echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
+	sudo apt update
+	sudo apt install gh
 
-cat << EOF
+	GhInstalledAgain=$(gh --version)
+	if [ "$GhInstalledAgain" != 0 ]; then
+
+		cat <<EOF
 $(hash_header)
 $(color "$Red")There was an issue with the installation. The GitHub CLI could not be installed.
 Please report this as an error.
 EOF
-exit 1;
+		exit 1
 
-else
+	else
 
-clear
-cat << EOF
+		clear
+		cat <<EOF
 $(hash_header)
 $(color "$Yel")The GitHub CLI was successfully installed. We are now going to
 authenticate you using the CLI.
 EOF
 
-fi
+	fi
 fi
 
 clear
-cat << EOF
+cat <<EOF
 $(hash_header)
 $(color "$Yel")You will now generate a personal access token (PAT).
 
@@ -202,21 +197,21 @@ EOF
 
 read -r -p "$(color "$Gre")Open the browser? [y/N] " response
 case "$response" in
-    [yY][eE][sS]|[yY])
-        xdg-open "https://github.com/settings/tokens/new?scopes=repo,admin:public_key,gist,read:org&description=MIL+token"
-        ;;
-    *)
-        exit 1
-        ;;
+[yY][eE][sS] | [yY])
+	xdg-open "https://github.com/settings/tokens/new?scopes=repo,admin:public_key,gist,read:org&description=MIL+token"
+	;;
+*)
+	exit 1
+	;;
 esac
 
 read -r -p "$(color "$Gre")Enter the PAT (it should start with ghp_): " response
-echo "$response" > token.txt
-gh auth login --with-token < token.txt
+echo "$response" >token.txt
+gh auth login --with-token <token.txt
 rm token.txt
 
 clear
-cat << EOF
+cat <<EOF
 $(hash_header)
 $(color "$Yel")You should now be authenticated with Git and GitHub!
 EOF
