@@ -305,12 +305,26 @@ class SubjuGator(BaseMission):
 
         await asyncio.gather(
             cls._moveto_action_client.setup(),
+            cls._odom_sub.setup(),
             cls._trajectory_sub.setup(),
             cls._trajectory_pub.setup(),
             cls._dvl_range_sub.setup(),
             cls._tf_listener.setup(),
             cls.pinger_sub.setup(),
             cls.yolo_objects.setup(),
+        )
+
+    @classmethod
+    async def _shutdown(cls) -> None:
+        await asyncio.gather(
+            cls._moveto_action_client.shutdown(),
+            cls._odom_sub.shutdown(),
+            cls._trajectory_sub.shutdown(),
+            cls._trajectory_pub.shutdown(),
+            cls._dvl_range_sub.shutdown(),
+            cls._tf_listener.shutdown(),
+            cls.pinger_sub.shutdown(),
+            cls.yolo_objects.shutdown(),
         )
 
     @property
