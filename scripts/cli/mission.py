@@ -47,4 +47,4 @@ def list():
     if rosgraph.is_master_online():
     	subprocess.call("rosrun mil_missions mission_client list", shell = True)
     else:
-    	rich.print("[red1 bold]Cannot find a running ROS instance...")
+    	rich.print("[red1 bold]ERROR: Failed to retrieve available missions. The ROS master appears to be offline.")
