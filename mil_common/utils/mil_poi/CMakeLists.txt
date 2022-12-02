@@ -29,3 +29,9 @@ generate_messages(
 )
 
 catkin_package()
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest(test/poi.test)
+endif()
+

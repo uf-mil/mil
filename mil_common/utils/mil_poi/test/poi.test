@@ -1,0 +1,6 @@
+<launch>
+	<node pkg="mil_poi" type="poi_server" name="poi_server">
+		<!--	<rosparam command="load" file="$(find navigator_launch)/config/poi.yaml"> -->
+	</node>
+	<test test-name="poi_test" pkg="mil_poi" type="test_async.py" time-limit="19.0"/>
+</launch>
