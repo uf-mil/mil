@@ -1,6 +1,5 @@
 # PCODAR
-pcodardelete()
-{
-rosservice call /database/requests "name: '$1'
+pcodardelete() {
+	rosservice call /database/requests "name: '$1'
 cmd: 'delete'"
 }

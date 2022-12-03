@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
-  <!-- COORDINATE: {'constant': 0, 'environment': 1} -->
-  <world name="robotx_example_course">
+  <!-- COORDINATE: {'constant': 0, 'environment': 0} -->
+  <world name="dynav_demo_30">
     <!-- Estimated latitude/longitude of sydneyregatta
 	 from satellite imagery -->
     <spherical_coordinates>
@@ -72,30 +72,17 @@
       <pose>-545 60 0.03 0 0 0</pose>
       <uri>model://blue_projectile</uri>
     </include>
-    <plugin filename="libwayfinding_scoring_plugin.so" name="wayfinding_scoring_plugin">
+    <plugin filename="libstationkeeping_scoring_plugin.so" name="stationkeeping_scoring_plugin">
       <vehicle>wamv</vehicle>
-      <task_name>wayfinding</task_name>
-      <min_errors_topic>/vrx/wayfinding/min_errors</min_errors_topic>
-      <mean_error_topic>/vrx/wayfinding/mean_error</mean_error_topic>
-      <waypoints_topic>/vrx/wayfinding/waypoints</waypoints_topic>
+      <task_name>station_keeping</task_name>
+      <rms_error_topic>/vrx/station_keeping/rms_error</rms_error_topic>
+      <pose_error_topic>/vrx/station_keeping/pose_error</pose_error_topic>
+      <goal_topic>/vrx/station_keeping/goal</goal_topic>
       <task_info_topic>/vrx/task/info</task_info_topic>
       <contact_debug_topic>/vrx/debug/contact</contact_debug_topic>
       <per_plugin_exit_on_completion>true</per_plugin_exit_on_completion>
       <!-- Goal as Latitude, Longitude, Yaw -->
-      <waypoints>
-        <waypoint>
-          <pose>-33.722026 150.674410 1.0</pose>
-        </waypoint>
-        <waypoint>
-          <pose>-33.722118 150.674034 1.0</pose>
-        </waypoint>
-        <waypoint>
-          <pose>-33.72211 150.674163 0.5</pose>
-        </waypoint>
-        <waypoint>
-          <pose>-33.722096 150.674610 -3</pose>
-        </waypoint>
-      </waypoints>
+      <goal_pose>-33.722718 150.674031 0.0</goal_pose>
       <initial_state_duration>10</initial_state_duration>
       <ready_state_duration>10</ready_state_duration>
       <running_state_duration>300</running_state_duration>
@@ -121,11 +108,11 @@
         <cell_count>50 50</cell_count>
         <wave>
           <model>PMS</model>
-          <period>8.0</period>
+          <period>5.0</period>
           <number>3</number>
-          <scale>10</scale>
-          <gain>0.2</gain>
-          <direction>-0.5 -0.5</direction>
+          <scale>2.5</scale>
+          <gain>0.0</gain>
+          <direction>1.0 0.0</direction>
           <angle>0.4</angle>
           <tau>2.0</tau>
           <amplitude>0.0</amplitude>
@@ -142,11 +129,11 @@
             <reflectOpacity>0.2</reflectOpacity>
             <wave>
               <model>PMS</model>
-              <period>8.0</period>
+              <period>5.0</period>
               <number>3</number>
-              <scale>10</scale>
-              <gain>0.2</gain>
-              <direction>-0.5 -0.5</direction>
+              <scale>2.5</scale>
+              <gain>0.0</gain>
+              <direction>1.0 0.0</direction>
               <angle>0.4</angle>
               <tau>2.0</tau>
               <amplitude>0.0</amplitude>
@@ -193,15 +180,15 @@
       <wind_obj>
         <name>wamv</name>
         <link_name>wamv/base_link</link_name>
-        <coeff_vector> .5 .5 .33</coeff_vector>
+        <coeff_vector>.5 .5 .33</coeff_vector>
       </wind_obj>
       <!-- Wind -->
-      <wind_direction>315</wind_direction>
+      <wind_direction>240</wind_direction>
       <!-- in degrees -->
-      <wind_mean_velocity>4.0</wind_mean_velocity>
-      <var_wind_gain_constants>2.0</var_wind_gain_constants>
+      <wind_mean_velocity>0.0</wind_mean_velocity>
+      <var_wind_gain_constants>0</var_wind_gain_constants>
       <var_wind_time_constants>2</var_wind_time_constants>
-      <random_seed>15</random_seed>
+      <random_seed>10</random_seed>
       <!-- set to zero/empty to randomize -->
       <update_rate>10</update_rate>
       <topic_wind_speed>/vrx/debug/wind/speed</topic_wind_speed>
@@ -217,8 +204,29 @@
       <origin_visual>0</origin_visual>
       <ambient>
 
-0.3 0.3 0.3 1
+0.85 0.85 0.85 1
       </ambient>
     </scene>
+    <!-- The navigation course -->
+    <include>
+      <name>bouy_start_red</name>
+      <uri>model://mb_marker_buoy_red</uri>
+      <pose> -531.257 172.998 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_start_green</name>
+      <uri>model://mb_marker_buoy_green</uri>
+      <pose>-522.752 167.624 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_end_red</name>
+      <uri>model://mb_marker_buoy_red</uri>
+      <pose>-515.28 198.39 0 0 0 -1.44</pose>
+    </include>
+    <include>
+      <name>buoy_end_green</name>
+      <uri>model://mb_marker_buoy_green</uri>
+      <pose>-506.777 193.017 0 0 0 -1.44</pose>
+    </include>
   </world>
 </sdf>

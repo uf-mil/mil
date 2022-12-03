@@ -3,7 +3,6 @@
 # This script is meant to be sourced when using the ros_alarms package. It
 # defines a few useful aliases and adds bash autocompletion for them.
 
-
 _alarm_complete() {
 	local ALARM
 
@@ -11,18 +10,17 @@ _alarm_complete() {
 	for ALARM in $(rosparam get /known_alarms); do
 
 		# Skip any entry that does not match the string to complete
-		if [[ -z "$2" || ! -z "$(echo "${ALARM:0:${#2}}" | grep "$2")" ]]; then
+		if [[ -z $2 || $(echo "${ALARM:0:${#2}}" | grep -q "$2") ]]; then
 
 			# Append the alarm name to the autocomplete list
-			if [[ ! -z "$( echo "${ALARM: -1}" | grep ',')" ]]; then
-				COMPREPLY+=( "${ALARM:0:-1}" )
+			if [[ -n "$(echo "${ALARM: -1}" | grep ',')" ]]; then
+				COMPREPLY+=("${ALARM:0:-1}")
 			else
-				COMPREPLY+=( "$ALARM" )
+				COMPREPLY+=("$ALARM")
 			fi
 		fi
 	done
 }
-
 
 # Define the alarm aliases
 alias alist="rosparam get /known_alarms"

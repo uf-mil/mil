@@ -4,7 +4,8 @@ set -euo pipefail
 # Sets the permissions of the workspace to be owned by the current user and group 1000
 # This makes sure that both the host user and the container user (whose id is 1000)
 # can modify the repo
-WORKSPACE_DIR="$(realpath $(dirname $BASH_SOURCE)/../)"
+WORKSPACE_DIR="$(realpath "$(dirname "${BASH_SOURCE[@]}")/../")"
+
 CMD="sudo chown $UID:1000 -R $WORKSPACE_DIR"
 echo "$CMD"
-$($CMD)
+eval "$CMD"

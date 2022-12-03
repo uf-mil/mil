@@ -1,6 +1,6 @@
 import numpy as np
 from sub8.sub_singleton import Searcher
-from txros import util
+from axros import util
 
 
 @util.cancellableInlineCallbacks

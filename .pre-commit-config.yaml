@@ -34,6 +34,17 @@ repos:
     hooks:
       - id: autoflake
         args: [--remove-all-unused-imports, --ignore-init-module-imports]
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.8.0.4
+    hooks:
+      - id: shellcheck
+        exclude: ^docker|deprecated|NaviGator/simulation/VRX
+        args: [--severity=warning, --exclude=SC1090]
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.5.1-1
+    hooks:
+      - id: shfmt
+        exclude: ^docker|deprecated|NaviGator/simulation/VRX
   - repo: local
     hooks:
       - id: pylint
