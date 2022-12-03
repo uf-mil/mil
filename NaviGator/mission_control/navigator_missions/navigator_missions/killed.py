@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class Killed(Navigator):
+class Killed(NaviGatorMission):
     """
-    Run when Navigator is killed. Exists mostly to
+    Run when NaviGatorMission is killed. Exists mostly to
     cancel the current mission on kill and print
     this to the GUI.
     """

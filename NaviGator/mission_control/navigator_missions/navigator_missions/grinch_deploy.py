@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class GrinchDeploy(Navigator):
+class GrinchDeploy(NaviGatorMission):
     """
     Deploy the grinch
     """

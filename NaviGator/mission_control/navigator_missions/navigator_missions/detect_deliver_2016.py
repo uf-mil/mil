@@ -8,13 +8,13 @@ import numpy as np
 import tf.transformations as trns
 from geometry_msgs.msg import Point, PoseStamped
 from mil_misc_tools.text_effects import fprint
-from navigator import Navigator
+from navigator import NaviGatorMission
 from navigator_msgs.msg import ShooterDoAction
 from navigator_msgs.srv import CameraToLidarTransform, CameraToLidarTransformRequest
 from navigator_tools import MissingPerceptionObject
 
 
-class DetectDeliver(Navigator):
+class DetectDeliver(NaviGatorMission):
     shoot_distance_meters = 2.7
     theta_offset = np.pi / 2.0
     spotings_req = 1
@@ -41,7 +41,7 @@ class DetectDeliver(Navigator):
         self.align_forest_pause = False
 
     @classmethod
-    async def init(cls):
+    async def setup(cls):
         cls.shooter_pose_sub = cls.nh.subscribe("/shooter_pose", PoseStamped)
         await cls.shooter_pose_sub.setup()
         cls.cameraLidarTransformer = cls.nh.get_service_client(

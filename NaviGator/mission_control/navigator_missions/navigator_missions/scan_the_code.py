@@ -15,7 +15,7 @@ from navigator_msgs.msg import ScanTheCode
 from sensor_msgs.msg import Image, PointCloud2
 from std_srvs.srv import SetBoolRequest
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 LED_PANEL_MAX = 0.1  # meters
 LED_PANEL_MIN = 0.5  # meters
@@ -30,7 +30,7 @@ TIMEOUT_SECONDS = 120  # seconds
 COLORS = ["red", "green", "black", "blue"]
 
 
-class ScanTheCode(Navigator):
+class ScanTheCode(NaviGatorMission):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.camera_model = PinholeCameraModel()

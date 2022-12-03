@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class ExampleMission(Navigator):
+class ExampleMission(NaviGatorMission):
     """
     Mission template / place to test functionality. Make changes locally, do not commit.
     """

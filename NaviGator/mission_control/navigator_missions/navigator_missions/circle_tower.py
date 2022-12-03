@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class CircleTower(Navigator):
+class CircleTower(NaviGatorMission):
     """
     Simple mission to circle totems once they have been labeled, does not
     have searching functionality found
