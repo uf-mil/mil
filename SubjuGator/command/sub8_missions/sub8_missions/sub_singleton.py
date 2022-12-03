@@ -175,7 +175,10 @@ class _VisionProxies:
 
 class _PoseProxy:
     def __init__(
-        self, sub: SubjuGator, pose: pose_editor.PoseEditor, print_only: bool = False
+        self,
+        sub: SubjuGatorMission,
+        pose: pose_editor.PoseEditor,
+        print_only: bool = False,
     ):
         self._sub = sub
         self._pose = pose
@@ -281,7 +284,7 @@ class _ActuatorProxy:
         return
 
 
-class SubjuGator(BaseMission):
+class SubjuGatorMission(BaseMission):
 
     nh: NodeHandle
 
@@ -289,8 +292,8 @@ class SubjuGator(BaseMission):
         super().__init__(**kwargs)
 
     @classmethod
-    async def _init(cls, mission_server):
-        super()._init(mission_server)
+    async def setup_base(cls, mission_server):
+        await super().setup_base(mission_server)
         cls._moveto_action_client = action.ActionClient(cls.nh, "moveto", MoveToAction)
         cls._odom_sub = cls.nh.subscribe("odom", Odometry)
         cls._trajectory_sub = cls.nh.subscribe("trajectory", PoseTwistStamped)
@@ -315,7 +318,7 @@ class SubjuGator(BaseMission):
         )
 
     @classmethod
-    async def _shutdown(cls) -> None:
+    async def shutdown_base(cls) -> None:
         await asyncio.gather(
             cls._moveto_action_client.shutdown(),
             cls._odom_sub.shutdown(),
@@ -372,7 +375,7 @@ class SubjuGator(BaseMission):
 
 
 class Searcher:
-    def __init__(self, sub: SubjuGator, vision_proxy: Callable, search_pattern):
+    def __init__(self, sub: SubjuGatorMission, vision_proxy: Callable, search_pattern):
         """
         Give a sub_singleton, a function to call for the object you're looking for,
         and a list poses to execute in order to find it (can be a list of relative
@@ -477,7 +480,7 @@ class Searcher:
 
 
 class PoseSequenceCommander:
-    def __init__(self, sub: SubjuGator):
+    def __init__(self, sub: SubjuGatorMission):
         self.sub = sub
 
     async def go_to_sequence_eulers(
@@ -539,7 +542,7 @@ class SonarObjects:
     _clear_pcl: ServiceClient
     _objects_service: ServiceClient
 
-    def __init__(self, sub: SubjuGator, pattern=None):
+    def __init__(self, sub: SubjuGatorMission, pattern=None):
         """
         SonarObjects: a helper to search and find objects
 
@@ -744,7 +747,7 @@ class SonarObjects:
 
 
 class SonarPointcloud:
-    def __init__(self, sub: SubjuGator, pattern=None):
+    def __init__(self, sub: SubjuGatorMission, pattern=None):
         if pattern is None:
             pattern = (
                 [sub.move.zero_roll_and_pitch()]

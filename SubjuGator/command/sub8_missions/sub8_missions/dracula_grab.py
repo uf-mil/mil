@@ -8,7 +8,7 @@ from sensor_msgs.msg import CameraInfo
 from std_srvs.srv import Trigger
 from sub8_msgs.srv import GuessRequestRequest
 
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 
 fprint = text_effects.FprintFactory(title="DRACULA_GRAB", msg_color="cyan").fprint
 
@@ -20,7 +20,7 @@ HEIGHT_DRACULA_GRABBER = 0.5
 TRAVEL_DEPTH = 0.5  # 2
 
 
-class DraculaGrabber(SubjuGator):
+class DraculaGrabber(SubjuGatorMission):
     async def run(self, args):
         fprint("Enabling cam_ray publisher")
 

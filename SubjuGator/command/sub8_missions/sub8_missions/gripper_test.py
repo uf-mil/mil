@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 
 
-class GripperTest(SubjuGator):
+class GripperTest(SubjuGatorMission):
     async def run(self, args):
         self.send_feedback("Opening Gripper")
         await self.actuators.gripper_open()

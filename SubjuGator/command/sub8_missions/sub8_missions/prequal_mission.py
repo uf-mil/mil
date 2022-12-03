@@ -6,12 +6,12 @@ import numpy as np
 import tf
 from cv_bridge import CvBridge
 
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 
 SPEED_LIMIT = 0.5  # m/s
 
 
-class PrequalMission(SubjuGator):
+class PrequalMission(SubjuGatorMission):
     async def run(self, args):
 
         # obtain camera data

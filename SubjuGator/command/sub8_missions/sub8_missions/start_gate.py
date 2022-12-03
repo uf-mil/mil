@@ -6,7 +6,7 @@ from mil_misc_tools import text_effects
 from mil_ros_tools import rosmsg_to_numpy
 from scipy.spatial import distance
 
-from .sub_singleton import SonarObjects, SubjuGator
+from .sub_singleton import SonarObjects, SubjuGatorMission
 
 fprint = text_effects.FprintFactory(title="START_GATE", msg_color="cyan").fprint
 
@@ -20,7 +20,7 @@ DIST_AFTER_GATE = 1
 RIGHT_OR_LEFT = 1
 
 
-class StartGate(SubjuGator):
+class StartGate(SubjuGatorMission):
     async def run(self, args):
         fprint("Waiting for odom")
         await self.tx_pose()
@@ -69,7 +69,7 @@ class StartGate(SubjuGator):
         # Gate = 120 inches wide = 3.048 meters
         # Gate Center = 60 inches
         # Pole offset from center = 12 inches
-        # SubjuGator = 31 inches wide
+        # SubjuGatorMission = 31 inches wide
         # 48 in - 32 in = 16 => 16/2 = 8 inch
         # 12 + 8 = 20 inch offset from middle to enter small portion
 

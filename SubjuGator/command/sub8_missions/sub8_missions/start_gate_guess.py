@@ -3,7 +3,7 @@ import rospy
 from mil_misc_tools import text_effects
 from std_srvs.srv import Trigger
 
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 
 fprint = text_effects.FprintFactory(title="PINGER", msg_color="cyan").fprint
 
@@ -13,7 +13,7 @@ DOWN_SPEED = 0.1
 DOWN = 1.5
 
 
-class StartGateGuess(SubjuGator):
+class StartGateGuess(SubjuGatorMission):
     async def run(self, args):
 
         fprint("Getting Guess Locations")

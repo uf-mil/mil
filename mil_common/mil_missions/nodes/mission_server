@@ -92,16 +92,13 @@ class MissionRunner:
         # If we've already loaded missions, we need to shutdown existing missions
         if self.missions_loaded:
             try:
-                await asyncio.wait_for(self.base_mission._shutdown(), timeout=10)
+                await asyncio.wait_for(self.base_mission.shutdown_base(), timeout=10)
             except AttributeError:
                 pass
 
-            for name, mission in self.missions.items():
+            for _, mission in self.missions.items():
                 try:
-                    if inspect.iscoroutinefunction(mission.shutdown):
-                        await mission.shutdown()
-                    else:
-                        mission.shutdown()
+                    await mission.shutdown()
                 except AttributeError:
                     # The mission class may not need to be shutdown (this is okay!)
                     pass
@@ -140,12 +137,10 @@ class MissionRunner:
         if not hasattr(self.mission_module, base_mission_name):
             raise Exception("Base mission not in module")
         self.base_mission = getattr(self.mission_module, base_mission_name)
+        assert issubclass(self.base_mission, BaseMission)
 
         # Import all missions which extend the base class and initialize them
-        if inspect.iscoroutinefunction(self.base_mission._init):
-            await self.base_mission._init(self)
-        else:
-            self.base_mission._init(self)
+        await self.base_mission.setup_base(self)
 
         for mod in self.imported_modules:
             for name, cls in inspect.getmembers(mod):
@@ -155,12 +150,9 @@ class MissionRunner:
                     and name != base_mission_name
                     and name not in self.missions
                 ):
-                    if inspect.iscoroutinefunction(cls.init):
-                        await axros.wrap_time_notice(
-                            cls.init(), 1, f"Setting up the {name} mission"
-                        )
-                    else:
-                        cls.init()
+                    await axros.wrap_time_notice(
+                        cls.setup(), 1, f"Setting up the {name} mission"
+                    )
                     self.missions[cls.name()] = cls
 
         # Set available missions param with list of all imported missions
@@ -240,11 +232,6 @@ class MissionRunner:
         # Try to accept a new mission
         self.do_new_mission()
 
-    def cleanup_fail(self, final, missionname):
-        print("")
-        print(f"Clean up for {missionname} failed!")
-        print(final.getTraceback())
-
     async def mission_finished_cb(self, task: Any):
         """
         Called when the current mission finishes successfully, is canceled, is preempted by another
@@ -264,8 +251,6 @@ class MissionRunner:
             else:  # If mission raised another kind of exception (like key error), return message and traceback
                 result.result = str(e)
                 result.parameters = json.dumps({"traceback": traceback.format_exc()})
-            # Call mission cleanup function
-            await self.mission.cleanup()
             self.server.set_aborted(
                 result=result, text=result.result
             )  # Set mission aborted in either case

@@ -4,14 +4,14 @@ from ros_alarms import TxAlarmBroadcaster
 
 # Import missions here
 from .start_gate_2022 import StartGate2022
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 from .surface import Surface
 
 fprint = text_effects.FprintFactory(title="AUTO_MISSION").fprint
 WAIT_SECONDS = 5.0
 
 
-class Autonomous2022(SubjuGator):
+class Autonomous2022(SubjuGatorMission):
     async def run_mission(self, mission, timeout):
         # timeout in seconds
         m = mission.run(self)
