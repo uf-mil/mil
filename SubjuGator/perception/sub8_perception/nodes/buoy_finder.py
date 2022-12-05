@@ -20,8 +20,8 @@ from sub8_msgs.srv import (
     VisionRequest2DResponse,
     VisionRequestResponse,
 )
-from sub8_vision_tools import MultiObservation, rviz
-
+from sub8_vision_tools import MultiObservation
+from rviz_helpers import (Image_Publisher, Image_Publisher)
 
 class Buoy:
     """
@@ -156,7 +156,6 @@ class BuoyFinder:
 
         self.image_sub = Image_Subscriber(camera, self.image_cb)
         if self.debug_ros:
-            self.rviz = rviz.RvizVisualizer(topic="~markers")
             self.mask_pub = Image_Publisher("~mask_image")
             rospy.Timer(rospy.Duration(1), self.print_status)
 
@@ -389,7 +388,7 @@ class BuoyFinder:
             buoy.est = self.multi_obs.lst_sqr_intersection(observations, pose_pairs)
             buoy.status = "Pose found"
             if self.debug_ros:
-                self.rviz.draw_sphere(
+                draw_sphere(
                     buoy.est,
                     color=buoy.draw_colors,
                     scaling=(0.2286, 0.2286, 0.2286),
