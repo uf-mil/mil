@@ -33,7 +33,7 @@ class Constants:
     PING_RESPONSE = 0x11
     CHECKSUM_CODE = 0xFF
 
-    def create_checksum(byte: int) -> int:
+    def create_checksum(self, byte: int) -> int:
         """
         Creates a checksum given a piece of data. The checksum is calculated through
         the XOR operation.
@@ -46,7 +46,7 @@ class Constants:
         """
         return byte ^ Constants.CHECKSUM_CODE
 
-    def verify_checksum(byte: int, checksum: int) -> bool:
+    def verify_checksum(self, byte: int, checksum: int) -> bool:
         """
         Verifies that two checksums are the same.
 
@@ -57,18 +57,18 @@ class Constants:
         Returns:
             bool: Whether the two checksums are the same.
         """
-        return checksum == Constants.create_checksum(byte)
+        return checksum == self.create_checksum(byte)
 
-    def serialize_packet(byte: int) -> bytes:
+    def serialize_packet(self, byte: int) -> bytes:
         """
         Serializes a piece of data (an integer) into a bytes object.
 
         Returns:
             bytes: The serialized packet.
         """
-        return struct.pack("BB", byte, Constants.create_checksum(byte))
+        return struct.pack("BB", byte, self.create_checksum(byte))
 
-    def deserialize_packet(data: bytes) -> Tuple[int, int]:
+    def deserialize_packet(self, data: bytes) -> Tuple[int, int]:
         """
         Deserializes a piece of data (a bytes object) into a tuple of two numbers.
         The first number is the data carried by the packet, and the second is the checksum
