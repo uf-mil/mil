@@ -11,7 +11,10 @@ class MissionException(Exception):
         parameters (Dict[Any, Any]): ???
     """
 
-    def __init__(self, message, parameters={}):
+    def __init__(self, message, parameters=None):
+        if parameters is None:
+            parameters = {}
+            
         self.message = message
         self.parameters = parameters
         super(Exception, self).__init__(message)
