@@ -41,4 +41,12 @@ def list():
     """
     List all missions that can be run.
     """
-    pass
+    # checks whether the ROS master is online
+    # if online, launches the mission_client node and executes list command
+    # if offline, mission list cannot be retrieved
+    if rosgraph.is_master_online():
+        subprocess.call("rosrun mil_missions mission_client list", shell=True)
+    else:
+        rich.print(
+            "[red1 bold]ERROR: Failed to retrieve available missions. The ROS master appears to be offline."
+        )
