@@ -45,6 +45,20 @@ class BaseMission:
 
         This method should be overridden for all child missions who wish to have a
         resource ready for when the mission begins.
+
+        Any resource setup in this method should be shutdown using the :meth:`~.shutdown`
+        method.
+
+        .. code-block:: python
+
+            class MovementMission(MyFancyRobotMission):
+                @classmethod
+                async def setup(cls):
+                    self.my_sub = await self.nh.subscribe("/my_topic", MyMessage)
+
+                @classmethod
+                async def shutdown(cls):
+                    await self.my_sub.shutdown()
         """
 
     @classmethod
@@ -60,8 +74,9 @@ class BaseMission:
         .. code-block:: python
 
             class MyFancyRobotMission:
-                def setup_base(cls, mission_runner):
-                    super(MyRobotBaseMission, cls).setup_base(cls, mission_runner)
+                @classmethod
+                async def setup_base(cls, mission_runner):
+                    await super(cls).setup_base(mission_runner)
 
         Args:
             mission_runner (:class:`MissionRunner`): The mission runner that will

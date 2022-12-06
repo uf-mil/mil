@@ -38,7 +38,7 @@ from sub8_msgs.srv import (
 from tf.transformations import quaternion_from_euler, quaternion_multiply
 from vision_msgs.msg import Detection2DArray
 
-from . import pose_editor
+from . import exceptions, pose_editor
 
 
 class VisionProxy:
@@ -213,7 +213,7 @@ class _PoseProxy:
             print("GOAL TOO HIGH")
             self._pos.position = -0.6
 
-    def go(self, *args, **kwargs):
+    async def go(self, *args, **kwargs):
         if self.print_only:
             print(self._pose)
             return self._sub.nh.sleep(0.1)
@@ -223,7 +223,10 @@ class _PoseProxy:
         goal = self._sub._moveto_action_client.send_goal(
             self._pose.as_MoveToGoal(*args, **kwargs)
         )
-        return goal.get_result()
+        result = await goal.get_result()
+        if result.error == "killed":
+            raise exceptions.KilledException()
+        return result
 
     def go_trajectory(self, *args, **kwargs):
         traj = self._sub._trajectory_pub.publish(
