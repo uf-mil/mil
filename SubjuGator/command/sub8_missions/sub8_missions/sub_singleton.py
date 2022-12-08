@@ -14,7 +14,14 @@ import sensor_msgs.point_cloud2 as pc2
 import yaml
 from axros import NodeHandle, ServiceClient, action, axros_tf, serviceclient, types
 from mil_missions_core import BaseMission
-from mil_msgs.msg import MoveToAction, PoseTwistStamped, RangeStamped
+from mil_msgs.msg import (
+    MoveToAction,
+    MoveToFeedback,
+    MoveToGoal,
+    MoveToResult,
+    PoseTwistStamped,
+    RangeStamped,
+)
 from mil_msgs.srv import (
     ObjectDBQuery,
     ObjectDBQueryRequest,
@@ -290,6 +297,7 @@ class _ActuatorProxy:
 class SubjuGatorMission(BaseMission):
 
     nh: NodeHandle
+    _moveto_action_client: action.ActionClient[MoveToGoal, MoveToResult, MoveToFeedback]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

@@ -22,6 +22,18 @@ class RunMissionTest(unittest.TestCase):
         self.assertEqual(result.parameters, "")
         self.assertEqual(result.result, "The darkness isn't so scary")
 
+    def test_failing_mission(self):
+        self.client.run_mission("FailingMission")
+        self.client.wait_for_result()
+        result = self.client.get_result()
+        state = self.client.get_state()
+        self.assertEqual(state, TerminalState.ABORTED)
+        self.assertFalse(result.success)
+        self.assertTrue(result.parameters)
+        self.assertRegex(
+            result.result, r"^In submission \<.*\>: This is an example error\!$"
+        )
+
 
 if __name__ == "__main__":
     import rostest
