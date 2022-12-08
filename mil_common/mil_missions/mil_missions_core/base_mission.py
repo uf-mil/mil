@@ -9,6 +9,12 @@ class BaseMission:
     is just documentation for the various functions that real missions
     can overload. Individual ROS robotics platforms should extend this
     base class to provide interfaces to the particular systems on the robot.
+
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Prints the name of the mission.
     """
 
     nh = None
@@ -201,3 +207,6 @@ class BaseMission:
                 will be a json decoded object from the string passed in the goal,
                 but can be changed by overriding decode_parameters.
         """
+
+    def __str__(self) -> str:
+        return self.__class__.__qualname__

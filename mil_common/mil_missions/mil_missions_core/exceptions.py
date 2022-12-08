@@ -96,4 +96,4 @@ class SubmissionException(MissionException):
         )
 
     def __str__(self):
-        return f"In submission {self.mission}: {self.exception}"
+        return f"Exception occurred in {self.mission} mission: {self.exception.__class__.__name__}: {self.exception}"
