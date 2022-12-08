@@ -1,17 +1,9 @@
 #!/usr/bin/env python3
 import struct
-from enum import IntEnum
 
 import serial
 
 from .simulated import SimulatedSabertooth2x12
-
-
-class CommandEnum(IntEnum):
-    MOTOR1_FORWARD
-    MOTOR1_BACKWARD
-    MOTOR2_FORWARD
-    MOTOR2_BACKWARD
 
 
 class Sabertooth2x12:
@@ -46,7 +38,7 @@ class Sabertooth2x12:
             self.ser = SimulatedSabertooth2x12()
 
     @staticmethod
-    def make_packet(address: int, command: CommandEnum, data: int) -> bytes:
+    def make_packet(address: int, command: int, data: int) -> bytes:
         """
         Constructs a packet given an address, command, and data. The checksum is
         added on to the end of the packet. All four integers are packed as unsigned
@@ -54,31 +46,21 @@ class Sabertooth2x12:
 
         Args:
             address (int): ???
-            command (CommandEnum): The command to send.
+            command (int): The command to send.
             data (int): The data to put in the packet.
 
         Returns:
             bytes: The constructed packet.
         """
-        intCommand = 0
-        if command == CommandEnum.MOTOR1_FORWARDS:
-            intCommand = 0
-        elif command == CommandEnum.MOTOR2_FORWARDS:
-            intCommand = 4
-        elif command == CommandEnum.MOTOR1_BACKWARDS:
-            intCommand = 1
-        elif command == CommandEnum.MOTOR2_BACKWARDS:
-            intCommand = 5
+        checksum = (address + command + data) & 127
+        return struct.pack("BBBB", address, command, data, checksum)
 
-        checksum = (address + intCommand + data) & 127
-        return struct.pack("BBBB", address, intCommand, data, checksum)
-
-    def send_packet(self, command: CommandEnum, data: int) -> None:
+    def send_packet(self, command: int, data: int) -> None:
         """
         Sends a packet over the serial connection using the class' address.
 
         Args:
-            command (Command): The command to send.
+            command (int): The command to send.
             data (int): The data to put in the packet.
         """
         packet = self.make_packet(self.address, command, data)
@@ -93,9 +75,9 @@ class Sabertooth2x12:
             speed (float): The speed to set the first motor to.
         """
         if speed < 0:
-            command = CommandEnum.MOTOR1_BACKWARDS
+            command = 1
         else:
-            command = CommandEnum.MOTOR1_FORWARDS
+            command = 0
         data = int(min(1.0, abs(speed)) * 127)
         self.send_packet(command, data)
 
@@ -108,8 +90,8 @@ class Sabertooth2x12:
             speed (float): The speed to set the second motor to.
         """
         if speed < 0:
-            command = CommandEnum.MOTOR2_BACKWARDS
+            command = 5
         else:
-            command = CommandEnum.MOTOR2_FORWARDS
+            command = 4
         data = int(min(1.0, abs(speed)) * 127)
         self.send_packet(command, data)
