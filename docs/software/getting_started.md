@@ -22,11 +22,11 @@ You will need to install **Ubuntu 20.04 LTS**, the main operating system support
 ROS and our tools. Our tools are not setup to work on other operating systems, including
 other Linux distributions, macOS, and Windows.
 
-To use Ubuntu in MIL, you have three options:
+To use Ubuntu in MIL, you have two options:
 
 1. Use a **virtual machine**. A virtual machine uses your current operating system
-to virtually host another operating system (in this case, Ubuntu). This will
-likely cause your Ubuntu system to run slow (in some cases, it might be unusable)
+to virtually host another operating system (in this case, Ubuntu). This could
+cause your Ubuntu environment to run slow (in some cases, it might be unusable)
 and may cause you to experience issues with certain programs.
 
 2. **Dual-boot your computer.** Dual booting will allocate a piece of your computer's
