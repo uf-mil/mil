@@ -1031,9 +1031,13 @@ main .attribute-table-column > ul {
   user-select: none;
 }
 
+div.highlight {
+  border-radius: 10px;
+}
+
 pre {
   background-color: var(--codeblock-background);
-  border: 1px solid var(--codeblock-border);
+  border-radius: 10px;
   color: var(--codeblock-text);
   font-size: 0.75em;
   line-height: 1.5em;
