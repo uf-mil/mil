@@ -54,6 +54,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.graphviz",
+    "sphinxcontrib.tikz",
     "sphinx_copybutton",
     "attributetable",
     "builder",
