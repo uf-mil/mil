@@ -108,7 +108,11 @@ mil_system_install --no-install-recommends \
 	doxygen \
 	doxygen-doc \
 	doxygen-gui \
-	graphviz
+	graphviz \
+	texlive \
+	texlive-pictures \
+	texlive-latex-extra \
+	pdf2svg
 
 # Attempt to install vcstool using apt-get or pip if apt-get does not work
 sudo apt install -y python3-vcstool || sudo pip3 install -U vcstool
