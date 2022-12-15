@@ -17,7 +17,6 @@ Various documentation related to practices followed by the MIL Software team.
    Bash Style Guide <bash_style.md>
    C++ Style Guide <cpp_style.md>
    Python Style Guide <python_style.md>
-   odometry
    Migrating to ROS Noetic <noetic_migration.md>
    Installing NVIDIA Drivers for RTX 2080 <rtx_2080_drivers.md>
    Installing Ubuntu 18.04 on an M-series Apple computer <apple_mseries_ubuntu_setup.md>
