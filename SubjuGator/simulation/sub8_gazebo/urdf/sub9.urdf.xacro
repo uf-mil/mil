@@ -14,10 +14,11 @@
   <!-- Base link of sub -->
   <link name="base_link">
     <inertial>
-      <!-- Mass from official weigh-in at RobotSub 2018 -->
-      <!-- determined from solid works as of 2020-08-09-->
-      <mass value="47.6"/>
-      <inertia ixx="1.18" ixy="-0.003" ixz="0.04" iyy="1.431" iyz="-0.034" izz="1.262"/>
+      <!-- Rough estimate of RoboSub 2022 -->
+      <mass value="21.5"/>
+      <!-- Estimate of inertial tensor based on inertial tensor for rectangular prism -->
+      <!-- https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors -->
+      <inertia ixx="0.96105" ixy="0.003" ixz="-0.02" iyy="1.799" iyz="0.0003" izz="2.1286"/>
     </inertial>
     <visual name="visual">
       <origin rpy="${pi/2} 0 ${pi}" xyz="${(0.915/2-0.009)} ${-(0.606/2)} ${-(0.381/2)}"/>
