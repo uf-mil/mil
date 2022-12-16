@@ -11,19 +11,19 @@ See the wiki to understand their implementation, how they work, and how to add a
 ```shell
 
 # To clear a particular alarm from the CLI
-rosrun sub8_alarm clear network-timeout
+rosrun ros_alarms clear network-timeout
 
 # Raise a particular alarm
-rosrun sub8_alarm raise network-timeout
+rosrun ros_alarms raise network-timeout
 
 # Clear all alarms
-rosrun sub8_alarm clear all
+rosrun ros_alarms clear all
 
 ```
 
 # Adding Alarms
 
-In the "alarms" sub-module: sub8_alarm.alarms, there are *.py files, for addressing particular alarm scenarios.
+In the "alarms" sub-module: subjugator_alarms.alarms, there are *.py files, for addressing particular alarm scenarios.
 
 
 # Topics
