@@ -18,11 +18,15 @@ of your VM software.
 
 ## Installing Ubuntu
 
+You will need to install **Ubuntu 20.04 LTS**, the main operating system supported by
+ROS and our tools. Our tools are not setup to work on other operating systems, including
+other Linux distributions, macOS, and Windows.
+
 To use Ubuntu in MIL, you have two options:
 
 1. Use a **virtual machine**. A virtual machine uses your current operating system
-to virtually host another operating system (in this case, Ubuntu). This will
-likely cause your Ubuntu system to run slow (in some cases, it might be unusable)
+to virtually host another operating system (in this case, Ubuntu). This could
+cause your Ubuntu environment to run slow (in some cases, it might be unusable)
 and may cause you to experience issues with certain programs.
 
 2. **Dual-boot your computer.** Dual booting will allocate a piece of your computer's
@@ -50,15 +54,22 @@ software on Windows to run Ubuntu. These software include VirtualBox or VMWare.
 Choose which virtualization software works best for you and find a tutorial on how
 to install Ubuntu.
 
-* **Using Parallels on MacOS**: Parallels is a favorited virtual machine software
+* **Using Parallels on macOS**: Parallels is a favorited virtual machine software
 available on MacOS. It is not free, although there is a student discount available.
 To see how to install Ubuntu on MacOS with parallels, see
 [here](https://peterwitham.com/videos/how-to-install-ubuntu-20-04-lts-on-parallels-for-mac/).
 
-* **Using UTM on a Mac**: UTM is a virtual machine software that is compatible with
+* **Using UTM on macOS**: UTM is a virtual machine software that is compatible with
 MacOS. The software is free, unlike Parallels, but requires more setup by the user.
 For instructions on installing Ubuntu with UTM,
 [see here](https://mac.getutm.app/gallery/ubuntu-20-04).
+
+* **Use Distrobox on another Linux distribution**: If you use a Linux distribution
+as your primary operating system, you can install
+Ubuntu through [Distrobox](https://github.com/89luca89/distrobox). You can create a
+Distrobox environment using `distrobox create --name mil --image ubuntu:focal --home ~/mil-home`.
+This will allow you to keep a MIL-only environment. You will also have to set the
+hostname to localhost manually by running `sudo hostname localhost` before running setup.
 
 After you have the operating system downloaded, you may need to configure it.
 This includes setting your preferred language and keyboard layout, along with
