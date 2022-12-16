@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<robot xmlns:xacro="http://ros.org/wiki/xacro" name="sub8">
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="sub9">
   <!-- Include macros -->
   <xacro:include filename="$(find mil_gazebo)/xacro/fixed_link.xacro"/>
   <xacro:include filename="$(find mil_gazebo)/xacro/camera.xacro"/>

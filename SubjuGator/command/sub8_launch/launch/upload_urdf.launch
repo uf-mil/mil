@@ -6,12 +6,22 @@
   <param if="$(arg simulate_cams)" name="robot_description" textfile="$(find sub8_gazebo)/urdf/$(arg sub).urdf"/>
   <param unless="$(arg simulate_cams)" name="robot_description" textfile="$(find sub8_gazebo)/urdf/$(arg sub)_no_cams.urdf"/>
 
-  <rosparam param="robot_parameters">
+  <rosparam if="$(eval arg('sub') == 'sub8')" param="robot_parameters">
     volume: 0.04822
     drag:
       linear_coeffs: [250, 250, 250]
       angular_coeffs: [100, 100, 100]
     height: 0.59
+    fluid_density: 997.0
+    air_density: 1.225
+    G: 9.81
+  </rosparam>
+  <rosparam if="$(eval arg('sub') == 'sub9')" param="robot_parameters">
+    volume: 0.02184
+    drag:
+      linear_coeffs: [250, 250, 250]
+      angular_coeffs: [100, 100, 100]
+    height: 0.4
     fluid_density: 997.0
     air_density: 1.225
     G: 9.81
