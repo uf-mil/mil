@@ -89,9 +89,9 @@ if __name__ == '__main__':
     import numpy.random as npr  # haha
     import rosparam
     import rospkg
-    sub8_thruster_mapper = rospkg.RosPack().get_path('sub8_thruster_mapper')
+    subjugator_thruster_mapper = rospkg.RosPack().get_path('subjugator_thruster_mapper')
     thruster_layout = rosparam.load_file(
-        sub8_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
+        subjugator_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
     print thruster_layout
 
     port_info = npr.choice(thruster_layout['thruster_ports'])

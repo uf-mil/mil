@@ -26,8 +26,8 @@ import os
 print 'Imported os'
 
 rospy.init_node('m5_debug_shell')
-rosparam.load_file(os.environ['CATKIN_DIR'] + '/src/SubjuGator/gnc/sub8_thruster_mapper/config/thruster_layout.yaml')[0][0]
-layout = rosparam.load_file(os.environ['CATKIN_DIR'] + '/src/SubjuGator/gnc/sub8_thruster_mapper/config/thruster_layout.yaml')[0][0]
+rosparam.load_file(os.environ['CATKIN_DIR'] + '/src/SubjuGator/gnc/subjugator_thruster_mapper/config/thruster_layout.yaml')[0][0]
+layout = rosparam.load_file(os.environ['CATKIN_DIR'] + '/src/SubjuGator/gnc/subjugator_thruster_mapper/config/thruster_layout.yaml')[0][0]
 
 port_defs, thruster_defs = layout['thruster_ports'], layout['thrusters']
 print "Port definitions and thruster definitions available as 'port_defs' and 'thruster_defs' respectively"

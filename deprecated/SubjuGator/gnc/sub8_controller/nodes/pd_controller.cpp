@@ -10,7 +10,7 @@
     - Intended to be a serious replacement for the sub7 controller
         (Something else is cooking to replace that)
 */
-#include "sub8_controller/pd_controller.hpp"
+#include "subjugator_controller/pd_controller.hpp"
 
 PDController::PDController()
 {
@@ -159,7 +159,7 @@ Eigen::AngleAxis<double> PDController::rotation_difference(Eigen::Matrix3d &rota
   return angle_axis;
 }
 
-void PDController::gain_callback(sub8_controller::GainConfig &config, uint32_t level)
+void PDController::gain_callback(subjugator_controller::GainConfig &config, uint32_t level)
 {
   /* Set gains using dynamic reconfigure */
   kp_trans = config.kp_trans;
@@ -206,7 +206,7 @@ void PDController::truth_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
   }
 }
 
-void PDController::trajectory_callback(const sub8_msgs::Trajectory::ConstPtr &trajectory)
+void PDController::trajectory_callback(const subjugator_msgs::Trajectory::ConstPtr &trajectory)
 {
   /* Callback on target trajectory */
 

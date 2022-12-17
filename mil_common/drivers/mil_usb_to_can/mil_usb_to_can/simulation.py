@@ -83,13 +83,16 @@ class SimulatedUSBtoCAN(SimulatedSerial):
     CAN devices to simulate the behavior of the whole CAN network.
     """
 
-    def __init__(self, devices={0: SimulatedCANDevice}, can_id=-1):
+    def __init__(self, devices=None, can_id=-1):
         """
         Args:
             devices (Dict[:class:`int`, Any]): Dictionary containing CAN IDs and
                 their associated simulated classes inheriting from :class:`SimulatedCANDevice`.
             can_id (int): ID of the CAN2USB device. Defaults to -1.
         """
+        if devices is None:
+            devices = {0: SimulatedCANDevice}
+
         self._my_id = can_id
         self._devices = {
             can_id: device(self, can_id) for can_id, device in devices.items()

@@ -39,7 +39,7 @@ from sklearn import cluster  # noqa
 
 # Importing these late so that argcomplete can run quickly
 # NEEDS TO NOT BE DEPENDENT ON sub8 SOON. MOVE THESE FUNCTIONS TO MIL_VISION
-from sub8_vision_tools import visual_threshold_tools  # noqa
+from subjugator_vision_tools import visual_threshold_tools  # noqa
 
 os.system("export ETS_TOOLKIT=qt4")
 
