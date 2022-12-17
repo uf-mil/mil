@@ -5,7 +5,7 @@ from ros_alarms import AlarmBroadcaster, AlarmListener
 from ros_alarms.msg import Alarm
 from rospy.timer import TimerEvent
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
-from sub8_msgs.msg import Thrust
+from subjugator_msgs.msg import Thrust
 
 from .packets import (
     KILL_SEND_ID,

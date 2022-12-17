@@ -7,7 +7,7 @@ The pd_controller here was written in early October, and is nothing more than a 
 
 # Running
 
-    rosrun sub8_controller pd_controller
+    rosrun subjugator_controller pd_controller
     rosrun rqt_reconfigure rqt_reconfigure
 
 

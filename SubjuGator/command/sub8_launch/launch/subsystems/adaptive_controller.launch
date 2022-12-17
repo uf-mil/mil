@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <arg name="debug" default="True" />
-  <node pkg="sub8_controller" type="adaptive_controller" name="adaptive_controller">
-    <rosparam param="" file="$(find sub8_launch)/config/adaptive_controller.yaml" />
-    <param name="debug" value="$(arg debug)" />
-  </node>
-</launch>

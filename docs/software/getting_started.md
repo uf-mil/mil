@@ -193,7 +193,7 @@ default terminal, use `Ctrl + Shift + t`.
 In window one, write:
 
 ```bash
-$ roslaunch sub8_launch gazebo.launch
+$ roslaunch subjugator_launch gazebo.launch
 ```
 
 In window two, write:

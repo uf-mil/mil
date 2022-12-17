@@ -10,9 +10,9 @@ Messages
 
 Thrust
 ^^^^^^
-.. attributetable:: sub8_msgs.msg.Thrust
+.. attributetable:: subjugator_msgs.msg.Thrust
 
-.. class:: sub8_msgs.msg.Thrust
+.. class:: subjugator_msgs.msg.Thrust
 
     Message type indicating commands for each thruster.
 
@@ -20,13 +20,13 @@ Thrust
 
         The commands for the thrusters.
 
-        :type: List[:class:`~sub8_msgs.msg.ThrusterCmd`]
+        :type: List[:class:`~subjugator_msgs.msg.ThrusterCmd`]
 
 ThrusterCmd
 ^^^^^^^^^^^
-.. attributetable:: sub8_msgs.msg.ThrusterCmd
+.. attributetable:: subjugator_msgs.msg.ThrusterCmd
 
-.. class:: sub8_msgs.msg.ThrusterCmd
+.. class:: subjugator_msgs.msg.ThrusterCmd
 
     A command for a specific thruster.
 
@@ -166,23 +166,23 @@ Thruster
 Object Detection
 ----------------
 
-Sub8BuoyDetector
-^^^^^^^^^^^^^^^^
-.. cppattributetable:: Sub8BuoyDetector
+SubjuGatorBuoyDetector
+^^^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: SubjuGatorBuoyDetector
 
-.. doxygenclass:: Sub8BuoyDetector
+.. doxygenclass:: SubjuGatorBuoyDetector
 
-Sub8StartGateDetector
-^^^^^^^^^^^^^^^^^^^^^
-.. cppattributetable:: Sub8StartGateDetector
+SubjuGatorStartGateDetector
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: SubjuGatorStartGateDetector
 
-.. doxygenclass:: Sub8StartGateDetector
+.. doxygenclass:: SubjuGatorStartGateDetector
 
-Sub8TorpedoBoardDetector
-^^^^^^^^^^^^^^^^^^^^^^^^
-.. cppattributetable:: Sub8TorpedoBoardDetector
+SubjuGatorTorpedoBoardDetector
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: SubjuGatorTorpedoBoardDetector
 
-.. doxygenclass:: Sub8TorpedoBoardDetector
+.. doxygenclass:: SubjuGatorTorpedoBoardDetector
 
 TorpedoBoardReprojectionCost
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -239,11 +239,11 @@ Type Definitions
 
 .. doxygentypedef:: ColorHandlerT
 
-Sub8ObjectFinder
-^^^^^^^^^^^^^^^^
-.. cppattributetable:: Sub8ObjectFinder
+SubjuGatorObjectFinder
+^^^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: SubjuGatorObjectFinder
 
-.. doxygenclass:: Sub8ObjectFinder
+.. doxygenclass:: SubjuGatorObjectFinder
 
 StereoBase
 ^^^^^^^^^^
@@ -259,16 +259,16 @@ RvizVisualizer
 
 OccGridUtils
 ^^^^^^^^^^^^
-.. attributetable:: sub8_vision_tools.OccGridUtils
+.. attributetable:: subjugator_vision_tools.OccGridUtils
 
-.. autoclass:: sub8_vision_tools.OccGridUtils
+.. autoclass:: subjugator_vision_tools.OccGridUtils
     :members:
 
 Searcher
 ^^^^^^^^
-.. attributetable:: sub8_vision_tools.Searcher
+.. attributetable:: subjugator_vision_tools.Searcher
 
-.. autoclass:: sub8_vision_tools.Searcher
+.. autoclass:: subjugator_vision_tools.Searcher
     :members:
 
 Classification
@@ -287,9 +287,9 @@ Simulation
 ----------
 BagManager
 ^^^^^^^^^^
-.. attributetable:: sub8_gazebo_tools.BagManager
+.. attributetable:: subjugator_gazebo_tools.BagManager
 
-.. autoclass:: sub8_gazebo_tools.BagManager
+.. autoclass:: subjugator_gazebo_tools.BagManager
     :members:
 
 6DOF Controller
@@ -305,16 +305,16 @@ Dynamics
 --------
 SubjuGatorDynamics
 ^^^^^^^^^^^^^^^^^^
-.. attributetable:: sub8_system_id.SubjuGatorDynamics
+.. attributetable:: subjugator_system_id.SubjuGatorDynamics
 
-.. autoclass:: sub8_system_id.SubjuGatorDynamics
+.. autoclass:: subjugator_system_id.SubjuGatorDynamics
     :members:
 
 Missions
 --------
 PoseEditor
 ^^^^^^^^^^
-.. attributetable:: sub8_missions.PoseEditor
+.. attributetable:: subjugator_missions.PoseEditor
 
-.. autoclass:: sub8_missions.PoseEditor
+.. autoclass:: subjugator_missions.PoseEditor
     :members:

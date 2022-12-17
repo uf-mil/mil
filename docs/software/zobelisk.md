@@ -67,7 +67,7 @@ began working on your project.
 ## Test Your Setup
 In the remote container, launch SubjuGator with
 
-    <username>@192.168.36.176$ roslaunch sub8_launch gazebo.launch
+    <username>@192.168.36.176$ roslaunch subjugator_launch gazebo.launch
 
 Then in the tmux session running on your computer, run
 

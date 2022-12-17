@@ -1,5 +1,5 @@
-digraph sub8 {
-  label="Sub8 High Level Software Graph";
+digraph subjugator {
+  label="SubjuGator High Level Software Graph";
 
   subgraph clusterSensors {
     label="Sensors";
