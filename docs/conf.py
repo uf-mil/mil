@@ -63,7 +63,7 @@ extensions = [
 ]
 
 intersphinx_mapping = {
-    "py": ("https://docs.python.org/3", None),
+    "py": ("https://docs.python.org/3.8", None),
     "aio": ("https://docs.aiohttp.org/en/stable/", None),
     "req": ("https://requests.readthedocs.io/en/latest/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),

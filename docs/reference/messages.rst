@@ -163,7 +163,7 @@ PointStamped
 
         :type: :class:`Header`
 
-    .. attribute:: position
+    .. attribute:: point
 
         The position associated with the point
 
