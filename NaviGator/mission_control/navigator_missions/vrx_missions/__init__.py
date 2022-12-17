@@ -1,4 +1,4 @@
-from navigator_missions import Navigator
+from navigator_missions import NaviGatorMission
 from navigator_missions.move import Move
 
 from .dock import Dock

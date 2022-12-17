@@ -22,6 +22,29 @@ class RunMissionTest(unittest.TestCase):
         self.assertEqual(result.parameters, "")
         self.assertEqual(result.result, "The darkness isn't so scary")
 
+    def test_failing_mission(self):
+        self.client.run_mission("FailingMission")
+        self.client.wait_for_result()
+        result = self.client.get_result()
+        state = self.client.get_state()
+        self.assertEqual(state, TerminalState.ABORTED)
+        self.assertFalse(result.success)
+        self.assertTrue(result.parameters)
+        self.assertRegex(
+            result.result,
+            r"^Exception occurred in FailingMission mission: ValueError: This is an example error\!$",
+        )
+
+    def test_cancelled_mission(self):
+        self.client.run_mission("CancelledMission")
+        self.client.wait_for_result()
+        result = self.client.get_result()
+        state = self.client.get_state()
+        self.assertEqual(state, TerminalState.ABORTED)
+        self.assertFalse(result.success)
+        self.assertFalse(result.parameters)
+        self.assertEqual(result.result, "mission cancelled")
+
 
 if __name__ == "__main__":
     import rostest

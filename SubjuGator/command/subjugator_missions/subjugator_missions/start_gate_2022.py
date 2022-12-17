@@ -2,7 +2,7 @@
 
 from mil_misc_tools import text_effects
 
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 
 fprint = text_effects.FprintFactory(title="START_GATE", msg_color="cyan").fprint
 
@@ -17,7 +17,7 @@ WAIT_SECONDS = 180
 RIGHT_OR_LEFT = 1
 
 
-class StartGate2022(SubjuGator):
+class StartGate2022(SubjuGatorMission):
     async def run(self, args):
         fprint("Waiting for odom")
         await self.tx_pose()

@@ -6,7 +6,7 @@ from image_geometry import PinholeCameraModel
 from mil_misc_tools import text_effects
 from sensor_msgs.msg import CameraInfo
 
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 
 fprint = text_effects.FprintFactory(title="BALL_DROP", msg_color="cyan").fprint
 
@@ -18,7 +18,7 @@ HEIGHT_BALL_DROPER = 0.75
 TRAVEL_DEPTH = 0.75  # 2
 
 
-class BallDrop(SubjuGator):
+class BallDrop(SubjuGatorMission):
     async def run(self, args):
         try:
             ree = rospy.ServiceProxy("/vision/garlic/enable", SetBool)

@@ -7,7 +7,7 @@ from mil_ros_tools import rosmsg_to_numpy
 from sensor_msgs.msg import CameraInfo
 from visualization_msgs.msg import Marker, MarkerArray
 
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 
 fprint = text_effects.FprintFactory(title="VAMPIRES", msg_color="cyan").fprint
 
@@ -20,7 +20,7 @@ Y_OFFSET = 0
 Z_OFFSET = 0
 
 
-class VampireSlayer(SubjuGator):
+class VampireSlayer(SubjuGatorMission):
     async def run(self, args):
         await self.vision_proxies.xyz_points.start()
 

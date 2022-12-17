@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 
 
-class TorpedosTest(SubjuGator):
+class TorpedosTest(SubjuGatorMission):
     async def run(self, args):
         self.send_feedback("Shooting Torpedo 1")
         await self.actuators.shoot_torpedo1()

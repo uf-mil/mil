@@ -8,7 +8,7 @@ from geometry_msgs.msg import Point, Pose, Quaternion, Twist
 from mil_misc_tools import ThrowingArgumentParser
 from ros_alarms import TxAlarmBroadcaster
 
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 
 UNITS = {"m": 1, "ft": 0.3048, "yard": 0.9144, "rad": 1, "deg": 0.0174533}
 SHORTHAND = {
@@ -29,14 +29,14 @@ SHORTHAND = {
 }
 
 
-class Move(SubjuGator):
+class Move(SubjuGatorMission):
     @classmethod
     def decode_parameters(cls, parameters):
         argv = parameters.split()
         return cls.parser.parse_args(argv)
 
     @classmethod
-    def init(cls):
+    async def setup(cls):
         parser = ThrowingArgumentParser(
             description="Command Line Mission Runner",
             usage="Pass any pose editor commands with an arguments. \n\t\

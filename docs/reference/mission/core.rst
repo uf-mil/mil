@@ -1,6 +1,8 @@
 :mod:`mil_missions_core` - Base mission classes
 -----------------------------------------------
 
+.. automodule:: mil_missions_core
+
 BaseMission
 ^^^^^^^^^^^
 .. attributetable:: mil_missions_core.BaseMission

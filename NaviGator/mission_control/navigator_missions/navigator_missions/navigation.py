@@ -6,7 +6,7 @@ import numpy as np
 from mil_tools import quaternion_matrix, rosmsg_to_numpy
 from std_srvs.srv import SetBoolRequest
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 ___author___ = "Alex Perez and Cameron Brown"
 
@@ -18,7 +18,7 @@ class MoveState(Enum):
     FINISHED = 4
 
 
-class Navigation(Navigator):
+class Navigation(NaviGatorMission):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.current_move_task_state = MoveState.NOT_STARTED

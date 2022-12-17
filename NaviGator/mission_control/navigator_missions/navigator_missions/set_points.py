@@ -7,10 +7,10 @@ from mil_tools import numpy_quat_pair_to_pose
 from sensor_msgs.msg import Joy
 from std_msgs.msg import Header
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-async def main(navigator: Navigator):
+async def main(navigator: NaviGatorMission):
     waypoints = []
     poses = []
 

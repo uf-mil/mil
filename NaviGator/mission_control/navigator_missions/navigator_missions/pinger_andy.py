@@ -3,16 +3,16 @@ import numpy as np
 from geometry_msgs.msg import Vector3Stamped
 from mil_tools import rosmsg_to_numpy
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class PingerAndy(Navigator):
+class PingerAndy(NaviGatorMission):
     """
     Mission to run sonar start gate challenge using Andy's sonar system, which produces a vector pointing towards the
     """
 
     @classmethod
-    async def init(cls):
+    async def setup(cls):
         cls.pinger_heading = cls.nh.subscribe(
             "/hydrophones/ping_direction", Vector3Stamped
         )

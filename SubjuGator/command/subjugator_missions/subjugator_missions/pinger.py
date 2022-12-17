@@ -12,7 +12,7 @@ from mil_misc_tools import text_effects
 from std_srvs.srv import Trigger
 from visualization_msgs.msg import Marker, MarkerArray
 
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 
 fprint = text_effects.FprintFactory(title="PINGER", msg_color="cyan").fprint
 
@@ -27,7 +27,7 @@ POSITION_TOL = 0.09  # how close to pinger before quitting
 Z_POSITION_TOL = -0.53
 
 
-class Pinger(SubjuGator):
+class Pinger(SubjuGatorMission):
     async def run(self, args):
         global markers
         markers = MarkerArray()
@@ -158,7 +158,7 @@ class Pinger(SubjuGator):
         fprint("Arrived to hydrophones! Going down!")
         await self.move.to_height(PINGER_HEIGHT).zero_roll_and_pitch().go(speed=0.1)
 
-    async def fancy_move(self, sub: SubjuGator, vec):
+    async def fancy_move(self, sub: SubjuGatorMission, vec):
         global markers
         marker = Marker(
             ns="pinger",
@@ -179,7 +179,9 @@ class Pinger(SubjuGator):
             speed=SPEED
         )
 
-    async def go_to_random_guess(self, sub: SubjuGator, pinger_1_req, pinger_2_req):
+    async def go_to_random_guess(
+        self, sub: SubjuGatorMission, pinger_1_req, pinger_2_req
+    ):
         pinger_guess = await self.transform_to_baselink(sub, pinger_1_req, pinger_2_req)
         where_to = random.choice(pinger_guess)
         where_to = where_to / np.linalg.norm(where_to)
@@ -204,7 +206,9 @@ class Pinger(SubjuGator):
             return (False, go_to_guess)
         return (True, vec)
 
-    async def transform_to_baselink(self, sub: SubjuGator, pinger_1_req, pinger_2_req):
+    async def transform_to_baselink(
+        self, sub: SubjuGatorMission, pinger_1_req, pinger_2_req
+    ):
         transform = await sub._tf_listener.get_transform("/base_link", "map")
         position = await sub.pose.position
         pinger_guess = [

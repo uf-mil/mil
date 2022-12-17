@@ -1,13 +1,13 @@
 from mil_misc_tools import text_effects
 
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 
 SPEED_LIMIT = 0.5  # m/s
 
 fprint = text_effects.FprintFactory(title="STRIPPER", msg_color="cyan").fprint
 
 
-class Strip(SubjuGator):
+class Strip(SubjuGatorMission):
     async def pitch(self):
         start = self.move.forward(0).zero_roll_and_pitch()
         pitches = [start.pitch_down_deg(7), start] * 5

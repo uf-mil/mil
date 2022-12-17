@@ -1,11 +1,11 @@
 #! /usr/bin/env python3
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 
 SIDE_LENGTH = 1  # meters
 SPEED_LIMIT = 0.2  # m/s
 
 
-class Square(SubjuGator):
+class Square(SubjuGatorMission):
     async def run(self, args):
         center = self.move.forward(0).zero_roll_and_pitch()
         for i in range(4):

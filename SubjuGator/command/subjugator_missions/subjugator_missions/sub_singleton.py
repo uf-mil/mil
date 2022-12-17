@@ -14,7 +14,14 @@ import sensor_msgs.point_cloud2 as pc2
 import yaml
 from axros import NodeHandle, ServiceClient, action, axros_tf, serviceclient, types
 from mil_missions_core import BaseMission
-from mil_msgs.msg import MoveToAction, PoseTwistStamped, RangeStamped
+from mil_msgs.msg import (
+    MoveToAction,
+    MoveToFeedback,
+    MoveToGoal,
+    MoveToResult,
+    PoseTwistStamped,
+    RangeStamped,
+)
 from mil_msgs.srv import (
     ObjectDBQuery,
     ObjectDBQueryRequest,
@@ -38,7 +45,7 @@ from subjugator_msgs.srv import (
 from tf.transformations import quaternion_from_euler, quaternion_multiply
 from vision_msgs.msg import Detection2DArray
 
-from . import pose_editor
+from . import exceptions, pose_editor
 
 
 class VisionProxy:
@@ -175,7 +182,10 @@ class _VisionProxies:
 
 class _PoseProxy:
     def __init__(
-        self, sub: SubjuGator, pose: pose_editor.PoseEditor, print_only: bool = False
+        self,
+        sub: SubjuGatorMission,
+        pose: pose_editor.PoseEditor,
+        print_only: bool = False,
     ):
         self._sub = sub
         self._pose = pose
@@ -210,7 +220,7 @@ class _PoseProxy:
             print("GOAL TOO HIGH")
             self._pos.position = -0.6
 
-    def go(self, *args, **kwargs):
+    async def go(self, *args, **kwargs):
         if self.print_only:
             print(self._pose)
             return self._sub.nh.sleep(0.1)
@@ -220,7 +230,10 @@ class _PoseProxy:
         goal = self._sub._moveto_action_client.send_goal(
             self._pose.as_MoveToGoal(*args, **kwargs)
         )
-        return goal.get_result()
+        result = await goal.get_result()
+        if result.error == "killed":
+            raise exceptions.KilledException()
+        return result
 
     def go_trajectory(self, *args, **kwargs):
         traj = self._sub._trajectory_pub.publish(
@@ -281,16 +294,17 @@ class _ActuatorProxy:
         return
 
 
-class SubjuGator(BaseMission):
+class SubjuGatorMission(BaseMission):
 
     nh: NodeHandle
+    _moveto_action_client: action.ActionClient[MoveToGoal, MoveToResult, MoveToFeedback]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     @classmethod
-    async def _init(cls, mission_server):
-        super()._init(mission_server)
+    async def setup_base(cls, mission_server):
+        await super().setup_base(mission_server)
         cls._moveto_action_client = action.ActionClient(cls.nh, "moveto", MoveToAction)
         cls._odom_sub = cls.nh.subscribe("odom", Odometry)
         cls._trajectory_sub = cls.nh.subscribe("trajectory", PoseTwistStamped)
@@ -315,7 +329,7 @@ class SubjuGator(BaseMission):
         )
 
     @classmethod
-    async def _shutdown(cls) -> None:
+    async def shutdown_base(cls) -> None:
         await asyncio.gather(
             cls._moveto_action_client.shutdown(),
             cls._odom_sub.shutdown(),
@@ -372,7 +386,7 @@ class SubjuGator(BaseMission):
 
 
 class Searcher:
-    def __init__(self, sub: SubjuGator, vision_proxy: Callable, search_pattern):
+    def __init__(self, sub: SubjuGatorMission, vision_proxy: Callable, search_pattern):
         """
         Give a sub_singleton, a function to call for the object you're looking for,
         and a list poses to execute in order to find it (can be a list of relative
@@ -477,7 +491,7 @@ class Searcher:
 
 
 class PoseSequenceCommander:
-    def __init__(self, sub: SubjuGator):
+    def __init__(self, sub: SubjuGatorMission):
         self.sub = sub
 
     async def go_to_sequence_eulers(
@@ -539,7 +553,7 @@ class SonarObjects:
     _clear_pcl: ServiceClient
     _objects_service: ServiceClient
 
-    def __init__(self, sub: SubjuGator, pattern=None):
+    def __init__(self, sub: SubjuGatorMission, pattern=None):
         """
         SonarObjects: a helper to search and find objects
 
@@ -744,7 +758,7 @@ class SonarObjects:
 
 
 class SonarPointcloud:
-    def __init__(self, sub: SubjuGator, pattern=None):
+    def __init__(self, sub: SubjuGatorMission, pattern=None):
         if pattern is None:
             pattern = (
                 [sub.move.zero_roll_and_pitch()]

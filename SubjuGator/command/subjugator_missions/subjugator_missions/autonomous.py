@@ -11,7 +11,7 @@ from .pinger import Pinger
 
 # Import missions here
 from .start_gate import StartGate
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 from .surface import Surface
 from .vampire_slayer import VampireSlayer
 
@@ -19,7 +19,7 @@ fprint = text_effects.FprintFactory(title="AUTO_MISSION").fprint
 WAIT_SECONDS = 5.0
 
 
-class Autonomous(SubjuGator):
+class Autonomous(SubjuGatorMission):
     async def run_mission(self, mission, timeout):
         # timeout in seconds
         m = mission.run(self)

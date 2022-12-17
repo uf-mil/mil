@@ -9,7 +9,7 @@ from mil_misc_tools import FprintFactory
 from mil_ros_tools import rosmsg_to_numpy
 from visualization_msgs.msg import Marker, MarkerArray
 
-from .sub_singleton import SubjuGator
+from .sub_singleton import SubjuGatorMission
 
 MISSION = "Torpedo Challenge"
 
@@ -30,7 +30,7 @@ class Target:
         self.position = pos
 
 
-class FireTorpedos(SubjuGator):
+class FireTorpedos(SubjuGatorMission):
     """
     Mission to solve the torpedo RoboSub challenge.
 

@@ -4,10 +4,10 @@ from genpy import Duration
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class ConstantVelocity(Navigator):
+class ConstantVelocity(NaviGatorMission):
     """
     Mission to command a constant velocity to NaviGator's controller.
     """
@@ -18,7 +18,7 @@ class ConstantVelocity(Navigator):
     CLEANUP_TIME = 0.5  # Time to publish zero velocity when command canceled
 
     @classmethod
-    async def init(cls):
+    async def setup(cls):
         cls.msg = Odometry()
         cls.msg.header.frame_id = "enu"
         cls.msg.child_frame_id = "base_link"

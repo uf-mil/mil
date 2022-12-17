@@ -123,7 +123,7 @@ def safe_wait_for_message(topic, topic_type):
 
 class PoseEditor:
     """
-    Helper class used to create poses for the movement of SubjuGator.
+    Helper class used to create poses for the movement of SubjuGatorMission.
 
     Frequently the methods from this class can be tied together in order to
     orchestrate multiple movements.

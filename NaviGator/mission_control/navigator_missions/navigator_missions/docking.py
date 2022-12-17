@@ -6,17 +6,17 @@ from mil_msgs.msg import ObjectsInImage
 from mil_msgs.srv import CameraToLidarTransform, CameraToLidarTransformRequest
 from mil_tools import rosmsg_to_numpy
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class Docking(Navigator):
+class Docking(NaviGatorMission):
     @classmethod
     def decode_parameters(cls, parameters):
         argv = parameters.split()
         return cls.parser.parse_args(argv)
 
     @classmethod
-    async def init(cls):
+    async def setup(cls):
         parser = ThrowingArgumentParser(
             description="Dock",
             usage="""Default parameters: \'runtask Docking

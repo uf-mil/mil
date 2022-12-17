@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class Circle(Navigator):
+class Circle(NaviGatorMission):
     async def run(self, parameters):
         p = self.pose[0]
         while True:

@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 from std_srvs.srv import SetBoolRequest
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class Wildlife(Navigator):
-    @classmethod
-    def init(cls):
-        pass
-
+class Wildlife(NaviGatorMission):
     async def run(self, parameters):
         # Go to autonomous mode
         await self.set_classifier_enabled.wait_for_service()

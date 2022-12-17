@@ -2,6 +2,6 @@
 <launch>
     <node pkg="mil_missions" type="mission_server" name="mission_runner" output="screen">
         <param name="missions_module" value="vrx_missions" />
-        <param name="base_mission" value="Navigator" />
+        <param name="base_mission" value="NaviGatorMission" />
     </node>
 </launch>

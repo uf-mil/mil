@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class StationHold(Navigator):
+class StationHold(NaviGatorMission):
     async def run(self, parameters):
         self.send_feedback("Setting hold waypoint")
         self.hold()
