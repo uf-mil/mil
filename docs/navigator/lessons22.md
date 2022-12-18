@@ -2,22 +2,27 @@
 
 ![Team Photo](/navigator/robotx2022_team_photo.jpg)
 
+Throughout the entire process leading up to and during RobotX 2022, Team
+NaviGator had fun, was able to accomplish a lot, and met a lot of great new
+friends. The learned a lot along the way and wanted to record these points for
+future teams to learn from!
+
 ## Overall Improvements
 
 * **Each and every system should be _finished_ at least one month before the
-  competition.** - Unfortunately, at RobotX 2022, our kill system was not
-  completed before the team left for the competition in Australia.
-  Unfortunately, this prevented the team from being able to run NaviGator in
-  the water, as a kill system is required for the competition. At least one
-  leader should ensure that every system is completed at least one month before
-  the competition. This does not necessarily require the system to be
-  _perfect_, only ready to go.
-* **Mechanical, electrical, and software need to meet throughout the design
-  process.** - While each team go together at the start of the semester to
-  discuss the design plan for NaviGator, this meeting was likely not enough to
-  sustain good progress throughout the semester. Each of the teams sometimes
-  became confused about what the other teams needed, and overall, the teams
-  lost sync with each other.
+  competition.** - At RobotX 2022, our kill system was not completed before the
+  team left for the competition in Australia. Unfortunately, this prevented the
+  team from being able to run NaviGator in the water, as a kill system is
+  required for the competition. At least one leader should ensure that every
+  system is completed at least one month before the competition. This does not
+  necessarily require the system to be _perfect_, only ready to go.
+* **Mechanical, electrical, and software should meet throughout the design
+  process.** - While each team got together at the start of the semester to
+  discuss the design plan for NaviGator, this meeting was not enough to sustain
+  good progress throughout the semester. Each of the teams sometimes became
+  confused about what the other teams needed, and overall, the teams lost sync
+  with each other. By having regular meetings, teams can make sure that they
+  are working towards the same goal.
 * **We should have more design reviews from mentors.** - Mentors are an important
   part of the design process. Mentors can catch design flaws in systems quicker
   than students can, and can show students how to improve their designs. These
@@ -27,8 +32,8 @@
 ## Shipping Improvements
 
 * **We should bring more materials over air rather than shipping them.** - If
-  cost allows, we should aim to bring more materials by carry-on rather than
-  shipping. Shipping can be a hastle and is subject to more delays than
+  cost allows, we should aim to bring more materials ourselves by plane rather
+  than shipping. Shipping can be a hastle and is subject to more delays than
   bringing carry-ons or checking luggage. Furthermore, bringing less by
   shipping can shorten our shipping manifest, making the entire shipping
   process easier. One note about checking equipment is that it is likely to get
@@ -90,7 +95,7 @@
   electrical system on NaviGator.
 * **The onboarding process should be improved.** - Currently, the onboarding
   process is alright, but it could be improved. Currently, it's lengthy,
-  written in PDFs stored in a random GitHub repository, and contains outdated
+  written in PDFs stored in a random GitHub repository, and it contains outdated
   information. Rather, this could be updated to be more interactive or helpful
   to the reader (by way of YouTube videos, websites, or more streamlined PDFs).
   Furthermore, many electrical members drop out of MIL during the electrical
@@ -103,7 +108,7 @@
   preparing for RobotX 2022, we had several branches for testing new features.
   Some of the branches had branched off of other branches, which branched off
   of other branches, etc. By the end, many of the branches had diverged
-  severely from `master` and other members could not find which branch was
+  significantly from `master` and other members could not find which branch was
   actually being used. By encouraging a quick merge back into `master`, we can
   ship features more quickly, make development more transparent and accessible,
   and reduce the number of random branches.
