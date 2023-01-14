@@ -63,7 +63,7 @@ class ApplicationPacket:
               error is thrown.
 
         Raises:
-            ApplicationPacketWrongIdentifierException: If the ```expected_identifier``
+            ApplicationPacketWrongIdentifierException: If the ``expected_identifier``
               does not match the identifier found in the packet, then this is raised.
 
         Returns:

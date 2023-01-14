@@ -83,7 +83,9 @@ class SimulatedUSBtoCAN(SimulatedSerial):
     CAN devices to simulate the behavior of the whole CAN network.
     """
 
-    def __init__(self, devices=None, can_id=-1):
+    def __init__(
+        self, devices: dict[int, type[SimulatedCANDevice]] | None = None, can_id=-1
+    ):
         """
         Args:
             devices (Dict[:class:`int`, Any]): Dictionary containing CAN IDs and

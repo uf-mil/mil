@@ -8,7 +8,6 @@ import serial
 from mil_usb_to_can.simulation import SimulatedUSBtoCAN
 from mil_usb_to_can.utils import (  # causes error if relative import used - GH-731
     CommandPacket,
-    Packet,
     ReceivePacket,
 )
 
@@ -38,7 +37,7 @@ class USBtoCANBoard:
         self.ser.flushOutput()
         self.ser.flushInput()
 
-    def read_packet(self) -> Optional[Packet]:
+    def read_packet(self) -> Optional[ReceivePacket]:
         """
         Read a packet from the board, if available. Returns a :class:`ReceivePacket`
         instance if one was succefully read, or ``None`` if the in buffer is empty.
@@ -53,14 +52,14 @@ class USBtoCANBoard:
                 return None
             return ReceivePacket.read_packet(self.ser)
 
-    def send_data(self, data: bytes, can_id: int = 0):
+    def send_data(self, data: bytes, can_id: int = 0) -> None:
         """
         Sends data to a CAN device using the thread lock. Writes using the :meth:`write`
         method of the :attr:`.ser` attribute.
 
         Args:
-                device_id (int): CAN device ID to send data to.
-                data (bytes): Data (represented as bytes) to send to the device.
+            device_id (int): CAN device ID to send data to.
+            data (bytes): Data (represented as bytes) to send to the device.
         """
         p = CommandPacket.create_send_packet(data, can_id=can_id)
         with self.lock:

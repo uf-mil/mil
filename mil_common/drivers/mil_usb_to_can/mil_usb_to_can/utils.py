@@ -2,12 +2,14 @@
 from __future__ import annotations
 
 import struct
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, TypeVar, overload
 
 import serial
 
 if TYPE_CHECKING:
     from .simulation import SimulatedUSBtoCAN
+
+T = TypeVar("T", bound="Packet")
 
 
 class USB2CANException(Exception):
@@ -104,6 +106,16 @@ class Packet:
         """
         return struct.pack(f"B{len(self.payload)}sB", self.SOF, self.payload, self.EOF)
 
+    @overload
+    @classmethod
+    def unpack_payload(cls, data: Literal[b""]) -> None:
+        ...
+
+    @overload
+    @classmethod
+    def unpack_payload(cls, data: bytes) -> bytes:
+        ...
+
     @classmethod
     def unpack_payload(cls, data: bytes) -> bytes | None:
         """
@@ -111,13 +123,13 @@ class Packet:
 
         Raises:
             InvalidStartFlagException: The start flag (first unsigned integer) of
-              the payload is invalid.
+                the payload is invalid.
             InvalidEndFlagException: The end flag (last unsigned integer) of the payload
-              is invalid.
+                is invalid.
 
         Returns:
             Optional[bytes]: The raw data inside the packet payload. If the data
-              has zero length, then ``None`` is returned.
+            has zero length, then ``None`` is returned.
         """
         payload_len = len(data) - 2
         if payload_len < 1:
@@ -130,12 +142,12 @@ class Packet:
         return payload
 
     @classmethod
-    def from_bytes(cls, data: bytes) -> Packet | None:
+    def from_bytes(cls: type[T], data: bytes) -> T | None:
         """
         Parses a packet from a bytes string into a Packet instance.
 
         Args:
-                data (bytes): The data to put into a packet.
+            data (bytes): The data to put into a packet.
 
         Returns:
             Optional[Packet]: The packet (if one can be created), otherwise ``None``.
@@ -149,13 +161,13 @@ class Packet:
         return f"Packet(payload={self.payload})"
 
     @classmethod
-    def read_packet(cls, ser: serial.Serial | SimulatedUSBtoCAN) -> Packet | None:
+    def read_packet(cls: type[T], ser: serial.Serial | SimulatedUSBtoCAN) -> T | None:
         """
         Read a packet with a known size from a serial device
 
         Args:
-                ser (Union[serial.Serial, SimulatedUSBtoCAN]): A instance of a serial device
-              to read from.
+            ser (Union[serial.Serial, SimulatedUSBtoCAN]): A instance of a serial device
+                to read from.
 
         Raises:
             InvalidStartFlagException: The start flag of the packet read was invalid.
@@ -221,8 +233,8 @@ class ReceivePacket(Packet):
         Creates a command packet to request data from a CAN device.
 
         Args:
-                filter_id (int): The CAN device ID to request data from.
-                payload (bytes): The data to send in the packet.
+            filter_id (int): The CAN device ID to request data from.
+            payload (bytes): The data to send in the packet.
 
         Returns:
             ReceivePacket: The packet to request from the CAN device.
@@ -281,7 +293,7 @@ class CommandPacket(Packet):
         Returns:
             :class:`int`
         """
-        return struct.unpack("B", self.payload[0])[0]
+        return struct.unpack("B", self.payload[0:1])[0]
 
     @property
     def is_receive(self) -> bool:
@@ -388,8 +400,18 @@ class CommandPacket(Packet):
             checksum += byte
         return checksum % 16
 
+    @overload
     @classmethod
-    def from_bytes(cls, data: bytes):
+    def from_bytes(cls, data: Literal[b""]) -> None:
+        ...
+
+    @overload
+    @classmethod
+    def from_bytes(cls: type[T], data: bytes) -> T:
+        ...
+
+    @classmethod
+    def from_bytes(cls: type[T], data: bytes) -> T | None:
         checksum_expected = 0
         checksum_expected += data[0]
         checksum_expected += data[1] & 135

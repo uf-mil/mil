@@ -35,6 +35,7 @@ class CANDeviceHandle:
         Args:
             data (bytes): The data received.
         """
+        del data
 
     def send_data(self, data: bytes, can_id: int = 0):
         """
@@ -74,10 +75,10 @@ class ExampleEchoDeviceHandle(CANDeviceHandle):
 
     def send_new_string(self):
         # Example string to test with
-        test = "".join([random.choice(string.ascii_letters) for i in range(4)])
+        test = "".join([random.choice(string.ascii_letters) for _ in range(4)])
         self.last_sent = (test, rospy.Time.now())
         print(f"SENDING {test}")
-        self.send_data(test)
+        self.send_data(test.encode())
 
 
 class ExampleAdderDeviceHandle(CANDeviceHandle):
@@ -88,13 +89,11 @@ class ExampleAdderDeviceHandle(CANDeviceHandle):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.correct_response = 37
         self.response_received = None
         self._srv = rospy.Service("add_two_ints", AddTwoInts, self.on_service_req)
 
     def on_service_req(self, req):
         payload = struct.pack("hh", req.a, req.b)
-        self.correct_response = req.a + req.b
         self.response_received = None
         self.send_data(ApplicationPacket(37, payload).to_bytes())
         start = rospy.Time.now()
