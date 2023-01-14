@@ -5,7 +5,7 @@ import struct
 import unittest
 
 import rostest
-from mil_usb_to_can import ApplicationPacket
+from mil_usb_to_can import ApplicationPacket, CommandPacket
 
 
 class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
@@ -31,6 +31,18 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             packet.from_bytes(packet.to_bytes(), expected_identifier=37), packet
         )
+
+    def test_assembled(self):
+        letter = random.choice(string.ascii_letters)
+        packet = ApplicationPacket(37, letter.encode())
+        command_packet = CommandPacket(packet.to_bytes()).to_bytes()
+        data = struct.pack(
+            f"B{len(packet.to_bytes())}sB", 0xC0, packet.to_bytes(), 0xC1
+        )
+        checksum = CommandPacket.calculate_checksum(data)
+        header_byte = (checksum << 3) | data[1]
+        data = data[:1] + chr(header_byte).encode() + data[2:]
+        self.assertEqual(command_packet, data)
 
 
 if __name__ == "__main__":

@@ -225,6 +225,9 @@ class ReceivePacket(Packet):
 
     @property
     def length(self):
+        """
+        The length of the data to receive.
+        """
         return struct.unpack("B", self.payload[1:2])[0]
 
     @classmethod
@@ -281,8 +284,8 @@ def can_id(task_group, ecu_number):
 
 class CommandPacket(Packet):
     """
-    Represents a packet to the CAN board from the motherboard.
-    This packet can either request data from a device or send data to a device.
+    Represents a packet to the CAN board from the motherboard. This packet can
+    either request data from a device or send data to a device.
     """
 
     @property
@@ -333,7 +336,7 @@ class CommandPacket(Packet):
         The data to be sent (empty string for data request commands).
 
         Returns:
-            :class:`bytes`
+            bytes: The data to be sent.
         """
         return self.payload[2:]
 
@@ -370,6 +373,7 @@ class CommandPacket(Packet):
 
         Args:
             data (bytes): The data payload.
+            can_id (int): The ID of the device to send data to. Defaults to 0.
 
         Raises:
             PayloadTooLargeException: The payload is larger than 8 bytes.
