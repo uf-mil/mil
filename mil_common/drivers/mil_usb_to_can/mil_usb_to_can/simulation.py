@@ -55,7 +55,8 @@ class ExampleSimulatedEchoDevice(SimulatedCANDevice):
 
     def on_data(self, data, can_id):
         # Echo data received back onto the bus
-        self.send_data(data)
+        packet = ApplicationPacket.from_bytes(data, expected_identifier=37)
+        self.send_data(ApplicationPacket(37, packet.payload).to_bytes())
 
 
 class ExampleSimulatedAdderDevice(SimulatedCANDevice):
