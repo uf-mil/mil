@@ -157,7 +157,7 @@ class Packet:
             return None
         return cls(payload)
 
-    def __str__(self):
+    def __repr__(self):
         return f"Packet(payload={self.payload})"
 
     @classmethod
@@ -175,7 +175,7 @@ class Packet:
 
         Returns:
             Optional[Packet]: If found, read a packet from the serial device. Otherwise,
-              return ``None``.
+            return ``None``.
         """
         # Read until SOF is encourntered in case buffer contains the end of a previous packet
         sof = None
@@ -233,7 +233,7 @@ class ReceivePacket(Packet):
         Creates a command packet to request data from a CAN device.
 
         Args:
-            filter_id (int): The CAN device ID to request data from.
+            device_id (int): The CAN device ID to request data from.
             payload (bytes): The data to send in the packet.
 
         Returns:
@@ -350,10 +350,13 @@ class CommandPacket(Packet):
             or :meth:`.create_receive_packet` instead.
 
         Args:
-                length_byte (int): The first header byte
-                filter_id (int): The second header byte
-                data (bytes): Optional data payload when this is a send command. Defaults
-            to an empty byte string.
+            length_byte (int): The first header byte
+            filter_id (int): The second header byte
+            data (bytes): Optional data payload when this is a send command. Defaults
+                to an empty byte string.
+
+        Raises:
+            PayloadTooLargeException: The payload is larger than 8 bytes.
         """
         if len(data) > 8:
             raise PayloadTooLargeException(len(data))
@@ -366,7 +369,10 @@ class CommandPacket(Packet):
         Creates a command packet to send data to the CAN bus from the motherboard.
 
         Args:
-                data (bytes): The data payload.
+            data (bytes): The data payload.
+
+        Raises:
+            PayloadTooLargeException: The payload is larger than 8 bytes.
 
         Returns:
             CommandPacket: The packet responsible for sending information to the CAN bus
@@ -383,8 +389,8 @@ class CommandPacket(Packet):
         Creates a command packet to request data from a CAN device.
 
         Args:
-                filter_id (int): The CAN device ID to request data from.
-                receive_length (int): The number of bytes to request.
+            filter_id (int): The CAN device ID to request data from.
+            receive_length (int): The number of bytes to request.
 
         Returns:
             CommandPacket: The command packet responsibel for requesting data from
@@ -437,11 +443,6 @@ class CommandPacket(Packet):
         return data
 
     def __str__(self):
-        if self.is_receive:
-            return "CommandPacket(filter_id={}, is_receive=True, receive_length={})".format(
-                self.filter_id, self.length
-            )
-        else:
-            return "CommandPacket(filter_id={}, is_receive=False, data={})".format(
-                self.filter_id, self.data
-            )
+        return "CommandPacket(filter_id={}, is_receive={}, receive_length={})".format(
+            self.filter_id, self.is_receive, self.length
+        )

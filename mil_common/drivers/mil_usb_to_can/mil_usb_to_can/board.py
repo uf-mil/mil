@@ -60,6 +60,9 @@ class USBtoCANBoard:
         Args:
             device_id (int): CAN device ID to send data to.
             data (bytes): Data (represented as bytes) to send to the device.
+
+        Raises:
+            PayloadTooLargeException: The payload is larger than 8 bytes.
         """
         p = CommandPacket.create_send_packet(data, can_id=can_id)
         with self.lock:

@@ -9,6 +9,7 @@ from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
 
 from .application_packet import ApplicationPacket
 from .board import USBtoCANBoard
+from .utils import PayloadTooLargeException
 
 
 class CANDeviceHandle:
@@ -66,6 +67,9 @@ class CANDeviceHandle:
         Args:
             data (bytes): The data payload to send to the device.
             can_id (int): The CAN device ID to send data to. Defaults to 0.
+
+        Raises:
+            PayloadTooLargeException: The payload is larger than 8 bytes.
         """
         return self._driver.send_data(data, can_id=can_id)
 
@@ -84,8 +88,15 @@ class ExampleEchoDeviceHandle(CANDeviceHandle):
 
     def srv_req(self, req: TriggerRequest):
         while self.count < 10:
-            if not self.send_new_string():
-                return TriggerResponse(False, "Failed :(")
+            if not self.send_new_string(4):
+                return TriggerResponse(False, "Unable to send string of length four.")
+
+        try:
+            self.send_new_string(8)
+        except PayloadTooLargeException:
+            pass
+        except:
+            return TriggerResponse(False, "Testing large strings failed.")
         return TriggerResponse(True, "Complete!")
 
     def on_data(self, data):
@@ -99,11 +110,9 @@ class ExampleEchoDeviceHandle(CANDeviceHandle):
         else:
             self.count += 1
 
-    def send_new_string(self):
+    def send_new_string(self, length: int = 4):
         # Example string to test with
-        test = "".join(
-            [random.choice(string.ascii_letters) for _ in range(random.randrange(1, 4))]
-        )
+        test = "".join([random.choice(string.ascii_letters) for _ in range(length)])
         self.last_sent = (test, rospy.Time.now())
         self.send_data(ApplicationPacket(37, test.encode()).to_bytes())
         start = rospy.Time.now()
