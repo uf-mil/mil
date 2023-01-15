@@ -129,7 +129,7 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
             not self.soft_kill_plug_pulled,
             not self.hard_kill_plug_pulled,
         )
-        self.send_data(status.to_bytes())
+        self.send_data(bytes(status))
 
     def on_data(self, data: bytes, can_id: int) -> None:
         """

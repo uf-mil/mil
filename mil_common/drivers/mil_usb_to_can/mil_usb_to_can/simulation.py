@@ -56,7 +56,7 @@ class ExampleSimulatedEchoDevice(SimulatedCANDevice):
     def on_data(self, data, can_id):
         # Echo data received back onto the bus
         packet = ApplicationPacket.from_bytes(data, expected_identifier=37)
-        self.send_data(ApplicationPacket(37, packet.payload).to_bytes())
+        self.send_data(bytes(ApplicationPacket(37, packet.payload)))
 
 
 class ExampleSimulatedAdderDevice(SimulatedCANDevice):
@@ -75,7 +75,7 @@ class ExampleSimulatedAdderDevice(SimulatedCANDevice):
         a, b = struct.unpack("hh", packet.payload)
         c = a + b
         res = struct.pack("i", c)
-        self.send_data(ApplicationPacket(37, res).to_bytes())
+        self.send_data(bytes(ApplicationPacket(37, res)))
 
 
 class SimulatedUSBtoCAN(SimulatedSerial):
@@ -114,7 +114,7 @@ class SimulatedUSBtoCAN(SimulatedSerial):
         """
         # If not from the motherboard, store this for future requests from motherboard
         if not from_mobo:
-            self.buffer += ReceivePacket.create_receive_packet(can_id, data).to_bytes()
+            self.buffer += bytes(ReceivePacket.create_receive_packet(can_id, data))
         # Send data to all simulated devices besides the sender
         for device_can_id, device in self._devices.items():
             if device_can_id != can_id:

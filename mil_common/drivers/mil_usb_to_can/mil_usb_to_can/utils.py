@@ -74,12 +74,26 @@ class InvalidEndFlagException(InvalidFlagException):
 
 class Packet:
     """
-    Represents a packet to or from the CAN to USB board.
+    Represents a packet to or from the CAN to USB board. This class is inherited
+    by :class:`~mil_usb_to_can.ReceivePacket` (for receiving data from the bus)
+    and :class:`~mil_usb_to_can.CommandPacket` (for sending commands). Those child
+    classes should be used over this class whenever possible.
+
+    .. container:: operations
+
+        .. describe:: bytes(x)
+
+            Assembles the packet into a form suitable for sending through a data
+            stream. For this base packet class, :attr:`~.SOF`, :attr:`~.payload`,
+            and :attr:`~.EOF` are assembled into one byte string.
 
     Attributes:
+        payload (bytes): The payload stored in the packet.
         SOF (int): Flag used to mark the beginning of each packet. Equal to `0xC0`.
         EOF (int): Flag used to mark the beginning of each packet. Equal to `0xC1`.
     """
+
+    payload: bytes
 
     # Flag used to mark beginning of each packet
     SOF = 0xC0
@@ -87,37 +101,31 @@ class Packet:
     EOF = 0xC1
 
     def __init__(self, payload: bytes):
-        """
-        Create a Packet object with the specified payload
-
-        Args:
-            payload (bytes): The bytes to send in the packet.
-        """
         self.payload = payload
 
-    def to_bytes(self) -> bytes:
+    def __bytes__(self) -> bytes:
         """
-        Returns the binary representation of this packet to be sent across the CAN network.
-        Uses :meth:`struct.Struct.pack` to pack the payload between the :attr:`.SOF` and
-        :attr:`.EOF`.
+        Assembles the packet into a form suitable for sending through a data
+        stream. For this base packet class, :attr:`~.SOF`, :attr:`~.payload`,
+        and :attr:`~.EOF` are assembled into one byte string.
 
         Returns:
-            The packed bytes.
+            bytes: The packed bytes.
         """
         return struct.pack(f"B{len(self.payload)}sB", self.SOF, self.payload, self.EOF)
 
     @overload
     @classmethod
-    def unpack_payload(cls, data: Literal[b""]) -> None:
+    def _unpack_payload(cls, data: Literal[b""]) -> None:
         ...
 
     @overload
     @classmethod
-    def unpack_payload(cls, data: bytes) -> bytes:
+    def _unpack_payload(cls, data: bytes) -> bytes:
         ...
 
     @classmethod
-    def unpack_payload(cls, data: bytes) -> bytes | None:
+    def _unpack_payload(cls, data: bytes) -> bytes | None:
         """
         Attempts to obtain the raw data from a packed payload.
 
@@ -144,43 +152,47 @@ class Packet:
     @classmethod
     def from_bytes(cls: type[T], data: bytes) -> T | None:
         """
-        Parses a packet from a bytes string into a Packet instance.
+        Parses a packet from a packed bytes string into a Packet instance.
 
         Args:
-            data (bytes): The data to put into a packet.
+            data (bytes): The packed data to construct the Packet instance from.
 
         Returns:
-            Optional[Packet]: The packet (if one can be created), otherwise ``None``.
+            Optional[Packet]: The packet instance. ``None`` is returned if the packet
+            contains an empty payload.
         """
-        payload = cls.unpack_payload(data)
+        payload = cls._unpack_payload(data)
         if payload is None:
             return None
         return cls(payload)
 
     def __repr__(self):
-        return f"Packet(payload={self.payload})"
+        return f"{self.__class__.__name__}(payload={self.payload})"
 
     @classmethod
-    def read_packet(cls: type[T], ser: serial.Serial | SimulatedUSBtoCAN) -> T | None:
+    def read_packet(
+        cls: type[T], stream: serial.Serial | SimulatedUSBtoCAN
+    ) -> T | None:
         """
         Read a packet with a known size from a serial device
 
         Args:
-            ser (Union[serial.Serial, SimulatedUSBtoCAN]): A instance of a serial device
-                to read from.
+            stream (Union[serial.Serial, SimulatedUSBtoCAN]): A instance of a serial
+                device to read from.
 
         Raises:
             InvalidStartFlagException: The start flag of the packet read was invalid.
             InvalidEndFlagException: The end flag of the packet read was invalid.
 
         Returns:
-            Optional[Packet]: If found, read a packet from the serial device. Otherwise,
-            return ``None``.
+            Optional[Packet]: The read packet. If a packet was partially transmitted
+            (ie, starting with a character other than :attr:`~.SOF` or ending with
+            a character other than :attr:`~.EOF`), then ``None`` is returned.
         """
         # Read until SOF is encourntered in case buffer contains the end of a previous packet
         sof = None
         for _ in range(10):
-            sof = ser.read(1)
+            sof = stream.read(1)
             if sof is None or len(sof) == 0:
                 return None
             sof_int = int.from_bytes(sof, byteorder="big")
@@ -193,7 +205,7 @@ class Packet:
         data = sof
         eof = None
         for _ in range(10):
-            eof = ser.read(1)
+            eof = stream.read(1)
             if eof is None or len(eof) == 0:
                 return None
             data += eof
@@ -209,6 +221,15 @@ class Packet:
 
 
 class ReceivePacket(Packet):
+    """
+    Packet used to request data from the USB to CAN board.
+
+    Attributes:
+        payload (bytes): The payload stored in the packet.
+        SOF (int): Flag used to mark the beginning of each packet. Equal to `0xC0`.
+        EOF (int): Flag used to mark the beginning of each packet. Equal to `0xC1`.
+    """
+
     @property
     def device(self) -> int:
         """
@@ -231,6 +252,13 @@ class ReceivePacket(Packet):
         return struct.unpack("B", self.payload[1:2])[0]
 
     @classmethod
+    def _calculate_checksum(cls, device_id, payload) -> int:
+        checksum = device_id + len(payload) + cls.SOF + cls.EOF
+        for byte in payload:
+            checksum += byte
+        return checksum % 16
+
+    @classmethod
     def create_receive_packet(cls, device_id: int, payload: bytes) -> ReceivePacket:
         """
         Creates a command packet to request data from a CAN device.
@@ -244,10 +272,7 @@ class ReceivePacket(Packet):
         """
         if len(payload) > 8:
             raise PayloadTooLargeException(len(payload))
-        checksum = device_id + len(payload) + cls.SOF + cls.EOF
-        for byte in payload:
-            checksum += byte
-        checksum %= 16
+        checksum = cls._calculate_checksum(device_id, payload)
         data = struct.pack(
             f"BB{len(payload)}sB", device_id, len(payload), payload, checksum
         )
@@ -271,10 +296,11 @@ class ReceivePacket(Packet):
             expected_checksum += byte
         expected_checksum += data[-1]
         expected_checksum %= 16
+        # expected_checksum = cls._calculate_checksum(data[0], data[:-1])
         real_checksum = data[-2]
         if real_checksum != expected_checksum:
             raise ChecksumException(expected_checksum, real_checksum)
-        payload = cls.unpack_payload(data)
+        payload = cls._unpack_payload(data)
         return cls(payload)
 
 
@@ -286,6 +312,18 @@ class CommandPacket(Packet):
     """
     Represents a packet to the CAN board from the motherboard. This packet can
     either request data from a device or send data to a device.
+
+    .. container:: operations
+
+        .. describe:: bytes(x)
+
+            Assembles the packet into a form suitable for sending through a data
+            stream.
+
+    Attributes:
+        payload (bytes): The payload stored in the packet.
+        SOF (int): Flag used to mark the beginning of each packet. Equal to `0xC0`.
+        EOF (int): Flag used to mark the beginning of each packet. Equal to `0xC1`.
     """
 
     @property
@@ -333,15 +371,13 @@ class CommandPacket(Packet):
     @property
     def data(self) -> bytes:
         """
-        The data to be sent (empty string for data request commands).
-
         Returns:
             bytes: The data to be sent.
         """
         return self.payload[2:]
 
     @classmethod
-    def create_command_packet(
+    def _create_command_packet(
         cls, length_byte: int, filter_id: int, data: bytes = b""
     ) -> CommandPacket:
         """
@@ -350,7 +386,7 @@ class CommandPacket(Packet):
         .. warning::
 
             This method should rarely be used. Instead, use :meth:`.create_send_packet`
-            or :meth:`.create_receive_packet` instead.
+            or :meth:`.create_request_packet` instead.
 
         Args:
             length_byte (int): The first header byte
@@ -383,7 +419,7 @@ class CommandPacket(Packet):
             from the motherboard.
         """
         length_byte = len(data) - 1
-        return cls.create_command_packet(length_byte, can_id, data)
+        return cls._create_command_packet(length_byte, can_id, data)
 
     @classmethod
     def create_request_packet(
@@ -397,14 +433,13 @@ class CommandPacket(Packet):
             receive_length (int): The number of bytes to request.
 
         Returns:
-            CommandPacket: The command packet responsibel for requesting data from
+            CommandPacket: The command packet responsible for requesting data from
             a CAN device.
         """
         length_byte = (receive_length - 1) | 128
-        return cls.create_command_packet(length_byte, filter_id)
+        return cls._create_command_packet(length_byte, filter_id)
 
-    @staticmethod
-    def calculate_checksum(data: bytes) -> int:
+    def calculate_checksum(self, data: bytes) -> int:
         checksum = 0
         for byte in data:
             checksum += byte
@@ -431,13 +466,13 @@ class CommandPacket(Packet):
         checksum_real = (data[1] & 120) >> 3
         if checksum_expected != checksum_real:
             raise ChecksumException(checksum_expected, checksum_real)
-        payload = cls.unpack_payload(data)
+        payload = cls._unpack_payload(data)
         if payload is None:
             return None
         return cls(payload)
 
-    def to_bytes(self) -> bytes:
-        data = super().to_bytes()
+    def __bytes__(self) -> bytes:
+        data = super().__bytes__()
         checksum = 0
         for byte in data:
             checksum += byte

@@ -66,6 +66,6 @@ class USBtoCANBoard:
         """
         p = CommandPacket.create_send_packet(data, can_id=can_id)
         with self.lock:
-            p_bytes = p.to_bytes()
+            p_bytes = bytes(p)
             # print 'SENDING ', hexify(p_bytes)
             self.ser.write(p_bytes)

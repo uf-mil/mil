@@ -52,6 +52,14 @@ class ApplicationPacket:
             def from_bytes(cls, data: bytes) -> SendALetterMessage:
                 return cls(*struct.unpack(self.STRUCT_FORMAT, data))
 
+    .. container:: operations
+
+        .. describe:: bytes(x)
+
+            Assembles the packet into a form suitable for sending through a data
+            stream. Packs :attr:`~.identifier` and :attr:`~.payload` into a single
+            :class:`bytes` object.
+
     Attributes:
         identifier (int): The identifier for the packet. Allowed range is between 0
             and 255.
@@ -62,11 +70,11 @@ class ApplicationPacket:
         self.identifier = identifier
         self.payload = payload
 
-    def to_bytes(self) -> bytes:
+    def __bytes__(self) -> bytes:
         """
-        Packs the packet into a series of bytes using :meth:`struct.Struct.pack`. The identifier
-        is packed as an unsigned integer, while the payload of bytes is packed as
-        a sequence of bytes equal to the length of the payload.
+        Packs the packet into a series of bytes using :meth:`struct.Struct.pack`.
+        The identifier is packed as an unsigned integer, while the payload of bytes
+        is packed as a sequence of bytes equal to the length of the payload.
 
         Returns:
             bytes: The packed bytes.

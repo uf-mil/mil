@@ -114,7 +114,7 @@ class ExampleEchoDeviceHandle(CANDeviceHandle):
         # Example string to test with
         test = "".join([random.choice(string.ascii_letters) for _ in range(length)])
         self.last_sent = (test, rospy.Time.now())
-        self.send_data(ApplicationPacket(37, test.encode()).to_bytes())
+        self.send_data(bytes(ApplicationPacket(37, test.encode())))
         start = rospy.Time.now()
         count_now = self.count
         while self.count == count_now:
@@ -137,7 +137,7 @@ class ExampleAdderDeviceHandle(CANDeviceHandle):
     def on_service_req(self, req):
         payload = struct.pack("hh", req.a, req.b)
         self.response_received = None
-        self.send_data(ApplicationPacket(37, payload).to_bytes())
+        self.send_data(bytes(ApplicationPacket(37, payload)))
         start = rospy.Time.now()
         while self.response_received is None:
             if rospy.Time.now() - start > rospy.Duration(1):
