@@ -20,9 +20,6 @@ sent over the serial connection to the USB to CAN board from ROS.
    * - Start flag (``0xC0``)
      - 1 byte
      - Flag indicating the start of a new board message
-   * - Checksum
-     - 1 byte
-     - Checksum used to ensure that data is transmitted correctly
    * - Payload
      - 4-11 bytes
      - Actual data being transmitted. Often created through application packets.
@@ -36,7 +33,7 @@ are packets sent out by the computer to complete an action (sending or requestin
 information), whereas receiving packets are packets that listen to data coming from
 other devices.
 
-.. list-table:: Command Packet
+.. list-table:: Command Packet (:class:`.CommandPacket`)
    :header-rows: 1
 
    * - Name
@@ -56,7 +53,7 @@ other devices.
      - For sending command packets, the actual data being sent. For requesting command
        packets, an empty binary string.
 
-.. list-table:: Receiving Packet
+.. list-table:: Receiving Packet (:class:`.ReceivePacket`)
    :header-rows: 1
 
    * - Name
@@ -74,6 +71,14 @@ other devices.
    * - Checksum
      - 1 byte
      - The checksum for the data.
+
+Checksums
+^^^^^^^^^
+All messages contain a checksum to help verify data integrity. However, receiving
+packets also have a special byte containing a slightly modified checksum formula.
+
+The checksum in all packets is found by adding up all bytes in the byte string,
+including the start/end flags, and then using modulo 16 on this result.
 
 Exceptions
 ^^^^^^^^^^

@@ -37,7 +37,7 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
         packet = ApplicationPacket(37, letter.encode())
         command_packet = bytes(CommandPacket(bytes(packet)))
         data = struct.pack(f"B{len(bytes(packet))}sB", 0xC0, bytes(packet), 0xC1)
-        checksum = CommandPacket.calculate_checksum(data)
+        checksum = CommandPacket(b"").calculate_checksum(data)
         header_byte = (checksum << 3) | data[1]
         data = data[:1] + chr(header_byte).encode() + data[2:]
         self.assertEqual(command_packet, data)
