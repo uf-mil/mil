@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import importlib
-from typing import Any, Dict, Generator, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Generator, Optional, Tuple
 
 import rospy
 from mil_usb_to_can.board import (
@@ -8,6 +8,9 @@ from mil_usb_to_can.board import (
 )
 from mil_usb_to_can.utils import USB2CANException
 from serial import SerialException
+
+if TYPE_CHECKING:
+    from .device import CANDeviceHandle
 
 
 class USBtoCANDriver:
@@ -18,7 +21,7 @@ class USBtoCANDriver:
 
     Attributes:
         board (USBtoCANBoard): The board the driver is implementing.
-        handles (Dict[int, Any]): The handles served by the driver. Each key represents
+        handles (dict[int, CANDeviceHandle]): The handles served by the driver. Each key represents
           a unique device ID, and each corresponding value represents an instance of
           a child class inheriting from :class:`CANDeviceHandle`. Upon initialization,
           each class is constructed after being parsed from dynamic reconfigure.
@@ -51,7 +54,7 @@ class USBtoCANDriver:
             self.board = USBtoCANBoard(port=port, baud=baud, simulated=simulation)
 
         # Add device handles from the modules specified in ROS params
-        self.handles: Dict[int, Any] = {
+        self.handles: Dict[int, CANDeviceHandle] = {
             device_id: cls(self, device_id)
             for device_id, cls in self.parse_module_dictionary(
                 rospy.get_param("~device_handles")
