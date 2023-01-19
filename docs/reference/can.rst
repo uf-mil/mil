@@ -170,16 +170,19 @@ Packet
 .. autoclass:: mil_usb_to_can.Packet
     :members:
 
-ReceivePacket
-^^^^^^^^^^^^^
-.. attributetable:: mil_usb_to_can.ReceivePacket
+Specific Packets
+^^^^^^^^^^^^^^^^
 
-.. autoclass:: mil_usb_to_can.ReceivePacket
+NackPacket
+~~~~~~~~~~
+.. attributetable:: mil_usb_to_can.NackPacket
+
+.. autoclass:: mil_usb_to_can.NackPacket
     :members:
 
-CommandPacket
-^^^^^^^^^^^^^
-.. attributetable:: mil_usb_to_can.CommandPacket
+AckPacket
+~~~~~~~~~
+.. attributetable:: mil_usb_to_can.AckPacket
 
-.. autoclass:: mil_usb_to_can.CommandPacket
+.. autoclass:: mil_usb_to_can.AckPacket
     :members:
