@@ -39,7 +39,7 @@ class Joystick:
         self.remote.clear_wrench()
 
     def check_for_timeout(self, joy: Joy):
-        """ This checks a particular duration when the controller times out. """
+        """ This checks for a particular duration when the controller times out. """
         if self.last_joy is None:
             self.last_joy = joy
             return
