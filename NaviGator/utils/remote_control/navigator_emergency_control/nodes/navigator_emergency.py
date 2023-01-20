@@ -38,7 +38,8 @@ class Joystick:
         self.active = False
         self.remote.clear_wrench()
 
-    def check_for_timeout(self, joy):
+    def check_for_timeout(self, joy: Joy):
+        """ This checks a particular duration when the controller times out. """
         if self.last_joy is None:
             self.last_joy = joy
             return
@@ -60,6 +61,7 @@ class Joystick:
             self.last_joy = joy
 
     def joy_recieved(self, joy: Joy) -> None:
+        "Several actions are being deployed or being kept track of in the process."
         self.last_time = rospy.Time.now()
         self.check_for_timeout(joy)
 
