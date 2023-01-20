@@ -38,7 +38,8 @@ class Joystick:
         self.active = False
         self.remote.clear_wrench()
 
-    def check_for_timeout(self, joy):
+    def check_for_timeout(self, joy: Joy):
+        """This checks for a particular duration for functionalities to take place."""
         if self.last_joy is None:
             self.last_joy = joy
             return
@@ -60,9 +61,11 @@ class Joystick:
             self.last_joy = joy
 
     def joy_recieved(self, joy: Joy) -> None:
+        """Several operations are being conducted especially with thrusters 
+        in order to keep track of various functions."""
         self.last_time = rospy.Time.now()
         self.check_for_timeout(joy)
-
+        
         # Assigns readable names to the buttons that are used
         start = joy.buttons[7]
         go_inactive = joy.buttons[6]
