@@ -5,9 +5,9 @@
   <node pkg="mil_usb_to_can" type="driver.py" name="usb_to_can_driver">
     <rosparam>
     device_handles:
-      "8": mil_usb_to_can.ExampleAdderDeviceHandle
+      mil_usb_to_can.example.ExampleAdderDeviceHandle: [mil_usb_to_can.example.ExampleAdderResponsePacket]
     simulated_devices:
-      "8": mil_usb_to_can.ExampleSimulatedAdderDevice
+      mil_usb_to_can.example.ExampleSimulatedAdderDevice: [mil_usb_to_can.example.ExampleAdderRequestPacket]
     </rosparam>
   </node>
 

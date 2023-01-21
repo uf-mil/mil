@@ -4,6 +4,11 @@ import struct
 from dataclasses import dataclass
 from typing import ClassVar
 
+SYNC_CHAR_1 = 0x37
+SYNC_CHAR_2 = 0x01
+
+_packet_registry: dict[int, dict[int, type[Packet]]] = {}
+
 
 @dataclass
 class Packet:
@@ -14,10 +19,14 @@ class Packet:
 
     This class should be overridden to implement unique packet payloads. Note
     that this class supports three subclass arguments to assign unique message IDs,
-    subclass IDs, and payload formats.
+    subclass IDs, and payload formats. Note that all subclasses must be decorated
+    with :meth:`dataclasses.dataclass`.
 
     .. code-block:: python
 
+        from dataclasses import dataclass
+
+        @dataclass
         class ExamplePacket(Packet, msg_id = 0x02, subclass_id = 0x01, payload_format = "BHHf"):
             example_char: int
             example_short: int
@@ -48,17 +57,53 @@ class Packet:
         cls.msg_id = msg_id
         cls.subclass_id = subclass_id
         cls.payload_format = payload_format
+        packets = [p for mid in _packet_registry.values() for p in mid.values()]
+        for packet in packets:
+            if packet.msg_id == msg_id and packet.subclass_id == subclass_id:
+                raise ValueError(
+                    f"Cannot reuse msg_id 0x{msg_id:0x} and subclass_id 0x{subclass_id}, already used by {packet.__qualname__}"
+                )
+        _packet_registry.setdefault(msg_id, {})[subclass_id] = cls
+
+    def _calculate_checksum(self):
+        return (0, 0)
 
     def __bytes__(self):
         payload = struct.pack(self.payload_format, *self.__dict__.values())
+        checksum = self._calculate_checksum()
         return struct.pack(
-            f"BBBBH{len(payload)}s",
+            f"BBBBH{len(payload)}sBB",
             0x37,
             0x01,
             self.msg_id,
             self.subclass_id,
             len(payload),
             payload,
+            checksum[0],
+            checksum[1],
+        )
+
+    @classmethod
+    def from_bytes(cls, packed: bytes) -> Packet:
+        """
+        Constructs a packet from a packed packet in a :class:`bytes` object.
+        If a packet is found with the corresponding message and subclass ID,
+        then an instance of that packet class will be returned, else :class:`Packet`
+        will be returned.
+        """
+        msg_id = packed[2]
+        subclass_id = packed[3]
+        # for subclass in cls.__subclasses__():
+        #     if subclass.msg_id == msg_id and subclass.subclass_id == subclass_id:
+        #         payload = packed[6:-2]
+        #         unpacked = struct.unpack(subclass.payload_format, payload)
+        if msg_id in _packet_registry and subclass_id in _packet_registry[msg_id]:
+            subclass = _packet_registry[msg_id][subclass_id]
+            payload = packed[6:-2]
+            unpacked = struct.unpack(subclass.payload_format, payload)
+            return subclass(*unpacked)
+        raise LookupError(
+            f"Attempted to reconstruct packet with msg_id 0x{msg_id:02x} and subclass_id 0x{subclass_id:02x}, but no packet with IDs was found."
         )
 
 
@@ -68,13 +113,9 @@ class AckPacket(Packet, msg_id=0x00, subclass_id=0x01, payload_format=""):
     Common acknowledgment packet. Should only be found in response operations.
     """
 
-    pass
-
 
 @dataclass
 class NackPacket(Packet, msg_id=0x00, subclass_id=0x00, payload_format=""):
     """
     Common not-acknowledged packet. Should only be found in response operations.
     """
-
-    pass
