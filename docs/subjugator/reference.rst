@@ -83,10 +83,6 @@ SetValve
 
         :type: bool
 
-Exceptions
-----------
-.. autoclass:: sub8_actuator_board.InvalidAddressException
-
 Actuator Board
 --------------
 
@@ -104,20 +100,6 @@ ActuatorBoardSimulation
 .. autoclass:: sub8_actuator_board.ActuatorBoardSimulation
     :members:
 
-CommandMessage
-^^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.CommandMessage
-
-.. autoclass:: sub8_actuator_board.CommandMessage
-    :members:
-
-FeedbackMessage
-^^^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.FeedbackMessage
-
-.. autoclass:: sub8_actuator_board.FeedbackMessage
-    :members:
-
 Thrust and Kill Board
 ---------------------
 
@@ -126,27 +108,6 @@ ThrusterAndKillBoard
 .. attributetable:: sub8_thrust_and_kill_board.ThrusterAndKillBoard
 
 .. autoclass:: sub8_thrust_and_kill_board.ThrusterAndKillBoard
-    :members:
-
-KillMessage
-^^^^^^^^^^^
-.. attributetable:: sub8_thrust_and_kill_board.KillMessage
-
-.. autoclass:: sub8_thrust_and_kill_board.KillMessage
-    :members:
-
-HeartbeatMessage
-^^^^^^^^^^^^^^^^
-.. attributetable:: sub8_thrust_and_kill_board.HeartbeatMessage
-
-.. autoclass:: sub8_thrust_and_kill_board.HeartbeatMessage
-    :members:
-
-ThrustPacket
-^^^^^^^^^^^^
-.. attributetable:: sub8_thrust_and_kill_board.ThrustPacket
-
-.. autoclass:: sub8_thrust_and_kill_board.ThrustPacket
     :members:
 
 ThrusterAndKillBoardSimulation

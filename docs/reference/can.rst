@@ -51,6 +51,40 @@ packets also have a special byte containing a slightly modified checksum formula
 The checksum in all packets is found by adding up all bytes in the byte string,
 including the start/end flags, and then using modulo 16 on this result.
 
+Packet Listing
+^^^^^^^^^^^^^^
+Below is a listing of all available packets.
+
++------------+--------------+-------------------------------------------------------------------------+
+| Message ID | Subclass ID  | Class                                                                   |
++============+==============+=========================================================================+
+| 0x00       | 0x00         | :class:`mil_usb_to_can.NackPacket`                                      |
++ (Meta)     +--------------+-------------------------------------------------------------------------+
+|            | 0x01         | :class:`mil_usb_to_can.AckPacket`                                       |
++------------+--------------+-------------------------------------------------------------------------+
+| 0x01       | 0x00         | :class:`sub8_thrust_and_kill_board.HeartbeatPacket`                     |
++ (Thrust/   +--------------+-------------------------------------------------------------------------+
+| Kill)      | 0x01         | :class:`sub8_thrust_and_kill_board.ThrustSetPacket`                     |
++            +--------------+-------------------------------------------------------------------------+
+|            | 0x02         | :class:`sub8_thrust_and_kill_board.KillSetPacket`                       |
++            +--------------+-------------------------------------------------------------------------+
+|            | 0x03         | :class:`sub8_thrust_and_kill_board.KillReceivePacket`                   |
++------------+--------------+-------------------------------------------------------------------------+
+| 0x02       | 0x00         | :class:`sub8_battery_monitor_board.BatteryPollRequestPacket`            |
++ (Battery   +--------------+-------------------------------------------------------------------------+
+| Monitor)   | 0x01         | :class:`sub8_battery_monitor_board.BatteryPollResponsePacket`           |
++------------+--------------+-------------------------------------------------------------------------+
+| 0x03       | 0x00         | :class:`sub8_actuator_board.ActuatorSetPacket`                          |
++ (Actuator  +--------------+-------------------------------------------------------------------------+
+| Board)     | 0x01         | :class:`sub8_actuator_board.ActuatorPollRequestPacket`                  |
++            +--------------+-------------------------------------------------------------------------+
+|            | 0x02         | :class:`sub8_actuator_board.ActuatorPollResponsePacket`                 |
++------------+--------------+-------------------------------------------------------------------------+
+| 0x04       | 0x00         | :class:`sub8_system_status_board.SetLedRequestPacket`                   |
+| (System    |              |                                                                         |
+| Status)    |              |                                                                         |
++------------+--------------+-------------------------------------------------------------------------+
+
 CANDeviceHandle
 ^^^^^^^^^^^^^^^
 .. attributetable:: mil_usb_to_can.CANDeviceHandle
