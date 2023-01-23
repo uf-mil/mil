@@ -1,7 +1,13 @@
 #!/usr/bin/python3
+from __future__ import annotations
+
 from mil_usb_to_can import AckPacket, SimulatedCANDeviceHandle
 
-from .packets import ActuatorPollRequest, ActuatorPollResponse, ActuatorSetPacket
+from .packets import (
+    ActuatorPollRequestPacket,
+    ActuatorPollResponsePacket,
+    ActuatorSetPacket,
+)
 
 
 class ActuatorBoardSimulation(SimulatedCANDeviceHandle):
@@ -18,7 +24,7 @@ class ActuatorBoardSimulation(SimulatedCANDeviceHandle):
         self.status = {i: False for i in range(4)}
         super().__init__(*args, **kwargs)
 
-    def on_data(self, packet: ActuatorSetPacket | ActuatorPollRequest) -> None:
+    def on_data(self, packet: ActuatorSetPacket | ActuatorPollRequestPacket) -> None:
         """
         Processes data received from motherboard / other devices. For each message received,
         the class' status attribute is updated if the message is asking to write, otherwise
@@ -30,11 +36,11 @@ class ActuatorBoardSimulation(SimulatedCANDeviceHandle):
             self.send_data(bytes(AckPacket()))
 
         # If message is a status request, send motherboard the status of the requested valve
-        elif isinstance(packet, ActuatorPollRequest):
+        elif isinstance(packet, ActuatorPollRequestPacket):
             self.send_data(
                 bytes(
-                    ActuatorPollResponse(
-                        int("".join(str(x) for x in self.status), base=2)
+                    ActuatorPollResponsePacket(
+                        int("".join(str(int(x)) for x in self.status.values()), base=2)
                     )
                 )
             )

@@ -100,6 +100,27 @@ ActuatorBoardSimulation
 .. autoclass:: sub8_actuator_board.ActuatorBoardSimulation
     :members:
 
+ActuatorSetPacket
+^^^^^^^^^^^^^^^^^
+.. attributetable:: sub8_actuator_board.ActuatorSetPacket
+
+.. autoclass:: sub8_actuator_board.ActuatorSetPacket
+    :members:
+
+ActuatorPollRequestPacket
+^^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub8_actuator_board.ActuatorPollRequestPacket
+
+.. autoclass:: sub8_actuator_board.ActuatorPollRequestPacket
+    :members:
+
+ActuatorPollResponsePacket
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub8_actuator_board.ActuatorPollResponsePacket
+
+.. autoclass:: sub8_actuator_board.ActuatorPollResponsePacket
+    :members:
+
 Thrust and Kill Board
 ---------------------
 

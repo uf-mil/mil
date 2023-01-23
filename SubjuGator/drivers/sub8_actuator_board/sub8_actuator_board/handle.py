@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import rospy
-from mil_usb_to_can import CANDeviceHandle
+from mil_usb_to_can import AckPacket, CANDeviceHandle
 from sub8_actuator_board.srv import SetValve, SetValveRequest
 
-from .packets import ActuatorPollRequest, ActuatorPollResponse, ActuatorSetPacket
+from .packets import (
+    ActuatorPollRequestPacket,
+    ActuatorPollResponsePacket,
+    ActuatorSetPacket,
+)
 
 
 class ActuatorBoard(CANDeviceHandle):
@@ -12,7 +18,7 @@ class ActuatorBoard(CANDeviceHandle):
     it inherits from the :class:`CANDeviceHandle` class.
     """
 
-    _recent_response: ActuatorPollResponse | None
+    _recent_response: ActuatorPollResponsePacket | None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -39,22 +45,25 @@ class ActuatorBoard(CANDeviceHandle):
         # Wait some time for board to process command
         rospy.sleep(0.01)
         # Request the status of the valve just commanded to ensure it worked
-        self.send_data(ActuatorPollRequest())
+        self.send_data(ActuatorPollRequestPacket())
         start = rospy.Time.now()
         while rospy.Time.now() - start < rospy.Duration(1):
             if self._recent_response is not None:
                 break
-        response = {
-            "success": self._recent_response.values & (1 << req.actuator)
-            if self._recent_response is not None
-            else False
-        }
+
+        success = False
+        if self._recent_response is not None:
+            if req.opened:
+                success = not (self._recent_response.values | (1 << req.actuator))
+            else:
+                success = self._recent_response.values & (1 << req.actuator)
+        response = {"success": success}
         self._recent_response = None
         return response
 
-    def on_data(self, packet) -> None:
+    def on_data(self, packet: ActuatorPollResponsePacket | AckPacket) -> None:
         """
         Process data received from board.
         """
-        assert isinstance(packet, ActuatorPollResponse)
-        self._recent_response = packet
+        if isinstance(packet, ActuatorPollResponsePacket):
+            self._recent_response = packet

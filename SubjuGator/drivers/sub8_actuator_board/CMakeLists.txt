@@ -9,5 +9,6 @@ add_service_files(
   FILES
   SetValve.srv
 )
+add_rostest(test/simulated_board.test)
 generate_messages()
 catkin_package(CATKIN_DEPENDS message_runtime)

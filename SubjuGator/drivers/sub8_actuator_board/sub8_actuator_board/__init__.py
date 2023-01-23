@@ -1,3 +1,7 @@
 from .handle import ActuatorBoard
-from .packets import CommandMessage, FeedbackMessage, InvalidAddressException
+from .packets import (
+    ActuatorPollRequestPacket,
+    ActuatorPollResponsePacket,
+    ActuatorSetPacket,
+)
 from .simulation import ActuatorBoardSimulation
