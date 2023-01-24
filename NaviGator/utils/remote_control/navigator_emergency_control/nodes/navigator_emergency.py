@@ -20,7 +20,6 @@ class Joystick:
     Attributes:
         force_scale (int): sets the force scale that needs to be amplified by.
         torque_scale (int): sets the torque scale that needs to be amplified by.
-        remote (object): inherits all the functions from the remote control library. 
         last_raise_kill (bool): determines whether the kill alarm is activated. 
         last_clear_kill (bool): clears the system kill no matter the state that it is in.
         last_station_hold_state (bool): determines whether the goal point is set as the current location.
@@ -29,7 +28,6 @@ class Joystick:
         thruster_deploy_count (int): the number of thrusters that are being deployed.
         thruster_retract_count (int): the number of thrusters that are being retracted. 
         start_count (int): number of seconds that start is being pressed down. 
-        last_joy (object): takes in a Joy object. 
         active (bool): indicates the current state of the controller. 
     """
     def __init__(self):
