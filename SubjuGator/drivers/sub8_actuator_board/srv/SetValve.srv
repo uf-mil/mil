@@ -1,6 +1,0 @@
-# Service call to open or close a pneumatic valve
-uint8 actuator      # ID of valve
-bool opened         # If True, valve will open; if False, valve will close
----
-bool success        # False if there were any problems with the request.
-string message      # Description of error if success is false

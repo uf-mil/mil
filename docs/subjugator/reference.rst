@@ -47,11 +47,11 @@ Services
 
 SetValve
 ^^^^^^^^
-.. attributetable:: sub8_actuator_board.srv.SetValveRequest
+.. attributetable:: sub_actuator_board.srv.SetValveRequest
 
-.. class:: sub8_actuator_board.srv.SetValveRequest
+.. class:: sub_actuator_board.srv.SetValveRequest
 
-    The request class for the ``sub8_actuator_board/SetValve`` service.
+    The request class for the ``sub_actuator_board/SetValve`` service.
 
     .. attribute:: actuator
 
@@ -65,11 +65,11 @@ SetValve
 
         :type: bool
 
-.. attributetable:: sub8_actuator_board.srv.SetValveResponse
+.. attributetable:: sub_actuator_board.srv.SetValveResponse
 
-.. class:: sub8_actuator_board.srv.SetValveResponse
+.. class:: sub_actuator_board.srv.SetValveResponse
 
-    The response class for the ``sub8_actuator_board/SetValve`` service.
+    The response class for the ``sub_actuator_board/SetValve`` service.
 
     .. attribute:: success
 
@@ -88,37 +88,37 @@ Actuator Board
 
 ActuatorBoard
 ^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.ActuatorBoard
+.. attributetable:: sub_actuator_board.ActuatorBoard
 
-.. autoclass:: sub8_actuator_board.ActuatorBoard
+.. autoclass:: sub_actuator_board.ActuatorBoard
     :members:
 
 ActuatorBoardSimulation
 ^^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.ActuatorBoardSimulation
+.. attributetable:: sub_actuator_board.ActuatorBoardSimulation
 
-.. autoclass:: sub8_actuator_board.ActuatorBoardSimulation
+.. autoclass:: sub_actuator_board.ActuatorBoardSimulation
     :members:
 
 ActuatorSetPacket
 ^^^^^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.ActuatorSetPacket
+.. attributetable:: sub_actuator_board.ActuatorSetPacket
 
-.. autoclass:: sub8_actuator_board.ActuatorSetPacket
+.. autoclass:: sub_actuator_board.ActuatorSetPacket
     :members:
 
 ActuatorPollRequestPacket
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.ActuatorPollRequestPacket
+.. attributetable:: sub_actuator_board.ActuatorPollRequestPacket
 
-.. autoclass:: sub8_actuator_board.ActuatorPollRequestPacket
+.. autoclass:: sub_actuator_board.ActuatorPollRequestPacket
     :members:
 
 ActuatorPollResponsePacket
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.ActuatorPollResponsePacket
+.. attributetable:: sub_actuator_board.ActuatorPollResponsePacket
 
-.. autoclass:: sub8_actuator_board.ActuatorPollResponsePacket
+.. autoclass:: sub_actuator_board.ActuatorPollResponsePacket
     :members:
 
 Thrust and Kill Board
