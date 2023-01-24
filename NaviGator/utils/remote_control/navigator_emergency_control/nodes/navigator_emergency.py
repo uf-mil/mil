@@ -44,6 +44,12 @@ class Joystick:
         """
         Used to reset the state of the controller. Sometimes when it
         disconnects then comes back online, the settings are all out of whack.
+
+        Args:
+            No arguments are passed in.
+
+        Returns:
+            No return statement but values are being reset to their default state. 
         """
         self.last_raise_kill = False
         self.last_clear_kill = False
@@ -59,6 +65,16 @@ class Joystick:
         self.remote.clear_wrench()
 
     def check_for_timeout(self, joy: Joy):
+        """
+        Consists of several procedures that reference parameters that are retrieved from the "Joy" object in 
+        order to determine the state of the controller or whether it is a timeout phase. 
+
+        Args:
+            joy (object): the name of the "Joy" object that is being passed in. 
+
+        Returns:
+            No return statement so far but methods are being passed and values are being reassigned. 
+        """
         if self.last_joy is None:
             self.last_joy = joy
             return
@@ -80,6 +96,18 @@ class Joystick:
             self.last_joy = joy
 
     def joy_recieved(self, joy: Joy) -> None:
+        """
+        Button elements are being assigned and simplied to readable names. The numnber of deployments or retractions for
+        thrusters are being updated based on several conditions. Morever, additional settings are changed based on the
+        state of the controller and the activation of potential alarms or switches. 
+
+        Args:
+            joy (object): the name of the "Joy" object that is being passed in. 
+
+        Returns:
+            No return statement but values are being assigned, incremented, and referenced for 
+            conditional statements. 
+        """
         self.last_time = rospy.Time.now()
         self.check_for_timeout(joy)
         
@@ -150,8 +178,13 @@ class Joystick:
 
     def die_check(self, _: rospy.timer.TimerEvent) -> None:
         """
-        Publishes zeros after 2 seconds of no update
-        in case node navigator_emergency_xbee dies
+        Publishes zeros after 2 seconds of no update in case node navigator_emergency_xbee dies.
+
+        Args: 
+            _: rospy.timer.TimerEvent (int): indicates the number of seconds or duration. 
+
+        Returns:
+            No return statements but values are reset to their default state. 
         """
         if self.active:
 
