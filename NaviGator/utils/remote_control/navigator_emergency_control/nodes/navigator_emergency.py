@@ -10,6 +10,28 @@ __license__ = "MIT"
 
 
 class Joystick:
+    """
+    Stores the history of operations pertaining to how the joystick operates.
+     
+    Possible operations could include resetting several parameters (imported from one of the inherited classes) 
+    to their default values, keeping track of duration to determine a timeout period, and assigning values to attributes that 
+    are used as reference for conditional statements and other functionalities such as incrementation, reassigning values, etc. 
+
+    Attributes:
+        force_scale (int): sets the force scale that needs to be amplified by.
+        torque_scale (int): sets the torque scale that needs to be amplified by.
+        remote (object): inherits all the functions from the remote control library. 
+        last_raise_kill (bool): determines whether the kill alarm is activated. 
+        last_clear_kill (bool): clears the system kill no matter the state that it is in.
+        last_station_hold_state (bool): determines whether the goal point is set as the current location.
+        last_emergency_control (bool): determines where the emergency controller is the active controller.
+        last_go_inactive (bool): checks whether something is going inactive or not.
+        thruster_deploy_count (int): the number of thrusters that are being deployed.
+        thruster_retract_count (int): the number of thrusters that are being retracted. 
+        start_count (int): number of seconds that start is being pressed down. 
+        last_joy (object): takes in a Joy object. 
+        active (bool): indicates the current state of the controller. 
+    """
     def __init__(self):
         self.force_scale = rospy.get_param("/joystick_wrench/force_scale", 600)
         self.torque_scale = rospy.get_param("/joystick_wrench/torque_scale", 500)
@@ -39,7 +61,6 @@ class Joystick:
         self.remote.clear_wrench()
 
     def check_for_timeout(self, joy: Joy):
-        """This checks for a particular duration for functionalities to take place."""
         if self.last_joy is None:
             self.last_joy = joy
             return
@@ -61,8 +82,6 @@ class Joystick:
             self.last_joy = joy
 
     def joy_recieved(self, joy: Joy) -> None:
-        """Several operations are being conducted especially with thrusters 
-        in order to keep track of various functions."""
         self.last_time = rospy.Time.now()
         self.check_for_timeout(joy)
         
