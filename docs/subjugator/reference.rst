@@ -145,6 +145,34 @@ Thruster
 .. autoclass:: sub8_thrust_and_kill_board.Thruster
     :members:
 
+HeartbeatPacket
+^^^^^^^^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.HeartbeatPacket
+
+.. autoclass:: sub8_thrust_and_kill_board.HeartbeatPacket
+    :members:
+
+ThrustSetPacket
+^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.ThrustSetPacket
+
+.. autoclass:: sub8_thrust_and_kill_board.ThrustSetPacket
+    :members:
+
+KillSetPacket
+^^^^^^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.KillSetPacket
+
+.. autoclass:: sub8_thrust_and_kill_board.KillSetPacket
+    :members:
+
+KillReceivePacket
+^^^^^^^^^^^^^^^^^
+.. attributetable:: sub8_thrust_and_kill_board.KillReceivePacket
+
+.. autoclass:: sub8_thrust_and_kill_board.KillReceivePacket
+    :members:
+
 Object Detection
 ----------------
 

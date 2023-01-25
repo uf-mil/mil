@@ -74,11 +74,11 @@ Below is a listing of all available packets.
 + (Battery   +--------------+-------------------------------------------------------------------------+
 | Monitor)   | 0x01         | :class:`sub8_battery_monitor_board.BatteryPollResponsePacket`           |
 +------------+--------------+-------------------------------------------------------------------------+
-| 0x03       | 0x00         | :class:`sub_actuator_board.ActuatorSetPacket`                          |
+| 0x03       | 0x00         | :class:`sub_actuator_board.ActuatorSetPacket`                           |
 + (Actuator  +--------------+-------------------------------------------------------------------------+
-| Board)     | 0x01         | :class:`sub_actuator_board.ActuatorPollRequestPacket`                  |
+| Board)     | 0x01         | :class:`sub_actuator_board.ActuatorPollRequestPacket`                   |
 +            +--------------+-------------------------------------------------------------------------+
-|            | 0x02         | :class:`sub_actuator_board.ActuatorPollResponsePacket`                 |
+|            | 0x02         | :class:`sub_actuator_board.ActuatorPollResponsePacket`                  |
 +------------+--------------+-------------------------------------------------------------------------+
 | 0x04       | 0x00         | :class:`sub8_system_status_board.SetLedRequestPacket`                   |
 | (System    |              |                                                                         |

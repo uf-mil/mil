@@ -5,13 +5,15 @@ from mil_usb_to_can import Packet
 
 @dataclass
 class HeartbeatPacket(Packet, msg_id=0x01, subclass_id=0x00, payload_format=""):
+    """
+    Packet indicating a heartbeat. Sent both ways.
+    """
+
     pass
 
 
 @dataclass
-class ThrustSetRequestPacket(
-    Packet, msg_id=0x01, subclass_id=0x01, payload_format="Bf"
-):
+class ThrustSetPacket(Packet, msg_id=0x01, subclass_id=0x01, payload_format="Bf"):
     """
     Packet to set the speed of a specific thruster.
 
@@ -46,5 +48,24 @@ class ThrustSetRequestPacket(
 
 
 @dataclass
-class KillSetPacket(Packet, msg_id=0x01, subclass_id=0x02, payload_format=""):
+class KillSetPacket(Packet, msg_id=0x01, subclass_id=0x02, payload_format="B"):
+    """
+    Packet sent by the motherboard to set/unset the kill.
+
+    Attributes:
+        set (bool): Whether the kill is set or unset.
+    """
+
+    set: bool
+
+
+@dataclass
+class KillReceivePacket(Packet, msg_id=0x01, subclass_id=0x03, payload_format="B"):
+    """
+    Packet sent by the motherboard to set/unset the kill.
+
+    Attributes:
+        set (bool): Whether the kill is set or unset.
+    """
+
     set: bool

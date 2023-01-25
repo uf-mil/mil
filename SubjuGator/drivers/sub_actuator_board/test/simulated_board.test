@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <param name="/is_simulation" value="True" />
+
+  <node pkg="mil_usb_to_can" type="driver.py" name="usb_to_can_driver">
+    <rosparam>
+    device_handles:
+      sub_actuator_board.ActuatorBoard: [sub_actuator_board.ActuatorPollResponsePacket]
+    simulated_devices:
+      sub_actuator_board.ActuatorBoardSimulation: [sub_actuator_board.ActuatorPollRequestPacket, sub_actuator_board.ActuatorSetPacket]
+    </rosparam>
+  </node>
+
+  <test test-name="simulated_board_test" pkg="sub_actuator_board" type="simulated_board_test.py" time-limit="5.0"/>
+</launch>
