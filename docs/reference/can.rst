@@ -53,37 +53,40 @@ including the start/end flags, and then using modulo 16 on this result.
 
 Packet Listing
 ^^^^^^^^^^^^^^
-Below is a listing of all available packets.
+Below is a listing of all available packets. The payload format is the format
+used by the :mod:`struct` module. For more information, see the Python documentation
+on the :ref:`list of format characters<format-characters>`, and their corresponding
+byte length.
 
-+------------+--------------+-------------------------------------------------------------------------+
-| Message ID | Subclass ID  | Class                                                                   |
-+============+==============+=========================================================================+
-| 0x00       | 0x00         | :class:`mil_usb_to_can.NackPacket`                                      |
-+ (Meta)     +--------------+-------------------------------------------------------------------------+
-|            | 0x01         | :class:`mil_usb_to_can.AckPacket`                                       |
-+------------+--------------+-------------------------------------------------------------------------+
-| 0x01       | 0x00         | :class:`sub8_thrust_and_kill_board.HeartbeatPacket`                     |
-+ (Thrust/   +--------------+-------------------------------------------------------------------------+
-| Kill)      | 0x01         | :class:`sub8_thrust_and_kill_board.ThrustSetPacket`                     |
-+            +--------------+-------------------------------------------------------------------------+
-|            | 0x02         | :class:`sub8_thrust_and_kill_board.KillSetPacket`                       |
-+            +--------------+-------------------------------------------------------------------------+
-|            | 0x03         | :class:`sub8_thrust_and_kill_board.KillReceivePacket`                   |
-+------------+--------------+-------------------------------------------------------------------------+
-| 0x02       | 0x00         | :class:`sub8_battery_monitor_board.BatteryPollRequestPacket`            |
-+ (Battery   +--------------+-------------------------------------------------------------------------+
-| Monitor)   | 0x01         | :class:`sub8_battery_monitor_board.BatteryPollResponsePacket`           |
-+------------+--------------+-------------------------------------------------------------------------+
-| 0x03       | 0x00         | :class:`sub_actuator_board.ActuatorSetPacket`                           |
-+ (Actuator  +--------------+-------------------------------------------------------------------------+
-| Board)     | 0x01         | :class:`sub_actuator_board.ActuatorPollRequestPacket`                   |
-+            +--------------+-------------------------------------------------------------------------+
-|            | 0x02         | :class:`sub_actuator_board.ActuatorPollResponsePacket`                  |
-+------------+--------------+-------------------------------------------------------------------------+
-| 0x04       | 0x00         | :class:`sub8_system_status_board.SetLedRequestPacket`                   |
-| (System    |              |                                                                         |
-| Status)    |              |                                                                         |
-+------------+--------------+-------------------------------------------------------------------------+
++------------+--------------+----------------+-------------------------------------------------------------------------+
+| Message ID | Subclass ID  | Payload Format | Class                                                                   |
++============+==============+================+=========================================================================+
+| 0x00       | 0x00         | Empty          | :class:`mil_usb_to_can.NackPacket`                                      |
++ (Meta)     +--------------+----------------+-------------------------------------------------------------------------+
+|            | 0x01         | Empty          | :class:`mil_usb_to_can.AckPacket`                                       |
++------------+--------------+----------------+-------------------------------------------------------------------------+
+| 0x01       | 0x00         | Empty          | :class:`sub8_thrust_and_kill_board.HeartbeatPacket`                     |
++ (Thrust/   +--------------+----------------+-------------------------------------------------------------------------+
+| Kill)      | 0x01         | ``Bf``         | :class:`sub8_thrust_and_kill_board.ThrustSetPacket`                     |
++            +--------------+----------------+-------------------------------------------------------------------------+
+|            | 0x02         | ``B``          | :class:`sub8_thrust_and_kill_board.KillSetPacket`                       |
++            +--------------+----------------+-------------------------------------------------------------------------+
+|            | 0x03         | ``B``          | :class:`sub8_thrust_and_kill_board.KillReceivePacket`                   |
++------------+--------------+----------------+-------------------------------------------------------------------------+
+| 0x02       | 0x00         | Empty          | :class:`sub8_battery_monitor_board.BatteryPollRequestPacket`            |
++ (Battery   +--------------+----------------+-------------------------------------------------------------------------+
+| Monitor)   | 0x01         | ``ffff``       | :class:`sub8_battery_monitor_board.BatteryPollResponsePacket`           |
++------------+--------------+----------------+-------------------------------------------------------------------------+
+| 0x03       | 0x00         | ``BB``         | :class:`sub_actuator_board.ActuatorSetPacket`                           |
++ (Actuator  +--------------+----------------+-------------------------------------------------------------------------+
+| Board)     | 0x01         | Empty          | :class:`sub_actuator_board.ActuatorPollRequestPacket`                   |
++            +--------------+----------------+-------------------------------------------------------------------------+
+|            | 0x02         | ``B``          | :class:`sub_actuator_board.ActuatorPollResponsePacket`                  |
++------------+--------------+----------------+-------------------------------------------------------------------------+
+| 0x04       | 0x00         | Empty          | :class:`sub8_system_status_board.SetLedRequestPacket`                   |
+| (System    |              |                |                                                                         |
+| Status)    |              |                |                                                                         |
++------------+--------------+----------------+-------------------------------------------------------------------------+
 
 CANDeviceHandle
 ^^^^^^^^^^^^^^^
