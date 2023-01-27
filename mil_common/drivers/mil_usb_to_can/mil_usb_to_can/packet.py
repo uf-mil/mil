@@ -2,12 +2,19 @@ from __future__ import annotations
 
 import struct
 from dataclasses import dataclass
-from typing import ClassVar
+from enum import Enum
+from functools import lru_cache
+from typing import ClassVar, get_type_hints
 
 SYNC_CHAR_1 = 0x37
 SYNC_CHAR_2 = 0x01
 
 _packet_registry: dict[int, dict[int, type[Packet]]] = {}
+
+
+@lru_cache(maxsize=None)
+def get_cache_hints(cls):
+    return get_type_hints(cls)
 
 
 @dataclass
@@ -21,6 +28,10 @@ class Packet:
     that this class supports three subclass arguments to assign unique message IDs,
     subclass IDs, and payload formats. Note that all subclasses must be decorated
     with :meth:`dataclasses.dataclass`.
+
+    If any class members are annotated with a subclass of :class:`enum.Enum`,
+    the class will always make an attempt to convert the raw data value to an
+    instance of the enum before constructing the rest of the values in the class.
 
     .. code-block:: python
 
@@ -64,6 +75,20 @@ class Packet:
                     f"Cannot reuse msg_id 0x{msg_id:0x} and subclass_id 0x{subclass_id}, already used by {packet.__qualname__}"
                 )
         _packet_registry.setdefault(msg_id, {})[subclass_id] = cls
+
+    def __post_init__(self):
+        for (name, field_type) in get_cache_hints(self.__class__).items():
+            if (
+                name
+                not in [
+                    "msg_id",
+                    "subclass_id",
+                    "payload_format",
+                ]
+                and not isinstance(self.__dict__[name], field_type)
+                and issubclass(field_type, Enum)
+            ):
+                setattr(self, name, field_type(self.__dict__[name]))
 
     def _calculate_checksum(self):
         return (0, 0)
