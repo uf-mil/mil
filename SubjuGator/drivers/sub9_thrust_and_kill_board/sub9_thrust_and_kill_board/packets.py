@@ -7,14 +7,14 @@ from mil_usb_to_can import Packet
 @dataclass
 class HeartbeatSetPacket(Packet, msg_id=0x02, subclass_id=0x00, payload_format=""):
     """
-    Packet indicating a heartbeat. Sent both ways.
+    Heartbeat packet sent by the motherboard to the thrust/kill board.
     """
 
 
 @dataclass
 class HeartbeatReceivePacket(Packet, msg_id=0x02, subclass_id=0x01, payload_format=""):
     """
-    Packet indicating a heartbeat. Sent both ways.
+    Heartbeat packet sent by the thrust/kill board to the motherboard.
     """
 
 

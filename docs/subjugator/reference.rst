@@ -176,11 +176,18 @@ KillReceivePacket
 Sub9 Thrust and Kill Board
 --------------------------
 
-HeartbeatPacket
-^^^^^^^^^^^^^^^
-.. attributetable:: sub9_thrust_and_kill_board.HeartbeatPacket
+HeartbeatSetPacket
+^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.HeartbeatSetPacket
 
-.. autoclass:: sub9_thrust_and_kill_board.HeartbeatPacket
+.. autoclass:: sub9_thrust_and_kill_board.HeartbeatSetPacket
+    :members:
+
+HeartbeatReceivePacket
+^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.HeartbeatReceivePacket
+
+.. autoclass:: sub9_thrust_and_kill_board.HeartbeatReceivePacket
     :members:
 
 ThrustSetPacket

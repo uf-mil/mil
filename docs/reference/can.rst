@@ -73,13 +73,15 @@ byte length.
 +            +--------------+----------------+-------------------------------------------------------------------------+
 |            | 0x03         | ``B``          | :class:`sub8_thrust_and_kill_board.KillReceivePacket`                   |
 +------------+--------------+----------------+-------------------------------------------------------------------------+
-| 0x02       | 0x00         | Empty          | :class:`sub9_thrust_and_kill_board.HeartbeatPacket`                     |
+| 0x02       | 0x00         | Empty          | :class:`sub9_thrust_and_kill_board.HeartbeatSetPacket`                  |
 + (Sub9      +--------------+----------------+-------------------------------------------------------------------------+
-| Thrust/    | 0x01         | ``Bf``         | :class:`sub9_thrust_and_kill_board.ThrustSetPacket`                     |
+| Thrust/    | 0x01         | Empty          | :class:`sub9_thrust_and_kill_board.HeartbeatReceivePacket`              |
 + Kill)      +--------------+----------------+-------------------------------------------------------------------------+
-|            | 0x02         | ``B``          | :class:`sub9_thrust_and_kill_board.KillSetPacket`                       |
+|            | 0x02         | ``Bf``         | :class:`sub9_thrust_and_kill_board.ThrustSetPacket`                     |
 +            +--------------+----------------+-------------------------------------------------------------------------+
-|            | 0x03         | ``B``          | :class:`sub9_thrust_and_kill_board.KillReceivePacket`                   |
+|            | 0x03         | ``B``          | :class:`sub9_thrust_and_kill_board.KillSetPacket`                       |
++            +--------------+----------------+-------------------------------------------------------------------------+
+|            | 0x04         | ``B``          | :class:`sub9_thrust_and_kill_board.KillReceivePacket`                   |
 +------------+--------------+----------------+-------------------------------------------------------------------------+
 | 0x03       | 0x00         | Empty          | :class:`sub8_battery_monitor_board.BatteryPollRequestPacket`            |
 + (Battery   +--------------+----------------+-------------------------------------------------------------------------+
