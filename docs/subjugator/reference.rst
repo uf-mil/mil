@@ -121,8 +121,8 @@ ActuatorPollResponsePacket
 .. autoclass:: sub_actuator_board.ActuatorPollResponsePacket
     :members:
 
-Thrust and Kill Board
----------------------
+Sub8 Thrust and Kill Board
+--------------------------
 
 ThrusterAndKillBoard
 ^^^^^^^^^^^^^^^^^^^^
@@ -171,6 +171,44 @@ KillReceivePacket
 .. attributetable:: sub8_thrust_and_kill_board.KillReceivePacket
 
 .. autoclass:: sub8_thrust_and_kill_board.KillReceivePacket
+    :members:
+
+Sub9 Thrust and Kill Board
+--------------------------
+
+HeartbeatPacket
+^^^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.HeartbeatPacket
+
+.. autoclass:: sub9_thrust_and_kill_board.HeartbeatPacket
+    :members:
+
+ThrustSetPacket
+^^^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.ThrustSetPacket
+
+.. autoclass:: sub9_thrust_and_kill_board.ThrustSetPacket
+    :members:
+
+KillStatus
+^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.KillStatus
+
+.. autoclass:: sub9_thrust_and_kill_board.KillStatus
+    :members:
+
+KillSetPacket
+^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.KillSetPacket
+
+.. autoclass:: sub9_thrust_and_kill_board.KillSetPacket
+    :members:
+
+KillReceivePacket
+^^^^^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.KillReceivePacket
+
+.. autoclass:: sub9_thrust_and_kill_board.KillReceivePacket
     :members:
 
 Object Detection

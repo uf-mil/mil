@@ -88,6 +88,7 @@ class USBtoCANDriver:
     _packet_deque: deque[
         SimulatedCANDeviceHandle | CANDeviceHandle
     ]  # Used to keep track of who gets incoming packets
+    _inbound_listing: dict[type[Packet], CANDeviceHandle]
 
     def __init__(self):
         port = rospy.get_param("~port", "/dev/tty0")
@@ -109,9 +110,13 @@ class USBtoCANDriver:
         self.stream.reset_output_buffer()
         self.stream.reset_input_buffer()
 
-        self.handles = [
-            device[0](self) for device in self.read_devices(simulated=False)
-        ]
+        self.handles = []
+        self._inbound_listing = {}
+        for device in self.read_devices(simulated=False):
+            handle = device[0](self)
+            self.handles.append(handle)
+            for packet in device[1]:
+                self._inbound_listing[packet] = handle
 
         self.timer = rospy.Timer(rospy.Duration(1.0 / 20.0), self.process_in_buffer)
 
@@ -159,7 +164,9 @@ class USBtoCANDriver:
             return False
         if packet is None:
             return False
-        if not self._packet_deque:
+        if packet.__class__ in self._inbound_listing:
+            self._inbound_listing[packet.__class__].on_data(packet)
+        elif not self._packet_deque:
             rospy.logwarn(
                 f"Message of type {packet.__class__.__qualname__} received, but no device ready to accept"
             )
