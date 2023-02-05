@@ -8,8 +8,6 @@
     port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A800GHCF-if00-port0
     # Baudrate of device, should leave as is
     baudrate: 115200
-    # The CAN device id of the usb-can board
-    can_id: 0
     # List of python device handle classes
     device_handles:
       "18": sub8_thrust_and_kill_board.ThrusterAndKillBoard

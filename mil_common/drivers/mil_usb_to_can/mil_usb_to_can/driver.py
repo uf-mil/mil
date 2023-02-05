@@ -178,8 +178,11 @@ class USBtoCANDriver:
         """
         Read all available packets in the board's in-buffer.
         """
-        while self.read_packet():
-            pass
+        while True:
+            try:
+                self.read_packet()
+            except Exception as e:
+                rospy.logerr(f"Error when reading packets: {e}")
 
     def send_data(
         self, handle: CANDeviceHandle | SimulatedCANDeviceHandle, packet: Packet

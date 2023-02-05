@@ -6,15 +6,28 @@ from enum import Enum
 from functools import lru_cache
 from typing import ClassVar, get_type_hints
 
-SYNC_CHAR_1 = 0x37
-SYNC_CHAR_2 = 0x01
+SYNC_CHAR_1 = ord("3")
+SYNC_CHAR_2 = ord("7")
 
 _packet_registry: dict[int, dict[int, type[Packet]]] = {}
+
+
+def hexify(data: bytes) -> str:
+    return ":".join(f"{c:02x}" for c in data)
 
 
 @lru_cache(maxsize=None)
 def get_cache_hints(cls):
     return get_type_hints(cls)
+
+
+class ChecksumException(OSError):
+    def __init__(
+        self, packet: type[Packet], received: tuple[int, int], expected: tuple[int, int]
+    ):
+        super().__init__(
+            f"Invalid checksum in packet of type {packet.__qualname__}: received {received}, expected {expected}"
+        )
 
 
 @dataclass
@@ -90,23 +103,27 @@ class Packet:
             ):
                 setattr(self, name, field_type(self.__dict__[name]))
 
-    def _calculate_checksum(self):
-        return (0, 0)
+    @classmethod
+    def _calculate_checksum(cls, data: bytes) -> tuple[int, int]:
+        sum1, sum2 = 0, 0
+        for byte in data:
+            sum1 = (sum1 + byte) % 255
+            sum2 = (sum2 + sum1) % 255
+        return sum1, sum2
 
     def __bytes__(self):
         payload = struct.pack(self.payload_format, *self.__dict__.values())
-        checksum = self._calculate_checksum()
-        return struct.pack(
-            f"BBBBH{len(payload)}sBB",
-            0x37,
-            0x01,
+        data = struct.pack(
+            f"BBBBH{len(payload)}s",
+            SYNC_CHAR_1,
+            SYNC_CHAR_2,
             self.msg_id,
             self.subclass_id,
             len(payload),
             payload,
-            checksum[0],
-            checksum[1],
         )
+        checksum = self._calculate_checksum(data[2:])
+        return data + struct.pack(f"BB", *checksum)
 
     @classmethod
     def from_bytes(cls, packed: bytes) -> Packet:
@@ -118,13 +135,17 @@ class Packet:
         """
         msg_id = packed[2]
         subclass_id = packed[3]
-        # for subclass in cls.__subclasses__():
-        #     if subclass.msg_id == msg_id and subclass.subclass_id == subclass_id:
-        #         payload = packed[6:-2]
-        #         unpacked = struct.unpack(subclass.payload_format, payload)
         if msg_id in _packet_registry and subclass_id in _packet_registry[msg_id]:
             subclass = _packet_registry[msg_id][subclass_id]
             payload = packed[6:-2]
+            if struct.unpack("BB", packed[-2:]) != cls._calculate_checksum(
+                packed[2:-2]
+            ):
+                raise ChecksumException(
+                    subclass,
+                    struct.unpack("BB", packed[-2:]),
+                    cls._calculate_checksum(packed[2:-2]),
+                )
             unpacked = struct.unpack(subclass.payload_format, payload)
             return subclass(*unpacked)
         raise LookupError(
