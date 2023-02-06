@@ -10,7 +10,6 @@ from urdf_parser_py.urdf import URDF
 
 
 def vrx_force_to_command_scalar(force):
-
     if force > 250:
         return 1.0
     elif force < -100:

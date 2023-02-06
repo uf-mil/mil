@@ -9,7 +9,6 @@ from qt_gui.plugin import Plugin
 
 
 class StcDisplay(Plugin):
-
     UPDATE_MILLISECONDS = 1000
     STC_TOPIC = "/stc_sequence"
     colors = {

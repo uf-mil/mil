@@ -15,7 +15,6 @@ DOWN = 1.5
 
 class StartGateGuess(SubjuGatorMission):
     async def run(self, args):
-
         fprint("Getting Guess Locations")
 
         sub_start_position, sub_start_orientation = await self.tx_pose()

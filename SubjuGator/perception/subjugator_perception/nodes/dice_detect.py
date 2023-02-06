@@ -60,7 +60,6 @@ class DiceDetect:
         return SetBoolResponse(success=True)
 
     def detect(self, dice_img):
-
         # Setup SimpleBlobDetector parameters.
         params = cv2.SimpleBlobDetector_Params()
         params.filterByColor = 1
@@ -194,7 +193,6 @@ class DiceDetect:
         output_dict, output_image, input_image = self.detect(cv_image)
 
         for key, value in output_dict.items():
-
             if int(key) > 0:
                 x_pos = value[0]
                 y_pos = value[1]

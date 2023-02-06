@@ -113,7 +113,7 @@ class VisionProxy:
         #     - Determine rotation around Z and undo that?
         try:
             pose = self._get_2d_service(VisionRequest2DRequest(target_name=target))
-        except (serviceclient.ServiceError):
+        except serviceclient.ServiceError:
             return None
         return pose
 
@@ -128,7 +128,7 @@ class VisionProxy:
         #     - Use the time information in the header
         try:
             pose = self._get_pose_service(VisionRequestRequest(target_name=target))
-        except (serviceclient.ServiceError):
+        except serviceclient.ServiceError:
             return None
         except Exception as e:
             print(type(e))
@@ -139,7 +139,7 @@ class VisionProxy:
     ) -> Coroutine[Any, Any, types.Message] | None:
         try:
             res = self._set_geometry_service(SetGeometryRequest(model=polygon))
-        except (serviceclient.ServiceError):
+        except serviceclient.ServiceError:
             return None
         return res
 
@@ -295,7 +295,6 @@ class _ActuatorProxy:
 
 
 class SubjuGatorMission(BaseMission):
-
     nh: NodeHandle
     _moveto_action_client: action.ActionClient[MoveToGoal, MoveToResult, MoveToFeedback]
 
@@ -413,7 +412,6 @@ class Searcher:
         start_pose = self.sub.move.forward(0)
         start_time = self.sub.nh.get_time()
         while self.sub.nh.get_time() - start_time < genpy.Duration(timeout):
-
             # If we find the object
             if self.object_found:
                 searcher.cancel()
@@ -549,7 +547,6 @@ class PoseSequenceCommander:
 
 
 class SonarObjects:
-
     _clear_pcl: ServiceClient
     _objects_service: ServiceClient
 

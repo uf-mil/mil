@@ -15,7 +15,6 @@ MISSION = "Torpedo Challenge"
 
 
 class Target:
-
     position: np.ndarray | None
     destroyed: bool
 

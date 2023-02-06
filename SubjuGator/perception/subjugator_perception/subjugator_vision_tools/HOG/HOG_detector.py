@@ -79,6 +79,6 @@ class HOGDetector:
             scale=1.6,
             useMeanshiftGrouping=True,
         )
-        for (x, y, w, h) in rects:
+        for x, y, w, h in rects:
             cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
         return img

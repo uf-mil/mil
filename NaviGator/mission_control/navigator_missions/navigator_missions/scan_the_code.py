@@ -110,7 +110,6 @@ class ScanTheCode(NaviGatorMission):
         sequence = []
         print("GETTING SEQUENCE")
         while len(sequence) < 3:
-
             img = await self.front_left_camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img)
 

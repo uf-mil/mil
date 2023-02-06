@@ -10,7 +10,6 @@ from .navigator import NaviGatorMission
 
 class EntranceGate2(NaviGatorMission):
     async def run(self, args):
-
         # Parameters:
         scan_code = False
         return_to_start = True
@@ -132,7 +131,6 @@ class EntranceGate2(NaviGatorMission):
     """
 
     async def find_gates(self):
-
         # This mission assumes we are starting off looking at the start gate task
 
         # Get five closest buoys

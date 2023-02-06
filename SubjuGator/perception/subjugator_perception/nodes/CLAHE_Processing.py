@@ -17,7 +17,6 @@ Emphasizes color differences and contrast in an image.
 
 class CLAHE_generator:
     def __init__(self):
-
         self.camera = rospy.get_param(
             "~camera_topic", "/camera/front/left/image_rect_color"
         )

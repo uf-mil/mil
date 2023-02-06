@@ -164,7 +164,6 @@ class Navigation(NaviGatorMission):
         move_task = None
         while True:
             if move_id_tuple is not None:
-
                 service_req = self.database_query(name="all")
 
                 result = await service_req
@@ -181,7 +180,6 @@ class Navigation(NaviGatorMission):
                         objects_msg.objects, move_id_tuple[1]
                     )
                     if classification_index != -1:
-
                         self.send_feedback(
                             "{} identified. Canceling investigation".format(
                                 move_id_tuple[1]
@@ -313,7 +311,6 @@ class Navigation(NaviGatorMission):
             # if that doesn't produce any results, literally just go to closest buoy
             if potential_candidate is None:
                 for i in range(len(objects)):
-
                     if (
                         objects[i].id not in investigated
                         and "round" not in objects[i].labeled_classification
@@ -332,7 +329,6 @@ class Navigation(NaviGatorMission):
 
             # explore the closest buoy to potential candidate
             if potential_candidate is not None:
-
                 # if there exists a closest buoy, go to it
                 self.send_feedback(f"Investigating {objects[potential_candidate].id}")
                 investigated.add(objects[potential_candidate].id)

@@ -27,7 +27,6 @@ as well as code from the buoy_finder mission of previous years.
 
 class torp_vision:
     def __init__(self):
-
         # Pull constants from config file
         self.lower = rospy.get_param("~lower_color_threshold", [0, 0, 80])
         self.upper = rospy.get_param("~higher_color_threshold", [200, 200, 250])

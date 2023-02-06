@@ -13,7 +13,6 @@ SPEED_LIMIT = 0.5  # m/s
 
 class PrequalMission(SubjuGatorMission):
     async def run(self, args):
-
         # obtain camera data
 
         self.bridge = CvBridge()
@@ -44,11 +43,9 @@ class PrequalMission(SubjuGatorMission):
 
     # returns center of first and last vertical lines
     async def find_start_gate(self):
-
         center_pixel = 480
 
         while True:
-
             img = await self.front_left_camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img)
 
@@ -71,13 +68,11 @@ class PrequalMission(SubjuGatorMission):
 
             for i in range(width):
                 if mask[(height / 2), i] != 0 and not white:
-
                     white = True
                     black = False
                     vertical_lines.append(i)
 
                 elif mask[(height / 2), i] == 0 and not black:
-
                     white = False
                     black = True
 
@@ -102,7 +97,6 @@ class PrequalMission(SubjuGatorMission):
             meters = difference / magic_ratio
 
             if abs(difference) > 30:
-
                 if difference < 0:
                     print("Adjusting right", abs(meters))
                     await self.move.yaw_right(abs(meters)).zero_roll_and_pitch().go(
@@ -119,9 +113,7 @@ class PrequalMission(SubjuGatorMission):
 
     # returns center of marker and width
     async def find_marker(self):
-
         while True:
-
             img = await self.front_left_camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img)
 
@@ -146,14 +138,12 @@ class PrequalMission(SubjuGatorMission):
 
             for i in range(width):
                 if mask[(height / 2), i] != 0 and not white:
-
                     white = True
                     black = False
                     vertical_lines.append(i)
                     start = i
 
                 elif mask[(height / 2), i] == 0 and not black:
-
                     white = False
                     black = True
                     stop = i
@@ -171,7 +161,6 @@ class PrequalMission(SubjuGatorMission):
 
             # check if we are aligned or not with center of pole
             if abs(difference) > 30:
-
                 if difference < 0:
                     print("Adjusting right")
                     await self.move.yaw_right(abs(angle)).zero_roll_and_pitch().go(

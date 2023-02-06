@@ -9,7 +9,6 @@ from mil_ros_tools import BagCrawler
 from subjugator_vision_tools import ImageCrawler, VideoCrawler
 
 if __name__ == "__main__":
-
     usage_msg = "Pass the path to a bag, the start of an image sequence, or 'video' for a webcam\
                  to play through the media and look for the learned object."
     desc_msg = "glhf"
