@@ -80,7 +80,6 @@ if __name__ == "__main__":
     count = 0
     param_gen = gen_data()
     for m, t, d, n in param_gen:
-
         f_name = f"{n}_{t}tree_{d}depth.dic"
         print(" ===================== ")
         print(f_name)

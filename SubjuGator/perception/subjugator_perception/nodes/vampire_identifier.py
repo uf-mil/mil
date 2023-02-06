@@ -39,7 +39,6 @@ General outline of task
 
 class VampireIdentifier:
     def __init__(self):
-
         # Pull constants from config file
         self.override = False
         self.lower = [0, 0, 0]

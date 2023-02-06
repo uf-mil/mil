@@ -82,7 +82,6 @@ class ScanTheCode(Vrx):
     async def get_sequence(self):
         sequence = []
         while len(sequence) < 3:
-
             img = await self.front_left_camera_sub.get_next_message()
             bounding_box_msg = await self.yolo_objects.get_next_message()
 

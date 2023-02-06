@@ -101,7 +101,6 @@ class classifier:
             return False
 
     def img_callback(self, data):
-
         if self.check_timestamp(data):
             return None
 

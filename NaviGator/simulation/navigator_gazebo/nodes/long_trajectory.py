@@ -51,7 +51,6 @@ class LongTrajectory:
         self.boat_ori = rosmsg_to_numpy(ori)
 
     def handler(self, req: MoveToWaypointRequest) -> MoveToWaypointResponse:
-
         # define messages
         print("Message received")
         res = MoveToWaypointResponse()
@@ -91,7 +90,6 @@ class LongTrajectory:
             or (y_err > self.y_thresh)
             or (yaw_err > self.yaw_thresh)
         ):
-
             yaw_err = trns.euler_from_quaternion(
                 trns.quaternion_multiply(
                     self.boat_ori, trns.quaternion_inverse(self.orientation)

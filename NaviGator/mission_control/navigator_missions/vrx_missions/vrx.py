@@ -27,7 +27,6 @@ ___author___ = "Kevin Allen"
 
 
 class Vrx(NaviGatorMission):
-
     nh: NodeHandle
 
     def __init__(self, *args, **kwargs):

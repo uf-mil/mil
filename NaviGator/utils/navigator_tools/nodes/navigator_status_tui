@@ -20,7 +20,6 @@ class nav_tui:
     """
 
     def __init__(self, screen):
-
         """
         Initialization of Tui window and fields that will be assigned by callback functions
         """

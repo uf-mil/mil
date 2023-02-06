@@ -64,7 +64,6 @@ class VrxNavigation2(Vrx):
             await self.set_long_waypoint(req)
 
     async def go_through_next_two_buoys(self):
-
         buoys = await self.get_two_closest_cones(TwoClosestConesRequest())
 
         self.task_done = buoys.no_more_buoys
@@ -80,7 +79,6 @@ class VrxNavigation2(Vrx):
         await self.go_thru_gate(gate)
 
     async def run(self, parameters):
-
         self.objects_passed = set()
         self.task_done = False
         gates_passed = 0

@@ -98,7 +98,6 @@ class Sub:
         if thrust_indicators:
             # add the thrust indicators
             for name, rel_direction, rel_position in self.thruster_list:
-
                 R = make_rotation(np.array([0.0, 0.0, 1.0]), rel_direction)
                 transformation = compose_transformation(np.transpose(R), rel_position)
 

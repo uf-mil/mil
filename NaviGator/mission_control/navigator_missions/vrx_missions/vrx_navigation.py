@@ -148,7 +148,6 @@ class VrxNavigation(Vrx):
                         objects_msg.objects, move_id_tuple[1]
                     )
                     if classification_index != -1:
-
                         self.send_feedback(
                             "{} identified. Canceling investigation".format(
                                 move_id_tuple[1]
@@ -229,7 +228,6 @@ class VrxNavigation(Vrx):
             # check if there are any buoys that have "marker" in the name that haven't been investigated
             # obtain the closest one to the previous gate and deem that the next buoy to investigate
             for i in range(len(objects)):
-
                 if (
                     "marker" in objects[i].labeled_classification
                     and objects[i].id not in investigated
@@ -266,7 +264,6 @@ class VrxNavigation(Vrx):
             # if that doesn't produce any results, literally just go to closest buoy
             if potential_candidate is None:
                 for i in range(len(objects)):
-
                     if (
                         objects[i].id not in investigated
                         and "round" not in objects[i].labeled_classification
@@ -284,7 +281,6 @@ class VrxNavigation(Vrx):
 
             # explore the closest buoy to potential candidate
             if potential_candidate is not None:
-
                 # if there exists a closest buoy, go to it
                 self.send_feedback(f"Investigating {objects[potential_candidate].id}")
                 investigated.add(objects[potential_candidate].id)

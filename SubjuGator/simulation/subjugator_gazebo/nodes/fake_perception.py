@@ -72,7 +72,6 @@ def handle_fake_perception(extra, target_object):
 
 
 def get_position(model_name):
-
     try:
         resp1 = model_state(model_name, "world")
         return resp1
@@ -81,22 +80,18 @@ def get_position(model_name):
 
 
 def set_geometry(req):
-
     return {"success": True}
 
 
 def vision_cb_2D():
-
     return False
 
 
 def start(resp):
-
     return SetBoolResponse(True, "")
 
 
 def init_service(name, target):
-
     # Generates services required for missions and target acquisition
     rospy.Service(
         "/vision/" + name + "/pose",
@@ -111,7 +106,6 @@ def init_service(name, target):
 
 
 def fake_perception_server():
-
     rospy.init_node("fake_perception")
     """
     In the dictionary below please place the name of the service you wish to mimic and the target of said service.
@@ -132,6 +126,5 @@ def fake_perception_server():
 
 
 if __name__ == "__main__":
-
     fake_perception_server()
     rospy.wait_for_service("/gazebo/get_model_state")

@@ -30,7 +30,6 @@ MISSION = "PERCEPTION"
 
 class MultiObs:
     def __init__(self):
-
         # Pull constants from config file
         self.min_trans = rospy.get_param("~min_trans", 0.25)
         self.max_velocity = rospy.get_param("~max_velocity", 1)

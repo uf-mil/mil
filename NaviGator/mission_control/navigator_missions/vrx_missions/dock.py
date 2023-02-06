@@ -37,7 +37,6 @@ class Dock(Vrx):
         self.rospack = RosPack()
 
     async def run(self, args):
-
         self.bridge = CvBridge()
 
         self.image_debug_pub = self.nh.advertise("/dock_mask_debug", Image)
@@ -190,7 +189,6 @@ class Dock(Vrx):
 
     # This function is used to see if we see the target symbol in the current image
     async def get_symbol_position(self, target_symbol):
-
         print("entering get symbol position function")
 
         target_color, _ = target_symbol.split("_")
@@ -212,7 +210,6 @@ class Dock(Vrx):
         _, w, h = symbol.shape[::-1]
 
         for meth in methods:
-
             # voting system for ten pictures [left, center, right]
             vote = [0, 0, 0]
             foggy_count = 0
@@ -220,7 +217,6 @@ class Dock(Vrx):
 
             # loop through ten pictures
             for i in range(10):
-
                 img = await self.front_left_camera_sub.get_next_message()
 
                 img = self.bridge.imgmsg_to_cv2(img)
@@ -327,7 +323,6 @@ class Dock(Vrx):
 
     # This function is used to help aim_and_fire you know... aim
     async def get_black_square_center(self, foggy=False):
-
         img = await self.front_right_camera_sub.get_next_message()
         img = self.bridge.imgmsg_to_cv2(img)
         image = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
@@ -408,9 +403,7 @@ class Dock(Vrx):
     # this function moves the boat until it is aiming at the big black square
     # once the boat is lined up, it fires the balls
     async def aim_and_fire(self, foggy=False):
-
         for i in range(3):
-
             # obtain the pixel position of the small black square
             square_pix = await self.get_black_square_center(foggy=foggy)
 
@@ -478,7 +471,6 @@ class Dock(Vrx):
     # It will also tell us (assuming we are on the correct side of the dock)
     # how many pixels (left or right) the center of the docking area is.
     async def dock_checks(self):
-
         # obtain one image
         img = await self.front_left_camera_sub.get_next_message()
         img = self.bridge.imgmsg_to_cv2(img)
@@ -508,7 +500,6 @@ class Dock(Vrx):
 
         # find left wall of docking area
         for i in range(width / 2):
-
             # look to left of pixel until we hit black
             if mask[(base_of_dock + 20), (width / 2 - i)] == 0:
                 left_wall = width / 2 - i
@@ -521,7 +512,6 @@ class Dock(Vrx):
 
         # find right wall of docking area
         for i in range(width / 2):
-
             # look to right of pixel until we hit black
             if mask[(base_of_dock + 20), (width / 2 + i)] == 0 and i != 0:
                 right_wall = width / 2 + i
@@ -553,7 +543,6 @@ class Dock(Vrx):
     #   - shoot the balls at the black square
     #   - undock
     async def dock_fire_undock(self, foggy=False):
-
         pixel_diff = await self.dock_checks()
 
         if pixel_diff is None:
@@ -598,7 +587,6 @@ class Dock(Vrx):
 
     # This function is used to find the position of the dock at the beginning of this mission
     async def find_dock(self):
-
         msgs = None
         while msgs is None:
             try:
@@ -678,7 +666,6 @@ class Dock(Vrx):
 
         print("The new size of cnts is: ", len(cnts))
         if len(cnts) == 2:
-
             masked_msg = self.bridge.cv2_to_imgmsg(mask, "mono8")
             # self.image_debug_pub.publish(masked_msg)
 
