@@ -101,6 +101,48 @@ This includes setting your preferred language and keyboard layout, along with
 your username and password. Set these settings up to your liking, but note that
 having a shorter username may save you some typing in the long run.
 
+#### Option 1: Dual-Booting a Windows computer
+
+A common choice for Windows computers is to dual-boot Linux onto them. This includes
+installing Linux right alongside your host operating system, Windows, on a separate
+partition on your computer's hard drive.
+
+1. If your computer uses BitLocker (also known as advanced drive encryption), you
+   will need to disable this. To do this, you can usually search for "BitLocker"
+   or "drive encryption" in your Windows search bar. A control panel or Settings
+   application should open, at which point you can find the BitLocker setting
+   and disable it.
+
+1. If your computer uses Secure Boot, you will need to disable this. Secure Boot
+   is a security feature in Windows that prevents the loading of operating systems
+   other than Windows. While disabling Secure Boot will make your computer slightly
+   less secure, unless you are a secret spy, you should be okay.
+
+   To disable secure boot, you will need to enter your computer's UEFI settings.
+   To do this, trigger an advanced restart of Windows. This can be done by holding
+   shift before clicking restart. Then, click
+   **Troubleshoot > Advanced Options > UEFI Firmware Settings**. Proceed into the
+   security section of your BIOS settings, and disable Secure Boot.
+
+1. Now, let's partition your hard drive to allocate space for your new Ubuntu setup.
+   Open Disk Manager by typing in "Disk Manager" in the Windows search bar. Right-click
+   on your computer's drive, and click **Shrink Volume**. Shrink your disk by
+   **50000 MB**, or 50 GB.
+
+1. Now, insert the bootable USB drive into your computer, and once again, do an
+   advanced restart by holding Shift and clicking **Restart** in your main Windows
+   menu. In the advanced restart menu, click **Use a device**, and then choose
+   the bootable USB drive. If you don't see the USB drive, check to make sure that
+   the USB is fully inserted, and try pulling it out and plugging it back in.
+
+1. You should now see the Linux boot menu. Boot into **Install Ubuntu** or **Ubuntu**,
+   not "Try Ubuntu without installing." You can proceed with all default configuration
+   options in the Ubuntu setup page, as you've already partitioned your disk.
+
+1. Ubuntu will take some time to install. Once the installation process is complete,
+   you should be able to access the Terminal using the nine dots in the bottom left
+   corner to proceed with the rest of the installation.
+
 ## Updating packages
 
 First, we will refresh the list of packages available for your computer. You
