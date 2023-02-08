@@ -16,7 +16,9 @@ If you are using a virtual machine, you can change the amount of RAM and the
 number of CPU cores allotted to the virtual machine by visiting the settings
 of your VM software.
 
-## Installing Ubuntu
+## Setting Up Ubuntu
+
+### Choosing an Install Method
 
 You will need to install **Ubuntu 20.04 LTS**, the main operating system supported by
 ROS and our tools. Our tools are not setup to work on other operating systems, including
@@ -44,6 +46,18 @@ virtual machine as these systems are not able to have two operating systems inst
 at once. Intel-based Macs may also experience some issues with dual-booting Ubuntu.
 :::
 
+### Installing Ubuntu
+
+Here are the links to appropriate `.iso` (disk image) files. Note that you will
+need to choose the correct disk image based on your computer's architecture. You
+do not always need to download these files - they are only needed for some installation
+methods.
+
+| Architecture | URL |
+| ------------ | --- |
+| AMD64 (most Windows computers, Intel-based Mac computers) | [focal-desktop-amd64.iso](https://cdimage.ubuntu.com/focal/daily-live/current/focal-desktop-amd64.iso) |
+| ARM64 (Apple Silicon Mac computers) | [focal-desktop-arm64.iso](https://cdimage.ubuntu.com/focal/daily-live/current/focal-desktop-arm64.iso) |
+
 Please follow the link that suits your best use case:
 
 * **Dual-booting a Windows computer**: Dual-booting on windows is the best option
@@ -53,6 +67,10 @@ to install Ubuntu on a Windows computer. To complete the process, [look here](ht
 software on Windows to run Ubuntu. These software include VirtualBox or VMWare.
 Choose which virtualization software works best for you and find a tutorial on how
 to install Ubuntu.
+
+* **Dual-booting a Mac computer:** If you have an Intel-based Mac computer, you
+can dual-boot your computer with Ubuntu. This will provide you more performance,
+but will be a harder process than setting up a virtual machine.
 
 * **Using Parallels on macOS**: Parallels is a favorited virtual machine software
 available on MacOS. It is not free, although there is a student discount available.
