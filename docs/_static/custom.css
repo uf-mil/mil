@@ -792,7 +792,7 @@ main li {
 
 main img {
   width: 100%;
-  max-width: 500px;
+  max-width: 80%;
 }
 
 main img.graphviz {

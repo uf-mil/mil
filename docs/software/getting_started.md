@@ -46,6 +46,13 @@ virtual machine as these systems are not able to have two operating systems inst
 at once. Intel-based Macs may also experience some issues with dual-booting Ubuntu.
 :::
 
+The following diagram should give you insight into which method is best for you.
+Note that the diagram is only a recommendation. If you have installed Linux before,
+or know of a technical issue with your computer, you may know that a different
+method is best for you.
+
+![Installation Guide](/software/installation.png)
+
 ### Installing Ubuntu
 
 Here are the links to appropriate `.iso` (disk image) files. Note that you will
