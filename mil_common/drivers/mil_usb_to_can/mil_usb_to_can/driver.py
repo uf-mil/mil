@@ -10,7 +10,7 @@ import rospy
 import serial
 from mil_misc_tools.serial_tools import SimulatedSerial
 from mil_usb_to_can.device import CANDeviceHandle, SimulatedCANDeviceHandle
-from mil_usb_to_can.packet import SYNC_CHAR_1, Packet
+from mil_usb_to_can.packet import SYNC_CHAR_1, Packet, hexify
 from serial import SerialException
 
 if TYPE_CHECKING:
@@ -125,12 +125,13 @@ class USBtoCANDriver:
         sof = None
         for _ in range(10):
             sof = self.stream.read(1)
-            if sof is None or len(sof) == 0:
-                return None
+            if not len(sof):
+                continue
             sof_int = int.from_bytes(sof, byteorder="big")
             if sof_int == SYNC_CHAR_1:
                 break
-        assert isinstance(sof, bytes)
+        if not isinstance(sof, bytes):
+            raise TimeoutError("No SOF received in one second.")
         sof_int = int.from_bytes(sof, byteorder="big")
         if sof_int != SYNC_CHAR_1:
             print("Where da start char at?")
@@ -158,6 +159,7 @@ class USBtoCANDriver:
                     return False
             packed_packet = self.read_from_stream()
             assert isinstance(packed_packet, bytes)
+            rospy.logerr(f"raw: {hexify(packed_packet)}")
             packet = Packet.from_bytes(packed_packet)
         except (SerialException) as e:
             rospy.logerr(f"Error reading packet: {e}")
