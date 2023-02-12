@@ -22,12 +22,11 @@ class StartGate2022(SubjuGatorMission):
         fprint("Waiting for odom")
         await self.tx_pose()
 
-        fprint(f"Waiting {WAIT_SECONDS} seconds...")
-        await self.nh.sleep(WAIT_SECONDS)
-
         fprint("Found odom")
-        down = self.move.down(1).zero_roll_and_pitch()
-        forward = self.move.forward(4).zero_roll_and_pitch()
+        action_kwargs = {"speed": float(0.2), "blind": bool(False)}
+        down = self.move.down(1)
 
-        await down.go(speed=SPEED)
-        await forward.go(speed=SPEED)
+        await down.go(**action_kwargs)
+        # await self.nh.sleep(1)
+        forward = self.move.forward(4)
+        await forward.go(**action_kwargs)
