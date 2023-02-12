@@ -67,9 +67,6 @@ methods.
 
 Please follow the link that suits your best use case:
 
-* **Dual-booting a Windows computer**: Dual-booting on windows is the best option
-to install Ubuntu on a Windows computer. To complete the process, [look here](https://help.ubuntu.com/community/WindowsDualBoot).
-
 * **Using a virtual machine on Windows:** You could also use a virtual machine
 software on Windows to run Ubuntu. These software include VirtualBox or VMWare.
 Choose which virtualization software works best for you and find a tutorial on how
@@ -101,11 +98,12 @@ This includes setting your preferred language and keyboard layout, along with
 your username and password. Set these settings up to your liking, but note that
 having a shorter username may save you some typing in the long run.
 
-#### Option 1: Dual-Booting a Windows computer
+#### Option 1: Dual-booting a Windows computer
 
 A common choice for Windows computers is to dual-boot Linux onto them. This includes
 installing Linux right alongside your host operating system, Windows, on a separate
-partition on your computer's hard drive.
+partition on your computer's hard drive. If you need access to a bootable USB drive
+containing Ubuntu Linux, feel free to stop by the lab.
 
 1. If your computer uses BitLocker (also known as advanced drive encryption), you
    will need to disable this. To do this, you can usually search for "BitLocker"
@@ -138,6 +136,53 @@ partition on your computer's hard drive.
 1. You should now see the Linux boot menu. Boot into **Install Ubuntu** or **Ubuntu**,
    not "Try Ubuntu without installing." You can proceed with all default configuration
    options in the Ubuntu setup page, as you've already partitioned your disk.
+
+1. Ubuntu will take some time to install. Once the installation process is complete,
+   you should be able to access the Terminal using the nine dots in the bottom left
+   corner to proceed with the rest of the installation.
+
+#### Option 2: Using a virtual machine on Windows
+
+Using a virtual machine on Windows will make installation quicker and easier, but
+will result in poorer performance and more strain on your system. If you'd like
+to install Ubuntu through a virtual machine:
+
+1. Install [VirtualBox](https://www.virtualbox.org/). This virtualization software
+   will manage your virtual machines.
+
+1. Download the Ubuntu 20.04 `.iso` file linked above. This is a disk image, and
+   contains a copy of Ubuntu. Wait for the download to complete.
+
+1. Click on **New** in VirtualBox. Fill out the first page of the form, if one appears.
+
+1. When asked how much memory to allocate, you should move the marker to where the green meets
+   the red. Typically in MIL, when your virtual machine is launched, it will be
+   the only program you are using on your computer, and therefore, it's recommended
+   to give it as much memory and CPU as possible. The tick where the green meets
+   the red is the highest amount that is safe for your operating system. If you
+   cannot allocate more than 8192 MB, understand that your virtual machine may be
+   a little slow, but that's okay.
+
+1. Create a new virtual hard disk. Using VDI (VirtualBox Disk Image) is fine.
+   Make the disk dynamically allocated to save space on your computer. When asked
+   how much space to start with, we recommend 50GB. Certainly no less than 30GB.
+
+1. After you finish creating the new virtual machine, enter the settings of the virtual
+   machine and adjust the "Processor" bar to where the green meets the red.
+
+1. Visit the "Storage" settings of the virtual machine. Under "Controller IDE",
+   click the CD icon next to "Optical Drive" and click "Choose a disk file..."
+   Navigate to the `.iso` file you downloaded earlier, and select it.
+
+1. Click "OK" to save your settings.
+
+1. Click on "Start" near the top of your virtual machine details. This will launch
+   your virtual machine!
+
+1. After some time, you should see the Linux boot menu. Boot into
+   **Install Ubuntu** or **Ubuntu**, not "Try Ubuntu without installing." You
+   can proceed with all default configuration options in the Ubuntu setup page,
+   as you've already partitioned your disk.
 
 1. Ubuntu will take some time to install. Once the installation process is complete,
    you should be able to access the Terminal using the nine dots in the bottom left
