@@ -777,7 +777,7 @@ main ol > li::before {
   content: counter(li) ".";
   counter-increment: li;
   top: -2px;
-  left: -1.1em;
+  left: -2em;
   width: 1.1em;
   padding: 4px 0;
   position: absolute;

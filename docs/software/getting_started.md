@@ -201,6 +201,8 @@ Parallels does cost $39.99/year for students.
 
 1. **Do not click "Install Ubuntu Linux" - this will install Ubuntu 22.04, not
    Ubuntu 20.04!** Instead, download the appropriate `.iso` file linked above.
+   Macs using an M-series processor should install the ARM64 disk image, not the
+   AMD64.
 
 1. Choose "Install Windows or another OS from a DVD or image file." Select the `.iso`
    file that you downloaded previously and start up your virtual machine.
@@ -212,6 +214,47 @@ Parallels does cost $39.99/year for students.
 
 1. Click "Continue" - this will launch the virtual machine and begin the installation
    process.
+
+1. After some time, you should see the Linux boot menu. Boot into
+   **Install Ubuntu** or **Ubuntu**, not "Try Ubuntu without installing." You
+   can proceed with all default configuration options in the Ubuntu setup page,
+   as you've already partitioned your disk.
+
+1. Ubuntu will take some time to install. Once the installation process is complete,
+   you should be able to access the Terminal using the nine dots in the bottom left
+   corner to proceed with the rest of the installation.
+
+#### Option 4: Using UTM on macOS
+
+[UTM](https://mac.getutm.app/) is a popular open-source virtualization software
+for macOS. It is free, but will provide less performance and support between
+your host Mac and the VM.
+
+1. Download UTM, linked above. If you use Homebrew, you can install UTM with
+   `brew install utm --cask`.
+
+1. Download the appropriate `.iso` file for your computer, linked above. Macs using
+   an M-series processor should install the ARM64 disk image, not the AMD64.
+
+1. Click the "+" button to create a new virtual machine, and choose "Virtualize."
+   Next, choose "Linux."
+
+1. Under "Boot ISO Image", choose the disk image you downloaded earlier.
+
+1. Allocate half of your computer's memory to your VM. For example, if you have
+   a 16GB computer, then allocate 8GB to the VM. Allocate half of your computer's
+   CPU cores. For example, if you use a quad-core computer, then allocate two cores
+   to the VM. Enable hardware acceleration with OpenGL.
+
+1. Allocate 50GB of space to your VM. If you don't have too much space left on your
+   computer, you can allocate less, but do not go below 30GB. If you'd like to clean
+   up space on your computer, click the Apple logo in the top left corner of your
+   Mac, choose "About This Mac", head to "Storage", and then click "Manage."
+
+1. Click "Save." Before starting the VM, go into the control panel of the VM using
+   the options button in the top right. In "Display," enable "Retina Mode."
+
+1. Now, click the play button on your VM to turn the VM on!
 
 1. After some time, you should see the Linux boot menu. Boot into
    **Install Ubuntu** or **Ubuntu**, not "Try Ubuntu without installing." You
