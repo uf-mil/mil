@@ -188,6 +188,40 @@ to install Ubuntu through a virtual machine:
    you should be able to access the Terminal using the nine dots in the bottom left
    corner to proceed with the rest of the installation.
 
+#### Option 3: Using Parallels on macOS
+
+[Parallels Desktop](https://www.parallels.com/) is well-known as the best
+virtual machine manager for macOS. Installing new virtual machines is quick,
+performance is stellar, and the application comes bundled with a suite of tools
+to make sharing resources between the virtual machine and macOS painless. However,
+Parallels does cost $39.99/year for students.
+
+1. Purchase and download Parallels Desktop, linked above. If you use Homebrew,
+   you can install the Parallels with `brew install parallels --cask`.
+
+1. **Do not click "Install Ubuntu Linux" - this will install Ubuntu 22.04, not
+   Ubuntu 20.04!** Instead, download the appropriate `.iso` file linked above.
+
+1. Choose "Install Windows or another OS from a DVD or image file." Select the `.iso`
+   file that you downloaded previously and start up your virtual machine.
+
+1. You can name your VM whatever you'd like (maybe something related to MIL?).
+   Click on "Configure..." and choose any options in the "Options" tab that you'd
+   like. In the "Hardware" tab, use the highest number of processors and highest
+   amount of memory recommended for your computer.
+
+1. Click "Continue" - this will launch the virtual machine and begin the installation
+   process.
+
+1. After some time, you should see the Linux boot menu. Boot into
+   **Install Ubuntu** or **Ubuntu**, not "Try Ubuntu without installing." You
+   can proceed with all default configuration options in the Ubuntu setup page,
+   as you've already partitioned your disk.
+
+1. Ubuntu will take some time to install. Once the installation process is complete,
+   you should be able to access the Terminal using the nine dots in the bottom left
+   corner to proceed with the rest of the installation.
+
 ## Updating packages
 
 First, we will refresh the list of packages available for your computer. You
