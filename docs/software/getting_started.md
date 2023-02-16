@@ -265,6 +265,37 @@ your host Mac and the VM.
    you should be able to access the Terminal using the nine dots in the bottom left
    corner to proceed with the rest of the installation.
 
+#### Option 5: Dual-boot a macOS computer
+
+While dual-booting macOS is not a common option of installation, for those with
+lots of space and recently built computers, it can still be a viable option. You
+may gain more performance from a dual-boot system versus a virtual machine.
+
+Dual-booting is only an option for members with an Intel-based Mac. M-series Macs
+are not able to dual-boot.
+
+1. To start, you'll need to partition your hard drive. Open Disk Utility and choose
+   "View > Show All Devices." Select the highest-level drive, and choose "Partition."
+
+1. Use the "+" button to create a new partition. Click "Add Partition." Name it
+   whatever you'd like (maybe something related to MIL or Ubuntu?), and set the
+   format to "MS-DOS (FAT32)." Allocate 50GB. If you don't have enough space to allocate
+   50GB, 30GB should suffice, but don't go below 30GB. Click "Apply" to create
+   a partition.
+
+1. Insert the bootable USB drive into your computer and restart your computer. Upon
+   restart, hold the Option key until you see the boot options. Select the bootable
+   USB drive.
+
+1. After some time, you should see the Linux boot menu. Boot into
+   **Install Ubuntu** or **Ubuntu**, not "Try Ubuntu without installing." You
+   can proceed with all default configuration options in the Ubuntu setup page,
+   as you've already partitioned your disk.
+
+1. Ubuntu will take some time to install. Once the installation process is complete,
+   you should be able to access the Terminal using the nine dots in the bottom left
+   corner to proceed with the rest of the installation.
+
 ## Updating packages
 
 First, we will refresh the list of packages available for your computer. You
