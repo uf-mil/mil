@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-
-  <include file="$(find indyav_gazebo)/launch/swan.launch"/>
-  <include file="$(find indyav_launch)/launch/master.launch">
-    <arg name="environment" value="gazebo"/>
-  </include>
-</launch>
