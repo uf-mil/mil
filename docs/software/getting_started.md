@@ -20,9 +20,10 @@ of your VM software.
 
 ### Choosing an Install Method
 
-You will need to install **Ubuntu 20.04 LTS**, the main operating system supported by
-ROS and our tools. Our tools are not setup to work on other operating systems, including
-other Linux distributions, macOS, and Windows.
+You will need to install **Ubuntu 20.04 LTS** (disk image downloads linked below),
+the main operating system supported by ROS and our tools. Our tools are not setup
+to work on other operating systems, including other Linux distributions, macOS,
+and Windows.
 
 To use Ubuntu in MIL, you have two options:
 
@@ -65,33 +66,9 @@ methods.
 | AMD64 (most Windows computers, Intel-based Mac computers) | [focal-desktop-amd64.iso](https://cdimage.ubuntu.com/focal/daily-live/current/focal-desktop-amd64.iso) |
 | ARM64 (Apple Silicon Mac computers) | [focal-desktop-arm64.iso](https://cdimage.ubuntu.com/focal/daily-live/current/focal-desktop-arm64.iso) |
 
-Please follow the link that suits your best use case:
-
-* **Using a virtual machine on Windows:** You could also use a virtual machine
-software on Windows to run Ubuntu. These software include VirtualBox or VMWare.
-Choose which virtualization software works best for you and find a tutorial on how
-to install Ubuntu.
-
-* **Dual-booting a Mac computer:** If you have an Intel-based Mac computer, you
-can dual-boot your computer with Ubuntu. This will provide you more performance,
-but will be a harder process than setting up a virtual machine.
-
-* **Using Parallels on macOS**: Parallels is a favorited virtual machine software
-available on MacOS. It is not free, although there is a student discount available.
-To see how to install Ubuntu on MacOS with parallels, see
-[here](https://peterwitham.com/videos/how-to-install-ubuntu-20-04-lts-on-parallels-for-mac/).
-
-* **Using UTM on macOS**: UTM is a virtual machine software that is compatible with
-MacOS. The software is free, unlike Parallels, but requires more setup by the user.
-For instructions on installing Ubuntu with UTM,
-[see here](https://mac.getutm.app/gallery/ubuntu-20-04).
-
-* **Use Distrobox on another Linux distribution**: If you use a Linux distribution
-as your primary operating system, you can install
-Ubuntu through [Distrobox](https://github.com/89luca89/distrobox). You can create a
-Distrobox environment using `distrobox create --name mil --image ubuntu:focal --home ~/mil-home`.
-This will allow you to keep a MIL-only environment. You will also have to set the
-hostname to localhost manually by running `sudo hostname localhost` before running setup.
+The following subsections cover various installation methods. Please choose the
+installation option that best meets your use case. If you're not sure what the
+best installation method is, please check the diagram above.
 
 After you have the operating system downloaded, you may need to configure it.
 This includes setting your preferred language and keyboard layout, along with
@@ -295,6 +272,22 @@ are not able to dual-boot.
 1. Ubuntu will take some time to install. Once the installation process is complete,
    you should be able to access the Terminal using the nine dots in the bottom left
    corner to proceed with the rest of the installation.
+
+#### Option 6: Use Distrobox on another Linux distribution
+
+If you're already using another Linux distribution regularly, you can use Distrobox
+to virtualize Ubuntu on this other distribution. This program is similar
+to Docker or a virtual machine software, but is more lightweight and less computationally
+heavy.
+
+1. Install Distrobox. The installation method will vary based on your host operating
+   system.
+
+1. Create a new Distrobox container using `distrobox create --name mil --image
+   ubuntu:focal --home ~/mil-home`.
+
+1. Enter the container using `distrobox enter --name mil`. You can proceed with
+   the MIL installation script from here.
 
 ## Updating packages
 
