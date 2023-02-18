@@ -1,6 +1,6 @@
 extend-select = [
     "UP", # pyupgrade
-    "RUF"
+    "RUF", # ruff-specific rules
 ]
 
 extend-exclude = [
@@ -27,7 +27,12 @@ ignore = [
     "E501", # Line length
     "F405", # Unknown import
     "F403", # Unknown names
+    "D212", # we use second line!
+    "D200", # one line docstrings are not shortened!
 ]
 
 [per-file-ignores]
 "__init__.py" = ["F401"]
+
+[pydocstyle]
+convention = "google"
