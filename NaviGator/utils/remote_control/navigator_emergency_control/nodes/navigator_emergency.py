@@ -12,24 +12,25 @@ __license__ = "MIT"
 class Joystick:
     """
     Stores the history of operations pertaining to how the joystick operates.
-     
-    Possible operations could include resetting several parameters (imported from one of the inherited classes) 
-    to their default values, keeping track of duration to determine a timeout period, and assigning values to attributes that 
-    are used as reference for conditional statements and other functionalities such as incrementation, reassigning values, etc. 
+
+    Possible operations could include resetting several parameters (imported from one of the inherited classes)
+    to their default values, keeping track of duration to determine a timeout period, and assigning values to attributes that
+    are used as reference for conditional statements and other functionalities such as incrementation, reassigning values, etc.
 
     Attributes:
-        force_scale (int): sets the force scale that needs to be amplified by.
-        torque_scale (int): sets the torque scale that needs to be amplified by.
-        last_raise_kill (bool): determines whether the kill alarm is activated. 
-        last_clear_kill (bool): clears the system kill no matter the state that it is in.
-        last_station_hold_state (bool): determines whether the goal point is set as the current location.
-        last_emergency_control (bool): determines where the emergency controller is the active controller.
-        last_go_inactive (bool): checks whether something is going inactive or not.
-        thruster_deploy_count (int): the number of thrusters that are being deployed.
-        thruster_retract_count (int): the number of thrusters that are being retracted. 
-        start_count (int): number of seconds that start is being pressed down. 
-        active (bool): indicates the current state of the controller. 
+        force_scale (int): Sets the force scale that needs to be amplified by.
+        torque_scale (int): Sets the torque scale that needs to be amplified by.
+        last_raise_kill (bool): Determines whether the kill alarm is activated.
+        last_clear_kill (bool): Clears the system kill no matter the state that it is in.
+        last_station_hold_state (bool): Determines whether the goal point is set as the current location.
+        last_emergency_control (bool): Determines where the emergency controller is the active controller.
+        last_go_inactive (bool): Checks whether something is going inactive or not.
+        thruster_deploy_count (int): The number of thrusters that are being deployed.
+        thruster_retract_count (int): The number of thrusters that are being retracted.
+        start_count (int): Number of seconds that start is being pressed down.
+        active (bool): Indicates the current state of the controller.
     """
+
     def __init__(self):
         self.force_scale = rospy.get_param("/joystick_wrench/force_scale", 600)
         self.torque_scale = rospy.get_param("/joystick_wrench/torque_scale", 500)
@@ -49,7 +50,7 @@ class Joystick:
             No arguments are passed in.
 
         Returns:
-            No return statement but values are being reset to their default state. 
+            No return statement but values are being reset to their default state.
         """
         self.last_raise_kill = False
         self.last_clear_kill = False
@@ -66,14 +67,11 @@ class Joystick:
 
     def check_for_timeout(self, joy: Joy):
         """
-        Consists of several procedures that reference parameters that are retrieved from the "Joy" object in 
-        order to determine the state of the controller or whether it is a timeout phase. 
+        Consists of several procedures that reference parameters that are retrieved from the "Joy" object in
+        order to determine the state of the controller or whether it is a timeout phase.
 
         Args:
-            joy (object): the name of the "Joy" object that is being passed in. 
-
-        Returns:
-            No return statement so far but methods are being passed and values are being reassigned. 
+            joy (Joy): The Joy message.
         """
         if self.last_joy is None:
             self.last_joy = joy
@@ -97,20 +95,17 @@ class Joystick:
 
     def joy_recieved(self, joy: Joy) -> None:
         """
-        Button elements are being assigned and simplied to readable names. The numnber of deployments or retractions for
-        thrusters are being updated based on several conditions. Morever, additional settings are changed based on the
-        state of the controller and the activation of potential alarms or switches. 
+        Button elements are being assigned and simplied to readable names. The
+        number of deployments or retractions for thrusters are being updated based
+        on several conditions. Moreover, additional settings are changed based on the
+        state of the controller and the activation of potential alarms or switches.
 
         Args:
-            joy (object): the name of the "Joy" object that is being passed in. 
-
-        Returns:
-            No return statement but values are being assigned, incremented, and referenced for 
-            conditional statements. 
+            joy (Joy): The Joy message.
         """
         self.last_time = rospy.Time.now()
         self.check_for_timeout(joy)
-        
+
         # Assigns readable names to the buttons that are used
         start = joy.buttons[7]
         go_inactive = joy.buttons[6]
@@ -178,13 +173,7 @@ class Joystick:
 
     def die_check(self, _: rospy.timer.TimerEvent) -> None:
         """
-        Publishes zeros after 2 seconds of no update in case node navigator_emergency_xbee dies.
-
-        Args: 
-            _: rospy.timer.TimerEvent (int): indicates the number of seconds or duration. 
-
-        Returns:
-            No return statements but values are reset to their default state. 
+        Publishes zeros after 2 seconds of no update in case node dies.
         """
         if self.active:
 
