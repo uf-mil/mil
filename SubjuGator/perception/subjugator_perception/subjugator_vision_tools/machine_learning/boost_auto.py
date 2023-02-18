@@ -157,7 +157,7 @@ def load_images(path, images_to_use=8):
         except KeyboardInterrupt:
             return None
 
-        except:
+        except Exception:
             print("There was an issue with loading an image. Skipping it...")
 
     return observation_list, label_list

@@ -181,8 +181,8 @@ if __name__ == "__main__":
     current_vel = numpy.zeros(3)
     current_orientation = numpy.array([0, 0, 0, 1])
     current_angvel = numpy.zeros(3)
-    m = 10
-    I = 10
+    vel_m = 10
+    angvel_I = 10
     dt = 0.01
 
     def updateCurrent(msg):
@@ -193,8 +193,8 @@ if __name__ == "__main__":
         # print wrench
         wrench_world = world_from_body.dot(wrench[0]), world_from_body.dot(wrench[1])
 
-        current_vel += dt * (wrench_world[0] - 10 * current_vel) / m
-        current_angvel += dt * (wrench_world[1] - 5 * current_angvel) / I
+        current_vel += dt * (wrench_world[0] - 10 * current_vel) / vel_m
+        current_angvel += dt * (wrench_world[1] - 5 * current_angvel) / angvel_I
 
         current_pos += dt * current_vel
 

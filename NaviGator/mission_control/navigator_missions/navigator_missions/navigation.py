@@ -154,12 +154,9 @@ class Navigation(NaviGatorMission):
         @object_filter func filters and sorts
         """
         move_id_tuple = None
-        previous_index = None
-        previous_cone = None
         init_boat_pos = self.pose[0]
         cone_buoys_investigated = 0  # max will be 2
         service_req = None
-        fl = None
         investigated = set()
         move_task = None
         while True:
@@ -200,7 +197,6 @@ class Navigation(NaviGatorMission):
                                 classification_index
                             ].labeled_classification
                         ):
-                            previous_cone = previous_index
                             init_boat_pos = rosmsg_to_numpy(
                                 objects_msg.objects[classification_index].pose.position
                             )
@@ -334,7 +330,6 @@ class Navigation(NaviGatorMission):
                 investigated.add(objects[potential_candidate].id)
                 move = self.inspect_object(positions[potential_candidate])
                 move_id_tuple = (move, objects[potential_candidate].id)
-                previous_index = potential_candidate
                 print("USING POTENTIAL CANDIDATE")
 
             if move_id_tuple is None:
@@ -348,7 +343,7 @@ class Navigation(NaviGatorMission):
             white_index2 = indices[1]
         except IndexError:
             return None
-        except Exception as e:
+        except Exception:
             import traceback
 
             traceback.print_exc()
@@ -368,7 +363,6 @@ class Navigation(NaviGatorMission):
         return -1
 
     async def prepare_to_enter(self):
-        closest = []
         robot_position = (await self.tx_pose())[0]
 
         def filter_and_sort(objects, positions):

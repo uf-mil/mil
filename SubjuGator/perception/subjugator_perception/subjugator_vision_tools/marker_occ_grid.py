@@ -70,7 +70,7 @@ class OccGridUtils:
 
         try:
             radius = int(radius / self.meta_data.resolution)
-        except:
+        except Exception:
             radius = 0
 
         cv2.circle(self.searched, tuple(center_offset.astype(np.int32)), radius, 1, -1)

@@ -52,7 +52,7 @@ def load_images(path, images_to_use=2):
         except KeyboardInterrupt:
             return None
 
-        except:
+        except Exception:
             print("There was an issue with loading an image. Skipping it...")
 
     return data
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         try:
             clf = cv2.Boost()
             clf.load(args.classpath + f_name)
-        except:
+        except Exception:
             print("Failed to load.")
             continue
 
@@ -114,7 +114,7 @@ if __name__ == "__main__":
                 segmentation = [
                     x for x in [clf.predict(obs) for obs in some_observations]
                 ]
-            except:
+            except Exception:
                 print("Failed to load. File probably doesn't exist")
                 break
 
@@ -180,7 +180,7 @@ if __name__ == "__main__":
             report_data["Average execution time"].append(
                 np.average(attributes["times"])
             )
-        except:
+        except Exception:
             print("Issue")
 
     # Give the results.

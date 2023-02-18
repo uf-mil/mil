@@ -61,7 +61,7 @@ class ContourClassifier:
 
         For example, an example overload might return ``['red_mean', 'blue_mean', 'green_mean']``.
         """
-        raise NotImplemented()
+        raise NotImplementedError()
 
     @abstractmethod
     def get_features(self, img: np.ndarray, mask: np.ndarray) -> np.ndarray:
@@ -248,7 +248,7 @@ class ContourClassifier:
         classes = np.array(classes)
         classes = classes.reshape((classes.shape[0], 1))
         data = np.hstack((classes, features))
-        df = pandas.DataFrame(data=data, columns=["Class"] + self.FEATURES)
+        df = pandas.DataFrame(data=data, columns=["Class", *self.FEATURES])
         df.to_csv(training_file)
 
     def extract_labels(
@@ -275,16 +275,16 @@ class ContourClassifier:
         label_classes = []
 
         def labeled_img_cb(label, img):
-            for l in label["Label"]:
-                if l in self.classes:
-                    for single_label in label["Label"][l]:
+            for lab in label["Label"]:
+                if lab in self.classes:
+                    for single_label in label["Label"][lab]:
                         points = LabelBoxParser.label_to_contour(
                             single_label, img.shape[0]
                         )
                         mask = contour_mask(points, img.shape)
                         features = self.get_features(img, mask)
                         label_features.append(features)
-                        label_classes.append(self.classes.index(l))
+                        label_classes.append(self.classes.index(lab))
 
         labler.get_labeled_images(labeled_img_cb)
         if len(label_features) == 0:

@@ -5,6 +5,7 @@ from geometry_msgs.msg import Point
 from image_geometry import PinholeCameraModel
 from mil_misc_tools import text_effects
 from sensor_msgs.msg import CameraInfo
+from std_srvs.srv import SetBool, Trigger
 
 from .sub_singleton import SubjuGatorMission
 
@@ -26,7 +27,7 @@ class BallDrop(SubjuGatorMission):
             if not resp:
                 print("Error, failed to init neural net.")
                 return
-        except rospy.ServiceException as e:
+        except rospy.ServiceException:
             print("Service Call Failed")
 
         fprint("Enabling cam_ray publisher")
@@ -54,7 +55,6 @@ class BallDrop(SubjuGatorMission):
             save_pois = rospy.ServiceProxy("/poi_server/save_to_param", Trigger)
             save_pois()
             if not rospy.has_param("/poi_server/initial_pois/ball_drop"):
-                use_prediction = False
                 fprint("Forgot to add ball_drop to guess?", msg_color="yellow")
             else:
                 fprint("Found ball_drop.", msg_color="green")

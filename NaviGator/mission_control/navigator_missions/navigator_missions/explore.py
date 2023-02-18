@@ -55,7 +55,7 @@ async def myfunc(navigator, looking_for, center_marker):
         center_marker = await navigator.database_query(object_name=center_marker.name)
         center_marker = center_marker.objects[0]
         print(center_marker.name)
-    except:
+    except Exception:
         fprint("A marker has not been set", msg_color="red")
         return False
 

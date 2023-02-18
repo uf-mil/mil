@@ -423,7 +423,7 @@ class DetectDeliver(NaviGatorMission):
         align_defer = self.continuously_align()
         fprint(
             "Sleeping for {} seconds to allow for alignment",
-            title=f"DETECT DELIVER",
+            title="DETECT DELIVER",
             msg_color="green",
         )
         await self.nh.sleep(self.FOREST_SLEEP)

@@ -22,7 +22,7 @@ class StartGateGuess(SubjuGatorMission):
         save_pois = rospy.ServiceProxy("/poi_server/save_to_param", Trigger)
         _ = save_pois()
         gate_1 = np.array(rospy.get_param("/poi_server/initial_pois/start_gate1"))
-        gate_2 = np.array(rospy.get_param("/poi_server/initial_pois/start_gate2"))
+        np.array(rospy.get_param("/poi_server/initial_pois/start_gate2"))
         # mid = (gate_1 + gate_2) / 2
         # mid = gate_1
         fprint(f"Found mid {gate_1}")

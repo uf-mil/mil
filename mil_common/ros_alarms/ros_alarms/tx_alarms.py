@@ -188,7 +188,7 @@ class TxAlarmListener:
                 try:
                     try:
                         alarm.parameters = json.loads(alarm.parameters)
-                    except:
+                    except Exception:
                         pass
 
                     cb(self._nh, alarm)

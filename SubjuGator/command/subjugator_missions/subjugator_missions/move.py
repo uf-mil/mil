@@ -91,7 +91,7 @@ class Move(SubjuGatorMission):
                 # Let the user input custom commands, the eval may be dangerous
                 # so do away with that at some point.
                 self.send_feedback(f"Moving with the command: {argument}")
-                res = await eval("self.move.{}.go()".format(argument, **action_kwargs))
+                res = await eval(f"self.move.{argument}.go()")
 
             elif command in ["tp", "teleport"]:
                 try:

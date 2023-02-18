@@ -196,9 +196,9 @@ class torp_vision:
 
         # convert from BGR to LAB color space
         lab = cv2.cvtColor(cv_image, cv2.COLOR_BGR2LAB)
-        l, a, b = cv2.split(lab)  # split on 3 different channels
+        l_channel, a, b = cv2.split(lab)  # split on 3 different channels
 
-        l2 = clahe.apply(l)  # apply CLAHE to the L-channel
+        l2 = clahe.apply(l_channel)  # apply CLAHE to the L-channel
 
         lab = cv2.merge((l2, a, b))  # merge channels
         cv_image = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)

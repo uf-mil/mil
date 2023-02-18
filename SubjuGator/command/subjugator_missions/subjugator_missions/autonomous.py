@@ -121,7 +121,9 @@ class Autonomous(SubjuGatorMission):
         al = await TxAlarmListener.init(self.nh, "network-loss")
         await self._auto_param_watchdog(self.nh)
 
-        call_with_sub = lambda *args: self._check_for_run(*args)
+        def call_with_sub(*args):
+            return self._check_for_run(*args)
+
         al.add_callback(call_with_sub, call_when_cleared=False)
 
         fprint("Waiting for network-loss...", msg_color="blue")

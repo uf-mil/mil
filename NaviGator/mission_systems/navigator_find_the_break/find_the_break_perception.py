@@ -46,7 +46,7 @@ class FindTheBreakPerception:
 
     def _get_all_pipes(self, frame):
         frame
-        h, w, r = frame.shape
+        h, width, r = frame.shape
         if h == 0:
             return
 
@@ -103,18 +103,18 @@ class FindTheBreakPerception:
                 p2 = box[2]
             else:
                 p2 = box[3]
-            l, lp = np.linalg.norm(abs(p1 - p0)), p1
-            w, wp = np.linalg.norm(abs(p2 - p0)), p2
-            if l < w:
-                temp = w
+            length, lp = np.linalg.norm(abs(p1 - p0)), p1
+            width, wp = np.linalg.norm(abs(p2 - p0)), p2
+            if length < width:
+                temp = width
                 templ = wp
-                w = l
+                width = length
                 wp = lp
-                l = temp
+                length = temp
                 wp = templ
 
             # get the ratio
-            rat = w / l
+            rat = width / length
             diff = abs(rat - self.target_wh_ratio)
             if diff > self.max_from_target_ratio:
                 continue

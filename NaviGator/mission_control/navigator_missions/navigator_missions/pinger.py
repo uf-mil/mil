@@ -366,7 +366,7 @@ class PingerMission(NaviGatorMission):
                 await self.mission_params["acoustic_pinger_active"].set(active_colors)
             else:
                 fprint(
-                    f"PINGER: cannot determine gate colors",
+                    "PINGER: cannot determine gate colors",
                     msg_color="red",
                 )
             #  fprint("PINGER: gate 3 color {}".format(sorted_3[0].color), msg_color='blue')

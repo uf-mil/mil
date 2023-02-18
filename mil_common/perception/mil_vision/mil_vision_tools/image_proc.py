@@ -54,7 +54,7 @@ class ImageProc:
         bridge (CvBridge): The ROS bridge to OpenCV.
     """
 
-    # https://github.com/ros-perception/image_pipeline/blob/indigo/image_proc/include/image_proc/processor.h # noqa
+    # https://github.com/ros-perception/image_pipeline/blob/indigo/image_proc/include/image_proc/processor.h
 
     # Flags to select which images should be outputted
     RAW = 0

@@ -591,7 +591,7 @@ class Dock(Vrx):
         while msgs is None:
             try:
                 msgs, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
-            except Exception as e:
+            except Exception:
                 await self.move.forward(10).go()
         await self.pcodar_label(msgs[0].id, "dock")
         # if no pcodar objects, throw error, exit mission
@@ -666,7 +666,7 @@ class Dock(Vrx):
 
         print("The new size of cnts is: ", len(cnts))
         if len(cnts) == 2:
-            masked_msg = self.bridge.cv2_to_imgmsg(mask, "mono8")
+            self.bridge.cv2_to_imgmsg(mask, "mono8")
             # self.image_debug_pub.publish(masked_msg)
 
             # assume there are only two contours (hopefully, otherwise, make contour and mask tighter)

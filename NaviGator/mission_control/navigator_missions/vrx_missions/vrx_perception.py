@@ -61,7 +61,7 @@ class VrxPerception(Vrx):
         await self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
         objects = {}
         while True:
-            task_info = await self.task_info_sub.get_next_message()
+            await self.task_info_sub.get_next_message()
             new_objects, positions = await self.get_object_map()
             position_enu = (await self.tx_pose)[0]
             for key in new_objects:

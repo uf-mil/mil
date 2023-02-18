@@ -32,7 +32,7 @@ class Node:
             self.processed_config = processed_config
 
             return config
-        except:
+        except Exception:
             traceback.print_exc()
             # go back to old config if new is invalid
             return self.config
