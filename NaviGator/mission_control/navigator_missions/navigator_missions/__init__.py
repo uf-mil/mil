@@ -1,9 +1,9 @@
 import mil_missions_core
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
-ChainWithTimeout = mil_missions_core.MakeChainWithTimeout(Navigator)
-Wait = mil_missions_core.MakeWait(Navigator)
+ChainWithTimeout = mil_missions_core.MakeChainWithTimeout(NaviGatorMission)
+Wait = mil_missions_core.MakeWait(NaviGatorMission)
 del mil_missions_core
 
 from . import pose_editor

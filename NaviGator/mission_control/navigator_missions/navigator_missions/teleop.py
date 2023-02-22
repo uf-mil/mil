@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class Teleop(Navigator):
+class Teleop(NaviGatorMission):
     async def run(self, parameters):
         await self.change_wrench("rc")
         self.send_feedback('Wrench set to "RC"')

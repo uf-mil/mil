@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import struct
-from typing import Any
+from typing import TypeVar
+
+T = TypeVar("T", bound="ApplicationPacket")
 
 
 class ApplicationPacketWrongIdentifierException(Exception):
@@ -13,21 +15,54 @@ class ApplicationPacketWrongIdentifierException(Exception):
     Inherits from :class:`Exception`.
     """
 
-    def __init__(self, was: Any, should_be: Any):
+    def __init__(self, received: int, expected: int):
         """
         Attributes:
-            was (Any): A value representing what was found.
-            should_be (Any): What the found value should have been.
+            received (int): A value representing what received found.
+            expected (int): What the found value should have been.
         """
-        super().__init__(f"Expected identified '{should_be}', got '{was}'")
+        super().__init__(f"Expected identified {expected}, got {received}")
 
 
 class ApplicationPacket:
     """
-    One packet of data that is used to communicate with CAN devices.
+    Represents an application-specific packet structure used by a CAN device. This
+    class does not implement the entire packet that will be sent over the CAN bus;
+    the packet only includes the identifier and payload in the packet.
+
+    This class should be used to generate packets to send to the board. This packet
+    does not handle communication with the board; this is instead handled by other
+    packet classes.
+
+    This class can be inherited from to implement packet structures for specific
+    applications.
+
+    .. code-block:: python
+
+        class SendALetterMessage(ApplicationPacket):
+
+            IDENTIFIER = 0xAA
+            STRUCT_FORMAT = "B"
+
+            def __init__(self, letter: str):
+                self.letter = letter
+                super().__init__(self.IDENTIFIER, struct.pack(self.STRUCT_FORMAT, ord(letter)))
+
+            @classmethod
+            def from_bytes(cls, data: bytes) -> SendALetterMessage:
+                return cls(*struct.unpack(self.STRUCT_FORMAT, data))
+
+    .. container:: operations
+
+        .. describe:: bytes(x)
+
+            Assembles the packet into a form suitable for sending through a data
+            stream. Packs :attr:`~.identifier` and :attr:`~.payload` into a single
+            :class:`bytes` object.
 
     Attributes:
-        identifier (int): The identifier for the packet.
+        identifier (int): The identifier for the packet. Allowed range is between 0
+            and 255.
         payload (bytes): The payload of bytes to be sent in the packet.
     """
 
@@ -35,11 +70,11 @@ class ApplicationPacket:
         self.identifier = identifier
         self.payload = payload
 
-    def to_bytes(self) -> bytes:
+    def __bytes__(self) -> bytes:
         """
-        Packs the packet into a series of bytes using :meth:`struct.Struct.pack`. The identifier
-        is packed as an unsigned integer, while the payload of bytes is packed as
-        a sequence of bytes equal to the length of the payload.
+        Packs the packet into a series of bytes using :meth:`struct.Struct.pack`.
+        The identifier is packed as an unsigned integer, while the payload of bytes
+        is packed as a sequence of bytes equal to the length of the payload.
 
         Returns:
             bytes: The packed bytes.
@@ -48,8 +83,8 @@ class ApplicationPacket:
 
     @classmethod
     def from_bytes(
-        cls, data: bytes, expected_identifier: int | None = None
-    ) -> ApplicationPacket:
+        cls: type[T], data: bytes, expected_identifier: int | None = None
+    ) -> T:
         """
         Unpacks a series of packed bytes representing an application packet using
         :meth:`struct.Struct.unpack`, which produces the packet identifier and array of data.
@@ -63,7 +98,7 @@ class ApplicationPacket:
               error is thrown.
 
         Raises:
-            ApplicationPacketWrongIdentifierException: If the ```expected_identifier``
+            ApplicationPacketWrongIdentifierException: If the ``expected_identifier``
               does not match the identifier found in the packet, then this is raised.
 
         Returns:
@@ -77,7 +112,12 @@ class ApplicationPacket:
             )
         return packet
 
-    def __str__(self):
-        return "MilApplicationPacket(identifier={}, payload={})".format(
-            self.identifier, self.payload
+    def __repr__(self):
+        return "{}(identifier={}, payload={})".format(
+            self.__class__.__name__, self.identifier, self.payload
         )
+
+    def __eq__(self, other):
+        if not isinstance(other, ApplicationPacket):
+            raise NotImplemented()
+        return self.identifier == other.identifier and self.payload == other.payload

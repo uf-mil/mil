@@ -15,7 +15,7 @@ scipy==1.7.3
 scikit-learn==1.1.1
 
 # Computer Vision
-Pillow==9.1.1
+Pillow==9.3.0
 
 # File Handling
 PyYAML==6.0

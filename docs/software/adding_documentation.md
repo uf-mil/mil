@@ -42,6 +42,19 @@ setup working that allows you to contribute to the docs and preview your changes
 4.  Make changes to the files.
 5.  To view your changes and contribute them, continue reading below.
 
+## Updating styling
+
+Most of the colors used on the documentation site are controlled through `custom.css`
+or `codeblocks.css`. To update the general layout of the site, edit the `custom.css`
+and re-build the documentation. If you haven't changed any actual content, you may
+need to build the documentation from scratch using the `-s` flag.
+
+To update the colors shown in code blocks, edit the `codeblocks.css` file. You can
+either edit this file directly, or generate a similar copy by using the `pygments`
+library. Navigate into the `uf_mil_pygments` Python package in the `docs/` folder,
+install the Python package (`pip install -e .`) and then create a CSS file using
+the Pygments Style class found in the package (`pygmentize -S mil -f html -a .highlight > mil.css`).
+
 ## Making changes
 To make changes to the documentation, you only need to add/edit files under
 the `docs/` folder or docstrings existing in the source code. Once you edit these

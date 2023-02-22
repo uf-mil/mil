@@ -1,5 +1,7 @@
 from typing import Union
 
+from mil_missions_core import BaseMission
+
 
 class MissionException(Exception):
     """
@@ -11,9 +13,7 @@ class MissionException(Exception):
         parameters (Dict[Any, Any]): ???
     """
 
-    def __init__(self, message, parameters={}):
-        self.message = message
-        self.parameters = parameters
+    def __init__(self, message):
         super(Exception, self).__init__(message)
 
 
@@ -42,7 +42,7 @@ class TimeoutException(Exception):
         return f"failed to finish within {self.timeout} seconds"
 
 
-class ParametersException(Exception):
+class ParametersException(MissionException):
     """
     Represents an exception from a mission or submission where the mission's parameters
     had an error or inconsistency.
@@ -67,7 +67,7 @@ class ParametersException(Exception):
         return f"invalid parameters: {self.msg}"
 
 
-class SubmissionException(Exception):
+class SubmissionException(MissionException):
     """
     Represents an exception encountered while running a submission.
 
@@ -88,9 +88,12 @@ class SubmissionException(Exception):
         exception (Exception): The exception experienced by the mission.
     """
 
-    def __init__(self, mission: str, exception: Exception):
+    def __init__(self, mission: BaseMission, exception: Exception):
         self.mission = mission
         self.exception = exception
+        super().__init__(
+            f"A {exception.__class__.__name__} exception occurred while running {mission}."
+        )
 
     def __str__(self):
-        return f"In submission {self.mission}: {self.exception}"
+        return f"Exception occurred in {self.mission} mission: {self.exception.__class__.__name__}: {self.exception}"

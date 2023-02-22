@@ -23,9 +23,9 @@ SESSION="sdgps"
 TMUX="tmux"
 
 # Exit if script is run for second time
-if $TMUX has-session -t $SESSION 2> /dev/null; then
-    echo "$SESSION already created, aborting"
-    exit 0
+if $TMUX has-session -t $SESSION 2>/dev/null; then
+	echo "$SESSION already created, aborting"
+	exit 0
 fi
 
 # Start tmux session

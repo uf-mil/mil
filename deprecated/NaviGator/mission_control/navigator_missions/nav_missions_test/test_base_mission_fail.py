@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-import txros
+import axros
 from mil_misc_tools.text_effects import fprint
 from twisted.internet import defer
 
 
-@txros.util.cancellableInlineCallbacks
+@axros.util.cancellableInlineCallbacks
 def main(navigator, **kwargs):
     nh = navigator.nh
     fprint("{} running".format(__name__), msg_color="red")

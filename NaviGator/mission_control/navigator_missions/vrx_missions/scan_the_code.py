@@ -2,8 +2,8 @@
 import asyncio
 from operator import attrgetter
 
+import axros
 import numpy as np
-import txros
 from cv_bridge import CvBridge
 from dynamic_reconfigure.msg import DoubleParameter
 from image_geometry import PinholeCameraModel
@@ -69,7 +69,7 @@ class ScanTheCode(Vrx):
         await self.nh.sleep(5)
 
         try:
-            sequence = await txros.util.wrap_timeout(
+            sequence = await axros.util.wrap_timeout(
                 self.get_sequence(), TIMEOUT_SECONDS, "Guessing RGB"
             )
         except asyncio.TimeoutError:
@@ -82,7 +82,6 @@ class ScanTheCode(Vrx):
     async def get_sequence(self):
         sequence = []
         while len(sequence) < 3:
-
             img = await self.front_left_camera_sub.get_next_message()
             bounding_box_msg = await self.yolo_objects.get_next_message()
 

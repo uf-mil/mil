@@ -51,7 +51,6 @@ class HydrophoneTrigger:
     """
 
     def __init__(self):
-
         # Attributes about our general frequency range (all pinger live here)
         #  Frequency range garunteed to be relatively quiet except for the pingers (in Hz)
         self.general_lower = 15000  # lowest frequency pinger - 10 kHz
@@ -241,14 +240,12 @@ class HydrophoneTrigger:
         gradients = np.gradient(max_convolves, axis=0)
 
         if np.max(gradients[:, 0]) >= self.threshold:
-
             triggered_at_idx = np.min(np.where(gradients[:, 0] >= self.threshold)[0])
             triggered_at_idx += int(self.trigger_offset * self.rate)
             trigger_time = time[triggered_at_idx]
 
             # if we have triggered very recently, do not trigger (echo protection)
             if trigger_time - self.prev_trigger_time > self.min_time_between_pings:
-
                 self.prev_trigger_time = trigger_time
 
                 start = triggered_at_idx - int(self.rate * self.trigger_window_past)

@@ -55,7 +55,8 @@ class ExampleSimulatedEchoDevice(SimulatedCANDevice):
 
     def on_data(self, data, can_id):
         # Echo data received back onto the bus
-        self.send_data(data)
+        packet = ApplicationPacket.from_bytes(data, expected_identifier=37)
+        self.send_data(bytes(ApplicationPacket(37, packet.payload)))
 
 
 class ExampleSimulatedAdderDevice(SimulatedCANDevice):
@@ -74,7 +75,7 @@ class ExampleSimulatedAdderDevice(SimulatedCANDevice):
         a, b = struct.unpack("hh", packet.payload)
         c = a + b
         res = struct.pack("i", c)
-        self.send_data(ApplicationPacket(37, res).to_bytes())
+        self.send_data(bytes(ApplicationPacket(37, res)))
 
 
 class SimulatedUSBtoCAN(SimulatedSerial):
@@ -83,13 +84,18 @@ class SimulatedUSBtoCAN(SimulatedSerial):
     CAN devices to simulate the behavior of the whole CAN network.
     """
 
-    def __init__(self, devices={0: SimulatedCANDevice}, can_id=-1):
+    def __init__(
+        self, devices: dict[int, type[SimulatedCANDevice]] | None = None, can_id=-1
+    ):
         """
         Args:
             devices (Dict[:class:`int`, Any]): Dictionary containing CAN IDs and
                 their associated simulated classes inheriting from :class:`SimulatedCANDevice`.
             can_id (int): ID of the CAN2USB device. Defaults to -1.
         """
+        if devices is None:
+            devices = {0: SimulatedCANDevice}
+
         self._my_id = can_id
         self._devices = {
             can_id: device(self, can_id) for can_id, device in devices.items()
@@ -108,7 +114,7 @@ class SimulatedUSBtoCAN(SimulatedSerial):
         """
         # If not from the motherboard, store this for future requests from motherboard
         if not from_mobo:
-            self.buffer += ReceivePacket.create_receive_packet(can_id, data).to_bytes()
+            self.buffer += bytes(ReceivePacket.create_receive_packet(can_id, data))
         # Send data to all simulated devices besides the sender
         for device_can_id, device in self._devices.items():
             if device_can_id != can_id:

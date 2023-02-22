@@ -11,8 +11,8 @@ from geometry_msgs.msg import Vector3
 from mil_ros_tools import numpy_to_point, thread_lock, wait_for_param
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from std_msgs.msg import Float64, Header
-from sub8_msgs.msg import Thrust, ThrusterStatus
-from sub8_msgs.srv import (
+from subjugator_msgs.msg import Thrust, ThrusterStatus
+from subjugator_msgs.srv import (
     FailThruster,
     ThrusterInfo,
     ThrusterInfoResponse,

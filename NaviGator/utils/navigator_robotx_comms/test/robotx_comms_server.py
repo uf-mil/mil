@@ -125,7 +125,6 @@ class TestRobotXComms(unittest.TestCase):
 
         try:
             while not rospy.is_shutdown() and times_ran < self.number_of_iterations:
-
                 rx_data = None
                 send_robot_x_entrance_exit_gate_message(entrance_gate, exit_gate)
                 while rx_data is None:
@@ -486,7 +485,6 @@ class TestRobotXComms(unittest.TestCase):
                             )
 
                             for i in range(int(data_list[4])):
-
                                 if i != int(data_list[4]) - 1:
                                     self.assertEqual(
                                         data_list[5 + i],
@@ -516,7 +514,6 @@ class TestRobotXComms(unittest.TestCase):
                             )
 
                             for i, animal in enumerate(animal_array):
-
                                 if i != len(animal_array) - 1:
                                     self.assertEqual(
                                         data_list[5 + i], animal, "animal incorrect"

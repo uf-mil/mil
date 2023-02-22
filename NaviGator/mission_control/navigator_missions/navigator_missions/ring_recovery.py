@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class RingRecovery(Navigator):
+class RingRecovery(NaviGatorMission):
     """
     Completes Ring Recovery challenge by circling the marker totem
     while spinning the grinch

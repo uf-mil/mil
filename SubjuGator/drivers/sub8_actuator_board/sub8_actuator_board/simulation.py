@@ -43,4 +43,4 @@ class ActuatorBoardSimulation(SimulatedCANDevice):
             response = FeedbackMessage.create_feedback_message(
                 address=message.address, on=self.status[message.address]
             )
-            self.send_data(response.to_bytes())
+            self.send_data(bytes(response))

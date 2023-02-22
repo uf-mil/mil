@@ -31,7 +31,6 @@ def wait_for_param(
     start_time = time.time()
     rate = rospy.Rate(poll_rate)
     while not rospy.is_shutdown():
-
         # Check if the parameter now exists
         if rospy.has_param(param_name):
             return rospy.get_param(param_name)

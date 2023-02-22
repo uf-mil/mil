@@ -8,7 +8,7 @@ In one panel, run:
 
 .. code-block:: bash
 
-    $ roslaunch sub8_launch gazebo.launch
+    $ roslaunch subjugator_launch gazebo.launch
 
 This will launch the server side of the gazebo simulator. The gazebo server (a.k.a. ``gzserver``)
 is the half of the simulator that will do all the heavy lifting in terms of simulating physics,

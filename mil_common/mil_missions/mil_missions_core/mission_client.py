@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-from typing import Any, Callable, Optional
+from __future__ import annotations
+
+from typing import Any, Callable
 
 import rospy
 from actionlib import SimpleActionClient
-from mil_missions.msg import DoMissionAction, DoMissionGoal
+from mil_missions.msg import DoMissionAction, DoMissionGoal, DoMissionResult
 from roboteq_msgs.msg import Feedback
 
 
@@ -20,7 +22,7 @@ class MissionClient(SimpleActionClient):
         SimpleActionClient.__init__(self, self.NS, DoMissionAction)
 
     @classmethod
-    def available_missions(cls) -> Optional[Any]:
+    def available_missions(cls) -> Any | None:
         """
         Returns a list of available missions or None if parameter is not set.
 
@@ -39,14 +41,20 @@ class MissionClient(SimpleActionClient):
         """
         self.cancel_all_goals()
 
+    def get_result(self) -> DoMissionResult | None:
+        return super().get_result()
+
+    def get_state(self) -> int | None:
+        return super().get_state()
+
     def run_mission(
         self,
         mission: str,
         parameters: str = "",
-        done_cb: Optional[Callable[[int, Any], None]] = None,
-        active_cb: Optional[Callable[[], None]] = None,
-        feedback_cb: Optional[Callable[[Feedback], None]] = None,
-    ):
+        done_cb: Callable[[int, Any], None] | None = None,
+        active_cb: Callable[[], None] | None = None,
+        feedback_cb: Callable[[Feedback], None] | None = None,
+    ) -> None:
         """
         Send a goal to start a new mission with the specified parameters.
 

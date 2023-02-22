@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import numpy as np
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class GPSWaypoints(Navigator):
+class GPSWaypoints(NaviGatorMission):
     DEFAULT_WAYPOINTS = np.array(
         [
             [29.534882, -82.303701],

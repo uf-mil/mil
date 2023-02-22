@@ -5,9 +5,9 @@ import inspect
 
 import navigator_tests
 import uvloop
+from axros import NodeHandle
 from mil_misc_tools.text_effects import fprint
 from navigator_test_lib import TestUnit
-from txros import NodeHandle
 
 
 def _import(module):

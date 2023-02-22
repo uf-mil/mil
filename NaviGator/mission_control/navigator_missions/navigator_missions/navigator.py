@@ -12,6 +12,7 @@ import numpy as np
 import rospkg
 import uvloop
 import yaml
+from axros import NodeHandle, ROSMasterError, ServiceClient, action, axros_tf, util
 from dynamic_reconfigure.msg import Config
 from dynamic_reconfigure.srv import Reconfigure, ReconfigureRequest
 from geometry_msgs.msg import PointStamped, PoseStamped
@@ -36,7 +37,6 @@ from std_srvs.srv import (
     TriggerRequest,
 )
 from topic_tools.srv import MuxSelect, MuxSelectRequest
-from txros import NodeHandle, ROSMasterError, ServiceClient, action, txros_tf, util
 from vision_msgs.msg import Detection2DArray
 
 from .pose_editor import PoseEditor2
@@ -81,7 +81,7 @@ class MissionResult:
         return "\n".join(_pass if self.success else _fail)
 
 
-class Navigator(BaseMission):
+class NaviGatorMission(BaseMission):
     circle = "CIRCLE"
     cross = "CROSS"
     triangle = "TRIANGLE"
@@ -98,8 +98,8 @@ class Navigator(BaseMission):
         super().__init__(**kwargs)
 
     @classmethod
-    async def _init(cls, mission_runner):
-        super()._init(mission_runner)
+    async def setup_base(cls, mission_runner):
+        await super().setup_base(mission_runner)
 
         try:
             cls.is_vrx = await cls.nh.get_param("/is_vrx")
@@ -135,12 +135,12 @@ class Navigator(BaseMission):
         await cls._odom_sub.setup()
 
         if cls.is_vrx:
-            cls._init_vrx()
+            cls._setup_vrx()
         else:
-            await cls._init_not_vrx()
+            await cls._setup_not_vrx()
 
     @classmethod
-    async def _shutdown(cls):
+    async def shutdown_base(cls):
         await asyncio.gather(
             cls._moveto_client.shutdown(),
             cls.rviz_goal.shutdown(),
@@ -151,7 +151,7 @@ class Navigator(BaseMission):
             await cls._shutdown_not_vrx()
 
     @classmethod
-    def _init_vrx(cls):
+    def _setup_vrx(cls):
         cls.killed = False
         cls.odom_loss = False
         cls.set_vrx_classifier_enabled = cls.nh.get_service_client(
@@ -159,7 +159,7 @@ class Navigator(BaseMission):
         )
 
     @classmethod
-    async def _init_not_vrx(cls):
+    async def _setup_not_vrx(cls):
         cls.vision_proxies = {}
         cls._load_vision_services()
 
@@ -169,7 +169,7 @@ class Navigator(BaseMission):
         cls.mission_params = {}
         cls._load_mission_params()
 
-        # If you don't want to use txros
+        # If you don't want to use axros
         cls.ecef_pose = None
 
         cls.killed = "?"
@@ -223,7 +223,7 @@ class Navigator(BaseMission):
                 msg_color="red",
             )
 
-        cls.tf_listener = txros_tf.TransformListener(cls.nh)
+        cls.tf_listener = axros_tf.TransformListener(cls.nh)
         await cls.tf_listener.setup()
 
         # Vision
@@ -798,7 +798,7 @@ class MissionParam:
 class Searcher:
     def __init__(
         self,
-        nav: Navigator,
+        nav: NaviGatorMission,
         search_pattern=None,
         looker=None,
         vision_proxy: str = "test",
@@ -906,7 +906,7 @@ class Searcher:
 async def main():
     nh = NodeHandle.from_argv("navigator_singleton")
     await nh.setup()
-    n = await Navigator(nh)._init()
+    n = await NaviGatorMission(nh).setup_base()
     fprint(await n.vision_proxies["start_gate"].get_response())
 
 

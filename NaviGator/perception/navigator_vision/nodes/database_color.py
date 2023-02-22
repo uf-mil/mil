@@ -28,7 +28,6 @@ fprint = FprintFactory(title="COLORAMA", time=None).fprint
 
 
 class ImageHolder:
-
     image: Image | None
     time: rospy.Duration | None
 
@@ -60,7 +59,6 @@ class ImageHolder:
 
 
 class ImageHistory:
-
     _images: list[ImageHolder]
 
     def __init__(self, image_topic, history: int = 30):
@@ -131,7 +129,6 @@ class DebugImage:
 
 
 class Observation:
-
     history_length: int = 100  # Default to 100
     hues: deque
     values: deque
@@ -228,7 +225,6 @@ class Observation:
 
 
 class Colorama:
-
     odom: np.ndarray | None
 
     def __init__(self):

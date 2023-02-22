@@ -7,9 +7,8 @@
 
 set -euo pipefail
 
-usage()
-{
-    echo "USAGE: $0 <USERNAME ON ZOBELISK> <USER ID ON ZOBELSIK> OPTIONAL: --safe -s, --help -h
+usage() {
+	echo "USAGE: $0 <USERNAME ON ZOBELISK> <USER ID ON ZOBELSIK> OPTIONAL: --safe -s, --help -h
 
     OPTIONS:
 
@@ -21,27 +20,26 @@ usage()
 
         This flag causes no ssh server to be run on the user's computer at the cost of no file sharing between zobelisk and the user's computer. (more secure)
 "
-    exit 1
+	exit 1
 }
 
 OPEN_SSH=true
 
 if [[ $* == *--safe* ]] || [[ $* == *-s* ]]; then
-    OPEN_SSH=false
+	OPEN_SSH=false
 
 elif [[ $* == *--help* ]] || [[ $* == *-h* ]]; then
-    usage
+	usage
 fi
 
 if [ $# -lt 2 ]; then
-    usage
+	usage
 fi
-
 
 LOCAL_USER=$USER
 SERVER_USERNAME=$1
 SERVER_UID=$2
-LOCAL_REPO=$(realpath $(dirname $BASH_SOURCE)/../)
+LOCAL_REPO=$(realpath "$(dirname "${BASH_SOURCE[@]}")/../")
 ZOBELISK_IP=192.168.37.176
 
 EXEC_ON_SERVER=""
@@ -49,46 +47,45 @@ EXIT_SCRIPT=""
 ROS_PORT=${SERVER_UID}0
 if [ $OPEN_SSH == true ]; then
 
-    IP=`hostname -I | head -n1 | awk '{print $1;}'`
+	IP=$(hostname -I | head -n1 | awk '{print $1;}')
 
-    read -n 1 -p "WARNING: This script requires you to run an ssh server on your computer while you are on the development server. Some people consider this to be insecure, but this is the price of using GUI text editors with a remote system. If you do not want to run an ssh server, kill this script now and re-run with --safe -s (does not support file sharing between the machines). The script will automatically close the ssh server upon exiting. Press Ctrl + c if you do not consent. Otherwise, press any key to continue." PLACEHOLDER
+	read -r -n 1 -p "WARNING: This script requires you to run an ssh server on your computer while you are on the development server. Some people consider this to be insecure, but this is the price of using GUI text editors with a remote system. If you do not want to run an ssh server, kill this script now and re-run with --safe -s (does not support file sharing between the machines). The script will automatically close the ssh server upon exiting. Press Ctrl + c if you do not consent. Otherwise, press any key to continue."
 
-    sudo apt install openssh-server
+	sudo apt install openssh-server
 
-    sudo systemctl start ssh
+	sudo systemctl start ssh
 
-    MOUNT_SHARED_FILES="sshfs -o nonempty -o allow_other \
+	MOUNT_SHARED_FILES="sshfs -o nonempty -o allow_other \
         $LOCAL_USER@$IP:$LOCAL_REPO /home/$SERVER_USERNAME/catkin_ws/src/mil"
-    UNMOUNT_SHARED_FILES="fusermount -u /home/$SERVER_USERNAME/catkin_ws/src/mil"
-    sleep 1
+	UNMOUNT_SHARED_FILES="fusermount -u /home/$SERVER_USERNAME/catkin_ws/src/mil"
+	sleep 1
 
-    EXEC_ON_SERVER="export ROS_MASTiER_URI=http://$ZOBELISK_IP:$ROS_PORT && \
+	EXEC_ON_SERVER="export ROS_MASTiER_URI=http://$ZOBELISK_IP:$ROS_PORT && \
         $MOUNT_SHARED_FILES && \
         /home/$SERVER_USERNAME/catkin_ws/src/mil/scripts/build_docker_containers && \
         /home/$SERVER_USERNAME/catkin_ws/src/mil/scripts/run_development_container --dev-server; \
         bash -l; \
         $UNMOUNT_SHARED_FILES"
 
-    EXIT_SCRIPT="sudo systemctl stop ssh"
+	EXIT_SCRIPT="sudo systemctl stop ssh"
 else
-    EXEC_ON_SERVER="export ROS_MASTiER_URI=http://$ZOBELISK_IP:$ROS_PORT && \
+	EXEC_ON_SERVER="export ROS_MASTiER_URI=http://$ZOBELISK_IP:$ROS_PORT && \
         /home/$SERVER_USERNAME/catkin_ws/src/mil/scripts/build_docker_containers && \
         /home/$SERVER_USERNAME/catkin_ws/src/mil/scripts/run_development_container --dev-server; \
         bash -l;"
-    EXIT_SCRIPT=":"
+	EXIT_SCRIPT=":"
 fi
-
 
 export ROS_MASTER_URI=http://$ZOBELISK_IP:$ROS_PORT/
 tmux new-session -d
 
 if [ ! -f ~/.ssh/zobelisk-key ]; then
-    echo "Generating you a key for zobelisk so less password typing"
-    ssh-keygen -b 4096 -t rsa -f ~/.ssh/zobelisk-key
-    ssh-copy-id -i ~/.ssh/zobelisk-key.pub $SERVER_USERNAME@$ZOBELISK_IP
+	echo "Generating you a key for zobelisk so less password typing"
+	ssh-keygen -b 4096 -t rsa -f ~/.ssh/zobelisk-key
+	ssh-copy-id -i ~/.ssh/zobelisk-key.pub "$SERVER_USERNAME"@$ZOBELISK_IP
 fi
 
 set +e
-ssh $SERVER_USERNAME@$ZOBELISK_IP -i ~/.ssh/zobelisk-key \
-    -t $EXEC_ON_SERVER
+ssh "$SERVER_USERNAME"@$ZOBELISK_IP -i ~/.ssh/zobelisk-key \
+	-t "$EXEC_ON_SERVER"
 $EXIT_SCRIPT

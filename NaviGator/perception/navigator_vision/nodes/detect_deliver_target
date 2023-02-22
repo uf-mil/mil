@@ -20,7 +20,6 @@ __author__ = "Kevin Allen"
 
 
 class DetectDeliverTargetDetector(VisionNode):
-
     BORDER_THICKNESS_METERS = 0.0508
 
     def __init__(self):

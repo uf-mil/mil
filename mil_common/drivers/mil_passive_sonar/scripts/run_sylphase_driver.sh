@@ -2,11 +2,10 @@
 # Script to run the propriatary sylphase driver at the specified port
 set -euo pipefail
 
-usage()
-{
-  echo "Usage: port"
-  echo "Example ./run_sylphase_driver 10001"
-  exit 1
+usage() {
+	echo "Usage: port"
+	echo "Example ./run_sylphase_driver 10001"
+	exit 1
 }
 # Call usage() function if arguments not supplied.
 [[ $# -lt 1 ]] && usage

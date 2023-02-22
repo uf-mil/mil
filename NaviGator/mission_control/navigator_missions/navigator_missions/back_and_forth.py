@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import numpy as np
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class BackAndForth(Navigator):
+class BackAndForth(NaviGatorMission):
     async def run(self, parameters):
         await self.change_wrench("autonomous")
         while True:
