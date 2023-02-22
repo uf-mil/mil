@@ -2,8 +2,8 @@
 import asyncio
 from operator import attrgetter
 
+import axros
 import numpy as np
-import txros
 from cv2 import bitwise_and
 from cv_bridge import CvBridge
 from dynamic_reconfigure.msg import DoubleParameter
@@ -15,7 +15,7 @@ from navigator_msgs.msg import ScanTheCode
 from sensor_msgs.msg import Image, PointCloud2
 from std_srvs.srv import SetBoolRequest
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 LED_PANEL_MAX = 0.1  # meters
 LED_PANEL_MIN = 0.5  # meters
@@ -30,7 +30,7 @@ TIMEOUT_SECONDS = 120  # seconds
 COLORS = ["red", "green", "black", "blue"]
 
 
-class ScanTheCode(Navigator):
+class ScanTheCode(NaviGatorMission):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.camera_model = PinholeCameraModel()
@@ -96,7 +96,7 @@ class ScanTheCode(Navigator):
             dtype=int,
         )
         try:
-            sequence = await txros.util.wrap_timeout(
+            sequence = await axros.util.wrap_timeout(
                 self.get_sequence(contour), TIMEOUT_SECONDS
             )
         except asyncio.TimeoutError:
@@ -110,7 +110,6 @@ class ScanTheCode(Navigator):
         sequence = []
         print("GETTING SEQUENCE")
         while len(sequence) < 3:
-
             img = await self.front_left_camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img)
 

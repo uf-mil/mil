@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import txros
+import axros
 
 
-@txros.util.cancellableInlineCallbacks
+@axros.util.cancellableInlineCallbacks
 def main(navigator):
     while True:
         target_raw = raw_input("Lat, Long: ")

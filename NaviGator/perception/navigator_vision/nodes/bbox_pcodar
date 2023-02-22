@@ -12,7 +12,6 @@ from tf2_geometry_msgs import do_transform_point
 
 
 class BBOXPCODAR:
-
     cached_objects: dict[int, Point]
 
     def __init__(self):

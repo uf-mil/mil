@@ -22,7 +22,6 @@ Supports resizing images, but given that this has shown no performance increase,
 def split_data(
     image_dir="Images", ann_dir="Annotations", resize=False, size=[256, 150]
 ):
-
     if resize:
         imgs_jpg = glob.glob(image_dir + "/*.png")
         for img_dir in imgs_jpg:
@@ -72,7 +71,6 @@ Processes our json file into the PASCAL VOC format which results in an Image dir
 
 
 def json_to_pascal(labelled_data="json_files/project_labels.json"):
-
     print("Downloading images and xml files, please wait...")
 
     # set labeled_data to the file path of the Labelbox JSON export
@@ -117,7 +115,6 @@ from the labelmap."""
 
 
 def xml_to_csv(path, labelmap, resize=False, size=[256, 150]):
-
     # Size is width by height
     number_of_images = 0
     global dictionary

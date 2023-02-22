@@ -9,7 +9,7 @@
 #include "opencv2/opencv.hpp"
 using namespace cv;
 
-//#define DO_DEBUG
+// #define DO_DEBUG
 #define DO_ROS_DEBUG
 #ifdef DO_ROS_DEBUG
 #include <cv_bridge/cv_bridge.h>

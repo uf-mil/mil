@@ -1,6 +1,0 @@
-<launch>
-    <node pkg="mil_missions" type="mission_server" name="mission_server">
-        <param name="missions_module" value="sub8_missions" />
-        <param name="base_mission" value="SubjuGator" />
-    </node>
-</launch>

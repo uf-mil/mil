@@ -45,10 +45,8 @@ class Joystick:
             return
 
         if joy.axes == self.last_joy.axes and joy.buttons == self.last_joy.buttons:
-
             # No change in state
             if rospy.Time.now() - self.last_joy.header.stamp > rospy.Duration(15 * 60):
-
                 # The controller times out after 15 minutes
                 if self.active:
                     rospy.logwarn("Controller Timed out. Hold start to resume.")

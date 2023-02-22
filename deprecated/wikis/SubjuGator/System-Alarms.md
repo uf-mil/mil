@@ -25,7 +25,7 @@ The SubjuGator alarm system has two key components. AlarmBroadcasters, which "ra
 
 Here is an example use of an AlarmBroadcaster
 
-    from sub8_alarm import AlarmBroadcaster
+    from subjugator_alarm import AlarmBroadcaster
 
     if __name__ == '__main__':
         alarm_broadcaster = AlarmBroadcaster()
@@ -82,7 +82,7 @@ Finally, we raise our alarm. We give the alarm a **human readable** `problem_des
 
 ## Alarm Scenarios
 
-Alarm scenarios are the way we handle a particular alarm. This decouples response behavior from failure detection. Every alarm scenario (in sub8_alarm.alarms), is a class that must:
+Alarm scenarios are the way we handle a particular alarm. This decouples response behavior from failure detection. Every alarm scenario (in subjugator_alarm.alarms), is a class that must:
 
 * Capitalize its first letter
 * Supply an `alarm_name` attribute, that is the name of the alarm it should respond to
@@ -107,17 +107,17 @@ Change suggestions are very welcome, this is the first iteration of what will be
 
 # Using System Alarms with C++
 
-To use the Sub 8 alarm system with your C++ package, you'll need to link your executable or library to the sub8_alarm shared library in your package's CMakeLists.txt. To do that, add the following to your CMakeLists.txt: 
-* `find_package(sub8_alarm)`
-* `DEPENDS sub8_alarm` to `catkin_package(...)`
-* `${sub8_alarm_INCLUDE_DIRS}` to `include_directories(...)`
-* `${sub8_alarm_LIBRARIES}` to `target_link_libraries(...)`
+To use the Sub 8 alarm system with your C++ package, you'll need to link your executable or library to the subjugator_alarm shared library in your package's CMakeLists.txt. To do that, add the following to your CMakeLists.txt: 
+* `find_package(subjugator_alarm)`
+* `DEPENDS subjugator_alarm` to `catkin_package(...)`
+* `${subjugator_alarm_INCLUDE_DIRS}` to `include_directories(...)`
+* `${subjugator_alarm_LIBRARIES}` to `target_link_libraries(...)`
 
 and to your `package.xml`, add the following: 
-* `<build_depend>sub8_alarm</build_depend>`
-* `<run_depend>sub8_alarm</run_depend>`
+* `<build_depend>subjugator_alarm</build_depend>`
+* `<run_depend>subjugator_alarm</run_depend>`
 
-Add the `#include <sub8_alarm/alarm_helpers.h>` include directive to your code to use the `AlarmBroadcaster` and `AlarmRaiser` classes
+Add the `#include <subjugator_alarm/alarm_helpers.h>` include directive to your code to use the `AlarmBroadcaster` and `AlarmRaiser` classes
 
 # Things to worry about
 

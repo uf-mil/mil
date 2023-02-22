@@ -189,7 +189,6 @@ class OGrid:
 
 
 class OGridServer:
-
     odom: Optional[Tuple[np.ndarray, np.ndarray]]
 
     def __init__(

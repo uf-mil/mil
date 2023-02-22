@@ -3,7 +3,7 @@
 import sys
 
 import genpy
-import txros
+import axros
 from mil_tools import fprint
 from navigator_msgs.srv import ObjectDBQuery
 from navigator_tools import DBHelper
@@ -28,9 +28,9 @@ class ScanTheCodeMission:
 
         self.stc_correct = False
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def init_(self, tl):
-        """Initialize the txros elements of ScanTheCodeMission class."""
+        """Initialize the axros elements of ScanTheCodeMission class."""
         my_tf = tl
         self.debug = Debug(self.nh, wait=False)
         self.perception = yield ScanTheCodePerception(my_tf, self.debug, self.nh)._init()
@@ -42,7 +42,7 @@ class ScanTheCodeMission:
     def _info_cb(self, info):
         self.perception.update_info(info)
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def _get_scan_the_code(self):
         v = False
         if self.scan_the_code is None:
@@ -57,7 +57,7 @@ class ScanTheCodeMission:
         fprint("GOT SCAN THE CODE WITH ID {}".format(ans.id), msg_color="blue")
         defer.returnValue(ans)
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def find_colors(self, timeout=sys.maxsize):
         """Find the colors of scan the code."""
         length = genpy.Duration(timeout)
@@ -82,7 +82,7 @@ class ScanTheCodeMission:
             # yield self.nh.sleep(.03)
         defer.returnValue(None)
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def initial_position(self, timeout=sys.maxsize):
         """Get the initial position of scan the code."""
         length = genpy.Duration(timeout)
@@ -98,7 +98,7 @@ class ScanTheCodeMission:
 
             defer.returnValue(self.action.initial_position(scan_the_code))
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def correct_pose(self, pose, timeout=sys.maxsize):
         """Check to see if the boat pose needs to be corrected to get an optimal viewing angle."""
         length = genpy.Duration(timeout)

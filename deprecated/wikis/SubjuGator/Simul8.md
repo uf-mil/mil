@@ -23,7 +23,7 @@ Credit to Forrest for this - the Pyode on apt doesn't behave, but compiling from
 
 Run...
 
-    roslaunch sub8_simulation sim_full.launch
+    roslaunch subjugator_simulation sim_full.launch
 
 Which will run all of the necessary nodes to run simulations.
 

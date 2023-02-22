@@ -36,7 +36,7 @@ class ActuatorBoard(CANDeviceHandle):
             )
         except InvalidAddressException as e:
             return {"success": False, "message": str(e)}
-        self.send_data(message.to_bytes(), can_id=SEND_ID)
+        self.send_data(bytes(message), can_id=SEND_ID)
         rospy.loginfo(
             "Set valve {} {}".format(req.actuator, "opened" if req.opened else "closed")
         )
@@ -44,9 +44,9 @@ class ActuatorBoard(CANDeviceHandle):
         rospy.sleep(0.01)
         # Request the status of the valve just commanded to ensure it worked
         self.send_data(
-            CommandMessage.create_command_message(
-                address=req.actuator, write=False
-            ).to_bytes(),
+            bytes(
+                CommandMessage.create_command_message(address=req.actuator, write=False)
+            ),
             can_id=SEND_ID,
         )
         return {"success": True}

@@ -5,10 +5,10 @@ import numpy as np
 from geometry_msgs.msg import PoseStamped
 from mil_tools import pose_to_numpy
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class TrackTarget(Navigator):
+class TrackTarget(NaviGatorMission):
     """
     Mission to track the detect deliver target
     """
@@ -21,7 +21,7 @@ class TrackTarget(Navigator):
     DISTANCE_TOLERANCE = 0.1
 
     @classmethod
-    async def init(cls):
+    async def setup(cls):
         # Store pose of shooter for later
         cls.base_link_to_shooter = -(
             await cls.tf_listener.get_transform("base_link", "shooter")

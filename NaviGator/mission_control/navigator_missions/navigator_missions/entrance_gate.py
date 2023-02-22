@@ -7,17 +7,17 @@ from mil_misc_tools import ThrowingArgumentParser
 from mil_tools import rosmsg_to_numpy
 from navigator_msgs.srv import MessageEntranceExitGate, MessageEntranceExitGateRequest
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class EntranceGate(Navigator):
+class EntranceGate(NaviGatorMission):
     @classmethod
     def decode_parameters(cls, parameters):
         argv = parameters.split()
         return cls.parser.parse_args(argv)
 
     @classmethod
-    def init(cls):
+    async def setup(cls):
         class Range:
             """
             https://stackoverflow.com/a/12117089

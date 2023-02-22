@@ -2,16 +2,16 @@ import asyncio
 import json
 import traceback
 
-import txros
+import axros
 from ros_alarms.msg import Alarm
 from ros_alarms.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
 
 """
-Alarms implementation for txros (https://github.com/txros/txros)
+Alarms implementation for axros (https://github.com/axros/axros)
 """
 
 
-async def _check_for_alarm(nh: txros.NodeHandle, alarm_name: str, nowarn=False):
+async def _check_for_alarm(nh: axros.NodeHandle, alarm_name: str, nowarn=False):
     if (
         not nowarn
         and (await nh.has_param("/known_alarms"))
@@ -32,7 +32,7 @@ def _check_for_valid_name(alarm_name, nowarn=False):
 
 class TxAlarmBroadcaster:
     @classmethod
-    async def init(cls, nh: txros.NodeHandle, name: str, node_name=None, nowarn=False):
+    async def init(cls, nh: axros.NodeHandle, name: str, node_name=None, nowarn=False):
         _check_for_valid_name(name, nowarn)
         await _check_for_alarm(nh, name, nowarn)
 
@@ -81,7 +81,7 @@ class TxAlarmListener:
 
         alarm_client = nh.get_service_client("/alarm/get", AlarmGet)
         try:
-            await txros.util.wrap_timeout(alarm_client.wait_for_service(), 1)
+            await axros.util.wrap_timeout(alarm_client.wait_for_service(), 1)
         except asyncio.TimeoutError:
             print("No alarm sever found! Alarm behaviours will be unpredictable.")
 
@@ -201,7 +201,7 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
     @classmethod
     async def init(
         cls,
-        nh: txros.NodeHandle,
+        nh: axros.NodeHandle,
         alarm_name: str,
         topic_name: str,
         msg_class,
@@ -216,12 +216,12 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
         """
         ab = await TxAlarmBroadcaster.init(nh, alarm_name, **kwargs)
         predicate = predicate if predicate is not None else lambda *args: True
-        prd = txros.util.genpy.Duration(prd)
+        prd = axros.util.genpy.Duration(prd)
         obj = cls(nh, ab, topic_name, msg_class, predicate, prd)
         await obj.sub.setup()
         return obj
 
-    def __init__(self, nh: txros.NodeHandle, ab, topic_name, msg_class, predicate, prd):
+    def __init__(self, nh: axros.NodeHandle, ab, topic_name, msg_class, predicate, prd):
         """Don't invoke this function directly, use the `init` function above"""
         self._nh = nh
         self._predicate = predicate

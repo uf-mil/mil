@@ -12,7 +12,7 @@ GoalStatus
 .. class:: actionlib_msgs.msg.GoalStatus
 
     Message type indicating the status of a goal in an actions server. Used by
-    the SimpleActionClient implemented by ROS and txros' layer over it.
+    the SimpleActionClient implemented by ROS and axros' layer over it.
 
     The specific attributes of the message are also used in order to indicate
     a specific type of status.
@@ -163,7 +163,7 @@ PointStamped
 
         :type: :class:`Header`
 
-    .. attribute:: position
+    .. attribute:: point
 
         The position associated with the point
 

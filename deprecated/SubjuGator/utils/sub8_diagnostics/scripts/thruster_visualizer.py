@@ -4,7 +4,7 @@ from __future__ import division
 import numpy as np
 import rospy
 from mil_ros_tools import numpy_to_point
-from sub8_msgs.msg import Thrust
+from subjugator_msgs.msg import Thrust
 from visualization_msgs.msg import Marker, MarkerArray
 
 __author__ = "Kevin Allen"

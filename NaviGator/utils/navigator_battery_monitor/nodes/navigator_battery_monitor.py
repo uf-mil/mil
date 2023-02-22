@@ -37,7 +37,6 @@ class BatteryMonitor:
     """
 
     def __init__(self):
-
         # Initialize the average voltage to none for the case of no feedback
         self.voltage = None
 

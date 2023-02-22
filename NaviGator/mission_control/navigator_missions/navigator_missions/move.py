@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 import numpy as np
+from axros import types, util
 from mil_misc_tools import ThrowingArgumentParser
 from mil_tools import numpy_to_point, rosmsg_to_numpy
 from navigator_path_planner.msg import MoveGoal
-from txros import types, util
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class Move(Navigator):
+class Move(NaviGatorMission):
     @classmethod
     def decode_parameters(cls, parameters):
         argv = parameters.split()
         return cls.parser.parse_args(argv)
 
     @classmethod
-    def init(cls):
+    async def setup(cls):
         parser = ThrowingArgumentParser(
             description="Command Line Mission Runner",
             usage="Pass any pose editor command with an argument. \n\t\

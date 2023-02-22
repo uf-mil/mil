@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <param name="use_sim_time" value="true" />
+  <param name="simulate" value="true" />
+  <arg name="gui" default="false" />
+  <arg name="simulate_cams" default="true" />
+  <arg name="sub" default="sub8"/>
+
+  <!-- start gazebo server-->
+  <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false"
+    args="$(find subjugator_gazebo)/worlds/robosub_2022.world --verbose" />
+  <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" if="$(arg gui)" />
+
+  <include file="$(find subjugator_gazebo)/launch/spawn.launch" >
+	<arg name="simulate_cams" value="$(arg simulate_cams)" />
+    <arg name="sub" value="$(arg sub)"/>
+  </include>
+</launch>

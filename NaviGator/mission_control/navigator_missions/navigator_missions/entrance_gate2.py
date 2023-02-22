@@ -5,16 +5,11 @@ import numpy as np
 from mil_tools import quaternion_matrix
 from std_srvs.srv import SetBoolRequest
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class EntranceGate2(Navigator):
-    @classmethod
-    def init(cls):
-        pass
-
+class EntranceGate2(NaviGatorMission):
     async def run(self, args):
-
         # Parameters:
         scan_code = False
         return_to_start = True
@@ -136,7 +131,6 @@ class EntranceGate2(Navigator):
     """
 
     async def find_gates(self):
-
         # This mission assumes we are starting off looking at the start gate task
 
         # Get five closest buoys

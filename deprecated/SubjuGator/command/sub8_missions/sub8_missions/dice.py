@@ -7,7 +7,7 @@ from mil_misc_tools import text_effects
 from sensor_msgs.msg import CameraInfo
 from std_srvs.srv import SetBool, SetBoolRequest
 from twisted.internet import defer
-from txros import util
+from axros import util
 from visualization_msgs.msg import Marker
 
 fprint = text_effects.FprintFactory(title="DICE", msg_color="cyan").fprint

@@ -164,7 +164,6 @@ class AlarmServer:
             and hasattr(cls, "alarm_name")
             and name != "HandlerBase"
         ]:
-
             # Have to instantiate so the class exists exists
             h = handler()
 

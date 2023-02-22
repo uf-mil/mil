@@ -14,7 +14,7 @@ from navigator_msgs.srv import (
 )
 from std_srvs.srv import SetBool, SetBoolRequest
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
 def print_good(message):
@@ -396,7 +396,7 @@ async def setup_mission(navigator):
     await navigator.mission_params["dock_color_2"].set(bay_2_color)
 
 
-async def main(navigator: Navigator, **kwargs):
+async def main(navigator: NaviGatorMission, **kwargs):
     await setup_mission(navigator)
     print_good("STARTING MISSION")
     mission = IdentifyDockMission(navigator)

@@ -5,7 +5,7 @@ from ros_alarms import AlarmBroadcaster, AlarmListener
 from ros_alarms.msg import Alarm
 from rospy.timer import TimerEvent
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
-from sub8_msgs.msg import Thrust
+from subjugator_msgs.msg import Thrust
 
 from .packets import (
     KILL_SEND_ID,
@@ -64,9 +64,11 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             SetBoolResponse: The service response.
         """
         self.send_data(
-            KillMessage.create_kill_message(
-                command=True, hard=False, asserted=req.data
-            ).to_bytes(),
+            bytes(
+                KillMessage.create_kill_message(
+                    command=True, hard=False, asserted=req.data
+                )
+            ),
             can_id=KILL_SEND_ID,
         )
         return SetBoolResponse(success=True)
@@ -76,7 +78,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         Send a special heartbeat packet. Called by a recurring timer set upon
         initialization.
         """
-        self.send_data(HeartbeatMessage.create().to_bytes(), can_id=KILL_SEND_ID)
+        self.send_data(bytes(HeartbeatMessage.create()), can_id=KILL_SEND_ID)
 
     def on_hw_kill(self, alarm: Alarm) -> None:
         """
@@ -110,7 +112,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             packet = ThrustPacket.create_thrust_packet(
                 ThrustPacket.ID_MAPPING[cmd.name], effort
             )
-            self.send_data(packet.to_bytes(), can_id=THRUST_SEND_ID)
+            self.send_data(bytes(packet), can_id=THRUST_SEND_ID)
 
     def update_hw_kill(self, status: StatusMessage) -> None:
         """
