@@ -75,7 +75,7 @@ class HydrophoneTrigger:
                 "samples", numpy_msg(HydrophoneSamplesStamped), self.hydrophones_cb
             )
         else:
-            ROS_FATAL("sample_msg_type not supported")
+            rospy.logfatal("sample_msg_type not supported")
             return
         self.pub = rospy.Publisher("pings", numpy_msg(Triggered), queue_size=1)
         rospy.Service("~filter_debug_trigger", Trigger, self.filter_response)
@@ -190,13 +190,11 @@ class HydrophoneTrigger:
         # Record start time of cb to make sure we are running in real time
         start_cb = rospy.get_rostime()
         if isinstance(msg, numpy_msg(Ping)):
-            msg_header = msg.header
             msg_channels = msg.channels
             msg_samples = msg.samples
             msg_sample_rate = msg.sample_rate
             msg_data = msg.data
         elif isinstance(msg, numpy_msg(HydrophoneSamplesStamped)):
-            msg_header = msg.header
             msg_channels = msg.hydrophone_samples.channels
             msg_samples = msg.hydrophone_samples.samples
             msg_sample_rate = msg.hydrophone_samples.sample_rate

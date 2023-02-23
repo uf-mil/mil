@@ -58,7 +58,10 @@ def desample_binary(data, labels, oversample=5):
 
 def split(img, size):
     """Chunk an image"""
-    _split = lambda p: np.array_split(p, size, axis=1)
+
+    def _split(p):
+        return np.array_split(p, size, axis=1)
+
     split_x = np.array_split(img, size)
     split_y = map(_split, split_x)
     images = []

@@ -93,7 +93,7 @@ class VampireSlayer(SubjuGatorMission):
             target_normal = rosmsg_to_numpy(res.pose.pose.orientation)[:2]
             print("Normal: ", target_normal)
             await self.move.go(blind=True, speed=0.1)  # Station hold
-            transform = await self._tf_listener.get_transform("map", "/base_link")
+            await self._tf_listener.get_transform("map", "/base_link")
             target_position = target_pose
             #            target_position = target_pose / target_normal
 

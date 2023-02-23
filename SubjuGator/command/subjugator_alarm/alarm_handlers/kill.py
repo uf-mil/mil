@@ -42,7 +42,7 @@ class Kill(HandlerBase):
         self._set_mobo_kill = rospy.ServiceProxy("/set_mobo_kill", SetBool)
         try:
             self._set_mobo_kill.wait_for_service(3.0)
-        except rospy.ROSException as e:
+        except rospy.ROSException:
             rospy.logerr("Could not contact kill board! Kills will only be software")
         self.set_mobo_kill(True)  # Tell HW that we started off as killed
 

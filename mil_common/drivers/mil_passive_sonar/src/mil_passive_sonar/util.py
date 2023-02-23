@@ -22,9 +22,7 @@ def resample(x, p, q):
 
     delay = math.floor(math.ceil(Lhalf) / q)
     nz1 = 0
-    while math.ceil(((Lx - 1) * p + len(h) + nz1) / q) - delay < math.ceil(
-        Lx * p / q
-    ):  # noqa
+    while math.ceil(((Lx - 1) * p + len(h) + nz1) / q) - delay < math.ceil(Lx * p / q):
         nz1 = nz1 + 1
     h = numpy.hstack([h, numpy.zeros(nz1)])
     y = upfirdn(x, h, p, q)

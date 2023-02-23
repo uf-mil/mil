@@ -144,7 +144,7 @@ class FireTorpedos(SubjuGatorMission):
         self.print_info(f"FIRING {target}")
         target_pose = self.targets[target].position
         await self.move.go(blind=self.BLIND, speed=0.1)  # Station hold
-        transform = await self._tf_listener.get_transform("map", "/base_link")
+        await self._tf_listener.get_transform("map", "/base_link")
         # target_position = transform._q_mat.dot(
         #         target_pose - transform._p)
 
@@ -217,7 +217,7 @@ class FireTorpedos(SubjuGatorMission):
             elif self.pattern_done:
                 break
             await self.nh.sleep(0.1)
-        search.cancel()
+        self.search.cancel()
         pattern.cancel()
         self.vision_proxies.xyz_points.stop()
         self.print_good("Done!")

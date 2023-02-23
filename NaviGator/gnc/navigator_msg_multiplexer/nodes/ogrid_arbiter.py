@@ -17,8 +17,10 @@ from navigator_msg_multiplexer.cfg import OgridConfig
 from navigator_path_planner import params
 from std_srvs.srv import Trigger
 
+
 # Wow what a concept
-fprint = lambda *args, **kwargs: _fprint(title="OGRID_ARB", *args, **kwargs)
+def fprint(*args, **kwargs):
+    return _fprint(*args, title="OGRID_ARB", **kwargs)
 
 
 def make_ogrid_transform(ogrid: OccupancyGrid) -> np.array:

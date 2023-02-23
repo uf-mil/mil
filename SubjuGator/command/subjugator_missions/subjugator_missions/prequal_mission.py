@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import tf
 from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
 
 from .sub_singleton import SubjuGatorMission
 

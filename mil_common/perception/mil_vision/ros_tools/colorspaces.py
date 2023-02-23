@@ -107,9 +107,11 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
             )
 
     # Set 3x3 grid of single channel images from 3 3-channel images
-    make_3deep = lambda x: np.repeat(
-        x[:, :, np.newaxis], 3, axis=2
-    )  # Needed for displaying in color
+    def make_3deep(x):
+        return np.repeat(
+            x[:, :, np.newaxis], 3, axis=2
+        )  # Needed for displaying in color
+
     viz[:, w:] = np.vstack(
         list(map(make_3deep, map(lambda x: flatten_channels(*x), images_and_labels)))
     )

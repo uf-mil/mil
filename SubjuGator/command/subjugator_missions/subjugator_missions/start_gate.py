@@ -169,11 +169,7 @@ class StartGate(SubjuGatorMission):
                     # continue
                 print(f"Dist {line}")
                 if abs(line[2] > depth_threshold):
-                    print(
-                        "Not similar height. Height: {}. Thresh: ".format(
-                            line[2], depth_threshold
-                        )
-                    )
+                    print(f"Not similar height. Height: {line[2]}. Thresh: ")
                     continue
                 if abs(line[0]) < 1 and abs(line[1]) < 1:
                     fprint(

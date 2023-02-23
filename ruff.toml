@@ -1,0 +1,38 @@
+extend-select = [
+    "UP", # pyupgrade
+    "RUF", # ruff-specific rules
+]
+
+extend-exclude = [
+    "deprecated",
+    # submodules
+    "mil_common/perception/yolov7-ros",
+    "NaviGator/gnc/navigator_path_planner/lqRRT",
+    "mil_common/drivers/pointgrey_camera_driver",
+    "mil_common/drivers/roboteq",
+    "mil_common/drivers/LMS1xx",
+    "mil_common/axros",
+    "NaviGator/simulation/VRX/vrx",
+    "NaviGator/simulation/VRX/vrx-docker",
+    "mil_common/perception/yolov7-ros",
+    # sub simulation
+    "SubjuGator/simulation",
+    # docker contents
+    "docker",
+]
+
+target-version = "py38"
+
+ignore = [
+    "E501", # Line length
+    "F405", # Unknown import
+    "F403", # Unknown names
+    "D212", # we use second line!
+    "D200", # one line docstrings are not shortened!
+]
+
+[per-file-ignores]
+"__init__.py" = ["F401"]
+
+[pydocstyle]
+convention = "google"

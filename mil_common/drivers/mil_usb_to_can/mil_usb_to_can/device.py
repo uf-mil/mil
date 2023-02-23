@@ -95,7 +95,7 @@ class ExampleEchoDeviceHandle(CANDeviceHandle):
             self.send_new_string(8)
         except PayloadTooLargeException:
             pass
-        except:
+        except Exception:
             return TriggerResponse(False, "Testing large strings failed.")
         return TriggerResponse(True, "Complete!")
 

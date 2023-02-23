@@ -38,7 +38,7 @@ max_nodes = 1e5
 # INERTIA
 
 m = 350  # kg
-I = 400  # kg*m^2
+I = 400  # kg*m^2 # noqa
 invM = np.array([1 / m, 1 / m, 1 / I])
 
 # SPEED AND THRUST LIMITS

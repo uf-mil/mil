@@ -218,7 +218,7 @@ class MultiObs:
         point0 = np.array([x0, y0])
         point1 = np.array([x0 + width, y0])
         point2 = np.array([x0, y0 + height])
-        point3 = np.array([x0 + width, y0 + height])
+        np.array([x0 + width, y0 + height])
         # print("p1: ", point1)
         # print("p2: ", point2)
         try:

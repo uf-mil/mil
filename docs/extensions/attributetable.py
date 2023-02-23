@@ -254,7 +254,7 @@ def build_lookup_table(env):
         "class",
     }
 
-    for fullname, _, objtype, docname, _, _ in domain.get_objects():
+    for fullname, x, objtype, docname, y, z in domain.get_objects():
         if objtype in ignored:
             continue
 
@@ -360,7 +360,7 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
                             .children[0]
                             .attributes["ids"][0]
                         )
-                    except:
+                    except Exception:
                         fullname = ""
 
                     # Parse the function signature into just its name
@@ -550,10 +550,10 @@ def class_results_to_node(key, elements):
         ref = nodes.reference(
             "",
             "",
+            *[nodes.Text(element.label)],
             internal=True,
             refuri=f"#{element.fullname}",
             anchorname="",
-            *[nodes.Text(element.label)],
         )
         para = addnodes.compact_paragraph("", "", ref)
         if element.badge is not None:

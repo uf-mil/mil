@@ -76,7 +76,7 @@ class ObjectClassifier:
 
 
 async def main():
-    async with axros.NodeHandle.from_argv("object_classifier"):
+    async with axros.NodeHandle.from_argv("object_classifier") as nh:
         config = Config()
         class_file = os.path.abspath(__file__)
         class_file = class_file.split("nodes")[0]

@@ -277,7 +277,6 @@ class ParsedPoseEstRequest:
             self.last_cam_matx,
             self.right_cam_matx,
             self.l_obs_corners,
-            self.r_obs_corners,
             w=w_on,
             r=reset,
         )

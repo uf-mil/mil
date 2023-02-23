@@ -119,5 +119,5 @@ class ApplicationPacket:
 
     def __eq__(self, other):
         if not isinstance(other, ApplicationPacket):
-            raise NotImplemented()
+            raise NotImplementedError()
         return self.identifier == other.identifier and self.payload == other.payload
