@@ -6,7 +6,7 @@ import numpy as np
 from mil_tools import quaternion_matrix, rosmsg_to_numpy
 from std_srvs.srv import SetBoolRequest
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 ___author___ = "Alex Perez and Cameron Brown"
 
@@ -18,7 +18,7 @@ class MoveState(Enum):
     FINISHED = 4
 
 
-class Navigation(Navigator):
+class Navigation(NaviGatorMission):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.current_move_task_state = MoveState.NOT_STARTED
@@ -154,17 +154,13 @@ class Navigation(Navigator):
         @object_filter func filters and sorts
         """
         move_id_tuple = None
-        previous_index = None
-        previous_cone = None
         init_boat_pos = self.pose[0]
         cone_buoys_investigated = 0  # max will be 2
         service_req = None
-        fl = None
         investigated = set()
         move_task = None
         while True:
             if move_id_tuple is not None:
-
                 service_req = self.database_query(name="all")
 
                 result = await service_req
@@ -181,7 +177,6 @@ class Navigation(Navigator):
                         objects_msg.objects, move_id_tuple[1]
                     )
                     if classification_index != -1:
-
                         self.send_feedback(
                             "{} identified. Canceling investigation".format(
                                 move_id_tuple[1]
@@ -202,7 +197,6 @@ class Navigation(Navigator):
                                 classification_index
                             ].labeled_classification
                         ):
-                            previous_cone = previous_index
                             init_boat_pos = rosmsg_to_numpy(
                                 objects_msg.objects[classification_index].pose.position
                             )
@@ -313,7 +307,6 @@ class Navigation(Navigator):
             # if that doesn't produce any results, literally just go to closest buoy
             if potential_candidate is None:
                 for i in range(len(objects)):
-
                     if (
                         objects[i].id not in investigated
                         and "round" not in objects[i].labeled_classification
@@ -332,13 +325,11 @@ class Navigation(Navigator):
 
             # explore the closest buoy to potential candidate
             if potential_candidate is not None:
-
                 # if there exists a closest buoy, go to it
                 self.send_feedback(f"Investigating {objects[potential_candidate].id}")
                 investigated.add(objects[potential_candidate].id)
                 move = self.inspect_object(positions[potential_candidate])
                 move_id_tuple = (move, objects[potential_candidate].id)
-                previous_index = potential_candidate
                 print("USING POTENTIAL CANDIDATE")
 
             if move_id_tuple is None:
@@ -352,7 +343,7 @@ class Navigation(Navigator):
             white_index2 = indices[1]
         except IndexError:
             return None
-        except Exception as e:
+        except Exception:
             import traceback
 
             traceback.print_exc()
@@ -372,7 +363,6 @@ class Navigation(Navigator):
         return -1
 
     async def prepare_to_enter(self):
-        closest = []
         robot_position = (await self.tx_pose())[0]
 
         def filter_and_sort(objects, positions):

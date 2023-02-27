@@ -4,10 +4,10 @@ import math
 import numpy as np
 from mil_misc_tools import ThrowingArgumentParser
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class ObstacleAvoid(Navigator):
+class ObstacleAvoid(NaviGatorMission):
     DIFF_TOLERANCE = 10.0
 
     @classmethod
@@ -16,7 +16,7 @@ class ObstacleAvoid(Navigator):
         return cls.parser.parse_args(argv)
 
     @classmethod
-    def init(cls):
+    async def setup(cls):
         parser = ThrowingArgumentParser(
             description="Start Gate Mission",
             usage="Default parameters: 'runtask ObstacleAvoid'",

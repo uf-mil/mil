@@ -49,8 +49,8 @@ def ports_from_layout(layout):
 rospy.init_node('thruster_spinner')
 
 # Connect to thrusters
-sub8_thruster_mapper = rospack.get_path('sub8_thruster_mapper')
-thruster_layout = rosparam.load_file(sub8_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
+subjugator_thruster_mapper = rospack.get_path('subjugator_thruster_mapper')
+thruster_layout = rosparam.load_file(subjugator_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
 thruster_ports = ports_from_layout(thruster_layout)
 if thruster_ports == {}:
     fprint('Unable to connect to any thruster ports. Quitting.')

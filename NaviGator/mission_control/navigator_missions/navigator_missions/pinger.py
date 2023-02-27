@@ -12,12 +12,12 @@ from navigator_msgs.srv import (
 from std_srvs.srv import SetBool, SetBoolRequest
 from visualization_msgs.msg import Marker, MarkerArray
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 ___author___ = "Kevin Allen"
 
 
-class PingerMission(Navigator):
+class PingerMission(NaviGatorMission):
     OBSERVE_DISTANCE_METERS = 7
     GATE_CROSS_METERS = 8
     FREQ = 27000
@@ -35,7 +35,7 @@ class PingerMission(Navigator):
         self.color_wrong = False
 
     @classmethod
-    async def init(cls):
+    async def setup(cls):
         cls.listen_client = cls.nh.get_service_client(
             "/hydrophones/set_listen", SetBool
         )
@@ -366,7 +366,7 @@ class PingerMission(Navigator):
                 await self.mission_params["acoustic_pinger_active"].set(active_colors)
             else:
                 fprint(
-                    f"PINGER: cannot determine gate colors",
+                    "PINGER: cannot determine gate colors",
                     msg_color="red",
                 )
             #  fprint("PINGER: gate 3 color {}".format(sorted_3[0].color), msg_color='blue')

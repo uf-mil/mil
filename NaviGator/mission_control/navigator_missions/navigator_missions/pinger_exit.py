@@ -4,12 +4,12 @@ import mil_tools
 import numpy as np
 from mil_misc_tools.text_effects import fprint
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 ___author___ = "Kevin Allen"
 
 
-class PingerExitMission(Navigator):
+class PingerExitMission(NaviGatorMission):
     OBSERVE_DISTANCE_METERS = 6
     GATE_CROSS_METERS = 7
     FREQ = 35000

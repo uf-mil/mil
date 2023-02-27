@@ -7,7 +7,7 @@ from axros import NodeHandle, axros_tf
 from geographic_msgs.msg import GeoPath, GeoPoseStamped
 from mil_msgs.srv import ObjectDBQuery
 from mil_tools import numpy_to_point, rosmsg_to_numpy
-from navigator_missions import Navigator
+from navigator_missions import NaviGatorMission
 from navigator_msgs.srv import (
     AcousticBeacon,
     ChooseAnimal,
@@ -26,8 +26,7 @@ from vrx_gazebo.srv import ColorSequence
 ___author___ = "Kevin Allen"
 
 
-class Vrx(Navigator):
-
+class Vrx(NaviGatorMission):
     nh: NodeHandle
 
     def __init__(self, *args, **kwargs):
@@ -197,7 +196,7 @@ class Vrx(Navigator):
         await self.set_long_waypoint(req)
 
     async def get_closest(self):
-        ret = await self.get_sorted_objects("all")
+        await self.get_sorted_objects("all")
 
     async def reset_pcodar(self):
         await self.pcodar_reset(Trigger())

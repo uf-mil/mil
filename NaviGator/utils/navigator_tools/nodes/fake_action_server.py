@@ -12,9 +12,9 @@ from mil_tools import make_header, pose_to_numpy, rosmsg_to_numpy
 from nav_msgs.msg import OccupancyGrid
 from navigator_path_planner.msg import MoveAction, MoveResult
 
-fprint = lambda *args, **kwargs: _fprint(
-    title="FAKE_ACTION_SERVER", time="", *args, **kwargs
-)
+
+def fprint(*args, **kwargs):
+    return _fprint(*args, title="FAKE_ACTION_SERVER", time="", **kwargs)
 
 
 class FakeActionServer:

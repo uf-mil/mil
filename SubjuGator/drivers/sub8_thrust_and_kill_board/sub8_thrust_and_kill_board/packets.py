@@ -179,7 +179,7 @@ class StatusMessage(KillStatus):
             args.append(bool(unpacked & getattr(cls.BIT_MASK, field)))
         return cls(*args)
 
-    def to_bytes(self):
+    def __bytes__(self):
         out = 0
         for field in KillStatus._fields:
             if getattr(self, field):

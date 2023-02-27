@@ -1,4 +1,0 @@
-<launch>
-  <rosparam file="$(find sub8_thruster_mapper)/config/thruster_layout.yaml" param="thruster_layout"/>
-  <node pkg="sub8_thruster_mapper" type="mapper.py" name="thruster_mapper" />
-</launch>

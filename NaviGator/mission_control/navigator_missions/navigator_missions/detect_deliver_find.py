@@ -7,10 +7,10 @@ from mil_misc_tools import ThrowingArgumentParser
 from mil_msgs.msg import ObjectsInImage
 from mil_tools import rosmsg_to_numpy
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class DetectDeliverFind(Navigator):
+class DetectDeliverFind(NaviGatorMission):
     DOCK_SIZE_LONG = 16.0
     DOCK_SIZE_SHORT = 8.0
 
@@ -24,7 +24,7 @@ class DetectDeliverFind(Navigator):
         return cls.parser.parse_args(argv)
 
     @classmethod
-    def init(cls):
+    async def setup(cls):
         parser = ThrowingArgumentParser(
             description="Detect Deliver Find",
             usage="""Default parameters: \'runtask DetectDeliverFind

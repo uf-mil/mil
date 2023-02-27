@@ -1,7 +1,7 @@
 <launch>
     <node pkg="mil_missions" type="mission_server" name="mission_runner">
         <param name="missions_module" value="navigator_missions" />
-        <param name="base_mission" value="Navigator" />
+        <param name="base_mission" value="NaviGatorMission" />
         <rosparam>
         # Time to lower the grinch, seconds
         grinch_lower_time: 20

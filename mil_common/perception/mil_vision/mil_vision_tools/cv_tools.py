@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import rospy
 import tf.transformations as trns
+from image_geometry import PinholeCameraModel
 
 __author__ = "Kevin Allen"
 

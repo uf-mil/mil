@@ -2,17 +2,17 @@
 import numpy as np
 from mil_misc_tools import ThrowingArgumentParser
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class ExploreTowers(Navigator):
+class ExploreTowers(NaviGatorMission):
     @classmethod
     def decode_parameters(cls, parameters):
         argv = parameters.split()
         return cls.parser.parse_args(argv)
 
     @classmethod
-    def init(cls):
+    async def setup(cls):
         parser = ThrowingArgumentParser(
             description="Explore a bit mission",
             usage="Default parameters: 'runtask ExploreJaxon'",

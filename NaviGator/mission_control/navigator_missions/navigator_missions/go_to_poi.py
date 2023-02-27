@@ -5,10 +5,10 @@ import numpy as np
 from geometry_msgs.msg import Point, Pose, Quaternion
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class GoToPOI(Navigator):
+class GoToPOI(NaviGatorMission):
     """
     Moves NaviGator to a point of interest
     """

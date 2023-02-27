@@ -4,10 +4,10 @@ from mil_misc_tools import ThrowingArgumentParser
 from mil_tools import rosmsg_to_numpy
 from std_srvs.srv import SetBoolRequest
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class DemonstrateNavigation(Navigator):
+class DemonstrateNavigation(NaviGatorMission):
     """
     Mission for the "Demonstrate Navigation And Control" challenge.
     May either use the objects in PCODAR or to clicked points.
@@ -18,7 +18,7 @@ class DemonstrateNavigation(Navigator):
     END_MARGIN_METERS = 5.0
 
     @classmethod
-    def init(cls):
+    async def setup(cls):
         parser = ThrowingArgumentParser(description="Navigation Pass Mission")
         parser.add_argument(
             "--use-pcodar",

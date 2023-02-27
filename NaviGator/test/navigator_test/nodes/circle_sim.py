@@ -16,7 +16,9 @@ from navigator_msgs.srv import (
 )
 from std_srvs.srv import Trigger, TriggerRequest
 
-fprint = lambda *args, **kwargs: _fprint(time="", title="SIM", *args, **kwargs)
+
+def fprint(*args, **kwargs):
+    return _fprint(*args, time="", title="SIM", **kwargs)
 
 
 class DoOdom:

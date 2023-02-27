@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 from .detect_deliver_find import DetectDeliverFind
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 # from .track_target import TrackTarget
 
 
-class DetectDeliver(Navigator):
+class DetectDeliver(NaviGatorMission):
     @classmethod
-    def init(cls):
+    async def setup(cls):
         cls.detect_deiliver_find = DetectDeliverFind()
         # cls.track_target = TrackTarget()
 

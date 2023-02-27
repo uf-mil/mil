@@ -11,7 +11,7 @@ import tf.transformations as trns
 from nav_msgs.msg import OccupancyGrid
 
 from . import pose_editor
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 WEST = trns.quaternion_matrix(pose_editor.WEST)
 EAST = trns.quaternion_matrix(pose_editor.EAST)
@@ -23,7 +23,7 @@ shapes = ["CIRCLE", "TRIANGLE", "CROSS"]
 shuffle(shapes)
 
 
-class CoralSurvey(Navigator):
+class CoralSurvey(NaviGatorMission):
     async def run(self, parameters):
         # middle_point = np.array([-10, -70, 0])
         est_coral_survey = await self.database_query("CoralSurvey")

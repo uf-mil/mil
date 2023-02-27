@@ -103,7 +103,6 @@ if __name__ == "__main__":
     def cb(label, img):
         for key in label["Label"]:
             for polygon in label["Label"][key]:
-
                 points = LabelBoxParser.label_to_contour(polygon, img.shape[0])
 
                 centroid = contour_centroid(points)

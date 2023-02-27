@@ -143,10 +143,11 @@ class Controller:
         )
 
         # Permitting lambda assignment b/c legacy
-        wrench_from_vec = lambda output: (
-            world_from_body.T.dot(output[0:3]),
-            world_from_body.T.dot(output[3:6]),
-        )  # noqa
+        def wrench_from_vec(output):
+            return world_from_body.T.dot(output[0:3]), world_from_body.T.dot(
+                output[3:6]
+            )
+
         if DEBUG:
             print("{:6} {}".format("PD:", wrench_from_vec(pd_output)))
             print("{:6} {}".format("PID(R):", wrench_from_vec(output)))

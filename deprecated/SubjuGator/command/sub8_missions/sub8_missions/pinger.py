@@ -6,7 +6,7 @@ import visualization_msgs.msg as visualization_msgs
 from geometry_msgs.msg import Point, Vector3
 from mil_misc_tools import text_effects
 from sub8_hydrophones.msg import ProcessedPing
-from sub8_msgs.srv import GuessRequest, GuessRequestRequest
+from subjugator_msgs.srv import GuessRequest, GuessRequestRequest
 from twisted.internet import defer
 from axros import util
 from visualization_msgs.msg import Marker, MarkerArray

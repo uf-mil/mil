@@ -4,14 +4,14 @@ import asyncio
 from axros import util
 from navigator_msgs.msg import ScanTheCode
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class ScanTheCodeJaxon(Navigator):
+class ScanTheCodeJaxon(NaviGatorMission):
     TIMEOUT_SECONDS = 30.0
 
     @classmethod
-    async def init(cls):
+    async def setup(cls):
         cls.stcsub = cls.nh.subscribe("/scan_the_code", ScanTheCode)
         cls.stcpub = cls.nh.advertise("/scan_the_code", ScanTheCode)
         await asyncio.gather(cls.stcsub.setup(), cls.stcpub.setup())

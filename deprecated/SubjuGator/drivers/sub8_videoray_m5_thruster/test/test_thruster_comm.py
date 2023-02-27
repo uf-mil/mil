@@ -14,9 +14,9 @@ rospack = rospkg.RosPack()
 
 class TestThrusterComm(unittest.TestCase):
     def setUp(self):
-        sub8_thruster_mapper = rospack.get_path("sub8_thruster_mapper")
+        subjugator_thruster_mapper = rospack.get_path("subjugator_thruster_mapper")
         self.thruster_layout = rosparam.load_file(
-            sub8_thruster_mapper + "/config/thruster_layout.yaml"
+            subjugator_thruster_mapper + "/config/thruster_layout.yaml"
         )[0][0]
 
     def test_thruster_comm_factory_fake(self):

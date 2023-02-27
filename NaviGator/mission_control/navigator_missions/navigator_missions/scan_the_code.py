@@ -15,7 +15,7 @@ from navigator_msgs.msg import ScanTheCode
 from sensor_msgs.msg import Image, PointCloud2
 from std_srvs.srv import SetBoolRequest
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 LED_PANEL_MAX = 0.1  # meters
 LED_PANEL_MIN = 0.5  # meters
@@ -30,7 +30,7 @@ TIMEOUT_SECONDS = 120  # seconds
 COLORS = ["red", "green", "black", "blue"]
 
 
-class ScanTheCode(Navigator):
+class ScanTheCodeMission(NaviGatorMission):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.camera_model = PinholeCameraModel()
@@ -66,7 +66,7 @@ class ScanTheCode(Navigator):
         # Try to find the stc light
         try:
             pose = await self.find_stc()
-        except Exception as e:
+        except Exception:
             sequence = ["red", "green", "blue"]
             await self.report_sequence(sequence)
             return sequence
@@ -110,7 +110,6 @@ class ScanTheCode(Navigator):
         sequence = []
         print("GETTING SEQUENCE")
         while len(sequence) < 3:
-
             img = await self.front_left_camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img)
 
@@ -156,12 +155,12 @@ class ScanTheCode(Navigator):
             _, poses = await self.get_sorted_objects(name="stc_platform", n=1)
             pose = poses[0]
         # in case stc platform not already identified
-        except Exception as e:
+        except Exception:
             # get all pcodar objects
             try:
                 _, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
             # if no pcodar objects, drive forward
-            except Exception as e:
+            except Exception:
                 await self.move.forward(50).go()
                 # get all pcodar objects
                 _, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
