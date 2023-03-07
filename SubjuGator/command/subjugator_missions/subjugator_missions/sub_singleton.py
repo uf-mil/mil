@@ -344,7 +344,10 @@ class SubjuGatorMission(BaseMission):
         pose = pose_editor.PoseEditor.from_Odometry(last_odom_msg)
         return pose
 
-    def current_pose_editor(self) -> pose_editor.PoseEditor:
+    def goto(self) -> pose_editor.PoseEditor:
+        """
+        Returns a pose editor at the current position and orientation.
+        """
         return self.pose
 
     async def tx_pose(self):

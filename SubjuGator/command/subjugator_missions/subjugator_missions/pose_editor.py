@@ -123,19 +123,32 @@ def safe_wait_for_message(topic, topic_type):
 
 class PoseEditor:
     """
-    Helper class used to create poses for the movement of SubjuGatorMission.
+    Helper class used to create poses for the movement of SubjuGator.
 
     Frequently the methods from this class can be tied together in order to
     orchestrate multiple movements.
+
+    .. code-block:: python
+
+        class ExampleMission(SubjuGatorMission):
+            pose = self.goto() # new pose editor
+            down = pose.down(3).left(2) # down 3m, left 2m
+            await self.go(down, speed = 0.7) # go to that location at 0.7m/s
 
     .. container:: operations
 
         .. describe:: str(x)
 
-            Pretty prints the position and orientation associated with the sub.
+            Pretty prints the position and orientation associated with the pose editor.
+
+        .. describe:: repr(x)
+
+            Pretty prints the position and orientation associated with the pose editor.
     """
 
-    def __init__(self, frame_id: str, position, orientation):
+    def __init__(
+        self, frame_id: str, position: Sequence[float], orientation: Sequence[float]
+    ):
         self.frame_id = frame_id
         self.position = position
         self.orientation = orientation

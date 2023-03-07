@@ -30,7 +30,6 @@ class StartGate2022(SubjuGatorMission):
         async with imu_sub:
             reading = await imu_sub.get_next_message()
         declination = await self.nh.get_param("/course/location/declination")
-        fprint(declination)
         assert isinstance(declination, float) or isinstance(declination, int)
         return (
             math.atan2(reading.magnetic_field.z, reading.magnetic_field.y)
@@ -53,15 +52,15 @@ class StartGate2022(SubjuGatorMission):
         assert isinstance(orientation, int)
         if cur_degree > orientation:
             fprint(f"Yaw lefting: {cur_degree - orientation} degrees")
-            await self.move.yaw_left_deg(cur_degree - orientation).go()
+            await self.go(self.goto().yaw_left_deg(cur_degree - orientation))
         else:
             fprint(f"Yaw righting: {orientation - cur_degree} degrees")
-            await self.move.yaw_right_deg(orientation - cur_degree).go()
+            await self.go(self.goto().yaw_right_deg(orientation - cur_degree))
         await self.nh.sleep(2)  # Give sub time to turn before moving straight
 
         fprint("Found odom")
-        down = self.current_pose_editor().down(1)
+        down = self.goto().down(1)
         await self.go(down, speed=SPEED)
 
-        forward = self.current_pose_editor().forward(4)
+        forward = self.goto().forward(4)
         await self.go(forward, speed=SPEED)
