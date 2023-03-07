@@ -218,28 +218,24 @@ class _PoseProxy:
         # End goal can't be above the water
         if self._pose.position[2] > 0:
             print("GOAL TOO HIGH")
-            self._pos.position = -0.6
+            self._pose.position[2] = -0.6
 
-    async def go(self, *args, **kwargs):
-        if self.print_only:
-            print(self._pose)
-            return self._sub.nh.sleep(0.1)
-
+    async def go(
+        self, *, speed: float = 0.2, blind: bool = False, uncoordinated: bool = False
+    ):
         self.check_goal()
 
         goal = self._sub._moveto_action_client.send_goal(
-            self._pose.as_MoveToGoal(*args, **kwargs)
+            self._pose.as_MoveToGoal(
+                speed=speed, blind=blind, uncoordinated=uncoordinated
+            )
         )
         result = await goal.get_result()
+
         if result.error == "killed":
             raise exceptions.KilledException()
-        return result
 
-    def go_trajectory(self, *args, **kwargs):
-        traj = self._sub._trajectory_pub.publish(
-            self._pose.as_PoseTwistStamped(*args, **kwargs)
-        )
-        return traj
+        return result
 
 
 class _ActuatorProxy:
@@ -348,6 +344,9 @@ class SubjuGatorMission(BaseMission):
         pose = pose_editor.PoseEditor.from_Odometry(last_odom_msg)
         return pose
 
+    def current_pose_editor(self) -> pose_editor.PoseEditor:
+        return self.pose
+
     async def tx_pose(self):
         """
         Slightly safer to use.
@@ -364,6 +363,30 @@ class SubjuGatorMission(BaseMission):
     @property
     def move(self) -> _PoseProxy:
         return _PoseProxy(self, self.pose, self.test_mode)
+
+    async def go(
+        self,
+        pose: pose_editor.PoseEditor,
+        *,
+        speed: float = 0.2,
+        blind: bool = False,
+        uncoordinated: bool = False,
+    ):
+        # Check goal
+        print(type(pose), type(pose.position))
+        if pose.position[2] > 0:
+            print("GOAL TOO HIGH")
+            pose.position[2] = -0.6
+
+        goal = self._moveto_action_client.send_goal(
+            pose.as_MoveToGoal(speed=speed, blind=blind, uncoordinated=uncoordinated)
+        )
+        result = await goal.get_result()
+
+        if result.error == "killed":
+            raise exceptions.KilledException()
+
+        return result
 
     async def get_dvl_range(self):
         msg = await self._dvl_range_sub.get_next_message()

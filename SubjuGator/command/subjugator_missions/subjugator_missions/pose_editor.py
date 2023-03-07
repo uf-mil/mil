@@ -135,6 +135,16 @@ class PoseEditor:
             Pretty prints the position and orientation associated with the sub.
     """
 
+    def __init__(self, frame_id: str, position, orientation):
+        self.frame_id = frame_id
+        self.position = position
+        self.orientation = orientation
+
+    def __str__(self):
+        return f"PoseEditor(frame_id={self.frame_id}, position={self.position}, orientation={self.orientation})"
+
+    __repr__ = __str__
+
     @classmethod
     def from_Odometry_topic(cls, topic: str = "/odom") -> PoseEditor:
         """
@@ -175,14 +185,6 @@ class PoseEditor:
         return cls(
             frame_id, rosmsg_to_numpy(msg.position), rosmsg_to_numpy(msg.orientation)
         )
-
-    def __init__(self, frame_id: str, position, orientation):
-        self.frame_id = frame_id
-        self.position = position
-        self.orientation = orientation
-
-    def __str__(self):
-        return f"p: {self.position}, q: {self.orientation}"
 
     @property
     def _rot(self) -> np.ndarray:

@@ -60,8 +60,8 @@ class StartGate2022(SubjuGatorMission):
         await self.nh.sleep(2)  # Give sub time to turn before moving straight
 
         fprint("Found odom")
-        down = self.move.down(1).zero_roll_and_pitch()
-        await down.go(speed=SPEED)
+        down = self.current_pose_editor().down(1)
+        await self.go(down, speed=SPEED)
 
-        forward = self.move.forward(4).zero_roll_and_pitch()
-        await forward.go(speed=SPEED)
+        forward = self.current_pose_editor().forward(4)
+        await self.go(forward, speed=SPEED)
