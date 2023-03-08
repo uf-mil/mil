@@ -156,7 +156,9 @@ class Pinger(SubjuGatorMission):
             await self.fancy_move(self, vec)
 
         fprint("Arrived to hydrophones! Going down!")
-        await self.move.to_height(PINGER_HEIGHT).zero_roll_and_pitch().go(speed=0.1)
+        await self.go(
+            self.move().to_height(PINGER_HEIGHT).zero_roll_and_pitch(), speed=0.1
+        )
 
     async def fancy_move(self, sub: SubjuGatorMission, vec):
         global markers
@@ -175,8 +177,9 @@ class Pinger(SubjuGatorMission):
         marker.color.a = 1
         markers.markers.append(marker)
 
-        await sub.move.relative(vec).depth(MOVE_AT_DEPTH).zero_roll_and_pitch().go(
-            speed=SPEED
+        await self.go(
+            self.move().relative(vec).depth(MOVE_AT_DEPTH).zero_roll_and_pitch(),
+            speed=SPEED,
         )
 
     async def go_to_random_guess(

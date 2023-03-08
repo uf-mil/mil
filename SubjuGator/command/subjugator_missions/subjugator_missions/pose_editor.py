@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import Sequence
+from typing import MutableSequence, Sequence
 
 import numpy as np
 import rospy
@@ -131,7 +131,7 @@ class PoseEditor:
     .. code-block:: python
 
         class ExampleMission(SubjuGatorMission):
-            pose = self.goto() # new pose editor
+            pose = self.move() # new pose editor
             down = pose.down(3).left(2) # down 3m, left 2m
             await self.go(down, speed = 0.7) # go to that location at 0.7m/s
 
@@ -147,7 +147,10 @@ class PoseEditor:
     """
 
     def __init__(
-        self, frame_id: str, position: Sequence[float], orientation: Sequence[float]
+        self,
+        frame_id: str,
+        position: MutableSequence[float],
+        orientation: MutableSequence[float],
     ):
         self.frame_id = frame_id
         self.position = position
@@ -216,7 +219,7 @@ class PoseEditor:
         return self._rot.dot(UP)
 
     # Position
-    def set_position(self, position: Sequence[float]) -> PoseEditor:
+    def set_position(self, position: MutableSequence[float]) -> PoseEditor:
         """
         Returns a new pose editor with the same orientation, but a new position.
 

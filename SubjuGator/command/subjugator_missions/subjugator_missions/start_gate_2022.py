@@ -52,15 +52,15 @@ class StartGate2022(SubjuGatorMission):
         assert isinstance(orientation, int)
         if cur_degree > orientation:
             fprint(f"Yaw lefting: {cur_degree - orientation} degrees")
-            await self.go(self.goto().yaw_left_deg(cur_degree - orientation))
+            await self.go(self.move().yaw_left_deg(cur_degree - orientation))
         else:
             fprint(f"Yaw righting: {orientation - cur_degree} degrees")
-            await self.go(self.goto().yaw_right_deg(orientation - cur_degree))
+            await self.go(self.move().yaw_right_deg(orientation - cur_degree))
         await self.nh.sleep(2)  # Give sub time to turn before moving straight
 
         fprint("Found odom")
-        down = self.goto().down(1)
+        down = self.move().down(1)
         await self.go(down, speed=SPEED)
 
-        forward = self.goto().forward(4)
+        forward = self.move().forward(4)
         await self.go(forward, speed=SPEED)

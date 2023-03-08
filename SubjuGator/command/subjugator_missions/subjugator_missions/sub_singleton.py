@@ -344,7 +344,7 @@ class SubjuGatorMission(BaseMission):
         pose = pose_editor.PoseEditor.from_Odometry(last_odom_msg)
         return pose
 
-    def goto(self) -> pose_editor.PoseEditor:
+    def move(self) -> pose_editor.PoseEditor:
         """
         Returns a pose editor at the current position and orientation.
         """
@@ -362,10 +362,6 @@ class SubjuGatorMission(BaseMission):
         next_odom_msg = await self._odom_sub.get_next_message()
         pose = mil_ros_tools.pose_to_numpy(next_odom_msg.pose.pose)
         return pose
-
-    @property
-    def move(self) -> _PoseProxy:
-        return _PoseProxy(self, self.pose, self.test_mode)
 
     async def go(
         self,
@@ -435,7 +431,7 @@ class Searcher:
         looker = asyncio.create_task(self._run_look(spotings_req))
         searcher = asyncio.create_task(self._run_search_pattern(loop, speed))
 
-        start_pose = self.sub.move.forward(0)
+        start_pose = self.sub.move().forward(0)
         start_time = self.sub.nh.get_time()
         while self.sub.nh.get_time() - start_time < genpy.Duration(timeout):
             # If we find the object
@@ -450,7 +446,7 @@ class Searcher:
         looker.cancel()
         searcher.cancel()
 
-        await start_pose.go()
+        await self.sub.go(start_pose)
 
     async def _run_search_pattern(self, loop: bool, speed: float):
         """
