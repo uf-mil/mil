@@ -180,64 +180,6 @@ class _VisionProxies:
         return self.proxies.get(proxy, None)
 
 
-class _PoseProxy:
-    def __init__(
-        self,
-        sub: SubjuGatorMission,
-        pose: pose_editor.PoseEditor,
-        print_only: bool = False,
-    ):
-        self._sub = sub
-        self._pose = pose
-        self.print_only = print_only
-
-    # Normal moves get routed here
-    def __getattr__(self, name: str) -> Callable:
-        def sub_attr_proxy(*args, **kwargs):
-            return _PoseProxy(
-                self._sub,
-                getattr(self._pose, name)(*args, **kwargs),
-                print_only=self.print_only,
-            )
-
-        return sub_attr_proxy
-
-    # Some special moves
-    def to_height(self, height):
-        dist_to_bot = self._sub._dvl_range_sub.get_last_message()
-        delta_height = dist_to_bot.range - height
-        return self.down(delta_height)
-
-    def check_goal(self) -> None:
-        """
-        Check end goal for feasibility.
-
-        Current checks are:
-        * End goal can't be above the water
-        """
-        # End goal can't be above the water
-        if self._pose.position[2] > 0:
-            print("GOAL TOO HIGH")
-            self._pose.position[2] = -0.6
-
-    async def go(
-        self, *, speed: float = 0.2, blind: bool = False, uncoordinated: bool = False
-    ):
-        self.check_goal()
-
-        goal = self._sub._moveto_action_client.send_goal(
-            self._pose.as_MoveToGoal(
-                speed=speed, blind=blind, uncoordinated=uncoordinated
-            )
-        )
-        result = await goal.get_result()
-
-        if result.error == "killed":
-            raise exceptions.KilledException()
-
-        return result
-
-
 class _ActuatorProxy:
     """
     Wrapper for making service calls to pneumatic valve board.
@@ -338,6 +280,11 @@ class SubjuGatorMission(BaseMission):
 
     @property
     def pose(self) -> pose_editor.PoseEditor:
+        """
+        Returns a pose editor at the current position and orientation. Equivalent
+        to :meth:`~.move`, but this property should be used to indicate that no
+        move is being requested.
+        """
         last_odom_msg = self._odom_sub.get_last_message()
         if self.test_mode:
             last_odom_msg = Odometry()  # All 0's
@@ -346,7 +293,9 @@ class SubjuGatorMission(BaseMission):
 
     def move(self) -> pose_editor.PoseEditor:
         """
-        Returns a pose editor at the current position and orientation.
+        Returns a pose editor at the current position and orientation. Equivalent
+        to the :meth:`~.pose` property, but this method should be used to indicate
+        that a movement is soon to be requested on the sub.
         """
         return self.pose
 
@@ -371,8 +320,19 @@ class SubjuGatorMission(BaseMission):
         blind: bool = False,
         uncoordinated: bool = False,
     ):
+        """
+        Executes a movement to the position and orientation supplied in the
+        provided pose editor.
+
+        Arguments:
+            speed (float): The speed to execute the movement in m/s. Defaults to
+                0.2 m/s.
+            blind (bool): Whether to ignore collision avoidance in the planned
+                path. Defaults to False.
+            uncoordinated (bool): Whether to achieve some components before others.
+                False will move in a straight line. Defaults to False.
+        """
         # Check goal
-        print(type(pose), type(pose.position))
         if pose.position[2] > 0:
             print("GOAL TOO HIGH")
             pose.position[2] = -0.6
