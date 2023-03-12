@@ -7,6 +7,16 @@ import rospy
 import tf2_ros
 from geometry_msgs.msg import Point, PointStamped, Pose, Quaternion
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
+from mil_ros_tools.msg_helpers import numpy_to_point
+from mil_tools import thread_lock
+from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
+from visualization_msgs.msg import (
+    InteractiveMarker,
+    InteractiveMarkerControl,
+    InteractiveMarkerFeedback,
+    Marker,
+)
+
 from mil_poi.msg import POI, POIArray
 from mil_poi.srv import (
     AddPOI,
@@ -18,15 +28,6 @@ from mil_poi.srv import (
     MovePOI,
     MovePOIRequest,
     MovePOIResponse,
-)
-from mil_ros_tools.msg_helpers import numpy_to_point
-from mil_tools import thread_lock
-from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
-from visualization_msgs.msg import (
-    InteractiveMarker,
-    InteractiveMarkerControl,
-    InteractiveMarkerFeedback,
-    Marker,
 )
 
 # Mutex for POIServer

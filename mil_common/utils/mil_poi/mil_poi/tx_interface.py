@@ -5,8 +5,9 @@ import asyncio
 
 import numpy as np
 from axros import NodeHandle
-from mil_poi.msg import POIArray
 from mil_ros_tools.msg_helpers import rosmsg_to_numpy
+
+from mil_poi.msg import POIArray
 
 
 class TxPOIClient:

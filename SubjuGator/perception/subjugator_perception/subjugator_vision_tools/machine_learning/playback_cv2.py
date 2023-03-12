@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 from boost_auto import observe
 from mil_ros_tools import BagCrawler
+
 from subjugator_vision_tools import ImageCrawler, VideoCrawler
 
 if __name__ == "__main__":

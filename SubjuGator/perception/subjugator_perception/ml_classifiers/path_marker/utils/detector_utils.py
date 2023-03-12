@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import rospkg
 import tensorflow as tf
+
 from utils import label_map_util
 
 rospack = rospkg.RosPack()

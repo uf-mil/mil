@@ -4,8 +4,9 @@ import rospy
 from dynamic_reconfigure.client import Client
 from dynamic_reconfigure.server import Server
 from geometry_msgs.msg import Point
-from mil_bounds.cfg import BoundsConfig
 from visualization_msgs.msg import Marker
+
+from mil_bounds.cfg import BoundsConfig
 
 
 def config_to_tuple(config, index):

@@ -3,11 +3,12 @@ import importlib
 from typing import TYPE_CHECKING, Any, Dict, Generator, Optional, Tuple
 
 import rospy
+from serial import SerialException
+
 from mil_usb_to_can.board import (
     USBtoCANBoard,  # relative import causes import error with rosrun - GH-731
 )
 from mil_usb_to_can.utils import USB2CANException
-from serial import SerialException
 
 if TYPE_CHECKING:
     from .device import CANDeviceHandle

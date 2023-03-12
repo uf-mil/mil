@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 from typing import List, Tuple
 
-import mil_ros_tools
 import numpy as np
 import rospy
 import visualization_msgs.msg as visualization_msgs
 from geometry_msgs.msg import Point, Pose, Vector3
 from image_geometry import PinholeCameraModel
 from std_msgs.msg import ColorRGBA
+
+import mil_ros_tools
 
 rviz_pub = rospy.Publisher("visualization", visualization_msgs.Marker, queue_size=3)
 

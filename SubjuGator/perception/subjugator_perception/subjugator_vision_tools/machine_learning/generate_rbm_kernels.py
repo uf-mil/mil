@@ -8,6 +8,7 @@ from sklearn import linear_model, metrics
 from sklearn.cross_validation import train_test_split
 from sklearn.neural_network import BernoulliRBM
 from sklearn.pipeline import Pipeline
+
 from subjugator_vision_tools import machine_learning as ml
 
 """

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import rospy
 from mil_usb_to_can import CANDeviceHandle
+
 from sub8_actuator_board.srv import SetValve, SetValveRequest
 
 from .packets import SEND_ID, CommandMessage, FeedbackMessage, InvalidAddressException

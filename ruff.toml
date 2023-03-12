@@ -1,5 +1,6 @@
 extend-select = [
     "UP", # pyupgrade
+    "I", # isort
     "RUF", # ruff-specific rules
 ]
 

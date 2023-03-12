@@ -5,9 +5,8 @@ from typing import Sequence
 
 import numpy as np
 import rospy
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, Quaternion, Twist, Vector3
 from geometry_msgs.msg import Pose as Pose
-from geometry_msgs.msg import Quaternion, Twist, Vector3
 from mil_msgs.msg import MoveToGoal, PoseTwist, PoseTwistStamped
 from mil_ros_tools import rosmsg_to_numpy
 from nav_msgs.msg import Odometry
