@@ -32,7 +32,7 @@ class StartGate2022(SubjuGatorMission):
             reading = await imu_sub.get_next_message()
         declination = await self.nh.get_param("/course/location/declination")
         fprint(declination)
-        assert isinstance(declination, float) or isinstance(declination, int)
+        assert isinstance(declination, (float, int))
         return (
             math.atan2(reading.magnetic_field.z, reading.magnetic_field.y)
             * 180

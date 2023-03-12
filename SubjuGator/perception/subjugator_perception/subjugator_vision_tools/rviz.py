@@ -85,7 +85,7 @@ class RvizVisualizer:
             action=visualization_msgs.Marker.ADD,
             color=ColorRGBA(*color),
             scale=Vector3(0.05, 0.05, 0.05),
-            points=map(lambda o: Point(*o), [base, direction * length]),
+            points=(Point(*o) for o in [base, direction * length]),
             lifetime=rospy.Duration(),
             **kwargs,
         )

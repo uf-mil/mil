@@ -74,22 +74,16 @@ class StcDisplay(Plugin):
         self.label3 = self._widget.findChild(QtWidgets.QLabel, "label_3")
 
     def translate_to_label(self, letter: str) -> str:
-        if letter == "R":
-            return "Red"
-        elif letter == "G":
-            return "Green"
-        elif letter == "B":
-            return "Blue"
-        return "Undefined"
+        words = {"R": "Red", "G": "Green", "B": "Blue"}
+        return words.get(letter, "Undefined")
 
     def translate_to_style(self, letter: str) -> str:
-        if letter == "R":
-            return "QWidget {background-color:#FF432E;}"
-        elif letter == "G":
-            return "QWidget {background-color:#B1EB00;}"
-        elif letter == "B":
-            return "QWidget {background-color:#4AA8DB;}"
-        return "Undefined"
+        styles = {
+            "R": "QWidget {background-color:#FF432E;}",
+            "G": "QWidget {background-color:#B1EB00;}",
+            "B": "QWidget {background-color:#4AA8DB;}",
+        }
+        return styles.get(letter, "Undefined")
 
     def update_gui(self, msg: ScanTheCode):
         print("updating gui...")

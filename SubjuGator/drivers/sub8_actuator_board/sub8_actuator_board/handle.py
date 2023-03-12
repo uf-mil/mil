@@ -65,7 +65,7 @@ class ActuatorBoard(CANDeviceHandle):
         Process data received from board.
         """
         # Ensure packet contains correct identifier byte
-        if FeedbackMessage.IDENTIFIER != ord(data[0]):
+        if ord(data[0]) != FeedbackMessage.IDENTIFIER:
             rospy.logwarn(f"Received packet with wrong identifier byte {ord(data[0])}")
             return
         # Parse message and (for now) just log it

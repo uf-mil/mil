@@ -91,10 +91,7 @@ class CircleTower(NaviGatorMission):
             )
 
             # Rotate for faster rotate
-            if direction == "cw":
-                move = move.yaw_left(1.57)
-            else:
-                move = move.yaw_right(1.57)
+            move = move.yaw_left(1.57) if direction == "cw" else move.yaw_right(1.57)
             await move.go()
 
             self.send_feedback("Circling!")

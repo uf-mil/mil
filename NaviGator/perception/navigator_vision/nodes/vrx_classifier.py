@@ -128,15 +128,12 @@ class VrxClassifier:
         self.last_objects = msg
 
     def in_rect(self, point, bbox):
-        if (
+        return bool(
             point[0] >= bbox.bbox.center.x - bbox.bbox.size_x / 2
             and point[1] >= bbox.bbox.center.y - bbox.bbox.size_y / 2
             and point[0] <= bbox.bbox.center.x + bbox.bbox.size_x / 2
-            and point[1] <= bbox.bbox.center.y + bbox.bbox.size_y / 2
-        ):
-            return True
-        else:
-            return False
+            and point[1] <= bbox.bbox.center.y + bbox.bbox.size_y / 2,
+        )
 
     def distance(self, first, second):
         x_diff = second[0] - first[0]

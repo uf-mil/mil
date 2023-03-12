@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import json
 import traceback
 
@@ -139,7 +140,7 @@ class TxAlarmListener:
         return resp.alarm
 
     def _severity_cb_check(self, severity):
-        if isinstance(severity, tuple) or isinstance(severity, list):
+        if isinstance(severity, (tuple, list)):
             return severity[0] <= self._last_alarm.severity <= severity[1]
 
         # Not a tuple, just an int. The severities should match
@@ -193,10 +194,8 @@ class TxAlarmListener:
 
                 # Try to run the callback, absorbing any errors
                 try:
-                    try:
+                    with contextlib.suppress(Exception):
                         alarm.parameters = json.loads(alarm.parameters)
-                    except Exception:
-                        pass
 
                     cb(self._nh, alarm)
                 except Exception as e:

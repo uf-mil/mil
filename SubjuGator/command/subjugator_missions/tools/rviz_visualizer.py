@@ -122,7 +122,7 @@ class RvizVisualizer:
         self.update_kill_button()
 
     def kill_buttton_callback(self, feedback):
-        if not feedback.event_type == 3:
+        if feedback.event_type != 3:
             return
         if self.need_kill_update:
             return
@@ -177,10 +177,7 @@ class RvizVisualizer:
         distance = msg.range
 
         # Color a sharper red if we're in danger
-        if distance < 1.0:
-            color = (1.0, 0.1, 0.0, 0.9)
-        else:
-            color = (0.2, 0.8, 0.0, 0.7)
+        color = (1.0, 0.1, 0.0, 0.9) if distance < 1.0 else (0.2, 0.8, 0.0, 0.7)
 
         marker = self.make_cylinder_marker(
             np.array([0.0, 0.0, 0.0]),  # place at origin

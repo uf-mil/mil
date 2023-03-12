@@ -144,7 +144,7 @@ while not rospy.is_shutdown():
     )
     q = tf.transformations.quaternion_from_euler(*rpy)
 
-    if (not p == p_last) or (not rpy == rpy_last):
+    if (p != p_last) or (rpy != rpy_last):
         rpy_feedback = "xyz: {}, euler: {}".format(
             [round(e, 5) for e in p],
             [round(np.degrees(f), 5) for f in rpy],

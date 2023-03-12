@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import importlib
 import inspect
 import json
@@ -95,17 +96,12 @@ class MissionRunner:
     async def _shutdown_missions(self):
         # If we've already loaded missions, we need to shutdown existing missions
         if self.missions_loaded:
-            try:
+            with contextlib.suppress(AttributeError):
                 await asyncio.wait_for(self.base_mission.shutdown_base(), timeout=10)
-            except AttributeError:
-                pass
 
             for _, mission in self.missions.items():
-                try:
+                with contextlib.suppress(AttributeError):
                     await mission.shutdown()
-                except AttributeError:
-                    # The mission class may not need to be shutdown (this is okay!)
-                    pass
 
     async def load_missions(self):
         """
@@ -230,10 +226,12 @@ class MissionRunner:
         comes in.
         """
         # If cancel request came in, cancel current mission
-        if self.mission_future is not None and self.server.is_cancel_requested():
-            self.mission_future.cancel()
         # If a new mission came in, cancel current mission
-        elif self.mission_future is not None and self.server.is_preempt_requested():
+        if (
+            self.mission_future is not None
+            and self.server.is_cancel_requested()
+            or (self.mission_future is not None and self.server.is_preempt_requested())
+        ):
             self.mission_future.cancel()
         # Try to accept a new mission
         self.do_new_mission()

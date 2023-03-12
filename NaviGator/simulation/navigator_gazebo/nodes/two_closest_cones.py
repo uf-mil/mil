@@ -226,13 +226,10 @@ class PcodarAverageScales:
 
         # check relative angle, if abs(rel_angle) is less than 90deg...
         # buoy is in front of boat
-        if (
+        return bool(
             abs(theta - yaw) < math.pi / 2
-            or abs(theta + (2 * math.pi) - yaw) < math.pi / 2
-        ):
-            return True
-        else:
-            return False
+            or abs(theta + 2 * math.pi - yaw) < math.pi / 2,
+        )
 
 
 if __name__ == "__main__":

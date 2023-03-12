@@ -111,9 +111,7 @@ if __name__ == "__main__":
             tic_prediction = time()
 
             try:
-                segmentation = [
-                    x for x in [clf.predict(obs) for obs in some_observations]
-                ]
+                segmentation = [clf.predict(obs) for obs in some_observations]
             except Exception:
                 print("Failed to load. File probably doesn't exist")
                 break

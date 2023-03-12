@@ -99,10 +99,7 @@ class classifier:
         This is a serious problem considering how long it takes to
         process a single image.
         """
-        if abs(msg.header.stamp.secs - int(rospy.get_time())) > self.time_thresh:
-            return True
-        else:
-            return False
+        return abs(msg.header.stamp.secs - int(rospy.get_time())) > self.time_thresh
 
     def img_callback(self, data):
         if self.check_timestamp(data):
@@ -330,10 +327,7 @@ class classifier:
                 min_x = pair[0]
                 min_y = pair[1]
         # Compare the heights of the pixels
-        if max_y > min_y:
-            direction = "right"
-        else:
-            direction = "left"
+        direction = "right" if max_y > min_y else "left"
         self.direction_pub.publish(data=direction)
 
 

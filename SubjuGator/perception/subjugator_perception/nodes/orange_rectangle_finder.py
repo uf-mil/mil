@@ -172,9 +172,11 @@ class OrangeRectangleFinder:
             res.found = False
             return res
         dt = (self.image_sub.last_image_time - self.last_found_time_3D).to_sec()
-        if dt < 0 or dt > self.timeout_seconds:
-            res.found = False
-        elif self.last3d is None or not self.enabled:
+        if (
+            dt < 0
+            or dt > self.timeout_seconds
+            or (self.last3d is None or not self.enabled)
+        ):
             res.found = False
         else:
             res.pose.header.frame_id = "map"
@@ -365,9 +367,8 @@ class OrangeRectangleFinder:
             return False
         self.last2d = self.rect_model.get_pose_2D(corners)
         self.last_found_time_2D = self.image_sub.last_image_time
-        if self.do_3D:
-            if not self._get_pose_3D(corners):
-                return False
+        if self.do_3D and not self._get_pose_3D(corners):
+            return False
         return True
 
     def _get_edges(self):

@@ -265,7 +265,7 @@ class DetectDeliver(NaviGatorMission):
                     self.update_shape(shape, normal_res, enu_cam_tf)
 
                 else:
-                    if not self.last_lidar_error == normal_res.error:
+                    if self.last_lidar_error != normal_res.error:
                         fprint(
                             f"Normal not found Error={normal_res.error}",
                             title="DETECT DELIVER",
@@ -273,7 +273,7 @@ class DetectDeliver(NaviGatorMission):
                         )
                     self.last_lidar_error = normal_res.error
         else:
-            if not self.last_shape_error == shapes.error:
+            if self.last_shape_error != shapes.error:
                 fprint(
                     f"shape not found Error={shapes.error}",
                     title="DETECT DELIVER",
@@ -497,10 +497,7 @@ class DetectDeliver(NaviGatorMission):
         stc_color = await self.mission_params["scan_the_code_color3"].get(
             raise_exception=False,
         )
-        if stc_color is False:
-            color = "ANY"
-        else:
-            color = stc_color
+        color = "ANY" if stc_color is False else stc_color
         # color = "ANY"
         shape = "ANY"
         fprint(

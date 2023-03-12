@@ -450,7 +450,7 @@ class Searcher:
                 while True:
                     for pose in self.search_pattern:
                         print("SEARCHER - going to next position.")
-                        if isinstance(pose, list) or isinstance(pose, np.ndarray):
+                        if isinstance(pose, (list, np.ndarray)):
                             await self.sub.move.relative(pose).go(speed=speed)
                         else:
                             await pose.go()
@@ -459,7 +459,7 @@ class Searcher:
 
             else:
                 for pose in self.search_pattern:
-                    if isinstance(pose, list) or isinstance(pose, np.ndarray):
+                    if isinstance(pose, (list, np.ndarray)):
                         await self.sub.move.relative(np.array(pose)).go(speed=speed)
                     else:
                         await pose.go()
@@ -836,7 +836,7 @@ class SonarPointcloud:
 
     async def _run_move_pattern(self, speed: float):
         for pose in self.pattern:
-            if isinstance(pose, list) or isinstance(pose, np.ndarray):
+            if isinstance(pose, (list, np.ndarray)):
                 await self.sub.move.relative(np.array(pose)).go(speed=speed)
             else:
                 await pose.go()

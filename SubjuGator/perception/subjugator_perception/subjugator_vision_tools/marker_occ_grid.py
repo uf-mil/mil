@@ -391,10 +391,7 @@ class MarkerOccGrid(OccGridUtils):
 
         # Get m/px on the ground floor.
         m = self.calculate_visual_radius(height)
-        if self.cam.cy() < self.cam.cx():
-            px = self.cam.cy()
-        else:
-            px = self.cam.cx()
+        px = self.cam.cy() if self.cam.cy() < self.cam.cx() else self.cam.cx()
 
         m_px = m / px
         marker_area_m = MARKER_WIDTH * MARKER_LENGTH

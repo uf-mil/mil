@@ -329,7 +329,7 @@ class BuoyFinder:
            position using the least squares tool imported
         """
         assert (
-            buoy_type in self.buoys.keys()
+            buoy_type in self.buoys
         ), f"Buoys_2d does not know buoy color: {buoy_type}"
         buoy = self.buoys[buoy_type]
         mask = buoy.get_mask(self.last_image)

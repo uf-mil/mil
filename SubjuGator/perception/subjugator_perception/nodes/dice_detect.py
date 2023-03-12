@@ -105,7 +105,7 @@ class DiceDetect:
 
         # im_c = Colored image
         im_c = dice_img
-        d = dict()
+        d = {}
         # im = GrayScale Image
         im = cv2.cvtColor(im_c, cv2.COLOR_BGR2GRAY)
 

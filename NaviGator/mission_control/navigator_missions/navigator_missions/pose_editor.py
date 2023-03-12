@@ -330,16 +330,15 @@ class PoseEditor2:
         )
 
     def as_MoveGoal(self, move_type=MoveGoal.DRIVE, **kwargs):
-        if "focus" in kwargs:
-            if not isinstance(kwargs["focus"], Point):
-                kwargs["focus"] = mil_tools.numpy_to_point(kwargs["focus"])
+        if "focus" in kwargs and not isinstance(kwargs["focus"], Point):
+            kwargs["focus"] = mil_tools.numpy_to_point(kwargs["focus"])
 
         if "speed_factor" in kwargs and isinstance(kwargs["speed_factor"], float):
             # User wants a uniform speed factor
             sf = kwargs["speed_factor"]
             kwargs["speed_factor"] = [sf, sf, sf]
 
-        for key in kwargs.keys():
+        for key in kwargs:
             if not hasattr(MoveGoal, key):
                 fprint(
                     "MoveGoal msg doesn't have a field called '{}' you tried to set via kwargs.".format(

@@ -20,7 +20,7 @@ def process_image(img, image_pub, clf):
     some_observations = observe(img)
     print("-------------------------")
     segmentation = np.array(
-        [x for x in [clf.predict(obs) for obs in some_observations]],
+        [clf.predict(obs) for obs in some_observations],
     )
     segmentation_image = np.reshape(segmentation, img[:, :, 2].shape)
 

@@ -29,7 +29,7 @@ class ActuatorBoardSimulation(SimulatedCANDevice):
             return
 
         # First byte should be the identifier char for the command message
-        assert CommandMessage.IDENTIFIER == ord(data[0])
+        assert ord(data[0]) == CommandMessage.IDENTIFIER
 
         # Parse message
         message = CommandMessage.from_bytes(data)

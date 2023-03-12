@@ -106,7 +106,7 @@ class Time:
     def __init__(self, WN, TOW):
         self.WN = WN
         self.TOW = TOW
-        while self.TOW >= week_length:
+        while week_length <= self.TOW:
             self.WN += 1
             self.TOW -= week_length
         while self.TOW < 0:
@@ -505,10 +505,10 @@ class GPSPublisher:
             os.makedirs(os.path.dirname(self._ionospheric_model_path))
         with open(self._ionospheric_model_path, "wb") as f:
             yaml.dump(
-                dict(
-                    a=self.ionospheric_model.a,
-                    b=self.ionospheric_model.b,
-                ),
+                {
+                    "a": self.ionospheric_model.a,
+                    "b": self.ionospheric_model.b,
+                },
                 f,
             )
 
@@ -617,11 +617,10 @@ class GPSPublisher:
                 [None] * 3,
             )[subframe.HOW.subframe_ID - 1] = subframe
             self._ephemeris_think(prn, subframe.IODE)
-        elif subframe.HOW.subframe_ID == 4:
-            if subframe.sv_id == 56:  # page 18
-                self._set_ionospheric_model(
-                    IonosphericModel(subframe.alpha, subframe.beta),
-                )
+        elif subframe.HOW.subframe_ID == 4 and subframe.sv_id == 56:  # page 18
+            self._set_ionospheric_model(
+                IonosphericModel(subframe.alpha, subframe.beta),
+            )
 
     def _ephemeris_think(self, prn, iode):
         subframes = self.ephemeris_data[prn][iode]
@@ -682,7 +681,7 @@ def generate_satellite_message(
         sat_dir_enu = sat_pos_enu / numpy.linalg.norm(sat_pos_enu)
 
         E = math.asin(sat_dir_enu[2])
-        if E < math.radians(5):
+        if math.radians(5) > E:
             return None
 
     return Satellite(

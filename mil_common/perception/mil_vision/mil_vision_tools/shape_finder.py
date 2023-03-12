@@ -226,10 +226,7 @@ class RectFinder:
         # get a pose estimate in camera frame
         if cam is not None:
             intrinsics = cam.intrinsicMatrix()
-            if rectified:
-                dist_coeffs = np.zeros((5, 1))
-            else:
-                dist_coeffs = cam.distortionCoeffs()
+            dist_coeffs = np.zeros((5, 1)) if rectified else cam.distortionCoeffs()
         assert intrinsics is not None
         assert dist_coeffs is not None
         _, rvec, tvec = cv2.solvePnP(self.model_3D, corners, intrinsics, dist_coeffs)

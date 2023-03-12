@@ -38,9 +38,8 @@ def wait_for_param(
             return rospy.get_param(param_name)
 
         # If we exceed a defined timeout, return None
-        if timeout is not None:
-            if time.time() - start_time > timeout:
-                return None
+        if timeout is not None and time.time() - start_time > timeout:
+            return None
 
         # Continue to poll at poll_rate
         rate.sleep()

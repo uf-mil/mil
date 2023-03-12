@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-
+import contextlib
 import traceback
 
 import numpy
@@ -176,7 +176,5 @@ class Node:
 
 if __name__ == "__main__":
     rospy.init_node("rise_6dof")
-    try:
+    with contextlib.suppress(rospy.ROSInterruptException):
         Node()
-    except rospy.ROSInterruptException:
-        pass

@@ -21,7 +21,7 @@ async def main(name, lla):
     await convert.init(nh)
 
     # Convert the name to Be_Like_This
-    name = "_".join(map(lambda txt: txt.title(), name.split("_")))
+    name = "_".join(txt.title() for txt in name.split("_"))
 
     point = await convert.request(CoordinateConversionRequest(frame="lla", point=lla))
     await db(ObjectDBQueryRequest(cmd="{}={p[0]}, {p[1]}".format(name, p=point.enu)))

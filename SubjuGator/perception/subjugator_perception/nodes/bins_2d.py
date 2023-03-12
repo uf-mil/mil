@@ -143,10 +143,7 @@ class BinFinder:
             """
             if len(contours) > 0:
                 bins = 2
-                if self.bin_type == "orange":
-                    orangeness = 0
-                else:
-                    orangeness = 100000
+                orangeness = 0 if self.bin_type == "orange" else 100000
                 if len(contours) < bins:
                     bins = len(contours)
                 for i in range(0, bins + 1):

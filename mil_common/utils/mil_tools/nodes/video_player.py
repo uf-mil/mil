@@ -114,7 +114,7 @@ class RosVideoPlayer:
         while not rospy.is_shutdown() and self.cap.isOpened() and not self.ended:
             if self.slider:
                 k = cv2.waitKey(1) & 0xFF
-                if not k == self.last_key:
+                if k != self.last_key:
                     self.last_key = k
                     if k == 27:
                         return

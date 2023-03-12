@@ -237,7 +237,6 @@ class DetectDeliverFind(NaviGatorMission):
             if self.long_scan:
                 self.docking_scan = msg.name
                 return True
-            elif self.short_scan:
-                if self.docking_scan is msg.name:
-                    return True
+            elif self.short_scan and self.docking_scan is msg.name:
+                return True
         return False

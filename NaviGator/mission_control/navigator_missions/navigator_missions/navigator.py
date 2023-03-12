@@ -842,10 +842,7 @@ class MissionParam:
                 await self.nh.delete_param(self.param)
 
     def _valid(self, value) -> bool:
-        for x in self.options:
-            if x == value:
-                return True
-        return False
+        return any(x == value for x in self.options)
 
 
 class Searcher:
@@ -909,7 +906,7 @@ class Searcher:
         async def pattern():
             for pose in self.search_pattern:
                 fprint("Going to next position.", title="SEARCHER")
-                if isinstance(pose, list) or isinstance(pose, np.ndarray):
+                if isinstance(pose, (list, np.ndarray)):
                     await self.nav.move.relative(pose).go(**kwargs)
                 else:
                     await pose.go(**kwargs)

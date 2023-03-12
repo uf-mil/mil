@@ -87,10 +87,7 @@ class BagFixer:
         if topic in self.ignore_topics:
             return False
         if self.keep_topics is not None and len(self.keep_topics):
-            for t in self.keep_topics:
-                if topic.find(t) == 0:
-                    return True
-            return False
+            return any(topic.find(t) == 0 for t in self.keep_topics)
         return True
 
     def __init__(

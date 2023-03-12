@@ -55,15 +55,14 @@ class Segmenter:
         self.state = 0
 
     def mouse_cb(self, event, x, y, flags, param):
-        if event == cv2.EVENT_LBUTTONDOWN:
-            if not self.is_done:
-                print("click")
-                self.corners.append(np.array([x, y]))
-                self.state += 1
-                if self.state >= 4:
-                    print("done")
-                    self.is_done = True
-                    self.state = 0
+        if event == cv2.EVENT_LBUTTONDOWN and not self.is_done:
+            print("click")
+            self.corners.append(np.array([x, y]))
+            self.state += 1
+            if self.state >= 4:
+                print("done")
+                self.is_done = True
+                self.state = 0
 
         if event == cv2.EVENT_RBUTTONDOWN:
             pass
@@ -115,10 +114,7 @@ if __name__ == "__main__":
     frame_unblurred = frame_initial[::2, ::2, :]
     frame = frame_unblurred
 
-    if args.hsv:
-        analysis_image = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    else:
-        analysis_image = frame
+    analysis_image = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) if args.hsv else frame
 
     draw_image = np.copy(frame_unblurred)
     seg_image = np.zeros_like(frame_unblurred[:, :, 0])

@@ -123,7 +123,7 @@ class ROI_Generator:
                 r = dict(self.rects)
                 self.mycoll.append(r)
             clone = self.image.copy()
-            for key in self.rects.keys():
+            for key in self.rects:
                 r = self.rects[key]
                 color = (255, 0, 0)
                 if key == self.sel_rect:

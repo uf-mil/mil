@@ -145,10 +145,7 @@ class CircleAnimal:
 
             start_circle_ori = self.point_at_goal(start_circle_pos, self.animal_pos)
 
-        if self.target_animal == "crocodile":
-            steps = granularity // 4
-        else:
-            steps = granularity
+        steps = granularity // 4 if self.target_animal == "crocodile" else granularity
 
         # go around animal
         for i in range(steps + 1):

@@ -195,10 +195,7 @@ class VrxNavigation(Vrx):
             positions = np.array(
                 [rosmsg_to_numpy(obj.pose.position) for obj in objects],
             )
-            if len(objects) == 0:
-                indices = []
-            else:
-                indices = filter_and_sort(objects, positions)
+            indices = [] if len(objects) == 0 else filter_and_sort(objects, positions)
             if indices is None or len(indices) == 0:
                 self.send_feedback("No objects")
                 continue
@@ -309,9 +306,8 @@ class VrxNavigation(Vrx):
         @return True of object with obj_id is classified
         """
         for i, obj in enumerate(objects):
-            if obj.id == obj_id:
-                if obj.labeled_classification != "UNKNOWN":
-                    return i
+            if obj.id == obj_id and obj.labeled_classification != "UNKNOWN":
+                return i
         return -1
 
     async def prepare_to_enter(self):

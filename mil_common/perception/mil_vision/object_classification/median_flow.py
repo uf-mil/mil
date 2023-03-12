@@ -13,11 +13,11 @@ class MedianFlow:
     def __init__(self, elimination_amount=0.6, winSize=(15, 15), maxLevel=2):
         self.prev_points = None
         self.prev_frame = None
-        self.lk_params = dict(
-            winSize=winSize,
-            maxLevel=maxLevel,
-            criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 2, 0.03),
-        )
+        self.lk_params = {
+            "winSize": winSize,
+            "maxLevel": maxLevel,
+            "criteria": (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 2, 0.03),
+        }
         self.tracking_points = deque()
         self.tracking_frames = deque()
         self.bboxs = deque()

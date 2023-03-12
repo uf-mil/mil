@@ -188,7 +188,7 @@ class Alarm:
         )
 
     def _severity_cb_check(self, severity):
-        if isinstance(severity, tuple) or isinstance(severity, list):
+        if isinstance(severity, (tuple, list)):
             return severity[0] <= self.severity <= severity[1]
 
         # Not a tuple, just an int. The severities should match
@@ -561,7 +561,7 @@ class AlarmListener:
         if self._last_alarm is None:
             return False
 
-        if isinstance(severity, tuple) or isinstance(severity, list):
+        if isinstance(severity, (tuple, list)):
             return severity[0] <= self._last_alarm.severity <= severity[1]
 
         # Not a tuple or list, just an int. The severities should match

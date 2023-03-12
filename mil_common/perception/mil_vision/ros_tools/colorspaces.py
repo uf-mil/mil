@@ -118,7 +118,7 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
         )  # Needed for displaying in color
 
     viz[:, w:] = np.vstack(
-        list(map(make_3deep, map(lambda x: flatten_channels(*x), images_and_labels))),
+        list(map(make_3deep, (flatten_channels(*x) for x in images_and_labels))),
     )
 
     # If enabled, display a color histogram in each panel

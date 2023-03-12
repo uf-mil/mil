@@ -70,20 +70,20 @@ def run(
     elif numpy.max(delta_errors) > 1e-3:
         errors.append("High template match error (%s)" % str(delta_errors))
 
-    return dict(
-        errors=errors,
-        freq=freq,
-        amplitude=amplitude,
-        fft_sharpness=fft_sharpness,
-        samples_fft=samples_fft,
-        pos=pos,
-        deltas=deltas,
-        delta_errors=delta_errors,
-        upsamples=upsamples,
-        upsample_rate=upsample_rate,
-        template_pos=template_pos,
-        template_width=template_width,
-    )
+    return {
+        "errors": errors,
+        "freq": freq,
+        "amplitude": amplitude,
+        "fft_sharpness": fft_sharpness,
+        "samples_fft": samples_fft,
+        "pos": pos,
+        "deltas": deltas,
+        "delta_errors": delta_errors,
+        "upsamples": upsamples,
+        "upsample_rate": upsample_rate,
+        "template_pos": template_pos,
+        "template_width": template_width,
+    }
 
 
 def zero_mean(samples: numpy.ndarray):

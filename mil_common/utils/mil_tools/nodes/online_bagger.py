@@ -69,7 +69,7 @@ class OnlineBagger:
         Outputs each topics: time_buffer(float in seconds), subscribe_statue(bool), topic(string)
         """
         sub_list = ""
-        for topic in self.subscriber_list.keys():
+        for topic in self.subscriber_list:
             if self.subscriber_list[topic][1] == status:
                 sub_list = sub_list + "\n{:13}, {}".format(
                     self.subscriber_list[topic],
@@ -112,7 +112,7 @@ class OnlineBagger:
         # Add topics from MIL bag script environment variables
         if "BAG_ALWAYS" in os.environ:
             add_env_var(os.environ["BAG_ALWAYS"])
-        for key in os.environ.keys():
+        for key in os.environ:
             if key[0:4] == "bag_":
                 add_env_var(os.environ[key])
 
@@ -310,7 +310,7 @@ class OnlineBagger:
         """
 
         total_message_count = 0
-        for topic in self.topic_messages.keys():
+        for topic in self.topic_messages:
             total_message_count = total_message_count + self.get_topic_message_count(
                 topic,
             )
@@ -519,10 +519,7 @@ if __name__ == "__main__":
     args = parser.parse_args(argv[1:])
     if args.client:  # Run as actionclient
         rospy.init_node("online_bagger_client", anonymous=True)
-        if args.topics is None:
-            topics = ""
-        else:
-            topics = "".join(args.topics)
+        topics = "" if args.topics is None else "".join(args.topics)
         client = OnlineBaggerClient(name=args.name, topics=topics, time=args.time)
         client.bag()
     else:  # Run as OnlineBagger server

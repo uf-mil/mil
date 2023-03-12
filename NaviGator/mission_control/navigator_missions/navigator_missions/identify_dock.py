@@ -386,18 +386,12 @@ async def setup_mission(navigator):
     stc_1 = await navigator.mission_params["scan_the_code_color1"].get(
         raise_exception=False,
     )
-    if stc_1 is False:
-        bay_1_color = "ANY"
-    else:
-        bay_1_color = stc_1
+    bay_1_color = "ANY" if stc_1 is False else stc_1
 
     stc_2 = await navigator.mission_params["scan_the_code_color2"].get(
         raise_exception=False,
     )
-    if stc_2 is False:
-        bay_2_color = "ANY"
-    else:
-        bay_2_color = stc_2
+    bay_2_color = "ANY" if stc_2 is False else stc_2
 
     bay_1_shape = "ANY"
     bay_2_shape = "ANY"

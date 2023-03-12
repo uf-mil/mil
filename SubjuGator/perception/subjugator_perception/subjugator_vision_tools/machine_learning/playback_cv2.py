@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     for image in crawl:
         some_observations = observe(image)
-        mask = [x for x in [clf.predict(obs) for obs in some_observations]]
+        mask = [clf.predict(obs) for obs in some_observations]
         cv2.imshow("image", image)
 
         segmentation_image = np.reshape(mask, image[:, :, 2].shape)

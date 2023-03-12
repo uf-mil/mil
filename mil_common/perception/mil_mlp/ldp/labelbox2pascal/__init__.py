@@ -128,7 +128,7 @@ def write_label(
 def _add_pascal_object_from_wkt(xml_writer, img_height, wkt_data, label):
     polygons = []
     if isinstance(wkt_data, list):  # V3+
-        polygons = map(lambda x: wkt.loads(x["geometry"]), wkt_data)
+        polygons = (wkt.loads(x["geometry"]) for x in wkt_data)
     else:  # V2
         polygons = wkt.loads(wkt_data)
 

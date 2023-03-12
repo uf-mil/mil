@@ -184,9 +184,9 @@ if __name__ == "__main__":
 
     print(
         yaml.dump(
-            dict(
-                scale=map(lambda x: map(float, x), scale),
-                shift=map(float, shift),
-            ),
+            {
+                "scale": (map(float, x) for x in scale),
+                "shift": map(float, shift),
+            },
         ),
     )

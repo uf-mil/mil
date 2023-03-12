@@ -189,9 +189,9 @@ class FireTorpedos(SubjuGatorMission):
         if self.targets[target].destroyed:
             pass
             # temp = target
-        elif self.targets[target].position is not None:
-            return target
-        elif self.pattern_done and self.targets[target].position is not None:
+        elif self.targets[target].position is not None or (
+            self.pattern_done and self.targets[target].position is not None
+        ):
             return target
         else:
             return None

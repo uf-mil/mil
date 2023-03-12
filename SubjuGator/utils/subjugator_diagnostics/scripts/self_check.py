@@ -95,7 +95,7 @@ class ThrusterChecker(TemplateChecker):
             raise OSError(e)
 
         self.found_thrusters = {}
-        for thruster_name in thrusters.keys():
+        for thruster_name in thrusters:
             self.found_thrusters[thruster_name] = False
         print(self.p.bold("  >>>>   ").set_blue.bold("Thruster Check"))
 

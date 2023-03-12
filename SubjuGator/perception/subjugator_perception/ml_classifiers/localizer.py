@@ -121,10 +121,7 @@ class classifier:
         process a single image.
         """
         see = self.see_sub.last_image_header
-        if abs(see.stamp.secs - int(rospy.get_time())) > self.time_thresh:
-            return True
-        else:
-            return False
+        return abs(see.stamp.secs - int(rospy.get_time())) > self.time_thresh
 
     def img_callback(self, data):
         self.parse_label_map()
