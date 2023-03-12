@@ -111,7 +111,7 @@ class PnuematicActuatorDriver:
         """
         data = self.ser.read(2)
         if len(data) != 2:
-            raise PnuematicActuatorTimeoutError()
+            raise PnuematicActuatorTimeoutError
         response = Constants.deserialize_packet(data)
         data = response[0]
         chksum = response[1]

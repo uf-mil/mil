@@ -238,11 +238,11 @@ class DBHelper:
 
     def set_color(self, color, name):
         """Set the color of an object in the database."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def set_fake_position(self, pos):
         """Set the position of a fake perception object."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def get_objects_in_radius(self, pos, radius, objects="all"):
         req = ObjectDBQueryRequest()

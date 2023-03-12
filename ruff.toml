@@ -2,6 +2,7 @@ extend-select = [
     "UP", # pyupgrade
     "I", # isort
     "RUF", # ruff-specific rules
+    "RSE", # flake8-raise (exceptions)
 ]
 
 extend-exclude = [

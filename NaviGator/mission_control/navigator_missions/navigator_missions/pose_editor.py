@@ -154,7 +154,7 @@ class PoseEditor2:
                 title="POSE_EDITOR",
                 msg_color="red",
             )
-            raise KilledException()
+            raise KilledException
 
         if len(self.kwargs) > 0:
             kwargs = dict(kwargs.items() | self.kwargs.items())

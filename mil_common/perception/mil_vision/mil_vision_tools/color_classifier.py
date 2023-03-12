@@ -61,7 +61,7 @@ class ContourClassifier:
 
         For example, an example overload might return ``['red_mean', 'blue_mean', 'green_mean']``.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def get_features(self, img: np.ndarray, mask: np.ndarray) -> np.ndarray:

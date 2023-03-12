@@ -232,7 +232,7 @@ class _PoseProxy:
         )
         result = await goal.get_result()
         if result.error == "killed":
-            raise exceptions.KilledException()
+            raise exceptions.KilledException
         return result
 
     def go_trajectory(self, *args, **kwargs):
