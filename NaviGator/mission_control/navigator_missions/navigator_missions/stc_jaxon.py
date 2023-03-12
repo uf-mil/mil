@@ -35,7 +35,9 @@ class ScanTheCodeJaxon(NaviGatorMission):
         # Get scan the code stuff
         try:
             result = await util.wrap_time_notice(
-                self.stcsub.get_next_message(), self.TIMEOUT_SECONDS, "test"
+                self.stcsub.get_next_message(),
+                self.TIMEOUT_SECONDS,
+                "test",
             )
             stc_result = result.color_pattern
         except util.TimeoutError:
@@ -53,7 +55,9 @@ class ScanTheCodeJaxon(NaviGatorMission):
         elif stc_result[0] == "B":
             await self.move.left(5).go()
             await self.move.circle_point(
-                self.stc, direction="cw", revolutions=1.25
+                self.stc,
+                direction="cw",
+                revolutions=1.25,
             ).go()
             await self.move.forward(10).go()
 

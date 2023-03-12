@@ -14,7 +14,7 @@ rospack = rospkg.RosPack()
 
 # To correctly import utils
 sys.path.append(
-    rospack.get_path("subjugator_perception") + "/ml_classifiers/path_marker/utils"
+    rospack.get_path("subjugator_perception") + "/ml_classifiers/path_marker/utils",
 )
 
 from utils import detector_utils  # noqa: manually appending sys.path
@@ -34,7 +34,8 @@ class classifier:
         self.upper = rospy.get_param("~upper_color_threshold", [255, 255, 255])
         # Camera topic we are pulling images from for processing
         self.camera_topic = rospy.get_param(
-            "~camera_topic", "/camera/front/left/image_rect_color"
+            "~camera_topic",
+            "/camera/front/left/image_rect_color",
         )
         # Number of frames
         self.num_frames = rospy.get_param("~num_frames", 0)
@@ -63,7 +64,10 @@ class classifier:
 
         # Subscribes to our image topic, allowing us to process the images
         self.sub1 = rospy.Subscriber(
-            self.camera_topic, Image, self.img_callback, queue_size=1
+            self.camera_topic,
+            Image,
+            self.img_callback,
+            queue_size=1,
         )
         """
         Publishers:
@@ -114,7 +118,9 @@ class classifier:
 
         # Run image through tensorflow graph
         boxes, scores, classes = detector_utils.detect_objects(
-            cv_image, self.inference_graph, self.sess
+            cv_image,
+            self.inference_graph,
+            self.sess,
         )
 
         # Draw Bounding box
@@ -161,7 +167,8 @@ class classifier:
         # Run through the mask function, returns all black image if no orange
         check = self.mask_image(
             cv_image[
-                int(bbox[0][1]) : int(bbox[1][1]), int(bbox[0][0]) : int(bbox[1][0])
+                int(bbox[0][1]) : int(bbox[1][1]),
+                int(bbox[0][0]) : int(bbox[1][0]),
             ],
             lower,
             upper,
@@ -203,7 +210,7 @@ class classifier:
             try:
                 # print(output)
                 self.orange_image_pub.publish(
-                    self.bridge.cv2_to_imgmsg(np.array(output), "bgr8")
+                    self.bridge.cv2_to_imgmsg(np.array(output), "bgr8"),
                 )
             except CvBridgeError as e:
                 print(e)
@@ -271,7 +278,9 @@ class classifier:
 
         # Compute contours
         cnts = cv2.findContours(
-            blurred.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            blurred.copy(),
+            cv2.RETR_EXTERNAL,
+            cv2.CHAIN_APPROX_SIMPLE,
         )
 
         cnts = cnts[1]

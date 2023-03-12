@@ -54,14 +54,18 @@ class Node:
 
         self.current = None
         rospy.Subscriber(
-            "/current", Odometry, lambda current: setattr(self, "current", current)
+            "/current",
+            Odometry,
+            lambda current: setattr(self, "current", current),
         )
         # rospy.Subscriber('/odom', Odometry, lambda current: setattr(self, 'current', current))
 
         self.constant_wrench = None
         self.constant_wrench_time = None
         rospy.Service(
-            "send_constant_wrench", SendConstantWrench, self.send_constant_wrench
+            "send_constant_wrench",
+            SendConstantWrench,
+            self.send_constant_wrench,
         )
 
         pub = rospy.Publisher("/output", WrenchStamped, queue_size=2)
@@ -84,7 +88,7 @@ class Node:
                     WrenchStamped(
                         header=Header(stamp=rospy.Time.now(), frame_id="/base_link"),
                         wrench=Wrench(force=Vector3(0, 0, 0), torque=Vector3(0, 0, 0)),
-                    )
+                    ),
                 )
                 continue
 
@@ -129,9 +133,10 @@ class Node:
                             frame_id="/base_link",
                         ),
                         wrench=Wrench(
-                            force=Vector3(*pd_wrench[0]), torque=Vector3(*pd_wrench[1])
+                            force=Vector3(*pd_wrench[0]),
+                            torque=Vector3(*pd_wrench[1]),
                         ),
-                    )
+                    ),
                 )
                 wrench = Wrench(force=Vector3(*wrench[0]), torque=Vector3(*wrench[1]))
             else:
@@ -144,7 +149,7 @@ class Node:
                         frame_id="/base_link",
                     ),
                     wrench=wrench,
-                )
+                ),
             )
 
     def is_constant_wrench_valid(self):

@@ -25,13 +25,16 @@ def balanced_resample(data, labels):
             labels_buffered = np.hstack([labels_buffered, labels[in_this_label]])
 
         single_data_resampled, single_labels_resampled = utils.resample(
-            data_buffered, labels_buffered, n_samples=int(num_required), replace=True
+            data_buffered,
+            labels_buffered,
+            n_samples=int(num_required),
+            replace=True,
         )
         data_resampled.append(single_data_resampled)
         labels_resampled.append(single_labels_resampled)
 
     return np.vstack(data_resampled).astype(data.dtype), np.hstack(
-        labels_resampled
+        labels_resampled,
     ).astype(labels.dtype)
 
 

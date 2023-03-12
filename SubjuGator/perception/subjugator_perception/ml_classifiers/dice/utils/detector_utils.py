@@ -21,7 +21,9 @@ NUM_CLASSES = 4
 # Load label map using utils provided by tensorflow object detection api
 label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
 categories = label_map_util.convert_label_map_to_categories(
-    label_map, max_num_classes=NUM_CLASSES, use_display_name=True
+    label_map,
+    max_num_classes=NUM_CLASSES,
+    use_display_name=True,
 )
 category_index = label_map_util.create_category_index(categories)
 
@@ -81,7 +83,13 @@ def draw_box_on_image(
 # Show fps value on image.
 def draw_text_on_image(fps, image_np):
     cv2.putText(
-        image_np, fps, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (77, 255, 9), 2
+        image_np,
+        fps,
+        (20, 50),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.75,
+        (77, 255, 9),
+        2,
     )
 
 

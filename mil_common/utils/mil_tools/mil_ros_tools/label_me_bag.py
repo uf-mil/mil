@@ -136,7 +136,10 @@ class BagToLabelMe:
         the bag config name and a topic
         """
         return os.path.join(
-            self.labelme_dir, "Annotations", name, self._name_encode(topic)
+            self.labelme_dir,
+            "Annotations",
+            name,
+            self._name_encode(topic),
         )
 
     def read_bags(self):
@@ -181,7 +184,9 @@ class BagToLabelMe:
         # Crawl through bag in configured time and frequency, writing images into labelme
         next_time = start + interval
         for topic, msg, time in bag.read_messages(
-            topics=config.topics, start_time=start, end_time=stop
+            topics=config.topics,
+            start_time=start,
+            end_time=stop,
         ):
             if time >= next_time:
                 img = self.bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
@@ -205,7 +210,7 @@ class BagToLabelMe:
         # Open output bag to write labels (along with original content) to
         outfilename = os.path.join(self.outdir, bag.outfile)
         if os.path.exists(
-            outfilename
+            outfilename,
         ):  # If output bag already exists, only override if force glag is set
             if self.force:
                 self._print(f"{outfilename} already exists. OVERRIDING")
@@ -259,14 +264,17 @@ class BagToLabelMe:
         if total_img_count == 0:
             print(
                 "{}/{} TOTAL images labeled (0%)".format(
-                    total_xml_count, total_img_count
-                )
+                    total_xml_count,
+                    total_img_count,
+                ),
             )
         else:
             print(
                 "{}/{} TOTAL images labeled ({:.1%})".format(
-                    total_xml_count, total_img_count, total_xml_count / total_img_count
-                )
+                    total_xml_count,
+                    total_img_count,
+                    total_xml_count / total_img_count,
+                ),
             )
 
     def _completion_bag(self, bag):
@@ -293,7 +301,10 @@ class BagToLabelMe:
                     img_count += 1
         if img_count == 0:
             self._print(
-                "\t{}/{} images labeled in {} (0%)", xml_count, img_count, bag.name
+                "\t{}/{} images labeled in {} (0%)",
+                xml_count,
+                img_count,
+                bag.name,
             )
         else:
             self._print(
@@ -335,7 +346,7 @@ class BagToLabelMe:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Generates rosbags based on LabelMe data and visa/versa"
+        description="Generates rosbags based on LabelMe data and visa/versa",
     )
     parser.add_argument(
         "config",

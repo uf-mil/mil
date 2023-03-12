@@ -52,7 +52,11 @@ class TxAlarmBroadcaster:
         print(f"Created alarm broadcaster for alarm {name}")
 
     def _generate_request(
-        self, raised, problem_description="", parameters={}, severity=0
+        self,
+        raised,
+        problem_description="",
+        parameters={},
+        severity=0,
     ):
         request = AlarmSetRequest()
         request.alarm.alarm_name = self._alarm_name
@@ -99,7 +103,9 @@ class TxAlarmListener:
         self._raised_cbs = []  # [(severity_for_cb1, cb1), (severity_for_cb2, cb2), ...]
         self._cleared_cbs = []
         self.update_sub = self._nh.subscribe(
-            "/alarm/updates", Alarm, self._alarm_update
+            "/alarm/updates",
+            Alarm,
+            self._alarm_update,
         )
 
         if callback_funct is not None:

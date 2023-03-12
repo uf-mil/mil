@@ -43,7 +43,8 @@ def nudge_dataset(X, Y):
         return convolve(x.reshape((8, 8)), mode="constant", weights=w).ravel()
 
     X = np.concatenate(
-        [X] + [np.apply_along_axis(shift, 1, X, vector) for vector in direction_vectors]
+        [X]
+        + [np.apply_along_axis(shift, 1, X, vector) for vector in direction_vectors],
     )
     Y = np.concatenate([Y for _ in range(5)], axis=0)
     return X, Y
@@ -101,12 +102,12 @@ logistic_classifier.fit(X_train, Y_train)
 print()
 print(
     "Logistic regression using RBM features:\n%s\n"
-    % (metrics.classification_report(Y_test, classifier.predict(X_test)))
+    % (metrics.classification_report(Y_test, classifier.predict(X_test))),
 )
 
 print(
     "Logistic regression using raw pixel features:\n%s\n"
-    % (metrics.classification_report(Y_test, logistic_classifier.predict(X_test)))
+    % (metrics.classification_report(Y_test, logistic_classifier.predict(X_test))),
 )
 
 #

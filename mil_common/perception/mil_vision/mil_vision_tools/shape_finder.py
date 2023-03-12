@@ -257,7 +257,9 @@ class RectFinder:
         return (center, vector)
 
     def draw_model(
-        self, size: tuple[int, int] = (500, 500), border: int = 25
+        self,
+        size: tuple[int, int] = (500, 500),
+        border: int = 25,
     ) -> np.ndarray:
         """
         Returns a 1 channel image displaying the internal model of the rectangle.

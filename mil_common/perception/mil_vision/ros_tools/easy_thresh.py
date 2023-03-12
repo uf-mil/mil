@@ -18,10 +18,14 @@ desc_msg = "A tool for making threshold determination fun!"
 
 parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
 parser.add_argument(
-    dest="topic_name", help="The topic name you'd like to listen to", choices=topics
+    dest="topic_name",
+    help="The topic name you'd like to listen to",
+    choices=topics,
 )
 parser.add_argument(
-    "--hsv", action="store_true", help="Would you like to look at hsv instead of bgr?"
+    "--hsv",
+    action="store_true",
+    help="Would you like to look at hsv instead of bgr?",
 )
 
 argcomplete.autocomplete(parser)
@@ -146,7 +150,8 @@ if __name__ == "__main__":
     )
 
     thresholder = visual_threshold_tools.make_extent_dialog(
-        ranges=visual_threshold_tools.color_ranges[prefix], image=analysis_image
+        ranges=visual_threshold_tools.color_ranges[prefix],
+        image=analysis_image,
     )
 
     while not rospy.is_shutdown():

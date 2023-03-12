@@ -182,7 +182,11 @@ class DBHelper:
         return np.linalg.norm(nt.rosmsg_to_numpy(x.position) - self.position)
 
     async def get_object(
-        self, object_name, volume_only=False, thresh=50, thresh_strict=50
+        self,
+        object_name,
+        volume_only=False,
+        thresh=50,
+        thresh_strict=50,
     ):
         """Get an object from the database."""
         if volume_only:

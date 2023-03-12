@@ -76,7 +76,7 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
                 cv2.cvtColor(rgb_small, cv2.COLOR_BGR2LAB),
             ],
             labels,
-        )
+        ),
     )
 
     # If enabled, show specific color information at current cursor location
@@ -93,7 +93,10 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
                 )
             )
             (t_w, t_h), _ = cv2.getTextSize(
-                text, cv2.FONT_HERSHEY_PLAIN, 2.3 * viz_scale, 1
+                text,
+                cv2.FONT_HERSHEY_PLAIN,
+                2.3 * viz_scale,
+                1,
             )
             t_y += t_h * 2
             cv2.putText(
@@ -109,11 +112,13 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
     # Set 3x3 grid of single channel images from 3 3-channel images
     def make_3deep(x):
         return np.repeat(
-            x[:, :, np.newaxis], 3, axis=2
+            x[:, :, np.newaxis],
+            3,
+            axis=2,
         )  # Needed for displaying in color
 
     viz[:, w:] = np.vstack(
-        list(map(make_3deep, map(lambda x: flatten_channels(*x), images_and_labels)))
+        list(map(make_3deep, map(lambda x: flatten_channels(*x), images_and_labels))),
     )
 
     # If enabled, display a color histogram in each panel
@@ -148,7 +153,11 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--use_video", help="Use video", type=str)
     parser.add_argument("-r", "--use_ros_topic", help="Use ROS topic", type=str)
     parser.add_argument(
-        "-s", "--scale", help="Scale for image processing", type=float, default=0.5
+        "-s",
+        "--scale",
+        help="Scale for image processing",
+        type=float,
+        default=0.5,
     )
     args = parser.parse_args()
 

@@ -109,7 +109,7 @@ class VampireSlayer(SubjuGatorMission):
             print("MOVING TO X: ", target_position[0])
             print("MOVING TO Y: ", target_position[1])
             await self.move.set_position(
-                np.array([target_position[0], target_position[1], target_position[2]])
+                np.array([target_position[0], target_position[1], target_position[2]]),
             ).go(blind=True, speed=0.1)
             # Go behind it
             # print('Going behind target')

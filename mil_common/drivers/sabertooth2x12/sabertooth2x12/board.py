@@ -17,7 +17,11 @@ class Sabertooth2x12:
     """
 
     def __init__(
-        self, filename: str, address: int = 128, baudrate: int = 9600, sim: bool = False
+        self,
+        filename: str,
+        address: int = 128,
+        baudrate: int = 9600,
+        sim: bool = False,
     ):
         """
         Args:

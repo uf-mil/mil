@@ -80,7 +80,11 @@ class MedianFlow:
         for i in range(self.TRACKING_LENGTH - 1, -1, -1):
             _frame = self.tracking_frames[i]
             _points, status, err = cv2.calcOpticalFlowPyrLK(
-                prev_frame, _frame, prev_points, None, **self.lk_params
+                prev_frame,
+                _frame,
+                prev_points,
+                None,
+                **self.lk_params,
             )
             prev_frame = _frame
             prev_points = _points
@@ -141,7 +145,7 @@ class MedianFlow:
         # If the mean fb error is > 2 and the amount of frames tracked is > 20, then the model has failed.
         # Also if the number of points in the model is <d the model has failed
         if (cv2.mean(diff)[0] > 2 and self._amount_mdn_flow_tracked > 20) or len(
-            points
+            points,
         ) < 3:
             self._is_effective = False
 
@@ -169,7 +173,7 @@ class MedianFlow:
             if i >= len(curr_comb):
                 # This should never happen
                 raise ValueError(
-                    "The previous points and current points are not synchronized"
+                    "The previous points and current points are not synchronized",
                 )
             prev_point_A = prev_comb[i][0]
             prev_point_B = prev_comb[i][1]
@@ -212,7 +216,11 @@ class MedianFlow:
             raise TypeError("The frame is invalid")
 
         points, status, err = cv2.calcOpticalFlowPyrLK(
-            self.prev_frame, frame, self.prev_points, None, **self.lk_params
+            self.prev_frame,
+            frame,
+            self.prev_points,
+            None,
+            **self.lk_params,
         )
         points = self._eliminate_points(points, frame)
         try:

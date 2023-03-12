@@ -10,7 +10,9 @@ import rostest
 
 
 def wait_for_param(
-    param_name: str, timeout: Optional[float] = None, poll_rate: float = 0.1
+    param_name: str,
+    timeout: Optional[float] = None,
+    poll_rate: float = 0.1,
 ) -> Optional[Any]:
     """
     Blocking wait for a parameter named to exist. Polls at the frequency of poll_rate.
@@ -65,7 +67,8 @@ def wait_for_subscriber(node_name: str, topic: str, timeout: float = 5.0) -> boo
     # Wait for time-out or ros-shutdown
     while (time.time() < end_time) and (not rospy.is_shutdown()):
         subscribed = rostest.is_subscriber(
-            rospy.resolve_name(topic), rospy.resolve_name(node_name)
+            rospy.resolve_name(topic),
+            rospy.resolve_name(node_name),
         )
         # Success scenario: node subscribes
         if subscribed:
@@ -75,7 +78,8 @@ def wait_for_subscriber(node_name: str, topic: str, timeout: float = 5.0) -> boo
     # Could do this with a while/else
     # But chose to explicitly check
     success = rostest.is_subscriber(
-        rospy.resolve_name(topic), rospy.resolve_name(node_name)
+        rospy.resolve_name(topic),
+        rospy.resolve_name(node_name),
     )
     return success
 

@@ -51,7 +51,8 @@ class ProjectionParticleFilter:
         #     - If probabilities fall below something reasonable, more frequently do reset_to_ray
         #         - In some cases, reset the worst 25% of particles to ray
         assert isinstance(
-            camera_model, image_geometry.PinholeCameraModel
+            camera_model,
+            image_geometry.PinholeCameraModel,
         ), "Must be pinhole camera"
         self.aggressive = aggressive
         self.min_Z = 0.0
@@ -73,7 +74,9 @@ class ProjectionParticleFilter:
 
         # This line doesn't *necessarily* do something
         self.particles = np.random.uniform(
-            (-25, -25, self.min_Z), (25, 25, self.max_Z), size=(self.num_particles, 3)
+            (-25, -25, self.min_Z),
+            (25, 25, self.max_Z),
+            size=(self.num_particles, 3),
         ).transpose()
         self.weights = np.ones(self.num_particles)
         self.weights = self.weights / np.sum(self.weights)
@@ -126,7 +129,7 @@ class ProjectionParticleFilter:
     def _transform_pts(self, t, R):
         """Supply a transform to the camera frame"""
         particles = np.copy(
-            np.dot(R.transpose(), self.particles) - R.transpose().dot(t)
+            np.dot(R.transpose(), self.particles) - R.transpose().dot(t),
         )
         return particles
 
@@ -162,12 +165,15 @@ class ProjectionParticleFilter:
             # range_distribution = np.random.uniform(self.min_Z, self.max_Z, size=self.num_particles)
 
             range_distribution = np.random.normal(
-                loc=self.max_Z / 2, scale=self.max_Z / 6, size=self.num_particles
+                loc=self.max_Z / 2,
+                scale=self.max_Z / 6,
+                size=self.num_particles,
             )
 
             self.particles = self.t + (range_distribution * unit_ray)
             self.particles += np.random.normal(
-                scale=(self.salt, self.salt, self.salt), size=(self.num_particles, 3)
+                scale=(self.salt, self.salt, self.salt),
+                size=(self.num_particles, 3),
             ).transpose()
 
         else:
@@ -176,13 +182,16 @@ class ProjectionParticleFilter:
             self.particles[:, weights < average_p] = (
                 np.reshape(-self.t, (3, 1))
                 + np.random.uniform(
-                    self.min_Z, self.max_Z, size=self.particles[:, weights < average_p]
+                    self.min_Z,
+                    self.max_Z,
+                    size=self.particles[:, weights < average_p],
                 )
                 * unit_ray
             )
 
             self.particles[:, weights < average_p] += np.random.normal(
-                scale=(self.salt, self.salt, self.salt), size=(self.num_particles, 3)
+                scale=(self.salt, self.salt, self.salt),
+                size=(self.num_particles, 3),
             ).transpose()
 
     def observe(self, observation):
@@ -247,7 +256,8 @@ class ProjectionParticleFilter:
         self.particles = (
             choices
             + np.random.normal(
-                scale=(self.salt, self.salt, self.salt), size=(self.num_particles, 3)
+                scale=(self.salt, self.salt, self.salt),
+                size=(self.num_particles, 3),
             ).transpose()
         )
 
@@ -301,7 +311,11 @@ def draw_camera(t, R):
         draw_line(t, t + line, color=color)
 
     mayavi.mlab.points3d(
-        [t[0]], [t[1]], [t[2]], color=(0.0, 1.0, 0.0), scale_factor=0.3
+        [t[0]],
+        [t[1]],
+        [t[2]],
+        color=(0.0, 1.0, 0.0),
+        scale_factor=0.3,
     )
 
 
@@ -352,7 +366,7 @@ def main():
                     [1.0, 0.0, 0.0],
                     [0.0, 0.0, 1.0],
                     [0.0, -1.0, 0.0],
-                ]
+                ],
             )
 
         else:
@@ -363,7 +377,7 @@ def main():
             projected = np.random.random(2) * np.array([640.0, 480.0])
         else:
             projected_h = ppf.K.dot(
-                np.dot(R.transpose(), real) - R.transpose().dot(camera_t)
+                np.dot(R.transpose(), real) - R.transpose().dot(camera_t),
             )
             projected = projected_h[:2] / projected_h[2]
 
@@ -384,7 +398,9 @@ def main():
 
     draw_cameras(observations, cameras)
     draw_particles(
-        ppf, color_hsv=((k + 1) / (max_k + 1), 0.7, 0.8), scale=0.1 * ((k + 1) / max_k)
+        ppf,
+        color_hsv=((k + 1) / (max_k + 1), 0.7, 0.8),
+        scale=0.1 * ((k + 1) / max_k),
     )
 
     mayavi.mlab.show()

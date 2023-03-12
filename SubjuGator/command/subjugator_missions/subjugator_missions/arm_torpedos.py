@@ -94,7 +94,7 @@ class FireTorpedos(SubjuGatorMission):
                 print("POSE FOUND!")
                 self.ltime = res.pose.header.stamp
                 self.targets[target].update_position(
-                    rosmsg_to_numpy(res.pose.pose.position)
+                    rosmsg_to_numpy(res.pose.pose.position),
                 )
                 self.normal = rosmsg_to_numpy(res.pose.pose.orientation)[:3]
                 marker = Marker(
@@ -161,13 +161,13 @@ class FireTorpedos(SubjuGatorMission):
         print("Target normal: ", self.normal)
         print("Point: ", target_position)
         await self.move.set_position(
-            np.array([target_position[0], target_position[1], target_position[2]])
+            np.array([target_position[0], target_position[1], target_position[2]]),
         ).go(blind=True, speed=0.5)
 
         self.print_good(
             "{} locked. Firing torpedoes. Hit confirmed, good job Commander.".format(
-                target
-            )
+                target,
+            ),
         )
         sub_pos = await self.tx_pose()
         print("Current Sub Position: ", sub_pos)

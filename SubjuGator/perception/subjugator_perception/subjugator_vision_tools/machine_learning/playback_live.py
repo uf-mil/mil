@@ -20,7 +20,7 @@ def process_image(img, image_pub, clf):
     some_observations = observe(img)
     print("-------------------------")
     segmentation = np.array(
-        [x for x in [clf.predict(obs) for obs in some_observations]]
+        [x for x in [clf.predict(obs) for obs in some_observations]],
     )
     segmentation_image = np.reshape(segmentation, img[:, :, 2].shape)
 
@@ -33,7 +33,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(usage="", description="")
     parser.add_argument(
-        dest="classifier", type=str, help="Name of the classifier to use."
+        dest="classifier",
+        type=str,
+        help="Name of the classifier to use.",
     )
     parser.add_argument(
         dest="topic",

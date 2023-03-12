@@ -19,12 +19,16 @@ class PcodarAverageScales:
     def __init__(self):
         # create service server
         self.server = rospy.Service(
-            "/get_two_closest_cones", TwoClosestCones, self.handler
+            "/get_two_closest_cones",
+            TwoClosestCones,
+            self.handler,
         )
 
         # create service client
         self.odom = rospy.Subscriber(
-            "/pcodar/objects", PerceptionObjectArray, self.pcodarSubscriber
+            "/pcodar/objects",
+            PerceptionObjectArray,
+            self.pcodarSubscriber,
         )
 
         # create odom subscriber

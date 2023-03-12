@@ -84,6 +84,10 @@ if __name__ == "__main__":
 
     # print clust.cluster_centers_
     visual_threshold_tools.points_with_labels(
-        all_list[:, 0], all_list[:, 1], all_list[:, 2], clust.labels_, scale_factor=5.0
+        all_list[:, 0],
+        all_list[:, 1],
+        all_list[:, 2],
+        clust.labels_,
+        scale_factor=5.0,
     )
     mlab.show()

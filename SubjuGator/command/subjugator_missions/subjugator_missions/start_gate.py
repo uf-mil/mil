@@ -76,8 +76,9 @@ class StartGate(SubjuGatorMission):
         distance_btwn_gate = distance.euclidean(gate_points[0], gate_points[1])
         fprint(
             "Distance between poles: {} m = {} inch".format(
-                distance_btwn_gate, distance_btwn_gate * 39.3701
-            )
+                distance_btwn_gate,
+                distance_btwn_gate * 39.3701,
+            ),
         )
 
         # Find midpoint between the two poles/objects
@@ -112,17 +113,17 @@ class StartGate(SubjuGatorMission):
 
         fprint("Moving in front of goalpoint!", msg_color="yellow")
         await self.move.set_position(goal_point - 2 * normal).look_at(goal_point).go(
-            speed=SPEED
+            speed=SPEED,
         )
 
         fprint("Style on dem haters!", msg_color="yellow")
         await self.move.set_position(goal_point).yaw_right_deg(179).go(
-            speed=CAREFUL_SPEED
+            speed=CAREFUL_SPEED,
         )
 
         fprint("Moving past the gate", msg_color="yellow")
         await self.move.set_position(
-            goal_point + DIST_AFTER_GATE * normal
+            goal_point + DIST_AFTER_GATE * normal,
         ).yaw_right_deg(179).zero_roll_and_pitch().go(speed=CAREFUL_SPEED)
         return True
 
@@ -154,8 +155,8 @@ class StartGate(SubjuGatorMission):
                 if distance.euclidean(p, p2) > max_distance_away:
                     fprint(
                         "Poles too far away. Distance {}".format(
-                            distance.euclidean(p, p2)
-                        )
+                            distance.euclidean(p, p2),
+                        ),
                     )
                     continue
                 if distance.euclidean(p, p2) < min_distance_away:
@@ -174,8 +175,9 @@ class StartGate(SubjuGatorMission):
                 if abs(line[0]) < 1 and abs(line[1]) < 1:
                     fprint(
                         "Objects on top of one another. x {}, y {}".format(
-                            line[0], line[1]
-                        )
+                            line[0],
+                            line[1],
+                        ),
                     )
                     continue
                 return (p, p2)

@@ -153,7 +153,7 @@ class ROI_Generator:
                     r = min(
                         list(self.rects.items()),
                         key=lambda rect: np.linalg.norm(
-                            np.array([rect[1][0], rect[1][1]]) - np.array([x, y])
+                            np.array([rect[1][0], rect[1][1]]) - np.array([x, y]),
                         ),
                     )
                     r = r[0]
@@ -179,7 +179,7 @@ class ROI_Generator:
                         self.sel_rect = min(
                             list(self.rects.items()),
                             key=lambda rect: np.linalg.norm(
-                                np.array([rect[1][0], rect[1][1]]) - np.array([x, y])
+                                np.array([rect[1][0], rect[1][1]]) - np.array([x, y]),
                             ),
                         )
                         self.sel_rect = self.sel_rect[0]
@@ -199,7 +199,9 @@ if __name__ == "__main__":
     parser.add_argument("bag", type=str, help="The bag you would like to use")
     parser.add_argument("name", type=str, help="The name of the output file")
     parser.add_argument(
-        "--load", action="store_true", help="The name of the output file"
+        "--load",
+        action="store_true",
+        help="The name of the output file",
     )
     args = parser.parse_args(sys.argv[1:])
 

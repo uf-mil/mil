@@ -39,10 +39,14 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         super().__init__(*args, **kwargs)
         self._update_timer = rospy.Timer(rospy.Duration(1), self.send_updates)
         self._soft_kill = rospy.Service(
-            "/simulate_soft_kill", SetBool, self.set_soft_kill
+            "/simulate_soft_kill",
+            SetBool,
+            self.set_soft_kill,
         )
         self._hard_kill = rospy.Service(
-            "/simulate_hard_kill", SetBool, self.set_hard_kill
+            "/simulate_hard_kill",
+            SetBool,
+            self.set_hard_kill,
         )
         self._go_srv = rospy.Service("/simulate_go", SetBool, self._on_go_srv)
 

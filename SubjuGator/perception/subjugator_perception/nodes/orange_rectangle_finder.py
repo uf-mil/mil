@@ -57,7 +57,8 @@ class OrangeRectangleFinder:
 
     # Coordinate axes for debugging image
     REFERENCE_POINTS = np.array(
-        [[0, 0, 0], [0.3, 0, 0], [0, 0.3, 0], [0, 0, 0.3]], dtype=float
+        [[0, 0, 0], [0.3, 0, 0], [0, 0.3, 0], [0, 0, 0.3]],
+        dtype=float,
     )
 
     def __init__(self):
@@ -94,13 +95,16 @@ class OrangeRectangleFinder:
         self.filter.measurementMatrix = 1.0 * np.eye(self.state_size, dtype=np.float32)
         self.filter.processNoiseCov = 1e-5 * np.eye(self.state_size, dtype=np.float32)
         self.filter.measurementNoiseCov = 1e-4 * np.eye(
-            self.state_size, dtype=np.float32
+            self.state_size,
+            dtype=np.float32,
         )
         self.filter.errorCovPost = 1.0 * np.eye(self.state_size, dtype=np.float32)
 
         self.reset()
         self.service_set_geometry = rospy.Service(
-            "~set_geometry", SetGeometry, self._set_geometry_cb
+            "~set_geometry",
+            SetGeometry,
+            self._set_geometry_cb,
         )
         if self.debug_ros:
             self.debug_pub = Image_Publisher("~debug_image")
@@ -280,13 +284,16 @@ class OrangeRectangleFinder:
         # Transform pose estimate to map frame
         try:
             self.tf_listener.waitForTransform(
-                "map", ps.header.frame_id, ps.header.stamp, rospy.Duration(0.1)
+                "map",
+                ps.header.frame_id,
+                ps.header.stamp,
+                rospy.Duration(0.1),
             )
             map_ps = self.tf_listener.transformPoint("map", ps)
             map_vec3 = self.tf_listener.transformVector3("map", vec3)
         except tf.Exception as err:
             rospy.logwarn(
-                f"Could not transform {self.cam.tfFrame()} to map error={err}"
+                f"Could not transform {self.cam.tfFrame()} to map error={err}",
             )
             return False
         # Try to ensure vector always points the same way, so kf is not thrown off at some angles
@@ -372,7 +379,9 @@ class OrangeRectangleFinder:
         blur = cv2.blur(self.last_image, (5, 5))
         hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
         thresh = cv2.inRange(
-            hsv, (0, self.thresh_saturation_low, 0), (self.thresh_hue_high, 255, 255)
+            hsv,
+            (0, self.thresh_saturation_low, 0),
+            (self.thresh_hue_high, 255, 255),
         )
         return cv2.Canny(thresh, self.canny_low, self.canny_low * self.canny_ratio)
 

@@ -21,7 +21,7 @@ if __name__ == "__main__":
             alpha=numpy.ones(6),
             beta=numpy.ones(6),
             use_rise=False,
-        )
+        ),
     )
 
     desired = PoseTwist(

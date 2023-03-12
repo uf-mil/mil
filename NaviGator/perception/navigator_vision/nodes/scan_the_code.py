@@ -29,7 +29,7 @@ def bbox_countour_from_rectangle(bbox) -> np.ndarray:
             [bbox[1][0], bbox[0][1]],
             [bbox[1][0], bbox[1][1]],
             [bbox[0][0], bbox[1][1]],
-        ]
+        ],
     )
 
 
@@ -47,11 +47,15 @@ class ScanTheCodePerception:
         self.camera_model.fromCameraInfo(info)
         if self.debug:
             self.image_mux = ImageMux(
-                size=(info.height, info.width), shape=(1, 2), labels=["Result", "Mask"]
+                size=(info.height, info.width),
+                shape=(1, 2),
+                labels=["Result", "Mask"],
             )
             self.debug_pub = Image_Publisher("~debug_image")
         self.bbox_sub = rospy.Subscriber(
-            "stc_led_pts_marshall", PointCloud2, self.panel_points_cb
+            "stc_led_pts_marshall",
+            PointCloud2,
+            self.panel_points_cb,
         )
         self.classification_list = deque()
         self.enabled = True
@@ -63,7 +67,8 @@ class ScanTheCodePerception:
         """
         self.debug = rospy.get_param("~debug", True)
         self.image_topic = rospy.get_param(
-            "~image_topic", "/camera/starboard/image_rect_color"
+            "~image_topic",
+            "/camera/starboard/image_rect_color",
         )
         self.classifier = ScanTheCodeClassifier()
         self.classifier.train_from_csv()
@@ -91,8 +96,8 @@ class ScanTheCodePerception:
         transformed_cloud = do_transform_cloud(self.last_panel_points_msg, transform)
         points = np.array(
             list(
-                sensor_msgs.point_cloud2.read_points(transformed_cloud, skip_nans=True)
-            )
+                sensor_msgs.point_cloud2.read_points(transformed_cloud, skip_nans=True),
+            ),
         )
         if len(points) < 4:
             rospy.logwarn("less than 4 points")

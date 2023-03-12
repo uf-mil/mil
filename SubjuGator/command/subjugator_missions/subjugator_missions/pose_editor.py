@@ -69,7 +69,7 @@ def triad(xxx_todo_changeme, xxx_todo_changeme1) -> np.ndarray:
     B = np.array([normalized(b1), bb, normalized(np.cross(b1, bb))])
     rot = A.T.dot(B)
     return transformations.quaternion_from_matrix(
-        [(a, b, c, 0) for a, b, c in rot] + [(0, 0, 0, 1)]
+        [(a, b, c, 0) for a, b, c in rot] + [(0, 0, 0, 1)],
     )
 
 
@@ -88,8 +88,8 @@ def test_triad():
                 transformations.quaternion_multiply(
                     q,
                     transformations.quaternion_inverse(q_),
-                )
-            )
+                ),
+            ),
         )
         < 1e-6
     )
@@ -172,7 +172,9 @@ class PoseEditor:
         the message.
         """
         return cls(
-            frame_id, rosmsg_to_numpy(msg.position), rosmsg_to_numpy(msg.orientation)
+            frame_id,
+            rosmsg_to_numpy(msg.position),
+            rosmsg_to_numpy(msg.orientation),
         )
 
     def __init__(self, frame_id: str, position, orientation):
@@ -437,7 +439,7 @@ class PoseEditor:
             transformations.quaternion_multiply(
                 transformations.quaternion_about_axis(angle, UP),
                 self.orientation,
-            )
+            ),
         )
 
     def yaw_right(self, angle: float) -> PoseEditor:
@@ -504,7 +506,7 @@ class PoseEditor:
             transformations.quaternion_multiply(
                 self.orientation,
                 transformations.quaternion_about_axis(angle, [1, 0, 0]),
-            )
+            ),
         )
 
     def roll_left(self, angle: float) -> PoseEditor:
@@ -544,10 +546,11 @@ class PoseEditor:
         return self.set_orientation(
             transformations.quaternion_multiply(
                 transformations.quaternion_about_axis(
-                    angle, self.zero_roll().left_vector
+                    angle,
+                    self.zero_roll().left_vector,
                 ),
                 self.orientation,
-            )
+            ),
         )
 
     def pitch_up(self, angle: float) -> PoseEditor:
@@ -573,7 +576,9 @@ class PoseEditor:
         )
 
     def as_PoseTwist(
-        self, linear: Sequence[float] = [0, 0, 0], angular: Sequence[float] = [0, 0, 0]
+        self,
+        linear: Sequence[float] = [0, 0, 0],
+        angular: Sequence[float] = [0, 0, 0],
     ):
         """
         Returns a :class:`~mil_msgs.msg.PoseTwist` message class with the pose
@@ -593,7 +598,9 @@ class PoseEditor:
         )
 
     def as_PoseTwistStamped(
-        self, linear: Sequence[int] = [0, 0, 0], angular: Sequence[int] = [0, 0, 0]
+        self,
+        linear: Sequence[int] = [0, 0, 0],
+        angular: Sequence[int] = [0, 0, 0],
     ) -> PoseTwistStamped:
         """
         Returns a :class:`~mil_msgs.msg.PoseTwist` message class with the pose

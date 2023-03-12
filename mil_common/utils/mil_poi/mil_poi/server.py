@@ -60,7 +60,10 @@ class POIServer:
 
         # Create publisher to notify clients of updates and interactive marker server
         self.pub = rospy.Publisher(
-            "points_of_interest", POIArray, queue_size=1, latch=True
+            "points_of_interest",
+            POIArray,
+            queue_size=1,
+            latch=True,
         )
         self.interactive_marker_server = InteractiveMarkerServer("points_of_interest")
 
@@ -86,7 +89,9 @@ class POIServer:
         self.delete_poi_server = rospy.Service("~delete", DeletePOI, self.delete_poi_cb)
         self.move_poi_service = rospy.Service("~move", MovePOI, self.move_poi_cb)
         self.save_to_param = rospy.Service(
-            "~save_to_param", Trigger, self.save_to_param_cb
+            "~save_to_param",
+            Trigger,
+            self.save_to_param_cb,
         )
 
     def transform_position(self, ps: PointStamped) -> Optional[Point]:
@@ -107,14 +112,18 @@ class POIServer:
             return ps.point
         try:
             ps_tf = self.tf_buffer.transform(
-                ps, self.global_frame, timeout=rospy.Duration(5)
+                ps,
+                self.global_frame,
+                timeout=rospy.Duration(5),
             )
             return ps_tf.point
         except tf2_ros.TransformException as e:
             rospy.logwarn(
                 'Error transforming "{}" to "{}": {}'.format(
-                    ps.header.frame_id, self.global_frame, e
-                )
+                    ps.header.frame_id,
+                    self.global_frame,
+                    e,
+                ),
             )
             return None
 

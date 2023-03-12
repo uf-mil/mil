@@ -20,7 +20,9 @@ if __name__ == "__main__":
         help="Pass the path to a bag, the start of an image sequence, or 'video' for a webcam.",
     )
     parser.add_argument(
-        dest="classifier", type=str, help="Name of the classifier to use."
+        dest="classifier",
+        type=str,
+        help="Name of the classifier to use.",
     )
     parser.add_argument(
         "--topic",

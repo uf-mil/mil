@@ -66,7 +66,7 @@ class Strip(SubjuGatorMission):
         await self.nh.sleep(5)
         fprint("Look at gate")
         await self.move.look_at(gate._pose.position).yaw_left_deg(10).go(
-            speed=SPEED_LIMIT
+            speed=SPEED_LIMIT,
         )
         await self.nh.sleep(5)
         #        fprint('Going to gate')

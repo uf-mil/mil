@@ -3,6 +3,7 @@ extend-select = [
     "I", # isort
     "RUF", # ruff-specific rules
     "RSE", # flake8-raise (exceptions)
+    "COM", # flake8-comma
 ]
 
 extend-exclude = [

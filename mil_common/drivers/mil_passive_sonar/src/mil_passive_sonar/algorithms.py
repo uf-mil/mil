@@ -38,7 +38,10 @@ def run(
 
     samples = zero_mean(samples)
     freq, amplitude, samples_fft = compute_freq(
-        samples, sample_rate, numpy.array([5e3, 40e3]), plot=True
+        samples,
+        sample_rate,
+        numpy.array([5e3, 40e3]),
+        plot=True,
     )
     fft_sharpness = amplitude**2 / numpy.sum(samples_fft)
     if DEBUG:
@@ -47,7 +50,10 @@ def run(
         list(map(plt.plot, samples_fft))
     upsamples, upsample_rate = preprocess(samples, sample_rate, 3e6)
     deltas, delta_errors, template_pos, template_width = compute_deltas(
-        upsamples, upsample_rate, max(dist_h, dist_h4) / v_sound, 20e-2 / v_sound
+        upsamples,
+        upsample_rate,
+        max(dist_h, dist_h4) / v_sound,
+        20e-2 / v_sound,
     )
     delta_errors = delta_errors / amplitude
     if len(deltas) == 3:
@@ -95,7 +101,10 @@ def normalize(samples: numpy.ndarray):
 
 
 def compute_freq(
-    samples: numpy.ndarray, sample_rate: int, freq_range, plot: bool = False
+    samples: numpy.ndarray,
+    sample_rate: int,
+    freq_range,
+    plot: bool = False,
 ):
     """
     Checks whether samples are likely a solid ping and returns the frequency.
@@ -105,11 +114,13 @@ def compute_freq(
     # Compute fft, find peaks in desired range
     fft_length = samples.shape[1]
     samples_fft = numpy.absolute(numpy.fft.fft(samples_window, fft_length, axis=1))[
-        :, : int(fft_length / 2)
+        :,
+        : int(fft_length / 2),
     ]
     bin_range = freq_to_bin(freq_range, sample_rate, fft_length).astype(int)
     peaks = bin_range[0] + numpy.argmax(
-        samples_fft[:, bin_range[0] : bin_range[1]], axis=1
+        samples_fft[:, bin_range[0] : bin_range[1]],
+        axis=1,
     )
 
     # Sort peaks, take mean of the middle
@@ -248,7 +259,10 @@ def make_template(channel: numpy.ndarray, width: int):
 
 
 def match_template(
-    channel: numpy.ndarray, start: int, stop: int, template: numpy.ndarray
+    channel: numpy.ndarray,
+    start: int,
+    stop: int,
+    template: numpy.ndarray,
 ):
     """
     Matches template to channel, returning the point where the start
@@ -275,7 +289,10 @@ def match_template(
 
 
 def calculate_error(
-    channel: numpy.ndarray, start: int, stop: int, template: numpy.ndarray
+    channel: numpy.ndarray,
+    start: int,
+    stop: int,
+    template: numpy.ndarray,
 ):
     """
     Slides the template along channel from start to stop, giving the
@@ -315,7 +332,11 @@ def find_minimum(data: numpy.ndarray):
 
 
 def compute_pos_4hyd(
-    deltas: numpy.ndarray, sample_rate: int, v_sound: int, dist_h: float, dist_h4: float
+    deltas: numpy.ndarray,
+    sample_rate: int,
+    v_sound: int,
+    dist_h: float,
+    dist_h4: float,
 ):
     """
     Solves the 4 hydrophone case (3 deltas) for heading, declination,
@@ -360,7 +381,8 @@ if __name__ == "__main__":
         samples = numpy.loadtxt(sys.argv[1], delimiter=",").transpose()
     else:
         samples = util.make_ping(
-            [0, 0.25, 1.234, -5], {"freq": 23e3, "sample_rate": sample_rate}
+            [0, 0.25, 1.234, -5],
+            {"freq": 23e3, "sample_rate": sample_rate},
         )
 
     r = run(samples, sample_rate, 1497, 2.286000e-02, 2.286000e-02)
@@ -392,7 +414,8 @@ if __name__ == "__main__":
     if r["template_pos"] is not None:
         period = int(round(r["upsample_rate"] / r["freq"]))
         template = r["upsamples"][
-            0, r["template_pos"] : r["template_pos"] + r["template_width"]
+            0,
+            r["template_pos"] : r["template_pos"] + r["template_width"],
         ]
         plot_start = r["template_pos"] - 2 * period
         plot_stop = r["template_pos"] + r["template_width"] + 2 * period

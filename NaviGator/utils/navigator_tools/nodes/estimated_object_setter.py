@@ -34,14 +34,20 @@ if __name__ == "__main__":
     ex. rosrun navigator_tools estimated_object_setter.py Shooter "[82.32, -26.87, 2]"'
 
     parser = ArgumentParser(
-        usage=usage_msg, description=desc_msg, formatter_class=RawTextHelpFormatter
+        usage=usage_msg,
+        description=desc_msg,
+        formatter_class=RawTextHelpFormatter,
     )
     parser.add_argument(dest="name", help="Name of the object.")
     parser.add_argument(
-        dest="lat", type=float, help="Latitude in degrees of the object of interest."
+        dest="lat",
+        type=float,
+        help="Latitude in degrees of the object of interest.",
     )
     parser.add_argument(
-        dest="long", type=float, help="Longitude in degrees of the object of interest."
+        dest="long",
+        type=float,
+        help="Longitude in degrees of the object of interest.",
     )
     parser.add_argument(
         "--alt",

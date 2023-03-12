@@ -186,7 +186,9 @@ class LidarToImage:
 
     async def get_3d_points(self, perc_obj):
         trans = await self.my_tf.get_transform(
-            "/stereo_right_cam", "/enu", perc_obj.header.stamp
+            "/stereo_right_cam",
+            "/enu",
+            perc_obj.header.stamp,
         )
 
         stereo_points = []

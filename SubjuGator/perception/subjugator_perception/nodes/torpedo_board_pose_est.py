@@ -105,7 +105,9 @@ class TBPoseEstimator:
                         rospy.Duration(0.1),
                     )
                     (trans, rot) = self.tf_listener.lookupTransform(
-                        "map", "front_stereo", self.current_req.stamp
+                        "map",
+                        "front_stereo",
+                        self.current_req.stamp,
                     )
                     yaw = tf.transformations.euler_from_quaternion(rot, "syxz")[0]
                     pose = np.array([trans.x, trans.y, trans.z, yaw])
@@ -117,7 +119,7 @@ class TBPoseEstimator:
                     self.visualize_pose_est()
         else:
             rospy.loginfo(
-                "\x1b[31mcost: " + str(self.minimization_result.fun) + "\x1b[0m"
+                "\x1b[31mcost: " + str(self.minimization_result.fun) + "\x1b[0m",
             )
 
     def calc_reprojection_error(self, pose_tb_from_cam):
@@ -130,30 +132,31 @@ class TBPoseEstimator:
         reprojection_error = 0.0
         for i in range(4):
             reprojection_error += lin.norm(
-                self.current_req.l_obs_corners[:, i] - L_cam_corners[:, i]
+                self.current_req.l_obs_corners[:, i] - L_cam_corners[:, i],
             )
             reprojection_error += lin.norm(
-                self.current_req.r_obs_corners[:, i] - R_cam_corners[:, i]
+                self.current_req.r_obs_corners[:, i] - R_cam_corners[:, i],
             )
         return reprojection_error
 
     def generate_hom_tb_corners_from_cam(self, pose_tb_from_cam):
         # pose_tb_from_cam --> np.array([x, y, z, yaw])
         rot_tb_from_cam = tf.transformations.rotation_matrix(
-            pose_tb_from_cam[3], np.array([[0], [1], [0]])
+            pose_tb_from_cam[3],
+            np.array([[0], [1], [0]]),
         )[:3, :3]
         trans_tb_from_cam = np.array(
-            [[pose_tb_from_cam[0]], [pose_tb_from_cam[1]], [-pose_tb_from_cam[2]]]
+            [[pose_tb_from_cam[0]], [pose_tb_from_cam[1]], [-pose_tb_from_cam[2]]],
         )
         # TODO: figure out why a negative is needed above, is there a problem with my frames?
         homogenizer = np.array([[0, 0, 0, 1]])
         tf_cam_from_tb_hom = np.vstack(
             (
                 np.hstack(
-                    (rot_tb_from_cam.T, -np.dot(rot_tb_from_cam.T, trans_tb_from_cam))
+                    (rot_tb_from_cam.T, -np.dot(rot_tb_from_cam.T, trans_tb_from_cam)),
                 ),
                 homogenizer,
-            )
+            ),
         )
         corners_from_cam_hom = np.dot(tf_cam_from_tb_hom, self.corners_from_tb_hom)
         return corners_from_cam_hom
@@ -191,7 +194,7 @@ class ParsedPoseEstRequest:
                 self.orientation.y,
                 self.orientation.z,
                 self.orientation.w,
-            ]
+            ],
         )
         self.pose = np.array(
             [
@@ -199,7 +202,7 @@ class ParsedPoseEstRequest:
                 self.position.y,
                 self.position.z,
                 tf.transformations.euler_from_quaternion(quat, "syxz")[0],
-            ]
+            ],
         )
         self.left_cam_matx = np.array(
             [
@@ -221,7 +224,7 @@ class ParsedPoseEstRequest:
                     req.l_proj_mat[10],
                     req.l_proj_mat[11],
                 ],
-            ]
+            ],
         )
         self.right_cam_matx = np.array(
             [
@@ -243,7 +246,7 @@ class ParsedPoseEstRequest:
                     req.r_proj_mat[10],
                     req.r_proj_mat[11],
                 ],
-            ]
+            ],
         )
         self.l_obs_corners = np.array(
             [
@@ -251,7 +254,7 @@ class ParsedPoseEstRequest:
                 [req.l_obs_corners[1].x, req.l_obs_corners[1].y],
                 [req.l_obs_corners[2].x, req.l_obs_corners[2].y],
                 [req.l_obs_corners[3].x, req.l_obs_corners[3].y],
-            ]
+            ],
         ).T
         self.r_obs_corners = np.array(
             [
@@ -259,7 +262,7 @@ class ParsedPoseEstRequest:
                 [req.r_obs_corners[1].x, req.r_obs_corners[1].y],
                 [req.r_obs_corners[2].x, req.r_obs_corners[2].y],
                 [req.r_obs_corners[3].x, req.r_obs_corners[3].y],
-            ]
+            ],
         ).T
 
     def __str__(self):
@@ -288,10 +291,10 @@ class ParsedPoseEstRequest:
 if __name__ == "__main__":
     rospy.init_node("torpedo_board_pose_est")
     rospy.loginfo(
-        "\x1b[1;31mInitializing the Torpedo Board Pose Estimation node\x1b[0m"
+        "\x1b[1;31mInitializing the Torpedo Board Pose Estimation node\x1b[0m",
     )
     rospy.loginfo(
-        "Awaiting pose estimation requests through:\n\t/torpedo_board_pose_est_srv\n"
+        "Awaiting pose estimation requests through:\n\t/torpedo_board_pose_est_srv\n",
     )
     TBPoseEstimator()
     rospy.spin()

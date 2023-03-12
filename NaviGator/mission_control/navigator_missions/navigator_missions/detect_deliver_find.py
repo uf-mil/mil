@@ -15,7 +15,7 @@ class DetectDeliverFind(NaviGatorMission):
     DOCK_SIZE_SHORT = 8.0
 
     CIRCLE_DISTANCE = 8.0 + math.sqrt(
-        (DOCK_SIZE_SHORT / 2) ** 2 + (DOCK_SIZE_LONG / 2) ** 2
+        (DOCK_SIZE_SHORT / 2) ** 2 + (DOCK_SIZE_LONG / 2) ** 2,
     )
 
     @classmethod
@@ -31,10 +31,16 @@ class DetectDeliverFind(NaviGatorMission):
                                          \'""",
         )
         parser.add_argument(
-            "-l", "--longscan", action="store_true", help="set to scan the long side"
+            "-l",
+            "--longscan",
+            action="store_true",
+            help="set to scan the long side",
         )
         parser.add_argument(
-            "-s", "--shortscan", action="store_true", help="set to scan the short side"
+            "-s",
+            "--shortscan",
+            action="store_true",
+            help="set to scan the short side",
         )
         parser.add_argument(
             "-o",
@@ -97,11 +103,11 @@ class DetectDeliverFind(NaviGatorMission):
         # If extra scanning circle is enabled, circle
         if pre_circle:
             start_vect = (boat_pose - self.dock_position) / np.linalg.norm(
-                boat_pose - self.dock_position
+                boat_pose - self.dock_position,
             )
             start_pt = self.dock_position + start_vect * self.CIRCLE_DISTANCE
             await self.move.set_position(start_pt).look_at(
-                self.dock_position
+                self.dock_position,
             ).yaw_right(1.57).go()
             await self.move.circle_point(self.dock_position).go()
 
@@ -133,7 +139,7 @@ class DetectDeliverFind(NaviGatorMission):
         for i in range(closest_scan, len(self.scans)) + range(0, closest_scan):
             # await self.move.set_position(self.scans[i][0]).look_at(self.scans[i][1]).go()
             await self.move.set_position(self.scans[i][0]).look_at(
-                self.dock_position
+                self.dock_position,
             ).go()
             correct = await self.scan_image()
             if correct:
@@ -157,7 +163,7 @@ class DetectDeliverFind(NaviGatorMission):
                 math.sin(angle) * (dist + self.dock_scale[1] / 2)
                 + self.dock_position[1],
                 self.dock_position[2],
-            ]
+            ],
         )
         if look_in:
             lpt = self.dock_position
@@ -203,7 +209,7 @@ class DetectDeliverFind(NaviGatorMission):
                     math.sin(angle) * (scan_dist + self.dock_scale[1] / 2)
                     + self.dock_position[1],
                     self.dock_position[2],
-                ]
+                ],
             )
             lpt = pt + np.array([math.sin(angle), -math.cos(angle), 0])
 

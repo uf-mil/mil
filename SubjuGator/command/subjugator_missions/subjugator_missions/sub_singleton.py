@@ -74,14 +74,17 @@ class VisionProxy:
     def __init__(self, service_root: str, nh: NodeHandle):
         assert "vision" in service_root, "expected 'vision' in the name of service_root"
         self._get_2d_service = nh.get_service_client(
-            service_root + "/2D", VisionRequest2D
+            service_root + "/2D",
+            VisionRequest2D,
         )
         self._get_pose_service = nh.get_service_client(
-            service_root + "/pose", VisionRequest
+            service_root + "/pose",
+            VisionRequest,
         )
         self._enable_service = nh.get_service_client(service_root + "/enable", SetBool)
         self._set_geometry_service = nh.get_service_client(
-            service_root + "/set_geometry", SetGeometry
+            service_root + "/set_geometry",
+            SetGeometry,
         )
 
     def start(self) -> Coroutine[Any, Any, types.Message]:
@@ -118,7 +121,9 @@ class VisionProxy:
         return pose
 
     def get_pose(
-        self, target: str = "", in_frame=None
+        self,
+        target: str = "",
+        in_frame=None,
     ) -> Coroutine[Any, Any, types.Message] | None:
         """
         Get the 3D pose of the object we're after.
@@ -135,7 +140,8 @@ class VisionProxy:
         return pose
 
     def set_geometry(
-        self, polygon: SetGeometry
+        self,
+        polygon: SetGeometry,
     ) -> Coroutine[Any, Any, types.Message] | None:
         try:
             res = self._set_geometry_service(SetGeometryRequest(model=polygon))
@@ -145,7 +151,8 @@ class VisionProxy:
 
     @classmethod
     def get_response_direction(
-        cls, vision_response: VisionRequest2DResponse
+        cls,
+        vision_response: VisionRequest2DResponse,
     ) -> tuple[np.ndarray, float]:
         xy = np.array([vision_response.pose.x, vision_response.pose.y])
         bounds = np.array([[vision_response.max_x, vision_response.max_y]])
@@ -168,7 +175,9 @@ class _VisionProxies:
     def __init__(self, nh: NodeHandle, file_name: str):
         rospack = rospkg.RosPack()
         config_file = os.path.join(
-            rospack.get_path("subjugator_missions"), "subjugator_missions", file_name
+            rospack.get_path("subjugator_missions"),
+            "subjugator_missions",
+            file_name,
         )
         f = yaml.full_load(open(config_file))
 
@@ -228,7 +237,7 @@ class _PoseProxy:
         self.check_goal()
 
         goal = self._sub._moveto_action_client.send_goal(
-            self._pose.as_MoveToGoal(*args, **kwargs)
+            self._pose.as_MoveToGoal(*args, **kwargs),
         )
         result = await goal.get_result()
         if result.error == "killed":
@@ -237,7 +246,7 @@ class _PoseProxy:
 
     def go_trajectory(self, *args, **kwargs):
         traj = self._sub._trajectory_pub.publish(
-            self._pose.as_PoseTwistStamped(*args, **kwargs)
+            self._pose.as_PoseTwistStamped(*args, **kwargs),
         )
         return traj
 
@@ -374,7 +383,9 @@ class SubjuGatorMission(BaseMission):
         TODO
         """
         transform = await self._tf_listener.get_transform(
-            frame, pose_stamped.header.frame_id, pose_stamped.header.stamp
+            frame,
+            pose_stamped.header.frame_id,
+            pose_stamped.header.stamp,
         )
         tft = axros_tf.Transform.from_Pose_message(pose_stamped.pose)
         full_transform = transform * tft
@@ -505,16 +516,18 @@ class PoseSequenceCommander:
         """
         for i in range(len(positions)):
             await self.sub.move.look_at_without_pitching(
-                np.array(positions[i][0:3])
+                np.array(positions[i][0:3]),
             ).go(speed)
             await self.sub.move.relative(np.array(positions[i][0:3])).go(speed)
             await self.sub.move.set_orientation(
                 quaternion_multiply(
                     self.sub.pose.orientation,
                     quaternion_from_euler(
-                        orientations[i][0], orientations[i][1], orientations[i][2]
+                        orientations[i][0],
+                        orientations[i][1],
+                        orientations[i][2],
                     ),
-                )
+                ),
             ).go(speed)
 
     async def go_to_sequence_quaternions(
@@ -530,7 +543,7 @@ class PoseSequenceCommander:
         """
         for i in range(len(positions)):
             await self.sub.move.look_at_without_pitching(
-                np.array(positions[i][0:3])
+                np.array(positions[i][0:3]),
             ).go(speed)
             await self.sub.move.relative(np.array(positions[i][0:3])).go(speed)
             await self.sub.move.set_orientation(
@@ -542,7 +555,7 @@ class PoseSequenceCommander:
                         orientations[i][2],
                         orientations[i][3],
                     ),
-                )
+                ),
             ).go(speed)
 
 
@@ -565,11 +578,13 @@ class SonarObjects:
             self.pattern = [sub.move.forward(0)]
         self.pattern = pattern
         self._clear_pcl = self.sub.nh.get_service_client(
-            "/ogrid_pointcloud/clear_pcl", Trigger
+            "/ogrid_pointcloud/clear_pcl",
+            Trigger,
         )
 
         self._objects_service = self.sub.nh.get_service_client(
-            "/ogrid_pointcloud/get_objects", ObjectDBQuery
+            "/ogrid_pointcloud/get_objects",
+            ObjectDBQuery,
         )
 
     def __del__(self):
@@ -618,7 +633,11 @@ class SonarObjects:
             # Break out of loop if we find something satisfying function
             res = await self._objects_service(ObjectDBQueryRequest())
             g_obj = self._get_objects_within_cone(
-                res.objects, start_point, ray, angle_tol, distance_tol
+                res.objects,
+                start_point,
+                ray,
+                angle_tol,
+                distance_tol,
             )
             g_obj = self._sort_by_angle(g_obj, ray, start_point)
 
@@ -631,14 +650,21 @@ class SonarObjects:
 
         res = await self._objects_service(ObjectDBQueryRequest())
         g_obj = self._get_objects_within_cone(
-            res.objects, start_point, ray, angle_tol, distance_tol
+            res.objects,
+            start_point,
+            ray,
+            angle_tol,
+            distance_tol,
         )
         g_obj = self._sort_by_angle(g_obj, ray, start_point)
         res.objects = g_obj
         return res
 
     async def start_until_found_x(
-        self, speed: float = 0.5, clear: bool = False, object_count: int = 0
+        self,
+        speed: float = 0.5,
+        clear: bool = False,
+        object_count: int = 0,
     ):
         """
         Search until a number of objects are found.
@@ -695,7 +721,11 @@ class SonarObjects:
                 await pose.go(speed=speed, blind=True)
                 res = await self._objects_service(ObjectDBQueryRequest())
                 g_obj = self._get_objects_within_cone(
-                    res.objects, start_point, ray, angle_tol, distance_tol
+                    res.objects,
+                    start_point,
+                    ray,
+                    angle_tol,
+                    distance_tol,
                 )
                 if g_obj is None:
                     continue
@@ -768,7 +798,8 @@ class SonarPointcloud:
 
     async def start(self, speed: float = 0.2):
         self._plane_subscriber = self.sub.nh.subscribe(
-            "/ogrid_pointcloud/point_cloud/plane", PointCloud2
+            "/ogrid_pointcloud/point_cloud/plane",
+            PointCloud2,
         )
         await self._plane_subscriber.setup()
         await self._run_move_pattern(speed)
@@ -776,9 +807,11 @@ class SonarPointcloud:
         pc_gen = np.asarray(
             list(
                 pc2.read_points(
-                    self.pointcloud, skip_nans=True, field_names=("x", "y", "z")
-                )
-            )
+                    self.pointcloud,
+                    skip_nans=True,
+                    field_names=("x", "y", "z"),
+                ),
+            ),
         )
         return pc_gen
 
@@ -788,12 +821,14 @@ class SonarPointcloud:
             self.pointcloud = data
         else:
             gen = list(
-                pc2.read_points(data, skip_nans=True, field_names=("x", "y", "z"))
+                pc2.read_points(data, skip_nans=True, field_names=("x", "y", "z")),
             )
             pc_gen = list(
                 pc2.read_points(
-                    self.pointcloud, skip_nans=True, field_names=("x", "y", "z")
-                )
+                    self.pointcloud,
+                    skip_nans=True,
+                    field_names=("x", "y", "z"),
+                ),
             )
             concat = np.asarray(gen + pc_gen, np.float32)
             print(f"SONAR_POINTCLOUD - current size: {concat.shape}")

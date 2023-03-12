@@ -17,7 +17,10 @@ class UnknownFormatError(Exception):
 
 
 def from_json(
-    labeled_data, annotations_output_dir, images_output_dir, label_format="WKT"
+    labeled_data,
+    annotations_output_dir,
+    images_output_dir,
+    label_format="WKT",
 ):
     """Convert Labelbox JSON export to Pascal VOC format.
 
@@ -61,18 +64,23 @@ def from_json(
         except requests.exceptions.MissingSchema:
             logging.exception(
                 '"Labeled Data" field must be a URL. '
-                "Support for local files coming soon"
+                "Support for local files coming soon",
             )
             continue
         except requests.exceptions.ConnectionError:
             logging.exception(
-                "Failed to fetch image from {}".format(data["Labeled Data"])
+                "Failed to fetch image from {}".format(data["Labeled Data"]),
             )
             continue
 
 
 def write_label(
-    label_id, image_url, labels, label_format, images_output_dir, annotations_output_dir
+    label_id,
+    image_url,
+    labels,
+    label_format,
+    images_output_dir,
+    annotations_output_dir,
 ):
     "Writes a Pascal VOC formatted image and label pair to disk."
     # Download image and save it
@@ -96,11 +104,17 @@ def write_label(
     for category_name, wkt_data in labels.items():
         if label_format == "WKT":
             xml_writer = _add_pascal_object_from_wkt(
-                xml_writer, img_height=height, wkt_data=wkt_data, label=category_name
+                xml_writer,
+                img_height=height,
+                wkt_data=wkt_data,
+                label=category_name,
             )
         elif label_format == "XY":
             xml_writer = _add_pascal_object_from_xy(
-                xml_writer, img_height=height, polygons=wkt_data, label=category_name
+                xml_writer,
+                img_height=height,
+                polygons=wkt_data,
+                label=category_name,
             )
         else:
             e = UnknownFormatError(label_format=label_format)

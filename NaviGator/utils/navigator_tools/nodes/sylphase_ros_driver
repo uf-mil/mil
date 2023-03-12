@@ -59,7 +59,8 @@ def go():
                 d = json.loads(line.decode())
                 if not d["running"]:
                     rospy.logwarn_throttle(
-                        10, "GPS not running: {}".format(d["running_reason"])
+                        10,
+                        "GPS not running: {}".format(d["running_reason"]),
                     )
                     continue
 
@@ -67,7 +68,7 @@ def go():
                     d["relative_position_enu"][2] = 0
 
                 ecef_cov = numpy.array(
-                    d["X_position_relative_position_orientation_ecef_covariance"]
+                    d["X_position_relative_position_orientation_ecef_covariance"],
                 )
                 absodom_pub.publish(
                     Odometry(
@@ -84,12 +85,12 @@ def go():
                             covariance=numpy.vstack(
                                 (
                                     numpy.hstack(
-                                        (ecef_cov[0:3, 0:3], ecef_cov[0:3, 6:9])
+                                        (ecef_cov[0:3, 0:3], ecef_cov[0:3, 6:9]),
                                     ),
                                     numpy.hstack(
-                                        (ecef_cov[6:9, 0:3], ecef_cov[6:9, 6:9])
+                                        (ecef_cov[6:9, 0:3], ecef_cov[6:9, 6:9]),
                                     ),
-                                )
+                                ),
                             ).flatten(),
                         ),
                         twist=TwistWithCovariance(
@@ -103,18 +104,18 @@ def go():
                                         (
                                             d["X_velocity_body_covariance"],
                                             numpy.zeros((3, 3)),
-                                        )
+                                        ),
                                     ),
                                     numpy.hstack(
                                         (
                                             numpy.zeros((3, 3)),
                                             d["X_angular_velocity_body_covariance"],
-                                        )
+                                        ),
                                     ),
-                                )
+                                ),
                             ).flatten(),
                         ),
-                    )
+                    ),
                 )
                 odom_pub.publish(
                     Odometry(
@@ -129,7 +130,7 @@ def go():
                                 orientation=Quaternion(**d["orientation_enu"]),
                             ),
                             covariance=numpy.array(
-                                d["X_relative_position_orientation_enu_covariance"]
+                                d["X_relative_position_orientation_enu_covariance"],
                             ).flatten(),
                         ),
                         twist=TwistWithCovariance(
@@ -143,18 +144,18 @@ def go():
                                         (
                                             d["X_velocity_body_covariance"],
                                             numpy.zeros((3, 3)),
-                                        )
+                                        ),
                                     ),
                                     numpy.hstack(
                                         (
                                             numpy.zeros((3, 3)),
                                             d["X_angular_velocity_body_covariance"],
-                                        )
+                                        ),
                                     ),
-                                )
+                                ),
                             ).flatten(),
                         ),
-                    )
+                    ),
                 )
                 acceleration_pub.publish(
                     Vector3Stamped(
@@ -163,7 +164,7 @@ def go():
                             frame_id=child_frame_id,
                         ),
                         vector=Vector3(*d["X_acceleration_body"]),
-                    )
+                    ),
                 )
 
             count += 1

@@ -12,11 +12,13 @@ def get_closest_objects(position, objects, max_len: int = 3, max_dist: int = 30)
     if num < max_len:
         idx = num
     objects = sorted(
-        objects, key=lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position))
+        objects,
+        key=lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position)),
     )
     objects = objects[:idx]
     dists = map(
-        lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position)), objects
+        lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position)),
+        objects,
     )
     final_objs = []
     for i, d in enumerate(dists):

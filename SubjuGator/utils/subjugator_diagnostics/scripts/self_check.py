@@ -83,7 +83,8 @@ class TemplateChecker:
 class ThrusterChecker(TemplateChecker):
     async def tx_init(self):
         self.thruster_topic = self.nh.subscribe(
-            "thrusters/thruster_status", ThrusterStatus
+            "thrusters/thruster_status",
+            ThrusterStatus,
         )
         await self.thruster_topic.setup()
 
@@ -101,7 +102,8 @@ class ThrusterChecker(TemplateChecker):
     async def do_check(self):
         try:
             passed = await axros.util.wrap_timeout(
-                self.get_all_thrusters(), MESSAGE_TIMEOUT
+                self.get_all_thrusters(),
+                MESSAGE_TIMEOUT,
             )
         except asyncio.TimeoutError:
             lost_thrusters = [x[0] for x in self.found_thrusters.items() if not x[1]]
@@ -113,7 +115,7 @@ class ThrusterChecker(TemplateChecker):
                 self.fail_check(err_msg)
             elif self.found_thrusters.values().count(False) == 1:
                 err_msg += "one thruster is out ({}), things should still work.".format(
-                    lost_thrusters
+                    lost_thrusters,
                 )
                 self.warn_check(err_msg)
             else:
@@ -140,15 +142,18 @@ class CameraChecker(TemplateChecker):
         self.front_cam_product_id = "1e10:3300"  # should be changed if cameras change
         self.right = self.nh.subscribe("/camera/front/right/image_rect_color", Image)
         self.right_info = self.nh.subscribe(
-            "/camera/front/right/camera_info", CameraInfo
+            "/camera/front/right/camera_info",
+            CameraInfo,
         )
         self.left = self.nh.subscribe("/camera/front/left/image_rect_color", Image)
         self.left_info = self.nh.subscribe("/camera/front/left/camera_info", CameraInfo)
         self.down = self.nh.subscribe(
-            "/camera/down/left/image_rect_color", Image
+            "/camera/down/left/image_rect_color",
+            Image,
         )  # TODO
         self.down_info = self.nh.subscribe(
-            "/camera/down/left/camera_info", CameraInfo
+            "/camera/down/left/camera_info",
+            CameraInfo,
         )  # TODO
 
         self.subs = [
@@ -177,7 +182,7 @@ class CameraChecker(TemplateChecker):
         err_str = "{} front camera{} not connected to usb port"
         try:
             count_front_cam_usb = subprocess.check_output(
-                ["/bin/sh", "-c", command]
+                ["/bin/sh", "-c", command],
             ).count("Point Grey")
             if count_front_cam_usb < 2:
                 self.fail_check(err_str.format("One", ""))
@@ -300,8 +305,8 @@ async def main():
             p.bold("\n  >>>>")
             .text("   Press return when ")
             .negative("sub8.launch")
-            .text(" is running.")
-        )
+            .text(" is running."),
+        ),
     )
     print(p.newline().set_blue.bold("-------- Running self checks...").newline())
 

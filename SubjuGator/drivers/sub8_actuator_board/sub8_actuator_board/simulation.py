@@ -41,6 +41,7 @@ class ActuatorBoardSimulation(SimulatedCANDevice):
         # If message is a status request, send motherboard the status of the requested valve
         else:
             response = FeedbackMessage.create_feedback_message(
-                address=message.address, on=self.status[message.address]
+                address=message.address,
+                on=self.status[message.address],
             )
             self.send_data(bytes(response))

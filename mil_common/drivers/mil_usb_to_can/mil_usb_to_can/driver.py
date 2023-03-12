@@ -37,12 +37,12 @@ class USBtoCANDriver:
         # If simulation mode, load simulated devices
         if simulation:
             rospy.logwarn(
-                "CAN2USB driver in simulation! Will not talk to real hardware."
+                "CAN2USB driver in simulation! Will not talk to real hardware.",
             )
             devices = dict(
                 list(
-                    self.parse_module_dictionary(rospy.get_param("~simulated_devices"))
-                )
+                    self.parse_module_dictionary(rospy.get_param("~simulated_devices")),
+                ),
             )
             self.board = USBtoCANBoard(
                 port=port,
@@ -58,7 +58,7 @@ class USBtoCANDriver:
         self.handles: Dict[int, CANDeviceHandle] = {
             device_id: cls(self, device_id)
             for device_id, cls in self.parse_module_dictionary(
-                rospy.get_param("~device_handles")
+                rospy.get_param("~device_handles"),
             )
         }
 
@@ -84,8 +84,8 @@ class USBtoCANDriver:
         else:
             rospy.logwarn(
                 "Message received for device {}, but no handle registered".format(
-                    packet.device
-                )
+                    packet.device,
+                ),
             )
         return True
 
@@ -113,7 +113,7 @@ class USBtoCANDriver:
 
     @staticmethod
     def parse_module_dictionary(
-        d: Dict[str, Any]
+        d: Dict[str, Any],
     ) -> Generator[Tuple[int, Any], None, None]:
         """
         Generator to load classes from module strings specified in a dictionary.

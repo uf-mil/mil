@@ -59,7 +59,7 @@ class BallDrop(SubjuGatorMission):
             else:
                 fprint("Found ball_drop.", msg_color="green")
                 await self.move.set_position(
-                    np.array(rospy.get_param("/poi_server/initial_pois/ball_drop"))
+                    np.array(rospy.get_param("/poi_server/initial_pois/ball_drop")),
                 ).depth(TRAVEL_DEPTH).go(speed=FAST_SPEED)
         except Exception as e:
             fprint(str(e) + "Forgot to run guess server?", msg_color="yellow")
@@ -85,7 +85,7 @@ class BallDrop(SubjuGatorMission):
 
         fprint(f"Centered, going to depth {HEIGHT_BALL_DROPER}")
         await self.move.to_height(HEIGHT_BALL_DROPER).zero_roll_and_pitch().go(
-            speed=SPEED
+            speed=SPEED,
         )
         fprint("Dropping marker")
         await self.actuators.drop_marker()

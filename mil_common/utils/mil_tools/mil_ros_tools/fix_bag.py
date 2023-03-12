@@ -21,10 +21,10 @@ class BagFixer:
     def fix_tf(self, tf):
         for i, t in enumerate(tf.transforms):
             tf.transforms[i].header.frame_id = self.fix_frame(
-                tf.transforms[i].header.frame_id
+                tf.transforms[i].header.frame_id,
             )
             tf.transforms[i].child_frame_id = self.fix_frame(
-                tf.transforms[i].child_frame_id
+                tf.transforms[i].child_frame_id,
             )
         return tf
 
@@ -94,7 +94,13 @@ class BagFixer:
         return True
 
     def __init__(
-        self, topic_map={}, frame_map={}, start=None, stop=None, keep=[], ignore=[]
+        self,
+        topic_map={},
+        frame_map={},
+        start=None,
+        stop=None,
+        keep=[],
+        ignore=[],
     ):
         if ignore is None:
             ignore = []
@@ -109,7 +115,12 @@ class BagFixer:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fix bag topics/frame_ids")
     parser.add_argument(
-        "--in", "-i", dest="infile", type=str, required=True, help="Bag to read and fix"
+        "--in",
+        "-i",
+        dest="infile",
+        type=str,
+        required=True,
+        help="Bag to read and fix",
     )
     parser.add_argument(
         "--out",

@@ -47,14 +47,16 @@ class TxPOIClient:
             if poi.name not in self.futures:
                 continue
             position, orientation = rosmsg_to_numpy(poi.pose.position), rosmsg_to_numpy(
-                poi.pose.orientation
+                poi.pose.orientation,
             )
             futures = self.futures.pop(poi.name)
             while len(futures):
                 futures.pop().set_result((position, orientation))
 
     async def get(
-        self, name: str, only_fresh: bool = False
+        self,
+        name: str,
+        only_fresh: bool = False,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Get the position of POI in the global frame as a 3x1 numpy array.
@@ -68,7 +70,7 @@ class TxPOIClient:
             for poi in self.last_msg.pois:
                 if poi.name == name:
                     position, orientation = rosmsg_to_numpy(
-                        poi.pose.position
+                        poi.pose.position,
                     ), rosmsg_to_numpy(poi.pose.orientation)
                     return (position, orientation)
         res = asyncio.Future()

@@ -35,7 +35,9 @@ class FindTheBreakPerception:
     async def init_(self):
         """Initialize the axros aspect of FindTheBreakPerception."""
         self._image_sub = self.nh.subscribe(
-            "/camera/down/image_rect_color", Image, lambda x: x
+            "/camera/down/image_rect_color",
+            Image,
+            lambda x: x,
         )
         await self._image_sub.setup()
 
@@ -184,7 +186,8 @@ class FindTheBreakPerception:
             hpipes, vpipes = self._get_all_pipes(frame)
             # Look for NEW pipes
             new_hpipes, new_vpipes = self._update_pipes(
-                hpipes, self.old_hpipe_pos
+                hpipes,
+                self.old_hpipe_pos,
             ), self._update_pipes(vpipes, self.old_vpipe_pos)
 
             # the second hpipe is found

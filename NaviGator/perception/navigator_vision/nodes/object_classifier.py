@@ -22,7 +22,9 @@ class ObjectClassifier:
 
     async def init_(self):
         serv = self.nh.advertise_service(
-            "/camera_database/requests", CameraDBQuery, self.database_request
+            "/camera_database/requests",
+            CameraDBQuery,
+            self.database_request,
         )
         await serv.setup()
         self.lidar_to_image = await LidarToImage(self.nh).init_()

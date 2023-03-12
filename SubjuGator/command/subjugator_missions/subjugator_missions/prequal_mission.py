@@ -18,7 +18,8 @@ class PrequalMission(SubjuGatorMission):
 
         self.bridge = CvBridge()
         self.front_left_camera_sub = self.nh.subscribe(
-            "/camera/front/left/image_color", Image
+            "/camera/front/left/image_color",
+            Image,
         )
         self.image_debug_pub = self.nh.advertise("/prequal_image_debug", Image)
         await self.image_debug_pub.setup()
@@ -101,12 +102,12 @@ class PrequalMission(SubjuGatorMission):
                 if difference < 0:
                     print("Adjusting right", abs(meters))
                     await self.move.yaw_right(abs(meters)).zero_roll_and_pitch().go(
-                        speed=SPEED_LIMIT
+                        speed=SPEED_LIMIT,
                     )
                 elif difference > 0:
                     print("Adjusting left", abs(meters))
                     await self.move.yaw_left(abs(meters)).zero_roll_and_pitch().go(
-                        speed=SPEED_LIMIT
+                        speed=SPEED_LIMIT,
                     )
 
             print("Going forward and inspecting again")
@@ -165,12 +166,12 @@ class PrequalMission(SubjuGatorMission):
                 if difference < 0:
                     print("Adjusting right")
                     await self.move.yaw_right(abs(angle)).zero_roll_and_pitch().go(
-                        speed=SPEED_LIMIT
+                        speed=SPEED_LIMIT,
                     )
                 elif difference > 0:
                     print("Adjusting left")
                     await self.move.yaw_left(abs(angle)).zero_roll_and_pitch().go(
-                        speed=SPEED_LIMIT
+                        speed=SPEED_LIMIT,
                     )
 
             # if the width of the pole is bigger than a certain amount, rotate around pole
@@ -194,10 +195,12 @@ class PrequalMission(SubjuGatorMission):
         sub_position = await self.pose.position
         sub_orientation = await self.pose.orientation
         center_point = self.get_point_in_front_of_sub(
-            sub_position, sub_orientation, 2.5
+            sub_position,
+            sub_orientation,
+            2.5,
         )
         vect = np.array(
-            [sub_position[0] - center_point[0], sub_position[1] - center_point[1], 0]
+            [sub_position[0] - center_point[0], sub_position[1] - center_point[1], 0],
         )
 
         # go around animal
@@ -214,7 +217,7 @@ class PrequalMission(SubjuGatorMission):
             print(new_pos)
             print(vect)
             await self.move.set_position(new_pos).look_at_without_pitching(
-                center_point
+                center_point,
             ).go()
 
     def point_at_goal(self, current_pos, center_pos):
@@ -225,7 +228,7 @@ class PrequalMission(SubjuGatorMission):
     def rotate_vector(self, vector, theta):
         # rotate a vector theta radians
         rot = np.array(
-            [[math.cos(theta), -math.sin(theta)], [math.sin(theta), math.cos(theta)]]
+            [[math.cos(theta), -math.sin(theta)], [math.sin(theta), math.cos(theta)]],
         )
         res = np.dot(rot, vector)
         return res

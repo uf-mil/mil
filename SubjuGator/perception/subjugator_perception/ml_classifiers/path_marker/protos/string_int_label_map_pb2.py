@@ -17,7 +17,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     name="object_detection/protos/string_int_label_map.proto",
     package="object_detection.protos",
     serialized_pb=_b(
-        '\n2object_detection/protos/string_int_label_map.proto\x12\x17object_detection.protos"G\n\x15StringIntLabelMapItem\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\x05\x12\x14\n\x0c\x64isplay_name\x18\x03 \x01(\t"Q\n\x11StringIntLabelMap\x12<\n\x04item\x18\x01 \x03(\x0b\x32..object_detection.protos.StringIntLabelMapItem'
+        '\n2object_detection/protos/string_int_label_map.proto\x12\x17object_detection.protos"G\n\x15StringIntLabelMapItem\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\x05\x12\x14\n\x0c\x64isplay_name\x18\x03 \x01(\t"Q\n\x11StringIntLabelMap\x12<\n\x04item\x18\x01 \x03(\x0b\x32..object_detection.protos.StringIntLabelMapItem',
     ),
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -137,7 +137,7 @@ StringIntLabelMapItem = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     dict(
         DESCRIPTOR=_STRINGINTLABELMAPITEM,
-        __module__="object_detection.protos.string_int_label_map_pb2"
+        __module__="object_detection.protos.string_int_label_map_pb2",
         # @@protoc_insertion_point(class_scope:object_detection.protos.StringIntLabelMapItem)
     ),
 )
@@ -148,7 +148,7 @@ StringIntLabelMap = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     dict(
         DESCRIPTOR=_STRINGINTLABELMAP,
-        __module__="object_detection.protos.string_int_label_map_pb2"
+        __module__="object_detection.protos.string_int_label_map_pb2",
         # @@protoc_insertion_point(class_scope:object_detection.protos.StringIntLabelMap)
     ),
 )

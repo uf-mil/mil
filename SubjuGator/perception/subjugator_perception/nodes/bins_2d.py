@@ -54,15 +54,20 @@ class BinFinder:
         self.last_image_time = None
         self.camera_model = None
         self.pose_service = rospy.Service(
-            "vision/bin/2D", VisionRequest2D, self.request_bin
+            "vision/bin/2D",
+            VisionRequest2D,
+            self.request_bin,
         )
         self.image_sub = mil_ros_tools.Image_Subscriber(
-            "/down/left/image_rect_color", self.image_cb
+            "/down/left/image_rect_color",
+            self.image_cb,
         )
         self.image_pub = mil_ros_tools.Image_Publisher("/vision/bin_2d/target_info")
         self.range = None
         self.range_sub = rospy.Subscriber(
-            "dvl/range", RangeStamped, self.range_callback
+            "dvl/range",
+            RangeStamped,
+            self.range_callback,
         )
 
         # Occasional status publisher
@@ -81,7 +86,8 @@ class BinFinder:
             if response is False or response is None:
                 rospy.loginfo("did not find")
                 resp = VisionRequest2DResponse(
-                    header=mil_ros_tools.make_header(frame="/down"), found=False
+                    header=mil_ros_tools.make_header(frame="/down"),
+                    found=False,
                 )
             else:
                 # Fill in
@@ -126,7 +132,9 @@ class BinFinder:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             ret, img = cv2.threshold(img, 254, 255, cv2.THRESH_BINARY)
             contours, hierarchy = cv2.findContours(
-                np.copy(img), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+                np.copy(img),
+                cv2.RETR_TREE,
+                cv2.CHAIN_APPROX_SIMPLE,
             )
             contours = contour_sort(contours)
             """This finds the bins and looks for the one that is orange or is not
