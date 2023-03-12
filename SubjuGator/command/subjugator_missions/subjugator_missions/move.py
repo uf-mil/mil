@@ -3,8 +3,8 @@ import os
 
 import rospkg
 import yaml
-from gazebo_msgs.msg import ModelState
-from geometry_msgs.msg import Point, Pose, Quaternion, Twist
+from gazebo_msgs.msg import ModelState, ModelStates
+from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 from mil_misc_tools import ThrowingArgumentParser
 from ros_alarms import TxAlarmBroadcaster
 
@@ -96,10 +96,6 @@ class Move(SubjuGatorMission):
             elif command in ["tp", "teleport"]:
                 try:
                     rospack = rospkg.RosPack()
-                    state_set_pub = self.nh.advertise(
-                        "gazebo/set_model_state", ModelState
-                    )
-                    await state_set_pub.setup()
                     config_file = os.path.join(
                         rospack.get_path("subjugator_gazebo"),
                         "config",
@@ -148,15 +144,15 @@ class Move(SubjuGatorMission):
                                     "TP location not found, check input."
                                 )
                                 break
-                        modelstate = ModelState(
-                            model_name="sub8",
-                            pose=Pose(
-                                position=Point(x, y, z),
-                                orientation=Quaternion(0, 0, 0, 0),
-                            ),
-                            twist=Twist(linear=Point(0, 0, 0), angular=Point(0, 0, 0)),
-                            reference_frame="world",
-                        )
+
+                        # Get whether to teleport sub8, sub9, or both
+                        sub = self.nh.subscribe("/gazebo/model_states", ModelStates)
+                        models = []
+                        async with sub:
+                            msg: ModelStates = await sub.get_next_message()
+                            models = [
+                                name for name in msg.name if name.startswith("sub")
+                            ]
                         # Sometimes you need to sleep in order to get the thing to publish
                         # Apparently there is a latency when you set a publisher and it needs to actually hook into it.
                         # As an additional note, given the way we do trajectory in the sim, we must kill sub to prevent
@@ -167,7 +163,30 @@ class Move(SubjuGatorMission):
                             problem_description="TELEPORTING: KILLING SUB", severity=5
                         )
                         await self.nh.sleep(1)
-                        await state_set_pub.publish(modelstate)
+                        state_set_pub = self.nh.advertise(
+                            "/gazebo/set_model_state", ModelState
+                        )
+                        async with state_set_pub:
+                            # Wait for Gazebo to listen for message
+                            while "/gazebo" not in state_set_pub.get_connections():
+                                await self.nh.sleep(0.1)
+                            for model in models:
+                                self.send_feedback(
+                                    f"Teleporting {model} to ({x}, {y}, {z})"
+                                )
+                                modelstate = ModelState(
+                                    model_name=model,
+                                    pose=Pose(
+                                        position=Point(x, y, z),
+                                        orientation=Quaternion(0, 0, 0, 1),
+                                    ),
+                                    twist=Twist(
+                                        linear=Vector3(0, 0, 0),
+                                        angular=Vector3(0, 0, 0),
+                                    ),
+                                    reference_frame="world",
+                                )
+                                state_set_pub.publish(modelstate)
                         await self.nh.sleep(1)
                         await ab.clear_alarm()
 
