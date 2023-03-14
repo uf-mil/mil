@@ -201,7 +201,9 @@ class PublishThread(threading.Thread):
             pose_twist_msg = PoseTwist()
             pose_twist_msg.pose = Pose()
             pose_twist_msg.pose.position = Point(
-                self.odom_x + self.x, self.odom_y + self.y, self.odom_z + self.z
+                self.odom_x + (self.x * self.speed),
+                self.odom_y + (self.y * self.speed),
+                min(-0.5, self.odom_z + (self.z * self.speed)),
             )
             pose_twist_msg.pose.orientation = self.odom_orient
             pose_twist_msg.twist = twist
@@ -258,7 +260,7 @@ if __name__ == "__main__":
 
     rospy.init_node("teleop_twist_keyboard")
 
-    speed = rospy.get_param("~speed", 0.5)
+    speed = rospy.get_param("~speed", 0.1)
     turn = rospy.get_param("~turn", 1.0)
     speed_limit = rospy.get_param("~speed_limit", 1000)
     turn_limit = rospy.get_param("~turn_limit", 1000)
