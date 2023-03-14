@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#! /usr/bin/env python3
 
 
 import sys
@@ -7,9 +7,11 @@ from select import select
 
 import roslib
 import rospy
+from c3_trajectory_generator.srv import SetDisabled, SetDisabledRequest
 from geometry_msgs.msg import Accel, Point, Pose, Twist, TwistStamped, Vector3
 from mil_msgs.msg import PoseTwist, PoseTwistStamped
 from nav_msgs.msg import Odometry
+from ros_alarms import AlarmListener
 
 roslib.load_manifest("teleop_twist_keyboard")
 
@@ -87,9 +89,20 @@ class PublishThread(threading.Thread):
         self.odom_sub = rospy.Subscriber(
             "/odom", Odometry, self.odom_callback, queue_size=1
         )
+        self.traj_gen_disable = rospy.ServiceProxy(
+            "/c3_trajectory_generator/set_disabled", SetDisabled
+        )
+        self.kill_listener = AlarmListener(
+            "kill", callback_funct=self.update_alarm_status
+        )
+        self.kill_raised = self.kill_listener.is_raised()
         self.x = 0.0
         self.y = 0.0
         self.z = 0.0
+        self.odom_x = 0.0
+        self.odom_y = 0.0
+        self.odom_z = 0.0
+        self.odom_orient = 0.0
         self.th = 0.0
         self.speed = 0.0
         self.turn = 0.0
@@ -103,7 +116,14 @@ class PublishThread(threading.Thread):
         else:
             self.timeout = None
 
+        self.set_traj_generator(disable=True)
         self.start()
+
+    def set_traj_generator(self, *, disable: bool):
+        self.traj_gen_disable(SetDisabledRequest(disabled=disable))
+
+    def update_alarm_status(self, alarm):
+        self.kill_raised = alarm.raised
 
     def odom_callback(self, msg: Odometry):
         self.odom_x = msg.pose.pose.position.x
@@ -126,8 +146,11 @@ class PublishThread(threading.Thread):
         if rospy.is_shutdown():
             raise Exception("Got shutdown request before subscribers connected")
 
-    def update(self, x, y, z, th, speed, turn):
+    def update(self, x, y, z, th, speed, turn, *, no_raise=False):
         self.condition.acquire()
+        if self.kill_raised and not no_raise:
+            self.condition.release()
+            raise RuntimeError('"kill" alarm is raised!')
         self.x = x
         self.y = y
         self.z = z
@@ -140,7 +163,8 @@ class PublishThread(threading.Thread):
 
     def stop(self):
         self.done = True
-        self.update(0, 0, 0, 0, 0, 0)
+        self.update(0, 0, 0, 0, 0, 0, no_raise=True)
+        pub_thread.set_traj_generator(disable=False)
         self.join()
 
     def run(self):
