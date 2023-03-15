@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import Sequence
+from typing import MutableSequence, Sequence
 
 import numpy as np
 import rospy
@@ -122,17 +122,43 @@ def safe_wait_for_message(topic, topic_type):
 
 class PoseEditor:
     """
-    Helper class used to create poses for the movement of SubjuGatorMission.
+    Helper class used to create poses for the movement of SubjuGator.
 
     Frequently the methods from this class can be tied together in order to
     orchestrate multiple movements.
+
+    .. code-block:: python
+
+        class ExampleMission(SubjuGatorMission):
+            pose = self.move() # new pose editor
+            down = pose.down(3).left(2) # down 3m, left 2m
+            await self.go(down, speed = 0.7) # go to that location at 0.7m/s
 
     .. container:: operations
 
         .. describe:: str(x)
 
-            Pretty prints the position and orientation associated with the sub.
+            Pretty prints the position and orientation associated with the pose editor.
+
+        .. describe:: repr(x)
+
+            Pretty prints the position and orientation associated with the pose editor.
     """
+
+    def __init__(
+        self,
+        frame_id: str,
+        position: MutableSequence[float],
+        orientation: MutableSequence[float],
+    ):
+        self.frame_id = frame_id
+        self.position = position
+        self.orientation = orientation
+
+    def __str__(self):
+        return f"PoseEditor(frame_id={self.frame_id}, position={self.position}, orientation={self.orientation})"
+
+    __repr__ = __str__
 
     @classmethod
     def from_Odometry_topic(cls, topic: str = "/odom") -> PoseEditor:
@@ -177,14 +203,6 @@ class PoseEditor:
             rosmsg_to_numpy(msg.orientation),
         )
 
-    def __init__(self, frame_id: str, position, orientation):
-        self.frame_id = frame_id
-        self.position = position
-        self.orientation = orientation
-
-    def __str__(self):
-        return f"p: {self.position}, q: {self.orientation}"
-
     @property
     def _rot(self) -> np.ndarray:
         return transformations.quaternion_matrix(self.orientation)[:3, :3]
@@ -202,7 +220,7 @@ class PoseEditor:
         return self._rot.dot(UP)
 
     # Position
-    def set_position(self, position: Sequence[float]) -> PoseEditor:
+    def set_position(self, position: MutableSequence[float]) -> PoseEditor:
         """
         Returns a new pose editor with the same orientation, but a new position.
 

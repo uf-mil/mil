@@ -9,7 +9,7 @@ fprint = text_effects.FprintFactory(title="STRIPPER", msg_color="cyan").fprint
 
 class Strip(SubjuGatorMission):
     async def pitch(self):
-        start = self.move.forward(0).zero_roll_and_pitch()
+        start = self.move().forward(0).zero_roll_and_pitch()
         pitches = [start.pitch_down_deg(7), start] * 5
         for p in pitches:
             await p.go(speed=0.1)
@@ -20,7 +20,7 @@ class Strip(SubjuGatorMission):
         fprint(sub_start_orientation)
         await self.nh.sleep(2)
 
-        sub_start = self.move.forward(0).zero_roll_and_pitch()
+        sub_start = self.move().forward(0).zero_roll_and_pitch()
         await sub_start.down(0.15).set_orientation(sub_start_orientation).go(speed=0.1)
         await self.nh.sleep(3)
 
@@ -50,7 +50,7 @@ class Strip(SubjuGatorMission):
         await pole_f.go(speed=SPEED_LIMIT)
         await self.nh.sleep(3)
 
-        pole_r = self.move.right(offset_left * 2)
+        pole_r = self.move().right(offset_left * 2)
         await pole_r.go(speed=SPEED_LIMIT)
         await self.nh.sleep(3)
 
@@ -58,19 +58,19 @@ class Strip(SubjuGatorMission):
         await pole_b.go(speed=SPEED_LIMIT)
         await self.nh.sleep(3)
 
-        await self.move.strafe_left(offset_left).go(speed=SPEED_LIMIT)
+        await self.move().strafe_left(offset_left).go(speed=SPEED_LIMIT)
         await self.nh.sleep(5)
 
         fprint("Turning back to gate")
         # await pole.backward(1).go(speed=SPEED_LIMIT)
         await self.nh.sleep(5)
         fprint("Look at gate")
-        await self.move.look_at(gate._pose.position).yaw_left_deg(10).go(
+        await self.move().look_at(gate._pose.position).yaw_left_deg(10).go(
             speed=SPEED_LIMIT,
         )
         await self.nh.sleep(5)
         #        fprint('Going to gate')
-        await self.move.forward(8.9).depth(0.6).go(speed=SPEED_LIMIT)
+        await self.move().forward(8.9).depth(0.6).go(speed=SPEED_LIMIT)
 
 
 #        await start.go(speed=SPEED_LIMIT)

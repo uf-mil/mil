@@ -25,7 +25,7 @@ class PrequalMission(SubjuGatorMission):
         await self.image_debug_pub.setup()
 
         # submerge submarine
-        await self.move.down(2).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
+        await self.go(self.move().down(2).zero_roll_and_pitch(), speed=SPEED_LIMIT)
 
         # look for start gate
         await self.find_start_gate()
@@ -35,7 +35,10 @@ class PrequalMission(SubjuGatorMission):
 
         # turn around
         await self.nh.sleep(5)
-        await self.move.yaw_right(1.57).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
+        await self.go(
+            self.move().yaw_right(1.57).zero_roll_and_pitch(),
+            speed=SPEED_LIMIT,
+        )
 
         # go through start gate again
         await self.nh.sleep(5)
@@ -85,7 +88,10 @@ class PrequalMission(SubjuGatorMission):
                 ) / 2
             else:
                 print("Going through the gate!")
-                await self.move.forward(5).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
+                await self.go(
+                    self.move().forward(5).zero_roll_and_pitch(),
+                    speed=SPEED_LIMIT,
+                )
                 break
 
             # move based on center pixel
@@ -101,17 +107,22 @@ class PrequalMission(SubjuGatorMission):
             if abs(difference) > 30:
                 if difference < 0:
                     print("Adjusting right", abs(meters))
-                    await self.move.yaw_right(abs(meters)).zero_roll_and_pitch().go(
+                    await self.go(
+                        self.move().yaw_right(abs(meters)).zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
                     )
                 elif difference > 0:
                     print("Adjusting left", abs(meters))
-                    await self.move.yaw_left(abs(meters)).zero_roll_and_pitch().go(
+                    await self.go(
+                        self.move().yaw_left(abs(meters)).zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
                     )
 
             print("Going forward and inspecting again")
-            await self.move.forward(2).zero_roll_and_pitch().go(speed=SPEED_LIMIT)
+            await self.go(
+                self.move().forward(2).zero_roll_and_pitch(),
+                speed=SPEED_LIMIT,
+            )
 
     # returns center of marker and width
     async def find_marker(self):
@@ -165,12 +176,14 @@ class PrequalMission(SubjuGatorMission):
             if abs(difference) > 30:
                 if difference < 0:
                     print("Adjusting right")
-                    await self.move.yaw_right(abs(angle)).zero_roll_and_pitch().go(
+                    await self.go(
+                        self.move().yaw_right(abs(angle)).zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
                     )
                 elif difference > 0:
                     print("Adjusting left")
-                    await self.move.yaw_left(abs(angle)).zero_roll_and_pitch().go(
+                    await self.go(
+                        self.move().yaw_left(abs(angle)).zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
                     )
 

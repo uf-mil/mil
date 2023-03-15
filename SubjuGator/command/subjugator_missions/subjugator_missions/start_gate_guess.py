@@ -33,5 +33,5 @@ class StartGateGuess(SubjuGatorMission):
         #      await self.move.look_at_without_pitching(mid).go(speed=DOWN_SPEED)
 
         fprint("Going!")
-        await self.move.set_position(gate_1).depth(DOWN).go(speed=SPEED)
-        await self.move.forward(1).go(speed=SPEED)
+        await self.go(self.move().set_position(gate_1).depth(DOWN), speed=SPEED)
+        await self.go(self.move().forward(1), speed=SPEED)
