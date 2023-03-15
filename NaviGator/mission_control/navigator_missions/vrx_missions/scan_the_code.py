@@ -40,10 +40,12 @@ class ScanTheCode(Vrx):
         self.bridge = CvBridge()
         self.image_debug_pub = self.nh.advertise("/stc_mask_debug", Image)
         self.sequence_report = self.nh.get_service_client(
-            COLOR_SEQUENCE_SERVICE, ColorSequence
+            COLOR_SEQUENCE_SERVICE,
+            ColorSequence,
         )
         await asyncio.gather(
-            self.debug_points_pub.setup(), self.image_debug_pub.setup()
+            self.debug_points_pub.setup(),
+            self.image_debug_pub.setup(),
         )
 
         await self.init_front_left_camera()
@@ -70,7 +72,9 @@ class ScanTheCode(Vrx):
 
         try:
             sequence = await axros.util.wrap_timeout(
-                self.get_sequence(), TIMEOUT_SECONDS, "Guessing RGB"
+                self.get_sequence(),
+                TIMEOUT_SECONDS,
+                "Guessing RGB",
             )
         except asyncio.TimeoutError:
             sequence = ["red", "green", "blue"]
@@ -282,7 +286,7 @@ def z_filter(db_obj_msg):
             [i.x, i.y, i.z]
             for i in db_obj_msg.points
             if i.z < top - LED_PANNEL_MAX and i.z > top - LED_PANNEL_MIN
-        ]
+        ],
     )
     return points
 
@@ -294,6 +298,6 @@ def bbox_from_rect(rect):
             [rect[1][0], rect[0][1]],
             [rect[1][0], rect[1][1]],
             [rect[0][0], rect[1][1]],
-        ]
+        ],
     )
     return bbox

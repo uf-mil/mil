@@ -27,7 +27,7 @@ class OdomKill(HandlerBase):
 
     def __init__(self, timeout=0.5):
         self.GRACE_PERIOD = rospy.Duration(
-            5.0
+            5.0,
         )  # Alarms won't be raised within grace period
         self.TIMEOUT = rospy.Duration(timeout)
         self.MAX_JUMP = 0.5
@@ -38,7 +38,10 @@ class OdomKill(HandlerBase):
         self.odom_discontinuity = False
         self._killed = False
         self.odom_listener = rospy.Subscriber(
-            "/odom", Odometry, self.got_odom_msg, queue_size=1
+            "/odom",
+            Odometry,
+            self.got_odom_msg,
+            queue_size=1,
         )
         self.ab = AlarmBroadcaster("odom-kill", node_name="odom-kill")
         rospy.Timer(rospy.Duration(0.1), self.check)
@@ -64,7 +67,8 @@ class OdomKill(HandlerBase):
             else:
                 self._killed = True
                 self.ab.raise_alarm(
-                    problem_description="STATE ESTIMATION LOSS: KILLING SUB", severity=5
+                    problem_description="STATE ESTIMATION LOSS: KILLING SUB",
+                    severity=5,
                 )
                 rospy.logerr("STATE ESTIMATION LOSS: KILLING SUB")
 
@@ -98,7 +102,7 @@ class OdomKill(HandlerBase):
             rospy.logerr("ODOM DISCONTINUITY DETECTED")
             self.ab.raise_alarm(
                 problem_description="ODOM DISCONTINUITY DETECTED JUMPED {} METERS".format(
-                    jump
+                    jump,
                 ),
                 severity=5,
             )
@@ -117,12 +121,12 @@ class OdomKill(HandlerBase):
             rospy.logerr_throttle(
                 1,
                 "LOST ODOM FOR {} SECONDS".format(
-                    (rospy.Time.now() - self.last_time).to_sec()
+                    (rospy.Time.now() - self.last_time).to_sec(),
                 ),
             )
             self.ab.raise_alarm(
                 problem_description="LOST ODOM FOR {} SECONDS".format(
-                    (rospy.Time.now() - self.last_time).to_sec()
+                    (rospy.Time.now() - self.last_time).to_sec(),
                 ),
                 severity=5,
             )

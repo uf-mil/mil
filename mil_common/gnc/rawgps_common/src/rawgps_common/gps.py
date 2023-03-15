@@ -6,9 +6,10 @@ from math import atan2, cos, pi, sin, sqrt
 import numpy
 import yaml
 from geometry_msgs.msg import Point, PointStamped, Vector3
-from rawgps_common.msg import Measurements, Satellite
 from std_msgs.msg import Header
 from tf import transformations
+
+from rawgps_common.msg import Measurements, Satellite
 
 from . import bitstream
 
@@ -40,7 +41,7 @@ def ecef_from_latlongheight(latitude, longitude, height):
             (N + height) * cos(latitude) * cos(longitude),
             (N + height) * cos(latitude) * sin(longitude),
             (N * (1 - e**2) + height) * sin(latitude),
-        ]
+        ],
     )
 
 
@@ -71,9 +72,9 @@ def latlongheight_from_ecef(tup):
 def enu_from_ecef_tf(ecef_pos):
     up_ecef = transformations.unit_vector(
         ecef_from_latlongheight(
-            *latlongheight_from_ecef(ecef_pos) + numpy.array([0, 0, 1])
+            *latlongheight_from_ecef(ecef_pos) + numpy.array([0, 0, 1]),
         )
-        - ecef_pos
+        - ecef_pos,
     )
     east_ecef = transformations.unit_vector(numpy.cross([0, 0, 1], up_ecef))
     north_ecef = numpy.cross(up_ecef, east_ecef)
@@ -105,7 +106,7 @@ class Time:
     def __init__(self, WN, TOW):
         self.WN = WN
         self.TOW = TOW
-        while self.TOW >= week_length:
+        while week_length <= self.TOW:
             self.WN += 1
             self.TOW -= week_length
         while self.TOW < 0:
@@ -354,7 +355,7 @@ class Ephemeris:
         if not (abs(t_k) < 6 * 60 * 60):
             print(
                 "ERROR: ephemeris predicting more than 6 hours from now (%f hours)"
-                % (t_k / 60 / 60,)
+                % (t_k / 60 / 60,),
             )
         n = n_0 + self.Deltan
         M_k = self.M_0 + n * t_k
@@ -466,7 +467,7 @@ def tropospheric_model(ground_pos_ecef, sat_pos_ecef):  # returns meters
     E = math.asin(sat_dir_enu[2])
 
     return 2.312 / math.sin(math.sqrt(E * E + 1.904e-3)) + 0.084 / math.sin(
-        math.sqrt(E * E + 0.6854e-3)
+        math.sqrt(E * E + 0.6854e-3),
     )
 
 
@@ -481,7 +482,10 @@ class GPSPublisher:
         if home == "~":
             raise AssertionError("home path expansion didn't work")
         self._ionospheric_model_path = os.path.join(
-            home, ".ros", "rawgps_common", "ionospheric_model.yaml"
+            home,
+            ".ros",
+            "rawgps_common",
+            "ionospheric_model.yaml",
         )
         if os.path.exists(self._ionospheric_model_path):
             with open(self._ionospheric_model_path, "rb") as f:
@@ -501,10 +505,10 @@ class GPSPublisher:
             os.makedirs(os.path.dirname(self._ionospheric_model_path))
         with open(self._ionospheric_model_path, "wb") as f:
             yaml.dump(
-                dict(
-                    a=self.ionospheric_model.a,
-                    b=self.ionospheric_model.b,
-                ),
+                {
+                    "a": self.ionospheric_model.a,
+                    "b": self.ionospheric_model.b,
+                },
                 f,
             )
 
@@ -538,7 +542,8 @@ class GPSPublisher:
 
         if len(satellites) >= 4:
             pos_estimate = estimate_pos(
-                satellites, use_corrections=self._last_pos is not None
+                satellites,
+                use_corrections=self._last_pos is not None,
             )
             self.pos_pub.publish(
                 PointStamped(
@@ -547,7 +552,7 @@ class GPSPublisher:
                         frame_id="/ecef",
                     ),
                     point=Point(*pos_estimate),
-                )
+                ),
             )
         else:
             pos_estimate = None
@@ -594,11 +599,11 @@ class GPSPublisher:
                 sync_WN=gps_time.WN,
                 sync=gps_time.TOW,
                 position=Point(
-                    *pos_estimate if pos_estimate is not None else (0, 0, 0)
+                    *pos_estimate if pos_estimate is not None else (0, 0, 0),
                 ),
                 position_valid=pos_estimate is not None,
                 satellites=satellites,
-            )
+            ),
         )
         print
 
@@ -608,14 +613,14 @@ class GPSPublisher:
 
         if subframe.HOW.subframe_ID in [1, 2, 3]:
             self.ephemeris_data.setdefault(prn, {}).setdefault(
-                subframe.IODE, [None] * 3
+                subframe.IODE,
+                [None] * 3,
             )[subframe.HOW.subframe_ID - 1] = subframe
             self._ephemeris_think(prn, subframe.IODE)
-        elif subframe.HOW.subframe_ID == 4:
-            if subframe.sv_id == 56:  # page 18
-                self._set_ionospheric_model(
-                    IonosphericModel(subframe.alpha, subframe.beta)
-                )
+        elif subframe.HOW.subframe_ID == 4 and subframe.sv_id == 56:  # page 18
+            self._set_ionospheric_model(
+                IonosphericModel(subframe.alpha, subframe.beta),
+            )
 
     def _ephemeris_think(self, prn, iode):
         subframes = self.ephemeris_data[prn][iode]
@@ -670,12 +675,13 @@ def generate_satellite_message(
         T_tropo = tropospheric_model(approximate_receiver_position, sat_pos) / c
 
         sat_pos_enu = enu_from_ecef(
-            sat_pos - approximate_receiver_position, approximate_receiver_position
+            sat_pos - approximate_receiver_position,
+            approximate_receiver_position,
         )
         sat_dir_enu = sat_pos_enu / numpy.linalg.norm(sat_pos_enu)
 
         E = math.asin(sat_dir_enu[2])
-        if E < math.radians(5):
+        if math.radians(5) > E:
             return None
 
     return Satellite(
@@ -714,7 +720,10 @@ def estimate_pos(sats, use_corrections, quiet=False, pos_guess=None):
             # print sum(r)
             if not quiet:
                 print(
-                    "|r|", numpy.linalg.norm(r) / math.sqrt(len(r)), use_corrections, x
+                    "|r|",
+                    numpy.linalg.norm(r) / math.sqrt(len(r)),
+                    use_corrections,
+                    x,
                 )
             # print 'J', J
             try:
@@ -743,7 +752,7 @@ def estimate_pos(sats, use_corrections, quiet=False, pos_guess=None):
         return [
             numpy.linalg.norm(
                 glonass.inertial_from_ecef(t, pos)
-                - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+                - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position)),
             )
             - (t - sat.time - (sat.T_iono + sat.T_tropo if use_corrections else 0)) * c
             for sat in sats
@@ -752,25 +761,25 @@ def estimate_pos(sats, use_corrections, quiet=False, pos_guess=None):
                 [
                     transformations.unit_vector(
                         glonass.inertial_from_ecef(t, pos)
-                        - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+                        - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position)),
                     ).dot(glonass.inertial_from_ecef(t, [1, 0, 0])),
                     transformations.unit_vector(
                         glonass.inertial_from_ecef(t, pos)
-                        - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+                        - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position)),
                     ).dot(glonass.inertial_from_ecef(t, [0, 1, 0])),
                     transformations.unit_vector(
                         glonass.inertial_from_ecef(t, pos)
-                        - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+                        - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position)),
                     ).dot(glonass.inertial_from_ecef(t, [0, 0, 1])),
                     transformations.unit_vector(
                         glonass.inertial_from_ecef(t, pos)
-                        - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+                        - glonass.inertial_from_ecef(sat.time, xyz_array(sat.position)),
                     ).dot(glonass.inertial_vel_from_ecef_vel(t, [0, 0, 0], pos))
                     / c
                     - 1,
                 ]
                 for sat in sats
-            ]
+            ],
         )
 
     x = find_minimum(
@@ -799,7 +808,7 @@ if __name__ == "__main__":
             math.cos(math.radians(20)) * math.sin(math.radians(210)),
             math.cos(math.radians(20)) * math.cos(math.radians(210)),
             math.sin(math.radians(20)),
-        ]
+        ],
     )
     print("sat_pos_enu", sat_pos_enu)
     sat_pos = ecef_from_enu(sat_pos_enu, station_pos) + station_pos

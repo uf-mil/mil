@@ -48,19 +48,23 @@ async def main():
 
     # Perception Subs
     topics["right_images"], topics["right_compressed"] = add_camera_feeds(
-        nh, "camera/starboard"
+        nh,
+        "camera/starboard",
     )
     topics["front_right_images"], topics["front_right_compressed"] = add_camera_feeds(
-        nh, "camera/front/right"
+        nh,
+        "camera/front/right",
     )
     topics["front_left_images"], topics["front_left_compressed"] = add_camera_feeds(
-        nh, "camera/front/left"
+        nh,
+        "camera/front/left",
     )
 
     from sensor_msgs.msg import PointCloud2
 
     topics["velodyne"] = nh.subscribe(
-        "/velodyne_points", PointCloud2
+        "/velodyne_points",
+        PointCloud2,
     ).get_next_message()
 
     # Thrusters

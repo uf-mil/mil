@@ -30,10 +30,15 @@ class MultilaterationNode:
         self.last_pos = None
         self.global_frame = rospy.get_param("~global_frame", default="enu")
         self.heading_sub = rospy.Subscriber(
-            "/hydrophones/direction", Vector3Stamped, self.heading_cb, queue_size=10
+            "/hydrophones/direction",
+            Vector3Stamped,
+            self.heading_cb,
+            queue_size=10,
         )
         self.position_pub = rospy.Publisher(
-            "/hydrophones/position", PointStamped, queue_size=1
+            "/hydrophones/position",
+            PointStamped,
+            queue_size=1,
         )
         self.enable_srv = rospy.Service("~enable", SetBool, self.enable_cb)
         self.reset_srv = rospy.Service("~reset", Trigger, self.reset_cb)
@@ -52,7 +57,9 @@ class MultilaterationNode:
         try:
             # Transform ping into global frame
             transformed_vec = self.tfBuffer.transform(
-                p_message, self.global_frame, rospy.Duration(2)
+                p_message,
+                self.global_frame,
+                rospy.Duration(2),
             )
             transformed_origin = self.tfBuffer.lookup_transform(
                 self.global_frame,
@@ -86,7 +93,7 @@ class MultilaterationNode:
     def publish_position(self):
         # Setup lines from samples
         line_array = np.array(
-            [(np.array(p[0][0:2]), np.array(p[1][0:2])) for p in self.vec_samples]
+            [(np.array(p[0][0:2]), np.array(p[1][0:2])) for p in self.vec_samples],
         )
 
         # Calculate least squares intersection
@@ -148,7 +155,7 @@ class MultilaterationNode:
                     [
                         line_array,
                         np.array([line1[0][0], line1[0][1], line1[1][0], line1[1][1]]),
-                    ]
+                    ],
                 )
 
         line_array = line_array[1:]
@@ -166,11 +173,14 @@ class MultilaterationNode:
         begin_pts = line_array[:, :2]
         diffs = line_array[:, 2:4] - begin_pts
         norms = np.apply_along_axis(line_segment_norm, 1, line_array).reshape(
-            diffs.shape[0], 1
+            diffs.shape[0],
+            1,
         )
         rot_left_90 = np.array([[0, -1], [1, 0]])
         perp_unit_vecs = np.apply_along_axis(
-            lambda unit_diffs: rot_left_90.dot(unit_diffs), 1, diffs / norms
+            lambda unit_diffs: rot_left_90.dot(unit_diffs),
+            1,
+            diffs / norms,
         )
         A_sum = np.zeros((2, 2))
         Ap_sum = np.zeros((2, 1))

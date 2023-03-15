@@ -53,7 +53,7 @@ class DraculaGrabber(SubjuGatorMission):
                 await self.go(
                     self.move()
                     .set_position(
-                        np.array(rospy.get_param("/poi_server/initial_pois/dracula"))
+                        np.array(rospy.get_param("/poi_server/initial_pois/dracula")),
                     )
                     .depth(TRAVEL_DEPTH),
                     speed=FAST_SPEED,
@@ -64,7 +64,8 @@ class DraculaGrabber(SubjuGatorMission):
         dracula_sub = self.nh.subscribe("/bbox_pub", Point)
         await dracula_sub.setup()
         await self.go(
-            self.move().to_height(SEARCH_HEIGHT).zero_roll_and_pitch(), speed=SPEED
+            self.move().to_height(SEARCH_HEIGHT).zero_roll_and_pitch(),
+            speed=SPEED,
         )
 
         while True:

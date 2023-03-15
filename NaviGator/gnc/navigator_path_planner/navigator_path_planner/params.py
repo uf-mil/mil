@@ -56,7 +56,7 @@ thruster_positions = np.array(
         [-1.9000, -1.0000, -0.0123],
         [1.6000, 0.6000, -0.0123],
         [1.6000, -0.6000, -0.0123],
-    ]
+    ],
 )
 
 # Thruster heading vectors, [back-left, back-right, front-left front-right] (m)
@@ -66,7 +66,7 @@ thruster_directions = np.array(
         [0.7071, -0.7071, 0.0000],
         [0.7071, -0.7071, 0.0000],
         [0.7071, 0.7071, 0.0000],
-    ]
+    ],
 )
 
 # Fresh sprinkles

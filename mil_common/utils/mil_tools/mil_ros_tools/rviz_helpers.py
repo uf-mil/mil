@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 from typing import List, Tuple
 
-import mil_ros_tools
 import numpy as np
 import rospy
 import visualization_msgs.msg as visualization_msgs
 from geometry_msgs.msg import Point, Pose, Vector3
 from image_geometry import PinholeCameraModel
 from std_msgs.msg import ColorRGBA
+
+import mil_ros_tools
 
 rviz_pub = rospy.Publisher("visualization", visualization_msgs.Marker, queue_size=3)
 
@@ -90,7 +91,7 @@ def make_ray(
     color: List[float],
     frame: str = "/base_link",
     m_id: int = 0,
-    **kwargs
+    **kwargs,
 ) -> visualization_msgs.Marker:
     """
     Makes a ray from a base with a direction. The ray is constructed in the ``wamv``
@@ -115,6 +116,6 @@ def make_ray(
         scale=Vector3(0.05, 0.05, 0.05),
         points=[Point(*o) for o in [base, direction * length]],
         lifetime=rospy.Duration(),
-        **kwargs
+        **kwargs,
     )
     return marker

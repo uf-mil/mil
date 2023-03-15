@@ -66,7 +66,9 @@ class BatteryMonitor:
 
         [
             message_filters.ApproximateTimeSynchronizer(
-                [feedback, status], 1, 10
+                [feedback, status],
+                1,
+                10,
             ).registerCallback(self.add_voltage)
             for feedback, status in zip(feedback_sub, status_sub)
         ]

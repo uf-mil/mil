@@ -102,7 +102,8 @@ class killtest(unittest.TestCase):
         pub.publish(Header())
         self.reset_update()
         alarm = self.wait_for_kill_update(
-            timeout=rospy.Duration(10.0), ver=1
+            timeout=rospy.Duration(10.0),
+            ver=1,
         )  # Allow lots of time for initial alarm setup
         if (alarm[0] and alarm[0].raised) or (alarm[1] and alarm[1].raised):
             self.assertTrue(True)

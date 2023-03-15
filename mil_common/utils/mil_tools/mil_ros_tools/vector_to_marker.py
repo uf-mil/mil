@@ -72,7 +72,9 @@ class VectorToMarker:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Publishes a rviz marker")
     parser.add_argument(
-        "vector_topic", type=str, help="Topic of vector to subscribe to"
+        "vector_topic",
+        type=str,
+        help="Topic of vector to subscribe to",
     )
     parser.add_argument(
         "marker_topic",
@@ -100,6 +102,9 @@ if __name__ == "__main__":
     args = parser.parse_args(args[1:])
     rospy.init_node("vector_to_marker")
     VectorToMarker(
-        args.vector_topic, args.marker_topic, length=args.length, color=args.color
+        args.vector_topic,
+        args.marker_topic,
+        length=args.length,
+        color=args.color,
     )
     rospy.spin()

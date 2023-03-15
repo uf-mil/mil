@@ -111,8 +111,8 @@ class VampireSlayer(SubjuGatorMission):
             await self.go(
                 self.move().set_position(
                     np.array(
-                        [target_position[0], target_position[1], target_position[2]]
-                    )
+                        [target_position[0], target_position[1], target_position[2]],
+                    ),
                 ),
                 blind=True,
                 speed=0.1,

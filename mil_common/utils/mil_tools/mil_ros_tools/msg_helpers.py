@@ -59,7 +59,8 @@ def rosmsg_to_numpy(rosmsg, keys=None):
         assert (
             len(output_array) != 0
         ), "Input type {} has none of these attributes {}.".format(
-            type(rosmsg).__name__, keys
+            type(rosmsg).__name__,
+            keys,
         )
         return np.array(output_array).astype(np.float32)
 
@@ -229,7 +230,8 @@ def numpy_to_quaternion(np_quaternion: np.ndarray) -> geometry_msgs.Quaternion:
 
 
 def numpy_to_twist(
-    linear_vel: np.ndarray, angular_vel: np.ndarray
+    linear_vel: np.ndarray,
+    angular_vel: np.ndarray,
 ) -> geometry_msgs.Twist:
     """
     Turns two :class:`np.ndarray`s into a :class:`Twist` message.
@@ -287,7 +289,8 @@ def numpy_matrix_to_quaternion(np_matrix: np.ndarray):
 
 
 def numpy_pair_to_pose(
-    np_translation: np.ndarray, np_rotation_matrix: np.ndarray
+    np_translation: np.ndarray,
+    np_rotation_matrix: np.ndarray,
 ) -> geometry_msgs.Pose:
     """
     Convert a rotation matrix and point pair to a Pose message.
@@ -306,7 +309,8 @@ def numpy_pair_to_pose(
 
 
 def numpy_quat_pair_to_pose(
-    np_translation: np.ndarray, np_quaternion: np.ndarray
+    np_translation: np.ndarray,
+    np_quaternion: np.ndarray,
 ) -> geometry_msgs.Pose:
     """
     Convert a quaternion array and point array pair to a Pose message.
@@ -439,14 +443,17 @@ def make_wrench_stamped(force: List[float], torque: List[float], frame: str = "/
     wrench = geometry_msgs.WrenchStamped(
         header=make_header(frame),
         wrench=geometry_msgs.Wrench(
-            force=geometry_msgs.Vector3(*force), torque=geometry_msgs.Vector3(*torque)
+            force=geometry_msgs.Vector3(*force),
+            torque=geometry_msgs.Vector3(*torque),
         ),
     )
     return wrench
 
 
 def make_pose_stamped(
-    position: List[float], orientation: List[float], frame: str = "/body"
+    position: List[float],
+    orientation: List[float],
+    frame: str = "/body",
 ) -> geometry_msgs.WrenchStamped:
     """
     Makes a PoseStamped message.

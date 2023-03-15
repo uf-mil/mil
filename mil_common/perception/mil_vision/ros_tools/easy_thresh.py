@@ -18,10 +18,14 @@ desc_msg = "A tool for making threshold determination fun!"
 
 parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
 parser.add_argument(
-    dest="topic_name", help="The topic name you'd like to listen to", choices=topics
+    dest="topic_name",
+    help="The topic name you'd like to listen to",
+    choices=topics,
 )
 parser.add_argument(
-    "--hsv", action="store_true", help="Would you like to look at hsv instead of bgr?"
+    "--hsv",
+    action="store_true",
+    help="Would you like to look at hsv instead of bgr?",
 )
 
 argcomplete.autocomplete(parser)
@@ -51,15 +55,14 @@ class Segmenter:
         self.state = 0
 
     def mouse_cb(self, event, x, y, flags, param):
-        if event == cv2.EVENT_LBUTTONDOWN:
-            if not self.is_done:
-                print("click")
-                self.corners.append(np.array([x, y]))
-                self.state += 1
-                if self.state >= 4:
-                    print("done")
-                    self.is_done = True
-                    self.state = 0
+        if event == cv2.EVENT_LBUTTONDOWN and not self.is_done:
+            print("click")
+            self.corners.append(np.array([x, y]))
+            self.state += 1
+            if self.state >= 4:
+                print("done")
+                self.is_done = True
+                self.state = 0
 
         if event == cv2.EVENT_RBUTTONDOWN:
             pass
@@ -111,10 +114,7 @@ if __name__ == "__main__":
     frame_unblurred = frame_initial[::2, ::2, :]
     frame = frame_unblurred
 
-    if args.hsv:
-        analysis_image = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    else:
-        analysis_image = frame
+    analysis_image = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) if args.hsv else frame
 
     draw_image = np.copy(frame_unblurred)
     seg_image = np.zeros_like(frame_unblurred[:, :, 0])
@@ -146,7 +146,8 @@ if __name__ == "__main__":
     )
 
     thresholder = visual_threshold_tools.make_extent_dialog(
-        ranges=visual_threshold_tools.color_ranges[prefix], image=analysis_image
+        ranges=visual_threshold_tools.color_ranges[prefix],
+        image=analysis_image,
     )
 
     while not rospy.is_shutdown():

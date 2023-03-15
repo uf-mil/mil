@@ -68,7 +68,10 @@ class ImageProc:
 
     @staticmethod
     def process(
-        raw_msg: Image, model: Optional[PinholeCameraModel], out: ImageSet, flags: int
+        raw_msg: Image,
+        model: Optional[PinholeCameraModel],
+        out: ImageSet,
+        flags: int,
     ) -> None:
         """
         Given an original image message (sensor_msgs/Image), fill in the out ImageSet

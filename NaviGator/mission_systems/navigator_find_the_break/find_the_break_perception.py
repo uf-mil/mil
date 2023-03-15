@@ -35,7 +35,9 @@ class FindTheBreakPerception:
     async def init_(self):
         """Initialize the axros aspect of FindTheBreakPerception."""
         self._image_sub = self.nh.subscribe(
-            "/camera/down/image_rect_color", Image, lambda x: x
+            "/camera/down/image_rect_color",
+            Image,
+            lambda x: x,
         )
         await self._image_sub.setup()
 
@@ -99,10 +101,7 @@ class FindTheBreakPerception:
             ang2 = np.arccos((vec3).dot(vec2))
             dif1 = 1.5708 - ang1
             dif2 = 1.5708 - ang2
-            if dif1 < dif2:
-                p2 = box[2]
-            else:
-                p2 = box[3]
+            p2 = box[2] if dif1 < dif2 else box[3]
             length, lp = np.linalg.norm(abs(p1 - p0)), p1
             width, wp = np.linalg.norm(abs(p2 - p0)), p2
             if length < width:
@@ -161,7 +160,7 @@ class FindTheBreakPerception:
         if len(old_pipes) == 0:
             return pipes
         for i, h in enumerate(pipes):
-            dists = map(lambda x: np.linalg.norm(h - x), old_pipes)
+            dists = (np.linalg.norm(h - x) for x in old_pipes)
             pipe_to_update = min(old_pipes, key=lambda x: np.linalg.norm(h - x))
             idx = old_pipes.index(pipe_to_update)
             if dists[idx] < self.diff_thresh:
@@ -184,7 +183,8 @@ class FindTheBreakPerception:
             hpipes, vpipes = self._get_all_pipes(frame)
             # Look for NEW pipes
             new_hpipes, new_vpipes = self._update_pipes(
-                hpipes, self.old_hpipe_pos
+                hpipes,
+                self.old_hpipe_pos,
             ), self._update_pipes(vpipes, self.old_vpipe_pos)
 
             # the second hpipe is found

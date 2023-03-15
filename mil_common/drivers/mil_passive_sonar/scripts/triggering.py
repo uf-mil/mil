@@ -72,7 +72,9 @@ class HydrophoneTrigger:
             self.sub = rospy.Subscriber("samples", numpy_msg(Ping), self.hydrophones_cb)
         elif msg_type == "HydrophoneSamplesStamped":
             self.sub = rospy.Subscriber(
-                "samples", numpy_msg(HydrophoneSamplesStamped), self.hydrophones_cb
+                "samples",
+                numpy_msg(HydrophoneSamplesStamped),
+                self.hydrophones_cb,
             )
         else:
             rospy.logfatal("sample_msg_type not supported")
@@ -105,7 +107,10 @@ class HydrophoneTrigger:
         filt_order = 6000
         # reset bandpass filter
         self.bandpass_filter = StreamedBandpass(
-            self.target - tolerance, self.target + tolerance, trans_width, filt_order
+            self.target - tolerance,
+            self.target + tolerance,
+            trans_width,
+            filt_order,
         )
 
         # Physical Properties
@@ -170,7 +175,10 @@ class HydrophoneTrigger:
             res.success = False
             return res
         x, y = util.find_freq_response(
-            self.bandpass_filter.h, self.rate, self.general_lower, self.general_upper
+            self.bandpass_filter.h,
+            self.rate,
+            self.general_lower,
+            self.general_upper,
         )
         plots = np.vstack((x, y))
         titles = ["frequency (Hz)  vs Gain (dB)"]
@@ -223,13 +231,17 @@ class HydrophoneTrigger:
             data = np.concatenate((self.prev_data, new_data))
         # Time according to the passive sonar interface (assuming no missed messages)
         time = np.linspace(
-            self.time, self.time + data.shape[0] / float(self.rate), data.shape[0]
+            self.time,
+            self.time + data.shape[0] / float(self.rate),
+            data.shape[0],
         )
 
         # only use hydrophone 0 to trigger, more efficient
         # do a max convolution on the data
         max_convolves = np.apply_along_axis(
-            lambda x: maximum_filter1d(x, self.window_size, axis=0), 0, data
+            lambda x: maximum_filter1d(x, self.window_size, axis=0),
+            0,
+            data,
         )
         max_convolve = max_convolves[:, 0]
         #  NOTE: No need to crop because zero padding is used and we are doing a max convolution
@@ -252,10 +264,10 @@ class HydrophoneTrigger:
                 ping_data = gradients[start:end]
                 triggered_at_sample = triggered_at_idx + (self.window_size - 1) / 2
                 start_sample = triggered_at_sample - int(
-                    50 * self.rate * self.trigger_window_past
+                    50 * self.rate * self.trigger_window_past,
                 )
                 end_sample = triggered_at_sample + int(
-                    50 * self.rate * self.trigger_window_future
+                    50 * self.rate * self.trigger_window_future,
                 )
                 ping_samples = data[start_sample:end_sample]
 
@@ -319,7 +331,7 @@ class HydrophoneTrigger:
         if spare_time < 0:
             rospy.logwarn(
                 "Spare Time After Callback: %f, Running slower than real time"
-                % spare_time
+                % spare_time,
             )
 
 
