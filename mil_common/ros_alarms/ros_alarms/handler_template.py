@@ -1,8 +1,13 @@
-from typing import Optional, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from ros_alarms.msg import Alarm as AlarmMsg
 
 from .alarms import Alarm
+
+if TYPE_CHECKING:
+    from .alarms import AlarmType
 
 
 class HandlerBase:
@@ -30,7 +35,7 @@ class HandlerBase:
         cls._alarm_server = alarm_server
 
     @property
-    def current_alarm(self) -> Optional[Alarm]:
+    def current_alarm(self) -> Alarm | None:
         """
         Returns the status of the alarm this handler is registered for.
 
@@ -39,7 +44,7 @@ class HandlerBase:
         """
         return self.get_alarm(self.alarm_name)
 
-    def get_alarm(self, name: str) -> Optional[Alarm]:
+    def get_alarm(self, name: str) -> Alarm | None:
         """
         Gets the current status of an alarm.
 
@@ -48,7 +53,7 @@ class HandlerBase:
         """
         return self._alarm_server.alarms.get(name)
 
-    def on_set(self, new_alarm: AlarmMsg) -> Optional[bool]:
+    def on_set(self, new_alarm: AlarmMsg) -> bool | None:
         """
         Called whenever a service request is made to the alarm server to the
         alarm this handler is registered for. Can be used to trigger actions
@@ -90,7 +95,7 @@ class HandlerBase:
         """
         return
 
-    def meta_predicate(self, meta_alarm: Alarm, alarms) -> Union[bool, Alarm]:
+    def meta_predicate(self, meta_alarm: Alarm, alarms: dict[str, AlarmType]) -> bool:
         """
         Called on an update to one of this alarms's meta alarms, if there are any.
         By default, returns True if any meta alarms are raised.

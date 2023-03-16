@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import traceback
-from typing import Callable
+from typing import Any, Callable
 
 import rospy
+from genpy import Message
 from ros_alarms.msg import Alarm as AlarmMsg
 from ros_alarms.srv import (
     AlarmGet,
@@ -13,6 +14,8 @@ from ros_alarms.srv import (
     AlarmSet,
     AlarmSetRequest,
 )
+
+AlarmMessageCallback = Callable[[AlarmMsg], Any]
 
 
 def parse_json_str(json_str: str) -> dict | str:
@@ -324,7 +327,8 @@ class AlarmBroadcaster:
         """
         Args:
             name (str): The name of the related alarm.
-            node_name (Optional[str]): The name of the node alarm.
+            node_name (Optional[str]): The name of the node alarm. Otherwise,
+                the name is fetched from the locally running node.
             nowarn (bool): Whether to disable warning for the class' operations.
         """
         self._alarm_name = name
@@ -335,7 +339,7 @@ class AlarmBroadcaster:
 
         self._alarm_set = rospy.ServiceProxy("/alarm/set", AlarmSet)
 
-    def wait_for_server(self, timeout=None):
+    def wait_for_server(self, timeout: float | None = None) -> None:
         """
         Wait for node to connect to alarm server. Waits timeout seconds (or forever
             if ``timeout`` is ``None``) to connect then fetches the current alarm
@@ -361,7 +365,12 @@ class AlarmBroadcaster:
         rospy.logdebug("alarm server connected")
 
     def _generate_request(
-        self, raised, node_name=None, problem_description="", parameters={}, severity=0
+        self,
+        raised,
+        node_name: str | None = None,
+        problem_description: str = "",
+        parameters: dict = {},
+        severity: int = 0,
     ):
         request = AlarmSetRequest()
         request.alarm.alarm_name = self._alarm_name
@@ -376,7 +385,13 @@ class AlarmBroadcaster:
 
         return request
 
-    def raise_alarm(self, **kwargs):
+    def raise_alarm(
+        self,
+        node_name: str | None = None,
+        problem_description: str = "",
+        parameters: dict = {},
+        severity: int = 0,
+    ) -> bool:
         """
         Raises the alarm.
 
@@ -397,12 +412,26 @@ class AlarmBroadcaster:
             bool: Whether the alarm was successfully raised.
         """
         try:
-            return self._alarm_set(self._generate_request(True, **kwargs)).succeed
+            return self._alarm_set(
+                self._generate_request(
+                    True,
+                    node_name=node_name,
+                    problem_description=problem_description,
+                    parameters=parameters,
+                    severity=severity,
+                )
+            ).succeed
         except rospy.service.ServiceException:
             rospy.logerr("No alarm sever found! Can't raise alarm.")
             return False
 
-    def clear_alarm(self, **kwargs):
+    def clear_alarm(
+        self,
+        node_name: str | None = None,
+        problem_description: str = "",
+        parameters: dict = {},
+        severity: int = 0,
+    ) -> bool:
         """
         Clears the alarm.
 
@@ -423,7 +452,15 @@ class AlarmBroadcaster:
             bool: Whether the alarm was successfully cleared.
         """
         try:
-            return self._alarm_set(self._generate_request(False, **kwargs)).succeed
+            return self._alarm_set(
+                self._generate_request(
+                    False,
+                    node_name=node_name,
+                    problem_description=problem_description,
+                    parameters=parameters,
+                    severity=severity,
+                )
+            ).succeed
         except rospy.service.ServiceException:
             rospy.logerr("No alarm sever found! Can't clear alarm.")
             return False
@@ -434,17 +471,22 @@ class AlarmListener:
     Listens to an alarm.
     """
 
+    _alarm_name: str
+    _last_alarm: AlarmMsg | None
+    _raised_cbs: list[AlarmMessageCallback]
+    _cleared_cbs: list[AlarmMessageCallback]
+
     def __init__(
         self,
         name: str,
-        callback_funct: Callable | None = None,
+        callback_funct: AlarmMessageCallback | None = None,
         nowarn: bool = False,
         **kwargs,
     ):
         """
         Args:
             name (str): The alarm name.
-            callback_funct (Optional[Callable]): The callback function.
+            callback_funct (Optional[Callable[[:class:`~.ros_alarms.msg.Alarm`], Any]]): The callback function.
             nowarn (bool): Whether to enable warnings about the class. Defaults to ``False``.
         """
         self._alarm_name = name
@@ -488,7 +530,7 @@ class AlarmListener:
         rospy.logdebug("alarm server connected")
         self.get_alarm()  # Now that we have service, update callbacks
 
-    def is_raised(self, fetch: bool = True):
+    def is_raised(self, fetch: bool = True) -> bool:
         """
         Returns whether this alarm is raised or not.
 
@@ -517,7 +559,7 @@ class AlarmListener:
         """
         return not self.is_raised(fetch=fetch)
 
-    def get_alarm(self, fetch: bool = True) -> AlarmGetResponse | None:
+    def get_alarm(self, fetch: bool = True) -> AlarmMsg | None:
         """
         Returns the alarm message.
 
@@ -554,7 +596,7 @@ class AlarmListener:
 
     def add_callback(
         self,
-        funct: Callable,
+        funct: AlarmMessageCallback,
         call_when_raised: bool = True,
         call_when_cleared: bool = True,
         severity_required: tuple[int, int] = (0, 5),
@@ -563,7 +605,7 @@ class AlarmListener:
         Adds a callback function to the alarm.
 
         Args:
-            funct (Callable): The callback to add.
+            funct (Callable[[:class:`~.ros_alarms.msg.AlarmMsg`], Any]): The callback to add.
             call_when_raised (bool): Whether to call the callback when the alarm
                 is raised. Defaults to ``True``.
             call_when_cleared (bool): Whether to call the callback when the alarm
@@ -648,9 +690,9 @@ class HeartbeatMonitor(AlarmBroadcaster):
         self,
         alarm_name: str,
         topic_name: str,
-        msg_class,
+        msg_class: type[Message],
         prd: float = 0.2,
-        predicate: Callable | None = None,
+        predicate: Callable[[Message], bool] | None = None,
         nowarn: bool = False,
         **kwargs,
     ):
