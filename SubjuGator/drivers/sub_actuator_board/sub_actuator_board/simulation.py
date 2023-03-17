@@ -4,7 +4,7 @@ from __future__ import annotations
 import random
 
 import rospy
-from mil_usb_to_can import AckPacket, SimulatedCANDeviceHandle
+from mil_usb_to_can.sub9 import AckPacket, SimulatedCANDeviceHandle
 
 from .packets import (
     ActuatorPollRequestPacket,

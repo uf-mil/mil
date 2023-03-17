@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import rospy
 from mil_misc_tools import rospy_to_datetime
-from mil_usb_to_can import AckPacket, CANDeviceHandle, NackPacket
+from mil_usb_to_can.sub9 import AckPacket, CANDeviceHandle, NackPacket
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from ros_alarms.msg import Alarm
 from rospy.timer import TimerEvent

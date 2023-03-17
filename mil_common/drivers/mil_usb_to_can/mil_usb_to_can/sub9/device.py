@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .driver import SimulatedUSBtoCANStream, USBtoCANDriver
     from .packet import Packet
+    from .sub9_driver import SimulatedUSBtoCANStream, USBtoCANDriver
 
 
 class SimulatedCANDeviceHandle:

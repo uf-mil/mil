@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import rospy
-from mil_usb_to_can import AckPacket, CANDeviceHandle
+from mil_usb_to_can.sub9 import AckPacket, CANDeviceHandle
 from sub_actuator_board.srv import (
     GetValve,
     GetValveRequest,

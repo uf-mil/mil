@@ -3,8 +3,13 @@
 
 .. automodule:: mil_usb_to_can
 
+SubjuGator 9
+^^^^^^^^^^^^
+
+.. automodule:: mil_usb_to_can.sub9
+
 Packet Format
-^^^^^^^^^^^^^
+~~~~~~~~~~~~~
 In order to reliably communicate with the USB to CAN board, a consistent packet format
 must be defined.
 
@@ -44,7 +49,7 @@ sent over the serial connection to the USB to CAN board from ROS.
      - Second byte of Fletcher's checksum.
 
 Checksums
-^^^^^^^^^
+~~~~~~~~~
 All messages contain a checksum to help verify data integrity. However, receiving
 packets also have a special byte containing a slightly modified checksum formula.
 
@@ -52,7 +57,7 @@ The checksum in all packets is found by adding up all bytes in the byte string,
 including the start/end flags, and then using modulo 16 on this result.
 
 Packet Listing
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 Below is a listing of all available packets. The payload format is the format
 used by the :mod:`struct` module. For more information, see the Python documentation
 on the :ref:`list of format characters<format-characters>`, and their corresponding
@@ -61,9 +66,9 @@ byte length.
 +------------+--------------+----------------+-------------------------------------------------------------------------+
 | Message ID | Subclass ID  | Payload Format | Class                                                                   |
 +============+==============+================+=========================================================================+
-| 0x00       | 0x00         | Empty          | :class:`mil_usb_to_can.NackPacket`                                      |
+| 0x00       | 0x00         | Empty          | :class:`mil_usb_to_can.sub9.NackPacket`                                      |
 + (Meta)     +--------------+----------------+-------------------------------------------------------------------------+
-|            | 0x01         | Empty          | :class:`mil_usb_to_can.AckPacket`                                       |
+|            | 0x01         | Empty          | :class:`mil_usb_to_can.sub9.AckPacket`                                       |
 +------------+--------------+----------------+-------------------------------------------------------------------------+
 | 0x01       | 0x00         | Empty          | :class:`sub8_thrust_and_kill_board.HeartbeatPacket`                     |
 + (Sub8      +--------------+----------------+-------------------------------------------------------------------------+
@@ -99,39 +104,36 @@ byte length.
 +------------+--------------+----------------+-------------------------------------------------------------------------+
 
 CANDeviceHandle
-^^^^^^^^^^^^^^^
-.. attributetable:: mil_usb_to_can.CANDeviceHandle
+~~~~~~~~~~~~~~~
+.. attributetable:: mil_usb_to_can.sub9.CANDeviceHandle
 
-.. autoclass:: mil_usb_to_can.CANDeviceHandle
+.. autoclass:: mil_usb_to_can.sub9.CANDeviceHandle
     :members:
 
 SimulatedCANDeviceHandle
-^^^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: mil_usb_to_can.SimulatedCANDeviceHandle
+~~~~~~~~~~~~~~~~~~~~~~~~
+.. attributetable:: mil_usb_to_can.sub9.SimulatedCANDeviceHandle
 
-.. autoclass:: mil_usb_to_can.SimulatedCANDeviceHandle
+.. autoclass:: mil_usb_to_can.sub9.SimulatedCANDeviceHandle
     :members:
 
 Packet
-^^^^^^
-.. attributetable:: mil_usb_to_can.Packet
+~~~~~~
+.. attributetable:: mil_usb_to_can.sub9.Packet
 
-.. autoclass:: mil_usb_to_can.Packet
+.. autoclass:: mil_usb_to_can.sub9.Packet
     :members:
-
-Specific Packets
-^^^^^^^^^^^^^^^^
 
 NackPacket
 ~~~~~~~~~~
-.. attributetable:: mil_usb_to_can.NackPacket
+.. attributetable:: mil_usb_to_can.sub9.NackPacket
 
-.. autoclass:: mil_usb_to_can.NackPacket
+.. autoclass:: mil_usb_to_can.sub9.NackPacket
     :members:
 
 AckPacket
 ~~~~~~~~~
-.. attributetable:: mil_usb_to_can.AckPacket
+.. attributetable:: mil_usb_to_can.sub9.AckPacket
 
-.. autoclass:: mil_usb_to_can.AckPacket
+.. autoclass:: mil_usb_to_can.sub9.AckPacket
     :members:

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from mil_usb_to_can import Packet
+from mil_usb_to_can.sub9 import Packet
 
 
 @dataclass
