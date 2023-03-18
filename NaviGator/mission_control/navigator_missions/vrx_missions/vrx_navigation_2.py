@@ -50,21 +50,18 @@ class VrxNavigation2(Vrx):
         after_position = center + (vec * AFTER)
 
         req = MoveToWaypointRequest()
-        goal_pose = before_position
         req.target_p.position.x = before_position[0]
         req.target_p.position.y = before_position[1]
         req.target_p.position.z = before_position[2]
         await self.set_long_waypoint(req)
 
         if AFTER > 0:
-            goal_pose = after_position
             req.target_p.position.x = after_position[0]
             req.target_p.position.y = after_position[1]
             req.target_p.position.z = after_position[2]
             await self.set_long_waypoint(req)
 
     async def go_through_next_two_buoys(self):
-
         buoys = await self.get_two_closest_cones(TwoClosestConesRequest())
 
         self.task_done = buoys.no_more_buoys
@@ -80,7 +77,6 @@ class VrxNavigation2(Vrx):
         await self.go_thru_gate(gate)
 
     async def run(self, parameters):
-
         self.objects_passed = set()
         self.task_done = False
         gates_passed = 0

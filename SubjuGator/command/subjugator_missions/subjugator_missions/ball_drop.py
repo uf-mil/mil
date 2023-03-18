@@ -5,6 +5,7 @@ from geometry_msgs.msg import Point
 from image_geometry import PinholeCameraModel
 from mil_misc_tools import text_effects
 from sensor_msgs.msg import CameraInfo
+from std_srvs.srv import SetBool, Trigger
 
 from .sub_singleton import SubjuGatorMission
 
@@ -26,7 +27,7 @@ class BallDrop(SubjuGatorMission):
             if not resp:
                 print("Error, failed to init neural net.")
                 return
-        except rospy.ServiceException as e:
+        except rospy.ServiceException:
             print("Service Call Failed")
 
         fprint("Enabling cam_ray publisher")
@@ -54,19 +55,25 @@ class BallDrop(SubjuGatorMission):
             save_pois = rospy.ServiceProxy("/poi_server/save_to_param", Trigger)
             save_pois()
             if not rospy.has_param("/poi_server/initial_pois/ball_drop"):
-                use_prediction = False
                 fprint("Forgot to add ball_drop to guess?", msg_color="yellow")
             else:
                 fprint("Found ball_drop.", msg_color="green")
-                await self.move.set_position(
-                    np.array(rospy.get_param("/poi_server/initial_pois/ball_drop"))
-                ).depth(TRAVEL_DEPTH).go(speed=FAST_SPEED)
+                await self.go(
+                    self.move()
+                    .set_position(
+                        np.array(rospy.get_param("/poi_server/initial_pois/ball_drop"))
+                    )
+                    .depth(TRAVEL_DEPTH),
+                    speed=FAST_SPEED,
+                )
         except Exception as e:
             fprint(str(e) + "Forgot to run guess server?", msg_color="yellow")
 
         ball_drop_sub = self.nh.subscribe("/bbox_pub", Point)
         await ball_drop_sub.setup()
-        await self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
+        await self.go(
+            self.move().to_height(SEARCH_HEIGHT).zero_roll_and_pitch(), speed=SPEED
+        )
 
         while True:
             fprint("Getting location of ball drop...")

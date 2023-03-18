@@ -373,7 +373,6 @@ class LQRRT_Node:
 
         # Standard driving
         elif self.move_type in [MoveGoal.DRIVE, MoveGoal.DRIVE_SMOOTH]:
-
             # Find the heading that points to the goal
             p_err = self.goal[:2] - self.state[:2]
             h_goal = np.arctan2(p_err[1], p_err[0])
@@ -684,7 +683,6 @@ class LQRRT_Node:
 
         # Analyze ogrid to find good bias and sample space buffer
         if self.ogrid is not None and not self.blind and self.next_seed is not None:
-
             # Get opencv-ready image from current ogrid (255 is occupied, 0 is clear)
             occ_img = 255 * np.greater(self.ogrid, self.ogrid_threshold).astype(
                 np.uint8
@@ -770,7 +768,7 @@ class LQRRT_Node:
                 col_max = ss_img.shape[1] - 2
 
                 # Classify boundary points
-                for (row, col) in bpts:
+                for row, col in bpts:
                     if col == col_min:  # left
                         push_xmin = True
                         if row == row_min:  # top left
@@ -1139,7 +1137,6 @@ class LQRRT_Node:
 
         # Simulate rotation move
         while not rospy.is_shutdown():
-
             # Stop if pose is infeasible
             if not self.is_feasible(
                 np.concatenate((x[:3], np.zeros(3))), np.zeros(3)
@@ -1213,7 +1210,6 @@ class LQRRT_Node:
         # Simulate spiral move
         anglim = abs(2 * np.pi * N)
         while abs(ang) < anglim and not rospy.is_shutdown():
-
             # Rotation for this instant
             radfactor = np.clip(magic_ratio * rmag, 0, 1)
             vt = np.clip(vt + radfactor * atmax * self.dt, 0, radfactor * vtmax)
@@ -1334,7 +1330,7 @@ class LQRRT_Node:
         cands = np.vstack((left_cands, right_cands, top_cands, bottom_cands))
 
         # Iterate through candidates and store the dividing boundary points
-        for (row, col) in cands:
+        for row, col in cands:
             hood = self.get_hood(flood_seed_thresh, row, col)
             if np.any(hood == fc2) and np.any(hood == 0):
                 bpts.append([row, col])

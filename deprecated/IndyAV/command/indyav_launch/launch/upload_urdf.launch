@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-  <param name="robot_description"
-    command="xacro --inorder '$(find indyav_gazebo)/urdf/indyav_car.urdf.xacro'" />
-
-</launch>

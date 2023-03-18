@@ -38,7 +38,7 @@ def from_json(
     try:
         annotations_output_dir = os.path.abspath(annotations_output_dir)
         assert os.path.isdir(annotations_output_dir)
-    except AssertionError as e:
+    except AssertionError:
         logging.exception("Annotation output directory does not exist")
         return None
 
@@ -58,13 +58,13 @@ def from_json(
                 annotations_output_dir,
             )
 
-        except requests.exceptions.MissingSchema as e:
+        except requests.exceptions.MissingSchema:
             logging.exception(
                 '"Labeled Data" field must be a URL. '
                 "Support for local files coming soon"
             )
             continue
-        except requests.exceptions.ConnectionError as e:
+        except requests.exceptions.ConnectionError:
             logging.exception(
                 "Failed to fetch image from {}".format(data["Labeled Data"])
             )
@@ -135,7 +135,7 @@ def _add_pascal_object_from_xy(xml_writer, img_height, polygons, label):
             polygon = polygon["geometry"]
         try:
             assert isinstance(polygon, list)  # V2 and V3
-        except:
+        except Exception:
             print("Only one value of polygon, skipping...")
             continue
 

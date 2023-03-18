@@ -39,7 +39,6 @@ General outline of task
 
 class VampireIdentifier:
     def __init__(self):
-
         # Pull constants from config file
         self.override = False
         self.lower = [0, 0, 0]
@@ -203,7 +202,7 @@ class VampireIdentifier:
         self.clear_old_observations()
         # print('Adding...')
         if (
-            slen(self._observations) == 0
+            len(self._observations) == 0
             or np.linalg.norm(self._pose_pairs[-1][0] - pose_pair[0]) > self.min_trans
         ):
             self._observations.append(obs)
@@ -228,7 +227,7 @@ class VampireIdentifier:
 
         if peri < self.min_contour_area or peri > self.max_contour_area:
             return target
-        approx = cv2.approxPolyDP(c, 0.04 * peri, True)
+        cv2.approxPolyDP(c, 0.04 * peri, True)
 
         target = "Target Acquisition Successful"
 

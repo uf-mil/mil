@@ -11,7 +11,7 @@ import tf
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import Image, RegionOfInterest
-from utils import detector_utils  # noqa
+from utils import detector_utils
 
 rospack = rospkg.RosPack()
 

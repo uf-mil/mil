@@ -217,7 +217,7 @@ class MedianFlow:
         points = self._eliminate_points(points, frame)
         try:
             self._update_bbox(points)
-        except:
+        except Exception:
             return None
 
         self.bboxs.append(self.bbox)

@@ -49,7 +49,7 @@ class VrxWildlife(Vrx):
         print(animals_list)
 
         # initialize distance matrix
-        poses = poses + [position]
+        poses = [*poses, position]
         array_size = len(poses)
         start_pose_index = array_size - 1
         dist_matrix = np.zeros((array_size, array_size))

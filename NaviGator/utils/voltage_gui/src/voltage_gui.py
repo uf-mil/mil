@@ -139,7 +139,7 @@ class VoltageWidget(QWidget):
         try:
             self.lowThreshold = rospy.get_param("battery-voltage/low")
             self.criticalThreshold = rospy.get_param("battery-voltage/critical")
-        except:
+        except Exception:
             print("Low and Critical Voltage not set, Low: 26 Critical:20")
             self.lowThreshold = 26
             self.criticalThreshold = 20
@@ -164,7 +164,7 @@ class VoltageWidget(QWidget):
             self.lowThreshold = rospy.get_param("battery-voltage/low")
             self.criticalThreshold = rospy.get_param("battery-voltage/critical")
             self.gotParams = True
-        except:
+        except Exception:
             self.gotParams = False
 
         if self.gotParams:
@@ -271,7 +271,7 @@ class VoltageWidget(QWidget):
             numMain = float(stringMain)
             numMain = int(numMain * 100)
             numMain = numMain / 100.0
-        except:
+        except Exception:
             if self.warningCounter == 0:
                 print("battery monitor is not online!!")
                 self.warningCounter = 1
@@ -285,27 +285,27 @@ class VoltageWidget(QWidget):
             numFL = (int(self.voltageFL * 100)) / 100
             stringFL = str(numFL)
             self.labelFL.setText(f"{stringFL}")
-        except:
+        except Exception:
             pass
 
         try:
             numFR = (int(self.voltageFR * 100)) / 100
             stringFR = str(numFR)
             self.labelFR.setText(f"{stringFR}")
-        except:
+        except Exception:
             pass
 
         try:
             numBL = (int(self.voltageBL * 100)) / 100
             stringBL = str(numBL)
             self.labelBL.setText(f"{stringBL}")
-        except:
+        except Exception:
             pass
 
         try:
             stringBR = float(f"{self.voltageBR:.2f}")
             self.labelBR.setText(f"{stringBR}")
-        except:
+        except Exception:
             pass
 
         QApplication.processEvents()

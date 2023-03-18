@@ -27,7 +27,6 @@ ___author___ = "Kevin Allen"
 
 
 class Vrx(NaviGatorMission):
-
     nh: NodeHandle
 
     def __init__(self, *args, **kwargs):
@@ -197,7 +196,7 @@ class Vrx(NaviGatorMission):
         await self.set_long_waypoint(req)
 
     async def get_closest(self):
-        ret = await self.get_sorted_objects("all")
+        await self.get_sorted_objects("all")
 
     async def reset_pcodar(self):
         await self.pcodar_reset(Trigger())

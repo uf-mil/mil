@@ -50,8 +50,8 @@ class TestROSTools(unittest.TestCase):
             torque = np.random.random(3) * 10
         wrench_msg = make_wrench_stamped(force, torque, frame="/enu")
 
-        msg_force = rosmsg_to_numpy(wrench_msg.wrench.force)  # noqa
-        msg_torque = rosmsg_to_numpy(wrench_msg.wrench.torque)  # noqa
+        msg_force = rosmsg_to_numpy(wrench_msg.wrench.force)
+        msg_torque = rosmsg_to_numpy(wrench_msg.wrench.torque)
         self.assertIsNotNone(msg_force)
         self.assertIsNotNone(msg_torque)
 

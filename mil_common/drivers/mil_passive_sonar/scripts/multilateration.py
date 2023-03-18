@@ -6,7 +6,6 @@ from collections import deque
 import numpy as np
 import rospy
 import tf2_ros
-from geometry_msgs.msg import PointStamped, Vector3Stamped
 from mil_ros_tools import numpy_to_point, rosmsg_to_numpy
 from std_srvs.srv import SetBool, SetBoolResponse, Trigger
 from tf2_geometry_msgs import PointStamped, Vector3Stamped
@@ -117,7 +116,7 @@ class MultilaterationNode:
         # Filter out lobs that intersect with many other lobs close to their origin
 
         line_array = np.array([[0, 0, 0, 0]])
-        line_intersecting_array = np.array([])
+        np.array([])
 
         for line1 in lines_array:
             line_intersections = 0

@@ -60,7 +60,7 @@ class ScanTheCode(Vrx):
         await self.pcodar_set_params(doubles=[pcodar_cluster_tol])
         try:
             pose = await self.find_stc2()
-        except Exception as e:
+        except Exception:
             sequence = ["red", "green", "blue"]
             await self.report_sequence(sequence)
             return sequence
@@ -82,7 +82,6 @@ class ScanTheCode(Vrx):
     async def get_sequence(self):
         sequence = []
         while len(sequence) < 3:
-
             img = await self.front_left_camera_sub.get_next_message()
             bounding_box_msg = await self.yolo_objects.get_next_message()
 
@@ -190,14 +189,14 @@ class ScanTheCode(Vrx):
             _, poses = await self.get_sorted_objects(name="stc_platform", n=1)
             pose = poses[0]
         # in case stc platform not already identified
-        except Exception as e:
+        except Exception:
             print("could not find stc_platform")
             # get all pcodar objects
             try:
                 print("check for any objects")
                 msgs, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
             # if no pcodar objects, drive forward
-            except Exception as e:
+            except Exception:
                 print("literally no objects?")
                 await self.move.forward(25).go()
                 # get first pcodar objects
@@ -208,7 +207,6 @@ class ScanTheCode(Vrx):
             print("going to nearest small object")
 
             # determine the dock and stc_buoy based on cluster size
-            dock_pose = None
             for i in range(len(msgs)):
                 # Sometimes the dock is perceived as multiple objects
                 # Ignore any objects that are the dock
@@ -223,7 +221,7 @@ class ScanTheCode(Vrx):
                     # much bigger than scale of stc
                     # then we found the dock
                     await self.pcodar_label(msgs[i].id, "dock")
-                    dock_pose = poses[i]
+                    poses[i]
 
                 else:  # if about same size as stc, label it stc
                     await self.pcodar_label(msgs[i].id, "stc_platform")
@@ -241,14 +239,14 @@ class ScanTheCode(Vrx):
             _, poses = await self.get_sorted_objects(name="stc_platform", n=1)
             pose = poses[0]
         # in case stc platform not already identified
-        except Exception as e:
+        except Exception:
             print("could not find stc_platform")
             # get all pcodar objects
             try:
                 print("check for any objects")
                 _, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
             # if no pcodar objects, drive forward
-            except Exception as e:
+            except Exception:
                 print("literally no objects?")
                 await self.move.forward(50).go()
                 # get all pcodar objects

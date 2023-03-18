@@ -27,7 +27,6 @@ as well as code from the buoy_finder mission of previous years.
 
 class torp_vision:
     def __init__(self):
-
         # Pull constants from config file
         self.lower = rospy.get_param("~lower_color_threshold", [0, 0, 80])
         self.upper = rospy.get_param("~higher_color_threshold", [200, 200, 250])
@@ -197,9 +196,9 @@ class torp_vision:
 
         # convert from BGR to LAB color space
         lab = cv2.cvtColor(cv_image, cv2.COLOR_BGR2LAB)
-        l, a, b = cv2.split(lab)  # split on 3 different channels
+        l_channel, a, b = cv2.split(lab)  # split on 3 different channels
 
-        l2 = clahe.apply(l)  # apply CLAHE to the L-channel
+        l2 = clahe.apply(l_channel)  # apply CLAHE to the L-channel
 
         lab = cv2.merge((l2, a, b))  # merge channels
         cv_image = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)

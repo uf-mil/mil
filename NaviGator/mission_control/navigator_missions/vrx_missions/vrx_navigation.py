@@ -125,8 +125,6 @@ class VrxNavigation(Vrx):
         @object_filter func filters and sorts
         """
         move_id_tuple = None
-        previous_index = None
-        previous_cone = None
         init_boat_pos = self.pose[0]
         cone_buoys_investigated = 0  # max will be 2
         service_req = None
@@ -148,7 +146,6 @@ class VrxNavigation(Vrx):
                         objects_msg.objects, move_id_tuple[1]
                     )
                     if classification_index != -1:
-
                         self.send_feedback(
                             "{} identified. Canceling investigation".format(
                                 move_id_tuple[1]
@@ -163,7 +160,6 @@ class VrxNavigation(Vrx):
                                 classification_index
                             ].labeled_classification
                         ):
-                            previous_cone = previous_index
                             print("updating initial boat pos...")
                             init_boat_pos = rosmsg_to_numpy(
                                 objects_msg.objects[classification_index].pose.position
@@ -229,7 +225,6 @@ class VrxNavigation(Vrx):
             # check if there are any buoys that have "marker" in the name that haven't been investigated
             # obtain the closest one to the previous gate and deem that the next buoy to investigate
             for i in range(len(objects)):
-
                 if (
                     "marker" in objects[i].labeled_classification
                     and objects[i].id not in investigated
@@ -266,7 +261,6 @@ class VrxNavigation(Vrx):
             # if that doesn't produce any results, literally just go to closest buoy
             if potential_candidate is None:
                 for i in range(len(objects)):
-
                     if (
                         objects[i].id not in investigated
                         and "round" not in objects[i].labeled_classification
@@ -284,13 +278,11 @@ class VrxNavigation(Vrx):
 
             # explore the closest buoy to potential candidate
             if potential_candidate is not None:
-
                 # if there exists a closest buoy, go to it
                 self.send_feedback(f"Investigating {objects[potential_candidate].id}")
                 investigated.add(objects[potential_candidate].id)
                 move = self.inspect_object(positions[potential_candidate])
                 move_id_tuple = (move, objects[potential_candidate].id)
-                previous_index = potential_candidate
                 print("USING POTENTIAL CANDIDATE")
 
             if move_id_tuple is None:
@@ -319,7 +311,6 @@ class VrxNavigation(Vrx):
         return -1
 
     async def prepare_to_enter(self):
-        closest = []
         robot_position = (await self.tx_pose())[0]
 
         def filter_and_sort(objects, positions):

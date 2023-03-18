@@ -92,7 +92,6 @@ class ExtentDialog(traits.api.HasTraits):
             self.z_min < self.z_max,
         )
         if self.filter_box is not None and all(conditions):
-
             self.ranges = np.array(
                 [
                     [

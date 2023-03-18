@@ -16,7 +16,7 @@ fi
 MIL_DOCS_URL="file://$(realpath $MIL_DOCS_INDEX)"
 
 # Try to open the program set to $BROWSER
-if [[ -n ${BROWSER:-} ]]; then
+if [[ -n ${BROWSER-} ]]; then
 	$BROWSER $MIL_DOCS_URL
 	exit
 fi

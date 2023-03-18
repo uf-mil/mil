@@ -113,7 +113,7 @@ class VisionProxy:
         #     - Determine rotation around Z and undo that?
         try:
             pose = self._get_2d_service(VisionRequest2DRequest(target_name=target))
-        except (serviceclient.ServiceError):
+        except serviceclient.ServiceError:
             return None
         return pose
 
@@ -128,7 +128,7 @@ class VisionProxy:
         #     - Use the time information in the header
         try:
             pose = self._get_pose_service(VisionRequestRequest(target_name=target))
-        except (serviceclient.ServiceError):
+        except serviceclient.ServiceError:
             return None
         except Exception as e:
             print(type(e))
@@ -139,7 +139,7 @@ class VisionProxy:
     ) -> Coroutine[Any, Any, types.Message] | None:
         try:
             res = self._set_geometry_service(SetGeometryRequest(model=polygon))
-        except (serviceclient.ServiceError):
+        except serviceclient.ServiceError:
             return None
         return res
 
@@ -178,68 +178,6 @@ class _VisionProxies:
 
     def __getattr__(self, proxy: str) -> VisionProxy | None:
         return self.proxies.get(proxy, None)
-
-
-class _PoseProxy:
-    def __init__(
-        self,
-        sub: SubjuGatorMission,
-        pose: pose_editor.PoseEditor,
-        print_only: bool = False,
-    ):
-        self._sub = sub
-        self._pose = pose
-        self.print_only = print_only
-
-    # Normal moves get routed here
-    def __getattr__(self, name: str) -> Callable:
-        def sub_attr_proxy(*args, **kwargs):
-            return _PoseProxy(
-                self._sub,
-                getattr(self._pose, name)(*args, **kwargs),
-                print_only=self.print_only,
-            )
-
-        return sub_attr_proxy
-
-    # Some special moves
-    def to_height(self, height):
-        dist_to_bot = self._sub._dvl_range_sub.get_last_message()
-        delta_height = dist_to_bot.range - height
-        return self.down(delta_height)
-
-    def check_goal(self) -> None:
-        """
-        Check end goal for feasibility.
-
-        Current checks are:
-        * End goal can't be above the water
-        """
-        # End goal can't be above the water
-        if self._pose.position[2] > 0:
-            print("GOAL TOO HIGH")
-            self._pos.position = -0.6
-
-    async def go(self, *args, **kwargs):
-        if self.print_only:
-            print(self._pose)
-            return self._sub.nh.sleep(0.1)
-
-        self.check_goal()
-
-        goal = self._sub._moveto_action_client.send_goal(
-            self._pose.as_MoveToGoal(*args, **kwargs)
-        )
-        result = await goal.get_result()
-        if result.error == "killed":
-            raise exceptions.KilledException()
-        return result
-
-    def go_trajectory(self, *args, **kwargs):
-        traj = self._sub._trajectory_pub.publish(
-            self._pose.as_PoseTwistStamped(*args, **kwargs)
-        )
-        return traj
 
 
 class _ActuatorProxy:
@@ -295,7 +233,6 @@ class _ActuatorProxy:
 
 
 class SubjuGatorMission(BaseMission):
-
     nh: NodeHandle
     _moveto_action_client: action.ActionClient[MoveToGoal, MoveToResult, MoveToFeedback]
 
@@ -343,11 +280,24 @@ class SubjuGatorMission(BaseMission):
 
     @property
     def pose(self) -> pose_editor.PoseEditor:
+        """
+        Returns a pose editor at the current position and orientation. Equivalent
+        to :meth:`~.move`, but this property should be used to indicate that no
+        move is being requested.
+        """
         last_odom_msg = self._odom_sub.get_last_message()
         if self.test_mode:
             last_odom_msg = Odometry()  # All 0's
         pose = pose_editor.PoseEditor.from_Odometry(last_odom_msg)
         return pose
+
+    def move(self) -> pose_editor.PoseEditor:
+        """
+        Returns a pose editor at the current position and orientation. Equivalent
+        to the :meth:`~.pose` property, but this method should be used to indicate
+        that a movement is soon to be requested on the sub.
+        """
+        return self.pose
 
     async def tx_pose(self):
         """
@@ -362,9 +312,40 @@ class SubjuGatorMission(BaseMission):
         pose = mil_ros_tools.pose_to_numpy(next_odom_msg.pose.pose)
         return pose
 
-    @property
-    def move(self) -> _PoseProxy:
-        return _PoseProxy(self, self.pose, self.test_mode)
+    async def go(
+        self,
+        pose: pose_editor.PoseEditor,
+        *,
+        speed: float = 0.2,
+        blind: bool = False,
+        uncoordinated: bool = False,
+    ):
+        """
+        Executes a movement to the position and orientation supplied in the
+        provided pose editor.
+
+        Arguments:
+            speed (float): The speed to execute the movement in m/s. Defaults to
+                0.2 m/s.
+            blind (bool): Whether to ignore collision avoidance in the planned
+                path. Defaults to False.
+            uncoordinated (bool): Whether to achieve some components before others.
+                False will move in a straight line. Defaults to False.
+        """
+        # Check goal
+        if pose.position[2] > 0:
+            print("GOAL TOO HIGH")
+            pose.position[2] = -0.6
+
+        goal = self._moveto_action_client.send_goal(
+            pose.as_MoveToGoal(speed=speed, blind=blind, uncoordinated=uncoordinated)
+        )
+        result = await goal.get_result()
+
+        if result.error == "killed":
+            raise exceptions.KilledException()
+
+        return result
 
     async def get_dvl_range(self):
         msg = await self._dvl_range_sub.get_next_message()
@@ -410,10 +391,9 @@ class Searcher:
         looker = asyncio.create_task(self._run_look(spotings_req))
         searcher = asyncio.create_task(self._run_search_pattern(loop, speed))
 
-        start_pose = self.sub.move.forward(0)
+        start_pose = self.sub.move().forward(0)
         start_time = self.sub.nh.get_time()
         while self.sub.nh.get_time() - start_time < genpy.Duration(timeout):
-
             # If we find the object
             if self.object_found:
                 searcher.cancel()
@@ -426,7 +406,7 @@ class Searcher:
         looker.cancel()
         searcher.cancel()
 
-        await start_pose.go()
+        await self.sub.go(start_pose)
 
     async def _run_search_pattern(self, loop: bool, speed: float):
         """
@@ -549,7 +529,6 @@ class PoseSequenceCommander:
 
 
 class SonarObjects:
-
     _clear_pcl: ServiceClient
     _objects_service: ServiceClient
 

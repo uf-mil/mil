@@ -10,7 +10,6 @@ from mil_msgs.msg import PerceptionObjectArray
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from mil_ros_tools import Image_Publisher, Image_Subscriber, rosmsg_to_numpy
 from mil_vision_tools import ImageMux, rect_from_roi, roi_enclosing_points
-from PIL import Image
 from sensor_msgs.msg import Image
 from std_srvs.srv import SetBool, Trigger
 from tf.transformations import quaternion_matrix

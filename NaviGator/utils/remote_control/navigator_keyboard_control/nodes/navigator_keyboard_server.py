@@ -78,7 +78,6 @@ class KeyboardServer:
 
         # If the key pressed was L, locks control of the service to the clinet's UUID
         if req.keycode == 76:
-
             # Generates a new UUID for the client if it does not already have one
             if req.uuid == "":
                 self.locked_uuid = uuid.uuid4().hex

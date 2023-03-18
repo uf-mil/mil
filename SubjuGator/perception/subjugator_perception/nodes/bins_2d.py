@@ -12,20 +12,20 @@ from std_msgs.msg import Header
 from subjugator_msgs.srv import VisionRequest2D, VisionRequest2DResponse
 
 
-def contour_sort(l):
+def contour_sort(l_arr):
     """Sort contours by area largest to smallest."""
-    length = len(l)
+    length = len(l_arr)
     if length <= 1:
-        return l
+        return l_arr
     else:
-        pivot = l.pop(int(length / 2))
+        pivot = l_arr.pop(int(length / 2))
         less, more = [], []
-        for x in l:
+        for x in l_arr:
             if cv2.contourArea(x) >= cv2.contourArea(pivot):
                 less.append(x)
             else:
                 more.append(x)
-        return contour_sort(less) + [pivot] + contour_sort(more)
+        return [*contour_sort(less), pivot, *contour_sort(more)]
 
 
 def evaluate_bin(roi):

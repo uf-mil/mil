@@ -91,7 +91,7 @@ class Move(SubjuGatorMission):
                 # Let the user input custom commands, the eval may be dangerous
                 # so do away with that at some point.
                 self.send_feedback(f"Moving with the command: {argument}")
-                res = await eval("self.move.{}.go()".format(argument, **action_kwargs))
+                res = await eval(f"self.move.{argument}.go()")
 
             elif command in ["tp", "teleport"]:
                 try:
@@ -194,7 +194,7 @@ class Move(SubjuGatorMission):
             else:
                 # Get the command from shorthand if it's there
                 command = SHORTHAND.get(command, command)
-                movement = getattr(self.move, command)
+                movement = getattr(self.move(), command)
 
                 trans_move = (
                     command[:3] != "yaw"
@@ -220,7 +220,7 @@ class Move(SubjuGatorMission):
                     break
                 goal = movement(float(amount) * UNITS.get(unit, 1))
                 if args.zrp:
-                    res = await goal.zero_roll_and_pitch().go(**action_kwargs)
+                    res = await self.go(goal.zero_roll_and_pitch(), **action_kwargs)
                 else:
-                    res = await goal.go(**action_kwargs)
+                    res = await self.go(goal, **action_kwargs)
                 return f"Result: {res.error}"
