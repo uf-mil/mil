@@ -5,7 +5,7 @@ import rospy
 from std_srvs.srv import Trigger, TriggerRequest
 
 
-class EchoDeviceTest(unittest.TestCase):
+class EchoDeviceTestSub9(unittest.TestCase):
     """
     Integration test for CAN2USB board driver. Talks
     to a simulated CAN device which should add two integers
@@ -24,8 +24,8 @@ class EchoDeviceTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    rospy.init_node("echo_device_test", anonymous=True)
+    rospy.init_node("echo_device_test_sub9", anonymous=True)
     import rostest
 
-    rostest.rosrun("mil_usb_to_can", "echo_device_test", EchoDeviceTest)
+    rostest.rosrun("mil_usb_to_can", "echo_device_test_sub9", EchoDeviceTestSub9)
     unittest.main()

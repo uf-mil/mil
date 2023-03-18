@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Literal, overload
 import rospy
 import serial
 from mil_misc_tools.serial_tools import SimulatedSerial
-from mil_usb_to_can.device import CANDeviceHandle, SimulatedCANDeviceHandle
-from mil_usb_to_can.packet import SYNC_CHAR_1, Packet, hexify
+from mil_usb_to_can.sub9.device import CANDeviceHandle, SimulatedCANDeviceHandle
+from mil_usb_to_can.sub9.packet import SYNC_CHAR_1, Packet
 from serial import SerialException
 
 if TYPE_CHECKING:
@@ -159,7 +159,7 @@ class USBtoCANDriver:
                     return False
             packed_packet = self.read_from_stream()
             assert isinstance(packed_packet, bytes)
-            rospy.logerr(f"raw: {hexify(packed_packet)}")
+            # rospy.logerr(f"raw: {hexify(packed_packet)}")
             packet = Packet.from_bytes(packed_packet)
         except (SerialException) as e:
             rospy.logerr(f"Error reading packet: {e}")

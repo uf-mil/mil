@@ -3,8 +3,8 @@ import unittest
 from dataclasses import dataclass
 
 import rostest
-from mil_usb_to_can import Packet
-from mil_usb_to_can.packet import SYNC_CHAR_1, SYNC_CHAR_2
+from mil_usb_to_can.sub9 import Packet
+from mil_usb_to_can.sub9.packet import SYNC_CHAR_1, SYNC_CHAR_2
 
 
 @dataclass
@@ -49,6 +49,6 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
 if __name__ == "__main__":
     packet = TestPacket(False, 42, 3.14)
     rostest.rosrun(
-        "mil_usb_to_can", "test_application_packets", BasicApplicationPacketTest
+        "mil_usb_to_can", "test_application_packets_sub9", BasicApplicationPacketTest
     )
     unittest.main()
