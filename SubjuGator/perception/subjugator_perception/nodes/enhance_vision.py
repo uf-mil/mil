@@ -32,9 +32,16 @@ from subjugator_msgs.srv import (
 class EnhanceVision:
 
     def __init__(self):
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        # Load model
+        model = PhysicalNN()
+        model = torch.nn.DataParallel(model).to(device)
+        checkpoint = torch.load('checkpoints/model_best_2842.pth.tar')
+            
         print("In Progress...")
         
 if __name__== "__main__":
     rospy.init_node("enhance_vision")
-    EnhanceVIsion()
+    EnhanceVision()
     rospy.spin()
