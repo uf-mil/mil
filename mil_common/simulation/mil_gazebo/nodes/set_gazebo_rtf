@@ -12,5 +12,5 @@ if __name__ == "__main__":
     rospy.init_node("dynamic_client", anonymous=True)
     client = dynamic_reconfigure.client.Client("gazebo", timeout=30)
     client.update_configuration(
-        {"max_update_rate": args.rtf / args.step_time, "time_step": args.step_time}
+        {"max_update_rate": args.rtf / args.step_time, "time_step": args.step_time},
     )

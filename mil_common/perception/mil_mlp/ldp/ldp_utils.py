@@ -20,7 +20,10 @@ Supports resizing images, but given that this has shown no performance increase,
 
 
 def split_data(
-    image_dir="Images", ann_dir="Annotations", resize=False, size=[256, 150]
+    image_dir="Images",
+    ann_dir="Annotations",
+    resize=False,
+    size=[256, 150],
 ):
     if resize:
         imgs_jpg = glob.glob(image_dir + "/*.png")
@@ -47,7 +50,10 @@ def split_data(
     X = sorted(glob.glob(image_dir + "/*"))
 
     X_train, X_test, Y_train, Y_test = train_test_split(
-        X, Y, test_size=0.30, random_state=10
+        X,
+        Y,
+        test_size=0.30,
+        random_state=10,
     )
 
     if not os.path.exists("train"):

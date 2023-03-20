@@ -151,14 +151,16 @@ class BagImageExtractorSource:
         except StopIteration:
             raise Exception(
                 "no camera info messages found on topic {} in {}".format(
-                    camera_info_topic, bag
-                )
+                    camera_info_topic,
+                    bag,
+                ),
             )
         if msg._type != "sensor_msgs/CameraInfo":
             raise Exception(
                 "msg on topic {} are not camera info in bag {}".format(
-                    camera_info_topic, bag
-                )
+                    camera_info_topic,
+                    bag,
+                ),
             )
         model = PinholeCameraModel()
         model.fromCameraInfo(msg)
@@ -217,8 +219,9 @@ class BagImageExtractorSource:
         if verbose:
             print(
                 "\tExtracting images from topic {} in {}".format(
-                    self.topic, self.filename
-                )
+                    self.topic,
+                    self.filename,
+                ),
             )
         filename = os.path.join(source_dir, self.filename)
         b = rosbag.Bag(filename)
@@ -233,7 +236,9 @@ class BagImageExtractorSource:
         next_time = start
         prefix = slugify(str(self.filename)) + "_" + slugify(str(self.topic))
         for _, msg, time in b.read_messages(
-            topics=self.topic, start_time=start, end_time=stop
+            topics=self.topic,
+            start_time=start,
+            end_time=stop,
         ):
             if time >= next_time:
                 next_time = time + interval
@@ -316,7 +321,9 @@ class BagImageExtractorDatasets:
             os.makedirs(image_dir)
         for source in self.sources:
             source.extract_images(
-                source_dir=source_dir, image_dir=image_dir, verbose=verbose
+                source_dir=source_dir,
+                image_dir=image_dir,
+                verbose=verbose,
             )
 
 
@@ -363,7 +370,9 @@ class BagImageExtractorProject:
         for dataset in d["datasets"]:
             datasets.append(BagImageExtractorDatasets.from_dict(dataset))
         return cls(
-            datasets, source_dir=d.get("source_dir"), image_dir=d.get("image_dir")
+            datasets,
+            source_dir=d.get("source_dir"),
+            image_dir=d.get("image_dir"),
         )
 
     def extract_images(self, verbose=False):
@@ -377,14 +386,16 @@ class BagImageExtractorProject:
         """
         for dataset in self.datasets:
             dataset.extract_images(
-                source_dir=self.source_dir, image_dir=self.image_dir, verbose=verbose
+                source_dir=self.source_dir,
+                image_dir=self.image_dir,
+                verbose=verbose,
             )
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Extracts images from ROS bags into image files according to a configuration.\n\
-                     Designed to be used to create labelbox.io projects for segmentation/classification."
+                     Designed to be used to create labelbox.io projects for segmentation/classification.",
     )
     parser.add_argument(
         "config",
@@ -411,7 +422,10 @@ if __name__ == "__main__":
                               Defaults to current directory.",
     )
     parser.add_argument(
-        "--verbose", "-v", action="store_true", help="Print status info along the way"
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Print status info along the way",
     )
     args = parser.parse_args()
 

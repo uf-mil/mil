@@ -97,7 +97,8 @@ class Move(SubjuGatorMission):
                 try:
                     rospack = rospkg.RosPack()
                     state_set_pub = self.nh.advertise(
-                        "gazebo/set_model_state", ModelState
+                        "gazebo/set_model_state",
+                        ModelState,
                     )
                     await state_set_pub.setup()
                     config_file = os.path.join(
@@ -145,7 +146,7 @@ class Move(SubjuGatorMission):
                                 # This means we did not find the saved location
                                 # referenced by the argument.
                                 self.send_feedback(
-                                    "TP location not found, check input."
+                                    "TP location not found, check input.",
                                 )
                                 break
                         modelstate = ModelState(
@@ -164,7 +165,8 @@ class Move(SubjuGatorMission):
                         # bringing it back to its expected position.
                         ab = TxAlarmBroadcaster(self.nh, "kill", node_name="kill")
                         await ab.raise_alarm(
-                            problem_description="TELEPORTING: KILLING SUB", severity=5
+                            problem_description="TELEPORTING: KILLING SUB",
+                            severity=5,
                         )
                         await self.nh.sleep(1)
                         await state_set_pub.publish(modelstate)
@@ -194,7 +196,7 @@ class Move(SubjuGatorMission):
             else:
                 # Get the command from shorthand if it's there
                 command = SHORTHAND.get(command, command)
-                movement = getattr(self.move, command)
+                movement = getattr(self.move(), command)
 
                 trans_move = (
                     command[:3] != "yaw"
@@ -220,7 +222,7 @@ class Move(SubjuGatorMission):
                     break
                 goal = movement(float(amount) * UNITS.get(unit, 1))
                 if args.zrp:
-                    res = await goal.zero_roll_and_pitch().go(**action_kwargs)
+                    res = await self.go(goal.zero_roll_and_pitch(), **action_kwargs)
                 else:
-                    res = await goal.go(**action_kwargs)
+                    res = await self.go(goal, **action_kwargs)
                 return f"Result: {res.error}"

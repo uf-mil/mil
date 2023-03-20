@@ -33,7 +33,9 @@ class Shooter(Plugin):
 
         # Extend the widget with all attributes and children in the UI file
         ui_file = os.path.join(
-            rospkg.RosPack().get_path("navigator_gui"), "resource", "shooter.ui"
+            rospkg.RosPack().get_path("navigator_gui"),
+            "resource",
+            "shooter.ui",
         )
         loadUi(ui_file, self._widget)
 
@@ -55,7 +57,7 @@ class Shooter(Plugin):
         # Deals with problem of multiple instances of same plugin
         if context.serial_number() > 1:
             self._widget.setWindowTitle(
-                self._widget.windowTitle() + (" (%d)" % context.serial_number())
+                self._widget.windowTitle() + (" (%d)" % context.serial_number()),
             )
 
         # Add widget to the user interface
@@ -69,10 +71,12 @@ class Shooter(Plugin):
 
         # Shooter status indicator
         self.shooter_status_frame = self._widget.findChild(
-            QtWidgets.QFrame, "shooter_status_frame"
+            QtWidgets.QFrame,
+            "shooter_status_frame",
         )
         self.shooter_status_message = self._widget.findChild(
-            QtWidgets.QLabel, "shooter_status_message"
+            QtWidgets.QLabel,
+            "shooter_status_message",
         )
 
         # Control panel buttons
@@ -85,19 +89,23 @@ class Shooter(Plugin):
         reset_button = self._widget.findChild(QtWidgets.QPushButton, "reset_button")
         reset_button.clicked.connect(self.remote.shooter_reset)
         linear_extend_button = self._widget.findChild(
-            QtWidgets.QPushButton, "linear_extend_button"
+            QtWidgets.QPushButton,
+            "linear_extend_button",
         )
         linear_extend_button.clicked.connect(self.remote.shooter_linear_extend)
         linear_retract_button = self._widget.findChild(
-            QtWidgets.QPushButton, "linear_retract_button"
+            QtWidgets.QPushButton,
+            "linear_retract_button",
         )
         linear_retract_button.clicked.connect(self.remote.shooter_linear_retract)
         disc_speed_slider = self._widget.findChild(
-            QtWidgets.QSlider, "disc_speed_slider"
+            QtWidgets.QSlider,
+            "disc_speed_slider",
         )
         disc_speed_slider.valueChanged[int].connect(self.cache_disc_speed_setting)
         set_disc_speed_button = self._widget.findChild(
-            QtWidgets.QPushButton, "set_disc_speed_button"
+            QtWidgets.QPushButton,
+            "set_disc_speed_button",
         )
         set_disc_speed_button.clicked.connect(self.set_disc_speed)
 

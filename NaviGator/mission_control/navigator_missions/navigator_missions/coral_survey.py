@@ -32,15 +32,13 @@ class CoralSurvey(NaviGatorMission):
         totem = await self.database_query("all")
 
         # Get the closest totem object to the boat
-        totems_np = map(
-            lambda obj: mil_tools.rosmsg_to_numpy(obj.position), totem.objects
-        )
-        dist = map(
-            lambda totem_np: np.linalg.norm(
+        totems_np = (mil_tools.rosmsg_to_numpy(obj.position) for obj in totem.objects)
+        dist = (
+            np.linalg.norm(
                 totem_np
-                - mil_tools.rosmsg_to_numpy(est_coral_survey.objects[0].position)
-            ),
-            totems_np,
+                - mil_tools.rosmsg_to_numpy(est_coral_survey.objects[0].position),
+            )
+            for totem_np in totems_np
         )
         middle_point = totems_np[np.argmin(dist)]
 
@@ -54,7 +52,7 @@ class CoralSurvey(NaviGatorMission):
         ogrid = OgridFactory(middle_point, draw_borders=True)
         msg = ogrid.get_message()
         latched = asyncio.create_task(
-            self.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
+            self.latching_publisher("/mission_ogrid", OccupancyGrid, msg),
         )
 
         # Construct waypoint list along NSEW directions then rotate 45 degrees to get a good spot to go to.
@@ -100,7 +98,8 @@ class OgridFactory:
         origin_x = self.center[0] - 30
         origin_y = self.center[1] - 30
         self.origin = mil_tools.numpy_quat_pair_to_pose(
-            [origin_x, origin_y, 0], [0, 0, 0, 1]
+            [origin_x, origin_y, 0],
+            [0, 0, 0, 1],
         )
 
         # The grid needs to have it's axes swapped since its row major
@@ -114,7 +113,7 @@ class OgridFactory:
                 [1 / self.resolution, 0, -origin_x / self.resolution],
                 [0, 1 / self.resolution, -origin_y / self.resolution],
                 [0, 0, 1],
-            ]
+            ],
         )
 
         self.transform = lambda point: self.t.dot(np.append(point[:2], 1))[:2]

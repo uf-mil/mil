@@ -50,15 +50,23 @@ class DraculaGrabber(SubjuGatorMission):
                 fprint("Forgot to add dracula to guess?", msg_color="yellow")
             else:
                 fprint("Found dracula.", msg_color="green")
-                await self.move.set_position(
-                    np.array(rospy.get_param("/poi_server/initial_pois/dracula"))
-                ).depth(TRAVEL_DEPTH).go(speed=FAST_SPEED)
+                await self.go(
+                    self.move()
+                    .set_position(
+                        np.array(rospy.get_param("/poi_server/initial_pois/dracula")),
+                    )
+                    .depth(TRAVEL_DEPTH),
+                    speed=FAST_SPEED,
+                )
         except Exception as e:
             fprint(str(e) + "Forgot to run guess server?", msg_color="yellow")
 
         dracula_sub = self.nh.subscribe("/bbox_pub", Point)
         await dracula_sub.setup()
-        await self.move.to_height(SEARCH_HEIGHT).zero_roll_and_pitch().go(speed=SPEED)
+        await self.go(
+            self.move().to_height(SEARCH_HEIGHT).zero_roll_and_pitch(),
+            speed=SPEED,
+        )
 
         while True:
             fprint("Getting location of ball drop...")
@@ -73,11 +81,12 @@ class DraculaGrabber(SubjuGatorMission):
                 break
             vec = np.append(vec, 0)
 
-            await self.move.relative_depth(vec).go(speed=SPEED)
+            await self.go(self.move().relative_depth(vec), speed=SPEED)
 
         fprint(f"Centered, going to depth {HEIGHT_DRACULA_GRABBER}")
-        await self.move.to_height(HEIGHT_DRACULA_GRABBER).zero_roll_and_pitch().go(
-            speed=SPEED
+        await self.go(
+            self.move().to_height(HEIGHT_DRACULA_GRABBER).zero_roll_and_pitch(),
+            speed=SPEED,
         )
         fprint("Dropping marker")
         await self.actuators.gripper_close()

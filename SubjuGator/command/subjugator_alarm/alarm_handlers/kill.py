@@ -102,8 +102,9 @@ class Kill(HandlerBase):
         else:
             rospy.logwarn(
                 "KILL BAG {}, status: {}".format(
-                    TerminalState.to_string(status), result.status
-                )
+                    TerminalState.to_string(status),
+                    result.status,
+                ),
             )
 
     def bagger_dump(self):
@@ -141,7 +142,8 @@ class Kill(HandlerBase):
 
         # If we lose network but don't want to go autonomous
         if sub_alarms["network-loss"].raised and not rospy.get_param(
-            "/autonomous", False
+            "/autonomous",
+            False,
         ):
             return True
         ignore.append("network-loss")
@@ -168,5 +170,5 @@ class Kill(HandlerBase):
 
         # Raised if any alarms besides the two above are raised
         return any(
-            [alarm.raised for name, alarm in sub_alarms.items() if name not in ignore]
+            [alarm.raised for name, alarm in sub_alarms.items() if name not in ignore],
         )

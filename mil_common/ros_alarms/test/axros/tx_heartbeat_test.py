@@ -25,7 +25,11 @@ async def main():
 
     alarm_name = "test_alarm123"
     hbm = await TxHeartbeatMonitor.init(
-        nh, alarm_name, "/heartbeat", String, nowarn=True
+        nh,
+        alarm_name,
+        "/heartbeat",
+        String,
+        nowarn=True,
     )
     monitor_df = asyncio.create_task(hbm.start_monitor())
 

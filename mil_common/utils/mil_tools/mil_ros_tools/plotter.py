@@ -59,7 +59,11 @@ class Plotter:
     #     Can be enables/disabled via the <topic_name>_enable service call
 
     def __init__(
-        self, topic_name: str, width: int = 20, height: int = 20, dpi: int = 150
+        self,
+        topic_name: str,
+        width: int = 20,
+        height: int = 20,
+        dpi: int = 150,
     ):
         matplotlib.rcParams.update({"font.size": 22})
         self.pub = rospy.Publisher(topic_name, Image, queue_size=1)
@@ -115,7 +119,8 @@ class Plotter:
 
         if self.is_go():
             self.thread = threading.Thread(
-                target=self.publish_plots_, args=(plots, titles, v_lines)
+                target=self.publish_plots_,
+                args=(plots, titles, v_lines),
             )
             self.thread.daemon = True
             self.thread.start()

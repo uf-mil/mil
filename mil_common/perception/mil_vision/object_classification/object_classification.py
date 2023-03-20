@@ -35,7 +35,7 @@ class Config:
         rois = []
         print(roi)
 
-        for b in roi.bag_to_rois.keys():
+        for b in roi.bag_to_rois:
             frames = roi.bag_to_rois[b]
             bc = BagCrawler(b)
             topic = bc.image_topics[0]
