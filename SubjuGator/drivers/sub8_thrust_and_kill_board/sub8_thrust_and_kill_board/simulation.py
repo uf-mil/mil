@@ -1,19 +1,19 @@
 #!/usr/bin/python3
 import rospy
-from mil_usb_to_can import SimulatedCANDeviceHandle
+from mil_usb_to_can.sub8 import SimulatedCANDevice
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 
-# from .packets import (
-#     KILL_SEND_ID,
-#     THRUST_SEND_ID,
-#     HeartbeatMessage,
-#     KillMessage,
-#     StatusMessage,
-#     ThrustPacket,
-# )
+from .packets import (
+    KILL_SEND_ID,
+    THRUST_SEND_ID,
+    HeartbeatMessage,
+    KillMessage,
+    StatusMessage,
+    ThrustPacket,
+)
 
 
-class ThrusterAndKillBoardSimulation(SimulatedCANDeviceHandle):
+class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
     """
     Serial simulator for the thruster and kill board,
     providing services to simulate physical plug connections/disconnections.

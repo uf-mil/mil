@@ -1,20 +1,20 @@
 #!/usr/bin/python3
 import rospy
-from mil_usb_to_can import CANDeviceHandle
+from mil_usb_to_can.sub8 import CANDeviceHandle
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from ros_alarms.msg import Alarm
 from rospy.timer import TimerEvent
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 from subjugator_msgs.msg import Thrust
 
-# from .packets import (
-#     KILL_SEND_ID,
-#     THRUST_SEND_ID,
-#     HeartbeatMessage,
-#     KillMessage,
-#     StatusMessage,
-#     ThrustPacket,
-# )
+from .packets import (
+    KILL_SEND_ID,
+    THRUST_SEND_ID,
+    HeartbeatMessage,
+    KillMessage,
+    StatusMessage,
+    ThrustPacket,
+)
 from .thruster import make_thruster_dictionary
 
 
@@ -114,7 +114,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             )
             self.send_data(bytes(packet), can_id=THRUST_SEND_ID)
 
-    def update_hw_kill(self, status: "StatusMessage") -> None:
+    def update_hw_kill(self, status: StatusMessage) -> None:
         """
         If needed, update the hw-kill alarm so it reflects the latest status from the board.
 

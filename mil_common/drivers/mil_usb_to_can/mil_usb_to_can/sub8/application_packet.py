@@ -83,7 +83,9 @@ class ApplicationPacket:
 
     @classmethod
     def from_bytes(
-        cls: type[T], data: bytes, expected_identifier: int | None = None
+        cls: type[T],
+        data: bytes,
+        expected_identifier: int | None = None,
     ) -> T:
         """
         Unpacks a series of packed bytes representing an application packet using
@@ -108,16 +110,19 @@ class ApplicationPacket:
         packet = cls(*struct.unpack(f"B{payload_len}s", data))
         if expected_identifier is not None and expected_identifier != packet.identifier:
             raise ApplicationPacketWrongIdentifierException(
-                packet.identifier, expected_identifier
+                packet.identifier,
+                expected_identifier,
             )
         return packet
 
     def __repr__(self):
         return "{}(identifier={}, payload={})".format(
-            self.__class__.__name__, self.identifier, self.payload
+            self.__class__.__name__,
+            self.identifier,
+            self.payload,
         )
 
     def __eq__(self, other):
         if not isinstance(other, ApplicationPacket):
-            raise NotImplementedError()
+            raise NotImplementedError
         return self.identifier == other.identifier and self.payload == other.payload
