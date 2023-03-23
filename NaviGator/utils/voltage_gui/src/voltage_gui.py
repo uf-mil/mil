@@ -120,7 +120,7 @@ class VoltageWidget(QWidget):
     def update_BR(self, dataBR: Feedback) -> None:
         self.voltageBR = dataBR.supply_voltage
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event): #done
         """
         Part of signal that notifies program whenever window is resized
 
@@ -133,7 +133,7 @@ class VoltageWidget(QWidget):
         self.resized.emit()
         return super().resizeEvent(event)
 
-    def resizeFont(self) -> None:
+    def resizeFont(self) -> None: #done
         """
         Increase/decrease size of fonts based on window resize
 
@@ -202,6 +202,15 @@ class VoltageWidget(QWidget):
 
     # If self.gotParams is False, the updateLabel function calls testParams every 5 seconds
     def testParams(self) -> None:
+        """
+        If self.gotParams is False, the updateLabel function calls testParams every 5 seconds
+
+        Args:
+            No arguments are being passed in. 
+
+        Returns:
+            No statement is being returned.  
+        """
         try:
             self.lowThreshold = rospy.get_param("battery-voltage/low")
             self.criticalThreshold = rospy.get_param("battery-voltage/critical")
