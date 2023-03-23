@@ -201,7 +201,7 @@ class VoltageWidget(QWidget):
         self.labelThresh.setFont(threshFont)
 
     # If self.gotParams is False, the updateLabel function calls testParams every 5 seconds
-    def testParams(self) -> None:
+    def testParams(self) -> None: # done
         """
         If self.gotParams is False, the updateLabel function calls testParams every 5 seconds
 
@@ -230,6 +230,15 @@ class VoltageWidget(QWidget):
 
     # sets colors of boxes based on current values of voltages for each box
     def setColors(self, numMain: float) -> None:
+        """
+        sets colors of boxes based on current values of voltages for each box
+
+        Args:
+            numMain(float): box object that stores current values  
+
+        Returns:
+            No statement is being returned.  
+        """ 
         if numMain > self.lowThreshold:
             self.labelMain.setStyleSheet(
                 "QLabel { background-color : green; color : white; }"
