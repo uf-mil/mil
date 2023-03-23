@@ -315,7 +315,15 @@ class VoltageWidget(QWidget):
             )
 
     def updateLabel(self) -> None:
-        # Tries self.gotParams every 3 function calls
+        """
+        Tries self.gotParams every 3 function calls
+
+        Args:
+            No arguments are being passed in.   
+
+        Returns:
+            No statement is being returned.  
+        """ 
         self.paramCounter = self.paramCounter + 1
         if self.gotParams is False and self.paramCounter >= 3:
             self.testParams()
