@@ -19,7 +19,7 @@ CAREFUL_SPEED = 0.3
 DIST_AFTER_GATE = 1
 WAIT_SECONDS = 1
 
-RIGHT_OR_LEFT = 1
+IS_LEFT = True
 
 
 class StartGate2022(SubjuGatorMission):
@@ -63,5 +63,14 @@ class StartGate2022(SubjuGatorMission):
         down = self.move().down(1)
         await self.go(down, speed=SPEED)
 
-        forward = self.move().forward(4)
+        if IS_LEFT:
+            left = self.move().left(1)
+            await self.go(left, speed=SPEED)
+        else:
+            right = self.move().right(1)
+            await self.go(right, speed=SPEED)
+
+        forward = self.move().forward(5)
         await self.go(forward, speed=SPEED)
+
+
