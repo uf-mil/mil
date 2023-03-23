@@ -59,8 +59,7 @@ class voltageGUI(Plugin):
             No arguments are passed in. 
         
         Returns: 
-        
-        
+            There is no present return statement.
         """
         app = QApplication(sys.argv)
         self.myWidget.show()
@@ -121,8 +120,16 @@ class VoltageWidget(QWidget):
     def update_BR(self, dataBR: Feedback) -> None:
         self.voltageBR = dataBR.supply_voltage
 
-    # Part of signal that notifies program whenever window is resized
     def resizeEvent(self, event):
+        """
+        Part of signal that notifies program whenever window is resized
+
+        Args:
+            event: an event object is being passed in.
+
+        Returns:
+            An event was being returned with a different size. 
+        """
         self.resized.emit()
         return super().resizeEvent(event)
 
