@@ -34,3 +34,5 @@ ion base, many shipping carriers won't take batteries without special precaution
 You will need to review these in order to ship them through standard shipping.
 For some locations, it may be easier to buy batteries at the competition site
 rather than to take batteries with you.
+
+Whenever a package is received in MIL, a note needs to be sent to Schwartz - a note on this should be added to the docs.
