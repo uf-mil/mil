@@ -20,6 +20,17 @@ __license__ = "MIT"
 
 
 class voltageGUI(Plugin):
+    """
+    Attributes:
+        height (int): defines the height of the screen
+        fontSize(int): sets the font size of the screen 
+        warningCounter(int): prints the number of warning signs
+        paramCounter(int): the number of times "updateLabel" function is called  
+        heightRatio(int): the ratio change in height that is caused by the resize
+        gotParams(bool): this checks to see whether the parameters are set
+        lowThreshold(int):  
+        criticalThreshold(int): 
+    """
     def __init__(self, context):
         super().__init__(context)
         self.setObjectName("voltage_gui")
@@ -57,17 +68,17 @@ class VoltageWidget(QWidget):
         # Whenever the screen is resized the resizeFont function is called
         self.resized.connect(self.resizeFont)
 
-        self.height = VoltageWidget.frameGeometry(self).height()
+        self.height = VoltageWidget.frameGeometry(self).height() #done
 
-        self.fontSize = 40
+        self.fontSize = 40 #done
 
-        self.warningCounter = 0
-        self.paramCounter = 0
+        self.warningCounter = 0 #done
+        self.paramCounter = 0 #done
 
         self.initThresh()
 
         # Subscribing to all the data we need
-        self.battery_voltage = None
+        self.battery_voltage = None 
         rospy.Subscriber("/battery_monitor", Float32, self.updateMain)
         rospy.Subscriber("/FL_motor/feedback", Feedback, self.update_FL)
         self.voltageFL = None
