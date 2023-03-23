@@ -168,6 +168,15 @@ class VoltageWidget(QWidget):
 
     # Sets the text of the thrshold info box
     def initThresh(self) -> None:
+        """
+        Sets the text of the thrshold info box
+
+        Args:
+            No arguments are being passed in. 
+
+        Returns:
+            No statement is being returned.  
+        """
         # Low and Critical decide what colors the boxes take for
         # Good (Green), Warning (Yellow), and Critical (Red)
         # If the parameter server has not set these values then we use the DEFAULT
