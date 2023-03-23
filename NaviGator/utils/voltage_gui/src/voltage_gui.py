@@ -28,8 +28,9 @@ class voltageGUI(Plugin):
         paramCounter(int): the number of times "updateLabel" function is called  
         heightRatio(int): the ratio change in height that is caused by the resize
         gotParams(bool): this checks to see whether the parameters are set
-        lowThreshold(int):  
-        criticalThreshold(int): 
+        lowThreshold(int): colors values which include Good (Green), Warning (Yellow), and Critical (Red)
+        criticalThreshold(int): colors values which include Good (Green), Warning (Yellow), and Critical (Red)
+        paramCounter(int): number of parameters that are called by function
     """
     def __init__(self, context):
         super().__init__(context)
