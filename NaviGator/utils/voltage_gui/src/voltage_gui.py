@@ -200,7 +200,6 @@ class VoltageWidget(QWidget):
         threshFont = QtGui.QFont("Times", (self.fontSize) / 3, QtGui.QFont.Bold)
         self.labelThresh.setFont(threshFont)
 
-    # If self.gotParams is False, the updateLabel function calls testParams every 5 seconds
     def testParams(self) -> None: # done
         """
         If self.gotParams is False, the updateLabel function calls testParams every 5 seconds
@@ -228,8 +227,7 @@ class VoltageWidget(QWidget):
             )
         self.labelThresh.setText(threshText)
 
-    # sets colors of boxes based on current values of voltages for each box
-    def setColors(self, numMain: float) -> None:
+    def setColors(self, numMain: float) -> None: # done
         """
         sets colors of boxes based on current values of voltages for each box
 
