@@ -31,6 +31,12 @@ class voltageGUI(Plugin):
         lowThreshold(int): colors values which include Good (Green), Warning (Yellow), and Critical (Red)
         criticalThreshold(int): colors values which include Good (Green), Warning (Yellow), and Critical (Red)
         paramCounter(int): number of parameters that are called by function
+
+        battery_voltage(int): the amount of voltage that is stored in the battery
+        voltageFL(int): the voltage that is being supplied from dataFL
+        voltageFR(int): the voltage that is being supplied from dataFR
+        voltageBL(int): the voltage that is being supplied from dataBL
+        voltageBR(int): the voltage that is being supplied from dataBR
     """
     def __init__(self, context):
         super().__init__(context)
@@ -45,8 +51,17 @@ class voltageGUI(Plugin):
         context.add_widget(self.myWidget)
         self.runGUI()
 
-    # Updates Values displayed in GUI every second
     def runGUI(self) -> None:
+        """
+        Updates Values displayed in GUI every second
+        
+        Args:
+            No arguments are passed in. 
+        
+        Returns: 
+        
+        
+        """
         app = QApplication(sys.argv)
         self.myWidget.show()
         while 0 == 0:
