@@ -133,8 +133,16 @@ class VoltageWidget(QWidget):
         self.resized.emit()
         return super().resizeEvent(event)
 
-    # Increase/decrease size of fonts based on window resize
     def resizeFont(self) -> None:
+        """
+        Increase/decrease size of fonts based on window resize
+
+        Args:
+            No arguments are being passed in. 
+
+        Returns:
+            No statement is being returned.  
+        """
         # gets new window dimensions, the self is needed because we are referencing
         # our VoltageWidget class
         height = VoltageWidget.frameGeometry(self).height()
