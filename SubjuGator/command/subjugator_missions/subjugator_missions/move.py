@@ -3,9 +3,9 @@ import os
 
 import rospkg
 import yaml
-from gazebo_msgs.msg import ModelState
-from geometry_msgs.msg import Point, Pose, Quaternion, Twist
-from mil_misc_tools import ThrowingArgumentParser
+from gazebo_msgs.msg import ModelState, ModelStates
+from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
+from mil_misc_tools import ArgumentParserException, ThrowingArgumentParser
 from ros_alarms import TxAlarmBroadcaster
 
 from .sub_singleton import SubjuGatorMission
@@ -33,7 +33,14 @@ class Move(SubjuGatorMission):
     @classmethod
     def decode_parameters(cls, parameters):
         argv = parameters.split()
-        return cls.parser.parse_args(argv)
+        try:
+            return cls.parser.parse_args(argv)
+        except ArgumentParserException as e:
+            if e.message.startswith("unrecognized arguments"):
+                print(
+                    'Note: If you are attempting to teleport to negative x value, use -- to separate tp arguments from actual command arguments. (ie, "submove tp -- -1,-2,3")'
+                )
+            raise e
 
     @classmethod
     async def setup(cls):
@@ -96,11 +103,6 @@ class Move(SubjuGatorMission):
             elif command in ["tp", "teleport"]:
                 try:
                     rospack = rospkg.RosPack()
-                    state_set_pub = self.nh.advertise(
-                        "gazebo/set_model_state",
-                        ModelState,
-                    )
-                    await state_set_pub.setup()
                     config_file = os.path.join(
                         rospack.get_path("subjugator_gazebo"),
                         "config",
@@ -115,9 +117,9 @@ class Move(SubjuGatorMission):
                         break
                     else:
                         try:
-                            x = float(argument.split(" ")[0])
-                            y = float(argument.split(" ")[1])
-                            z = float(argument.split(" ")[2])
+                            x = float(argument.split(",")[0])
+                            y = float(argument.split(",")[1])
+                            z = float(argument.split(",")[2])
                             # Assumption is if we make it this far, we have successfully
                             # bound the previous three coordinates.
                             # The below would fail if we entered a location name instead of coords
@@ -125,7 +127,7 @@ class Move(SubjuGatorMission):
                             # This is to catch anything over 3 coordinates. If
                             # only two were given then we would also error out
                             # above.
-                            if len(argument.split(" ")) != 3:
+                            if len(argument.split(",")) != 3:
                                 self.send_feedback("Incorrect number of coordinates")
                                 break
                         except IndexError:
@@ -149,15 +151,15 @@ class Move(SubjuGatorMission):
                                     "TP location not found, check input.",
                                 )
                                 break
-                        modelstate = ModelState(
-                            model_name="sub8",
-                            pose=Pose(
-                                position=Point(x, y, z),
-                                orientation=Quaternion(0, 0, 0, 0),
-                            ),
-                            twist=Twist(linear=Point(0, 0, 0), angular=Point(0, 0, 0)),
-                            reference_frame="world",
-                        )
+
+                        # Get whether to teleport sub8, sub9, or both
+                        sub = self.nh.subscribe("/gazebo/model_states", ModelStates)
+                        models = []
+                        async with sub:
+                            msg: ModelStates = await sub.get_next_message()
+                            models = [
+                                name for name in msg.name if name.startswith("sub")
+                            ]
                         # Sometimes you need to sleep in order to get the thing to publish
                         # Apparently there is a latency when you set a publisher and it needs to actually hook into it.
                         # As an additional note, given the way we do trajectory in the sim, we must kill sub to prevent
@@ -169,7 +171,30 @@ class Move(SubjuGatorMission):
                             severity=5,
                         )
                         await self.nh.sleep(1)
-                        await state_set_pub.publish(modelstate)
+                        state_set_pub = self.nh.advertise(
+                            "/gazebo/set_model_state", ModelState
+                        )
+                        async with state_set_pub:
+                            # Wait for Gazebo to listen for message
+                            while "/gazebo" not in state_set_pub.get_connections():
+                                await self.nh.sleep(0.1)
+                            for model in models:
+                                self.send_feedback(
+                                    f"Teleporting {model} to ({x}, {y}, {z})"
+                                )
+                                modelstate = ModelState(
+                                    model_name=model,
+                                    pose=Pose(
+                                        position=Point(x, y, z),
+                                        orientation=Quaternion(0, 0, 0, 1),
+                                    ),
+                                    twist=Twist(
+                                        linear=Vector3(0, 0, 0),
+                                        angular=Vector3(0, 0, 0),
+                                    ),
+                                    reference_frame="world",
+                                )
+                                state_set_pub.publish(modelstate)
                         await self.nh.sleep(1)
                         await ab.clear_alarm()
 
@@ -225,4 +250,7 @@ class Move(SubjuGatorMission):
                     res = await self.go(goal.zero_roll_and_pitch(), **action_kwargs)
                 else:
                     res = await self.go(goal, **action_kwargs)
-                return f"Result: {res.error}"
+                self.send_feedback(
+                    f"Result of {command}ing: {res.error or 'No error (successful).'}"
+                )
+        return "All movements complete."
