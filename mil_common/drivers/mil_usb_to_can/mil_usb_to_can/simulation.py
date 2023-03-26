@@ -85,7 +85,9 @@ class SimulatedUSBtoCAN(SimulatedSerial):
     """
 
     def __init__(
-        self, devices: dict[int, type[SimulatedCANDevice]] | None = None, can_id=-1
+        self,
+        devices: dict[int, type[SimulatedCANDevice]] | None = None,
+        can_id=-1,
     ):
         """
         Args:

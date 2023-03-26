@@ -105,7 +105,7 @@ class ExampleEchoDeviceHandle(CANDeviceHandle):
             raise RuntimeError(f"Received {data} but have not yet sent anything")
         elif data.decode() != self.last_sent[0]:
             raise ValueError(
-                f"ERROR! Received {data.decode()} but last sent {self.last_sent}"
+                f"ERROR! Received {data.decode()} but last sent {self.last_sent}",
             )
         else:
             self.count += 1
@@ -143,7 +143,8 @@ class ExampleAdderDeviceHandle(CANDeviceHandle):
             if rospy.Time.now() - start > rospy.Duration(1):
                 return -1
         res = ApplicationPacket.from_bytes(
-            self.response_received, expected_identifier=37
+            self.response_received,
+            expected_identifier=37,
         )
         my_sum = struct.unpack("i", res.payload)
         return my_sum

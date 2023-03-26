@@ -72,13 +72,18 @@ class TestSimIntegration(unittest.TestCase):
         self.assertTrue(
             len(self.odom_pos_msg) == 3 and len(self.odom_ori_msg) == 4,
             msg="POS, ORI: {}, {}".format(
-                len(self.odom_pos_msg), len(self.odom_ori_msg)
+                len(self.odom_pos_msg),
+                len(self.odom_ori_msg),
             ),
         )
         initial_pos = [-1.2319, 0.0, 0.0]
         initial_ori = [0.0, 0.0, 0.0, 1.0]
         self.verify_pos_ori(
-            self.odom_pos_msg, initial_pos, self.odom_ori_msg, initial_ori, "/odom"
+            self.odom_pos_msg,
+            initial_pos,
+            self.odom_ori_msg,
+            initial_ori,
+            "/odom",
         )
 
     def absodom_cb(self, msg):
@@ -96,7 +101,8 @@ class TestSimIntegration(unittest.TestCase):
         self.assertTrue(
             len(self.absodom_pos_msg) == 3 and len(self.absodom_ori_msg) == 4,
             msg="POS, ORI: {}, {}".format(
-                len(self.absodom_pos_msg), len(self.absodom_ori_msg)
+                len(self.absodom_pos_msg),
+                len(self.absodom_ori_msg),
             ),
         )
         initial_pos = [743789.637462, -5503821.36715, 3125622.10477]
@@ -118,7 +124,9 @@ class TestSimIntegration(unittest.TestCase):
                 places=0,
                 msg=(
                     "Error: {} position is: {} should be {}".format(
-                        topic, actual, initial
+                        topic,
+                        actual,
+                        initial,
                     )
                 ),
             )
@@ -128,7 +136,9 @@ class TestSimIntegration(unittest.TestCase):
                 initial,
                 msg=(
                     "Error: {} orientation is: {} should be {}".format(
-                        topic, actual, initial
+                        topic,
+                        actual,
+                        initial,
                     )
                 ),
             )
@@ -220,7 +230,8 @@ class TestSimIntegration(unittest.TestCase):
             len(data_lists),
             num_topics,
             msg="Number of topics is {}, should be {}".format(
-                len(data_lists), num_topics
+                len(data_lists),
+                num_topics,
             ),
         )
         for data_list in data_lists:
@@ -234,7 +245,9 @@ class TestSimIntegration(unittest.TestCase):
                     initial_dim,
                     msg=(
                         "Error: {} is: {} shouldn't be {}".format(
-                            topic, actual_dim, initial_dim
+                            topic,
+                            actual_dim,
+                            initial_dim,
                         )
                     ),
                 )

@@ -88,7 +88,10 @@ class ImageHistory:
             self._images = self._images[-self._history_length :]
 
     def get_around_time(
-        self, time, margin: float = 0.5, timeout: float = 0.5
+        self,
+        time,
+        margin: float = 0.5,
+        timeout: float = 0.5,
     ) -> ImageHolder:
         """
         Returns the image that is closest to the specified time.
@@ -110,7 +113,11 @@ class ImageHistory:
 
 class DebugImage:
     def __init__(
-        self, topic: str, encoding: str = "bgr8", queue_size: int = 1, prd: float = 1
+        self,
+        topic: str,
+        encoding: str = "bgr8",
+        queue_size: int = 1,
+        prd: float = 1,
     ):
         self.bridge = CvBridge()
         self.encoding = encoding
@@ -169,8 +176,9 @@ class Observation:
         _str = "hues: {}\nvalues: {}\ndists: {}\nq_errs: {}"
         return _str.format(
             *np.round(
-                map(np.array, [self.hues, self.values, self.dists, self.q_errs]), 3
-            )
+                map(np.array, [self.hues, self.values, self.dists, self.q_errs]),
+                3,
+            ),
         )
 
     def extend(self, params_tuple):
@@ -184,7 +192,10 @@ class Observation:
         self.q_errs.extend(q_diffs)
 
     def compute_confidence(
-        self, value_dist_q: list[float], get_conf: bool = False, **kwargs
+        self,
+        value_dist_q: list[float],
+        get_conf: bool = False,
+        **kwargs,
     ):
         """Don't try to compute weights with bad data (too few samples)"""
         (value_w, dist_w, q_diff_w) = value_dist_q
@@ -220,7 +231,7 @@ class Observation:
     def _guass(self, data, mean, sig):
         return np.exp(
             -np.power(np.array(data).astype(np.float64) - mean, 2)
-            / (2 * np.power(sig, 2))
+            / (2 * np.power(sig, 2)),
         )
 
 
@@ -233,7 +244,9 @@ class Colorama:
 
         self.tf_listener = tf.TransformListener()
         self.status_pub = rospy.Publisher(
-            "/database_color_status", ColoramaDebug, queue_size=1
+            "/database_color_status",
+            ColoramaDebug,
+            queue_size=1,
         )
 
         self.odom = None
@@ -257,7 +270,9 @@ class Colorama:
         while not rospy.is_shutdown():
             try:
                 camera_info_msg = rospy.wait_for_message(
-                    info_topic, CameraInfo, timeout=3
+                    info_topic,
+                    CameraInfo,
+                    timeout=3,
                 )
             except rospy.exceptions.ROSException:
                 rospy.sleep(1)
@@ -337,7 +352,8 @@ class Colorama:
         Returns an angular difference between q and target_q in radians
         """
         dq = trns.quaternion_multiply(
-            np.array(target_q), trns.quaternion_inverse(np.array(q))
+            np.array(target_q),
+            trns.quaternion_inverse(np.array(q)),
         )
         return 2 * np.arccos(dq[3])
 
@@ -362,8 +378,9 @@ class Colorama:
 
         fprint(
             "Likely color: {} with an hue error of {} rads.".format(
-                likely_color, np.round(error, 3)
-            )
+                likely_color,
+                np.round(error, 3),
+            ),
         )
         return [likely_color, error]
 
@@ -392,7 +409,9 @@ class Colorama:
         }
 
         w, weights = t_color.compute_confidence(
-            [self.v_factor, self.dist_factor, self.q_factor], True, **kwargs
+            [self.v_factor, self.dist_factor, self.q_factor],
+            True,
+            **kwargs,
         )
         fprint(f"CONF: {w}")
         if np.mean(w) < self.conf_reject:
@@ -465,7 +484,10 @@ class Colorama:
             try:
                 fprint(f"Getting transform between /enu and {cam_tf}...")
                 self.tf_listener.waitForTransform(
-                    "/enu", cam_tf, time_of_marker, ros_t(1)
+                    "/enu",
+                    cam_tf,
+                    time_of_marker,
+                    ros_t(1),
                 )
                 t_mat44 = self.tf_listener.asMatrix(cam_tf, header)
             except tf.ExtrapolationException as e:
@@ -499,14 +521,18 @@ class Colorama:
 
                 # Shove ones in there to make homogeneous points to get points in image frame
                 points_np_homo = np.hstack(
-                    (points_np, np.ones((points_np.shape[0], 1)))
+                    (points_np, np.ones((points_np.shape[0], 1))),
                 ).T
                 points_cam = t_mat44.dot(points_np_homo).T
                 points_px = map(self.camera_model.project3dToPixel, points_cam[:, :3])
 
                 [
                     cv2.circle(
-                        self.debug.image, tuple(map(int, p)), 2, (255, 255, 255), -1
+                        self.debug.image,
+                        tuple(map(int, p)),
+                        2,
+                        (255, 255, 255),
+                        -1,
                     )
                     for p in points_px
                 ]
@@ -550,14 +576,20 @@ class Colorama:
 
                     cmd = "{name}={rgb[0]},{rgb[1]},{rgb[2]},{_id}"
                     self.make_request(
-                        cmd=cmd.format(name=obj.name, _id=obj.id, rgb=rgb)
+                        cmd=cmd.format(name=obj.name, _id=obj.id, rgb=rgb),
                     )
 
                 bgr = rgb[::-1]
                 cv2.circle(self.debug.image, tuple(object_px), 10, bgr, -1)
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 cv2.putText(
-                    self.debug.image, str(obj.id), tuple(object_px), font, 1, bgr, 2
+                    self.debug.image,
+                    str(obj.id),
+                    tuple(object_px),
+                    font,
+                    1,
+                    bgr,
+                    2,
                 )
 
     def _get_solar_angle(self):

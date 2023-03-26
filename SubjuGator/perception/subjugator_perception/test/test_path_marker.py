@@ -33,7 +33,8 @@ class TestPathMarker(unittest.TestCase):
         rospy.wait_for_service("/vision/orange_rectangle/2D", 3.0)
         rospy.wait_for_service("/vision/orange_rectangle/enable", 3.0)
         self.service = rospy.ServiceProxy(
-            "/vision/orange_rectangle/2D", VisionRequest2D
+            "/vision/orange_rectangle/2D",
+            VisionRequest2D,
         )
         enable = rospy.ServiceProxy("/vision/orange_rectangle/enable", SetBool)
         enable(SetBoolRequest(data=True))
@@ -84,7 +85,9 @@ class TestPathMarker(unittest.TestCase):
         correct_xy = np.array([correct.pose.x, correct.pose.y])
         err = np.linalg.norm(res_xy - correct_xy)
         msg = "Marker pose (x,y) too much error Res={} Correct={} Error={}".format(
-            res_xy, correct_xy, err
+            res_xy,
+            correct_xy,
+            err,
         )
         self.assertLess(
             err,
@@ -97,7 +100,7 @@ class TestPathMarker(unittest.TestCase):
             np.arctan2(
                 np.sin(res.pose.theta - correct.pose.theta),
                 np.cos(res.pose.theta - correct.pose.theta),
-            )
+            ),
         )
         msg = "Marker pose angle (theta) too much error Res={} Correct={} Error={}".format(
             np.degrees(res.pose.theta),

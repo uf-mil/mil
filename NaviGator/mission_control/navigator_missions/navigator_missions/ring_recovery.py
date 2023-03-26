@@ -25,7 +25,7 @@ class RingRecovery(NaviGatorMission):
         # Move in front of it, but back a little
         self.send_feedback("Moving in front of marker totem")
         await self.move.look_at(totem).set_position(totem).backward(
-            self.DEPLOY_DISTANCE
+            self.DEPLOY_DISTANCE,
         ).go()
 
         # Deploy the grinch mechanism into the water
@@ -40,7 +40,7 @@ class RingRecovery(NaviGatorMission):
         totem = await self.get_marker_totem()
         self.send_feedback("Moving closer")
         await self.move.look_at(totem).set_position(totem).backward(self.RADIUS).go(
-            blind=True
+            blind=True,
         )
 
         # Circle totem

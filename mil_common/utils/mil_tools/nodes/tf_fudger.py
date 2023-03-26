@@ -46,8 +46,9 @@ ang_res = ang_range / ang_max
 
 print(
     "Distance resolution: {} meters\nAngular resolution: {} radians".format(
-        x_res, ang_res
-    )
+        x_res,
+        ang_res,
+    ),
 )
 
 cv2.createTrackbar("x", "tf", 0, x_max, lambda x: x)
@@ -93,10 +94,15 @@ p_original = (0, 0, 0)
 rpy_original = (0, 0, 0)
 try:
     listener.waitForTransform(
-        args.tf_parent, args.tf_child, rospy.Time(0), rospy.Duration(1)
+        args.tf_parent,
+        args.tf_child,
+        rospy.Time(0),
+        rospy.Duration(1),
     )
     (trans, rot) = listener.lookupTransform(
-        args.tf_parent, args.tf_child, rospy.Time(0)
+        args.tf_parent,
+        args.tf_child,
+        rospy.Time(0),
     )
     euler = trns.euler_from_quaternion(rot)
     p_original = trans
@@ -138,12 +144,14 @@ while not rospy.is_shutdown():
     )
     q = tf.transformations.quaternion_from_euler(*rpy)
 
-    if (not p == p_last) or (not rpy == rpy_last):
+    if (p != p_last) or (rpy != rpy_last):
         rpy_feedback = "xyz: {}, euler: {}".format(
-            [round(e, 5) for e in p], [round(np.degrees(f), 5) for f in rpy]
+            [round(e, 5) for e in p],
+            [round(np.degrees(f), 5) for f in rpy],
         )
         q_feedback = "xyz: {},     q: {}".format(
-            [round(x, 5) for e in p], [round(f, 5) for f in q]
+            [round(x, 5) for e in p],
+            [round(f, 5) for f in q],
         )
         print(q_feedback if q_mode else rpy_feedback)
     p_last = p
@@ -212,6 +220,10 @@ while not rospy.is_shutdown():
 print(
     "\n",
     tf_line.format(
-        child=args.tf_child, p=p, q=np.round(q, 5), parent=args.tf_parent, prd=prd
+        child=args.tf_child,
+        p=p,
+        q=np.round(q, 5),
+        parent=args.tf_parent,
+        prd=prd,
     ),
 )

@@ -27,7 +27,7 @@ def bbox_countour_from_rectangle(bbox):
             [bbox[1][0], bbox[0][1]],
             [bbox[1][0], bbox[1][1]],
             [bbox[0][0], bbox[1][1]],
-        ]
+        ],
     )
 
 
@@ -65,7 +65,9 @@ class VrxClassifier:
         self.last_panel_points_msg = None
         self.database_client = rospy.ServiceProxy("/database/requests", ObjectDBQuery)
         self.task_info_sub = rospy.Subscriber(
-            "/vrx/task/info", Task, self.taskinfoSubscriber
+            "/vrx/task/info",
+            Task,
+            self.taskinfoSubscriber,
         )
         self.is_perception_task = False
         self.sub = Image_Subscriber(self.image_topic, self.image_cb)
@@ -82,10 +84,15 @@ class VrxClassifier:
         self.last_objects = None
         self.last_update_time = rospy.Time.now()
         self.objects_sub = rospy.Subscriber(
-            "/pcodar/objects", PerceptionObjectArray, self.process_objects, queue_size=2
+            "/pcodar/objects",
+            PerceptionObjectArray,
+            self.process_objects,
+            queue_size=2,
         )
         self.boxes_sub = rospy.Subscriber(
-            "/yolov7/detections", Detection2DArray, self.process_boxes
+            "/yolov7/detections",
+            Detection2DArray,
+            self.process_boxes,
         )
         self.enabled_srv = rospy.Service("~set_enabled", SetBool, self.set_enable_srv)
         self.last_image = None
@@ -121,15 +128,12 @@ class VrxClassifier:
         self.last_objects = msg
 
     def in_rect(self, point, bbox):
-        if (
+        return bool(
             point[0] >= bbox.bbox.center.x - bbox.bbox.size_x / 2
             and point[1] >= bbox.bbox.center.y - bbox.bbox.size_y / 2
             and point[0] <= bbox.bbox.center.x + bbox.bbox.size_x / 2
-            and point[1] <= bbox.bbox.center.y + bbox.bbox.size_y / 2
-        ):
-            return True
-        else:
-            return False
+            and point[1] <= bbox.bbox.center.y + bbox.bbox.size_y / 2,
+        )
 
     def distance(self, first, second):
         x_diff = second[0] - first[0]
@@ -209,7 +213,7 @@ class VrxClassifier:
                     "Object {} classified as {}".format(
                         self.last_objects.objects[closest_to_box].id,
                         self.CLASSES[a.results[0].id],
-                    )
+                    ),
                 )
                 cmd = "{}={}".format(
                     self.last_objects.objects[closest_to_box].id,
@@ -230,21 +234,25 @@ class VrxClassifier:
                 print("Reclassified as white")
                 print(
                     "Object {} classified as {}".format(
-                        self.last_objects.objects[a].id, "mb_marker_buoy_white"
-                    )
+                        self.last_objects.objects[a].id,
+                        "mb_marker_buoy_white",
+                    ),
                 )
                 cmd = "{}={}".format(
-                    self.last_objects.objects[a].id, "mb_marker_buoy_white"
+                    self.last_objects.objects[a].id,
+                    "mb_marker_buoy_white",
                 )
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
             else:
                 print(
                     "Object {} classified as {}".format(
-                        self.last_objects.objects[a].id, "mb_round_buoy_black"
-                    )
+                        self.last_objects.objects[a].id,
+                        "mb_round_buoy_black",
+                    ),
                 )
                 cmd = "{}={}".format(
-                    self.last_objects.objects[a].id, "mb_round_buoy_black"
+                    self.last_objects.objects[a].id,
+                    "mb_round_buoy_black",
                 )
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
 
@@ -256,7 +264,8 @@ class VrxClassifier:
         self.is_training = rospy.get_param("~train", False)
         self.debug = rospy.get_param("~debug", True)
         self.image_topic = rospy.get_param(
-            "~image_topic", "/camera/starboard/image_rect_color"
+            "~image_topic",
+            "/camera/starboard/image_rect_color",
         )
         self.model_loc = rospy.get_param("~model_location", "config/model")
         self.update_period = rospy.Duration(1.0 / rospy.get_param("~update_hz", 5))

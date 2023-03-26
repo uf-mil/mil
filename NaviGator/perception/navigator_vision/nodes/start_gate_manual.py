@@ -47,7 +47,11 @@ class BuoySelector:
 
         self.scale_factor = scale_factor
         self.img = cv2.resize(
-            img, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_CUBIC
+            img,
+            None,
+            fx=scale_factor,
+            fy=scale_factor,
+            interpolation=cv2.INTER_CUBIC,
         )
         self.draw_img = self.img
 
@@ -107,7 +111,9 @@ class Segmenter:
         filtered_mask = self.filter_mask(mask)
 
         cnts, _ = cv2.findContours(
-            filtered_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+            filtered_mask,
+            cv2.RETR_TREE,
+            cv2.CHAIN_APPROX_SIMPLE,
         )
         cnt = sorted(cnts, key=cv2.contourArea, reverse=True)[0]
         M = cv2.moments(cnt)
@@ -208,7 +214,10 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
         try:
             # Working copy of the current frame obtained at the same time as the tf link
             tf_listener.waitForTransform(
-                "enu", "front_left_cam_optical", rospy.Time(), rospy.Duration(4.0)
+                "enu",
+                "front_left_cam_optical",
+                rospy.Time(),
+                rospy.Duration(4.0),
             )
             left_image, right_image = left.frame, right.frame
             cam_tf = tf_listener.lookupTransform(
@@ -217,7 +226,9 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
                 left.sub.last_image_time,
             )
             cam_p, cam_q = tf_listener.lookupTransform(
-                "enu", "front_left_cam_optical", left.sub.last_image_time
+                "enu",
+                "front_left_cam_optical",
+                left.sub.last_image_time,
             )
             cam_p = np.array([cam_p])
             cam_r = tf.transformations.quaternion_matrix(cam_q)[:3, :3]
@@ -256,7 +267,11 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
     for _ in range(5):
         # Publish it 5 times so we can see it in rviz
         mil_tools.draw_ray_3d(
-            red_left_pt, left_cam, [1, 0, 0, 1], m_id=0, frame="front_left_cam_optical"
+            red_left_pt,
+            left_cam,
+            [1, 0, 0, 1],
+            m_id=0,
+            frame="front_left_cam_optical",
         )
         mil_tools.draw_ray_3d(
             red_right_pt,

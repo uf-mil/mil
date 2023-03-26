@@ -32,7 +32,10 @@ class classifier:
             help="Sets up Network for Bin Dropper",
         )
         parser.add_argument(
-            "-v", "--vamp", action="store_true", help="Sets up Network for the Buoy"
+            "-v",
+            "--vamp",
+            action="store_true",
+            help="Sets up Network for the Buoy",
         )
         parser.add_argument(
             "-s",
@@ -52,19 +55,22 @@ class classifier:
             self.target = "garlic"
             self.classes = 1
             self.see_sub = mil_tools.Image_Subscriber(
-                topic="/camera/down/image_raw", callback=self.img_callback
+                topic="/camera/down/image_raw",
+                callback=self.img_callback,
             )
         elif self.vamp:
             self.target = "vamp"
             self.classes = 4
             self.see_sub = mil_tools.Image_Subscriber(
-                topic="/camera/front/left/image_raw", callback=self.img_callback
+                topic="/camera/front/left/image_raw",
+                callback=self.img_callback,
             )
         else:
             self.target = "stake"
             self.classes = 1
             self.see_sub = mil_tools.Image_Subscriber(
-                topic="/camera/front/left/image_raw", callback=self.img_callback
+                topic="/camera/front/left/image_raw",
+                callback=self.img_callback,
             )
         # Number of frames
         self.num_frames = rospy.get_param("~num_frames", 0)
@@ -86,7 +92,8 @@ class classifier:
         self.bridge = CvBridge()
 
         self.inference_graph, self.sess = detector_utils.load_inference_graph(
-            self.target, self.classes
+            self.target,
+            self.classes,
         )
 
         # Subscribes to our image topic, allowing us to process the images
@@ -114,10 +121,7 @@ class classifier:
         process a single image.
         """
         see = self.see_sub.last_image_header
-        if abs(see.stamp.secs - int(rospy.get_time())) > self.time_thresh:
-            return True
-        else:
-            return False
+        return abs(see.stamp.secs - int(rospy.get_time())) > self.time_thresh
 
     def img_callback(self, data):
         self.parse_label_map()
@@ -131,7 +135,9 @@ class classifier:
         #  cv_image = cv2.resize(cv_image, (256, 144))
         # Run image through tensorflow graph
         boxes, scores, classes = detector_utils.detect_objects(
-            cv_image, self.inference_graph, self.sess
+            cv_image,
+            self.inference_graph,
+            self.sess,
         )
 
         # Draw Bounding box

@@ -22,7 +22,9 @@ class Guess:
             "start_gate2",
         ]
         self.guess_service = rospy.Service(
-            "guess_location", GuessRequest, self.request_location
+            "guess_location",
+            GuessRequest,
+            self.request_location,
         )
         self.markers_subscribers = []
         self.markers_locations = dict.fromkeys(self.items)
@@ -62,14 +64,16 @@ class Guess:
 
     def process_feedback(self, feedback):
         self.markers_locations[feedback.marker_name] = PoseStamped(
-            header=feedback.header, pose=feedback.pose
+            header=feedback.header,
+            pose=feedback.pose,
         )
 
     def request_location(self, srv):
         req_item = srv.item
         if req_item in self.items:
             return GuessRequestResponse(
-                location=self.markers_locations[req_item], found=True
+                location=self.markers_locations[req_item],
+                found=True,
             )
         else:
             return GuessRequestResponse(found=False)

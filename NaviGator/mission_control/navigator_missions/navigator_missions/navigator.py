@@ -116,14 +116,17 @@ class NaviGatorMission(BaseMission):
 
         cls._change_wrench = cls.nh.get_service_client("/wrench/select", MuxSelect)
         cls._change_trajectory = cls.nh.get_service_client(
-            "/trajectory/select", MuxSelect
+            "/trajectory/select",
+            MuxSelect,
         )
         cls._database_query = cls.nh.get_service_client(
-            "/database/requests", ObjectDBQuery
+            "/database/requests",
+            ObjectDBQuery,
         )
         cls._reset_pcodar = cls.nh.get_service_client("/pcodar/reset", Trigger)
         cls._pcodar_set_params = cls.nh.get_service_client(
-            "/pcodar/set_parameters", Reconfigure
+            "/pcodar/set_parameters",
+            Reconfigure,
         )
 
         cls.pose = None
@@ -155,7 +158,8 @@ class NaviGatorMission(BaseMission):
         cls.killed = False
         cls.odom_loss = False
         cls.set_vrx_classifier_enabled = cls.nh.get_service_client(
-            "/vrx_classifier/set_enabled", SetBool
+            "/vrx_classifier/set_enabled",
+            SetBool,
         )
 
     @classmethod
@@ -195,7 +199,9 @@ class NaviGatorMission(BaseMission):
         cls._grinch_raise_time = await cls.nh.get_param("~grinch_raise_time")
         cls.grinch_limit_switch_pressed = False
         cls._grinch_limit_switch_sub = cls.nh.subscribe(
-            "/limit_switch", Bool, cls._grinch_limit_switch_cb
+            "/limit_switch",
+            Bool,
+            cls._grinch_limit_switch_cb,
         )
         cls._winch_motor_pub = cls.nh.advertise("/grinch_winch/cmd", Command)
         cls._grind_motor_pub = cls.nh.advertise("/grinch_spin/cmd", Command)
@@ -207,14 +213,17 @@ class NaviGatorMission(BaseMission):
 
         try:
             cls._actuator_client = cls.nh.get_service_client(
-                "/actuator_driver/actuate", SetValve
+                "/actuator_driver/actuate",
+                SetValve,
             )
             cls._camera_database_query = cls.nh.get_service_client(
-                "/camera_database/requests", navigator_srvs.CameraDBQuery
+                "/camera_database/requests",
+                navigator_srvs.CameraDBQuery,
             )
             cls._change_wrench = cls.nh.get_service_client("/wrench/select", MuxSelect)
             cls._change_trajectory = cls.nh.get_service_client(
-                "/trajectory/select", MuxSelect
+                "/trajectory/select",
+                MuxSelect,
             )
         except AttributeError as err:
             fprint(
@@ -228,13 +237,16 @@ class NaviGatorMission(BaseMission):
 
         # Vision
         cls.set_classifier_enabled = cls.nh.get_service_client(
-            "/classifier/set_enabled", SetBool
+            "/classifier/set_enabled",
+            SetBool,
         )
         cls.obstacle_course_vision_enable = cls.nh.get_service_client(
-            "/vision/obsc/enable", SetBool
+            "/vision/obsc/enable",
+            SetBool,
         )
         cls.docks_vision_enable = cls.nh.get_service_client(
-            "/vision/docks/enable", SetBool
+            "/vision/docks/enable",
+            SetBool,
         )
 
         await cls._make_alarms()
@@ -242,18 +254,24 @@ class NaviGatorMission(BaseMission):
         # We want to make sure odom is working before we continue
         fprint("Action client do you await?", title="NAVIGATOR")
         await util.wrap_time_notice(
-            cls._moveto_client.wait_for_server(), 2, "Lqrrt action server"
+            cls._moveto_client.wait_for_server(),
+            2,
+            "Lqrrt action server",
         )
         fprint("Yes he await!", title="NAVIGATOR")
 
         fprint("Waiting for odom...", title="NAVIGATOR")
         await util.wrap_time_notice(
-            cls._odom_sub.get_next_message(), 2, "Odom listener"
+            cls._odom_sub.get_next_message(),
+            2,
+            "Odom listener",
         )
 
         if not cls.sim:
             await util.wrap_time_notice(
-                cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener"
+                cls._ecef_odom_sub.get_next_message(),
+                2,
+                "ENU Odom listener",
             )
         print("Odom has been received!")
 
@@ -267,10 +285,12 @@ class NaviGatorMission(BaseMission):
         await cls.init_front_right_camera()
 
         cls.yolo_objects = cls.nh.subscribe(
-            "/yolov7/detections_model1", Detection2DArray
+            "/yolov7/detections_model1",
+            Detection2DArray,
         )
         cls.stc_objects = cls.nh.subscribe(
-            "/yolov7/stc_detections_model", Detection2DArray
+            "/yolov7/stc_detections_model",
+            Detection2DArray,
         )
         await cls.yolo_objects.setup()
         await cls.stc_objects.setup()
@@ -297,32 +317,38 @@ class NaviGatorMission(BaseMission):
     async def init_front_left_camera(cls):
         if cls.front_left_camera_sub is None:
             cls.front_left_camera_sub = cls.nh.subscribe(
-                "/wamv/sensors/camera/front_left_cam/image_raw", Image
+                "/wamv/sensors/camera/front_left_cam/image_raw",
+                Image,
             )
 
         if cls.front_left_camera_info_sub is None:
             cls.front_left_camera_info_sub = cls.nh.subscribe(
-                "/wamv/sensors/camera/front_left_cam/camera_info", CameraInfo
+                "/wamv/sensors/camera/front_left_cam/camera_info",
+                CameraInfo,
             )
 
         await asyncio.gather(
-            cls.front_left_camera_sub.setup(), cls.front_left_camera_info_sub.setup()
+            cls.front_left_camera_sub.setup(),
+            cls.front_left_camera_info_sub.setup(),
         )
 
     @classmethod
     async def init_front_right_camera(cls):
         if cls.front_right_camera_sub is None:
             cls.front_right_camera_sub = cls.nh.subscribe(
-                "/wamv/sensors/camera/front_right_cam/image_raw", Image
+                "/wamv/sensors/camera/front_right_cam/image_raw",
+                Image,
             )
 
         if cls.front_right_camera_info_sub is None:
             cls.front_right_camera_info_sub = cls.nh.subscribe(
-                "/wamv/sensors/camera/front_right_cam/camera_info", CameraInfo
+                "/wamv/sensors/camera/front_right_cam/camera_info",
+                CameraInfo,
             )
 
         await asyncio.gather(
-            cls.front_right_camera_sub.setup(), cls.front_right_camera_info_sub.setup()
+            cls.front_right_camera_sub.setup(),
+            cls.front_right_camera_info_sub.setup(),
         )
 
     @classmethod
@@ -393,7 +419,7 @@ class NaviGatorMission(BaseMission):
         """
         while True:
             self._grind_motor_pub.publish(
-                Command(setpoint=speed * self.max_grinch_effort)
+                Command(setpoint=speed * self.max_grinch_effort),
             )
             await self.nh.sleep(interval)
 
@@ -405,7 +431,7 @@ class NaviGatorMission(BaseMission):
         """
         while True:
             self._winch_motor_pub.publish(
-                Command(setpoint=speed * self.max_grinch_effort)
+                Command(setpoint=speed * self.max_grinch_effort),
             )
             await self.nh.sleep(interval)
 
@@ -521,7 +547,11 @@ class NaviGatorMission(BaseMission):
         return self._actuator_client(req)
 
     async def get_sorted_objects(
-        self, name: str, n: int = -1, throw: bool = True, **kwargs
+        self,
+        name: str,
+        n: int = -1,
+        throw: bool = True,
+        **kwargs,
     ):
         """
         Get the closest N objects with a particular name from the PCODAR database
@@ -552,7 +582,10 @@ class NaviGatorMission(BaseMission):
         return (objects_sorted, positions[distances_argsort, :])
 
     async def database_query(
-        self, object_name: str | None = None, raise_exception: bool = True, **kwargs
+        self,
+        object_name: str | None = None,
+        raise_exception: bool = True,
+        **kwargs,
     ):
         if object_name is not None:
             kwargs["name"] = object_name
@@ -570,7 +603,7 @@ class NaviGatorMission(BaseMission):
         if object_name is not None:
             kwargs["name"] = object_name
             res = await self._camera_database_query(
-                navigator_srvs.CameraDBQueryRequest(**kwargs)
+                navigator_srvs.CameraDBQueryRequest(**kwargs),
             )
 
             return res
@@ -638,7 +671,9 @@ class NaviGatorMission(BaseMission):
     def _load_vision_services(cls, fname: str = "vision_services.yaml"):
         rospack = rospkg.RosPack()
         config_file = os.path.join(
-            rospack.get_path("navigator_missions"), "launch", fname
+            rospack.get_path("navigator_missions"),
+            "launch",
+            fname,
         )
         f = yaml.safe_load(open(config_file))
 
@@ -649,10 +684,14 @@ class NaviGatorMission(BaseMission):
                 s_args = f[name]["args"]
                 s_client = cls.nh.get_service_client(f[name]["topic"], s_type)
                 s_switch = cls.nh.get_service_client(
-                    f[name]["topic"] + "/switch", SetBool
+                    f[name]["topic"] + "/switch",
+                    SetBool,
                 )
                 cls.vision_proxies[name] = VisionProxy(
-                    s_client, s_req, s_args, s_switch
+                    s_client,
+                    s_req,
+                    s_args,
+                    s_switch,
                 )
             except Exception as e:
                 err = f"Error loading vision sevices: {e}"
@@ -662,7 +701,9 @@ class NaviGatorMission(BaseMission):
     def _load_mission_params(cls, fname="mission_params.yaml"):
         rospack = rospkg.RosPack()
         config_file = os.path.join(
-            rospack.get_path("navigator_missions"), "launch", fname
+            rospack.get_path("navigator_missions"),
+            "launch",
+            fname,
         )
         f = yaml.safe_load(open(config_file))
 
@@ -673,7 +714,11 @@ class NaviGatorMission(BaseMission):
                 desc = f[name]["description"]
                 default = f[name].get("default")
                 cls.mission_params[name] = MissionParam(
-                    cls.nh, param, options, desc, default
+                    cls.nh,
+                    param,
+                    options,
+                    desc,
+                    default,
                 )
             except Exception as e:
                 err = f"Error loading mission params: {e}"
@@ -687,7 +732,9 @@ class NaviGatorMission(BaseMission):
     @classmethod
     async def _make_alarms(cls):
         cls.kill_listener = await TxAlarmListener.init(
-            cls.nh, "kill", cls.kill_alarm_cb
+            cls.nh,
+            "kill",
+            cls.kill_alarm_cb,
         )
         await cls.kill_listener.setup()
         # TODO: Enable node handle subscriber to topic to have multiple callbacks
@@ -754,8 +801,11 @@ class MissionParam:
         if not self._valid(value):
             raise Exception(
                 "Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
-                    value, self.param, self.options, self.description
-                )
+                    value,
+                    self.param,
+                    self.options,
+                    self.description,
+                ),
             )
         else:
             return value
@@ -767,8 +817,11 @@ class MissionParam:
         if not self._valid(value):
             raise Exception(
                 "Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
-                    value, self.param, self.options, self.description
-                )
+                    value,
+                    self.param,
+                    self.options,
+                    self.description,
+                ),
             )
         await self.nh.set_param(self.param, value)
 
@@ -789,10 +842,7 @@ class MissionParam:
                 await self.nh.delete_param(self.param)
 
     def _valid(self, value) -> bool:
-        for x in self.options:
-            if x == value:
-                return True
-        return False
+        return any(x == value for x in self.options)
 
 
 class Searcher:
@@ -856,7 +906,7 @@ class Searcher:
         async def pattern():
             for pose in self.search_pattern:
                 fprint("Going to next position.", title="SEARCHER")
-                if isinstance(pose, list) or isinstance(pose, np.ndarray):
+                if isinstance(pose, (list, np.ndarray)):
                     await self.nav.move.relative(pose).go(**kwargs)
                 else:
                     await pose.go(**kwargs)
@@ -876,7 +926,7 @@ class Searcher:
 
     async def _vision_proxy_look(self):
         resp = await self.nav.vision_proxies[self.vision_proxy].get_response(
-            **self.looker_kwargs
+            **self.looker_kwargs,
         )
         return resp.found
 

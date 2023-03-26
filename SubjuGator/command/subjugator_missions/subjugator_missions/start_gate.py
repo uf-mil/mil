@@ -26,12 +26,12 @@ class StartGate(SubjuGatorMission):
         await self.tx_pose()
         fprint("Found odom")
         fprint("Begin search for gates")
-        rotate_start = self.move.zero_roll_and_pitch()
+        rotate_start = self.move().zero_roll_and_pitch()
         for i in range(4):
             # Search 4 quadrants separated by 90 degrees for the gate
             fprint(f"Searching {90 * i} degrees")
             await rotate_start.yaw_right_deg(90 * i).go(speed=CAREFUL_SPEED)
-            start = self.move.zero_roll_and_pitch()
+            start = self.move().zero_roll_and_pitch()
             # Pitch up and down to populate pointcloud
             so = SonarObjects(self, [start.pitch_down_deg(7), start] * 5)
             transform = await self._tf_listener.get_transform("map", "/base_link")
@@ -76,8 +76,9 @@ class StartGate(SubjuGatorMission):
         distance_btwn_gate = distance.euclidean(gate_points[0], gate_points[1])
         fprint(
             "Distance between poles: {} m = {} inch".format(
-                distance_btwn_gate, distance_btwn_gate * 39.3701
-            )
+                distance_btwn_gate,
+                distance_btwn_gate * 39.3701,
+            ),
         )
 
         # Find midpoint between the two poles/objects
@@ -88,7 +89,7 @@ class StartGate(SubjuGatorMission):
         fprint(f"Midpoint: {mid_point}")
 
         fprint("Looking at gate", msg_color="yellow")
-        await self.move.look_at(mid_point).go(speed=CAREFUL_SPEED)
+        await self.go(self.move().look_at(mid_point), speed=CAREFUL_SPEED)
 
         normal = mid_point - self.pose.position
         normal[2] = 0
@@ -111,19 +112,25 @@ class StartGate(SubjuGatorMission):
         fprint(f"Goalpoint: {goal_point}")
 
         fprint("Moving in front of goalpoint!", msg_color="yellow")
-        await self.move.set_position(goal_point - 2 * normal).look_at(goal_point).go(
-            speed=SPEED
+        await self.go(
+            self.move().set_position(goal_point - 2 * normal).look_at(goal_point),
+            speed=SPEED,
         )
 
         fprint("Style on dem haters!", msg_color="yellow")
-        await self.move.set_position(goal_point).yaw_right_deg(179).go(
-            speed=CAREFUL_SPEED
+        await self.go(
+            self.move().set_position(goal_point).yaw_right_deg(179),
+            speed=CAREFUL_SPEED,
         )
 
         fprint("Moving past the gate", msg_color="yellow")
-        await self.move.set_position(
-            goal_point + DIST_AFTER_GATE * normal
-        ).yaw_right_deg(179).zero_roll_and_pitch().go(speed=CAREFUL_SPEED)
+        await self.go(
+            self.move()
+            .set_position(goal_point + DIST_AFTER_GATE * normal)
+            .yaw_right_deg(179)
+            .zero_roll_and_pitch(),
+            speed=CAREFUL_SPEED,
+        )
         return True
 
     def find_gate(
@@ -154,8 +161,8 @@ class StartGate(SubjuGatorMission):
                 if distance.euclidean(p, p2) > max_distance_away:
                     fprint(
                         "Poles too far away. Distance {}".format(
-                            distance.euclidean(p, p2)
-                        )
+                            distance.euclidean(p, p2),
+                        ),
                     )
                     continue
                 if distance.euclidean(p, p2) < min_distance_away:
@@ -174,8 +181,9 @@ class StartGate(SubjuGatorMission):
                 if abs(line[0]) < 1 and abs(line[1]) < 1:
                     fprint(
                         "Objects on top of one another. x {}, y {}".format(
-                            line[0], line[1]
-                        )
+                            line[0],
+                            line[1],
+                        ),
                     )
                     continue
                 return (p, p2)

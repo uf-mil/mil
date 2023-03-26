@@ -72,7 +72,7 @@ class SubjuGatorDynamics:
         rotational_inertia = np.array(root.inertial.inertia.to_matrix())
         drag_linear = np.array(rospy.get_param("/robot_parameters/drag/linear_coeffs"))
         drag_angular = np.array(
-            rospy.get_param("/robot_parameters/drag/angular_coeffs")
+            rospy.get_param("/robot_parameters/drag/angular_coeffs"),
         )
         drag_coeffs = np.hstack((drag_linear, drag_angular)).T
         volume = rospy.get_param("/robot_parameters/volume")
@@ -187,7 +187,9 @@ class SubjuGatorDynamics:
         return self.inverse_dynamics_from_total_wrench(twist, total_wrench)
 
     def inverse_dynamics_from_total_wrench(
-        self, twist: np.ndarray, total_wrench: np.ndarray
+        self,
+        twist: np.ndarray,
+        total_wrench: np.ndarray,
     ) -> np.ndarray:
         """
         Calculates the acceleration of the Sub given the total force/torque on the body.

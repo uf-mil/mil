@@ -23,13 +23,19 @@ class RvizVisualizer:
     def __init__(self):
         rospy.init_node("revisualizer")
         self.rviz_pub = rospy.Publisher(
-            "visualization/state", visualization_msgs.Marker, queue_size=2
+            "visualization/state",
+            visualization_msgs.Marker,
+            queue_size=2,
         )
         self.rviz_pub_t = rospy.Publisher(
-            "visualization/state_t", visualization_msgs.Marker, queue_size=2
+            "visualization/state_t",
+            visualization_msgs.Marker,
+            queue_size=2,
         )
         self.rviz_pub_utils = rospy.Publisher(
-            "visualization/bus_voltage", visualization_msgs.Marker, queue_size=2
+            "visualization/bus_voltage",
+            visualization_msgs.Marker,
+            queue_size=2,
         )
         self.kill_server = InteractiveMarkerServer("interactive_kill")
 
@@ -85,13 +91,17 @@ class RvizVisualizer:
 
         # distance to bottom
         self.range_sub = rospy.Subscriber(
-            "dvl/range", RangeStamped, self.range_callback
+            "dvl/range",
+            RangeStamped,
+            self.range_callback,
         )
         # distance to surface
         self.depth_sub = rospy.Subscriber("depth", DepthStamped, self.depth_callback)
         # battery voltage
         self.voltage_sub = rospy.Subscriber(
-            "/bus_voltage", Float64, self.voltage_callback
+            "/bus_voltage",
+            Float64,
+            self.voltage_callback,
         )
 
     def update_kill_button(self):
@@ -112,7 +122,7 @@ class RvizVisualizer:
         self.update_kill_button()
 
     def kill_buttton_callback(self, feedback):
-        if not feedback.event_type == 3:
+        if feedback.event_type != 3:
             return
         if self.need_kill_update:
             return
@@ -167,10 +177,7 @@ class RvizVisualizer:
         distance = msg.range
 
         # Color a sharper red if we're in danger
-        if distance < 1.0:
-            color = (1.0, 0.1, 0.0, 0.9)
-        else:
-            color = (0.2, 0.8, 0.0, 0.7)
+        color = (1.0, 0.1, 0.0, 0.9) if distance < 1.0 else (0.2, 0.8, 0.0, 0.7)
 
         marker = self.make_cylinder_marker(
             np.array([0.0, 0.0, 0.0]),  # place at origin
@@ -196,7 +203,7 @@ class RvizVisualizer:
         color: Sequence[float],
         frame: str = "/base_link",
         up_vector: np.ndarray = np.array([0.0, 0.0, 1.0]),
-        **kwargs
+        **kwargs,
     ):
         """
         Handle the frustration that Rviz cylinders are designated by their center, not base.
@@ -217,7 +224,7 @@ class RvizVisualizer:
             color=ColorRGBA(*color),
             scale=Vector3(0.2, 0.2, length),
             lifetime=rospy.Duration(),
-            **kwargs
+            **kwargs,
         )
         return marker
 

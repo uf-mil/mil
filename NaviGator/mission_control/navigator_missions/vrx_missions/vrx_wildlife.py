@@ -29,7 +29,7 @@ class VrxWildlife(Vrx):
     async def run(self, parameters):
         self.send_feedback("Waiting for task to start")
         await self.wait_for_task_such_that(
-            lambda task: task.state in ["ready", "running"]
+            lambda task: task.state in ["ready", "running"],
         )
         await self.reset_pcodar()
         path_msg = await self.get_latching_msg(self.animal_landmarks)
@@ -94,17 +94,19 @@ class VrxWildlife(Vrx):
             for geo_pose in path_msg.poses:
                 if geo_pose.header.frame_id == "crocodile":
                     animal_pose_croc = await self.geo_pose_to_enu_pose(
-                        path_msg.poses[croc_index].pose
+                        path_msg.poses[croc_index].pose,
                     )
 
             # get animal msgs
             path_msg = await self.get_latching_msg(self.animal_landmarks)
             animal_pose_next = await self.geo_pose_to_enu_pose(
-                path_msg.poses[path[i]].pose
+                path_msg.poses[path[i]].pose,
             )
 
             start_circle_pos = self.closest_point_on_radius(
-                self.pose[0], animal_pose_next[0], radius
+                self.pose[0],
+                animal_pose_next[0],
+                radius,
             )
 
             # first point at goal

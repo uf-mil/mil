@@ -67,8 +67,8 @@ class LabelBoxParser:
                 if not found:
                     raise Exception(
                         "Could not find image {} in image dir".format(
-                            label["External ID"]
-                        )
+                            label["External ID"],
+                        ),
                     )
             img = cv2.imread(imgname)
             cb(label, img)
@@ -82,10 +82,12 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Example of labelbox reader class. Displays images with label"
+        description="Example of labelbox reader class. Displays images with label",
     )
     parser.add_argument(
-        "labels", type=str, help="JSON file with labels exported from labelbox.io"
+        "labels",
+        type=str,
+        help="JSON file with labels exported from labelbox.io",
     )
     parser.add_argument(
         "dir",

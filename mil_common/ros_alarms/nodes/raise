@@ -46,6 +46,8 @@ severity = (
 
 ab.wait_for_server()
 ab.raise_alarm(
-    parameters=params, severity=severity, problem_description=args.description
+    parameters=params,
+    severity=severity,
+    problem_description=args.description,
 )
 rospy.loginfo("Alarm raised!")

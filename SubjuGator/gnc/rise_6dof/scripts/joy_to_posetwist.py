@@ -36,12 +36,12 @@ def cb(msg: Joy) -> None:
                     linear=Vector3(
                         *numpy.array(msg.axes[:3])
                         / joy_max
-                        * [1, 1, 1 if msg.buttons[1] else 0]
+                        * [1, 1, 1 if msg.buttons[1] else 0],
                     ),
                     angular=Vector3(*numpy.array(msg.axes[3:]) / joy_max * [0, 0, 1]),
                 ),
             ),
-        )
+        ),
     )
 
 
@@ -55,7 +55,8 @@ if __name__ == "__main__":
     pub = rospy.Publisher("/trajectory", PoseTwistStamped)
 
     set_trajgen_disabled = rospy.ServiceProxy(
-        "/c3_trajectory_generator/set_disabled", SetDisabled
+        "/c3_trajectory_generator/set_disabled",
+        SetDisabled,
     )
 
     joy_max = 0.68359375

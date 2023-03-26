@@ -17,7 +17,7 @@ def inertial_from_ecef(t, tup):
             x * math.cos(th) - y * math.sin(th),
             x * math.sin(th) + y * math.cos(th),
             z,
-        ]
+        ],
     )
 
 
@@ -30,7 +30,7 @@ def inertial_vel_from_ecef_vel(t, tup, inertial_point):
             x * math.cos(th) - y * math.sin(th) - w_E * inertial_point[1],
             x * math.sin(th) + y * math.cos(th) + w_E * inertial_point[0],
             z,
-        ]
+        ],
     )
 
 
@@ -42,7 +42,7 @@ def ecef_from_inertial(t, tup):
             +x * math.cos(th) + y * math.sin(th),
             -x * math.sin(th) + y * math.cos(th),
             z,
-        ]
+        ],
     )
 
 
@@ -56,7 +56,7 @@ def ecef_vel_from_inertial_vel(t, tup, inertial_point):
             +x * math.cos(th) + y * math.sin(th),
             -x * math.sin(th) + y * math.cos(th),
             z,
-        ]
+        ],
     )
 
 
@@ -124,7 +124,7 @@ class Ephemeris:
                         1 - 5 * pos_bar[2] ** 2,
                         1 - 5 * pos_bar[2] ** 2,
                         3 - 5 * pos_bar[2] ** 2,
-                    ]
+                    ],
                 )
                 + a
             )

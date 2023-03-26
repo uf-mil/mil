@@ -140,7 +140,7 @@ def test():
                     [1.0, 0.0, 0.0],
                     [0.0, 0.0, 1.0],
                     [0.0, -1.0, 0.0],
-                ]
+                ],
             )
 
         else:
@@ -152,7 +152,7 @@ def test():
             projected = np.random.random(2) * np.array([640.0, 480.0])
         else:
             projected_h = MO.K.dot(
-                np.dot(R.transpose(), real) - R.transpose().dot(camera_t)
+                np.dot(R.transpose(), real) - R.transpose().dot(camera_t),
             )
             projected = projected_h[:2] / projected_h[2]
 
