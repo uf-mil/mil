@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(subjugator_gazebo)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -Wall")
-# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 find_package(catkin
     REQUIRED COMPONENTS
@@ -29,7 +32,7 @@ add_library(
     subjugator_buoyancy
         src/subjugator_buoyancy.cc
 )
-set_target_properties(subjugator_buoyancy PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+set_target_properties(subjugator_buoyancy PROPERTIES COMPILE_FLAGS "-std=c++17 -Wall")
 target_link_libraries(
     subjugator_buoyancy
         ${catkin_LIBRARIES}
@@ -40,7 +43,7 @@ add_library(
     subjugator_liftdrag
         src/subjugator_liftdrag.cc
 )
-set_target_properties(subjugator_liftdrag PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+set_target_properties(subjugator_liftdrag PROPERTIES COMPILE_FLAGS "-std=c++17 -Wall")
 target_link_libraries(
     subjugator_liftdrag
         ${catkin_LIBRARIES}
@@ -52,7 +55,7 @@ add_library(
         src/subjugator_thrusters.cc
         src/subjugator_thruster_config.cpp
 )
-set_target_properties(subjugator_thrusters PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+set_target_properties(subjugator_thrusters PROPERTIES COMPILE_FLAGS "-std=c++17 -Wall")
 target_link_libraries(
     subjugator_thrusters
         ${catkin_LIBRARIES}
@@ -63,7 +66,7 @@ add_library(
     subjugator_state_set
         src/subjugator_state_set.cpp
 )
-set_target_properties(subjugator_state_set PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+set_target_properties(subjugator_state_set PROPERTIES COMPILE_FLAGS "-std=c++17 -Wall")
 target_link_libraries(
     subjugator_state_set
         ${catkin_LIBRARIES}
@@ -93,7 +96,7 @@ add_library(
     subjugator_test
         src/subjugator_test.cc
 )
-set_target_properties(subjugator_test PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+set_target_properties(subjugator_test PROPERTIES COMPILE_FLAGS "-std=c++17 -Wall")
 target_link_libraries(
     subjugator_test
         ${catkin_LIBRARIES}
