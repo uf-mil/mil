@@ -38,7 +38,7 @@ class Move(SubjuGatorMission):
         except ArgumentParserException as e:
             if e.message.startswith("unrecognized arguments"):
                 print(
-                    'Note: If you are attempting to teleport to negative x value, use -- to separate tp arguments from actual command arguments. (ie, "submove tp -- -1,-2,3")'
+                    'Note: If you are attempting to teleport to negative x value, use -- to separate tp arguments from actual command arguments. (ie, "submove tp -- -1,-2,3")',
                 )
             raise e
 
@@ -172,7 +172,8 @@ class Move(SubjuGatorMission):
                         )
                         await self.nh.sleep(1)
                         state_set_pub = self.nh.advertise(
-                            "/gazebo/set_model_state", ModelState
+                            "/gazebo/set_model_state",
+                            ModelState,
                         )
                         async with state_set_pub:
                             # Wait for Gazebo to listen for message
@@ -180,7 +181,7 @@ class Move(SubjuGatorMission):
                                 await self.nh.sleep(0.1)
                             for model in models:
                                 self.send_feedback(
-                                    f"Teleporting {model} to ({x}, {y}, {z})"
+                                    f"Teleporting {model} to ({x}, {y}, {z})",
                                 )
                                 modelstate = ModelState(
                                     model_name=model,
@@ -251,6 +252,6 @@ class Move(SubjuGatorMission):
                 else:
                     res = await self.go(goal, **action_kwargs)
                 self.send_feedback(
-                    f"Result of {command}ing: {res.error or 'No error (successful).'}"
+                    f"Result of {command}ing: {res.error or 'No error (successful).'}",
                 )
         return "All movements complete."

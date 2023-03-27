@@ -87,13 +87,18 @@ class PublishThread(threading.Thread):
         super().__init__()
         self.publisher = rospy.Publisher("/trajectory", PoseTwistStamped, queue_size=1)
         self.odom_sub = rospy.Subscriber(
-            "/odom", Odometry, self.odom_callback, queue_size=1
+            "/odom",
+            Odometry,
+            self.odom_callback,
+            queue_size=1,
         )
         self.traj_gen_disable = rospy.ServiceProxy(
-            "/c3_trajectory_generator/set_disabled", SetDisabled
+            "/c3_trajectory_generator/set_disabled",
+            SetDisabled,
         )
         self.kill_listener = AlarmListener(
-            "kill", callback_funct=self.update_alarm_status
+            "kill",
+            callback_funct=self.update_alarm_status,
         )
         self.kill_raised = self.kill_listener.is_raised()
         self.x = 0.0
@@ -137,8 +142,8 @@ class PublishThread(threading.Thread):
             if i == 4:
                 print(
                     "Waiting for subscriber to connect to {}".format(
-                        self.publisher.name
-                    )
+                        self.publisher.name,
+                    ),
                 )
             rospy.sleep(0.5)
             i += 1
@@ -208,7 +213,8 @@ class PublishThread(threading.Thread):
             pose_twist_msg.pose.orientation = self.odom_orient
             pose_twist_msg.twist = twist
             pose_twist_msg.acceleration = Accel(
-                Vector3(self.x, self.y, self.z), Vector3(0, 0, 0)
+                Vector3(self.x, self.y, self.z),
+                Vector3(0, 0, 0),
             )
 
             trajectory_msg.posetwist = pose_twist_msg
@@ -231,10 +237,7 @@ def getKey(settings, timeout):
         tty.setraw(sys.stdin.fileno())
         # sys.stdin.read() returns a string on Linux
         rlist, _, _ = select([sys.stdin], [], [], timeout)
-        if rlist:
-            key = sys.stdin.read(1)
-        else:
-            key = ""
+        key = sys.stdin.read(1) if rlist else ""
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
     return key
 
@@ -287,12 +290,12 @@ if __name__ == "__main__":
         print(vels(speed, turn))
         while 1:
             key = getKey(settings, key_timeout)
-            if key in moveBindings.keys():
+            if key in moveBindings:
                 x = moveBindings[key][0]
                 y = moveBindings[key][1]
                 z = moveBindings[key][2]
                 th = moveBindings[key][3]
-            elif key in speedBindings.keys():
+            elif key in speedBindings:
                 speed = min(speed_limit, speed * speedBindings[key][0])
                 turn = min(turn_limit, turn * speedBindings[key][1])
                 if speed == speed_limit:
