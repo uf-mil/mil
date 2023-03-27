@@ -37,13 +37,16 @@ class PingerMission(NaviGatorMission):
     @classmethod
     async def setup(cls):
         cls.listen_client = cls.nh.get_service_client(
-            "/hydrophones/set_listen", SetBool
+            "/hydrophones/set_listen",
+            SetBool,
         )
         cls.pinger_client = cls.nh.get_service_client(
-            "/hydrophones/find_pinger", FindPinger
+            "/hydrophones/find_pinger",
+            FindPinger,
         )
         cls.reset_client = cls.nh.get_service_client(
-            "/hydrophones/set_freq", SetFrequency
+            "/hydrophones/set_freq",
+            SetFrequency,
         )
         cls.marker_pub = cls.nh.advertise("/pinger/debug_marker", MarkerArray)
         await cls.marker_pub.setup()
@@ -90,13 +93,13 @@ class PingerMission(NaviGatorMission):
             [
                 np.linalg.norm(
                     pose
-                    - (self.gate_poses[0] + self.OBSERVE_DISTANCE_METERS * self.g_perp)
+                    - (self.gate_poses[0] + self.OBSERVE_DISTANCE_METERS * self.g_perp),
                 ),
                 np.linalg.norm(
                     pose
-                    - (self.gate_poses[0] - self.OBSERVE_DISTANCE_METERS * self.g_perp)
+                    - (self.gate_poses[0] - self.OBSERVE_DISTANCE_METERS * self.g_perp),
                 ),
-            ]
+            ],
         )
         if np.argmin(distance_test) == 1:
             self.negate = True
@@ -108,19 +111,23 @@ class PingerMission(NaviGatorMission):
             if self.negate:
                 self.observation_points = (
                     np.append(
-                        (branch_pt0 - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0
+                        (branch_pt0 - self.OBSERVE_DISTANCE_METERS * self.g_perp),
+                        0,
                     ),
                     np.append(
-                        (branch_pt1 - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0
+                        (branch_pt1 - self.OBSERVE_DISTANCE_METERS * self.g_perp),
+                        0,
                     ),
                 )
             else:
                 self.observation_points = (
                     np.append(
-                        (branch_pt0 + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0
+                        (branch_pt0 + self.OBSERVE_DISTANCE_METERS * self.g_perp),
+                        0,
                     ),
                     np.append(
-                        (branch_pt1 + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0
+                        (branch_pt1 + self.OBSERVE_DISTANCE_METERS * self.g_perp),
+                        0,
                     ),
                 )
             self.look_at_points = (np.append(branch_pt0, 0), np.append(branch_pt1, 0))
@@ -187,7 +194,7 @@ class PingerMission(NaviGatorMission):
                 np.linalg.norm(self.pinger_pose - self.gate_poses[0]),
                 np.linalg.norm(self.pinger_pose - self.gate_poses[1]),
                 np.linalg.norm(self.pinger_pose - self.gate_poses[2]),
-            ]
+            ],
         )
 
     async def go_thru_gate(self):
@@ -244,11 +251,15 @@ class PingerMission(NaviGatorMission):
 
         cur_time = self.nh.get_time()
         self.new_marker(
-            position=np.append(estimated_3_endbuoy, 0), color=(1, 1, 1), time=cur_time
+            position=np.append(estimated_3_endbuoy, 0),
+            color=(1, 1, 1),
+            time=cur_time,
         )
         self.new_marker(position=np.append(estimated_circle_buoy, 0), time=cur_time)
         self.new_marker(
-            position=np.append(estimated_1_endbuoy, 0), color=(1, 1, 1), time=cur_time
+            position=np.append(estimated_1_endbuoy, 0),
+            color=(1, 1, 1),
+            time=cur_time,
         )
 
         totems = await self.database_query("totem", raise_exception=False)
@@ -256,13 +267,13 @@ class PingerMission(NaviGatorMission):
             sorted_1 = sorted(
                 totems.objects,
                 key=lambda t: np.linalg.norm(
-                    estimated_1_endbuoy - mil_tools.rosmsg_to_numpy(t.position)[:2]
+                    estimated_1_endbuoy - mil_tools.rosmsg_to_numpy(t.position)[:2],
                 ),
             )
             sorted_3 = sorted(
                 totems.objects,
                 key=lambda t: np.linalg.norm(
-                    estimated_3_endbuoy - mil_tools.rosmsg_to_numpy(t.position)[:2]
+                    estimated_3_endbuoy - mil_tools.rosmsg_to_numpy(t.position)[:2],
                 ),
             )
 
@@ -271,8 +282,8 @@ class PingerMission(NaviGatorMission):
                 key=lambda t: abs(
                     np.linalg.norm(
                         estimated_circle_buoy
-                        - mil_tools.rosmsg_to_numpy(t.position)[:2]
-                    )
+                        - mil_tools.rosmsg_to_numpy(t.position)[:2],
+                    ),
                 ),
             )
             self.new_marker(
@@ -282,7 +293,7 @@ class PingerMission(NaviGatorMission):
             )
             circle_error = np.linalg.norm(
                 mil_tools.rosmsg_to_numpy(sorted_circle[0].position)[:2]
-                - estimated_circle_buoy
+                - estimated_circle_buoy,
             )
             if circle_error < self.MAX_CIRCLE_BUOY_ERROR:
                 self.circle_totem = mil_tools.rosmsg_to_numpy(sorted_circle[0].position)
@@ -388,11 +399,11 @@ class PingerMission(NaviGatorMission):
             await self.mission_params["acoustic_pinger_active_index_correct"].set(3)
         else:
             await self.mission_params["acoustic_pinger_active_index_correct"].set(
-                int(self.gate_index) + 1
+                int(self.gate_index) + 1,
             )
 
         await self.mission_params["acoustic_pinger_active_index"].set(
-            int(self.gate_index) + 1
+            int(self.gate_index) + 1,
         )
         # await self.get_colored_buoys()
 
@@ -400,16 +411,18 @@ class PingerMission(NaviGatorMission):
         if self.circle_totem is not None:
             # Circle around totem
             await self.move.look_at(self.circle_totem).set_position(
-                self.circle_totem
+                self.circle_totem,
             ).backward(8).yaw_left(90, unit="deg").go()
             await self.move.circle_point(self.circle_totem).go()
 
             (first, last) = reversed(self.gate_thru_points)
             await self.move.set_position(first).look_at(last).go(
-                initial_plan_time=5, move_type="drive"
+                initial_plan_time=5,
+                move_type="drive",
             )
             await self.move.set_position(last).go(
-                initial_plan_time=5, move_type="drive"
+                initial_plan_time=5,
+                move_type="drive",
             )
 
     def get_gate_perp(self):

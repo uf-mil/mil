@@ -37,11 +37,11 @@ class CircleTower(NaviGatorMission):
                     elif val == "B":
                         colors[i] = "BLUE"
                 self.send_feedback(
-                    "Colors specified, running {}".format(" ".join(colors))
+                    "Colors specified, running {}".format(" ".join(colors)),
                 )
             else:
                 self.send_feedback(
-                    "No colors Specified, defaulting to {}".format(" ".join(colors))
+                    "No colors Specified, defaulting to {}".format(" ".join(colors)),
                 )
         else:
             # Make sure they are valid colors
@@ -56,7 +56,9 @@ class CircleTower(NaviGatorMission):
         targets = []
         for color in colors:
             res = await self.get_sorted_objects(
-                "totem_" + color.lower(), n=1, throw=False
+                "totem_" + color.lower(),
+                n=1,
+                throw=False,
             )
             if res is None:
                 self.send_feedback(f"Totem {color} not found")
@@ -89,16 +91,15 @@ class CircleTower(NaviGatorMission):
             )
 
             # Rotate for faster rotate
-            if direction == "cw":
-                move = move.yaw_left(1.57)
-            else:
-                move = move.yaw_right(1.57)
+            move = move.yaw_left(1.57) if direction == "cw" else move.yaw_right(1.57)
             await move.go()
 
             self.send_feedback("Circling!")
             await self.nh.sleep(0.1)
             res = await self.move.circle_point(
-                position, direction=direction, revolutions=1.3
+                position,
+                direction=direction,
+                revolutions=1.3,
             ).go()
             self.send_feedback("Done circling")
             await self.nh.sleep(0.1)

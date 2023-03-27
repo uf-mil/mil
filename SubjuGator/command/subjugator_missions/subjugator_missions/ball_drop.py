@@ -61,7 +61,7 @@ class BallDrop(SubjuGatorMission):
                 await self.go(
                     self.move()
                     .set_position(
-                        np.array(rospy.get_param("/poi_server/initial_pois/ball_drop"))
+                        np.array(rospy.get_param("/poi_server/initial_pois/ball_drop")),
                     )
                     .depth(TRAVEL_DEPTH),
                     speed=FAST_SPEED,
@@ -72,7 +72,8 @@ class BallDrop(SubjuGatorMission):
         ball_drop_sub = self.nh.subscribe("/bbox_pub", Point)
         await ball_drop_sub.setup()
         await self.go(
-            self.move().to_height(SEARCH_HEIGHT).zero_roll_and_pitch(), speed=SPEED
+            self.move().to_height(SEARCH_HEIGHT).zero_roll_and_pitch(),
+            speed=SPEED,
         )
 
         while True:
@@ -92,7 +93,7 @@ class BallDrop(SubjuGatorMission):
 
         fprint(f"Centered, going to depth {HEIGHT_BALL_DROPER}")
         await self.move.to_height(HEIGHT_BALL_DROPER).zero_roll_and_pitch().go(
-            speed=SPEED
+            speed=SPEED,
         )
         fprint("Dropping marker")
         await self.actuators.drop_marker()

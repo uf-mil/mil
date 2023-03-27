@@ -40,13 +40,13 @@ class Printer:
 
         # Text effects
         self.underline = lambda text: Printer(
-            self._string + Colors.underline + str(text) + Colors.reset
+            self._string + Colors.underline + str(text) + Colors.reset,
         )
         self.bold = lambda text: Printer(
-            self._string + Colors.bold + str(text) + Colors.reset
+            self._string + Colors.bold + str(text) + Colors.reset,
         )
         self.negative = lambda text: Printer(
-            self._string + Colors.negative + str(text) + Colors.reset
+            self._string + Colors.negative + str(text) + Colors.reset,
         )
 
         # For passing in custom formatting
@@ -130,17 +130,20 @@ class FprintFactory:
         newline: int = 1,
     ):
         assert time is None or callable(
-            time
+            time,
         ), "`time` should be `None` for no printing or a function that generates a timestamp."
         assert msg_color is None or isinstance(
-            msg_color, str
+            msg_color,
+            str,
         ), "`msg_color` should be `None` for default printing or a string color."
         assert isinstance(
-            auto_bold, bool
+            auto_bold,
+            bool,
         ), "`auto_bold` should be true or false if messages should be printed\
                                as bold by default or not"
         assert newline is None or isinstance(
-            newline, int
+            newline,
+            int,
         ), "`newline` should be the number of newlines after the text (default 1)"
 
         # All these can be overwritten if not specified here

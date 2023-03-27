@@ -16,7 +16,9 @@ def odom_callback(odom_msg: Odometry) -> None:
           callback by the subscriber.
     """
     controller.give_new_state(
-        odom_msg.pose.pose, odom_msg.twist.twist, odom_msg.header.stamp.to_sec()
+        odom_msg.pose.pose,
+        odom_msg.twist.twist,
+        odom_msg.header.stamp.to_sec(),
     )
 
 
@@ -30,7 +32,7 @@ def reference_callback(ref_msg: PoseTwistStamped) -> None:
           to the callback by the subscriber.
     """
     pose_ref_pub.publish(
-        PoseStamped(header=ref_msg.header, pose=ref_msg.posetwist.pose)
+        PoseStamped(header=ref_msg.header, pose=ref_msg.posetwist.pose),
     )
     controller.give_new_reference(ref_msg.posetwist.pose, ref_msg.posetwist.twist)
 

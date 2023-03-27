@@ -52,14 +52,14 @@ def observe(image):
     kernels_run = features.conv_features(im_gs)
 
     kernel_observations = np.reshape(kernels_run, (-1, kernels_run.shape[2])).astype(
-        np.float32
+        np.float32,
     )
 
     all_observations = np.hstack(
         (
             observations,
             kernel_observations,
-        )
+        ),
     ).astype(np.float32)
 
     return all_observations

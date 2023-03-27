@@ -51,7 +51,10 @@ class DoOdom:
 
 class Sim:
     def __init__(
-        self, bf_size: float = 60, min_t_spacing: float = 9, num_of_buoys: int = 20
+        self,
+        bf_size: float = 60,
+        min_t_spacing: float = 9,
+        num_of_buoys: int = 20,
     ):
         self.ogrid_pub = rospy.Publisher("/ogrid", OccupancyGrid, queue_size=2)
         self.odom = DoOdom(bf_size)
@@ -66,7 +69,8 @@ class Sim:
         self.height = bf_size * 3
         self.width = bf_size * 3
         self.origin = mil_tools.numpy_quat_pair_to_pose(
-            [-bf_size, -bf_size, 0], [0, 0, 0, 1]
+            [-bf_size, -bf_size, 0],
+            [0, 0, 0, 1],
         )
 
         self.publish_ogrid = lambda *args: self.ogrid_pub.publish(self.get_message())
@@ -87,7 +91,7 @@ class Sim:
 
     def _make_ogrid_transform(self):
         self.grid = np.zeros(
-            (self.height / self.resolution, self.width / self.resolution)
+            (self.height / self.resolution, self.width / self.resolution),
         )
         # Transforms points from ENU to ogrid frame coordinates
         self.t = np.array(
@@ -95,7 +99,7 @@ class Sim:
                 [1 / self.resolution, 0, -self.origin.position.x / self.resolution],
                 [0, 1 / self.resolution, -self.origin.position.y / self.resolution],
                 [0, 0, 1],
-            ]
+            ],
         )
 
         return lambda point: self.t.dot(np.append(point[:2], 1))[:2]
@@ -111,15 +115,15 @@ class Sim:
         _buoy_positions = []
         for b in buoy_positions:
             if np.all(
-                np.linalg.norm(self.totem_positions - b, axis=1) > self.min_t_spacing
+                np.linalg.norm(self.totem_positions - b, axis=1) > self.min_t_spacing,
             ):
                 _buoy_positions.append(b)
         self.buoy_positions = np.array(_buoy_positions)
         print(len(self.buoy_positions))
         fprint(
             "Removed {} buoys that were too close to totems".format(
-                len(self.buoy_positions) - len(_buoy_positions)
-            )
+                len(self.buoy_positions) - len(_buoy_positions),
+            ),
         )
         # assert len(self.buoy_positions) > .5 * self.num_of_buoys, "Not enough buoys remain, try rerunning."
         if len(self.buoy_positions) < 0.5 * self.num_of_buoys:
@@ -132,7 +136,11 @@ class Sim:
         self.publish_ogrid()
 
     def position_to_object(
-        self, position: np.ndarray, color: Sequence[int], id, name: str = "totem"
+        self,
+        position: np.ndarray,
+        color: Sequence[int],
+        id,
+        name: str = "totem",
     ) -> PerceptionObject:
         obj = PerceptionObject()
         obj.id = int(id)
@@ -152,8 +160,10 @@ class Sim:
             index = np.argwhere(self.ids == req.name)
             objects = [
                 self.position_to_object(
-                    self.totem_positions[index], self.colors[index], req.name
-                )
+                    self.totem_positions[index],
+                    self.colors[index],
+                    req.name,
+                ),
             ]
         elif req.name == "totem":
             objects = [
@@ -163,8 +173,11 @@ class Sim:
         elif req.name == "BuoyField":
             objects = [
                 self.position_to_object(
-                    [self.bf_size / 2, self.bf_size / 2, 0], [0, 0, 0], 0, "BuoyField"
-                )
+                    [self.bf_size / 2, self.bf_size / 2, 0],
+                    [0, 0, 0],
+                    0,
+                    "BuoyField",
+                ),
             ]
         else:
             return ObjectDBQueryResponse(found=False)
@@ -178,7 +191,7 @@ class Sim:
                 msg_color="yellow",
             )
             self.grid = np.zeros(
-                (self.height / self.resolution, self.width / self.resolution)
+                (self.height / self.resolution, self.width / self.resolution),
             )
 
         ogrid = OccupancyGrid()
@@ -195,17 +208,29 @@ class Sim:
         for b in self.buoy_positions:
             center = tuple(self.transform(b).astype(np.int32).tolist())
             cv2.circle(
-                self.grid, center, int(self.buoy_size / self.resolution), 255, -1
+                self.grid,
+                center,
+                int(self.buoy_size / self.resolution),
+                255,
+                -1,
             )
 
     def draw_totems(self) -> None:
         for b in self.totem_positions:
             center = tuple(self.transform(b).astype(np.int32).tolist())
             cv2.circle(
-                self.grid, center, int(self.totem_size / self.resolution), 255, -1
+                self.grid,
+                center,
+                int(self.totem_size / self.resolution),
+                255,
+                -1,
             )
             cv2.circle(
-                self.grid, center, int(0.5 * self.totem_size / self.resolution), -50, -1
+                self.grid,
+                center,
+                int(0.5 * self.totem_size / self.resolution),
+                -50,
+                -1,
             )
 
 

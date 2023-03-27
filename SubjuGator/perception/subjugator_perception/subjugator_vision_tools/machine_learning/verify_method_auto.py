@@ -111,9 +111,7 @@ if __name__ == "__main__":
             tic_prediction = time()
 
             try:
-                segmentation = [
-                    x for x in [clf.predict(obs) for obs in some_observations]
-                ]
+                segmentation = [clf.predict(obs) for obs in some_observations]
             except Exception:
                 print("Failed to load. File probably doesn't exist")
                 break
@@ -133,10 +131,10 @@ if __name__ == "__main__":
                 continue
 
             true_positives = np.sum(bool_targets & bool_predictions) / np.sum(
-                bool_targets
+                bool_targets,
             ).astype(np.float32)
             false_positives = np.sum(
-                np.logical_not(bool_targets) & bool_predictions
+                np.logical_not(bool_targets) & bool_predictions,
             ) / np.sum(np.logical_not(bool_targets)).astype(np.float32)
 
             print(f"\tPercent correct: {true_positives}")
@@ -153,32 +151,32 @@ if __name__ == "__main__":
 
         try:
             print(
-                "Average accuracy: {}".format(np.average(attributes["true_positives"]))
+                "Average accuracy: {}".format(np.average(attributes["true_positives"])),
             )
             print(
                 "Average false positives: {}".format(
-                    np.average(attributes["false_positives"])
-                )
+                    np.average(attributes["false_positives"]),
+                ),
             )
             print("Min accuracy: {}".format(np.min(attributes["true_positives"])))
             print(
-                "Max false positives: {}".format(np.max(attributes["false_positives"]))
+                "Max false positives: {}".format(np.max(attributes["false_positives"])),
             )
             print("Average execution time: {}".format(np.average(attributes["times"])))
 
             report_data["Type"].append(f_name)
             report_data["Average accuracy"].append(
-                np.average(attributes["true_positives"])
+                np.average(attributes["true_positives"]),
             )
             report_data["Average false positives"].append(
-                np.average(attributes["false_positives"])
+                np.average(attributes["false_positives"]),
             )
             report_data["Min accuracy"].append(np.min(attributes["true_positives"]))
             report_data["Max false positives"].append(
-                np.max(attributes["false_positives"])
+                np.max(attributes["false_positives"]),
             )
             report_data["Average execution time"].append(
-                np.average(attributes["times"])
+                np.average(attributes["times"]),
             )
         except Exception:
             print("Issue")

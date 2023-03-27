@@ -69,10 +69,11 @@ class OnlineBagger:
         Outputs each topics: time_buffer(float in seconds), subscribe_statue(bool), topic(string)
         """
         sub_list = ""
-        for topic in self.subscriber_list.keys():
+        for topic in self.subscriber_list:
             if self.subscriber_list[topic][1] == status:
                 sub_list = sub_list + "\n{:13}, {}".format(
-                    self.subscriber_list[topic], topic
+                    self.subscriber_list[topic],
+                    topic,
                 )
         return sub_list
 
@@ -87,7 +88,8 @@ class OnlineBagger:
 
         self.stream_time = rospy.get_param("~stream_time", default=30)  # seconds
         self.resubscribe_period = rospy.get_param(
-            "~resubscribe_period", default=3.0
+            "~resubscribe_period",
+            default=3.0,
         )  # seconds
         self.dated_folder = rospy.get_param("~dated_folder", default=True)  # bool
 
@@ -110,7 +112,7 @@ class OnlineBagger:
         # Add topics from MIL bag script environment variables
         if "BAG_ALWAYS" in os.environ:
             add_env_var(os.environ["BAG_ALWAYS"])
-        for key in os.environ.keys():
+        for key in os.environ:
             if key[0:4] == "bag_":
                 add_env_var(os.environ[key])
 
@@ -153,7 +155,7 @@ class OnlineBagger:
             def __getitem__(self, index):
                 if isinstance(index, slice):
                     return type(self)(
-                        itertools.islice(self, index.start, index.stop, index.step)
+                        itertools.islice(self, index.start, index.stop, index.step),
                     )
                 return deque.__getitem__(self, index)
 
@@ -183,10 +185,11 @@ class OnlineBagger:
                 self.successful_subscription_count,
                 len(self.subscriber_list),
                 self.resubscribe_period,
-            )
+            ),
         )
         self.resubscriber = rospy.Timer(
-            rospy.Duration(self.resubscribe_period), self.subscribe
+            rospy.Duration(self.resubscribe_period),
+            self.subscribe,
         )
 
     def subscribe(self, time_info=None):
@@ -284,7 +287,7 @@ class OnlineBagger:
                     topic,
                     self.get_topic_message_count(topic),
                     round(time_diff.to_sec(), 2),
-                )
+                ),
             )
 
         while (
@@ -307,9 +310,9 @@ class OnlineBagger:
         """
 
         total_message_count = 0
-        for topic in self.topic_messages.keys():
+        for topic in self.topic_messages:
             total_message_count = total_message_count + self.get_topic_message_count(
-                topic
+                topic,
             )
 
         return total_message_count
@@ -460,7 +463,9 @@ class OnlineBaggerClient:
             bar_format="{desc} {bar} {percentage:3.0f}%",
         )
         self.client.send_goal(
-            self.goal, done_cb=self._done_cb, feedback_cb=self._feedback_cb
+            self.goal,
+            done_cb=self._done_cb,
+            feedback_cb=self._feedback_cb,
         )
         while self.result is None and not rospy.is_shutdown():
             rospy.sleep(0.1)
@@ -477,7 +482,7 @@ if __name__ == "__main__":
     argv = rospy.myargv()
     parser = argparse.ArgumentParser(
         description="ROS node to maintain buffers to create bags of the past\
-                                                  and client to call this node."
+                                                  and client to call this node.",
     )
     parser.add_argument(
         "-c",
@@ -514,10 +519,7 @@ if __name__ == "__main__":
     args = parser.parse_args(argv[1:])
     if args.client:  # Run as actionclient
         rospy.init_node("online_bagger_client", anonymous=True)
-        if args.topics is None:
-            topics = ""
-        else:
-            topics = "".join(args.topics)
+        topics = "" if args.topics is None else "".join(args.topics)
         client = OnlineBaggerClient(name=args.name, topics=topics, time=args.time)
         client.bag()
     else:  # Run as OnlineBagger server

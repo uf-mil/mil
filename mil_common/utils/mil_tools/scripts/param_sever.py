@@ -24,7 +24,8 @@ while not rospy.is_shutdown():
 
         p = rospy.get_param(file_basepath)
         data = yaml.dump(
-            {k: v for k, v in p.items() if k in param_paths}, Dumper=MyDumper
+            {k: v for k, v in p.items() if k in param_paths},
+            Dumper=MyDumper,
         )
 
         if os.path.exists(filename):

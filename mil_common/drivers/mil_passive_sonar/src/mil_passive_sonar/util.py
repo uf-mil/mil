@@ -46,7 +46,13 @@ def upfirdn(x, h, p, q):
 
 
 def make_ping_channel(
-    delay=0, freq=25e3, offset=0x7FFF, ampl=200, zeros=64, count=1024, sample_rate=300e3
+    delay=0,
+    freq=25e3,
+    offset=0x7FFF,
+    ampl=200,
+    zeros=64,
+    count=1024,
+    sample_rate=300e3,
 ):
     w = 2 * math.pi * freq / sample_rate
     sinwave = ampl * numpy.sin(w * (numpy.arange(count) - delay))
@@ -178,7 +184,7 @@ def calculate_dir_pinger(deltas, h_dist, v_sound):
     """
     if numpy.max(deltas) > h_dist / float(v_sound):
         raise Exception(
-            "an impossible time delay was detected ( > %f)" % float(h_dist / v_sound)
+            "an impossible time delay was detected ( > %f)" % float(h_dist / v_sound),
         )
     x = numpy.zeros((3,))
 
