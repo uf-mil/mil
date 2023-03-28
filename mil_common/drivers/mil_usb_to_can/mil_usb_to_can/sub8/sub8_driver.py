@@ -5,10 +5,12 @@ from typing import TYPE_CHECKING, Any, Dict, Generator, Optional, Tuple
 import rospy
 from serial import SerialException
 
-from .board import (
-    USBtoCANBoard,  # relative import causes import error with rosrun - GH-731
+from mil_usb_to_can.sub8.board import (
+    USBtoCANBoard,
 )
-from .utils import USB2CANException
+
+# relative import causes import error with rosrun - GH-731
+from mil_usb_to_can.sub8.utils import USB2CANException
 
 if TYPE_CHECKING:
     from .device import CANDeviceHandle

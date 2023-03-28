@@ -54,13 +54,13 @@ from .application_packet import (
 )
 from .board import USBtoCANBoard
 from .device import CANDeviceHandle, ExampleAdderDeviceHandle, ExampleEchoDeviceHandle
-from .driver import USBtoCANDriver
 from .simulation import (
     ExampleSimulatedAdderDevice,
     ExampleSimulatedEchoDevice,
     SimulatedCANDevice,
     SimulatedUSBtoCAN,
 )
+from .sub8_driver import USBtoCANDriver
 from .utils import (
     ChecksumException,
     CommandPacket,

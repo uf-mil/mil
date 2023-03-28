@@ -5,7 +5,7 @@ import struct
 import unittest
 
 import rostest
-from mil_usb_to_can import ApplicationPacket, CommandPacket
+from mil_usb_to_can.sub8 import ApplicationPacket, CommandPacket
 
 
 class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
@@ -20,7 +20,7 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
         packet = ApplicationPacket(-1, b"test")
         with self.assertRaises(struct.error):
             bytes(packet)
-        packet = ApplicationPacket("a", b"test")
+        packet = ApplicationPacket(ord("a"), b"test")
         with self.assertRaises(struct.error):
             bytes(packet)
 
