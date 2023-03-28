@@ -2,7 +2,7 @@
 <launch>
   <param name="/is_simulation" value="True" />
 
-  <node pkg="mil_usb_to_can" type="driver.py" name="usb_to_can_driver">
+  <node pkg="mil_usb_to_can" type="sub9_driver.py" name="usb_to_can_driver">
     <rosparam>
     device_handles:
       sub9_thrust_and_kill_board.ThrusterAndKillBoard: [sub9_thrust_and_kill_board.KillReceivePacket]

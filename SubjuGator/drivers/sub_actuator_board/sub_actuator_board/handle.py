@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import rospy
 from mil_usb_to_can.sub9 import AckPacket, CANDeviceHandle
+
 from sub_actuator_board.srv import (
     GetValve,
     GetValveRequest,
@@ -47,7 +48,10 @@ class ActuatorBoard(CANDeviceHandle):
         message = ActuatorSetPacket(address=req.actuator, open=req.opened)
         self.send_data(message)
         rospy.loginfo(
-            "Set valve {} {}".format(req.actuator, "opened" if req.opened else "closed")
+            "Set valve {} {}".format(
+                req.actuator,
+                "opened" if req.opened else "closed",
+            ),
         )
         # Wait some time for board to process command
         rospy.sleep(0.01)
@@ -80,7 +84,7 @@ class ActuatorBoard(CANDeviceHandle):
             raise RuntimeError("No response from the board within 10 seconds.")
 
         response = GetValveResponse(
-            opened=self._recent_response.values & (1 << req.actuator)
+            opened=self._recent_response.values & (1 << req.actuator),
         )
         self._recent_response = None
         return response
