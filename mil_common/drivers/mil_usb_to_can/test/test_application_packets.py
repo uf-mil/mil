@@ -20,7 +20,7 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
         packet = ApplicationPacket(-1, b"test")
         with self.assertRaises(struct.error):
             bytes(packet)
-        packet = ApplicationPacket(ord("a"), b"test")
+        packet = ApplicationPacket("a", b"test")
         with self.assertRaises(struct.error):
             bytes(packet)
 

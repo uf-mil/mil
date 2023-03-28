@@ -5,7 +5,7 @@ USB to CAN driver board. The package provides full functionality for communicati
 with the board, along with helper classes to provide a better, more structured use
 of data being sent to and received from the board.
 
-To launch the driver, start ``driver.py``, an executable Python file. This file
+To launch the driver, start ``sub8_driver.py``, an executable Python file. This file
 will spin up a driver and interface to the board. If you are starting the driver
 from a launch file, you can additionally provide information for the embedded
 :class:`USBtoCANBoard` class, which handles connecting to the board. This information
@@ -14,7 +14,7 @@ can be provided through local ROS parameters:
 .. code-block:: xml
 
     <launch>
-      <node pkg="mil_usb_to_can" type="driver.py" name="usb_to_can_driver">
+      <node pkg="mil_usb_to_can" type="sub8_driver.py" name="usb_to_can_driver">
         <rosparam command="delete" />
         <rosparam>
         # Path of serial device (default: "/dev/tty0")
