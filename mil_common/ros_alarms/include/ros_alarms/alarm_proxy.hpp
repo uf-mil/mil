@@ -5,7 +5,7 @@
 #pragma once
 
 #include <ros/ros.h>
-#include <ros_alarms/Alarm.h>
+#include <ros_alarms_msg/Alarm.h>
 
 #include <sstream>
 #include <string>
@@ -44,14 +44,14 @@ struct AlarmProxy
    *
    * @param msg The message to construct the class from.
    */
-  AlarmProxy(ros_alarms::Alarm msg);
+  AlarmProxy(ros_alarms_msg::Alarm msg);
 
   /**
    * Converts the Alarm Proxy object to an :class:`Alarm` message.
    *
    * @return The constructed message.
    */
-  Alarm as_msg();  // convert to ros msg
+  ros_alarms_msg::Alarm as_msg();  // convert to ros msg
 
   /**
    * Prints a readable representation of the class. Normally prints the alarm name,

@@ -2,7 +2,7 @@
 import rospy
 from mil_usb_to_can import CANDeviceHandle
 from ros_alarms import AlarmBroadcaster, AlarmListener
-from ros_alarms.msg import Alarm
+from ros_alarms_msg.msg import Alarm
 from rospy.timer import TimerEvent
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 from subjugator_msgs.msg import Thrust

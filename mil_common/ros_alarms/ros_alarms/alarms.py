@@ -5,8 +5,8 @@ import traceback
 from typing import Callable
 
 import rospy
-from ros_alarms.msg import Alarm as AlarmMsg
-from ros_alarms.srv import (
+from ros_alarms_msg.msg import Alarm as AlarmMsg
+from ros_alarms_msg.srv import (
     AlarmGet,
     AlarmGetRequest,
     AlarmGetResponse,

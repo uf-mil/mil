@@ -1,8 +1,8 @@
 #pragma once
 
 #include <ros/ros.h>
-#include <ros_alarms/Alarm.h>
-#include <ros_alarms/AlarmSet.h>
+#include <ros_alarms_msg/Alarm.h>
+#include <ros_alarms_msg/AlarmSet.h>
 
 #include <ros_alarms/alarm_proxy.hpp>
 #include <string>

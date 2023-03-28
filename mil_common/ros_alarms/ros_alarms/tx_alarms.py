@@ -3,8 +3,8 @@ import json
 import traceback
 
 import axros
-from ros_alarms.msg import Alarm
-from ros_alarms.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
+from ros_alarms_msg.msg import Alarm
+from ros_alarms_msg.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
 
 """
 Alarms implementation for axros (https://github.com/axros/axros)

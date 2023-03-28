@@ -5,7 +5,7 @@ from geometry_msgs.msg import WrenchStamped
 from navigator_thrust_mapper import ThrusterMap
 from roboteq_msgs.msg import Command
 from ros_alarms import AlarmListener
-from ros_alarms.msg import Alarm
+from ros_alarms_msg.msg import Alarm
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float32
 

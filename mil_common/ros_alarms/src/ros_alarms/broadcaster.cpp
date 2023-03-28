@@ -8,7 +8,7 @@ AlarmBroadcaster::AlarmBroadcaster(ros::NodeHandle& nh, AlarmProxy* alarm)
   : __nh(nh)
   , __alarm_ptr(alarm)
   , __alarm_proxy("uninitialized_alarm", false, "", "", 5)
-  , __set_alarm(__nh.serviceClient<ros_alarms::AlarmSet>("/alarm/set"))
+  , __set_alarm(__nh.serviceClient<ros_alarms_msg::AlarmSet>("/alarm/set"))
 {
   // Broadcaster should use the AlarmProxy allocated internally if the user did
   // not provide an external one to use
@@ -23,11 +23,11 @@ AlarmBroadcaster::AlarmBroadcaster(ros::NodeHandle& nh, AlarmProxy* alarm)
 
 bool AlarmBroadcaster::publish()
 {
-  ros_alarms::Alarm a =
+  ros_alarms_msg::Alarm a =
       AlarmProxy(__alarm_ptr->alarm_name, __alarm_ptr->raised, __alarm_ptr->node_name, __alarm_ptr->problem_description,
                  __alarm_ptr->json_parameters, __alarm_ptr->severity)
           .as_msg();
-  ros_alarms::AlarmSet srv;
+  ros_alarms_msg::AlarmSet srv;
   srv.request.alarm = a;
   bool success = __set_alarm.call(srv);
   if (!success)
