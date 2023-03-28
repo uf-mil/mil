@@ -19,7 +19,9 @@ class CircleAnimal:
         rospy.init_node("circle_animal")
         self.odom = rospy.Subscriber("/odom", Odometry, self.odometrySubscriber)
         self.animals = rospy.Subscriber(
-            "/vrx/wildlife/animals/poses", GeoPath, self.animalSubscriber
+            "/vrx/wildlife/animals/poses",
+            GeoPath,
+            self.animalSubscriber,
         )
         self.pub = rospy.Publisher("/trajectory_long/cmd", Odometry, queue_size=10)
         self.serv = rospy.Service("/choose_animal", ChooseAnimal, self.handler)
@@ -48,7 +50,7 @@ class CircleAnimal:
         for animal in poses:
             if self.target_animal == animal.header.frame_id:
                 self.animal_pos, self.animal_ori = self.geo_pose_to_enu_pose(
-                    animal.pose
+                    animal.pose,
                 )
                 self.new_animal_pose = True
 
@@ -71,11 +73,15 @@ class CircleAnimal:
 
         if self.target_animal != "crocodile":
             start_circle_pos = self.closest_point_on_radius(
-                self.boat_pos, self.animal_pos, radius
+                self.boat_pos,
+                self.animal_pos,
+                radius,
             )
         if self.target_animal == "crocodile":
             start_circle_pos = self.closest_point_on_radius(
-                self.boat_pos, self.animal_pos, 15
+                self.boat_pos,
+                self.animal_pos,
+                15,
             )
 
         start_circle_ori = self.point_at_goal(start_circle_pos, self.animal_pos)
@@ -85,7 +91,7 @@ class CircleAnimal:
             [
                 start_circle_pos[0] - self.animal_pos[0],
                 start_circle_pos[1] - self.animal_pos[1],
-            ]
+            ],
         )
         start_circle_vector = self.animal_pos - start_circle_pos
 
@@ -139,10 +145,7 @@ class CircleAnimal:
 
             start_circle_ori = self.point_at_goal(start_circle_pos, self.animal_pos)
 
-        if self.target_animal == "crocodile":
-            steps = granularity // 4
-        else:
-            steps = granularity
+        steps = granularity // 4 if self.target_animal == "crocodile" else granularity
 
         # go around animal
         for i in range(steps + 1):
@@ -187,7 +190,10 @@ class CircleAnimal:
         return res
 
     def closest_point_on_radius(
-        self, start_pos: np.ndarray, end_pos: np.ndarray, radius: float
+        self,
+        start_pos: np.ndarray,
+        end_pos: np.ndarray,
+        radius: float,
     ) -> list[float]:
         # given two points, this finds the closest point to the end_pose given a radius around the end_pose
         vector = [end_pos[0] - start_pos[0], end_pos[1] - start_pos[1]]
@@ -209,7 +215,7 @@ class CircleAnimal:
     def rotate_vector(self, vector: np.ndarray, theta: float):
         # rotate a vector theta radians
         rot = np.array(
-            [[math.cos(theta), -math.sin(theta)], [math.sin(theta), math.cos(theta)]]
+            [[math.cos(theta), -math.sin(theta)], [math.sin(theta), math.cos(theta)]],
         )
         res = np.dot(rot, vector)
         return res

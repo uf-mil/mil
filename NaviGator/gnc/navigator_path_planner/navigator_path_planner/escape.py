@@ -35,7 +35,7 @@ def dynamics(x, u, dt):
     """
     # Rotation matrix (orientation, converts body to world)
     R = np.array(
-        [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]]
+        [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]],
     )
 
     # Construct drag coefficients based on our motion signs
@@ -73,7 +73,7 @@ def lqr(x, u):
 
     """
     R = np.array(
-        [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]]
+        [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]],
     )
     K = np.hstack((kp.dot(R.T), kd))
     return (S, K)
@@ -105,7 +105,10 @@ def gen_ss(seed, goal, buff=40):
 
 
 constraints = lqrrt.Constraints(
-    nstates=nstates, ncontrols=ncontrols, goal_buffer=goal_buffer, is_feasible=unset
+    nstates=nstates,
+    ncontrols=ncontrols,
+    goal_buffer=goal_buffer,
+    is_feasible=unset,
 )
 
 planner = lqrrt.Planner(

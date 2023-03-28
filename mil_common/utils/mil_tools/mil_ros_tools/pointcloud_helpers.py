@@ -6,7 +6,9 @@ from sensor_msgs.msg import PointCloud2, PointField
 
 
 def numpy_to_pointcloud2(
-    points: np.ndarray, stamp: Optional[Time] = None, frame_id: Optional[str] = None
+    points: np.ndarray,
+    stamp: Optional[Time] = None,
+    frame_id: Optional[str] = None,
 ) -> PointCloud2:
     """
     Create a sensor_msgs.PointCloud2 from an array of points.

@@ -61,7 +61,9 @@ if __name__ == "__main__":
     template_periods = rospy.get_param("~template_periods", 3)
     pub = rospy.Publisher("hydrophones/processed", ProcessedPing, queue_size=10)
     pub_direction = rospy.Publisher(
-        "hydrophones/direction", Vector3Stamped, queue_size=10
+        "hydrophones/direction",
+        Vector3Stamped,
+        queue_size=10,
     )
     pub_debug = rospy.Publisher("hydrophones/debug", Debug, queue_size=10)
 

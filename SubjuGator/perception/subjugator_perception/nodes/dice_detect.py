@@ -38,15 +38,21 @@ class DiceDetect:
         debug_talker publishes chatter of whether the program is running
         """
         self.debug_image_publisher = rospy.Publisher(
-            "dice/debugimage", Image, queue_size=1
+            "dice/debugimage",
+            Image,
+            queue_size=1,
         )
         self.debug_image_input_publisher = rospy.Publisher(
-            "dice/debugimageinput", Image, queue_size=1
+            "dice/debugimageinput",
+            Image,
+            queue_size=1,
         )
         self.point_publisher = rospy.Publisher("dice/points", Point, queue_size=1)
         self.debug_talker = rospy.Publisher("dice/debugtalker", String, queue_size=1)
         self.image_subscriber = rospy.Subscriber(
-            "/camera/front/left/image_rect_color", Image, self.callback
+            "/camera/front/left/image_rect_color",
+            Image,
+            self.callback,
         )
         self.bridge = CvBridge()
         self.enabled = False
@@ -99,7 +105,7 @@ class DiceDetect:
 
         # im_c = Colored image
         im_c = dice_img
-        d = dict()
+        d = {}
         # im = GrayScale Image
         im = cv2.cvtColor(im_c, cv2.COLOR_BGR2GRAY)
 
@@ -199,10 +205,10 @@ class DiceDetect:
 
                 try:
                     self.debug_image_publisher.publish(
-                        self.bridge.cv2_to_imgmsg(output_image, "bgr8")
+                        self.bridge.cv2_to_imgmsg(output_image, "bgr8"),
                     )
                     self.debug_image_input_publisher.publish(
-                        self.bridge.cv2_to_imgmsg(input_image, "bgr8")
+                        self.bridge.cv2_to_imgmsg(input_image, "bgr8"),
                     )
                     self.point_publisher.publish(Point(x_pos, y_pos, int(key)))
                     self.debug_talker.publish(String("Dice Detection Running"))

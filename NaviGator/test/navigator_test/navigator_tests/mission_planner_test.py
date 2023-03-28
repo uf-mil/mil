@@ -25,7 +25,8 @@ class MissionPlannerTest(TestUnit):
             passed = False
             fprint(
                 "EXPECTED RESULT {} DOES NOT MATCH ACTUAL RESULT {}. TEST FAILED".format(
-                    my_res, self.results
+                    my_res,
+                    self.results,
                 ),
                 msg_color="red",
             )
@@ -37,7 +38,8 @@ class MissionPlannerTest(TestUnit):
         if not passed:
             fprint(
                 "EXPECTED RESULT {} DOES NOT MATCH ACTUAL RESULT {}. TEST FAILED".format(
-                    my_res, self.results
+                    my_res,
+                    self.results,
                 ),
                 msg_color="red",
             )
@@ -94,11 +96,15 @@ class MissionPlannerTest(TestUnit):
         self.pub_base_mission = sg.spoof_publisher("/odom", Odometry, [odom], [100000])
 
         self.serv_empty = sg.spoof_service(
-            "/database/requests", ObjectDBQuery, [empty_resp]
+            "/database/requests",
+            ObjectDBQuery,
+            [empty_resp],
         )
 
         self.serv_markers = sg.spoof_service(
-            "/database/requests", ObjectDBQuery, [all_marker]
+            "/database/requests",
+            ObjectDBQuery,
+            [all_marker],
         )
         self.serv_markers_empty = sg.spoof_service(
             "/database/requests",
@@ -142,11 +148,17 @@ class MissionPlannerTest(TestUnit):
         #                                                                                   stc_response])
 
         self.markers = sg.spoof_publisher(
-            "/database/objects", PerceptionObjectArray, [stc_shooter], [1000]
+            "/database/objects",
+            PerceptionObjectArray,
+            [stc_shooter],
+            [1000],
         )
 
         self.empty = sg.spoof_publisher(
-            "/database/objects", PerceptionObjectArray, [empty], [1000]
+            "/database/objects",
+            PerceptionObjectArray,
+            [empty],
+            [1000],
         )
 
     async def run_tests(self):
@@ -269,7 +281,8 @@ class MissionPlannerTest(TestUnit):
                 await self.nh.sleep(0.5)
                 yaml_text = yaml.safe_load(stream)
                 init = MissionPlanner(total_minutes=time, mode="t").init_(
-                    yaml_text, sim_mode=True
+                    yaml_text,
+                    sim_mode=True,
                 )
                 planner = await init
                 await planner.empty_queue()

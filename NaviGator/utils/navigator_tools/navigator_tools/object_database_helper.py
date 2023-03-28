@@ -182,7 +182,11 @@ class DBHelper:
         return np.linalg.norm(nt.rosmsg_to_numpy(x.position) - self.position)
 
     async def get_object(
-        self, object_name, volume_only=False, thresh=50, thresh_strict=50
+        self,
+        object_name,
+        volume_only=False,
+        thresh=50,
+        thresh_strict=50,
     ):
         """Get an object from the database."""
         if volume_only:
@@ -238,11 +242,11 @@ class DBHelper:
 
     def set_color(self, color, name):
         """Set the color of an object in the database."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def set_fake_position(self, pos):
         """Set the position of a fake perception object."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def get_objects_in_radius(self, pos, radius, objects="all"):
         req = ObjectDBQueryRequest()

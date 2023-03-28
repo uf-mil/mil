@@ -78,7 +78,8 @@ class StreamedBandpass:
         """
         if not self.is_ready_to_make_filter():
             raise Exception(
-                "Some parameters have not been filled in yet: ", self.__dict__
+                "Some parameters have not been filled in yet: ",
+                self.__dict__,
             )
         self.h = scipy.signal.remez(
             self.size,
@@ -105,7 +106,9 @@ class StreamedBandpass:
             np.ndarray: The resulting filtered data.
         """
         filtered_data = np.apply_along_axis(
-            lambda x: fftconvolve(x, self.h, "full"), 0, data
+            lambda x: fftconvolve(x, self.h, "full"),
+            0,
+            data,
         )
         if self.from_prev is not None:
             filtered_data[: self.size - 1] += self.from_prev

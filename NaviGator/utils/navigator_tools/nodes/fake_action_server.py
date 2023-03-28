@@ -32,7 +32,10 @@ class FakeActionServer:
         rospy.Subscriber("/ogrid_master", OccupancyGrid, set_ogrid)
 
         self.move_server = actionlib.SimpleActionServer(
-            "/move_to", MoveAction, execute_cb=self.move_cb, auto_start=False
+            "/move_to",
+            MoveAction,
+            execute_cb=self.move_cb,
+            auto_start=False,
         )
         self.move_server.start()
         rospy.sleep(0.1)
@@ -59,7 +62,8 @@ class FakeActionServer:
 
         yaw = trns.euler_from_quaternion(rosmsg_to_numpy(msg.goal.orientation))[2]
         if not self.is_feasible(
-            np.array([msg.goal.position.x, msg.goal.position.y, yaw]), np.zeros(3)
+            np.array([msg.goal.position.x, msg.goal.position.y, yaw]),
+            np.zeros(3),
         ):
             fprint("Not feasible", msg_color="red")
             self.move_server.set_aborted(MoveResult("occupied"))
@@ -92,7 +96,8 @@ class FakeActionServer:
 
         try:
             data = np.array(self.ogrid.data).reshape(
-                self.ogrid.info.width, self.ogrid.info.height
+                self.ogrid.info.width,
+                self.ogrid.info.height,
             )
             grid_values = data[indices[:, 1], indices[:, 0]]
         except IndexError:

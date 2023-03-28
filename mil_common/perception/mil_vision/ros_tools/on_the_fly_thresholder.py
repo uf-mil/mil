@@ -30,7 +30,11 @@ class Trackbars:
         ]
         [
             cv2.createTrackbar(
-                name + "_low", "parameters", 0, 255 if name != "h" else 179, lambda a: a
+                name + "_low",
+                "parameters",
+                0,
+                255 if name != "h" else 179,
+                lambda a: a,
             )
             for name in self.thresh_type
         ]
@@ -42,13 +46,13 @@ class Trackbars:
             [
                 cv2.getTrackbarPos(name + "_high", "parameters")
                 for name in self.thresh_type
-            ]
+            ],
         )
         lower_bounds = np.array(
             [
                 cv2.getTrackbarPos(name + "_low", "parameters")
                 for name in self.thresh_type
-            ]
+            ],
         )
         return lower_bounds, upper_bounds
 
@@ -128,7 +132,8 @@ def do_parsing():
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument(
-        dest="topic_name", help="The topic name you'd like to listen to."
+        dest="topic_name",
+        help="The topic name you'd like to listen to.",
     )
     parser.add_argument(
         dest="parameter_family",

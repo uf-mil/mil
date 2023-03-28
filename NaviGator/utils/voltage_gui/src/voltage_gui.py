@@ -28,7 +28,7 @@ class voltageGUI(Plugin):
 
         if context.serial_number() > 1:
             self.myWidget.setWindowTitle(
-                self.myWidget.windowTitle() + (" (%d)" % context.serial_number())
+                self.myWidget.windowTitle() + (" (%d)" % context.serial_number()),
             )
         context.add_widget(self.myWidget)
         self.runGUI()
@@ -149,11 +149,12 @@ class VoltageWidget(QWidget):
         # self.labelThresh = QLabel(self)
         # self.labelThresh.setGeometry(QtCore.QRect((150+2*self.boxWidth), (10), self.boxWidth, self.boxHeight))
         threshText = "Low Threshold: {} \nCritical: {}".format(
-            self.lowThreshold, self.criticalThreshold
+            self.lowThreshold,
+            self.criticalThreshold,
         )
         self.labelThresh.setText(threshText)
         self.labelThresh.setStyleSheet(
-            "QLabel { background-color : white; color : black; }"
+            "QLabel { background-color : white; color : black; }",
         )
         threshFont = QtGui.QFont("Times", (self.fontSize) / 3, QtGui.QFont.Bold)
         self.labelThresh.setFont(threshFont)
@@ -169,11 +170,13 @@ class VoltageWidget(QWidget):
 
         if self.gotParams:
             threshText = "Low Threshold: {} \nCritical: {}".format(
-                self.lowThreshold, self.criticalThreshold
+                self.lowThreshold,
+                self.criticalThreshold,
             )
         else:
             threshText = "THRESHOLDS NOT SET\nUSING DEFAULT\nLow Threshold: {} \nCritical: {}".format(
-                self.lowThreshold, self.criticalThreshold
+                self.lowThreshold,
+                self.criticalThreshold,
             )
         self.labelThresh.setText(threshText)
 
@@ -181,79 +184,79 @@ class VoltageWidget(QWidget):
     def setColors(self, numMain: float) -> None:
         if numMain > self.lowThreshold:
             self.labelMain.setStyleSheet(
-                "QLabel { background-color : green; color : white; }"
+                "QLabel { background-color : green; color : white; }",
             )
         elif numMain <= self.lowThreshold and numMain > self.criticalThreshold:
             self.labelMain.setStyleSheet(
-                "QLabel { background-color : yellow; color : black; }"
+                "QLabel { background-color : yellow; color : black; }",
             )
         elif numMain <= self.criticalThreshold:
             self.labelMain.setStyleSheet(
-                "QLabel { background-color : red; color : white; }"
+                "QLabel { background-color : red; color : white; }",
             )
 
         if self.voltageFL > self.lowThreshold:
             self.labelFL.setStyleSheet(
-                "QLabel { background-color : green; color : white; }"
+                "QLabel { background-color : green; color : white; }",
             )
         elif (
             self.voltageFL <= self.lowThreshold
             and self.voltageFL > self.criticalThreshold
         ):
             self.labelFL.setStyleSheet(
-                "QLabel { background-color : yellow; color : black; }"
+                "QLabel { background-color : yellow; color : black; }",
             )
         elif self.voltageFL <= self.criticalThreshold:
             self.labelFL.setStyleSheet(
-                "QLabel { background-color : red; color : white; }"
+                "QLabel { background-color : red; color : white; }",
             )
 
         if self.voltageFR > self.lowThreshold:
             self.labelFR.setStyleSheet(
-                "QLabel { background-color : green; color : white; }"
+                "QLabel { background-color : green; color : white; }",
             )
         elif (
             self.voltageFR <= self.lowThreshold
             and self.voltageFR > self.criticalThreshold
         ):
             self.labelFR.setStyleSheet(
-                "QLabel { background-color : yellow; color : black; }"
+                "QLabel { background-color : yellow; color : black; }",
             )
         elif self.voltageFR <= self.criticalThreshold:
             self.labelFR.setStyleSheet(
-                "QLabel { background-color : red; color : white; }"
+                "QLabel { background-color : red; color : white; }",
             )
 
         if self.voltageBL > self.lowThreshold:
             self.labelBL.setStyleSheet(
-                "QLabel { background-color : green; color : white; }"
+                "QLabel { background-color : green; color : white; }",
             )
         elif (
             self.voltageBL <= self.lowThreshold
             and self.voltageBL > self.criticalThreshold
         ):
             self.labelBL.setStyleSheet(
-                "QLabel { background-color : yellow; color : black; }"
+                "QLabel { background-color : yellow; color : black; }",
             )
         elif self.voltageBL <= self.criticalThreshold:
             self.labelBL.setStyleSheet(
-                "QLabel { background-color : red; color : white; }"
+                "QLabel { background-color : red; color : white; }",
             )
 
         if self.voltageBR > self.lowThreshold:
             self.labelBR.setStyleSheet(
-                "QLabel { background-color : green; color : white; }"
+                "QLabel { background-color : green; color : white; }",
             )
         elif (
             self.voltageBR <= self.lowThreshold
             and self.voltageBR > self.criticalThreshold
         ):
             self.labelBR.setStyleSheet(
-                "QLabel { background-color : yellow; color : black; }"
+                "QLabel { background-color : yellow; color : black; }",
             )
         elif self.voltageBR <= self.criticalThreshold:
             self.labelBR.setStyleSheet(
-                "QLabel { background-color : red; color : white; }"
+                "QLabel { background-color : red; color : white; }",
             )
 
     def updateLabel(self) -> None:

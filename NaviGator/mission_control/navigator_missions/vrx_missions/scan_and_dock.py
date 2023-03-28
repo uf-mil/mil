@@ -9,7 +9,7 @@ class ScanAndDock(Vrx):
     async def run(self, args):
         await self.nh.sleep(10)
         await self.wait_for_task_such_that(
-            lambda task: task.state in ["ready", "running"]
+            lambda task: task.state in ["ready", "running"],
         )
 
         sequence = await self.run_submission("ScanTheCode")

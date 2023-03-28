@@ -23,7 +23,10 @@ rospy.init_node("host_monitor")
 class HostMonitor:
     def __init__(self):
         self.pub_hosts = rospy.Publisher(
-            "/host_monitor", Hosts, queue_size=1, latch=True
+            "/host_monitor",
+            Hosts,
+            queue_size=1,
+            latch=True,
         )
         self.hosts = Hosts()
 

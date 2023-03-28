@@ -26,10 +26,10 @@ can be provided through local ROS parameters:
         # List of python device handle classes (list of device id: python class implementation)
         device_handles:
           "18": sub8_thrust_and_kill_board.ThrusterAndKillBoard
-          "83": sub8_actuator_board.ActuatorBoard
+          "83": sub_actuator_board.ActuatorBoard
         simulated_devices:
           "18": sub8_thrust_and_kill_board.ThrusterAndKillBoardSimulation
-          "83": sub8_actuator_board.ActuatorBoardSimulation
+          "83": sub_actuator_board.ActuatorBoardSimulation
         </rosparam>
       </node>
     </launch>

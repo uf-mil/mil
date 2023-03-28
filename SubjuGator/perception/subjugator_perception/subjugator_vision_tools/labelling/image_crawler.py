@@ -10,7 +10,7 @@ class ImageCrawler:
         assert "." in starting_image, "Please include the first image in your sequence."
         self.image_path = starting_image.rsplit("/", 1)[0] + "/"
         self.starting_image, self.image_format = starting_image.rsplit("/", 1)[1].split(
-            "."
+            ".",
         )
 
     def crawl(self, topic, max_msgs=float("inf")):

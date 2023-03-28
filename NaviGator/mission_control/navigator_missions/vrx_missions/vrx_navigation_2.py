@@ -28,12 +28,12 @@ class VrxNavigation2(Vrx):
             [
                 np.linalg.norm((center + perp_vec) - position),
                 np.linalg.norm((center - perp_vec) - position),
-            ]
+            ],
         )
         if np.argmin(distances) == 0:
             perp_vec = -perp_vec
         return np.array([center[0], center[1], 0.0]), np.array(
-            [perp_vec[0], perp_vec[1], 0.0]
+            [perp_vec[0], perp_vec[1], 0.0],
         )
 
     async def go_thru_gate(self, gate, BEFORE=5.0, AFTER=4.0):

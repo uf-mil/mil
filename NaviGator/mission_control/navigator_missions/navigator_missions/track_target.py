@@ -29,7 +29,8 @@ class TrackTarget(NaviGatorMission):
         cls.base_link_to_shooter[2] = 0.0
         # Subscribe to pose
         cls.target_pose_sub = cls.nh.subscribe(
-            "/detect_deliver_target_detector/pose", PoseStamped
+            "/detect_deliver_target_detector/pose",
+            PoseStamped,
         )
         await cls.target_pose_sub.setup()
 
@@ -65,10 +66,12 @@ class TrackTarget(NaviGatorMission):
 
                 # Transform pose to ENU
                 transform = await self.tf_listener.get_transform(
-                    "enu", pose.header.frame_id, pose.header.stamp
+                    "enu",
+                    pose.header.frame_id,
+                    pose.header.stamp,
                 )
                 pos, quat = transform.transform_point(
-                    pos
+                    pos,
                 ), transform.transform_quaternion(quat)
                 pos[2] = 0.0
 

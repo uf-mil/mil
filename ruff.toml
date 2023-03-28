@@ -1,6 +1,11 @@
 extend-select = [
     "UP", # pyupgrade
+    "I", # isort
     "RUF", # ruff-specific rules
+    "RSE", # flake8-raise (exceptions)
+    "COM", # flake8-comma
+    "C4", # flake8-comprehensions
+    "SIM", # flake8-simplify
 ]
 
 extend-exclude = [
@@ -29,6 +34,7 @@ ignore = [
     "F403", # Unknown names
     "D212", # we use second line!
     "D200", # one line docstrings are not shortened!
+    "SIM115", # too many for now...
 ]
 
 [per-file-ignores]

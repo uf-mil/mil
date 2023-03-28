@@ -16,7 +16,10 @@ class BoundsFromRVIZ(BoundsClient):
         self.ignore_stamp = ignore_stamp
         self.points = []
         self.sub = rospy.Subscriber(
-            "clicked_point", PointStamped, self._cb, queue_size=4
+            "clicked_point",
+            PointStamped,
+            self._cb,
+            queue_size=4,
         )
 
     def _cb(self, msg):
@@ -25,7 +28,9 @@ class BoundsFromRVIZ(BoundsClient):
         if self.frame is not None and msg.header.frame_id != self.frame:
             try:
                 msg = self.tf_buffer.transform(
-                    msg, self.frame, timeout=rospy.Duration(10, 0)
+                    msg,
+                    self.frame,
+                    timeout=rospy.Duration(10, 0),
                 )
             except tf2_ros.TransformException as err:
                 rospy.logerr(f"Transform error: {err}")
