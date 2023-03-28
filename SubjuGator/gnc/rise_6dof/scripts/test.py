@@ -15,13 +15,13 @@ if __name__ == "__main__":
     print(transformations.quaternion_from_euler(math.pi / 2, 0, math.pi / 2))
 
     c = Controller(
-        dict(
-            k=numpy.ones(6),
-            ks=numpy.ones(6),
-            alpha=numpy.ones(6),
-            beta=numpy.ones(6),
-            use_rise=False,
-        )
+        {
+            "k": numpy.ones(6),
+            "ks": numpy.ones(6),
+            "alpha": numpy.ones(6),
+            "beta": numpy.ones(6),
+            "use_rise": False,
+        },
     )
 
     desired = PoseTwist(

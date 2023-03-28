@@ -68,10 +68,12 @@ class MagToMarker:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Publishes a rviz marker representing a MagneticField message"
+        description="Publishes a rviz marker representing a MagneticField message",
     )
     parser.add_argument(
-        "mag_topic", type=str, help="Topic of magnetic field to subscribe to"
+        "mag_topic",
+        type=str,
+        help="Topic of magnetic field to subscribe to",
     )
     parser.add_argument(
         "marker_topic",

@@ -130,7 +130,8 @@ def normalize(vector) -> npt.NDArray:
 
 
 def compose_transformation(
-    rotation: npt.NDArray, translation: npt.NDArray
+    rotation: npt.NDArray,
+    translation: npt.NDArray,
 ) -> np.ndarray:
     """
     Compose a transformation from a rotation matrix and a translation matrix.

@@ -27,8 +27,9 @@ class ChecksumException(USB2CANException):
     def __init__(self, calculated, expected):
         super().__init__(
             "Checksum was calculated as {} but reported as {}".format(
-                calculated, expected
-            )
+                calculated,
+                expected,
+            ),
         )
 
 
@@ -40,7 +41,7 @@ class PayloadTooLargeException(USB2CANException):
 
     def __init__(self, length):
         super().__init__(
-            f"Payload is {length} bytes, which is greater than the maximum of 8"
+            f"Payload is {length} bytes, which is greater than the maximum of 8",
         )
 
 
@@ -171,7 +172,8 @@ class Packet:
 
     @classmethod
     def read_packet(
-        cls: type[T], stream: serial.Serial | SimulatedUSBtoCAN
+        cls: type[T],
+        stream: serial.Serial | SimulatedUSBtoCAN,
     ) -> T | None:
         """
         Read a packet with a known size from a serial device
@@ -274,7 +276,11 @@ class ReceivePacket(Packet):
             raise PayloadTooLargeException(len(payload))
         checksum = cls._calculate_checksum(device_id, payload)
         data = struct.pack(
-            f"BB{len(payload)}sB", device_id, len(payload), payload, checksum
+            f"BB{len(payload)}sB",
+            device_id,
+            len(payload),
+            payload,
+            checksum,
         )
         return cls(data)
 
@@ -378,7 +384,10 @@ class CommandPacket(Packet):
 
     @classmethod
     def _create_command_packet(
-        cls, length_byte: int, filter_id: int, data: bytes = b""
+        cls,
+        length_byte: int,
+        filter_id: int,
+        data: bytes = b"",
     ) -> CommandPacket:
         """
         Creates a command packet.
@@ -423,7 +432,9 @@ class CommandPacket(Packet):
 
     @classmethod
     def create_request_packet(
-        cls, filter_id: int, receive_length: int
+        cls,
+        filter_id: int,
+        receive_length: int,
     ) -> CommandPacket:
         """
         Creates a command packet to request data from a CAN device.
@@ -483,5 +494,7 @@ class CommandPacket(Packet):
 
     def __str__(self):
         return "CommandPacket(filter_id={}, is_receive={}, receive_length={})".format(
-            self.filter_id, self.is_receive, self.length
+            self.filter_id,
+            self.is_receive,
+            self.length,
         )

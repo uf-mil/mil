@@ -12,8 +12,10 @@ args = parser.parse_args()
 def print_alarm(alarm):
     rospy.loginfo(
         "Alarm: {} ({}) ({})".format(
-            alarm.alarm_name, "raised" if alarm.raised else "clear", alarm.severity
-        )
+            alarm.alarm_name,
+            "raised" if alarm.raised else "clear",
+            alarm.severity,
+        ),
     )
     for name, value in alarm.parameters.items():
         rospy.loginfo(f"\t{name} = {value}")

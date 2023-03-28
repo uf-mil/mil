@@ -19,12 +19,16 @@ class PcodarAverageScales:
     def __init__(self):
         # create service server
         self.server = rospy.Service(
-            "/get_two_closest_cones", TwoClosestCones, self.handler
+            "/get_two_closest_cones",
+            TwoClosestCones,
+            self.handler,
         )
 
         # create service client
         self.odom = rospy.Subscriber(
-            "/pcodar/objects", PerceptionObjectArray, self.pcodarSubscriber
+            "/pcodar/objects",
+            PerceptionObjectArray,
+            self.pcodarSubscriber,
         )
 
         # create odom subscriber
@@ -222,13 +226,10 @@ class PcodarAverageScales:
 
         # check relative angle, if abs(rel_angle) is less than 90deg...
         # buoy is in front of boat
-        if (
+        return bool(
             abs(theta - yaw) < math.pi / 2
-            or abs(theta + (2 * math.pi) - yaw) < math.pi / 2
-        ):
-            return True
-        else:
-            return False
+            or abs(theta + 2 * math.pi - yaw) < math.pi / 2,
+        )
 
 
 if __name__ == "__main__":

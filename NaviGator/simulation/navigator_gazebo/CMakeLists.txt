@@ -1,5 +1,8 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(navigator_gazebo)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(catkin
     REQUIRED COMPONENTS
@@ -30,7 +33,7 @@ add_library(
     navigator_thrusters
         src/navigator_thrusters.cpp
 )
-set_target_properties(navigator_thrusters PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+set_target_properties(navigator_thrusters PROPERTIES COMPILE_FLAGS "-std=c++17 -Wall")
 target_link_libraries(navigator_thrusters
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
@@ -43,7 +46,7 @@ add_library(
     pinger_plugin
         src/pinger_plugin.cpp
 )
-set_target_properties(pinger_plugin PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+set_target_properties(pinger_plugin PROPERTIES COMPILE_FLAGS "-std=c++17 -Wall")
 target_link_libraries(pinger_plugin
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
@@ -55,7 +58,7 @@ add_dependencies(pinger_plugin
 add_library(sylphase_gazebo
   src/sylphase_gazebo.cpp
 )
-set_target_properties(sylphase_gazebo PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+set_target_properties(sylphase_gazebo PROPERTIES COMPILE_FLAGS "-std=c++17 -Wall")
 target_link_libraries(sylphase_gazebo
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}

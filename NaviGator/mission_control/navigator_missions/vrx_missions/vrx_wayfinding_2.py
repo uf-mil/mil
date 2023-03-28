@@ -14,7 +14,7 @@ class VrxWayfinding2(Vrx):
     async def run(self, parameters):
         self.send_feedback("Waiting for task to start")
         await self.wait_for_task_such_that(
-            lambda task: task.state in ["ready", "running"]
+            lambda task: task.state in ["ready", "running"],
         )
 
         path_msg = await self.get_latching_msg(self.wayfinding_path_sub)
