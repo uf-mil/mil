@@ -503,9 +503,9 @@ Subsystems
 AlarmGet
 ~~~~~~~~
 
-.. attributetable:: ros_alarms.srv.AlarmGetRequest
+.. attributetable:: ros_alarms_msg.srv.AlarmGetRequest
 
-.. class:: ros_alarms.srv.AlarmGetRequest
+.. class:: ros_alarms_msg.srv.AlarmGetRequest
 
    The request class for the ``ros_alarms/AlarmGet`` service.
 
@@ -515,9 +515,9 @@ AlarmGet
 
         :type: str
 
-.. attributetable:: ros_alarms.srv.AlarmGetResponse
+.. attributetable:: ros_alarms_msg.srv.AlarmGetResponse
 
-.. class:: ros_alarms.srv.AlarmGetResponse
+.. class:: ros_alarms_msg.srv.AlarmGetResponse
 
    The response class for the ``ros_alarms/AlarmGet`` service.
 
@@ -536,9 +536,9 @@ AlarmGet
 AlarmSet
 ~~~~~~~~
 
-.. attributetable:: ros_alarms.srv.AlarmSetRequest
+.. attributetable:: ros_alarms_msg.srv.AlarmSetRequest
 
-.. class:: ros_alarms.srv.AlarmSetRequest
+.. class:: ros_alarms_msg.srv.AlarmSetRequest
 
    The request class for the ``ros_alarms/AlarmSet`` service.
 
@@ -548,9 +548,9 @@ AlarmSet
 
         :type: ~ros_alarms_msg.msg.Alarm
 
-.. attributetable:: ros_alarms.srv.AlarmSetResponse
+.. attributetable:: ros_alarms_msg.srv.AlarmSetResponse
 
-.. class:: ros_alarms.srv.AlarmSetResponse
+.. class:: ros_alarms_msg.srv.AlarmSetResponse
 
    The response class for the ``ros_alarms/AlarmSet`` service.
 
