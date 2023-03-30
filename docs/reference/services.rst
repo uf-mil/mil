@@ -531,7 +531,7 @@ AlarmGet
 
         The response data about the requested alarm.
 
-        :type: ~ros_alarms.msg.Alarm
+        :type: ~ros_alarms_msg.msg.Alarm
 
 AlarmSet
 ~~~~~~~~
@@ -546,7 +546,7 @@ AlarmSet
 
         The alarm to set.
 
-        :type: ~ros_alarms.msg.Alarm
+        :type: ~ros_alarms_msg.msg.Alarm
 
 .. attributetable:: ros_alarms.srv.AlarmSetResponse
 
