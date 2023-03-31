@@ -4,7 +4,7 @@ import random
 
 import numpy as np
 import rospy
-from ros_alarms_msg.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
+from ros_alarms_msgs.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
 
 # Dummy params to pass in
 parameters = {"testing": True, "not_real": 3, "a_list": [1, 2, 3]}

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>ros_alarms_msg</name>
+  <name>ros_alarms_msgs</name>
   <version>1.0.0</version>
-  <description>The ros_alarms_msg package</description>
+  <description>The ros_alarms_msgs package</description>
   <maintainer email="matthew.langford95@gmail.com">Matt Langford</maintainer>
   <maintainer email="d.soto@ufl.com">David Soto</maintainer>
   <license>MIT</license>

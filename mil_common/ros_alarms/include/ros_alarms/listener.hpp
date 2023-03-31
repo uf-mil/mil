@@ -6,8 +6,8 @@
 
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
-#include <ros_alarms_msg/Alarm.h>
-#include <ros_alarms_msg/AlarmGet.h>
+#include <ros_alarms_msgs/Alarm.h>
+#include <ros_alarms_msgs/AlarmGet.h>
 
 #include <functional>
 #include <ros_alarms/alarm_proxy.hpp>
@@ -80,7 +80,7 @@ struct ListenerCb
    * Overloads the ``()`` operator to execute the callback function only if the
    * specified conditions are met.
    */
-  void operator()(ros_alarms_msg::Alarm msg)
+  void operator()(ros_alarms_msgs::Alarm msg)
   {
     // Only call if alarm status matches the call_scenario
     bool call_scenario_match = call_scenario == CallScenario::always ||
@@ -315,12 +315,12 @@ private:
   ros::Time __last_update{ 0, 0 };
   std::string __object_name;
   void __addCb(callable_t cb, int severity_lo, int severity_hi, CallScenario call_scenario);
-  void __alarmUpdate(ros_alarms_msg::Alarm);
+  void __alarmUpdate(ros_alarms_msgs::Alarm);
 };
 
 template <typename callable_t>
 AlarmListener<callable_t>::AlarmListener(ros::NodeHandle &nh, std::string alarm_name)
-try : __nh(nh), __alarm_name(alarm_name), __get_alarm(__nh.serviceClient<ros_alarms_msg::AlarmGet>("/alarm/get")),
+try : __nh(nh), __alarm_name(alarm_name), __get_alarm(__nh.serviceClient<ros_alarms_msgs::AlarmGet>("/alarm/get")),
     __async_spinner(1, &__cb_queue)
 
 {
@@ -385,7 +385,7 @@ template <typename callable_t>
 AlarmProxy AlarmListener<callable_t>::getAlarm()
 {
   // Create Query msg
-  ros_alarms_msg::AlarmGet alarm_query;
+  ros_alarms_msgs::AlarmGet alarm_query;
   alarm_query.request.alarm_name = __alarm_name;
 
   // Query alarm server
@@ -453,7 +453,7 @@ void AlarmListener<callable_t>::__addCb(callable_t cb, int severity_lo, int seve
 }
 
 template <typename callable_t>
-void AlarmListener<callable_t>::__alarmUpdate(ros_alarms_msg::Alarm alarm_msg)
+void AlarmListener<callable_t>::__alarmUpdate(ros_alarms_msgs::Alarm alarm_msg)
 {
   if (alarm_msg.alarm_name == __alarm_name)
   {

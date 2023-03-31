@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   message_runtime
   std_msgs
-  ros_alarms_msg
+  ros_alarms_msgs
   roscpp
   rospy
 )
@@ -41,7 +41,7 @@ catkin_package(
   LIBRARIES
     ros_alarms
   CATKIN_DEPENDS
-    ros_alarms_msg
+    ros_alarms_msgs
     roscpp
     rospy
     message_generation

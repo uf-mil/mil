@@ -10,7 +10,7 @@ import message_filters
 import rospy
 from roboteq_msgs.msg import Feedback, Status
 from ros_alarms import AlarmListener
-from ros_alarms_msg.msg import Alarm
+from ros_alarms_msgs.msg import Alarm
 from std_msgs.msg import Float32
 
 __author__ = "Anthony Olive"
