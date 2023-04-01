@@ -11,7 +11,6 @@ from qt_gui.plugin import Plugin
 from roboteq_msgs.msg import Feedback
 from std_msgs.msg import Float32
 
-# Display voltage from battery_monitor and the four motors to a GUI
 
 
 __author__ = "Joseph Brooks"
@@ -21,6 +20,8 @@ __license__ = "MIT"
 
 class voltageGUI(Plugin):
     """
+    Display voltage from battery_monitor and the four motors to a GUI
+
     Attributes:
         height (int): defines the height of the screen
         fontSize(int): sets the font size of the screen 
@@ -106,18 +107,63 @@ class VoltageWidget(QWidget):
 
     # The functions that the subscribers call in order to get new data
     def updateMain(self, mainData: Float32) -> None:
+        """
+        It is one of the functions that the subscribers call in order to get new data.
+
+        Args:
+            mainData: it is a float value that is being passed in for a variable to be set to.
+
+        Returns:
+            No statement is being returned.  
+        """
         self.battery_voltage = mainData
 
     def update_FL(self, dataFL: Feedback) -> None:
+        """
+        It is one of the functions that the subscribers call in order to get new data.
+
+        Args:
+            dataFL: it is a feedback value that is being passed in for a variable to be set to.
+
+        Returns:
+            No statement is being returned.  
+        """
         self.voltageFL = dataFL.supply_voltage
 
     def update_FR(self, dataFR: Feedback) -> None:
+        """
+        It is one of the functions that the subscribers call in order to get new data.
+
+        Args:
+            dataFR: it is a feedback value that is being passed in for a variable to be set to.
+
+        Returns:
+            No statement is being returned.  
+        """
         self.voltageFR = dataFR.supply_voltage
 
     def update_BL(self, dataBL: Feedback) -> None:
+        """
+        It is one of the functions that the subscribers call in order to get new data.
+
+        Args:
+            dataBL: it is a feedback value that is being passed in for a variable to be set to.
+
+        Returns:
+            No statement is being returned.  
+        """
         self.voltageBL = dataBL.supply_voltage
 
     def update_BR(self, dataBR: Feedback) -> None:
+        """
+        It is one of the functions that the subscribers call in order to get new data.
+
+        Args:
+            dataBR: it is a feedback value that is being passed in for a variable to be set to.
+
+        Returns:
+            No statement is being returned.  
+        """
         self.voltageBR = dataBR.supply_voltage
 
     def resizeEvent(self, event): #done
@@ -169,7 +215,7 @@ class VoltageWidget(QWidget):
     # Sets the text of the thrshold info box
     def initThresh(self) -> None:
         """
-        Sets the text of the thrshold info box
+        Sets the text of the threshold info box
 
         Args:
             No arguments are being passed in. 
