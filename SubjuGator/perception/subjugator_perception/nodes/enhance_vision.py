@@ -32,6 +32,8 @@ from mil_ros_tools import (
 )
 
 class EnhanceVision:
+    # Currently running on CPU, needs to change in the future.
+
      #device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
      device = torch.device('cpu')
 
