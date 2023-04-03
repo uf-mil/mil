@@ -8,6 +8,7 @@ calls. Curses is used to display a basic UI in the terminal that gives the user
 useful feedback and captures key presses to be sent to the server.
 """
 
+import contextlib
 import curses
 from typing import Optional
 
@@ -144,7 +145,5 @@ def main(stdscr):
 
 
 if __name__ == "__main__":
-    try:
+    with contextlib.suppress(rospy.ROSInterruptException):
         curses.wrapper(main)
-    except rospy.ROSInterruptException:
-        pass

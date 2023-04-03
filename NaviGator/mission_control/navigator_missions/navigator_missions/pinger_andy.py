@@ -14,7 +14,8 @@ class PingerAndy(NaviGatorMission):
     @classmethod
     async def setup(cls):
         cls.pinger_heading = cls.nh.subscribe(
-            "/hydrophones/ping_direction", Vector3Stamped
+            "/hydrophones/ping_direction",
+            Vector3Stamped,
         )
         await cls.pinger_heading.setup()
 
@@ -58,7 +59,7 @@ class PingerAndy(NaviGatorMission):
                 if point.header.frame_id != "enu":
                     self.send_feedback(
                         "Point is not in ENU.\
-                         Please switch rviz frame to ENU or tell kevin to support other frames."
+                         Please switch rviz frame to ENU or tell kevin to support other frames.",
                     )
                     continue
                 break
@@ -83,7 +84,8 @@ class PingerAndy(NaviGatorMission):
 
         # Convert heading and hydophones from to enu
         hydrophones_to_enu = await self.tf_listener.get_transform(
-            "enu", heading.header.frame_id
+            "enu",
+            heading.header.frame_id,
         )
         hydrophones_origin = hydrophones_to_enu._p[0:2]
         heading = rosmsg_to_numpy(heading.vector)
@@ -116,7 +118,7 @@ class PingerAndy(NaviGatorMission):
         direction_vector /= np.linalg.norm(direction_vector)
         position = self.pose[0][:2]
         if np.linalg.norm(position - (gate + direction_vector)) > np.linalg.norm(
-            position - (gate - direction_vector)
+            position - (gate - direction_vector),
         ):
             direction_vector = -direction_vector
 

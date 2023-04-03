@@ -28,7 +28,8 @@ class Docking(NaviGatorMission):
         cls.bboxsub = cls.nh.subscribe("/bbox_pub", ObjectsInImage)
         await cls.bboxsub.setup()
         cls.camera_lidar_tf = cls.nh.get_service_client(
-            "/camera_to_lidar/front_right_cam", CameraToLidarTransform
+            "/camera_to_lidar/front_right_cam",
+            CameraToLidarTransform,
         )
 
     @classmethod
@@ -121,7 +122,8 @@ class Docking(NaviGatorMission):
         pose_offset = await self.camera_lidar_tf(msg)
 
         cam_to_enu = await self.tf_listener.get_transform(
-            "enu", center_frame[1].header.frame_id
+            "enu",
+            center_frame[1].header.frame_id,
         )
         normal = rosmsg_to_numpy(pose_offset.normal)
         normal = cam_to_enu.transform_vector(normal)
@@ -139,7 +141,7 @@ class Docking(NaviGatorMission):
         # Which is closer
         boat_pos = (self.tx_pose)[0]
         if np.linalg.norm(found_pt_1 - boat_pos) > np.linalg.norm(
-            found_pt_2 - boat_pos
+            found_pt_2 - boat_pos,
         ):
             found_pt = found_pt_2
         else:

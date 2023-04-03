@@ -5,6 +5,7 @@ from threading import Lock
 from typing import Optional
 
 import serial
+
 from mil_usb_to_can.simulation import SimulatedUSBtoCAN
 from mil_usb_to_can.utils import (  # causes error if relative import used - GH-731
     CommandPacket,

@@ -29,7 +29,10 @@ def MakeChainWithTimeout(base: Type):
         """
 
         async def run_submission_with_timeout(
-            self, mission: str, timeout: float, parameters: str
+            self,
+            mission: str,
+            timeout: float,
+            parameters: str,
         ):
             """
             Runs a child mission, throwing an exception if more time than specified in timeout
@@ -54,7 +57,8 @@ def MakeChainWithTimeout(base: Type):
                 return result
             timeout_fut = self.nh.sleep(timeout)
             result, index = await asyncio.wait(
-                [submission, timeout_fut], return_when=asyncio.FIRST_COMPLETED
+                [submission, timeout_fut],
+                return_when=asyncio.FIRST_COMPLETED,
             )
             if index == 0:
                 timeout_fut.cancel()
@@ -95,19 +99,20 @@ def MakeChainWithTimeout(base: Type):
                     raise Exception('invalid parameters, missing attribute "mission"')
                 if not cls.has_mission(mission["mission"]):
                     raise Exception(
-                        'mission "{}" not available'.format(mission["mission"])
+                        'mission "{}" not available'.format(mission["mission"]),
                     )
                 if "parameters" not in mission:
                     mission["parameters"] = ""
                 try:
                     mission["parameters"] = cls.get_mission(
-                        mission["mission"]
+                        mission["mission"],
                     ).decode_parameters(mission["parameters"])
                 except Exception as e:
                     raise ParametersException(
                         "Invalid parameters for {}: {}".format(
-                            mission["mission"], str(e)
-                        )
+                            mission["mission"],
+                            str(e),
+                        ),
                     )
                 if "timeout" not in mission:
                     mission["timeout"] = 0
@@ -135,23 +140,27 @@ def MakeChainWithTimeout(base: Type):
                     if isinstance(final, failure.Failure):
                         self.send_feedback(
                             "{} FAILED: {}".format(
-                                mission["mission"], final.getErrorMessage()
-                            )
+                                mission["mission"],
+                                final.getErrorMessage(),
+                            ),
                         )
                         if mission[
                             "required"
                         ]:  # Fail whole chain if a required mission times out or fails
                             raise SubmissionException(
-                                mission["mission"], final.getErrorMessage()
+                                mission["mission"],
+                                final.getErrorMessage(),
                             )
                     else:
                         self.send_feedback(
-                            "{} SUCCEEDED: {}".format(mission["mission"], final)
+                            "{} SUCCEEDED: {}".format(mission["mission"], final),
                         )
                         print("NO FAIL BRO")
 
                 fut = self.run_submission_with_timeout(
-                    mission["mission"], mission["timeout"], mission["parameters"]
+                    mission["mission"],
+                    mission["timeout"],
+                    mission["parameters"],
                 )
                 fut.add_done_callback(cb)
                 await fut

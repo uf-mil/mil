@@ -19,7 +19,7 @@ class HandlerBase:
     alarm_server = None
 
     @classmethod
-    def _init(cls, alarm_server: "AlarmServer"):
+    def _init(cls, alarm_server):
         """
         Called by the alarm server to give each handler a reference to the alarm server,
         so it can efficiently get and set alarms.

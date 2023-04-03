@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import rospy
 import tf.transformations as trns
+from image_geometry import PinholeCameraModel
 
 __author__ = "Kevin Allen"
 
@@ -51,10 +52,12 @@ class Threshold:
             AttributeError: No conversion code could be determined.
         """
         assert isinstance(
-            low, (tuple, list, np.ndarray)
+            low,
+            (tuple, list, np.ndarray),
         ), "param lower must be a tuple/list/np.ndarray"
         assert isinstance(
-            high, (tuple, list, np.ndarray)
+            high,
+            (tuple, list, np.ndarray),
         ), "param upper must be a tuple/list/np.ndarray"
         self.low = np.array(low)
         self.high = np.array(high)
@@ -68,8 +71,9 @@ class Threshold:
                 raise AttributeError(
                     "Could not determine conversion code from params.\
                                  Are [{}, {}] valid OpenCV colorspaces?".format(
-                        in_space, thresh_space
-                    )
+                        in_space,
+                        thresh_space,
+                    ),
                 )
         else:
             self.conversion_code = conversion_code
@@ -107,11 +111,11 @@ class Threshold:
                     pass
             raise AttributeError(
                 "No valid colorspace found in dictionary. Are {} valid OpenCV colorspaces?".format(
-                    d.keys()
-                )
+                    d.keys(),
+                ),
             )
         assert thresh_space in d, "{} color space not in dictionary".format(
-            thresh_space
+            thresh_space,
         )
         inner = d[thresh_space]
         if "low" in inner and "high" in inner:
@@ -126,7 +130,10 @@ class Threshold:
 
     @classmethod
     def from_param(
-        cls, param: str, in_space: str = "BGR", thresh_space: Optional[str] = None
+        cls,
+        param: str,
+        in_space: str = "BGR",
+        thresh_space: Optional[str] = None,
     ):
         """
         Loads thresholds from a ROS parameter name. The value of the parameter is
@@ -139,7 +146,9 @@ class Threshold:
                 to ``None``.
         """
         return cls.from_dict(
-            rospy.get_param(param), in_space=in_space, thresh_space=thresh_space
+            rospy.get_param(param),
+            in_space=in_space,
+            thresh_space=thresh_space,
         )
 
     def threshold(self, img: np.ndarray):
@@ -187,10 +196,15 @@ class Threshold:
     def __str__(self):
         if self.conversion_code is not None:
             return "Threshold from {} to {} using conversion code {}".format(
-                self.low, self.high, self.conversion_code
+                self.low,
+                self.high,
+                self.conversion_code,
             )
         return "Threshold {} images in {} colorspace from {} to {}".format(
-            self.in_space, self.thresh_space, self.low, self.high
+            self.in_space,
+            self.thresh_space,
+            self.low,
+            self.high,
         )
 
     def __repr__(self):
@@ -341,7 +355,9 @@ def points_in_image(camera: "PinholeCameraModel", points: np.ndarray) -> np.ndar
 
 
 def roi_enclosing_points(
-    camera: "PinholeCameraModel", points: np.ndarray, border: Tuple[int, int] = (0, 0)
+    camera: "PinholeCameraModel",
+    points: np.ndarray,
+    border: Tuple[int, int] = (0, 0),
 ) -> Optional[Tuple[slice, slice]]:
     """
     Gets region of interest in image which encloses the projected 3D points. Output
@@ -368,16 +384,16 @@ def roi_enclosing_points(
         return None
     resolution = camera.fullResolution()
     xmin = int(
-        np.clip(np.round(np.min(img_points[:, 0]) - border[0]), 0, resolution[0])
+        np.clip(np.round(np.min(img_points[:, 0]) - border[0]), 0, resolution[0]),
     )
     xmax = int(
-        np.clip(np.round(np.max(img_points[:, 0]) + border[0]), 0, resolution[0])
+        np.clip(np.round(np.max(img_points[:, 0]) + border[0]), 0, resolution[0]),
     )
     ymin = int(
-        np.clip(np.round(np.min(img_points[:, 1]) - border[1]), 0, resolution[1])
+        np.clip(np.round(np.min(img_points[:, 1]) - border[1]), 0, resolution[1]),
     )
     ymax = int(
-        np.clip(np.round(np.max(img_points[:, 1]) + border[1]), 0, resolution[1])
+        np.clip(np.round(np.max(img_points[:, 1]) + border[1]), 0, resolution[1]),
     )
     return (slice(ymin, ymax), slice(xmin, xmax))
 

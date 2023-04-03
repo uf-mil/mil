@@ -32,7 +32,8 @@ class PnuematicActuatorDriverChecksumError(PnuematicActuatorDriverError):
 
     def __init__(self, checksum_is, checksum_should_be):
         message = "Invalid checksum. Recievied {}, should be {}".format(
-            hex(checksum_is), hex(checksum_should_be)
+            hex(checksum_is),
+            hex(checksum_should_be),
         )
         super().__init__(message)
 
@@ -46,7 +47,8 @@ class PnuematicActuatorDriverResponseError(PnuematicActuatorDriverError):
 
     def __init__(self, received, expected):
         message = "Unexpected response. Expected {}, received {}".format(
-            hex(received), hex(expected)
+            hex(received),
+            hex(expected),
         )
         super().__init__(message)
 
@@ -99,7 +101,8 @@ class PnuematicActuatorDriver:
         """
         if not Constants.verify_checksum(byte, checksum):
             raise PnuematicActuatorDriverChecksumError(
-                checksum, Constants.create_checksum(byte)
+                checksum,
+                Constants.create_checksum(byte),
             )
 
     def _get_response(self) -> int:
@@ -111,7 +114,7 @@ class PnuematicActuatorDriver:
         """
         data = self.ser.read(2)
         if len(data) != 2:
-            raise PnuematicActuatorTimeoutError()
+            raise PnuematicActuatorTimeoutError
         response = Constants.deserialize_packet(data)
         data = response[0]
         chksum = response[1]

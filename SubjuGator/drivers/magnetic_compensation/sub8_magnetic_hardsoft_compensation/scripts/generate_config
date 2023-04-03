@@ -60,8 +60,8 @@ def fit_ellipsoid(points):
                 [X[0], X[3], X[4]],
                 [X[3], X[1], X[5]],
                 [X[4], X[5], X[2]],
-            ]
-        )
+            ],
+        ),
     )
     shift = ka.dot(X[6:9])
 
@@ -104,12 +104,14 @@ def test():
     error = calculate_error(compensated)
 
     assert numpy.allclose(
-        scale2, scale
+        scale2,
+        scale,
     ), "Magnetic Hardsoft Compenstion self-test failed"
     assert numpy.allclose(
-        shift2, shift
+        shift2,
+        shift,
     ), "Magnetic Hardsoft Compenstion self-test failed, shifts: {}".format(
-        (shift2, shift)
+        (shift2, shift),
     )
     assert (
         error < 1e-5
@@ -135,7 +137,7 @@ if __name__ == "__main__":
                 if hasattr(msg, "magnetic_field")
                 else mil_ros_tools.rosmsg_to_numpy(msg.vector)
                 for topic, msg, t in bag.read_messages(topics=["/imu/mag_raw"])
-            ]
+            ],
         )
 
     if not len(points):
@@ -148,7 +150,6 @@ if __name__ == "__main__":
 
     try:
         import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-import
 
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot("111", projection="3d")
@@ -156,7 +157,7 @@ if __name__ == "__main__":
         ax.scatter(*zip(*points[::10, :]))
         axisEqual3D(ax)
         plt.show()
-    except:
+    except Exception:
         import traceback
 
         traceback.print_exc()
@@ -167,7 +168,6 @@ if __name__ == "__main__":
 
     try:
         import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-import
 
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot("111", projection="3d")
@@ -177,16 +177,16 @@ if __name__ == "__main__":
         axisEqual3D(ax)
         plt.show()
 
-    except:
+    except Exception:
         import traceback
 
         traceback.print_exc()
 
     print(
         yaml.dump(
-            dict(
-                scale=map(lambda x: map(float, x), scale),
-                shift=map(float, shift),
-            )
-        )
+            {
+                "scale": (map(float, x) for x in scale),
+                "shift": map(float, shift),
+            },
+        ),
     )

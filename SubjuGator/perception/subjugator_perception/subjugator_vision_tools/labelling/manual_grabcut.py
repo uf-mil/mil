@@ -91,7 +91,7 @@ class Picker:
         elif event == cv2.EVENT_MBUTTONDOWN:
             self.visualize_draw *= 0
             self.mask = np.ones(self.visualize_draw.shape[:2], dtype=np.uint8) * int(
-                cv2.GC_PR_BGD
+                cv2.GC_PR_BGD,
             )
 
         elif event == cv2.EVENT_MOUSEMOVE:
@@ -99,7 +99,9 @@ class Picker:
                 if self.opacity_change is None:
                     self.opacity_change = y
                 self.draw_opacity = np.clip(
-                    (self.draw_opacity + (self.opacity_change - y) * 0.005), 0, 1
+                    (self.draw_opacity + (self.opacity_change - y) * 0.005),
+                    0,
+                    1,
                 )
                 self.opacity_change = y
 
@@ -107,14 +109,20 @@ class Picker:
                 if self.brush_size_change is None:
                     self.brush_size_change = y
                 self.brush_size = np.clip(
-                    (self.brush_size + (self.brush_size_change - y)), 0, 99
+                    (self.brush_size + (self.brush_size_change - y)),
+                    0,
+                    99,
                 )
                 self.brush_size_change = y
                 self.brush_size_opacity = 0.9
 
             elif flags == cv2.EVENT_FLAG_ALTKEY:
                 cv2.circle(
-                    self.visualize_draw, (x, y), self.brush_size, (0, 0, 200), -1
+                    self.visualize_draw,
+                    (x, y),
+                    self.brush_size,
+                    (0, 0, 200),
+                    -1,
                 )
                 cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_BGD), -1)
 
@@ -122,13 +130,21 @@ class Picker:
                 self.opacity_change = None
                 if self.mouse_state[0]:
                     cv2.circle(
-                        self.visualize_draw, (x, y), self.brush_size, (0, 200, 0), -1
+                        self.visualize_draw,
+                        (x, y),
+                        self.brush_size,
+                        (0, 200, 0),
+                        -1,
                     )
                     cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_FGD), -1)
 
                 elif self.mouse_state[1]:
                     cv2.circle(
-                        self.visualize_draw, (x, y), self.brush_size, (0, 0, 200), -1
+                        self.visualize_draw,
+                        (x, y),
+                        self.brush_size,
+                        (0, 0, 200),
+                        -1,
                     )
                     cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_BGD), -1)
 
@@ -156,7 +172,9 @@ class Picker:
 
     def get_biggest_ctr(self, image):
         contours, _ = cv2.findContours(
-            np.copy(image), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+            np.copy(image),
+            cv2.RETR_TREE,
+            cv2.CHAIN_APPROX_SIMPLE,
         )
         if len(contours) > 0:
             cnt = max(contours, key=cv2.contourArea)
@@ -187,7 +205,13 @@ class Picker:
             out_mask = np.zeros(shape=image.shape[:2], dtype=np.uint8)
         else:
             cv2.grabCut(
-                self.image, out_mask, None, bgdModel, fgdModel, 1, cv2.GC_INIT_WITH_MASK
+                self.image,
+                out_mask,
+                None,
+                bgdModel,
+                fgdModel,
+                1,
+                cv2.GC_INIT_WITH_MASK,
             )
 
         return_mask = np.zeros(out_mask.shape).astype(np.float64)
@@ -230,7 +254,9 @@ if __name__ == "__main__":
         help="Either the name of the bag or first image in a sequence you'd like to segment.",
     )
     parser.add_argument(
-        "--topic", type=str, help="Name of the topic to use or the usb camera number."
+        "--topic",
+        type=str,
+        help="Name of the topic to use or the usb camera number.",
     )
     parser.add_argument(
         "--output",

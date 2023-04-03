@@ -54,7 +54,7 @@ class ImageProc:
         bridge (CvBridge): The ROS bridge to OpenCV.
     """
 
-    # https://github.com/ros-perception/image_pipeline/blob/indigo/image_proc/include/image_proc/processor.h # noqa
+    # https://github.com/ros-perception/image_pipeline/blob/indigo/image_proc/include/image_proc/processor.h
 
     # Flags to select which images should be outputted
     RAW = 0
@@ -68,7 +68,10 @@ class ImageProc:
 
     @staticmethod
     def process(
-        raw_msg: Image, model: Optional[PinholeCameraModel], out: ImageSet, flags: int
+        raw_msg: Image,
+        model: Optional[PinholeCameraModel],
+        out: ImageSet,
+        flags: int,
     ) -> None:
         """
         Given an original image message (sensor_msgs/Image), fill in the out ImageSet

@@ -31,8 +31,8 @@ class MissionClientCli:
         if not missions:
             print(
                 "{} param not set. Is mission runner running?".format(
-                    MissionClient.LIST_PARAM
-                )
+                    MissionClient.LIST_PARAM,
+                ),
             )
             return
         print("Available Missions:")
@@ -91,7 +91,7 @@ class MissionClientCli:
 def main():
     argv = rospy.myargv()
     parser = argparse.ArgumentParser(
-        description="Runs a mission on the mission_runner server"
+        description="Runs a mission on the mission_runner server",
     )
     subparser = parser.add_subparsers()
 

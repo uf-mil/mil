@@ -67,19 +67,19 @@ class VampireSlayer(SubjuGatorMission):
         """
         Move Pattern
         """
-        await self.move.left(1).go()
+        await self.go(self.move().left(1))
         await self.nh.sleep(2)
-        await self.move.right(2).go()
+        await self.go(self.move().right(2))
         await self.nh.sleep(2)
-        await self.move.down(0.5).go()
+        await self.go(self.move().down(0.5))
         await self.nh.sleep(2)
-        await self.move.up(0.5).go()
-        await self.move.forward(0.75).go()
+        await self.go(self.move().up(0.5))
+        await self.go(self.move().forward(0.75))
         await self.nh.sleep(2)
-        await self.move.right(0.75).go()
+        await self.go(self.move().right(0.75))
         await self.nh.sleep(2)
-        await self.move.backward(0.75).go()
-        await self.move.left(1).go()
+        await self.go(self.move().backward(0.75))
+        await self.go(self.move().left(1))
         """
         Did we find something?
         """
@@ -92,8 +92,8 @@ class VampireSlayer(SubjuGatorMission):
             target_pose = rosmsg_to_numpy(res.pose.pose.position)
             target_normal = rosmsg_to_numpy(res.pose.pose.orientation)[:2]
             print("Normal: ", target_normal)
-            await self.move.go(blind=True, speed=0.1)  # Station hold
-            transform = await self._tf_listener.get_transform("map", "/base_link")
+            await self.go(self.move(), blind=True, speed=0.1)  # Station hold
+            await self._tf_listener.get_transform("map", "/base_link")
             target_position = target_pose
             #            target_position = target_pose / target_normal
 
@@ -108,9 +108,15 @@ class VampireSlayer(SubjuGatorMission):
             # Don't hit buoy yet
             print("MOVING TO X: ", target_position[0])
             print("MOVING TO Y: ", target_position[1])
-            await self.move.set_position(
-                np.array([target_position[0], target_position[1], target_position[2]])
-            ).go(blind=True, speed=0.1)
+            await self.go(
+                self.move().set_position(
+                    np.array(
+                        [target_position[0], target_position[1], target_position[2]],
+                    ),
+                ),
+                blind=True,
+                speed=0.1,
+            )
             # Go behind it
             # print('Going behind target')
             # await self.move.right(4).go(speed=1)

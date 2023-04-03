@@ -92,7 +92,8 @@ class EntranceGate(NaviGatorMission):
         cls.parser = parser
 
         cls.net_service_call = cls.nh.get_service_client(
-            "/entrance_exit_gate_message", MessageEntranceExitGate
+            "/entrance_exit_gate_message",
+            MessageEntranceExitGate,
         )
 
     async def run(self, args):
@@ -145,7 +146,7 @@ class EntranceGate(NaviGatorMission):
         # Go through the gate
         self.send_feedback("Navigating through gate")
         await self.move.set_position(traversal_points[0]).look_at(
-            traversal_points[1]
+            traversal_points[1],
         ).go()
         await self.move.set_position(traversal_points[1]).go()
         self.send_feedback("Done with start gate!")
@@ -159,10 +160,12 @@ class EntranceGate(NaviGatorMission):
 
         # Calculate scan points
         scan_points_0 = await self.get_perpendicular_points(
-            self.gate_totems[1], scan_dist
+            self.gate_totems[1],
+            scan_dist,
         )
         scan_points_1 = await self.get_perpendicular_points(
-            self.gate_totems[2], scan_dist
+            self.gate_totems[2],
+            scan_dist,
         )
         scan_point_0 = scan_points_0[0]
         scan_lookat_0 = scan_points_0[1]
@@ -245,7 +248,7 @@ class EntranceGate(NaviGatorMission):
 
             self.send_feedback(
                 "Multilaterating Method has confidence of "
-                + str(multilateration_confidence)
+                + str(multilateration_confidence),
             )
         else:
             intersect_results = self.calculate_intersect()
@@ -253,7 +256,7 @@ class EntranceGate(NaviGatorMission):
             intersect_confidence = intersect_results[1]
 
             self.send_feedback(
-                "Intersecting Method has confidence of " + str(intersect_confidence)
+                "Intersecting Method has confidence of " + str(intersect_confidence),
             )
 
     async def run_pass_scan(self, args):
@@ -264,13 +267,16 @@ class EntranceGate(NaviGatorMission):
 
         # Calculate scan points
         scan_points_0 = await self.get_perpendicular_points(
-            self.gate_centers[0], scan_dist
+            self.gate_centers[0],
+            scan_dist,
         )
         scan_points_1 = await self.get_perpendicular_points(
-            self.gate_centers[2], scan_dist
+            self.gate_centers[2],
+            scan_dist,
         )
         scan_points_2 = await self.get_perpendicular_points(
-            self.gate_totems[3], scan_dist
+            self.gate_totems[3],
+            scan_dist,
         )
         scan_point_0 = scan_points_0[0]
         scan_lookat_0 = scan_points_1[0]
@@ -299,7 +305,7 @@ class EntranceGate(NaviGatorMission):
 
         self.send_feedback("Navigating to scan end point")
         await self.move.set_position(scan_point_1).look_at(scan_lookat_1).go(
-            speed_factor=speed
+            speed_factor=speed,
         )
 
         if uses_multilateration:
@@ -317,7 +323,7 @@ class EntranceGate(NaviGatorMission):
 
             self.send_feedback(
                 "Multilaterating Method has confidence of "
-                + str(multilateration_confidence)
+                + str(multilateration_confidence),
             )
         else:
             intersect_results = self.calculate_intersect()
@@ -325,7 +331,7 @@ class EntranceGate(NaviGatorMission):
             intersect_confidence = intersect_results[1]
 
             self.send_feedback(
-                "Intersecting Method has confidence of " + str(intersect_confidence)
+                "Intersecting Method has confidence of " + str(intersect_confidence),
             )
 
     """
@@ -345,7 +351,7 @@ class EntranceGate(NaviGatorMission):
                     [
                         gate_vector[1] - gate_vector[0],
                         pinger_vector[0] - pinger_vector[1],
-                    ]
+                    ],
                 ).T,
                 pinger_vector[0] - gate_vector[0],
             )
@@ -394,7 +400,8 @@ class EntranceGate(NaviGatorMission):
         try:
             # Transform the ping into enu
             hydrophones_to_enu = await self.tf_listener.get_transform(
-                "enu", p_message.header.frame_id
+                "enu",
+                p_message.header.frame_id,
             )
             hydrophones_origin = hydrophones_to_enu._p[0:2]
             heading = rosmsg_to_numpy(p_message.vector)
@@ -403,7 +410,7 @@ class EntranceGate(NaviGatorMission):
 
             # Track the ping
             self.intersect_vectors.append(
-                (hydrophones_origin[0:2], hydrophones_origin[0:2] + heading_enu[0:2])
+                (hydrophones_origin[0:2], hydrophones_origin[0:2] + heading_enu[0:2]),
             )
         except tf2_ros.TransformException as e:
             self.send_feedback(f"TF Exception: {e}")
@@ -424,7 +431,7 @@ class EntranceGate(NaviGatorMission):
         for gate_center in self.gate_centers:
             distances.append(
                 (gate_center[0] - pinger_pos[0]) ** 2
-                + (gate_center[1] - pinger_pos[1]) ** 2
+                + (gate_center[1] - pinger_pos[1]) ** 2,
             )
 
         # Determine which gate is closest
@@ -515,7 +522,10 @@ class EntranceGate(NaviGatorMission):
     """
 
     async def get_perpendicular_points(
-        self, center_point, offset_distance, boat_pose=None
+        self,
+        center_point,
+        offset_distance,
+        boat_pose=None,
     ):
         # Find the perpendicular line
         perpendicular_vector = self.perpendicular(self.gates_line)

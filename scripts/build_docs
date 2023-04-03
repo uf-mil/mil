@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 usage="$(basename "$0") [-h | --help] [-s | --scratch] [-n | --no-source]
 [-d | --doxygen] -- build MIL docs
 
@@ -56,9 +57,9 @@ fi
 
 if [ "$SCRATCH" = true ]; then
 	#Doxygen
-	NO_SOURCE="$NO_SOURCE" sphinx-build -E -b html -d "$BUILD_DIR"/doctrees "$MIL_DIR"/docs "$BUILD_DIR"/html
+	NO_SOURCE="$NO_SOURCE" sphinx-build -W -E -b html -d "$BUILD_DIR"/doctrees "$MIL_DIR"/docs "$BUILD_DIR"/html
 else
-	NO_SOURCE="$NO_SOURCE" sphinx-build -b html -d "$BUILD_DIR"/doctrees "$MIL_DIR"/docs "$BUILD_DIR"/html
+	NO_SOURCE="$NO_SOURCE" sphinx-build -W -b html -d "$BUILD_DIR"/doctrees "$MIL_DIR"/docs "$BUILD_DIR"/html
 fi
 
 # Then Sphinx build

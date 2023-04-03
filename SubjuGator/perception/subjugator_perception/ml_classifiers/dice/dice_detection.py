@@ -14,7 +14,7 @@ rospack = rospkg.RosPack()
 
 # To correctly import utils
 sys.path.append(
-    rospack.get_path("subjugator_perception") + "/ml_classifiers/dice/utils"
+    rospack.get_path("subjugator_perception") + "/ml_classifiers/dice/utils",
 )
 
 from utils import detector_utils  # noqa
@@ -25,7 +25,9 @@ class classifier:
         rospy.init_node("dice_detection")
         self.bridge = CvBridge()
         self.subscriber = rospy.Subscriber(
-            "/camera/front/left/image_rect_color", Image, self.img_callback
+            "/camera/front/left/image_rect_color",
+            Image,
+            self.img_callback,
         )
         self.publisher = rospy.Publisher("/dice/debug_rcnn", Image, queue_size=1)
 
@@ -51,7 +53,9 @@ class classifier:
 
         # Run image through tensorflow graph
         boxes, scores, classes = detector_utils.detect_objects(
-            cv_image, self.inference_graph, self.sess
+            cv_image,
+            self.inference_graph,
+            self.sess,
         )
 
         # Draw Bounding box
@@ -95,7 +99,7 @@ class classifier:
                 p2 = np.array([int(right), int(bottom)])
                 mid_point = (p1 + p2) / 2
                 self.dice_publisher.publish(
-                    Point(mid_point[0], mid_point[1], classes[i])
+                    Point(mid_point[0], mid_point[1], classes[i]),
                 )
 
 

@@ -101,7 +101,7 @@ class Dock(Vrx):
         # determine which long side is closer to us, go to the closer one
         # (assume VRX peeps are nice and will always have the open side of the dock closer)
         if np.linalg.norm(side_a - curr_pose[0]) < np.linalg.norm(
-            side_b - curr_pose[0]
+            side_b - curr_pose[0],
         ):
             print("side_a")
             goal_pos = side_a
@@ -167,12 +167,12 @@ class Dock(Vrx):
         # position boat in front of correct symbol
         if symbol_position == "left":
             await self.move.set_position(self.left_position).look_at(
-                self.dock_point_left
+                self.dock_point_left,
             ).go(blind=True, move_type="skid")
             position = self.dock_point_left
         elif symbol_position == "right":
             await self.move.set_position(self.right_position).look_at(
-                self.dock_point_right
+                self.dock_point_right,
             ).go(blind=True, move_type="skid")
             position = self.dock_point_right
 
@@ -204,7 +204,8 @@ class Dock(Vrx):
         ]
         path = self.rospack.get_path("navigator_vision")
         symbol_file = os.path.join(
-            path, "datasets/dock_target_images/" + target_symbol + ".png"
+            path,
+            "datasets/dock_target_images/" + target_symbol + ".png",
         )
         symbol = cv2.imread(symbol_file)
         _, w, h = symbol.shape[::-1]
@@ -572,7 +573,9 @@ class Dock(Vrx):
         for i in range(4):
             try:
                 await axros.util.wrap_timeout(
-                    self.aim_and_fire(foggy=foggy), 15, "Trying to shoot"
+                    self.aim_and_fire(foggy=foggy),
+                    15,
+                    "Trying to shoot",
                 )
             except asyncio.TimeoutError:
                 print("Let's just take the shot anyways")
@@ -591,7 +594,7 @@ class Dock(Vrx):
         while msgs is None:
             try:
                 msgs, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
-            except Exception as e:
+            except Exception:
                 await self.move.forward(10).go()
         await self.pcodar_label(msgs[0].id, "dock")
         # if no pcodar objects, throw error, exit mission
@@ -629,7 +632,7 @@ class Dock(Vrx):
                     [bottom_right[0], top_left[1]],
                 ],
                 dtype=np.int32,
-            )
+            ),
         ]
 
         stencil = np.zeros(img.shape[:-1]).astype(np.uint8)
@@ -666,7 +669,7 @@ class Dock(Vrx):
 
         print("The new size of cnts is: ", len(cnts))
         if len(cnts) == 2:
-            masked_msg = self.bridge.cv2_to_imgmsg(mask, "mono8")
+            self.bridge.cv2_to_imgmsg(mask, "mono8")
             # self.image_debug_pub.publish(masked_msg)
 
             # assume there are only two contours (hopefully, otherwise, make contour and mask tighter)

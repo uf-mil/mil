@@ -34,9 +34,13 @@ class Controller:
         self._rise_term_int_prev = numpy.zeros(6)
 
     def update(
-        self, dt: float, desired: PoseTwist, current: PoseTwist
+        self,
+        dt: float,
+        desired: PoseTwist,
+        current: PoseTwist,
     ) -> Tuple[
-        Tuple[numpy.ndarray, numpy.ndarray], Tuple[numpy.ndarray, numpy.ndarray]
+        Tuple[numpy.ndarray, numpy.ndarray],
+        Tuple[numpy.ndarray, numpy.ndarray],
     ]:
         """
         Updates the controllers with a few values.
@@ -59,7 +63,7 @@ class Controller:
             [
                 world_from_body.dot(p_dot),
                 world_from_body.dot(o_dot),
-            ]
+            ],
         )
 
         # world_from_desiredbody = transformations.quaternion_matrix(desired_o)[:3, :3]
@@ -67,13 +71,13 @@ class Controller:
             [
                 world_from_body.dot(desired_p_dot),
                 world_from_body.dot(desired_o_dot),
-            ]
+            ],
         )
         desired_x_dotdot = numpy.concatenate(
             [
                 world_from_body.dot(desired_p_dotdot),
                 world_from_body.dot(desired_o_dotdot),
-            ]
+            ],
         )
 
         if DEBUG:
@@ -86,9 +90,9 @@ class Controller:
                     transformations.quaternion_multiply(
                         desired_o,
                         transformations.quaternion_inverse(o),
-                    )
+                    ),
                 ),
-            ]
+            ],
         )
         if self.config["two_d_mode"]:
             error_position_world = error_position_world * [1, 1, 0, 0, 0, 1]
@@ -118,11 +122,11 @@ class Controller:
         output = pd_output
         if self.config["use_rise"]:
             rise_term_int = body_gain(
-                numpy.diag(self.config["ks"] * self.config["alpha"])
+                numpy.diag(self.config["ks"] * self.config["alpha"]),
             ).dot(error_velocity_world) + body_gain(
-                numpy.diag(self.config["beta"])
+                numpy.diag(self.config["beta"]),
             ).dot(
-                numpy.sign(error_velocity_world)
+                numpy.sign(error_velocity_world),
             )
 
             self._rise_term = self._rise_term + dt / 2 * (
@@ -136,17 +140,18 @@ class Controller:
             self._rise_term = numpy.zeros(6)
             self._rise_term_int_prev = numpy.zeros(6)
         output = output + body_gain(numpy.diag(self.config["accel_feedforward"])).dot(
-            desired_x_dotdot
+            desired_x_dotdot,
         )
         output = output + body_gain(numpy.diag(self.config["vel_feedforward"])).dot(
-            desired_x_dot
+            desired_x_dot,
         )
 
         # Permitting lambda assignment b/c legacy
-        wrench_from_vec = lambda output: (
-            world_from_body.T.dot(output[0:3]),
-            world_from_body.T.dot(output[3:6]),
-        )  # noqa
+        def wrench_from_vec(output):
+            return world_from_body.T.dot(output[0:3]), world_from_body.T.dot(
+                output[3:6],
+            )
+
         if DEBUG:
             print("{:6} {}".format("PD:", wrench_from_vec(pd_output)))
             print("{:6} {}".format("PID(R):", wrench_from_vec(output)))

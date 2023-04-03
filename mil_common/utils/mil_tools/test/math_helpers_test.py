@@ -25,7 +25,9 @@ class TestROSTools(unittest.TestCase):
 
                 # Test that the norm is 1
                 np.testing.assert_almost_equal(
-                    norm, 1.0, err_msg="The normalized vector did not have length 1"
+                    norm,
+                    1.0,
+                    err_msg="The normalized vector did not have length 1",
                 )
 
     def test_quat_to_euler(self):
@@ -35,7 +37,9 @@ class TestROSTools(unittest.TestCase):
         numpy_array = quat_to_euler(q)
         truth = np.array([1.57079633, 0.0, 0.0])
         np.testing.assert_almost_equal(
-            numpy_array, truth, err_msg="Quaternion to euler conversion incorrect"
+            numpy_array,
+            truth,
+            err_msg="Quaternion to euler conversion incorrect",
         )
 
     def test_compose_transformation(self):
@@ -48,7 +52,9 @@ class TestROSTools(unittest.TestCase):
 
         test = compose_transformation(R, t)
         np.testing.assert_almost_equal(
-            test, truth, err_msg="Error composing transformation"
+            test,
+            truth,
+            err_msg="Error composing transformation",
         )
 
     def test_euler_to_quat(self):
@@ -61,7 +67,9 @@ class TestROSTools(unittest.TestCase):
         testing = np.array([testing.x, testing.y, testing.z, testing.w])
         truth = np.array([0.70710678, 0.0, 0.0, 0.70710678])
         np.testing.assert_almost_equal(
-            testing, truth, err_msg="Incorrect euler to quaternion conversion"
+            testing,
+            truth,
+            err_msg="Incorrect euler to quaternion conversion",
         )
 
 
