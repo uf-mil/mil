@@ -38,12 +38,12 @@ public:
   /**
    * Forbidden copy constructor. Set to the delete operator.
    */
-  CameraFrameSequence(const CameraFrameSequence&) = delete;  // Forbid copy construction
+  CameraFrameSequence(const CameraFrameSequence &) = delete;  // Forbid copy construction
 
   /**
    * Forbidden move constructor. Set to the delete operator.
    */
-  CameraFrameSequence(CameraFrameSequence&&) = delete;  // Forbid move construction
+  CameraFrameSequence(CameraFrameSequence &&) = delete;  // Forbid move construction
 
   virtual ~CameraFrameSequence() = default;
 
