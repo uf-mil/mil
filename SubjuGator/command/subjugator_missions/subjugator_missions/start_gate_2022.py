@@ -74,13 +74,14 @@ class StartGate2022(SubjuGatorMission):
 
         fprint("Waiting for side")
         IS_LEFT = await self.is_left()
-        
+
         if IS_LEFT:
             side = "left"
         else:
             side = "right"
 
-        print("Found side:", side)
+        msg = "Found side: " + side
+        fprint(msg)
 
         if IS_LEFT:
             left = self.move().left(1)
