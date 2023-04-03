@@ -21,7 +21,9 @@ class GazeboInterface:
         self.state_sub_max_prd = rospy.Duration(1 / 100)  # s
         self.last_state_sub_time = rospy.Time.now()
         self.state_sub = rospy.Subscriber(
-            "/gazebo/link_states", LinkStates, self.state_cb
+            "/gazebo/link_states",
+            LinkStates,
+            self.state_cb,
         )
         self.state_pub = rospy.Publisher("model_odom", Odometry, queue_size=1)
         self.absstate_pub = rospy.Publisher("absodom", Odometry, queue_size=1)
@@ -65,7 +67,7 @@ class GazeboInterface:
                 header=mil_tools.make_header(frame="/enu"),
                 child_frame_id="/measurement",
                 pose=PoseWithCovariance(
-                    pose=mil_tools.numpy_quat_pair_to_pose(*self.last_enu)
+                    pose=mil_tools.numpy_quat_pair_to_pose(*self.last_enu),
                 ),
                 twist=TwistWithCovariance(twist=twist),
             )
@@ -75,8 +77,9 @@ class GazeboInterface:
                 child_frame_id="/measurement",
                 pose=PoseWithCovariance(
                     pose=mil_tools.numpy_quat_pair_to_pose(
-                        self.last_ecef, self.last_enu[1]
-                    )
+                        self.last_ecef,
+                        self.last_enu[1],
+                    ),
                 ),
                 twist=TwistWithCovariance(twist=twist),
             )

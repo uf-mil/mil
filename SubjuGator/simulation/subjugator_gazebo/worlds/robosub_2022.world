@@ -1,4 +1,4 @@
-<sdf version='1.6'>
+<sdf version='1.7'>
   <world name='default'>
     <physics name='default_physics' default='0' type='ode'>
       <real_time_update_rate>100</real_time_update_rate>
@@ -15,7 +15,7 @@
     </spherical_coordinates>
     <magnetic_field>5e-06 2.4e-05 3.9e-05</magnetic_field>
     <light name='illum' type='directional'>
-      <pose frame=''>-4 18 9 0 -0.75 0</pose>
+      <pose>-4 18 9 0 -0.75 0</pose>
       <diffuse>0.1 0.4 1 1</diffuse>
       <attenuation>
         <constant>1</constant>
@@ -23,9 +23,14 @@
       </attenuation>
       <specular>0.1 0.1 0.1 1</specular>
       <direction>0 0 -1</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
     </light>
     <light name='sky_illum' type='directional'>
-      <pose frame=''>0 0 5 3.14 -0 0</pose>
+      <pose>0 0 5 3.14 -0 0</pose>
       <diffuse>1 1 1 1</diffuse>
       <attenuation>
         <constant>1</constant>
@@ -33,10 +38,15 @@
       </attenuation>
       <specular>0.1 0.1 0.1 1</specular>
       <direction>0 0 -1</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
     </light>
     <light name='sun' type='directional'>
       <cast_shadows>1</cast_shadows>
-      <pose frame=''>0 0 10 0 -0 0</pose>
+      <pose>0 0 10 0 -0 0</pose>
       <diffuse>0.8 0.8 0.8 1</diffuse>
       <specular>0.2 0.2 0.2 1</specular>
       <attenuation>
@@ -46,9 +56,14 @@
         <quadratic>0.001</quadratic>
       </attenuation>
       <direction>-0.5 0.1 -0.9</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
     </light>
     <light name='user_point_light_0' type='point'>
-      <pose frame=''>0.109933 -0.142384 1 0 -0 0</pose>
+      <pose>0.109933 -0.142384 1 0 -0 0</pose>
       <diffuse>0.5 0.5 0.5 1</diffuse>
       <specular>0.1 0.1 0.1 1</specular>
       <attenuation>
@@ -59,9 +74,14 @@
       </attenuation>
       <cast_shadows>0</cast_shadows>
       <direction>0 0 -1</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
     </light>
     <light name='user_point_light_1' type='point'>
-      <pose frame=''>-29.7505 -0.454729 1 0 -0 0</pose>
+      <pose>-29.7505 -0.454729 1 0 -0 0</pose>
       <diffuse>0.5 0.5 0.5 1</diffuse>
       <specular>0.1 0.1 0.1 1</specular>
       <attenuation>
@@ -72,9 +92,14 @@
       </attenuation>
       <cast_shadows>0</cast_shadows>
       <direction>0 0 -1</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
     </light>
     <light name='user_point_light_2' type='point'>
-      <pose frame=''>31.6112 -2.69613 1 0 -0 0</pose>
+      <pose>31.6112 -2.69613 1 0 -0 0</pose>
       <diffuse>0.5 0.5 0.5 1</diffuse>
       <specular>0.1 0.1 0.1 1</specular>
       <attenuation>
@@ -85,10 +110,15 @@
       </attenuation>
       <cast_shadows>0</cast_shadows>
       <direction>0 0 -1</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
     </light>
     <model name='water'>
       <static>1</static>
-      <pose frame=''>0 0 0 3.14159 9.3e-05 3.14159</pose>
+      <pose>0 0 0 3.14159 9.3e-05 3.14159</pose>
       <link name='link'>
         <visual name='visual'>
           <transparency>0.8</transparency>
@@ -111,7 +141,7 @@
       </link>
     </model>
     <model name='transdec'>
-      <pose frame=''>0 0 0.5 0 -0 0</pose>
+      <pose>0 0 0.5 0 -0 0</pose>
       <static>1</static>
       <link name='ground'>
         <visual name='visual'>
@@ -173,7 +203,7 @@
           <angular>1e-05</angular>
         </velocity_decay>
         <collision name='pathmarkers2018col'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <uri>file://markers/PathMarkers2018s.dae</uri>
@@ -205,7 +235,7 @@
           </plugin>
         </sensor>
         <visual name='pathmarkers2018vis'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <uri>file://markers/PathMarkers2018s.dae</uri>
@@ -216,11 +246,11 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <pose frame=''>-0.11 0.1787 -1.49 0 -0 0</pose>
+      <pose>-0.11 0.1787 -1.49 0 -0 0</pose>
     </model>
     <model name='transdec_pinger'>
       <static>1</static>
-      <pose frame=''>15 0 -2 0 -0 0</pose>
+      <pose>15 0 -2 0 -0 0</pose>
       <link name='link'>
         <visual name='visual'>
           <geometry>
@@ -237,7 +267,7 @@
     </model>
     <model name='transdec_pinger2'>
       <static>1</static>
-      <pose frame=''>15 15 -2 0 -0 0</pose>
+      <pose>15 15 -2 0 -0 0</pose>
       <link name='link'>
         <visual name='visual'>
           <geometry>
@@ -268,9 +298,9 @@
     <model name='posters_0'>
       <static>1</static>
       <link name='base_link'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
+        <pose>0 0 0 0 -0 0</pose>
         <inertial>
-          <pose frame=''>-0.845799 0.235134 0.009916 0 -0 0</pose>
+          <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
           <mass>8.45052</mass>
           <inertia>
             <ixx>0.978466</ixx>
@@ -282,7 +312,7 @@
           </inertia>
         </inertial>
         <collision name='base_link_collision'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
@@ -304,7 +334,7 @@
           </surface>
         </collision>
         <visual name='base_link_visual'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
@@ -316,14 +346,14 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <pose frame=''>1.89831 -3.10654 0 0 -0 0</pose>
+      <pose>1.89831 -3.10654 0 0 -0 0</pose>
     </model>
     <model name='posters_1'>
       <static>1</static>
       <link name='base_link'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
+        <pose>0 0 0 0 -0 0</pose>
         <inertial>
-          <pose frame=''>-0.845799 0.235134 0.009916 0 -0 0</pose>
+          <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
           <mass>8.45052</mass>
           <inertia>
             <ixx>0.978466</ixx>
@@ -335,7 +365,7 @@
           </inertia>
         </inertial>
         <collision name='base_link_collision'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
@@ -357,7 +387,7 @@
           </surface>
         </collision>
         <visual name='base_link_visual'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
@@ -369,14 +399,14 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <pose frame=''>2.81731 -3.85937 0 0 -0 0</pose>
+      <pose>2.81731 -3.85937 0 0 -0 0</pose>
     </model>
     <model name='posters_2'>
       <static>1</static>
       <link name='base_link'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
+        <pose>0 0 0 0 -0 0</pose>
         <inertial>
-          <pose frame=''>-0.845799 0.235134 0.009916 0 -0 0</pose>
+          <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
           <mass>8.45052</mass>
           <inertia>
             <ixx>0.978466</ixx>
@@ -388,7 +418,7 @@
           </inertia>
         </inertial>
         <collision name='base_link_collision'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
@@ -410,7 +440,7 @@
           </surface>
         </collision>
         <visual name='base_link_visual'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
@@ -422,14 +452,14 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <pose frame=''>4.03178 -4.08252 0 0 -0 0</pose>
+      <pose>4.03178 -4.08252 0 0 -0 0</pose>
     </model>
     <model name='posters_3'>
       <static>1</static>
       <link name='base_link'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
+        <pose>0 0 0 0 -0 0</pose>
         <inertial>
-          <pose frame=''>-0.845799 0.235134 0.009916 0 -0 0</pose>
+          <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
           <mass>8.45052</mass>
           <inertia>
             <ixx>0.978466</ixx>
@@ -441,7 +471,7 @@
           </inertia>
         </inertial>
         <collision name='base_link_collision'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
@@ -463,7 +493,7 @@
           </surface>
         </collision>
         <visual name='base_link_visual'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
@@ -475,14 +505,14 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <pose frame=''>2.92241 -2.77317 0 0 -0 0</pose>
+      <pose>2.92241 -2.77317 0 0 -0 0</pose>
     </model>
     <model name='posters_4'>
       <static>1</static>
       <link name='base_link'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
+        <pose>0 0 0 0 -0 0</pose>
         <inertial>
-          <pose frame=''>-0.845799 0.235134 0.009916 0 -0 0</pose>
+          <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
           <mass>8.45052</mass>
           <inertia>
             <ixx>0.978466</ixx>
@@ -494,7 +524,7 @@
           </inertia>
         </inertial>
         <collision name='base_link_collision'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
@@ -516,7 +546,7 @@
           </surface>
         </collision>
         <visual name='base_link_visual'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
@@ -528,13 +558,13 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <pose frame=''>4.48097 -4.72555 0 0 -0 0</pose>
+      <pose>4.48097 -4.72555 0 0 -0 0</pose>
     </model>
     <model name='octogon'>
       <static>1</static>
       <link name='octogon'>
         <collision name='octogoncol'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <uri>file://octogon/octogon.dae</uri>
@@ -555,7 +585,7 @@
           </surface>
         </collision>
         <visual name='octogonvis'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <uri>file://octogon/octogon.dae</uri>
@@ -566,7 +596,7 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <pose frame=''>6.25993 -4.43932 0 0 -0 0</pose>
+      <pose>6.25993 -4.43932 0 0 -0 0</pose>
     </model>
     <state world_name='default'>
       <sim_time>0</sim_time>
@@ -574,167 +604,167 @@
       <wall_time>0 694175568</wall_time>
       <iterations>0</iterations>
       <model name='octogon'>
-        <pose frame=''>22.9712 -1.43185 0 0 -0 1.5708</pose>
+        <pose>22.9712 -1.43185 0 0 -0 1.5708</pose>
         <scale>1 1 1</scale>
         <link name='octogon'>
-          <pose frame=''>22.9712 -1.43185 -0 0 -0 1.5708</pose>
+          <pose>22.9712 -1.43185 -0 0 -0 1.5708</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='pathmarkers2018'>
-        <pose frame=''>4.49659 0.1787 -2.92663 0 -0 0</pose>
+        <pose>4.49659 0.1787 -2.92663 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='pathmarkers2018'>
-          <pose frame=''>4.49659 0.1787 -2.92663 0 -0 0</pose>
+          <pose>4.49659 0.1787 -2.92663 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='pathmarkers2018_0'>
-        <pose frame=''>8.80989 -4.68693 -2.97363 0.032661 -0.009562 2.8703</pose>
+        <pose>8.80989 -4.68693 -2.97363 0.032661 -0.009562 2.8703</pose>
         <scale>1 1 1</scale>
         <link name='pathmarkers2018'>
-          <pose frame=''>8.80989 -4.68693 -2.97363 0.032661 -0.009562 2.8703</pose>
+          <pose>8.80989 -4.68693 -2.97363 0.032661 -0.009562 2.8703</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='posters'>
-        <pose frame=''>10.3637 -4.17768 -1.1472 0 -0 1.57</pose>
+        <pose>10.3637 -4.17768 -1.1472 0 -0 1.57</pose>
         <scale>1 1 1</scale>
         <link name='base_link'>
-          <pose frame=''>10.3637 -4.17768 -1.1472 0 -0 1.57</pose>
+          <pose>10.3637 -4.17768 -1.1472 0 -0 1.57</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='posters_0'>
-        <pose frame=''>8.31009 -2.03187 -1.21848 0 -0 0.785</pose>
+        <pose>8.31009 -2.03187 -1.21848 0 -0 0.785</pose>
         <scale>1 1 1</scale>
         <link name='base_link'>
-          <pose frame=''>8.31009 -2.03187 -1.21848 0 -0 0.785</pose>
+          <pose>8.31009 -2.03187 -1.21848 0 -0 0.785</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='posters_1'>
-        <pose frame=''>7.74867 -2.53671 -1.24482 0 -0 0.785</pose>
+        <pose>7.74867 -2.53671 -1.24482 0 -0 0.785</pose>
         <scale>1 1 1</scale>
         <link name='base_link'>
-          <pose frame=''>7.74867 -2.53671 -1.24482 0 -0 0.785</pose>
+          <pose>7.74867 -2.53671 -1.24482 0 -0 0.785</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='posters_2'>
-        <pose frame=''>14 2 -1.09014 0 0 -0.785</pose>
+        <pose>14 2 -1.09014 0 0 -0.785</pose>
         <scale>1 1 1</scale>
         <link name='base_link'>
-          <pose frame=''>14 2 -1.09014 0 0 -0.785</pose>
+          <pose>14 2 -1.09014 0 0 -0.785</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='posters_3'>
-        <pose frame=''>14.433 1.43243 -0.989775 0 0 -0.785</pose>
+        <pose>14.433 1.43243 -0.989775 0 0 -0.785</pose>
         <scale>1 1 1</scale>
         <link name='base_link'>
-          <pose frame=''>14.433 1.43243 -0.989775 0 0 -0.785</pose>
+          <pose>14.433 1.43243 -0.989775 0 0 -0.785</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='posters_4'>
-        <pose frame=''>10.3678 -4.9986 -1.2595 0 -0 1.57</pose>
+        <pose>10.3678 -4.9986 -1.2595 0 -0 1.57</pose>
         <scale>1 1 1</scale>
         <link name='base_link'>
-          <pose frame=''>10.3678 -4.9986 -1.2595 0 -0 1.57</pose>
+          <pose>10.3678 -4.9986 -1.2595 0 -0 1.57</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='start_gate_2022'>
-        <pose frame=''>3.52062 2.82876 -0.12531 0.119618 0.947618 -0.145634</pose>
+        <pose>4.55509 -0.018982 -0.205829 0.009062 0.031542 -1.57001</pose>
         <scale>1 1 1</scale>
         <link name='base_link'>
-          <pose frame=''>3.52062 2.82876 -0.12531 0.119618 0.947618 -0.145634</pose>
+          <pose>4.55509 -0.018982 -0.205829 0.009062 0.031542 -1.57001</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='transdec'>
-        <pose frame=''>0 0 0.5 0 -0 0</pose>
+        <pose>0 0 0.5 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='ground'>
-          <pose frame=''>0 0 0.5 0 -0 0</pose>
+          <pose>0 0 0.5 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='transdec_pinger'>
-        <pose frame=''>14 1 -2 0 -0 0</pose>
+        <pose>14 1 -2 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>14 1 -2 0 -0 0</pose>
+          <pose>14 1 -2 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='transdec_pinger2'>
-        <pose frame=''>22 -2 -2 0 -0 0</pose>
+        <pose>22 -2 -2 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>22 -2 -2 0 -0 0</pose>
+          <pose>22 -2 -2 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='water'>
-        <pose frame=''>-0.069528 0.449668 0 3.14159 9.3e-05 3.14159</pose>
+        <pose>0.194567 0.198111 0 3.14159 9.3e-05 3.14159</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>-0.069528 0.449668 0 3.14159 9.3e-05 3.14159</pose>
+          <pose>0.194567 0.198111 0 3.14159 9.3e-05 3.14159</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <light name='illum'>
-        <pose frame=''>-4 18 9 0 -0.75 0</pose>
+        <pose>-4 18 9 0 -0.75 0</pose>
       </light>
       <light name='sky_illum'>
-        <pose frame=''>0 0 5 3.14 -0 0</pose>
+        <pose>0 0 5 3.14 -0 0</pose>
       </light>
       <light name='sun'>
-        <pose frame=''>0 0 10 0 -0 0</pose>
+        <pose>0 0 10 0 -0 0</pose>
       </light>
       <light name='user_point_light_0'>
-        <pose frame=''>0.109933 -0.142384 1 0 -0 0</pose>
+        <pose>0.109933 -0.142384 1 0 -0 0</pose>
       </light>
       <light name='user_point_light_1'>
-        <pose frame=''>-29.7505 -0.454729 1 0 -0 0</pose>
+        <pose>-29.7505 -0.454729 1 0 -0 0</pose>
       </light>
       <light name='user_point_light_2'>
-        <pose frame=''>31.6112 -2.69613 1 0 -0 0</pose>
+        <pose>31.6112 -2.69613 1 0 -0 0</pose>
       </light>
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>-12.7114 1.44508 14.1726 0 0.5818 -0.136649</pose>
+        <pose>-6.58452 -11.5807 1.70121 -0 0.2418 0.923352</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
@@ -758,7 +788,7 @@
           <angular>1e-05</angular>
         </velocity_decay>
         <collision name='pathmarkers2018col'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <uri>file://markers/PathMarkers2018s.dae</uri>
@@ -790,7 +820,7 @@
           </plugin>
         </sensor>
         <visual name='pathmarkers2018vis'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <uri>file://markers/PathMarkers2018s.dae</uri>
@@ -801,14 +831,14 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <pose frame=''>7.79991 -3.31658 0 0 -0 0</pose>
+      <pose>7.79991 -3.31658 0 0 -0 0</pose>
     </model>
     <model name='posters'>
       <static>1</static>
       <link name='base_link'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
+        <pose>0 0 0 0 -0 0</pose>
         <inertial>
-          <pose frame=''>-0.845799 0.235134 0.009916 0 -0 0</pose>
+          <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
           <mass>8.45052</mass>
           <inertia>
             <ixx>0.978466</ixx>
@@ -820,7 +850,7 @@
           </inertia>
         </inertial>
         <collision name='base_link_collision'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
@@ -842,7 +872,7 @@
           </surface>
         </collision>
         <visual name='base_link_visual'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
@@ -854,14 +884,14 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <pose frame=''>12.3723 -3.83106 0 0 -0 0</pose>
+      <pose>12.3723 -3.83106 0 0 -0 0</pose>
     </model>
     <model name='start_gate_2022'>
       <static>1</static>
       <link name='base_link'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
+        <pose>0 0 0 0 -0 0</pose>
         <inertial>
-          <pose frame=''>1.30078 1.35363 2.40887 0 -0 0</pose>
+          <pose>1.30078 1.35363 2.40887 0 -0 0</pose>
           <mass>13.5315</mass>
           <inertia>
             <ixx>5.04877</ixx>
@@ -873,7 +903,7 @@
           </inertia>
         </inertial>
         <collision name='base_link_collision'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <uri>file://start_gate_2022/start_gate.dae</uri>
@@ -894,7 +924,7 @@
           </surface>
         </collision>
         <visual name='base_link_visual'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
               <uri>file://start_gate_2022/start_gate.dae</uri>
@@ -905,7 +935,7 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <pose frame=''>-0.957126 1.98002 0 0 -0 0</pose>
+      <pose>-0.957126 1.98002 0 0 -0 0</pose>
     </model>
   </world>
 </sdf>

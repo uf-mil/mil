@@ -1494,7 +1494,7 @@ void anisotropic_diffusion(const Mat &src, Mat &dest, int t_max)
         if (i == 0 || i == x0.rows - 1 || j == 0 || j == x0.cols - 1)  // conduction coefficient set to
           d = 1;                                                       // 1 p633 after equation 13
         else
-          d = 1.0 / (1 + (gx * gx + 0 * gy * gy) * K2);  // expression of g(gradient(I))
+          d = 1.0 / (1 + (gx * gx + 0 * gy * gy) * K2);                // expression of g(gradient(I))
                                                          // d =-exp(-(gx*gx+gy*gy)*K2); // expression of g(gradient(I))
         D.at<float>(i, j) = d;
       }

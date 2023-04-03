@@ -43,9 +43,9 @@ Alarms
 Alarm
 ~~~~~
 
-.. attributetable:: ros_alarms.msg.Alarm
+.. attributetable:: ros_alarms_msgs.msg.Alarm
 
-.. class:: ros_alarms.msg.Alarm
+.. class:: ros_alarms_msgs.msg.Alarm
 
     A message representing a ROS Alarm.
 

@@ -33,7 +33,9 @@ class MRAC_Controller:
         # Yaw error threshold for long trajectory to be satisfied
         self.yaw_thresh = rospy.get_param("yaw_thresh", 0.02)
         self.task_info_sub = rospy.Subscriber(
-            "/vrx/task/info", Task, self.taskinfoSubscriber
+            "/vrx/task/info",
+            Task,
+            self.taskinfoSubscriber,
         )
         self.thresholds_changed = False
         # Initial disturbance estimate
@@ -64,10 +66,12 @@ class MRAC_Controller:
         # REFERENCE MODEL (note that this is not the adaptively estimated TRUE model; rather,
         #                     these parameters will govern the trajectory we want to achieve).
         self.mass_ref = rospy.get_param(
-            "~mass", 500
+            "~mass",
+            500,
         )  # kg, determined to be larger than boat in practice due to water mass  ## might change to lowe number (350kg)
         self.inertia_ref = rospy.get_param(
-            "~izz", 400
+            "~izz",
+            400,
         )  # kg*m^2, determined to be larger than boat in practice due to water mass
         self.thrust_max = 220  # N
 
@@ -78,7 +82,7 @@ class MRAC_Controller:
                 [-1.9000, -1.0000, -0.0123],
                 [1.6000, 0.6000, -0.0123],
                 [1.6000, -0.6000, -0.0123],
-            ]
+            ],
         )
 
         # back-left, back-right, front-left, front-right thruster directions in radians
@@ -88,7 +92,7 @@ class MRAC_Controller:
                 [0.7071, -0.7071, 0.0000],
                 [0.7071, -0.7071, 0.0000],
                 [0.7071, 0.7071, 0.0000],
-            ]
+            ],
         )
         self.lever_arms = np.cross(self.thruster_positions, self.thruster_directions)
         self.B_body = np.concatenate((self.thruster_directions.T, self.lever_arms.T))
@@ -98,16 +102,16 @@ class MRAC_Controller:
         self.D_body_positive = (
             abs(
                 np.array(
-                    [self.Fx_max_body[0], self.Fy_max_body[1], self.Mz_max_body[5]]
-                )
+                    [self.Fx_max_body[0], self.Fy_max_body[1], self.Mz_max_body[5]],
+                ),
             )
             / self.vel_max_body_positive**2
         )
         self.D_body_negative = (
             abs(
                 np.array(
-                    [self.Fx_max_body[0], self.Fy_max_body[1], self.Mz_max_body[5]]
-                )
+                    [self.Fx_max_body[0], self.Fy_max_body[1], self.Mz_max_body[5]],
+                ),
             )
             / self.vel_max_body_negative**2
         )
@@ -153,7 +157,9 @@ class MRAC_Controller:
         rospy.Subscriber("/wrench/selected", String, self.set_learning)
         # Publishers
         self.wrench_pub = rospy.Publisher(
-            "/wrench/autonomous", WrenchStamped, queue_size=0
+            "/wrench/autonomous",
+            WrenchStamped,
+            queue_size=0,
         )
         self.pose_ref_pub = rospy.Publisher("pose_ref", PoseStamped, queue_size=0)
         self.adaptation_pub = rospy.Publisher("adaptation", WrenchStamped, queue_size=0)
@@ -181,7 +187,7 @@ class MRAC_Controller:
               the subscriber.
         """
         self.p_ref = np.array(
-            [msg.posetwist.pose.position.x, msg.posetwist.pose.position.y]
+            [msg.posetwist.pose.position.x, msg.posetwist.pose.position.y],
         )
         self.q_ref = np.array(
             [
@@ -189,7 +195,7 @@ class MRAC_Controller:
                 msg.posetwist.pose.orientation.y,
                 msg.posetwist.pose.orientation.z,
                 msg.posetwist.pose.orientation.w,
-            ]
+            ],
         )
 
         R = trns.quaternion_matrix(self.q_ref)[:3, :3]
@@ -200,8 +206,8 @@ class MRAC_Controller:
                     msg.posetwist.twist.linear.x,
                     msg.posetwist.twist.linear.y,
                     msg.posetwist.twist.linear.z,
-                ]
-            )
+                ],
+            ),
         )[:2]
         self.w_ref = R.dot(
             np.array(
@@ -209,8 +215,8 @@ class MRAC_Controller:
                     msg.posetwist.twist.angular.x,
                     msg.posetwist.twist.angular.y,
                     msg.posetwist.twist.angular.z,
-                ]
-            )
+                ],
+            ),
         )[2]
 
         self.a_ref = R.dot(
@@ -219,8 +225,8 @@ class MRAC_Controller:
                     msg.posetwist.acceleration.linear.x,
                     msg.posetwist.acceleration.linear.y,
                     msg.posetwist.acceleration.linear.z,
-                ]
-            )
+                ],
+            ),
         )[:2]
         self.aa_ref = R.dot(
             np.array(
@@ -228,8 +234,8 @@ class MRAC_Controller:
                     msg.posetwist.acceleration.angular.x,
                     msg.posetwist.acceleration.angular.y,
                     msg.posetwist.acceleration.angular.z,
-                ]
-            )
+                ],
+            ),
         )[2]
 
     def set_traj_from_odom_msg(self, msg: Odometry) -> None:
@@ -258,7 +264,7 @@ class MRAC_Controller:
                 msg.pose.pose.orientation.y,
                 msg.pose.pose.orientation.z,
                 msg.pose.pose.orientation.w,
-            ]
+            ],
         )
 
         self.old_p_ref = self.p_ref
@@ -272,8 +278,8 @@ class MRAC_Controller:
                     msg.twist.twist.linear.x,
                     msg.twist.twist.linear.y,
                     msg.twist.twist.linear.z,
-                ]
-            )
+                ],
+            ),
         )[:2]
         self.w_ref = R.dot(
             np.array(
@@ -281,8 +287,8 @@ class MRAC_Controller:
                     msg.twist.twist.angular.x,
                     msg.twist.twist.angular.y,
                     msg.twist.twist.angular.z,
-                ]
-            )
+                ],
+            ),
         )[2]
 
         self.a_ref = np.array([0, 0])
@@ -300,7 +306,7 @@ class MRAC_Controller:
                 msg.pose.pose.orientation.y,
                 msg.pose.pose.orientation.z,
                 msg.pose.pose.orientation.w,
-            ]
+            ],
         )
 
         R = trns.quaternion_matrix(self.q_ref)[:3, :3]
@@ -311,8 +317,8 @@ class MRAC_Controller:
                     msg.twist.twist.linear.x,
                     msg.twist.twist.linear.y,
                     msg.twist.twist.linear.z,
-                ]
-            )
+                ],
+            ),
         )[:2]
         self.w_ref = R.dot(
             np.array(
@@ -320,8 +326,8 @@ class MRAC_Controller:
                     msg.twist.twist.angular.x,
                     msg.twist.twist.angular.y,
                     msg.twist.twist.angular.z,
-                ]
-            )
+                ],
+            ),
         )[2]
 
         self.a_ref = np.array([0, 0])
@@ -360,7 +366,7 @@ class MRAC_Controller:
         # ROS unpack
         self.position = np.array([position.x, position.y])
         self.orientation = np.array(
-            [orientation.x, orientation.y, orientation.z, orientation.w]
+            [orientation.x, orientation.y, orientation.z, orientation.w],
         )
 
         # Frame management quantities
@@ -370,10 +376,10 @@ class MRAC_Controller:
 
         # More ROS unpacking, converting body frame twist to world frame lin_vel and ang_vel
         self.lin_vel = R.dot(
-            np.array([lin_vel_body.x, lin_vel_body.y, lin_vel_body.z])
+            np.array([lin_vel_body.x, lin_vel_body.y, lin_vel_body.z]),
         )[:2]
         self.ang_vel = R.dot(
-            np.array([ang_vel_body.x, ang_vel_body.y, ang_vel_body.z])
+            np.array([ang_vel_body.x, ang_vel_body.y, ang_vel_body.z]),
         )[2]
 
         # Convert body PD gains to world frame
@@ -384,8 +390,9 @@ class MRAC_Controller:
         p_err = self.p_ref - self.position
         y_err = trns.euler_from_quaternion(
             trns.quaternion_multiply(
-                self.q_ref, trns.quaternion_inverse(self.orientation)
-            )
+                self.q_ref,
+                trns.quaternion_inverse(self.orientation),
+            ),
         )[2]
         v_err = self.v_ref - self.lin_vel
         w_err = self.w_ref - self.ang_vel
@@ -444,7 +451,7 @@ class MRAC_Controller:
                     -self.lin_vel[0] * np.cos(y) - self.lin_vel[1] * np.sin(y),
                     self.ang_vel,
                 ],
-            ]
+            ],
         )
 
         # wrench = PD + feedforward + I + adaptation
@@ -454,7 +461,9 @@ class MRAC_Controller:
             self.dist_est = [0, 0, 0]
         else:
             self.drag_effort = np.clip(
-                drag_regressor.dot(self.drag_est), -self.drag_limit, self.drag_limit
+                drag_regressor.dot(self.drag_est),
+                -self.drag_limit,
+                self.drag_limit,
             )
             wrench = (
                 (kp.dot(err))
@@ -506,7 +515,7 @@ class MRAC_Controller:
                     position=Point(self.p_ref[0], self.p_ref[1], 0),
                     orientation=Quaternion(*self.q_ref),
                 ),
-            )
+            ),
         )
 
         # Publish adaptation (Y*theta) for plotting
@@ -540,14 +549,18 @@ class MRAC_Controller:
         w_err = -self.w_ref
         if npl.norm(p_err) <= self.heading_threshold:
             q_err = trns.quaternion_multiply(
-                self.q_des, trns.quaternion_inverse(self.q_ref)
+                self.q_des,
+                trns.quaternion_inverse(self.q_ref),
             )
         else:
             q_direct = trns.quaternion_from_euler(
-                0, 0, np.angle(p_err[0] + (1j * p_err[1]))
+                0,
+                0,
+                np.angle(p_err[0] + (1j * p_err[1])),
             )
             q_err = trns.quaternion_multiply(
-                q_direct, trns.quaternion_inverse(self.q_ref)
+                q_direct,
+                trns.quaternion_inverse(self.q_ref),
             )
         y_err = trns.euler_from_quaternion(q_err)[2]
 
@@ -558,7 +571,7 @@ class MRAC_Controller:
 
         # Compute world frame thruster matrix (B) from thruster geometry, and then map wrench to thrusts
         B = np.concatenate(
-            (R_ref.dot(self.thruster_directions.T), R_ref.dot(self.lever_arms.T))
+            (R_ref.dot(self.thruster_directions.T), R_ref.dot(self.lever_arms.T)),
         )
         B_3dof = np.concatenate((B[:2, :], [B[5, :]]))
         command = self.thruster_mapper(wrench, B_3dof)
@@ -579,7 +592,9 @@ class MRAC_Controller:
         self.aa_ref = (wrench_saturated[5] - drag_ref[2]) / self.inertia_ref
         self.p_ref = self.p_ref + (self.v_ref * self.timestep)
         self.q_ref = trns.quaternion_from_euler(
-            0, 0, y_ref + (self.w_ref * self.timestep)
+            0,
+            0,
+            y_ref + (self.w_ref * self.timestep),
         )
         self.v_ref = self.v_ref + (self.a_ref * self.timestep)
         self.w_ref = self.w_ref + (self.aa_ref * self.timestep)

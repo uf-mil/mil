@@ -94,11 +94,12 @@ ListenerCb
 
 .. doxygenstruct:: ros_alarms::ListenerCb
 
-HeartbeatMonitor
-~~~~~~~~~~~~~~~~
-.. cppattributetable:: ros_alarms::HeartbeatMonitor
+.. Causes sphinx-doc/sphinx#10152
+.. HeartbeatMonitor
+.. ~~~~~~~~~~~~~~~~
+.. .. cppattributetable:: ros_alarms::HeartbeatMonitor
 
-.. doxygenclass:: ros_alarms::HeartbeatMonitor
+.. .. doxygenclass:: ros_alarms::HeartbeatMonitor
 
 Subjugator-specific
 ^^^^^^^^^^^^^^^^^^^

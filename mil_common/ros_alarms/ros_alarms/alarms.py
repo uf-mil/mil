@@ -5,8 +5,8 @@ import traceback
 from typing import Callable
 
 import rospy
-from ros_alarms.msg import Alarm as AlarmMsg
-from ros_alarms.srv import (
+from ros_alarms_msgs.msg import Alarm as AlarmMsg
+from ros_alarms_msgs.srv import (
     AlarmGet,
     AlarmGetRequest,
     AlarmGetResponse,
@@ -53,7 +53,10 @@ def _make_callback_error_string(alarm_name, backtrace=""):
 
 
 def wait_for_service(
-    service, warn_time=1.0, warn_msg="Waiting for service..", timeout=None
+    service,
+    warn_time=1.0,
+    warn_msg="Waiting for service..",
+    timeout=None,
 ):
     """
     A fancy extension of wait for service that will warn with a message if it is taking a while.
@@ -184,7 +187,7 @@ class Alarm:
         )
 
     def _severity_cb_check(self, severity):
-        if isinstance(severity, tuple) or isinstance(severity, list):
+        if isinstance(severity, (tuple, list)):
             return severity[0] <= self.severity <= severity[1]
 
         # Not a tuple, just an int. The severities should match
@@ -228,8 +231,9 @@ class Alarm:
                 except Exception:
                     rospy.logwarn(
                         _make_callback_error_string(
-                            self.alarm_name, traceback.format_exc()
-                        )
+                            self.alarm_name,
+                            traceback.format_exc(),
+                        ),
                     )
 
         if call_when_cleared:
@@ -241,8 +245,9 @@ class Alarm:
                 except Exception:
                     rospy.logwarn(
                         _make_callback_error_string(
-                            self.alarm_name, traceback.format_exc()
-                        )
+                            self.alarm_name,
+                            traceback.format_exc(),
+                        ),
                     )
 
     def update(self, srv: Alarm):
@@ -267,8 +272,9 @@ class Alarm:
 
         rospy.loginfo(
             "Updating alarm: {}, {}.".format(
-                self.alarm_name, "raised" if self.raised else "cleared"
-            )
+                self.alarm_name,
+                "raised" if self.raised else "cleared",
+            ),
         )
         # Run the callbacks for that alarm
         cb_list = self.raised_cbs if srv.raised else self.cleared_cbs
@@ -282,7 +288,10 @@ class Alarm:
                 cb(self)
             except Exception:
                 rospy.logwarn(
-                    _make_callback_error_string(self.alarm_name, traceback.format_exc())
+                    _make_callback_error_string(
+                        self.alarm_name,
+                        traceback.format_exc(),
+                    ),
                 )
 
     def as_msg(self) -> AlarmMsg:
@@ -361,7 +370,12 @@ class AlarmBroadcaster:
         rospy.logdebug("alarm server connected")
 
     def _generate_request(
-        self, raised, node_name=None, problem_description="", parameters={}, severity=0
+        self,
+        raised,
+        node_name=None,
+        problem_description="",
+        parameters={},
+        severity=0,
     ):
         request = AlarmSetRequest()
         request.alarm.alarm_name = self._alarm_name
@@ -546,7 +560,7 @@ class AlarmListener:
         if self._last_alarm is None:
             return False
 
-        if isinstance(severity, tuple) or isinstance(severity, list):
+        if isinstance(severity, (tuple, list)):
             return severity[0] <= self._last_alarm.severity <= severity[1]
 
         # Not a tuple or list, just an int. The severities should match
@@ -587,8 +601,9 @@ class AlarmListener:
                 except Exception:
                     rospy.logwarn(
                         _make_callback_error_string(
-                            self._alarm_name, traceback.format_exc()
-                        )
+                            self._alarm_name,
+                            traceback.format_exc(),
+                        ),
                     )
 
         if call_when_cleared:
@@ -601,8 +616,9 @@ class AlarmListener:
                 except Exception:
                     rospy.logwarn(
                         _make_callback_error_string(
-                            self._alarm_name, traceback.format_exc()
-                        )
+                            self._alarm_name,
+                            traceback.format_exc(),
+                        ),
                     )
 
     def clear_callbacks(self):
@@ -629,8 +645,9 @@ class AlarmListener:
             except Exception:
                 rospy.logerr(
                     _make_callback_error_string(
-                        self._alarm_name, traceback.format_exc()
-                    )
+                        self._alarm_name,
+                        traceback.format_exc(),
+                    ),
                 )
 
 

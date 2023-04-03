@@ -23,7 +23,9 @@ class LongTrajectory:
         self.serv = rospy.Service("/set_long_waypoint", MoveToWaypoint, self.handler)
         self.from_lla = rospy.ServiceProxy("/fromLL", FromLL)
         self.task_info_sub = rospy.Subscriber(
-            "/vrx/task/info", Task, self.taskinfoSubscriber
+            "/vrx/task/info",
+            Task,
+            self.taskinfoSubscriber,
         )
         self.boat_pos = np.array([])
         self.boat_ori = np.array([])
@@ -92,8 +94,9 @@ class LongTrajectory:
         ):
             yaw_err = trns.euler_from_quaternion(
                 trns.quaternion_multiply(
-                    self.boat_ori, trns.quaternion_inverse(self.orientation)
-                )
+                    self.boat_ori,
+                    trns.quaternion_inverse(self.orientation),
+                ),
             )[2]
             x_err = abs(self.boat_pos[0] - pos.x)
             y_err = abs(self.boat_pos[1] - pos.y)

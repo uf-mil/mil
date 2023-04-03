@@ -30,7 +30,12 @@ class OccGridUtils:
     """
 
     def __init__(
-        self, res, width, height, starting_pose, topic_name: str = "/search_grid"
+        self,
+        res,
+        width,
+        height,
+        starting_pose,
+        topic_name: str = "/search_grid",
     ):
         self.meta_data = MapMetaData()
         # Resolution is m/cell. Width is X, height is Y.
@@ -44,7 +49,7 @@ class OccGridUtils:
 
         p = Point(x=-starting_pose.x * res, y=-starting_pose.y * res, z=0)
         q = Quaternion(
-            *tf.transformations.quaternion_from_euler(0, 0, starting_pose.theta)
+            *tf.transformations.quaternion_from_euler(0, 0, starting_pose.theta),
         )
         self.meta_data.origin = Pose(position=p, orientation=q)
 
@@ -65,7 +70,7 @@ class OccGridUtils:
         Also used to project the camera's view onto the grid because it is rotationally intolerant.
         """
         center_offset = np.array(center) / self.meta_data.resolution - np.array(
-            [self.mid_x, self.mid_y]
+            [self.mid_x, self.mid_y],
         )
 
         try:
@@ -84,19 +89,21 @@ class OccGridUtils:
         TRENCH_WIDTH = 0.1524 / self.meta_data.resolution  # cells (6 inches)
 
         center = np.array(
-            [pose_2d.x, pose_2d.y]
+            [pose_2d.x, pose_2d.y],
         )  # The negative all depends on how the center is returned
         rotation = -pose_2d.theta
 
         center_offset = center / self.meta_data.resolution - np.array(
-            [self.mid_x, self.mid_y]
+            [self.mid_x, self.mid_y],
         )
 
         rot_top_point = np.dot(
-            np.array([TRENCH_LENGTH, 0]) / 2, make_2D_rotation(rotation)
+            np.array([TRENCH_LENGTH, 0]) / 2,
+            make_2D_rotation(rotation),
         ).astype(np.int32)
         rot_bottom_point = np.dot(
-            -np.array([TRENCH_LENGTH, 0]) / 2, make_2D_rotation(rotation)
+            -np.array([TRENCH_LENGTH, 0]) / 2,
+            make_2D_rotation(rotation),
         ).astype(np.int32)
 
         pos_top_point = np.int0(rot_top_point + center_offset)
@@ -170,11 +177,12 @@ class Searcher:
         # We search at 1.5 * r so that there is some overlay in the search feilds.
         np_pose = msg_helpers.pose_to_numpy(srv.intial_position)
         rot_mat = make_2D_rotation(
-            tf.transformations.euler_from_quaternion(np_pose[1])[2]
+            tf.transformations.euler_from_quaternion(np_pose[1])[2],
         )
         coor = (
             np.append(
-                np.dot(rot_mat, next(self.poly_generator)) * srv.search_radius * 1.75, 0
+                np.dot(rot_mat, next(self.poly_generator)) * srv.search_radius * 1.75,
+                0,
             )
             + np_pose[0]
         )
@@ -211,7 +219,7 @@ class Searcher:
             return 1
 
         return len(masked_search[masked_search > 0.5]) / len(
-            circle_mask[circle_mask > 0.5]
+            circle_mask[circle_mask > 0.5],
         )
 
     def polygon_generator(self, n=12):
@@ -248,7 +256,12 @@ class MarkerOccGrid(OccGridUtils):
     """
 
     def __init__(
-        self, image_sub, grid_res, grid_width, grid_height, grid_starting_pose
+        self,
+        image_sub,
+        grid_res,
+        grid_width,
+        grid_height,
+        grid_starting_pose,
     ):
         super(self.__class__, self).__init__(
             res=grid_res,
@@ -329,12 +342,18 @@ class MarkerOccGrid(OccGridUtils):
             timestamp = rospy.Time()
 
         self.tf_listener.waitForTransform(
-            "map", "/downward", timestamp, rospy.Duration(5.0)
+            "map",
+            "/downward",
+            timestamp,
+            rospy.Duration(5.0),
         )
         trans, rot = self.tf_listener.lookupTransform("map", "/downward", timestamp)
         x_y_position = trans[:2]
         self.tf_listener.waitForTransform(
-            "/ground", "/downward", timestamp, rospy.Duration(5.0)
+            "/ground",
+            "/downward",
+            timestamp,
+            rospy.Duration(5.0),
         )
         trans, _ = self.tf_listener.lookupTransform("/ground", "/downward", timestamp)
         height = np.nan_to_num(trans[2])
@@ -372,10 +391,7 @@ class MarkerOccGrid(OccGridUtils):
 
         # Get m/px on the ground floor.
         m = self.calculate_visual_radius(height)
-        if self.cam.cy() < self.cam.cx():
-            px = self.cam.cy()
-        else:
-            px = self.cam.cx()
+        px = self.cam.cy() if self.cam.cy() < self.cam.cx() else self.cam.cx()
 
         m_px = m / px
         marker_area_m = MARKER_WIDTH * MARKER_LENGTH
@@ -407,6 +423,9 @@ class MarkerOccGrid(OccGridUtils):
 if __name__ == "__main__":
     rospy.init_node("searcher")
     tr = MarkerOccGrid(
-        res=0.1, width=100, height=500, starting_pose=Pose2D(x=50, y=50, theta=0)
+        res=0.1,
+        width=100,
+        height=500,
+        starting_pose=Pose2D(x=50, y=50, theta=0),
     )
     rospy.spin()

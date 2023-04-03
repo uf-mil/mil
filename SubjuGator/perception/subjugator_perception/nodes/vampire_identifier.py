@@ -51,7 +51,8 @@ class VampireIdentifier:
         self.goal = None
         self.last_config = None
         self.reconfigure_server = DynamicReconfigureServer(
-            VampireIdentifierConfig, self.reconfigure
+            VampireIdentifierConfig,
+            self.reconfigure,
         )
 
         # Instantiate remaining variables and objects
@@ -243,7 +244,7 @@ class VampireIdentifier:
             try:
                 # print(output)
                 self.mask_image_pub.publish(
-                    self.bridge.cv2_to_imgmsg(np.array(output), "bgr8")
+                    self.bridge.cv2_to_imgmsg(np.array(output), "bgr8"),
                 )
             except CvBridgeError as e:
                 print(e)
@@ -263,7 +264,9 @@ class VampireIdentifier:
         blurred = cv2.cvtColor(blurred, cv2.COLOR_BGR2GRAY)
         # Compute contours
         cnts = cv2.findContours(
-            blurred.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            blurred.copy(),
+            cv2.RETR_EXTERNAL,
+            cv2.CHAIN_APPROX_SIMPLE,
         )
 
         cnts = cnts[1]
@@ -335,7 +338,9 @@ class VampireIdentifier:
                 return False
 
             (t, rot_q) = self.tf_listener.lookupTransform(
-                "map", self.camera_model.tfFrame(), self.last_image_time
+                "map",
+                self.camera_model.tfFrame(),
+                self.last_image_time,
             )
             R = mil_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
             center = np.array([max_x, max_y])

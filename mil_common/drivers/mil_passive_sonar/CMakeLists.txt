@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(mil_passive_sonar)
 find_package(catkin REQUIRED COMPONENTS tf std_msgs message_runtime message_generation rospy geometry_msgs roscpp)
 catkin_python_setup()

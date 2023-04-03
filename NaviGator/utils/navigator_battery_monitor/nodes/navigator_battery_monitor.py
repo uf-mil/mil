@@ -10,7 +10,7 @@ import message_filters
 import rospy
 from roboteq_msgs.msg import Feedback, Status
 from ros_alarms import AlarmListener
-from ros_alarms.msg import Alarm
+from ros_alarms_msgs.msg import Alarm
 from std_msgs.msg import Float32
 
 __author__ = "Anthony Olive"
@@ -66,7 +66,9 @@ class BatteryMonitor:
 
         [
             message_filters.ApproximateTimeSynchronizer(
-                [feedback, status], 1, 10
+                [feedback, status],
+                1,
+                10,
             ).registerCallback(self.add_voltage)
             for feedback, status in zip(feedback_sub, status_sub)
         ]

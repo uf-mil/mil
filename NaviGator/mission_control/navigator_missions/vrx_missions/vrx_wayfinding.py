@@ -22,7 +22,7 @@ class VrxWayfinding(Vrx):
     async def run(self, parameters):
         self.send_feedback("Waiting for task to start")
         await self.wait_for_task_such_that(
-            lambda task: task.state in ["ready", "running"]
+            lambda task: task.state in ["ready", "running"],
         )
 
         path_msg = await self.get_latching_msg(self.wayfinding_path_sub)
@@ -59,5 +59,5 @@ class VrxWayfinding(Vrx):
             orientation_fix = self.point_at_goal(poses[index][0])
             await self.move.set_orientation(orientation_fix).go(blind=True)
             await self.move.set_position(poses[index][0]).set_orientation(
-                poses[index][1]
+                poses[index][1],
             ).go(blind=True)

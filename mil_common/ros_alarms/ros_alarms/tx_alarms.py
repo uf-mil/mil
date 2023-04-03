@@ -1,10 +1,11 @@
 import asyncio
+import contextlib
 import json
 import traceback
 
 import axros
-from ros_alarms.msg import Alarm
-from ros_alarms.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
+from ros_alarms_msgs.msg import Alarm
+from ros_alarms_msgs.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
 
 """
 Alarms implementation for axros (https://github.com/axros/axros)
@@ -51,7 +52,11 @@ class TxAlarmBroadcaster:
         print(f"Created alarm broadcaster for alarm {name}")
 
     def _generate_request(
-        self, raised, problem_description="", parameters={}, severity=0
+        self,
+        raised,
+        problem_description="",
+        parameters={},
+        severity=0,
     ):
         request = AlarmSetRequest()
         request.alarm.alarm_name = self._alarm_name
@@ -98,7 +103,9 @@ class TxAlarmListener:
         self._raised_cbs = []  # [(severity_for_cb1, cb1), (severity_for_cb2, cb2), ...]
         self._cleared_cbs = []
         self.update_sub = self._nh.subscribe(
-            "/alarm/updates", Alarm, self._alarm_update
+            "/alarm/updates",
+            Alarm,
+            self._alarm_update,
         )
 
         if callback_funct is not None:
@@ -132,7 +139,7 @@ class TxAlarmListener:
         return resp.alarm
 
     def _severity_cb_check(self, severity):
-        if isinstance(severity, tuple) or isinstance(severity, list):
+        if isinstance(severity, (tuple, list)):
             return severity[0] <= self._last_alarm.severity <= severity[1]
 
         # Not a tuple, just an int. The severities should match
@@ -186,10 +193,8 @@ class TxAlarmListener:
 
                 # Try to run the callback, absorbing any errors
                 try:
-                    try:
+                    with contextlib.suppress(Exception):
                         alarm.parameters = json.loads(alarm.parameters)
-                    except Exception:
-                        pass
 
                     cb(self._nh, alarm)
                 except Exception as e:

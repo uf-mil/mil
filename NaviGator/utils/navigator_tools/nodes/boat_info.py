@@ -21,7 +21,8 @@ class RvizStrings:
         rospy.Subscriber("/battery_monitor", Float32, self.battery_monitor_cb)
         self.kill_listener = AlarmListener("kill", callback_funct=self.kill_alarm_cb)
         self.station_hold_listner = AlarmListener(
-            "station-hold", callback_funct=self.station_alarm_cb
+            "station-hold",
+            callback_funct=self.station_alarm_cb,
         )
 
     def update(self):
