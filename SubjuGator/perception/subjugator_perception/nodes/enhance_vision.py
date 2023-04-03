@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
 
+# ML MODEL CITATION:
+""" 
+@misc{chen2021underwater,
+  title={Underwater Image Enhancement based on Deep Learning and Image Formation Model}, 
+  author={Xuelei Chen and Pin Zhang and Lingwei Quan and Chao Yi and Cunyue Lu},
+  year={2021},
+  eprint={2101.00991},
+  archivePrefix={arXiv},
+  primaryClass={eess.IV} 
+
+"""
+
 # IMPORTS -- Underwater Enhancement ML 
 
 import os
@@ -7,26 +19,16 @@ import torch
 import numpy as np
 from PIL import Image
 from model import PhysicalNN
-import argparse
 from torchvision import transforms
 import datetime
-import math
 
 # IMPORTS -- ROS vision
 
 import rospy
-import tf
 from image_geometry import PinholeCameraModel
 from mil_ros_tools import (
     Image_Publisher,
     Image_Subscriber,
-)
-from std_srvs.srv import SetBool, SetBoolResponse
-from subjugator_msgs.srv import (
-    VisionRequest,
-    VisionRequest2D,
-    VisionRequest2DResponse,
-    VisionRequestResponse,
 )
 
 class EnhanceVision:
@@ -48,7 +50,7 @@ class EnhanceVision:
      unloader = transforms.ToPILImage()
 
      def __init__(self):
-        camera = rospy.get_param("~image_topic", "/camera/front/left/image_color")
+        camera = rospy.get_param("~image_topic", "/camera/down/image_rect_color")
 
         self.image_sub = Image_Subscriber(camera, self.enhance_callback)
         self.camera_info = self.image_sub.wait_for_camera_info()
@@ -71,10 +73,12 @@ class EnhanceVision:
 
         self.image_pub.publish(np.array(corrected))
 
-        dir = '{}/results_{}'.format('.', self.checkpoint['epoch'])
-        if not os.path.exists(dir):
-            os.makedirs(dir)
-        corrected.save(dir+'/{}corrected.png'.format("camera_"))
+        # The commented code is to create a file with a png image of the captured img data.
+
+        #dir = '{}/results_{}'.format('.', self.checkpoint['epoch'])
+        #if not os.path.exists(dir):
+        #    os.makedirs(dir)
+        #corrected.save(dir+'/{}corrected.png'.format("camera_"))
         endtime = datetime.datetime.now()
         print(endtime-starttime)
         
