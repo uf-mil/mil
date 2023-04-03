@@ -6,6 +6,7 @@ from axros import Subscriber
 from mil_misc_tools import text_effects
 from sensor_msgs.msg import MagneticField
 from tf.transformations import *
+from std_msgs.msg import Bool
 
 from .sub_singleton import SubjuGatorMission
 
@@ -19,14 +20,11 @@ CAREFUL_SPEED = 0.3
 DIST_AFTER_GATE = 1
 WAIT_SECONDS = 1
 
-IS_LEFT = True
-
-
 class StartGate2022(SubjuGatorMission):
     async def current_angle(self):
         imu_sub: Subscriber[MagneticField] = self.nh.subscribe(
-            "/imu/mag",
-            MagneticField,
+            name="/imu/mag",
+            message_type=MagneticField,
         )
         async with imu_sub:
             reading = await imu_sub.get_next_message()
@@ -38,6 +36,17 @@ class StartGate2022(SubjuGatorMission):
             / math.pi
             + declination
         )
+    
+    async def is_left(self):
+        side_sub: Subscriber[Bool] = self.nh.subscribe(
+            name="/getside",
+            message_type=Bool,
+        )
+        async with side_sub:
+            result = await side_sub.get_next_message()
+        return result.data
+
+        
 
     async def run(self, args):
         fprint("Waiting for odom")
@@ -62,6 +71,16 @@ class StartGate2022(SubjuGatorMission):
         fprint("Found odom")
         down = self.move().down(1)
         await self.go(down, speed=SPEED)
+
+        fprint("Waiting for side")
+        IS_LEFT = await self.is_left()
+        
+        if IS_LEFT:
+            side = "left"
+        else:
+            side = "right"
+
+        print("Found side:", side)
 
         if IS_LEFT:
             left = self.move().left(1)
