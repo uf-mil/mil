@@ -503,9 +503,9 @@ Subsystems
 AlarmGet
 ~~~~~~~~
 
-.. attributetable:: ros_alarms.srv.AlarmGetRequest
+.. attributetable:: ros_alarms_msgs.srv.AlarmGetRequest
 
-.. class:: ros_alarms.srv.AlarmGetRequest
+.. class:: ros_alarms_msgs.srv.AlarmGetRequest
 
    The request class for the ``ros_alarms/AlarmGet`` service.
 
@@ -515,9 +515,9 @@ AlarmGet
 
         :type: str
 
-.. attributetable:: ros_alarms.srv.AlarmGetResponse
+.. attributetable:: ros_alarms_msgs.srv.AlarmGetResponse
 
-.. class:: ros_alarms.srv.AlarmGetResponse
+.. class:: ros_alarms_msgs.srv.AlarmGetResponse
 
    The response class for the ``ros_alarms/AlarmGet`` service.
 
@@ -531,14 +531,14 @@ AlarmGet
 
         The response data about the requested alarm.
 
-        :type: ~ros_alarms.msg.Alarm
+        :type: ~ros_alarms_msgs.msg.Alarm
 
 AlarmSet
 ~~~~~~~~
 
-.. attributetable:: ros_alarms.srv.AlarmSetRequest
+.. attributetable:: ros_alarms_msgs.srv.AlarmSetRequest
 
-.. class:: ros_alarms.srv.AlarmSetRequest
+.. class:: ros_alarms_msgs.srv.AlarmSetRequest
 
    The request class for the ``ros_alarms/AlarmSet`` service.
 
@@ -546,11 +546,11 @@ AlarmSet
 
         The alarm to set.
 
-        :type: ~ros_alarms.msg.Alarm
+        :type: ~ros_alarms_msgs.msg.Alarm
 
-.. attributetable:: ros_alarms.srv.AlarmSetResponse
+.. attributetable:: ros_alarms_msgs.srv.AlarmSetResponse
 
-.. class:: ros_alarms.srv.AlarmSetResponse
+.. class:: ros_alarms_msgs.srv.AlarmSetResponse
 
    The response class for the ``ros_alarms/AlarmSet`` service.
 

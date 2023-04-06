@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(rdi_explorer_dvl)
 find_package(catkin REQUIRED COMPONENTS nodelet roscpp mil_msgs mil_tools)
 catkin_package(
