@@ -137,7 +137,10 @@ class ImageMux:
                 continue
             tup = self._index_to_tuple(i)
             (text_width, text_height), _ = cv2.getTextSize(
-                label, self.text_font, self.text_scale, self.text_thickness
+                label,
+                self.text_font,
+                self.text_scale,
+                self.text_thickness,
             )
             x = int(self.pane_size[1] * tup[1])
             y = int(self.pane_size[0] * tup[0] + text_height)

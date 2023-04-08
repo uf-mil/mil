@@ -17,8 +17,10 @@ from navigator_msg_multiplexer.cfg import OgridConfig
 from navigator_path_planner import params
 from std_srvs.srv import Trigger
 
+
 # Wow what a concept
-fprint = lambda *args, **kwargs: _fprint(title="OGRID_ARB", *args, **kwargs)
+def fprint(*args, **kwargs):
+    return _fprint(*args, title="OGRID_ARB", **kwargs)
 
 
 def make_ogrid_transform(ogrid: OccupancyGrid) -> np.array:
@@ -42,7 +44,7 @@ def make_ogrid_transform(ogrid: OccupancyGrid) -> np.array:
             [1 / resolution, 0, -origin[0] / resolution],
             [0, 1 / resolution, -origin[1] / resolution],
             [0, 0, 1],
-        ]
+        ],
     )
     return t
 
@@ -104,7 +106,9 @@ def transform_ogrid_to_enu(grid_points: List[int], grid: OccupancyGrid) -> np.nd
 
 
 def transform_between_ogrids(
-    grid1_points: List[int], grid1: OccupancyGrid, grid2: OccupancyGrid
+    grid1_points: List[int],
+    grid1: OccupancyGrid,
+    grid2: OccupancyGrid,
 ) -> np.ndarray:
     """
     ???
@@ -161,7 +165,10 @@ class OGrid:
         self.np_map = None  # Numpy version of last received OccupancyGrid message
         self.replace = replace
         self.subscriber = rospy.Subscriber(
-            topic, OccupancyGrid, self.subscriber_callback, queue_size=1
+            topic,
+            OccupancyGrid,
+            self.subscriber_callback,
+            queue_size=1,
         )
 
     @property
@@ -189,7 +196,6 @@ class OGrid:
 
 
 class OGridServer:
-
     odom: Optional[Tuple[np.ndarray, np.ndarray]]
 
     def __init__(
@@ -215,7 +221,7 @@ class OGridServer:
 
         # Default to centering the ogrid
         position = np.array(
-            [-(map_size * resolution) / 2, -(map_size * resolution) / 2, 0]
+            [-(map_size * resolution) / 2, -(map_size * resolution) / 2, 0],
         )
         quaternion = np.array([0, 0, 0, 1])
 
@@ -350,7 +356,7 @@ class OGridServer:
                     -(map_size[1] * self.resolution) / 2,
                     -(map_size[0] * self.resolution) / 2,
                     0,
-                ]
+                ],
             )
             quaternion = np.array([0, 0, 0, 1])
             self.origin = mil_tools.numpy_quat_pair_to_pose(position, quaternion)
@@ -420,7 +426,8 @@ class OGridServer:
                 g_h, g_w = global_ogrid.info.height, global_ogrid.info.width
                 if l_h > g_h or l_w > g_w:
                     fprint(
-                        "Proactively preventing errors in ogrid size.", msg_color="red"
+                        "Proactively preventing errors in ogrid size.",
+                        msg_color="red",
                     )
                     new_size = max(l_w, g_w, l_h, g_h)
                     self.global_ogrid = self.create_grid((new_size, new_size))
@@ -429,7 +436,9 @@ class OGridServer:
                 corners = get_enu_corners(ogrid.nav_ogrid)
                 index_limits = transform_enu_to_ogrid(corners, ogrid.nav_ogrid)
                 index_limits = transform_between_ogrids(
-                    index_limits, ogrid.nav_ogrid, global_ogrid
+                    index_limits,
+                    ogrid.nav_ogrid,
+                    global_ogrid,
                 )[:, :2]
 
                 l_x_min = index_limits[0][0]
@@ -445,7 +454,9 @@ class OGridServer:
 
                 # Should be indices
                 l_ogrid_start = transform_between_ogrids(
-                    [start_x, start_y, 1], global_ogrid, ogrid.nav_ogrid
+                    [start_x, start_y, 1],
+                    global_ogrid,
+                    ogrid.nav_ogrid,
                 )
 
                 # fprint("ROI {},{} {},{}".format(start_x, start_y, end_x, end_y))
@@ -457,7 +468,8 @@ class OGridServer:
                 # fprint("Ogrid size: {}, {}".format(ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width))
 
                 to_add = ogrid.np_map[
-                    l_ogrid_start[1] : index_height, l_ogrid_start[0] : index_width
+                    l_ogrid_start[1] : index_height,
+                    l_ogrid_start[0] : index_width,
                 ]
 
                 # fprint("to_add shape: {}".format(to_add.shape))
@@ -482,14 +494,15 @@ class OGridServer:
                     print(e)
                     fprint(
                         "w: {}, h: {}".format(
-                            global_ogrid.info.width, global_ogrid.info.height
+                            global_ogrid.info.width,
+                            global_ogrid.info.height,
                         ),
                         msg_color="red",
                     )
 
         if self.draw_bounds and self.enforce_bounds:
             ogrid_bounds = transform_enu_to_ogrid(self.enu_bounds, global_ogrid).astype(
-                np.int32
+                np.int32,
             )
             for i, point in enumerate(ogrid_bounds[:, :2]):
                 if i == 0:

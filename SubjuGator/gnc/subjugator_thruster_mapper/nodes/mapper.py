@@ -78,29 +78,39 @@ class ThrusterMapper:
         self.Binv = np.linalg.pinv(self.B)
         self.min_thrusts, self.max_thrusts = self.get_ranges()
         self.default_min_thrusts, self.default_max_thrusts = np.copy(
-            self.min_thrusts
+            self.min_thrusts,
         ), np.copy(self.max_thrusts)
         self.update_layout_server = rospy.Service(
-            "update_thruster_layout", UpdateThrusterLayout, self.update_layout
+            "update_thruster_layout",
+            UpdateThrusterLayout,
+            self.update_layout,
         )
 
         # Expose B matrix through a srv
         self.b_matrix_server = rospy.Service("b_matrix", BMatrix, self.get_b_matrix)
 
         self.wrench_sub = rospy.Subscriber(
-            "wrench", WrenchStamped, self.request_wrench_cb, queue_size=1
+            "wrench",
+            WrenchStamped,
+            self.request_wrench_cb,
+            queue_size=1,
         )
         self.actual_wrench_pub = rospy.Publisher(
-            "wrench_actual", WrenchStamped, queue_size=1
+            "wrench_actual",
+            WrenchStamped,
+            queue_size=1,
         )
         self.wrench_error_pub = rospy.Publisher(
-            "wrench_error", WrenchStamped, queue_size=1
+            "wrench_error",
+            WrenchStamped,
+            queue_size=1,
         )
         self.thruster_pub = rospy.Publisher("thrusters/thrust", Thrust, queue_size=1)
 
     @thread_lock(lock)
     def update_layout(
-        self, srv: UpdateThrusterLayoutRequest
+        self,
+        srv: UpdateThrusterLayoutRequest,
     ) -> UpdateThrusterLayoutResponse:
         """
         Update the physical thruster layout.
@@ -134,18 +144,20 @@ class ThrusterMapper:
             [
                 self.thruster_layout["thrusters"][x]["thrust_bounds"][0]
                 for x in self.thruster_name_map
-            ]
+            ],
         )
         maxima = np.array(
             [
                 self.thruster_layout["thrusters"][x]["thrust_bounds"][1]
                 for x in self.thruster_name_map
-            ]
+            ],
         )
         return minima, maxima
 
     def get_thruster_wrench(
-        self, position: list[float], direction: list[float]
+        self,
+        position: list[float],
+        direction: list[float],
     ) -> np.ndarray:
         """
         Compute a single column of B, or the wrench created by a particular thruster
@@ -158,7 +170,9 @@ class ThrusterMapper:
             wrench (np.ndarray): The wrench created by the thruster.
         """
         assert np.isclose(
-            1.0, np.linalg.norm(direction), atol=1e-3
+            1.0,
+            np.linalg.norm(direction),
+            atol=1e-3,
         ), "Direction must be a unit vector"
         forces = direction
         torques = np.cross(position, forces)
@@ -203,7 +217,8 @@ class ThrusterMapper:
             # Assemble the B matrix by columns
             self.thruster_name_map.append(thruster_name)
             wrench_column = self.get_thruster_wrench(
-                thruster_info["position"], thruster_info["direction"]
+                thruster_info["position"],
+                thruster_info["direction"],
             )
             self.num_thrusters += 1
             B.append(wrench_column)
@@ -312,14 +327,18 @@ class ThrusterMapper:
         actual_wrench = self.B.dot(u)
         self.actual_wrench_pub.publish(
             msg_helpers.make_wrench_stamped(
-                actual_wrench[:3], actual_wrench[3:], frame="/base_link"
-            )
+                actual_wrench[:3],
+                actual_wrench[3:],
+                frame="/base_link",
+            ),
         )
         mapper_wrench_error = wrench - actual_wrench
         self.wrench_error_pub.publish(
             msg_helpers.make_wrench_stamped(
-                mapper_wrench_error[:3], mapper_wrench_error[3:], frame="/base_link"
-            )
+                mapper_wrench_error[:3],
+                mapper_wrench_error[3:],
+                frame="/base_link",
+            ),
         )
         self.thruster_pub.publish(thrust_cmds)
 

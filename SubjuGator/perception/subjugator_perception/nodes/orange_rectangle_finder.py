@@ -57,7 +57,8 @@ class OrangeRectangleFinder:
 
     # Coordinate axes for debugging image
     REFERENCE_POINTS = np.array(
-        [[0, 0, 0], [0.3, 0, 0], [0, 0.3, 0], [0, 0, 0.3]], dtype=float
+        [[0, 0, 0], [0.3, 0, 0], [0, 0.3, 0], [0, 0, 0.3]],
+        dtype=float,
     )
 
     def __init__(self):
@@ -94,13 +95,16 @@ class OrangeRectangleFinder:
         self.filter.measurementMatrix = 1.0 * np.eye(self.state_size, dtype=np.float32)
         self.filter.processNoiseCov = 1e-5 * np.eye(self.state_size, dtype=np.float32)
         self.filter.measurementNoiseCov = 1e-4 * np.eye(
-            self.state_size, dtype=np.float32
+            self.state_size,
+            dtype=np.float32,
         )
         self.filter.errorCovPost = 1.0 * np.eye(self.state_size, dtype=np.float32)
 
         self.reset()
         self.service_set_geometry = rospy.Service(
-            "~set_geometry", SetGeometry, self._set_geometry_cb
+            "~set_geometry",
+            SetGeometry,
+            self._set_geometry_cb,
         )
         if self.debug_ros:
             self.debug_pub = Image_Publisher("~debug_image")
@@ -168,9 +172,11 @@ class OrangeRectangleFinder:
             res.found = False
             return res
         dt = (self.image_sub.last_image_time - self.last_found_time_3D).to_sec()
-        if dt < 0 or dt > self.timeout_seconds:
-            res.found = False
-        elif self.last3d is None or not self.enabled:
+        if (
+            dt < 0
+            or dt > self.timeout_seconds
+            or (self.last3d is None or not self.enabled)
+        ):
             res.found = False
         else:
             res.pose.header.frame_id = "map"
@@ -280,13 +286,16 @@ class OrangeRectangleFinder:
         # Transform pose estimate to map frame
         try:
             self.tf_listener.waitForTransform(
-                "map", ps.header.frame_id, ps.header.stamp, rospy.Duration(0.1)
+                "map",
+                ps.header.frame_id,
+                ps.header.stamp,
+                rospy.Duration(0.1),
             )
             map_ps = self.tf_listener.transformPoint("map", ps)
             map_vec3 = self.tf_listener.transformVector3("map", vec3)
         except tf.Exception as err:
             rospy.logwarn(
-                f"Could not transform {self.cam.tfFrame()} to map error={err}"
+                f"Could not transform {self.cam.tfFrame()} to map error={err}",
             )
             return False
         # Try to ensure vector always points the same way, so kf is not thrown off at some angles
@@ -358,9 +367,8 @@ class OrangeRectangleFinder:
             return False
         self.last2d = self.rect_model.get_pose_2D(corners)
         self.last_found_time_2D = self.image_sub.last_image_time
-        if self.do_3D:
-            if not self._get_pose_3D(corners):
-                return False
+        if self.do_3D and not self._get_pose_3D(corners):
+            return False
         return True
 
     def _get_edges(self):
@@ -372,7 +380,9 @@ class OrangeRectangleFinder:
         blur = cv2.blur(self.last_image, (5, 5))
         hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
         thresh = cv2.inRange(
-            hsv, (0, self.thresh_saturation_low, 0), (self.thresh_hue_high, 255, 255)
+            hsv,
+            (0, self.thresh_saturation_low, 0),
+            (self.thresh_hue_high, 255, 255),
         )
         return cv2.Canny(thresh, self.canny_low, self.canny_low * self.canny_ratio)
 

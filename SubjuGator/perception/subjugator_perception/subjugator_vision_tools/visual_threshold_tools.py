@@ -34,10 +34,11 @@ def mlab_color_imshow(image, **kwargs):
 
     image_LUT_array = np.c_[image.reshape(-1, 3), alpha]
     image_LUT_array[:, 0], image_LUT_array[:, 2] = np.copy(
-        image_LUT_array[:, 2]
+        image_LUT_array[:, 2],
     ), np.copy(image_LUT_array[:, 0])
     LUT_lookup = np.arange(image.shape[0] * image.shape[1]).reshape(
-        image.shape[0], image.shape[1]
+        image.shape[0],
+        image.shape[1],
     )
 
     mlab_imshow = mlab.imshow(LUT_lookup, colormap="binary", **kwargs)
@@ -92,7 +93,6 @@ class ExtentDialog(traits.api.HasTraits):
             self.z_min < self.z_max,
         )
         if self.filter_box is not None and all(conditions):
-
             self.ranges = np.array(
                 [
                     [
@@ -107,7 +107,7 @@ class ExtentDialog(traits.api.HasTraits):
                         denormalize(self.z_min, self.data_z_min, self.data_z_max),
                         denormalize(self.z_max, self.data_z_min, self.data_z_max),
                     ],
-                ]
+                ],
             )
             self.filter_box.mlab_source.x = self.ranges[0, :]
             self.filter_box.mlab_source.y = self.ranges[1, :]

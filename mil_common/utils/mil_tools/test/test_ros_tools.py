@@ -46,8 +46,8 @@ class TestROSTools(unittest.TestCase):
             torque = np.random.random(3) * 10
         wrench_msg = make_wrench_stamped(force, torque, frame="/enu")
 
-        msg_force = rosmsg_to_numpy(wrench_msg.wrench.force)  # noqa
-        msg_torque = rosmsg_to_numpy(wrench_msg.wrench.torque)  # noqa
+        msg_force = rosmsg_to_numpy(wrench_msg.wrench.force)
+        msg_torque = rosmsg_to_numpy(wrench_msg.wrench.torque)
         self.assertIsNotNone(msg_force)
         self.assertIsNotNone(msg_torque)
 
@@ -90,7 +90,8 @@ class TestROSTools(unittest.TestCase):
         self.assertTrue(fake_lock.entry, msg="Thread was never locked")
         self.assertTrue(fake_lock.exit, msg="Thread was never released")
         self.assertTrue(
-            result, msg="Thread was not locked while the function was executed"
+            result,
+            msg="Thread was not locked while the function was executed",
         )
 
     def test_skew_symmetric_cross(self):
@@ -103,7 +104,7 @@ class TestROSTools(unittest.TestCase):
                 [+0, -3, +2],
                 [+3, +0, -1],
                 [-2, +1, +0],
-            ]
+            ],
         )
         np.testing.assert_allclose(
             skew_sym,
@@ -127,11 +128,14 @@ class TestROSTools(unittest.TestCase):
                 np.cross(p_rotated, q),
                 atol=1e-5,
                 err_msg="The generated rotation matrix did not align the input vectors, {} to {}".format(
-                    p, q
+                    p,
+                    q,
                 ),
             )
             self.assertGreater(
-                np.dot(p_rotated, q), 0.0, msg="The rotation did wacky inversion"
+                np.dot(p_rotated, q),
+                0.0,
+                msg="The rotation did wacky inversion",
             )
 
     def test_normalize_vector(self):
@@ -147,7 +151,9 @@ class TestROSTools(unittest.TestCase):
 
                 # Test that the norm is 1
                 np.testing.assert_almost_equal(
-                    norm, 1.0, err_msg="The normalized vector did not have length 1"
+                    norm,
+                    1.0,
+                    err_msg="The normalized vector did not have length 1",
                 )
 
 

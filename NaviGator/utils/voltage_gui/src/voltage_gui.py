@@ -11,8 +11,6 @@ from qt_gui.plugin import Plugin
 from roboteq_msgs.msg import Feedback
 from std_msgs.msg import Float32
 
-
-
 __author__ = "Joseph Brooks"
 __email__ = "brooksturtle@ufl.edu"
 __license__ = "MIT"
@@ -24,9 +22,9 @@ class voltageGUI(Plugin):
 
     Attributes:
         height (int): defines the height of the screen
-        fontSize(int): sets the font size of the screen 
+        fontSize(int): sets the font size of the screen
         warningCounter(int): prints the number of warning signs
-        paramCounter(int): the number of times "updateLabel" function is called  
+        paramCounter(int): the number of times "updateLabel" function is called
         heightRatio(int): the ratio change in height that is caused by the resize
         gotParams(bool): this checks to see whether the parameters are set
         lowThreshold(int): colors values which include Good (Green), Warning (Yellow), and Critical (Red)
@@ -39,6 +37,7 @@ class voltageGUI(Plugin):
         voltageBL(int): the voltage that is being supplied from dataBL
         voltageBR(int): the voltage that is being supplied from dataBR
     """
+
     def __init__(self, context):
         super().__init__(context)
         self.setObjectName("voltage_gui")
@@ -47,7 +46,7 @@ class voltageGUI(Plugin):
 
         if context.serial_number() > 1:
             self.myWidget.setWindowTitle(
-                self.myWidget.windowTitle() + (" (%d)" % context.serial_number())
+                self.myWidget.windowTitle() + (" (%d)" % context.serial_number()),
             )
         context.add_widget(self.myWidget)
         self.runGUI()
@@ -55,11 +54,11 @@ class voltageGUI(Plugin):
     def runGUI(self) -> None:
         """
         Updates Values displayed in GUI every second
-        
+
         Args:
-            No arguments are passed in. 
-        
-        Returns: 
+            No arguments are passed in.
+
+        Returns:
             There is no present return statement.
         """
         app = QApplication(sys.argv)
@@ -84,17 +83,17 @@ class VoltageWidget(QWidget):
         # Whenever the screen is resized the resizeFont function is called
         self.resized.connect(self.resizeFont)
 
-        self.height = VoltageWidget.frameGeometry(self).height() #done
+        self.height = VoltageWidget.frameGeometry(self).height()  # done
 
-        self.fontSize = 40 #done
+        self.fontSize = 40  # done
 
-        self.warningCounter = 0 #done
-        self.paramCounter = 0 #done
+        self.warningCounter = 0  # done
+        self.paramCounter = 0  # done
 
         self.initThresh()
 
         # Subscribing to all the data we need
-        self.battery_voltage = None 
+        self.battery_voltage = None
         rospy.Subscriber("/battery_monitor", Float32, self.updateMain)
         rospy.Subscriber("/FL_motor/feedback", Feedback, self.update_FL)
         self.voltageFL = None
@@ -114,7 +113,7 @@ class VoltageWidget(QWidget):
             mainData: it is a float value that is being passed in for a variable to be set to.
 
         Returns:
-            No statement is being returned.  
+            No statement is being returned.
         """
         self.battery_voltage = mainData
 
@@ -126,7 +125,7 @@ class VoltageWidget(QWidget):
             dataFL: it is a feedback value that is being passed in for a variable to be set to.
 
         Returns:
-            No statement is being returned.  
+            No statement is being returned.
         """
         self.voltageFL = dataFL.supply_voltage
 
@@ -138,7 +137,7 @@ class VoltageWidget(QWidget):
             dataFR: it is a feedback value that is being passed in for a variable to be set to.
 
         Returns:
-            No statement is being returned.  
+            No statement is being returned.
         """
         self.voltageFR = dataFR.supply_voltage
 
@@ -150,7 +149,7 @@ class VoltageWidget(QWidget):
             dataBL: it is a feedback value that is being passed in for a variable to be set to.
 
         Returns:
-            No statement is being returned.  
+            No statement is being returned.
         """
         self.voltageBL = dataBL.supply_voltage
 
@@ -162,11 +161,11 @@ class VoltageWidget(QWidget):
             dataBR: it is a feedback value that is being passed in for a variable to be set to.
 
         Returns:
-            No statement is being returned.  
+            No statement is being returned.
         """
         self.voltageBR = dataBR.supply_voltage
 
-    def resizeEvent(self, event): #done
+    def resizeEvent(self, event):  # done
         """
         Part of signal that notifies program whenever window is resized
 
@@ -174,20 +173,20 @@ class VoltageWidget(QWidget):
             event: an event object is being passed in.
 
         Returns:
-            An event was being returned with a different size. 
+            An event was being returned with a different size.
         """
         self.resized.emit()
         return super().resizeEvent(event)
 
-    def resizeFont(self) -> None: #done
+    def resizeFont(self) -> None:  # done
         """
         Increase/decrease size of fonts based on window resize
 
         Args:
-            No arguments are being passed in. 
+            No arguments are being passed in.
 
         Returns:
-            No statement is being returned.  
+            No statement is being returned.
         """
         # gets new window dimensions, the self is needed because we are referencing
         # our VoltageWidget class
@@ -218,10 +217,10 @@ class VoltageWidget(QWidget):
         Sets the text of the threshold info box
 
         Args:
-            No arguments are being passed in. 
+            No arguments are being passed in.
 
         Returns:
-            No statement is being returned.  
+            No statement is being returned.
         """
         # Low and Critical decide what colors the boxes take for
         # Good (Green), Warning (Yellow), and Critical (Red)
@@ -236,7 +235,7 @@ class VoltageWidget(QWidget):
         try:
             self.lowThreshold = rospy.get_param("battery-voltage/low")
             self.criticalThreshold = rospy.get_param("battery-voltage/critical")
-        except:
+        except Exception:
             print("Low and Critical Voltage not set, Low: 26 Critical:20")
             self.lowThreshold = 26
             self.criticalThreshold = 20
@@ -246,127 +245,130 @@ class VoltageWidget(QWidget):
         # self.labelThresh = QLabel(self)
         # self.labelThresh.setGeometry(QtCore.QRect((150+2*self.boxWidth), (10), self.boxWidth, self.boxHeight))
         threshText = "Low Threshold: {} \nCritical: {}".format(
-            self.lowThreshold, self.criticalThreshold
+            self.lowThreshold,
+            self.criticalThreshold,
         )
         self.labelThresh.setText(threshText)
         self.labelThresh.setStyleSheet(
-            "QLabel { background-color : white; color : black; }"
+            "QLabel { background-color : white; color : black; }",
         )
         threshFont = QtGui.QFont("Times", (self.fontSize) / 3, QtGui.QFont.Bold)
         self.labelThresh.setFont(threshFont)
 
-    def testParams(self) -> None: # done
+    def testParams(self) -> None:  # done
         """
         If self.gotParams is False, the updateLabel function calls testParams every 5 seconds
 
         Args:
-            No arguments are being passed in. 
+            No arguments are being passed in.
 
         Returns:
-            No statement is being returned.  
+            No statement is being returned.
         """
         try:
             self.lowThreshold = rospy.get_param("battery-voltage/low")
             self.criticalThreshold = rospy.get_param("battery-voltage/critical")
             self.gotParams = True
-        except:
+        except Exception:
             self.gotParams = False
 
         if self.gotParams:
             threshText = "Low Threshold: {} \nCritical: {}".format(
-                self.lowThreshold, self.criticalThreshold
+                self.lowThreshold,
+                self.criticalThreshold,
             )
         else:
             threshText = "THRESHOLDS NOT SET\nUSING DEFAULT\nLow Threshold: {} \nCritical: {}".format(
-                self.lowThreshold, self.criticalThreshold
+                self.lowThreshold,
+                self.criticalThreshold,
             )
         self.labelThresh.setText(threshText)
 
-    def setColors(self, numMain: float) -> None: # done
+    def setColors(self, numMain: float) -> None:  # done
         """
         sets colors of boxes based on current values of voltages for each box
 
         Args:
-            numMain(float): box object that stores current values  
+            numMain(float): box object that stores current values
 
         Returns:
-            No statement is being returned.  
-        """ 
+            No statement is being returned.
+        """
         if numMain > self.lowThreshold:
             self.labelMain.setStyleSheet(
-                "QLabel { background-color : green; color : white; }"
+                "QLabel { background-color : green; color : white; }",
             )
         elif numMain <= self.lowThreshold and numMain > self.criticalThreshold:
             self.labelMain.setStyleSheet(
-                "QLabel { background-color : yellow; color : black; }"
+                "QLabel { background-color : yellow; color : black; }",
             )
         elif numMain <= self.criticalThreshold:
             self.labelMain.setStyleSheet(
-                "QLabel { background-color : red; color : white; }"
+                "QLabel { background-color : red; color : white; }",
             )
 
         if self.voltageFL > self.lowThreshold:
             self.labelFL.setStyleSheet(
-                "QLabel { background-color : green; color : white; }"
+                "QLabel { background-color : green; color : white; }",
             )
         elif (
             self.voltageFL <= self.lowThreshold
             and self.voltageFL > self.criticalThreshold
         ):
             self.labelFL.setStyleSheet(
-                "QLabel { background-color : yellow; color : black; }"
+                "QLabel { background-color : yellow; color : black; }",
             )
         elif self.voltageFL <= self.criticalThreshold:
             self.labelFL.setStyleSheet(
-                "QLabel { background-color : red; color : white; }"
+                "QLabel { background-color : red; color : white; }",
             )
 
         if self.voltageFR > self.lowThreshold:
             self.labelFR.setStyleSheet(
-                "QLabel { background-color : green; color : white; }"
+                "QLabel { background-color : green; color : white; }",
             )
         elif (
             self.voltageFR <= self.lowThreshold
             and self.voltageFR > self.criticalThreshold
         ):
             self.labelFR.setStyleSheet(
-                "QLabel { background-color : yellow; color : black; }"
+                "QLabel { background-color : yellow; color : black; }",
             )
         elif self.voltageFR <= self.criticalThreshold:
             self.labelFR.setStyleSheet(
-                "QLabel { background-color : red; color : white; }"
+                "QLabel { background-color : red; color : white; }",
             )
 
         if self.voltageBL > self.lowThreshold:
             self.labelBL.setStyleSheet(
-                "QLabel { background-color : green; color : white; }"
+                "QLabel { background-color : green; color : white; }",
             )
         elif (
             self.voltageBL <= self.lowThreshold
             and self.voltageBL > self.criticalThreshold
         ):
             self.labelBL.setStyleSheet(
-                "QLabel { background-color : yellow; color : black; }"
+                "QLabel { background-color : yellow; color : black; }",
             )
         elif self.voltageBL <= self.criticalThreshold:
             self.labelBL.setStyleSheet(
-                "QLabel { background-color : red; color : white; }"
+                "QLabel { background-color : red; color : white; }",
             )
 
         if self.voltageBR > self.lowThreshold:
             self.labelBR.setStyleSheet(
-                "QLabel { background-color : green; color : white; }"
+                "QLabel { background-color : green; color : white; }",
             )
         elif (
             self.voltageBR <= self.lowThreshold
             and self.voltageBR > self.criticalThreshold
         ):
             self.labelBR.setStyleSheet(
-                "QLabel { background-color : yellow; color : black; }"
+                "QLabel { background-color : yellow; color : black; }",
             )
         elif self.voltageBR <= self.criticalThreshold:
             self.labelBR.setStyleSheet(
-                "QLabel { background-color : red; color : white; }"
+                "QLabel { background-color : red; color : white; }",
             )
 
     def updateLabel(self) -> None:
@@ -374,11 +376,11 @@ class VoltageWidget(QWidget):
         Tries self.gotParams every 3 function calls
 
         Args:
-            No arguments are being passed in.   
+            No arguments are being passed in.
 
         Returns:
-            No statement is being returned.  
-        """ 
+            No statement is being returned.
+        """
         self.paramCounter = self.paramCounter + 1
         if self.gotParams is False and self.paramCounter >= 3:
             self.testParams()
@@ -392,7 +394,7 @@ class VoltageWidget(QWidget):
             numMain = float(stringMain)
             numMain = int(numMain * 100)
             numMain = numMain / 100.0
-        except:
+        except Exception:
             if self.warningCounter == 0:
                 print("battery monitor is not online!!")
                 self.warningCounter = 1
@@ -406,27 +408,27 @@ class VoltageWidget(QWidget):
             numFL = (int(self.voltageFL * 100)) / 100
             stringFL = str(numFL)
             self.labelFL.setText(f"{stringFL}")
-        except:
+        except Exception:
             pass
 
         try:
             numFR = (int(self.voltageFR * 100)) / 100
             stringFR = str(numFR)
             self.labelFR.setText(f"{stringFR}")
-        except:
+        except Exception:
             pass
 
         try:
             numBL = (int(self.voltageBL * 100)) / 100
             stringBL = str(numBL)
             self.labelBL.setText(f"{stringBL}")
-        except:
+        except Exception:
             pass
 
         try:
             stringBR = float(f"{self.voltageBR:.2f}")
             self.labelBR.setText(f"{stringBR}")
-        except:
+        except Exception:
             pass
 
         QApplication.processEvents()

@@ -29,10 +29,10 @@ while not rospy.is_shutdown():
                             math.cos(i * 2 * math.pi / 4),
                             math.sin(i * 2 * math.pi / 4),
                             0,
-                        ]
+                        ],
                     ),
                 )
                 for i in range(4)
             ],
-        )
+        ),
     )

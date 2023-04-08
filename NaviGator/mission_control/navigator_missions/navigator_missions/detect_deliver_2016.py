@@ -45,16 +45,22 @@ class DetectDeliver(NaviGatorMission):
         cls.shooter_pose_sub = cls.nh.subscribe("/shooter_pose", PoseStamped)
         await cls.shooter_pose_sub.setup()
         cls.cameraLidarTransformer = cls.nh.get_service_client(
-            "/camera_to_lidar/right_right_cam", CameraToLidarTransform
+            "/camera_to_lidar/right_right_cam",
+            CameraToLidarTransform,
         )
         cls.shooterLoad = axros.action.ActionClient(
-            cls.nh, "/shooter/load", ShooterDoAction
+            cls.nh,
+            "/shooter/load",
+            ShooterDoAction,
         )
         cls.shooterFire = axros.action.ActionClient(
-            cls.nh, "/shooter/fire", ShooterDoAction
+            cls.nh,
+            "/shooter/fire",
+            ShooterDoAction,
         )
         cls.shooter_baselink_tf = await cls.tf_listener.get_transform(
-            "/base_link", "/shooter"
+            "/base_link",
+            "/shooter",
         )
 
     @classmethod
@@ -85,10 +91,13 @@ class DetectDeliver(NaviGatorMission):
         res = await self.database_query("shooter")
         if not res.found:
             fprint(
-                "shooter waypoint not found", title="DETECT DELIVER", msg_color="red"
+                "shooter waypoint not found",
+                title="DETECT DELIVER",
+                msg_color="red",
             )
             raise MissingPerceptionObject(
-                "shooter", "Detect Deliver Waypoint not found"
+                "shooter",
+                "Detect Deliver Waypoint not found",
             )
         self.waypoint_res = res
 
@@ -99,7 +108,9 @@ class DetectDeliver(NaviGatorMission):
                 normal_res = await self.get_normal(shape)
                 if normal_res.success:
                     enu_cam_tf = await self.tf_listener.get_transform(
-                        "/enu", "/" + shape.header.frame_id, shape.header.stamp
+                        "/enu",
+                        "/" + shape.header.frame_id,
+                        shape.header.stamp,
                     )
                     self.update_shape(shape, normal_res, enu_cam_tf)
                     return (
@@ -123,14 +134,15 @@ class DetectDeliver(NaviGatorMission):
     async def circle_search(self):
         platform_np = mil_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position)
         await self.move.look_at(platform_np).set_position(platform_np).backward(
-            self.circle_radius
+            self.circle_radius,
         ).yaw_left(90, unit="deg").go(move_type="drive")
 
         done_circle = False
 
         async def do_circle():
             await self.move.circle_point(
-                platform_np, direction=self.circle_direction
+                platform_np,
+                direction=self.circle_direction,
             ).go()
             done_circle = True  # noqa flake8 can't see that it is defined above
 
@@ -142,7 +154,7 @@ class DetectDeliver(NaviGatorMission):
                 continue
             fprint(
                 "Shape ({}found, using normal to look at other 3 shapes if needed".format(
-                    res[0]
+                    res[0],
                 ),
                 title="DETECT DELIVER",
                 msg_color="green",
@@ -180,7 +192,7 @@ class DetectDeliver(NaviGatorMission):
             )
 
             await self.search_sides(
-                (move_right_or_whatever, move_opposite_side, move_left_or_whatever)
+                (move_right_or_whatever, move_opposite_side, move_left_or_whatever),
             )
             return
         fprint(
@@ -192,7 +204,8 @@ class DetectDeliver(NaviGatorMission):
 
     def update_shape(self, shape_res, normal_res, tf):
         self.identified_shapes[(shape_res.Shape, shape_res.Color)] = self.get_shape_pos(
-            normal_res, tf
+            normal_res,
+            tf,
         )
 
     def correct_shape(self, tup):
@@ -217,7 +230,9 @@ class DetectDeliver(NaviGatorMission):
             res = await self.search_side()
             if res is False:
                 fprint(
-                    "No shape found on side", title="DETECT DELIVER", msg_color="red"
+                    "No shape found on side",
+                    title="DETECT DELIVER",
+                    msg_color="red",
                 )
                 continue
             shape_color, found_pose = res
@@ -226,7 +241,8 @@ class DetectDeliver(NaviGatorMission):
                 return
             fprint(
                 "Saw (Shape={}, Color={}) on this side".format(
-                    shape_color[0], shape_color[1]
+                    shape_color[0],
+                    shape_color[1],
                 ),
                 title="DETECT DELIVER",
                 msg_color="green",
@@ -239,7 +255,9 @@ class DetectDeliver(NaviGatorMission):
                 normal_res = await self.get_normal(shape)
                 if normal_res.success:
                     enu_cam_tf = await self.tf_listener.get_transform(
-                        "/enu", "/" + shape.header.frame_id, shape.header.stamp
+                        "/enu",
+                        "/" + shape.header.frame_id,
+                        shape.header.stamp,
                     )
                     if self.correct_shape(shape):
                         self.shape_pose = self.get_shape_pos(normal_res, enu_cam_tf)
@@ -247,7 +265,7 @@ class DetectDeliver(NaviGatorMission):
                     self.update_shape(shape, normal_res, enu_cam_tf)
 
                 else:
-                    if not self.last_lidar_error == normal_res.error:
+                    if self.last_lidar_error != normal_res.error:
                         fprint(
                             f"Normal not found Error={normal_res.error}",
                             title="DETECT DELIVER",
@@ -255,7 +273,7 @@ class DetectDeliver(NaviGatorMission):
                         )
                     self.last_lidar_error = normal_res.error
         else:
-            if not self.last_shape_error == shapes.error:
+            if self.last_shape_error != shapes.error:
                 fprint(
                     f"shape not found Error={shapes.error}",
                     title="DETECT DELIVER",
@@ -270,7 +288,8 @@ class DetectDeliver(NaviGatorMission):
             if self.Shape == shape or self.Color == color:
                 fprint(
                     "Correct shape not found, resorting to shape={} color={}".format(
-                        shape, color
+                        shape,
+                        color,
                     ),
                     title="DETECT DELIVER",
                     msg_color="yellow",
@@ -288,7 +307,8 @@ class DetectDeliver(NaviGatorMission):
         if self.shape_pose is None:
             self.select_backup_shape()
         goal_point, goal_orientation = self.get_aligned_pose(
-            self.shape_pose[0], self.shape_pose[1]
+            self.shape_pose[0],
+            self.shape_pose[1],
         )
         move = (
             self.move.set_position(goal_point)
@@ -297,7 +317,7 @@ class DetectDeliver(NaviGatorMission):
         )
         # Adjust for location of shooter
         move = move.left(-self.shooter_baselink_tf._p[1]).forward(
-            -self.shooter_baselink_tf._p[0]
+            -self.shooter_baselink_tf._p[0],
         )
         fprint(
             f"Aligning to shoot at {move}",
@@ -316,16 +336,18 @@ class DetectDeliver(NaviGatorMission):
         )  # moves x meters away
         angle = np.arctan2(-enunormal[0], enunormal[1])
         aligned_orientation = trns.quaternion_from_euler(
-            0, 0, angle
+            0,
+            0,
+            angle,
         )  # Align perpendicular
         return (aligned_position, aligned_orientation)
 
     def get_shape_pos(self, normal_res, enu_cam_tf):
         enunormal = enu_cam_tf.transform_vector(
-            mil_tools.rosmsg_to_numpy(normal_res.normal)
+            mil_tools.rosmsg_to_numpy(normal_res.normal),
         )
         enupoint = enu_cam_tf.transform_point(
-            mil_tools.rosmsg_to_numpy(normal_res.closest)
+            mil_tools.rosmsg_to_numpy(normal_res.closest),
         )
         return (enupoint, enunormal)
 
@@ -382,7 +404,7 @@ class DetectDeliver(NaviGatorMission):
                     shooter_pose.orientation.y,
                     shooter_pose.orientation.z,
                     shooter_pose.orientation.w,
-                ]
+                ],
             )[2]
             q = trns.quaternion_from_euler(0, 0, yaw)
             p = np.append(cen, 0)
@@ -396,7 +418,7 @@ class DetectDeliver(NaviGatorMission):
 
             # Adjust move for location of launcher
             move = move.left(-self.shooter_baselink_tf._p[1]).forward(
-                -self.shooter_baselink_tf._p[0]
+                -self.shooter_baselink_tf._p[0],
             )
 
             # Move away a fixed distance to make the shot
@@ -409,7 +431,7 @@ class DetectDeliver(NaviGatorMission):
         if move.failure_reason != "":
             fprint(
                 "Error Aligning with target = {}. Ending mission :(".format(
-                    move.failure_reason
+                    move.failure_reason,
                 ),
                 title="DETECT DELIVER",
                 msg_color="red",
@@ -423,7 +445,7 @@ class DetectDeliver(NaviGatorMission):
         align_defer = self.continuously_align()
         fprint(
             "Sleeping for {} seconds to allow for alignment",
-            title=f"DETECT DELIVER",
+            title="DETECT DELIVER",
             msg_color="green",
         )
         await self.nh.sleep(self.FOREST_SLEEP)
@@ -458,7 +480,7 @@ class DetectDeliver(NaviGatorMission):
         if move.failure_reason != "":
             fprint(
                 "Error Aligning with target = {}. Ending mission :(".format(
-                    move.failure_reason
+                    move.failure_reason,
                 ),
                 title="DETECT DELIVER",
                 msg_color="red",
@@ -473,12 +495,9 @@ class DetectDeliver(NaviGatorMission):
 
     async def setup_mission(self):
         stc_color = await self.mission_params["scan_the_code_color3"].get(
-            raise_exception=False
+            raise_exception=False,
         )
-        if stc_color is False:
-            color = "ANY"
-        else:
-            color = stc_color
+        color = "ANY" if stc_color is False else stc_color
         # color = "ANY"
         shape = "ANY"
         fprint(

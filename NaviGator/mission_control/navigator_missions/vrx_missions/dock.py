@@ -37,7 +37,6 @@ class Dock(Vrx):
         self.rospack = RosPack()
 
     async def run(self, args):
-
         self.bridge = CvBridge()
 
         self.image_debug_pub = self.nh.advertise("/dock_mask_debug", Image)
@@ -102,7 +101,7 @@ class Dock(Vrx):
         # determine which long side is closer to us, go to the closer one
         # (assume VRX peeps are nice and will always have the open side of the dock closer)
         if np.linalg.norm(side_a - curr_pose[0]) < np.linalg.norm(
-            side_b - curr_pose[0]
+            side_b - curr_pose[0],
         ):
             print("side_a")
             goal_pos = side_a
@@ -168,12 +167,12 @@ class Dock(Vrx):
         # position boat in front of correct symbol
         if symbol_position == "left":
             await self.move.set_position(self.left_position).look_at(
-                self.dock_point_left
+                self.dock_point_left,
             ).go(blind=True, move_type="skid")
             position = self.dock_point_left
         elif symbol_position == "right":
             await self.move.set_position(self.right_position).look_at(
-                self.dock_point_right
+                self.dock_point_right,
             ).go(blind=True, move_type="skid")
             position = self.dock_point_right
 
@@ -190,7 +189,6 @@ class Dock(Vrx):
 
     # This function is used to see if we see the target symbol in the current image
     async def get_symbol_position(self, target_symbol):
-
         print("entering get symbol position function")
 
         target_color, _ = target_symbol.split("_")
@@ -206,13 +204,13 @@ class Dock(Vrx):
         ]
         path = self.rospack.get_path("navigator_vision")
         symbol_file = os.path.join(
-            path, "datasets/dock_target_images/" + target_symbol + ".png"
+            path,
+            "datasets/dock_target_images/" + target_symbol + ".png",
         )
         symbol = cv2.imread(symbol_file)
         _, w, h = symbol.shape[::-1]
 
         for meth in methods:
-
             # voting system for ten pictures [left, center, right]
             vote = [0, 0, 0]
             foggy_count = 0
@@ -220,7 +218,6 @@ class Dock(Vrx):
 
             # loop through ten pictures
             for i in range(10):
-
                 img = await self.front_left_camera_sub.get_next_message()
 
                 img = self.bridge.imgmsg_to_cv2(img)
@@ -327,7 +324,6 @@ class Dock(Vrx):
 
     # This function is used to help aim_and_fire you know... aim
     async def get_black_square_center(self, foggy=False):
-
         img = await self.front_right_camera_sub.get_next_message()
         img = self.bridge.imgmsg_to_cv2(img)
         image = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
@@ -408,9 +404,7 @@ class Dock(Vrx):
     # this function moves the boat until it is aiming at the big black square
     # once the boat is lined up, it fires the balls
     async def aim_and_fire(self, foggy=False):
-
         for i in range(3):
-
             # obtain the pixel position of the small black square
             square_pix = await self.get_black_square_center(foggy=foggy)
 
@@ -478,7 +472,6 @@ class Dock(Vrx):
     # It will also tell us (assuming we are on the correct side of the dock)
     # how many pixels (left or right) the center of the docking area is.
     async def dock_checks(self):
-
         # obtain one image
         img = await self.front_left_camera_sub.get_next_message()
         img = self.bridge.imgmsg_to_cv2(img)
@@ -508,7 +501,6 @@ class Dock(Vrx):
 
         # find left wall of docking area
         for i in range(width / 2):
-
             # look to left of pixel until we hit black
             if mask[(base_of_dock + 20), (width / 2 - i)] == 0:
                 left_wall = width / 2 - i
@@ -521,7 +513,6 @@ class Dock(Vrx):
 
         # find right wall of docking area
         for i in range(width / 2):
-
             # look to right of pixel until we hit black
             if mask[(base_of_dock + 20), (width / 2 + i)] == 0 and i != 0:
                 right_wall = width / 2 + i
@@ -553,7 +544,6 @@ class Dock(Vrx):
     #   - shoot the balls at the black square
     #   - undock
     async def dock_fire_undock(self, foggy=False):
-
         pixel_diff = await self.dock_checks()
 
         if pixel_diff is None:
@@ -583,7 +573,9 @@ class Dock(Vrx):
         for i in range(4):
             try:
                 await axros.util.wrap_timeout(
-                    self.aim_and_fire(foggy=foggy), 15, "Trying to shoot"
+                    self.aim_and_fire(foggy=foggy),
+                    15,
+                    "Trying to shoot",
                 )
             except asyncio.TimeoutError:
                 print("Let's just take the shot anyways")
@@ -598,12 +590,11 @@ class Dock(Vrx):
 
     # This function is used to find the position of the dock at the beginning of this mission
     async def find_dock(self):
-
         msgs = None
         while msgs is None:
             try:
                 msgs, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
-            except Exception as e:
+            except Exception:
                 await self.move.forward(10).go()
         await self.pcodar_label(msgs[0].id, "dock")
         # if no pcodar objects, throw error, exit mission
@@ -641,7 +632,7 @@ class Dock(Vrx):
                     [bottom_right[0], top_left[1]],
                 ],
                 dtype=np.int32,
-            )
+            ),
         ]
 
         stencil = np.zeros(img.shape[:-1]).astype(np.uint8)
@@ -678,8 +669,7 @@ class Dock(Vrx):
 
         print("The new size of cnts is: ", len(cnts))
         if len(cnts) == 2:
-
-            masked_msg = self.bridge.cv2_to_imgmsg(mask, "mono8")
+            self.bridge.cv2_to_imgmsg(mask, "mono8")
             # self.image_debug_pub.publish(masked_msg)
 
             # assume there are only two contours (hopefully, otherwise, make contour and mask tighter)

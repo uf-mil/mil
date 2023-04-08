@@ -139,7 +139,7 @@ class PyAttributeTable(SphinxDirective):
                 modulename = self.env.ref_context.get("py:module")
         if modulename is None:
             raise RuntimeError(
-                f"modulename somehow None for {content} in {self.env.docname}."
+                f"modulename somehow None for {content} in {self.env.docname}.",
             )
 
         return modulename, name
@@ -254,7 +254,7 @@ def build_lookup_table(env):
         "class",
     }
 
-    for (fullname, _, objtype, docname, _, _) in domain.get_objects():
+    for fullname, x, objtype, docname, y, z in domain.get_objects():
         if objtype in ignored:
             continue
 
@@ -337,7 +337,7 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
                     [
                         (_("Attributes"), []),
                         (_("Functions"), []),
-                    ]
+                    ],
                 )
 
             elif all([c in node.attributes["classes"] for c in ["cpp", "function"]]):
@@ -360,7 +360,7 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
                             .children[0]
                             .attributes["ids"][0]
                         )
-                    except:
+                    except Exception:
                         fullname = ""
 
                     # Parse the function signature into just its name
@@ -371,7 +371,7 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
                     badge["badge-type"] = _("function")
                     if current_section:
                         classes[current_section][_("Functions")].append(
-                            TableElement(fullname=fullname, label=parsed, badge=badge)
+                            TableElement(fullname=fullname, label=parsed, badge=badge),
                         )
 
             elif all(c in node.attributes["classes"] for c in ["cpp", "var"]):
@@ -395,7 +395,7 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
                     # Make table element
                     if current_section:
                         classes[current_section][_("Attributes")].append(
-                            TableElement(fullname=fullname, label=parsed, badge=None)
+                            TableElement(fullname=fullname, label=parsed, badge=None),
                         )
 
             elif isinstance(node, nodes.section):
@@ -421,14 +421,14 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
                 "a C++ class or struct and not any other data structure. Additionally, "
                 "ensure that proper documentation was able to be generated without "
                 "the attribute table being used. If an error occurred, please open "
-                "an issue on our GitHub repo."
+                "an issue on our GitHub repo.",
             )
 
         for label, subitems in classes[target].items():
             if not subitems:
                 continue
             table.append(
-                class_results_to_node(label, sorted(subitems, key=lambda c: c.label))
+                class_results_to_node(label, sorted(subitems, key=lambda c: c.label)),
             )
 
         # Turn table into node
@@ -461,7 +461,7 @@ def process_attributetable(app, doctree, fromdocname):
             if not subitems:
                 continue
             table.append(
-                class_results_to_node(label, sorted(subitems, key=lambda c: c.label))
+                class_results_to_node(label, sorted(subitems, key=lambda c: c.label)),
             )
 
         table["python-class"] = fullname
@@ -482,7 +482,7 @@ def get_class_results(lookup: dict, modulename: str, name: str, fullname: str):
         [
             (_("Attributes"), []),
             (_("Methods"), []),
-        ]
+        ],
     )
 
     # If the class has members, let's get them! If not, it has no members, and
@@ -550,10 +550,10 @@ def class_results_to_node(key, elements):
         ref = nodes.reference(
             "",
             "",
+            *[nodes.Text(element.label)],
             internal=True,
             refuri=f"#{element.fullname}",
             anchorname="",
-            *[nodes.Text(element.label)],
         )
         para = addnodes.compact_paragraph("", "", ref)
         if element.badge is not None:
@@ -568,7 +568,8 @@ def setup(app):
     app.add_directive("attributetable", PyAttributeTable)
     app.add_directive("cppattributetable", CppAttributeTable)
     app.add_node(
-        attributetable, html=(visit_attributetable_node, depart_attributetable_node)
+        attributetable,
+        html=(visit_attributetable_node, depart_attributetable_node),
     )
     app.add_node(
         attributetablecolumn,

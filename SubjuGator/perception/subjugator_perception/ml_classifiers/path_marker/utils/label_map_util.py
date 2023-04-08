@@ -23,7 +23,7 @@ from google.protobuf import text_format
 
 rospack = rospkg.RosPack()
 sys.path.append(
-    rospack.get_path("subjugator_perception") + "/ml_classifiers/path_marker/protos"
+    rospack.get_path("subjugator_perception") + "/ml_classifiers/path_marker/protos",
 )
 
 from protos import string_int_label_map_pb2  # noqa
@@ -108,7 +108,7 @@ def convert_label_map_to_categories(label_map, max_num_classes, use_display_name
                 {
                     "id": class_id + label_id_offset,
                     "name": f"category_{class_id + label_id_offset}",
-                }
+                },
             )
         return categories
     for item in label_map.item:

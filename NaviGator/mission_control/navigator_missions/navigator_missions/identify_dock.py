@@ -44,13 +44,16 @@ class IdentifyDockMission:
     def __init__(self, navigator):
         self.navigator = navigator
         self.ogrid_activation_client = self.navigator.nh.get_service_client(
-            "/identify_dock/active", SetBool
+            "/identify_dock/active",
+            SetBool,
         )
         self.get_bays = self.navigator.nh.get_service_client(
-            "/identify_dock/get_bays", GetDockBays
+            "/identify_dock/get_bays",
+            GetDockBays,
         )
         self.cameraLidarTransformer = self.navigator.nh.get_service_client(
-            "/camera_to_lidar/front_right_cam", CameraToLidarTransform
+            "/camera_to_lidar/front_right_cam",
+            CameraToLidarTransform,
         )
         self.identified_shapes = {}
 
@@ -69,8 +72,11 @@ class IdentifyDockMission:
         self.bay_2 = (bay_2_shape, bay_2_color)
         print_good(
             "Docking in Bay (Shape={}, Color={}) then (Shape={}, Color={})".format(
-                bay_1_shape, bay_1_color, bay_2_shape, bay_2_color
-            )
+                bay_1_shape,
+                bay_1_color,
+                bay_2_shape,
+                bay_2_color,
+            ),
         )
 
     async def get_waypoint(self):
@@ -89,7 +95,7 @@ class IdentifyDockMission:
 
         async def circle_bay():
             await self.navigator.move.look_at(self.dock_pose).set_position(
-                self.dock_pose
+                self.dock_pose,
             ).backward(self.CIRCLE_RADIUS).look_at(self.dock_pose).go()
             await self.navigator.move.circle_point(self.dock_pose, direction="ccw").go()
             done_circle = True  # noqa flake8 doesn't see that it is defined above
@@ -129,13 +135,13 @@ class IdentifyDockMission:
         """
         for pose in self.bay_poses:
             move = self.navigator.move.set_position(
-                pose + self.bay_normal * self.LOOK_AT_DISTANCE
+                pose + self.bay_normal * self.LOOK_AT_DISTANCE,
             ).look_at(pose)
             print_good("Moving in front of bay for observation")
             await move.go()
             start_time = self.navigator.nh.get_time()
             while self.navigator.nh.get_time() - start_time < genpy.Duration(
-                self.LOOK_SHAPE_TIMEOUT
+                self.LOOK_SHAPE_TIMEOUT,
             ):
                 if await self.search_shape_vision_only():
                     return
@@ -145,11 +151,13 @@ class IdentifyDockMission:
     def update_shape(self, shape_res, normal_res, tf):
         print_good(
             "Found (Shape={}, Color={} in a bay".format(
-                shape_res.Shape, shape_res.Color
-            )
+                shape_res.Shape,
+                shape_res.Color,
+            ),
         )
         self.identified_shapes[(shape_res.Shape, shape_res.Color)] = self.get_shape_pos(
-            normal_res, tf
+            normal_res,
+            tf,
         )
 
     def done_searching(self):
@@ -163,14 +171,17 @@ class IdentifyDockMission:
 
     async def search_shape_vision_only(self):
         shapes = await self.navigator.vision_proxies["get_shape_front"].get_response(
-            Shape="ANY", Color="ANY"
+            Shape="ANY",
+            Color="ANY",
         )
         if shapes.found:
             for shape in shapes.shapes.list:
                 normal_res = await self.get_normal(shape)
                 if normal_res.success:
                     enu_cam_tf = await self.navigator.tf_listener.get_transform(
-                        "/enu", "/" + shape.header.frame_id, shape.header.stamp
+                        "/enu",
+                        "/" + shape.header.frame_id,
+                        shape.header.stamp,
                     )
                     self.update_shape(shape, normal_res, enu_cam_tf)
                     if self.done_searching():
@@ -192,7 +203,7 @@ class IdentifyDockMission:
 
         async def circle_bay():
             await self.navigator.move.set_position(self.dock_pose).backward(
-                self.CIRCLE_RADIUS
+                self.CIRCLE_RADIUS,
             ).look_at(self.dock_pose).go()
             await self.navigator.move.circle_point(self.dock_pose, direction="ccw").go()
             done_circle = True  # noqa flake8 can't see that it is defined above
@@ -228,10 +239,10 @@ class IdentifyDockMission:
 
     def get_shape_pos(self, normal_res, enu_cam_tf):
         enunormal = enu_cam_tf.transform_vector(
-            mil_tools.rosmsg_to_numpy(normal_res.normal)
+            mil_tools.rosmsg_to_numpy(normal_res.normal),
         )
         enupoint = enu_cam_tf.transform_point(
-            mil_tools.rosmsg_to_numpy(normal_res.closest)
+            mil_tools.rosmsg_to_numpy(normal_res.closest),
         )
         return (enupoint, enunormal)
 
@@ -254,7 +265,7 @@ class IdentifyDockMission:
                 del incorrect_shapes[0]
             else:
                 print_bad(
-                    "First bay not found and no other bays found, moving on to second"
+                    "First bay not found and no other bays found, moving on to second",
                 )
         else:
             print_good("Docking in first desired bay")
@@ -274,10 +285,10 @@ class IdentifyDockMission:
     async def dock_in_bay_blind(self, tup):
         point, normal = tup
         move_front = self.navigator.move.set_position(
-            point + normal * self.LOOK_AT_DISTANCE
+            point + normal * self.LOOK_AT_DISTANCE,
         ).look_at(point)
         move_in = self.navigator.move.set_position(
-            point + normal * self.DOCK_DISTANCE
+            point + normal * self.DOCK_DISTANCE,
         ).look_at(point)
         await move_front.go(move_type="skid")
         await move_in.go(move_type="skid", speed_factor=[0.5, 0.5, 0.5], blind=True)
@@ -287,10 +298,10 @@ class IdentifyDockMission:
     async def dock_in_bay_using_ogrid(self, tup):
         point, normal = tup
         move_front = self.navigator.move.set_position(
-            point + normal * self.LOOK_AT_DISTANCE
+            point + normal * self.LOOK_AT_DISTANCE,
         ).look_at(point)
         move_in = self.navigator.move.set_position(
-            point + normal * self.DOCK_DISTANCE
+            point + normal * self.DOCK_DISTANCE,
         ).look_at(point)
         await move_front.go(move_type="skid")
         await self.start_ogrid()
@@ -308,11 +319,11 @@ class IdentifyDockMission:
 
         search_line_vector = right_pose - left_pose
         search_line_vector_normal = search_line_vector / np.linalg.norm(
-            search_line_vector
+            search_line_vector,
         )
         if np.isnan(search_line_vector_normal[0]):
             raise Exception(
-                "Gate Edge Markers are not in a line. Perhaps they were not placed"
+                "Gate Edge Markers are not in a line. Perhaps they were not placed",
             )
         rot_right = np.array([[0, 1, 0], [-1, 0, 0], [0, 0, 0]])
         search_line_rot = rot_right.dot(search_line_vector_normal)
@@ -328,7 +339,7 @@ class IdentifyDockMission:
             [
                 np.linalg.norm(pose - move_left.position[:2]),
                 np.linalg.norm(pose - move_right.position[:2]),
-            ]
+            ],
         )
         if np.argmin(distance_test) == 0:
             self.search_moves = (move_left, move_right)
@@ -373,20 +384,14 @@ class IdentifyDockMission:
 
 async def setup_mission(navigator):
     stc_1 = await navigator.mission_params["scan_the_code_color1"].get(
-        raise_exception=False
+        raise_exception=False,
     )
-    if stc_1 is False:
-        bay_1_color = "ANY"
-    else:
-        bay_1_color = stc_1
+    bay_1_color = "ANY" if stc_1 is False else stc_1
 
     stc_2 = await navigator.mission_params["scan_the_code_color2"].get(
-        raise_exception=False
+        raise_exception=False,
     )
-    if stc_2 is False:
-        bay_2_color = "ANY"
-    else:
-        bay_2_color = stc_2
+    bay_2_color = "ANY" if stc_2 is False else stc_2
 
     bay_1_shape = "ANY"
     bay_2_shape = "ANY"

@@ -29,8 +29,9 @@ class Kill(HandlerBase):
         else:
             rospy.logwarn(
                 "KILL BAG {}, status: {}".format(
-                    TerminalState.to_string(status), result.status
-                )
+                    TerminalState.to_string(status),
+                    result.status,
+                ),
             )
 
     def _kill_task_cb(self, status, result):
@@ -39,8 +40,9 @@ class Kill(HandlerBase):
             return
         rospy.logwarn(
             "Killed task failed ({}): {}".format(
-                TerminalState.to_string(status), result.result
-            )
+                TerminalState.to_string(status),
+                result.result,
+            ),
         )
 
     def raised(self, alarm):

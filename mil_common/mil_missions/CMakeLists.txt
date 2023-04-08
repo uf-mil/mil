@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(mil_missions)
 find_package(catkin REQUIRED genmsg actionlib_msgs actionlib)
 catkin_python_setup()

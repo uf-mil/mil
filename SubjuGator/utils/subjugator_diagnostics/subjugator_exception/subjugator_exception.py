@@ -20,10 +20,7 @@ class SubjuGatorException(BaseException):
         self.kwargs = kwargs
 
     def __repr__(self):
-        if len(self.args) == 0:
-            desc = "No description given"
-        else:
-            desc = self.args[0]
+        desc = "No description given" if len(self.args) == 0 else self.args[0]
 
         return desc + ". Parameters: " + self.kwargs.__repr__()
 

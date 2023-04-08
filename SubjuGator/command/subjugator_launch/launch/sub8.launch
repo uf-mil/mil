@@ -25,6 +25,11 @@
 
   <include file="$(find subjugator_launch)/launch/can.launch" />
 
+  <!-- Parameters for course-specific geometry -->
+  <group ns="course">
+      <rosparam file="$(find subjugator_launch)/config/course_geometry.yaml" />
+  </group>
+
   <include if="$(eval environment != 'dynsim')" file="$(find subjugator_launch)/launch/subsystems/cameras.launch">
     <arg name="environment" value="$(arg environment)" />
     <arg name="simulate_cams" value="$(arg simulate_cams)" />

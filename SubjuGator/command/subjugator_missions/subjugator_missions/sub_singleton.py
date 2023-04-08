@@ -74,14 +74,17 @@ class VisionProxy:
     def __init__(self, service_root: str, nh: NodeHandle):
         assert "vision" in service_root, "expected 'vision' in the name of service_root"
         self._get_2d_service = nh.get_service_client(
-            service_root + "/2D", VisionRequest2D
+            service_root + "/2D",
+            VisionRequest2D,
         )
         self._get_pose_service = nh.get_service_client(
-            service_root + "/pose", VisionRequest
+            service_root + "/pose",
+            VisionRequest,
         )
         self._enable_service = nh.get_service_client(service_root + "/enable", SetBool)
         self._set_geometry_service = nh.get_service_client(
-            service_root + "/set_geometry", SetGeometry
+            service_root + "/set_geometry",
+            SetGeometry,
         )
 
     def start(self) -> Coroutine[Any, Any, types.Message]:
@@ -113,12 +116,14 @@ class VisionProxy:
         #     - Determine rotation around Z and undo that?
         try:
             pose = self._get_2d_service(VisionRequest2DRequest(target_name=target))
-        except (serviceclient.ServiceError):
+        except serviceclient.ServiceError:
             return None
         return pose
 
     def get_pose(
-        self, target: str = "", in_frame=None
+        self,
+        target: str = "",
+        in_frame=None,
     ) -> Coroutine[Any, Any, types.Message] | None:
         """
         Get the 3D pose of the object we're after.
@@ -128,24 +133,26 @@ class VisionProxy:
         #     - Use the time information in the header
         try:
             pose = self._get_pose_service(VisionRequestRequest(target_name=target))
-        except (serviceclient.ServiceError):
+        except serviceclient.ServiceError:
             return None
         except Exception as e:
             print(type(e))
         return pose
 
     def set_geometry(
-        self, polygon: SetGeometry
+        self,
+        polygon: SetGeometry,
     ) -> Coroutine[Any, Any, types.Message] | None:
         try:
             res = self._set_geometry_service(SetGeometryRequest(model=polygon))
-        except (serviceclient.ServiceError):
+        except serviceclient.ServiceError:
             return None
         return res
 
     @classmethod
     def get_response_direction(
-        cls, vision_response: VisionRequest2DResponse
+        cls,
+        vision_response: VisionRequest2DResponse,
     ) -> tuple[np.ndarray, float]:
         xy = np.array([vision_response.pose.x, vision_response.pose.y])
         bounds = np.array([[vision_response.max_x, vision_response.max_y]])
@@ -168,7 +175,9 @@ class _VisionProxies:
     def __init__(self, nh: NodeHandle, file_name: str):
         rospack = rospkg.RosPack()
         config_file = os.path.join(
-            rospack.get_path("subjugator_missions"), "subjugator_missions", file_name
+            rospack.get_path("subjugator_missions"),
+            "subjugator_missions",
+            file_name,
         )
         f = yaml.full_load(open(config_file))
 
@@ -178,68 +187,6 @@ class _VisionProxies:
 
     def __getattr__(self, proxy: str) -> VisionProxy | None:
         return self.proxies.get(proxy, None)
-
-
-class _PoseProxy:
-    def __init__(
-        self,
-        sub: SubjuGatorMission,
-        pose: pose_editor.PoseEditor,
-        print_only: bool = False,
-    ):
-        self._sub = sub
-        self._pose = pose
-        self.print_only = print_only
-
-    # Normal moves get routed here
-    def __getattr__(self, name: str) -> Callable:
-        def sub_attr_proxy(*args, **kwargs):
-            return _PoseProxy(
-                self._sub,
-                getattr(self._pose, name)(*args, **kwargs),
-                print_only=self.print_only,
-            )
-
-        return sub_attr_proxy
-
-    # Some special moves
-    def to_height(self, height):
-        dist_to_bot = self._sub._dvl_range_sub.get_last_message()
-        delta_height = dist_to_bot.range - height
-        return self.down(delta_height)
-
-    def check_goal(self) -> None:
-        """
-        Check end goal for feasibility.
-
-        Current checks are:
-        * End goal can't be above the water
-        """
-        # End goal can't be above the water
-        if self._pose.position[2] > 0:
-            print("GOAL TOO HIGH")
-            self._pos.position = -0.6
-
-    async def go(self, *args, **kwargs):
-        if self.print_only:
-            print(self._pose)
-            return self._sub.nh.sleep(0.1)
-
-        self.check_goal()
-
-        goal = self._sub._moveto_action_client.send_goal(
-            self._pose.as_MoveToGoal(*args, **kwargs)
-        )
-        result = await goal.get_result()
-        if result.error == "killed":
-            raise exceptions.KilledException()
-        return result
-
-    def go_trajectory(self, *args, **kwargs):
-        traj = self._sub._trajectory_pub.publish(
-            self._pose.as_PoseTwistStamped(*args, **kwargs)
-        )
-        return traj
 
 
 class _ActuatorProxy:
@@ -295,7 +242,6 @@ class _ActuatorProxy:
 
 
 class SubjuGatorMission(BaseMission):
-
     nh: NodeHandle
     _moveto_action_client: action.ActionClient[MoveToGoal, MoveToResult, MoveToFeedback]
 
@@ -343,11 +289,24 @@ class SubjuGatorMission(BaseMission):
 
     @property
     def pose(self) -> pose_editor.PoseEditor:
+        """
+        Returns a pose editor at the current position and orientation. Equivalent
+        to :meth:`~.move`, but this property should be used to indicate that no
+        move is being requested.
+        """
         last_odom_msg = self._odom_sub.get_last_message()
         if self.test_mode:
             last_odom_msg = Odometry()  # All 0's
         pose = pose_editor.PoseEditor.from_Odometry(last_odom_msg)
         return pose
+
+    def move(self) -> pose_editor.PoseEditor:
+        """
+        Returns a pose editor at the current position and orientation. Equivalent
+        to the :meth:`~.pose` property, but this method should be used to indicate
+        that a movement is soon to be requested on the sub.
+        """
+        return self.pose
 
     async def tx_pose(self):
         """
@@ -362,9 +321,40 @@ class SubjuGatorMission(BaseMission):
         pose = mil_ros_tools.pose_to_numpy(next_odom_msg.pose.pose)
         return pose
 
-    @property
-    def move(self) -> _PoseProxy:
-        return _PoseProxy(self, self.pose, self.test_mode)
+    async def go(
+        self,
+        pose: pose_editor.PoseEditor,
+        *,
+        speed: float = 0.2,
+        blind: bool = False,
+        uncoordinated: bool = False,
+    ):
+        """
+        Executes a movement to the position and orientation supplied in the
+        provided pose editor.
+
+        Arguments:
+            speed (float): The speed to execute the movement in m/s. Defaults to
+                0.2 m/s.
+            blind (bool): Whether to ignore collision avoidance in the planned
+                path. Defaults to False.
+            uncoordinated (bool): Whether to achieve some components before others.
+                False will move in a straight line. Defaults to False.
+        """
+        # Check goal
+        if pose.position[2] > 0:
+            print("GOAL TOO HIGH")
+            pose.position[2] = -0.6
+
+        goal = self._moveto_action_client.send_goal(
+            pose.as_MoveToGoal(speed=speed, blind=blind, uncoordinated=uncoordinated),
+        )
+        result = await goal.get_result()
+
+        if result.error == "killed":
+            raise exceptions.KilledException
+
+        return result
 
     async def get_dvl_range(self):
         msg = await self._dvl_range_sub.get_next_message()
@@ -375,7 +365,9 @@ class SubjuGatorMission(BaseMission):
         TODO
         """
         transform = await self._tf_listener.get_transform(
-            frame, pose_stamped.header.frame_id, pose_stamped.header.stamp
+            frame,
+            pose_stamped.header.frame_id,
+            pose_stamped.header.stamp,
         )
         tft = axros_tf.Transform.from_Pose_message(pose_stamped.pose)
         full_transform = transform * tft
@@ -410,10 +402,9 @@ class Searcher:
         looker = asyncio.create_task(self._run_look(spotings_req))
         searcher = asyncio.create_task(self._run_search_pattern(loop, speed))
 
-        start_pose = self.sub.move.forward(0)
+        start_pose = self.sub.move().forward(0)
         start_time = self.sub.nh.get_time()
         while self.sub.nh.get_time() - start_time < genpy.Duration(timeout):
-
             # If we find the object
             if self.object_found:
                 searcher.cancel()
@@ -426,7 +417,7 @@ class Searcher:
         looker.cancel()
         searcher.cancel()
 
-        await start_pose.go()
+        await self.sub.go(start_pose)
 
     async def _run_search_pattern(self, loop: bool, speed: float):
         """
@@ -441,7 +432,7 @@ class Searcher:
                 while True:
                     for pose in self.search_pattern:
                         print("SEARCHER - going to next position.")
-                        if isinstance(pose, list) or isinstance(pose, np.ndarray):
+                        if isinstance(pose, (list, np.ndarray)):
                             await self.sub.move.relative(pose).go(speed=speed)
                         else:
                             await pose.go()
@@ -450,7 +441,7 @@ class Searcher:
 
             else:
                 for pose in self.search_pattern:
-                    if isinstance(pose, list) or isinstance(pose, np.ndarray):
+                    if isinstance(pose, (list, np.ndarray)):
                         await self.sub.move.relative(np.array(pose)).go(speed=speed)
                     else:
                         await pose.go()
@@ -507,16 +498,18 @@ class PoseSequenceCommander:
         """
         for i in range(len(positions)):
             await self.sub.move.look_at_without_pitching(
-                np.array(positions[i][0:3])
+                np.array(positions[i][0:3]),
             ).go(speed)
             await self.sub.move.relative(np.array(positions[i][0:3])).go(speed)
             await self.sub.move.set_orientation(
                 quaternion_multiply(
                     self.sub.pose.orientation,
                     quaternion_from_euler(
-                        orientations[i][0], orientations[i][1], orientations[i][2]
+                        orientations[i][0],
+                        orientations[i][1],
+                        orientations[i][2],
                     ),
-                )
+                ),
             ).go(speed)
 
     async def go_to_sequence_quaternions(
@@ -532,7 +525,7 @@ class PoseSequenceCommander:
         """
         for i in range(len(positions)):
             await self.sub.move.look_at_without_pitching(
-                np.array(positions[i][0:3])
+                np.array(positions[i][0:3]),
             ).go(speed)
             await self.sub.move.relative(np.array(positions[i][0:3])).go(speed)
             await self.sub.move.set_orientation(
@@ -544,12 +537,11 @@ class PoseSequenceCommander:
                         orientations[i][2],
                         orientations[i][3],
                     ),
-                )
+                ),
             ).go(speed)
 
 
 class SonarObjects:
-
     _clear_pcl: ServiceClient
     _objects_service: ServiceClient
 
@@ -568,11 +560,13 @@ class SonarObjects:
             self.pattern = [sub.move.forward(0)]
         self.pattern = pattern
         self._clear_pcl = self.sub.nh.get_service_client(
-            "/ogrid_pointcloud/clear_pcl", Trigger
+            "/ogrid_pointcloud/clear_pcl",
+            Trigger,
         )
 
         self._objects_service = self.sub.nh.get_service_client(
-            "/ogrid_pointcloud/get_objects", ObjectDBQuery
+            "/ogrid_pointcloud/get_objects",
+            ObjectDBQuery,
         )
 
     def __del__(self):
@@ -621,7 +615,11 @@ class SonarObjects:
             # Break out of loop if we find something satisfying function
             res = await self._objects_service(ObjectDBQueryRequest())
             g_obj = self._get_objects_within_cone(
-                res.objects, start_point, ray, angle_tol, distance_tol
+                res.objects,
+                start_point,
+                ray,
+                angle_tol,
+                distance_tol,
             )
             g_obj = self._sort_by_angle(g_obj, ray, start_point)
 
@@ -634,14 +632,21 @@ class SonarObjects:
 
         res = await self._objects_service(ObjectDBQueryRequest())
         g_obj = self._get_objects_within_cone(
-            res.objects, start_point, ray, angle_tol, distance_tol
+            res.objects,
+            start_point,
+            ray,
+            angle_tol,
+            distance_tol,
         )
         g_obj = self._sort_by_angle(g_obj, ray, start_point)
         res.objects = g_obj
         return res
 
     async def start_until_found_x(
-        self, speed: float = 0.5, clear: bool = False, object_count: int = 0
+        self,
+        speed: float = 0.5,
+        clear: bool = False,
+        object_count: int = 0,
     ):
         """
         Search until a number of objects are found.
@@ -698,7 +703,11 @@ class SonarObjects:
                 await pose.go(speed=speed, blind=True)
                 res = await self._objects_service(ObjectDBQueryRequest())
                 g_obj = self._get_objects_within_cone(
-                    res.objects, start_point, ray, angle_tol, distance_tol
+                    res.objects,
+                    start_point,
+                    ray,
+                    angle_tol,
+                    distance_tol,
                 )
                 if g_obj is None:
                     continue
@@ -771,7 +780,8 @@ class SonarPointcloud:
 
     async def start(self, speed: float = 0.2):
         self._plane_subscriber = self.sub.nh.subscribe(
-            "/ogrid_pointcloud/point_cloud/plane", PointCloud2
+            "/ogrid_pointcloud/point_cloud/plane",
+            PointCloud2,
         )
         await self._plane_subscriber.setup()
         await self._run_move_pattern(speed)
@@ -779,9 +789,11 @@ class SonarPointcloud:
         pc_gen = np.asarray(
             list(
                 pc2.read_points(
-                    self.pointcloud, skip_nans=True, field_names=("x", "y", "z")
-                )
-            )
+                    self.pointcloud,
+                    skip_nans=True,
+                    field_names=("x", "y", "z"),
+                ),
+            ),
         )
         return pc_gen
 
@@ -791,12 +803,14 @@ class SonarPointcloud:
             self.pointcloud = data
         else:
             gen = list(
-                pc2.read_points(data, skip_nans=True, field_names=("x", "y", "z"))
+                pc2.read_points(data, skip_nans=True, field_names=("x", "y", "z")),
             )
             pc_gen = list(
                 pc2.read_points(
-                    self.pointcloud, skip_nans=True, field_names=("x", "y", "z")
-                )
+                    self.pointcloud,
+                    skip_nans=True,
+                    field_names=("x", "y", "z"),
+                ),
             )
             concat = np.asarray(gen + pc_gen, np.float32)
             print(f"SONAR_POINTCLOUD - current size: {concat.shape}")
@@ -804,7 +818,7 @@ class SonarPointcloud:
 
     async def _run_move_pattern(self, speed: float):
         for pose in self.pattern:
-            if isinstance(pose, list) or isinstance(pose, np.ndarray):
+            if isinstance(pose, (list, np.ndarray)):
                 await self.sub.move.relative(np.array(pose)).go(speed=speed)
             else:
                 await pose.go()
