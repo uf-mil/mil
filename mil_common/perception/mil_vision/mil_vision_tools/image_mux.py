@@ -236,15 +236,15 @@ if __name__ == "__main__":
     """
     ImageMux is intended to be used as a class, not an executable.
     The following is an example of how to use it in a python program.
-    Creates a 2x2 grid of Racoon images with labels, using some custom parameters.
+    Creates a 2x2 grid of Raccoon images with labels, using some custom parameters.
 
     To run this yourself, download some images, put them in $HOME/Pictures/[1.jpg, 2.jpg, 3.jpg, 4.jpg]
     """
     import os
 
     labels = [
-        "Chubby Racoon",
-        "Kiddo Racoons",
+        "Chubby Raccoon",
+        "Kiddo Raccoons",
         "wide",
         "tall",
         "big wide",

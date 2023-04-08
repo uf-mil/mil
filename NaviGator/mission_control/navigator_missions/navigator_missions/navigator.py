@@ -694,7 +694,7 @@ class NaviGatorMission(BaseMission):
                     s_switch,
                 )
             except Exception as e:
-                err = f"Error loading vision sevices: {e}"
+                err = f"Error loading vision services: {e}"
                 fprint("" + err, title="NAVIGATOR", msg_color="red")
 
     @classmethod
