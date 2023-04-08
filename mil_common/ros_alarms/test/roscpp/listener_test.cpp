@@ -127,7 +127,7 @@ TEST(ListenerTest, listenerTest)
   listener.addRaiseCb(raise_cb);           // Use this overload for any severity raise
   listener.addClearCb(clear_cb);           // Called for any clear of the alarm
 
-  ros::Duration latency(0.01);  // Approximate upper bound on publisher latency
+  ros::Duration latency(0.01);             // Approximate upper bound on publisher latency
   auto update_start = update_count;
   auto lo_start = lo_priority_raise_count;
   auto hi_start = hi_priority_raise_count;
