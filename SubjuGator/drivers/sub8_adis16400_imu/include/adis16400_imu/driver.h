@@ -70,7 +70,7 @@ public:
     result.header.frame_id = frame_id;
     result.header.stamp = ros::Time::now();
 
-    result.orientation_covariance[0] = -1;  // indicate no orientation data
+    result.orientation_covariance[0] = -1;                          // indicate no orientation data
 
     static const double GYRO_CONVERSION = 0.05 * (2 * M_PI / 360);  // convert to deg/s and then to rad/s
     result.angular_velocity.x = get16(data + 4 + 2 * 0) * GYRO_CONVERSION;
@@ -78,7 +78,7 @@ public:
     result.angular_velocity.z = get16(data + 4 + 2 * 2) * GYRO_CONVERSION;
     result.angular_velocity_covariance[0] = result.angular_velocity_covariance[4] =
         result.angular_velocity_covariance[8] =
-            pow(0.9 * (2 * M_PI / 360), 2);  // 0.9 deg/sec rms converted to rad/sec and then squared
+            pow(0.9 * (2 * M_PI / 360), 2);                  // 0.9 deg/sec rms converted to rad/sec and then squared
 
     static const double ACC_CONVERSION = 3.33e-3 * 9.80665;  // convert to g's and then to m/s^2
     result.linear_acceleration.x = -get16(data + 10 + 2 * 0) * ACC_CONVERSION;
@@ -99,9 +99,9 @@ public:
         mag_result.magnetic_field_covariance[8] =
             pow(1.25e-3 * 0.0001, 2);  // 1.25 mgauss converted to tesla and then squared
 
-    getu16(data + 0);              // flags unused
-    getu16(data + 2) * 2.418e-3;   // supply voltage unused
-    get16(data + 22) * 0.14 + 25;  // temperature unused
+    getu16(data + 0);                  // flags unused
+    getu16(data + 2) * 2.418e-3;       // supply voltage unused
+    get16(data + 22) * 0.14 + 25;      // temperature unused
 
     return true;
   }
