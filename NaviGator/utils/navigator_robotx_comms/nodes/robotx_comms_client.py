@@ -50,7 +50,7 @@ from navigator_robotx_comms.navigator_robotx_comms import (
     RobotXUAVSearchReportMessage,
 )
 from ros_alarms import AlarmListener
-from ros_alarms.msg import Alarm
+from ros_alarms_msgs.msg import Alarm
 from std_msgs.msg import String
 
 lock = threading.Lock()
