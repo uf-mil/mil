@@ -54,12 +54,6 @@ class voltageGUI(Plugin):
     def runGUI(self) -> None:
         """
         Updates Values displayed in GUI every second
-
-        Args:
-            No arguments are passed in.
-
-        Returns:
-            There is no present return statement.
         """
         app = QApplication(sys.argv)
         self.myWidget.show()
@@ -111,9 +105,6 @@ class VoltageWidget(QWidget):
 
         Args:
             mainData: it is a float value that is being passed in for a variable to be set to.
-
-        Returns:
-            No statement is being returned.
         """
         self.battery_voltage = mainData
 
@@ -123,9 +114,6 @@ class VoltageWidget(QWidget):
 
         Args:
             dataFL: it is a feedback value that is being passed in for a variable to be set to.
-
-        Returns:
-            No statement is being returned.
         """
         self.voltageFL = dataFL.supply_voltage
 
@@ -135,9 +123,6 @@ class VoltageWidget(QWidget):
 
         Args:
             dataFR: it is a feedback value that is being passed in for a variable to be set to.
-
-        Returns:
-            No statement is being returned.
         """
         self.voltageFR = dataFR.supply_voltage
 
@@ -147,9 +132,6 @@ class VoltageWidget(QWidget):
 
         Args:
             dataBL: it is a feedback value that is being passed in for a variable to be set to.
-
-        Returns:
-            No statement is being returned.
         """
         self.voltageBL = dataBL.supply_voltage
 
@@ -159,9 +141,6 @@ class VoltageWidget(QWidget):
 
         Args:
             dataBR: it is a feedback value that is being passed in for a variable to be set to.
-
-        Returns:
-            No statement is being returned.
         """
         self.voltageBR = dataBR.supply_voltage
 
@@ -181,12 +160,6 @@ class VoltageWidget(QWidget):
     def resizeFont(self) -> None:  # done
         """
         Increase/decrease size of fonts based on window resize
-
-        Args:
-            No arguments are being passed in.
-
-        Returns:
-            No statement is being returned.
         """
         # gets new window dimensions, the self is needed because we are referencing
         # our VoltageWidget class
@@ -215,12 +188,6 @@ class VoltageWidget(QWidget):
     def initThresh(self) -> None:
         """
         Sets the text of the threshold info box
-
-        Args:
-            No arguments are being passed in.
-
-        Returns:
-            No statement is being returned.
         """
         # Low and Critical decide what colors the boxes take for
         # Good (Green), Warning (Yellow), and Critical (Red)
@@ -258,12 +225,6 @@ class VoltageWidget(QWidget):
     def testParams(self) -> None:  # done
         """
         If self.gotParams is False, the updateLabel function calls testParams every 5 seconds
-
-        Args:
-            No arguments are being passed in.
-
-        Returns:
-            No statement is being returned.
         """
         try:
             self.lowThreshold = rospy.get_param("battery-voltage/low")
@@ -290,9 +251,6 @@ class VoltageWidget(QWidget):
 
         Args:
             numMain(float): box object that stores current values
-
-        Returns:
-            No statement is being returned.
         """
         if numMain > self.lowThreshold:
             self.labelMain.setStyleSheet(
@@ -374,12 +332,6 @@ class VoltageWidget(QWidget):
     def updateLabel(self) -> None:
         """
         Tries self.gotParams every 3 function calls
-
-        Args:
-            No arguments are being passed in.
-
-        Returns:
-            No statement is being returned.
         """
         self.paramCounter = self.paramCounter + 1
         if self.gotParams is False and self.paramCounter >= 3:
