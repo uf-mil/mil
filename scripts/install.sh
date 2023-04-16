@@ -235,11 +235,16 @@ mil_user_install_dependencies() {
 		git \
 		tmux \
 		vim \
+		htop \
+		tmuxinator \
 		awscli \
 		net-tools \
 		cifs-utils \
 		nmap \
-		tmuxinator
+		fd-find \
+		ripgrep \
+		lsd \
+		fzf
 }
 
 # Add line to user's bashrc which source the repo's setup files
