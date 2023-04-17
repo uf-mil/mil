@@ -29,6 +29,12 @@ __author__ = "Kevin Allen"
 # Ensure opencv3 or opencv4 is used, needed for KalmanFilter
 assert cv2.__version__[0] in ["3", "4"]
 
+"""
+Use change in degree to determine if elbow in orange marker is found
+Start with line from beginning of middle to end and then keep going up the middle
+until the delta angle between the new lines is less than some offset
+"""
+
 
 class OrangeRectangleFinder:
     """
@@ -84,7 +90,7 @@ class OrangeRectangleFinder:
         width = rospy.get_param("~width", 0.1524)
         self.rect_model = RectFinder(length, width)
         self.do_3D = rospy.get_param("~do_3D", True)
-        camera = rospy.get_param("~image_topic", "/camera/down/left/image_rect_color")
+        camera = rospy.get_param("~image_topic", "/camera/down/image_color")
 
         self.tf_listener = tf.TransformListener()
 
@@ -353,9 +359,12 @@ class OrangeRectangleFinder:
         """
         if cv2.contourArea(contour) < self.min_contour_area:
             return False
+        print("contour area")
         match = self.rect_model.verify_contour(contour)
+        print(match)
         if match > self.shape_match_thresh:
             return False
+        print("here")
         # Checks that contour is 4 sided
         corners = self.rect_model.get_corners(
             contour,
@@ -365,6 +374,7 @@ class OrangeRectangleFinder:
         )
         if corners is None:
             return False
+        print(corners)
         self.last2d = self.rect_model.get_pose_2D(corners)
         self.last_found_time_2D = self.image_sub.last_image_time
         if self.do_3D and not self._get_pose_3D(corners):
@@ -391,7 +401,7 @@ class OrangeRectangleFinder:
             return
         self.last_image = img
         edges = self._get_edges()
-        _, contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         # Check if each contour is valid
         for idx, c in enumerate(contours):

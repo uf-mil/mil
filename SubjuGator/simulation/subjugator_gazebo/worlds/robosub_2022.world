@@ -206,7 +206,7 @@
           <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
-              <uri>file://markers/PathMarkers2018s.dae</uri>
+              <uri>file://markers/PathMarkers2023.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -238,7 +238,7 @@
           <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
-              <uri>file://markers/PathMarkers2018s.dae</uri>
+              <uri>file://markers/PathMarkers2023.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -791,7 +791,7 @@
           <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
-              <uri>file://markers/PathMarkers2018s.dae</uri>
+              <uri>file://markers/PathMarkers2023.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -823,7 +823,7 @@
           <pose>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
-              <uri>file://markers/PathMarkers2018s.dae</uri>
+              <uri>file://markers/PathMarkers2023.dae</uri>
             </mesh>
           </geometry>
         </visual>

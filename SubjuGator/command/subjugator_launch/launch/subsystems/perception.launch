@@ -19,6 +19,10 @@
       <rosparam file="$(find subjugator_launch)/config/path_localizer.yaml" command="load" />
     </node>
   </group>-->
+    <node pkg="subjugator_perception" type="orange_rectangle_finder.py" name="orange_rectangle" ns="vision" output="screen">
+      <rosparam file="$(find subjugator_launch)/config/orange_rectangle_finder.yaml" command="load" />
+      <param name="do_3D" value="False" />
+    </node>
 
   <!-- TODO: Create weights file for sub-->
   <arg name="weights" default="" />
