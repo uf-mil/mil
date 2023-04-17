@@ -16,7 +16,7 @@ from python_qt_binding import QtCore, QtWidgets, loadUi
 from qt_gui.plugin import Plugin
 from remote_control_lib import RemoteControl
 from ros_alarms import AlarmListener
-from ros_alarms.msg import Alarm
+from ros_alarms_msgs.msg import Alarm
 from std_msgs.msg import Float32, String
 
 __author__ = "Anthony Olive"

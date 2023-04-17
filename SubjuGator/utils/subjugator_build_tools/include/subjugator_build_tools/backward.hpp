@@ -222,7 +222,7 @@ struct hashtable
 using std::move;
 }  // namespace details
 }  // namespace backward
-#else  // NOT BACKWARD_ATLEAST_CXX11
+#else   // NOT BACKWARD_ATLEAST_CXX11
 #include <map>
 namespace backward
 {
@@ -752,7 +752,7 @@ private:
   };
 };
 
-#else  // BACKWARD_HAS_UNWIND == 0
+#else   // BACKWARD_HAS_UNWIND == 0
 
 template <>
 class StackTraceImpl<system_tag::linux_tag> : public StackTraceLinuxImplHolder
@@ -1902,7 +1902,7 @@ private:
   bool _istty;
 };
 
-#else  // ndef BACKWARD_SYSTEM_LINUX
+#else   // ndef BACKWARD_SYSTEM_LINUX
 
 namespace Color
 {
@@ -2152,7 +2152,7 @@ private:
 
     StackTrace st;
     void* error_addr = 0;
-#ifdef REG_RIP  // x86_64
+#ifdef REG_RIP          // x86_64
     error_addr = reinterpret_cast<void*>(uctx->uc_mcontext.gregs[REG_RIP]);
 #elif defined(REG_EIP)  // x86_32
     error_addr = reinterpret_cast<void*>(uctx->uc_mcontext.gregs[REG_EIP]);
