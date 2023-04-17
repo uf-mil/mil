@@ -7,7 +7,7 @@
 
   <!-- DVL -->
   <group if="$(eval dvl and environment == 'real')">
-    <node pkg="subjugator_launch" type="dvl_conn" name="dvl_conn" respawn="true"/>
+    <node pkg="subjugator_launch" type="dvl_conn" name="dvl_conn" respawn="true" respawn_delay = "10"/>
     <node pkg="nodelet" type="nodelet" name="dvl_driver" args="standalone rdi_explorer_dvl/nodelet">
       <param name="port" type="string" value="/tmp/dvl"/>
       <param name="frame_id" type="string" value="/dvl"/>
@@ -17,7 +17,7 @@
 
   <!-- Depth Sensor -->
   <group if="$(eval depth and environment == 'real')">
-    <node pkg="subjugator_launch" type="depth_conn" name="depth_conn" respawn="true"/>
+    <node pkg="subjugator_launch" type="depth_conn" name="depth_conn" respawn="true" respawn_delay = "10"/>
     <node pkg="nodelet" type="nodelet" name="depth_driver" args="standalone depth_driver/nodelet">
       <param name="port" type="string" value="/tmp/depth"/>
       <param name="frame_id" type="string" value="/depth"/>
@@ -26,7 +26,7 @@
 
   <!-- IMU -->
   <group if="$(arg imu)" >
-    <node if="$(eval environment == 'real')" pkg="subjugator_launch" type="imu_conn" name="imu_conn" respawn="true"/>
+    <node if="$(eval environment == 'real')" pkg="subjugator_launch" type="imu_conn" name="imu_conn" respawn="true" respawn_delay = "10"/>
     <node if="$(eval environment == 'real')" pkg="nodelet" type="nodelet" name="imu_driver"
           args="standalone adis16400_imu/nodelet">
       <param name="port" type="string" value="/tmp/imu"/>
