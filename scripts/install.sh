@@ -243,7 +243,6 @@ mil_user_install_dependencies() {
 		nmap \
 		fd-find \
 		ripgrep \
-		lsd \
 		fzf
 }
 
