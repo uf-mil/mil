@@ -26,7 +26,7 @@
         <technique sid="common">
           <lambert>
             <emission>
-              <color sid="emission">0 0 0 1</color>
+              <color sid="emission">255 255 255 1</color>
             </emission>
             <diffuse>
               <texture texture="_2_makeGrade_tommyGun_png-sampler" texcoord="UVMap"/>
