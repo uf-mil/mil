@@ -20,7 +20,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file://posters/base_link.dae</uri>
+            <uri>file://Gman_Poster/G-man_Buoy.dae</uri>
           </mesh>
         </geometry>
       </collision>
@@ -29,7 +29,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>file://posters/base_link.dae</uri>
+            <uri>file://Gman_Poster/G-man_Buoy.dae</uri>
           </mesh>
         </geometry>
       </visual>
