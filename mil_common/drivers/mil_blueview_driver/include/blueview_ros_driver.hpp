@@ -25,7 +25,7 @@ public:
 private:
   ros::NodeHandle nh;
   BlueViewSonar sonar;
-  void loop(const ros::TimerEvent&);
+  void loop(const ros::TimerEvent &);
   void get_ping();
 
   image_transport::ImageTransport image_transport;
