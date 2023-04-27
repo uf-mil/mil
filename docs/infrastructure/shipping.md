@@ -37,4 +37,4 @@ rather than to take batteries with you.
 
 ## Note
 
-Whenever a package is received in MIL, a note needs to be sent to Schwartz
+Whenever a package is received in MIL, a note needs to be sent to Schwartz. The note should contain the sender's name of the package.
