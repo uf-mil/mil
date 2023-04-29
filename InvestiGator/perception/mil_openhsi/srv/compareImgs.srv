@@ -1,0 +1,4 @@
+string img1_dir
+string img2_dir
+---
+float32 euclid_dist

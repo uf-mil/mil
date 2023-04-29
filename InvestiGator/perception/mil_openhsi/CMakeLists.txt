@@ -58,6 +58,8 @@ catkin_python_setup()
  add_service_files(
    FILES
    specSig.srv
+   update6S.srv
+   compareImgs.srv
  )
 
 ## Generate actions in the 'action' folder

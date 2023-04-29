@@ -4,15 +4,16 @@
         6,
         447
     ],
+
     "latitude": 27.70,
     "longitude": -82.40,
     "radiosonde_station_num":72210,
     "radiosonde_region": "TBW",
     "altitude": 13.0,
-    "sixs_path": "~/build/6SV1.1/sixsV1.1",
+    "sixs_path": "~/6S/build/6SV1.1/sixsV1.1",
 
     "resolution": [
-        441,
+        458,
         528
     ],
     "fwhm_nm": 4,
