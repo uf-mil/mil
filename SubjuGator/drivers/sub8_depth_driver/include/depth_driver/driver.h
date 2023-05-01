@@ -166,7 +166,7 @@ public:
 
   void send_heartbeat()
   {
-    send_packet(ByteVec());                                         // heartbeat
+    send_packet(ByteVec());  // heartbeat
     uint8_t msg[] = { 4, 1, 20 };
     send_packet(ByteVec(msg, msg + sizeof(msg) / sizeof(msg[0])));  // StartPublishing 20hz
   }
