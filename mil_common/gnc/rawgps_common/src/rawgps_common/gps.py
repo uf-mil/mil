@@ -354,8 +354,7 @@ class Ephemeris:
         assert abs(t_k) < week_length / 2
         if not (abs(t_k) < 6 * 60 * 60):
             print(
-                "ERROR: ephemeris predicting more than 6 hours from now (%f hours)"
-                % (t_k / 60 / 60,),
+                f"ERROR: ephemeris predicting more than 6 hours from now ({t_k / 60 / 60:f} hours)",
             )
         n = n_0 + self.Deltan
         M_k = self.M_0 + n * t_k

@@ -105,4 +105,4 @@ class HandlerBase:
             should be raised, or a new Alarm object which the calling alarm
             should update itself to.
         """
-        return any([alarm.raised for name, alarm in alarms.items()])
+        return any(alarm.raised for name, alarm in alarms.items())

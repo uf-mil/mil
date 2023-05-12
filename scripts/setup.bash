@@ -84,6 +84,7 @@ alias search_root='sudo find / \
 		        -print | grep -i'
 
 alias search='find . -print | grep -i'
+alias fd="fdfind"
 
 # Gazebo aliases
 alias gazebogui="rosrun gazebo_ros gzclient __name:=gzclient"
