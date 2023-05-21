@@ -5,12 +5,15 @@ from numpy import clip, polyval
 
 def make_thruster_dictionary(dictionary):
     """
-    Make a dictionary mapping thruster names to :class:`Thruster` objects.
+    Make a dictionary mapping thruster names to :class:`Thruster` objects
+    and a dictionary mapping thruster names to node IDs.
     """
     ret = {}
+    name_id_map = {}
     for thruster, content in dictionary.items():
         ret[thruster] = Thruster.from_dict(content)
-    return ret
+        name_id_map[thruster] = content["node_id"]
+    return ret, name_id_map
 
 
 class Thruster:
