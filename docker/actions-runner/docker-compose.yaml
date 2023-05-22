@@ -1,0 +1,25 @@
+---
+version: "2.3"
+services:
+  zobelisk_accelerator:
+    image: myoung34/github-runner:latest
+    environment:
+      REPO_URL: https://github.com/uf-mil/mil
+      RUNNER_NAME: zobelisk_accelerator
+      RUNNER_TOKEN: ${RUNNER_TOKEN}
+      RUNNER_WORKDIR: /tmp/runners/accelerator/work
+      RUNNER_SCOPE: 'repo'
+      LABELS: linux,x64,gpu
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - '/tmp/runners/accelerator:/tmp/runners/accelerator'
+  zobelisk_setup:
+    depends_on:
+      - zobelisk_accelerator
+    image: myoung34/github-runner:latest
+    restart: "no"
+    entrypoint: >
+      bash -c pip3 install pip —upgrade &&
+              sudo -H pip3 install --ignore-installed PyYAML &&
+              git config --add --global safe.directory ~/catkin_ws/src/mil &&
+              pip3 install pyopenssl --upgrade
