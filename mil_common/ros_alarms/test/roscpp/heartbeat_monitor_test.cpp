@@ -28,7 +28,7 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
 
   // Publish heartbeat
   ros::Publisher heartbeat_pub = nh.advertise<std_msgs::String>(heartbeat_topic, 1000);
-  auto pub_valid = [&heartbeat_pub](bool valid) {         // Can publish a valid or invalid heartbeat
+  auto pub_valid = [&heartbeat_pub](bool valid) {  // Can publish a valid or invalid heartbeat
     std_msgs::String msg;
     msg.data = (valid ? "Will pass the predicate" : "");  // second one won't
     heartbeat_pub.publish(msg);
@@ -97,7 +97,7 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
   while (ros::Time::now() - hb_monitor.getLastBeatTime() < time_to_clear)  // Shouldn't recover here,
   {                                                                        //  invalid heartbeat
     sleep_until(time_to_raise * 0.8, ros::Time::now());
-    pub_valid(false);                                                      // False --> publish invalid heartbeat
+    pub_valid(false);  // False --> publish invalid heartbeat
   }
   EXPECT_TRUE(listener.queryRaised());
 

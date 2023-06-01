@@ -104,7 +104,7 @@ void OgridManager::update_config(Config const& config)
   ogrid_.info.height = height_meters_ / resolution_meters_per_cell_;
   ogrid_.info.origin.position.x = -1. * width_meters_ / 2.;  //-1. * width_meters_ * resolution_meters_per_cell_ / 2.;
   ogrid_.info.origin.position.y =
-      -1. * height_meters_ / 2.;                             // -1. * height_meters_ * resolution_meters_per_cell_ / 2.;
+      -1. * height_meters_ / 2.;  // -1. * height_meters_ * resolution_meters_per_cell_ / 2.;
   ogrid_.info.origin.orientation.w = 1;
   ogrid_.data.resize(ogrid_.info.width * ogrid_.info.height);
   ogrid_mat_ = cv::Mat(cv::Size(ogrid_.info.width, ogrid_.info.height), CV_8UC1, ogrid_.data.data());
