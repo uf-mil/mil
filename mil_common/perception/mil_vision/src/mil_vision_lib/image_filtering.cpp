@@ -7,7 +7,7 @@ cv::Mat rotateKernel(const cv::Mat &kernel, float theta, bool deg, bool no_expan
   theta = deg ? theta : theta * mil_tools::PI / 180.0f;
   cv::Point2f c_org{ kernel.cols * 0.5f, kernel.rows * 0.5f };  // center of original
 
-  if (no_expand)                                                // rotates without expanding the canvas
+  if (no_expand)  // rotates without expanding the canvas
   {
     cv::Mat result;
     cv::Mat rot_mat = cv::getRotationMatrix2D(c_org, theta, 1.0f);

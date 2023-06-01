@@ -61,7 +61,7 @@ class ConstantVelocity(NaviGatorMission):
         if not isinstance(parsed, list) or len(parsed) != 3:
             raise err
         for i in range(3):
-            if not (isinstance(parsed[i], int) or isinstance(parsed[i], float)):
+            if not (isinstance(parsed[i], (int, float))):
                 raise err
         return parsed
 
