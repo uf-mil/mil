@@ -340,7 +340,7 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
                     ],
                 )
 
-            elif all([c in node.attributes["classes"] for c in ["cpp", "function"]]):
+            elif all(c in node.attributes["classes"] for c in ["cpp", "function"]):
                 # Get the signature line of the function, where its name is stored
                 try:
                     descriptions = [
