@@ -63,7 +63,7 @@ class PrequalMission(SubjuGatorMission):
             upper = np.array([50, 50, 50], dtype="uint8")
             mask = cv2.inRange(hsv_img, lower, upper)
 
-            # publish mask for debuggin purposes
+            # publish mask for debugging purposes
             masked_msg = self.bridge.cv2_to_imgmsg(mask, "mono8")
             self.image_debug_pub.publish(masked_msg)
 
@@ -139,7 +139,7 @@ class PrequalMission(SubjuGatorMission):
             upper = np.array([50, 50, 50], dtype="uint8")
             mask = cv2.inRange(hsv_img, lower, upper)
 
-            # publish mask for debuggin purposes
+            # publish mask for debugging purposes
             masked_msg = self.bridge.cv2_to_imgmsg(mask, "mono8")
             self.image_debug_pub.publish(masked_msg)
 
