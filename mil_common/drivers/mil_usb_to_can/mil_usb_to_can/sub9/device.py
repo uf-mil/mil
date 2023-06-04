@@ -21,7 +21,9 @@ class SimulatedCANDeviceHandle:
     """
 
     def __init__(
-        self, sim_board: SimulatedUSBtoCANStream, inbound_packets: list[type[Packet]]
+        self,
+        sim_board: SimulatedUSBtoCANStream,
+        inbound_packets: list[type[Packet]],
     ):
         self._sim_board = sim_board
         self.inbound_packets = inbound_packets

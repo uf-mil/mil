@@ -69,7 +69,8 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDeviceHandle):
         )
 
     def on_data(
-        self, packet: HeartbeatSetPacket | ThrustSetPacket | KillSetPacket
+        self,
+        packet: HeartbeatSetPacket | ThrustSetPacket | KillSetPacket,
     ) -> None:
         """
         Serves as the data handler for the device. Handles :class:`KillMessage`,

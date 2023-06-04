@@ -41,7 +41,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         super().__init__(*args, **kwargs)
         # Initialize thruster mapping from params
         self.thrusters = make_thruster_dictionary(
-            rospy.get_param("/thruster_layout/thrusters")
+            rospy.get_param("/thruster_layout/thrusters"),
         )
         # Tracks last hw-kill alarm update
         self._last_hw_kill = None
@@ -49,7 +49,8 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         self._kill_broadcaster = AlarmBroadcaster("hw-kill")
         # Listens to hw-kill updates to ensure another nodes doesn't manipulate it
         self._hw_kill_listener = AlarmListener(
-            "hw-kill", callback_funct=self.on_hw_kill
+            "hw-kill",
+            callback_funct=self.on_hw_kill,
         )
         # Provide service for alarm handler to set/clear the motherboard kill
         self._unkill_service = rospy.Service("/set_mobo_kill", SetBool, self.set_kill)
@@ -57,7 +58,10 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         self._heartbeat_timer = rospy.Timer(rospy.Duration(0.4), self.send_heartbeat)
         # Create a subscribe for thruster commands
         self._sub = rospy.Subscriber(
-            "/thrusters/thrust", Thrust, self.on_command, queue_size=10
+            "/thrusters/thrust",
+            Thrust,
+            self.on_command,
+            queue_size=10,
         )
         self._last_heartbeat = rospy.Time.now()
         self._last_packet = None
@@ -93,7 +97,8 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             return SetBoolResponse(success=True)
         else:
             return SetBoolResponse(
-                success=False, message="No response from board after 1 second."
+                success=False,
+                message="No response from board after 1 second.",
             )
 
     def send_heartbeat(self, _: TimerEvent) -> None:
@@ -124,7 +129,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             # If we don't have a mapping for this thruster, ignore it
             if cmd.name not in self.thrusters:
                 rospy.logwarn(
-                    f"Command received for {cmd.name}, but this is not a thruster."
+                    f"Command received for {cmd.name}, but this is not a thruster.",
                 )
                 continue
             # Map commanded thrust (in newetons) to effort value (-1 to 1)
@@ -146,21 +151,21 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         ):
             if raised:
                 self._kill_broadcaster.raise_alarm(
-                    severity=severity, problem_description=message
+                    severity=severity,
+                    problem_description=message,
                 )
             else:
                 self._kill_broadcaster.clear_alarm(severity=severity)
 
     def on_data(
-        self, data: AckPacket | NackPacket | HeartbeatReceivePacket | KillReceivePacket
+        self,
+        data: AckPacket | NackPacket | HeartbeatReceivePacket | KillReceivePacket,
     ) -> None:
         """
         Parse the two bytes and raise kills according to a set of specifications
         listed below.
         """
-        if isinstance(data, AckPacket):
-            self._last_packet = data
-        elif isinstance(data, NackPacket):
+        if isinstance(data, (AckPacket, NackPacket)):
             self._last_packet = data
         elif isinstance(data, HeartbeatReceivePacket):
             self._last_heartbeat = rospy.Time.now()
@@ -169,7 +174,8 @@ class ThrusterAndKillBoard(CANDeviceHandle):
                 self.update_software_kill(False, "")
             elif data.status is KillStatus.MOBO_HEARTBEAT_LOST:
                 self.update_software_kill(
-                    True, "Thrust/kill board lost heartbeat from motherboard."
+                    True,
+                    "Thrust/kill board lost heartbeat from motherboard.",
                 )
             elif data.status is KillStatus.BATTERY_LOW:
                 self.update_software_kill(True, "Battery too low.")
@@ -184,7 +190,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             elif data.status is KillStatus.SOFTWARE_REQUESTED:
                 self.update_software_kill(
                     True,
-                    f"Software requested kill.",
+                    "Software requested kill.",
                 )
         else:
             raise ValueError(f"Not expecting packet of type {data.__class__.__name__}!")

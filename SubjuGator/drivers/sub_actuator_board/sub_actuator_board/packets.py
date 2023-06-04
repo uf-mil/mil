@@ -20,7 +20,10 @@ class ActuatorSetPacket(Packet, msg_id=0x03, subclass_id=0x00, payload_format="B
 
 @dataclass
 class ActuatorPollRequestPacket(
-    Packet, msg_id=0x03, subclass_id=0x01, payload_format=""
+    Packet,
+    msg_id=0x03,
+    subclass_id=0x01,
+    payload_format="",
 ):
     """
     Packet used by the actuator board to request the status of all valves.
@@ -31,7 +34,10 @@ class ActuatorPollRequestPacket(
 
 @dataclass
 class ActuatorPollResponsePacket(
-    Packet, msg_id=0x03, subclass_id=0x02, payload_format="B"
+    Packet,
+    msg_id=0x03,
+    subclass_id=0x02,
+    payload_format="B",
 ):
     """
     Packet used by the actuator board to return the status of all valves.

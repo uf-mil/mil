@@ -49,7 +49,7 @@ class ActuatorBoardSimulation(SimulatedCANDeviceHandle):
                                 str(int(x)) for x in reversed(self.status.values())
                             ),
                             base=2,
-                        )
-                    )
-                )
+                        ),
+                    ),
+                ),
             )

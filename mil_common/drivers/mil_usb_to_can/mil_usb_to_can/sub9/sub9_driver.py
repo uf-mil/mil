@@ -9,13 +9,15 @@ from typing import TYPE_CHECKING, Literal, overload
 import rospy
 import serial
 from mil_misc_tools.serial_tools import SimulatedSerial
+from serial import SerialException
+
 from mil_usb_to_can.sub9.device import CANDeviceHandle, SimulatedCANDeviceHandle
 from mil_usb_to_can.sub9.packet import SYNC_CHAR_1, Packet
-from serial import SerialException
 
 if TYPE_CHECKING:
     HandlePacketListing = tuple[
-        type[SimulatedCANDeviceHandle | CANDeviceHandle], list[Packet]
+        type[SimulatedCANDeviceHandle | CANDeviceHandle],
+        list[Packet],
     ]
 
 
@@ -68,7 +70,7 @@ class SimulatedUSBtoCANStream(SimulatedSerial):
 
         if not sent and from_mobo:
             rospy.logerr(
-                f"{sent}, {from_mobo}: Received packet of type {p.__class__.__qualname__} on simulated bus, but no one is listening for it..."
+                f"{sent}, {from_mobo}: Received packet of type {p.__class__.__qualname__} on simulated bus, but no one is listening for it...",
             )
 
     def write(self, data: bytes) -> None:
@@ -93,14 +95,14 @@ class USBtoCANDriver:
     def __init__(self):
         port = rospy.get_param("~port", "/dev/tty0")
         baud = rospy.get_param("~baudrate", 115200)
-        can_id = rospy.get_param("~can_id", 0)
+        rospy.get_param("~can_id", 0)
         simulation = rospy.get_param("/is_simulation", False)
         self.lock = Lock()
         self._packet_deque = deque()
         # If simulation mode, load simulated devices
         if simulation:
             rospy.logwarn(
-                "CAN2USB driver in simulation! Will not talk to real hardware."
+                "CAN2USB driver in simulation! Will not talk to real hardware.",
             )
             devices = self.read_devices(simulated=True)
             self.stream = SimulatedUSBtoCANStream(devices=devices)
@@ -141,7 +143,7 @@ class USBtoCANDriver:
         length = self.stream.read(2)  # read payload length
         data += length
         data += self.stream.read(
-            int.from_bytes(length, byteorder="little") + 2
+            int.from_bytes(length, byteorder="little") + 2,
         )  # read data and checksum
         return data
 
@@ -161,7 +163,7 @@ class USBtoCANDriver:
             assert isinstance(packed_packet, bytes)
             # rospy.logerr(f"raw: {hexify(packed_packet)}")
             packet = Packet.from_bytes(packed_packet)
-        except (SerialException) as e:
+        except SerialException as e:
             rospy.logerr(f"Error reading packet: {e}")
             return False
         if packet is None:
@@ -170,7 +172,7 @@ class USBtoCANDriver:
             self._inbound_listing[packet.__class__].on_data(packet)
         elif not self._packet_deque:
             rospy.logwarn(
-                f"Message of type {packet.__class__.__qualname__} received, but no device ready to accept"
+                f"Message of type {packet.__class__.__qualname__} received, but no device ready to accept",
             )
         else:
             self._packet_deque.popleft().on_data(packet)
@@ -187,7 +189,9 @@ class USBtoCANDriver:
                 rospy.logerr(f"Error when reading packets: {e}")
 
     def send_data(
-        self, handle: CANDeviceHandle | SimulatedCANDeviceHandle, packet: Packet
+        self,
+        handle: CANDeviceHandle | SimulatedCANDeviceHandle,
+        packet: Packet,
     ) -> Exception | None:
         """
         Sends data using the :meth:`USBtoCANBoard.send_data` method.
@@ -201,27 +205,34 @@ class USBtoCANDriver:
                 self.stream.write(bytes(packet))
                 self._packet_deque.append(handle)
             return None
-        except (SerialException) as e:
+        except SerialException as e:
             rospy.logerr(f"Error writing packet: {e}")
             return e
 
     @overload
     def read_devices(
-        self, *, simulated: Literal[True]
+        self,
+        *,
+        simulated: Literal[True],
     ) -> list[tuple[type[SimulatedCANDeviceHandle], list[type[Packet]]]]:
         ...
 
     @overload
     def read_devices(
-        self, *, simulated: Literal[False]
+        self,
+        *,
+        simulated: Literal[False],
     ) -> list[tuple[type[CANDeviceHandle], list[type[Packet]]]]:
         ...
 
     def read_devices(
-        self, *, simulated: bool
+        self,
+        *,
+        simulated: bool,
     ) -> list[
         tuple[
-            type[SimulatedCANDeviceHandle] | type[CANDeviceHandle], list[type[Packet]]
+            type[SimulatedCANDeviceHandle] | type[CANDeviceHandle],
+            list[type[Packet]],
         ],
     ]:
         """

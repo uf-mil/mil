@@ -49,6 +49,8 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
 if __name__ == "__main__":
     packet = TestPacket(False, 42, 3.14)
     rostest.rosrun(
-        "mil_usb_to_can", "test_application_packets_sub9", BasicApplicationPacketTest
+        "mil_usb_to_can",
+        "test_application_packets_sub9",
+        BasicApplicationPacketTest,
     )
     unittest.main()

@@ -34,6 +34,8 @@ if __name__ == "__main__":
     import rostest
 
     rostest.rosrun(
-        "sub9_thrust_and_kill_board", "simulated_board_test", SimulatedBoardTest
+        "sub9_thrust_and_kill_board",
+        "simulated_board_test",
+        SimulatedBoardTest,
     )
     unittest.main()

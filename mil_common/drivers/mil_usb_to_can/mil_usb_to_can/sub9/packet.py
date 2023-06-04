@@ -23,10 +23,13 @@ def get_cache_hints(cls):
 
 class ChecksumException(OSError):
     def __init__(
-        self, packet: type[Packet], received: tuple[int, int], expected: tuple[int, int]
+        self,
+        packet: type[Packet],
+        received: tuple[int, int],
+        expected: tuple[int, int],
     ):
         super().__init__(
-            f"Invalid checksum in packet of type {packet.__qualname__}: received {received}, expected {expected}"
+            f"Invalid checksum in packet of type {packet.__qualname__}: received {received}, expected {expected}",
         )
 
 
@@ -85,12 +88,12 @@ class Packet:
         for packet in packets:
             if packet.msg_id == msg_id and packet.subclass_id == subclass_id:
                 raise ValueError(
-                    f"Cannot reuse msg_id 0x{msg_id:0x} and subclass_id 0x{subclass_id}, already used by {packet.__qualname__}"
+                    f"Cannot reuse msg_id 0x{msg_id:0x} and subclass_id 0x{subclass_id}, already used by {packet.__qualname__}",
                 )
         _packet_registry.setdefault(msg_id, {})[subclass_id] = cls
 
     def __post_init__(self):
-        for (name, field_type) in get_cache_hints(self.__class__).items():
+        for name, field_type in get_cache_hints(self.__class__).items():
             if (
                 name
                 not in [
@@ -123,7 +126,7 @@ class Packet:
             payload,
         )
         checksum = self._calculate_checksum(data[2:])
-        return data + struct.pack(f"BB", *checksum)
+        return data + struct.pack("BB", *checksum)
 
     @classmethod
     def from_bytes(cls, packed: bytes) -> Packet:
@@ -139,7 +142,7 @@ class Packet:
             subclass = _packet_registry[msg_id][subclass_id]
             payload = packed[6:-2]
             if struct.unpack("BB", packed[-2:]) != cls._calculate_checksum(
-                packed[2:-2]
+                packed[2:-2],
             ):
                 raise ChecksumException(
                     subclass,
@@ -149,7 +152,7 @@ class Packet:
             unpacked = struct.unpack(subclass.payload_format, payload)
             return subclass(*unpacked)
         raise LookupError(
-            f"Attempted to reconstruct packet with msg_id 0x{msg_id:02x} and subclass_id 0x{subclass_id:02x}, but no packet with IDs was found."
+            f"Attempted to reconstruct packet with msg_id 0x{msg_id:02x} and subclass_id 0x{subclass_id:02x}, but no packet with IDs was found.",
         )
 
 

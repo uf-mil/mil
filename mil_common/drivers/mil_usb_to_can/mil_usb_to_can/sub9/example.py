@@ -12,21 +12,30 @@ from .packet import Packet
 
 @dataclass
 class ExampleEchoRequestPacket(
-    Packet, msg_id=0x99, subclass_id=0x00, payload_format="10s"
+    Packet,
+    msg_id=0x99,
+    subclass_id=0x00,
+    payload_format="10s",
 ):
     my_special_string: bytes
 
 
 @dataclass
 class ExampleEchoResponsePacket(
-    Packet, msg_id=0x99, subclass_id=0x01, payload_format="10s"
+    Packet,
+    msg_id=0x99,
+    subclass_id=0x01,
+    payload_format="10s",
 ):
     my_special_string: bytes
 
 
 @dataclass
 class ExampleAdderRequestPacket(
-    Packet, msg_id=0x99, subclass_id=0x02, payload_format="BB"
+    Packet,
+    msg_id=0x99,
+    subclass_id=0x02,
+    payload_format="BB",
 ):
     num_one: int
     num_two: int
@@ -34,7 +43,10 @@ class ExampleAdderRequestPacket(
 
 @dataclass
 class ExampleAdderResponsePacket(
-    Packet, msg_id=0x99, subclass_id=0x03, payload_format="B"
+    Packet,
+    msg_id=0x99,
+    subclass_id=0x03,
+    payload_format="B",
 ):
     response: int
 
@@ -63,7 +75,7 @@ class ExampleEchoDeviceHandle(CANDeviceHandle):
             raise RuntimeError(f"Received {data} but have not yet sent anything")
         elif response != self.last_sent[0]:
             raise ValueError(
-                f"ERROR! Received {response} but last sent {self.last_sent}"
+                f"ERROR! Received {response} but last sent {self.last_sent}",
             )
         else:
             self.count += 1
