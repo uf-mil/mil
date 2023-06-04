@@ -17,7 +17,7 @@ Default behavior (direct implementation) every message on that topic is recordde
 Designed to be inherited and the Callback function overloaded so that messages are reorder according to an arbitrary
 function
 ie:
-  time:record every so many seconds(periodic) or location: every 1 m change in location(spacial).
+  time:record every so many seconds(periodic) or location: every 1 m change in location(spatial).
 
 see indyav_path path_recorder.cpp for an implementation example
 */

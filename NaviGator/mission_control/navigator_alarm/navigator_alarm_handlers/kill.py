@@ -54,7 +54,7 @@ class Kill(HandlerBase):
             rospy.logwarn("BAG_ALWAYS or BAG_KILL not set. Not making kill bag.")
         else:
             goal = BagOnlineGoal(bag_name="kill.bag")
-            goal.topics = os.environ["BAG_ALWAYS"] + " " + os.environ["bag_kill"]
+            goal.topics = os.environ["BAG_ALWAYS"] + " " + os.environ["BAG_KILL"]
             self.bag_client.send_goal(goal, done_cb=self._online_bagger_cb)
         self.task_client.run_mission("Killed", done_cb=self._kill_task_cb)
 

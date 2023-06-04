@@ -1,16 +1,21 @@
-from typing import Any, Dict
+from __future__ import annotations
+
+from typing import Any
 
 from numpy import clip, polyval
 
 
-def make_thruster_dictionary(dictionary):
+def make_thruster_dictionary(dictionary) -> tuple[dict[str, Thruster], dict[str, int]]:
     """
-    Make a dictionary mapping thruster names to :class:`Thruster` objects.
+    Make a dictionary mapping thruster names to :class:`Thruster` objects
+    and a dictionary mapping thruster names to node IDs.
     """
     ret = {}
+    name_id_map = {}
     for thruster, content in dictionary.items():
         ret[thruster] = Thruster.from_dict(content)
-    return ret
+        name_id_map[thruster] = content["node_id"]
+    return ret, name_id_map
 
 
 class Thruster:
@@ -27,7 +32,7 @@ class Thruster:
         self.backward_calibration = backward_calibration
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Dict[str, Any]]):
+    def from_dict(cls, data: dict[str, dict[str, Any]]):
         """
         Constructs the class from a dictionary. The dictionary should be formatted
         as so:

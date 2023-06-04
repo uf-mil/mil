@@ -2,7 +2,7 @@
 import rospy
 from mil_usb_to_can.sub8 import CANDeviceHandle
 from ros_alarms import AlarmBroadcaster, AlarmListener
-from ros_alarms.msg import Alarm
+from ros_alarms_msgs.msg import Alarm
 from rospy.timer import TimerEvent
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 from subjugator_msgs.msg import Thrust
@@ -26,7 +26,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Initialize thruster mapping from params
-        self.thrusters = make_thruster_dictionary(
+        self.thrusters, self.name_to_id = make_thruster_dictionary(
             rospy.get_param("/thruster_layout/thrusters"),
         )
         # Tracks last hw-kill alarm update
@@ -118,7 +118,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             effort = self.thrusters[cmd.name].effort_from_thrust(cmd.thrust)
             # Send packet to command specified thruster the specified force
             packet = ThrustPacket.create_thrust_packet(
-                ThrustPacket.ID_MAPPING[cmd.name],
+                self.name_to_id[cmd.name],
                 effort,
             )
             self.send_data(bytes(packet), can_id=THRUST_SEND_ID)
