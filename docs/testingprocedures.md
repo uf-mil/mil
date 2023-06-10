@@ -53,9 +53,11 @@
 * Grease O-rings with Molykote 55 every time a pressure vessel is closed.
 * Make sure ALL pneumatic tubes are inserted correctly. **(DO NOT FLOOD THE VALVE BOX)**
 * Make sure all holes to paintball tank are sealed correctly. **(THIS WILL ALSO RESULT IN FLOODING IF NOT DONE)**
+* Make sure the pressure release valve in the battery vessel (the red cap) is closed
 * Person getting into the pool must do backflip.
-* Deploy sub. (check for bubbles, make sure buoyancy is correct)
+* Deploy sub in the warer (check for bubbles, make sure buoyancy is correct)
 * Verify odometry.
+* Verify cameras are working
 
 What happens when the valve box isn't closed:
 ![What happens when the valve box isn't closed.](/flooded_valve_box.jpg)
