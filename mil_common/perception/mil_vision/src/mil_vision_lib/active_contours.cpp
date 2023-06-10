@@ -135,7 +135,7 @@ void growRoute(const vector<uint8_t>& partial, const vector<uint8_t>& occupied, 
     auto next_partial = partial;
     next_partial.push_back(new_elem);
 
-    auto next_tails = getHoodIdxs(new_elem, true);                    // true --> include border
+    auto next_tails = getHoodIdxs(new_elem, true);  // true --> include border
     auto find_exit_itr = find(next_tails.begin(), next_tails.end(), exit);
     if (find_exit_itr != next_tails.end() && *find_exit_itr != tail)  // add to cache if exit is a possible next tail
     {

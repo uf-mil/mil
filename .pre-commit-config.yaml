@@ -11,7 +11,7 @@ ci:
 
 repos:
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.30.0
+    rev: v1.32.0
     hooks:
       - id: yamllint
   - repo: https://github.com/psf/black
@@ -19,16 +19,16 @@ repos:
     hooks:
       - id: black
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v16.0.0
+    rev: v16.0.4
     hooks:
       - id: clang-format
   - repo: https://github.com/PyCQA/autoflake
-    rev: v2.0.2
+    rev: v2.1.1
     hooks:
       - id: autoflake
         args: [--remove-all-unused-imports, --ignore-init-module-imports]
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.2
+    rev: v0.9.0.5
     hooks:
       - id: shellcheck
         exclude: ^docker|deprecated|NaviGator/simulation/VRX
@@ -40,7 +40,7 @@ repos:
         exclude: ^docker|deprecated|NaviGator/simulation/VRX
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     # Ruff version.
-    rev: 'v0.0.260'
+    rev: 'v0.0.270'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
