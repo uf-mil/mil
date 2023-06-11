@@ -120,7 +120,7 @@ jobs:
       # We need to install rsync for GitHub Pages deploy action
       - name: Install rsync
         run: |
-          sudo apt-get upgrade && sudo apt-get update && sudo apt-get install -y rsync
+          sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y rsync
 
       # Publish the artifact to the GitHub Pages branch
       - name: Push docs to GitHub Pages
