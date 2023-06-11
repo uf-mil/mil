@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
+import random
+import time
 import unittest
 
 import numpy as np
+import rospy
 from geometry_msgs.msg import Pose2D, Quaternion, Vector3
+from mil_misc_tools import datetime_to_rospy, rospy_to_datetime
 from mil_ros_tools import (
     get_image_msg,
     make_image_msg,
@@ -155,6 +159,14 @@ class TestROSTools(unittest.TestCase):
                     1.0,
                     err_msg="The normalized vector did not have length 1",
                 )
+
+    def test_datetime_conv(self):
+        """Test datetime to rospy.Time conversion."""
+        for _ in range(10):
+            unix_stamp = random.randrange(0, int(time.time()))
+            rp1 = rospy.Time(unix_stamp)
+            dt1 = rospy_to_datetime(rp1)
+            self.assertEqual(datetime_to_rospy(dt1), rp1)
 
 
 if __name__ == "__main__":
