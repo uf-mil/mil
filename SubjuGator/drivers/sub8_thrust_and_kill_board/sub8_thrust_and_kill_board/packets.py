@@ -1,7 +1,7 @@
 import struct
 from collections import namedtuple
 
-from mil_usb_to_can import ApplicationPacket
+from mil_usb_to_can.sub8 import ApplicationPacket
 
 # CAN channel to send thrust messages to
 THRUST_SEND_ID = 0x21

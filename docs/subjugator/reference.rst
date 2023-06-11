@@ -47,11 +47,11 @@ Services
 
 SetValve
 ^^^^^^^^
-.. attributetable:: sub8_actuator_board.srv.SetValveRequest
+.. attributetable:: sub_actuator_board.srv.SetValveRequest
 
-.. class:: sub8_actuator_board.srv.SetValveRequest
+.. class:: sub_actuator_board.srv.SetValveRequest
 
-    The request class for the ``sub8_actuator_board/SetValve`` service.
+    The request class for the ``sub_actuator_board/SetValve`` service.
 
     .. attribute:: actuator
 
@@ -65,11 +65,11 @@ SetValve
 
         :type: bool
 
-.. attributetable:: sub8_actuator_board.srv.SetValveResponse
+.. attributetable:: sub_actuator_board.srv.SetValveResponse
 
-.. class:: sub8_actuator_board.srv.SetValveResponse
+.. class:: sub_actuator_board.srv.SetValveResponse
 
-    The response class for the ``sub8_actuator_board/SetValve`` service.
+    The response class for the ``sub_actuator_board/SetValve`` service.
 
     .. attribute:: success
 
@@ -83,43 +83,46 @@ SetValve
 
         :type: bool
 
-Exceptions
-----------
-.. autoclass:: sub8_actuator_board.InvalidAddressException
-
 Actuator Board
 --------------
 
 ActuatorBoard
 ^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.ActuatorBoard
+.. attributetable:: sub_actuator_board.ActuatorBoard
 
-.. autoclass:: sub8_actuator_board.ActuatorBoard
+.. autoclass:: sub_actuator_board.ActuatorBoard
     :members:
 
 ActuatorBoardSimulation
 ^^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.ActuatorBoardSimulation
+.. attributetable:: sub_actuator_board.ActuatorBoardSimulation
 
-.. autoclass:: sub8_actuator_board.ActuatorBoardSimulation
+.. autoclass:: sub_actuator_board.ActuatorBoardSimulation
     :members:
 
-CommandMessage
-^^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.CommandMessage
+ActuatorSetPacket
+^^^^^^^^^^^^^^^^^
+.. attributetable:: sub_actuator_board.ActuatorSetPacket
 
-.. autoclass:: sub8_actuator_board.CommandMessage
+.. autoclass:: sub_actuator_board.ActuatorSetPacket
     :members:
 
-FeedbackMessage
-^^^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.FeedbackMessage
+ActuatorPollRequestPacket
+^^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub_actuator_board.ActuatorPollRequestPacket
 
-.. autoclass:: sub8_actuator_board.FeedbackMessage
+.. autoclass:: sub_actuator_board.ActuatorPollRequestPacket
     :members:
 
-Thrust and Kill Board
----------------------
+ActuatorPollResponsePacket
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub_actuator_board.ActuatorPollResponsePacket
+
+.. autoclass:: sub_actuator_board.ActuatorPollResponsePacket
+    :members:
+
+Sub8 Thrust and Kill Board
+--------------------------
 
 ThrusterAndKillBoard
 ^^^^^^^^^^^^^^^^^^^^
@@ -161,6 +164,51 @@ Thruster
 .. attributetable:: sub8_thrust_and_kill_board.Thruster
 
 .. autoclass:: sub8_thrust_and_kill_board.Thruster
+    :members:
+
+Sub9 Thrust and Kill Board
+--------------------------
+
+HeartbeatSetPacket
+^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.HeartbeatSetPacket
+
+.. autoclass:: sub9_thrust_and_kill_board.HeartbeatSetPacket
+    :members:
+
+HeartbeatReceivePacket
+^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.HeartbeatReceivePacket
+
+.. autoclass:: sub9_thrust_and_kill_board.HeartbeatReceivePacket
+    :members:
+
+ThrustSetPacket
+^^^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.ThrustSetPacket
+
+.. autoclass:: sub9_thrust_and_kill_board.ThrustSetPacket
+    :members:
+
+KillStatus
+^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.KillStatus
+
+.. autoclass:: sub9_thrust_and_kill_board.KillStatus
+    :members:
+
+KillSetPacket
+^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.KillSetPacket
+
+.. autoclass:: sub9_thrust_and_kill_board.KillSetPacket
+    :members:
+
+KillReceivePacket
+^^^^^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.KillReceivePacket
+
+.. autoclass:: sub9_thrust_and_kill_board.KillReceivePacket
     :members:
 
 Object Detection

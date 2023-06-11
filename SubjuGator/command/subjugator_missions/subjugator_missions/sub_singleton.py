@@ -34,7 +34,7 @@ from sensor_msgs.msg import PointCloud2
 from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
 
 # from subjugator_msgs.srv import SetValve, SetValveRequest
-from sub8_actuator_board.srv import SetValve, SetValveRequest
+from sub_actuator_board.srv import SetValve, SetValveRequest
 from subjugator_msgs.srv import (
     VisionRequest,
     VisionRequest2D,
