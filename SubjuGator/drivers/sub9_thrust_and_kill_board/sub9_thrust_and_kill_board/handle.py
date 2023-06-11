@@ -5,7 +5,7 @@ import rospy
 from mil_misc_tools import rospy_to_datetime
 from mil_usb_to_can.sub9 import AckPacket, CANDeviceHandle, NackPacket
 from ros_alarms import AlarmBroadcaster, AlarmListener
-from ros_alarms.msg import Alarm
+from ros_alarms_msgs.msg import Alarm
 from rospy.timer import TimerEvent
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 from subjugator_msgs.msg import Thrust
@@ -113,7 +113,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         Update the classes' hw-kill alarm to the latest update.
 
         Args:
-            alarm (:class:`~ros_alarms.msg._Alarm.Alarm`): The alarm message to update with.
+            alarm (:class:`~ros_alarms_msgs.msg._Alarm.Alarm`): The alarm message to update with.
         """
         self._last_hw_kill = alarm
 

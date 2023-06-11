@@ -93,7 +93,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         Update the classes' hw-kill alarm to the latest update.
 
         Args:
-            alarm (:class:`~ros_alarms.msg._Alarm.Alarm`): The alarm message to update with.
+            alarm (:class:`~ros_alarms_msgs.msg._Alarm.Alarm`): The alarm message to update with.
         """
         self._last_hw_kill = alarm
 

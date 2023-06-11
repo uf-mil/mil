@@ -67,9 +67,6 @@ jobs:
       #     catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3 \
       #                 -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 \
       #                 -j6
-      - name: temp sleep
-        run: sleep 15000s
-        shell: bash
       - name: Run catkin_make tests
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
