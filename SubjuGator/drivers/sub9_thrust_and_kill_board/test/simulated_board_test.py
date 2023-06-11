@@ -21,7 +21,7 @@ class SimulatedBoardTest(unittest.TestCase):
         """
         Test we can get correct data through CAN bus at least ten times.
         """
-        self.kill_srv.wait_for_service(1)
+        self.kill_srv.wait_for_service(5)
         self.hw_alarm_listener.wait_for_server()
         self.assertTrue(self.kill_srv(SetBoolRequest(True)).success)
         self.assertTrue(self.hw_alarm_listener.is_raised(True))
