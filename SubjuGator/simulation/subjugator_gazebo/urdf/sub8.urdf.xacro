@@ -11,7 +11,15 @@
   <xacro:include filename="$(find mil_gazebo)/xacro/passive_sonar.xacro"/>
   <xacro:include filename="$(find mil_gazebo)/xacro/inclinometer.xacro"/>
 
+  <!-- dummy link and joint to avoid URDF inertia warning-->
+  <link name="dummy"/>
   <!-- Base link of sub -->
+  <joint name="dummy_joint" type="fixed">
+    <parent link="dummy"/>
+    <child link="base_link"/>
+  </joint>
+
+  <!-- base link -->
   <link name="base_link">
     <inertial>
       <!-- Mass from official weigh-in at RobotSub 2018 -->
