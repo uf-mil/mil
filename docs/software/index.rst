@@ -26,3 +26,4 @@ Various documentation related to practices followed by the MIL Software team.
    Developing with Submodules <submodule.md>
    Optional Extensions <extension_support.md>
    Helpful Scripts <scripts>
+   Gazebo Guide <gazebo_guide>
