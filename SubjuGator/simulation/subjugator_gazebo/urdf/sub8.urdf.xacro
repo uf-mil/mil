@@ -11,6 +11,8 @@
   <xacro:include filename="$(find mil_gazebo)/xacro/passive_sonar.xacro"/>
   <xacro:include filename="$(find mil_gazebo)/xacro/inclinometer.xacro"/>
 
+  <link name="world"/>
+
   <!-- Base link of sub -->
   <link name="base_link">
     <inertial>
@@ -30,6 +32,11 @@
       </geometry>
     </collision>
   </link>
+
+  <joint name="dummy_joint" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+  </joint>
 
   <!-- Sensors -->
   <xacro:mil_fixed_link name="front_stereo" parent="base_link" xyz="0.2559 0 0.1707" rpy="0 0 0"/>
