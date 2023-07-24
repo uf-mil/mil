@@ -289,6 +289,130 @@ heavy.
 1. Enter the container using `distrobox enter --name mil`. You can proceed with
    the MIL installation script from here.
 
+#### Option 7: Use WSL on Windows
+
+##### Prerequisites
+
+You must be running Windows 10 version 2004 and higher (Build 19041 and higher) or Windows 11 to use the commands below.
+
+##### Install WSL
+
+1. Open Windows Command Prompt or PowerShell in admin mode (this can be done by right-clicking and selecting "Run as administrator").
+
+1. Run the below command to install the required version of Ubuntu.
+
+   ```
+   wsl --install -d Ubuntu-20.04
+   ```
+
+1. Restart your machine.
+
+1. See this link for more information https://learn.microsoft.com/en-us/windows/wsl/install
+
+##### Check version of WSL
+
+1. Check the version of WSL your Linux distribution is set to by running the below command in PowerShell or Windows Command Prompt.
+
+   ```
+   wsl -l -v
+   ```
+
+1. Make sure that the version is WSL 2 inorder for GUI applications to work.
+
+1. If you have a previously installed Linux distribution use the below command to set the version to WSL 2.
+
+   ```
+   wsl --set-version <distro name> 2
+   ```
+
+   In our case this would be,
+   ```
+   wsl --set-version Ubuntu-20.04 2
+   ```
+
+##### Testing that GUI applications work
+
+1. X11 is the Linux windowing system and this is a miscellaneous collection of apps and tools that ship with it, such as the xclock, xcalc calculator, xclipboard for cut and paste, xev for event testing, etc.
+
+1. To install them run the following command
+
+   ```
+   sudo apt install x11-apps -y
+   ```
+
+1. To launch, enter the name of the tool you would like to use. For example: `xcalc`, `xclock`, `xeyes`
+
+1. You should see a new window open in your windows desktop.
+
+1. That's it. You're good to go ahead with the rest of the installation.
+
+##### Troubleshooting
+
+Let's see how to rectify some common issues
+
+###### Trouble having GUI application connect to WSLg's X server
+
+1. Verify you are running on Windows build 21364+
+
+1. This can be done by typing _ver_ on Windows command prompt or PowerShell from WSL directory
+
+   ```
+   E:\wsl>ver
+   Microsoft Windows [Version 10.0.21367.1000]
+   ```
+
+###### Server not connected to the correct display
+
+1. WSLg's X server should be running on display 0.
+
+1. Verify if DISPLAY environment variable is set to 0 by running the below command
+
+   ```
+   $ echo $DISPLAY
+   :0
+   ```
+
+1. If it is not set to 0 or is unset, reset the environment variable by running,
+
+   ```
+   export DISPLAY=:0
+   ```
+
+###### X11 directory mapping issue
+
+1. X servers create their socket under /tmp/.X11-Unix
+
+1. Verify that this directory exists and is linked to /mnt/wslg/.X11-Unix where WSLg built-in X server creates its socket
+
+1. Verify this by running the command
+
+   ```
+   ls -la /tmp/.X11-unix
+   srwxrwxrwx 1 mil-user mil-user 0 Jul 24 10:25 X0
+   ```
+
+1. This link is setup during WSL's INIT. If it does not exist try re-creating the link manually. If the problem still persists, there is likely something that caused the dir to be removed from your environment. Try tracking down the issue or uninstall and try reinstall WSL.
+
+   ```
+   sudo rm -r /tmp/.X11-unix
+   ln -s /mnt/wslg/.X11-unix /tmp/.X11-unix
+   ```
+
+###### Check if X11 server is running
+
+1. If the X server is running, you should see an X0 socket
+
+   ```
+   $ ls /tmp/.X11-unix
+   X0
+   ```
+
+###### Other issues
+
+If you are having any other issues go [here](https://github.com/microsoft/wslg/wiki/Diagnosing-%22cannot-open-display%22-type-issues-with-WSLg) for troubleshooting tips
+
+
+
 ## Updating packages
 
 First, we will refresh the list of packages available for your computer. You
