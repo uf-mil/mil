@@ -11,7 +11,7 @@ pandas==1.4.1
 numpy==1.22.3
 
 # Machine Learning
-scipy==1.7.3
+scipy==1.10.0
 scikit-learn==1.1.1
 
 # Computer Vision
@@ -22,7 +22,7 @@ PyYAML==6.0
 urdf-parser-py==0.0.4
 
 # Internet
-aiohttp==3.8.1
+aiohttp==3.8.5
 aiohttp-xmlrpc==1.5.0
 
 # Documentation

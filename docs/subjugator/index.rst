@@ -15,6 +15,7 @@ SubjuGator 8
     Simulating <simulating>
     Enabling <enabling>
     Cameras <cameras>
+    PID Controller <pid>
 
     electrical
 
