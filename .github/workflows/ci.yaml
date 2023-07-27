@@ -37,7 +37,7 @@ jobs:
           submodules: recursive
           path: catkin_ws/src/mil
       - name: Setup ROS Noetic
-        uses: ros-tooling/setup-ros@v0.6.2
+        uses: ros-tooling/setup-ros@v0.7
         with:
           required-ros-distributions: noetic
       - name: Install pip dependencies
