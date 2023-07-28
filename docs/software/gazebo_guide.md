@@ -74,6 +74,16 @@ The Insert Tab allows you to add new models (objects) to the Gazebo simulation. 
 
 The Layers tab organizes and displays different visualization groups within the simulation. Layers can contain one or more models, and enabling or disabling a layer will show or hide all the models within it. While not mandatory, layers can be helpful for organizing your simulation. Note that this tab may be empty if no layers are defined.
 
+To define a layer, you will need to edit a model's SDF file. To add an object's visuals to a layer you will need to add a `<meta>` tag for information and then a `<layer>` tag with the layer number under each `<visual>` tag. Below is an example:
+```xml
+<visual name = 'visual_0'>
+	<meta>
+		<layer>0</layer>
+	</meta>
+	...
+</visual>
+```
+
 #### Scene
 
 The Scene is the main window where objects are animated, and you interact with the environment. Two toolbars are available:
@@ -96,7 +106,7 @@ The Right Panel is used to interact with the mobile parts (joints) of a selected
 
 #### Menus (File, Edit, Camera, View, Window, Help)
 
-Most Linux apps have menus. If you don't see it move your cursor to the top of the application window and the menus should appear. Below describes the features of each menu.
+Most Linux apps have menus. These menus are usually tabs (file, edit, ...) at the top left of an application. If you don't see it move your cursor to the top of the application window and the menus should appear. Below describes the features of each menu that Gazebo has.
 
 ![Gazebo Menus](/software/Gazebo/Menus.png)
 
@@ -106,16 +116,41 @@ It is recommended that you use a mouse when using Gazebo. Below is a diagram sho
 
 ![Gazebo Mouse Controls](/software/Gazebo/Mouse.png)
 
+However, if you want to use a trackpad you can. Below are the controls for the trackpad:
 
+![Gazebo Mouse Controls](/software/Gazebo/TrackPad.png)
 
-### Model Creation
-You can use the **Model Editor** to create simple models all within Gazebo, but for more complex models you will want to create/write your own SDF files.
+##  How to Create Models
+The structure for most models in Gazebo is that the model is a folder that contains a .config file, .SDF file(s), and .dae or .stl file(s). The config file contains meta information about the model. The .SDF file contains important simulation information like model definitions, the model's positioning, its physical properties, etc. The .dae or .stl files contain 3D mesh information. When creating a model it's recommended that you have all these components.
+
+### Model Editor
+
+You can use the **Model Editor** to create simple models all within Gazebo, but for more complex models you will want to create/write your own SDF files and .dae files.
 
 To enter the **Model Editor**, click on Edit in the menu bar and select Model Editor.
 
 The Model Editor Interface looks similar to the regular Gazebo UI with some slight changes. The left panel and the top toolbar have been changed to contain only buttons and features for editing and creating parts of a model. The bottom toolbar is now hidden as the simulation is paused.
 
 ![Gazebo Model Editor](/software/Gazebo/Model_Editor.png)
+
+When entering the Model Editor all other models will turn white. This can make it hard to see the model you are currently working on if you have a lot of models in your scene. So it may be easier to open a blank Gazebo world and create the model using the Model Editor there. Then when you exit the Model Editor it will ask you to save the model. This will save the model as a folder on your computer. Then you can go back to the original world and just insert this model, by going to the insert tab (note this is the regular insert tab, not the one in the model editor) and adding that model folder's file path.
+
+:::{note}
+When inserting a model, make sure that the file path you pick is the path to the parent directory. This directory contains the model folder you want to insert. Do not just put the path to the model folder. Often this parent directory will contain all the models you want to use. The file hierachy might look like this: where models is the parent directory and contains the models model1 and buoys.
+```
+	models/
+          ├── model_1/
+          │     ├── model.config
+          │     ├── model1.sdf
+          │     ├── model1.dae
+          │     └── ...
+          ├── buoys/
+          │     ├── model.config
+          │     ├── green.sdf
+          │     ├── red.sdf
+          │     └── ...
+```
+:::
 
 
 #### Insert Tab
@@ -182,5 +217,4 @@ When using roslaunch to start Gazebo, it is crucial to update the World file if 
 
 ## More Info
 
-If you ever need more information on how any aspect of Gazebo works or how to use ROS with Gazebo you can check out the official Gazebo Documentation here: https://classic.gazebosim.org/tutorials.
-Note that most of the pictures and information used in this guide are sourced from there.
+If you ever need more information on how any aspect of Gazebo works or how to use ROS with Gazebo you can check out the official Gazebo Documentation here: https://classic.gazebosim.org/tutorials. Some of the images used in this guide are sourced from here and we are grateful to the creators for their exceptional work, which has been instrumental in writing this guide.
