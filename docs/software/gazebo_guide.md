@@ -136,7 +136,7 @@ The Model Editor Interface looks similar to the regular Gazebo UI with some slig
 When entering the Model Editor all other models will turn white. This can make it hard to see the model you are currently working on if you have a lot of models in your scene. So it may be easier to open a blank Gazebo world and create the model using the Model Editor there. Then when you exit the Model Editor it will ask you to save the model. This will save the model as a folder on your computer. Then you can go back to the original world and just insert this model, by going to the insert tab (note this is the regular insert tab, not the one in the model editor) and adding that model folder's file path.
 
 :::{note}
-When inserting a model, make sure that the file path you pick is the path to the parent directory. This directory contains the model folder you want to insert. Do not just put the path to the model folder. Often this parent directory will contain all the models you want to use. The file hierachy might look like this: where models is the parent directory and contains the models model1 and buoys.
+When inserting a model, make sure that the file path you pick is the path to the parent directory. This directory contains the model folder you want to insert. Do not just put the path to the model folder. Often this parent directory will contain all the models you want to use. The file hierarchy might look like this: where models is the parent directory and contains the models model1 and buoys.
 ```
 	models/
           ├── model_1/
