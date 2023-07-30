@@ -19,20 +19,21 @@ from mil_msgs.msg import (
 )
 from tqdm import tqdm
 
-"""
-Online Bagger is a node which subscribes to a list of ros topics,
-maintaining a buffer of the most recent n seconds. Parts or all of
-these buffered topics can be written to a bag file by
-sending a new goal to the /online_bagger/bag action server.
-
-When run with the -c flag, instead runs an action client which connects
-to online bagger, triggering a bag write and displaying a progress bar
-as it writes.
-
-"""
-
 
 class OnlineBagger:
+    """
+    Node that maintains a list of bagged information relating to the specified
+    topics.
+
+    Subscribes to a list of ROS topics, and maintains a buffer of the most recent
+    n seconds. Parts or all of these buffered topics can be written to a bag
+    file by sending a new goal to the /online_bagger/bag action server. When
+    run with the -c flag, instead runs an action client which connects to online
+    bagger, triggering a bag write and displaying a progress bar as it writes.
+
+    Attributes:
+        BAG_TOPIC (str): The action server that OnlineBagger sends goals to.
+    """
     BAG_TOPIC = "/online_bagger/bag"
 
     def __init__(self):
