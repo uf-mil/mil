@@ -3,28 +3,28 @@
 ## Table of Contents
 
 1. Introduction
-2. Installation
-3. Getting Started
+ - 1.1 Why Use RQT?
+3. Installation
+4. Getting Started
     - 3.1 Launching RQT
-4. Monitoring Information with RQT
+5. Monitoring Information with RQT
     - 4.1 Subscribing to Specific Topics
     - 4.2 Displaying Data with Plot Plugin
-5. Configuring RQT
+6. Configuring RQT
     - 5.1 Theme Configuration
     - 5.2 Layout Configuration
-6. Writing RQT Plugins
+7. Writing RQT Plugins
     - 6.1 Plugin Structure
     - 6.2 Implementing a Basic Plugin
     - 6.3 Adding Custom Functionality
     - 6.4 Implementing a More Advanced Plugin
-7. Why Use RQT?
 8. Conclusion
 
 ## 1. Introduction
 
 RQT (ROS Qt-based GUI Framework) is a powerful tool that provides a graphical user interface for ROS (Robot Operating System) applications. It allows users to monitor ROS topics, interact with nodes, visualize data, and more. This document serves as a user guide for understanding and effectively using RQT.
 
-## 2. Installation
+### 1.1. Installation
 
 Before using RQT, make sure you have ROS installed on your system. If ROS is not yet installed, follow the official ROS installation guide for your operating system. Once ROS is installed, you can install RQT using the package manager:
 
@@ -360,18 +360,6 @@ You can further enhance the plugin by adding features like legends, axis labels,
 
 With custom plugins, you have the freedom to tailor RQT to suit your specific application's visualization needs, making it a versatile tool for ROS developers.
 
-## 7. Why Use RQT?
-
-Using RQT offers several advantages for developing and debugging ROS applications:
-
-- **Graphical Interface**: RQT provides a user-friendly graphical interface, making it easier to visualize data, monitor topics, and interact with nodes. This is especially helpful for users who prefer a GUI-based approach over the command line.
-
-- **Centralized Tool**: RQT serves as a centralized tool for various ROS tasks, including visualization, configuration, and debugging. This reduces the need to switch between multiple terminals and tools, streamlining the development process.
-
-- **Extensibility**: RQT's plugin architecture allows users to create custom plugins to tailor the tool to their specific application needs. This extensibility significantly enhances RQT's capabilities and makes it adaptable to various robotic systems.
-
-- **Integration with ROS**: RQT is tightly integrated with ROS, ensuring seamless interaction with ROS nodes, topics, and services. This integration simplifies the process of debugging and analyzing data in real-time.
-
-## 8. Conclusion
+## 7. Conclusion
 
 Congratulations! You have now learned the basics of using RQT, including monitoring information sent over specific topics, configuring RQT to your preferences, writing your custom plugins, and understanding the importance of using RQT in ROS development. RQT provides a user-friendly and powerful graphical interface for ROS applications, making it an essential tool for developers and researchers working with ROS-based robotic systems. By leveraging RQT's capabilities, you can streamline your development process and gain valuable insights into your robot's behavior. Happy ROS-ing!
