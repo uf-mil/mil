@@ -371,7 +371,7 @@ You can further enhance the plugin by adding features like legends, axis labels,
 With custom plugins, you have the freedom to tailor RQT to suit your specific application's visualization needs, making it a versatile tool for ROS developers.
 
 ## 7. External Resources
-| Resource      |  
+| Resources      |  
 | ----------- |  
 | [ROS wiki page for rqt](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwin36-OnbmAAxU1sDEKHf_UCSoQFnoECBAQAQ&url=http%3A%2F%2Fwiki.ros.org%2Frqt&usg=AOvVaw2p3mQTkmoXih9cZS1NTOW6&opi=89978449) |    
 | [GeorgiaTech RoboJacket's rqt tutorial](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwin36-OnbmAAxU1sDEKHf_UCSoQwqsBegQIDxAG&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Do90IaCRje2I&usg=AOvVaw04mXzk9sBXpTMhkhgGqXIb&opi=89978449)   | 
