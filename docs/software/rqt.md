@@ -4,6 +4,7 @@
 
 1. Introduction
     - 1.1 Why Use RQT?
+    - 1.2 Installation
 3. Installation
 4. Getting Started
     - 3.1 Launching RQT
@@ -24,7 +25,16 @@
 
 RQT (ROS Qt-based GUI Framework) is a powerful tool that provides a graphical user interface for ROS (Robot Operating System) applications. It allows users to monitor ROS topics, interact with nodes, visualize data, and more. This document serves as a user guide for understanding and effectively using RQT.
 
-### 1.1. Installation
+### 1.1. Why use RQT?
+- **Graphical Interface**: RQT provides a user-friendly graphical interface, making it easier to visualize data, monitor topics, and interact with nodes. This is especially helpful for users who prefer a GUI-based approach over the command line.
+
+- **Centralized Tool**: RQT serves as a centralized tool for various ROS tasks, including visualization, configuration, and debugging. This reduces the need to switch between multiple terminals and tools, streamlining the development process.
+
+- **Extensibility**: RQT's plugin architecture allows users to create custom plugins to tailor the tool to their specific application needs. This extensibility significantly enhances RQT's capabilities and makes it adaptable to various robotic systems.
+
+- **Integration with ROS**: RQT is tightly integrated with ROS, ensuring seamless interaction with ROS nodes, topics, and services. This integration simplifies the process of debugging and analyzing data in real-time.
+
+### 1.2. Installation
 
 Before using RQT, make sure you have ROS installed on your system. If ROS is not yet installed, follow the official ROS installation guide for your operating system. Once ROS is installed, you can install RQT using the package manager:
 
