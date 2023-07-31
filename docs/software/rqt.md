@@ -5,19 +5,20 @@
 1. Introduction
     - 1.1 Why Use RQT?
 2. Installation
-4. Getting Started
+3. Getting Started
     - 3.1 Launching RQT
-5. Monitoring Information with RQT
+4. Monitoring Information with RQT
     - 4.1 Subscribing to Specific Topics
     - 4.2 Displaying Data with Plot Plugin
-6. Configuring RQT
+5. Configuring RQT
     - 5.1 Theme Configuration
     - 5.2 Layout Configuration
-7. Writing RQT Plugins
+6. Writing RQT Plugins
     - 6.1 Plugin Structure
     - 6.2 Implementing a Basic Plugin
     - 6.3 Adding Custom Functionality
     - 6.4 Implementing a More Advanced Plugin
+7. External Resources
 8. Conclusion
 
 ## 1. Introduction
@@ -369,6 +370,13 @@ You can further enhance the plugin by adding features like legends, axis labels,
 
 With custom plugins, you have the freedom to tailor RQT to suit your specific application's visualization needs, making it a versatile tool for ROS developers.
 
-## 7. Conclusion
+## 7. External Resources
+| Resource      |  
+| ----------- |  
+| [ROS wiki page for rqt](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwin36-OnbmAAxU1sDEKHf_UCSoQFnoECBAQAQ&url=http%3A%2F%2Fwiki.ros.org%2Frqt&usg=AOvVaw2p3mQTkmoXih9cZS1NTOW6&opi=89978449) |    
+| [GeorgiaTech RoboJacket's rqt tutorial](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwin36-OnbmAAxU1sDEKHf_UCSoQwqsBegQIDxAG&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Do90IaCRje2I&usg=AOvVaw04mXzk9sBXpTMhkhgGqXIb&opi=89978449)   | 
+| [Creating Custom rqt Plugins](https://github.com/ChoKasem/rqt_tut) |
+## 8. Conclusion
 
-Congratulations! You have now learned the basics of using RQT, including monitoring information sent over specific topics, configuring RQT to your preferences, writing your custom plugins, and understanding the importance of using RQT in ROS development. RQT provides a user-friendly and powerful graphical interface for ROS applications, making it an essential tool for developers and researchers working with ROS-based robotic systems. By leveraging RQT's capabilities, you can streamline your development process and gain valuable insights into your robot's behavior. Happy ROS-ing!
+Congratulations! You have now learned the basics of using RQT, including monitoring information sent over specific topics, configuring RQT to your preferences, writing your custom plugins, and understanding the importance of using RQT in ROS development. RQT provides a user-friendly and powerful graphical interface for ROS applications, making it an essential tool for developers and researchers working with ROS-based robotic systems. By leveraging RQT's capabilities, you can streamline your development process and gain valuable insights into your robot's behavior.  
+
