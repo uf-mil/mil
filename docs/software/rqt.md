@@ -4,8 +4,7 @@
 
 1. Introduction
     - 1.1 Why Use RQT?
-    - 1.2 Installation
-3. Installation
+2. Installation
 4. Getting Started
     - 3.1 Launching RQT
 5. Monitoring Information with RQT
@@ -34,7 +33,7 @@ RQT (ROS Qt-based GUI Framework) is a powerful tool that provides a graphical us
 
 - **Integration with ROS**: RQT is tightly integrated with ROS, ensuring seamless interaction with ROS nodes, topics, and services. This integration simplifies the process of debugging and analyzing data in real-time.
 
-### 1.2. Installation
+## 2. Installation
 
 Before using RQT, make sure you have ROS installed on your system. If ROS is not yet installed, follow the official ROS installation guide for your operating system. Once ROS is installed, you can install RQT using the package manager:
 
