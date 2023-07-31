@@ -3,7 +3,7 @@
 ## Table of Contents
 
 1. Introduction
- - 1.1 Why Use RQT?
+    - 1.1 Why Use RQT?
 3. Installation
 4. Getting Started
     - 3.1 Launching RQT
