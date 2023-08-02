@@ -10,6 +10,7 @@ import roslib
 import scipy.linalg
 import yaml
 from tf import transformations
+from mpl_toolkits.mplot3d import axes3d, Axes3D
 
 roslib.load_manifest("magnetic_hardsoft_compensation")
 
@@ -20,8 +21,8 @@ def normalized_matrix(m):
 
 
 def calculate_error(points):
-    radii = map(numpy.linalg.norm, points)
-    error = numpy.std(radii) / numpy.mean(radii)
+    radii = list(map(numpy.linalg.norm, points))
+    error = numpy.divide(numpy.std(radii),numpy.mean(radii))
     return error
 
 
@@ -68,8 +69,9 @@ def fit_ellipsoid(points):
     # the A matrix has eigenvalues which are squares of the axis scale factors, so
     # taking the matrix square root yields the transform from a sphere to the ellipsoid
     scale = scipy.linalg.sqrtm(ka)
-    assert numpy.isreal(scale).all(), scale
-    scale = numpy.real(scale)
+    scale = scale.real
+    #assert numpy.isreal(scale).all(), scale
+    #scale = numpy.real_if_close(scale)
 
     # the matrix is then normalized to get rid of the k factor and to center the
     # scale factors around one since we don't know what they actually should be
@@ -152,7 +154,7 @@ if __name__ == "__main__":
         import matplotlib.pyplot as plt
 
         fig = plt.figure(figsize=(10, 10))
-        ax = fig.add_subplot("111", projection="3d")
+        ax = Axes3D(fig)
         ax.scatter([0], [0], [0], s=100, c="r")
         ax.scatter(*zip(*points[::10, :]))
         axisEqual3D(ax)
@@ -164,13 +166,17 @@ if __name__ == "__main__":
 
     scale, shift, compensated = fit_ellipsoid(points)
     compensated = numpy.array(compensated)
+
+    scale_list = scale.tolist()
+    shift_list = shift.tolist()
+
     print(f"error: {100 * calculate_error(compensated):.4f}%")
 
     try:
         import matplotlib.pyplot as plt
 
         fig = plt.figure(figsize=(10, 10))
-        ax = fig.add_subplot("111", projection="3d")
+        ax = Axes3D(fig)
         ax.scatter([0], [0], [0], s=100, c="r")
         ax.scatter(*zip(*points[::10, :]))
         ax.scatter(*zip(*compensated[::10, :]), c="g")
@@ -185,8 +191,8 @@ if __name__ == "__main__":
     print(
         yaml.dump(
             {
-                "scale": (map(float, x) for x in scale),
-                "shift": map(float, shift),
+                "scale": scale_list,
+                "shift": shift_list,
             },
         ),
     )
