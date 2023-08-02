@@ -30,7 +30,7 @@
     <node if="$(eval environment == 'real')" pkg="nodelet" type="nodelet" name="imu_driver"
           args="standalone adis16400_imu/nodelet">
       <param name="port" type="string" value="/tmp/imu"/>
-      <param name="frame_id" type="string" value="/imu"/>
+      <param name="frame_id" type="string" value="imu"/>
     </node>
 
     <node if="$(eval environment == 'real')"
@@ -39,13 +39,13 @@
     </node>
     <node if="$(eval environment == 'real')" pkg="nodelet" type="nodelet" name="magnetic_hardsoft_compensation" args="standalone magnetic_hardsoft_compensation/nodelet">
       <remap from="/imu/mag_raw" to="/imu/mag_lessraw"/>
-      <param name="frame_id" type="string" value="/imu"/>
+      <param name="frame_id" type="string" value="imu"/>
       <rosparam>
         scale:
-        - [0.993770963897068, 0.00105871125374563, 7.659410525291767e-05]
-        - [0.00105871125374563, 0.9996814868251349, -0.0011040738267441828]
-        - [7.659410525291767e-05, -0.001104073826744163, 1.0065910531028952]
-        shift: [1.2551999807772446e-06, -1.1666595150804588e-06, 6.895773090438596e-08]
+        - [1.0158755061539362, -0.013360544870828762, 0.0012240638293650296]
+        - [-0.0133605448708288, 0.9965524445246389, -0.0031607443771571406]
+        - [0.001224063829365064, -0.0031607443771571623, 0.9879636042725329]
+        shift: [-5.181455098035394e-07, 3.530998749259596e-06, 2.9474494332467233e-06]
       </rosparam>
     </node>
 
