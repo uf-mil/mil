@@ -68,6 +68,15 @@ class OnlineBagger:
         """
         Get string of all topics, if their subscribe status matches the input (True / False)
         Outputs each topics: time_buffer(float in seconds), subscribe_statue(bool), topic(string)
+
+        Args:
+            status (bool): The subscription status used to search for topics with a matching
+                subcription status.
+
+        Returns:
+            sub_list (string): The list of topics that match the desired subscribe status. Each
+                line in the list contains the buffer time (in seconds) of the topic, the subscrition
+                status of the topic, and the topic name.
         """
         sub_list = ""
         for topic in self.subscriber_list:
@@ -103,10 +112,23 @@ class OnlineBagger:
             self.subscriber_list[topic[0]] = (time, False)
 
         def add_unique_topic(topic):
+            """
+            Adds a topic to the subscriber list if the topic is not already in the
+            list.
+
+            Args:
+                topic (str): The name of the topic to add to the subscriber list.
+            """
             if topic not in self.subscriber_list:
                 self.subscriber_list[topic] = (self.stream_time, False)
 
         def add_env_var(var):
+            """
+            Adds topic(s) to the subscriber list.
+
+            Args:
+                var (str): The topic(s) to add to the subscriber list.
+            """
             for topic in var.split():
                 add_unique_topic(topic)
 
@@ -206,11 +228,16 @@ class OnlineBagger:
         where the Bool tells the current status of the subscriber (success/failure).
 
         Return number of topics that failed subscription
+
+        Args:
+            time_info (): An instance of the TimerEvent class. This method does
+                not use the argument but it is required or an error will occur. The
+                default value is None.
         """
         if self.successful_subscription_count == len(self.subscriber_list):
             if self.resubscriber is not None:
                 self.resubscriber.shutdown()
-            rospy.loginfo("All topics subscribed too! Shutting down resubscriber")
+         rospy.loginfo("All topics subscribed too! Shutting down resubscriber")
 
         for topic, (time, subscribed) in self.subscriber_list.items():
             if not subscribed:
@@ -227,7 +254,13 @@ class OnlineBagger:
 
     def get_topic_duration(self, topic):
         """
-        Return current time duration of topic
+        Returns the current time duration of topic
+        
+        Args:
+            topic (rostopic): The topic for which the duration will be calculated.
+
+        Returns:
+            duration (Duration): The time duration of the topic. 
         """
 
         return self.topic_messages[topic][-1][0] - self.topic_messages[topic][0][0]
@@ -235,8 +268,14 @@ class OnlineBagger:
     def get_header_time(self, msg):
         """
         Retrieve header time if available
-        """
 
+        Args:
+            msg (msg): The ROS message from which to extract the time.
+
+        Returns:
+            msg.header.stamp (stamp): The timestamp of the topic's header if the topic
+                has a header. Otherwise, the current time is returned.
+        """
         if hasattr(msg, "header"):
             return msg.header.stamp
         else:
@@ -244,7 +283,8 @@ class OnlineBagger:
 
     def get_time_index(self, topic, requested_seconds):
         """
-        Return the index for the time index for a topic at 'n' seconds from the end of the dequeue
+        Returns the index for the time index for a topic at 'n' seconds from the end of the dequeue.
+
         For example, to bag the last 10 seconds of data, the index for 10 seconds back from the most
         recent message can be obtained with this function.
         The number of requested seconds should be the number of seoncds desired from
@@ -252,6 +292,15 @@ class OnlineBagger:
         If the desired time length of the bag is greater than the available messages it will output a
         message and return how ever many seconds of data are available at the moment.
         Seconds is of a number type (not a rospy.Time type) (ie. int, float)
+
+        Args:
+            topic (str): The name of the topic for which to get the time index.
+            requested_seconds (int/float): The number of seconds from the end of the dequeue to search
+                for the topic.
+
+        Returns:
+            index (int): The index for the time index of the topic at requested_seconds seconds from the
+            end of the dequeue.
         """
 
         topic_duration = self.get_topic_duration(topic).to_sec()
@@ -265,10 +314,15 @@ class OnlineBagger:
 
     def bagger_callback(self, msg, topic):
         """
-        Streaming callback function, stops streaming during bagging process
-        also pops off msgs from dequeue if stream size is greater than specified stream_time
+        Adds incoming messages to the appropriate topic and removes older messages if necessary.
 
-        Stream, callback function does nothing if streaming is not active
+        Streaming callback function, stops streaming during bagging process and pops off msgs
+        from dequeue if stream size is greater than specified stream_time. Stream, callback
+        function does nothing if streaming is not active.
+
+        Args:
+            msg (msg): The incoming message.
+            topic (topic): The topic to which the incoming message will be added.
         """
 
         if not self.streaming:
@@ -301,6 +355,14 @@ class OnlineBagger:
     def get_topic_message_count(self, topic):
         """
         Return number of messages available in a topic
+
+        Args:
+            topic (str): The name of the topic for which to calculate the number
+                of messages.
+
+        Returns:
+            len(self.topic_messages[topic]) (int): The number of messages
+                available in the specified topic.
         """
 
         return len(self.topic_messages[topic])
@@ -308,6 +370,10 @@ class OnlineBagger:
     def get_total_message_count(self):
         """
         Returns total number of messages across all topics
+
+        Returns:
+            total_message_count (int): The total number of messages available in
+                all topics.
         """
 
         total_message_count = 0
@@ -319,6 +385,12 @@ class OnlineBagger:
         return total_message_count
 
     def _get_default_filename(self):
+        """
+        Uses the current date and time to create a default bag name.
+
+        Returns:
+            bag name (str): The default bag name constructed using format date-time.
+        """
         return (
             str(datetime.date.today()) + "-" + str(datetime.datetime.now().time())[0:8]
         )
@@ -327,6 +399,15 @@ class OnlineBagger:
         """
         Create ros bag save directory
         If no bag name is provided, the current date/time is used as default.
+
+        Args:
+            filename (str): The save directory for the ros bag. The default value
+                is an empty string, which will result in the default filename being
+                used.
+
+        Returns:
+            os.path.join(bag_dir, bag_name) (str): A string representing the path
+                of the ros bag file.
         """
         # If directory param is not set, default to $HOME/bags/<date>
         default_dir = self.dir
@@ -353,9 +434,17 @@ class OnlineBagger:
 
     def start_bagging(self, req):
         """
+        Writes collected data to a bag file.
+
         Dump all data in dictionary to bags, temporarily stops streaming
         during the bagging process, resumes streaming when over.
-        If bagging is already false because of an active call to this service
+        If bagging is already false because of an active call to this service.
+
+        Args:
+            req (msg): The bagging request information.
+
+        Raises:
+            IOError: A problem occurs when opening or closing the bag file.
         """
         result = BagOnlineResult()
         if self.streaming is False:
