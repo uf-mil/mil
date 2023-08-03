@@ -32,7 +32,14 @@ class OnlineBagger:
     bagger, triggering a bag write and displaying a progress bar as it writes.
 
     Attributes:
-        BAG_TOPIC (str): The action server that OnlineBagger sends goals to.
+        successful_subscription_count (int): The number of successful subcriptions
+            to topics.
+        iteration_count (int): The number of iterations.
+        streaming (bool): Indicates whether the bagger is streaming.
+        subscriber_list (list[topic]): The list of topics subscribed to the
+            OnlineBagger.
+        _action_server (SimpleActionServer): The action server associated with the
+            OnlineBagger.
     """
     BAG_TOPIC = "/online_bagger/bag"
 
