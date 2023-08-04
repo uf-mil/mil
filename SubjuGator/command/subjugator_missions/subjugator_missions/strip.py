@@ -72,9 +72,3 @@ class Strip(SubjuGatorMission):
         #        fprint('Going to gate')
         await self.move().forward(8.9).depth(0.6).go(speed=SPEED_LIMIT)
 
-
-#        await start.go(speed=SPEED_LIMIT)
-# await gate.yaw_left_deg(180).down(0.1).go(speed=SPEED_LIMIT)
-#        await self.nh.sleep(5)
-#        fprint('Go past through gate')
-#        await start.yaw_left_deg(180).go(speed=SPEED_LIMIT)

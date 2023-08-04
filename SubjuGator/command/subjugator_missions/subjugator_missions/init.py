@@ -10,12 +10,10 @@ from .pinger import Pinger
 from .pose_editor import PoseEditor
 from .prequal_mission import PrequalMission
 from .square import Square
-from .start_gate import StartGate
+from .start_gate_simple import StartGateSimple
 from .start_gate_style import StartGateStyle
 from .start_gate_coin_flip import StartGateCoinFlip
-from .start_gate_2022 import StartGate2022
 from .strip import Strip
-from .simple import Simple 
 from .sub_singleton import SubjuGatorMission
 from .surface import Surface
 from .torpedos_test import TorpedosTest
