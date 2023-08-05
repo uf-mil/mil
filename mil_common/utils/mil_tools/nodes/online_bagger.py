@@ -244,7 +244,7 @@ class OnlineBagger:
         if self.successful_subscription_count == len(self.subscriber_list):
             if self.resubscriber is not None:
                 self.resubscriber.shutdown()
-         rospy.loginfo("All topics subscribed too! Shutting down resubscriber")
+        rospy.loginfo("All topics subscribed too! Shutting down resubscriber")
 
         for topic, (time, subscribed) in self.subscriber_list.items():
             if not subscribed:
