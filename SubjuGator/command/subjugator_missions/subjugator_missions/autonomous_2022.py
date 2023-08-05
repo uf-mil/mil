@@ -34,31 +34,31 @@ class Autonomous2022(SubjuGatorMission):
             await self.run_mission(StartGate2022(), 400)
 
             # Run mission to follow orange marker
-            fprint("Following orange marker", msg_color="green")
+            #fprint("Following orange marker", msg_color="green")
             # await self.run_mission(FollowPath2022(), 400)
 
             # Run mission to do phase 1 buoys
-            fprint("Making the Grade", msg_color="green")
+            #fprint("Making the Grade", msg_color="green")
             # await self.run_mission(MakeGrade2022(), 400)
 
             # Run mission to follow orange marker
-            fprint("Following orange marker", msg_color="green")
+            #fprint("Following orange marker", msg_color="green")
             # await self.run_mission(FollowPath2022(), 400)
 
             # Run mission to do bins mission
-            fprint("Starting bins mission", msg_color="green")
+            #fprint("Starting bins mission", msg_color="green")
             # await self.run_mission(Bin2022(), 400)
 
             # Run mission to get to next pinger location
-            fprint("Going to pinger location", msg_color="green")
+            #fprint("Going to pinger location", msg_color="green")
             # await self.run_mission(Pinger2022(), 400)
 
             # Run mission to Analyze where to fire torpedoes
-            fprint("Starting mission to fire torpedoes", msg_color="green")
+            #fprint("Starting mission to fire torpedoes", msg_color="green")
             # await self.run_mission(FireTorpedos2022(), 400)
 
             # Run mission to get to next pinger location
-            fprint("Finding other pinger location", msg_color="green")
+            #fprint("Finding other pinger location", msg_color="green")
             # await self.run_mission(Pinger2022(), 400)
 
             # Rise from Octagon
