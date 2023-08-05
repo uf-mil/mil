@@ -12,10 +12,12 @@ from .prequal_mission import PrequalMission
 from .square import Square
 from .start_gate import StartGate
 from .start_gate_style import StartGateStyle
-from .start_gate_coin_flip import StartGateCoinFlip
 from .start_gate_2022 import StartGate2022
+from .autonomous_2023 import Autonomous2023
+from .octagon import Octagon
 from .strip import Strip
 from .start_gate_simple import StartGateSimple 
+from .coin_flip import CoinFlip
 from .sub_singleton import SubjuGatorMission
 from .surface import Surface
 from .torpedos_test import TorpedosTest
