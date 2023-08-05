@@ -41,6 +41,7 @@ class OnlineBagger:
         _action_server (SimpleActionServer): The action server associated with the
             OnlineBagger.
     """
+
     BAG_TOPIC = "/online_bagger/bag"
 
     def __init__(self):
@@ -241,9 +242,10 @@ class OnlineBagger:
                 not use the argument but it is required or an error will occur. The
                 default value is None.
         """
-        if self.successful_subscription_count == len(self.subscriber_list):
-            if self.resubscriber is not None:
-                self.resubscriber.shutdown()
+        if (self.successful_subscription_count == len(self.subscriber_list)) and (
+            self.resubscriber is not None
+        ):
+            self.resubscriber.shutdown()
         rospy.loginfo("All topics subscribed too! Shutting down resubscriber")
 
         for topic, (time, subscribed) in self.subscriber_list.items():
@@ -262,12 +264,12 @@ class OnlineBagger:
     def get_topic_duration(self, topic):
         """
         Returns the current time duration of topic
-        
+
         Args:
             topic (rostopic): The topic for which the duration will be calculated.
 
         Returns:
-            duration (Duration): The time duration of the topic. 
+            duration (Duration): The time duration of the topic.
         """
 
         return self.topic_messages[topic][-1][0] - self.topic_messages[topic][0][0]
