@@ -32,15 +32,16 @@ class StartGateStyle(SubjuGatorMission):
         fprint(f"Downing {1} m...")
         await self.go(self.move().down(1), speed=SPEED)
 
-        fprint(f"Forwarding {10} m...")
-        await self.go(self.move().forward(10), speed=SPEED)
+        fprint(f"Forwarding {11} m...")
+        await self.go(self.move().forward(11), speed=SPEED)
 
         fprint(f"YawingRight {790} deg...")
         await self.go(self.move().yaw_right_deg(180), speed=SPEED)
         await self.go(self.move().yaw_right_deg(180), speed=SPEED)
         await self.go(self.move().yaw_right_deg(180), speed=SPEED)
         await self.go(self.move().yaw_right_deg(180), speed=SPEED)
-        await self.go(self.move().yaw_right_deg(50), speed=SPEED)
+        await self.go(self.move().yaw_right_deg(30), speed=SPEED)
+        fprint(f"Zero rp")
         await self.go(self.move().zero_roll_and_pitch())
 
         fprint(f"YawingLeft {790} deg...")
@@ -48,8 +49,9 @@ class StartGateStyle(SubjuGatorMission):
         await self.go(self.move().yaw_left_deg(180), speed=SPEED)
         await self.go(self.move().yaw_left_deg(180), speed=SPEED)
         await self.go(self.move().yaw_left_deg(180), speed=SPEED)
-        await self.go(self.move().yaw_left_deg(50), speed=SPEED)
+        await self.go(self.move().yaw_left_deg(30), speed=SPEED)
+        fprint(f"Zero rp")
         await self.go(self.move().zero_roll_and_pitch())
         
-        fprint(f"Forwarding {16} m...")
-        await self.go(self.move().forward(16), speed=SPEED)
+        #fprint(f"Forwarding {16} m...")
+        #await self.go(self.move().forward(16), speed=SPEED)

@@ -10,7 +10,7 @@ SPEED = 0.6
 CAREFUL_SPEED = 0.3
 
 TURN_RIGHT_TO_OCTAGON = False
-TURN_DEG = 45
+TURN_DEG = 5
 DIST_TO_OCTAGON = 25
 
 class Octagon(SubjuGatorMission):

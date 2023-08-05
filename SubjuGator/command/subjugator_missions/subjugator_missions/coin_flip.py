@@ -27,7 +27,7 @@ class CoinFlip(SubjuGatorMission):
         cur_orientation = self.pose.orientation
         fprint(f"Current orientation {cur_orientation}...")
 
-        go2gate_quat = [0.,0.,0.,1.] # hardcoded from odom when looking at gate 
+        go2gate_quat = [-0.060561777094835983,0.06749885535659933,-0.9938135363787743,0.06411575930283418] # hardcoded from odom when looking at gate 
 
         fprint(f"Rotating to start gate orientation (of {go2gate_quat} quaterntions)...")
         await self.go(self.move().down(0.15).set_orientation(go2gate_quat))
