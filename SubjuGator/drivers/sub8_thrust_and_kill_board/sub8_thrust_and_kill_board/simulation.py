@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import rospy
-from mil_usb_to_can import SimulatedCANDevice
+from mil_usb_to_can.sub8 import SimulatedCANDevice
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 
 from .packets import (

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import rospy
-from mil_usb_to_can import CANDeviceHandle
+from mil_usb_to_can.sub8 import CANDeviceHandle
 
 from sub8_actuator_board.srv import SetValve, SetValveRequest
 

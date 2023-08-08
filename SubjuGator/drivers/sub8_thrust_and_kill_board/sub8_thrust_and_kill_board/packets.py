@@ -1,7 +1,7 @@
 import struct
 from collections import namedtuple
 
-from mil_usb_to_can import ApplicationPacket
+from mil_usb_to_can.sub8 import ApplicationPacket
 
 # CAN channel to send thrust messages to
 THRUST_SEND_ID = 0x21
@@ -250,41 +250,9 @@ class ThrustPacket(ApplicationPacket):
     Attributes:
         IDENTIFIER (int): The packet identifier, equal to the ordinal value of "T,"
             or 84.
-        ID_MAPPING (Dict[str, int]): A dictionary mapping 3-letter thruster codes
-            to their respective IDs:
-
-            +--------+------+
-            |  Name  |  ID  |
-            +========+======+
-            |  FLH   |  0   |
-            +--------+------+
-            |  FRH   |  1   |
-            +--------+------+
-            |  FLV   |  2   |
-            +--------+------+
-            |  FRV   |  3   |
-            +--------+------+
-            |  BLH   |  4   |
-            +--------+------+
-            |  BRH   |  5   |
-            +--------+------+
-            |  BLV   |  6   |
-            +--------+------+
-            |  BRV   |  7   |
-            +--------+------+
     """
 
     IDENTIFIER = ord("T")
-    ID_MAPPING = {
-        "FLH": 0,
-        "FRH": 1,
-        "FLV": 2,
-        "FRV": 3,
-        "BLH": 4,
-        "BRH": 5,
-        "BLV": 6,
-        "BRV": 7,
-    }
 
     @classmethod
     def create_thrust_packet(cls, thruster_id: int, command: float):

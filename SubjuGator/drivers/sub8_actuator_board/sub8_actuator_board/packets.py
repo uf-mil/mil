@@ -1,6 +1,6 @@
 import struct
 
-from mil_usb_to_can import ApplicationPacket
+from mil_usb_to_can.sub8 import ApplicationPacket
 
 # CAN ID for the channel from MOBO to actuator board
 SEND_ID = 0x51

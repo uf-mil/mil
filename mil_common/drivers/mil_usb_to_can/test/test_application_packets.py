@@ -5,7 +5,7 @@ import struct
 import unittest
 
 import rostest
-from mil_usb_to_can import ApplicationPacket, CommandPacket
+from mil_usb_to_can.sub8 import ApplicationPacket, CommandPacket
 
 
 class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <param name="/is_simulation" value="True" />
+
+  <node pkg="mil_usb_to_can" type="sub9_driver.py" name="usb_to_can_driver">
+    <rosparam>
+    device_handles:
+      sub9_thrust_and_kill_board.ThrusterAndKillBoard: [sub9_thrust_and_kill_board.KillReceivePacket]
+    simulated_devices:
+      sub9_thrust_and_kill_board.ThrusterAndKillBoardSimulation: [sub9_thrust_and_kill_board.HeartbeatSetPacket, sub9_thrust_and_kill_board.ThrustSetPacket, sub9_thrust_and_kill_board.KillSetPacket]
+    </rosparam>
+  </node>
+
+  <include file="$(find subjugator_launch)/launch/subsystems/thruster_mapper.launch" />
+  <include file="$(find subjugator_alarm)/launch/alarms.launch" />
+
+  <test test-name="simulated_board_test" pkg="sub9_thrust_and_kill_board" type="simulated_board_test.py" time-limit="5.0"/>
+</launch>

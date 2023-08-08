@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <param name="/is_simulation" value="True" />
+
+  <node pkg="mil_usb_to_can" type="sub9_driver.py" name="usb_to_can_driver">
+    <rosparam>
+    device_handles:
+      mil_usb_to_can.sub9.example.ExampleEchoDeviceHandle: [mil_usb_to_can.sub9.example.ExampleEchoResponsePacket]
+    simulated_devices:
+      mil_usb_to_can.sub9.example.ExampleSimulatedEchoDevice: [mil_usb_to_can.sub9.example.ExampleEchoRequestPacket]
+    </rosparam>
+  </node>
+
+  <test test-name="can_echo_test_sub9" pkg="mil_usb_to_can" type="echo_device_test_sub9.py" time-limit="5.0"/>
+</launch>
