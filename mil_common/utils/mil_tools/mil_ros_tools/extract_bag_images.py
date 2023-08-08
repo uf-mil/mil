@@ -150,17 +150,11 @@ class BagImageExtractorSource:
             _, msg, _ = next(bag.read_messages(topics=camera_info_topic))
         except StopIteration:
             raise Exception(
-                "no camera info messages found on topic {} in {}".format(
-                    camera_info_topic,
-                    bag,
-                ),
+                f"no camera info messages found on topic {camera_info_topic} in {bag}",
             )
         if msg._type != "sensor_msgs/CameraInfo":
             raise Exception(
-                "msg on topic {} are not camera info in bag {}".format(
-                    camera_info_topic,
-                    bag,
-                ),
+                f"msg on topic {camera_info_topic} are not camera info in bag {bag}",
             )
         model = PinholeCameraModel()
         model.fromCameraInfo(msg)
@@ -218,10 +212,7 @@ class BagImageExtractorSource:
         """
         if verbose:
             print(
-                "\tExtracting images from topic {} in {}".format(
-                    self.topic,
-                    self.filename,
-                ),
+                f"\tExtracting images from topic {self.topic} in {self.filename}",
             )
         filename = os.path.join(source_dir, self.filename)
         b = rosbag.Bag(filename)

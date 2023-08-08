@@ -599,7 +599,7 @@ class SonarObjects:
         distance_tol: float = 10,
         speed: float = 0.5,
         clear: bool = False,
-        c_func: Callable = None,
+        c_func: Callable | None = None,
     ):
         if clear:
             print("SONAR_OBJECTS: clearing pointcloud")

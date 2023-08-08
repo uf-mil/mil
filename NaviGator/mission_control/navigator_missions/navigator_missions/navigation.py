@@ -187,9 +187,7 @@ class Navigation(NaviGatorMission):
                     )
                     if classification_index != -1:
                         self.send_feedback(
-                            "{} identified. Canceling investigation".format(
-                                move_id_tuple[1],
-                            ),
+                            f"{move_id_tuple[1]} identified. Canceling investigation",
                         )
                         move_task.cancel()
 

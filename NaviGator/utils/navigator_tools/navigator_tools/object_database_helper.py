@@ -50,7 +50,7 @@ class DBHelper:
         req = ObjectDBQueryRequest()
         req.name = "all"
         resp = await self._database(req)
-        ans = [obj for obj in resp.objects if obj.id == my_id][0]
+        ans = next(obj for obj in resp.objects if obj.id == my_id)
         return ans
 
     async def begin_observing(self, cb):

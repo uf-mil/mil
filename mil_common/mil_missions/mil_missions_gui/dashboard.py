@@ -195,11 +195,10 @@ class Dashboard(Plugin):
         """
         self.lock.acquire()
         date_time = datetime.datetime.fromtimestamp(rospy.Time.now().to_time())
-        time_str = "{}:{}:{}".format(
-            date_time.hour,
-            date_time.minute,
-            date_time.second,
-        ).ljust(12, " ")
+        time_str = f"{date_time.hour}:{date_time.minute}:{date_time.second}".ljust(
+            12,
+            " ",
+        )
         formatted = time_str + string
         self.feedback_list.addItem(formatted)
         self.lock.release()
@@ -242,9 +241,7 @@ class Dashboard(Plugin):
                 self.current_mission_status = terminal_state
                 self.current_mission_status_label.setText(self.current_mission_status)
                 self.ui_log(
-                    "FINISHED: mission finished ({})".format(
-                        self.current_mission_status,
-                    ),
+                    f"FINISHED: mission finished ({self.current_mission_status})",
                 )
 
     def reload_available_missions(self, _):
