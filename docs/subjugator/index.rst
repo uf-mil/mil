@@ -16,6 +16,7 @@ SubjuGator 8
     Enabling <enabling>
     Cameras <cameras>
     PID Controller <pid>
+	Navigation Tube <navtube>
 
     electrical
 
