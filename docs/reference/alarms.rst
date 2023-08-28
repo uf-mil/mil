@@ -169,17 +169,17 @@ rosrun your_package_name array_query_client.py
 
 The alarm system's functionality is more intricate than the preceding example. In this scenario, the server is engineered to manage not numeric calculations, but the tasks of updating, setting, and querying alarm data. Unlike the single-client model, ROS alarms encompass two distinct types of clients: the alarm broadcaster and the alarm listener. The broadcaster initializes and triggers alarms in response to errors or changes, while the listener monitors the broadcaster's activity and activates designated a callback function when alarms are raised. The callback function should handle the error or change appropriately. 
 
-To peruse the detailed alarm system code, refer to the repository: [https://github.com/uf-mil/mil/tree/master/mil_common/ros_alarms](https://github.com/uf-mil/mil/tree/master/mil_common/ros_alarms)
+To peruse the detailed alarm system code, refer to the repository: [https://github.com/uf-mil/mil/tree/master/mil_common/ros_alarms]
 
 To successfully leverage alarms, the initialization of both the broadcaster and listener is needed. The listener should be configured to execute a predefined callback function, addressing errors or changes detected by the broadcaster. Within your codebase, error detection and alarm-raising procedures should be integrated. If orchestrated correctly, the callback function will be automatically invoked, underscoring successful error mitigation.
 
-For a practical example of this workflow, visit: [https://github.com/uf-mil/mil/blob/master/mil_common/ros_alarms/test/rospy/callback_test.py](https://github.com/uf-mil/mil/blob/master/mil_common/ros_alarms/test/rospy/callback_test.py)
+For a practical example of this workflow, visit: [https://github.com/uf-mil/mil/blob/master/mil_common/ros_alarms/test/rospy/callback_test.py]
 
 **Applications and Context**
 
 The applications of ROS alarms span various contexts, with one notable application residing in the control of the submersible vehicle's thrust and killboard. The thrust and killboard, responsible for the sub's electronic operations, is integrally associated with ROS alarms. Upon the board's activation or deactivation (hard or soft kill), alarms are invoked to apprise users of these changes. The listener's callback function comes into play, ensuring that alarms are updated in alignment with the board's current state. This process, triggered each time the board is deactivated, creates a system whereby users are continually informed about the board's status changes – essentially manifesting a dynamic live alarm system.
 
-To delve into the implementation, visit: [https://github.com/uf-mil/mil/blob/master/SubjuGator/drivers/sub8_thrust_and_kill_board/sub8_thrust_and_kill_board/handle.py](https://github.com/uf-mil/mil/blob/master/SubjuGator/drivers/sub8_thrust_and_kill_board/sub8_thrust_and_kill_board/handle.py)
+To delve into the implementation, visit: [https://github.com/uf-mil/mil/blob/master/SubjuGator/drivers/sub8_thrust_and_kill_board/sub8_thrust_and_kill_board/handle.py]
 
 .. automodule:: ros_alarms
 
