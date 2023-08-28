@@ -23,6 +23,7 @@ by MIL. These subsystems relate to a variety of processes.
     resources
     rc
     alarms
+    alarmspart2
     pathplanning
     battery
     passivesonar
