@@ -23,6 +23,7 @@ For a concrete illustration, consider the case of a service designed to query an
 Create two separate service message files in your ROS package's `srv` folder:
 
 - ArrayUpdate.srv:
+
 ```
 # ArrayUpdate.srv
 int32 index
