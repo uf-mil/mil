@@ -22,8 +22,8 @@ For a concrete illustration, consider the case of a service designed to query an
 
 Create two separate service message files in your ROS package's `srv` folder:
 
-- `ArrayUpdate.srv`:
-```plaintext
+- ArrayUpdate.srv:
+```
 # ArrayUpdate.srv
 int32 index
 int32 value
@@ -31,8 +31,8 @@ int32 value
 bool success
 ```
 
-- `ArrayQuery.srv`:
-```plaintext
+- ArrayQuery.srv:
+```
 # ArrayQuery.srv
 int32 index
 ---
@@ -41,7 +41,7 @@ int32 value
 
 2. **Implement the Service Server**
 
-Create a Python script named `array_service_server.py`:
+Create a Python script named array_service_server.py:
 
 ```python
 #!/usr/bin/env python
