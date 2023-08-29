@@ -40,7 +40,7 @@ follow these steps:
     ```
 
     :::{note}
-    -\-screen forces all ROS node output to the screen. It is used for debugging.
+    `--screen` forces all ROS node output to the screen. It is used for debugging.
     :::
 
 1. Then in another terminal window run this command to start the Gazebo
@@ -70,14 +70,14 @@ follow these steps:
 
 When you launch Gazebo you will be greeted by its user interface.
 
-![Gazebo Interface](/software/Gazebo/Interface.png)
+![Gazebo Interface](/images/gazebo/Interface.png)
 
 The Gazebo interface consists of three main sections: The **Left Panel**, the
 **Scene**, and the **Right Panel**. By default the Right Panel is hidden. This
 is because we do not have anything selected. To show the right panel you can
 always Click and drag the bar on the right to open it.
 
-![Gazebo Labeled Interface](/software/Gazebo/Labeled_Interface.png)
+![Gazebo Labeled Interface](/images/gazebo/Labeled_Interface.png)
 
 #### Left Panel
 
@@ -114,11 +114,11 @@ and then a `<layer>` tag with the layer number under each `<visual>` tag. Below
 is an example:
 
 ```xml
-<visual name = 'visual_0'>
-	<meta>
-		<layer>0</layer>
-	</meta>
-	...
+<visual name='visual_0'>
+  <meta>
+    <layer>0</layer>
+  </meta>
+  ...
 </visual>
 ```
 
@@ -133,14 +133,14 @@ The Upper Toolbar consists of various buttons that allow you to select, move,
 rotate, and scale objects. It also provides options to create simple shapes,
 as well as copy and paste objects.
 
-![Gazebo Upper Toolbar](/software/Gazebo/Upper_Toolbar.png)
+![Gazebo Upper Toolbar](/images/gazebo/Upper_Toolbar.png)
 
 ##### The Bottom Toolbar
 
 The Bottom Toolbar displays information about the simulation time and its
 relationship to real time. It helps you track the progress of your simulation.
 
-![Gazebo Bottom Toolbar](/software/Gazebo/Bottom_Toolbar.png)
+![Gazebo Bottom Toolbar](/images/gazebo/Bottom_Toolbar.png)
 
 #### Right Panel
 
@@ -155,19 +155,19 @@ the top left of an application. If you don't see it move your cursor to the
 top of the application window and the menus should appear. Below describes
 the features of each menu that Gazebo has.
 
-![Gazebo Menus](/software/Gazebo/Menus.png)
+![Gazebo Menus](/images/gazebo/Menus.png)
 
 #### Mouse
 
 It is recommended that you use a mouse when using Gazebo. Below is a diagram
 showing all the mouse controls.
 
-![Gazebo Mouse Controls](/software/Gazebo/Mouse.png)
+![Gazebo Mouse Controls](/images/gazebo/Mouse.png)
 
 However, if you want to use a trackpad you can. Below are the controls for
 the trackpad:
 
-![Gazebo Mouse Controls](/software/Gazebo/TrackPad.png)
+![Gazebo Mouse Controls](/images/gazebo/TrackPad.png)
 
 ## How to Create Models
 
@@ -192,7 +192,7 @@ slight changes. The left panel and the top toolbar have been changed to
 contain only buttons and features for editing and creating parts of a model.
 The bottom toolbar is now hidden as the simulation is paused.
 
-![Gazebo Model Editor](/software/Gazebo/Model_Editor.png)
+![Gazebo Model Editor](/images/gazebo/Model_Editor.png)
 
 When entering the Model Editor all other models will turn white. This can make
 it hard to see the model you are currently working on if you have a lot of
@@ -282,8 +282,7 @@ To constrain the motion between shapes, you can add joints. Follow these steps:
 To control your model, you need to create a plugin. You can do this in the
 Model Tab by specifying the necessary details for the plugin.
 
-You can find more information on how to create your own custom plugins here
-https://classic.gazebosim.org/tutorials?tut=ros_gzplugins
+You can find more information on how to create your own custom plugins [here](https://classic.gazebosim.org/tutorials?tut=ros_gzplugins).
 
 #### Model Creation Workflow Example
 
@@ -313,7 +312,7 @@ You can save the World file by selecting File and Save World As.
 :::{note}
 When using roslaunch to start Gazebo, it is crucial to update the World file
 if you make any changes to the simulation environment. At MIL, there is a
-dedicated "worlds" folder where Gazebo World files are saved. When you update
+dedicated `worlds` folder where Gazebo World files are saved. When you update
 a World file, ensure that you replace the old file in this folder. Failing
 to do so will result in the continued use of the old World file when
 launching Gazebo using roslaunch.
@@ -322,7 +321,7 @@ launching Gazebo using roslaunch.
 ## More Info
 
 If you ever need more information on how any aspect of Gazebo works or how to
-use ROS with Gazebo you can check out the official Gazebo Documentation here:
-https://classic.gazebosim.org/tutorials. Some of the images used in this guide
-are sourced from here and we are grateful to the creators for their exceptional
-work, which has been instrumental in writing this guide.
+use ROS with Gazebo you can check out the official Gazebo Documentation [here](https://classic.gazebosim.org/tutorials).
+Some of the images used in this guide are sourced from here and we are grateful
+to the creators for their exceptional work, which has been instrumental in
+writing this guide.
