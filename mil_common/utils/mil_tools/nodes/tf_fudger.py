@@ -45,10 +45,7 @@ x_res = x_range / x_max
 ang_res = ang_range / ang_max
 
 print(
-    "Distance resolution: {} meters\nAngular resolution: {} radians".format(
-        x_res,
-        ang_res,
-    ),
+    f"Distance resolution: {x_res} meters\nAngular resolution: {ang_res} radians",
 )
 
 cv2.createTrackbar("x", "tf", 0, x_max, lambda x: x)

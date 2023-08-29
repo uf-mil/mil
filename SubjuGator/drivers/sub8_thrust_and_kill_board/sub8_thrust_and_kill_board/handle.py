@@ -109,9 +109,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             # If we don't have a mapping for this thruster, ignore it
             if cmd.name not in self.thrusters:
                 rospy.logwarn(
-                    "Command received for {}, but this is not a thruster.".format(
-                        cmd.name,
-                    ),
+                    f"Command received for {cmd.name}, but this is not a thruster.",
                 )
                 continue
             # Map commanded thrust (in newetons) to effort value (-1 to 1)

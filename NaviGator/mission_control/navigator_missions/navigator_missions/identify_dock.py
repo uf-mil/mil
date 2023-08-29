@@ -150,10 +150,7 @@ class IdentifyDockMission:
 
     def update_shape(self, shape_res, normal_res, tf):
         print_good(
-            "Found (Shape={}, Color={} in a bay".format(
-                shape_res.Shape,
-                shape_res.Color,
-            ),
+            f"Found (Shape={shape_res.Shape}, Color={shape_res.Color} in a bay",
         )
         self.identified_shapes[(shape_res.Shape, shape_res.Color)] = self.get_shape_pos(
             normal_res,

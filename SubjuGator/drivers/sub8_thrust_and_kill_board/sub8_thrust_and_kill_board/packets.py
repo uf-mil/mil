@@ -287,7 +287,4 @@ class ThrustPacket(ApplicationPacket):
         return struct.unpack("f", self.payload[1:])[0]
 
     def __str__(self):
-        return "ThrustPacket(thruster_id={}, command={})".format(
-            self.thruster_id,
-            self.command,
-        )
+        return f"ThrustPacket(thruster_id={self.thruster_id}, command={self.command})"

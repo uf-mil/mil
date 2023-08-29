@@ -151,9 +151,7 @@ class VrxNavigation(Vrx):
                     )
                     if classification_index != -1:
                         self.send_feedback(
-                            "{} identified. Canceling investigation".format(
-                                move_id_tuple[1],
-                            ),
+                            f"{move_id_tuple[1]} identified. Canceling investigation",
                         )
                         move_id_tuple[0].cancel()
                         await self.nh.sleep(1.0)
