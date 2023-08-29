@@ -39,8 +39,7 @@ jobs:
       - name: Setup ROS Noetic
         uses: ros-tooling/setup-ros@v0.7.0
         with:
-          required-ros-distributions: noetic humble
-        run: vcs --help
+          required-ros-distributions: noetic
       - name: Install pip dependencies
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
