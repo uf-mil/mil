@@ -71,8 +71,8 @@ topics. The most common plugin for this purpose is the Plot plugin.
 ### Displaying Data with Plot Plugin
 
 1. Open RQT using the command mentioned earlier.
-1. Click on the "Plugins" menu in the top toolbar and select "Visualization"
-   > "Plot."
+1. Click on the "Plugins" menu in the top toolbar and select
+   "Visualization" > "Plot."
 1. A new "Plot" tab will appear. Click on the "+" button to add a plot.
 1. Choose the topic you want to visualize from the list, select the message
    field, and click "OK."
@@ -421,11 +421,9 @@ for ROS developers.
 
 ## External Resources
 
-| Resources |
-| ----------- |
-| [ROS wiki page for rqt](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwin36-OnbmAAxU1sDEKHf_UCSoQFnoECBAQAQ&url=http%3A%2F%2Fwiki.ros.org%2Frqt&usg=AOvVaw2p3mQTkmoXih9cZS1NTOW6&opi=89978449) |
-| [GeorgiaTech RoboJacket's rqt tutorial](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwin36-OnbmAAxU1sDEKHf_UCSoQwqsBegQIDxAG&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Do90IaCRje2I&usg=AOvVaw04mXzk9sBXpTMhkhgGqXIb&opi=89978449)   |
-| [Creating Custom rqt Plugins](https://github.com/ChoKasem/rqt_tut) |
+- [ROS wiki page for rqt](https://wiki.ros.org/rqt)
+- [GeorgiaTech RoboJacket's rqt tutorial](https://www.youtube.com/watch?v=o90IaCRje2I)
+- [Creating Custom rqt Plugins](https://github.com/ChoKasem/rqt_tut)
 
 ## Conclusion
 
