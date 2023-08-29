@@ -28,10 +28,7 @@ class Kill(HandlerBase):
             rospy.loginfo(f"KILL BAG WRITTEN TO {result.filename}")
         else:
             rospy.logwarn(
-                "KILL BAG {}, status: {}".format(
-                    TerminalState.to_string(status),
-                    result.status,
-                ),
+                f"KILL BAG {TerminalState.to_string(status)}, status: {result.status}",
             )
 
     def _kill_task_cb(self, status, result):
@@ -39,10 +36,7 @@ class Kill(HandlerBase):
             rospy.loginfo("Killed task success!")
             return
         rospy.logwarn(
-            "Killed task failed ({}): {}".format(
-                TerminalState.to_string(status),
-                result.result,
-            ),
+            f"Killed task failed ({TerminalState.to_string(status)}): {result.result}",
         )
 
     def raised(self, alarm):

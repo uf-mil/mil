@@ -17,7 +17,7 @@ sys.path.append(
     rospack.get_path("subjugator_perception") + "/ml_classifiers/path_marker/utils",
 )
 
-from utils import detector_utils  # noqa: manually appending sys.path
+from utils import detector_utils  # noqa
 
 
 class classifier:
