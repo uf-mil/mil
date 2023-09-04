@@ -493,10 +493,7 @@ class OGridServer:
                     )
                     print(e)
                     fprint(
-                        "w: {}, h: {}".format(
-                            global_ogrid.info.width,
-                            global_ogrid.info.height,
-                        ),
+                        f"w: {global_ogrid.info.width}, h: {global_ogrid.info.height}",
                         msg_color="red",
                     )
 

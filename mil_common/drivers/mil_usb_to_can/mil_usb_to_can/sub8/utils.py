@@ -26,10 +26,7 @@ class ChecksumException(USB2CANException):
 
     def __init__(self, calculated, expected):
         super().__init__(
-            "Checksum was calculated as {} but reported as {}".format(
-                calculated,
-                expected,
-            ),
+            f"Checksum was calculated as {calculated} but reported as {expected}",
         )
 
 

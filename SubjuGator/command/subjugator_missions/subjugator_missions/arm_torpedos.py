@@ -170,9 +170,7 @@ class FireTorpedos(SubjuGatorMission):
         )
 
         self.print_good(
-            "{} locked. Firing torpedoes. Hit confirmed, good job Commander.".format(
-                target,
-            ),
+            f"{target} locked. Firing torpedoes. Hit confirmed, good job Commander.",
         )
         sub_pos = await self.tx_pose()
         print("Current Sub Position: ", sub_pos)
