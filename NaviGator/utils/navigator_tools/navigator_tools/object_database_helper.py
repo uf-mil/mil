@@ -18,7 +18,7 @@ class DBHelper:
 
     Attributes:
         found (bool): checks whether the object is what the user has been looking for.
-        nh (object): processes database requests.
+        nh (axros.NodeHandle): processes database requests.
         position (int): the current position of the object.
         rot (): one of the dimensional values.
         new_object_subscriber (): an object that is being called from the database.
@@ -34,7 +34,7 @@ class DBHelper:
         Initialize the DB helper class.
 
         Args:
-            nh(): database object
+            nh(NodeHandle): NodeHandle object
         """
         self.found = set()
         self.nh = nh
@@ -52,10 +52,7 @@ class DBHelper:
         Initialize the axros parts of the DBHelper.
 
         Args:
-            navigator (object): a navigator object is passed in.
-
-        Returns:
-            An object with set values is being returned.
+            navigator (NaviGator | None): Base NaviGator object
         """
         # self._sub_database = yield self.nh.subscribe('/database/objects', PerceptionObjectArray, self.object_cb)
         self._database = self.nh.get_service_client("/database/requests", ObjectDBQuery)
@@ -73,7 +70,7 @@ class DBHelper:
         Sets the position and the rot values.
 
         Args:
-            odom (object): odom, dimensional values, is being returned.
+            odom (object): Odom
         """
         self.position, self.rot = nt.odometry_to_numpy(odom)[0]
 
@@ -147,7 +144,7 @@ class DBHelper:
         """
         self.looking_for = name
 
-    def is_found_func(self):
+    def is_found_func(self) -> bool:
         """
         Determines whether the object is being found or not.
 
@@ -214,7 +211,7 @@ class DBHelper:
         """
         self.ensuring_objects = False
 
-    def _wait_for_position(self, timeout=10):
+    def _wait_for_position(self, timeout=10) -> bool:
         """
         A possible position is being stored in a variable.
 
@@ -222,7 +219,7 @@ class DBHelper:
             timeout (int): time limit to retrieve something.
 
         Returns:
-            Determines whether the position is found within the time limit.
+            bool: Determines whether the position is found within the time limit.
         """
         count = 0
         while self.position is None:
