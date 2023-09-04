@@ -16,7 +16,6 @@ class GPSToBaseLink:
 
     # Requires both odom and range_bearing to be publishing data
     def odometrySubscriber(self, msg):
-
         base_link_odom = msg
         pose = [[0, 0, 0], [0, 0, 0, 0]]
 

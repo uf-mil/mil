@@ -15,7 +15,6 @@ DOWN = 1.5
 
 class StartGateGuess(SubjuGatorMission):
     async def run(self, args):
-
         fprint("Getting Guess Locations")
 
         sub_start_position, sub_start_orientation = await self.tx_pose()
@@ -23,7 +22,7 @@ class StartGateGuess(SubjuGatorMission):
         save_pois = rospy.ServiceProxy("/poi_server/save_to_param", Trigger)
         _ = save_pois()
         gate_1 = np.array(rospy.get_param("/poi_server/initial_pois/start_gate1"))
-        gate_2 = np.array(rospy.get_param("/poi_server/initial_pois/start_gate2"))
+        np.array(rospy.get_param("/poi_server/initial_pois/start_gate2"))
         # mid = (gate_1 + gate_2) / 2
         # mid = gate_1
         fprint(f"Found mid {gate_1}")
@@ -34,5 +33,5 @@ class StartGateGuess(SubjuGatorMission):
         #      await self.move.look_at_without_pitching(mid).go(speed=DOWN_SPEED)
 
         fprint("Going!")
-        await self.move.set_position(gate_1).depth(DOWN).go(speed=SPEED)
-        await self.move.forward(1).go(speed=SPEED)
+        await self.go(self.move().set_position(gate_1).depth(DOWN), speed=SPEED)
+        await self.go(self.move().forward(1), speed=SPEED)

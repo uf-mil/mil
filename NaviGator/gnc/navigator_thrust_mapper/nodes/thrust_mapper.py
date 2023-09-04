@@ -5,7 +5,7 @@ from geometry_msgs.msg import WrenchStamped
 from navigator_thrust_mapper import ThrusterMap
 from roboteq_msgs.msg import Command
 from ros_alarms import AlarmListener
-from ros_alarms.msg import Alarm
+from ros_alarms_msgs.msg import Alarm
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float32
 
@@ -61,7 +61,9 @@ class ThrusterMapperNode:
         # TODO(ironmig):
         if not self.is_vrx and not self.is_sim:
             self.joint_state_pub = rospy.Publisher(
-                "/thruster_states", JointState, queue_size=1
+                "/thruster_states",
+                JointState,
+                queue_size=1,
             )
             self.joint_state_msg = JointState()
             for name in self.thruster_map.joints:

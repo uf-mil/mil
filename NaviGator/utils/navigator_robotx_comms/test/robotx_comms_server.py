@@ -49,7 +49,9 @@ class TestRobotXComms(unittest.TestCase):
         self.use_test_data = rospy.get_param("~use_test_data")
         self.server = RobotXServer(self.td_ip, self.td_port)
         self.scan_code_pub = rospy.Publisher(
-            "/scan_the_code", ScanTheCode, queue_size=10
+            "/scan_the_code",
+            ScanTheCode,
+            queue_size=10,
         )
         super().__init__(*args)
 
@@ -68,7 +70,8 @@ class TestRobotXComms(unittest.TestCase):
                 split_rx_data = rx_data.splitlines(True)
                 for message in split_rx_data:
                     deserialized_msg = robotx_heartbeat_message.from_string(
-                        self.delim, message
+                        self.delim,
+                        message,
                     )
                     data_list = [x.decode() for x in deserialized_msg[0]]
                     checksum_list = [x.decode() for x in deserialized_msg[1]]
@@ -76,19 +79,23 @@ class TestRobotXComms(unittest.TestCase):
                         full_data_for_checksum = checksum_list[0].replace("$", "")
                         checksum_calc = BitwiseXORChecksum()
                         tot_checksum = checksum_calc.ret_checksum(
-                            str(full_data_for_checksum)
+                            str(full_data_for_checksum),
                         )
                         hex_checksum = format(tot_checksum, "02X")
                         final_checksum_string = hex_checksum + "\r\n"
                         self.assertEqual(
-                            len(data_list), 10, "heartbeat message formatting incorrect"
+                            len(data_list),
+                            10,
+                            "heartbeat message formatting incorrect",
                         )
                         if self.use_test_data is True:
                             test_data = "$RXHRB,111221,161229,21.31198,N,157.88972,W,ROBOT,2,1*11\r\n"
                             list_test_data = test_data.split(self.delim.decode())
                             checksum_list_test_data = test_data.split("*")
                             self.assertEqual(
-                                data_list[7], list_test_data[7], "team id incorrect"
+                                data_list[7],
+                                list_test_data[7],
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -97,7 +104,9 @@ class TestRobotXComms(unittest.TestCase):
                             )
                         else:
                             self.assertEqual(
-                                data_list[7], self.team_id, "team id incorrect"
+                                data_list[7],
+                                self.team_id,
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -118,14 +127,14 @@ class TestRobotXComms(unittest.TestCase):
 
         rospy.wait_for_service("entrance_exit_gate_message")
         send_robot_x_entrance_exit_gate_message = rospy.ServiceProxy(
-            "entrance_exit_gate_message", MessageEntranceExitGate
+            "entrance_exit_gate_message",
+            MessageEntranceExitGate,
         )
 
         robot_x_entrance_exit_gate_message = RobotXEntranceExitGateMessage()
 
         try:
             while not rospy.is_shutdown() and times_ran < self.number_of_iterations:
-
                 rx_data = None
                 send_robot_x_entrance_exit_gate_message(entrance_gate, exit_gate)
                 while rx_data is None:
@@ -134,7 +143,8 @@ class TestRobotXComms(unittest.TestCase):
 
                 for message in split_rx_data:
                     deserialized_msg = robot_x_entrance_exit_gate_message.from_string(
-                        self.delim, message
+                        self.delim,
+                        message,
                     )
                     data_list = [x.decode() for x in deserialized_msg[0]]
                     checksum_list = [x.decode() for x in deserialized_msg[1]]
@@ -142,7 +152,7 @@ class TestRobotXComms(unittest.TestCase):
                         full_data_for_checksum = checksum_list[0].replace("$", "")
                         checksum_calc = BitwiseXORChecksum()
                         tot_checksum = checksum_calc.ret_checksum(
-                            full_data_for_checksum
+                            full_data_for_checksum,
                         )
                         hex_checksum = format(tot_checksum, "02X")
                         final_checksum_string = hex_checksum + "\r\n"
@@ -156,7 +166,9 @@ class TestRobotXComms(unittest.TestCase):
                             list_test_data = test_data.split(self.delim.decode())
                             checksum_list_test_data = test_data.split("*")
                             self.assertEqual(
-                                data_list[3], list_test_data[3], "team id incorrect"
+                                data_list[3],
+                                list_test_data[3],
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -177,7 +189,9 @@ class TestRobotXComms(unittest.TestCase):
                             )
                         else:
                             self.assertEqual(
-                                data_list[3], self.team_id, "team id incorrect"
+                                data_list[3],
+                                self.team_id,
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -191,7 +205,9 @@ class TestRobotXComms(unittest.TestCase):
                             )
                             exit_gate_value = data_list[5].split("*")[0]
                             self.assertEqual(
-                                int(exit_gate_value), exit_gate, "exit gate incorrect"
+                                int(exit_gate_value),
+                                exit_gate,
+                                "exit gate incorrect",
                             )
                         times_ran += 1
 
@@ -218,7 +234,8 @@ class TestRobotXComms(unittest.TestCase):
                 split_rx_data = rx_data.splitlines(True)
                 for message in split_rx_data:
                     deserialized_msg = robot_x_scan_code_message.from_string(
-                        self.delim, message
+                        self.delim,
+                        message,
                     )
                     data_list = [x.decode() for x in deserialized_msg[0]]
                     checksum_list = [x.decode() for x in deserialized_msg[1]]
@@ -226,19 +243,23 @@ class TestRobotXComms(unittest.TestCase):
                         full_data_for_checksum = checksum_list[0].replace("$", "")
                         checksum_calc = BitwiseXORChecksum()
                         tot_checksum = checksum_calc.ret_checksum(
-                            full_data_for_checksum
+                            full_data_for_checksum,
                         )
                         hex_checksum = format(tot_checksum, "02X")
                         final_checksum_string = hex_checksum + "\r\n"
                         self.assertEqual(
-                            len(data_list), 5, "scan code message formatting incorrect"
+                            len(data_list),
+                            5,
+                            "scan code message formatting incorrect",
                         )
                         if self.use_test_data is True:
                             test_data = "$RXCOD,111221,161229,ROBOT,RBG*5E\r\n"
                             list_test_data = test_data.split(self.delim.decode())
                             checksum_list_test_data = test_data.split("*")
                             self.assertEqual(
-                                data_list[3], list_test_data[3], "team id incorrect"
+                                data_list[3],
+                                list_test_data[3],
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -254,7 +275,9 @@ class TestRobotXComms(unittest.TestCase):
                             )
                         else:
                             self.assertEqual(
-                                data_list[3], self.team_id, "team id incorrect"
+                                data_list[3],
+                                self.team_id,
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -281,7 +304,8 @@ class TestRobotXComms(unittest.TestCase):
 
         rospy.wait_for_service("detect_dock_message")
         send_robot_x_detect_dock_message = rospy.ServiceProxy(
-            "detect_dock_message", MessageDetectDock
+            "detect_dock_message",
+            MessageDetectDock,
         )
 
         robot_x_detect_dock_message = RobotXDetectDockMessage()
@@ -295,7 +319,8 @@ class TestRobotXComms(unittest.TestCase):
                 split_rx_data = rx_data.splitlines(True)
                 for message in split_rx_data:
                     deserialized_msg = robot_x_detect_dock_message.from_string(
-                        self.delim, message
+                        self.delim,
+                        message,
                     )
                     data_list = [x.decode() for x in deserialized_msg[0]]
                     checksum_list = [x.decode() for x in deserialized_msg[1]]
@@ -303,7 +328,7 @@ class TestRobotXComms(unittest.TestCase):
                         full_data_for_checksum = checksum_list[0].replace("$", "")
                         checksum_calc = BitwiseXORChecksum()
                         tot_checksum = checksum_calc.ret_checksum(
-                            full_data_for_checksum
+                            full_data_for_checksum,
                         )
                         hex_checksum = format(tot_checksum, "02X")
                         final_checksum_string = hex_checksum + "\r\n"
@@ -317,7 +342,9 @@ class TestRobotXComms(unittest.TestCase):
                             list_test_data = test_data.split(self.delim.decode())
                             checksum_list_test_data = test_data.split("*")
                             self.assertEqual(
-                                data_list[3], list_test_data[3], "team id incorrect"
+                                data_list[3],
+                                list_test_data[3],
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -325,16 +352,22 @@ class TestRobotXComms(unittest.TestCase):
                                 "detect dock message checksum incorrect",
                             )
                             self.assertEqual(
-                                data_list[4], list_test_data[4], "dock color incorrect"
+                                data_list[4],
+                                list_test_data[4],
+                                "dock color incorrect",
                             )
                             ams_status_ = data_list[5].split("*")[0]
                             msg_ams_status = list_test_data[5].split("*")[0]
                             self.assertEqual(
-                                msg_ams_status, ams_status_, "ams status incorrect"
+                                msg_ams_status,
+                                ams_status_,
+                                "ams status incorrect",
                             )
                         else:
                             self.assertEqual(
-                                data_list[3], self.team_id, "team id incorrect"
+                                data_list[3],
+                                self.team_id,
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -342,11 +375,15 @@ class TestRobotXComms(unittest.TestCase):
                                 "detect dock message checksum incorrect",
                             )
                             self.assertEqual(
-                                data_list[4], dock_color, "dock color incorrect"
+                                data_list[4],
+                                dock_color,
+                                "dock color incorrect",
                             )
                             ams_status_ = int(data_list[5].split("*")[0])
                             self.assertEqual(
-                                ams_status, ams_status_, "ams status incorrect"
+                                ams_status,
+                                ams_status_,
+                                "ams status incorrect",
                             )
                         times_ran += 1
 
@@ -361,7 +398,8 @@ class TestRobotXComms(unittest.TestCase):
 
         rospy.wait_for_service("follow_path_message")
         send_robot_x_follow_path_message = rospy.ServiceProxy(
-            "follow_path_message", MessageFollowPath
+            "follow_path_message",
+            MessageFollowPath,
         )
 
         robot_x_follow_path_message = RobotXFollowPathMessage()
@@ -375,7 +413,8 @@ class TestRobotXComms(unittest.TestCase):
                 split_rx_data = rx_data.splitlines(True)
                 for message in split_rx_data:
                     deserialized_msg = robot_x_follow_path_message.from_string(
-                        self.delim, message
+                        self.delim,
+                        message,
                     )
                     data_list = [x.decode() for x in deserialized_msg[0]]
                     checksum_list = [x.decode() for x in deserialized_msg[1]]
@@ -383,7 +422,7 @@ class TestRobotXComms(unittest.TestCase):
                         full_data_for_checksum = checksum_list[0].replace("$", "")
                         checksum_calc = BitwiseXORChecksum()
                         tot_checksum = checksum_calc.ret_checksum(
-                            full_data_for_checksum
+                            full_data_for_checksum,
                         )
                         hex_checksum = format(tot_checksum, "02X")
                         final_checksum_string = hex_checksum + "\r\n"
@@ -397,7 +436,9 @@ class TestRobotXComms(unittest.TestCase):
                             list_test_data = test_data.split(self.delim.decode())
                             checksum_list_test_data = test_data.split("*")
                             self.assertEqual(
-                                data_list[3], list_test_data[3], "team id incorrect"
+                                data_list[3],
+                                list_test_data[3],
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -407,11 +448,15 @@ class TestRobotXComms(unittest.TestCase):
                             msg_finished = data_list[4].split("*")[0]
                             finished_ = list_test_data[4].split("*")[0]
                             self.assertEqual(
-                                msg_finished, finished_, "finished status incorrect"
+                                msg_finished,
+                                finished_,
+                                "finished status incorrect",
                             )
                         else:
                             self.assertEqual(
-                                data_list[3], self.team_id, "team id incorrect"
+                                data_list[3],
+                                self.team_id,
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -420,7 +465,9 @@ class TestRobotXComms(unittest.TestCase):
                             )
                             finished_ = int(data_list[4].split("*")[0])
                             self.assertEqual(
-                                finished, finished_, "finished status incorrect"
+                                finished,
+                                finished_,
+                                "finished status incorrect",
                             )
                         times_ran += 1
 
@@ -435,7 +482,8 @@ class TestRobotXComms(unittest.TestCase):
 
         rospy.wait_for_service("react_report_message")
         send_robot_x_react_report_message = rospy.ServiceProxy(
-            "react_report_message", MessageReactReport
+            "react_report_message",
+            MessageReactReport,
         )
 
         robot_x_react_report_message = RobotXReactReportMessage()
@@ -449,7 +497,8 @@ class TestRobotXComms(unittest.TestCase):
                 split_rx_data = rx_data.splitlines(True)
                 for message in split_rx_data:
                     deserialized_msg = robot_x_react_report_message.from_string(
-                        self.delim, message
+                        self.delim,
+                        message,
                     )
                     data_list = [x.decode() for x in deserialized_msg[0]]
                     checksum_list = [x.decode() for x in deserialized_msg[1]]
@@ -457,7 +506,7 @@ class TestRobotXComms(unittest.TestCase):
                         full_data_for_checksum = checksum_list[0].replace("$", "")
                         checksum_calc = BitwiseXORChecksum()
                         tot_checksum = checksum_calc.ret_checksum(
-                            full_data_for_checksum
+                            full_data_for_checksum,
                         )
                         hex_checksum = format(tot_checksum, "02X")
                         final_checksum_string = hex_checksum + "\r\n"
@@ -471,7 +520,9 @@ class TestRobotXComms(unittest.TestCase):
                             list_test_data = test_data.split(self.delim.decode())
                             checksum_list_test_data = test_data.split("*")
                             self.assertEqual(
-                                data_list[3], list_test_data[3], "team id incorrect"
+                                data_list[3],
+                                list_test_data[3],
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -486,7 +537,6 @@ class TestRobotXComms(unittest.TestCase):
                             )
 
                             for i in range(int(data_list[4])):
-
                                 if i != int(data_list[4]) - 1:
                                     self.assertEqual(
                                         data_list[5 + i],
@@ -497,12 +547,16 @@ class TestRobotXComms(unittest.TestCase):
                                     msg_animal = data_list[5 + i].split("*")[0]
                                     animal_ = list_test_data[5 + i].split("*")[0]
                                     self.assertEqual(
-                                        msg_animal, animal_, "animal incorrect"
+                                        msg_animal,
+                                        animal_,
+                                        "animal incorrect",
                                     )
 
                         else:
                             self.assertEqual(
-                                data_list[3], self.team_id, "team id incorrect"
+                                data_list[3],
+                                self.team_id,
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -516,15 +570,18 @@ class TestRobotXComms(unittest.TestCase):
                             )
 
                             for i, animal in enumerate(animal_array):
-
                                 if i != len(animal_array) - 1:
                                     self.assertEqual(
-                                        data_list[5 + i], animal, "animal incorrect"
+                                        data_list[5 + i],
+                                        animal,
+                                        "animal incorrect",
                                     )
                                 else:
                                     animal_ = data_list[5 + i].split("*")[0]
                                     self.assertEqual(
-                                        animal, animal_, "animal incorrect"
+                                        animal,
+                                        animal_,
+                                        "animal incorrect",
                                     )
                         times_ran += 1
 
@@ -540,7 +597,8 @@ class TestRobotXComms(unittest.TestCase):
 
         rospy.wait_for_service("find_fling_message")
         send_robot_x_find_fling_message = rospy.ServiceProxy(
-            "find_fling_message", MessageFindFling
+            "find_fling_message",
+            MessageFindFling,
         )
 
         robot_x_find_fling_message = RobotXFindFlingMessage()
@@ -554,7 +612,8 @@ class TestRobotXComms(unittest.TestCase):
                 split_rx_data = rx_data.splitlines(True)
                 for message in split_rx_data:
                     deserialized_msg = robot_x_find_fling_message.from_string(
-                        self.delim, message
+                        self.delim,
+                        message,
                     )
                     data_list = [x.decode() for x in deserialized_msg[0]]
                     checksum_list = [x.decode() for x in deserialized_msg[1]]
@@ -562,7 +621,7 @@ class TestRobotXComms(unittest.TestCase):
                         full_data_for_checksum = checksum_list[0].replace("$", "")
                         checksum_calc = BitwiseXORChecksum()
                         tot_checksum = checksum_calc.ret_checksum(
-                            full_data_for_checksum
+                            full_data_for_checksum,
                         )
                         hex_checksum = format(tot_checksum, "02X")
                         final_checksum_string = hex_checksum + "\r\n"
@@ -576,7 +635,9 @@ class TestRobotXComms(unittest.TestCase):
                             list_test_data = test_data.split(self.delim.decode())
                             checksum_list_test_data = test_data.split("*")
                             self.assertEqual(
-                                data_list[3], list_test_data[3], "team id incorrect"
+                                data_list[3],
+                                list_test_data[3],
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -584,16 +645,22 @@ class TestRobotXComms(unittest.TestCase):
                                 "find fling message checksum incorrect",
                             )
                             self.assertEqual(
-                                data_list[4], list_test_data[4], "shape color incorrect"
+                                data_list[4],
+                                list_test_data[4],
+                                "shape color incorrect",
                             )
                             msg_ams_status = data_list[5].split("*")[0]
                             ams_status_ = list_test_data[5].split("*")[0]
                             self.assertEqual(
-                                msg_ams_status, ams_status_, "shape incorrect"
+                                msg_ams_status,
+                                ams_status_,
+                                "shape incorrect",
                             )
                         else:
                             self.assertEqual(
-                                data_list[3], self.team_id, "team id incorrect"
+                                data_list[3],
+                                self.team_id,
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -603,7 +670,9 @@ class TestRobotXComms(unittest.TestCase):
                             self.assertEqual(data_list[4], color, "color incorrect")
                             ams_status_ = int(data_list[5].split("*")[0])
                             self.assertEqual(
-                                ams_status, ams_status_, "ams_status status incorrect"
+                                ams_status,
+                                ams_status_,
+                                "ams_status status incorrect",
                             )
                         times_ran += 1
 
@@ -619,7 +688,8 @@ class TestRobotXComms(unittest.TestCase):
 
         rospy.wait_for_service("uav_replenishment_message")
         send_robot_x_uav_replenishment_message = rospy.ServiceProxy(
-            "uav_replenishment_message", MessageUAVReplenishment
+            "uav_replenishment_message",
+            MessageUAVReplenishment,
         )
 
         robot_x_uav_replenishment_message = RobotXUAVReplenishmentMessage()
@@ -633,7 +703,8 @@ class TestRobotXComms(unittest.TestCase):
                 split_rx_data = rx_data.splitlines(True)
                 for message in split_rx_data:
                     deserialized_msg = robot_x_uav_replenishment_message.from_string(
-                        self.delim, message
+                        self.delim,
+                        message,
                     )
                     data_list = [x.decode() for x in deserialized_msg[0]]
                     checksum_list = [x.decode() for x in deserialized_msg[1]]
@@ -641,7 +712,7 @@ class TestRobotXComms(unittest.TestCase):
                         full_data_for_checksum = checksum_list[0].replace("$", "")
                         checksum_calc = BitwiseXORChecksum()
                         tot_checksum = checksum_calc.ret_checksum(
-                            full_data_for_checksum
+                            full_data_for_checksum,
                         )
                         hex_checksum = format(tot_checksum, "02X")
                         final_checksum_string = hex_checksum + "\r\n"
@@ -655,7 +726,9 @@ class TestRobotXComms(unittest.TestCase):
                             list_test_data = test_data.split(self.delim.decode())
                             checksum_list_test_data = test_data.split("*")
                             self.assertEqual(
-                                data_list[3], list_test_data[3], "team id incorrect"
+                                data_list[3],
+                                list_test_data[3],
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -663,16 +736,22 @@ class TestRobotXComms(unittest.TestCase):
                                 "uav replenishment message checksum incorrect",
                             )
                             self.assertEqual(
-                                data_list[4], list_test_data[4], "uav status incorrect"
+                                data_list[4],
+                                list_test_data[4],
+                                "uav status incorrect",
                             )
                             msg_item_status = data_list[5].split("*")[0]
                             item_status_ = list_test_data[5].split("*")[0]
                             self.assertEqual(
-                                msg_item_status, item_status_, "item_status incorrect"
+                                msg_item_status,
+                                item_status_,
+                                "item_status incorrect",
                             )
                         else:
                             self.assertEqual(
-                                data_list[3], self.team_id, "team id incorrect"
+                                data_list[3],
+                                self.team_id,
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -680,11 +759,15 @@ class TestRobotXComms(unittest.TestCase):
                                 "uav replenishment message checksum incorrect",
                             )
                             self.assertEqual(
-                                int(data_list[4]), uav_status, "uav_status incorrect"
+                                int(data_list[4]),
+                                uav_status,
+                                "uav_status incorrect",
                             )
                             item_status_ = int(data_list[5].split("*")[0])
                             self.assertEqual(
-                                item_status, item_status_, "finished status incorrect"
+                                item_status,
+                                item_status_,
+                                "finished status incorrect",
                             )
                         times_ran += 1
 
@@ -701,7 +784,8 @@ class TestRobotXComms(unittest.TestCase):
 
         rospy.wait_for_service("uav_search_report_message")
         send_robot_x_uav_search_report_message = rospy.ServiceProxy(
-            "uav_search_report_message", MessageUAVSearchReport
+            "uav_search_report_message",
+            MessageUAVSearchReport,
         )
 
         robot_x_uav_search_report_message = RobotXUAVSearchReportMessage()
@@ -710,14 +794,25 @@ class TestRobotXComms(unittest.TestCase):
             while not rospy.is_shutdown() and times_ran < self.number_of_iterations:
                 rx_data = None
                 send_robot_x_uav_search_report_message(
-                    object1, 0, "", 0, "", object2, 0, "", 0, "", uav_status
+                    object1,
+                    0,
+                    "",
+                    0,
+                    "",
+                    object2,
+                    0,
+                    "",
+                    0,
+                    "",
+                    uav_status,
                 )
                 while rx_data is None:
                     rx_data = self.server.receive_message()
                 split_rx_data = rx_data.splitlines(True)
                 for message in split_rx_data:
                     deserialized_msg = robot_x_uav_search_report_message.from_string(
-                        self.delim, message
+                        self.delim,
+                        message,
                     )
                     data_list = [x.decode() for x in deserialized_msg[0]]
                     checksum_list = [x.decode() for x in deserialized_msg[1]]
@@ -725,7 +820,7 @@ class TestRobotXComms(unittest.TestCase):
                         full_data_for_checksum = checksum_list[0].replace("$", "")
                         checksum_calc = BitwiseXORChecksum()
                         tot_checksum = checksum_calc.ret_checksum(
-                            full_data_for_checksum
+                            full_data_for_checksum,
                         )
                         hex_checksum = format(tot_checksum, "02X")
                         final_checksum_string = hex_checksum + "\r\n"
@@ -739,7 +834,9 @@ class TestRobotXComms(unittest.TestCase):
                             list_test_data = test_data.split(self.delim.decode())
                             checksum_list_test_data = test_data.split("*")
                             self.assertEqual(
-                                data_list[13], list_test_data[13], "team id incorrect"
+                                data_list[13],
+                                list_test_data[13],
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -747,19 +844,27 @@ class TestRobotXComms(unittest.TestCase):
                                 "follow path message checksum incorrect",
                             )
                             self.assertEqual(
-                                data_list[3], list_test_data[3], "object1 incorrect"
+                                data_list[3],
+                                list_test_data[3],
+                                "object1 incorrect",
                             )
                             self.assertEqual(
-                                data_list[8], list_test_data[8], "object2 incorrect"
+                                data_list[8],
+                                list_test_data[8],
+                                "object2 incorrect",
                             )
                             msg_uav_status = data_list[14].split("*")[0]
                             uav_status_ = list_test_data[14].split("*")[0]
                             self.assertEqual(
-                                msg_uav_status, uav_status_, "uav_status incorrect"
+                                msg_uav_status,
+                                uav_status_,
+                                "uav_status incorrect",
                             )
                         else:
                             self.assertEqual(
-                                data_list[13], self.team_id, "team id incorrect"
+                                data_list[13],
+                                self.team_id,
+                                "team id incorrect",
                             )
                             self.assertEqual(
                                 checksum_list[1],
@@ -767,14 +872,20 @@ class TestRobotXComms(unittest.TestCase):
                                 "follow path message checksum incorrect",
                             )
                             self.assertEqual(
-                                data_list[3], object1, "object 1 incorrect"
+                                data_list[3],
+                                object1,
+                                "object 1 incorrect",
                             )
                             self.assertEqual(
-                                data_list[8], object2, "object 2 incorrect"
+                                data_list[8],
+                                object2,
+                                "object 2 incorrect",
                             )
                             uav_status_ = int(data_list[14].split("*")[0])
                             self.assertEqual(
-                                uav_status, uav_status_, "uav status incorrect"
+                                uav_status,
+                                uav_status_,
+                                "uav status incorrect",
                             )
                         times_ran += 1
 
@@ -800,10 +911,13 @@ class RobotXServer:
         while not self.connected and not rospy.is_shutdown():
             try:
                 self.socket_connection = socket.socket(
-                    socket.AF_INET, socket.SOCK_STREAM
+                    socket.AF_INET,
+                    socket.SOCK_STREAM,
                 )
                 self.socket_connection.setsockopt(
-                    socket.SOL_SOCKET, socket.SO_REUSEADDR, 1
+                    socket.SOL_SOCKET,
+                    socket.SO_REUSEADDR,
+                    1,
                 )
                 self.socket_connection.bind((self.tcp_ip, self.tcp_port))
                 self.socket_connection.listen(5)

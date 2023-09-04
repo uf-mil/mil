@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import rospy
-from mil_usb_to_can import SimulatedCANDevice
+from mil_usb_to_can.sub8 import SimulatedCANDevice
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 
 from .packets import (
@@ -39,10 +39,14 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         super().__init__(*args, **kwargs)
         self._update_timer = rospy.Timer(rospy.Duration(1), self.send_updates)
         self._soft_kill = rospy.Service(
-            "/simulate_soft_kill", SetBool, self.set_soft_kill
+            "/simulate_soft_kill",
+            SetBool,
+            self.set_soft_kill,
         )
         self._hard_kill = rospy.Service(
-            "/simulate_hard_kill", SetBool, self.set_hard_kill
+            "/simulate_hard_kill",
+            SetBool,
+            self.set_hard_kill,
         )
         self._go_srv = rospy.Service("/simulate_go", SetBool, self._on_go_srv)
 
@@ -136,8 +140,8 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         Serves as the data handler for the device. Handles :class:`KillMessage`,
         :class:`ThrustPacket`, and :class:`HeartbeatMessage` types.
         """
-        assert can_id == THRUST_SEND_ID or can_id == KILL_SEND_ID
-        if KillMessage.IDENTIFIER == data[0]:
+        assert can_id in (THRUST_SEND_ID, KILL_SEND_ID)
+        if data[0] == KillMessage.IDENTIFIER:
             packet = KillMessage.from_bytes(data)
             assert packet.is_command
             assert packet.is_hard or packet.is_soft
@@ -146,9 +150,9 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
             elif packet.is_soft:
                 self.soft_kill_mobo = packet.is_asserted
             self.send_updates()
-        elif ThrustPacket.IDENTIFIER == data[0]:
+        elif data[0] == ThrustPacket.IDENTIFIER:
             packet = ThrustPacket.from_bytes(data)
-        elif HeartbeatMessage.IDENTIFIER == data[0]:
+        elif data[0] == HeartbeatMessage.IDENTIFIER:
             packet = HeartbeatMessage.from_bytes(data)
             self._last_heartbeat = rospy.Time.now()
         else:

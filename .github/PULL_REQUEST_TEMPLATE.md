@@ -9,9 +9,9 @@
 
 
 ## Related Issues
-<!-- BELOW: What issues are closed by this PR? Write "Closed #XXX" to close the issue when the PR is merged. -->
+<!-- BELOW: What issues are closed by this PR? Write "Closes #XXX" to link the issue to the PR and close it when the PR is merged. -->
 
-* #XXX
+\- Closes #XXX
 
 ## Testing
 <!-- BELOW: Briefly explain how someone can go about testing your PR. -->

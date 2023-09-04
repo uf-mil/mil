@@ -50,7 +50,9 @@ class EarthCoordinateConverter:
         """
         if self.first:  # Advertise convert service on first odom/absodom pair
             self.convert_service = rospy.Service(
-                "convert", CoordinateConversion, self.convert_cb
+                "convert",
+                CoordinateConversion,
+                self.convert_cb,
             )
             self.first = False
         self.stamp = odom.header.stamp

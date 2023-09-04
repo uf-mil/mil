@@ -10,4 +10,4 @@ class FailingMission(ExampleBaseMission):
 
 class CancelledMission(ExampleBaseMission):
     async def run(self, parameters):
-        raise asyncio.CancelledError()
+        raise asyncio.CancelledError

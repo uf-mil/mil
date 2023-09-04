@@ -25,6 +25,11 @@
 
   <include file="$(find subjugator_launch)/launch/can.launch" />
 
+  <!-- Parameters for course-specific geometry -->
+  <group ns="course">
+      <rosparam file="$(find subjugator_launch)/config/course_geometry.yaml" />
+  </group>
+
   <include if="$(eval environment != 'dynsim')" file="$(find subjugator_launch)/launch/subsystems/cameras.launch">
     <arg name="environment" value="$(arg environment)" />
     <arg name="simulate_cams" value="$(arg simulate_cams)" />
@@ -34,7 +39,9 @@
   <include if="$(eval environment != 'dynsim')" file="$(find subjugator_launch)/launch/subsystems/odometry.launch"/>
   <include file="$(find subjugator_launch)/launch/subsystems/thruster_mapper.launch"/>
 
-  <include if="$(arg use_adaptive_controller)" file="$(find subjugator_launch)/launch/subsystems/adaptive_controller.launch"/>
+  <include if="$(arg use_adaptive_controller)" file="$(find subjugator_launch)/launch/subsystems/adaptive_controller.launch">
+    <arg name="environment" value="$(arg environment)" />
+  </include>
   <include unless="$(arg use_adaptive_controller)" file="$(find subjugator_launch)/launch/subsystems/rise.launch"/>
 
   <include file="$(find subjugator_launch)/launch/subsystems/path_planner.launch" />

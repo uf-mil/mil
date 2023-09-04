@@ -5,7 +5,7 @@ import socket
 import time
 
 parser = argparse.ArgumentParser(
-    description="Creates a TCP server and send any client whom connects the full contents of the specified binary file"
+    description="Creates a TCP server and send any client whom connects the full contents of the specified binary file",
 )
 parser.add_argument("file", help="name of file to playback")
 parser.add_argument("--port", default=10001, type=int, help="Port to bind to")
@@ -17,7 +17,10 @@ parser.add_argument(
     help="Number of samples to send at a time (in bytes), 0 for all available",
 )
 parser.add_argument(
-    "--rate", default=0, type=float, help="Number of times to send a batch per second"
+    "--rate",
+    default=0,
+    type=float,
+    help="Number of times to send a batch per second",
 )
 parser.add_argument(
     "--advance_on_arrow",

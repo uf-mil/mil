@@ -36,13 +36,15 @@ def makeBoxControl() -> InteractiveMarkerControl:
                 type=Marker.CUBE,
                 scale=Vector3(0.45, 0.45, 0.45),
                 color=ColorRGBA(0.5, 0.5, 0.5, 1),
-            )
+            ),
         ],
     )
 
 
 def make6DofMarker(
-    name: str, description: str, allow_rotation: bool = False
+    name: str,
+    description: str,
+    allow_rotation: bool = False,
 ) -> InteractiveMarker:
     int_marker = InteractiveMarker()
     int_marker.name = name
@@ -125,9 +127,9 @@ if __name__ == "__main__":
         ):
             # compute twist from this and last pose update
             if desired_posetwist is not None and rospy.Duration.from_sec(
-                0
+                0,
             ) < rospy.Time.now() - desired_posetwist.header.stamp < rospy.Duration.from_sec(
-                0.05
+                0.05,
             ):
                 dt = (rospy.Time.now() - desired_posetwist.header.stamp).to_sec()
                 vel = (
@@ -146,9 +148,11 @@ if __name__ == "__main__":
                         transformations.quaternion_multiply(
                             xyzw_array(feedback.pose.orientation),
                             transformations.quaternion_conjugate(
-                                xyzw_array(desired_posetwist.posetwist.pose.orientation)
+                                xyzw_array(
+                                    desired_posetwist.posetwist.pose.orientation,
+                                ),
                             ),
-                        )
+                        ),
                     )
                     / dt
                 )
@@ -163,10 +167,11 @@ if __name__ == "__main__":
                 ),
             )
         if rospy.Time.now() - desired_posetwist.header.stamp > rospy.Duration.from_sec(
-            0.05
+            0.05,
         ):
             desired_posetwist.posetwist.twist = Twist(
-                linear=Vector3(0, 0, 0), angular=Vector3(0, 0, 0)
+                linear=Vector3(0, 0, 0),
+                angular=Vector3(0, 0, 0),
             )
         if desired_posetwist is not None:
             desired_pub.publish(desired_posetwist)
@@ -181,8 +186,8 @@ if __name__ == "__main__":
     current_vel = numpy.zeros(3)
     current_orientation = numpy.array([0, 0, 0, 1])
     current_angvel = numpy.zeros(3)
-    m = 10
-    I = 10
+    vel_m = 10
+    angvel_I = 10
     dt = 0.01
 
     def updateCurrent(msg):
@@ -193,19 +198,21 @@ if __name__ == "__main__":
         # print wrench
         wrench_world = world_from_body.dot(wrench[0]), world_from_body.dot(wrench[1])
 
-        current_vel += dt * (wrench_world[0] - 10 * current_vel) / m
-        current_angvel += dt * (wrench_world[1] - 5 * current_angvel) / I
+        current_vel += dt * (wrench_world[0] - 10 * current_vel) / vel_m
+        current_angvel += dt * (wrench_world[1] - 5 * current_angvel) / angvel_I
 
         current_pos += dt * current_vel
 
         def quat_exp(quat):
             x, y, z = quat
             return transformations.quaternion_about_axis(
-                numpy.linalg.norm((x, y, z)), (x, y, z)
+                numpy.linalg.norm((x, y, z)),
+                (x, y, z),
             )
 
         current_orientation = transformations.quaternion_multiply(
-            quat_exp(current_angvel * dt), current_orientation
+            quat_exp(current_angvel * dt),
+            current_orientation,
         )
 
         pose = Pose(
@@ -227,10 +234,11 @@ if __name__ == "__main__":
                 pose=PoseWithCovariance(pose=pose),
                 twist=TwistWithCovariance(
                     twist=Twist(
-                        linear=Vector3(*current_vel), angular=Vector3(*current_angvel)
-                    )
+                        linear=Vector3(*current_vel),
+                        angular=Vector3(*current_angvel),
+                    ),
                 ),
-            )
+            ),
         )
 
     rospy.Timer(rospy.Duration(dt), updateCurrent)

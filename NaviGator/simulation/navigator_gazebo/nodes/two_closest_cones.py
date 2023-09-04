@@ -17,15 +17,18 @@ from navigator_msgs.srv import (
 # Defines a service that returns the position of the acoustic beacon from odom and the range_bearing topic
 class PcodarAverageScales:
     def __init__(self):
-
         # create service server
         self.server = rospy.Service(
-            "/get_two_closest_cones", TwoClosestCones, self.handler
+            "/get_two_closest_cones",
+            TwoClosestCones,
+            self.handler,
         )
 
         # create service client
         self.odom = rospy.Subscriber(
-            "/pcodar/objects", PerceptionObjectArray, self.pcodarSubscriber
+            "/pcodar/objects",
+            PerceptionObjectArray,
+            self.pcodarSubscriber,
         )
 
         # create odom subscriber
@@ -58,7 +61,6 @@ class PcodarAverageScales:
         self.odomSet = True
 
     def pcodarSubscriber(self, msg: PerceptionObjectArray) -> None:
-
         self.new_closest_two_indicies = [None, None]
         self.new_closest_two_dists = [None, None]
         self.new_closest_two_buoys = [None, None]
@@ -73,7 +75,6 @@ class PcodarAverageScales:
         self.labeled_objects = msg.objects
 
         for i, object in enumerate(msg.objects):
-
             buoy_pos = rosmsg_to_numpy(object.pose.position)
             dist = np.linalg.norm(buoy_pos - self.pos)
             radius = 50
@@ -139,7 +140,6 @@ class PcodarAverageScales:
             # buoy is in front of boat
             # buoy is within a certain radius of boat
             if not self.buoy_in_front_of_boat(buoy_pos) or not (dist < radius):
-
                 continue
 
             if (
@@ -150,7 +150,6 @@ class PcodarAverageScales:
                 and (self.new_closest_two_indicies[0] != i)
                 and (i not in self.buoys_passed)
             ):
-
                 temp_index = self.new_closest_two_indicies[0]
                 temp_buoy = self.new_closest_two_buoys[0]
                 temp_dist = self.new_closest_two_dists[0]
@@ -172,7 +171,6 @@ class PcodarAverageScales:
                 and (self.new_closest_two_indicies[0] != i)
                 and (i not in self.buoys_passed)
             ):
-
                 self.new_closest_two_dists[1] = dist
                 self.new_closest_two_buoys[1] = object.pose.position
                 self.new_closest_two_indicies[1] = i
@@ -198,7 +196,6 @@ class PcodarAverageScales:
             or "round" in self.labeled_objects[index1].labeled_classification
             or "round" in self.labeled_objects[index2].labeled_classification
         ):
-
             cones.no_more_buoys = True
             return cones
 
@@ -220,7 +217,6 @@ class PcodarAverageScales:
         return cones
 
     def buoy_in_front_of_boat(self, buoy_pos: np.ndarray) -> bool:
-
         # get global angle of vector between boat and buoy
         vect = [buoy_pos[0] - self.pos[0], buoy_pos[1] - self.pos[1]]
         theta = math.atan2(vect[1], vect[0])
@@ -230,13 +226,10 @@ class PcodarAverageScales:
 
         # check relative angle, if abs(rel_angle) is less than 90deg...
         # buoy is in front of boat
-        if (
+        return bool(
             abs(theta - yaw) < math.pi / 2
-            or abs(theta + (2 * math.pi) - yaw) < math.pi / 2
-        ):
-            return True
-        else:
-            return False
+            or abs(theta + 2 * math.pi - yaw) < math.pi / 2,
+        )
 
 
 if __name__ == "__main__":

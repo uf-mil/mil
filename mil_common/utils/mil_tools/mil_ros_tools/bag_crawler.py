@@ -128,8 +128,6 @@ class BagCrawler:
 
 
 if __name__ == "__main__":
-    import cv2
-
     bag = "test.bag"
     bc = BagCrawler(bag)
 

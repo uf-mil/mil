@@ -25,10 +25,16 @@ class Sabertooth2x12ROSNode:
 
         self.timer = rospy.Timer(self.timeout / 2.0, self.timer_cb)
         self.motor1_sub = rospy.Subscriber(
-            "motor1/cmd", Float64, self.motor1_cb, queue_size=1
+            "motor1/cmd",
+            Float64,
+            self.motor1_cb,
+            queue_size=1,
         )
         self.motor2_sub = rospy.Subscriber(
-            "motor2/cmd", Float64, self.motor2_cb, queue_size=1
+            "motor2/cmd",
+            Float64,
+            self.motor2_cb,
+            queue_size=1,
         )
 
     @thread_lock(lock)
