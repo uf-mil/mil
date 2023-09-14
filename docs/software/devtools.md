@@ -6,7 +6,8 @@ These tools serve to be like little assistants, polietly cleaning up your code
 behind you and warning you about potential errors that may occur as you change
 existing code and contribute new code.
 
-Let's discuss how we can use some of these tools.
+Let's discuss how we can use some of these tools. These tools are great and help
+us do a lot in MIL!
 
 ## `pre-commit`
 
