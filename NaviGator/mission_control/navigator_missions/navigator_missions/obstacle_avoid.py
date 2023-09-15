@@ -42,7 +42,11 @@ class ObstacleAvoid(NaviGatorMission):
             help="set to use pois for square corners",
         )
         parser.add_argument(
-            "-s", "--speed", type=float, default=0.75, help="set speed_factor of boat"
+            "-s",
+            "--speed",
+            type=float,
+            default=0.75,
+            help="set speed_factor of boat",
         )
 
         cls.parser = parser
@@ -73,10 +77,16 @@ class ObstacleAvoid(NaviGatorMission):
         for i in range(0, num_passes):
             # Calculate the points at offset away from the square edges
             ppoints_close = await self.get_perpendicular_points(
-                self.square[0], self.square[1], midpoints_close[i], out_offset
+                self.square[0],
+                self.square[1],
+                midpoints_close[i],
+                out_offset,
             )
             ppoints_far = await self.get_perpendicular_points(
-                self.square[3], self.square[2], midpoints_far[i], out_offset
+                self.square[3],
+                self.square[2],
+                midpoints_far[i],
+                out_offset,
             )
 
             # If its on the first side go to the close side then the far side, otherwise vice versa
@@ -91,11 +101,11 @@ class ObstacleAvoid(NaviGatorMission):
         for i in range(0, len(traverse_points)):
             if i + 1 != len(traverse_points):
                 await self.move.set_position(traverse_points[i]).look_at(
-                    traverse_points[i + 1]
+                    traverse_points[i + 1],
                 ).go(speed_factor=speed_factor)
             else:
                 await self.move.set_position(traverse_points[i]).go(
-                    speed_factor=speed_factor
+                    speed_factor=speed_factor,
                 )
 
         self.send_feedback("Done with obstacle avoid!")
@@ -125,7 +135,8 @@ class ObstacleAvoid(NaviGatorMission):
                         continue
                     for totem3 in white_totems:
                         if np.array_equal(totem1, totem3) or np.array_equal(
-                            totem2, totem3
+                            totem2,
+                            totem3,
                         ):
                             continue
                         for totem4 in white_totems:

@@ -6,7 +6,8 @@ from setuptools import setup
 
 # Fetch values from package.xml
 setup_args = generate_distutils_setup(
-    packages=["navigator_path_planner", "lqrrt"], package_dir={"lqrrt": "lqRRT/lqrrt"}
+    packages=["navigator_path_planner", "lqrrt"],
+    package_dir={"lqrrt": "lqRRT/lqrrt"},
 )
 
 setup(**setup_args)

@@ -24,7 +24,7 @@ AlarmProxy::AlarmProxy(string _alarm_name, bool _raised, string _problem, string
   *this = AlarmProxy(_alarm_name, _raised, ros::this_node::getName(), _problem, _json, _severity);
 }
 
-AlarmProxy::AlarmProxy(ros_alarms::Alarm msg)
+AlarmProxy::AlarmProxy(ros_alarms_msgs::Alarm msg)
 {
   alarm_name = msg.alarm_name;
   raised = msg.raised;
@@ -34,9 +34,9 @@ AlarmProxy::AlarmProxy(ros_alarms::Alarm msg)
   severity = msg.severity;
 }
 
-Alarm AlarmProxy::as_msg()
+ros_alarms_msgs::Alarm AlarmProxy::as_msg()
 {
-  ros_alarms::Alarm a;
+  ros_alarms_msgs::Alarm a;
   a.alarm_name = alarm_name;
   a.raised = raised;
   a.node_name = node_name;

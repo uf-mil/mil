@@ -47,7 +47,7 @@ for i in os.listdir(os.path.abspath(folder)):
                 + str(refPt[0][0])
                 + ", "
                 + str(refPt[1][0])
-                + "\n"
+                + "\n",
             )
             refPt = []
 

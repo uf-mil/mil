@@ -34,3 +34,10 @@ ion base, many shipping carriers won't take batteries without special precaution
 You will need to review these in order to ship them through standard shipping.
 For some locations, it may be easier to buy batteries at the competition site
 rather than to take batteries with you.
+
+## Note
+
+Whenever a package is received in MIL, an email needs to be sent to Dr. Schwartz.
+The email should contain the sender's name of the package, and a picture of the
+packing receipt, if one is included. This should be done by the lab member who
+opens up the package.

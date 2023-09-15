@@ -40,7 +40,7 @@ def dynamics(x: np.ndarray, u: np.ndarray, dt):
     """
     # Rotation matrix (orientation, converts body to world)
     R = np.array(
-        [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]]
+        [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]],
     )
 
     # Construct drag coefficients based on our motion signs
@@ -86,7 +86,7 @@ def lqr(x: np.ndarray, u: np.ndarray):
     Returns cost-to-go matrix S and policy matrix K given local state x and effort u.
     """
     R = np.array(
-        [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]]
+        [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]],
     )
     K = np.hstack((kp.dot(R.T), kd))
     return (S, K)
@@ -118,7 +118,10 @@ def gen_ss(seed: np.ndarray, goal: np.ndarray, buff: List[float] = [ss_start] * 
 
 
 constraints = lqrrt.Constraints(
-    nstates=nstates, ncontrols=ncontrols, goal_buffer=goal_buffer, is_feasible=unset
+    nstates=nstates,
+    ncontrols=ncontrols,
+    goal_buffer=goal_buffer,
+    is_feasible=unset,
 )
 
 planner = lqrrt.Planner(

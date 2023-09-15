@@ -49,7 +49,7 @@ class DemonstrateNavigation(NaviGatorMission):
         if not parameters.pcodar:
             print(1)
             self.send_feedback(
-                "Please click between the end tower of the navigation pass."
+                "Please click between the end tower of the navigation pass.",
             )
             target_point = await self.rviz_point.get_next_message()
             target_point = rosmsg_to_numpy(target_point.point)
@@ -60,7 +60,7 @@ class DemonstrateNavigation(NaviGatorMission):
             for i in range(parameters.num_moves):
                 self.send_feedback(f"Doing move {i + 1}/{parameters.num_moves}")
                 await self.move.look_at(target_point).forward(distance_per_move).go(
-                    blind=True
+                    blind=True,
                 )
             return True
         else:
@@ -77,7 +77,7 @@ class DemonstrateNavigation(NaviGatorMission):
 
             # Start a little behind the entrance
             await self.move.set_position(begin_midpoint).backward(
-                self.START_MARGIN_METERS
+                self.START_MARGIN_METERS,
             ).go()
 
             _, closest_reds = await self.get_sorted_objects("red_cylinder", 2)
@@ -92,7 +92,7 @@ class DemonstrateNavigation(NaviGatorMission):
 
             # Then move a little passed the exit
             await self.move.look_at(end_midpoint).set_position(end_midpoint).forward(
-                self.END_MARGIN_METERS
+                self.END_MARGIN_METERS,
             ).go()
             print("GO NAVIGATOR")
             return True

@@ -41,7 +41,7 @@ def dynamics(x, u, dt):
     """
     # Rotation matrix (orientation, converts body to world)
     R = np.array(
-        [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]]
+        [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]],
     )
 
     # Construct drag coefficients based on our motion signs
@@ -92,7 +92,7 @@ def lqr(x, u):
 
     """
     R = np.array(
-        [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]]
+        [[np.cos(x[2]), -np.sin(x[2]), 0], [np.sin(x[2]), np.cos(x[2]), 0], [0, 0, 1]],
     )
     K = np.hstack((kp.dot(R.T), kd))
     return (S, K)
@@ -106,7 +106,9 @@ error_tol = np.copy(goal_buffer) / 10
 
 
 def gen_ss(
-    seed: np.ndarray, goal: np.ndarray, buff: List[int] = [ss_start] * 4
+    seed: np.ndarray,
+    goal: np.ndarray,
+    buff: List[int] = [ss_start] * 4,
 ) -> List[Tuple[float, float]]:
     """
     Returns a sample space given a seed state, goal state, and buffer.
@@ -125,7 +127,10 @@ def gen_ss(
 
 
 constraints = lqrrt.Constraints(
-    nstates=nstates, ncontrols=ncontrols, goal_buffer=goal_buffer, is_feasible=unset
+    nstates=nstates,
+    ncontrols=ncontrols,
+    goal_buffer=goal_buffer,
+    is_feasible=unset,
 )
 
 planner = lqrrt.Planner(

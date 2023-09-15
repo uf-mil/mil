@@ -59,7 +59,7 @@ class TestMapThrusters(unittest.TestCase):
 
         for num, wrench in enumerate(wrenches):
             wrench_msg = WrenchStamped(
-                wrench=Wrench(force=Vector3(*wrench[:3]), torque=Vector3(*wrench[3:]))
+                wrench=Wrench(force=Vector3(*wrench[:3]), torque=Vector3(*wrench[3:])),
             )
 
             thrust_pub.publish(wrench_msg)

@@ -24,7 +24,8 @@ class ThrusterOut(HandlerBase):
         )
 
         self._update_layout_proxy = rospy.ServiceProxy(
-            "update_thruster_layout", UpdateThrusterLayout
+            "update_thruster_layout",
+            UpdateThrusterLayout,
         )
 
     def update_layout(self, *args, **kwargs):

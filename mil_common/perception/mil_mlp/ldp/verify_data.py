@@ -16,7 +16,11 @@ for index, row in test_df.iterrows():
         img = cv2.imread("test/" + row["filename"])
         prev_img = row["filename"]
     cv2.rectangle(
-        img, (row["xmin"], row["ymin"]), (row["xmax"], row["ymax"]), (0, 0, 255), 5
+        img,
+        (row["xmin"], row["ymin"]),
+        (row["xmax"], row["ymax"]),
+        (0, 0, 255),
+        5,
     )
     cv2.imshow("image", img)
     cv2.waitKey(0)
@@ -26,7 +30,11 @@ for index, row in train_df.iterrows():
         img = cv2.imread("train/" + row["filename"])
         prev_img = row["filename"]
     cv2.rectangle(
-        img, (row["xmin"], row["ymin"]), (row["xmax"], row["ymax"]), (0, 0, 255), 5
+        img,
+        (row["xmin"], row["ymin"]),
+        (row["xmax"], row["ymax"]),
+        (0, 0, 255),
+        5,
     )
     cv2.imshow("image", img)
     k = cv2.waitKey(50)

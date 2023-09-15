@@ -1,4 +1,4 @@
-# Testing Procedures
+# SubjuGator Testing Procedures
 
 ## Before leaving
 
@@ -14,18 +14,23 @@
 * Laptops
 * 7/16 wrench
 * 5/32 Allen Key
+* Duct tape and scissor
+* Buoyancy foams for the sub
 * Allen Key for paintball tank
 * Pliers
 * Flat-head screwdriver
 * Kill wand
+* Multimeter
 * Goggles / Snorkeling Tube
 * Pool noddles
 * Dive fins
-* O'ring grease
+* O'ring grease (Molykote 55)
+* Cable grease (Molykote 44)
 * Hot glue gun
 * Zip ties
 * clippers
 * Towels
+* [Sunscreen](https://www.youtube.com/watch?v=sTJ7AzBIJoI)
 
 
 ### Software/Electrical Checklist

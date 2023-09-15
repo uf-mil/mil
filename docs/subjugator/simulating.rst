@@ -31,7 +31,7 @@ to run the gazebogui with special parameters:
 
     $ gazebogui
 
-This will show you ground truth of the simulated environment. However, when debuggin robot behavior, it is usually more usful to have an idea of exactly what the robot knows, which is why there is also Rviz.
+This will show you ground truth of the simulated environment. However, when debugging robot behavior, it is usually more usful to have an idea of exactly what the robot knows, which is why there is also Rviz.
 
 Run RVIZ
 ~~~~~~~~

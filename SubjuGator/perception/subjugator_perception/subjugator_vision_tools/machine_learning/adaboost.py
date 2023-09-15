@@ -36,14 +36,14 @@ def observe(image):
     kernels_run = features.conv_features(im_gs)
 
     kernel_observations = np.reshape(kernels_run, (-1, kernels_run.shape[2])).astype(
-        np.float32
+        np.float32,
     )
 
     all_observations = np.hstack(
         (
             observations,
             kernel_observations,
-        )
+        ),
     ).astype(np.float32)
 
     return all_observations
@@ -83,7 +83,10 @@ def train_classifier(x, y, n_trees=5, max_depth=3):
     print("Training...")
     bar = tqdm(total=iterations, unit=" estimators")
     boost = GradientBoostingClassifier(
-        n_estimators=iterations, learning_rate=1.0, max_depth=3, loss="exponential"
+        n_estimators=iterations,
+        learning_rate=1.0,
+        max_depth=3,
+        loss="exponential",
     )
 
     boost.fit(normalize(x), y.ravel(), monitor=monitor)
