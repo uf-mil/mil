@@ -4,8 +4,8 @@ from typing import Union
 
 import rospy
 from ros_alarms import Alarm, HandlerBase
-from ros_alarms.msg import Alarm as AlarmMsg
-from ros_alarms.srv import (
+from ros_alarms_msgs.msg import Alarm as AlarmMsg
+from ros_alarms_msgs.srv import (
     AlarmGet,
     AlarmGetRequest,
     AlarmGetResponse,
@@ -38,7 +38,10 @@ class AlarmServer:
         rospy.loginfo(msg.format(rospy.get_param("/known_alarms", [])))
 
         self._alarm_pub = rospy.Publisher(
-            "/alarm/updates", AlarmMsg, latch=True, queue_size=100
+            "/alarm/updates",
+            AlarmMsg,
+            latch=True,
+            queue_size=100,
         )
 
         self._create_meta_alarms()
@@ -90,7 +93,8 @@ class AlarmServer:
         """
         rospy.logdebug(f"Got request for alarm: {srv.alarm_name}")
         return self.alarms.get(
-            srv.alarm_name, Alarm.blank(srv.alarm_name)
+            srv.alarm_name,
+            Alarm.blank(srv.alarm_name),
         ).as_srv_resp()
 
     def make_tagged_alarm(self, name: str) -> Alarm:
@@ -131,8 +135,8 @@ class AlarmServer:
         else:
             rospy.logwarn(
                 "Meta alarm callback for {} failed to return an Alarm or boolean".format(
-                    meta_alarm
-                )
+                    meta_alarm,
+                ),
             )
             return
         self.set_alarm(alarm)
@@ -164,7 +168,6 @@ class AlarmServer:
             and hasattr(cls, "alarm_name")
             and name != "HandlerBase"
         ]:
-
             # Have to instantiate so the class exists exists
             h = handler()
 

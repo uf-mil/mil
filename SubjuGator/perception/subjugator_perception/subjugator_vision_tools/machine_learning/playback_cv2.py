@@ -6,10 +6,10 @@ import cv2
 import numpy as np
 from boost_auto import observe
 from mil_ros_tools import BagCrawler
+
 from subjugator_vision_tools import ImageCrawler, VideoCrawler
 
 if __name__ == "__main__":
-
     usage_msg = "Pass the path to a bag, the start of an image sequence, or 'video' for a webcam\
                  to play through the media and look for the learned object."
     desc_msg = "glhf"
@@ -20,7 +20,9 @@ if __name__ == "__main__":
         help="Pass the path to a bag, the start of an image sequence, or 'video' for a webcam.",
     )
     parser.add_argument(
-        dest="classifier", type=str, help="Name of the classifier to use."
+        dest="classifier",
+        type=str,
+        help="Name of the classifier to use.",
     )
     parser.add_argument(
         "--topic",
@@ -54,7 +56,7 @@ if __name__ == "__main__":
 
     for image in crawl:
         some_observations = observe(image)
-        mask = [x for x in [clf.predict(obs) for obs in some_observations]]
+        mask = [clf.predict(obs) for obs in some_observations]
         cv2.imshow("image", image)
 
         segmentation_image = np.reshape(mask, image[:, :, 2].shape)

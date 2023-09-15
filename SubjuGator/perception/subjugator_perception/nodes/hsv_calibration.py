@@ -13,7 +13,8 @@ class HSVCalibration:
         self.image_sub = Image_Subscriber(self.camera, self.image_cb)
         self.image_pub = Image_Publisher("/image/hsv")
         self.reconfigure_server = DynamicReconfigureServer(
-            HSVCalibrationConfig, self.reconfigure
+            HSVCalibrationConfig,
+            self.reconfigure,
         )
         self.lower = np.array([0, 0, 0], dtype=np.uint8)
         self.upper = np.array([179, 255, 255], dtype=np.uint8)

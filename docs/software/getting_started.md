@@ -16,11 +16,14 @@ If you are using a virtual machine, you can change the amount of RAM and the
 number of CPU cores allotted to the virtual machine by visiting the settings
 of your VM software.
 
-## Installing Ubuntu
+## Setting Up Ubuntu
 
-You will need to install **Ubuntu 20.04 LTS**, the main operating system supported by
-ROS and our tools. Our tools are not setup to work on other operating systems, including
-other Linux distributions, macOS, and Windows.
+### Choosing an Install Method
+
+You will need to install **Ubuntu 20.04 LTS** (disk image downloads linked below),
+the main operating system supported by ROS and our tools. Our tools are not setup
+to work on other operating systems, including other Linux distributions, macOS,
+and Windows.
 
 To use Ubuntu in MIL, you have two options:
 
@@ -44,37 +47,247 @@ virtual machine as these systems are not able to have two operating systems inst
 at once. Intel-based Macs may also experience some issues with dual-booting Ubuntu.
 :::
 
-Please follow the link that suits your best use case:
+The following diagram should give you insight into which method is best for you.
+Note that the diagram is only a recommendation. If you have installed Linux before,
+or know of a technical issue with your computer, you may know that a different
+method is best for you.
 
-* **Dual-booting a Windows computer**: Dual-booting on windows is the best option
-to install Ubuntu on a Windows computer. To complete the process, [look here](https://help.ubuntu.com/community/WindowsDualBoot).
+![Installation Guide](/software/installation.png)
 
-* **Using a virtual machine on Windows:** You could also use a virtual machine
-software on Windows to run Ubuntu. These software include VirtualBox or VMWare.
-Choose which virtualization software works best for you and find a tutorial on how
-to install Ubuntu.
+### Installing Ubuntu
 
-* **Using Parallels on macOS**: Parallels is a favorited virtual machine software
-available on MacOS. It is not free, although there is a student discount available.
-To see how to install Ubuntu on MacOS with parallels, see
-[here](https://peterwitham.com/videos/how-to-install-ubuntu-20-04-lts-on-parallels-for-mac/).
+Here are the links to appropriate `.iso` (disk image) files. Note that you will
+need to choose the correct disk image based on your computer's architecture. You
+do not always need to download these files - they are only needed for some installation
+methods.
 
-* **Using UTM on macOS**: UTM is a virtual machine software that is compatible with
-MacOS. The software is free, unlike Parallels, but requires more setup by the user.
-For instructions on installing Ubuntu with UTM,
-[see here](https://mac.getutm.app/gallery/ubuntu-20-04).
+| Architecture | URL |
+| ------------ | --- |
+| AMD64 (most Windows computers, Intel-based Mac computers) | [focal-desktop-amd64.iso](https://cdimage.ubuntu.com/focal/daily-live/current/focal-desktop-amd64.iso) |
+| ARM64 (Apple Silicon Mac computers) | [focal-desktop-arm64.iso](https://cdimage.ubuntu.com/focal/daily-live/current/focal-desktop-arm64.iso) |
 
-* **Use Distrobox on another Linux distribution**: If you use a Linux distribution
-as your primary operating system, you can install
-Ubuntu through [Distrobox](https://github.com/89luca89/distrobox). You can create a
-Distrobox environment using `distrobox create --name mil --image ubuntu:focal --home ~/mil-home`.
-This will allow you to keep a MIL-only environment. You will also have to set the
-hostname to localhost manually by running `sudo hostname localhost` before running setup.
+The following subsections cover various installation methods. Please choose the
+installation option that best meets your use case. If you're not sure what the
+best installation method is, please check the diagram above.
 
 After you have the operating system downloaded, you may need to configure it.
 This includes setting your preferred language and keyboard layout, along with
 your username and password. Set these settings up to your liking, but note that
 having a shorter username may save you some typing in the long run.
+
+#### Option 1: Dual-booting a Windows computer
+
+A common choice for Windows computers is to dual-boot Linux onto them. This includes
+installing Linux right alongside your host operating system, Windows, on a separate
+partition on your computer's hard drive. If you need access to a bootable USB drive
+containing Ubuntu Linux, feel free to stop by the lab.
+
+1. If your computer uses BitLocker (also known as advanced drive encryption), you
+   will need to disable this. To do this, you can usually search for "BitLocker"
+   or "drive encryption" in your Windows search bar. A control panel or Settings
+   application should open, at which point you can find the BitLocker setting
+   and disable it.
+
+1. If your computer uses Secure Boot, you will need to disable this. Secure Boot
+   is a security feature in Windows that prevents the loading of operating systems
+   other than Windows. While disabling Secure Boot will make your computer slightly
+   less secure, unless you are a secret spy, you should be okay.
+
+   To disable secure boot, you will need to enter your computer's UEFI settings.
+   To do this, trigger an advanced restart of Windows. This can be done by holding
+   shift before clicking restart. Then, click
+   **Troubleshoot > Advanced Options > UEFI Firmware Settings**. Proceed into the
+   security section of your BIOS settings, and disable Secure Boot.
+
+1. Now, let's partition your hard drive to allocate space for your new Ubuntu setup.
+   Open Disk Manager by typing in "Disk Manager" in the Windows search bar. Right-click
+   on your computer's drive, and click **Shrink Volume**. Shrink your disk by
+   **50000 MB**, or 50 GB.
+
+1. Now, insert the bootable USB drive into your computer, and once again, do an
+   advanced restart by holding Shift and clicking **Restart** in your main Windows
+   menu. In the advanced restart menu, click **Use a device**, and then choose
+   the bootable USB drive. If you don't see the USB drive, check to make sure that
+   the USB is fully inserted, and try pulling it out and plugging it back in.
+
+1. You should now see the Linux boot menu. Boot into **Install Ubuntu** or **Ubuntu**,
+   not "Try Ubuntu without installing." You can proceed with all default configuration
+   options in the Ubuntu setup page, as you've already partitioned your disk.
+
+1. Ubuntu will take some time to install. Once the installation process is complete,
+   you should be able to access the Terminal using the nine dots in the bottom left
+   corner to proceed with the rest of the installation.
+
+#### Option 2: Using a virtual machine on Windows
+
+Using a virtual machine on Windows will make installation quicker and easier, but
+will result in poorer performance and more strain on your system. If you'd like
+to install Ubuntu through a virtual machine:
+
+1. Install [VirtualBox](https://www.virtualbox.org/). This virtualization software
+   will manage your virtual machines.
+
+1. Download the Ubuntu 20.04 `.iso` file linked above. This is a disk image, and
+   contains a copy of Ubuntu. Wait for the download to complete.
+
+1. Click on **New** in VirtualBox. Fill out the first page of the form, if one appears.
+
+1. When asked how much memory to allocate, you should move the marker to where the green meets
+   the red. Typically in MIL, when your virtual machine is launched, it will be
+   the only program you are using on your computer, and therefore, it's recommended
+   to give it as much memory and CPU as possible. The tick where the green meets
+   the red is the highest amount that is safe for your operating system. If you
+   cannot allocate more than 8192 MB, understand that your virtual machine may be
+   a little slow, but that's okay.
+
+1. Create a new virtual hard disk. Using VDI (VirtualBox Disk Image) is fine.
+   Make the disk dynamically allocated to save space on your computer. When asked
+   how much space to start with, we recommend 50GB. Certainly no less than 30GB.
+
+1. After you finish creating the new virtual machine, enter the settings of the virtual
+   machine and adjust the "Processor" bar to where the green meets the red.
+
+1. Visit the "Storage" settings of the virtual machine. Under "Controller IDE",
+   click the CD icon next to "Optical Drive" and click "Choose a disk file..."
+   Navigate to the `.iso` file you downloaded earlier, and select it.
+
+1. Click "OK" to save your settings.
+
+1. Click on "Start" near the top of your virtual machine details. This will launch
+   your virtual machine!
+
+1. After some time, you should see the Linux boot menu. Boot into
+   **Install Ubuntu** or **Ubuntu**, not "Try Ubuntu without installing." You
+   can proceed with all default configuration options in the Ubuntu setup page,
+   as you've already partitioned your disk.
+
+1. Ubuntu will take some time to install. Once the installation process is complete,
+   you should be able to access the Terminal using the nine dots in the bottom left
+   corner to proceed with the rest of the installation.
+
+#### Option 3: Using Parallels on macOS
+
+[Parallels Desktop](https://www.parallels.com/) is well-known as the best
+virtual machine manager for macOS. Installing new virtual machines is quick,
+performance is stellar, and the application comes bundled with a suite of tools
+to make sharing resources between the virtual machine and macOS painless. However,
+Parallels does cost $39.99/year for students.
+
+1. Purchase and download Parallels Desktop, linked above. If you use Homebrew,
+   you can install the Parallels with `brew install parallels --cask`.
+
+1. **Do not click "Install Ubuntu Linux" - this will install Ubuntu 22.04, not
+   Ubuntu 20.04!** Instead, download the appropriate `.iso` file linked above.
+   Macs using an M-series processor should install the ARM64 disk image, not the
+   AMD64.
+
+1. Choose "Install Windows or another OS from a DVD or image file." Select the `.iso`
+   file that you downloaded previously and start up your virtual machine.
+
+1. You can name your VM whatever you'd like (maybe something related to MIL?).
+   Click on "Configure..." and choose any options in the "Options" tab that you'd
+   like. In the "Hardware" tab, use the highest number of processors and highest
+   amount of memory recommended for your computer.
+
+1. Click "Continue" - this will launch the virtual machine and begin the installation
+   process.
+
+1. After some time, you should see the Linux boot menu. Boot into
+   **Install Ubuntu** or **Ubuntu**, not "Try Ubuntu without installing." You
+   can proceed with all default configuration options in the Ubuntu setup page,
+   as you've already partitioned your disk.
+
+1. Ubuntu will take some time to install. Once the installation process is complete,
+   you should be able to access the Terminal using the nine dots in the bottom left
+   corner to proceed with the rest of the installation.
+
+#### Option 4: Using UTM on macOS
+
+[UTM](https://mac.getutm.app/) is a popular open-source virtualization software
+for macOS. It is free, but will provide less performance and support between
+your host Mac and the VM.
+
+1. Download UTM, linked above. If you use Homebrew, you can install UTM with
+   `brew install utm --cask`.
+
+1. Download the appropriate `.iso` file for your computer, linked above. Macs using
+   an M-series processor should install the ARM64 disk image, not the AMD64.
+
+1. Click the "+" button to create a new virtual machine, and choose "Virtualize."
+   Next, choose "Linux."
+
+1. Under "Boot ISO Image", choose the disk image you downloaded earlier.
+
+1. Allocate half of your computer's memory to your VM. For example, if you have
+   a 16GB computer, then allocate 8GB to the VM. Allocate half of your computer's
+   CPU cores. For example, if you use a quad-core computer, then allocate two cores
+   to the VM. Enable hardware acceleration with OpenGL.
+
+1. Allocate 50GB of space to your VM. If you don't have too much space left on your
+   computer, you can allocate less, but do not go below 30GB. If you'd like to clean
+   up space on your computer, click the Apple logo in the top left corner of your
+   Mac, choose "About This Mac", head to "Storage", and then click "Manage."
+
+1. Click "Save." Before starting the VM, go into the control panel of the VM using
+   the options button in the top right. In "Display," enable "Retina Mode."
+
+1. Now, click the play button on your VM to turn the VM on!
+
+1. After some time, you should see the Linux boot menu. Boot into
+   **Install Ubuntu** or **Ubuntu**, not "Try Ubuntu without installing." You
+   can proceed with all default configuration options in the Ubuntu setup page,
+   as you've already partitioned your disk.
+
+1. Ubuntu will take some time to install. Once the installation process is complete,
+   you should be able to access the Terminal using the nine dots in the bottom left
+   corner to proceed with the rest of the installation.
+
+#### Option 5: Dual-boot a macOS computer
+
+While dual-booting macOS is not a common option of installation, for those with
+lots of space and recently built computers, it can still be a viable option. You
+may gain more performance from a dual-boot system versus a virtual machine.
+
+Dual-booting is only an option for members with an Intel-based Mac. M-series Macs
+are not able to dual-boot.
+
+1. To start, you'll need to partition your hard drive. Open Disk Utility and choose
+   "View > Show All Devices." Select the highest-level drive, and choose "Partition."
+
+1. Use the "+" button to create a new partition. Click "Add Partition." Name it
+   whatever you'd like (maybe something related to MIL or Ubuntu?), and set the
+   format to "MS-DOS (FAT32)." Allocate 50GB. If you don't have enough space to allocate
+   50GB, 30GB should suffice, but don't go below 30GB. Click "Apply" to create
+   a partition.
+
+1. Insert the bootable USB drive into your computer and restart your computer. Upon
+   restart, hold the Option key until you see the boot options. Select the bootable
+   USB drive.
+
+1. After some time, you should see the Linux boot menu. Boot into
+   **Install Ubuntu** or **Ubuntu**, not "Try Ubuntu without installing." You
+   can proceed with all default configuration options in the Ubuntu setup page,
+   as you've already partitioned your disk.
+
+1. Ubuntu will take some time to install. Once the installation process is complete,
+   you should be able to access the Terminal using the nine dots in the bottom left
+   corner to proceed with the rest of the installation.
+
+#### Option 6: Use Distrobox on another Linux distribution
+
+If you're already using another Linux distribution regularly, you can use Distrobox
+to virtualize Ubuntu on this other distribution. This program is similar
+to Docker or a virtual machine software, but is more lightweight and less computationally
+heavy.
+
+1. Install Distrobox. The installation method will vary based on your host operating
+   system.
+
+1. Create a new Distrobox container using `distrobox create --name mil --image
+   ubuntu:focal --home ~/mil-home`.
+
+1. Enter the container using `distrobox enter --name mil`. You can proceed with
+   the MIL installation script from here.
 
 ## Updating packages
 

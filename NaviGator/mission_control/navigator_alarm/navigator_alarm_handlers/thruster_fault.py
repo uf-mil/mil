@@ -65,9 +65,7 @@ class ThrusterFault(HandlerBase):
                 return
             self.broadcaster.raise_alarm(
                 severity=5,
-                problem_description="{} thrusters have faults".format(
-                    len(self._raised_alarms)
-                ),
+                problem_description=f"{len(self._raised_alarms)} thrusters have faults",
                 parameters={
                     t: self._get_fault_codes(k) for t, k in self._raised_alarms.items()
                 },

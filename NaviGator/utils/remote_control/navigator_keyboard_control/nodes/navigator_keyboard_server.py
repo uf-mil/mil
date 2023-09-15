@@ -51,10 +51,14 @@ class KeyboardServer:
             ord("a"): lambda: self.remote.publish_wrench(0, self.force_scale, 0),
             ord("d"): lambda: self.remote.publish_wrench(0, -self.force_scale, 0),
             curses.KEY_LEFT: lambda: self.remote.publish_wrench(
-                0, 0, self.torque_scale
+                0,
+                0,
+                self.torque_scale,
             ),
             curses.KEY_RIGHT: lambda: self.remote.publish_wrench(
-                0, 0, -self.torque_scale
+                0,
+                0,
+                -self.torque_scale,
             ),
         }
         self.movement_keys = [
@@ -78,7 +82,6 @@ class KeyboardServer:
 
         # If the key pressed was L, locks control of the service to the clinet's UUID
         if req.keycode == 76:
-
             # Generates a new UUID for the client if it does not already have one
             if req.uuid == "":
                 self.locked_uuid = uuid.uuid4().hex

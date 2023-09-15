@@ -10,6 +10,27 @@ __license__ = "MIT"
 
 
 class Joystick:
+    """
+    Stores the history of operations pertaining to how the joystick operates.
+
+    Possible operations could include resetting several parameters (imported from one of the inherited classes)
+    to their default values, keeping track of duration to determine a timeout period, and assigning values to attributes that
+    are used as reference for conditional statements and other functionalities such as incrementation, reassigning values, etc.
+
+    Attributes:
+        force_scale (int): Sets the force scale that needs to be amplified by.
+        torque_scale (int): Sets the torque scale that needs to be amplified by.
+        last_raise_kill (bool): Determines whether the kill alarm is activated.
+        last_clear_kill (bool): Clears the system kill no matter the state that it is in.
+        last_station_hold_state (bool): Determines whether the goal point is set as the current location.
+        last_emergency_control (bool): Determines where the emergency controller is the active controller.
+        last_go_inactive (bool): Checks whether something is going inactive or not.
+        thruster_deploy_count (int): The number of thrusters that are being deployed.
+        thruster_retract_count (int): The number of thrusters that are being retracted.
+        start_count (int): Number of seconds that start is being pressed down.
+        active (bool): Indicates the current state of the controller.
+    """
+
     def __init__(self):
         self.force_scale = rospy.get_param("/joystick_wrench/force_scale", 600)
         self.torque_scale = rospy.get_param("/joystick_wrench/torque_scale", 500)
@@ -24,6 +45,12 @@ class Joystick:
         """
         Used to reset the state of the controller. Sometimes when it
         disconnects then comes back online, the settings are all out of whack.
+
+        Args:
+            No arguments are passed in.
+
+        Returns:
+            No return statement but values are being reset to their default state.
         """
         self.last_raise_kill = False
         self.last_clear_kill = False
@@ -39,20 +66,25 @@ class Joystick:
         self.remote.clear_wrench()
 
     def check_for_timeout(self, joy: Joy):
-        """ This checks for a particular duration when the controller times out. """
+        """
+        This checks for a particular duration when the controller times out.
+
+        Args:
+            joy (Joy): The Joy message.
+        """
         if self.last_joy is None:
             self.last_joy = joy
             return
 
         if joy.axes == self.last_joy.axes and joy.buttons == self.last_joy.buttons:
-
             # No change in state
-            if rospy.Time.now() - self.last_joy.header.stamp > rospy.Duration(15 * 60):
-
-                # The controller times out after 15 minutes
-                if self.active:
-                    rospy.logwarn("Controller Timed out. Hold start to resume.")
-                    self.reset()
+            # The controller times out after 15 minutes
+            if (
+                rospy.Time.now() - self.last_joy.header.stamp > rospy.Duration(15 * 60)
+                and self.active
+            ):
+                rospy.logwarn("Controller Timed out. Hold start to resume.")
+                self.reset()
 
         else:
             joy.header.stamp = (
@@ -61,7 +93,15 @@ class Joystick:
             self.last_joy = joy
 
     def joy_recieved(self, joy: Joy) -> None:
-        "Several actions are being deployed or being kept track of in the process."
+        """
+        Button elements are being assigned and simplied to readable names. The
+        number of deployments or retractions for thrusters are being updated based
+        on several conditions. Moreover, additional settings are changed based on the
+        state of the controller and the activation of potential alarms or switches.
+
+        Args:
+            joy (Joy): The Joy message.
+        """
         self.last_time = rospy.Time.now()
         self.check_for_timeout(joy)
 
@@ -132,16 +172,12 @@ class Joystick:
 
     def die_check(self, _: rospy.timer.TimerEvent) -> None:
         """
-        Publishes zeros after 2 seconds of no update
-        in case node navigator_emergency_xbee dies
+        Publishes zeros after 2 seconds of no update in case node dies.
         """
-        if self.active:
-
-            # No new instructions after 2 seconds
-            if rospy.Time.now() - self.last_time > rospy.Duration(2):
-
-                # Zero the wrench, reset
-                self.reset()
+        # No new instructions after 2 seconds
+        if self.active and rospy.Time.now() - self.last_time > rospy.Duration(2):
+            # Zero the wrench, reset
+            self.reset()
 
 
 if __name__ == "__main__":

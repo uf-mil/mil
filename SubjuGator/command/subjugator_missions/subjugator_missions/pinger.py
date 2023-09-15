@@ -42,19 +42,21 @@ class Pinger(SubjuGatorMission):
             save_pois = rospy.ServiceProxy("/poi_server/save_to_param", Trigger)
             _ = save_pois()
             if rospy.has_param(
-                "/poi_server/initial_pois/pinger_shooter"
+                "/poi_server/initial_pois/pinger_shooter",
             ) and rospy.has_param("/poi_server/initial_pois/pinger_surface"):
                 fprint("Found two pinger guesses", msg_color="green")
                 pinger_1_req = rospy.get_param(
-                    "/poi_server/initial_pois/pinger_surface"
+                    "/poi_server/initial_pois/pinger_surface",
                 )
                 pinger_2_req = rospy.get_param(
-                    "/poi_server/initial_pois/pinger_shooter"
+                    "/poi_server/initial_pois/pinger_shooter",
                 )
 
                 # check \/
                 pinger_guess = await self.transform_to_baselink(
-                    self, pinger_1_req, pinger_2_req
+                    self,
+                    pinger_1_req,
+                    pinger_2_req,
                 )
                 fprint(pinger_guess)
             else:
@@ -99,7 +101,8 @@ class Pinger(SubjuGatorMission):
 
             # Transform hydrophones vector to relative coordinate
             transform = await self._tf_listener.get_transform(
-                "/base_link", "/hydrophones"
+                "/base_link",
+                "/hydrophones",
             )
             vec = transform._q_mat.dot(vec)
 
@@ -132,7 +135,7 @@ class Pinger(SubjuGatorMission):
                 dists = [
                     np.linalg.norm(
                         sub_position
-                        - mil_ros_tools.rosmsg_to_numpy(x.location.pose.position)
+                        - mil_ros_tools.rosmsg_to_numpy(x.location.pose.position),
                     )
                     for x in (pinger_1_req, pinger_2_req)
                 ]
@@ -146,7 +149,9 @@ class Pinger(SubjuGatorMission):
             vec[2] = 0
             if use_prediction:
                 pinger_guess = await self.transform_to_baselink(
-                    self, pinger_1_req, pinger_2_req
+                    self,
+                    pinger_1_req,
+                    pinger_2_req,
                 )
                 fprint(f"Transformed guess: {pinger_guess}")
                 # Check if the pinger aligns with guess
@@ -156,7 +161,10 @@ class Pinger(SubjuGatorMission):
             await self.fancy_move(self, vec)
 
         fprint("Arrived to hydrophones! Going down!")
-        await self.move.to_height(PINGER_HEIGHT).zero_roll_and_pitch().go(speed=0.1)
+        await self.go(
+            self.move().to_height(PINGER_HEIGHT).zero_roll_and_pitch(),
+            speed=0.1,
+        )
 
     async def fancy_move(self, sub: SubjuGatorMission, vec):
         global markers
@@ -175,12 +183,16 @@ class Pinger(SubjuGatorMission):
         marker.color.a = 1
         markers.markers.append(marker)
 
-        await sub.move.relative(vec).depth(MOVE_AT_DEPTH).zero_roll_and_pitch().go(
-            speed=SPEED
+        await self.go(
+            self.move().relative(vec).depth(MOVE_AT_DEPTH).zero_roll_and_pitch(),
+            speed=SPEED,
         )
 
     async def go_to_random_guess(
-        self, sub: SubjuGatorMission, pinger_1_req, pinger_2_req
+        self,
+        sub: SubjuGatorMission,
+        pinger_1_req,
+        pinger_2_req,
     ):
         pinger_guess = await self.transform_to_baselink(sub, pinger_1_req, pinger_2_req)
         where_to = random.choice(pinger_guess)
@@ -199,7 +211,8 @@ class Pinger(SubjuGatorMission):
             go_to_guess = go_to_guess / np.linalg.norm(go_to_guess)
             fprint(
                 "Though ping was behind. Going to pinger guess {} at {}".format(
-                    np.argmax(dots) + 1, go_to_guess
+                    np.argmax(dots) + 1,
+                    go_to_guess,
                 ),
                 msg_color="yellow",
             )
@@ -207,7 +220,10 @@ class Pinger(SubjuGatorMission):
         return (True, vec)
 
     async def transform_to_baselink(
-        self, sub: SubjuGatorMission, pinger_1_req, pinger_2_req
+        self,
+        sub: SubjuGatorMission,
+        pinger_1_req,
+        pinger_2_req,
     ):
         transform = await sub._tf_listener.get_transform("/base_link", "map")
         position = await sub.pose.position

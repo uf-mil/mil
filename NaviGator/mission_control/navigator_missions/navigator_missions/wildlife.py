@@ -15,7 +15,7 @@ class Wildlife(NaviGatorMission):
         try:
             t1 = await self.get_sorted_objects("red_cylinder", n=1)
             t1 = t1[1][0]
-        except Exception as e:
+        except Exception:
             print("could not find stc_platform")
             # get all pcodar objects
             try:
@@ -23,7 +23,7 @@ class Wildlife(NaviGatorMission):
                 t1 = await self.get_sorted_objects(name="UNKNOWN", n=-1)
                 t1 = t1[1][0]
             # if no pcodar objects, drive forward
-            except Exception as e:
+            except Exception:
                 print("literally no objects?")
                 await self.move.forward(10).go()
                 # get first pcodar objects
@@ -34,4 +34,4 @@ class Wildlife(NaviGatorMission):
 
             print("going to nearest small object")
 
-        points = await self.move.d_spiral_point(t1, 5, 4, 1, "ccw", theta_offset=-1.57)
+        await self.move.d_spiral_point(t1, 5, 4, 1, "ccw", theta_offset=-1.57)

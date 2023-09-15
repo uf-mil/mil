@@ -139,7 +139,13 @@ class RobotXHeartbeatMessage:
             system_mode = 0
 
         first_half_data = "{}{}{}{}{}{}{}".format(
-            self.message_id, delim, aedt_date_time, delim, latitude, delim, north_south
+            self.message_id,
+            delim,
+            aedt_date_time,
+            delim,
+            latitude,
+            delim,
+            north_south,
         )
 
         second_half_data = "{}{}{}{}{}{}{}{}{}".format(
@@ -489,7 +495,13 @@ class RobotXScanCodeMessage:
             str: The constructed message.
         """
         data = "{}{}{}{}{}{}{}".format(
-            self.message_id, delim, aedt_date_time, delim, team_id, delim, color_pattern
+            self.message_id,
+            delim,
+            aedt_date_time,
+            delim,
+            team_id,
+            delim,
+            color_pattern,
         )
 
         # test data

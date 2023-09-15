@@ -27,7 +27,9 @@ class MissionPlannerTest(TestUnit):
         stc_resp.objects = [stc_obj]
         stc_resp.found = True
         self.service = sg.spoof_service(
-            "/database/requests", ObjectDBQuery, [empty_resp]
+            "/database/requests",
+            ObjectDBQuery,
+            [empty_resp],
         )
         self.service_missing = sg.spoof_service(
             "/database/requests",
@@ -36,7 +38,10 @@ class MissionPlannerTest(TestUnit):
         )
 
         self.pub_base_mission = sg.spoof_publisher(
-            "/database/objects", PerceptionObjectArray, [empty, stc], [5, 1000]
+            "/database/objects",
+            PerceptionObjectArray,
+            [empty, stc],
+            [5, 1000],
         )
         self.pub_normal_1 = sg.spoof_publisher(
             "/database/objects",
@@ -51,16 +56,28 @@ class MissionPlannerTest(TestUnit):
             [5, 5, 100],
         )
         self.pub_fail_mission = sg.spoof_publisher(
-            "/database/objects", PerceptionObjectArray, [], []
+            "/database/objects",
+            PerceptionObjectArray,
+            [],
+            [],
         )
         self.pub_missing_objects = sg.spoof_publisher(
-            "/database/objects", PerceptionObjectArray, [stc, empty, stc], [4, 10, 100]
+            "/database/objects",
+            PerceptionObjectArray,
+            [stc, empty, stc],
+            [4, 10, 100],
         )
         self.timeout = sg.spoof_publisher(
-            "/database/objects", PerceptionObjectArray, [], []
+            "/database/objects",
+            PerceptionObjectArray,
+            [],
+            [],
         )
         self.obj_appear = sg.spoof_publisher(
-            "/database/objects", PerceptionObjectArray, [empty, stc], [3, 10000]
+            "/database/objects",
+            PerceptionObjectArray,
+            [empty, stc],
+            [3, 10000],
         )
 
     async def run_tests(self):
@@ -99,7 +116,10 @@ class MissionPlannerTest(TestUnit):
             "Testing normal behavior",
         )
         await self._run_mission(
-            base_file + "/timeout.yaml", self.timeout, self.service, "Testing timeouts"
+            base_file + "/timeout.yaml",
+            self.timeout,
+            self.service,
+            "Testing timeouts",
         )
         await self._run_mission(
             base_file + "/object_appears.yaml",

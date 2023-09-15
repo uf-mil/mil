@@ -54,7 +54,7 @@ def grow_cluster(image, prior_range):
 if __name__ == "__main__":
     import visual_threshold_tools
     from mayavi import mlab
-    from sklearn import cluster  # noqa
+    from sklearn import cluster
 
     img = cv2.imread("/home/sub8/Pictures/Selection_001.png")
     cv2.imshow("ss", img)
@@ -84,6 +84,10 @@ if __name__ == "__main__":
 
     # print clust.cluster_centers_
     visual_threshold_tools.points_with_labels(
-        all_list[:, 0], all_list[:, 1], all_list[:, 2], clust.labels_, scale_factor=5.0
+        all_list[:, 0],
+        all_list[:, 1],
+        all_list[:, 2],
+        clust.labels_,
+        scale_factor=5.0,
     )
     mlab.show()

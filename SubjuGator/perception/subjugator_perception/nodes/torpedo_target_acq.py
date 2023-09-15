@@ -27,7 +27,6 @@ as well as code from the buoy_finder mission of previous years.
 
 class torp_vision:
     def __init__(self):
-
         # Pull constants from config file
         self.lower = rospy.get_param("~lower_color_threshold", [0, 0, 80])
         self.upper = rospy.get_param("~higher_color_threshold", [200, 200, 250])
@@ -38,7 +37,8 @@ class torp_vision:
         self.timeout = rospy.Duration(rospy.get_param("~timeout_seconds"), 250000)
         self.min_observations = rospy.get_param("~min_observations", 8)
         self.camera = rospy.get_param(
-            "~camera_topic", "/camera/front/left/image_rect_color"
+            "~camera_topic",
+            "/camera/front/left/image_rect_color",
         )
 
         # Instantiate remaining variables and objects
@@ -197,9 +197,9 @@ class torp_vision:
 
         # convert from BGR to LAB color space
         lab = cv2.cvtColor(cv_image, cv2.COLOR_BGR2LAB)
-        l, a, b = cv2.split(lab)  # split on 3 different channels
+        l_channel, a, b = cv2.split(lab)  # split on 3 different channels
 
-        l2 = clahe.apply(l)  # apply CLAHE to the L-channel
+        l2 = clahe.apply(l_channel)  # apply CLAHE to the L-channel
 
         lab = cv2.merge((l2, a, b))  # merge channels
         cv_image = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
@@ -220,7 +220,7 @@ class torp_vision:
             try:
                 # print(output)
                 self.mask_image_pub.publish(
-                    self.bridge.cv2_to_imgmsg(np.array(output), "bgr8")
+                    self.bridge.cv2_to_imgmsg(np.array(output), "bgr8"),
                 )
             except CvBridgeError as e:
                 print(e)
@@ -247,7 +247,9 @@ class torp_vision:
         blurred = cv2.cvtColor(blurred, cv2.COLOR_BGR2GRAY)
         # Compute contours
         cnts = cv2.findContours(
-            blurred.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            blurred.copy(),
+            cv2.RETR_EXTERNAL,
+            cv2.CHAIN_APPROX_SIMPLE,
         )
 
         cnts = cnts[1]
@@ -326,7 +328,9 @@ class torp_vision:
                 return False
 
             (t, rot_q) = self.tf_listener.lookupTransform(
-                "map", self.camera_model.tfFrame(), self.last_image_time
+                "map",
+                self.camera_model.tfFrame(),
+                self.last_image_time,
             )
             R = mil_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
             center = np.array([max_x, max_y])
