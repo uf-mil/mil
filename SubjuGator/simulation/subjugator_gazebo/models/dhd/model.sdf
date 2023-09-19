@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <model name="dhd">
+    <static>true</static>
+    <link name="dhd">
+      <collision name='dhdcol'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>file://dhd/dhd.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="dhdvis">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>file://dhd/dhd.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+  </model>
+</sdf>
