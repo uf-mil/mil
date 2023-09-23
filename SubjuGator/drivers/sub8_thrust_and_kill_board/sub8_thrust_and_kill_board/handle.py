@@ -229,6 +229,11 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         | Bit 0       |                                           |
         +-------------+-------------------------------------------+
         """
+        """
+        data must be 2 bytes, will fail if it isn't
+        the error you get when it is not looks like this:
+        struct.error: unpack requires a buffer of 2 bytes
+        """
         status = StatusMessage.from_bytes(data)
         self.update_hw_kill(status)
 

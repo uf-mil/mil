@@ -76,14 +76,9 @@ class Autonomous2022(SubjuGatorMission):
 
     async def wait_before_start(self, nh):
         """Waits for the network loss alarm to trigger before"""
-        if await nh.has_param("autonomous"):
-            fprint(f"Waiting {WAIT_SECONDS} seconds before running missions...")
-
-            await nh.sleep(WAIT_SECONDS)
-            fprint("Running Missions")
-            await self.do_mission()
-        else:
-            fprint("Please place sub in autonomous mode", msg_color="red")
+        await nh.sleep(WAIT_SECONDS)
+        fprint("Running Missions")
+        await self.do_mission()
 
     async def run(self, args):
         await self.wait_before_start(self.nh)

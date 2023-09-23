@@ -5,11 +5,11 @@
   <include file="$(find subjugator_launch)/launch/subsystems/cameras/launch/right_camera.launch">
     <arg name="environment" value="$(arg environment)" />
   </include>
-  <include file="$(find subjugator_launch)/launch/subsystems/cameras/launch/left_camera.launch">
+  <!--<include file="$(find subjugator_launch)/launch/subsystems/cameras/launch/left_camera.launch">
     <arg name="environment" value="$(arg environment)" />
     <arg name="simulate_cams" value="$(arg simulate_cams)" />
   </include>
   <include file="$(find subjugator_launch)/launch/subsystems/cameras/launch/down_camera.launch">
     <arg name="environment" value="$(arg environment)" />
-  </include>
+  </include>-->
 </launch>

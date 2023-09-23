@@ -8,9 +8,9 @@ from tf.transformations import *
 
 from .sub_singleton import SubjuGatorMission
 
-fprint = text_effects.FprintFactory(title="START_GATE", msg_color="cyan").fprint
+fprint = text_effects.FprintFactory(title="COIN FLIP", msg_color="cyan").fprint
 
-WAIT_SECONDS = 1
+WAIT_SECONDS = 6
 SPEED = 0.6
 
 class CoinFlip(SubjuGatorMission):
@@ -27,7 +27,7 @@ class CoinFlip(SubjuGatorMission):
         cur_orientation = self.pose.orientation
         fprint(f"Current orientation {cur_orientation}...")
 
-        go2gate_quat = [-0.060561777094835983,0.06749885535659933,-0.9938135363787743,0.06411575930283418] # hardcoded from odom when looking at gate 
+        go2gate_quat = [-0.026659765032916644,-0.04171869996144414,0.573253354777503,0.8178810416180674] # hardcoded from odom when looking at gate 
 
         fprint(f"Rotating to start gate orientation (of {go2gate_quat} quaterntions)...")
         await self.go(self.move().down(0.15).set_orientation(go2gate_quat))
