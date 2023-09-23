@@ -24,45 +24,45 @@ Note that there are several special properties that can be attached to your alar
 Here is a line-by-line breakdown of an example alarm implementation: 
 
 ```python
-    ab = AlarmBroadcaster("test_alarm")
-    al = AlarmListener("test_alarm")
-    ab.clear_alarm()
-    rospy.sleep(0.1)
+ab = AlarmBroadcaster("test_alarm")
+al = AlarmListener("test_alarm")
+ab.clear_alarm()
+rospy.sleep(0.1)
 ```
 This is how you would initialize the alarm broadcaster and listener. Here they make sure to clear any previous alarm data in the broadcaster. 
 
 ```python
-    al.add_callback(cb1)
+al.add_callback(cb1)
 ```
 Make sure to establish the callback function that should be executed once the alarm is activated. 
 
 ```python
-    ab.raise_alarm()
-    rospy.sleep(0.1)
-    assert al.is_raised()
-    assert cb1_ran
+ab.raise_alarm()
+rospy.sleep(0.1)
+assert al.is_raised()
+assert cb1_ran
 ```
 When the alarm is sounded via the `raise_alarm()` function, the callback will be executed automatically. 
 
 ```python
-    al.clear_callbacks()
+al.clear_callbacks()
 
-    al.add_callback(cb1, severity_required=2)
-    al.add_callback(cb2, call_when_raised=False)
+al.add_callback(cb1, severity_required=2)
+al.add_callback(cb2, call_when_raised=False)
 
-    rospy.loginfo("Severity Range Test 1")
-    ab.raise_alarm(severity=4)
-    rospy.sleep(0.1)
-    assert not cb1_ran
-    assert cb2_ran
-    cb2_ran = False
+rospy.loginfo("Severity Range Test 1")
+ab.raise_alarm(severity=4)
+rospy.sleep(0.1)
+assert not cb1_ran
+assert cb2_ran
+cb2_ran = False
 
-    rospy.loginfo("Severity Range Test 2")
-    ab.raise_alarm(severity=1)
-    rospy.sleep(0.1)
-    assert cb1_ran
-    assert not cb2_ran
-    cb1_ran = False
+rospy.loginfo("Severity Range Test 2")
+ab.raise_alarm(severity=1)
+rospy.sleep(0.1)
+assert cb1_ran
+assert not cb2_ran
+cb1_ran = False
 ```
 Note that you can also attach some special properties to your alarm. For instance, you can attach multiple callback functions to the alarm. You can also configure whether the callback function should be automatically executed when the alarm is raised or whether it should be executed manually. Finally, you can assign a severity level to the alarm which can tell the alarm code which callback functions should be run. 
 
