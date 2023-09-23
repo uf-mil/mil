@@ -5,7 +5,7 @@ In the realm of building dependable control systems, the importance of error det
 **ROS Alarms: A Service-Oriented Architecture**
 
 The architecture of ROS alarms distinguishes itself by employing a service-oriented model rather than the usual topic-based approach. In ROS, Services act as the conduits for interaction between nodes, functioning in a request-response manner. While ROS topics enable asynchronous data exchange, services facilitate nodes in seeking specific actions or information from other nodes, awaiting a subsequent response before proceeding. This method of waiting before proceeding is known as a synchronous data exchange. This proves especially valuable in tasks that require direct engagement, such as data retrieval or computations.
-If you are not familiar with ROS Services it is highly recommended that you take a look at [our page on ROS services]().
+If you are not familiar with ROS Services it is highly recommended that you take a look at [our page on ROS services](./services.md).
 
 **Alarm System Logic**
 
