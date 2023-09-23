@@ -9,7 +9,7 @@ If you are not familiar with ROS Services it is highly recommended that you take
 
 **Alarm System Logic**
 
-The alarm system's functionality is more intricate than that of a typical ROS service, which usually manages operations of base types (ints, strings, etc). In this scenario, the alarm's service server is engineered to manage the tasks of updating, querying, and processing alarm data. ROS alarms encompass two distinct types of clients: the alarm broadcaster and the alarm listener. The broadcaster initializes and triggers alarms in response to errors or changes, while the listener monitors the broadcaster's activity and activates designated a callback function when alarms are raised. The callback function should handle the error or change appropriately. 
+The alarm system's functionality is more intricate than that of a typical ROS service, which usually manages operations of base types (ints, strings, etc). In this scenario, the alarm's service server is engineered to manage the tasks of updating, querying, and processing an alarm object. ROS alarms encompass two distinct types of clients: the alarm broadcaster and the alarm listener. The broadcaster initializes and triggers alarms in response to errors or changes, while the listener monitors the broadcaster's activity and activates designated a callback function when alarms are raised. The callback function should handle the error or change appropriately. 
 
 To peruse the detailed alarm system code, refer to the repository: [https://github.com/uf-mil/mil/tree/master/mil_common/ros_alarms](https://github.com/uf-mil/mil/tree/master/mil_common/ros_alarms)
 
