@@ -11,6 +11,7 @@ Various documentation related to practices followed by the MIL Software team.
    documentation_syntax
    adding_documentation
    help
+   vrx_2023
    zobelisk
    asyncio
    rqt
