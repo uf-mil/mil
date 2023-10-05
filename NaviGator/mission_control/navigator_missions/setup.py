@@ -10,7 +10,7 @@ setup_args = generate_distutils_setup(
         "nav_missions_test",
         "nav_missions_lib",
         "vrx_missions",
-    ]
+    ],
 )
 
 setup(**setup_args)

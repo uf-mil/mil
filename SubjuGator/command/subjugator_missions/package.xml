@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package>
+  <name>subjugator_missions</name>
+  <version>1.0.0</version>
+  <description>The subjugator_missions package</description>
+  <maintainer email="jpanikulam@ufl.edu">jacob</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>subjugator_msgs</build_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>subjugator_msgs</run_depend>
+  <export/>
+</package>

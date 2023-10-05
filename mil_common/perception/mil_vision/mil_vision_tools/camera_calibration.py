@@ -16,11 +16,13 @@ class CameraCalibration:
         self.checkerboard = (6, 9)  # measured from inner corners
         self.criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
         self.objp = np.zeros(
-            (1, self.checkerboard[0] * self.checkerboard[1], 3), np.float32
+            (1, self.checkerboard[0] * self.checkerboard[1], 3),
+            np.float32,
         )
         self.objp[0, :, :2] = (
             np.mgrid[0 : self.checkerboard[0], 0 : self.checkerboard[1]].T.reshape(
-                -1, 2
+                -1,
+                2,
             )
             * 25.4
         )
@@ -43,7 +45,11 @@ class CameraCalibration:
 
         if ret is True:
             corners2 = cv2.cornerSubPix(
-                gray, corners, (11, 11), (-1, -1), self.criteria
+                gray,
+                corners,
+                (11, 11),
+                (-1, -1),
+                self.criteria,
             )
             img = cv2.drawChessboardCorners(image, self.checkerboard, corners2, ret)
             self.image_pub.publish(img)
@@ -68,10 +74,10 @@ class CameraCalibration:
                     0,
                     1,
                 ],
-            ]
+            ],
         )
         dst = np.asarray(
-            [[0.06689877, -0.13360559, 0.0073066, -0.00161229, 0.07727962]]
+            [[0.06689877, -0.13360559, 0.0073066, -0.00161229, 0.07727962]],
         )
         newmtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dst, (w, h), 1, (w, h))
         dist = cv2.undistort(image, mtx, dst, None, newmtx)
@@ -88,7 +94,11 @@ class CameraCalibration:
         obj = list(self.objpoints)
         img = list(self.imgpoints)
         ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(
-            obj, img, self.shape, None, None
+            obj,
+            img,
+            self.shape,
+            None,
+            None,
         )
         print("done")
         print(mtx)

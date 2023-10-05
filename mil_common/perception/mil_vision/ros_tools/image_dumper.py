@@ -90,7 +90,6 @@ class ImageHandler:
 
 
 if __name__ == "__main__":
-
     desc_msg = (
         "Automated tool that traverses a directory dumping all of"
         + "the images from all non-rectificed, non-mono, and non-"
@@ -131,7 +130,6 @@ if __name__ == "__main__":
         bag = rosbag.Bag(filepath)
         ImageHandler(filepath, savepath, bag)
     else:
-
         # Generate list of file paths containing bag files
         for root, dirnames, filenames in os.walk(filepath):
             for filename in fnmatch.filter(filenames, "*.bag"):

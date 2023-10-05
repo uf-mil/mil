@@ -4,12 +4,12 @@ import mil_tools
 import numpy as np
 from mil_misc_tools.text_effects import fprint
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 ___author___ = "Kevin Allen"
 
 
-class PingerExitMission(Navigator):
+class PingerExitMission(NaviGatorMission):
     OBSERVE_DISTANCE_METERS = 6
     GATE_CROSS_METERS = 7
     FREQ = 35000
@@ -46,7 +46,7 @@ class PingerExitMission(Navigator):
         """Move to the points needed to go through the correct gate"""
         self.get_gate_thru_points()
         await self.move.set_position(self.gate_thru_points[0]).look_at(
-            self.gate_thru_points[1]
+            self.gate_thru_points[1],
         ).go()
         await self.move.set_position(self.gate_thru_points[1]).go()
         # for p in self.gate_thru_points:

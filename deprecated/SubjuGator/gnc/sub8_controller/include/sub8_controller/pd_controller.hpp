@@ -5,7 +5,7 @@
 #include "geometry_msgs/WrenchStamped.h"
 #include "nav_msgs/Odometry.h"
 #include "ros/ros.h"
-#include "sub8_controller/GainConfig.h"
+#include "subjugator_controller/GainConfig.h"
 #include "sub8_msgs/Trajectory.h"
 #include "sub8_msgs/Waypoint.h"
 
@@ -28,8 +28,8 @@ private:
   ros::Subscriber truth_sub;
   ros::Publisher wrench_pub;
   ros::Timer control_timer;
-  dynamic_reconfigure::Server<sub8_controller::GainConfig> server;
-  dynamic_reconfigure::Server<sub8_controller::GainConfig>::CallbackType reconfigure_callback;
+  dynamic_reconfigure::Server<subjugator_controller::GainConfig> server;
+  dynamic_reconfigure::Server<subjugator_controller::GainConfig>::CallbackType reconfigure_callback;
 
   bool ready = false;  // Wait until we're ready
   bool got_state = false;
@@ -68,7 +68,7 @@ private:
   double sub_mass = 25;  // kg
 
   // Callbacks
-  void gain_callback(sub8_controller::GainConfig &config, uint32_t level);
+  void gain_callback(subjugator_controller::GainConfig &config, uint32_t level);
 
   void trajectory_callback(const sub8_msgs::Trajectory::ConstPtr &);
   void truth_callback(const nav_msgs::Odometry::ConstPtr &);

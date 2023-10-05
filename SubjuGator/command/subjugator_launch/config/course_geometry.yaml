@@ -1,0 +1,10 @@
+---
+location:
+  # TRANSDEC values
+  declination: 11
+
+  # Florida Pool values
+  # declination: -6.27
+
+start_gate:
+  orientation: 0

@@ -1,0 +1,4 @@
+<launch>
+  <rosparam file="$(find subjugator_thruster_mapper)/config/thruster_layout.yaml" param="thruster_layout"/>
+  <node pkg="subjugator_thruster_mapper" type="mapper.py" name="thruster_mapper" />
+</launch>

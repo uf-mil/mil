@@ -1,0 +1,12 @@
+---
+buoy: 6 -2 -1
+octagon: 20 -20 -1
+startgate: 1 0 0
+pathmarker: 5.3 0 -1.2
+# old ones
+# bin: -24 14 -3.5
+# navgate: 26 -13 -1.5
+# torpedoboard: 21 11 -2.75
+
+# yamllint disable-line rule:line-length
+# Numbers represent X Y Z coordinates from Origin (center of transdeck) in Gazebo.

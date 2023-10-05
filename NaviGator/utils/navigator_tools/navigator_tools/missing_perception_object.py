@@ -1,8 +1,9 @@
 class MissingPerceptionObject(Exception):
     def __init__(
-        self, missing_object, message="An object from the database is missing"
+        self,
+        missing_object,
+        message="An object from the database is missing",
     ):
-
         # Call the base class constructor with the parameters it needs
         super().__init__(message)
 

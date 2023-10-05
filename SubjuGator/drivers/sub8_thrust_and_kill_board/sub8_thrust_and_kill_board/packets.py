@@ -1,7 +1,7 @@
 import struct
 from collections import namedtuple
 
-from mil_usb_to_can import ApplicationPacket
+from mil_usb_to_can.sub8 import ApplicationPacket
 
 # CAN channel to send thrust messages to
 THRUST_SEND_ID = 0x21
@@ -54,7 +54,10 @@ class KillMessage(ApplicationPacket):
 
     @classmethod
     def create_kill_message(
-        cls, command: bool = False, hard: bool = False, asserted: bool = False
+        cls,
+        command: bool = False,
+        hard: bool = False,
+        asserted: bool = False,
     ):
         """
         Creates a kill message containing three bytes of information, specified
@@ -72,7 +75,11 @@ class KillMessage(ApplicationPacket):
         hard_soft_byte = cls.HARD if hard else cls.SOFT
         assert_unassert_byte = cls.ASSERTED if asserted else cls.UNASSERTED
         payload = struct.pack(
-            "BBBB", command_byte, hard_soft_byte, assert_unassert_byte, cls.PADDING
+            "BBBB",
+            command_byte,
+            hard_soft_byte,
+            assert_unassert_byte,
+            cls.PADDING,
         )
         return cls(cls.IDENTIFIER, payload)
 
@@ -138,7 +145,9 @@ class KillMessage(ApplicationPacket):
 
     def __str__(self):
         return "KillMessage(command={}, hard={}, asserted={})".format(
-            self.is_command, self.is_hard, self.is_asserted
+            self.is_command,
+            self.is_hard,
+            self.is_asserted,
         )
 
 
@@ -160,7 +169,15 @@ KillStatus = namedtuple(
 
 class StatusMessage(KillStatus):
     BIT_MASK = KillStatus(
-        1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7, 1 << 11, 1 << 12, 1 << 13, 1 << 14
+        1 << 3,
+        1 << 4,
+        1 << 5,
+        1 << 6,
+        1 << 7,
+        1 << 11,
+        1 << 12,
+        1 << 13,
+        1 << 14,
     )
     STRUCT_FORMAT = "=h"
 
@@ -179,7 +196,7 @@ class StatusMessage(KillStatus):
             args.append(bool(unpacked & getattr(cls.BIT_MASK, field)))
         return cls(*args)
 
-    def to_bytes(self):
+    def __bytes__(self):
         out = 0
         for field in KillStatus._fields:
             if getattr(self, field):
@@ -233,41 +250,9 @@ class ThrustPacket(ApplicationPacket):
     Attributes:
         IDENTIFIER (int): The packet identifier, equal to the ordinal value of "T,"
             or 84.
-        ID_MAPPING (Dict[str, int]): A dictionary mapping 3-letter thruster codes
-            to their respective IDs:
-
-            +--------+------+
-            |  Name  |  ID  |
-            +========+======+
-            |  FLH   |  0   |
-            +--------+------+
-            |  FRH   |  1   |
-            +--------+------+
-            |  FLV   |  2   |
-            +--------+------+
-            |  FRV   |  3   |
-            +--------+------+
-            |  BLH   |  4   |
-            +--------+------+
-            |  BRH   |  5   |
-            +--------+------+
-            |  BLV   |  6   |
-            +--------+------+
-            |  BRV   |  7   |
-            +--------+------+
     """
 
     IDENTIFIER = ord("T")
-    ID_MAPPING = {
-        "FLH": 0,
-        "FRH": 1,
-        "FLV": 2,
-        "FRV": 3,
-        "BLH": 4,
-        "BRH": 5,
-        "BLV": 6,
-        "BRV": 7,
-    }
 
     @classmethod
     def create_thrust_packet(cls, thruster_id: int, command: float):
@@ -302,6 +287,4 @@ class ThrustPacket(ApplicationPacket):
         return struct.unpack("f", self.payload[1:])[0]
 
     def __str__(self):
-        return "ThrustPacket(thruster_id={}, command={})".format(
-            self.thruster_id, self.command
-        )
+        return f"ThrustPacket(thruster_id={self.thruster_id}, command={self.command})"

@@ -7,7 +7,7 @@ from axros import NodeHandle, axros_tf
 from geographic_msgs.msg import GeoPath, GeoPoseStamped
 from mil_msgs.srv import ObjectDBQuery
 from mil_tools import numpy_to_point, rosmsg_to_numpy
-from navigator_missions import Navigator
+from navigator_missions import NaviGatorMission
 from navigator_msgs.srv import (
     AcousticBeacon,
     ChooseAnimal,
@@ -26,8 +26,7 @@ from vrx_gazebo.srv import ColorSequence
 ___author___ = "Kevin Allen"
 
 
-class Vrx(Navigator):
-
+class Vrx(NaviGatorMission):
     nh: NodeHandle
 
     def __init__(self, *args, **kwargs):
@@ -42,27 +41,34 @@ class Vrx(Navigator):
         Vrx.task_info_sub = Vrx.nh.subscribe("/vrx/task/info", Task)
         await Vrx.task_info_sub.setup()
         Vrx.scan_dock_color_sequence = Vrx.nh.get_service_client(
-            "/vrx/scan_dock_deliver/color_sequence", ColorSequence
+            "/vrx/scan_dock_deliver/color_sequence",
+            ColorSequence,
         )
         Vrx.fire_ball = Vrx.nh.advertise("/wamv/shooters/ball_shooter/fire", Empty)
         Vrx.station_keep_goal = Vrx.nh.subscribe(
-            "/vrx/station_keeping/goal", GeoPoseStamped
+            "/vrx/station_keeping/goal",
+            GeoPoseStamped,
         )
         Vrx.wayfinding_path_sub = Vrx.nh.subscribe("/vrx/wayfinding/waypoints", GeoPath)
         Vrx.station_keeping_pose_error = Vrx.nh.subscribe(
-            "/vrx/station_keeping/pose_error", Float64
+            "/vrx/station_keeping/pose_error",
+            Float64,
         )
         Vrx.station_keeping_rms_error = Vrx.nh.subscribe(
-            "/vrx/station_keeping/rms_error", Float64
+            "/vrx/station_keeping/rms_error",
+            Float64,
         )
         Vrx.wayfinding_min_errors = Vrx.nh.subscribe(
-            "/vrx/wayfinding/min_errors", Float64MultiArray
+            "/vrx/wayfinding/min_errors",
+            Float64MultiArray,
         )
         Vrx.wayfinding_mean_error = Vrx.nh.subscribe(
-            "/vrx/wayfinding/mean_error", Float64
+            "/vrx/wayfinding/mean_error",
+            Float64,
         )
         Vrx.perception_landmark = Vrx.nh.advertise(
-            "/vrx/perception/landmark", GeoPoseStamped
+            "/vrx/perception/landmark",
+            GeoPoseStamped,
         )
         await asyncio.gather(
             Vrx.fire_ball.setup(),
@@ -79,16 +85,19 @@ class Vrx(Navigator):
         Vrx.beacon_landmark = Vrx.nh.get_service_client("beaconLocator", AcousticBeacon)
         Vrx.circle_animal = Vrx.nh.get_service_client("/choose_animal", ChooseAnimal)
         Vrx.set_long_waypoint = Vrx.nh.get_service_client(
-            "/set_long_waypoint", MoveToWaypoint
+            "/set_long_waypoint",
+            MoveToWaypoint,
         )
         Vrx.yolo_objects = Vrx.nh.subscribe("/yolov7/detections", Detection2DArray)
         Vrx.tf_listener = axros_tf.TransformListener(Vrx.nh)
         await Vrx.tf_listener.setup()
         Vrx.database_response = Vrx.nh.get_service_client(
-            "/database/requests", ObjectDBQuery
+            "/database/requests",
+            ObjectDBQuery,
         )
         Vrx.get_two_closest_cones = Vrx.nh.get_service_client(
-            "/get_two_closest_cones", TwoClosestCones
+            "/get_two_closest_cones",
+            TwoClosestCones,
         )
         await asyncio.gather(
             Vrx.animal_landmarks.setup(),
@@ -127,32 +136,38 @@ class Vrx(Navigator):
     async def init_front_left_camera():
         if Vrx.front_left_camera_sub is None:
             Vrx.front_left_camera_sub = Vrx.nh.subscribe(
-                "/wamv/sensors/cameras/front_left_camera/image_raw", Image
+                "/wamv/sensors/cameras/front_left_camera/image_raw",
+                Image,
             )
 
         if Vrx.front_left_camera_info_sub is None:
             Vrx.front_left_camera_info_sub = Vrx.nh.subscribe(
-                "/wamv/sensors/cameras/front_left_camera/camera_info", CameraInfo
+                "/wamv/sensors/cameras/front_left_camera/camera_info",
+                CameraInfo,
             )
 
         await asyncio.gather(
-            Vrx.front_left_camera_sub.setup(), Vrx.front_left_camera_info_sub.setup()
+            Vrx.front_left_camera_sub.setup(),
+            Vrx.front_left_camera_info_sub.setup(),
         )
 
     @staticmethod
     async def init_front_right_camera():
         if Vrx.front_right_camera_sub is None:
             Vrx.front_right_camera_sub = Vrx.nh.subscribe(
-                "/wamv/sensors/cameras/front_right_camera/image_raw", Image
+                "/wamv/sensors/cameras/front_right_camera/image_raw",
+                Image,
             )
 
         if Vrx.front_right_camera_info_sub is None:
             Vrx.front_right_camera_info_sub = Vrx.nh.subscribe(
-                "/wamv/sensors/cameras/front_right_camera/camera_info", CameraInfo
+                "/wamv/sensors/cameras/front_right_camera/camera_info",
+                CameraInfo,
             )
 
         await asyncio.gather(
-            Vrx.front_right_camera_sub.setup(), Vrx.front_right_camera_info_sub.setup()
+            Vrx.front_right_camera_sub.setup(),
+            Vrx.front_right_camera_info_sub.setup(),
         )
 
     async def geo_pose_to_enu_pose(self, geo):
@@ -197,7 +212,7 @@ class Vrx(Navigator):
         await self.set_long_waypoint(req)
 
     async def get_closest(self):
-        ret = await self.get_sorted_objects("all")
+        await self.get_sorted_objects("all")
 
     async def reset_pcodar(self):
         await self.pcodar_reset(Trigger())

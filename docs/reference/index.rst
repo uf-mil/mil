@@ -17,6 +17,7 @@ by MIL. These subsystems relate to a variety of processes.
     serial
     msghandlers
     axros/index
+    mission/index
     rviz
     pcodar
     resources
@@ -30,4 +31,3 @@ by MIL. These subsystems relate to a variety of processes.
     poi
     pneumatic
     sabertooth
-    mission/index

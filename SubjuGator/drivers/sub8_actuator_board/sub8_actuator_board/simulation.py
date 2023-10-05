@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from mil_usb_to_can import SimulatedCANDevice
+from mil_usb_to_can.sub8 import SimulatedCANDevice
 
 from .packets import SEND_ID, CommandMessage, FeedbackMessage
 
@@ -29,7 +29,7 @@ class ActuatorBoardSimulation(SimulatedCANDevice):
             return
 
         # First byte should be the identifier char for the command message
-        assert CommandMessage.IDENTIFIER == ord(data[0])
+        assert ord(data[0]) == CommandMessage.IDENTIFIER
 
         # Parse message
         message = CommandMessage.from_bytes(data)
@@ -41,6 +41,7 @@ class ActuatorBoardSimulation(SimulatedCANDevice):
         # If message is a status request, send motherboard the status of the requested valve
         else:
             response = FeedbackMessage.create_feedback_message(
-                address=message.address, on=self.status[message.address]
+                address=message.address,
+                on=self.status[message.address],
             )
-            self.send_data(response.to_bytes())
+            self.send_data(bytes(response))

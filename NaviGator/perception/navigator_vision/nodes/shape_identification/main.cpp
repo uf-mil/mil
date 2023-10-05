@@ -51,9 +51,9 @@ public:
     nh_.param<std::string>("get_shapes_topic", get_shapes_topic, "get_shapes");
     runService = nh_.advertiseService(get_shapes_topic + "/switch", &ShooterVision::runCallback, this);
     roiService = nh_.advertiseService("setROI", &ShooterVision::roiServiceCallback, this);
-    //#ifdef DO_DEBUG
-    // DebugWindow::init();
-    //#endif
+    // #ifdef DO_DEBUG
+    //  DebugWindow::init();
+    // #endif
     foundShapesPublisher = nh_.advertise<navigator_msgs::DockShapes>("found_shapes", 1000);
     image_sub_ = it_.subscribe(camera_topic, 1, &ShooterVision::run, this);
 

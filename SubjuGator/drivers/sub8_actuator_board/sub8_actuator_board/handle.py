@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import rospy
-from mil_usb_to_can import CANDeviceHandle
+from mil_usb_to_can.sub8 import CANDeviceHandle
+
 from sub8_actuator_board.srv import SetValve, SetValveRequest
 
 from .packets import SEND_ID, CommandMessage, FeedbackMessage, InvalidAddressException
@@ -32,21 +33,29 @@ class ActuatorBoard(CANDeviceHandle):
         # Send board command to open or close specified valve
         try:
             message = CommandMessage.create_command_message(
-                address=req.actuator, write=True, on=req.opened
+                address=req.actuator,
+                write=True,
+                on=req.opened,
             )
         except InvalidAddressException as e:
             return {"success": False, "message": str(e)}
-        self.send_data(message.to_bytes(), can_id=SEND_ID)
+        self.send_data(bytes(message), can_id=SEND_ID)
         rospy.loginfo(
-            "Set valve {} {}".format(req.actuator, "opened" if req.opened else "closed")
+            "Set valve {} {}".format(
+                req.actuator,
+                "opened" if req.opened else "closed",
+            ),
         )
         # Wait some time for board to process command
         rospy.sleep(0.01)
         # Request the status of the valve just commanded to ensure it worked
         self.send_data(
-            CommandMessage.create_command_message(
-                address=req.actuator, write=False
-            ).to_bytes(),
+            bytes(
+                CommandMessage.create_command_message(
+                    address=req.actuator,
+                    write=False,
+                ),
+            ),
             can_id=SEND_ID,
         )
         return {"success": True}
@@ -56,7 +65,7 @@ class ActuatorBoard(CANDeviceHandle):
         Process data received from board.
         """
         # Ensure packet contains correct identifier byte
-        if FeedbackMessage.IDENTIFIER != ord(data[0]):
+        if ord(data[0]) != FeedbackMessage.IDENTIFIER:
             rospy.logwarn(f"Received packet with wrong identifier byte {ord(data[0])}")
             return
         # Parse message and (for now) just log it

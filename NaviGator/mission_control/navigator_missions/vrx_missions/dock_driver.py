@@ -11,7 +11,8 @@ class DockDriver(Vrx):
     async def run(self, args):
         await self.nh.sleep(5)
         self.scan_dock_placard_symbol = self.nh.subscribe(
-            "/vrx/scan_dock/placard_symbol", String
+            "/vrx/scan_dock/placard_symbol",
+            String,
         )
         dock_msg = await self.scan_dock_placard_symbol.get_next_message()
         dock_msg = str.split(dock_msg.data, "_")

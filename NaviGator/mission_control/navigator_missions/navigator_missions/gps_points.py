@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import numpy as np
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class GPSWaypoints(Navigator):
+class GPSWaypoints(NaviGatorMission):
     DEFAULT_WAYPOINTS = np.array(
         [
             [29.534882, -82.303701],
@@ -13,7 +13,7 @@ class GPSWaypoints(Navigator):
             [29.534801, -82.303917],
             [29.534660, -82.304180],
             [29.534554, -82.304366],
-        ]
+        ],
     )
 
     def verify_parameters(self, parameters):

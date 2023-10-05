@@ -91,13 +91,15 @@ class AlarmMonitor:
             return
         center = height // 2
         if width >= len(
-            self.alarm_name
+            self.alarm_name,
         ):  # If box is wide enough, display alarm name in center
             status_window.addstr(
-                center - 1, (width - len(self.alarm_name)) // 2, self.alarm_name
+                center - 1,
+                (width - len(self.alarm_name)) // 2,
+                self.alarm_name,
             )
         if width >= len(
-            status_str
+            status_str,
         ):  # If box is wide enough, display status text in center
             status_window.addstr(center, (width - len(status_str)) // 2, status_str)
         if (
@@ -106,7 +108,9 @@ class AlarmMonitor:
             and height >= 4
         ):
             status_window.addstr(
-                center + 1, (width - len(description_str)) // 2, description_str
+                center + 1,
+                (width - len(description_str)) // 2,
+                description_str,
             )
 
     def _read_key(self):
@@ -140,7 +144,7 @@ class AlarmMonitor:
                 self._draw()
             if key in self.RAISE_KEYS:
                 self.broadcaster.raise_alarm(
-                    problem_description="User raised from amonitor"
+                    problem_description="User raised from amonitor",
                 )
             elif key in self.CLEAR_KEYS:
                 self.broadcaster.clear_alarm()

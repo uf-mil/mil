@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class RetractThrusters(Navigator):
+class RetractThrusters(NaviGatorMission):
     async def run(self, parameters):
         self.send_feedback("Retracting thrusters")
         await self.retract_thrusters()

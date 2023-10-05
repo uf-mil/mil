@@ -9,9 +9,9 @@ import numpy as np
 import rospy
 from dynamic_reconfigure.server import Server
 from scipy import linalg
-from sub8_controller.cfg import GainConfig  # Configuration file
-from sub8_msgs.msg import Trajectory
-from sub8_simulation.srv import SimSetPose
+from subjugator_controller.cfg import GainConfig  # Configuration file
+from subjugator_msgs.msg import Trajectory
+from subjugator_simulation.srv import SimSetPose
 from tf import transformations
 
 lock = threading.Lock()

@@ -5,16 +5,11 @@ import numpy as np
 from mil_tools import quaternion_matrix
 from std_srvs.srv import SetBoolRequest
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class EntranceGate2(Navigator):
-    @classmethod
-    def init(cls):
-        pass
-
+class EntranceGate2(NaviGatorMission):
     async def run(self, args):
-
         # Parameters:
         scan_code = False
         return_to_start = True
@@ -44,13 +39,14 @@ class EntranceGate2(Navigator):
 
         # Calculate traversal points
         traversal_points = await self.get_perpendicular_points(
-            self.gate_centers[self.pinger_gate], self.traversal_distance
+            self.gate_centers[self.pinger_gate],
+            self.traversal_distance,
         )
 
         # Go through the gate
         self.send_feedback("Navigating through gate")
         await self.move.set_position(traversal_points[0]).look_at(
-            traversal_points[1]
+            traversal_points[1],
         ).go()
         await self.move.set_position(traversal_points[1]).go()
 
@@ -73,14 +69,19 @@ class EntranceGate2(Navigator):
 
             # Rotate around buoy
             print("beginning spiral movement")
-            points = await self.move.d_spiral_point(
-                buoy, circle_radius, 4, 0.75, circle_direction, yaw_offset
+            await self.move.d_spiral_point(
+                buoy,
+                circle_radius,
+                4,
+                0.75,
+                circle_direction,
+                yaw_offset,
             )
 
             # Go back through start gate
             self.send_feedback("Navigating through gate")
             await self.move.set_position(traversal_points[1]).look_at(
-                traversal_points[0]
+                traversal_points[0],
             ).go()
             await self.move.set_position(traversal_points[0]).go()
 
@@ -136,7 +137,6 @@ class EntranceGate2(Navigator):
     """
 
     async def find_gates(self):
-
         # This mission assumes we are starting off looking at the start gate task
 
         # Get five closest buoys
@@ -147,7 +147,7 @@ class EntranceGate2(Navigator):
         p = pose[0]
         q_mat = quaternion_matrix(pose[1])
         positions_local = np.array(
-            [(q_mat.T.dot(position - p)) for position in buoys[1]]
+            [(q_mat.T.dot(position - p)) for position in buoys[1]],
         )
         positions_local_x = np.array(positions_local[:, 0])  # positive is forward
         positions_local_y = np.array(positions_local[:, 1])  # positive is to the left
@@ -164,28 +164,28 @@ class EntranceGate2(Navigator):
                 try:
                     t4 = await self.get_sorted_objects("green_cylinder", n=1)
                     t4 = t4[1][0][:2]
-                except:
+                except Exception:
                     t4 = buoys[1][buoy_index][:2]
                     await self.pcodar_label(buoys[0][buoy_index].id, "green_cylinder")
             elif i == 1:
                 try:
                     white_totems = await self.get_sorted_objects("white_cylinder", n=2)
                     t3 = white_totems[1][0][:2]
-                except:
+                except Exception:
                     t3 = buoys[1][buoy_index][:2]
                     await self.pcodar_label(buoys[0][buoy_index].id, "white_cylinder")
             elif i == 2:
                 try:
                     white_totems = await self.get_sorted_objects("white_cylinder", n=2)
                     t2 = white_totems[1][1][:2]
-                except:
+                except Exception:
                     t2 = buoys[1][buoy_index][:2]
                     await self.pcodar_label(buoys[0][buoy_index].id, "white_cylinder")
             elif i == 3:
                 try:
                     t1 = await self.get_sorted_objects("red_cylinder", n=1)
                     t1 = t1[1][0][:2]
-                except:
+                except Exception:
                     t1 = buoys[1][buoy_index][:2]
                     await self.pcodar_label(buoys[0][buoy_index].id, "red_cylinder")
 
@@ -224,7 +224,10 @@ class EntranceGate2(Navigator):
     """
 
     async def get_perpendicular_points(
-        self, center_point, offset_distance, boat_pose=None
+        self,
+        center_point,
+        offset_distance,
+        boat_pose=None,
     ):
         # Find the perpendicular line
         perpendicular_vector = self.perpendicular(self.gates_line)

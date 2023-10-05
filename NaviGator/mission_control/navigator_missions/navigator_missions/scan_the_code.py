@@ -15,7 +15,7 @@ from navigator_msgs.msg import ScanTheCode
 from sensor_msgs.msg import Image, PointCloud2
 from std_srvs.srv import SetBoolRequest
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 LED_PANEL_MAX = 0.1  # meters
 LED_PANEL_MIN = 0.5  # meters
@@ -30,7 +30,7 @@ TIMEOUT_SECONDS = 120  # seconds
 COLORS = ["red", "green", "black", "blue"]
 
 
-class ScanTheCode(Navigator):
+class ScanTheCodeMission(NaviGatorMission):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.camera_model = PinholeCameraModel()
@@ -66,7 +66,7 @@ class ScanTheCode(Navigator):
         # Try to find the stc light
         try:
             pose = await self.find_stc()
-        except Exception as e:
+        except Exception:
             sequence = ["red", "green", "blue"]
             await self.report_sequence(sequence)
             return sequence
@@ -91,13 +91,14 @@ class ScanTheCode(Navigator):
         print("obtaining contour")
         contour = np.array(
             bbox_from_rect(
-                rect_from_roi(roi_enclosing_points(self.camera_model, points))
+                rect_from_roi(roi_enclosing_points(self.camera_model, points)),
             ),
             dtype=int,
         )
         try:
             sequence = await axros.util.wrap_timeout(
-                self.get_sequence(contour), TIMEOUT_SECONDS
+                self.get_sequence(contour),
+                TIMEOUT_SECONDS,
             )
         except asyncio.TimeoutError:
             sequence = ["red", "green", "blue"]
@@ -110,7 +111,6 @@ class ScanTheCode(Navigator):
         sequence = []
         print("GETTING SEQUENCE")
         while len(sequence) < 3:
-
             img = await self.front_left_camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img)
 
@@ -118,7 +118,8 @@ class ScanTheCode(Navigator):
 
             img = img[:, :, [2, 1, 0]]
             mask_msg = self.bridge.cv2_to_imgmsg(
-                bitwise_and(img, img, mask=mask), "bgr8"
+                bitwise_and(img, img, mask=mask),
+                "bgr8",
             )
 
             print("PUBLISHING MASK")
@@ -156,12 +157,12 @@ class ScanTheCode(Navigator):
             _, poses = await self.get_sorted_objects(name="stc_platform", n=1)
             pose = poses[0]
         # in case stc platform not already identified
-        except Exception as e:
+        except Exception:
             # get all pcodar objects
             try:
                 _, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
             # if no pcodar objects, drive forward
-            except Exception as e:
+            except Exception:
                 await self.move.forward(50).go()
                 # get all pcodar objects
                 _, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
@@ -196,7 +197,7 @@ def z_filter(db_obj_msg):
             [i.x, i.y, i.z]
             for i in db_obj_msg.points
             if i.z < top - LED_PANEL_MAX and i.z > top - LED_PANEL_MIN
-        ]
+        ],
     )
     return points
 
@@ -209,6 +210,6 @@ def bbox_from_rect(rect):
             [rect[1][0] + 20, rect[0][1] - rect[0][1]],
             [rect[1][0] + 20, rect[1][1] + 20],
             [rect[0][0] - 20, rect[1][1] + 20],
-        ]
+        ],
     )
     return bbox

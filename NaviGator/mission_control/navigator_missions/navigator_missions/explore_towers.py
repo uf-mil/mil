@@ -2,17 +2,17 @@
 import numpy as np
 from mil_misc_tools import ThrowingArgumentParser
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class ExploreTowers(Navigator):
+class ExploreTowers(NaviGatorMission):
     @classmethod
     def decode_parameters(cls, parameters):
         argv = parameters.split()
         return cls.parser.parse_args(argv)
 
     @classmethod
-    def init(cls):
+    async def setup(cls):
         parser = ThrowingArgumentParser(
             description="Explore a bit mission",
             usage="Default parameters: 'runtask ExploreJaxon'",
@@ -25,7 +25,11 @@ class ExploreTowers(Navigator):
             help="number of unclassified objects to attempt",
         )
         parser.add_argument(
-            "-d", "--dist", type=float, default=30.0, help="distance to limit checks to"
+            "-d",
+            "--dist",
+            type=float,
+            default=30.0,
+            help="distance to limit checks to",
         )
         parser.add_argument(
             "-b",
@@ -35,7 +39,11 @@ class ExploreTowers(Navigator):
             help="distance to limit checks to",
         )
         parser.add_argument(
-            "-w", "--wait", type=float, default=8.0, help="distance to limit checks to"
+            "-w",
+            "--wait",
+            type=float,
+            default=8.0,
+            help="distance to limit checks to",
         )
         cls.parser = parser
 
@@ -43,7 +51,9 @@ class ExploreTowers(Navigator):
         initial_boat_pose = (self.tx_pose)[0]
 
         closest_unclassified = await self.get_sorted_objects(
-            "UNKNOWN", n=args.count, throw=False
+            "UNKNOWN",
+            n=args.count,
+            throw=False,
         )
         closest_unclassified = closest_unclassified[1]
 
@@ -56,7 +66,7 @@ class ExploreTowers(Navigator):
                 continue
             self.send_feedback("Exploring object")
             await self.move.look_at(unclass_obj).set_position(unclass_obj).backward(
-                args.backup
+                args.backup,
             ).go()
             await self.nh.sleep(args.wait)
 

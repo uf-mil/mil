@@ -6,7 +6,7 @@ How to Use
 
 Launch
 ******
-``roslaunch sub8_launch passive_sonar.launch``
+``roslaunch subjugator_launch passive_sonar.launch``
 
 Debugging
 *********
@@ -15,7 +15,7 @@ To Play Back a File
 ^^^^^^^^^^^^^^^^^^^
 
 * Download `oof.bin <http://sylphase.com/files/oof.bin>`_
-* ``roslaunch sub8_launch passive_sonar.launch environment:=file``
+* ``roslaunch subjugator_launch passive_sonar.launch environment:=file``
 
 To step through a file
 ______________________
@@ -28,10 +28,10 @@ _________________________________
 
 Visualize Data in the Pipeline
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-This pipline makes use of the ``mil_common/utils/mil_tools/mil_ros_tools/plotter.py`` utility to plot batches of data over on ROS Topics as CV2 images at most points in the processiong pipeline.
+This pipeline makes use of the ``mil_common/utils/mil_tools/mil_ros_tools/plotter.py`` utility to plot batches of data over on ROS Topics as CV2 images at most points in the processiong pipeline.
 
-To view all points of the triggering pipline
-____________________________________________
+To view all points of the triggering pipeline
+_____________________________________________
 (raw, max convolution, gradient) that caused the most recent trigger (only hydrophone 0), look at ``/hydrophones/triggering/trigger_debug``
 
 It should look something like this (30kHz):
@@ -81,7 +81,7 @@ All parameters that are expected to be changed in tuining are ROS Params initial
 To make a custom configation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* ``roscd sub8_launch``
+* ``roscd subjugator_launch``
 
 * ``cp config/passive_sonar.yaml config/my_passive_sonar.yaml``
 
@@ -89,7 +89,7 @@ To make a custom configation
 
 * change whatever parameters you like
 
-* ``roslaunch sub8_launch passive_sonar.launch config_file:=my_passive_sonar.yaml``
+* ``roslaunch subjugator_launch passive_sonar.launch config_file:=my_passive_sonar.yaml``
 
 To change the configuration at runtime
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

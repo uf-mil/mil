@@ -43,4 +43,4 @@ alias subfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 \$(rosrun 
 alias subtest="(cd \$CATKIN_DIR; rosrun mil_tools catkin_tests_directory.py src/mil/SubjuGator)"
 
 # Set robot model param, for using rviz when playing bags
-alias submodel="roslaunch sub8_launch upload_urdf.launch"
+alias submodel="roslaunch subjugator_launch upload_urdf.launch"

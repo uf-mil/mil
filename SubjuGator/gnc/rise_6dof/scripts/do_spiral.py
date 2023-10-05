@@ -23,7 +23,7 @@ def position_generator_orig(t):
     r = RADIUS  # *(1 - math.e**(-t/30))
     w = 2 * math.pi / PERIOD
     return numpy.array(
-        [r * math.sin(w * t), r * -math.cos(w * t), -DESCENT * t / PERIOD]
+        [r * math.sin(w * t), r * -math.cos(w * t), -DESCENT * t / PERIOD],
     )
 
 
@@ -51,8 +51,9 @@ def positionorientationvelocityangularvelocity_generator(t):
     angvel = (
         orientation_helpers.quat_to_rotvec(
             transformations.quaternion_multiply(
-                orient2, transformations.quaternion_inverse(orient1)
-            )
+                orient2,
+                transformations.quaternion_inverse(orient1),
+            ),
         )
         / dt
     )
@@ -80,7 +81,7 @@ if __name__ == "__main__":
 
         t = (now_time - start_time).to_sec()
         pos, orient, vel, angvel = positionorientationvelocityangularvelocity_generator(
-            t
+            t,
         )
         if pos[2] < -5:
             break
@@ -103,5 +104,5 @@ if __name__ == "__main__":
                         angular=Vector3(*world_from_body.T.dot(angvel)),
                     ),
                 ),
-            )
+            ),
         )
