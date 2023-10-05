@@ -31,6 +31,9 @@ breathe==4.34.0
 myst-parser==0.18.0
 sphinx-copybutton==0.5.0
 
+# Terminal
+blessed==1.20.0
+
 # External Devices
 pyserial==3.5
 
