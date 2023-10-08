@@ -79,7 +79,7 @@ class Threshold:
             self.conversion_code = conversion_code
 
     @classmethod
-    def from_dict(cls, d, in_space: str = "BGR", thresh_space: str = None):
+    def from_dict(cls, d, in_space: str = "BGR", thresh_space: Optional[str] = None):
         """
         Loads thresholds from a dictionary. See examples for valid dictionaries.
 
@@ -114,9 +114,7 @@ class Threshold:
                     d.keys(),
                 ),
             )
-        assert thresh_space in d, "{} color space not in dictionary".format(
-            thresh_space,
-        )
+        assert thresh_space in d, f"{thresh_space} color space not in dictionary"
         inner = d[thresh_space]
         if "low" in inner and "high" in inner:
             return cls(

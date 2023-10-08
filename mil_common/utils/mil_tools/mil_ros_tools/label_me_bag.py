@@ -263,10 +263,7 @@ class BagToLabelMe:
             total_img_count += i
         if total_img_count == 0:
             print(
-                "{}/{} TOTAL images labeled (0%)".format(
-                    total_xml_count,
-                    total_img_count,
-                ),
+                f"{total_xml_count}/{total_img_count} TOTAL images labeled (0%)",
             )
         else:
             print(

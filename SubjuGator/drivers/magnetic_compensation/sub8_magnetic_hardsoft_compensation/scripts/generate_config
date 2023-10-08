@@ -111,9 +111,7 @@ def test():
     assert numpy.allclose(
         shift2,
         shift,
-    ), "Magnetic Hardsoft Compenstion self-test failed, shifts: {}".format(
-        (shift2, shift),
-    )
+    ), f"Magnetic Hardsoft Compenstion self-test failed, shifts: {(shift2, shift)}"
     assert (
         error < 1e-5
     ), f"Magnetic Hardsoft Compenstion self-test failed, error: {error}"
