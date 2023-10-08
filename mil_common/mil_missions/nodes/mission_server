@@ -29,8 +29,10 @@ class MissionRunner:
     missions_loaded: bool
     base_mission: type[BaseMission]
     missions: dict[str, type[BaseMission]]
+    _running_tasks: set[asyncio.Task]
 
     def __init__(self):
+        self._running_tasks = set()
         pass
 
     async def init(self):
@@ -213,6 +215,7 @@ class MissionRunner:
         self.mission = self.missions[goal.mission]()
         self.mission_future = asyncio.create_task(self.run_with_callback(parameters))
         self.mission_future.add_done_callback(self.mission_finished_cb)
+        self._running_tasks.add(self.mission_future)
 
     async def run_with_callback(self, parameters):
         try:
@@ -242,6 +245,7 @@ class MissionRunner:
         mission, or raises an exception. Publishes the correct result to the action clients.
         """
         result = DoMissionResult()
+        self._running_tasks.remove(task)
 
         try:
             task_result = task.result()
