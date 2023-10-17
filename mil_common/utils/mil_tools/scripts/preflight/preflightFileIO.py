@@ -18,6 +18,8 @@
 # readTests(filename)
 #   reads and runs all the tests in the file.
 #   returns whether each test pass or fail
+import rospy
+import rostopic
 
 
 def writeTests(filename, topicsToCheck):
@@ -50,13 +52,23 @@ def deleteTests(filename, topicsToCheck):
 def readTests(filename):
     tests = open(filename)
     lines = tests.readlines()
+    dataTypes = []
     for i in range(len(lines)):
         lines[i] = lines[i][:-1]
+        TopicType, topic_str, _ = rostopic.get_topic_class(lines[i])
+        dataTypes.append(TopicType)
+        lines[i] = topic_str
+        rospy.Subscriber(lines[i], dataTypes[i], some_callback)
 
-    print(lines)
+
+def some_callback(msg):
+    rospy.loginfo("Got the message: " + str(msg))
+
     # We need to call the ros topic and verify the data WIP
 
 
-writeTests("SubChecklist.txt", ["Test", "testing"])
-deleteTests("SubChecklist.txt", ["testing"])
-readTests("SubChecklist.txt")
+if __name__ == "__main__":
+    rospy.init_node("topic_publisher_checker")
+    writeTests("SubChecklist.txt", ["dvl", "odom"])
+    deleteTests("SubChecklist.txt", ["testing"])
+    readTests("SubChecklist.txt")
