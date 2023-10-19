@@ -35,7 +35,8 @@ class MultiObs:
         self.max_velocity = rospy.get_param("~max_velocity", 1)
         self.min_observations = rospy.get_param("~min_observations", 30)
         self.camera = rospy.get_param(
-            "~camera_topic", "/camera/front/left/image_rect_color"
+            "~camera_topic",
+            "/camera/front/left/image_rect_color",
         )
         # Instantiate remaining variables and objects
         self._observations = deque()
@@ -61,7 +62,9 @@ class MultiObs:
         self.print_info = FprintFactory(title=MISSION).fprint
         # Image Subscriber and Camera Information
         self.point_sub = rospy.Subscriber(
-            "/roi_pub", RegionOfInterest, self.acquire_targets
+            "/roi_pub",
+            RegionOfInterest,
+            self.acquire_targets,
         )
         self.image_sub = Image_Subscriber(self.camera, self.image_cb)
 
@@ -122,7 +125,9 @@ class MultiObs:
                 pose=Pose(
                     position=Point(*((self.est + self.est1 + self.est2) / 3)),
                     orientation=Quaternion(
-                        x=self.plane[0], y=self.plane[1], z=self.plane[2]
+                        x=self.plane[0],
+                        y=self.plane[1],
+                        z=self.plane[2],
                     ),
                 ),
             ),
@@ -218,7 +223,7 @@ class MultiObs:
         point0 = np.array([x0, y0])
         point1 = np.array([x0 + width, y0])
         point2 = np.array([x0, y0 + height])
-        point3 = np.array([x0 + width, y0 + height])
+        np.array([x0 + width, y0 + height])
         # print("p1: ", point1)
         # print("p2: ", point2)
         try:
@@ -241,10 +246,14 @@ class MultiObs:
 
         self.add_observation(point0, (np.array(t), R), self.image_sub.last_image_time)
         observations1, pose_pairs1 = self.add_observation1(
-            point1, (np.array(t), R), self.image_sub.last_image_time
+            point1,
+            (np.array(t), R),
+            self.image_sub.last_image_time,
         )
         observations2, pose_pairs2 = self.add_observation2(
-            point2, (np.array(t), R), self.image_sub.last_image_time
+            point2,
+            (np.array(t), R),
+            self.image_sub.last_image_time,
         )
 
         observations, pose_pairs = self.get_observations_and_pose_pairs()

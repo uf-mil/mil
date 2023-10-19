@@ -25,13 +25,16 @@ def balanced_resample(data, labels):
             labels_buffered = np.hstack([labels_buffered, labels[in_this_label]])
 
         single_data_resampled, single_labels_resampled = utils.resample(
-            data_buffered, labels_buffered, n_samples=int(num_required), replace=True
+            data_buffered,
+            labels_buffered,
+            n_samples=int(num_required),
+            replace=True,
         )
         data_resampled.append(single_data_resampled)
         labels_resampled.append(single_labels_resampled)
 
     return np.vstack(data_resampled).astype(data.dtype), np.hstack(
-        labels_resampled
+        labels_resampled,
     ).astype(labels.dtype)
 
 
@@ -58,7 +61,10 @@ def desample_binary(data, labels, oversample=5):
 
 def split(img, size):
     """Chunk an image"""
-    _split = lambda p: np.array_split(p, size, axis=1)
+
+    def _split(p):
+        return np.array_split(p, size, axis=1)
+
     split_x = np.array_split(img, size)
     split_y = map(_split, split_x)
     images = []

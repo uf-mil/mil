@@ -13,7 +13,7 @@ class GPSWaypoints(NaviGatorMission):
             [29.534801, -82.303917],
             [29.534660, -82.304180],
             [29.534554, -82.304366],
-        ]
+        ],
     )
 
     def verify_parameters(self, parameters):

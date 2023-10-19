@@ -9,6 +9,7 @@ import rosbag
 import roslib
 import scipy.linalg
 import yaml
+from mpl_toolkits.mplot3d import Axes3D
 from tf import transformations
 
 roslib.load_manifest("magnetic_hardsoft_compensation")
@@ -20,7 +21,7 @@ def normalized_matrix(m):
 
 
 def calculate_error(points):
-    radii = map(numpy.linalg.norm, points)
+    radii = list(map(numpy.linalg.norm, points))
     error = numpy.std(radii) / numpy.mean(radii)
     return error
 
@@ -47,7 +48,7 @@ def fit_ellipsoid(points):
 
     B = numpy.ones((points.shape[0], 1))
 
-    X = numpy.linalg.lstsq(A, B)[0].flatten()
+    X = numpy.linalg.lstsq(A, B, rcond=-1)[0].flatten()
     if X[0] < 0:
         X = -X  # make sure ka turns out positive definite
 
@@ -60,8 +61,8 @@ def fit_ellipsoid(points):
                 [X[0], X[3], X[4]],
                 [X[3], X[1], X[5]],
                 [X[4], X[5], X[2]],
-            ]
-        )
+            ],
+        ),
     )
     shift = ka.dot(X[6:9])
 
@@ -104,13 +105,13 @@ def test():
     error = calculate_error(compensated)
 
     assert numpy.allclose(
-        scale2, scale
+        scale2,
+        scale,
     ), "Magnetic Hardsoft Compenstion self-test failed"
     assert numpy.allclose(
-        shift2, shift
-    ), "Magnetic Hardsoft Compenstion self-test failed, shifts: {}".format(
-        (shift2, shift)
-    )
+        shift2,
+        shift,
+    ), f"Magnetic Hardsoft Compenstion self-test failed, shifts: {(shift2, shift)}"
     assert (
         error < 1e-5
     ), f"Magnetic Hardsoft Compenstion self-test failed, error: {error}"
@@ -135,7 +136,7 @@ if __name__ == "__main__":
                 if hasattr(msg, "magnetic_field")
                 else mil_ros_tools.rosmsg_to_numpy(msg.vector)
                 for topic, msg, t in bag.read_messages(topics=["/imu/mag_raw"])
-            ]
+            ],
         )
 
     if not len(points):
@@ -148,15 +149,14 @@ if __name__ == "__main__":
 
     try:
         import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-import
 
         fig = plt.figure(figsize=(10, 10))
-        ax = fig.add_subplot("111", projection="3d")
+        ax = Axes3D(fig)
         ax.scatter([0], [0], [0], s=100, c="r")
         ax.scatter(*zip(*points[::10, :]))
         axisEqual3D(ax)
         plt.show()
-    except:
+    except Exception:
         import traceback
 
         traceback.print_exc()
@@ -167,26 +167,25 @@ if __name__ == "__main__":
 
     try:
         import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-import
 
         fig = plt.figure(figsize=(10, 10))
-        ax = fig.add_subplot("111", projection="3d")
+        ax = Axes3D(fig)
         ax.scatter([0], [0], [0], s=100, c="r")
         ax.scatter(*zip(*points[::10, :]))
         ax.scatter(*zip(*compensated[::10, :]), c="g")
         axisEqual3D(ax)
         plt.show()
 
-    except:
+    except Exception:
         import traceback
 
         traceback.print_exc()
 
     print(
         yaml.dump(
-            dict(
-                scale=map(lambda x: map(float, x), scale),
-                shift=map(float, shift),
-            )
-        )
+            {
+                "scale": scale.tolist(),
+                "shift": shift.tolist(),
+            },
+        ),
     )

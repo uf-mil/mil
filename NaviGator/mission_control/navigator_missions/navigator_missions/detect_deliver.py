@@ -14,7 +14,7 @@ class DetectDeliver(NaviGatorMission):
     async def run(self, args):
         self.send_feedback("Starting detect deliver")
         await self.detect_deiliver_find.run(
-            self.detect_deiliver_find.decode_parameters(args)
+            self.detect_deiliver_find.decode_parameters(args),
         )
         await self.track_target.run(self.track_target.decode_parameters(args))
         self.send_feedback("Done with detect deliver")

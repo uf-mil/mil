@@ -60,8 +60,8 @@ class HOGDetector:
         self.hog = cv2.HOGDescriptor((64, 64), (64, 64), (4, 4), (64, 64), 9)
         self.base = os.path.dirname(os.path.abspath(__file__))
         coef = open(self.base + "/coef")
-        l = coef.read()
-        arr = l.split("\n")
+        lrd = coef.read()
+        arr = lrd.split("\n")
         coef = []
         for a in arr:
             coef.append(float(a))

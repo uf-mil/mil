@@ -7,16 +7,16 @@ SPEED_LIMIT = 0.2  # m/s
 
 class Square(SubjuGatorMission):
     async def run(self, args):
-        center = self.move.forward(0).zero_roll_and_pitch()
+        center = self.move().forward(0).zero_roll_and_pitch()
         for i in range(4):
-            forward = self.move.forward(SIDE_LENGTH).zero_roll_and_pitch()
+            forward = self.move().forward(SIDE_LENGTH).zero_roll_and_pitch()
             right = forward.right(SIDE_LENGTH).zero_roll_and_pitch()
 
-            await forward.go(speed=SPEED_LIMIT)
-            await right.go(speed=SPEED_LIMIT)
-            await forward.go(speed=SPEED_LIMIT)
-            await center.go(speed=SPEED_LIMIT)
+            await self.go(forward, speed=SPEED_LIMIT)
+            await self.go(right, speed=SPEED_LIMIT)
+            await self.go(forward, speed=SPEED_LIMIT)
+            await self.go(center, speed=SPEED_LIMIT)
             center = center.yaw_right_deg(90)
-            await center.go(speed=SPEED_LIMIT)
+            await self.go(center, speed=SPEED_LIMIT)
 
         print("Done!")

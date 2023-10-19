@@ -19,7 +19,7 @@ async def myfunc(navigator: NaviGatorMission, **kwargs):
             await navigator.move.set_position(pos).go()
             nt.fprint(o.name, msg_color="green")
 
-        except:
+        except Exception:
             nt.fprint("Missing Marker", msg_color="red")
 
 

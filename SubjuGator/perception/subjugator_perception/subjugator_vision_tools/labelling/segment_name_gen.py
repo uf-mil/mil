@@ -47,7 +47,7 @@ def name_gen(no_web=False):
             # Replace any non alpha numeric characters
             stripped_title = re.sub(r"\W+", "", stripped_title)
 
-        except:
+        except Exception:
             stripped_title = np.random.randint(999999999)
 
         yield stripped_title

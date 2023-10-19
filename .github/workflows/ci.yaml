@@ -37,43 +37,36 @@ jobs:
           submodules: recursive
           path: catkin_ws/src/mil
       - name: Setup ROS Noetic
-        uses: ros-tooling/setup-ros@v0.3
+        uses: ros-tooling/setup-ros@v0.7
         with:
           required-ros-distributions: noetic
       - name: Install pip dependencies
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          pip install -r requirements.txt
-      - name: Install system dependencies
-        # GH-803: This should not need continue-on-error: true
-        continue-on-error: true
-        run: |
-          cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          ./scripts/install.sh
+          pip3 install -r requirements.txt
+      # We want to run a full test suite in CI - this includes the BlueView
+      # tests!
       - name: Install BlueView Sonar SDK
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
           ./scripts/hardware_installers/install_bvtsdk --pass ${{ secrets.ZOBELISK_PASSWORD }}
           ls mil_common/drivers/mil_blueview_driver
           echo $PWD
-      - name: Run catkin_make
+      - name: Install system dependencies
         run: |
-          export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
-          cd $GITHUB_WORKSPACE/catkin_ws
-          ls src/mil/mil_common/drivers/mil_blueview_driver
-          source /opt/ros/noetic/setup.bash
-          rm -rf build devel
-          catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3 \
-                      -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 \
-                      -j6
-      # We want to run a full test suite in CI - this includes the BlueView
-      # tests!
-      - name: Run pylint
-        run: |
+          # Needed for /etc/update-manager/release-upgrades
+          sudo apt-get install -y ubuntu-release-upgrader-core
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          source /opt/ros/noetic/setup.bash
-          source ../../devel/setup.bash
-          pylint $(git ls-files "*.py") --jobs=0
+          rm -rf build devel
+          export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
+          ./scripts/install.sh
+      # - name: Run catkin_make
+      #   run: |
+      #     cd $GITHUB_WORKSPACE/catkin_ws
+      #     source /opt/ros/noetic/setup.bash
+      #     catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3 \
+      #                 -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 \
+      #                 -j6
       - name: Run catkin_make tests
         run: |
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
@@ -127,7 +120,7 @@ jobs:
       # We need to install rsync for GitHub Pages deploy action
       - name: Install rsync
         run: |
-          sudo apt-get upgrade && sudo apt-get update && sudo apt-get install -y rsync
+          sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y rsync
 
       # Publish the artifact to the GitHub Pages branch
       - name: Push docs to GitHub Pages

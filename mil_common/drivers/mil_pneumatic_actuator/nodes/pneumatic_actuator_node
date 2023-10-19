@@ -17,7 +17,13 @@ class Actuator:
     """
 
     def __init__(
-        self, type_str, open_id, open_default, close_id, close_default, pulse_time
+        self,
+        type_str,
+        open_id,
+        open_default,
+        close_id,
+        close_default,
+        pulse_time,
     ):
         self.pulse_time = pulse_time
         self.type = type_str
@@ -38,7 +44,12 @@ class Actuator:
             close_id = config["ports"]["close_port"]["id"]
             close_default = config["ports"]["close_port"]["default"]
             return cls(
-                type_str, open_id, open_default, close_id, close_default, pulse_time
+                type_str,
+                open_id,
+                open_default,
+                close_id,
+                close_default,
+                pulse_time,
             )
         return cls(type_str, open_id, open_default, -1, 0, pulse_time)
 
@@ -97,8 +108,9 @@ class PnuematicActuatorNode:
         """
         rospy.loginfo(
             "Setting valve {} to {}".format(
-                srv.actuator, "open" if srv.opened else "closed"
-            )
+                srv.actuator,
+                "open" if srv.opened else "closed",
+            ),
         )
         self.set_port(int(srv.actuator), srv.opened)
         return {"success": True}
@@ -124,7 +136,9 @@ class PnuematicActuatorNode:
         if not self.connected:
             try:
                 self.driver = PnuematicActuatorDriver(
-                    self.port, baud=self.baud_rate, simulated=self.is_simulation
+                    self.port,
+                    baud=self.baud_rate,
+                    simulated=self.is_simulation,
                 )
             except SerialException as e:
                 rospy.logwarn(e)

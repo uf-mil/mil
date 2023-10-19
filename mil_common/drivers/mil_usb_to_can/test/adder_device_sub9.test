@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <param name="/is_simulation" value="True" />
+
+  <node pkg="mil_usb_to_can" type="sub9_driver.py" name="usb_to_can_driver">
+    <rosparam>
+    device_handles:
+      mil_usb_to_can.sub9.example.ExampleAdderDeviceHandle: [mil_usb_to_can.sub9.example.ExampleAdderResponsePacket]
+    simulated_devices:
+      mil_usb_to_can.sub9.example.ExampleSimulatedAdderDevice: [mil_usb_to_can.sub9.example.ExampleAdderRequestPacket]
+    </rosparam>
+  </node>
+
+  <test test-name="kill_board_test" pkg="mil_usb_to_can" type="adder_device_test_sub9.py" />
+</launch>

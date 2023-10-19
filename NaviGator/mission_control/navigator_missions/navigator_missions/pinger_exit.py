@@ -46,7 +46,7 @@ class PingerExitMission(NaviGatorMission):
         """Move to the points needed to go through the correct gate"""
         self.get_gate_thru_points()
         await self.move.set_position(self.gate_thru_points[0]).look_at(
-            self.gate_thru_points[1]
+            self.gate_thru_points[1],
         ).go()
         await self.move.set_position(self.gate_thru_points[1]).go()
         # for p in self.gate_thru_points:

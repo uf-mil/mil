@@ -28,7 +28,7 @@ class GoToPOI(NaviGatorMission):
         euler += np.array([0, 0, math.pi])
         orientation = quaternion_from_euler(*euler)
         self.send_feedback(
-            f"Moving to {poi} at {position[0:2]} with orientation {orientation}"
+            f"Moving to {poi} at {position[0:2]} with orientation {orientation}",
         )
         await self.change_wrench("autonomous")
         await self.move.to_pose(Pose(Point(*position), Quaternion(*orientation))).go()

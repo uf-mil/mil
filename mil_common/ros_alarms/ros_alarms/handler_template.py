@@ -1,6 +1,6 @@
 from typing import Optional, Union
 
-from ros_alarms.msg import Alarm as AlarmMsg
+from ros_alarms_msgs.msg import Alarm as AlarmMsg
 
 from .alarms import Alarm
 
@@ -19,7 +19,7 @@ class HandlerBase:
     alarm_server = None
 
     @classmethod
-    def _init(cls, alarm_server: "AlarmServer"):
+    def _init(cls, alarm_server):
         """
         Called by the alarm server to give each handler a reference to the alarm server,
         so it can efficiently get and set alarms.
@@ -105,4 +105,4 @@ class HandlerBase:
             should be raised, or a new Alarm object which the calling alarm
             should update itself to.
         """
-        return any([alarm.raised for name, alarm in alarms.items()])
+        return any(alarm.raised for name, alarm in alarms.items())

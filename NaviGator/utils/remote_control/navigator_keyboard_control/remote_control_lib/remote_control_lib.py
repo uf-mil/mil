@@ -33,7 +33,7 @@ class RemoteControl:
     def __init__(self, controller_name: str, wrench_pub: Optional[str] = None):
         self.name = controller_name
         self.wrench_choices = itertools.cycle(
-            ["rc", "emergency", "keyboard", "autonomous"]
+            ["rc", "emergency", "keyboard", "autonomous"],
         )
 
         self.kill_broadcaster = AlarmBroadcaster("kill")
@@ -42,7 +42,8 @@ class RemoteControl:
         self.wrench_changer = rospy.ServiceProxy("/wrench/select", MuxSelect)
         self.task_client = MissionClient()
         self.kill_listener = AlarmListener(
-            "kill", callback_funct=self._update_kill_status
+            "kill",
+            callback_funct=self._update_kill_status,
         )
 
         if wrench_pub is None:
@@ -51,14 +52,17 @@ class RemoteControl:
             self.wrench_pub = rospy.Publisher(wrench_pub, WrenchStamped, queue_size=1)
 
         self.shooter_load_client = actionlib.SimpleActionClient(
-            "/shooter/load", ShooterDoAction
+            "/shooter/load",
+            ShooterDoAction,
         )
         self.shooter_fire_client = actionlib.SimpleActionClient(
-            "/shooter/fire", ShooterDoAction
+            "/shooter/fire",
+            ShooterDoAction,
         )
         self.shooter_cancel_client = rospy.ServiceProxy("/shooter/cancel", Trigger)
         self.shooter_manual_client = rospy.ServiceProxy(
-            "/shooter/manual", ShooterManual
+            "/shooter/manual",
+            ShooterManual,
         )
         self.shooter_reset_client = rospy.ServiceProxy("/shooter/reset", Trigger)
 
@@ -147,8 +151,9 @@ class RemoteControl:
             else:
                 rospy.logwarn(
                     "Error deploying thrusters: {}, status: {}".format(
-                        TerminalState.to_string(terminal_state), result.status
-                    )
+                        TerminalState.to_string(terminal_state),
+                        result.status,
+                    ),
                 )
 
         self.task_client.run_task("DeployThrusters", done_cb=cb)
@@ -165,8 +170,9 @@ class RemoteControl:
             else:
                 rospy.logwarn(
                     "Error rectracting thrusters: {}, status: {}".format(
-                        TerminalState.to_string(terminal_state), result.status
-                    )
+                        TerminalState.to_string(terminal_state),
+                        result.status,
+                    ),
                 )
 
         self.task_client.run_task("RetractThrusters", done_cb=cb)
@@ -217,8 +223,10 @@ class RemoteControl:
         """
         rospy.loginfo(
             "Shooter Load Status={} Success={} Error={}".format(
-                status, result.success, result.error
-            )
+                status,
+                result.success,
+                result.error,
+            ),
         )
 
     @_timeout_check
@@ -227,7 +235,8 @@ class RemoteControl:
         Loads the shooter by using the action client to retract the linear actuator.
         """
         self.shooter_load_client.send_goal(
-            goal=ShooterDoActionGoal(), done_cb=self._shooter_load_feedback
+            goal=ShooterDoActionGoal(),
+            done_cb=self._shooter_load_feedback,
         )
         rospy.loginfo("Kip, do not throw away your shot.")
 
@@ -237,8 +246,10 @@ class RemoteControl:
         """
         rospy.loginfo(
             "Shooter Fire Status={} Success={} Error={}".format(
-                status, result.success, result.error
-            )
+                status,
+                result.success,
+                result.error,
+            ),
         )
 
     @_timeout_check
@@ -248,10 +259,11 @@ class RemoteControl:
         acceleration discs and extend the linear actuator.
         """
         self.shooter_fire_client.send_goal(
-            goal=ShooterDoActionGoal(), done_cb=self._shooter_fire_feedback
+            goal=ShooterDoActionGoal(),
+            done_cb=self._shooter_fire_feedback,
         )
         rospy.loginfo(
-            "One, two, three, four, five, six, seven, eight, nine. Number... TEN PACES! FIRE!"
+            "One, two, three, four, five, six, seven, eight, nine. Number... TEN PACES! FIRE!",
         )
 
     @_timeout_check
@@ -264,7 +276,7 @@ class RemoteControl:
         self.shooter_cancel_client(TriggerRequest())
         rospy.loginfo("I imaging death so much it feels more like a memory.")
         rospy.loginfo(
-            "When's it gonna get me? While I'm blocked? Seven clocks ahead of me?"
+            "When's it gonna get me? While I'm blocked? Seven clocks ahead of me?",
         )
 
     def _shooter_reset_helper(self, event):
@@ -274,7 +286,7 @@ class RemoteControl:
         rospy.loginfo("Resetting the shooter service")
         self.shooter_reset_client(TriggerRequest())
         rospy.loginfo(
-            "In New York you can be a new man! In New York you can be a new man!"
+            "In New York you can be a new man! In New York you can be a new man!",
         )
 
     @_timeout_check

@@ -5,7 +5,7 @@ import struct
 import unittest
 
 import rostest
-from mil_usb_to_can import ApplicationPacket, CommandPacket
+from mil_usb_to_can.sub8 import ApplicationPacket, CommandPacket
 
 
 class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
@@ -29,7 +29,8 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
         packet = ApplicationPacket(37, letter.encode())
         self.assertEqual(bytes(packet), struct.pack("B1s", 37, letter.encode()))
         self.assertEqual(
-            ApplicationPacket.from_bytes(bytes(packet), expected_identifier=37), packet
+            ApplicationPacket.from_bytes(bytes(packet), expected_identifier=37),
+            packet,
         )
 
     def test_assembled(self):
@@ -45,6 +46,8 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
 
 if __name__ == "__main__":
     rostest.rosrun(
-        "mil_usb_to_can", "test_application_packets", BasicApplicationPacketTest
+        "mil_usb_to_can",
+        "test_application_packets",
+        BasicApplicationPacketTest,
     )
     unittest.main()
