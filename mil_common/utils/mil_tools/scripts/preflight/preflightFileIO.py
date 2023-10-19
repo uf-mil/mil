@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-# Systems[]
-#   Global variable that contains all the systems. Used to standardized file name. Ex Subjugator or Navigator
-
 # writeTests(fileName, topicsToCheck[])
 #   fileName should standardized, this input should be from a selected number of names
 #   topicsToCheck[] this array should only contain valid topics that we will make sure data is in.
@@ -18,6 +15,8 @@
 # readTests(filename)
 #   reads and runs all the tests in the file.
 #   returns whether each test pass or fail
+
+
 import rospy
 import rostopic
 
@@ -62,7 +61,6 @@ def readTests(filename):
     dataTypes = []  # Create list to store topic datatypes
     results = []  # list to store the results of all the tests
 
-    print(lines)
     # Loop through all the tests
     for i in range(len(lines)):
         # Fix the formatting of the tests to match topic names
@@ -81,11 +79,4 @@ def readTests(filename):
         except Exception:
             results.append(False)
 
-    return results
-
-
-if __name__ == "__main__":
-    rospy.init_node("topic_publisher_checker")
-    writeTests("SubChecklist.txt", ["dvl", "odom"])
-    deleteTests("SubChecklist.txt", ["testing"])
-    print(readTests("SubChecklist.txt"))
+    return [lines, results]
