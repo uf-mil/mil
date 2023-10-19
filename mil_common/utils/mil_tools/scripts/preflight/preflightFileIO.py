@@ -23,8 +23,15 @@ import rostopic
 
 
 def writeTests(filename, topicsToCheck):
+    lines = []
+    try:
+        tests = open(filename)  # open file for reading
+        lines = tests.readlines()
+        tests.close()
+    except OSError:
+        pass
+
     tests = open(filename, "a+")
-    lines = tests.readlines()
 
     # If the topic to add is not already in the list add it
     for topic in topicsToCheck:
@@ -50,25 +57,35 @@ def deleteTests(filename, topicsToCheck):
 
 
 def readTests(filename):
-    tests = open(filename)
-    lines = tests.readlines()
-    dataTypes = []
+    tests = open(filename)  # Read the file
+    lines = tests.readlines()  # Store all tests from file into array
+    dataTypes = []  # Create list to store topic datatypes
+    results = []  # list to store the results of all the tests
+
+    print(lines)
+    # Loop through all the tests
     for i in range(len(lines)):
+        # Fix the formatting of the tests to match topic names
         lines[i] = lines[i][:-1]
+        lines[i] = f"/{lines[i]}"
+
+        # Get the topic types
         TopicType, topic_str, _ = rostopic.get_topic_class(lines[i])
         dataTypes.append(TopicType)
-        lines[i] = topic_str
-        rospy.Subscriber(lines[i], dataTypes[i], some_callback)
+        lines[i] = topic_str  # Fix the topic names
 
+        # Try calling the topic
+        try:
+            rospy.wait_for_message(lines[i], dataTypes[i])
+            results.append(True)
+        except Exception:
+            results.append(False)
 
-def some_callback(msg):
-    rospy.loginfo("Got the message: " + str(msg))
-
-    # We need to call the ros topic and verify the data WIP
+    return results
 
 
 if __name__ == "__main__":
     rospy.init_node("topic_publisher_checker")
     writeTests("SubChecklist.txt", ["dvl", "odom"])
     deleteTests("SubChecklist.txt", ["testing"])
-    readTests("SubChecklist.txt")
+    print(readTests("SubChecklist.txt"))
