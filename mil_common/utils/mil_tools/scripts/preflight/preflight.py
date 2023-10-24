@@ -13,6 +13,10 @@ if __name__ == "__main__":
     else:
         print("Running for real")
 
-    preflightFileIO.writeTests("SubChecklist.txt", ["dvl", "odom", "testing"])
-    preflightFileIO.deleteTests("SubChecklist.txt", ["testing"])
+    preflightFileIO.writeTests(
+        "SubChecklist.txt",
+        ["h check safety", "s TOPIC /dvl", "h check valve"],
+    )
+    preflightFileIO.deleteTests("SubChecklist.txt", ["check safety"])
     print(preflightFileIO.readTests("SubChecklist.txt"))
+    print(preflightFileIO.runTests("SubChecklist.txt", 1))

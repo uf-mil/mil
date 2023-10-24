@@ -1,82 +1,124 @@
 #!/usr/bin/env python3
 
-# writeTests(fileName, topicsToCheck[])
-#   fileName should standardized, this input should be from a selected number of names
-#   topicsToCheck[] this array should only contain valid topics that we will make sure data is in.
-#       What ever program calls this function should only pass in valid topics. This will be a list of strings.
-#   This should not delete old topicsToCheck only add new ones.
-
-# deleteTests(fileName, topicsToCheck[])
-#   fileName should standardized, this input should be from a selected number of names
-#   topicsToCheck[] this array should only contain valid topics that we will make sure data is in.
-#       What ever program calls this function should only pass in valid topics. This will be a list of strings.
-#   delete tests from the file.
-
-# readTests(filename)
-#   reads and runs all the tests in the file.
-#   returns whether each test pass or fail
-
+import contextlib
 
 import rospy
 import rostopic
 
 
-def writeTests(filename, topicsToCheck):
-    lines = []
+def writeTests(filename, testsToAdd):
+    hardwareLines = []
+    softwareLines = []
     try:
-        tests = open(filename)  # open file for reading
-        lines = tests.readlines()
-        tests.close()
+        hardwareLines = getHardwareChecks(filename)
+        softwareLines = getSoftwareChecks(filename)
     except OSError:
         pass
 
-    tests = open(filename, "a+")
+    tests = open(filename, "w")
+    tests.write("=== Hardware Checks ===\n")
 
-    # If the topic to add is not already in the list add it
-    for topic in topicsToCheck:
-        topic += "\n"
-        if topic not in lines:
-            tests.write(topic)
+    # If the hardware topic to add is not already in the list add it
+    for test in testsToAdd:
+        if test[0] == "h":
+            test = test[2:]
+            test += "\n"
+            if test not in hardwareLines:
+                tests.write(test)
+
+    tests.write("=== Software Checks ===\n")
+
+    # If the software topic to add is not already in the list add it
+    for test in testsToAdd:
+        if test[0] == "s":
+            test = test[2:]
+            test += "\n"
+            if test not in softwareLines:
+                tests.write(test)
+
     tests.close()
 
 
-def deleteTests(filename, topicsToCheck):
-    tests = open(filename)
-    lines = tests.readlines()
-    tests.close()
+def deleteTests(filename, testsToDelete):
+    hardwareLines = []
+    softwareLines = []
 
-    # If the topic to add is not already in the list add it
-    for topic in topicsToCheck:
-        topic += "\n"
-        if topic in lines:
-            lines.remove(topic)
+    try:
+        hardwareLines = getHardwareChecks(filename)
+        softwareLines = getSoftwareChecks(filename)
+    except OSError:
+        return False
+
+    for test in testsToDelete:
+        test += "\n"
+        with contextlib.suppress(Exception):
+            hardwareLines.remove(test)
+
+        with contextlib.suppress(Exception):
+            softwareLines.remove(test)
 
     tests = open(filename, "w")
-    tests.writelines(lines)
+    tests.write("=== Hardware Checks ===\n")
+    tests.writelines(hardwareLines)
+    tests.write("=== Software Checks ===\n")
+    tests.writelines(softwareLines)
 
 
 def readTests(filename):
-    tests = open(filename)  # Read the file
-    lines = tests.readlines()  # Store all tests from file into array
-    dataTypes = []  # Create list to store topic datatypes
-    results = []  # list to store the results of all the tests
+    return [getHardwareChecks(filename), getSoftwareChecks(filename)]
 
-    # Loop through all the tests
-    for i in range(len(lines)):
-        # Fix the formatting of the tests to match topic names
-        lines[i] = lines[i][:-1]
-        lines[i] = f"/{lines[i]}"
 
-        # Get the topic types
-        TopicType, topic_str, _ = rostopic.get_topic_class(lines[i])
-        dataTypes.append(TopicType)
-        lines[i] = topic_str  # Fix the topic names
+def runTests(filename, index):
+    sChecks = getSoftwareChecks(filename)
 
-        # Try calling the topic
+    testType = sChecks[index].split()[0]
+    testTopic = sChecks[index].split()[1]
+
+    if testType == "TOPIC":
+        TopicType, topic_str, _ = rostopic.get_topic_class(testTopic)
+
         try:
-            rospy.wait_for_message(lines[i], dataTypes[i])
-            results.append(True)
+            rospy.wait_for_message(topic_str, TopicType)
+            return True
         except Exception:
-            results.append(False)
+            return False
 
-    return [lines, results]
+
+def getHardwareChecks(filename):
+    checks = open(filename)
+    foundHardware = False
+    hardwareChecks = []
+    for index, line in enumerate(checks):
+        if "=== Hardware Checks ===" in line:
+            foundHardware = True
+            continue
+
+        if "=== Software Checks ===" in line:
+            foundHardware = False
+            continue
+
+        if foundHardware:
+            hardwareChecks.append(line)
+
+    checks.close()
+    return hardwareChecks
+
+
+def getSoftwareChecks(filename):
+    checks = open(filename)
+    foundSoftware = False
+    softwareChecks = []
+    for index, line in enumerate(checks):
+        if "=== Hardware Checks ===" in line:
+            foundSoftware = False
+            continue
+
+        if "=== Software Checks ===" in line:
+            foundSoftware = True
+            continue
+
+        if foundSoftware:
+            softwareChecks.append(line)
+
+    checks.close()
+    return softwareChecks
