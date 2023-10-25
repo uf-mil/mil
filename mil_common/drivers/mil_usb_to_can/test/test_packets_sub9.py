@@ -6,9 +6,9 @@ import rostest
 from mil_usb_to_can.sub9 import Packet
 from mil_usb_to_can.sub9.packet import SYNC_CHAR_1, SYNC_CHAR_2
 
-
+# payload_format must follow format characters listed here: https://docs.python.org/3/library/struct.html
 @dataclass
-class TestPacket(Packet, msg_id=0x47, subclass_id=0x44, payload_format="BHf"):
+class TestPacket(Packet, msg_id=0x47, subclass_id=0x44, payload_format="?Hd"):
     example_bool: bool
     example_int: int
     example_float: float
@@ -23,7 +23,7 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
         packet = TestPacket(False, 42, 3.14)
         self.assertEqual(packet.msg_id, 0x47)
         self.assertEqual(packet.subclass_id, 0x44)
-        self.assertEqual(packet.payload_format, "BHf")
+        self.assertEqual(packet.payload_format, "?Hd")
         self.assertEqual(packet.example_bool, False)
         self.assertEqual(packet.example_int, 42)
         self.assertEqual(packet.example_float, 3.14)
@@ -35,6 +35,13 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(assembled[1], SYNC_CHAR_2)
         self.assertEqual(assembled[2], packet.msg_id)
         self.assertEqual(assembled[3], packet.subclass_id)
+    
+    def test_format(self):
+        packet = TestPacket(False, 42, 3.14)
+        self.assertEqual(
+            TestPacket.from_bytes(TestPacket.__bytes__(packet)),
+            packet,
+        )
 
     def test_comparisons(self):
         packet = TestPacket(False, 42, 3.14)
