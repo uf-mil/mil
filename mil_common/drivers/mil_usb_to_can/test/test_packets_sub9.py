@@ -6,6 +6,7 @@ import rostest
 from mil_usb_to_can.sub9 import Packet
 from mil_usb_to_can.sub9.packet import SYNC_CHAR_1, SYNC_CHAR_2
 
+
 @dataclass
 class TestPacket(Packet, msg_id=0x47, subclass_id=0x44, payload_format="?Hd"):
     example_bool: bool
@@ -34,7 +35,7 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(assembled[1], SYNC_CHAR_2)
         self.assertEqual(assembled[2], packet.msg_id)
         self.assertEqual(assembled[3], packet.subclass_id)
-    
+
     def test_format(self):
         packet = TestPacket(False, 42, 3.14)
         self.assertEqual(
