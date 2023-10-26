@@ -6,7 +6,6 @@ import rostest
 from mil_usb_to_can.sub9 import Packet
 from mil_usb_to_can.sub9.packet import SYNC_CHAR_1, SYNC_CHAR_2
 
-# payload_format must follow format characters listed here: https://docs.python.org/3/library/struct.html
 @dataclass
 class TestPacket(Packet, msg_id=0x47, subclass_id=0x44, payload_format="?Hd"):
     example_bool: bool
