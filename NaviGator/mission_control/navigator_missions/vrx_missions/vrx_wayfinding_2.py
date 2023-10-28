@@ -38,40 +38,23 @@ class VrxWayfinding2(Vrx):
             for j in range(array_size):
                 dist_matrix[i][j] = np.linalg.norm(poses[i][0] - poses[j][0])
 
-        #self.send_feedback(f"Distance Matrix:\n{dist_matrix}")
-
         # solve tsp algorithm (ensure start point is where boat is located) & remove current position from pose list
         path = solve_tsp(dist_matrix, endpoints=(start_pose_index, None))
         poses = poses[:start_pose_index]
         path = path[1:]
 
-        #self.send_feedback(f"Poses:\n{poses}")
-
-        #self.send_feedback(f"Path:\n{path}")
-
-        # self.send_feedback('Sorted poses' + str(poses))
         await self.wait_for_task_such_that(lambda task: task.state in ["running"])
 
         # do movements
         for index in path:
             self.send_feedback(f"Going to {poses[index]}")
-
-            #path_msg = await self.get_latching_msg(self.wayfinding_path_sub)
-            #self.send_feedback(f"Message:\n{path_msg}")
             # Go to goal
-
-            # Percent Radius of Adjustment
-            P = 0.85 
+            P = 0.85
             part_way_point = [x * P for x in poses[index][0][:-1]]
-            # Partial Axis Approach
-            # part_way_point[1] = poses[index][0][1]
-
-            # Constant Radius of Adjustment
-            # R = 10
-            # part_way_point = [(x - R if x > 0 else (x + R if x < 0 else x)) for x in poses[index][0][:-1]]
-
             part_way_point.append(poses[index][0][-1])
-            self.send_feedback(f"\nPartway:\n{part_way_point}\nEndPoint:\n{poses[index][0]}")
+            self.send_feedback(
+                f"\nPartway:\n{part_way_point}\nEndPoint:\n{poses[index][0]}",
+            )
 
             await self.send_trajectory_without_path([part_way_point, poses[index][1]])
             await self.send_trajectory_without_path(poses[index])
