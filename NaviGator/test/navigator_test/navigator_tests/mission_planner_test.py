@@ -10,16 +10,32 @@ from std_msgs.msg import String
 
 
 class MissionPlannerTest(TestUnit):
+    """
+    Attributes:
+        nh (NodeHandle): it is an object that ensures the proper setup of processes
+        results (array): it is array that stores the status and name of the mission
+        count (int): increments for each process implemented 
+    """
     def __init__(self, nh):
         self.nh = nh
         self.results = []
         self.count = 0
 
     def mission_cb(self, mission):
+        """Updates the attributes pertaining to a mission
+
+        Args:
+            mission (object): variables, like status, word, and name, are being extracted
+        """
         status, word, name = mission.data.split()
         self.results.append((status, name))
 
     def myassert(self, my_res):
+        """_summary_
+
+        Args:
+            my_res (_type_): _description_
+        """
         passed = True
         if len(my_res) != len(self.results):
             passed = False
