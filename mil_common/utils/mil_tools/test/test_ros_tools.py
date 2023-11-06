@@ -131,10 +131,7 @@ class TestROSTools(unittest.TestCase):
                 [0.0, 0.0, 0.0],
                 np.cross(p_rotated, q),
                 atol=1e-5,
-                err_msg="The generated rotation matrix did not align the input vectors, {} to {}".format(
-                    p,
-                    q,
-                ),
+                err_msg=f"The generated rotation matrix did not align the input vectors, {p} to {q}",
             )
             self.assertGreater(
                 np.dot(p_rotated, q),
