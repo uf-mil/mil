@@ -15,11 +15,11 @@ repos:
     hooks:
       - id: yamllint
   - repo: https://github.com/psf/black
-    rev: 23.9.1
+    rev: 23.10.1
     hooks:
       - id: black
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v16.0.6
+    rev: v17.0.4
     hooks:
       - id: clang-format
   - repo: https://github.com/PyCQA/autoflake
@@ -40,12 +40,12 @@ repos:
         exclude: ^docker|deprecated|NaviGator/simulation/VRX
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: 'v0.0.292'
+    rev: 'v0.1.4'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.5
+    rev: v2.2.6
     hooks:
       - id: codespell
         args:
@@ -73,7 +73,7 @@ repos:
       - id: prettier-package-xml
       - id: sort-package-xml
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
