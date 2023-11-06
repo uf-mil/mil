@@ -98,7 +98,7 @@ class Image_Subscriber:
         last_image_time (genpy.Time): The time of the last image received.
         im_sub (rospy.Subscriber): The subscriber to the image topic. The topic
             name and queue size are received through the constructor.
-        info_sub (rospy.Susbcriber): The subscriber to the camera info topic.
+        info_sub (rospy.Subscriber): The subscriber to the camera info topic.
             The topic name is derived from the root of the supplied topic and the
             queue size is derived from the constructor.
         bridge (CvBridge): The bridge between OpenCV and ROS.

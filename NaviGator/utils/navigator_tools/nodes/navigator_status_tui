@@ -35,7 +35,7 @@ class nav_tui:
         self.panel.hide()
         panel.update_panels()
         self.rate = rospy.Rate(2)  # Fixed rate for while loop to update at: 2 hz
-        # The following are default field initalizations for various values that that will be overwritten
+        # The following are default field initializations for various values that that will be overwritten
         self.voltage = 0
         self.wrench = None
         self.LAT = None

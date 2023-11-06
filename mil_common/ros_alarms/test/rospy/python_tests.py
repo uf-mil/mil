@@ -17,7 +17,7 @@ class ClientTester(unittest.TestCase):
         super().__init__(*args)
 
     """ Tests alarm client operations
-    Creates some listeners and some broadcasters and tests various raising and clearing conditoins
+    Creates some listeners and some broadcasters and tests various raising and clearing conditions
     Also tests various combination of parameters
     """
 
@@ -142,7 +142,7 @@ class ClientTester(unittest.TestCase):
         self.cleared = False
         self.both = False
 
-        # Make sure callbacks run when they're suppsed to
+        # Make sure callbacks run when they're supposed to
         ab_a.raise_alarm()
         rospy.sleep(0.5)
 

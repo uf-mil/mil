@@ -213,7 +213,7 @@ class RectFinder:
             cam (Optional[PinholeCameraModel]): The camera model.
             rectified (bool): If ``cam`` is set, set True if corners were found in an
                already rectified image (image_rect_color topic).
-            instrinsics (np.ndarray): Camera intrinisic matrix.
+            intrinsics (np.ndarray): Camera intrinisic matrix.
             dist_coeffs (np.ndarray): Camera distortion coefficients.
 
         Returns:

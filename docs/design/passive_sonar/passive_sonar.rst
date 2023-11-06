@@ -78,7 +78,7 @@ Configuration
 *************
 All parameters that are expected to be changed in tuining are ROS Params initialized in ``passive_sonar.yaml``
 
-To make a custom configation
+To make a custom configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * ``roscd subjugator_launch``

@@ -184,7 +184,7 @@ class VoltageWidget(QWidget):
         threshFont = QtGui.QFont("Times", (self.fontSize) / 3, QtGui.QFont.Bold)
         self.labelThresh.setFont(threshFont)
 
-    # Sets the text of the thrshold info box
+    # Sets the text of the threshold info box
     def initThresh(self) -> None:
         """
         Sets the text of the threshold info box

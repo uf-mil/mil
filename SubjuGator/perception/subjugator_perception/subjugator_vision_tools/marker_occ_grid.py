@@ -174,7 +174,7 @@ class Searcher:
             self.poly_generator = self.polygon_generator()
             return [0, False, srv.intial_position]
 
-        # We search at 1.5 * r so that there is some overlay in the search feilds.
+        # We search at 1.5 * r so that there is some overlay in the search fields.
         np_pose = msg_helpers.pose_to_numpy(srv.intial_position)
         rot_mat = make_2D_rotation(
             tf.transformations.euler_from_quaternion(np_pose[1])[2],
