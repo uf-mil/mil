@@ -31,10 +31,11 @@ class MissionPlannerTest(TestUnit):
         self.results.append((status, name))
 
     def myassert(self, my_res):
-        """_summary_
+        """
+        This prints out whether the intended result has been matched or prints an error message
 
         Args:
-            my_res (_type_): _description_
+            my_res (array): array that is being compared 
         """
         passed = True
         if len(my_res) != len(self.results):
@@ -65,6 +66,10 @@ class MissionPlannerTest(TestUnit):
         self.count += 1
 
     def create_spoofs(self):
+        """
+        A "SpoofGenerator" instance has been created by assigning a preset values to each attribute
+        
+        """
         sg = SpoofGenerator()
         empty = PerceptionObjectArray()
         stc = PerceptionObjectArray()
@@ -166,6 +171,9 @@ class MissionPlannerTest(TestUnit):
         )
 
     async def run_tests(self):
+        """
+        A test for each yaml file is being run while passing the parameters for each instance. 
+        """
         await self.pub_base_mission.start(self.nh)
         sub = self.nh.subscribe("/mission_planner/mission", String, self.mission_cb)
         await sub.setup()
@@ -277,6 +285,17 @@ class MissionPlannerTest(TestUnit):
         fprint(f"{self.count} Missions passed", msg_color="green")
 
     async def _run_mission(self, yaml_file, spoof_pub, spoof_service, time, desc, res):
+        """This runs the process starting with the yaml file while also passing in attributes of an object. 
+           This confirms whether the tests are successful. 
+
+        Args:
+            yaml_file (_type_): _description_
+            spoof_pub (_type_): _description_
+            spoof_service (_type_): _description_
+            time (_type_): _description_
+            desc (_type_): _description_
+            res (_type_): _description_
+        """
         with open(yaml_file) as stream:
             try:
                 spoof_pub.start(self.nh)
