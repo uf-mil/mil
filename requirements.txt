@@ -22,7 +22,7 @@ PyYAML==6.0
 urdf-parser-py==0.0.4
 
 # Internet
-aiohttp==3.8.5
+aiohttp==3.8.6
 aiohttp-xmlrpc==1.5.0
 
 # Documentation
