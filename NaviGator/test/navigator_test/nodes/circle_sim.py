@@ -48,6 +48,23 @@ class DoOdom:
 
 
 class Sim:
+    """
+    Attributes:
+        ogrid_pub (Publisher): imports a grid-like object
+        odom (DoOdom) : converts the "bf_size" size
+        bf_size (float): stores a float version of the size
+        min_t_spacing (float): stores a float version of spacing
+        num_of_buoys (int): stores the number of buoys
+        grid (object): this is a grid object
+        resolution (float): sets the resolution of the grid
+        height (float): sets a size that is three times the size of "bf_size"
+        width (float): sets a size that is three times the size of "bf_size"
+        origin (int): computed a numerical operation involving sizes
+        publish_ogrid (Publisher): publishes a grid
+        buoy_size (int): radius of buoy
+        totem_size (int): radius of totem
+        
+    """
     def __init__(
         self, bf_size: float = 60, min_t_spacing: float = 9, num_of_buoys: int = 20
     ):
