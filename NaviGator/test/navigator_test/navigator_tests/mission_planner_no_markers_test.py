@@ -7,10 +7,17 @@ from navigator_test_lib import SpoofGenerator, TestUnit
 
 
 class MissionPlannerTest(TestUnit):
+    """A definition of the MissionPlannerTest
+
+    Args:
+        TestUnit (object): TestUnit is passed within the class
+    """
     def __init__(self, nh):
         self.nh = nh
 
     def create_spoofs(self):
+        """Creates a Spoof Generator object
+        """
         sg = SpoofGenerator()
         empty = PerceptionObjectArray()
         stc = PerceptionObjectArray()
@@ -64,6 +71,8 @@ class MissionPlannerTest(TestUnit):
         )
 
     async def run_tests(self):
+        """Several mission cases are being run. 
+        """
         base_file = (
             "/".join(__file__.split("/")[0:-1]) + "/mission_planner_no_markers_yamls"
         )
@@ -110,6 +119,14 @@ class MissionPlannerTest(TestUnit):
         await self.pub_missing_objects
 
     async def _run_mission(self, yaml_file, spoof_pub, spoof_service, desc):
+        """Opens up a yaml file and executes actions embedded within objects. 
+
+        Args:
+            yaml_file (yaml): a yaml file is passed in 
+            spoof_pub (object): a spoof_pub object is passed in 
+            spoof_service (object): a poof_service executes the action
+            desc (object): executes the first test
+        """
         with open(yaml_file) as stream:
             try:
                 spoof_pub.start(self.nh)

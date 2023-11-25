@@ -101,6 +101,12 @@ class Sim:
         rospy.Timer(rospy.Duration(1), self.publish_ogrid)
 
     def _make_ogrid_transform(self):
+        """
+        Transforms points from ENU to ogrid frame coordinates
+
+        Returns:
+            lambda point: performs a dot operation for ogrid frame coordinates
+        """
         self.grid = np.zeros(
             (self.height / self.resolution, self.width / self.resolution)
         )
@@ -116,6 +122,12 @@ class Sim:
         return lambda point: self.t.dot(np.append(point[:2], 1))[:2]
 
     def reseed(self, req: Optional[TriggerRequest]) -> None:
+        """
+        Generates buoys and totems and also checks for proximity
+
+        Args:
+            req (Optional[TriggerRequest]): the reseed operation is being performed on the request.
+        """
         # Generate some buoys and totems
         buoy_positions = np.random.uniform(self.bf_size, size=(self.num_of_buoys, 2))
         self.ids = np.array([1, 45, 32, 55])
@@ -149,6 +161,17 @@ class Sim:
     def position_to_object(
         self, position: np.ndarray, color: Sequence[int], id, name: str = "totem"
     ) -> PerceptionObject:
+        """_summary_
+
+        Args:
+            position (np.ndarray): position of the object
+            color (Sequence[int]): color of the sequence is passed in
+            id (int): id of the object is passed in 
+            name (str, optional): name of the object is passed in. Defaults to "totem".
+
+        Returns:
+            PerceptionObject: "PerceptionObject" instance is created with all the parameters being assigned. 
+        """
         obj = PerceptionObject()
         obj.id = int(id)
         obj.header = mil_tools.make_header(frame="enu")
@@ -162,6 +185,14 @@ class Sim:
         return obj
 
     def got_request(self, req: ObjectDBQueryRequest) -> ObjectDBQueryResponse:
+        """Gets a request based on the name of the object
+
+        Args:
+            req (ObjectDBQueryRequest): object that is passed in for comparison purposes
+
+        Returns:
+            ObjectDBQueryResponse: response is submitted based on the request type
+        """
         fprint(f"Request received {req.name}")
         if req.name in self.ids:
             index = np.argwhere(self.ids == req.name)
@@ -187,6 +218,11 @@ class Sim:
         return ObjectDBQueryResponse(objects=objects, found=True)
 
     def get_message(self) -> OccupancyGrid:
+        """An ogrid component is being set with the assigned values. 
+
+        Returns:
+            OccupancyGrid: this type of grid is sent with all the passed-in data
+        """
         if self.grid is None:
             fprint(
                 "Ogrid was requested but no ogrid was found. Using blank.",
@@ -207,6 +243,8 @@ class Sim:
         return ogrid
 
     def draw_buoys(self) -> None:
+        """A buoys is being drawn out, especially with a circle. 
+        """
         for b in self.buoy_positions:
             center = tuple(self.transform(b).astype(np.int32).tolist())
             cv2.circle(
@@ -214,6 +252,8 @@ class Sim:
             )
 
     def draw_totems(self) -> None:
+        """A totem is being drawn with two separate circles. 
+        """
         for b in self.totem_positions:
             center = tuple(self.transform(b).astype(np.int32).tolist())
             cv2.circle(
