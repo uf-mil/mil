@@ -34,6 +34,8 @@ TCP_IP = args.ip
 TCP_PORT = args.port
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# REUSEADDR fixes option that limit kernel from reopening socket quickly
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((TCP_IP, TCP_PORT))
 s.listen(1)
 
@@ -50,17 +52,18 @@ wait_time = 0
 if args.rate != 0:
     wait_time = 1.0 / args.rate
 
-conn, addr = s.accept()
 try:
     if args.advance_on_arrow is False:
         if args.batch_size == 0:
             while True:
+                conn, addr = s.accept()
                 conn.send(data)
                 print("sent samples")
                 conn.close()
                 print("Closed connection")
         elif args.batch_size != 0:
             while True:
+                conn, addr = s.accept()
                 print("New connection")
                 for sample in data:
                     conn.send(sample)
@@ -97,6 +100,7 @@ try:
 
         print(len(data))
         while True:
+            conn, addr = s.accept()
             print("New connection")
             i = 0
             while i < len(data):

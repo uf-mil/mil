@@ -56,7 +56,7 @@ class PingLocator:
         Args:
             msg (Triggered): The received message, with numpy formatting.
         """
-        data = msg.hydrophone_samples.data
+        data = msg.hydrophone_samples.data.copy()
         data.resize((msg.hydrophone_samples.samples, msg.hydrophone_samples.channels))
         rate = msg.hydrophone_samples.sample_rate
 
@@ -76,11 +76,14 @@ class PingLocator:
             [np.argmax(cross_corr[:, i]) for i in range(cross_corr.shape[1])],
         )
 
-        if (maxes == cross_corr.shape[0] - 1).any() or (maxes == 0).any():
-            rospy.logerr(
-                "/hydrophones/ping_locator lack of features on one of the channels",
-            )
-            return
+        print(maxes)
+        print(cross_corr.shape[0])
+
+        # if (maxes == cross_corr.shape[0] - 1).any() or (maxes == 0).any():
+        #     rospy.logerr(
+        #         "/hydrophones/ping_locator lack of features on one of the channels",
+        #     )
+        #     return
 
         deltas = np.array(time[maxes])
         deltas -= deltas[0]

@@ -250,7 +250,9 @@ class HydrophoneTrigger:
         gradients = np.gradient(max_convolves, axis=0)
 
         if np.max(gradients[:, 0]) >= self.threshold:
-            triggered_at_idx = np.min(np.where(gradients[:, 0] >= self.threshold)[0])
+            triggered_at_idx = int(
+                np.min(np.where(gradients[:, 0] >= self.threshold)[0]),
+            )
             triggered_at_idx += int(self.trigger_offset * self.rate)
             trigger_time = time[triggered_at_idx]
 
@@ -262,7 +264,7 @@ class HydrophoneTrigger:
                 end = triggered_at_idx + int(self.rate * self.trigger_window_future)
 
                 ping_data = gradients[start:end]
-                triggered_at_sample = triggered_at_idx + (self.window_size - 1) / 2
+                triggered_at_sample = int(triggered_at_idx + (self.window_size - 1) / 2)
                 start_sample = triggered_at_sample - int(
                     50 * self.rate * self.trigger_window_past,
                 )
@@ -284,7 +286,7 @@ class HydrophoneTrigger:
                 ping.hydrophone_samples.channels = msg_channels
                 ping.hydrophone_samples.samples = end - start
                 ping.hydrophone_samples.sample_rate = self.rate
-                ping.hydrophone_samples.data = ping_data.flatten()
+                ping.hydrophone_samples.data = ping_data.flatten().astype(int).tolist()
                 ping.trigger_time = -1 * (
                     trigger_time
                     - (
