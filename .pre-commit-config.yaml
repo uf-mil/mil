@@ -11,15 +11,15 @@ ci:
 
 repos:
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.32.0
+    rev: v1.33.0
     hooks:
       - id: yamllint
   - repo: https://github.com/psf/black
-    rev: 23.10.1
+    rev: 23.12.1
     hooks:
       - id: black
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v17.0.4
+    rev: v17.0.6
     hooks:
       - id: clang-format
   - repo: https://github.com/PyCQA/autoflake
@@ -34,12 +34,13 @@ repos:
         exclude: ^docker|deprecated|NaviGator/simulation/VRX
         args: [--severity=warning, --exclude=SC1090]
   - repo: https://github.com/scop/pre-commit-shfmt
-    rev: v3.7.0-1
+    rev: v3.7.0-4
     hooks:
       - id: shfmt
         exclude: ^docker|deprecated|NaviGator/simulation/VRX
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.1.4'
+    # Ruff version.
+    rev: 'v0.1.9'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -77,6 +78,7 @@ repos:
       - id: check-added-large-files
       - id: check-case-conflict
       - id: check-merge-conflict
+        exclude_types: [markdown, rst]
       - id: check-executables-have-shebangs
       - id: check-symlinks
       - id: check-json

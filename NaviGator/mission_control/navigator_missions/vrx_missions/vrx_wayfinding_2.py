@@ -5,6 +5,7 @@ from tsp_solver.greedy import solve_tsp
 from .vrx import Vrx
 
 ___author___ = "Alex Perez"
+# Optimized by Daniel Parra
 
 
 class VrxWayfinding2(Vrx):
@@ -42,12 +43,18 @@ class VrxWayfinding2(Vrx):
         poses = poses[:start_pose_index]
         path = path[1:]
 
-        # self.send_feedback('Sorted poses' + str(poses))
         await self.wait_for_task_such_that(lambda task: task.state in ["running"])
 
         # do movements
         for index in path:
             self.send_feedback(f"Going to {poses[index]}")
-
             # Go to goal
+            P = 0.85
+            part_way_point = [x * P for x in poses[index][0][:-1]]
+            part_way_point.append(poses[index][0][-1])
+            self.send_feedback(
+                f"\nPartway:\n{part_way_point}\nEndPoint:\n{poses[index][0]}",
+            )
+
+            await self.send_trajectory_without_path([part_way_point, poses[index][1]])
             await self.send_trajectory_without_path(poses[index])
