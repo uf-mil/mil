@@ -1,3 +1,0 @@
-=== Hardware Checks ===
-check valve
-=== Software Checks ===
