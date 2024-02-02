@@ -1,10 +1,12 @@
 import subprocess
 
+import preflight_menus
 import rosnode
 import rospy
 import rostopic
 import typer
 from PyInquirer import prompt
+from rich.progress import track
 
 app = typer.Typer()
 
@@ -12,7 +14,7 @@ hardwareChecklist = [
     {
         "type": "checkbox",
         "message": "Hardware Checklist:",
-        "name": "HardwareTests",
+        "name": "HardwareTests: \nPlease check that all of the following are in working order. \nYou cannot continue until everything has been checked.",
         "choices": [
             {"name": "check thing 1"},
             {"name": "check thing 2"},
@@ -22,7 +24,7 @@ hardwareChecklist = [
         ],
     },
 ]
-mechanicalChecklist = [
+actuatorChecklist = [
     {
         "type": "list",
         "message": "Select which system you want to run. BE CAREFUL make sure everyone's fingures are secured.",
@@ -43,24 +45,50 @@ topics = [
 
 nodes = ["/odom_estimator"]
 
-run = ["/thrusters/thrust"]
+actuatorsList = ["/thrusters/thrust"]
 
 
 @app.command("Start")
 def main():
+    # Display Modes/Options
+    subprocess.run("clear", shell=True)
+    mode = preflight_menus.display_start_menu()
+
+    if mode == "Run Preflight Full Test":
+        hardware()
+        software()
+        actuators()
+
+    # Complete the actuator tests
+    subprocess.run("clear", shell=True)
+
+
+def hardware():
+    # Complete the hardware tests
     subprocess.run("clear", shell=True)
     answers = prompt(hardwareChecklist)
-    while len(answers["HardwareTests"]) != 5:
+    while len(next(iter(answers.values()))) != 5:
         subprocess.run("clear", shell=True)
         answers = prompt(hardwareChecklist)
-        print(answers)
 
 
-@app.command("Topic")
-def topic():
+def software():
+    # Complete the software tests
+    subprocess.run("clear", shell=True)
     rospy.init_node("preflight")
+
+    # Check Nodes
     answers = []
-    for topic in topics:
+    for node in track(nodes, description="Checking Nodes..."):
+        try:
+            answers.append({node: rosnode.rosnode_ping(node, 5)})
+        except Exception:
+            answers.append({node: False})
+    print(answers)
+
+    # Check Topics
+    answers = []
+    for topic in track(topics, description="Checking Topics..."):
         try:
             topicType, topicStr, _ = rostopic.get_topic_class(topic)  # get topic class
             rospy.wait_for_message(
@@ -73,22 +101,21 @@ def topic():
             answers.append({topic: False})
     print(answers)
 
+    print(
+        prompt(
+            [
+                {
+                    "type": "confirm",
+                    "name": "continue",
+                    "message": "Continue?",
+                },
+            ],
+        ),
+    )
 
-@app.command("Node")
-def node():
-    rospy.init_node("preflight")
-    answers = []
-    for node in nodes:
-        try:
-            answers.append({node: rosnode.rosnode_ping(node, 5)})
-        except Exception:
-            answers.append({node: False})
-    print(answers)
 
-
-@app.command("Run")
-def Run():
-    rospy.init_node("preflight")
+def actuators():
+    subprocess.run("clear", shell=True)
 
 
 if __name__ == "__main__":
