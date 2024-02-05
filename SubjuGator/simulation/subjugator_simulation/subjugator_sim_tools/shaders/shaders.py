@@ -65,7 +65,6 @@ class ShaderReader:
 
 
 class Shaders:
-
     """A Shaders class, which automatically contains all of the shaders
         in the shaders folder
     WTF?

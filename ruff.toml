@@ -28,6 +28,7 @@ extend-exclude = [
 
 target-version = "py38"
 
+[lint]
 ignore = [
     "E501", # Line length
     "F405", # Unknown import

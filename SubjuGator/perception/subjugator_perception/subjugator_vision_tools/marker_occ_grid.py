@@ -249,7 +249,6 @@ class Searcher:
 
 
 class MarkerOccGrid(OccGridUtils):
-
     """
     Handles updating occupancy grid when new data comes in.
     TODO: Upon call can return some path to go to in order to find them.
