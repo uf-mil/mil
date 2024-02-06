@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "mil-preflight"
+version = "0.1.2"
+description = ""
+authors = ["Anthony Liao <anthonyliao@ufl.edu>","Keith Khadar <kkhadar@ufl.edu>","Joshua Thomas <joshuathomas@ufl.edu>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+typer = {extras = ["all"], version = "^0.9.0"}
+
+[tool.poetry.scripts]
+preflight = "mil_preflight.main:app"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
