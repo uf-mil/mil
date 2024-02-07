@@ -1,4 +1,5 @@
 import subprocess
+import time
 
 import rosnode
 import rospy
@@ -7,6 +8,9 @@ import typer
 from PyInquirer import prompt
 from rich.console import Console
 from rich.progress import track
+
+# Custom message imports
+from subjugator_msgs.msg import ThrusterCmd
 
 app = typer.Typer()
 
@@ -79,7 +83,21 @@ topics = [
 
 nodes = ["/odom_estimator"]
 
-actuatorsList = {"/thrusters/thrust": ["FLH", 25.0]}
+actuatorsList = [
+    (
+        "/thrusters/thrust",
+        [
+            ThrusterCmd(name="FLH", thrust=60.0),
+            ThrusterCmd(name="FLV", thrust=60.0),
+            ThrusterCmd(name="FRH", thrust=60.0),
+            ThrusterCmd(name="FRV", thrust=60.0),
+            ThrusterCmd(name="BLH", thrust=60.0),
+            ThrusterCmd(name="BLV", thrust=60.0),
+            ThrusterCmd(name="BRH", thrust=60.0),
+            ThrusterCmd(name="BRV", thrust=60.0),
+        ],
+    ),
+]
 
 
 @app.command("Start")
@@ -160,26 +178,27 @@ def actuators():
                     "type": "confirm",
                     "name": "runActuator",
                     "message": "Are your sure you want to run "
-                    + actuatorsList.keys[0]
+                    + actuatorsList[0][0]
                     + "? BE CAREFUL make sure everyone's fingures are secured.",
                 },
             ],
         )
         topicType, topicStr, _ = rostopic.get_topic_class(
-            actuatorsList.keys[0],
+            actuatorsList[0][0],
         )  # get topic class
+        print(topicType)
         pub = rospy.Publisher(topicStr, topicType, queue_size=10)
-        rostopic.publish_message(pub, topicType, actuatorsList.values[0])
-
+        print(actuatorsList[0][1])
+        t_end = time.time() + 5
+        while time.time() < t_end:
+            pub.publish(actuatorsList[0][1])
         answers.append(
             prompt(
                 [
                     {
                         "type": "confirm",
                         "name": "worked?",
-                        "message": "Did "
-                        + actuatorsList.keys[0]
-                        + " work as expected?",
+                        "message": "Did " + actuatorsList[0][0] + " work as expected?",
                     },
                 ],
             ),
