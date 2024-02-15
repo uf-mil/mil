@@ -18,3 +18,5 @@ from .sub_singleton import SubjuGatorMission
 from .surface import Surface
 from .torpedos_test import TorpedosTest
 from .vampire_slayer import VampireSlayer
+from .start_signal import StartSignal
+
