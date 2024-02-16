@@ -22,7 +22,7 @@ class ObjectDetectionTest:
 
     def detection_callback(self, msg):
         # Create Image from array
-        self.detector.display_detection_ros_msg(msg, conf_thres=0)
+        self.detector.display_detection_ros_msg(msg, conf_thres=0.85)
 
 
 if __name__ == "__main__":
