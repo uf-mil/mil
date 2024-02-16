@@ -68,7 +68,7 @@ class DemonstrateNavigation(NaviGatorMission):
             _, closest_reds = await self.get_sorted_objects("red_cylinder", 1)
             _, closest_greens = await self.get_sorted_objects("green_cylinder", 1)
 
-            # Rename the totems for their symantic name
+            # Rename the totems for their semantic name
             green_close = closest_greens[0]
             red_close = closest_reds[0]
 
@@ -83,7 +83,7 @@ class DemonstrateNavigation(NaviGatorMission):
             _, closest_reds = await self.get_sorted_objects("red_cylinder", 2)
             _, closest_greens = await self.get_sorted_objects("green_cylinder", 2)
 
-            # Rename the totems for their symantic name
+            # Rename the totems for their semantic name
             green_far = closest_greens[1]
             red_far = closest_reds[1]
 

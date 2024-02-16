@@ -1070,7 +1070,7 @@ class LQRRT_Node:
     def action_check(self, _: rospy.timer.TimerEvent) -> None:
         """
         Manages action preempting. Serves as the callback to a Timer operating
-          opereating every self.revisit_period seconds.
+          operating every self.revisit_period seconds.
         """
         if self.preempted or not self.move_server.is_active():
             return

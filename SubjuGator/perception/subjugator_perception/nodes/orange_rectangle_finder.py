@@ -52,7 +52,7 @@ class OrangeRectangleFinder:
     * Transform this frames pose into /map frame
     * Plug this frames pose in /map into a kalman filter to reduce noise
 
-    TODO: Allow for two objects to be identifed at once, both filtered through its own KF
+    TODO: Allow for two objects to be identified at once, both filtered through its own KF
     """
 
     # Coordinate axes for debugging image

@@ -36,7 +36,6 @@ class LightManager:
 
 
 class ShaderManager:
-
     """
     This class is used when you want to have an entity switch out shaders at a specific time.
     If you want to add another rule for when to switch out shaders:
