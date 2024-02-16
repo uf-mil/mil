@@ -6,7 +6,7 @@ from mil_ros_tools import (
 )
 from yoloros import Detector
 
-__author_ = "Daniel Parra"
+__author__ = "Daniel Parra"
 
 
 class ObjectDetectionTest:
