@@ -1,69 +1,42 @@
+################################################################################
+#  File name: main.py
+#  Author: Keith Khadar
+#  Description: This file is the entry point to preflight.
+################################################################################
+#                             -----  Imports -----                             #
+# ----- Preflight  -----#
+# ----- Console  -----#
 import subprocess
 import time
 
 import menus
+
+# ----- ROS  -----#
 import rosnode
 import rospy
 import rostopic
+import tests
 from PyInquirer import prompt
 from rich.console import Console
 from rich.progress import Progress, track
+from rich.table import Table
 
-# Custom message imports
-from subjugator_msgs.msg import ThrusterCmd
-
+#                             -----  Variables -----                             #
+# ----- Timeouts  -----#
 node_timout = 5  # seconds
 topic_timout = 5  # seconds
 actuator_timout = 5  # seconds
 
+# ----- Reports  -----#
+report = []
 
-hardwareChecklist = [
-    {
-        "type": "checkbox",
-        "message": "Hardware Checklist:",
-        "name": "HardwareTests: \nPlease check that all of the following are in working order. \nYou cannot continue until everything has been checked.",
-        "choices": [
-            {"name": "check thing 1"},
-            {"name": "check thing 2"},
-            {"name": "check thing 3"},
-            {"name": "check thing 4"},
-            {"name": "check thing 5"},
-        ],
-    },
-]
 
-topics = [
-    # "/camera/front/right/image_raw",
-    # "/camera/down/image_raw",
-    # "/camera/front/left/image_raw",
-    # "/dvl",
-    # "/depth",
-    # "/imu/data_raw",
-    # "/imu/mag",
-]
-
-nodes = ["/odom_estimator"]
-
-actuatorsList = [
-    (
-        "/thrusters/thrust",
-        [
-            ThrusterCmd(name="FLH", thrust=60.0),
-            ThrusterCmd(name="FLV", thrust=60.0),
-            ThrusterCmd(name="FRH", thrust=60.0),
-            ThrusterCmd(name="FRV", thrust=60.0),
-            ThrusterCmd(name="BLH", thrust=60.0),
-            ThrusterCmd(name="BLV", thrust=60.0),
-            ThrusterCmd(name="BRH", thrust=60.0),
-            ThrusterCmd(name="BRV", thrust=60.0),
-        ],
-    ),
-]
+#                             -----  Main Routine -----                           #
 
 
 def main():
     # Clear Screen and Display Start menu
-    subprocess.run("clear", shell=True)
+    clear_screen()
 
     # Print Info about Preflight
     Console().print(menus.info_page)
@@ -75,6 +48,8 @@ def main():
     # Select the mode and run it
     if mode == "Run Preflight Full Test":
         fullTest()
+    if mode == "View Report":
+        viewReport()
     if mode == "Exit":
         subprocess.run("clear", shell=True)
         return
@@ -83,28 +58,40 @@ def main():
     main()
 
 
+#                            -----  Subroutines -----                          #
+
+# ----- Modes  -----#
+
+
 def fullTest():
     ### Complete the hardware tests ###
 
-    while True:
-        subprocess.run("clear", shell=True)
-        answers = prompt(hardwareChecklist)
+    # Clear the screen and display the hardware checklist
+    clear_screen()
+    Console().print(menus.hardware_desc)
+    respond = prompt(menus.hardwareChecklist)
 
-        # If everything has been checked off
-        if len(next(iter(answers.values()))) == 5:
-            break
+    # Filter the response and store checklist to the report
+    answers = []
+    for i in range(len(tests.hardware)):
+        if tests.hardware[i] in next(iter(respond.values())):
+            answers.append((tests.hardware[i], True))
         else:
-            menu_ans = prompt(menus.incomplete_continue)
-            if next(iter(menu_ans.values())) is True:
-                # Continue even though everything has not been checked off
-                break
-            else:
-                # Go back to main menu
-                return
+            answers.append((tests.hardware[i], False))
+    createResult(answers, "Hardware Checklist")
+
+    # Check if the list is incomplete. If so prompt user for comfirmation to continue
+    if len(next(iter(respond.values()))) != len(tests.hardware):
+        menu_ans = prompt(menus.incomplete_continue)
+        if next(iter(menu_ans.values())) is False:
+            return
 
     ### Complete Software Tests ###
 
-    subprocess.run("clear", shell=True)
+    # Clear the screen
+    clear_screen()
+
+    # Check that ROS is running!
     try:
         rostopic._check_master()
     except Exception:
@@ -112,26 +99,37 @@ def fullTest():
         menu_ans = prompt(menus.press_anykey)
         return
 
+    # Initialize the ROS node
     rospy.init_node("preflight")
+
+    # Print Node Screen description
+    Console().print(menus.node_desc)
 
     # Check Nodes
     answers = []
-    for node in track(nodes, description="Checking Nodes..."):
+    for node in track(tests.nodes, description="Checking Nodes..."):
         # Try and ping the nodes
         try:
             answers.append((node, rosnode.rosnode_ping(node, node_timout)))
         except Exception:
             answers.append((node, False))
 
-    print_results(answers)
+    # Clear the screen, print and save the response to the report
+    print_results(answers, "Node Liveliness")
+
+    # Prompt the user to continue to next test
     menu_ans = prompt(menus.continue_question)
     if next(iter(menu_ans.values())) is False:
         # Go back to main menu
         return
 
+    # Print Topic screen description
+    clear_screen()
+    Console().print(menus.topic_desc)
+
     # Check Topics
     answers = []
-    for topic in track(topics, description="Checking Topics..."):
+    for topic in track(tests.topics, description="Checking Topics..."):
         # Check for messages on the topics
         try:
             topicType, topicStr, _ = rostopic.get_topic_class(topic)  # get topic class
@@ -140,21 +138,26 @@ def fullTest():
                 topicType,
                 topic_timout,
             )  # try to get a message from that topic
-            answers.append({topic: True})
+            answers.append((topic, True))
         except Exception:
-            answers.append({topic: False})
-    print_results(answers)
+            answers.append((topic, False))
 
+    # Clear the screen, print and save the response to the report
+    print_results(answers, "Topic Liveliness")
+
+    # Prompt the user to continue to next test
     menu_ans = prompt(menus.continue_question)
     if next(iter(menu_ans.values())) is False:
         # Go back to main menu
         return
 
     ### Actuators Test ###
+    # Print Actuators Screen description
     subprocess.run("clear", shell=True)
+    Console().print(menus.node_desc)
 
     answers = []
-    for actuator in actuatorsList:
+    for actuator in tests.actuatorsList:
         try:
             # Confirm that it is safe to run this actuator
             Console().print(menus.safety_check, actuator[0])
@@ -185,18 +188,57 @@ def fullTest():
         except Exception:
             answers.append((actuator[0], False))
 
-    print_results(answers)
-    menu_ans = prompt(menus.press_anykey)
+    # Clear the screen, print and save the response to the report
+    print_results(answers, "Actuator Tests")
+    prompt(menus.press_anykey)
     return
 
 
-def print_results(systems):
+def viewReport():
+    # Clear the screen
+    clear_screen()
+
+    # Check that there is a report
+    if len(report) == 0:
+        Console().print(
+            "[bold]No report![/].\nPlease generate a report by running a full test.",
+        )
+        prompt(menus.press_anykey)
+        return
+    # Generate the report
+    for result in report:
+        Console().print(result)
+    prompt(menus.press_anykey)
+    return
+
+
+# ----- Helper  -----#
+
+
+def createResult(systems, name):
+    # Generates a table to hold information about each system
+    result = Table(title=f"[bold]{name}[/]")
+    result.add_column("System Name", justify="center", style="cyan", no_wrap=True)
+    result.add_column("Status", justify="center", style="magenta", no_wrap=True)
+
+    # Populates the table
+    for system, status in systems:
+        status_text = "[green]✔[/] Working" if status else "[red]❌[/] Not Working"
+        result.add_row(system, status_text)
+    report.append(result)
+
+    return result
+
+
+def print_results(systems, name):
+    clear_screen()
+    result = createResult(systems, name)
+    Console().print(result)
+
+
+def clear_screen():
     subprocess.run("clear", shell=True)
-    for name, status in systems:
-        if status:
-            Console().print(f"{name}: [green]✔[/] Working")
-        else:
-            Console().print(f"{name}: [red]❌[/] Not Working")
+    Console().print(menus.title)
 
 
 if __name__ == "__main__":
