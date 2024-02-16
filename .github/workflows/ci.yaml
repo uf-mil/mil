@@ -59,6 +59,7 @@ jobs:
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
           rm -rf build devel
           export HOME=$GITHUB_WORKSPACE # Temporary fix for setup scripts
+          sudo apt reinstall python3-pip
           ./scripts/install.sh
       # - name: Run catkin_make
       #   run: |
