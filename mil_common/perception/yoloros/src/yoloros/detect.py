@@ -11,9 +11,13 @@ from utils.general import non_max_suppression
 from utils.plots import plot_one_box
 from visualizer import load_visuals
 
+from mil_ros_tools import Image_Publisher
+
 
 class Detector:
-    def __init__(self, weights):
+    def __init__(self, weights, device="cuda"):
+        self.image_pub = Image_Publisher("~yolo_detections_display")
+        self.device = device
         if weights == "robosub24":
             print("Weights loaded for Robosub24")
             self.model_name = weights
@@ -22,7 +26,7 @@ class Detector:
             )
             self.__MODEL = attempt_load(
                 absolute_file_path,
-                map_location=torch.device("cuda"),
+                map_location=torch.device(device),
             )
             self.__CLASSES, self.__COLORS = load_visuals(weights)
         else:
@@ -42,7 +46,7 @@ class Detector:
 
         img_transform = transforms.Compose([transforms.ToTensor()])
 
-        img_tensor = img_transform(img).to("cuda").unsqueeze(0)
+        img_tensor = img_transform(img).to(self.device).unsqueeze(0)
         pred_results = self.__MODEL(img_tensor)[0]
         detections = non_max_suppression(
             pred_results,
@@ -68,6 +72,40 @@ class Detector:
             print("No Detections Made")
 
         Image.fromarray(arr_image).show()
+
+    def display_detection_ros_msg(self, ros_msg, conf_thres=0.85, iou_thres=0.5):
+        img = Image.fromarray(ros_msg.astype("uint8"), "RGB")
+
+        img = img.resize((960, 608))
+        print(img.size)
+
+        img_transform = transforms.Compose([transforms.ToTensor()])
+
+        img_tensor = img_transform(img).to(self.device).unsqueeze(0)
+
+        pred_results = self.__MODEL(img_tensor)[0]
+        detections = non_max_suppression(
+            pred_results,
+            conf_thres=conf_thres,
+            iou_thres=iou_thres,
+        )
+
+        arr_image = np.array(img)
+
+        if detections:
+            detections = detections[0]
+            for x1, y1, x2, y2, conf, cls in detections:
+                class_index = int(cls.cpu().item())
+                print(f"{self.__CLASSES[class_index]} => {conf}")
+                plot_one_box(
+                    [x1, y1, x2, y2],
+                    arr_image,
+                    label=f"{self.__CLASSES[class_index]}",
+                    color=self.__COLORS[class_index],
+                    line_thickness=2,
+                )
+
+        self.image_pub.publish(arr_image)
 
 
 if __name__ == "__main__":
