@@ -24,7 +24,7 @@ PcdColorizer::PcdColorizer(ros::NodeHandle nh, string input_pcd_topic)
   }
   catch (std::exception &e)
   {
-    _err_msg = "COLORIZER: Suscriber or publisher error caught: "_s + e.what();
+    _err_msg = "COLORIZER: Subscriber or publisher error caught: "_s + e.what();
     ROS_ERROR(_err_msg.c_str());
     return;
   }

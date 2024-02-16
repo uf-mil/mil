@@ -93,7 +93,7 @@ class DiceDetect:
         params.minConvexity = 0.8  # 1 = perfect convex hull
         # Filter by Inertia
         params.filterByInertia = True
-        params.minInertiaRatio = 0.4  # Defines the ellipsoid 1= detects only cirlces
+        params.minInertiaRatio = 0.4  # Defines the ellipsoid 1= detects only circles
         # 0 = Detects even lines
 
         # Create a detector with the parameters

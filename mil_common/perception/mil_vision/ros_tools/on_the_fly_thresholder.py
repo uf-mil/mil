@@ -78,9 +78,11 @@ class Thresholder:
     def update_mask(self):
         self.lower, self.upper = self.trackbars.get_bounds()
         self.mask = cv2.inRange(
-            self.image
-            if self.thresh_type == "bgr"
-            else cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV),
+            (
+                self.image
+                if self.thresh_type == "bgr"
+                else cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
+            ),
             self.lower,
             self.upper,
         )

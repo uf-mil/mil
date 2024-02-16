@@ -9,7 +9,6 @@ from std_msgs.msg import ColorRGBA
 
 
 class RvizVisualizer:
-
     """Cute tool for drawing both depth and height-from-bottom in RVIZ"""
 
     def __init__(self, topic="visualization/markers"):

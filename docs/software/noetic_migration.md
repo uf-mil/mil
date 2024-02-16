@@ -45,7 +45,7 @@ before you commit.
 
 Great, the code is now pretty! :D
 
-If you ran `python-modernize`, it will have suggested some changes to you, indcated
+If you ran `python-modernize`, it will have suggested some changes to you, indicated
 by `+` and `-` signs. It may look something like this:
 
 ```diff

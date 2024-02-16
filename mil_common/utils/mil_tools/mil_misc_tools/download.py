@@ -11,6 +11,7 @@ We're using this because I don't want to track 20MB files in Git.
 [3] Download a file via http
     http://stackoverflow.com/questions/22676
 """
+
 import io as StringIO
 import os
 import urllib.request

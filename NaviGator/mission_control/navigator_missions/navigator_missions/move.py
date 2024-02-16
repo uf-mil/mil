@@ -149,7 +149,7 @@ class Move(NaviGatorMission):
                     "yl": "yaw_left",
                     "yr": "yaw_right",
                 }
-                command = command if command not in shorthand else shorthand[command]
+                command = shorthand.get(command, command)
                 movement = getattr(self.move, command)
 
                 trans_move = command[:3] != "yaw"
