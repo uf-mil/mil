@@ -1,59 +1,20 @@
 import subprocess
 import time
 
+import menus
 import rosnode
 import rospy
 import rostopic
-import typer
 from PyInquirer import prompt
 from rich.console import Console
-from rich.progress import track
+from rich.progress import Progress, track
 
 # Custom message imports
 from subjugator_msgs.msg import ThrusterCmd
 
-app = typer.Typer()
-
-
-def display_start_menu():
-    console = Console()
-
-    # Title
-    console.print(
-        "[bold green]Preflight Program - Autonomous Robot Verification[/bold green]",
-    )
-
-    # Description
-    console.print(
-        "Welcome to the Preflight Program, a tool inspired by the preflight checklists used by pilots before "
-        "flying a plane. This program is designed to verify the functionality of all software and hardware "
-        "systems on your autonomous robot. It ensures that everything is in working order, allowing you to "
-        "safely deploy your robot with confidence.\n",
-    )
-
-    # Authors section
-    console.print("\n[italic]Authors:[/italic]")
-    console.print("Keith Khadar")
-    console.print("Anthony Liao")
-    console.print("Joshua Thomas\n")
-
-    # Menu options
-    start_menu = [
-        {
-            "type": "list",
-            "name": "mode selection",
-            "message": "Menu",
-            "choices": [
-                "Run Preflight Full Test",
-                "View Report",
-                "Run Specific Test",
-                "View Documentation",
-                "Exit",
-            ],
-        },
-    ]
-    option = prompt(start_menu)
-    return next(iter(option.values()))
+node_timout = 5  # seconds
+topic_timout = 5  # seconds
+actuator_timout = 5  # seconds
 
 
 hardwareChecklist = [
@@ -72,13 +33,13 @@ hardwareChecklist = [
 ]
 
 topics = [
-    "/camera/front/right/image_raw",
-    "/camera/down/image_raw",
-    "/camera/front/left/image_raw",
-    "/dvl",
-    "/depth",
-    "/imu/data_raw",
-    "/imu/mag",
+    # "/camera/front/right/image_raw",
+    # "/camera/down/image_raw",
+    # "/camera/front/left/image_raw",
+    # "/dvl",
+    # "/depth",
+    # "/imu/data_raw",
+    # "/imu/mag",
 ]
 
 nodes = ["/odom_estimator"]
@@ -100,127 +61,143 @@ actuatorsList = [
 ]
 
 
-@app.command("Start")
 def main():
-    # Display Modes/Options
+    # Clear Screen and Display Start menu
     subprocess.run("clear", shell=True)
-    mode = display_start_menu()
 
+    # Print Info about Preflight
+    Console().print(menus.info_page)
+
+    # Print start select menu
+    option = prompt(menus.start_menu)
+    mode = next(iter(option.values()))
+
+    # Select the mode and run it
     if mode == "Run Preflight Full Test":
-        hardware()
-        software()
-        actuators()
+        fullTest()
     if mode == "Exit":
         subprocess.run("clear", shell=True)
         return
+
+    # Return to this screen after running the selected mode
     main()
 
 
-def hardware():
-    # Complete the hardware tests
-    subprocess.run("clear", shell=True)
-    answers = prompt(hardwareChecklist)
-    while len(next(iter(answers.values()))) != 5:
+def fullTest():
+    ### Complete the hardware tests ###
+
+    while True:
         subprocess.run("clear", shell=True)
         answers = prompt(hardwareChecklist)
 
+        # If everything has been checked off
+        if len(next(iter(answers.values()))) == 5:
+            break
+        else:
+            menu_ans = prompt(menus.incomplete_continue)
+            if next(iter(menu_ans.values())) is True:
+                # Continue even though everything has not been checked off
+                break
+            else:
+                # Go back to main menu
+                return
 
-def software():
-    # Complete the software tests
+    ### Complete Software Tests ###
+
     subprocess.run("clear", shell=True)
+    try:
+        rostopic._check_master()
+    except Exception:
+        Console().print("[bold] ROS not running! Please try again later[/]")
+        menu_ans = prompt(menus.press_anykey)
+        return
+
     rospy.init_node("preflight")
 
     # Check Nodes
     answers = []
     for node in track(nodes, description="Checking Nodes..."):
+        # Try and ping the nodes
         try:
-            answers.append({node: rosnode.rosnode_ping(node, 5)})
+            answers.append((node, rosnode.rosnode_ping(node, node_timout)))
         except Exception:
-            answers.append({node: False})
-    print(answers)
+            answers.append((node, False))
+
+    print_results(answers)
+    menu_ans = prompt(menus.continue_question)
+    if next(iter(menu_ans.values())) is False:
+        # Go back to main menu
+        return
 
     # Check Topics
     answers = []
     for topic in track(topics, description="Checking Topics..."):
+        # Check for messages on the topics
         try:
             topicType, topicStr, _ = rostopic.get_topic_class(topic)  # get topic class
             rospy.wait_for_message(
                 topicStr,
                 topicType,
-                5,
+                topic_timout,
             )  # try to get a message from that topic
             answers.append({topic: True})
         except Exception:
             answers.append({topic: False})
-    print(answers)
+    print_results(answers)
 
-    print(
-        prompt(
-            [
-                {
-                    "type": "confirm",
-                    "name": "continue",
-                    "message": "Continue?",
-                },
-            ],
-        ),
-    )
+    menu_ans = prompt(menus.continue_question)
+    if next(iter(menu_ans.values())) is False:
+        # Go back to main menu
+        return
 
-
-def actuators():
+    ### Actuators Test ###
     subprocess.run("clear", shell=True)
-    print("test")
+
     answers = []
-    try:
-        prompt(
-            [
-                {
-                    "type": "confirm",
-                    "name": "runActuator",
-                    "message": "Are your sure you want to run "
-                    + actuatorsList[0][0]
-                    + "? BE CAREFUL make sure everyone's fingures are secured.",
-                },
-            ],
-        )
-        topicType, topicStr, _ = rostopic.get_topic_class(
-            actuatorsList[0][0],
-        )  # get topic class
-        print(topicType)
-        pub = rospy.Publisher(topicStr, topicType, queue_size=10)
-        print(actuatorsList[0][1])
-        t_end = time.time() + 5
-        while time.time() < t_end:
-            pub.publish(actuatorsList[0][1])
-        answers.append(
-            prompt(
-                [
-                    {
-                        "type": "confirm",
-                        "name": "worked?",
-                        "message": "Did " + actuatorsList[0][0] + " work as expected?",
-                    },
-                ],
-            ),
-        )
-    except Exception as e:
-        print(e)
-        answers.append(False)
+    for actuator in actuatorsList:
+        try:
+            # Confirm that it is safe to run this actuator
+            Console().print(menus.safety_check, actuator[0])
+            menu_ans = prompt(menus.continue_question)
+            if next(iter(menu_ans.values())) is False:
+                # Go back to main menu
+                return
 
-    print(answers)
+            # Create a publisher
+            topicType, topicStr, _ = rostopic.get_topic_class(actuator[0])
+            pub = rospy.Publisher(topicStr, topicType, queue_size=10)
 
-    print(
-        prompt(
-            [
-                {
-                    "type": "confirm",
-                    "name": "continue",
-                    "message": "Continue?",
-                },
-            ],
-        ),
-    )
+            # Publish to the topic for the specified timeout
+            with Progress() as progress:
+                t_start = time.time()
+                t_end = t_start + actuator_timout
+                t_prev = time.time()
+                task = progress.add_task("Running", total=(t_end - t_start))
+                while time.time() <= t_end:
+                    pub.publish(actuator[1])
+                    progress.update(task, advance=(time.time() - t_prev))
+                    t_prev = time.time()
+                progress.update(task, advance=t_end)
+
+            # Ask if the actuator worked
+            Console().print(menus.actuator_check)
+            answers.append((actuator[0], next(iter(prompt(menus.yes_no).values()))))
+        except Exception:
+            answers.append((actuator[0], False))
+
+    print_results(answers)
+    menu_ans = prompt(menus.press_anykey)
+    return
+
+
+def print_results(systems):
+    subprocess.run("clear", shell=True)
+    for name, status in systems:
+        if status:
+            Console().print(f"{name}: [green]✔[/] Working")
+        else:
+            Console().print(f"{name}: [red]❌[/] Not Working")
 
 
 if __name__ == "__main__":
-    app()
+    main()
