@@ -31,6 +31,7 @@ jobs:
       - name: Configure catkin workspace folder structure
         run: |
           mkdir -p $GITHUB_WORKSPACE/catkin_ws/src
+          sudo apt reinstall python3-pip
       - name: Check out code from GitHub
         uses: actions/checkout@v3.0.2
         with:
