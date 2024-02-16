@@ -96,7 +96,7 @@ class HydrophoneTrigger:
         self.enabled = rospy.get_param("~enable_on_launch")
 
         # Attributes about our target frequency range
-        #  target Frquency in Hz
+        #  target Frequency in Hz
         self.target = rospy.get_param("~target_frequency")
         #  tolerance around that frequerncy in Hz
         tolerance = rospy.get_param("~frequency_tolerance")
@@ -121,7 +121,7 @@ class HydrophoneTrigger:
         self.v_sound = rospy.get_param("v_sound")
 
         # Misc attributes
-        #  minimum gradient of the max convolution wrt time to trigger a time of arivals calculation
+        #  minimum gradient of the max convolution wrt time to trigger a time of arrivals calculation
         self.threshold = rospy.get_param("~threshold")
         self.trigger_offset = rospy.get_param("~trigger_offset")
         #  how far after the triggering time to make upper bound of samples at triggering in sec

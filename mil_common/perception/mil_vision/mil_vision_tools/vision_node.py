@@ -27,7 +27,7 @@ def create_object_msg(
     is needed/available in your application.
 
     Args:
-        name (str): Name of the identifed object.
+        name (str): Name of the identified object.
         attributes (str): Attributes to attach to message, the purpose and value
             of this attribute will vary by application. Defaults to an empty string.
         confidence (Optional[float]): Float between 0 and 1 describing the confidence

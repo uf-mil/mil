@@ -100,5 +100,5 @@ $ ./scripts/build_docs --scratch
 ```
 
 ## Contributing changes
-Now that you have made and verifed your changes, follow the [contributing guide](contributing)
+Now that you have made and verified your changes, follow the [contributing guide](contributing)
 to add your changes to the repository.

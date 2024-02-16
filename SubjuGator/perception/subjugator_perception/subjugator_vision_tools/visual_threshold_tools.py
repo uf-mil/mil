@@ -63,7 +63,6 @@ def denormalize(val, _min, _max):
 
 
 class ExtentDialog(traits.api.HasTraits):
-
     """A dialog to graphically adjust the extents of a threshold range"""
 
     # Data extents
