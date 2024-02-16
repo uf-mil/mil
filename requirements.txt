@@ -32,7 +32,6 @@ myst-parser==0.18.0
 sphinx-copybutton==0.5.0
 
 # Terminal
-typer[all]==4.8.0
 PyInquirer==1.0.3
 
 # External Devices
