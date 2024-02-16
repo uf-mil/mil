@@ -18,11 +18,11 @@ class CannyOrangePillDetection:
         camera = rospy.get_param("~image_topic", "/camera/down/image_rect_color")
 
         self.image_sub = Image_Subscriber(camera, self.vectorize_image)
+        self.image_pub = Image_Publisher("~vector_viz_topic")
         self.camera_info = self.image_sub.wait_for_camera_info()
         assert self.camera_info is not None
         self.cam = PinholeCameraModel()
         self.cam.fromCameraInfo(self.camera_info)
-        self.image_pub = Image_Publisher("~vector_viz_topic")
 
     def vectorize_image(self, msg):
         # Create Image from array
