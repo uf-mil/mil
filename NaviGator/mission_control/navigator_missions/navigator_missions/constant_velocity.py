@@ -66,7 +66,7 @@ class ConstantVelocity(NaviGatorMission):
         return parsed
 
     async def run(self, args):
-        # Publish a velocity of zero for a while to stabalize navigator
+        # Publish a velocity of zero for a while to stabilize navigator
         self.send_feedback("Switching trajectory to constant")
         await self.change_trajectory("constant")
         await self.nh.sleep(0.1)

@@ -4,7 +4,7 @@ This package includes the main algorithm to find the direction of a pinger. It a
 # Running:
 Ensure that hydrophones -> ros is running and publishing a `mil_passive_sonar/Ping` msg.
 
-Then run `roslaunch mil_passive_sonar mil_passive_sonar.lauch`
+Then run `roslaunch mil_passive_sonar mil_passive_sonar.launch`
 
 `mil_passive_sonar/FindPinger`
 

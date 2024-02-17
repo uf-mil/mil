@@ -51,7 +51,7 @@ TEST(ListenerTest, listenerTest)
   ab.getAlarm() = pxy;
   ab.clear();  // alarm starts off cleared
 
-  // Last update time happened wehen we called ab.clear()
+  // Last update time happened when we called ab.clear()
   auto first_query = listener.getLastUpdateTime();
 
   ab.updateSeverity(5);  // This is an update to the alarm

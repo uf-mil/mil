@@ -213,7 +213,7 @@ class RectFinder:
             cam (Optional[PinholeCameraModel]): The camera model.
             rectified (bool): If ``cam`` is set, set True if corners were found in an
                already rectified image (image_rect_color topic).
-            instrinsics (np.ndarray): Camera intrinisic matrix.
+            intrinsics (np.ndarray): Camera intrinisic matrix.
             dist_coeffs (np.ndarray): Camera distortion coefficients.
 
         Returns:
@@ -304,12 +304,12 @@ class EllipseFinder(RectFinder):
         self.model_2D = np.zeros((50, 1, 2), dtype=np.int)
         # Approximate an ellipse with 50 points, so that verify_contour is reasonable fast still
         for idx, theta in enumerate(np.linspace(0.0, 2.0 * np.pi, num=50)):
-            self.model_2D[idx][0][
-                0
-            ] = self.length * 0.5 * scale + self.length * 0.5 * scale * np.cos(theta)
-            self.model_2D[idx][0][
-                1
-            ] = self.width * 0.5 * scale + self.width * 0.5 * scale * np.sin(theta)
+            self.model_2D[idx][0][0] = (
+                self.length * 0.5 * scale + self.length * 0.5 * scale * np.cos(theta)
+            )
+            self.model_2D[idx][0][1] = (
+                self.width * 0.5 * scale + self.width * 0.5 * scale * np.sin(theta)
+            )
 
     def get_corners(self, contour, debug_image=None):
         """

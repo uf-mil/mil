@@ -100,10 +100,11 @@ def train_on_data(observation_list, label_list, split_factor=4):
         s_time = time.time()
         process_round = 0
         # Split this into multiple passes in an attempt to free RAM (no idea if this works).
-        for x, y in zip(all_observations_split, all_labels_split):
+        for process_round, (x, y) in enumerate(
+            zip(all_observations_split, all_labels_split),
+        ):
             print(f"Training subset {process_round + 1}/{split_factor}.")
             boost.train(x, cv2.CV_ROW_SAMPLE, y, params=parameters)
-            process_round += 1
 
         print(f"Time to complete: {time.time() - s_time}")
         print("Done! Saving...")
