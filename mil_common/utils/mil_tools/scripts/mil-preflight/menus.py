@@ -1,7 +1,7 @@
 ################################################################################
 #  File name: menus.py
 #  Author: Keith Khadar
-#  Description: This file is used to store all the menus used by preflight
+#  Description: This file is used to store all the menus used by preflight. Version 1.0
 ################################################################################
 # ----- Imports  -----#
 import tests

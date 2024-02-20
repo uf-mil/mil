@@ -1,13 +1,14 @@
 ################################################################################
 #  File name: main.py
 #  Author: Keith Khadar
-#  Description: This file is the entry point to preflight.
+#  Description: This file is the entry point to preflight. Version 1.0
 ################################################################################
 #                             -----  Imports -----                             #
 # ----- Preflight  -----#
 # ----- Console  -----#
 import subprocess
 import time
+from pathlib import Path
 
 import menus
 
@@ -18,6 +19,7 @@ import rostopic
 import tests
 from PyInquirer import prompt
 from rich.console import Console
+from rich.markdown import Markdown
 from rich.progress import Progress, track
 from rich.table import Table
 
@@ -50,6 +52,8 @@ def main():
         fullTest()
     if mode == "View Report":
         viewReport()
+    if mode == "View Documentation":
+        viewDocumentation()
     if mode == "Exit":
         subprocess.run("clear", shell=True)
         return
@@ -208,6 +212,22 @@ def viewReport():
     # Generate the report
     for result in report:
         Console().print(result)
+    prompt(menus.press_anykey)
+    return
+
+
+def viewDocumentation():
+    # Clear the screen
+    clear_screen()
+
+    # Find path to README from current directory
+    mod_path = Path(__file__).parent
+    rel_path = "README.md"
+    src_path = (mod_path / rel_path).resolve()
+    # Print the documentation
+    with open(src_path, "r+") as help_file:
+        Console().print(Markdown(help_file.read()))
+
     prompt(menus.press_anykey)
     return
 
