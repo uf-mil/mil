@@ -27,9 +27,9 @@ class BatteryVoltage(HandlerBase):
             if not self._raised or self._severity != severity:
                 self.broadcaster.raise_alarm(
                     severity=severity,
-                    problem_description="battery critcaly low"
-                    if severity == 2
-                    else "battery low",
+                    problem_description=(
+                        "battery critcaly low" if severity == 2 else "battery low"
+                    ),
                     parameters={"voltage": voltage},
                 )
 

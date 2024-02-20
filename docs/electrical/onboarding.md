@@ -20,7 +20,7 @@ including meeting times.
 
 ## Join the electrical GitHub
 Unlike the software and mechanical teams (who share a GitHub repository), we use
-a separate repository for the electrical team. As a resut, you will need to be added
+a separate repository for the electrical team. As a result, you will need to be added
 to this organization. Once you're in Slack (or you've come to the lab), ask an electrical
 leader to add you to the GitHub organization. The organization can be found [here](https://github.com/uf-mil-electrical).
 

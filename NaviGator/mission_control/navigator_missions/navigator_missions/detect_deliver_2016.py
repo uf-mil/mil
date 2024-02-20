@@ -153,9 +153,7 @@ class DetectDeliver(NaviGatorMission):
                 await self.nh.sleep(0.25)
                 continue
             fprint(
-                "Shape ({}found, using normal to look at other 3 shapes if needed".format(
-                    res[0],
-                ),
+                f"Shape ({res[0]}found, using normal to look at other 3 shapes if needed",
                 title="DETECT DELIVER",
                 msg_color="green",
             )
