@@ -67,8 +67,7 @@ class Joystick:
 
     def check_for_timeout(self, joy: Joy):
         """
-        Consists of several procedures that reference parameters that are retrieved from the "Joy" object in
-        order to determine the state of the controller or whether it is a timeout phase.
+        This checks for a particular duration when the controller times out.
 
         Args:
             joy (Joy): The Joy message.
