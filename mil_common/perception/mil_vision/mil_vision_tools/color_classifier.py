@@ -94,7 +94,7 @@ class ContourClassifier:
 
     def feature_probabilities(self, features: np.ndarray) -> List[float]:
         """
-        Allows child classes to give probabilties for each possible class given
+        Allows child classes to give probabilities for each possible class given
         a features vector, instead of just one classification. By default,
         gives 1.0 to classified class and 0.0 to others.
 

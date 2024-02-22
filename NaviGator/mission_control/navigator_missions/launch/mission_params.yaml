@@ -157,14 +157,14 @@ dock_shape_1:
   param: /mission/identify_dock/shape_1
   options: [CIRCLE, TRIANGLE, CROSS, ANY]
   description: >
-    The shape of the first bay to dock in during the dentify
+    The shape of the first bay to dock in during the identify
     Symbols and Dock mission. If set to ANY, mission should dock based on the
     color parameter and set this parameter during the mission
 dock_color_1:
   param: /mission/identify_dock/color_1
   options: [RED, GREEN, BLUE, ANY]
   description: >
-    The color of the first bay to dock in during the dentify Symbols and Dock
+    The color of the first bay to dock in during the identify Symbols and Dock
     mission. If set to ANY, mission should dock based on the shape parameter
     and set this parameter during the mission
 
@@ -174,7 +174,7 @@ dock_shape_2:
   description: >
     # yamllint disable-line rule:line-length
     The shape of the second bay to dock in during the
-    dentify Symbols and Dock mission. If set to ANY,
+    identify Symbols and Dock mission. If set to ANY,
     mission should dock based on the color parameter and set this
     parameter during the mission
 dock_color_2:
@@ -183,6 +183,6 @@ dock_color_2:
   description: >
     # yamllint disable-line rule:line-length
     The color of the second bay to dock in during the
-    dentify Symbols and Dock mission.
+    identify Symbols and Dock mission.
     If set to ANY, mission should dock based on the shape
     parameter and set this parameter during the mission

@@ -94,7 +94,7 @@ class Joystick:
 
     def joy_recieved(self, joy: Joy) -> None:
         """
-        Button elements are being assigned and simplied to readable names. The
+        Button elements are being assigned and simplified to readable names. The
         number of deployments or retractions for thrusters are being updated based
         on several conditions. Moreover, additional settings are changed based on the
         state of the controller and the activation of potential alarms or switches.

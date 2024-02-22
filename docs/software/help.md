@@ -63,7 +63,7 @@ for examples of it being used.
 
 ## Search the internet
 If your problem is not MIL-specific (issue with Linux, ROS, C++, etc),
-somone has most likely had the same problem and written about it on the internet.
+someone has most likely had the same problem and written about it on the internet.
 You'll be surprised how often you can fix your issue by Googling the error.
 
 ## Search Slack

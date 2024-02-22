@@ -2,6 +2,7 @@
 Credit goes to discord.py and its creators for creating most of this file:
 https://github.com/Rapptz/discord.py/blob/master/docs/extensions/attributetable.py
 """
+
 from sphinx.builders.html import StandaloneHTMLBuilder
 from sphinx.environment.adapters.indexentries import IndexEntries
 from sphinx.writers.html5 import HTML5Translator

@@ -7,26 +7,6 @@ body:
     attributes:
       value: |
         Hey, thanks for taking the time to add this software issue!
-  - type: input
-    id: assignee
-    attributes:
-      label: Assignee
-      description: >
-        Does this issue need to be completed by a specific person on the team?
-        If so, mention them below.
-      placeholder: ex. @torvalds is already working on this task!
-    validations:
-      required: false
-  - type: input
-    id: deadline
-    attributes:
-      label: Deadline
-      description: >
-        Does this task need a deadline? _If this task is related to a competition,
-        it should have a deadline._
-      placeholder: ex. 2023-12-25
-    validations:
-      required: false
   - type: textarea
     id: description
     attributes:

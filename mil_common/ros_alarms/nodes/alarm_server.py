@@ -178,9 +178,9 @@ class AlarmServer:
                 if alarm_name in self.alarms:
                     self.alarms[alarm_name].update(h.initial_alarm)
                 else:
-                    self.alarms[
-                        alarm_name
-                    ] = h.initial_alarm  # Update even if already added to server
+                    self.alarms[alarm_name] = (
+                        h.initial_alarm
+                    )  # Update even if already added to server
             elif (
                 alarm_name not in self.alarms
             ):  # Add default initial if not there already
