@@ -210,6 +210,8 @@ class ContourClassifier:
         Args:
             training_file (Optional[str]): The name of the training file.
         """
+        if training_file is None:
+            raise NotImplementedError("Cannot read without any training file.")
         training_file = _get_param(training_file, self.training_file)
         df = pandas.read_csv(training_file)
         classes = df.values[:, 1]
