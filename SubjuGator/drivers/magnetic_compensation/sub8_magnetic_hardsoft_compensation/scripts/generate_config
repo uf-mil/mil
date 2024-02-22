@@ -132,9 +132,11 @@ if __name__ == "__main__":
     with rosbag.Bag(sys.argv[1]) as bag:
         points = numpy.array(
             [
-                mil_ros_tools.rosmsg_to_numpy(msg.magnetic_field)
-                if hasattr(msg, "magnetic_field")
-                else mil_ros_tools.rosmsg_to_numpy(msg.vector)
+                (
+                    mil_ros_tools.rosmsg_to_numpy(msg.magnetic_field)
+                    if hasattr(msg, "magnetic_field")
+                    else mil_ros_tools.rosmsg_to_numpy(msg.vector)
+                )
                 for topic, msg, t in bag.read_messages(topics=["/imu/mag_raw"])
             ],
         )

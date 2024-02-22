@@ -416,7 +416,7 @@ void AerialMapDisplay::assembleScene()
     // determine location of this tile, flipping y in the process
     const double x = (tile.x() - loader_->centerTileX()) * tile_w + origin_x;
     const double y = -(tile.y() - loader_->centerTileY()) * tile_h + origin_y;
-    //  don't re-use any ids
+    //  don't reuse any ids
     const std::string name_suffix = std::to_string(tile.x()) + "_" + std::to_string(tile.y()) + "_" +
                                     std::to_string(map_id_) + "_" + std::to_string(scene_id_);
 

@@ -33,7 +33,7 @@ Basic Usage Example
 
 - Visualize this new topic in rviz by clicking `Add` and then `/odom2 -> Odometry`
 
-- Watch the red arrow advance from where the sub started to where the sub stopped updting approximately 10 times a second.
+- Watch the red arrow advance from where the sub started to where the sub stopped updating approximately 10 times a second.
 
 Source Files
 ^^^^^^^^^^^^

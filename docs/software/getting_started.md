@@ -420,7 +420,7 @@ launches the Gazebo GUI - aka, the thing you will actually interact with! If all
 goes according to plan, you should see our robot in its own little world!
 
 ## Installing developer tools
-After you have verified that your Git setup is working appopriately, take a look
+After you have verified that your Git setup is working appropriately, take a look
 at installing some developer tools on the [Developer Tools](/software/devtools)
 page.
 
