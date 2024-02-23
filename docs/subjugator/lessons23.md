@@ -1,0 +1,13 @@
+# Lessons from RoboSub 2023
+
+Paraphrasing Dan Frank, “it's clear that if we had made all these mistakes back in Gainesville, we could have been in way better shape for the competition”.
+
+* **Make a plan and be familiar with the sub** - We should create a solid checklist that spells out all the basic stuff we need to nail before we leave. This should cover nailing down sub moves commands, getting familiar with the missions we already have written, testing those missions in the pool, and making sure our kill system is on point and integrates well with our software. Having a game plan for finals that's solid and picking out a reliable run that can get enough points to really boost our chances is really important. Let's not leave our presentation prep for the last minute – we need to make the presentation and practice at least a week before the competition hits. We should have deadlines for all of these.
+
+* **Make a plan and be familiar with the sub** - We need to have a Plan B when someone can't make it or falls sick. At least 2-3 people need to be able to rock the sub operation, change and charge batteries, replace mechanical things, etc. Roles in the team need to be crystal clear during the competition.
+
+* **Track issues and maintenance of parts** - We should track intermitten issues; investigate them, and deal with them, before leaving. The issues showed up every now and then, but we brushed them off thinking they’ll go away. They should've been solved earlier. Also we need a proper log of when we're swapping out parts or using them. That way, we know when it's time for replacements. We only made the move of MacArtney connector switch after stumbling on a Slack conversation from 2019. Having a grip on the tether's age would've helped sort things out sooner.
+
+* **Easier debugging and Sub Status** - When hardware kills don't unkill after rebooting and sticking the kill wand back in, we should've cracked open those CAN messages to see what was going wrong. Having all this info on a screen or sent to our computers would've made life simpler. About lights and screens, having status symbols or messages on screens for errors or warnings from each board would make debugging easier. Same goes for side lights on the sub – they'd be useful for the electrical and softwar.
+
+* **Document** - Since hardware takes more effort than firmware, we could try to make it easier to write working prototype firmware to have more time for making hardware. We currently have MIL written drivers, but they have inconsistent documentation and are confusing for some members to use (especially the ones for CAN).

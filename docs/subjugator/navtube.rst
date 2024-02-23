@@ -12,7 +12,6 @@ Navigation Computer
 ===================
 
 The navigation computer consists of a Gumstix Overo Computer-on-Module that mounts to a carrier board. The carrier board contains headers for the Teledyne Dopper Velocity Logger (DVL) connector board, Analog Devices Inertial Measurement Unit (IMU), and the pressure sensor. At one point, the navigation computer was also connected to a GPS antenna.
-
 .. warning::
 
      No documentation or PCB design files exist for the navigation computer carrier board and there are no more functioning spare boards. Additionally, only the newer GumStix Overo COM boards are available to purchase (with a lead time of roughly 1 year) which may not be compatible with the current system. Be very careful when working inside of the navigation tube.
