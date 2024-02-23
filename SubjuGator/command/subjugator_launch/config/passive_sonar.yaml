@@ -3,7 +3,7 @@
 dist_h: 2.286e-02
 # speed of sound in water
 v_sound: 1482
-#  target Frquency in Hz
+#  target Frequency in Hz
 triggering/target_frequency: 30000
 #  tolerance around target frequerncy in Hz
 triggering/frequency_tolerance: 100

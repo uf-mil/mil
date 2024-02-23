@@ -153,9 +153,7 @@ class DetectDeliver(NaviGatorMission):
                 await self.nh.sleep(0.25)
                 continue
             fprint(
-                "Shape ({}found, using normal to look at other 3 shapes if needed".format(
-                    res[0],
-                ),
+                f"Shape ({res[0]}found, using normal to look at other 3 shapes if needed",
                 title="DETECT DELIVER",
                 msg_color="green",
             )
@@ -240,10 +238,7 @@ class DetectDeliver(NaviGatorMission):
                 self.shape_pose = found_pose
                 return
             fprint(
-                "Saw (Shape={}, Color={}) on this side".format(
-                    shape_color[0],
-                    shape_color[1],
-                ),
+                f"Saw (Shape={shape_color[0]}, Color={shape_color[1]}) on this side",
                 title="DETECT DELIVER",
                 msg_color="green",
             )
@@ -287,10 +282,7 @@ class DetectDeliver(NaviGatorMission):
             self.shape_pose = point_normal
             if self.Shape == shape or self.Color == color:
                 fprint(
-                    "Correct shape not found, resorting to shape={} color={}".format(
-                        shape,
-                        color,
-                    ),
+                    f"Correct shape not found, resorting to shape={shape} color={color}",
                     title="DETECT DELIVER",
                     msg_color="yellow",
                 )
@@ -430,9 +422,7 @@ class DetectDeliver(NaviGatorMission):
         move = await self.align_to_target()
         if move.failure_reason != "":
             fprint(
-                "Error Aligning with target = {}. Ending mission :(".format(
-                    move.failure_reason,
-                ),
+                f"Error Aligning with target = {move.failure_reason}. Ending mission :(",
                 title="DETECT DELIVER",
                 msg_color="red",
             )
@@ -479,9 +469,7 @@ class DetectDeliver(NaviGatorMission):
         move = await self.align_to_target()
         if move.failure_reason != "":
             fprint(
-                "Error Aligning with target = {}. Ending mission :(".format(
-                    move.failure_reason,
-                ),
+                f"Error Aligning with target = {move.failure_reason}. Ending mission :(",
                 title="DETECT DELIVER",
                 msg_color="red",
             )

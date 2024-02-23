@@ -85,9 +85,7 @@ class USBtoCANDriver:
             self.handles[packet.device].on_data(packet.data)
         else:
             rospy.logwarn(
-                "Message received for device {}, but no handle registered".format(
-                    packet.device,
-                ),
+                f"Message received for device {packet.device}, but no handle registered",
             )
         return True
 

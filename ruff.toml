@@ -28,6 +28,7 @@ extend-exclude = [
 
 target-version = "py38"
 
+[lint]
 ignore = [
     "E501", # Line length
     "F405", # Unknown import
@@ -35,6 +36,7 @@ ignore = [
     "D212", # we use second line!
     "D200", # one line docstrings are not shortened!
     "SIM115", # too many for now...
+    "RUF012", # too many for now, adds obvious ClassVar statements
 ]
 
 [per-file-ignores]

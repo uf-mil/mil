@@ -67,8 +67,7 @@ class Joystick:
 
     def check_for_timeout(self, joy: Joy):
         """
-        Consists of several procedures that reference parameters that are retrieved from the "Joy" object in
-        order to determine the state of the controller or whether it is a timeout phase.
+        This checks for a particular duration when the controller times out.
 
         Args:
             joy (Joy): The Joy message.
@@ -95,7 +94,7 @@ class Joystick:
 
     def joy_recieved(self, joy: Joy) -> None:
         """
-        Button elements are being assigned and simplied to readable names. The
+        Button elements are being assigned and simplified to readable names. The
         number of deployments or retractions for thrusters are being updated based
         on several conditions. Moreover, additional settings are changed based on the
         state of the controller and the activation of potential alarms or switches.

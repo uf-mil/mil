@@ -37,7 +37,7 @@ class Actuator:
         if isinstance(config, int):
             return cls.from_int(config)
         type_str = config["type"]
-        pulse_time = config["pulse_time"] if "pulse_time" in config else None
+        pulse_time = config.get("pulse_time")
         open_id = config["ports"]["open_port"]["id"]
         open_default = config["ports"]["open_port"]["default"]
         if "close_port" in config["ports"]:

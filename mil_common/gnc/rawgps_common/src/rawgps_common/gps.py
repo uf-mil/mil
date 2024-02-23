@@ -649,9 +649,7 @@ def generate_satellite_message(
     for i in range(2):
         dt = t - eph.t_oc
         assert abs(dt) < week_length / 2
-        deltat_SV_L1 = (
-            eph.a_f0 + eph.a_f1 * dt + eph.a_f2 * dt**2 + deltat_r - eph.T_GD
-        )
+        deltat_SV_L1 = eph.a_f0 + eph.a_f1 * dt + eph.a_f2 * dt**2 + deltat_r - eph.T_GD
         t = t_SV - deltat_SV_L1
         if i == 1:
             sat_pos, deltat_r, sat_vel = eph.predict(t)
@@ -691,14 +689,16 @@ def generate_satellite_message(
         time=-pseudo_range / c - deltat_SV_L1,
         T_iono=T_iono,
         T_tropo=T_tropo,
-        carrier_distance=carrier_cycles * c / L1_f0
-        if carrier_cycles is not None
-        else nan,
+        carrier_distance=(
+            carrier_cycles * c / L1_f0 if carrier_cycles is not None else nan
+        ),
         doppler_velocity=doppler_freq * c / L1_f0,
         direction_enu=Vector3(*direction_enu),
-        velocity_plus_drift=doppler_freq * c / L1_f0 + direction.dot(sat_vel)
-        if doppler_freq is not None
-        else nan,
+        velocity_plus_drift=(
+            doppler_freq * c / L1_f0 + direction.dot(sat_vel)
+            if doppler_freq is not None
+            else nan
+        ),
     )
 
 

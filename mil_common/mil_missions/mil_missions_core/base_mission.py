@@ -121,6 +121,7 @@ class BaseMission:
         mission is a child mission, it will call the send_feedback_child of its
         parent, allowing missions to choose how to use the feedback from its children.
         """
+        message = str(message)
         if self.parent:
             self.parent.send_feedback_child(message, self)
         else:

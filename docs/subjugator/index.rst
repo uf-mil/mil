@@ -17,6 +17,7 @@ SubjuGator 8
     Cameras <cameras>
     PID Controller <pid>
 	Navigation Tube <navtube>
+    Watercooling <watercooling>
 
     electrical
 
