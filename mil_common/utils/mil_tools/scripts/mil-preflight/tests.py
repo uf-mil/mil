@@ -17,14 +17,7 @@ actuatorsList = [
     (
         "/thrusters/thrust",
         [
-            ThrusterCmd(name="FLH", thrust=60.0),
-            ThrusterCmd(name="FLV", thrust=60.0),
-            ThrusterCmd(name="FRH", thrust=60.0),
-            ThrusterCmd(name="FRV", thrust=60.0),
-            ThrusterCmd(name="BLH", thrust=60.0),
-            ThrusterCmd(name="BLV", thrust=60.0),
-            ThrusterCmd(name="BRH", thrust=60.0),
-            ThrusterCmd(name="BRV", thrust=60.0),
+            ThrusterCmd(name="FLH", thrust=10.0),
         ],
     ),
 ]

@@ -27,7 +27,7 @@ from rich.table import Table
 # ----- Timeouts  -----#
 node_timout = 5  # seconds
 topic_timout = 5  # seconds
-actuator_timout = 5  # seconds
+actuator_timout = 1.5  # seconds
 
 # ----- Reports  -----#
 report = []
