@@ -17,7 +17,7 @@ SPEED = 0.6
 CAREFUL_SPEED = 0.3
 
 # How many meters to pass the gate by
-DIST_AFTER_GATE = 1
+DIST_AFTER_GATE = 2
 WAIT_SECONDS = 1
 
 

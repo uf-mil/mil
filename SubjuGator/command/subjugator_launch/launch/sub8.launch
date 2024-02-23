@@ -45,7 +45,7 @@
   <include file="$(find subjugator_launch)/launch/subsystems/path_planner.launch" />
   <include if="$(eval environment == 'real')" file="$(find subjugator_launch)/launch/subsystems/online_bagger.launch"/>
   <include file="$(find subjugator_alarm)/launch/alarms.launch" />
-  <!--include file="$(find subjugator_launch)/launch/mission_server.launch" /-->
+  <include file="$(find subjugator_launch)/launch/mission_server.launch" />
   <!--<include file="$(find subjugator_launch)/launch/subsystems/passive_sonar.launch">
     <arg name="environment" value="$(arg environment)" />
   </include>-->
