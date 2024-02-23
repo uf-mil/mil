@@ -51,9 +51,7 @@ class OdomKill(HandlerBase):
                 self._raised = True  # Avoid raising multiple times
                 rospy.logwarn("ODOM DISCONTINUITY DETECTED")
                 self.ab.raise_alarm(
-                    problem_description="ODOM DISCONTINUITY DETECTED. JUMPED {} METERS".format(
-                        jump,
-                    ),
+                    problem_description=f"ODOM DISCONTINUITY DETECTED. JUMPED {jump} METERS",
                     severity=5,
                 )
         self.last_position = position

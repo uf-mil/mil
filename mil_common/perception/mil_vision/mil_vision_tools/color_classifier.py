@@ -94,7 +94,7 @@ class ContourClassifier:
 
     def feature_probabilities(self, features: np.ndarray) -> List[float]:
         """
-        Allows child classes to give probabilties for each possible class given
+        Allows child classes to give probabilities for each possible class given
         a features vector, instead of just one classification. By default,
         gives 1.0 to classified class and 0.0 to others.
 
@@ -210,6 +210,8 @@ class ContourClassifier:
         Args:
             training_file (Optional[str]): The name of the training file.
         """
+        if training_file is None:
+            raise NotImplementedError("Cannot read without any training file.")
         training_file = _get_param(training_file, self.training_file)
         df = pandas.read_csv(training_file)
         classes = df.values[:, 1]

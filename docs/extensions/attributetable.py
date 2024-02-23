@@ -2,6 +2,7 @@
 Credit goes to discord.py and its creators for creating most of this file:
 https://github.com/Rapptz/discord.py/blob/master/docs/extensions/attributetable.py
 """
+
 import importlib
 import inspect
 import re
