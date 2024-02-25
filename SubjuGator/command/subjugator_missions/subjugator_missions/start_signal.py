@@ -31,7 +31,7 @@ class StartSignal(SubjuGatorMission):
                 # Yaw to the right if the x distance is positive and to the left if negative
                 self.move()
                 .yaw_left(yaw_angle) if self.buoy_positions[i][0] < 0 else self.move().yaw_right(yaw_angle)
-                # Pitch up if angle is postive, pitch down id angle is negative
+                # Pitch up if angle is postive, pitch down is angle is negative
                 .pitch_up(pitch_angle) if pitch_angle > 0 else self.move().pitch_down(abs(pitch_angle))
             )
             self.send_feedback(f"Traveling forward to buoy {i}")
