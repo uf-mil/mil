@@ -244,7 +244,8 @@ mil_user_install_dependencies() {
 		nmap \
 		fd-find \
 		ripgrep \
-		fzf
+		fzf \
+		aptitude
 }
 
 # Add line to user's bashrc which source the repo's setup files
