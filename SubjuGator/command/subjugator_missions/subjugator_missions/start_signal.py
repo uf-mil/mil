@@ -8,7 +8,7 @@ class StartSignal(SubjuGatorMission):
     buoy_positions = [[5, 10, 3], [6, 8, 5], [3, 12, 10]]  # x, y, z displacements
     
     async def run(self, args):
-        for i in len(self.args):
+        for i in range(len(self.buoy_positions)):
             pitch_angle = abs(np.arctan(self.buoy_positions[i][2]/self.buoy_positions[i][1]))
             yaw_angle = abs(np.arctan(self.buoy_positions[i][2]/self.buoy_positions[i][0]))
             self.send_feedback(f"Rotating towards Buoy {i}")
