@@ -58,10 +58,7 @@ def rosmsg_to_numpy(rosmsg, keys=None):
                 break
         assert (
             len(output_array) != 0
-        ), "Input type {} has none of these attributes {}.".format(
-            type(rosmsg).__name__,
-            keys,
-        )
+        ), f"Input type {type(rosmsg).__name__} has none of these attributes {keys}."
         return np.array(output_array).astype(np.float32)
 
     else:

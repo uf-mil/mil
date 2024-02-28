@@ -607,7 +607,7 @@ class Dock(Vrx):
         # This function looks at the two squares in front of the boat
         # and it gets the middle pixel between the two squares.
         # If the middle pixel is for some reason not in the middle of our camera...
-        # adjust the boat postiion before docking
+        # adjust the boat position before docking
         print("prepare for landing!")
 
         img = await self.front_left_camera_sub.get_next_message()

@@ -71,10 +71,7 @@ class TestSimIntegration(unittest.TestCase):
             rospy.sleep(0.1)
         self.assertTrue(
             len(self.odom_pos_msg) == 3 and len(self.odom_ori_msg) == 4,
-            msg="POS, ORI: {}, {}".format(
-                len(self.odom_pos_msg),
-                len(self.odom_ori_msg),
-            ),
+            msg=f"POS, ORI: {len(self.odom_pos_msg)}, {len(self.odom_ori_msg)}",
         )
         initial_pos = [-1.2319, 0.0, 0.0]
         initial_ori = [0.0, 0.0, 0.0, 1.0]
@@ -100,10 +97,7 @@ class TestSimIntegration(unittest.TestCase):
             rospy.sleep(0.1)
         self.assertTrue(
             len(self.absodom_pos_msg) == 3 and len(self.absodom_ori_msg) == 4,
-            msg="POS, ORI: {}, {}".format(
-                len(self.absodom_pos_msg),
-                len(self.absodom_ori_msg),
-            ),
+            msg=f"POS, ORI: {len(self.absodom_pos_msg)}, {len(self.absodom_ori_msg)}",
         )
         initial_pos = [743789.637462, -5503821.36715, 3125622.10477]
         initial_ori = [0.0, 0.0, 0.0, 1.0]
@@ -122,25 +116,13 @@ class TestSimIntegration(unittest.TestCase):
                 actual,
                 initial,
                 places=0,
-                msg=(
-                    "Error: {} position is: {} should be {}".format(
-                        topic,
-                        actual,
-                        initial,
-                    )
-                ),
+                msg=(f"Error: {topic} position is: {actual} should be {initial}"),
             )
         for actual, initial in zip(ori, initial_ori):
             self.assertEqual(
                 actual,
                 initial,
-                msg=(
-                    "Error: {} orientation is: {} should be {}".format(
-                        topic,
-                        actual,
-                        initial,
-                    )
-                ),
+                msg=(f"Error: {topic} orientation is: {actual} should be {initial}"),
             )
 
     def cam_info_right_cb(self, msg):
@@ -229,10 +211,7 @@ class TestSimIntegration(unittest.TestCase):
         self.assertEqual(
             len(data_lists),
             num_topics,
-            msg="Number of topics is {}, should be {}".format(
-                len(data_lists),
-                num_topics,
-            ),
+            msg=f"Number of topics is {len(data_lists)}, should be {num_topics}",
         )
         for data_list in data_lists:
             self.assertNotEqual(len(data_list), 0, msg="data is empty")
@@ -243,13 +222,7 @@ class TestSimIntegration(unittest.TestCase):
                 self.assertNotEqual(
                     actual_dim,
                     initial_dim,
-                    msg=(
-                        "Error: {} is: {} shouldn't be {}".format(
-                            topic,
-                            actual_dim,
-                            initial_dim,
-                        )
-                    ),
+                    msg=(f"Error: {topic} is: {actual_dim} shouldn't be {initial_dim}"),
                 )
 
 

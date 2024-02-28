@@ -76,7 +76,7 @@ unsigned int select_hist_mode(std::vector<cv::Point> &histogram_modes, unsigned 
 
 // Takes in a grayscale image and segments out a semi-homogenous foreground
 // object with pixel intensities close to <target>. Tuning of last three
-// parameters may imrove results but default values should work well in
+// parameters may improve results but default values should work well in
 // most cases.
 void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, cv::Mat &debug_img, const int hist_size,
                                     const float **ranges, const int target, std::string image_name = "Unnamed Image",

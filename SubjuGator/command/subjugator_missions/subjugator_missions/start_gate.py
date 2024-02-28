@@ -160,9 +160,7 @@ class StartGate(SubjuGatorMission):
                 p2 = rosmsg_to_numpy(o2.pose.position)
                 if distance.euclidean(p, p2) > max_distance_away:
                     fprint(
-                        "Poles too far away. Distance {}".format(
-                            distance.euclidean(p, p2),
-                        ),
+                        f"Poles too far away. Distance {distance.euclidean(p, p2)}",
                     )
                     continue
                 if distance.euclidean(p, p2) < min_distance_away:
@@ -180,10 +178,7 @@ class StartGate(SubjuGatorMission):
                     continue
                 if abs(line[0]) < 1 and abs(line[1]) < 1:
                     fprint(
-                        "Objects on top of one another. x {}, y {}".format(
-                            line[0],
-                            line[1],
-                        ),
+                        f"Objects on top of one another. x {line[0]}, y {line[1]}",
                     )
                     continue
                 return (p, p2)

@@ -24,7 +24,7 @@ async def main(name, lla):
     name = "_".join(txt.title() for txt in name.split("_"))
 
     point = await convert.request(CoordinateConversionRequest(frame="lla", point=lla))
-    await db(ObjectDBQueryRequest(cmd="{}={p[0]}, {p[1]}".format(name, p=point.enu)))
+    await db(ObjectDBQueryRequest(cmd=f"{name}={point.enu[0]}, {point.enu[1]}"))
 
 
 if __name__ == "__main__":

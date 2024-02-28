@@ -18,7 +18,6 @@ MESSAGE_TIMEOUT = 1  # s
 
 
 class TemplateChecker:
-
     """Template for how each checker class should look.
     This provides interface functions for the main function to use. You don't have to
         implement them all in each checker.

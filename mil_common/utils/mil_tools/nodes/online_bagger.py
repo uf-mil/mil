@@ -89,10 +89,7 @@ class OnlineBagger:
         sub_list = ""
         for topic in self.subscriber_list:
             if self.subscriber_list[topic][1] == status:
-                sub_list = sub_list + "\n{:13}, {}".format(
-                    self.subscriber_list[topic],
-                    topic,
-                )
+                sub_list = sub_list + f"\n{self.subscriber_list[topic]:13}, {topic}"
         return sub_list
 
     def get_params(self):

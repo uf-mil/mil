@@ -141,9 +141,7 @@ class PublishThread(threading.Thread):
         while not rospy.is_shutdown() and self.publisher.get_num_connections() == 0:
             if i == 4:
                 print(
-                    "Waiting for subscriber to connect to {}".format(
-                        self.publisher.name,
-                    ),
+                    f"Waiting for subscriber to connect to {self.publisher.name}",
                 )
             rospy.sleep(0.5)
             i += 1

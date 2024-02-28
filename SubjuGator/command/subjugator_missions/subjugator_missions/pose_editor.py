@@ -617,8 +617,8 @@ class PoseEditor:
 
     def as_PoseTwistStamped(
         self,
-        linear: Sequence[int] = [0, 0, 0],
-        angular: Sequence[int] = [0, 0, 0],
+        linear: Sequence[float] = [0, 0, 0],
+        angular: Sequence[float] = [0, 0, 0],
     ) -> PoseTwistStamped:
         """
         Returns a :class:`~mil_msgs.msg.PoseTwist` message class with the pose
@@ -639,8 +639,8 @@ class PoseEditor:
 
     def as_MoveToGoal(
         self,
-        linear: Sequence[int] = [0, 0, 0],
-        angular: Sequence[int] = [0, 0, 0],
+        linear: Sequence[float] = [0, 0, 0],
+        angular: Sequence[float] = [0, 0, 0],
         **kwargs,
     ) -> MoveToGoal:
         return MoveToGoal(
