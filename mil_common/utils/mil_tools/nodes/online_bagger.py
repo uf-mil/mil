@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
 
 import argparse
 import datetime
 import itertools
 import os
 from collections import deque
+from typing import TYPE_CHECKING
 
 import rosbag
 import rospy
@@ -18,6 +20,9 @@ from mil_msgs.msg import (
     BagOnlineResult,
 )
 from tqdm import tqdm
+
+if TYPE_CHECKING:
+    import genpy
 
 
 class OnlineBagger:
@@ -32,13 +37,11 @@ class OnlineBagger:
     bagger, triggering a bag write and displaying a progress bar as it writes.
 
     Attributes:
-        successful_subscription_count (int): The number of successful subcriptions
+        successful_subscription_count (int): The number of successful subscriptions
             to topics.
         iteration_count (int): The number of iterations.
         streaming (bool): Indicates whether the bagger is streaming.
-        subscriber_list (list[topic]): The list of topics subscribed to the
-            OnlineBagger.
-        _action_server (SimpleActionServer): The action server associated with the
+        subscriber_list (list[str]): The list of topics subscribed to the
             OnlineBagger.
     """
 
@@ -79,10 +82,10 @@ class OnlineBagger:
 
         Args:
             status (bool): The subscription status used to search for topics with a matching
-                subcription status.
+                subscription status.
 
         Returns:
-            sub_list (string): The list of topics that match the desired subscribe status. Each
+            string: The list of topics that match the desired subscribe status. Each
                 line in the list contains the buffer time (in seconds) of the topic, the subscrition
                 status of the topic, and the topic name.
         """
@@ -220,7 +223,7 @@ class OnlineBagger:
             self.subscribe,
         )
 
-    def subscribe(self, time_info=None):
+    def subscribe(self, _: rospy.timer.TimerEvent | None = None):
         """
         Subscribe to the topics defined in the yaml configuration file
 
@@ -231,13 +234,6 @@ class OnlineBagger:
 
         Each element in self.subscriber list is a list [topic, Bool]
         where the Bool tells the current status of the subscriber (success/failure).
-
-        Return number of topics that failed subscription
-
-        Args:
-            time_info (): An instance of the TimerEvent class. This method does
-                not use the argument but it is required or an error will occur. The
-                default value is None.
         """
         if (self.successful_subscription_count == len(self.subscriber_list)) and (
             self.resubscriber is not None
@@ -258,28 +254,27 @@ class OnlineBagger:
 
                     self.subscriber_list[topic] = (time, True)
 
-    def get_topic_duration(self, topic):
+    def get_topic_duration(self, topic: str):
         """
         Returns the current time duration of topic
 
         Args:
-            topic (rostopic): The topic for which the duration will be calculated.
+            topic (str): The topic for which the duration will be calculated.
 
         Returns:
-            duration (Duration): The time duration of the topic.
+            Duration: The time duration of the topic.
         """
-
         return self.topic_messages[topic][-1][0] - self.topic_messages[topic][0][0]
 
-    def get_header_time(self, msg):
+    def get_header_time(self, msg: genpy.Message):
         """
         Retrieve header time if available
 
         Args:
-            msg (msg): The ROS message from which to extract the time.
+            msg (genpy.Message): The ROS message from which to extract the time.
 
         Returns:
-            msg.header.stamp (stamp): The timestamp of the topic's header if the topic
+            rospy.Time: The timestamp of the topic's header if the topic
                 has a header. Otherwise, the current time is returned.
         """
         if hasattr(msg, "header"):
@@ -305,7 +300,7 @@ class OnlineBagger:
                 for the topic.
 
         Returns:
-            index (int): The index for the time index of the topic at requested_seconds seconds from the
+            int: The index for the time index of the topic at requested_seconds seconds from the
             end of the dequeue.
         """
 
@@ -318,7 +313,7 @@ class OnlineBagger:
         index = int(self.get_topic_message_count(topic) * (1 - min(ratio, 1)))
         return index
 
-    def bagger_callback(self, msg, topic):
+    def bagger_callback(self, msg: genpy.Message, topic: str):
         """
         Adds incoming messages to the appropriate topic and removes older messages if necessary.
 
@@ -327,8 +322,8 @@ class OnlineBagger:
         function does nothing if streaming is not active.
 
         Args:
-            msg (msg): The incoming message.
-            topic (topic): The topic to which the incoming message will be added.
+            msg (genpy.Message): The incoming message.
+            topic (str): The topic to which the incoming message will be added.
         """
 
         if not self.streaming:
@@ -358,7 +353,7 @@ class OnlineBagger:
             self.topic_messages[topic].popleft()
             time_diff = self.get_topic_duration(topic)
 
-    def get_topic_message_count(self, topic):
+    def get_topic_message_count(self, topic: str):
         """
         Return number of messages available in a topic
 
@@ -367,8 +362,7 @@ class OnlineBagger:
                 of messages.
 
         Returns:
-            len(self.topic_messages[topic]) (int): The number of messages
-                available in the specified topic.
+            int: The number of messages available in the specified topic.
         """
 
         return len(self.topic_messages[topic])
@@ -378,10 +372,8 @@ class OnlineBagger:
         Returns total number of messages across all topics
 
         Returns:
-            total_message_count (int): The total number of messages available in
-                all topics.
+            int: The total number of messages available in all topics.
         """
-
         total_message_count = 0
         for topic in self.topic_messages:
             total_message_count = total_message_count + self.get_topic_message_count(
@@ -395,13 +387,13 @@ class OnlineBagger:
         Uses the current date and time to create a default bag name.
 
         Returns:
-            bag name (str): The default bag name constructed using format date-time.
+            str: The default bag name constructed using format date-time.
         """
         return (
             str(datetime.date.today()) + "-" + str(datetime.datetime.now().time())[0:8]
         )
 
-    def get_bag_name(self, filename=""):
+    def get_bag_name(self, filename: str = ""):
         """
         Create ros bag save directory
         If no bag name is provided, the current date/time is used as default.
@@ -412,8 +404,7 @@ class OnlineBagger:
                 used.
 
         Returns:
-            os.path.join(bag_dir, bag_name) (str): A string representing the path
-                of the ros bag file.
+            str: A string representing the path of the ros bag file.
         """
         # If directory param is not set, default to $HOME/bags/<date>
         default_dir = self.dir
@@ -438,7 +429,7 @@ class OnlineBagger:
             bag_name = bag_name + ".bag"
         return os.path.join(bag_dir, bag_name)
 
-    def start_bagging(self, req):
+    def start_bagging(self, req: BagOnlineGoal):
         """
         Writes collected data to a bag file.
 
@@ -447,7 +438,7 @@ class OnlineBagger:
         If bagging is already false because of an active call to this service.
 
         Args:
-            req (msg): The bagging request information.
+            req (BagOnlineGoal): The bagging request information.
 
         Raises:
             IOError: A problem occurs when opening or closing the bag file.
