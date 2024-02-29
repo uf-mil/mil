@@ -23,3 +23,6 @@
 [submodule "mil_common/perception/yolov7-ros"]
 	path = mil_common/perception/yolov7-ros
 	url = https://github.com/uf-mil/yolov7-ros.git
+[submodule "SubjuGator/drivers/vectornav"]
+	path = SubjuGator/drivers/vectornav
+	url = https://github.com/uf-mil/vectornav
