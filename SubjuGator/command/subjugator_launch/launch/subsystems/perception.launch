@@ -19,6 +19,7 @@
       <rosparam file="$(find subjugator_launch)/config/path_localizer.yaml" command="load" />
     </node>
   </group>-->
+  <node pkg="subjugator_perception" type="vision_pipeline_test.py" name="vision_pipeline_test" />
 
   <!-- TODO: Create weights file for sub-->
   <arg name="weights" default="" />
