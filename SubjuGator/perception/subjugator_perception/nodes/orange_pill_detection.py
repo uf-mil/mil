@@ -15,7 +15,7 @@ class CannyOrangePillDetection:
     ERROR = 0.01
 
     def __init__(self):
-        camera = rospy.get_param("~image_topic", "/camera/down/image_rect_color")
+        camera = rospy.get_param("~image_topic", "/camera/front/right/image_rect_color")
 
         self.image_sub = Image_Subscriber(camera, self.vectorize_image)
         self.image_pub = Image_Publisher("~vector_viz_topic")
