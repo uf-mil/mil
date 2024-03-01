@@ -16,8 +16,7 @@ class CannyOrangePillDetection:
     BRIGHT_OFFSET = 45
 
     def __init__(self):
-        # Use camera data
-        camera = rospy.get_param("~image_topic", "/camera/down/image_color")
+        camera = rospy.get_param("~image_topic", "/camera/down/image_rect_color")
         self.image_sub = Image_Subscriber(camera, self.vectorize_image)
         self.image_pub = Image_Publisher("~vector_viz_topic")
         self.image_pub_pre = Image_Publisher("~shark_viz")
