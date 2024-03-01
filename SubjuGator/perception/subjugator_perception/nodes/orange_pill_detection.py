@@ -6,6 +6,7 @@ import numpy as np
 import rospy
 from image_geometry import PinholeCameraModel
 from mil_ros_tools import Image_Publisher, Image_Subscriber
+from std_msgs.msg import Float32
 
 
 class CannyOrangePillDetection:
@@ -23,6 +24,7 @@ class CannyOrangePillDetection:
         self.camera_info = self.image_sub.wait_for_camera_info()
 
         assert self.camera_info is not None
+        self.angle_pub = rospy.Publisher("angle_offset", Float32, queue_size=10)
         self.cam = PinholeCameraModel()
         self.cam.fromCameraInfo(self.camera_info)
 
@@ -183,10 +185,26 @@ class CannyOrangePillDetection:
         )
 
         # Display vectors on image
-        for key, value in sorted_dict.items():
-            major_angle = sum(value) / len(value)
-            print(major_angle)
-            break
+        if not sorted_dict:
+            msg = Float32()
+            msg.data = -9.99
+            self.angle_pub.publish(msg)
+        else:
+            for key, value in sorted_dict.items():
+                major_angle = sum(value) / len(value)
+                major_angle * 180.0 / np.pi
+                major_angle = (
+                    major_angle + np.pi / 2
+                    if major_angle <= 0
+                    else major_angle - np.pi / 2
+                )
+                msg = Float32()
+
+                msg.data = major_angle
+                # if major_angle + np.pi/2:
+                #     msg.data = major_angle
+                self.angle_pub.publish(msg)
+                break
 
         # bgr_image = cv2.cvtColor(contour_image_bgr)
         self.image_pub.publish(np.array(contour_image_bgr))
