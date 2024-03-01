@@ -200,8 +200,6 @@ class CannyOrangePillDetection:
                 msg = Float32()
 
                 msg.data = major_angle
-                # if major_angle + np.pi/2:
-                #     msg.data = major_angle
                 self.angle_pub.publish(msg)
                 break
 
