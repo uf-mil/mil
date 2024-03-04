@@ -17,6 +17,7 @@ are interested in, then read a 1 byte response for either RESPONSE_FALSE or RESP
 The computer can also command a kill (for example, if ROS notices a criticaly low battery)
 by sending the COMPUTER.KILL.REQUEST and undone with COMPUTER.CLEAR.REQUEST
 """
+
 constants = {
     "TIMEOUT_SECONDS": 8.0,  # How often board must be pinged to not set HEARTBERAT_REMOTE True
     # Note: not official documented, this is just a guess

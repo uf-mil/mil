@@ -341,9 +341,7 @@ class PoseEditor2:
         for key in kwargs:
             if not hasattr(MoveGoal, key):
                 fprint(
-                    "MoveGoal msg doesn't have a field called '{}' you tried to set via kwargs.".format(
-                        key,
-                    ),
+                    f"MoveGoal msg doesn't have a field called '{key}' you tried to set via kwargs.",
                     title="POSE_EDITOR",
                     msg_color="red",
                 )

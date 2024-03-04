@@ -2,6 +2,7 @@
 This module provides functions which help to ensure that resources are available
 when needed.
 """
+
 import time
 from typing import Any, Optional
 

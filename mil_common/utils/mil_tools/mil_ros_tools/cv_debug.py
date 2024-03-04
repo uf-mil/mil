@@ -1,6 +1,7 @@
 """
 Shows images for debugging purposes.
 """
+
 import sys
 from typing import Optional
 
