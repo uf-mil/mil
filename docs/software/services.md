@@ -1,3 +1,5 @@
+# Services
+
 **Components of a ROS Service**
 Some ROS classes distinguishes themselves by employing a service-oriented model rather than the usual topic-based approach. In ROS, Services act as the conduits for interaction between nodes, functioning in a request-response manner. While ROS topics enable asynchronous data exchange, services facilitate nodes in seeking specific actions or information from other nodes, awaiting a subsequent response before proceeding. This method of waiting before proceeding is known as a synchronous data exchange. This proves especially valuable in tasks that require direct engagement, such as data retrieval or computations.
 
@@ -64,10 +66,10 @@ class ArrayServiceServer:
 def main():
     rospy.init_node('array_service_server')
     server = ArrayServiceServer()
-    
+
     rospy.Service('array_update', ArrayUpdate, server.handle_array_update)
     rospy.Service('array_query', ArrayQuery, server.handle_array_query)
-    
+
     rospy.spin()
 
 if __name__ == '__main__':
@@ -98,11 +100,11 @@ def array_update_client(index, value):
 
 if __name__ == '__main__':
     rospy.init_node('array_update_client')
-    
+
     index_to_update = 2
     new_value = 35
     success = array_update_client(index_to_update, new_value)
-    
+
     if success:
         print(f"Value at index {index_to_update} was updated to {new_value}")
     else:
@@ -127,10 +129,10 @@ def array_query_client(index):
 
 if __name__ == '__main__':
     rospy.init_node('array_query_client')
-    
+
     index_to_query = 2
     value = array_query_client(index_to_query)
-    
+
     if value != -1:
         print(f"Value at index {index_to_query}: {value}")
     else:
