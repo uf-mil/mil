@@ -1,43 +1,45 @@
 #!/usr/bin/env python3
 from .sub_singleton import SubjuGatorMission
 import numpy as np
+import math 
 
 
 class StartSignal(SubjuGatorMission):
 
-    buoy_positions = [[5, 10, 3], [6, 8, 5], [3, 12, 10]]  # x, y, z displacements
+    buoy_positions = [[5, 10, 3], [6, 8, 1], [3, 12, 1]]  # x, y, z displacements
     
     async def run(self, args):
         for i in range(len(self.buoy_positions)):
-            pitch_angle = abs(np.arctan(self.buoy_positions[i][2]/self.buoy_positions[i][1]))
-            yaw_angle = abs(np.arctan(self.buoy_positions[i][2]/self.buoy_positions[i][0]))
-            self.send_feedback(f"Rotating towards Buoy {i}")
+            pitch_angle = np.arctan(self.buoy_positions[i][2]/self.buoy_positions[i][1])
+            yaw_angle = np.arctan(self.buoy_positions[i][2]/self.buoy_positions[i][0])
+            self.send_feedback(f"Rotating towards Buoy {i} with yaw {math.degrees(yaw_angle)} and pitch {math.degrees(pitch_angle)}")
 
-            rotate_yaw = self.move().yaw_left(yaw_angle) if self.buoy_positions[i][0] < 0 else self.move().yaw_right(yaw_angle)
-            rotate_pitch = self.move().pitch_up(pitch_angle) if pitch_angle > 0 else self.move().pitch_down(pitch_angle)
+            rotate = self.move().set_roll_pitch_yaw(0, pitch_angle, yaw_angle)
+            # Multiply quaternarion by 1? (makes sure angles dont overwrite)
+            await self.go(rotate)            
 
-            await self.go(rotate_yaw)
-            await self.go(rotate_pitch)
-
+            # does this actually go forward relative to orientation
             self.send_feedback(f"Traveling forward to buoy {i}")
             await self.go(
                 self.move()
-                    .forward(self.buoy_positions[i][2] + 0.5)
+                    .forward(self.buoy_positions[i][2])
             )
+
+
 
             self.send_feedback("Back to Origin")
             await self.go(
                 self.move()
-                .forward(-(self.buoy_positions[i][2]+0.5))
+                .forward(-(self.buoy_positions[i][2]))
             )
+
 
             self.send_feedback("Undo Rotation")
             
-            rotate_yaw = self.move().yaw_right(yaw_angle) if self.buoy_positions[i][0] < 0 else self.move().yaw_left(yaw_angle)
-            rotate_pitch = self.move().pitch_down(pitch_angle) if pitch_angle > 0 else self.move().pitch_up(pitch_angle)
-
-            await self.go(rotate_yaw)
-            await self.go(rotate_pitch)
+            pitch_angle = -np.arctan(self.buoy_positions[i][2]/self.buoy_positions[i][1])
+            yaw_angle = -np.arctan(self.buoy_positions[i][2]/self.buoy_positions[i][0])
+            rotate = self.move().set_roll_pitch_yaw(0, pitch_angle, yaw_angle)
+            await self.go(rotate)
     
         # async def run_rotation(self, args):
         # for i in len(self.args):
