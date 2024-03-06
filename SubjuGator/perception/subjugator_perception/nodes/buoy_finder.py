@@ -9,10 +9,9 @@ import rospy
 import tf
 from geometry_msgs.msg import Point, Pose, Pose2D, PoseStamped
 from image_geometry import PinholeCameraModel
-from mil_ros_tools import Image_Subscriber, rosmsg_to_numpy
+from mil_ros_tools import Image_Publisher, Image_Subscriber, rosmsg_to_numpy
 from mil_vision_tools import CircleFinder, Threshold
 from nav_msgs.msg import Odometry
-from rviz_helpers import Image_Publisher
 from std_msgs.msg import Header
 from std_srvs.srv import SetBool, SetBoolResponse
 from subjugator_msgs.srv import (
@@ -21,7 +20,7 @@ from subjugator_msgs.srv import (
     VisionRequest2DResponse,
     VisionRequestResponse,
 )
-from subjugator_vision_tools import MultiObservation
+from subjugator_vision_tools import MultiObservation, rviz
 
 
 class Buoy:
@@ -158,6 +157,7 @@ class BuoyFinder:
 
         self.image_sub = Image_Subscriber(camera, self.image_cb)
         if self.debug_ros:
+            self.rviz = rviz.RvizVisualizer(topic="~markers")
             self.mask_pub = Image_Publisher("~mask_image")
             rospy.Timer(rospy.Duration(1), self.print_status)
 
@@ -398,14 +398,13 @@ class BuoyFinder:
             buoy.est = self.multi_obs.lst_sqr_intersection(observations, pose_pairs)
             buoy.status = "Pose found"
             if self.debug_ros:
-                # draw_sphere(
-                #     buoy.est,
-                #     color=buoy.draw_colors,
-                #     scaling=(0.2286, 0.2286, 0.2286),
-                #     frame="map",
-                #     _id=buoy.visual_id,
-                # )
-                pass
+                self.rviz.draw_sphere(
+                    buoy.est,
+                    color=buoy.draw_colors,
+                    scaling=(0.2286, 0.2286, 0.2286),
+                    frame="map",
+                    _id=buoy.visual_id,
+                )
         else:
             buoy.status = f"{len(observations)} observations"
         return center, radius
