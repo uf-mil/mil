@@ -185,6 +185,7 @@ EOF
 
 # Documentation dependencies
 mil_system_install python3-pip python3-setuptools
+sudo apt reinstall -y python3-pip
 
 # Disable "automatic updates" Ubuntu prompt (thanks to https://askubuntu.com/a/610623!)
 sudo sed -i 's/Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades
@@ -235,11 +236,16 @@ mil_user_install_dependencies() {
 		git \
 		tmux \
 		vim \
+		htop \
+		tmuxinator \
 		awscli \
 		net-tools \
 		cifs-utils \
 		nmap \
-		tmuxinator
+		fd-find \
+		ripgrep \
+		fzf \
+		aptitude
 }
 
 # Add line to user's bashrc which source the repo's setup files

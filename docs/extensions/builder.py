@@ -2,6 +2,7 @@
 Credit goes to discord.py and its creators for creating most of this file:
 https://github.com/Rapptz/discord.py/blob/master/docs/extensions/attributetable.py
 """
+
 from sphinx.builders.html import StandaloneHTMLBuilder
 from sphinx.environment.adapters.indexentries import IndexEntries
 from sphinx.writers.html5 import HTML5Translator
@@ -34,7 +35,7 @@ class DPYStandaloneHTMLBuilder(StandaloneHTMLBuilder):
         indexcounts = []
         for _k, entries in genindex:
             indexcounts.append(
-                sum(1 + len(subitems) for _, (_, subitems, _) in entries)
+                sum(1 + len(subitems) for _, (_, subitems, _) in entries),
             )
 
         genindexcontext = {

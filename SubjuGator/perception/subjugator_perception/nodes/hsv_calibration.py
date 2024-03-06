@@ -13,7 +13,8 @@ class HSVCalibration:
         self.image_sub = Image_Subscriber(self.camera, self.image_cb)
         self.image_pub = Image_Publisher("/image/hsv")
         self.reconfigure_server = DynamicReconfigureServer(
-            HSVCalibrationConfig, self.reconfigure
+            HSVCalibrationConfig,
+            self.reconfigure,
         )
         self.lower = np.array([0, 0, 0], dtype=np.uint8)
         self.upper = np.array([179, 255, 255], dtype=np.uint8)
@@ -35,13 +36,17 @@ class HSVCalibration:
     def reconfigure(self, config, level):
         try:
             self.lower = np.array(self.parse_string(config["dyn_lower"]))
-            rospy.logwarn("HSV lower bound below minimum value") if (
-                self.lower < 0
-            ).any() else None
+            (
+                rospy.logwarn("HSV lower bound below minimum value")
+                if (self.lower < 0).any()
+                else None
+            )
             self.upper = np.array(self.parse_string(config["dyn_upper"]))
-            rospy.logwarn("HSV upper bound above maximum values") if (
-                self.upper[0] > 179
-            ).any() or (self.upper[1:] > 255).any() else None
+            (
+                rospy.logwarn("HSV upper bound above maximum values")
+                if (self.upper[0] > 179).any() or (self.upper[1:] > 255).any()
+                else None
+            )
 
         except ValueError as e:
             rospy.logwarn(f"Invalid dynamic reconfigure: {e}")

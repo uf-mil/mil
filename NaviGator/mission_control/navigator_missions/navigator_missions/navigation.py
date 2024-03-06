@@ -66,12 +66,12 @@ class Navigation(NaviGatorMission):
             [
                 np.linalg.norm((center + perp_vec) - position),
                 np.linalg.norm((center - perp_vec) - position),
-            ]
+            ],
         )
         if np.argmin(distances) == 0:
             perp_vec = -perp_vec
         return np.array([center[0], center[1], 0.0]), np.array(
-            [perp_vec[0], perp_vec[1], 0.0]
+            [perp_vec[0], perp_vec[1], 0.0],
         )
 
     async def go_thru_gate(self, gate, BEFORE=5.0, AFTER=4.0):
@@ -91,12 +91,16 @@ class Navigation(NaviGatorMission):
             # filter out buoys more than filter_distance behind boat
             filter_distance = -5
             positions_local = np.array(
-                [(q_mat.T.dot(position - p)) for position in positions]
+                [(q_mat.T.dot(position - p)) for position in positions],
             )
             positions_local_x = np.array(positions_local[:, 0])
             forward_indices = np.argwhere(positions_local_x > filter_distance).flatten()
             forward_indices = np.array(
-                [i for i in forward_indices if objects[i].id not in self.objects_passed]
+                [
+                    i
+                    for i in forward_indices
+                    if objects[i].id not in self.objects_passed
+                ],
             )
             distances = np.linalg.norm(positions_local[forward_indices], axis=1)
             indices = forward_indices[np.argsort(distances).flatten()].tolist()
@@ -107,11 +111,13 @@ class Navigation(NaviGatorMission):
         def is_done(objects, positions):
             try:
                 left_index = self.get_index_of_type(
-                    objects, ("red_cylinder", "white_cylinder")
+                    objects,
+                    ("red_cylinder", "white_cylinder"),
                 )
                 if objects[left_index].labeled_classification != "white_cylinder":
                     right_index = self.get_index_of_type(
-                        objects, ("green_cylinder", "white_cylinder")
+                        objects,
+                        ("green_cylinder", "white_cylinder"),
                     )
                 else:
                     indices = self.get_indices_of_type(objects, "white_cylinder")
@@ -130,12 +136,14 @@ class Navigation(NaviGatorMission):
             )
 
         left, left_obj, right, right_obj, end = await self.explore_closest_until(
-            is_done, filter_and_sort
+            is_done,
+            filter_and_sort,
         )
         self.send_feedback(
             "Going through gate of objects {} and {}".format(
-                left_obj.labeled_classification, right_obj.labeled_classification
-            )
+                left_obj.labeled_classification,
+                right_obj.labeled_classification,
+            ),
         )
         gate = self.get_gate(left, right, p)
         await self.go_thru_gate(gate)
@@ -174,13 +182,12 @@ class Navigation(NaviGatorMission):
                     service_req = None
                     objects_msg = result
                     classification_index = self.object_classified(
-                        objects_msg.objects, move_id_tuple[1]
+                        objects_msg.objects,
+                        move_id_tuple[1],
                     )
                     if classification_index != -1:
                         self.send_feedback(
-                            "{} identified. Canceling investigation".format(
-                                move_id_tuple[1]
-                            )
+                            f"{move_id_tuple[1]} identified. Canceling investigation",
                         )
                         move_task.cancel()
 
@@ -198,7 +205,7 @@ class Navigation(NaviGatorMission):
                             ].labeled_classification
                         ):
                             init_boat_pos = rosmsg_to_numpy(
-                                objects_msg.objects[classification_index].pose.position
+                                objects_msg.objects[classification_index].pose.position,
                             )
                             print(init_boat_pos)
                             cone_buoys_investigated += 1
@@ -234,12 +241,9 @@ class Navigation(NaviGatorMission):
                 objects_msg = await self.database_query(name="all")
             objects = objects_msg.objects
             positions = np.array(
-                [rosmsg_to_numpy(obj.pose.position) for obj in objects]
+                [rosmsg_to_numpy(obj.pose.position) for obj in objects],
             )
-            if len(objects) == 0:
-                indices = []
-            else:
-                indices = filter_and_sort(objects, positions)
+            indices = [] if len(objects) == 0 else filter_and_sort(objects, positions)
             if indices is None or len(indices) == 0:
                 self.send_feedback("No objects")
                 continue
@@ -281,7 +285,7 @@ class Navigation(NaviGatorMission):
                         print(shortest_distance)
                         print(positions[i])
                         print(
-                            "POTENTIAL CANDIDATE: IDENTIFIED THROUGH MARKER THAT HAS NOT BEEN INVESTIGATED"
+                            "POTENTIAL CANDIDATE: IDENTIFIED THROUGH MARKER THAT HAS NOT BEEN INVESTIGATED",
                         )
                         potential_candidate = i
 
@@ -300,7 +304,7 @@ class Navigation(NaviGatorMission):
                             print(shortest_distance)
                             print(positions[i])
                             print(
-                                "POTENTIAL CANDIDATE: IDENTIFIED BY FINDING CLOSEST CONE TO ALREADY INVESTIGATED CONE (<25m)"
+                                "POTENTIAL CANDIDATE: IDENTIFIED BY FINDING CLOSEST CONE TO ALREADY INVESTIGATED CONE (<25m)",
                             )
                             potential_candidate = i
 
@@ -357,9 +361,8 @@ class Navigation(NaviGatorMission):
         @return True of object with obj_id is classified
         """
         for i, obj in enumerate(objects):
-            if obj.id == obj_id:
-                if obj.labeled_classification != "UNKNOWN":
-                    return i
+            if obj.id == obj_id and obj.labeled_classification != "UNKNOWN":
+                return i
         return -1
 
     async def prepare_to_enter(self):
@@ -383,15 +386,17 @@ class Navigation(NaviGatorMission):
             )
 
         white, white_position, red, red_position = await self.explore_closest_until(
-            is_done, filter_and_sort
+            is_done,
+            filter_and_sort,
         )
         self.objects_passed.add(white.id)
         self.objects_passed.add(red.id)
         gate = self.get_gate(white_position, red_position, robot_position)
         self.send_feedback(
             "Going through start gate formed by {} and {}".format(
-                white.labeled_classification, red.labeled_classification
-            )
+                white.labeled_classification,
+                red.labeled_classification,
+            ),
         )
         await self.go_thru_gate(gate, AFTER=-2)
 

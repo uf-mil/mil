@@ -74,5 +74,8 @@ class MissionClient(SimpleActionClient):
         """
         goal = DoMissionGoal(mission=mission, parameters=parameters)
         return self.send_goal(
-            goal, done_cb=done_cb, active_cb=active_cb, feedback_cb=feedback_cb
+            goal,
+            done_cb=done_cb,
+            active_cb=active_cb,
+            feedback_cb=feedback_cb,
         )

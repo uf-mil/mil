@@ -94,7 +94,7 @@ class FireTorpedos(SubjuGatorMission):
                 print("POSE FOUND!")
                 self.ltime = res.pose.header.stamp
                 self.targets[target].update_position(
-                    rosmsg_to_numpy(res.pose.pose.position)
+                    rosmsg_to_numpy(res.pose.pose.position),
                 )
                 self.normal = rosmsg_to_numpy(res.pose.pose.orientation)[:3]
                 marker = Marker(
@@ -119,13 +119,13 @@ class FireTorpedos(SubjuGatorMission):
     async def pattern(self):
         self.print_info("Descending to Depth...")
         # await self.move.depth(1.5).go(blind=self.BLIND, speed=0.1)
-        await self.move.left(2).go(blind=self.BLIND, speed=0.5)
+        await self.go(self.move().left(2), blind=self.BLIND, speed=0.5)
         await self.nh.sleep(2)
-        await self.move.right(2).go(blind=self.BLIND, speed=0.5)
+        await self.go(self.move().right(2), blind=self.BLIND, speed=0.5)
         await self.nh.sleep(2)
-        await self.move.left(1).go(blind=self.BLIND, speed=0.5)
+        await self.go(self.move().left(1), blind=self.BLIND, speed=0.5)
         await self.nh.sleep(2)
-        await self.move.down(0.5).go(blind=self.BLIND, speed=0.5)
+        await self.go(self.move().down(0.5), blind=self.BLIND, speed=0.5)
         await self.nh.sleep(2)
         # def err():
         # self.print_info('Search pattern canceled')
@@ -143,7 +143,8 @@ class FireTorpedos(SubjuGatorMission):
     async def fire(self, target: str):
         self.print_info(f"FIRING {target}")
         target_pose = self.targets[target].position
-        await self.move.go(blind=self.BLIND, speed=0.1)  # Station hold
+        # What does this do?? vvv
+        # await self.move.go(blind=self.BLIND, speed=0.1)  # Station hold
         await self._tf_listener.get_transform("map", "/base_link")
         # target_position = transform._q_mat.dot(
         #         target_pose - transform._p)
@@ -160,14 +161,16 @@ class FireTorpedos(SubjuGatorMission):
         #     blind=self.BLIND, speed=.25)
         print("Target normal: ", self.normal)
         print("Point: ", target_position)
-        await self.move.set_position(
-            np.array([target_position[0], target_position[1], target_position[2]])
-        ).go(blind=True, speed=0.5)
+        await self.go(
+            self.move().set_position(
+                np.array([target_position[0], target_position[1], target_position[2]]),
+            ),
+            blind=True,
+            speed=0.5,
+        )
 
         self.print_good(
-            "{} locked. Firing torpedoes. Hit confirmed, good job Commander.".format(
-                target
-            )
+            f"{target} locked. Firing torpedoes. Hit confirmed, good job Commander.",
         )
         sub_pos = await self.tx_pose()
         print("Current Sub Position: ", sub_pos)
@@ -189,9 +192,9 @@ class FireTorpedos(SubjuGatorMission):
         if self.targets[target].destroyed:
             pass
             # temp = target
-        elif self.targets[target].position is not None:
-            return target
-        elif self.pattern_done and self.targets[target].position is not None:
+        elif self.targets[target].position is not None or (
+            self.pattern_done and self.targets[target].position is not None
+        ):
             return target
         else:
             return None

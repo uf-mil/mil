@@ -62,7 +62,7 @@ def triad(tup, tup2):
     B = np.array([normalized(b1), bb, normalized(np.cross(b1, bb))])
     rot = A.T.dot(B)
     return transformations.quaternion_from_matrix(
-        [(a, b, c, 0) for a, b, c in rot] + [(0, 0, 0, 1)]
+        [(a, b, c, 0) for a, b, c in rot] + [(0, 0, 0, 1)],
     )
 
 
@@ -120,7 +120,10 @@ class PoseEditor2:
     """
 
     def __init__(
-        self, nav: NaviGatorMission, pose: tuple[np.ndarray, np.ndarray], **kwargs
+        self,
+        nav: NaviGatorMission,
+        pose: tuple[np.ndarray, np.ndarray],
+        **kwargs,
     ):
         self.nav = nav
 
@@ -154,7 +157,7 @@ class PoseEditor2:
                 title="POSE_EDITOR",
                 msg_color="red",
             )
-            raise KilledException()
+            raise KilledException
 
         if len(self.kwargs) > 0:
             kwargs = dict(kwargs.items() | self.kwargs.items())
@@ -204,7 +207,7 @@ class PoseEditor2:
             transformations.quaternion_multiply(
                 transformations.quaternion_about_axis(angle * UNITS[unit], UP),
                 self.orientation,
-            )
+            ),
         )
 
     def yaw_right(self, angle, unit="rad"):
@@ -214,7 +217,7 @@ class PoseEditor2:
 
     def look_at_rel(self, rel_point):
         return self.set_orientation(
-            look_at_without_pitching(rel_point)
+            look_at_without_pitching(rel_point),
         )  # Using no pitch here since we are 2D
 
     def look_at(self, point):
@@ -295,7 +298,8 @@ class PoseEditor2:
 
         # Find first point to go to using boat rotation
         next_point = np.append(
-            normalize(self.position[:2] - point[:2]), 0
+            normalize(self.position[:2] - point[:2]),
+            0,
         )  # Doing this in 2d
         radius_increment = meters_per_rev / granularity
         for i in range(int(granularity * revolutions + 1)):
@@ -320,25 +324,24 @@ class PoseEditor2:
 
     def as_MoveToGoal(self, linear=[0, 0, 0], angular=[0, 0, 0], **kwargs):
         return MoveToGoal(
-            header=make_header(), posetwist=self.as_PoseTwist(linear, angular), **kwargs
+            header=make_header(),
+            posetwist=self.as_PoseTwist(linear, angular),
+            **kwargs,
         )
 
     def as_MoveGoal(self, move_type=MoveGoal.DRIVE, **kwargs):
-        if "focus" in kwargs:
-            if not isinstance(kwargs["focus"], Point):
-                kwargs["focus"] = mil_tools.numpy_to_point(kwargs["focus"])
+        if "focus" in kwargs and not isinstance(kwargs["focus"], Point):
+            kwargs["focus"] = mil_tools.numpy_to_point(kwargs["focus"])
 
         if "speed_factor" in kwargs and isinstance(kwargs["speed_factor"], float):
             # User wants a uniform speed factor
             sf = kwargs["speed_factor"]
             kwargs["speed_factor"] = [sf, sf, sf]
 
-        for key in kwargs.keys():
+        for key in kwargs:
             if not hasattr(MoveGoal, key):
                 fprint(
-                    "MoveGoal msg doesn't have a field called '{}' you tried to set via kwargs.".format(
-                        key
-                    ),
+                    f"MoveGoal msg doesn't have a field called '{key}' you tried to set via kwargs.",
                     title="POSE_EDITOR",
                     msg_color="red",
                 )
@@ -349,7 +352,7 @@ class PoseEditor2:
     def as_Pose(self):
         return Pose(
             position=Point(
-                *np.array(self.position)
+                *np.array(self.position),
             ),  # Don't set waypoints out of the water plane
             orientation=Quaternion(*self.orientation),
         )

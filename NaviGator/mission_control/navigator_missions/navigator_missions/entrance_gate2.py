@@ -39,13 +39,14 @@ class EntranceGate2(NaviGatorMission):
 
         # Calculate traversal points
         traversal_points = await self.get_perpendicular_points(
-            self.gate_centers[self.pinger_gate], self.traversal_distance
+            self.gate_centers[self.pinger_gate],
+            self.traversal_distance,
         )
 
         # Go through the gate
         self.send_feedback("Navigating through gate")
         await self.move.set_position(traversal_points[0]).look_at(
-            traversal_points[1]
+            traversal_points[1],
         ).go()
         await self.move.set_position(traversal_points[1]).go()
 
@@ -69,13 +70,18 @@ class EntranceGate2(NaviGatorMission):
             # Rotate around buoy
             print("beginning spiral movement")
             await self.move.d_spiral_point(
-                buoy, circle_radius, 4, 0.75, circle_direction, yaw_offset
+                buoy,
+                circle_radius,
+                4,
+                0.75,
+                circle_direction,
+                yaw_offset,
             )
 
             # Go back through start gate
             self.send_feedback("Navigating through gate")
             await self.move.set_position(traversal_points[1]).look_at(
-                traversal_points[0]
+                traversal_points[0],
             ).go()
             await self.move.set_position(traversal_points[0]).go()
 
@@ -141,7 +147,7 @@ class EntranceGate2(NaviGatorMission):
         p = pose[0]
         q_mat = quaternion_matrix(pose[1])
         positions_local = np.array(
-            [(q_mat.T.dot(position - p)) for position in buoys[1]]
+            [(q_mat.T.dot(position - p)) for position in buoys[1]],
         )
         positions_local_x = np.array(positions_local[:, 0])  # positive is forward
         positions_local_y = np.array(positions_local[:, 1])  # positive is to the left
@@ -218,7 +224,10 @@ class EntranceGate2(NaviGatorMission):
     """
 
     async def get_perpendicular_points(
-        self, center_point, offset_distance, boat_pose=None
+        self,
+        center_point,
+        offset_distance,
+        boat_pose=None,
     ):
         # Find the perpendicular line
         perpendicular_vector = self.perpendicular(self.gates_line)

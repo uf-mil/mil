@@ -27,15 +27,15 @@ class nav_tui:
         self.y, self.x = screen.getmaxyx()
         self.window = screen.subwin(self.y, self.x, 0, 0)
         self.window.keypad(
-            1
+            1,
         )  # Allows for escape sequences (ctrl-c) to be interpreted by the curses window
         self.panel = panel.new_panel(
-            self.window
+            self.window,
         )  # Creates a panel of window object, self.window
         self.panel.hide()
         panel.update_panels()
         self.rate = rospy.Rate(2)  # Fixed rate for while loop to update at: 2 hz
-        # The following are default field initalizations for various values that that will be overwritten
+        # The following are default field initializations for various values that that will be overwritten
         self.voltage = 0
         self.wrench = None
         self.LAT = None
@@ -126,7 +126,8 @@ class nav_tui:
             curses.doupdate()  # Updates physical screen to match virtual one
             # AlarmListener for kill alarm
             self.kill_listener = AlarmListener(
-                "kill", callback_funct=self.kill_alarm_cb
+                "kill",
+                callback_funct=self.kill_alarm_cb,
             )
             self.kill_listener.wait_for_server()
             # Subscribers for the different values displayed
@@ -141,7 +142,10 @@ class nav_tui:
 
             [
                 rospy.Subscriber(
-                    topic + "/status", Status, self.thruster_fault_cb, topic
+                    topic + "/status",
+                    Status,
+                    self.thruster_fault_cb,
+                    topic,
                 )
                 for topic in self.motor_topics
             ]
@@ -210,49 +214,68 @@ class nav_tui:
             if len(self.decode_fault_status(self.FL_fault)) == 0:
                 self.window.addstr(5, self.x / 2 - 7, "No faults", curses.color_pair(3))
             else:
-                n = 0
-                for fault in self.decode_fault_status(self.FL_fault):
+                for n, fault in enumerate(self.decode_fault_status(self.FL_fault)):
                     self.window.addstr(
-                        5 + n, self.x / 2 - 7, "%s" % fault, curses.color_pair(1)
+                        5 + n,
+                        self.x / 2 - 7,
+                        "%s" % fault,
+                        curses.color_pair(1),
                     )
-                    n += 1
 
             self.window.addstr(14, self.x / 2 - 7, "Back Left", color)
             if len(self.decode_fault_status(self.BL_fault)) == 0:
                 self.window.addstr(
-                    15, self.x / 2 - 7, "No faults", curses.color_pair(3)
+                    15,
+                    self.x / 2 - 7,
+                    "No faults",
+                    curses.color_pair(3),
                 )
             else:
                 n = 0
                 for fault in self.decode_fault_status(self.BL_fault):
                     self.window.addstr(
-                        15 + n, self.x / 2 - 7, "%s" % fault, curses.color_pair(1)
+                        15 + n,
+                        self.x / 2 - 7,
+                        "%s" % fault,
+                        curses.color_pair(1),
                     )
                     n += 1
 
             self.window.addstr(4, self.x / 2 + 16, "Front Right", color)
             if len(self.decode_fault_status(self.FR_fault)) == 0:
                 self.window.addstr(
-                    5, self.x / 2 + 16, "No faults", curses.color_pair(3)
+                    5,
+                    self.x / 2 + 16,
+                    "No faults",
+                    curses.color_pair(3),
                 )
             else:
                 n = 0
                 for fault in self.decode_fault_status(self.FR_fault):
                     self.window.addstr(
-                        5 + n, self.x / 2 + 16, "%s" % fault, curses.color_pair(1)
+                        5 + n,
+                        self.x / 2 + 16,
+                        "%s" % fault,
+                        curses.color_pair(1),
                     )
                     n += 1
 
             self.window.addstr(14, self.x / 2 + 16, "Back Right", color)
             if len(self.decode_fault_status(self.BR_fault)) == 0:
                 self.window.addstr(
-                    15, self.x / 2 + 16, "No faults", curses.color_pair(3)
+                    15,
+                    self.x / 2 + 16,
+                    "No faults",
+                    curses.color_pair(3),
                 )
             else:
                 n = 0
                 for fault in self.decode_fault_status(self.BR_fault):
                     self.window.addstr(
-                        15 + n, self.x / 2 + 16, "%s" % fault, curses.color_pair(1)
+                        15 + n,
+                        self.x / 2 + 16,
+                        "%s" % fault,
+                        curses.color_pair(1),
                     )
                     n += 1
             self.rate.sleep()  # Sleep function helps regulate the loop to a rate of 2 hz

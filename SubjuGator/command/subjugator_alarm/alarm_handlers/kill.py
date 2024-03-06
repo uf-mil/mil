@@ -101,9 +101,7 @@ class Kill(HandlerBase):
             rospy.loginfo(f"KILL BAG WRITTEN TO {result.filename}")
         else:
             rospy.logwarn(
-                "KILL BAG {}, status: {}".format(
-                    TerminalState.to_string(status), result.status
-                )
+                f"KILL BAG {TerminalState.to_string(status)}, status: {result.status}",
             )
 
     def bagger_dump(self):
@@ -116,7 +114,7 @@ class Kill(HandlerBase):
             rospy.logwarn("BAG_ALWAYS or BAG_KILL not set. Not making kill bag.")
             return
         goal = BagOnlineGoal(bag_name="kill.bag")
-        goal.topics = os.environ["BAG_ALWAYS"] + " " + os.environ["bag_kill"]
+        goal.topics = os.environ["BAG_ALWAYS"] + " " + os.environ["BAG_KILL"]
         self.bag_client.send_goal(goal, done_cb=self._bag_done_cb)
 
     def meta_predicate(self, meta_alarm, sub_alarms):
@@ -141,7 +139,8 @@ class Kill(HandlerBase):
 
         # If we lose network but don't want to go autonomous
         if sub_alarms["network-loss"].raised and not rospy.get_param(
-            "/autonomous", False
+            "/autonomous",
+            False,
         ):
             return True
         ignore.append("network-loss")
@@ -168,5 +167,5 @@ class Kill(HandlerBase):
 
         # Raised if any alarms besides the two above are raised
         return any(
-            [alarm.raised for name, alarm in sub_alarms.items() if name not in ignore]
+            alarm.raised for name, alarm in sub_alarms.items() if name not in ignore
         )

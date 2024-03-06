@@ -45,7 +45,7 @@ def main(_):
         gtfr.create_dict()
         if FLAGS.output_path == "default":
             writer = tf.python_io.TFRecordWriter(
-                "../docker_tf/transfer_learning/data/" + (folder + ".record")
+                "../docker_tf/transfer_learning/data/" + (folder + ".record"),
             )
         else:
             writer = tf.python_io.TFRecordWriter(FLAGS.output_path)
@@ -68,11 +68,11 @@ def main(_):
 
         if FLAGS.check_tfrecords:
             print(
-                "Checking Validity of TFRecords. Expect image encoding alongside label data."
+                "Checking Validity of TFRecords. Expect image encoding alongside label data.",
             )
             if FLAGS.output_path == "default":
                 for example in tf.python_io.tf_record_iterator(
-                    "../docker_tf/transfer_learning/data/" + (folder + ".record")
+                    "../docker_tf/transfer_learning/data/" + (folder + ".record"),
                 ):
                     result = tf.train.Example.FromString(example)
                     print(result)

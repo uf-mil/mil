@@ -28,10 +28,10 @@ _________________________________
 
 Visualize Data in the Pipeline
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-This pipline makes use of the ``mil_common/utils/mil_tools/mil_ros_tools/plotter.py`` utility to plot batches of data over on ROS Topics as CV2 images at most points in the processiong pipeline.
+This pipeline makes use of the ``mil_common/utils/mil_tools/mil_ros_tools/plotter.py`` utility to plot batches of data over on ROS Topics as CV2 images at most points in the processiong pipeline.
 
-To view all points of the triggering pipline
-____________________________________________
+To view all points of the triggering pipeline
+_____________________________________________
 (raw, max convolution, gradient) that caused the most recent trigger (only hydrophone 0), look at ``/hydrophones/triggering/trigger_debug``
 
 It should look something like this (30kHz):
@@ -78,8 +78,8 @@ Configuration
 *************
 All parameters that are expected to be changed in tuining are ROS Params initialized in ``passive_sonar.yaml``
 
-To make a custom configation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To make a custom configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * ``roscd subjugator_launch``
 

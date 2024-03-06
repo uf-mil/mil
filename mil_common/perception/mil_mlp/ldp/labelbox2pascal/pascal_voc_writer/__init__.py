@@ -7,7 +7,8 @@ class Writer:
     def __init__(self, path, width, height, depth=3, database="Unknown", segmented=0):
         environment = Environment(
             loader=PackageLoader(
-                "labelbox2pascal", package_path="pascal_voc_writer/templates"
+                "labelbox2pascal",
+                package_path="pascal_voc_writer/templates",
             ),
             keep_trailing_newline=True,
         )
@@ -48,7 +49,7 @@ class Writer:
                 "pose": pose,
                 "truncated": truncated,
                 "difficult": difficult,
-            }
+            },
         )
 
     def save(self, annotation_path):

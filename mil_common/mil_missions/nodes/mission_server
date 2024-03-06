@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import importlib
 import inspect
 import json
@@ -28,8 +29,10 @@ class MissionRunner:
     missions_loaded: bool
     base_mission: type[BaseMission]
     missions: dict[str, type[BaseMission]]
+    _running_tasks: set[asyncio.Task]
 
     def __init__(self):
+        self._running_tasks = set()
         pass
 
     async def init(self):
@@ -49,7 +52,9 @@ class MissionRunner:
         #   1) The missions module can not be imported quickly.
         #   2) The base mission is not being initialized fully.
         await util.wrap_time_notice(
-            self.load_missions(), 10, "Loading missions in mission runner"
+            self.load_missions(),
+            10,
+            "Loading missions in mission runner",
         )
 
         # Set current mission to None
@@ -58,7 +63,10 @@ class MissionRunner:
 
         # Start a service to refresh missions
         self.refresh_service = Service(
-            self.nh, "~refresh_missions", Trigger, self.refresh_missions_cb
+            self.nh,
+            "~refresh_missions",
+            Trigger,
+            self.refresh_missions_cb,
         )
         await self.refresh_service.setup()
 
@@ -90,17 +98,12 @@ class MissionRunner:
     async def _shutdown_missions(self):
         # If we've already loaded missions, we need to shutdown existing missions
         if self.missions_loaded:
-            try:
+            with contextlib.suppress(AttributeError):
                 await asyncio.wait_for(self.base_mission.shutdown_base(), timeout=10)
-            except AttributeError:
-                pass
 
             for _, mission in self.missions.items():
-                try:
+                with contextlib.suppress(AttributeError):
                     await mission.shutdown()
-                except AttributeError:
-                    # The mission class may not need to be shutdown (this is okay!)
-                    pass
 
     async def load_missions(self):
         """
@@ -111,7 +114,9 @@ class MissionRunner:
         All missions from the module are saved to ``self.missions``.
         """
         await axros.wrap_time_notice(
-            self._shutdown_missions(), 3, "Shutting down missions"
+            self._shutdown_missions(),
+            3,
+            "Shutting down missions",
         )
         self.missions = {}
 
@@ -119,7 +124,8 @@ class MissionRunner:
         mission_module_name = await self.nh.get_param("~missions_module")
         base_mission_name = await self.nh.get_param("~base_mission")
         assert isinstance(mission_module_name, str) and isinstance(
-            base_mission_name, str
+            base_mission_name,
+            str,
         )
         if self.missions_loaded:
             self.mission_module = importlib.reload(self.mission_module)
@@ -150,7 +156,9 @@ class MissionRunner:
                     and name not in self.missions
                 ):
                     await axros.wrap_time_notice(
-                        cls.setup(), 1, f"Setting up the {name} mission"
+                        cls.setup(),
+                        1,
+                        f"Setting up the {name} mission",
                     )
                     self.missions[cls.name()] = cls
 
@@ -190,7 +198,7 @@ class MissionRunner:
         if not self.has_mission(goal.mission):
             print(f"TASK RUNNER: unrecognized mission '{goal.mission}'")
             self.server.set_aborted(
-                result=DoMissionResult(success=False, result="mission unknown")
+                result=DoMissionResult(success=False, result="mission unknown"),
             )
             return
 
@@ -199,7 +207,7 @@ class MissionRunner:
             parameters = self.missions[goal.mission].decode_parameters(goal.parameters)
         except Exception as e:
             self.server.set_aborted(
-                result=DoMissionResult(success=False, result=str(e))
+                result=DoMissionResult(success=False, result=str(e)),
             )
             return
 
@@ -207,6 +215,7 @@ class MissionRunner:
         self.mission = self.missions[goal.mission]()
         self.mission_future = asyncio.create_task(self.run_with_callback(parameters))
         self.mission_future.add_done_callback(self.mission_finished_cb)
+        self._running_tasks.add(self.mission_future)
 
     async def run_with_callback(self, parameters):
         try:
@@ -220,10 +229,12 @@ class MissionRunner:
         comes in.
         """
         # If cancel request came in, cancel current mission
-        if self.mission_future is not None and self.server.is_cancel_requested():
-            self.mission_future.cancel()
         # If a new mission came in, cancel current mission
-        elif self.mission_future is not None and self.server.is_preempt_requested():
+        if (
+            self.mission_future is not None
+            and self.server.is_cancel_requested()
+            or (self.mission_future is not None and self.server.is_preempt_requested())
+        ):
             self.mission_future.cancel()
         # Try to accept a new mission
         self.do_new_mission()
@@ -234,12 +245,13 @@ class MissionRunner:
         mission, or raises an exception. Publishes the correct result to the action clients.
         """
         result = DoMissionResult()
+        self._running_tasks.remove(task)
 
         try:
             task_result = task.result()
         except asyncio.CancelledError:
             print(
-                f"Instance of {self.mission.__class__.__name__} mission was cancelled."
+                f"Instance of {self.mission.__class__.__name__} mission was cancelled.",
             )
             result.result = "mission cancelled"
             self.server.set_aborted(result=result, text=result.result)

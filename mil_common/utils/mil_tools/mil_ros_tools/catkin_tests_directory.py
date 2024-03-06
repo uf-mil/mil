@@ -36,7 +36,7 @@ def run_tests(tests):
 if __name__ == "__main__":
     # parse configuration from arguments
     parser = argparse.ArgumentParser(
-        description="Prints all catkin test targets in a specified directory"
+        description="Prints all catkin test targets in a specified directory",
     )
     parser.add_argument(
         "directory",

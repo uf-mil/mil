@@ -20,7 +20,7 @@ jobs:
 
       # Wait for the CI to finish so we can download the docs artifact
       - name: Wait for CI
-        uses: lewagon/wait-on-check-action@v1.0.0
+        uses: lewagon/wait-on-check-action@v1.3.3
         if: github.event.action != 'closed'
         with:
           ref: ${{ github.event.pull_request.head.ref }}
@@ -50,7 +50,7 @@ jobs:
       # We need to install rsync for GitHub Pages deploy action
       - name: Install rsync
         run: |
-          sudo apt-get upgrade && sudo apt-get update && sudo apt-get install -y rsync
+          sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y rsync
 
       - name: Move folders
         if: github.event.action != 'closed'

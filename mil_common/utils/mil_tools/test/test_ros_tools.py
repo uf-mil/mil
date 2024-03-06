@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
+import random
+import time
 import unittest
 
 import numpy as np
+import rospy
 from geometry_msgs.msg import Pose2D, Quaternion, Vector3
+from mil_misc_tools import datetime_to_rospy, rospy_to_datetime
 from mil_ros_tools import (
     get_image_msg,
     make_image_msg,
@@ -90,7 +94,8 @@ class TestROSTools(unittest.TestCase):
         self.assertTrue(fake_lock.entry, msg="Thread was never locked")
         self.assertTrue(fake_lock.exit, msg="Thread was never released")
         self.assertTrue(
-            result, msg="Thread was not locked while the function was executed"
+            result,
+            msg="Thread was not locked while the function was executed",
         )
 
     def test_skew_symmetric_cross(self):
@@ -103,7 +108,7 @@ class TestROSTools(unittest.TestCase):
                 [+0, -3, +2],
                 [+3, +0, -1],
                 [-2, +1, +0],
-            ]
+            ],
         )
         np.testing.assert_allclose(
             skew_sym,
@@ -126,12 +131,12 @@ class TestROSTools(unittest.TestCase):
                 [0.0, 0.0, 0.0],
                 np.cross(p_rotated, q),
                 atol=1e-5,
-                err_msg="The generated rotation matrix did not align the input vectors, {} to {}".format(
-                    p, q
-                ),
+                err_msg=f"The generated rotation matrix did not align the input vectors, {p} to {q}",
             )
             self.assertGreater(
-                np.dot(p_rotated, q), 0.0, msg="The rotation did wacky inversion"
+                np.dot(p_rotated, q),
+                0.0,
+                msg="The rotation did wacky inversion",
             )
 
     def test_normalize_vector(self):
@@ -147,8 +152,18 @@ class TestROSTools(unittest.TestCase):
 
                 # Test that the norm is 1
                 np.testing.assert_almost_equal(
-                    norm, 1.0, err_msg="The normalized vector did not have length 1"
+                    norm,
+                    1.0,
+                    err_msg="The normalized vector did not have length 1",
                 )
+
+    def test_datetime_conv(self):
+        """Test datetime to rospy.Time conversion."""
+        for _ in range(10):
+            unix_stamp = random.randrange(0, int(time.time()))
+            rp1 = rospy.Time(unix_stamp)
+            dt1 = rospy_to_datetime(rp1)
+            self.assertEqual(datetime_to_rospy(dt1), rp1)
 
 
 if __name__ == "__main__":

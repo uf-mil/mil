@@ -8,7 +8,6 @@ from nav_msgs.msg import Odometry
 
 
 class Job:
-
     """Inherit from this!"""
 
     _job_name = "generic job"

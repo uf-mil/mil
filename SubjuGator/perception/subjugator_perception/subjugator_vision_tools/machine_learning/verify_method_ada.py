@@ -30,7 +30,7 @@ if __name__ == "__main__":
         print(f"Observing took {time() - tic_observation} seconds")
         tic_prediction = time()
         segmentation = clf.predict(
-            some_observations.reshape(-1, some_observations.shape[1])
+            some_observations.reshape(-1, some_observations.shape[1]),
         )
         print(f"Predicting took {time() - tic_prediction} seconds")
         total_time = time() - tic_observation
@@ -43,10 +43,10 @@ if __name__ == "__main__":
         bool_predictions = segmentation_image == 1
 
         true_positives = np.sum(bool_targets & bool_predictions) / np.sum(
-            bool_targets
+            bool_targets,
         ).astype(np.float32)
         false_positives = np.sum(
-            np.logical_not(bool_targets) & bool_predictions
+            np.logical_not(bool_targets) & bool_predictions,
         ) / np.sum(np.logical_not(bool_targets)).astype(np.float32)
 
         print(f"\tPercent correct: {true_positives}")
@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     print("Average accuracy: {}".format(np.average(attributes["true_positives"])))
     print(
-        "Average false positives: {}".format(np.average(attributes["false_positives"]))
+        "Average false positives: {}".format(np.average(attributes["false_positives"])),
     )
     print("Min accuracy: {}".format(np.min(attributes["true_positives"])))
     print("Max false positives: {}".format(np.max(attributes["false_positives"])))

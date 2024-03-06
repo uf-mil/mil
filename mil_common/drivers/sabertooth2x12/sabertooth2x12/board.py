@@ -17,7 +17,11 @@ class Sabertooth2x12:
     """
 
     def __init__(
-        self, filename: str, address: int = 128, baudrate: int = 9600, sim: bool = False
+        self,
+        filename: str,
+        address: int = 128,
+        baudrate: int = 9600,
+        sim: bool = False,
     ):
         """
         Args:
@@ -74,10 +78,7 @@ class Sabertooth2x12:
         Args:
             speed (float): The speed to set the first motor to.
         """
-        if speed < 0:
-            command = 1
-        else:
-            command = 0
+        command = 1 if speed < 0 else 0
         data = int(min(1.0, abs(speed)) * 127)
         self.send_packet(command, data)
 
@@ -89,9 +90,6 @@ class Sabertooth2x12:
         Args:
             speed (float): The speed to set the second motor to.
         """
-        if speed < 0:
-            command = 5
-        else:
-            command = 4
+        command = 5 if speed < 0 else 4
         data = int(min(1.0, abs(speed)) * 127)
         self.send_packet(command, data)

@@ -43,12 +43,12 @@ class VrxNavigation(Vrx):
             [
                 np.linalg.norm((center + perp_vec) - position),
                 np.linalg.norm((center - perp_vec) - position),
-            ]
+            ],
         )
         if np.argmin(distances) == 0:
             perp_vec = -perp_vec
         return np.array([center[0], center[1], 0.0]), np.array(
-            [perp_vec[0], perp_vec[1], 0.0]
+            [perp_vec[0], perp_vec[1], 0.0],
         )
 
     async def go_thru_gate(self, gate, BEFORE=5.0, AFTER=4.0):
@@ -68,18 +68,18 @@ class VrxNavigation(Vrx):
             # filter out buoys more than filter_distance behind boat
             filter_distance = -5
             positions_local = np.array(
-                [(q_mat.T.dot(position - p)) for position in positions]
+                [(q_mat.T.dot(position - p)) for position in positions],
             )
             positions_local_x = np.array(positions_local[:, 0])
             forward_indicies = np.argwhere(
-                positions_local_x > filter_distance
+                positions_local_x > filter_distance,
             ).flatten()
             forward_indicies = np.array(
                 [
                     i
                     for i in forward_indicies
                     if objects[i].id not in self.objects_passed
-                ]
+                ],
             )
             distances = np.linalg.norm(positions_local[forward_indicies], axis=1)
             indices = forward_indicies[np.argsort(distances).flatten()].tolist()
@@ -90,7 +90,8 @@ class VrxNavigation(Vrx):
         def is_done(objects, positions):
             try:
                 left_index = self.get_index_of_type(
-                    objects, ("mb_marker_buoy_green", "mb_marker_buoy_black")
+                    objects,
+                    ("mb_marker_buoy_green", "mb_marker_buoy_black"),
                 )
                 right_index = self.get_index_of_type(objects, "mb_marker_buoy_red")
             except StopIteration:
@@ -106,12 +107,14 @@ class VrxNavigation(Vrx):
             )
 
         left, left_obj, right, right_obj, end = await self.explore_closest_until(
-            is_done, filter_and_sort
+            is_done,
+            filter_and_sort,
         )
         self.send_feedback(
             "Going through gate of objects {} and {}".format(
-                left_obj.labeled_classification, right_obj.labeled_classification
-            )
+                left_obj.labeled_classification,
+                right_obj.labeled_classification,
+            ),
         )
         gate = self.get_gate(left, right, p)
         await self.go_thru_gate(gate)
@@ -143,13 +146,12 @@ class VrxNavigation(Vrx):
                     service_req = None
                     objects_msg = result
                     classification_index = self.object_classified(
-                        objects_msg.objects, move_id_tuple[1]
+                        objects_msg.objects,
+                        move_id_tuple[1],
                     )
                     if classification_index != -1:
                         self.send_feedback(
-                            "{} identified. Canceling investigation".format(
-                                move_id_tuple[1]
-                            )
+                            f"{move_id_tuple[1]} identified. Canceling investigation",
                         )
                         move_id_tuple[0].cancel()
                         await self.nh.sleep(1.0)
@@ -162,7 +164,7 @@ class VrxNavigation(Vrx):
                         ):
                             print("updating initial boat pos...")
                             init_boat_pos = rosmsg_to_numpy(
-                                objects_msg.objects[classification_index].pose.position
+                                objects_msg.objects[classification_index].pose.position,
                             )
                             print(init_boat_pos)
                             cone_buoys_investigated += 1
@@ -189,12 +191,9 @@ class VrxNavigation(Vrx):
             objects = objects_msg.objects
             # print(len(objects))
             positions = np.array(
-                [rosmsg_to_numpy(obj.pose.position) for obj in objects]
+                [rosmsg_to_numpy(obj.pose.position) for obj in objects],
             )
-            if len(objects) == 0:
-                indices = []
-            else:
-                indices = filter_and_sort(objects, positions)
+            indices = [] if len(objects) == 0 else filter_and_sort(objects, positions)
             if indices is None or len(indices) == 0:
                 self.send_feedback("No objects")
                 continue
@@ -235,7 +234,7 @@ class VrxNavigation(Vrx):
                         print(shortest_distance)
                         print(positions[i])
                         print(
-                            "POTENTIAL CANDIDATE: IDENTIFIED THROUGH MARKER THAT HAS NOT BEEN INVESTIGATED"
+                            "POTENTIAL CANDIDATE: IDENTIFIED THROUGH MARKER THAT HAS NOT BEEN INVESTIGATED",
                         )
                         potential_candidate = i
 
@@ -254,7 +253,7 @@ class VrxNavigation(Vrx):
                             print(shortest_distance)
                             print(positions[i])
                             print(
-                                "POTENTIAL CANDIDATE: IDENTIFIED BY FINDING CLOSEST CONE TO ALREADY INVESTIGATED CONE (<25m)"
+                                "POTENTIAL CANDIDATE: IDENTIFIED BY FINDING CLOSEST CONE TO ALREADY INVESTIGATED CONE (<25m)",
                             )
                             potential_candidate = i
 
@@ -271,7 +270,7 @@ class VrxNavigation(Vrx):
                             print(shortest_distance)
                             print(positions[i])
                             print(
-                                "POTENTIAL CANDIDATE: IDENTIFIED BY FINDING CLOSEST CONE TO INIT BOAT POS"
+                                "POTENTIAL CANDIDATE: IDENTIFIED BY FINDING CLOSEST CONE TO INIT BOAT POS",
                             )
                             potential_candidate = i
                             print(positions[i])
@@ -305,9 +304,8 @@ class VrxNavigation(Vrx):
         @return True of object with obj_id is classified
         """
         for i, obj in enumerate(objects):
-            if obj.id == obj_id:
-                if obj.labeled_classification != "UNKNOWN":
-                    return i
+            if obj.id == obj_id and obj.labeled_classification != "UNKNOWN":
+                return i
         return -1
 
     async def prepare_to_enter(self):
@@ -331,15 +329,17 @@ class VrxNavigation(Vrx):
             )
 
         white, white_position, red, red_position = await self.explore_closest_until(
-            is_done, filter_and_sort
+            is_done,
+            filter_and_sort,
         )
         self.objects_passed.add(white.id)
         self.objects_passed.add(red.id)
         gate = self.get_gate(white_position, red_position, robot_position)
         self.send_feedback(
             "Going through start gate formed by {} and {}".format(
-                white.labeled_classification, red.labeled_classification
-            )
+                white.labeled_classification,
+                red.labeled_classification,
+            ),
         )
         await self.go_thru_gate(gate, AFTER=-2)
 

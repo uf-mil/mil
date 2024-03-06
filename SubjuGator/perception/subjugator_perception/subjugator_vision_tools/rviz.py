@@ -9,14 +9,18 @@ from std_msgs.msg import ColorRGBA
 
 
 class RvizVisualizer:
-
     """Cute tool for drawing both depth and height-from-bottom in RVIZ"""
 
     def __init__(self, topic="visualization/markers"):
         self.rviz_pub = rospy.Publisher(topic, visualization_msgs.Marker, queue_size=3)
 
     def draw_sphere(
-        self, position, color, scaling=(0.11, 0.11, 0.11), _id=4, frame="/front_stereo"
+        self,
+        position,
+        color,
+        scaling=(0.11, 0.11, 0.11),
+        _id=4,
+        frame="/front_stereo",
     ):
         pose = Pose(
             position=mil_ros_tools.numpy_to_point(position),
@@ -69,7 +73,7 @@ class RvizVisualizer:
         frame="/base_link",
         _id=100,
         timestamp=None,
-        **kwargs
+        **kwargs,
     ):
         """Handle the frustration that Rviz cylinders are designated by their center, not base"""
         marker = visualization_msgs.Marker(
@@ -80,8 +84,8 @@ class RvizVisualizer:
             action=visualization_msgs.Marker.ADD,
             color=ColorRGBA(*color),
             scale=Vector3(0.05, 0.05, 0.05),
-            points=map(lambda o: Point(*o), [base, direction * length]),
+            points=(Point(*o) for o in [base, direction * length]),
             lifetime=rospy.Duration(),
-            **kwargs
+            **kwargs,
         )
         return marker

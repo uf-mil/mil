@@ -101,7 +101,7 @@ class Dock(Vrx):
         # determine which long side is closer to us, go to the closer one
         # (assume VRX peeps are nice and will always have the open side of the dock closer)
         if np.linalg.norm(side_a - curr_pose[0]) < np.linalg.norm(
-            side_b - curr_pose[0]
+            side_b - curr_pose[0],
         ):
             print("side_a")
             goal_pos = side_a
@@ -167,12 +167,12 @@ class Dock(Vrx):
         # position boat in front of correct symbol
         if symbol_position == "left":
             await self.move.set_position(self.left_position).look_at(
-                self.dock_point_left
+                self.dock_point_left,
             ).go(blind=True, move_type="skid")
             position = self.dock_point_left
         elif symbol_position == "right":
             await self.move.set_position(self.right_position).look_at(
-                self.dock_point_right
+                self.dock_point_right,
             ).go(blind=True, move_type="skid")
             position = self.dock_point_right
 
@@ -204,7 +204,8 @@ class Dock(Vrx):
         ]
         path = self.rospack.get_path("navigator_vision")
         symbol_file = os.path.join(
-            path, "datasets/dock_target_images/" + target_symbol + ".png"
+            path,
+            "datasets/dock_target_images/" + target_symbol + ".png",
         )
         symbol = cv2.imread(symbol_file)
         _, w, h = symbol.shape[::-1]
@@ -572,7 +573,9 @@ class Dock(Vrx):
         for i in range(4):
             try:
                 await axros.util.wrap_timeout(
-                    self.aim_and_fire(foggy=foggy), 15, "Trying to shoot"
+                    self.aim_and_fire(foggy=foggy),
+                    15,
+                    "Trying to shoot",
                 )
             except asyncio.TimeoutError:
                 print("Let's just take the shot anyways")
@@ -604,7 +607,7 @@ class Dock(Vrx):
         # This function looks at the two squares in front of the boat
         # and it gets the middle pixel between the two squares.
         # If the middle pixel is for some reason not in the middle of our camera...
-        # adjust the boat postiion before docking
+        # adjust the boat position before docking
         print("prepare for landing!")
 
         img = await self.front_left_camera_sub.get_next_message()
@@ -629,7 +632,7 @@ class Dock(Vrx):
                     [bottom_right[0], top_left[1]],
                 ],
                 dtype=np.int32,
-            )
+            ),
         ]
 
         stencil = np.zeros(img.shape[:-1]).astype(np.uint8)

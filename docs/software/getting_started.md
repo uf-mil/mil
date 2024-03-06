@@ -63,8 +63,8 @@ methods.
 
 | Architecture | URL |
 | ------------ | --- |
-| AMD64 (most Windows computers, Intel-based Mac computers) | [focal-desktop-amd64.iso](https://cdimage.ubuntu.com/focal/daily-live/current/focal-desktop-amd64.iso) |
-| ARM64 (Apple Silicon Mac computers) | [focal-desktop-arm64.iso](https://cdimage.ubuntu.com/focal/daily-live/current/focal-desktop-arm64.iso) |
+| AMD64 (most Windows computers, Intel-based Mac computers) | [focal-desktop-amd64.iso](https://releases.ubuntu.com/focal/ubuntu-20.04.6-desktop-amd64.iso) |
+| ARM64 (Apple Silicon Mac computers) | Unfortunately, Ubuntu 20.04 no longer has an ARM-compatible ISO. While we are working on finding/building a new iso image, you may not be able to install. |
 
 The following subsections cover various installation methods. Please choose the
 installation option that best meets your use case. If you're not sure what the
@@ -420,7 +420,7 @@ launches the Gazebo GUI - aka, the thing you will actually interact with! If all
 goes according to plan, you should see our robot in its own little world!
 
 ## Installing developer tools
-After you have verified that your Git setup is working appopriately, take a look
+After you have verified that your Git setup is working appropriately, take a look
 at installing some developer tools on the [Developer Tools](/software/devtools)
 page.
 

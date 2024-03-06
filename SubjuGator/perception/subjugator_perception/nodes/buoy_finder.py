@@ -44,7 +44,7 @@ class Buoy:
         self.min_trans = rospy.get_param("~min_trans")
         self.threshold = Threshold.from_param(f"/color/buoy/{color}")
         rospy.loginfo(
-            f"{color} buoy has {self.threshold}"
+            f"{color} buoy has {self.threshold}",
         )  # Print threshold for each buoy
         if debug_cv:
             self.threshold.create_trackbars(window=color)
@@ -128,7 +128,7 @@ class BuoyFinder:
         self.last_image_time = None
         self.camera_model = None
         self.circle_finder = CircleFinder(
-            1.0
+            1.0,
         )  # Model radius doesn't matter because it's not being used for 3D pose
 
         # Various constants for tuning, debugging. See buoy_finder.yaml for more info
@@ -141,7 +141,8 @@ class BuoyFinder:
         self.roi_y = rospy.get_param("~roi_y")
         self.roi_height = rospy.get_param("~roi_height")
         camera = rospy.get_param(
-            "~camera_topic", "/camera/front/right/image_rect_color"
+            "~camera_topic",
+            "/camera/front/right/image_rect_color",
         )
 
         self.buoys = {}
@@ -328,7 +329,7 @@ class BuoyFinder:
            position using the least squares tool imported
         """
         assert (
-            buoy_type in self.buoys.keys()
+            buoy_type in self.buoys
         ), f"Buoys_2d does not know buoy color: {buoy_type}"
         buoy = self.buoys[buoy_type]
         mask = buoy.get_mask(self.last_image)
@@ -344,7 +345,10 @@ class BuoyFinder:
         )
         if self.debug_ros:
             cv2.add(
-                self.mask_image.copy(), buoy.cv_colors, mask=mask, dst=self.mask_image
+                self.mask_image.copy(),
+                buoy.cv_colors,
+                mask=mask,
+                dst=self.mask_image,
             )
         if self.debug_cv:
             self.debug_images[buoy_type] = mask.copy()
@@ -367,7 +371,10 @@ class BuoyFinder:
 
         try:
             self.tf_listener.waitForTransform(
-                "map", self.frame_id, self.last_image_time, rospy.Duration(0.2)
+                "map",
+                self.frame_id,
+                self.last_image_time,
+                rospy.Duration(0.2),
             )
         except tf.Exception as e:
             rospy.logwarn(f"Could not transform camera to map: {e}")
@@ -378,7 +385,9 @@ class BuoyFinder:
             return False
 
         (t, rot_q) = self.tf_listener.lookupTransform(
-            "map", self.frame_id, self.last_image_time
+            "map",
+            self.frame_id,
+            self.last_image_time,
         )
         R = mil_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
 

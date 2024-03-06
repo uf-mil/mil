@@ -62,7 +62,7 @@ future teams to learn from!
   It is quicker to tell when tools have gone missing (as each tool now has a
   dedicated spot in the organizer), and which tool is missing. Furthermore, it
   becomes easier for software members, electrical members, and mentors to find
-  tools, even if they maybe are not acquianted with a deep knowledge of the
+  tools, even if they maybe are not acquainted with a deep knowledge of the
   mechanical team.
 * **Focus on bringing less and staying more organized.** - At RobotX 2022, we
   were one of the teams who had brought the most equipment, yet we had a hard

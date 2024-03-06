@@ -91,13 +91,14 @@ class ScanTheCodeMission(NaviGatorMission):
         print("obtaining contour")
         contour = np.array(
             bbox_from_rect(
-                rect_from_roi(roi_enclosing_points(self.camera_model, points))
+                rect_from_roi(roi_enclosing_points(self.camera_model, points)),
             ),
             dtype=int,
         )
         try:
             sequence = await axros.util.wrap_timeout(
-                self.get_sequence(contour), TIMEOUT_SECONDS
+                self.get_sequence(contour),
+                TIMEOUT_SECONDS,
             )
         except asyncio.TimeoutError:
             sequence = ["red", "green", "blue"]
@@ -117,7 +118,8 @@ class ScanTheCodeMission(NaviGatorMission):
 
             img = img[:, :, [2, 1, 0]]
             mask_msg = self.bridge.cv2_to_imgmsg(
-                bitwise_and(img, img, mask=mask), "bgr8"
+                bitwise_and(img, img, mask=mask),
+                "bgr8",
             )
 
             print("PUBLISHING MASK")
@@ -195,7 +197,7 @@ def z_filter(db_obj_msg):
             [i.x, i.y, i.z]
             for i in db_obj_msg.points
             if i.z < top - LED_PANEL_MAX and i.z > top - LED_PANEL_MIN
-        ]
+        ],
     )
     return points
 
@@ -208,6 +210,6 @@ def bbox_from_rect(rect):
             [rect[1][0] + 20, rect[0][1] - rect[0][1]],
             [rect[1][0] + 20, rect[1][1] + 20],
             [rect[0][0] - 20, rect[1][1] + 20],
-        ]
+        ],
     )
     return bbox

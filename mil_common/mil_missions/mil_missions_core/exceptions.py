@@ -96,7 +96,7 @@ class SubmissionException(MissionException):
         self.mission = mission
         self.exception = exception
         super().__init__(
-            f"A {exception.__class__.__name__} exception occurred while running {mission}."
+            f"A {exception.__class__.__name__} exception occurred while running {mission}.",
         )
 
     def __str__(self):

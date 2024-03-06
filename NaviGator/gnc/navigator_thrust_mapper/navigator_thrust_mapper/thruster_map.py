@@ -27,7 +27,7 @@ def vrx_force_to_command_scalar(force):
     #   -0.113122 log(-154.285 (0.99 - (1.88948x10^12)/(199.13 + x)^5.34))
     elif force < 0:
         return -0.113122 * np.log(
-            -154.285 * (0.99 - ((1.88948 * 10**12) / ((199.13 + force) ** 5.34)))
+            -154.285 * (0.99 - ((1.88948 * 10**12) / ((199.13 + force) ** 5.34))),
         )
     else:
         # approx broken range as strait line with 0.01cmd/3.2N
@@ -109,7 +109,7 @@ class ThrusterMap:
         # returns a matrix made of the thruster columns
         self.thruster_matrix = np.hstack(thruster_matrix)
         self.thruster_matrix_inv = np.linalg.pinv(
-            self.thruster_matrix
+            self.thruster_matrix,
         )  # Magical numpy pseudoinverse
 
     @classmethod
@@ -127,7 +127,10 @@ class ThrusterMap:
             name = link.name[:find]
             try:
                 trans = buff.lookup_transform(
-                    "wamv/base_link", link.name, rospy.Time(), rospy.Duration(10)
+                    "wamv/base_link",
+                    link.name,
+                    rospy.Time(),
+                    rospy.Duration(10),
                 )
             except tf2_ros.TransformException as e:
                 raise Exception(e)
@@ -141,7 +144,9 @@ class ThrusterMap:
 
     @classmethod
     def from_urdf(
-        cls, urdf_string: str, transmission_suffix: str = "_thruster_transmission"
+        cls,
+        urdf_string: str,
+        transmission_suffix: str = "_thruster_transmission",
     ):
         """
         Load from an URDF string. Expects each thruster to be connected a transmission ending in the specified suffix.
@@ -161,15 +166,11 @@ class ThrusterMap:
             if find != -1 and find + len(transmission_suffix) == len(transmission.name):
                 if len(transmission.joints) != 1:
                     raise Exception(
-                        "Transmission {} does not have 1 joint".format(
-                            transmission.name
-                        )
+                        f"Transmission {transmission.name} does not have 1 joint",
                     )
                 if len(transmission.actuators) != 1:
                     raise Exception(
-                        "Transmission {} does not have 1 actuator".format(
-                            transmission.name
-                        )
+                        f"Transmission {transmission.name} does not have 1 actuator",
                     )
 
                 t_ratio = transmission.actuators[0].mechanicalReduction
@@ -177,8 +178,9 @@ class ThrusterMap:
                 if t_ratio < 0:
                     raise Exception(
                         "Thruster mapper does not allow mechanical reduction of {} for {}.".format(
-                            t_ratio, transmission.name
-                        )
+                            t_ratio,
+                            transmission.name,
+                        ),
                     )
 
                 ratio[i] = t_ratio
@@ -189,13 +191,14 @@ class ThrusterMap:
                         joint = t_joint
                 if joint is None:
                     rospy.logerr(
-                        "Transmission joint {} not found".format(
-                            transmission.joints[0].name
-                        )
+                        f"Transmission joint {transmission.joints[0].name} not found",
                     )
                 try:
                     trans = buff.lookup_transform(
-                        "wamv/base_link", joint.child, rospy.Time(), rospy.Duration(10)
+                        "wamv/base_link",
+                        joint.child,
+                        rospy.Time(),
+                        rospy.Duration(10),
                     )
                 except tf2_ros.TransformException as e:
                     raise Exception(e)
@@ -208,9 +211,7 @@ class ThrusterMap:
                 joints.append(joint.name)
                 if limit != -1 and joint.limit.effort != limit:
                     raise Exception(
-                        "Thruster {} had a different limit, cannot proceed".format(
-                            joint.name
-                        )
+                        f"Thruster {joint.name} had a different limit, cannot proceed",
                     )
                 limit = joint.limit.effort
         limit_tuple = (limit, -limit)
@@ -231,10 +232,10 @@ class ThrusterMap:
         returns: wrench (x, y, torque about z) force/torque applied to boat
         """
         raise Exception(
-            "Unimplemented. Please file an issue if you encounter this error"
+            "Unimplemented. Please file an issue if you encounter this error",
         )
         return self.effort_to_force(
-            np.linalg.lstsq(self.thruster_matrix_inv, thrusts)[0]
+            np.linalg.lstsq(self.thruster_matrix_inv, thrusts)[0],
         )
 
     def wrench_to_thrusts(self, wrench: np.ndarray):
@@ -247,7 +248,7 @@ class ThrusterMap:
         returns: wrench (x, y, torque) force/torque applied to boat
         """
         return self.force_to_command(
-            np.linalg.lstsq(self.thruster_matrix, wrench, rcond=-1)[0]
+            np.linalg.lstsq(self.thruster_matrix, wrench, rcond=-1)[0],
         )
 
     def force_to_command(self, force):
@@ -255,7 +256,7 @@ class ThrusterMap:
         Maps a list of thruster forces to their corposponding effort units
         """
         return self._force_to_command(
-            np.clip(force, self.force_limit[1], self.force_limit[0])
+            np.clip(force, self.force_limit[1], self.force_limit[0]),
         )
 
     def effort_to_force(self, effort):
@@ -265,6 +266,6 @@ class ThrusterMap:
         Maps a list of thrusts in effort units to the corresponding force in newtons.
         """
         raise Exception(
-            "Unimplemented. Please file an issue if you encounter this error"
+            "Unimplemented. Please file an issue if you encounter this error",
         )
         return effort / self.effort_ratio

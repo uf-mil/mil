@@ -213,7 +213,7 @@ class RectFinder:
             cam (Optional[PinholeCameraModel]): The camera model.
             rectified (bool): If ``cam`` is set, set True if corners were found in an
                already rectified image (image_rect_color topic).
-            instrinsics (np.ndarray): Camera intrinisic matrix.
+            intrinsics (np.ndarray): Camera intrinisic matrix.
             dist_coeffs (np.ndarray): Camera distortion coefficients.
 
         Returns:
@@ -226,10 +226,7 @@ class RectFinder:
         # get a pose estimate in camera frame
         if cam is not None:
             intrinsics = cam.intrinsicMatrix()
-            if rectified:
-                dist_coeffs = np.zeros((5, 1))
-            else:
-                dist_coeffs = cam.distortionCoeffs()
+            dist_coeffs = np.zeros((5, 1)) if rectified else cam.distortionCoeffs()
         assert intrinsics is not None
         assert dist_coeffs is not None
         _, rvec, tvec = cv2.solvePnP(self.model_3D, corners, intrinsics, dist_coeffs)
@@ -257,7 +254,9 @@ class RectFinder:
         return (center, vector)
 
     def draw_model(
-        self, size: tuple[int, int] = (500, 500), border: int = 25
+        self,
+        size: tuple[int, int] = (500, 500),
+        border: int = 25,
     ) -> np.ndarray:
         """
         Returns a 1 channel image displaying the internal model of the rectangle.
@@ -305,12 +304,12 @@ class EllipseFinder(RectFinder):
         self.model_2D = np.zeros((50, 1, 2), dtype=np.int)
         # Approximate an ellipse with 50 points, so that verify_contour is reasonable fast still
         for idx, theta in enumerate(np.linspace(0.0, 2.0 * np.pi, num=50)):
-            self.model_2D[idx][0][
-                0
-            ] = self.length * 0.5 * scale + self.length * 0.5 * scale * np.cos(theta)
-            self.model_2D[idx][0][
-                1
-            ] = self.width * 0.5 * scale + self.width * 0.5 * scale * np.sin(theta)
+            self.model_2D[idx][0][0] = (
+                self.length * 0.5 * scale + self.length * 0.5 * scale * np.cos(theta)
+            )
+            self.model_2D[idx][0][1] = (
+                self.width * 0.5 * scale + self.width * 0.5 * scale * np.sin(theta)
+            )
 
     def get_corners(self, contour, debug_image=None):
         """

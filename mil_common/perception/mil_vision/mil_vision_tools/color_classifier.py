@@ -61,7 +61,7 @@ class ContourClassifier:
 
         For example, an example overload might return ``['red_mean', 'blue_mean', 'green_mean']``.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def get_features(self, img: np.ndarray, mask: np.ndarray) -> np.ndarray:
@@ -94,7 +94,7 @@ class ContourClassifier:
 
     def feature_probabilities(self, features: np.ndarray) -> List[float]:
         """
-        Allows child classes to give probabilties for each possible class given
+        Allows child classes to give probabilities for each possible class given
         a features vector, instead of just one classification. By default,
         gives 1.0 to classified class and 0.0 to others.
 
@@ -210,6 +210,8 @@ class ContourClassifier:
         Args:
             training_file (Optional[str]): The name of the training file.
         """
+        if training_file is None:
+            raise NotImplementedError("Cannot read without any training file.")
         training_file = _get_param(training_file, self.training_file)
         df = pandas.read_csv(training_file)
         classes = df.values[:, 1]
@@ -252,7 +254,9 @@ class ContourClassifier:
         df.to_csv(training_file)
 
     def extract_labels(
-        self, labelfile: Optional[str] = None, image_dir: Optional[str] = None
+        self,
+        labelfile: Optional[str] = None,
+        image_dir: Optional[str] = None,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Extract features and labeled classes from a project labeled on labelbox.io.
@@ -279,7 +283,8 @@ class ContourClassifier:
                 if lab in self.classes:
                     for single_label in label["Label"][lab]:
                         points = LabelBoxParser.label_to_contour(
-                            single_label, img.shape[0]
+                            single_label,
+                            img.shape[0],
                         )
                         mask = contour_mask(points, img.shape)
                         features = self.get_features(img, mask)
@@ -321,13 +326,15 @@ class ContourClassifier:
             help="Path to directory containing images for datasets labeled by label file",
         )
         score = subparser.add_parser(
-            "score", help="Print a accuracy score based on saved training file"
+            "score",
+            help="Print a accuracy score based on saved training file",
         )
         score.set_defaults(cmd="score")
         args = parser.parse_args(params)
         if args.cmd == "extract":
             features, classes = self.extract_labels(
-                labelfile=args.label_file, image_dir=args.image_dir
+                labelfile=args.label_file,
+                image_dir=args.image_dir,
             )
             self.save_csv(features, classes, training_file=args.training_file)
         if args.cmd == "score":
