@@ -15,14 +15,14 @@ scipy==1.10.0
 scikit-learn==1.1.1
 
 # Computer Vision
-Pillow==9.3.0
+Pillow==10.2.0
 
 # File Handling
 PyYAML==6.0
 urdf-parser-py==0.0.4
 
 # Internet
-aiohttp==3.8.5
+aiohttp==3.9.2
 aiohttp-xmlrpc==1.5.0
 
 # Documentation

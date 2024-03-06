@@ -16,8 +16,7 @@ desc_list = None
 class_list = np.array(0)
 
 # loop through the training images
-count = 0
-for i in os.listdir(os.path.abspath(folder)):
+for count, i in enumerate(os.listdir(os.path.abspath(folder))):
     # get the roi from the file
     path = folder + "/" + i
     roi_str = f.readline()
@@ -72,7 +71,6 @@ for i in os.listdir(os.path.abspath(folder)):
     class_temp = np.empty(len_myinvhog / 9)
     class_temp.fill(-1)
     class_list = np.append(class_list, class_temp)
-    count += 1
 
 # hack
 class_list = np.delete(class_list, [0])

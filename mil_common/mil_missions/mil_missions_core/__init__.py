@@ -4,6 +4,7 @@ to be used with a mission server is :class:`~.BaseMission`, which can be inherit
 from to create robot-specific mission tasks. These mission classes can be imported
 by the mission runner and then run.
 """
+
 from .base_mission import BaseMission
 from .chain_with_timeout import MakeChainWithTimeout
 from .exceptions import (

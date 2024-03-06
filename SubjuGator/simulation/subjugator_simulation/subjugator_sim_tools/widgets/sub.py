@@ -83,7 +83,6 @@ class Sub:
         )
 
         class ThrustGetter:
-
             """This is a pretty garbage thing, and will be replaced by the scenegraph system"""
 
             def __init__(self, thruster_name, rdir):

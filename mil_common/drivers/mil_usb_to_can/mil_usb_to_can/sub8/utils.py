@@ -114,13 +114,11 @@ class Packet:
 
     @overload
     @classmethod
-    def _unpack_payload(cls, data: Literal[b""]) -> None:
-        ...
+    def _unpack_payload(cls, data: Literal[b""]) -> None: ...
 
     @overload
     @classmethod
-    def _unpack_payload(cls, data: bytes) -> bytes:
-        ...
+    def _unpack_payload(cls, data: bytes) -> bytes: ...
 
     @classmethod
     def _unpack_payload(cls, data: bytes) -> bytes | None:
@@ -455,13 +453,11 @@ class CommandPacket(Packet):
 
     @overload
     @classmethod
-    def from_bytes(cls, data: Literal[b""]) -> None:
-        ...
+    def from_bytes(cls, data: Literal[b""]) -> None: ...
 
     @overload
     @classmethod
-    def from_bytes(cls: type[T], data: bytes) -> T:
-        ...
+    def from_bytes(cls: type[T], data: bytes) -> T: ...
 
     @classmethod
     def from_bytes(cls: type[T], data: bytes) -> T | None:
