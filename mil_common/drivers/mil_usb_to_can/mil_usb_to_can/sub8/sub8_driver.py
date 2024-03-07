@@ -5,10 +5,12 @@ from typing import TYPE_CHECKING, Any, Dict, Generator, Optional, Tuple
 import rospy
 from serial import SerialException
 
-from mil_usb_to_can.board import (
-    USBtoCANBoard,  # relative import causes import error with rosrun - GH-731
+from mil_usb_to_can.sub8.board import (
+    USBtoCANBoard,
 )
-from mil_usb_to_can.utils import USB2CANException
+
+# relative import causes import error with rosrun - GH-731
+from mil_usb_to_can.sub8.utils import USB2CANException
 
 if TYPE_CHECKING:
     from .device import CANDeviceHandle
@@ -83,9 +85,7 @@ class USBtoCANDriver:
             self.handles[packet.device].on_data(packet.data)
         else:
             rospy.logwarn(
-                "Message received for device {}, but no handle registered".format(
-                    packet.device,
-                ),
+                f"Message received for device {packet.device}, but no handle registered",
             )
         return True
 

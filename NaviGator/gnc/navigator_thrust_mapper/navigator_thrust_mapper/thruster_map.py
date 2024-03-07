@@ -166,15 +166,11 @@ class ThrusterMap:
             if find != -1 and find + len(transmission_suffix) == len(transmission.name):
                 if len(transmission.joints) != 1:
                     raise Exception(
-                        "Transmission {} does not have 1 joint".format(
-                            transmission.name,
-                        ),
+                        f"Transmission {transmission.name} does not have 1 joint",
                     )
                 if len(transmission.actuators) != 1:
                     raise Exception(
-                        "Transmission {} does not have 1 actuator".format(
-                            transmission.name,
-                        ),
+                        f"Transmission {transmission.name} does not have 1 actuator",
                     )
 
                 t_ratio = transmission.actuators[0].mechanicalReduction
@@ -195,9 +191,7 @@ class ThrusterMap:
                         joint = t_joint
                 if joint is None:
                     rospy.logerr(
-                        "Transmission joint {} not found".format(
-                            transmission.joints[0].name,
-                        ),
+                        f"Transmission joint {transmission.joints[0].name} not found",
                     )
                 try:
                     trans = buff.lookup_transform(
@@ -217,9 +211,7 @@ class ThrusterMap:
                 joints.append(joint.name)
                 if limit != -1 and joint.limit.effort != limit:
                     raise Exception(
-                        "Thruster {} had a different limit, cannot proceed".format(
-                            joint.name,
-                        ),
+                        f"Thruster {joint.name} had a different limit, cannot proceed",
                     )
                 limit = joint.limit.effort
         limit_tuple = (limit, -limit)

@@ -31,19 +31,20 @@ jobs:
       - name: Configure catkin workspace folder structure
         run: |
           mkdir -p $GITHUB_WORKSPACE/catkin_ws/src
+          sudo apt reinstall python3-pip
       - name: Check out code from GitHub
         uses: actions/checkout@v3.0.2
         with:
           submodules: recursive
           path: catkin_ws/src/mil
       - name: Setup ROS Noetic
-        uses: ros-tooling/setup-ros@v0.3
+        uses: ros-tooling/setup-ros@v0.7
         with:
           required-ros-distributions: noetic
       - name: Install pip dependencies
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          pip install -r requirements.txt
+          pip3 install -r requirements.txt
       # We want to run a full test suite in CI - this includes the BlueView
       # tests!
       - name: Install BlueView Sonar SDK
@@ -120,7 +121,7 @@ jobs:
       # We need to install rsync for GitHub Pages deploy action
       - name: Install rsync
         run: |
-          sudo apt-get upgrade && sudo apt-get update && sudo apt-get install -y rsync
+          sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y rsync
 
       # Publish the artifact to the GitHub Pages branch
       - name: Push docs to GitHub Pages

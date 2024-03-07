@@ -5,7 +5,7 @@ import rospy
 from rospy_tutorials.srv import AddTwoInts, AddTwoIntsRequest
 
 
-class AdderDeviceTest(unittest.TestCase):
+class AdderDeviceTestSub9(unittest.TestCase):
     """
     Integration test for CAN2USB board driver. Talks
     to a simulated CAN device which should add two integers
@@ -33,8 +33,8 @@ class AdderDeviceTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    rospy.init_node("adder_device_test", anonymous=True)
+    rospy.init_node("adder_device_test_sub9", anonymous=True)
     import rostest
 
-    rostest.rosrun("mil_usb_to_can", "adder_device_test", AdderDeviceTest)
+    rostest.rosrun("mil_usb_to_can", "adder_device_test_sub9", AdderDeviceTestSub9)
     unittest.main()

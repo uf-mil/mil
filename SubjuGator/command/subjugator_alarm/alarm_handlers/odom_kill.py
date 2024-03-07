@@ -101,9 +101,7 @@ class OdomKill(HandlerBase):
         if jump > self.MAX_JUMP:
             rospy.logerr("ODOM DISCONTINUITY DETECTED")
             self.ab.raise_alarm(
-                problem_description="ODOM DISCONTINUITY DETECTED JUMPED {} METERS".format(
-                    jump,
-                ),
+                problem_description=f"ODOM DISCONTINUITY DETECTED JUMPED {jump} METERS",
                 severity=5,
             )
             self.odom_discontinuity = True
@@ -120,9 +118,7 @@ class OdomKill(HandlerBase):
         if odom_loss:
             rospy.logerr_throttle(
                 1,
-                "LOST ODOM FOR {} SECONDS".format(
-                    (rospy.Time.now() - self.last_time).to_sec(),
-                ),
+                f"LOST ODOM FOR {(rospy.Time.now() - self.last_time).to_sec()} SECONDS",
             )
             self.ab.raise_alarm(
                 problem_description="LOST ODOM FOR {} SECONDS".format(

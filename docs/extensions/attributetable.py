@@ -2,6 +2,7 @@
 Credit goes to discord.py and its creators for creating most of this file:
 https://github.com/Rapptz/discord.py/blob/master/docs/extensions/attributetable.py
 """
+
 import importlib
 import inspect
 import re
@@ -340,7 +341,7 @@ def process_cppattributetable(app, doctree: Node, fromdocname):
                     ],
                 )
 
-            elif all([c in node.attributes["classes"] for c in ["cpp", "function"]]):
+            elif all(c in node.attributes["classes"] for c in ["cpp", "function"]):
                 # Get the signature line of the function, where its name is stored
                 try:
                     descriptions = [

@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from mil_usb_to_can import SimulatedCANDevice
+from mil_usb_to_can.sub8 import SimulatedCANDevice
 
 from .packets import SEND_ID, CommandMessage, FeedbackMessage
 

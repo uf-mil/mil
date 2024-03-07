@@ -61,12 +61,12 @@ class ConstantVelocity(NaviGatorMission):
         if not isinstance(parsed, list) or len(parsed) != 3:
             raise err
         for i in range(3):
-            if not (isinstance(parsed[i], int) or isinstance(parsed[i], float)):
+            if not (isinstance(parsed[i], (int, float))):
                 raise err
         return parsed
 
     async def run(self, args):
-        # Publish a velocity of zero for a while to stabalize navigator
+        # Publish a velocity of zero for a while to stabilize navigator
         self.send_feedback("Switching trajectory to constant")
         await self.change_trajectory("constant")
         await self.nh.sleep(0.1)

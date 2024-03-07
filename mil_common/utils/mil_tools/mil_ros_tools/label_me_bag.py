@@ -53,13 +53,13 @@ class BagConfig:
         self.topics = config["topics"]
         if not isinstance(self.topics, list):
             self.topics = [self.topics]
-        self.start = config["start"] if "start" in config else None
-        self.stop = config["stop"] if "stop" in config else None
-        self.freq = config["freq"] if "freq" in config else None
+        self.start = config.get("start")
+        self.stop = config.get("stop")
+        self.freq = config.get("freq")
         self.name = (
             config["name"] if "name" in config else self.default_name(self.filename)
         )
-        self.outfile = config["outfile"] if "outfile" in config else self.filename
+        self.outfile = config.get("outfile", self.filename)
 
 
 class BagToLabelMe:
@@ -263,10 +263,7 @@ class BagToLabelMe:
             total_img_count += i
         if total_img_count == 0:
             print(
-                "{}/{} TOTAL images labeled (0%)".format(
-                    total_xml_count,
-                    total_img_count,
-                ),
+                f"{total_xml_count}/{total_img_count} TOTAL images labeled (0%)",
             )
         else:
             print(

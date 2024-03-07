@@ -559,10 +559,7 @@ class RobotXClient:
         """
         if not self.connected:
             rospy.loginfo(
-                "Attempting Connection to TD Server at {}:{}".format(
-                    self.tcp_ip,
-                    self.tcp_port,
-                ),
+                f"Attempting Connection to TD Server at {self.tcp_ip}:{self.tcp_port}",
             )
         while not self.connected and not rospy.is_shutdown():
             # recreate socket

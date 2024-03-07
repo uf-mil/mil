@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import rospy
-from mil_usb_to_can import CANDeviceHandle
+from mil_usb_to_can.sub8 import CANDeviceHandle
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from ros_alarms_msgs.msg import Alarm
 from rospy.timer import TimerEvent
@@ -26,7 +26,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Initialize thruster mapping from params
-        self.thrusters = make_thruster_dictionary(
+        self.thrusters, self.name_to_id = make_thruster_dictionary(
             rospy.get_param("/thruster_layout/thrusters"),
         )
         # Tracks last hw-kill alarm update
@@ -93,7 +93,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         Update the classes' hw-kill alarm to the latest update.
 
         Args:
-            alarm (:class:`~ros_alarms.msg._Alarm.Alarm`): The alarm message to update with.
+            alarm (:class:`~ros_alarms_msgs.msg._Alarm.Alarm`): The alarm message to update with.
         """
         self._last_hw_kill = alarm
 
@@ -109,16 +109,14 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             # If we don't have a mapping for this thruster, ignore it
             if cmd.name not in self.thrusters:
                 rospy.logwarn(
-                    "Command received for {}, but this is not a thruster.".format(
-                        cmd.name,
-                    ),
+                    f"Command received for {cmd.name}, but this is not a thruster.",
                 )
                 continue
             # Map commanded thrust (in newetons) to effort value (-1 to 1)
             effort = self.thrusters[cmd.name].effort_from_thrust(cmd.thrust)
             # Send packet to command specified thruster the specified force
             packet = ThrustPacket.create_thrust_packet(
-                ThrustPacket.ID_MAPPING[cmd.name],
+                self.name_to_id[cmd.name],
                 effort,
             )
             self.send_data(bytes(packet), can_id=THRUST_SEND_ID)

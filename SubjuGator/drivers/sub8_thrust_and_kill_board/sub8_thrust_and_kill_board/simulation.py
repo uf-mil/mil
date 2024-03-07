@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import rospy
-from mil_usb_to_can import SimulatedCANDevice
+from mil_usb_to_can.sub8 import SimulatedCANDevice
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 
 from .packets import (
@@ -156,4 +156,4 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
             packet = HeartbeatMessage.from_bytes(data)
             self._last_heartbeat = rospy.Time.now()
         else:
-            assert False, "No recognized identifier"
+            raise Exception("No recognized identifier")

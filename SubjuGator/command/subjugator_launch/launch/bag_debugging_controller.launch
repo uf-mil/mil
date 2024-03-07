@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="prefix_name" default="controller_debug" />
+  <arg name="bag_name" default="$(find subjugator_controller)/debug_bags/$(arg prefix_name)" />
+  <node name="record" pkg="rosbag" type="record" args="-o $(arg bag_name) /adaptive_controller/pose_error /adaptive_controller/twist_error /adaptive_controller/adaptation /adaptive_controller/dist /adaptive_controller/drag /wrench /trajectory /odom /imu/data_raw /dvl/range">
+  </node>
+</launch>

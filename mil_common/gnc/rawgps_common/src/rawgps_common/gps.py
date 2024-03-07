@@ -354,8 +354,7 @@ class Ephemeris:
         assert abs(t_k) < week_length / 2
         if not (abs(t_k) < 6 * 60 * 60):
             print(
-                "ERROR: ephemeris predicting more than 6 hours from now (%f hours)"
-                % (t_k / 60 / 60,),
+                f"ERROR: ephemeris predicting more than 6 hours from now ({t_k / 60 / 60:f} hours)",
             )
         n = n_0 + self.Deltan
         M_k = self.M_0 + n * t_k
@@ -650,9 +649,7 @@ def generate_satellite_message(
     for i in range(2):
         dt = t - eph.t_oc
         assert abs(dt) < week_length / 2
-        deltat_SV_L1 = (
-            eph.a_f0 + eph.a_f1 * dt + eph.a_f2 * dt**2 + deltat_r - eph.T_GD
-        )
+        deltat_SV_L1 = eph.a_f0 + eph.a_f1 * dt + eph.a_f2 * dt**2 + deltat_r - eph.T_GD
         t = t_SV - deltat_SV_L1
         if i == 1:
             sat_pos, deltat_r, sat_vel = eph.predict(t)
@@ -692,14 +689,16 @@ def generate_satellite_message(
         time=-pseudo_range / c - deltat_SV_L1,
         T_iono=T_iono,
         T_tropo=T_tropo,
-        carrier_distance=carrier_cycles * c / L1_f0
-        if carrier_cycles is not None
-        else nan,
+        carrier_distance=(
+            carrier_cycles * c / L1_f0 if carrier_cycles is not None else nan
+        ),
         doppler_velocity=doppler_freq * c / L1_f0,
         direction_enu=Vector3(*direction_enu),
-        velocity_plus_drift=doppler_freq * c / L1_f0 + direction.dot(sat_vel)
-        if doppler_freq is not None
-        else nan,
+        velocity_plus_drift=(
+            doppler_freq * c / L1_f0 + direction.dot(sat_vel)
+            if doppler_freq is not None
+            else nan
+        ),
     )
 
 

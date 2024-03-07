@@ -28,10 +28,7 @@ class Kill(HandlerBase):
             rospy.loginfo(f"KILL BAG WRITTEN TO {result.filename}")
         else:
             rospy.logwarn(
-                "KILL BAG {}, status: {}".format(
-                    TerminalState.to_string(status),
-                    result.status,
-                ),
+                f"KILL BAG {TerminalState.to_string(status)}, status: {result.status}",
             )
 
     def _kill_task_cb(self, status, result):
@@ -39,10 +36,7 @@ class Kill(HandlerBase):
             rospy.loginfo("Killed task success!")
             return
         rospy.logwarn(
-            "Killed task failed ({}): {}".format(
-                TerminalState.to_string(status),
-                result.result,
-            ),
+            f"Killed task failed ({TerminalState.to_string(status)}): {result.result}",
         )
 
     def raised(self, alarm):
@@ -54,7 +48,7 @@ class Kill(HandlerBase):
             rospy.logwarn("BAG_ALWAYS or BAG_KILL not set. Not making kill bag.")
         else:
             goal = BagOnlineGoal(bag_name="kill.bag")
-            goal.topics = os.environ["BAG_ALWAYS"] + " " + os.environ["bag_kill"]
+            goal.topics = os.environ["BAG_ALWAYS"] + " " + os.environ["BAG_KILL"]
             self.bag_client.send_goal(goal, done_cb=self._online_bagger_cb)
         self.task_client.run_mission("Killed", done_cb=self._kill_task_cb)
 

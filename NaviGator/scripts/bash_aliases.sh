@@ -18,7 +18,7 @@ nthrust() {
 	topic="/$1_motor/cmd"
 	publishers=$(rostopic info "$topic" | grep Publishers)
 	if [ "$publishers" != "Publishers: None" ]; then
-		echo "Somone is already publishing to $topic. Perhaps you need to kill thrust mapper?"
+		echo "Someone is already publishing to $topic. Perhaps you need to kill thrust mapper?"
 		return 1
 	fi
 	rostopic pub "$topic" "roboteq_msgs/Command" "setpoint: $2" -r100
