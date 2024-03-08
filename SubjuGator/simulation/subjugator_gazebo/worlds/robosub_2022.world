@@ -493,11 +493,11 @@
       <pose>6.25993 -4.43932 0 0 -0 0</pose>
     </model>
     <state world_name='default'>
-      <sim_time>5 340000000</sim_time>
-      <real_time>5 955675253</real_time>
-      <wall_time>1682019349 33741613</wall_time>
-      <iterations>534</iterations>
-      <model name='Untitled'>
+      <sim_time>0</sim_time>
+      <real_time>0</real_time>
+      <wall_time>0</wall_time>
+      <iterations>0</iterations>
+      <model name='bootlegger_buoy'>
         <pose>7.48885 -3.34226 -1.0014 1.58931 -0.036528 -2.34951</pose>
         <scale>1 1 1</scale>
         <model name='Bootlegger_Buoy'>
@@ -602,10 +602,10 @@
         </link>
       </model>
       <model name='transdec'>
-        <pose>0.054801 -0.077178 0.5 0 -0 0</pose>
+        <pose>0 0 0.5 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='ground'>
-          <pose>0.054801 -0.077178 0.5 0 -0 0</pose>
+          <pose>0 0 0.5 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -632,10 +632,10 @@
         </link>
       </model>
       <model name='water'>
-        <pose>-255.682 -259.605 0 3.14159 9.3e-05 3.14159</pose>
+        <pose>0.194567 0.198111 0 3.14159 9.3e-05 3.14159</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>-255.682 -259.605 0 3.14159 9.3e-05 3.14159</pose>
+          <pose>0.194567 0.198111 0 3.14159 9.3e-05 3.14159</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -662,7 +662,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>-4.3222 8.70844 1.70461 -0 0.219017 -0.728864</pose>
+        <pose>-6.58452 -11.5807 1.70121 -0 0.2418 0.923352</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
@@ -835,7 +835,7 @@
       </link>
       <pose>-0.957126 1.98002 0 0 -0 0</pose>
     </model>
-    <model name='Untitled'>
+    <model name='buoys_2'>
       <model name='Bootlegger_Buoy'>
         <static>1</static>
         <link name='base_link'>
