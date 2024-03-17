@@ -102,6 +102,15 @@ startxbox() {
 	roslaunch navigator_launch shore.launch
 }
 
+# catkin_make for one specific package only
+RED='\033[0;31m'
+cmonly() {
+	cd ~/catkin_ws || exit
+	catkin_make --only-pkg-with-deps $1
+	cd - >/dev/null || exit
+	echo "${RED}!! Warning: Future calls to catkin_make will just build the '$1' package. To revert this, ensure you run 'cm' or 'cd ~/catkin_ws && catkin_make -DCATKIN_WHITELIST_PACKAGES=\"\"' when you want to recompile the entire repository."
+}
+
 alias xbox=startxbox
 
 # PYTHONPATH modifications

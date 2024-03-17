@@ -69,7 +69,7 @@ private:
     }
     catch (const std::exception &exc)
     {
-      ROS_ERROR("error on write: %s; dropping", exc.what());
+      ROS_ERROR_THROTTLE(5, "error on write: %s; dropping", exc.what());
     }
   }
 
@@ -82,7 +82,7 @@ private:
     }
     catch (const std::exception &exc)
     {
-      ROS_ERROR("error on read: %s; reopening", exc.what());
+      ROS_ERROR_THROTTLE(5, "error on read: %s; reopening", exc.what());
       open();
       return false;
     }
@@ -98,7 +98,7 @@ private:
     }
     catch (const std::exception &exc)
     {
-      ROS_ERROR("error on open(%s): %s; reopening after delay", port.c_str(), exc.what());
+      ROS_ERROR_THROTTLE(5, "error on open(%s): %s; reopening after delay", port.c_str(), exc.what());
       boost::this_thread::sleep(boost::posix_time::seconds(1));
     }
   }
