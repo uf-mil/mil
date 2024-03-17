@@ -51,6 +51,14 @@ press_anykey = [
         "confirm": False,
     },
 ]
+press_anykey_menu_return = [
+    {
+        "type": "confirm",
+        "name": "continue",
+        "message": "Press any key to return to the menu.",
+        "confirm": False,
+    },
+]
 
 incomplete_continue = [
     {
@@ -76,16 +84,37 @@ topic_desc = """
 Welcome to the Topic Monitoring screen. This screen allows you to monitor the topics in the ROS system. In a ROS (Robot Operating System) environment, topics serve as channels through which nodes communicate by publishing and subscribing to messages. Monitoring topics enables you to verify that sensors are actively publishing their data.
 """
 
-# -----  Hardware Screen  -----#
-hardware_desc = """
-Welcome to the [bold]Hardware Inspection Checklist[/] page of our preflight app! This checklist is designed to ensure that all critical hardware components of your robot are thoroughly inspected before each operation. By completing this checklist, you contribute to the safety and reliability of the robot during its mission. Please carefully examine each item listed below to verify its condition and functionality.
-"""
-hardwareChecklist = [
+nodeChecklist = [
     {
         "type": "checkbox",
-        "message": "Hardware Checklist:",
+        "message": "Node Checklist:",
+        "name": "NodeChecklist: \nPlease check that all of the following are in working order.",
+        "choices": [{"name": item} for item in tests.nodes],
+    },
+]
+
+topicChecklist = [
+    {
+        "type": "checkbox",
+        "message": "Topic Checklist:",
+        "name": "TopicChecklist: \nPlease check that all of the following are in working order.",
+        "choices": [{"name": item} for item in tests.topics],
+    },
+]
+
+# -----  Setup Screen  -----#
+setup_desc = """
+Welcome to the [bold]Setup Checklist[/] page of our preflight app! This checklist is designed to ensure that all critical hardware components of your robot are thoroughly inspected before each operation. By completing this checklist, you contribute to the safety and reliability of the robot during its mission. Please carefully examine each item listed below to verify its condition and functionality.
+
+Go through each item and check it off. Use the arrow keys to select and item and press space to check it off. Once all items have been checked press enter to continue. You can always review what items you checked off later in the report section of the main menu.
+
+"""
+setupChecklist = [
+    {
+        "type": "checkbox",
+        "message": "Setup Checklist:",
         "name": "HardwareTests: \nPlease check that all of the following are in working order.",
-        "choices": [{"name": item} for item in tests.hardware],
+        "choices": [{"name": item} for item in tests.setup],
     },
 ]
 
@@ -100,4 +129,24 @@ safety_check = """
 
 actuator_check = """
 Did the actuator work?
+"""
+
+actuator_failed = """
+Actuator failed!
+"""
+
+actuatorChecklist = [
+    {
+        "type": "checkbox",
+        "message": "Actuator Checklist:",
+        "name": "ActuatorTests: \nPlease check that all of the following are in working order.",
+        "choices": [{"name": item[0]} for item in tests.actuatorsList],
+    },
+]
+
+# -----  Specific Test Screen  -----#
+specific_desc = """
+Welcome to the [bold]Specific Test[/] page of our preflight app! Here you can specify which tests you want to run. This can be useful for debugging parts of the robot.
+You can use the arrow keys to select which tests you want to run (use the spacebar to select). Once you are ready you can press enter to run those tests!
+
 """
