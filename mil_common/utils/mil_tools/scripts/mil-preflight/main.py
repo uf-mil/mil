@@ -10,6 +10,7 @@
 import asyncio
 import subprocess
 import time
+from contextlib import suppress
 from pathlib import Path
 
 import menus
@@ -18,7 +19,7 @@ import menus
 import rospy
 import rostopic
 import tests
-from axros import NodeHandle, Subscriber
+from axros import NodeHandle
 from PyInquirer import prompt
 from rich.console import Console
 from rich.markdown import Markdown
@@ -30,7 +31,6 @@ from rich.table import Table
 
 
 report = []
-nh = NodeHandle.from_argv("Preflight_nh", "", anonymous=True)
 
 
 #                             -----  Main Routine -----                           #
@@ -111,7 +111,8 @@ async def fullTest():
         return
 
     # Initialize the ROS node
-    rospy.init_node("preflight")
+    with suppress(Exception):
+        rospy.init_node("preflight")
 
     # Print Node Screen description
     Console().print(menus.node_desc)
@@ -119,9 +120,10 @@ async def fullTest():
     # Check Nodes
 
     # Setup AXROS
+    nh = NodeHandle.from_argv("Preflight_nh", "", anonymous=True)
     async with nh:
         answers = []
-        tasks = [check_node(node, answers) for node in tests.nodes]
+        tasks = [check_node(node, answers, nh) for node in tests.nodes]
         for task in track(
             asyncio.as_completed(tasks),
             description="Checking Nodes...",
@@ -130,7 +132,7 @@ async def fullTest():
             await task
 
     # Clear the screen, print and save the response to the report
-    # print_results(answers, "Node Liveliness")
+    print_results(answers, "Node Liveliness")
 
     # Prompt the user to continue to next test
     menu_ans = prompt(menus.continue_question)
@@ -143,10 +145,18 @@ async def fullTest():
     Console().print(menus.topic_desc)
 
     # Check Topics
-    answers = []
-    for topic in track(tests.topics, description="Checking Topics..."):
-        # Check for messages on the topics
-        await check_topic(topic, answers)
+
+    # Setup AXROS
+    nh = NodeHandle.from_argv("Preflight_nh", "", anonymous=True)
+    async with nh:
+        answers = []
+        tasks = [check_topic(node, answers, nh) for node in tests.topics]
+        for task in track(
+            asyncio.as_completed(tasks),
+            description="Checking Topics...",
+            total=len(tasks),
+        ):
+            await task
 
     # Clear the screen, print and save the response to the report
     print_results(answers, "Topic Liveliness")
@@ -188,7 +198,8 @@ async def specificTest():
         return
 
     # Initialize the ROS node
-    rospy.init_node("preflight")
+    with suppress(Exception):
+        rospy.init_node("preflight")
 
     # Clear the screen and display the node checklist
     clear_screen()
@@ -205,10 +216,16 @@ async def specificTest():
     Console().print(menus.node_desc)
 
     # Check Nodes
-    answers = []
-    for node in track(nodes, description="Checking Nodes..."):
-        # Try and ping the nodes
-        await check_node(node, answers)
+    nh = NodeHandle.from_argv("Preflight_nh", "", anonymous=True)
+    async with nh:
+        answers = []
+        tasks = [check_node(node, answers, nh) for node in nodes]
+        for task in track(
+            asyncio.as_completed(tasks),
+            description="Checking Nodes...",
+            total=len(tasks),
+        ):
+            await task
 
     # Clear the screen, print and save the response to the report
     print_results(answers, "Node Liveliness")
@@ -235,10 +252,16 @@ async def specificTest():
     Console().print(menus.topic_desc)
 
     # Check Topics
-    answers = []
-    for topic in track(topics, description="Checking Topics..."):
-        # Check for messages on the topics
-        await check_topic(topic, answers)
+    nh = NodeHandle.from_argv("Preflight_nh", "", anonymous=True)
+    async with nh:
+        answers = []
+        tasks = [check_topic(node, answers, nh) for node in topics]
+        for task in track(
+            asyncio.as_completed(tasks),
+            description="Checking Topics...",
+            total=len(tasks),
+        ):
+            await task
 
     # Clear the screen, print and save the response to the report
     print_results(answers, "Topic Liveliness")
@@ -337,25 +360,23 @@ def clear_screen():
     Console().print(menus.title)
 
 
-async def check_node(node, results):
+async def check_node(node, results, nh):
     try:
-        print(node)
-        print(nh.lookup_node(node))
-        results.append((node, bool(nh.lookup_node(node))))
+        results.append((node, bool(await nh.lookup_node(node))))
     except Exception:
         results.append((node, False))
 
 
-async def check_topic(topic, results):
-    try:
-        topicType, topicStr, _ = rostopic.get_topic_class(topic)  # get topic class
-        sub = Subscriber(nh, topicStr, topicType)
+async def check_topic(topic, results, nh):
+    topicType, topicStr, _ = rostopic.get_topic_class(topic)  # get topic class
+    sub = nh.subscribe(topicStr, topicType)
 
-        async with sub:
+    async with sub:
+        try:
             await asyncio.wait_for(sub.get_next_message(), tests.topic_timeout)
-        results.append((topic, True))
-    except Exception:
-        results.append((topic, False))
+            results.append((topic, True))
+        except Exception:
+            results.append((topic, False))
 
 
 def check_actuator(actuator, results):

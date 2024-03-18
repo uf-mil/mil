@@ -72,7 +72,7 @@ nodes = [
     "/odom_estimator",
     "/odom_estimator",
     "/odom_estimator",
-    "/odom_estimator",
+    "/doest_exist",
 ]
 
 # -----    Topics   -----#
