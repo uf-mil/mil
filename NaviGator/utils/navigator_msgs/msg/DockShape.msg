@@ -1,19 +1,15 @@
 string Shape
-string CROSS=CROSS
-string TRIANGLE=TRIANGLE
-string CIRCLE =CIRCLE
-
+string CROSS==CROSS
+string TRIANGLE==TRIANGLE
+string CIRCLE==CIRCLE
 string Color
-string RED=RED
-string BLUE=BLUE
-string GREEN=GREEN
-
+string RED==RED
+string BLUE==BLUE
+string GREEN==GREEN
 uint32 CenterX
 uint32 CenterY
-
 uint16 img_width
-Header header
+std_msgs/Header header
 geometry_msgs/Point[] points
-
 float32 color_confidence
 float32 shape_confidence
