@@ -7,7 +7,9 @@ import cv2
 import genpy
 import mil_tools
 import numpy as np
-import rospy
+import rclpy
+import rclpy.duration
+import rclpy.timer
 import tf.transformations as trns
 from dynamic_reconfigure.client import Client
 from dynamic_reconfigure.server import Server
@@ -15,7 +17,10 @@ from mil_misc_tools.text_effects import fprint as _fprint
 from nav_msgs.msg import OccupancyGrid, Odometry
 from navigator_msg_multiplexer.cfg import OgridConfig
 from navigator_path_planner import params
+from rcl_interfaces.msg import ParameterDescriptor
 from std_srvs.srv import Trigger
+
+logger = rclpy.logging.get_logger("ogrid_arbiter")
 
 
 # Wow what a concept
@@ -155,7 +160,7 @@ class OGrid:
     nav_ogrid: Optional[OccupancyGrid]
     np_map: Optional[np.ndarray]
     replace: bool
-    subscriber: rospy.Subscriber
+    subscriber: rclpy.Subscriber
 
     def __init__(self, topic: str, replace: bool = False, frame_id: str = "enu"):
         # Assert that the topic is valid
@@ -164,11 +169,11 @@ class OGrid:
         self.nav_ogrid = None  # Last received OccupancyGrid message
         self.np_map = None  # Numpy version of last received OccupancyGrid message
         self.replace = replace
-        self.subscriber = rospy.Subscriber(
-            topic,
+        self.subscriber = rclpy.create_subscription(
             OccupancyGrid,
+            topic,
             self.subscriber_callback,
-            queue_size=1,
+            1,
         )
 
     @property
@@ -182,7 +187,7 @@ class OGrid:
         """
         if self.last_message_stamp is None:
             return 0
-        return (rospy.Time.now() - self.last_message_stamp).to_sec()
+        return (rclpy.Time.now() - self.last_message_stamp).to_sec()
 
     def subscriber_callback(self, ogrid: OccupancyGrid):
         """
@@ -228,14 +233,14 @@ class OGridServer:
         self.origin = mil_tools.numpy_quat_pair_to_pose(position, quaternion)
         self.global_ogrid = self.create_grid((map_size, map_size))
 
-        rospy.Subscriber("/odom", Odometry, self.set_odom)
-        self.publisher = rospy.Publisher("/ogrid_master", OccupancyGrid, queue_size=1)
+        node.create_subscription(Odometry, "/odom", self.set_odom)
+        self.publisher = node.create_publisher(OccupancyGrid, "/ogrid_master", 1)
 
         self.ogrid_server = Server(OgridConfig, self.dynamic_config_callback)
         self.dynam_client = Client("bounds_server", config_callback=self.bounds_cb)
 
-        rospy.Service("~center_ogrid", Trigger, self.center_ogrid)
-        rospy.Timer(rospy.Duration(1.0 / rate), self.publish)
+        node.create_service(Trigger, "~center_ogrid", self.center_ogrid)
+        node.create_timer(1.0 / rate, self.publish)
 
     def set_odom(self, msg: Odometry) -> np.ndarray:
         """
@@ -290,7 +295,7 @@ class OGridServer:
             config: dict - The update changes from dynamic
             reconfigure to be handled.
         """
-        rospy.loginfo("BOUNDS UPDATED")
+        logger.info("BOUNDS UPDATED")
 
         self.enu_bounds = [
             [config["x1"], config["y1"], 1],
@@ -375,7 +380,7 @@ class OGridServer:
             to generate in the ogrid.
         """
         ogrid = OccupancyGrid()
-        ogrid.header.stamp = rospy.Time.now()
+        ogrid.header.stamp = rclpy.Time.now()
         ogrid.header.frame_id = self.frame_id
 
         ogrid.info.resolution = self.resolution
@@ -392,10 +397,10 @@ class OGridServer:
     def publish(self, timer_event):
         """
         Publishes the final ogrid to the ROS topic. Called by
-        a rospy.Timer set to a specific rate.
+        a rclpy.Timer set to a specific rate.
 
         Args:
-            timer_event: The TimerEvent sent by the rospy Timer
+            timer_event: The TimerEvent sent by the rclpy Timer
             upon each call by the timer.
         """
         global_ogrid = deepcopy(self.global_ogrid)
@@ -565,6 +570,20 @@ class OGridServer:
 
 
 if __name__ == "__main__":
-    rospy.init_node("ogrid_server", anonymous=False)
+    rclpy.init()
+    node = rclpy.create_node("ogrid_server")
+
+    ### Parameters
+    topics_descriptor = ParameterDescriptor(
+        type="string",
+        description="A comma delimited list of topics to subscribe to for ogrid updates.",
+    )
+    node.declare_parameter(
+        "topics",
+        "ogrid, mission_ogrid, draw_ogrid",
+        topics_descriptor,
+    )
+
+    ### Finalizing server
     og_server = OGridServer()
-    rospy.spin()
+    rclpy.spin(node)
