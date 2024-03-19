@@ -8,6 +8,8 @@ import genpy
 import mil_tools
 import numpy as np
 import rclpy
+import rclpy.duration
+import rclpy.timer
 import tf.transformations as trns
 from dynamic_reconfigure.client import Client
 from dynamic_reconfigure.server import Server
@@ -15,6 +17,7 @@ from mil_misc_tools.text_effects import fprint as _fprint
 from nav_msgs.msg import OccupancyGrid, Odometry
 from navigator_msg_multiplexer.cfg import OgridConfig
 from navigator_path_planner import params
+from rcl_interfaces.msg import ParameterDescriptor
 from std_srvs.srv import Trigger
 
 logger = rclpy.logging.get_logger("ogrid_arbiter")
@@ -237,7 +240,7 @@ class OGridServer:
         self.dynam_client = Client("bounds_server", config_callback=self.bounds_cb)
 
         node.create_service(Trigger, "~center_ogrid", self.center_ogrid)
-        rclpy.Timer(rclpy.Duration(1.0 / rate), self.publish)
+        node.create_timer(1.0 / rate, self.publish)
 
     def set_odom(self, msg: Odometry) -> np.ndarray:
         """
@@ -569,5 +572,18 @@ class OGridServer:
 if __name__ == "__main__":
     rclpy.init()
     node = rclpy.create_node("ogrid_server")
+
+    ### Parameters
+    topics_descriptor = ParameterDescriptor(
+        type="string",
+        description="A comma delimited list of topics to subscribe to for ogrid updates.",
+    )
+    node.declare_parameter(
+        "topics",
+        "ogrid, mission_ogrid, draw_ogrid",
+        topics_descriptor,
+    )
+
+    ### Finalizing server
     og_server = OGridServer()
-    rclpy.spin()
+    rclpy.spin(node)
