@@ -65,13 +65,6 @@ repos:
         #                  mil_common/perception/mil_mlp/ldp/labelbox2pascal/.*|
         #                  mil_common/gnc/odometry_utils/nodelet.xml
         #                )$
-  - repo: https://github.com/tier4/pre-commit-hooks-ros
-    rev: v0.8.0
-    hooks:
-      - id: prettier-xacro
-      - id: prettier-launch-xml
-      - id: prettier-package-xml
-      - id: sort-package-xml
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
