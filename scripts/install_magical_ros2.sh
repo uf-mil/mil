@@ -16,7 +16,6 @@ cmonly ros_introspection
 cmonly roscompile
 cmonly magical_ros2_conversion_tool
 cd ~/catkin_ws/src/mil || exit
-rm -rf roscompile
 
 python3 -m pip install ruamel.yaml
 
