@@ -3,7 +3,7 @@ from mil_misc_tools import text_effects
 from ros_alarms import TxAlarmBroadcaster
 
 # Import missions here
-from .start_gate_2022 import StartGate2022
+from .start_gate_2024 import StartGate2024
 from .sub_singleton import SubjuGatorMission
 from .surface import Surface
 
@@ -31,7 +31,7 @@ class Autonomous2022(SubjuGatorMission):
         try:
             # Run start gate mission
             fprint("Running start gate mission", msg_color="green")
-            await self.run_mission(StartGate2022(), 400)
+            await self.run_mission(StartGate2024(), 400)
 
             # Run mission to follow orange marker
             fprint("Following orange marker", msg_color="green")
