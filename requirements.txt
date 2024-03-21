@@ -35,7 +35,7 @@ sphinx-copybutton==0.5.0
 pyserial==3.5
 
 # Linting
-black==22.1.0
+black==24.3.0
 modernize==0.8.0 # This can be removed after Noetic Migration is complete.
 
 # Testing
