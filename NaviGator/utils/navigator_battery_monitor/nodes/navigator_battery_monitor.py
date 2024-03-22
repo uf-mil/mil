@@ -6,8 +6,10 @@ averaging the supply voltage to each of the four thrusters.
 """
 
 
+import sys
+
 import message_filters
-import rospy
+import rclpy
 from roboteq_msgs.msg import Feedback, Status
 from ros_alarms import AlarmListener
 from ros_alarms_msgs.msg import Alarm
@@ -49,7 +51,7 @@ class BatteryMonitor:
         self._hw_kill_listener.wait_for_server()
 
         # The publisher for the averaged voltage
-        self.pub_voltage = rospy.Publisher("/battery_monitor", Float32, queue_size=1)
+        self.pub_voltage = node.create_publisher(Float32, "/battery_monitor", 1)
 
         # Subscribes to the feedback from each of the four thrusters
         motor_topics = ["/FL_motor", "/FR_motor", "/BL_motor", "/BR_motor"]
@@ -117,7 +119,8 @@ class BatteryMonitor:
 
 
 if __name__ == "__main__":
-    rospy.init_node("battery_monitor")
+    rclpy.init(args=sys.argv)
+    node = rclpy.create_node("battery_monitor")
     monitor = BatteryMonitor()
-    rospy.Timer(rospy.Duration(1), monitor.publish_voltage, oneshot=False)
-    rospy.spin()
+    node.create_timer(1.0, monitor.publish_voltage)
+    rclpy.spin()
