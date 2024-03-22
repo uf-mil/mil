@@ -8,29 +8,6 @@ import math
 class HydrothermalVent(SubjuGatorMission):
     async def run(self, args):
         self.buoy_pos = np.array([3, 2, 4])  # Convert buoy position to numpy array
-        # pitch_angle = np.arctan(self.buoy_pos[2]/self.buoy_pos[1])
-        # yaw_angle = np.arctan(self.buoy_pos[2]/self.buoy_pos[0])
-        # self.send_feedback(f"Rotating towards Buoy with yaw {math.degrees(yaw_angle)} and pitch {math.degrees(pitch_angle)}")
-
-        # rotate = self.move().set_roll_pitch_yaw(0, pitch_angle, yaw_angle)
-        # await self.go(rotate)            
-
-        # # does this actually go forward relative to orientation
-        # self.send_feedback(f"Traveling forward to buoy")
-        # await self.go(
-        #     self.move()
-        #         .forward(self.buoy_pos[2] - 2) # don't reach the buoy, remain 2 units away
-        # )
-
-
-        # self.send_feedback(f"Undoing pitch")
-        # rotate = self.move().set_roll_pitch_yaw(0, -pitch_angle, 0)
-        # await self.go(rotate)
-
-        # # rotate 90 degrees:
-        # self.send_feedback(f"Rotating 90 degrees")
-        # rotate = self.move().set_roll_pitch_yaw(0, 0, np.radians(90))
-        # await self.go(rotate)
 
         # First, move down the necessary depth to reach the buoy
 
