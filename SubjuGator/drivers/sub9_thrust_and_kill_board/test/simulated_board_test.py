@@ -56,12 +56,12 @@ class SimulatedBoardTest(unittest.TestCase):
         )
         # KillSetPacket
         kill_set_packet = KillSetPacket(True, KillStatus.BATTERY_LOW)
-        self.assertEqual(bytes(kill_set_packet), b"7\x01\x02\x03\x02\x00\x01\x00\x08%")
+        self.assertEqual(bytes(kill_set_packet), b"7\x01\x02\x03\x02\x00\x01\x04\x0c)")
         # KillReceivePacket
         kill_receive_packet = KillReceivePacket(True, KillStatus.BATTERY_LOW)
         self.assertEqual(
             bytes(kill_receive_packet),
-            b"7\x01\x02\x04\x02\x00\x01\x00\t*",
+            b"7\x01\x02\x04\x02\x00\x01\x04\r.",
         )
 
 
