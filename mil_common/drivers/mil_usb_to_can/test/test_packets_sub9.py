@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+import struct
 import unittest
 from dataclasses import dataclass
 
@@ -52,12 +53,16 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(TypeError):
             packet > packet_two
 
+    def _pack_checksum(self, byte_string: bytes) -> int:
+        checksum = Packet._calculate_checksum(byte_string)
+        return int.from_bytes(struct.pack("<BB", *checksum), byteorder="big")
+
     def test_checksum(self):
-        self.assertEqual(Packet._calculate_checksum(b"abcde"), 0xF0C8)
-        self.assertEqual(Packet._calculate_checksum(b"abcdefgh"), 0x2706)
+        self.assertEqual(self._pack_checksum(b"abcde"), 0xF0C8)
+        self.assertEqual(self._pack_checksum(b"abcdefgh"), 0x2706)
         self.assertEqual(
-            Packet._calculate_checksum(b"abcdeabcdeabcdeabcdeabcde"),
-            0xBAF4,
+            self._pack_checksum(b"abcdeabcdeabcdeabcdeabcde"),
+            0xB4FA,
         )
 
 
