@@ -18,7 +18,7 @@ class ActuatorPacketId(IntEnum):
 
 
 @dataclass
-class ActuatorSetPacket(Packet, msg_id=0x03, subclass_id=0x00, payload_format="BB"):
+class ActuatorSetPacket(Packet, msg_id=0x03, subclass_id=0x00, payload_format="<BB"):
     """
     Packet used by the actuator board to set a specific valve.
 
