@@ -16,7 +16,7 @@ class TestPacket(Packet, msg_id=0x47, subclass_id=0x44, payload_format="?Hd"):
 
 class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
     """
-    Tests basic application packt functionality.
+    Tests basic application packet functionality.
     """
 
     def test_simple_packet(self):
@@ -51,6 +51,14 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
             packet < packet_two
         with self.assertRaises(TypeError):
             packet > packet_two
+
+    def test_checksum(self):
+        self.assertEqual(Packet._calculate_checksum(b"abcde"), 0xF0C8)
+        self.assertEqual(Packet._calculate_checksum(b"abcdefgh"), 0x2706)
+        self.assertEqual(
+            Packet._calculate_checksum(b"abcdeabcdeabcdeabcdeabcde"),
+            0xBAF4,
+        )
 
 
 if __name__ == "__main__":

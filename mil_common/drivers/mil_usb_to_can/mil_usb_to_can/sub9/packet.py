@@ -6,8 +6,8 @@ from enum import Enum
 from functools import lru_cache
 from typing import ClassVar, get_type_hints
 
-SYNC_CHAR_1 = ord("3")
-SYNC_CHAR_2 = ord("7")
+SYNC_CHAR_1 = 0x37
+SYNC_CHAR_2 = 0x01
 
 _packet_registry: dict[int, dict[int, type[Packet]]] = {}
 
