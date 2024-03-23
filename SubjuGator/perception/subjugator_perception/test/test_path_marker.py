@@ -17,7 +17,6 @@ PKG = "subjugator_perception"
 
 
 class TestPathMarker(unittest.TestCase):
-
     """
     Unit test for perception service finding orange path markers
     Plays several bags with known pixel coordinates of path marker,

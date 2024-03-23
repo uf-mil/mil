@@ -100,6 +100,11 @@ ActuatorBoardSimulation
 .. autoclass:: sub_actuator_board.ActuatorBoardSimulation
     :members:
 
+ActuatorPacketId
+^^^^^^^^^^^^^^^^
+.. autoclass:: sub_actuator_board.ActuatorPacketId
+    :members:
+
 ActuatorSetPacket
 ^^^^^^^^^^^^^^^^^
 .. attributetable:: sub_actuator_board.ActuatorSetPacket

@@ -101,10 +101,7 @@ class Kill(HandlerBase):
             rospy.loginfo(f"KILL BAG WRITTEN TO {result.filename}")
         else:
             rospy.logwarn(
-                "KILL BAG {}, status: {}".format(
-                    TerminalState.to_string(status),
-                    result.status,
-                ),
+                f"KILL BAG {TerminalState.to_string(status)}, status: {result.status}",
             )
 
     def bagger_dump(self):

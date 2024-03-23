@@ -31,3 +31,4 @@ by MIL. These subsystems relate to a variety of processes.
     poi
     pneumatic
     sabertooth
+    bagging

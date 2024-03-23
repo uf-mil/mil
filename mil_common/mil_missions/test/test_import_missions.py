@@ -21,10 +21,7 @@ class MissionsImportTest(unittest.TestCase):
 
         if not hasattr(mission_module, self.base_class):
             self.fail(
-                msg="{} doesn't have base mission {}".format(
-                    self.module,
-                    self.base_class,
-                ),
+                msg=f"{self.module} doesn't have base mission {self.base_class}",
             )
         base_mission = getattr(mission_module, self.base_class)
 

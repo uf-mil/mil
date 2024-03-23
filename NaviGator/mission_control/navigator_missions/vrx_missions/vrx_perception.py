@@ -79,11 +79,7 @@ class VrxPerception(Vrx):
                     )
                 elif objects[key] != new_objects[key]:
                     self.send_feedback(
-                        "{} changed from {} to {}".format(
-                            key,
-                            objects[key],
-                            new_objects[key],
-                        ),
+                        f"{key} changed from {objects[key]} to {new_objects[key]}",
                     )
                     await self.announce_object(
                         key,

@@ -7,6 +7,7 @@
     <param name="/is_vrx" type="bool" value="True" />
 
     <include file="$(find navigator_launch)/launch/gnc/thruster_mapper.launch"/>
+    <include file="$(find navigator_launch)/launch/vrx/vrx_classifier.launch" />
     <include file="$(find navigator_launch)/launch/vrx/vrx_tf.launch" />
     <include file="$(find navigator_launch)/launch/vrx/vrx_localization.launch" />
     <include file="$(find navigator_launch)/launch/vrx/vrx_upload_urdf.launch" />
@@ -30,5 +31,4 @@
 
     <node if="$(arg run_task)" name="run_vrx_task" pkg="mil_missions" type="mission_client"
           args="run Vrx" output="screen" />
-    <include file="$(find navigator_launch)/launch/vrx/vrx_classifier.launch" />
 </launch>

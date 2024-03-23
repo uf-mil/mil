@@ -31,8 +31,9 @@ class SimulatedUSBtoCANStream(SimulatedSerial):
 
     def __init__(
         self,
-        devices: list[tuple[type[SimulatedCANDeviceHandle], list[type[Packet]]]]
-        | None = None,
+        devices: (
+            list[tuple[type[SimulatedCANDeviceHandle], list[type[Packet]]]] | None
+        ) = None,
     ):
         """
         Args:
@@ -214,16 +215,14 @@ class USBtoCANDriver:
         self,
         *,
         simulated: Literal[True],
-    ) -> list[tuple[type[SimulatedCANDeviceHandle], list[type[Packet]]]]:
-        ...
+    ) -> list[tuple[type[SimulatedCANDeviceHandle], list[type[Packet]]]]: ...
 
     @overload
     def read_devices(
         self,
         *,
         simulated: Literal[False],
-    ) -> list[tuple[type[CANDeviceHandle], list[type[Packet]]]]:
-        ...
+    ) -> list[tuple[type[CANDeviceHandle], list[type[Packet]]]]: ...
 
     def read_devices(
         self,

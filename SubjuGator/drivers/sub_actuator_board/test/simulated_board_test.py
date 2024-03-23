@@ -28,11 +28,11 @@ class SimulatedBoardTest(unittest.TestCase):
         self.assertFalse(self.get_srv(GetValveRequest(0)).opened)
         self.assertTrue(self.set_srv(SetValveRequest(0, False)).success)
         self.assertFalse(self.get_srv(GetValveRequest(0)).opened)
-        self.assertTrue(self.set_srv(SetValveRequest(3, True)).success)
-        self.assertTrue(self.get_srv(GetValveRequest(3)).opened)
+        self.assertTrue(self.set_srv(SetValveRequest(1, True)).success)
+        self.assertTrue(self.get_srv(GetValveRequest(1)).opened)
         self.assertFalse(self.get_srv(GetValveRequest(0)).opened)
-        self.assertTrue(self.set_srv(SetValveRequest(4, False)).success)
-        self.assertFalse(self.get_srv(GetValveRequest(4)).opened)
+        self.assertTrue(self.set_srv(SetValveRequest(2, False)).success)
+        self.assertFalse(self.get_srv(GetValveRequest(2)).opened)
         self.assertFalse(self.get_srv(GetValveRequest(0)).opened)
 
 

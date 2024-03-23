@@ -20,7 +20,7 @@ jobs:
 
       # Wait for the CI to finish so we can download the docs artifact
       - name: Wait for CI
-        uses: lewagon/wait-on-check-action@v1.0.0
+        uses: lewagon/wait-on-check-action@v1.3.3
         if: github.event.action != 'closed'
         with:
           ref: ${{ github.event.pull_request.head.ref }}
