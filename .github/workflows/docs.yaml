@@ -70,8 +70,8 @@ jobs:
           username: mil
           server: mil.ufl.edu
           port: 266
-          local_path: ${{ github.workspace }}/pr-docs/${{ github.event.number }}/*
-          remote_path: htdocs/pr-docs/${{ github.event.number }}
+          local_path: '${{ github.workspace }}/pr-docs/${{ github.event.number }}/*'
+          remote_path: 'htdocs/pr-docs/${{ github.event.number }}'
           password: ${{ secrets.MIL_UFL_SFTP_PASS }}
           sftpArgs: '-o ConnectTimeout=5'
 
