@@ -70,7 +70,7 @@ jobs:
           user: ${{ secrets.MIL_UFL_SFTP_USER }}
           host: mil.ufl.edu
           port: ${{ secrets.MIL_UFL_SFTP_PORT }}
-          localDir: './pr-docs/${{ github.event.number }}/*'
+          localDir: '${{ github.workspace }}/pr-docs/${{ github.event.number }}/*'
           remoteDir: '/home/users/mil/htdocs/pr-docs/${{ github.event.number }}'
           pass: ${{ secrets.MIL_UFL_SFTP_PASS }}
           options: '--verbose'
