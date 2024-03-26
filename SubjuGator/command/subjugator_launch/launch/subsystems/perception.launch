@@ -20,6 +20,8 @@
     </node>
   </group>-->
 
+  <node pkg="subjugator_perception" type="orange_pill_detection.py" name="orange_pill_detection" />
+
   <!-- TODO: Create weights file for sub-->
   <arg name="weights" default="" />
   <arg name="image_topic" default="/camera/front/left/image_raw" />
