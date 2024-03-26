@@ -188,6 +188,13 @@ HeartbeatReceivePacket
 .. autoclass:: sub9_thrust_and_kill_board.HeartbeatReceivePacket
     :members:
 
+ThrusterId
+^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.ThrusterId
+
+.. autoclass:: sub9_thrust_and_kill_board.ThrusterId
+    :members:
+
 ThrustSetPacket
 ^^^^^^^^^^^^^^^
 .. attributetable:: sub9_thrust_and_kill_board.ThrustSetPacket

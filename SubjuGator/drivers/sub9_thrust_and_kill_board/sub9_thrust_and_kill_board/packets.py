@@ -18,38 +18,41 @@ class HeartbeatReceivePacket(Packet, msg_id=0x02, subclass_id=0x01, payload_form
     """
 
 
+class ThrusterId(IntEnum):
+    """
+    Enum to represent the thruster ID.
+    """
+
+    #: Front left horizontal thruster.
+    FLH = 0
+    #: Front right horizontal thruster.
+    FRH = 1
+    #: Front left vertical thruster.
+    FLV = 2
+    #: Front right vertical thruster.
+    FRV = 3
+    #: Back left horizontal thruster.
+    BLH = 4
+    #: Back right horizontal thruster.
+    BRH = 5
+    #: Back left vertical thruster.
+    BLV = 6
+    #: Back right vertical thruster.
+    BRV = 7
+
+
 @dataclass
-class ThrustSetPacket(Packet, msg_id=0x02, subclass_id=0x02, payload_format="=Bf"):
+class ThrustSetPacket(Packet, msg_id=0x02, subclass_id=0x02, payload_format="<Bf"):
     """
     Packet to set the speed of a specific thruster.
 
     Attributes:
-        thruster_id (int): The ID of the thruster to set the speed of. The ID of
+        thruster_id (ThrusterId): The ID of the thruster to set the speed of. The ID of
             the thruster corresponds to a specific thruster:
-
-            +--------+------+
-            |  name  |  id  |
-            +========+======+
-            |  FLH   |  0   |
-            +--------+------+
-            |  FRH   |  1   |
-            +--------+------+
-            |  FLV   |  2   |
-            +--------+------+
-            |  FRV   |  3   |
-            +--------+------+
-            |  BLH   |  4   |
-            +--------+------+
-            |  BRH   |  5   |
-            +--------+------+
-            |  BLV   |  6   |
-            +--------+------+
-            |  BRV   |  7   |
-            +--------+------+
         speed (float): The speed to set the thruster to.
     """
 
-    thruster_id: int
+    thruster_id: ThrusterId
     speed: float
 
 
@@ -71,7 +74,7 @@ class KillStatus(IntEnum):
 
 
 @dataclass
-class KillSetPacket(Packet, msg_id=0x02, subclass_id=0x03, payload_format="=BB"):
+class KillSetPacket(Packet, msg_id=0x02, subclass_id=0x03, payload_format="<BB"):
     """
     Packet sent by the motherboard to set/unset the kill.
 
@@ -85,7 +88,7 @@ class KillSetPacket(Packet, msg_id=0x02, subclass_id=0x03, payload_format="=BB")
 
 
 @dataclass
-class KillReceivePacket(Packet, msg_id=0x02, subclass_id=0x04, payload_format="=BB"):
+class KillReceivePacket(Packet, msg_id=0x02, subclass_id=0x04, payload_format="<BB"):
     """
     Packet sent by the motherboard to set/unset the kill.
 
