@@ -21,7 +21,7 @@ private:
   {
     tf::Transform transform;
     poseMsgToTF(msg->pose.pose, transform);
-    if (_last_tf_stamps.count(msg->header.frame_id) && _last_tf_stamps[msg->header.frame_id] <= msg->header.stamp)
+    if (_last_tf_stamps.count(msg->header.frame_id) && _last_tf_stamps[msg->header.frame_id] == msg->header.stamp)
     {
       return;
     }

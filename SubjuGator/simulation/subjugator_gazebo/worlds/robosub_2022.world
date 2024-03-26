@@ -295,112 +295,6 @@
     <gravity>0 0 -9.8</gravity>
     <atmosphere type='adiabatic'/>
     <wind/>
-    <model name='posters_0'>
-      <static>1</static>
-      <link name='base_link'>
-        <pose>0 0 0 0 -0 0</pose>
-        <inertial>
-          <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
-          <mass>8.45052</mass>
-          <inertia>
-            <ixx>0.978466</ixx>
-            <ixy>0.0388385</ixy>
-            <ixz>0.0020155</ixz>
-            <iyy>0.239042</iyy>
-            <iyz>-0.0222223</iyz>
-            <izz>1.21612</izz>
-          </inertia>
-        </inertial>
-        <collision name='base_link_collision'>
-          <pose>0 0 0 0 -0 0</pose>
-          <geometry>
-            <mesh>
-              <scale>1 1 1</scale>
-              <uri>file://posters/base_link.dae</uri>
-            </mesh>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision>
-        <visual name='base_link_visual'>
-          <pose>0 0 0 0 -0 0</pose>
-          <geometry>
-            <mesh>
-              <scale>1 1 1</scale>
-              <uri>file://posters/base_link.dae</uri>
-            </mesh>
-          </geometry>
-        </visual>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <pose>1.89831 -3.10654 0 0 -0 0</pose>
-    </model>
-    <model name='posters_1'>
-      <static>1</static>
-      <link name='base_link'>
-        <pose>0 0 0 0 -0 0</pose>
-        <inertial>
-          <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
-          <mass>8.45052</mass>
-          <inertia>
-            <ixx>0.978466</ixx>
-            <ixy>0.0388385</ixy>
-            <ixz>0.0020155</ixz>
-            <iyy>0.239042</iyy>
-            <iyz>-0.0222223</iyz>
-            <izz>1.21612</izz>
-          </inertia>
-        </inertial>
-        <collision name='base_link_collision'>
-          <pose>0 0 0 0 -0 0</pose>
-          <geometry>
-            <mesh>
-              <scale>1 1 1</scale>
-              <uri>file://posters/base_link.dae</uri>
-            </mesh>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision>
-        <visual name='base_link_visual'>
-          <pose>0 0 0 0 -0 0</pose>
-          <geometry>
-            <mesh>
-              <scale>1 1 1</scale>
-              <uri>file://posters/base_link.dae</uri>
-            </mesh>
-          </geometry>
-        </visual>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <pose>2.81731 -3.85937 0 0 -0 0</pose>
-    </model>
     <model name='posters_2'>
       <static>1</static>
       <link name='base_link'>
@@ -601,8 +495,22 @@
     <state world_name='default'>
       <sim_time>0</sim_time>
       <real_time>0</real_time>
-      <wall_time>0 694175568</wall_time>
+      <wall_time>0</wall_time>
       <iterations>0</iterations>
+      <model name='bootlegger_buoy'>
+        <pose>7.48885 -3.34226 -1.0014 1.58931 -0.036528 -2.34951</pose>
+        <scale>1 1 1</scale>
+        <model name='Bootlegger_Buoy'>
+          <pose>7.48884 -3.34226 -1.0014 1.58931 -0.036528 -2.34951</pose>
+          <scale>1 1 1</scale>
+          <link name='base_link'>
+            <pose>7.48884 -3.34226 -1.0014 1.58931 -0.036528 -2.34951</pose>
+            <velocity>0 0 0 0 -0 0</velocity>
+            <acceleration>0 0 0 0 -0 0</acceleration>
+            <wrench>0 0 0 0 -0 0</wrench>
+          </link>
+        </model>
+      </model>
       <model name='octogon'>
         <pose>22.9712 -1.43185 0 0 -0 1.5708</pose>
         <scale>1 1 1</scale>
@@ -643,26 +551,6 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='posters_0'>
-        <pose>8.31009 -2.03187 -1.21848 0 -0 0.785</pose>
-        <scale>1 1 1</scale>
-        <link name='base_link'>
-          <pose>8.31009 -2.03187 -1.21848 0 -0 0.785</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='posters_1'>
-        <pose>7.74867 -2.53671 -1.24482 0 -0 0.785</pose>
-        <scale>1 1 1</scale>
-        <link name='base_link'>
-          <pose>7.74867 -2.53671 -1.24482 0 -0 0.785</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
       <model name='posters_2'>
         <pose>14 2 -1.09014 0 0 -0.785</pose>
         <scale>1 1 1</scale>
@@ -688,6 +576,16 @@
         <scale>1 1 1</scale>
         <link name='base_link'>
           <pose>10.3678 -4.9986 -1.2595 0 -0 1.57</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='posters_5'>
+        <pose>6.92302 -3.94022 -1.0415 1.56526 -0.050617 -2.35626</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>6.92302 -3.94022 -1.0415 1.56526 -0.050617 -2.35626</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -936,6 +834,117 @@
         <kinematic>0</kinematic>
       </link>
       <pose>-0.957126 1.98002 0 0 -0 0</pose>
+    </model>
+    <model name='buoys_2'>
+      <model name='Bootlegger_Buoy'>
+        <static>1</static>
+        <link name='base_link'>
+          <pose>0 0 0 0 -0 0</pose>
+          <inertial>
+            <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
+            <mass>8.45052</mass>
+            <inertia>
+              <ixx>0.978466</ixx>
+              <ixy>0.0388385</ixy>
+              <ixz>0.0020155</ixz>
+              <iyy>0.239042</iyy>
+              <iyz>-0.0222223</iyz>
+              <izz>1.21612</izz>
+            </inertia>
+          </inertial>
+          <collision name='base_link_collision'>
+            <pose>0 0 0 0 -0 0</pose>
+            <geometry>
+              <mesh>
+                <scale>1 1 1</scale>
+                <uri>file://Bootlegger_Poster/Bootlegger_Buoy.dae</uri>
+              </mesh>
+            </geometry>
+            <max_contacts>10</max_contacts>
+            <surface>
+              <contact>
+                <ode/>
+              </contact>
+              <bounce/>
+              <friction>
+                <torsional>
+                  <ode/>
+                </torsional>
+                <ode/>
+              </friction>
+            </surface>
+          </collision>
+          <visual name='base_link_visual'>
+            <pose>0 0 0 0 -0 0</pose>
+            <geometry>
+              <mesh>
+                <scale>1 1 1</scale>
+                <uri>file://Bootlegger_Poster/Bootlegger_Buoy.dae</uri>
+              </mesh>
+            </geometry>
+          </visual>
+          <self_collide>0</self_collide>
+          <enable_wind>0</enable_wind>
+          <kinematic>0</kinematic>
+        </link>
+        <pose>2e-06 5e-06 0 0 -0 0</pose>
+      </model>
+      <static>0</static>
+      <allow_auto_disable>1</allow_auto_disable>
+      <pose>-4.24138 -4.56442 0 0 -0 0</pose>
+    </model>
+    <model name='posters_5'>
+      <static>1</static>
+      <link name='base_link'>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
+          <mass>8.45052</mass>
+          <inertia>
+            <ixx>0.978466</ixx>
+            <ixy>0.0388385</ixy>
+            <ixz>0.0020155</ixz>
+            <iyy>0.239042</iyy>
+            <iyz>-0.0222223</iyz>
+            <izz>1.21612</izz>
+          </inertia>
+        </inertial>
+        <collision name='base_link_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file://Gman_Poster/G-man_Buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='base_link_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file://Gman_Poster/G-man_Buoy.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-2.89545 -5.70392 0 0 -0 0</pose>
     </model>
   </world>
 </sdf>

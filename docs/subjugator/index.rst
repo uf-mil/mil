@@ -16,7 +16,7 @@ SubjuGator 8
     Enabling <enabling>
     Cameras <cameras>
     PID Controller <pid>
-    Nav Tube <nav_tube>
+	Navigation Tube <navtube>
     Watercooling <watercooling>
 
     electrical
@@ -28,5 +28,6 @@ RoboSub
 
     RoboSub <robosub>
 
+    Lessons from 2023 <lessons23>
     Lessons from 2022 <lessons22>
     Lessons from 2019 <lessons19>

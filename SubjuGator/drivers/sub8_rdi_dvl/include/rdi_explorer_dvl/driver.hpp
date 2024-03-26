@@ -48,7 +48,7 @@ private:
       }
       catch (const std::exception &exc)
       {
-        ROS_ERROR_THROTTLE(0.5, "DVL: error on read: %s; reopening serial port", exc.what());
+        ROS_ERROR_THROTTLE(5, "DVL: error on read: %s; reopening serial port", exc.what());
         open();
         return false;
       }
@@ -86,7 +86,7 @@ private:
     }
     catch (const std::exception &exc)
     {
-      ROS_ERROR("DVL: error on open(port=%s): %s; reopening after delay", port.c_str(), exc.what());
+      ROS_ERROR_THROTTLE(5, "DVL: error on open(port=%s): %s; reopening after delay", port.c_str(), exc.what());
       boost::this_thread::sleep(boost::posix_time::seconds(1));
     }
   }
@@ -268,7 +268,7 @@ public:
     }
     catch (const std::exception &exc)
     {
-      ROS_ERROR_THROTTLE(0.5, "DVL: error on write: %s; dropping heartbeat", exc.what());
+      ROS_ERROR_THROTTLE(5, "DVL: error on write: %s; dropping heartbeat", exc.what());
     }
   }
 
