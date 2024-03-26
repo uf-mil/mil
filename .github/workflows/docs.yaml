@@ -69,6 +69,7 @@ jobs:
         with:
           username: mil
           server: mil.ufl.edu
+          port: 266
           local_path: ${{ github.workspace }}/pr-docs/${{ github.event.number }}
           remote_path: htdocs/pr-docs/${{ github.event.number }}
           password: ${{ secrets.MIL_UFL_SFTP_PASS }}
@@ -113,11 +114,12 @@ jobs:
           echo "emptydir=$(mktemp -d)" >> $GITHUB_ENV
 
       - name: Prepare deletion folders
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         if: github.event.action == 'closed'
         with:
           username: mil
           server: mil.ufl.edu
+          port: 266
           local_path: ${{ env.emptydir }}
           remote_path: htdocs/pr-docs/${{ github.event.number }}
           password: ${{ secrets.MIL_UFL_SFTP_PASS }}

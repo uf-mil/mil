@@ -124,12 +124,13 @@ jobs:
           sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y rsync
 
       # Publish the artifact to the GitHub Pages branch
-      - name: Push docs to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Push docs to mil.ufl.edu
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         with:
-          token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
-          branch: main
-          repository-name: uf-mil/uf-mil.github.io
-          folder: ${{ github.workspace }}/build/docs
-          target-folder: docs
-          commit-message: Updating docs to ${{ github.sha }}
+          username: mil
+          server: mil.ufl.edu
+          port: 266
+          local_path: ${{ github.workspace }}/build/docs
+          remote_path: htdocs/docs
+          password: ${{ secrets.MIL_UFL_SFTP_PASS }}
+          sftpArgs: '-o ConnectTimeout=5'
