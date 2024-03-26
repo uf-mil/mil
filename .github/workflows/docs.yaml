@@ -64,16 +64,16 @@ jobs:
       ############################
       # Publish the artifact to the GitHub Pages branch
       - name: Upload to mil.ufl.edu
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+        uses: pressidium/lftp-mirror-action@v1
         if: github.event.action != 'closed'
         with:
-          username: mil
-          server: mil.ufl.edu
-          port: 266
-          local_path: './pr-docs/${{ github.event.number }}/*'
-          remote_path: 'htdocs/pr-docs/${{ github.event.number }}'
-          password: ${{ secrets.MIL_UFL_SFTP_PASS }}
-          sftpArgs: '-o ConnectTimeout=5'
+          user: ${{ secrets.MIL_UFL_SFTP_USER }}
+          host: mil.ufl.edu
+          port: ${{ secrets.MIL_UFL_SFTP_PORT }}
+          localDir: './pr-docs/${{ github.event.number }}/*'
+          remoteDir: '/home/users/mil/htdocs/pr-docs/${{ github.event.number }}'
+          pass: ${{ secrets.MIL_UFL_SFTP_PASS }}
+          options: '--verbose'
 
       # Create/update stickied comment
       - name: Update stickied comment
