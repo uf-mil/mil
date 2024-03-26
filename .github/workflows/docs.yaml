@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-20.04
+    runs-on: self-hosted
     steps:
       - name: Wait to let checks appear
         run: sleep 1m
@@ -59,19 +59,21 @@ jobs:
           mv docs-ci-html-${{ github.event.pull_request.head.sha }} ${{ github.event.number }}
           echo "datetime=$(TZ=America/New_York date '+%Y-%m-%d %H:%M %Z')" >> $GITHUB_ENV
 
+      ############################
+      # If commit was an update/refresh (not close)
+      ############################
       # Publish the artifact to the GitHub Pages branch
-      - name: Push preview to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Upload to mil.ufl.edu
+        uses: pressidium/lftp-mirror-action@v1
         if: github.event.action != 'closed'
         with:
-          token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
-          branch: main
-          git-config-name: uf-mil-bot
-          git-config-email: 108953868+uf-mil-bot@users.noreply.github.com
-          repository-name: uf-mil/uf-mil.github.io
-          folder: ${{ github.workspace }}/pr-docs/${{ github.event.number }}
-          target-folder: pr-docs/${{ github.event.number }}
-          commit-message: "Adding PR preview for PR ${{ github.event.number }}"
+          user: ${{ secrets.MIL_UFL_SFTP_USER }}
+          host: mil.ufl.edu
+          port: ${{ secrets.MIL_UFL_SFTP_PORT }}
+          localDir: '${{ github.workspace }}/pr-docs/${{ github.event.number }}/*'
+          remoteDir: '/home/users/mil/htdocs/pr-docs/${{ github.event.number }}'
+          pass: ${{ secrets.MIL_UFL_SFTP_PASS }}
+          options: '--verbose'
 
       # Create/update stickied comment
       - name: Update stickied comment
@@ -86,7 +88,7 @@ jobs:
 
 
             The **docs preview** for this PR is available at
-            https://uf-mil.github.io/pr-docs/${{ github.event.number }}.
+            https://mil.ufl.edu/pr-docs/${{ github.event.number }}.
 
 
             ```css
@@ -102,6 +104,9 @@ jobs:
 
             Have a great day! Go gators! 🐊
 
+      ############################
+      # If commit was closed
+      ############################
       # If the PR is closed, remove the files
       - name: Prepare empty folder
         if: github.event.action == 'closed'
@@ -109,17 +114,16 @@ jobs:
           echo "emptydir=$(mktemp -d)" >> $GITHUB_ENV
 
       - name: Prepare deletion folders
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         if: github.event.action == 'closed'
         with:
-          token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
-          branch: main
-          git-config-name: uf-mil-bot
-          git-config-email: 108953868+uf-mil-bot@users.noreply.github.com
-          repository-name: uf-mil/uf-mil.github.io
-          folder: ${{ env.emptydir }}
-          target-folder: pr-docs/${{ github.event.number }}
-          commit-message: Removing PR preview for PR ${{ github.event.number }}
+          username: mil
+          server: mil.ufl.edu
+          port: 266
+          local_path: ${{ env.emptydir }}/*
+          remote_path: htdocs/pr-docs/${{ github.event.number }}
+          password: ${{ secrets.MIL_UFL_SFTP_PASS }}
+          sftpArgs: '-o ConnectTimeout=5'
 
       # Create/update stickied comment
       - name: Update stickied comment
