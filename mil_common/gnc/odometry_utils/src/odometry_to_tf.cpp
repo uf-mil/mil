@@ -1,14 +1,13 @@
 #include <nav_msgs/Odometry.h>
+#include <tf2/LinearMath/Quaternion.h>
 #include <tf2/transform_datatypes.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_ros/transform_broadcaster.h>
 
 #include <map>
-#include <string>
-
-#include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/odometry.hpp>
-#include <tf2_ros/transform_broadcaster.h>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <rclcpp/rclcpp.hpp>
+#include <string>
 
 namespace odometry_utils
 {
@@ -49,11 +48,11 @@ public:
   virtual void onInit()
   {
     tf_br_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
-    odom_sub = this->create_subscription<nav_msgs::msg::Odometry>("odom", 10, std::bind(&OdometryToTf::handle_odom, this, std::placeholders::_1));
-
+    odom_sub = this->create_subscription<nav_msgs::msg::Odometry>(
+        "odom", 10, std::bind(&OdometryToTf::handle_odom, this, std::placeholders::_1));
   }
 };
 
-}
-#include <rclcpp_components/register_node_macro.hpp> // Include macro to register the component
-RCLCPP_COMPONENTS_REGISTER_NODE(odometry_utils::OdometryToTf) // Register the node as a component
+}  // namespace odometry_utils
+#include <rclcpp_components/register_node_macro.hpp>           // Include macro to register the component
+RCLCPP_COMPONENTS_REGISTER_NODE(odometry_utils::OdometryToTf)  // Register the node as a component
