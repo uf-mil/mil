@@ -63,9 +63,9 @@ jobs:
         run: |
           # Install sshpass
           sudo apt-get install sshpass
-          sshpass -p ${{ secrets.MIL_UFL_SFTP_PASS }} \
           # Upload contents of local folder to remote folder
-          sftp -P ${{ secrets.MIL_UFL_SFTP_PORT }} mil@mil.ufl.edu << EOF
+          sshpass -p ${{ secrets.MIL_UFL_SFTP_PASS }} \
+            sftp -P ${{ secrets.MIL_UFL_SFTP_PORT }} mil@mil.ufl.edu << EOF
           mkdir htdocs/pr-docs/${{ github.event.number }}
           cd htdocs/pr-docs/${{ github.event.number }}
           lcd ${{ github.workspace }}/pr-docs/${{ github.event.number }}
