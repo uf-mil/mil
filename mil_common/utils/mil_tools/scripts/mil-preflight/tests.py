@@ -5,10 +5,10 @@
 #                add tests you would add them here.
 ################################################################################
 
-
 #                  -----  Actuator Tests -----                  #
 # Add tests here for actuators. These will be turned on and the user
 # will confirm their operation. Also include any custom message
+
 # imports here.
 
 # Thruster Messages
@@ -20,6 +20,10 @@ topic_timeout = 5  # seconds
 actuator_timeout = 1.5  # seconds
 
 actuatorsList = [
+    ###  (
+    ###     "Name of Test",
+    ###     ("/topic", message),
+    ###  )
     (
         "FLH Thruster Test",
         ("/thrusters/thrust", [ThrusterCmd(name="FLH", thrust=10.0)]),
@@ -54,6 +58,7 @@ actuatorsList = [
     ),
 ]
 
+
 #                  -----  Setup Tests -----                  #
 # Add tests here for things that need to be physically inspected or check before the sub is running
 setup = [
@@ -68,11 +73,13 @@ setup = [
 
 # -----    Nodes    -----#
 nodes = [
+    # Navbox processing
     "/odom_estimator",
-    "/odom_estimator",
-    "/odom_estimator",
-    "/odom_estimator",
-    "/doest_exist",
+    "/transform_odometry",
+    "/c3_trajectory_generator",
+    "/adaptive_controller",
+    "/thruster_mapper",
+    "/mission_runner",
 ]
 
 # -----    Topics   -----#

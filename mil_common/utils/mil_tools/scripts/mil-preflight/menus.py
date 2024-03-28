@@ -12,11 +12,6 @@ title = """
 """
 info_page = """
 Welcome to the Preflight Program, a tool inspired by the preflight checklists used by pilots before flying a plane. This program is designed to verify the functionality of all software and hardware systems on your autonomous robot. It ensures that everything is in working order, allowing you to safely deploy your robot with confidence.\n
-[italic]Authors:[/italic]
-Keith Khadar
-Anthony Liao
-Joshua Thomas
-Maanas Kotha\n
 """
 
 
