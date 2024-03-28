@@ -89,6 +89,9 @@ alias fd="fdfind"
 # Gazebo aliases
 alias gazebogui="rosrun gazebo_ros gzclient __name:=gzclient"
 
+# Preflight aliases
+alias preflight='python3 $MIL_REPO/mil_common/utils/mil_tools/scripts/mil-preflight/main.py'
+
 # Process killing aliases
 alias killgazebo="killall -9 gzserver && killall -9 gzclient"
 alias killros='$MIL_REPO/scripts/kill_ros.sh'
