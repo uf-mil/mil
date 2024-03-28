@@ -47,11 +47,6 @@ jobs:
           commit: ${{ github.event.pull_request.head.sha }}
           path: ${{ github.workspace }}/pr-docs
 
-      # We need to install rsync for GitHub Pages deploy action
-      - name: Install rsync
-        run: |
-          sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y rsync
-
       - name: Move folders
         if: github.event.action != 'closed'
         run: |
@@ -63,17 +58,20 @@ jobs:
       # If commit was an update/refresh (not close)
       ############################
       # Publish the artifact to the GitHub Pages branch
-      - name: Upload to mil.ufl.edu
-        uses: pressidium/lftp-mirror-action@v1
+      - name: Upload docs to mil.ufl.edu
         if: github.event.action != 'closed'
-        with:
-          user: ${{ secrets.MIL_UFL_SFTP_USER }}
-          host: mil.ufl.edu
-          port: ${{ secrets.MIL_UFL_SFTP_PORT }}
-          localDir: '${{ github.workspace }}/pr-docs/${{ github.event.number }}/*'
-          remoteDir: '/home/users/mil/htdocs/pr-docs/${{ github.event.number }}'
-          pass: ${{ secrets.MIL_UFL_SFTP_PASS }}
-          options: '--verbose'
+        run: |
+          # Install sshpass
+          sudo apt-get install sshpass
+          sshpass -p ${{ secrets.MIL_UFL_SFTP_PASS }} \
+          # Upload contents of local folder to remote folder
+          sftp -P ${{ secrets.MIL_UFL_SFTP_PORT }} mil@mil.ufl.edu << EOF
+          mkdir htdocs/pr-docs/${{ github.event.number }}
+          cd htdocs/pr-docs/${{ github.event.number }}
+          lcd ${{ github.workspace }}/pr-docs/${{ github.event.number }}
+          put -r .
+          exit
+          EOF
 
       # Create/update stickied comment
       - name: Update stickied comment
