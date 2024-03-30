@@ -32,4 +32,3 @@ by MIL. These subsystems relate to a variety of processes.
     pneumatic
     sabertooth
     bagging
-    preflight
