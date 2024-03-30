@@ -11,6 +11,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import datetime
 import os
 import os.path
 import sys
@@ -88,6 +89,9 @@ autodoc_mock_imports = ["mayavi"]  # Package is very hard to install sometimes
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
+now = datetime.datetime.now().astimezone()
+# Sun, Jan 30th, 2024 11:59 PM (EST)
+html_last_updated_fmt = now.strftime("%a, %b %d, %Y %I:%M %p (%Z)")
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -102,7 +106,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "mil"
-copyright = "2019-2022, Machine Intelligence Lab"
+copyright = "2019-2024, Machine Intelligence Lab"
 author = "Machine Intelligence Lab"
 
 # The version info for the project you're documenting, acts as replacement for
