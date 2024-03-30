@@ -126,11 +126,15 @@ jobs:
       # Publish the artifact to the GitHub Pages branch
       - name: Push docs to mil.ufl.edu
         uses: wlixcc/SFTP-Deploy-Action@v1.2.4
-        with:
-          username: mil
-          server: mil.ufl.edu
-          port: 266
-          local_path: ${{ github.workspace }}/build/docs/*
-          remote_path: htdocs/docs
-          password: ${{ secrets.MIL_UFL_SFTP_PASS }}
-          sftpArgs: '-o ConnectTimeout=5'
+        run: |
+          # Install sshpass
+          sudo apt-get install sshpass
+          # Upload contents of local folder to remote folder
+          sshpass -p ${{ secrets.MIL_UFL_SFTP_PASS }} \
+            sftp -o StrictHostKeyChecking=no \
+            -P ${{ secrets.MIL_UFL_SFTP_PORT }} mil@mil.ufl.edu << EOF
+          cd htdocs/docs
+          lcd ${{ github.workspace }}/build/docs
+          put -r .
+          exit
+          EOF

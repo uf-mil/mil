@@ -107,22 +107,17 @@ jobs:
       # If commit was closed
       ############################
       # If the PR is closed, remove the files
-      - name: Prepare empty folder
+      - name: Delete pr-docs folder on mil.ufl.edu
         if: github.event.action == 'closed'
         run: |
-          echo "emptydir=$(mktemp -d)" >> $GITHUB_ENV
-
-      - name: Prepare deletion folders
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
-        if: github.event.action == 'closed'
-        with:
-          username: mil
-          server: mil.ufl.edu
-          port: 266
-          local_path: ${{ env.emptydir }}/*
-          remote_path: htdocs/pr-docs/${{ github.event.number }}
-          password: ${{ secrets.MIL_UFL_SFTP_PASS }}
-          sftpArgs: '-o ConnectTimeout=5'
+          # Install lftp
+          sudo apt-get install lftp
+          # Upload docs
+          lftp -u mil,${{ secrets.MIL_UFL_SFTP_PASS }} \
+            -p ${{ secrets.MIL_UFL_SFTP_PORT }} sftp://mil.ufl.edu << EOF
+          rm -r htdocs/pr-docs/${{ github.event.number }}
+          exit
+          EOF
 
       # Create/update stickied comment
       - name: Update stickied comment
