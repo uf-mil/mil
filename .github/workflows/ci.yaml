@@ -125,7 +125,6 @@ jobs:
 
       # Publish the artifact to the GitHub Pages branch
       - name: Push docs to mil.ufl.edu
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         run: |
           # Install sshpass
           sudo apt-get install sshpass
