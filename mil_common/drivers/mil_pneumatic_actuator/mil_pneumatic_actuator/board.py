@@ -43,7 +43,9 @@ class PnuematicActuatorDriverResponseError(PnuematicActuatorDriverError):
     """
 
     def __init__(self, received, expected):
-        message = f"Unexpected response. Expected {hex(received)}, received {hex(expected)}"
+        message = (
+            f"Unexpected response. Expected {hex(received)}, received {hex(expected)}"
+        )
         super().__init__(message)
 
 

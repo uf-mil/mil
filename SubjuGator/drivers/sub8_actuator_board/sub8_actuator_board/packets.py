@@ -73,7 +73,9 @@ class CommandMessage(ApplicationPacket):
         return cls(cls.IDENTIFIER, payload)
 
     def __str__(self):
-        return f"CommandMessage(address={self.address}, write={self.write}, on={self.on})"
+        return (
+            f"CommandMessage(address={self.address}, write={self.write}, on={self.on})"
+        )
 
 
 class InvalidAddressException(RuntimeError):

@@ -211,7 +211,9 @@ class VoltageWidget(QWidget):
         # Thresh is a box in the top right of the GUI that displays Threshold values and box layouts
         # self.labelThresh = QLabel(self)
         # self.labelThresh.setGeometry(QtCore.QRect((150+2*self.boxWidth), (10), self.boxWidth, self.boxHeight))
-        threshText = f"Low Threshold: {self.lowThreshold} \nCritical: {self.criticalThreshold}"
+        threshText = (
+            f"Low Threshold: {self.lowThreshold} \nCritical: {self.criticalThreshold}"
+        )
         self.labelThresh.setText(threshText)
         self.labelThresh.setStyleSheet(
             "QLabel { background-color : white; color : black; }",

@@ -113,7 +113,9 @@ class ThrusterChecker(TemplateChecker):
                 err_msg += f"more than one failed thruster: {lost_thrusters}"
                 self.fail_check(err_msg)
             elif self.found_thrusters.values().count(False) == 1:
-                err_msg += f"one thruster is out ({lost_thrusters}), things should still work."
+                err_msg += (
+                    f"one thruster is out ({lost_thrusters}), things should still work."
+                )
                 self.warn_check(err_msg)
             else:
                 self.warn_check("unknown timeout reason.")
