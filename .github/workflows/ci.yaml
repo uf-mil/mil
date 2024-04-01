@@ -100,7 +100,7 @@ jobs:
 
   deploy-docs:
     name: Deploy docs from master
-    runs-on: ubuntu-20.04
+    runs-on: self-hosted
     needs:
       - super-ci
     if: github.ref == 'refs/heads/master'
@@ -117,11 +117,6 @@ jobs:
         with:
           name: docs-ci-html-${{ github.sha }}
           path: ${{ github.workspace }}/build/docs
-
-      # We need to install rsync for GitHub Pages deploy action
-      - name: Install rsync
-        run: |
-          sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y rsync
 
       # Publish the artifact to the GitHub Pages branch
       - name: Push docs to mil.ufl.edu
