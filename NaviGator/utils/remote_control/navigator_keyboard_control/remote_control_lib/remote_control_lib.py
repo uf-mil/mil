@@ -150,10 +150,7 @@ class RemoteControl:
                 rospy.loginfo("Thrusters Deployed!")
             else:
                 rospy.logwarn(
-                    "Error deploying thrusters: {}, status: {}".format(
-                        TerminalState.to_string(terminal_state),
-                        result.status,
-                    ),
+                    f"Error deploying thrusters: {TerminalState.to_string(terminal_state)}, status: {result.status}",
                 )
 
         self.task_client.run_task("DeployThrusters", done_cb=cb)
@@ -169,10 +166,7 @@ class RemoteControl:
                 rospy.loginfo("Thrusters Retracted!")
             else:
                 rospy.logwarn(
-                    "Error rectracting thrusters: {}, status: {}".format(
-                        TerminalState.to_string(terminal_state),
-                        result.status,
-                    ),
+                    f"Error rectracting thrusters: {TerminalState.to_string(terminal_state)}, status: {result.status}",
                 )
 
         self.task_client.run_task("RetractThrusters", done_cb=cb)
@@ -222,11 +216,7 @@ class RemoteControl:
         Prints the feedback that is returned by the shooter load action client
         """
         rospy.loginfo(
-            "Shooter Load Status={} Success={} Error={}".format(
-                status,
-                result.success,
-                result.error,
-            ),
+            f"Shooter Load Status={status} Success={result.success} Error={result.error}",
         )
 
     @_timeout_check
@@ -245,11 +235,7 @@ class RemoteControl:
         Prints the feedback that is returned by the shooter fire action client
         """
         rospy.loginfo(
-            "Shooter Fire Status={} Success={} Error={}".format(
-                status,
-                result.success,
-                result.error,
-            ),
+            f"Shooter Fire Status={status} Success={result.success} Error={result.error}",
         )
 
     @_timeout_check

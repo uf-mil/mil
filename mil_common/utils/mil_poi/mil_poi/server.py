@@ -119,11 +119,7 @@ class POIServer:
             return ps_tf.point
         except tf2_ros.TransformException as e:
             rospy.logwarn(
-                'Error transforming "{}" to "{}": {}'.format(
-                    ps.header.frame_id,
-                    self.global_frame,
-                    e,
-                ),
+                f'Error transforming "{ps.header.frame_id}" to "{self.global_frame}": {e}',
             )
             return None
 

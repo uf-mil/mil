@@ -121,9 +121,7 @@ class OdomKill(HandlerBase):
                 f"LOST ODOM FOR {(rospy.Time.now() - self.last_time).to_sec()} SECONDS",
             )
             self.ab.raise_alarm(
-                problem_description="LOST ODOM FOR {} SECONDS".format(
-                    (rospy.Time.now() - self.last_time).to_sec(),
-                ),
+                problem_description=f"LOST ODOM FOR {(rospy.Time.now() - self.last_time).to_sec()} SECONDS",
                 severity=5,
             )
         return odom_loss or self.odom_discontinuity

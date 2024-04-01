@@ -75,10 +75,7 @@ class StartGate(SubjuGatorMission):
 
         distance_btwn_gate = distance.euclidean(gate_points[0], gate_points[1])
         fprint(
-            "Distance between poles: {} m = {} inch".format(
-                distance_btwn_gate,
-                distance_btwn_gate * 39.3701,
-            ),
+            f"Distance between poles: {distance_btwn_gate} m = {distance_btwn_gate * 39.3701} inch",
         )
 
         # Find midpoint between the two poles/objects

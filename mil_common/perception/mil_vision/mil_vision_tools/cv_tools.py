@@ -69,11 +69,8 @@ class Threshold:
                 self.conversion_code = getattr(cv2, f"COLOR_{in_space}2{thresh_space}")
             except AttributeError:
                 raise AttributeError(
-                    "Could not determine conversion code from params.\
-                                 Are [{}, {}] valid OpenCV colorspaces?".format(
-                        in_space,
-                        thresh_space,
-                    ),
+                    f"Could not determine conversion code from params.\
+                                 Are [{in_space}, {thresh_space}] valid OpenCV colorspaces?",
                 )
         else:
             self.conversion_code = conversion_code
@@ -110,9 +107,7 @@ class Threshold:
                 except AttributeError:
                     pass
             raise AttributeError(
-                "No valid colorspace found in dictionary. Are {} valid OpenCV colorspaces?".format(
-                    d.keys(),
-                ),
+                f"No valid colorspace found in dictionary. Are {d.keys()} valid OpenCV colorspaces?",
             )
         assert thresh_space in d, f"{thresh_space} color space not in dictionary"
         inner = d[thresh_space]
@@ -193,17 +188,8 @@ class Threshold:
 
     def __str__(self):
         if self.conversion_code is not None:
-            return "Threshold from {} to {} using conversion code {}".format(
-                self.low,
-                self.high,
-                self.conversion_code,
-            )
-        return "Threshold {} images in {} colorspace from {} to {}".format(
-            self.in_space,
-            self.thresh_space,
-            self.low,
-            self.high,
-        )
+            return f"Threshold from {self.low} to {self.high} using conversion code {self.conversion_code}"
+        return f"Threshold {self.in_space} images in {self.thresh_space} colorspace from {self.low} to {self.high}"
 
     def __repr__(self):
         return str((self.low, self.high, self.conversion_code))

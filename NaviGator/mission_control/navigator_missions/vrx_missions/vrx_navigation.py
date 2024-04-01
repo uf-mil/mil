@@ -111,10 +111,7 @@ class VrxNavigation(Vrx):
             filter_and_sort,
         )
         self.send_feedback(
-            "Going through gate of objects {} and {}".format(
-                left_obj.labeled_classification,
-                right_obj.labeled_classification,
-            ),
+            f"Going through gate of objects {left_obj.labeled_classification} and {right_obj.labeled_classification}",
         )
         gate = self.get_gate(left, right, p)
         await self.go_thru_gate(gate)
@@ -336,10 +333,7 @@ class VrxNavigation(Vrx):
         self.objects_passed.add(red.id)
         gate = self.get_gate(white_position, red_position, robot_position)
         self.send_feedback(
-            "Going through start gate formed by {} and {}".format(
-                white.labeled_classification,
-                red.labeled_classification,
-            ),
+            f"Going through start gate formed by {white.labeled_classification} and {red.labeled_classification}",
         )
         await self.go_thru_gate(gate, AFTER=-2)
 

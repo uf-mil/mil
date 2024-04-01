@@ -211,10 +211,7 @@ class VoltageWidget(QWidget):
         # Thresh is a box in the top right of the GUI that displays Threshold values and box layouts
         # self.labelThresh = QLabel(self)
         # self.labelThresh.setGeometry(QtCore.QRect((150+2*self.boxWidth), (10), self.boxWidth, self.boxHeight))
-        threshText = "Low Threshold: {} \nCritical: {}".format(
-            self.lowThreshold,
-            self.criticalThreshold,
-        )
+        threshText = f"Low Threshold: {self.lowThreshold} \nCritical: {self.criticalThreshold}"
         self.labelThresh.setText(threshText)
         self.labelThresh.setStyleSheet(
             "QLabel { background-color : white; color : black; }",
@@ -234,15 +231,9 @@ class VoltageWidget(QWidget):
             self.gotParams = False
 
         if self.gotParams:
-            threshText = "Low Threshold: {} \nCritical: {}".format(
-                self.lowThreshold,
-                self.criticalThreshold,
-            )
+            threshText = f"Low Threshold: {self.lowThreshold} \nCritical: {self.criticalThreshold}"
         else:
-            threshText = "THRESHOLDS NOT SET\nUSING DEFAULT\nLow Threshold: {} \nCritical: {}".format(
-                self.lowThreshold,
-                self.criticalThreshold,
-            )
+            threshText = f"THRESHOLDS NOT SET\nUSING DEFAULT\nLow Threshold: {self.lowThreshold} \nCritical: {self.criticalThreshold}"
         self.labelThresh.setText(threshText)
 
     def setColors(self, numMain: float) -> None:  # done
