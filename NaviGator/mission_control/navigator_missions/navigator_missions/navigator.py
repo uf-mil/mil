@@ -800,12 +800,7 @@ class MissionParam:
         value = await self.nh.get_param(self.param)
         if not self._valid(value):
             raise Exception(
-                "Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
-                    value,
-                    self.param,
-                    self.options,
-                    self.description,
-                ),
+                f"Value {value} is invalid for param {self.param}\nValid values: {self.options}\nDescription: {self.description}",
             )
         else:
             return value
@@ -816,12 +811,7 @@ class MissionParam:
     async def set(self, value):
         if not self._valid(value):
             raise Exception(
-                "Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
-                    value,
-                    self.param,
-                    self.options,
-                    self.description,
-                ),
+                f"Value {value} is invalid for param {self.param}\nValid values: {self.options}\nDescription: {self.description}",
             )
         await self.nh.set_param(self.param, value)
 

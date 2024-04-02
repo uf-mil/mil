@@ -144,11 +144,7 @@ class KillMessage(ApplicationPacket):
         return self.payload[2] == self.UNASSERTED
 
     def __str__(self):
-        return "KillMessage(command={}, hard={}, asserted={})".format(
-            self.is_command,
-            self.is_hard,
-            self.is_asserted,
-        )
+        return f"KillMessage(command={self.is_command}, hard={self.is_hard}, asserted={self.is_asserted})"
 
 
 KillStatus = namedtuple(

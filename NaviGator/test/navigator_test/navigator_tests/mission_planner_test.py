@@ -24,10 +24,7 @@ class MissionPlannerTest(TestUnit):
         if len(my_res) != len(self.results):
             passed = False
             fprint(
-                "EXPECTED RESULT {} DOES NOT MATCH ACTUAL RESULT {}. TEST FAILED".format(
-                    my_res,
-                    self.results,
-                ),
+                f"EXPECTED RESULT {my_res} DOES NOT MATCH ACTUAL RESULT {self.results}. TEST FAILED",
                 msg_color="red",
             )
             fprint("-----------\n\n\n\n", msg_color="red")
@@ -37,10 +34,7 @@ class MissionPlannerTest(TestUnit):
                 passed = False
         if not passed:
             fprint(
-                "EXPECTED RESULT {} DOES NOT MATCH ACTUAL RESULT {}. TEST FAILED".format(
-                    my_res,
-                    self.results,
-                ),
+                f"EXPECTED RESULT {my_res} DOES NOT MATCH ACTUAL RESULT {self.results}. TEST FAILED",
                 msg_color="red",
             )
             fprint("-----------\n\n\n\n", msg_color="red")

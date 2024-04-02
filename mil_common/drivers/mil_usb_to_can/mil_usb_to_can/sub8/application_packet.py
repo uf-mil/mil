@@ -116,11 +116,7 @@ class ApplicationPacket:
         return packet
 
     def __repr__(self):
-        return "{}(identifier={}, payload={})".format(
-            self.__class__.__name__,
-            self.identifier,
-            self.payload,
-        )
+        return f"{self.__class__.__name__}(identifier={self.identifier}, payload={self.payload})"
 
     def __eq__(self, other):
         if not isinstance(other, ApplicationPacket):

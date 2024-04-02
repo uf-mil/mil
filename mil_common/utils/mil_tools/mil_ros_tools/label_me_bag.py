@@ -267,11 +267,7 @@ class BagToLabelMe:
             )
         else:
             print(
-                "{}/{} TOTAL images labeled ({:.1%})".format(
-                    total_xml_count,
-                    total_img_count,
-                    total_xml_count / total_img_count,
-                ),
+                f"{total_xml_count}/{total_img_count} TOTAL images labeled ({total_xml_count / total_img_count:.1%})",
             )
 
     def _completion_bag(self, bag):

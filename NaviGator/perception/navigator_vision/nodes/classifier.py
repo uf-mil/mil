@@ -219,10 +219,7 @@ class Classifier:
                 #        self.CLASSES[a.results[0].id],
                 #    )
                 # )
-                cmd = "{}={}".format(
-                    self.last_objects.objects[closest_to_box].id,
-                    self.CLASSES[a.results[0].id],
-                )
+                cmd = f"{self.last_objects.objects[closest_to_box].id}={self.CLASSES[a.results[0].id]}"
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
 
         if not self.is_perception_task:
