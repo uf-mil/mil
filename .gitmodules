@@ -23,3 +23,6 @@
 [submodule "mil_common/perception/yolov7-ros"]
 	path = mil_common/perception/yolov7-ros
 	url = https://github.com/uf-mil/yolov7-ros.git
+[submodule "SubjuGator/drivers/waterlinked_a50_ros_driver"]
+	path = SubjuGator/drivers/waterlinked_a50_ros_driver
+	url = https://github.com/uf-mil/dvl-a50-ros-driver
