@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import threading
+import threading #ros2
 from typing import Optional
 
 import serial
@@ -10,6 +10,8 @@ from .simulated_board import SimulatedPnuematicActuatorBoard
 
 lock = threading.Lock()
 
+import rclpy
+from rclpy.node import Node
 
 class PnuematicActuatorDriverError(Exception):
     """
@@ -65,7 +67,7 @@ class PnuematicActuatorTimeoutError(PnuematicActuatorDriverError):
         super().__init__(message)
 
 
-class PnuematicActuatorDriver:
+class PnuematicActuatorDriver(Node):
     """
     Allows high level ROS code to interface with Daniel's pneumatics board.
 
@@ -77,7 +79,6 @@ class PnuematicActuatorDriver:
     design documentation.
     """
 
-    # TODO: Add a function to try and reconnect to the serial port if we lose connection.
 
     def __init__(self, port: str, baud: int = 9600, simulated: bool = False):
         """
@@ -87,6 +88,8 @@ class PnuematicActuatorDriver:
             simulated (bool): Whether to use a simulated actuator board class
                 or an interface to the physical board.
         """
+        super().__init__('pneumatic_actuator_driver')
+
         if simulated:
             self.ser = SimulatedPnuematicActuatorBoard()
         else:
@@ -212,6 +215,17 @@ class PnuematicActuatorDriver:
             PnuematicActuatorDriverResponseError: The expected response from the board
                 was not received.
             PnuematicActuatorDriverChecksumError: The checksum expected and the checksum
+                received were not the same def get_port(self, port: int) -> int:
+        """
+        Reads the data at a specific port.
+
+        Args:
+            port (int): The port to read from.
+
+        Raises:
+            PnuematicActuatorDriverResponseError: The expected response from the board
+                was not received.
+            PnuematicActuatorDriverChecksumError: The checksum expected and the checksum
                 received were not the same. The board may be malfunctioning or the
                 communication with the board may be disrupted.
 
@@ -236,3 +250,19 @@ class PnuematicActuatorDriver:
             int: The response from the board.
         """
         return self._send_request(Constants.PING_REQUEST, Constants.PING_RESPONSE)
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    node = PnuematicActuatorDriver(port='/dev/ttyUSB0', baud=9600, simulated=False)
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
