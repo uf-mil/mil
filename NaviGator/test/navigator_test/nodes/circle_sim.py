@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+import sys
 from typing import Optional, Sequence
 
 import cv2
 import mil_tools
 import numpy as np
-import rospy
+import rclpy
 import tf.transformations as trns
 from mil_misc_tools.text_effects import fprint as _fprint
 from nav_msgs.msg import OccupancyGrid, Odometry
@@ -27,12 +28,16 @@ class DoOdom:
     """
 
     def __init__(self, rand_size: float):
-        self.odom_pub = rospy.Publisher("/odom", Odometry, queue_size=2)
+        self.odom_pub = node.create_publisher(Odometry, "/odom", 2)
         self.odom = None
-        self.carrot_sub = rospy.Subscriber("/trajectory/cmd", Odometry, self.set_odom)
+        self.carrot_sub = node.create_publisher(
+            Odometry,
+            "/trajectory/cmd",
+            self.set_odom,
+        )
 
         fprint("Shaking hands and taking names.")
-        rospy.sleep(1)
+        rclpy.sleep(1)
 
         # We need to publish an initial odom message for lqrrt
         start_ori = trns.quaternion_from_euler(0, 0, np.random.normal() * 3.14)
@@ -56,7 +61,7 @@ class Sim:
         min_t_spacing: float = 9,
         num_of_buoys: int = 20,
     ):
-        self.ogrid_pub = rospy.Publisher("/ogrid", OccupancyGrid, queue_size=2)
+        self.ogrid_pub = node.create_publisher("/ogrid", OccupancyGrid, 2)
         self.odom = DoOdom(bf_size)
 
         self.bf_size = bf_size
@@ -84,10 +89,10 @@ class Sim:
         self.publish_ogrid()
 
         # Now set up the database request service
-        rospy.Service("/database/requests", ObjectDBQuery, self.got_request)
-        rospy.Service("/reseed", Trigger, self.reseed)
+        node.create_service(ObjectDBQuery, "/database/requests", self.got_request)
+        node.create_service(Trigger, "/reseed", self.reseed)
 
-        rospy.Timer(rospy.Duration(1), self.publish_ogrid)
+        rclpy.Timer(rclpy.Duration(1), self.publish_ogrid)
 
     def _make_ogrid_transform(self):
         self.grid = np.zeros(
@@ -236,7 +241,8 @@ class Sim:
 
 if __name__ == "__main__":
     fprint("Starting", msg_color="blue")
-    rospy.init_node("Sim")
+    rclpy.init(args=sys.argv)
+    node = rclpy.create_node("Sim")
 
     Sim()
-    rospy.spin()
+    rclpy.spin()
