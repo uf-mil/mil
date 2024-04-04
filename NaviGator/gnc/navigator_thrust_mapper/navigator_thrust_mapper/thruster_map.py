@@ -177,10 +177,7 @@ class ThrusterMap:
 
                 if t_ratio < 0:
                     raise Exception(
-                        "Thruster mapper does not allow mechanical reduction of {} for {}.".format(
-                            t_ratio,
-                            transmission.name,
-                        ),
+                        f"Thruster mapper does not allow mechanical reduction of {t_ratio} for {transmission.name}.",
                     )
 
                 ratio[i] = t_ratio

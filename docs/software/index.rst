@@ -16,6 +16,7 @@ Various documentation related to practices followed by the MIL Software team.
    rqt
    rostest
    alarms
+   preflight
    Bash Style Guide <bash_style.md>
    C++ Style Guide <cpp_style.md>
    Python Style Guide <python_style.md>

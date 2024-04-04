@@ -31,14 +31,7 @@ def main():
                 euler = tf.transformations.euler_from_quaternion(rot)
                 print(f"(Roll={euler[0]}, Pitch={euler[1]}, Yaw={euler[2]})")
                 print(
-                    "<pose> {} {} {} {} {} {} </pose>".format(
-                        trans[0],
-                        trans[1],
-                        trans[2],
-                        euler[0],
-                        euler[1],
-                        euler[2],
-                    ),
+                    f"<pose> {trans[0]} {trans[1]} {trans[2]} {euler[0]} {euler[1]} {euler[2]} </pose>",
                 )
         except (
             tf.LookupException,

@@ -4,6 +4,15 @@ import unittest
 import rospy
 from ros_alarms import AlarmListener
 from std_srvs.srv import SetBool, SetBoolRequest
+from sub9_thrust_and_kill_board.packets import (
+    HeartbeatReceivePacket,
+    HeartbeatSetPacket,
+    KillReceivePacket,
+    KillSetPacket,
+    KillStatus,
+    ThrusterId,
+    ThrustSetPacket,
+)
 
 
 class SimulatedBoardTest(unittest.TestCase):
@@ -27,6 +36,33 @@ class SimulatedBoardTest(unittest.TestCase):
         self.assertTrue(self.hw_alarm_listener.is_raised(True))
         self.assertTrue(self.kill_srv(SetBoolRequest(False)).success)
         self.assertTrue(self.hw_alarm_listener.is_raised(False))
+
+    def test_packet(self):
+        # ThrustSetPacket
+        thrust_set_packet = ThrustSetPacket(ThrusterId.FLH, 0.5)
+        self.assertEqual(thrust_set_packet.thruster_id, ThrusterId.FLH)
+        self.assertEqual(
+            bytes(thrust_set_packet),
+            b"7\x01\x02\x02\x05\x00\x00\x00\x00\x00?H\x84",
+        )
+        # HeartbeatSetPacket
+        heartbeat_set_packet = HeartbeatSetPacket()
+        self.assertEqual(bytes(heartbeat_set_packet), b"7\x01\x02\x00\x00\x00\x02\x08")
+        # HeartbeatReceivePacket
+        heartbeat_receive_packet = HeartbeatReceivePacket()
+        self.assertEqual(
+            bytes(heartbeat_receive_packet),
+            b"7\x01\x02\x01\x00\x00\x03\x0b",
+        )
+        # KillSetPacket
+        kill_set_packet = KillSetPacket(True, KillStatus.BATTERY_LOW)
+        self.assertEqual(bytes(kill_set_packet), b"7\x01\x02\x03\x02\x00\x01\x04\x0c)")
+        # KillReceivePacket
+        kill_receive_packet = KillReceivePacket(True, KillStatus.BATTERY_LOW)
+        self.assertEqual(
+            bytes(kill_receive_packet),
+            b"7\x01\x02\x04\x02\x00\x01\x04\r.",
+        )
 
 
 if __name__ == "__main__":

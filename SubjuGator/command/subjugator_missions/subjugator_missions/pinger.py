@@ -210,10 +210,7 @@ class Pinger(SubjuGatorMission):
             go_to_guess = pinger_guess[np.argmax(dots)]
             go_to_guess = go_to_guess / np.linalg.norm(go_to_guess)
             fprint(
-                "Though ping was behind. Going to pinger guess {} at {}".format(
-                    np.argmax(dots) + 1,
-                    go_to_guess,
-                ),
+                f"Though ping was behind. Going to pinger guess {np.argmax(dots) + 1} at {go_to_guess}",
                 msg_color="yellow",
             )
             return (False, go_to_guess)

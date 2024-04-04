@@ -86,12 +86,7 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
         t_y = 0
         for i in range(len(images_and_labels)):
             # Print values in each color space of current cursor location
-            text = (
-                "[{l[0]}, {l[1]}, {l[2]}] = [{r[0]:>3}   {r[1]:>3}   {r[2]:>3}]".format(
-                    l=images_and_labels[i][1],
-                    r=images_and_labels[i][0][mouse_y, mouse_x],
-                )
-            )
+            text = f"[{images_and_labels[i][1][0]}, {images_and_labels[i][1][1]}, {images_and_labels[i][1][2]}] = [{images_and_labels[i][0][mouse_y, mouse_x][0]:>3}   {images_and_labels[i][0][mouse_y, mouse_x][1]:>3}   {images_and_labels[i][0][mouse_y, mouse_x][2]:>3}]"
             (t_w, t_h), _ = cv2.getTextSize(
                 text,
                 cv2.FONT_HERSHEY_PLAIN,

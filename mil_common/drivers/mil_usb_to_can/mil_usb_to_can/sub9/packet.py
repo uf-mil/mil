@@ -6,8 +6,8 @@ from enum import Enum
 from functools import lru_cache
 from typing import ClassVar, get_type_hints
 
-SYNC_CHAR_1 = ord("3")
-SYNC_CHAR_2 = ord("7")
+SYNC_CHAR_1 = 0x37
+SYNC_CHAR_2 = 0x01
 
 _packet_registry: dict[int, dict[int, type[Packet]]] = {}
 
@@ -117,7 +117,7 @@ class Packet:
     def __bytes__(self):
         payload = struct.pack(self.payload_format, *self.__dict__.values())
         data = struct.pack(
-            f"=BBBBH{len(payload)}s",
+            f"<BBBBH{len(payload)}s",
             SYNC_CHAR_1,
             SYNC_CHAR_2,
             self.msg_id,
@@ -126,7 +126,7 @@ class Packet:
             payload,
         )
         checksum = self._calculate_checksum(data[2:])
-        return data + struct.pack("=BB", *checksum)
+        return data + struct.pack("<BB", *checksum)
 
     @classmethod
     def from_bytes(cls, packed: bytes) -> Packet:
@@ -141,12 +141,12 @@ class Packet:
         if msg_id in _packet_registry and subclass_id in _packet_registry[msg_id]:
             subclass = _packet_registry[msg_id][subclass_id]
             payload = packed[6:-2]
-            if struct.unpack("=BB", packed[-2:]) != cls._calculate_checksum(
+            if struct.unpack("<BB", packed[-2:]) != cls._calculate_checksum(
                 packed[2:-2],
             ):
                 raise ChecksumException(
                     subclass,
-                    struct.unpack("=BB", packed[-2:]),
+                    struct.unpack("<BB", packed[-2:]),
                     cls._calculate_checksum(packed[2:-2]),
                 )
             unpacked = struct.unpack(subclass.payload_format, payload)

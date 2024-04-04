@@ -71,12 +71,7 @@ class IdentifyDockMission:
         self.bay_1 = (bay_1_shape, bay_1_color)
         self.bay_2 = (bay_2_shape, bay_2_color)
         print_good(
-            "Docking in Bay (Shape={}, Color={}) then (Shape={}, Color={})".format(
-                bay_1_shape,
-                bay_1_color,
-                bay_2_shape,
-                bay_2_color,
-            ),
+            f"Docking in Bay (Shape={bay_1_shape}, Color={bay_1_color}) then (Shape={bay_2_shape}, Color={bay_2_color})",
         )
 
     async def get_waypoint(self):

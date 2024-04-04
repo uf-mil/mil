@@ -269,20 +269,9 @@ class ParsedPoseEstRequest:
         # To get rid of color characters: w_on = ""; reset = "\n"
         w_on = "\x1b[37m"
         reset = "\x1b[0m\n"
-        return "Pose Estimation request:{r}Seq:{w}{}{r}Frame_ID:{}{r}Position:{w}{}{r}Orientation:{w}{}{r}\
-                Left camera projection matrix:{w}{}{r}Right camera projection matrix:{w}{}{r}\
-                Observed Board corners left image:{w}{}{r}Observed Board corners right image:{w}{}{r}".format(
-            self.seq,
-            self.stamp,
-            self.frame_id,
-            self.position,
-            self.orientation,
-            self.last_cam_matx,
-            self.right_cam_matx,
-            self.l_obs_corners,
-            w=w_on,
-            r=reset,
-        )
+        return f"Pose Estimation request:{reset}Seq:{w_on}{self.seq}{reset}Frame_ID:{self.stamp}{reset}Position:{w_on}{self.frame_id}{reset}Orientation:{w_on}{self.position}{reset}\
+                Left camera projection matrix:{w_on}{self.orientation}{reset}Right camera projection matrix:{w_on}{self.last_cam_matx}{reset}\
+                Observed Board corners left image:{w_on}{self.right_cam_matx}{reset}Observed Board corners right image:{w_on}{self.l_obs_corners}{reset}"
 
 
 # def tf_to_world_frame()
