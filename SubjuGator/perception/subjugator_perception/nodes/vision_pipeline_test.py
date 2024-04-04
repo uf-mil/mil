@@ -6,6 +6,8 @@ from mil_ros_tools import (
 )
 from yoloros import Detector
 
+# from vision_stack import VisionStack
+
 __author__ = "Daniel Parra"
 
 
@@ -22,6 +24,7 @@ class ObjectDetectionTest:
 
     def detection_callback(self, msg):
         # Create Image from array
+        print("Detecting...")
         self.detector.display_detection_ros_msg(msg, conf_thres=0.85)
 
 
