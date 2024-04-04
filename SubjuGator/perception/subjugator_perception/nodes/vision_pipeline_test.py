@@ -13,7 +13,7 @@ __author__ = "Daniel Parra"
 
 class ObjectDetectionTest:
     def __init__(self):
-        camera = rospy.get_param("~image_topic", "/camera/front/left/image_rect_color")
+        camera = rospy.get_param("~image_topic", "/camera/front/right/image_rect_color")
         self.detector = Detector("robosub24", device="cpu")
 
         self.image_sub = Image_Subscriber(camera, self.detection_callback)
