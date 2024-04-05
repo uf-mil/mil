@@ -3,8 +3,11 @@ from mil_ros_tools import Image_Publisher, Image_Subscriber, rosmsg_to_numpy
 
 
 class Red_Buoy_Detector:
-    def __init__(self):
-        print("Initilalized Red Buoy finder!")
+    def __init__(self, path):
+        self.image = cv.resize(cv.imread(path), (960, 600))
+
+    def detect(self):
+        
 
 # import cv2 as cv
 # import numpy as np
