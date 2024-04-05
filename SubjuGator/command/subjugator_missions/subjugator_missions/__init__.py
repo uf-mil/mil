@@ -18,4 +18,4 @@ from .sub_singleton import SubjuGatorMission
 from .surface import Surface
 from .torpedos_test import TorpedosTest
 from .vampire_slayer import VampireSlayer
-from .pacific_gate import PacificGate
+from .torpedo_task import TorpedoTask

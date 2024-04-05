@@ -79,6 +79,11 @@ target_link_libraries(
 )
 
 add_executable(
+  subjugator_torpedo_octogon_finder
+    nodes/torpedo_octogon_finder.py
+)
+
+add_executable(
   torpedos_cpp
     nodes/torpedo_board.cpp
 )

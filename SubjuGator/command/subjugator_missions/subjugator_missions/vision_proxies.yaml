@@ -13,3 +13,5 @@ the_path:
     root: "/vision/the_path"
 start_gate:
     root: "/vision/start_gate"
+torpedos: 
+    root: "/vision/torpedos"
