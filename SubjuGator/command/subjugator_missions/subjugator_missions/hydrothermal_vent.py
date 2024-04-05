@@ -5,6 +5,9 @@ import math
 
 # This mission will direct the sub towards a red buoy, and continously circumnavigate
 # the buoy in a CCW motion
+
+
+# Computer vision aspect still required to detect the red buoy. For now, random position used
 class HydrothermalVent(SubjuGatorMission):
     async def run(self, args):
         self.buoy_pos = np.array([3, 2, 4])  # Convert buoy position to numpy array
@@ -21,26 +24,30 @@ class HydrothermalVent(SubjuGatorMission):
         self.send_feedback(f"Traveling forward to buoy")
         await self.go(
             self.move()
-                .forward(self.buoy_pos[2] - 2) # don't reach the buoy, remain 2 units away
+                .forward(self.buoy_pos[2] - 1) # don't reach the buoy, remain 1 meter away
         )
-        
+        yaw_angle2 = np.deg2rad(90)
         # rotate 90 degrees:
-        self.send_feedback("Rotating 90 degrees")
-        rotate = self.move().set_roll_pitch_yaw(0, 0, np.radians(90))
+        self.send_feedback("Rotating 90 degrees left")
+        rotate = self.move().yaw_left(yaw_angle2)
         await self.go(rotate)
+        
+        self.send_feedback("Circumnaviganting the buoy")
+        await self.go(self.move().forward(0.5))
+        for i in range(0, 3):
+            rotate = self.move().yaw_right(yaw_angle2)
+            await self.go(rotate)
+            await self.go(self.move().forward(1))
+        rotate = self.move().yaw_right(yaw_angle2)
+        await self.go(rotate)
+        await self.go(self.move().forward(0.5))
 
-        # continuosly rotate around the buoy
-        while True:
-            sub_current_pos = await self.tx_pose()  # Assuming tx_pose() returns a tuple
+        self.send_feedback("Returning to origin")
+        await self.go(self.move().yaw_left(yaw_angle2))
+        await self.go(self.move().forward(self.buoy_pos[2] - 1))
 
-        # Figure out why this is not working:
+        await self.go(self.move().set_roll_pitch_yaw(0, 0, -yaw_angle))
 
-            #sub_current_pos = np.array(sub_current_pos[:2])  # Extract position information and convert to numpy array
-            # delta = sub_current_pos - self.buoy_pos  # Calculate position difference
-            #yaw_angle = np.arctan2(delta[1], delta[0])  # Calculate angle based on position difference
-            #rotate = self.move().set_roll_pitch_yaw(0, 0, yaw_angle)
-            #await self.go(self.move().forward(1))
-            #await self.go(rotate)
-
+        await self.go(self.move().up(self.buoy_pos[1]))
 
 
