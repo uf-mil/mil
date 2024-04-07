@@ -99,9 +99,11 @@ boost::shared_ptr<tcp::socket> NavTubeDriver::connect()
   using ip_address = boost::asio::ip::address;
   tcp::endpoint endpoint(ip_address::from_string(ip_), port_);
 
+  ROS_INFO_STREAM("Connecting to Depth Server");
   boost::asio::io_service io_service;
   boost::shared_ptr<tcp::socket> socket = boost::make_shared<tcp::socket>(io_service);
   socket->connect(endpoint);
+  ROS_INFO_STREAM("Connection to Depth Server established");
 
   return socket;
 }
