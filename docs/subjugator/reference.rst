@@ -100,6 +100,11 @@ ActuatorBoardSimulation
 .. autoclass:: sub_actuator_board.ActuatorBoardSimulation
     :members:
 
+ActuatorPacketId
+^^^^^^^^^^^^^^^^
+.. autoclass:: sub_actuator_board.ActuatorPacketId
+    :members:
+
 ActuatorSetPacket
 ^^^^^^^^^^^^^^^^^
 .. attributetable:: sub_actuator_board.ActuatorSetPacket
@@ -181,6 +186,13 @@ HeartbeatReceivePacket
 .. attributetable:: sub9_thrust_and_kill_board.HeartbeatReceivePacket
 
 .. autoclass:: sub9_thrust_and_kill_board.HeartbeatReceivePacket
+    :members:
+
+ThrusterId
+^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.ThrusterId
+
+.. autoclass:: sub9_thrust_and_kill_board.ThrusterId
     :members:
 
 ThrustSetPacket

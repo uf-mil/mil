@@ -138,27 +138,9 @@ class RobotXHeartbeatMessage:
         if system_mode is None:
             system_mode = 0
 
-        first_half_data = "{}{}{}{}{}{}{}".format(
-            self.message_id,
-            delim,
-            aedt_date_time,
-            delim,
-            latitude,
-            delim,
-            north_south,
-        )
+        first_half_data = f"{self.message_id}{delim}{aedt_date_time}{delim}{latitude}{delim}{north_south}"
 
-        second_half_data = "{}{}{}{}{}{}{}{}{}".format(
-            longitude,
-            delim,
-            east_west,
-            delim,
-            team_id,
-            delim,
-            system_mode,
-            delim,
-            str(uav_status),
-        )
+        second_half_data = f"{longitude}{delim}{east_west}{delim}{team_id}{delim}{system_mode}{delim}{uav_status!s}"
 
         full_data = first_half_data + delim + second_half_data
 
@@ -238,17 +220,7 @@ class RobotXEntranceExitGateMessage:
             str: The encoded message.
         """
 
-        data = "{}{}{}{}{}{}{}{}{}".format(
-            self.message_id,
-            delim,
-            aedt_date_time,
-            delim,
-            team_id,
-            delim,
-            str(data.entrance_gate),
-            delim,
-            str(data.exit_gate),
-        )
+        data = f"{self.message_id}{delim}{aedt_date_time}{delim}{team_id}{delim}{data.entrance_gate!s}{delim}{data.exit_gate!s}"
 
         # test data
         if use_test_data:
@@ -325,15 +297,7 @@ class RobotXFollowPathMessage:
             str: The encoded message.
         """
 
-        data = "{}{}{}{}{}{}{}".format(
-            self.message_id,
-            delim,
-            aedt_date_time,
-            delim,
-            team_id,
-            delim,
-            str(data.finished),
-        )
+        data = f"{self.message_id}{delim}{aedt_date_time}{delim}{team_id}{delim}{data.finished!s}"
 
         # test data
         if use_test_data:
@@ -410,15 +374,7 @@ class RobotXReactReportMessage:
             str: The encoded message.
         """
 
-        data_ = "{}{}{}{}{}{}{}".format(
-            self.message_id,
-            delim,
-            aedt_date_time,
-            delim,
-            team_id,
-            delim,
-            str(len(data.animal_array)),
-        )
+        data_ = f"{self.message_id}{delim}{aedt_date_time}{delim}{team_id}{delim}{len(data.animal_array)!s}"
 
         for animal in data.animal_array:
             data_ += delim + animal
@@ -494,15 +450,7 @@ class RobotXScanCodeMessage:
         Returns:
             str: The constructed message.
         """
-        data = "{}{}{}{}{}{}{}".format(
-            self.message_id,
-            delim,
-            aedt_date_time,
-            delim,
-            team_id,
-            delim,
-            color_pattern,
-        )
+        data = f"{self.message_id}{delim}{aedt_date_time}{delim}{team_id}{delim}{color_pattern}"
 
         # test data
         if use_test_data:
@@ -579,17 +527,7 @@ class RobotXDetectDockMessage:
             str: The encoded message.
         """
 
-        data = "{}{}{}{}{}{}{}{}{}".format(
-            self.message_id,
-            delim,
-            aedt_date_time,
-            delim,
-            team_id,
-            delim,
-            str(data.color),
-            delim,
-            str(data.ams_status),
-        )
+        data = f"{self.message_id}{delim}{aedt_date_time}{delim}{team_id}{delim}{data.color!s}{delim}{data.ams_status!s}"
 
         # test data
         if use_test_data:
@@ -666,17 +604,7 @@ class RobotXFindFlingMessage:
             str: The encoded message.
         """
 
-        data = "{}{}{}{}{}{}{}{}{}".format(
-            self.message_id,
-            delim,
-            aedt_date_time,
-            delim,
-            team_id,
-            delim,
-            str(data.color),
-            delim,
-            str(data.ams_status),
-        )
+        data = f"{self.message_id}{delim}{aedt_date_time}{delim}{team_id}{delim}{data.color!s}{delim}{data.ams_status!s}"
 
         # test data
         if use_test_data:
@@ -753,17 +681,7 @@ class RobotXUAVReplenishmentMessage:
             str: The encoded message.
         """
 
-        data = "{}{}{}{}{}{}{}{}{}".format(
-            self.message_id,
-            delim,
-            aedt_date_time,
-            delim,
-            team_id,
-            delim,
-            str(data.uav_status),
-            delim,
-            str(data.item_status),
-        )
+        data = f"{self.message_id}{delim}{aedt_date_time}{delim}{team_id}{delim}{data.uav_status!s}{delim}{data.item_status!s}"
 
         # test data
         if use_test_data:
@@ -840,35 +758,7 @@ class RobotXUAVSearchReportMessage:
             str: The encoded message.
         """
 
-        data = "{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}".format(
-            self.message_id,
-            delim,
-            aedt_date_time,
-            delim,
-            str(data.object1),
-            delim,
-            str(data.object1_latitude),
-            delim,
-            str(data.object1_n_s),
-            delim,
-            str(data.object1_longitude),
-            delim,
-            str(data.object1_e_w),
-            delim,
-            str(data.object2),
-            delim,
-            str(data.object2_latitude),
-            delim,
-            str(data.object2_n_s),
-            delim,
-            str(data.object2_longitude),
-            delim,
-            str(data.object2_e_w),
-            delim,
-            team_id,
-            delim,
-            str(data.uav_status),
-        )
+        data = f"{self.message_id}{delim}{aedt_date_time}{delim}{data.object1!s}{delim}{data.object1_latitude!s}{delim}{data.object1_n_s!s}{delim}{data.object1_longitude!s}{delim}{data.object1_e_w!s}{delim}{data.object2!s}{delim}{data.object2_latitude!s}{delim}{data.object2_n_s!s}{delim}{data.object2_longitude!s}{delim}{data.object2_e_w!s}{delim}{team_id}{delim}{data.uav_status!s}"
 
         # test data
         if use_test_data:

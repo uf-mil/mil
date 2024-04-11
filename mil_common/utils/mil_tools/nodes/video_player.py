@@ -101,12 +101,7 @@ class RosVideoPlayer:
                 self.roi_width_cb,
             )
         rospy.loginfo(
-            "Playing {} at {}fps starting at frame {} ({} Total Frames)".format(
-                self.filename,
-                self.fps,
-                self.start_frame,
-                self.num_frames,
-            ),
+            f"Playing {self.filename} at {self.fps}fps starting at frame {self.start_frame} ({self.num_frames} Total Frames)",
         )
 
     def run(self):

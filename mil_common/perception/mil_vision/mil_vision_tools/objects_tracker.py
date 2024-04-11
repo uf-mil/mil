@@ -75,11 +75,7 @@ class TrackedObject:
         return self.stamp - self.created_at
 
     def __str__(self):
-        return "TrackedObject(id={}, observations={}, age={}s)".format(
-            self.id,
-            self.observations,
-            self.age.to_sec(),
-        )
+        return f"TrackedObject(id={self.id}, observations={self.observations}, age={self.age.to_sec()}s)"
 
 
 class ObjectsTracker:

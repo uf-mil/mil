@@ -64,6 +64,9 @@
                 <div id="sidebar">
                     {%- include "searchbox.html" %}
                     {%- include "globaltoc.html" %}
+                    {% if last_updated %}
+                        <p><i>Last updated on: {{ last_updated }}.</i></p>
+                    {% endif %}
                 </div>
             </aside>
             <main class="grid-item" role="main">

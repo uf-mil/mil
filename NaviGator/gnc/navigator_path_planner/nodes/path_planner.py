@@ -454,9 +454,7 @@ class LQRRT_Node:
                 print(f"\nMove {self.move_count}\n----")
                 print(f"Behavior: {self.enroute_behavior.__name__[10:]}")
                 print(
-                    "Reached goal region: {}".format(
-                        self.enroute_behavior.planner.plan_reached_goal,
-                    ),
+                    f"Reached goal region: {self.enroute_behavior.planner.plan_reached_goal}",
                 )
                 print(f"Goal bias: {np.round(self.goal_bias, 2)}")
                 print(f"Tree size: {self.tree.size}")
@@ -1027,9 +1025,7 @@ class LQRRT_Node:
                             self.failure_reason = "collided"
                     else:
                         print(
-                            "\nFound collision on current path!\nTime till collision: {}".format(
-                                time_till_collision,
-                            ),
+                            f"\nFound collision on current path!\nTime till collision: {time_till_collision}",
                         )
                         self.time_till_issue = time_till_collision
                         for behavior in self.behaviors_list:
@@ -1495,9 +1491,7 @@ class LQRRT_Node:
         elapsed = abs(self.rostime() - start)
         if elapsed > 1:
             print(
-                "\n(WARNING: ogrid callback is taking {} seconds)\n".format(
-                    np.round(elapsed, 2),
-                ),
+                f"\n(WARNING: ogrid callback is taking {np.round(elapsed, 2)} seconds)\n",
             )
 
     def odom_cb(self, msg: Odometry) -> None:

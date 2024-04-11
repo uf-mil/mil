@@ -2,6 +2,12 @@
 import unittest
 
 import rospy
+from sub_actuator_board.packets import (
+    ActuatorPacketId,
+    ActuatorPollRequestPacket,
+    ActuatorPollResponsePacket,
+    ActuatorSetPacket,
+)
 from sub_actuator_board.srv import GetValve, GetValveRequest, SetValve, SetValveRequest
 
 
@@ -28,12 +34,29 @@ class SimulatedBoardTest(unittest.TestCase):
         self.assertFalse(self.get_srv(GetValveRequest(0)).opened)
         self.assertTrue(self.set_srv(SetValveRequest(0, False)).success)
         self.assertFalse(self.get_srv(GetValveRequest(0)).opened)
-        self.assertTrue(self.set_srv(SetValveRequest(3, True)).success)
-        self.assertTrue(self.get_srv(GetValveRequest(3)).opened)
+        self.assertTrue(self.set_srv(SetValveRequest(1, True)).success)
+        self.assertTrue(self.get_srv(GetValveRequest(1)).opened)
         self.assertFalse(self.get_srv(GetValveRequest(0)).opened)
-        self.assertTrue(self.set_srv(SetValveRequest(4, False)).success)
-        self.assertFalse(self.get_srv(GetValveRequest(4)).opened)
+        self.assertTrue(self.set_srv(SetValveRequest(2, False)).success)
+        self.assertFalse(self.get_srv(GetValveRequest(2)).opened)
         self.assertFalse(self.get_srv(GetValveRequest(0)).opened)
+
+    def test_packet(self):
+        """
+        Test that the bytes representation of all packets is correct.
+        """
+        # ActuatorPollRequestPacket
+        packet = ActuatorPollRequestPacket()
+        self.assertEqual(bytes(packet), b"7\x01\x03\x01\x00\x00\x04\x0f")
+        # ActuatorPollResponsePacket
+        packet = ActuatorPollResponsePacket(0b00111)
+        self.assertEqual(packet.ball_drop_opened, True)
+        self.assertEqual(packet.gripper_opened, True)
+        self.assertEqual(packet.torpedo_launcher_opened, True)
+        self.assertEqual(bytes(packet), b"7\x01\x03\x02\x01\x00\x07\r!")
+        # ActuatorSetPacket
+        packet = ActuatorSetPacket(ActuatorPacketId.TORPEDO_LAUNCHER, True)
+        self.assertEqual(bytes(packet), b"7\x01\x03\x00\x02\x00\x01\x01\x07\x1d")
 
 
 if __name__ == "__main__":

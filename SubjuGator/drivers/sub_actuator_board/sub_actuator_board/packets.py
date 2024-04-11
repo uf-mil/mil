@@ -1,20 +1,34 @@
 from dataclasses import dataclass
+from enum import IntEnum
 
 from mil_usb_to_can.sub9 import Packet
 
 
+class ActuatorPacketId(IntEnum):
+    """
+    Enumerator representing each controllable actuator.
+    """
+
+    #: The gripper actuator.
+    GRIPPER = 0
+    #: The torpedo launcher actuator.
+    TORPEDO_LAUNCHER = 1
+    #: The ball drop actuator. Only one actuator is used for both balls.
+    BALL_DROP = 2
+
+
 @dataclass
-class ActuatorSetPacket(Packet, msg_id=0x03, subclass_id=0x00, payload_format="BB"):
+class ActuatorSetPacket(Packet, msg_id=0x03, subclass_id=0x00, payload_format="<BB"):
     """
     Packet used by the actuator board to set a specific valve.
 
     Attributes:
-        address (int): The actuator ID to set.
+        address (ActuatorPacketId): The actuator ID to set.
         open (bool): Whether to open the specified actuator. ``True`` requests opening,
             ``False`` requests closing.
     """
 
-    address: int
+    address: ActuatorPacketId
     open: bool
 
 
@@ -28,8 +42,6 @@ class ActuatorPollRequestPacket(
     """
     Packet used by the actuator board to request the status of all valves.
     """
-
-    pass
 
 
 @dataclass
@@ -48,3 +60,24 @@ class ActuatorPollResponsePacket(
     """
 
     values: int
+
+    @property
+    def gripper_opened(self) -> bool:
+        """
+        Whether the gripper is opened.
+        """
+        return bool(self.values & (0b0001 << ActuatorPacketId.GRIPPER))
+
+    @property
+    def torpedo_launcher_opened(self) -> bool:
+        """
+        Whether the torpedo launcher is opened.
+        """
+        return bool(self.values & (0b0001 << ActuatorPacketId.TORPEDO_LAUNCHER))
+
+    @property
+    def ball_drop_opened(self) -> bool:
+        """
+        Whether the ball drop is opened.
+        """
+        return bool(self.values & (0b0001 << ActuatorPacketId.BALL_DROP))

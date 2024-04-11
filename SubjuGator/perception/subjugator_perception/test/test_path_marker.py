@@ -83,11 +83,7 @@ class TestPathMarker(unittest.TestCase):
         res_xy = np.array([res.pose.x, res.pose.y])
         correct_xy = np.array([correct.pose.x, correct.pose.y])
         err = np.linalg.norm(res_xy - correct_xy)
-        msg = "Marker pose (x,y) too much error Res={} Correct={} Error={}".format(
-            res_xy,
-            correct_xy,
-            err,
-        )
+        msg = f"Marker pose (x,y) too much error Res={res_xy} Correct={correct_xy} Error={err}"
         self.assertLess(
             err,
             20.0,
@@ -101,11 +97,7 @@ class TestPathMarker(unittest.TestCase):
                 np.cos(res.pose.theta - correct.pose.theta),
             ),
         )
-        msg = "Marker pose angle (theta) too much error Res={} Correct={} Error={}".format(
-            np.degrees(res.pose.theta),
-            np.degrees(correct.pose.theta),
-            np.degrees(theta_err),
-        )
+        msg = f"Marker pose angle (theta) too much error Res={np.degrees(res.pose.theta)} Correct={np.degrees(correct.pose.theta)} Error={np.degrees(theta_err)}"
         self.assertLess(theta_err, 0.15, msg=msg)
 
     def test_transdec(self):

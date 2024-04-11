@@ -142,13 +142,9 @@ while not rospy.is_shutdown():
     q = tf.transformations.quaternion_from_euler(*rpy)
 
     if (p != p_last) or (rpy != rpy_last):
-        rpy_feedback = "xyz: {}, euler: {}".format(
-            [round(e, 5) for e in p],
-            [round(np.degrees(f), 5) for f in rpy],
-        )
-        q_feedback = "xyz: {},     q: {}".format(
-            [round(x, 5) for e in p],
-            [round(f, 5) for f in q],
+        rpy_feedback = f"xyz: {[round(e, 5) for e in p]}, euler: {[round(np.degrees(f), 5) for f in rpy]}"
+        q_feedback = (
+            f"xyz: {[round(x, 5) for e in p]},     q: {[round(f, 5) for f in q]}"
         )
         print(q_feedback if q_mode else rpy_feedback)
     p_last = p

@@ -248,7 +248,8 @@ mil_user_install_dependencies() {
 		fd-find \
 		ripgrep \
 		fzf \
-		aptitude
+		aptitude \
+		lm-sensors
 }
 
 # Add line to user's bashrc which source the repo's setup files

@@ -377,10 +377,7 @@ class Colorama:
                 likely_color = color
 
         fprint(
-            "Likely color: {} with an hue error of {} rads.".format(
-                likely_color,
-                np.round(error, 3),
-            ),
+            f"Likely color: {likely_color} with an hue error of {np.round(error, 3)} rads.",
         )
         return [likely_color, error]
 
@@ -468,11 +465,7 @@ class Colorama:
                     return
 
                 fprint(
-                    "No valid image found for t={} ({}) dt: {}".format(
-                        time_of_marker.to_sec(),
-                        t.to_sec(),
-                        (rospy.Time.now() - t).to_sec(),
-                    ),
+                    f"No valid image found for t={time_of_marker.to_sec()} ({t.to_sec()}) dt: {(rospy.Time.now() - t).to_sec()}",
                     msg_color="red",
                 )
                 return

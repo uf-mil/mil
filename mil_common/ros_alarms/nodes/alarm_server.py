@@ -134,9 +134,7 @@ class AlarmServer:
                 alarm.problem_description = "Raised by meta alarm"
         else:
             rospy.logwarn(
-                "Meta alarm callback for {} failed to return an Alarm or boolean".format(
-                    meta_alarm,
-                ),
+                f"Meta alarm callback for {meta_alarm} failed to return an Alarm or boolean",
             )
             return
         self.set_alarm(alarm)

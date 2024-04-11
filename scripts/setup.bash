@@ -45,8 +45,9 @@ source "$MIL_WS/src/mil/NaviGator/scripts/bash_aliases.sh"
 
 # Repo aliases
 alias mil='cd $MIL_REPO'
-alias cm='catkin_make -C $MIL_WS'
+alias cm='catkin_make -DCATKIN_WHITELIST_PACKAGES="" -C $MIL_WS'
 alias vrx='cd $MIL_REPO/NaviGator/simulation/VRX/vrx'
+alias cputemp='watch sensors'
 
 # General ROS aliases
 ros_env() {
@@ -88,6 +89,9 @@ alias fd="fdfind"
 
 # Gazebo aliases
 alias gazebogui="rosrun gazebo_ros gzclient __name:=gzclient"
+
+# Preflight aliases
+alias preflight='python3 $MIL_REPO/mil_common/utils/mil_tools/scripts/mil-preflight/main.py'
 
 # Process killing aliases
 alias killgazebo="killall -9 gzserver && killall -9 gzclient"
