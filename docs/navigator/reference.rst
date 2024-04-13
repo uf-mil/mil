@@ -1,4 +1,4 @@
-Navigator Software Reference
+NaviGator Software Reference
 ============================
 
 Below is the software reference for Navigator-specific systems.
