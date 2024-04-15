@@ -51,3 +51,6 @@ deprecated/IndyAV/simulation/indyav_gazebo/worlds/speedways/*.xacro
 
 # Unpackaged proprietary software
 mil_common/drivers/mil_blueview_driver/bvtsdk
+
+# ROS2 stuff
+roscompile

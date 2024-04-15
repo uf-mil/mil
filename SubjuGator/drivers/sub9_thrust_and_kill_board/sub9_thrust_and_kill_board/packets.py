@@ -19,7 +19,7 @@ class HeartbeatReceivePacket(Packet, msg_id=0x02, subclass_id=0x01, payload_form
 
 
 @dataclass
-class ThrustSetPacket(Packet, msg_id=0x02, subclass_id=0x02, payload_format="Bf"):
+class ThrustSetPacket(Packet, msg_id=0x02, subclass_id=0x02, payload_format="=Bf"):
     """
     Packet to set the speed of a specific thruster.
 
@@ -71,7 +71,7 @@ class KillStatus(IntEnum):
 
 
 @dataclass
-class KillSetPacket(Packet, msg_id=0x02, subclass_id=0x03, payload_format="BB"):
+class KillSetPacket(Packet, msg_id=0x02, subclass_id=0x03, payload_format="=BB"):
     """
     Packet sent by the motherboard to set/unset the kill.
 
@@ -85,7 +85,7 @@ class KillSetPacket(Packet, msg_id=0x02, subclass_id=0x03, payload_format="BB"):
 
 
 @dataclass
-class KillReceivePacket(Packet, msg_id=0x02, subclass_id=0x04, payload_format="BB"):
+class KillReceivePacket(Packet, msg_id=0x02, subclass_id=0x04, payload_format="=BB"):
     """
     Packet sent by the motherboard to set/unset the kill.
 

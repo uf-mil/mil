@@ -1,0 +1,6 @@
+<launch>
+	<node pkg="mil_poi" type="poi_server" name="poi_server">
+	</node>
+    <test test-name="async_test" pkg="mil_poi" type="test_async.py" time-limit="19.0"/>
+	<test test-name="sync_test" pkg="mil_poi" type="test_sync.py" time-limit="19.0"/>
+</launch>
