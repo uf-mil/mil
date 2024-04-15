@@ -1,9 +1,9 @@
 #!/usr/bin/python3
-import rospy
+import rclpy
 from mil_usb_to_can.sub8 import CANDeviceHandle
+from rclpy.timer import TimerEvent
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from ros_alarms_msgs.msg import Alarm
-from rospy.timer import TimerEvent
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 from subjugator_msgs.msg import Thrust
 
@@ -27,7 +27,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         super().__init__(*args, **kwargs)
         # Initialize thruster mapping from params
         self.thrusters, self.name_to_id = make_thruster_dictionary(
-            rospy.get_param("/thruster_layout/thrusters"),
+            self.declare_parameter("/thruster_layout/thrusters").value,
         )
         # Tracks last hw-kill alarm update
         self._last_hw_kill = None
@@ -43,19 +43,19 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             callback_funct=self.on_hw_kill,
         )
         # Provide service for alarm handler to set/clear the motherboard kill
-        self._unkill_service = rospy.Service(
-            "/set_mobo_kill",
+        self._unkill_service = self.create_service(
             SetBool,
+            "/set_mobo_kill",
             self.set_mobo_kill,
         )
         # Sends heartbeat to board
-        self._heartbeat_timer = rospy.Timer(rospy.Duration(0.4), self.send_heartbeat)
+        self._heartbeat_timer = rclpy.create_timer(0.4, self.send_heartbeat)
         # Create a subscribe for thruster commands
-        self._sub = rospy.Subscriber(
-            "/thrusters/thrust",
+        self._sub = self.create_subscription(
             Thrust,
+            "/thrusters/thrust",
             self.on_command,
-            queue_size=10,
+            10,
         )
 
     def set_mobo_kill(self, req: SetBoolRequest) -> SetBoolResponse:
@@ -108,7 +108,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         for cmd in msg.thruster_commands:
             # If we don't have a mapping for this thruster, ignore it
             if cmd.name not in self.thrusters:
-                rospy.logwarn(
+                self.get_logger().warn(
                     f"Command received for {cmd.name}, but this is not a thruster.",
                 )
                 continue

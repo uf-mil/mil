@@ -1,6 +1,7 @@
 #!/usr/bin/python3
-import rospy
+import rclpy
 from mil_usb_to_can.sub8 import SimulatedCANDevice
+from rclpy.duration import Duration
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 
 from .packets import (
@@ -27,7 +28,7 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         soft_kill_mobo (bool): Whether the motherboard experienced a soft kill request.
     """
 
-    HEARTBEAT_TIMEOUT_SECONDS = rospy.Duration(1.0)
+    HEARTBEAT_TIMEOUT_SECONDS = Duration(seconds=1.0)
 
     def __init__(self, *args, **kwargs):
         self.hard_kill_plug_pulled = False
@@ -37,18 +38,18 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         self.go_button = False
         self._last_heartbeat = None
         super().__init__(*args, **kwargs)
-        self._update_timer = rospy.Timer(rospy.Duration(1), self.send_updates)
-        self._soft_kill = rospy.Service(
-            "/simulate_soft_kill",
+        self._update_timer = rclpy.create_timer(1.0, self.send_updates)
+        self._soft_kill = self.create_service(
             SetBool,
+            "/simulate_soft_kill",
             self.set_soft_kill,
         )
-        self._hard_kill = rospy.Service(
-            "/simulate_hard_kill",
+        self._hard_kill = self.create_service(
             SetBool,
+            "/simulate_hard_kill",
             self.set_hard_kill,
         )
-        self._go_srv = rospy.Service("/simulate_go", SetBool, self._on_go_srv)
+        self._go_srv = self.create_service(SetBool, "/simulate_go", self._on_go_srv)
 
     def _on_go_srv(self, req):
         self.go_button = req.data
@@ -102,7 +103,7 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         """
         return (
             self._last_heartbeat is None
-            or (rospy.Time.now() - self._last_heartbeat)
+            or (self.get_clock().now() - self._last_heartbeat)
             > self.HEARTBEAT_TIMEOUT_SECONDS
         )
 
@@ -154,6 +155,6 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
             packet = ThrustPacket.from_bytes(data)
         elif data[0] == HeartbeatMessage.IDENTIFIER:
             packet = HeartbeatMessage.from_bytes(data)
-            self._last_heartbeat = rospy.Time.now()
+            self._last_heartbeat = self.get_clock().now()
         else:
             raise Exception("No recognized identifier")
