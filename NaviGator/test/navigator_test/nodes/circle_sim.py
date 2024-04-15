@@ -28,9 +28,9 @@ class DoOdom:
     """
 
     def __init__(self, rand_size: float):
-        self.odom_pub = node.create_publisher(Odometry, "/odom", 2)
+        self.odom_pub = self.create_publisher(Odometry, "/odom", 2)
         self.odom = None
-        self.carrot_sub = node.create_publisher(
+        self.carrot_sub = self.create_publisher(
             Odometry,
             "/trajectory/cmd",
             self.set_odom,
@@ -89,8 +89,8 @@ class Sim:
         self.publish_ogrid()
 
         # Now set up the database request service
-        node.create_service(ObjectDBQuery, "/database/requests", self.got_request)
-        node.create_service(Trigger, "/reseed", self.reseed)
+        self.create_service(ObjectDBQuery, "/database/requests", self.got_request)
+        self.create_service(Trigger, "/reseed", self.reseed)
 
         rclpy.Timer(rclpy.Duration(1), self.publish_ogrid)
 
