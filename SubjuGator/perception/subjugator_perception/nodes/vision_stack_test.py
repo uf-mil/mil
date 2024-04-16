@@ -12,13 +12,11 @@ __author__ = "Daniel Parra"
 class ObjectDetectionTest:
     def __init__(self):
         camera = rospy.get_param("~image_topic", "/camera/front/right/image_rect_color")
-        SIZE = (960, 608)
         self.vs = VisionStack(
             layers=[
-                ResizeLayer((0, 0), 960, 608),
-                UnderWaterImageEnhancementLayer(SIZE),
+                ResizeLayer(960, 608),
+                UnderWaterImageEnhancementLayer(),
             ],
-            input_size=SIZE,
         )
 
         self.image_sub = Image_Subscriber(camera, self.detection_callback)
