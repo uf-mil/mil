@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import numpy as np
-import rospy
 from mil_ros_tools import rosmsg_to_numpy
 from nav_msgs.msg import Odometry
 from ros_alarms import AlarmBroadcaster, HandlerBase, HeartbeatMonitor
@@ -32,12 +31,12 @@ class OdomKill(HandlerBase):
             prd=self.TIMEOUT_SECONDS,
         )
         self.MAX_JUMP = 0.5
-        self.launch_time = rospy.Time.now()
+        self.launch_time = self.get_clock().now()
         self.last_time = self.launch_time
         self.last_position = None
         self._raised = False
         self.ab = AlarmBroadcaster("odom-kill", node_name="odom-kill")
-        rospy.Subscriber("/odom", Odometry, self.check_continuity, queue_size=5)
+        self.create_subscription(Odometry, "/odom", self.check_continuity, 5)
 
     def check_continuity(self, odom):
         """
@@ -49,7 +48,7 @@ class OdomKill(HandlerBase):
             jump = np.linalg.norm(position - self.last_position)
             if jump > self.MAX_JUMP and not self._raised:
                 self._raised = True  # Avoid raising multiple times
-                rospy.logwarn("ODOM DISCONTINUITY DETECTED")
+                self.get_logger().warn("ODOM DISCONTINUITY DETECTED")
                 self.ab.raise_alarm(
                     problem_description=f"ODOM DISCONTINUITY DETECTED. JUMPED {jump} METERS",
                     severity=5,
