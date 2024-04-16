@@ -23,3 +23,6 @@
 [submodule "mil_common/perception/yolov7-ros"]
 	path = mil_common/perception/yolov7-ros
 	url = https://github.com/uf-mil/yolov7-ros.git
+[submodule "mil_common/perception/vision_stack"]
+	path = mil_common/perception/vision_stack
+	url = https://github.com/uf-mil/vision_stack.git

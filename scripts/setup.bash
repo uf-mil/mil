@@ -47,6 +47,7 @@ source "$MIL_WS/src/mil/NaviGator/scripts/bash_aliases.sh"
 alias mil='cd $MIL_REPO'
 alias cm='catkin_make -DCATKIN_WHITELIST_PACKAGES="" -C $MIL_WS'
 alias vrx='cd $MIL_REPO/NaviGator/simulation/VRX/vrx'
+alias cputemp='watch sensors'
 
 # General ROS aliases
 ros_env() {
