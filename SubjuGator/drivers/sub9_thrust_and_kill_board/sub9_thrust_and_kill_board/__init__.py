@@ -5,6 +5,7 @@ from .packets import (
     KillReceivePacket,
     KillSetPacket,
     KillStatus,
+    ThrusterId,
     ThrustSetPacket,
 )
 from .simulation import ThrusterAndKillBoardSimulation

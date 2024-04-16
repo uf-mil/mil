@@ -121,9 +121,7 @@ class Sim:
         self.buoy_positions = np.array(_buoy_positions)
         print(len(self.buoy_positions))
         fprint(
-            "Removed {} buoys that were too close to totems".format(
-                len(self.buoy_positions) - len(_buoy_positions),
-            ),
+            f"Removed {len(self.buoy_positions) - len(_buoy_positions)} buoys that were too close to totems",
         )
         # assert len(self.buoy_positions) > .5 * self.num_of_buoys, "Not enough buoys remain, try rerunning."
         if len(self.buoy_positions) < 0.5 * self.num_of_buoys:

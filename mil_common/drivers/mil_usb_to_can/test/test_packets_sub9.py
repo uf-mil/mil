@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+import struct
 import unittest
 from dataclasses import dataclass
 
@@ -16,7 +17,7 @@ class TestPacket(Packet, msg_id=0x47, subclass_id=0x44, payload_format="?Hd"):
 
 class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
     """
-    Tests basic application packt functionality.
+    Tests basic application packet functionality.
     """
 
     def test_simple_packet(self):
@@ -51,6 +52,18 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
             packet < packet_two
         with self.assertRaises(TypeError):
             packet > packet_two
+
+    def _pack_checksum(self, byte_string: bytes) -> int:
+        checksum = Packet._calculate_checksum(byte_string)
+        return int.from_bytes(struct.pack("<BB", *checksum), byteorder="big")
+
+    def test_checksum(self):
+        self.assertEqual(self._pack_checksum(b"abcde"), 0xF0C8)
+        self.assertEqual(self._pack_checksum(b"abcdefgh"), 0x2706)
+        self.assertEqual(
+            self._pack_checksum(b"abcdeabcdeabcdeabcdeabcde"),
+            0xB4FA,
+        )
 
 
 if __name__ == "__main__":

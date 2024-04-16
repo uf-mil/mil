@@ -1,4 +1,4 @@
-Subjugator Software Reference
+SubjuGator Software Reference
 =============================
 
 Below is the reference documentation for the code on our submarine robot, SubjuGator.
@@ -186,6 +186,13 @@ HeartbeatReceivePacket
 .. attributetable:: sub9_thrust_and_kill_board.HeartbeatReceivePacket
 
 .. autoclass:: sub9_thrust_and_kill_board.HeartbeatReceivePacket
+    :members:
+
+ThrusterId
+^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.ThrusterId
+
+.. autoclass:: sub9_thrust_and_kill_board.ThrusterId
     :members:
 
 ThrustSetPacket

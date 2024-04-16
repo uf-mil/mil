@@ -486,8 +486,4 @@ class CommandPacket(Packet):
         return data
 
     def __str__(self):
-        return "CommandPacket(filter_id={}, is_receive={}, receive_length={})".format(
-            self.filter_id,
-            self.is_receive,
-            self.length,
-        )
+        return f"CommandPacket(filter_id={self.filter_id}, is_receive={self.is_receive}, receive_length={self.length})"

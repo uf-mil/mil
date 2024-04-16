@@ -212,11 +212,7 @@ class OnlineBagger:
             if i % 1000 == 0:
                 rospy.logdebug("still subscribing!")
         rospy.loginfo(
-            "Subscribed to {} of {} topics, will try again every {} seconds".format(
-                self.successful_subscription_count,
-                len(self.subscriber_list),
-                self.resubscribe_period,
-            ),
+            f"Subscribed to {self.successful_subscription_count} of {len(self.subscriber_list)} topics, will try again every {self.resubscribe_period} seconds",
         )
         self.resubscriber = rospy.Timer(
             rospy.Duration(self.resubscribe_period),
@@ -339,11 +335,7 @@ class OnlineBagger:
         # verify streaming is popping off and recording topics
         if self.iteration_count % 100 == 0:
             rospy.logdebug(
-                "{} has {} messages spanning {} seconds".format(
-                    topic,
-                    self.get_topic_message_count(topic),
-                    round(time_diff.to_sec(), 2),
-                ),
+                f"{topic} has {self.get_topic_message_count(topic)} messages spanning {round(time_diff.to_sec(), 2)} seconds",
             )
 
         while (
