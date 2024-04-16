@@ -5,6 +5,7 @@ from .ball_drop import BallDrop
 from .ball_drop_test import BallDropTest
 from .dracula_grab import DraculaGrabber
 from .gripper_test import GripperTest
+from .hydrothermal_vent import HydrothermalVent
 from .move import Move
 from .pinger import Pinger
 from .pose_editor import PoseEditor
@@ -18,4 +19,3 @@ from .sub_singleton import SubjuGatorMission
 from .surface import Surface
 from .torpedos_test import TorpedosTest
 from .vampire_slayer import VampireSlayer
-from .hydrothermal_vent import HydrothermalVent

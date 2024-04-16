@@ -444,10 +444,10 @@ class PoseEditor:
 
     def turn_vec_towards_rel(self, body_vec, towards_rel_point) -> PoseEditor:
         return self.set_orientation(triad((UP, towards_rel_point), (UP, body_vec)))
-    
+
     def set_roll_pitch_yaw(self, roll: float, pitch: float, yaw: float) -> PoseEditor:
         return self.set_orientation(
-                transformations.quaternion_multiply(
+            transformations.quaternion_multiply(
                 transformations.quaternion_from_euler(roll, pitch, yaw),
                 self.orientation,
             ),
@@ -687,4 +687,3 @@ class PoseEditor:
     @property
     def angular_tolerance(self) -> int:
         return 0
-    
