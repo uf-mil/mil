@@ -122,7 +122,7 @@ class POIServer:
             )
             return ps_tf.point
         except tf2_ros.TransformException as e:
-            rclpy.logwarn(
+            self.get_logger().warn(
                 'Error transforming "{}" to "{}": {}'.format(
                     ps.header.frame_id,
                     self.global_frame,
