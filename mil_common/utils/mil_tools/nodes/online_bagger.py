@@ -6,11 +6,12 @@ import argparse
 import datetime
 import itertools
 import os
+import sys
 from collections import deque
 from typing import TYPE_CHECKING
 
+import rclpy
 import rosbag
-import rospy
 import rostopic
 from actionlib import SimpleActionClient, SimpleActionServer, TerminalState
 from mil_msgs.msg import (
@@ -60,8 +61,8 @@ class OnlineBagger:
         self.streaming = True
         self.get_params()
         if len(self.subscriber_list) == 0:
-            rospy.logwarn("No topics selected to subscribe to. Closing.")
-            rospy.signal_shutdown("No topics to subscribe to")
+            rclpy.logwarn("No topics selected to subscribe to. Closing.")
+            rclpy.signal_shutdown("No topics to subscribe to")
             return
         self.make_dicts()
 
@@ -72,7 +73,9 @@ class OnlineBagger:
             auto_start=False,
         )
         self.subscribe_loop()
-        rospy.loginfo(f"Remaining Failed Topics: {self.get_subscriber_list(False)}\n")
+        self.get_logger().info(
+            f"Remaining Failed Topics: {self.get_subscriber_list(False)}\n",
+        )
         self._action_server.start()
 
     def get_subscriber_list(self, status):
@@ -99,20 +102,23 @@ class OnlineBagger:
         """
         Retrieve parameters from param server.
         """
-        self.dir = rospy.get_param("~bag_package_path", default=None)
+        self.dir = self.declare_parameter("~bag_package_path", default=None)
         # Handle bag directory for MIL bag script
         if self.dir is None and "BAG_DIR" in os.environ:
             self.dir = os.environ["BAG_DIR"]
 
-        self.stream_time = rospy.get_param("~stream_time", default=30)  # seconds
-        self.resubscribe_period = rospy.get_param(
+        self.stream_time = self.declare_parameter("~stream_time", default=30)  # seconds
+        self.resubscribe_period = self.declare_parameter(
             "~resubscribe_period",
             default=3.0,
         )  # seconds
-        self.dated_folder = rospy.get_param("~dated_folder", default=True)  # bool
+        self.dated_folder = self.declare_parameter(
+            "~dated_folder",
+            default=True,
+        )  # bool
 
         self.subscriber_list = {}
-        topics_param = rospy.get_param("~topics", default=[])
+        topics_param = self.declare_parameter("~topics", default=[])
 
         # Add topics from rosparam to subscribe list
         for topic in topics_param:
@@ -147,8 +153,8 @@ class OnlineBagger:
             if key[0:4] == "bag_":
                 add_env_var(os.environ[key])
 
-        rospy.loginfo(f"Default stream_time: {self.stream_time} seconds")
-        rospy.loginfo(f"Bag Directory: {self.dir}")
+        node.get_logger().info(f"Default stream_time: {self.stream_time} seconds")
+        node.get_logger().info(f"Bag Directory: {self.dir}")
 
     def make_dicts(self):
         """
@@ -193,7 +199,9 @@ class OnlineBagger:
         for topic in self.subscriber_list:
             self.topic_messages[topic] = SliceableDeque(deque())
 
-        rospy.loginfo(f"Initial subscriber_list: {self.get_subscriber_list(False)}")
+        node.get_logger().info(
+            f"Initial subscriber_list: {self.get_subscriber_list(False)}",
+        )
 
     def subscribe_loop(self):
         """
@@ -205,25 +213,25 @@ class OnlineBagger:
         i = 0
         # if self.successful_subscription_count == 0 and not
         # rospy.is_shutdown():
-        while self.successful_subscription_count == 0 and not rospy.is_shutdown():
+        while self.successful_subscription_count == 0 and not rclpy.is_shutdown():
             self.subscribe()
-            rospy.sleep(0.1)
+            rclpy.sleep(0.1)
             i = i + 1
             if i % 1000 == 0:
-                rospy.logdebug("still subscribing!")
-        rospy.loginfo(
+                rclpy.logdebug("still subscribing!")
+        node.get_logger().info(
             "Subscribed to {} of {} topics, will try again every {} seconds".format(
                 self.successful_subscription_count,
                 len(self.subscriber_list),
                 self.resubscribe_period,
             ),
         )
-        self.resubscriber = rospy.Timer(
-            rospy.Duration(self.resubscribe_period),
+        self.resubscriber = rclpy.Timer(
+            rclpy.Duration(self.resubscribe_period),
             self.subscribe,
         )
 
-    def subscribe(self, _: rospy.timer.TimerEvent | None = None):
+    def subscribe(self, _: rclpy.timer.TimerEvent | None = None):
         """
         Subscribe to the topics defined in the yaml configuration file
 
@@ -239,16 +247,16 @@ class OnlineBagger:
             self.resubscriber is not None
         ):
             self.resubscriber.shutdown()
-        rospy.loginfo("All topics subscribed too! Shutting down resubscriber")
+        node.get_logger().info("All topics subscribed too! Shutting down resubscriber")
 
         for topic, (time, subscribed) in self.subscriber_list.items():
             if not subscribed:
                 msg_class = rostopic.get_topic_class(topic)
                 if msg_class[1] is not None:
                     self.successful_subscription_count += 1
-                    rospy.Subscriber(
-                        topic,
+                    self.create_subscription(
                         msg_class[0],
+                        topic,
                         lambda msg, _topic=topic: self.bagger_callback(msg, _topic),
                     )
 
@@ -280,7 +288,7 @@ class OnlineBagger:
         if hasattr(msg, "header"):
             return msg.header.stamp
         else:
-            return rospy.get_rostime()
+            return rclpy.get_rostime()
 
     def get_time_index(self, topic, requested_seconds):
         """
@@ -338,7 +346,7 @@ class OnlineBagger:
 
         # verify streaming is popping off and recording topics
         if self.iteration_count % 100 == 0:
-            rospy.logdebug(
+            rclpy.logdebug(
                 "{} has {} messages spanning {} seconds".format(
                     topic,
                     self.get_topic_message_count(topic),
@@ -347,8 +355,8 @@ class OnlineBagger:
             )
 
         while (
-            time_diff > rospy.Duration(self.subscriber_list[topic][0])
-            and not rospy.is_shutdown()
+            time_diff > rclpy.Duration(self.subscriber_list[topic][0])
+            and not rclpy.is_shutdown()
         ):
             self.topic_messages[topic].popleft()
             time_diff = self.get_topic_duration(topic)
@@ -509,7 +517,7 @@ class OnlineBagger:
             if bag is not None:
                 bag.close()
             return
-        rospy.loginfo(f"Bag written to {result.filename}")
+        node.get_logger().info(f"Bag written to {result.filename}")
         result.success = True
         self._action_server.set_succeeded(result)
         self.streaming = True
@@ -539,7 +547,7 @@ class OnlineBaggerClient:
             self.bar.refresh()
             self.total_it = percentage
 
-    def bag(self, timeout=rospy.Duration(0)):
+    def bag(self, timeout=rclpy.Duration(0)):
         self.client.wait_for_server()
         self.result = None
         self.total_it = 0
@@ -554,8 +562,8 @@ class OnlineBaggerClient:
             done_cb=self._done_cb,
             feedback_cb=self._feedback_cb,
         )
-        while self.result is None and not rospy.is_shutdown():
-            rospy.sleep(0.1)
+        while self.result is None and not rclpy.is_shutdown():
+            rclpy.sleep(0.1)
         self.bar.refresh()
         self.bar.close()
         (status, result) = self.result
@@ -566,7 +574,7 @@ class OnlineBaggerClient:
 
 
 if __name__ == "__main__":
-    argv = rospy.myargv()
+    argv = rclpy.myargv()
     parser = argparse.ArgumentParser(
         description="ROS node to maintain buffers to create bags of the past\
                                                   and client to call this node.",
@@ -605,11 +613,15 @@ if __name__ == "__main__":
     )
     args = parser.parse_args(argv[1:])
     if args.client:  # Run as actionclient
-        rospy.init_node("online_bagger_client", anonymous=True)
+        rclpy.init(args=sys.argv)
+        node = rclpy.create_node("online_bagger_client")
+
         topics = "" if args.topics is None else "".join(args.topics)
         client = OnlineBaggerClient(name=args.name, topics=topics, time=args.time)
         client.bag()
     else:  # Run as OnlineBagger server
-        rospy.init_node("online_bagger")
+        rclpy.init(args=sys.argv)
+        node = rclpy.create_node("online_bagger")
+
         bagger = OnlineBagger()
-        rospy.spin()
+        rclpy.spin()

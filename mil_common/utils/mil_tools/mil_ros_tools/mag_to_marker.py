@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 import argparse
+import sys
 
 import numpy as np
-import rospy
+import rclpy
 from mil_tools import numpy_to_point, rosmsg_to_numpy
 from sensor_msgs.msg import MagneticField
 from std_msgs.msg import ColorRGBA
@@ -41,12 +42,12 @@ class MagToMarker:
         if color is None:
             color = [0, 0, 1, 1]
         self.length = length
-        self.pub = rospy.Publisher(marker_topic, Marker, queue_size=1)
+        self.pub = self.create_publisher(Marker, marker_topic, 1)
         self.color = ColorRGBA(*color)
-        rospy.Subscriber(mag_topic, MagneticField, self.publish)
+        self.create_subscription(MagneticField, mag_topic, self.publish)
 
     def publish(self, vec: MagneticField):
-        rospy.logdebug("mag received")
+        rclpy.logdebug("mag received")
         marker = Marker()
         marker.header = vec.header
         marker.type = 0
@@ -59,7 +60,7 @@ class MagToMarker:
         if self.length is not None:
             norm = np.linalg.norm(vec)
             if norm == 0:
-                rospy.logwarn("Zero vector received, skipping")
+                rclpy.logwarn("Zero vector received, skipping")
                 return
             vec = (self.length / norm) * vec
         marker.points.append(numpy_to_point(vec))
@@ -97,8 +98,9 @@ if __name__ == "__main__":
         metavar=("R", "G", "B", "A"),
         help="Color of vector to publish as floats RGBA 0 to 1",
     )
-    args = rospy.myargv()
+    args = rclpy.myargv()
     args = parser.parse_args(args[1:])
-    rospy.init_node("mag_to_marker")
+    rclpy.init(args=sys.argv)
+    node = rclpy.create_node("mag_to_marker")
     MagToMarker(args.mag_topic, args.marker_topic, length=args.length, color=args.color)
-    rospy.spin()
+    rclpy.spin()

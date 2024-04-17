@@ -3,7 +3,7 @@
 from threading import Lock
 from typing import Optional
 
-import rospy
+import rclpy
 import tf2_ros
 from geometry_msgs.msg import Point, PointStamped, Pose, Quaternion
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
@@ -49,27 +49,27 @@ class POIServer:
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
         # Radius of interactive marker for POIs
-        self.marker_scale = rospy.get_param("~marker_scale", 0.5)
+        self.marker_scale = self.declare_parameter("~marker_scale", 0.5)
 
         # Create initial empty POI array
         self.pois = POIArray()
 
         # Get the global frame to be used
-        self.global_frame = rospy.get_param("~global_frame", "map")
+        self.global_frame = self.declare_parameter("~global_frame", "map")
         self.pois.header.frame_id = self.global_frame
 
         # Create publisher to notify clients of updates and interactive marker server
-        self.pub = rospy.Publisher(
-            "points_of_interest",
+        self.pub = self.create_publisher(
             POIArray,
-            queue_size=1,
+            "points_of_interest",
+            1,
             latch=True,
         )
         self.interactive_marker_server = InteractiveMarkerServer("points_of_interest")
 
         # Load initial POIs from params
-        if rospy.has_param("~initial_pois"):
-            pois = rospy.get_param("~initial_pois")
+        if rclpy.has_param("~initial_pois"):
+            pois = self.declare_parameter("~initial_pois")
             assert isinstance(pois, dict)
             for key, value in pois.items():
                 assert isinstance(key, str)
@@ -85,12 +85,16 @@ class POIServer:
         self.update()
 
         # Create services to add / delete / move a POI
-        self.add_poi_server = rospy.Service("~add", AddPOI, self.add_poi_cb)
-        self.delete_poi_server = rospy.Service("~delete", DeletePOI, self.delete_poi_cb)
-        self.move_poi_service = rospy.Service("~move", MovePOI, self.move_poi_cb)
-        self.save_to_param = rospy.Service(
-            "~save_to_param",
+        self.add_poi_server = self.create_service(AddPOI, "~add", self.add_poi_cb)
+        self.delete_poi_server = self.create_service(
+            DeletePOI,
+            "~delete",
+            self.delete_poi_cb,
+        )
+        self.move_poi_service = self.create_service(MovePOI, "~move", self.move_poi_cb)
+        self.save_to_param = self.create_service(
             Trigger,
+            "~save_to_param",
             self.save_to_param_cb,
         )
 
@@ -114,11 +118,11 @@ class POIServer:
             ps_tf = self.tf_buffer.transform(
                 ps,
                 self.global_frame,
-                timeout=rospy.Duration(5),
+                timeout=rclpy.Duration(5),
             )
             return ps_tf.point
         except tf2_ros.TransformException as e:
-            rospy.logwarn(
+            rclpy.logwarn(
                 'Error transforming "{}" to "{}": {}'.format(
                     ps.header.frame_id,
                     self.global_frame,
@@ -163,7 +167,7 @@ class POIServer:
             TriggerResponse: The response from the service; ie, whether the operation
             succeeded.
         """
-        rospy.set_param("~global_frame", self.global_frame)
+        self.declare_parameter("~global_frame", self.global_frame)
         d = {}
         for poi in self.pois.pois:
             d[poi.name] = [
@@ -171,7 +175,7 @@ class POIServer:
                 float(poi.position.y),
                 float(poi.position.z),
             ]
-        rospy.set_param("~initial_pois", d)
+        self.declare_parameter("~initial_pois", d)
         return TriggerResponse(success=True)
 
     def add_poi_cb(self, req: AddPOIRequest) -> AddPOIResponse:
@@ -296,7 +300,7 @@ class POIServer:
         """
         Update interactive markers server and POI publish of changes.
         """
-        self.pois.header.stamp = rospy.Time.now()
+        self.pois.header.stamp = rclpy.Time.now()
         self.pub.publish(self.pois)
         self.interactive_marker_server.applyChanges()
 

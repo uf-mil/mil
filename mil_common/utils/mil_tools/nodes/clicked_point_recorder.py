@@ -2,9 +2,10 @@
 
 import csv
 import datetime
+import sys
 from typing import Dict, Union
 
-import rospy
+import rclpy
 from geometry_msgs.msg import PointStamped
 
 
@@ -16,7 +17,11 @@ class ClickedPointRecorder:
 
     def __init__(self):
         self.points = []
-        self.point_sub = rospy.Subscriber("/clicked_point", PointStamped, self.point_cb)
+        self.point_sub = self.create_subscription(
+            PointStamped,
+            "/clicked_point",
+            self.point_cb,
+        )
 
     def point_to_dict(self, point: PointStamped) -> Dict[str, Union[str, int, float]]:
         """
@@ -52,7 +57,7 @@ class ClickedPointRecorder:
             for p in self.points:
                 d = self.point_to_dict(p)
                 writer.writerow(d)
-        rospy.loginfo(f"Writing points to {filename}")
+        self.get_logger().info(f"Writing points to {filename}")
 
     def point_cb(self, point: PointStamped) -> None:
         """
@@ -62,16 +67,17 @@ class ClickedPointRecorder:
         Args:
             point (PointStamped): The message input to the callback.
         """
-        rospy.loginfo(f"Received new point: {point}")
+        self.get_logger().info(f"Received new point: {point}")
         self.points.append(point)
 
 
 if __name__ == "__main__":
-    rospy.init_node("clicked_point_recorder")
+    rclpy.init(args=sys.argv)
+    node = rclpy.create_node("clicked_point_recorder")
     recorder = ClickedPointRecorder()
 
     def shutdown_cb():
         recorder.write_file()
 
-    rospy.on_shutdown(shutdown_cb)
-    rospy.spin()
+    rclpy.on_shutdown(shutdown_cb)
+    rclpy.spin()

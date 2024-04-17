@@ -4,7 +4,7 @@ import time
 import unittest
 
 import numpy as np
-import rospy
+import rclpy
 from geometry_msgs.msg import Pose2D, Quaternion, Vector3
 from mil_misc_tools import datetime_to_rospy, rospy_to_datetime
 from mil_ros_tools import (
@@ -161,7 +161,7 @@ class TestROSTools(unittest.TestCase):
         """Test datetime to rospy.Time conversion."""
         for _ in range(10):
             unix_stamp = random.randrange(0, int(time.time()))
-            rp1 = rospy.Time(unix_stamp)
+            rp1 = rclpy.Time(unix_stamp)
             dt1 = rospy_to_datetime(rp1)
             self.assertEqual(datetime_to_rospy(dt1), rp1)
 

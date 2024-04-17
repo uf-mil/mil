@@ -7,11 +7,12 @@ import sys
 
 import cv2
 import numpy as np
-import rospy
+import rclpy
 from geometry_msgs.msg import Pose
 from nav_msgs.msg import MapMetaData, OccupancyGrid
 
-rospy.init_node("ogrid_draw_node", anonymous=True)
+rclpy.init(args=sys.argv)
+node = rclpy.create_node("ogrid_draw_node")
 
 
 class DrawGrid:
@@ -61,13 +62,17 @@ class OGridPub:
     """
 
     def __init__(self, image_path=None):
-        height = int(rospy.get_param("~grid_height", 800))
-        width = int(rospy.get_param("~grid_width", 800))
-        resolution = rospy.get_param("~grid_resolution", 0.3)
-        ogrid_topic = rospy.get_param("~grid_topic", "/ogrid")
+        height = int(self.declare_parameter("~grid_height", 800))
+        width = int(self.declare_parameter("~grid_width", 800))
+        resolution = self.declare_parameter("~grid_resolution", 0.3)
+        ogrid_topic = self.declare_parameter("~grid_topic", "/ogrid")
 
         self.grid_drawer = DrawGrid(height, width, image_path)
-        self.ogrid_pub = rospy.Publisher(ogrid_topic, OccupancyGrid, queue_size=1)
+        self.ogrid_pub = self.declare_parameter(
+            ogrid_topic,
+            OccupancyGrid,
+            queue_size=1,
+        )
 
         m = MapMetaData()
         m.resolution = resolution
@@ -79,14 +84,14 @@ class OGridPub:
 
         self.map_meta_data = m
 
-        rospy.Timer(rospy.Duration(1), self.pub_grid)
+        rclpy.Timer(rclpy.Duration(1), self.pub_grid)
 
     def pub_grid(self, *args):
         grid = self.grid_drawer.img
 
         ogrid = OccupancyGrid()
         ogrid.header.frame_id = "/enu"
-        ogrid.header.stamp = rospy.Time.now()
+        ogrid.header.stamp = rclpy.Time.now()
         ogrid.info = self.map_meta_data
         ogrid.data = np.subtract(np.flipud(grid).flatten(), 1).astype(np.int8).tolist()
 
@@ -116,7 +121,7 @@ if __name__ == "__main__":
 
     o = OGridPub(image_path=im_path)
 
-    while not rospy.is_shutdown():
+    while not rclpy.is_shutdown():
         cv2.imshow("Draw OccupancyGrid", o.grid_drawer.img)
         k = cv2.waitKey(100) & 0xFF
 

@@ -6,8 +6,9 @@ when needed.
 import time
 from typing import Any, Optional
 
-import rospy
+import rclpy
 import rostest
+from rclpy.node import Node
 
 
 def wait_for_param(
@@ -32,11 +33,11 @@ def wait_for_param(
         the parameter never came to exist.
     """
     start_time = time.time()
-    rate = rospy.Rate(poll_rate)
-    while not rospy.is_shutdown():
+    rate = rclpy.Rate(poll_rate)
+    while not rclpy.is_shutdown():
         # Check if the parameter now exists
-        if rospy.has_param(param_name):
-            return rospy.get_param(param_name)
+        if rclpy.has_param(param_name):
+            return Node.declare_parameter(param_name)
 
         # If we exceed a defined timeout, return None
         if timeout is not None and time.time() - start_time > timeout:
@@ -65,10 +66,10 @@ def wait_for_subscriber(node_name: str, topic: str, timeout: float = 5.0) -> boo
     end_time = time.time() + timeout
 
     # Wait for time-out or ros-shutdown
-    while (time.time() < end_time) and (not rospy.is_shutdown()):
+    while (time.time() < end_time) and (not rclpy.is_shutdown()):
         subscribed = rostest.is_subscriber(
-            rospy.resolve_name(topic),
-            rospy.resolve_name(node_name),
+            rclpy.resolve_name(topic),
+            rclpy.resolve_name(node_name),
         )
         # Success scenario: node subscribes
         if subscribed:
@@ -78,8 +79,8 @@ def wait_for_subscriber(node_name: str, topic: str, timeout: float = 5.0) -> boo
     # Could do this with a while/else
     # But chose to explicitly check
     success = rostest.is_subscriber(
-        rospy.resolve_name(topic),
-        rospy.resolve_name(node_name),
+        rclpy.resolve_name(topic),
+        rclpy.resolve_name(node_name),
     )
     return success
 
@@ -101,8 +102,8 @@ def wait_for_service(
     """
     try:
         service.wait_for_service(warn_time)
-    except rospy.ROSException:
+    except rclpy.ROSException:
         if timeout is not None:
             timeout = timeout - warn_time
-        rospy.logwarn(warn_msg)
+        rclpy.logwarn(warn_msg)
         service.wait_for_service(timeout)

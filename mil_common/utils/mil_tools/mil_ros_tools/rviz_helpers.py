@@ -2,15 +2,16 @@
 from typing import List, Tuple
 
 import numpy as np
-import rospy
+import rclpy
 import visualization_msgs.msg as visualization_msgs
 from geometry_msgs.msg import Point, Pose, Vector3
 from image_geometry import PinholeCameraModel
+from rclpy.node import Node
 from std_msgs.msg import ColorRGBA
 
 import mil_ros_tools
 
-rviz_pub = rospy.Publisher("visualization", visualization_msgs.Marker, queue_size=3)
+rviz_pub = Node.create_publisher(visualization_msgs.Marker, "visualization", 3)
 
 
 def draw_sphere(
@@ -46,7 +47,7 @@ def draw_sphere(
         pose=pose,
         color=ColorRGBA(*color),
         scale=Vector3(*scaling),
-        lifetime=rospy.Duration(),
+        lifetime=rclpy.Duration(),
     )
     rviz_pub.publish(marker)
 
@@ -115,7 +116,7 @@ def make_ray(
         color=ColorRGBA(*color),
         scale=Vector3(0.05, 0.05, 0.05),
         points=[Point(*o) for o in [base, direction * length]],
-        lifetime=rospy.Duration(),
+        lifetime=rclpy.Duration(),
         **kwargs,
     )
     return marker

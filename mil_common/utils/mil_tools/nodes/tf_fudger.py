@@ -5,11 +5,13 @@ import sys
 
 import cv2
 import numpy as np
-import rospy
+import rclpy
 import tf
 import tf.transformations as trns
 
-rospy.init_node("tf_fudger", anonymous=True)
+rclpy.init(args=sys.argv)
+node = rclpy.create_node("tf_fudger")
+
 br = tf.TransformBroadcaster()
 
 usage_msg = "Useful to test transforms between two frames."
@@ -93,13 +95,13 @@ try:
     listener.waitForTransform(
         args.tf_parent,
         args.tf_child,
-        rospy.Time(0),
-        rospy.Duration(1),
+        rclpy.Time(0),
+        rclpy.Duration(1),
     )
     (trans, rot) = listener.lookupTransform(
         args.tf_parent,
         args.tf_child,
-        rospy.Time(0),
+        rclpy.Time(0),
     )
     euler = trns.euler_from_quaternion(rot)
     p_original = trans
@@ -127,7 +129,7 @@ reset()
 p_last = p_original
 rpy_last = rpy_original
 
-while not rospy.is_shutdown():
+while not rclpy.is_shutdown():
     x, y, z = (
         toTfLin(cv2.getTrackbarPos("x", "tf")),
         toTfLin(cv2.getTrackbarPos("y", "tf")),
@@ -211,7 +213,7 @@ while not rospy.is_shutdown():
         break
     """
 
-    br.sendTransform(p, q, rospy.Time.now(), args.tf_child, args.tf_parent)
+    br.sendTransform(p, q, rclpy.Time.now(), args.tf_child, args.tf_parent)
 
 # Print out the tf static transform line with the fudged tf
 print(

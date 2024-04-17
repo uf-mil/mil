@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 import os
 import random
+import sys
 
-import rospy
+import rclpy
 import yaml
 
-rospy.init_node("param_saver", anonymous=True)
+rclpy.init(args=sys.argv)
+node = rclpy.create_node("param_saver")
 
 
 class MyDumper(yaml.Dumper):
@@ -13,16 +15,16 @@ class MyDumper(yaml.Dumper):
         return yaml.Dumper.represent_mapping(self, tag, mapping, flow_style)
 
 
-while not rospy.is_shutdown():
-    rospy.sleep(rospy.Duration(3))
+while not rclpy.is_shutdown():
+    rclpy.sleep(rclpy.Duration(3))
 
-    entries = rospy.get_param("~")
+    entries = node.declare_parameter("~")
     for entry in entries.values():
         filename = entry["filename"]
         file_basepath = entry["file_basepath"]
         param_paths = entry["param_paths"]
 
-        p = rospy.get_param(file_basepath)
+        p = node.declare_parameter(file_basepath)
         data = yaml.dump(
             {k: v for k, v in p.items() if k in param_paths},
             Dumper=MyDumper,

@@ -7,7 +7,6 @@ from typing import Optional
 
 import cv2
 import numpy as np
-import rospy
 from axros import NodeHandle
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
@@ -72,7 +71,7 @@ class CvDebug:
         self.base_topic = "/debug/"
         self.topic_to_pub = {}
         if nh is None:
-            self.pub = rospy.Publisher("/debug/image", Image, queue_size=10)
+            self.pub = self.create_publisher(Image, "/debug/image", 10)
         else:
             self.pub = nh.advertise("/debug/image", Image)
 
@@ -136,7 +135,7 @@ class CvDebug:
         if topic in list(self.topic_to_pub.keys()):
             pub = self.topic_to_pub[topic]
         elif self.nh is None:
-            pub = rospy.Publisher("/debug/" + topic, Image, queue_size=10)
+            pub = self.create_publisher(Image, "/debug/" + topic, 10)
         elif self.nh is not None:
             pub = self.nh.advertise("/debug/" + topic, Image)
         self.topic_to_pub[topic] = pub

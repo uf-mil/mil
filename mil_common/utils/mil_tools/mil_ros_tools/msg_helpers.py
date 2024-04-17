@@ -3,9 +3,10 @@ from typing import List, Tuple
 import geometry_msgs.msg as geometry_msgs
 import nav_msgs.msg as nav_msgs
 import numpy as np
-import rospy
+import rclpy
 import std_msgs.msg as std_msgs
 from mil_msgs.msg import Point2D, PoseTwist
+from rclpy.node import Node
 from tf import transformations
 
 
@@ -415,9 +416,9 @@ def make_header(frame="/body", stamp=None) -> std_msgs.Header:
     """
     if stamp is None:
         try:
-            stamp = rospy.Time.now()
-        except rospy.ROSInitException:
-            stamp = rospy.Time(0)
+            stamp = rclpy.Time.now()
+        except rclpy.ROSInitException:
+            stamp = rclpy.Time(0)
 
     header = std_msgs.Header(stamp=stamp, frame_id=frame)
     return header
@@ -481,7 +482,7 @@ def odom_sub(topic, callback):
         msg = args[-1]
         callback(odometry_to_numpy(msg))
 
-    return rospy.Subscriber(topic, nav_msgs.Odometry, wrapped_callback, queue_size=1)
+    return Node.create_subcription(nav_msgs.Odometry, topic, wrapped_callback, 1)
 
 
 def ros_to_np_3D(msg):
