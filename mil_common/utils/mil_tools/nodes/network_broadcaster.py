@@ -27,7 +27,7 @@ class NetworkBroadcaster:
         hz = self.declare_parameter("~hz", 20)
         topic = self.declare_parameter("~topic", "network")
 
-        rclpy.loginfo(f"NETWORK BROADCASTER: publishing to {topic} at {hz}hz")
+        self.get_logger().info(f"NETWORK BROADCASTER: publishing to {topic} at {hz}hz")
         self.msg = Header()
         self.msg.seq = 0
         self.num_connections = -1

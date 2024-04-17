@@ -24,14 +24,16 @@ def get_parameter_range(parameter_root: str):
     """
     low_param, high_param = parameter_root + "/hsv_low", parameter_root + "/hsv_high"
 
-    rclpy.logwarn(f"Blocking -- waiting for parameters {low_param} and {high_param}")
+    Node.get_logger().warn(
+        f"Blocking -- waiting for parameters {low_param} and {high_param}",
+    )
 
     wait_for_param(low_param)
     wait_for_param(high_param)
     low = Node.declare_parameter(low_param)
     high = Node.declare_parameter(high_param)
 
-    Node.get_logger.info()(f"Got {low_param} and {high_param}")
+    Node.get_logger().info()(f"Got {low_param} and {high_param}")
     return np.array([low, high]).transpose()
 
 
@@ -82,7 +84,7 @@ class Image_Publisher:
             self.im_pub.publish(image_message)
         except CvBridgeError as e:
             # Intentionally absorb CvBridge Errors
-            rclpy.logerr(str(e))
+            self.get_logger().warn(str(e))
 
 
 class Image_Subscriber:
@@ -142,7 +144,7 @@ class Image_Subscriber:
         Raises:
             Exception: No camera info was found after the timeout had finished.
         """
-        rclpy.logwarn(
+        self.get_logger().warn(
             "Blocking -- waiting at most %d seconds for camera info." % timeout,
         )
 
@@ -152,11 +154,11 @@ class Image_Subscriber:
 
         while (rclpy.Time.now() - start_time < timeout) and (not rclpy.is_shutdown()):
             if self.camera_info is not None:
-                rclpy.loginfo("Camera info found!")
+                self.get_logger().info("Camera info found!")
                 return self.camera_info
             rclpy.sleep(0.2)
 
-        rclpy.logerr("Camera info not found.")
+        self.get_logger().warn("Camera info not found.")
         raise Exception("Camera info not found.")
 
     def wait_for_camera_model(self, **kwargs):
@@ -204,7 +206,7 @@ class Image_Subscriber:
             self.callback(image)
         except CvBridgeError as e:
             # Intentionally absorb CvBridge Errors
-            rclpy.logerr(e)
+            self.get_logger().warn(e)
 
 
 class StereoImageSubscriber:
@@ -377,4 +379,4 @@ class StereoImageSubscriber:
             self.callback(img_left, img_right)
         except CvBridgeError as e:
             # Intentionally absorb CvBridge Errors
-            rclpy.logerr(e)
+            self.get_logger().warn(e)

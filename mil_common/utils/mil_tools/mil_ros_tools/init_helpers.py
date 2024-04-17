@@ -105,5 +105,5 @@ def wait_for_service(
     except rclpy.ROSException:
         if timeout is not None:
             timeout = timeout - warn_time
-        rclpy.logwarn(warn_msg)
+        Node.get_logger().warm(warn_msg)
         service.wait_for_service(timeout)

@@ -60,7 +60,7 @@ class MagToMarker:
         if self.length is not None:
             norm = np.linalg.norm(vec)
             if norm == 0:
-                rclpy.logwarn("Zero vector received, skipping")
+                self.get_logger().warn("Zero vector received, skipping")
                 return
             vec = (self.length / norm) * vec
         marker.points.append(numpy_to_point(vec))

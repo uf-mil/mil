@@ -61,7 +61,7 @@ class OnlineBagger:
         self.streaming = True
         self.get_params()
         if len(self.subscriber_list) == 0:
-            rclpy.logwarn("No topics selected to subscribe to. Closing.")
+            self.get_logger().warn("No topics selected to subscribe to. Closing.")
             rclpy.signal_shutdown("No topics to subscribe to")
             return
         self.make_dicts()
