@@ -8,8 +8,8 @@ mechanism.
 
 import os
 
+import rclpy
 import rospkg
-import rospy
 from python_qt_binding import QtCore, QtWidgets, loadUi
 from qt_gui.plugin import Plugin
 from remote_control_lib import RemoteControl
@@ -44,7 +44,7 @@ class Shooter(Plugin):
 
         self.shooter_status = {
             "received": "Unknown",
-            "stamp": rospy.Time.now(),
+            "stamp": rclpy.Time.now(),
             "cached": "Unknown",
         }
 
@@ -52,7 +52,7 @@ class Shooter(Plugin):
 
         self.connect_ui()
 
-        rospy.Subscriber("/shooter/status", String, self.cache_shooter_status)
+        self.create_subscription(String, "/shooter/status", self.cache_shooter_status)
 
         # Deals with problem of multiple instances of same plugin
         if context.serial_number() > 1:
@@ -142,7 +142,7 @@ class Shooter(Plugin):
         Stores the shooter status when it is published.
         """
         self.shooter_status["received"] = msg.data
-        self.shooter_status["stamp"] = rospy.Time.now()
+        self.shooter_status["stamp"] = rclpy.Time.now()
 
     def monitor_shooter_status(self) -> None:
         """
@@ -150,7 +150,7 @@ class Shooter(Plugin):
         when the received shooter status has changed. The connection to the
         status will time out if no message has been received in 1s.
         """
-        if (rospy.Time.now() - self.shooter_status["stamp"]) < rospy.Duration(1):
+        if (rclpy.Time.now() - self.shooter_status["stamp"]) < rclpy.Duration(1):
             self.remote.is_timed_out = False
 
         # Sets the remote control to timed out and the shooter status to 'Unknown' if no message has been received in 1s
