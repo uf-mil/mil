@@ -188,7 +188,9 @@ mil_system_install python3-pip python3-setuptools
 sudo apt reinstall -y python3-pip
 
 # Disable "automatic updates" Ubuntu prompt (thanks to https://askubuntu.com/a/610623!)
-sudo sed -i 's/Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades
+if which update-manager >/dev/null 2>&1; then
+	sudo sed -i 's/Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades
+fi
 
 # Install Python 3 dependencies
 sudo pip3 install -r requirements.txt
