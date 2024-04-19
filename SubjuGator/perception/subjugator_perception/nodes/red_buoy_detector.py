@@ -13,7 +13,7 @@ import cv2 as cv
 import cv2 as cv
 import numpy as np
 
-img = cv.imread("./test_images/underwater-test.png")
+img = cv.imread("./test_images/buoys.png")
 img = cv.resize(img, (960, 600))
 mean = cv.mean(img)[0:3]
 average = np.full_like(img, (mean))
