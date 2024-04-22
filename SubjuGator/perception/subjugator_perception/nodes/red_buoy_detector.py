@@ -24,35 +24,22 @@ img_hsv[:,:,0] = opposite_hsv[:,:,0]
 img_hsv[:,:,1] = opposite_hsv[:,:,1]
 img2 = cv.cvtColor(img_hsv, cv.COLOR_HSV2BGR)
 no_hue = cv.addWeighted(img2, 0.5, img, 0.5, 0)
-cv.imshow('Result', no_hue)
 
+# blur and get edges from image with no hue
+blur = cv.GaussianBlur(no_hue, (5, 5), 0)
+edges = cv.Canny(blur, 70, 225)
+
+# detect circles, since there is only one buoy, we set minDist to 500 in order to prevent false circles
+circles = cv.HoughCircles(edges, cv.HOUGH_GRADIENT, 1, 500, param1=100, param2=18, minRadius=5, maxRadius=500)
+
+# draw circles on result
+if circles is not None:
+    circles = np.round(circles[0, :]).astype("int")
+
+    for (x, y, r) in circles:
+        cv.circle(img, (x, y), r, (0, 255, 0), 4)
+
+cv.imshow('No hue', no_hue)
+cv.imshow('Edges', edges)
+cv.imshow('Result', img)
 cv.waitKey(0)
-
-
-# blur = cv.GaussianBlur(img, (5, 5), 0)
-# edges = cv.Canny(blur, 70, 225)
-
-# hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
-
-
-# gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-# gray_blurred = cv.blur(gray, (3, 3))
-# value = hsv[:, :, 2]
-
-# circles = cv.HoughCircles(gray_blurred, cv.HOUGH_GRADIENT,
-#                           1, 20, param1 = 50, param2 = 30,
-#                           minRadius = 1, maxRadius = 40)
-
-# if circles is not None:
-#     circles = np.round(circles[0, :]).astype("int")
-
-#     for (x, y, r) in circles:
-#         cv.circle(img, (x, y), r, (0, 255, 0), 4)
-
-# cv.imshow('Balls', img)
-# cv.imshow('Gray ball', gray_blurred)
-
-# cv.imshow('Blurred', blur)
-# cv.imshow('Edges', edges)
-# cv.imshow('Grayscale HSV', value)
-# cv.waitKey(0)
