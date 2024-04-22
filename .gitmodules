@@ -26,3 +26,6 @@
 [submodule "SubjuGator/drivers/vectornav"]
 	path = SubjuGator/drivers/vectornav
 	url = https://github.com/uf-mil/vectornav
+[submodule "mil_common/perception/vision_stack"]
+	path = mil_common/perception/vision_stack
+	url = https://github.com/uf-mil/vision_stack.git
