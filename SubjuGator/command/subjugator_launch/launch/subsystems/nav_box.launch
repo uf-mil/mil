@@ -29,7 +29,7 @@
   <group if="$(arg imu)" >
       <group if="$(eval environment == 'real')">
           <include file="$(find vectornav)/launch/vn100_imu.launch">
-              <arg name="serial_port" value="missing for now" />
+              <arg name="serial_port" value="/dev/serial/by-id/usb-FTDI_USB-RS232_Cable_AV0K7MTC-if00-port0" />
           </include>
         <node pkg="nodelet" type="nodelet" name="magnetic_dynamic_compensation" args="standalone magnetic_dynamic_compensation/nodelet">
           <remap from="/imu/mag" to="/imu/mag_lessraw"/>
