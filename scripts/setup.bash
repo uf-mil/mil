@@ -115,4 +115,4 @@ cmonly() {
 alias xbox=startxbox
 
 # PYTHONPATH modifications
-export PYTHONPATH="${HOME}/catkin_ws/src/mil/mil_common/perception/vision_stack/src/vision_stack:${HOME}/catkin_ws/src/mil/mil_common/axros/axros/src:${PYTHONPATH}"
+export PYTHONPATH="${HOME}/catkin_ws/src/mil/mil_common/perception/vision_stack/src:${HOME}/catkin_ws/src/mil/mil_common/axros/axros/src:${PYTHONPATH}"
