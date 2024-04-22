@@ -8,11 +8,10 @@ import numpy as np
 import tf.transformations as trns
 from geometry_msgs.msg import Point, PoseStamped
 from mil_misc_tools.text_effects import fprint
+from navigator import NaviGatorMission
 from navigator_msgs.msg import ShooterDoAction
 from navigator_msgs.srv import CameraToLidarTransform, CameraToLidarTransformRequest
 from navigator_tools import MissingPerceptionObject
-
-from navigator import NaviGatorMission
 
 
 class DetectDeliver(NaviGatorMission):
