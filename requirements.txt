@@ -8,7 +8,7 @@ uvloop==0.16.0
 
 # Data Science
 pandas==1.4.1
-numpy==1.22.3
+numpy==1.24.4
 
 # Machine Learning
 scipy==1.10.0
@@ -54,3 +54,4 @@ opencv-python==4.6.0.66
 seaborn==0.11.2
 thop==0.1.1.post2207130030
 requests==2.31.0
+tensorflow==2.13.1
