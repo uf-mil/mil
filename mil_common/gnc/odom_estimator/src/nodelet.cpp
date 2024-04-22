@@ -281,6 +281,10 @@ private:
     for (unsigned int i = 0; i < msg.velocity_measurements.size(); i++)
     {
       mil_msgs::VelocityMeasurement const &vm = msg.velocity_measurements[i];
+      if (std::fabs(xyz2vec(vm.direction).norm() - 1) > 1e-3)
+      {
+        NODELET_ERROR("VelocityMeasurement::direction should always be a unit vector");
+      }
       if (!std::isnan(vm.velocity))
       {
         good.push_back(vm);
