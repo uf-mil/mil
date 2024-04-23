@@ -60,3 +60,13 @@ class HydrothermalVent(SubjuGatorMission):
         await self.go(self.move().set_roll_pitch_yaw(0, 0, -yaw_angle))
 
         await self.go(self.move().up(self.buoy_pos[1]))
+
+    # This function is supposed to center the buoy based on position given in terms of xy position of the center of the red buoy, with
+    # respect to the center of the camera, as well as the distance from the buoy
+    async def center_bouy(self, buoy_pos_c):
+        while (abs(buoy_pos_c[0]) > 0.01) and (abs(buoy_pos_c[1]) > 0.01):
+            await self.go(self.move().depth(buoy_pos_c[1]))
+            yaw_angle = np.arctan(buoy_pos_c[0] / buoy_pos_c[2])
+            await self.go(self.move().set_roll_pitch_yaw(0, 0, yaw_angle))
+
+            buoy_pos_c = buoy_pos_c  # this will be replaced with the computer vision call to check the position of the buoy
