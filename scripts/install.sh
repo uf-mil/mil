@@ -173,7 +173,10 @@ mil_system_install \
 	ros-noetic-teleop-twist-keyboard \
 	ros-noetic-ros-control \
 	ros-noetic-ros-controllers \
-	ros-noetic-tf2-tools
+	ros-noetic-tf2-tools \
+	ros-noetic-rviz-imu-plugin \
+	ros-noetic-imu-filter-madgwick \
+	ros-noetic-imu-transformer
 
 cat <<EOF
 $(color "$Pur")
