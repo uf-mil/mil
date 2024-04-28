@@ -11,12 +11,12 @@ from typing import Callable, Optional
 
 import actionlib
 import genpy
-import rospy
 from actionlib import TerminalState
 from geometry_msgs.msg import WrenchStamped
 from mil_missions_core import MissionClient
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
 from navigator_msgs.srv import ShooterManual
+from rclpy.duration import Duration
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from std_srvs.srv import Trigger, TriggerRequest
 from topic_tools.srv import MuxSelect
@@ -39,7 +39,7 @@ class RemoteControl:
         self.kill_broadcaster = AlarmBroadcaster("kill")
         self.station_hold_broadcaster = AlarmBroadcaster("station-hold")
 
-        self.wrench_changer = rospy.ServiceProxy("/wrench/select", MuxSelect)
+        self.wrench_changer = self.create_client(MuxSelect, "/wrench/select")
         self.task_client = MissionClient()
         self.kill_listener = AlarmListener(
             "kill",
@@ -49,7 +49,7 @@ class RemoteControl:
         if wrench_pub is None:
             self.wrench_pub = wrench_pub
         else:
-            self.wrench_pub = rospy.Publisher(wrench_pub, WrenchStamped, queue_size=1)
+            self.wrench_pub = self.create_publisher(WrenchStamped, wrench_pub, 1)
 
         self.shooter_load_client = actionlib.SimpleActionClient(
             "/shooter/load",
@@ -59,12 +59,12 @@ class RemoteControl:
             "/shooter/fire",
             ShooterDoAction,
         )
-        self.shooter_cancel_client = rospy.ServiceProxy("/shooter/cancel", Trigger)
-        self.shooter_manual_client = rospy.ServiceProxy(
-            "/shooter/manual",
+        self.shooter_cancel_client = self.create_client(Trigger, "/shooter/cancel")
+        self.shooter_manual_client = self.create_client(
             ShooterManual,
+            "/shooter/manual",
         )
-        self.shooter_reset_client = rospy.ServiceProxy("/shooter/reset", Trigger)
+        self.shooter_reset_client = self.create_client(Trigger, "/shooter/reset")
 
         self.is_killed = False
         self.is_timed_out = False
@@ -95,7 +95,7 @@ class RemoteControl:
         """
         Kills the system regardless of what state it is in.
         """
-        rospy.loginfo("Killing")
+        self.get_logger().info("Killing")
         self.kill_broadcaster.raise_alarm(
             problem_description="System kill from user remote control",
             parameters={"location": self.name},
@@ -106,7 +106,7 @@ class RemoteControl:
         """
         Clears the system kill regardless of what state it is in.
         """
-        rospy.loginfo("Reviving")
+        self.get_logger().info("Reviving")
         self.kill_broadcaster.clear_alarm()
 
     @_timeout_check
@@ -114,7 +114,7 @@ class RemoteControl:
         """
         Toggles the kill status when the toggle_kill_button is pressed.
         """
-        rospy.loginfo("Toggling Kill")
+        self.get_logger().info("Toggling Kill")
 
         # Responds to the kill broadcaster and checks the status of the kill alarm
         if self.is_killed:
@@ -131,7 +131,7 @@ class RemoteControl:
         Sets the goal point to the current location and switches to autonomous
         mode in order to stay at that point.
         """
-        rospy.loginfo("Station Holding")
+        self.get_logger().info("Station Holding")
 
         # Trigger station holding at the current pose
         self.station_hold_broadcaster.raise_alarm(
@@ -147,9 +147,9 @@ class RemoteControl:
 
         def cb(terminal_state, result):
             if terminal_state == 3:
-                rospy.loginfo("Thrusters Deployed!")
+                self.get_logger().info("Thrusters Deployed!")
             else:
-                rospy.logwarn(
+                self.get_logger().warn(
                     "Error deploying thrusters: {}, status: {}".format(
                         TerminalState.to_string(terminal_state),
                         result.status,
@@ -166,9 +166,9 @@ class RemoteControl:
 
         def cb(terminal_state, result):
             if terminal_state == 3:
-                rospy.loginfo("Thrusters Retracted!")
+                self.get_logger().info("Thrusters Retracted!")
             else:
-                rospy.logwarn(
+                self.get_logger().warn(
                     "Error rectracting thrusters: {}, status: {}".format(
                         TerminalState.to_string(terminal_state),
                         result.status,
@@ -182,7 +182,7 @@ class RemoteControl:
         """
         Selects the autonomously generated trajectory as the active controller.
         """
-        rospy.loginfo("Changing Control to Autonomous")
+        self.get_logger().info("Changing Control to Autonomous")
         self.wrench_changer("autonomous")
 
     @_timeout_check
@@ -190,14 +190,14 @@ class RemoteControl:
         """
         Selects the Xbox remote joystick as the active controller.
         """
-        rospy.loginfo("Changing Control to RC")
+        self.get_logger().info("Changing Control to RC")
         self.wrench_changer("rc")
 
     def select_emergency_control(self, *args, **kwargs) -> None:
         """
         Selects the emergency controller as the active controller.
         """
-        rospy.loginfo("Changing Control to Emergency Controller")
+        self.get_logger().info("Changing Control to Emergency Controller")
         self.wrench_changer("emergency")
 
     @_timeout_check
@@ -205,7 +205,7 @@ class RemoteControl:
         """
         Selects the keyboard teleoperation service as the active controller.
         """
-        rospy.loginfo("Changing Control to Keyboard")
+        self.get_logger().info("Changing Control to Keyboard")
         self.wrench_changer("keyboard")
 
     @_timeout_check
@@ -214,14 +214,14 @@ class RemoteControl:
         Selects the autonomously generated trajectory as the active controller.
         """
         mode = next(self.wrench_choices)
-        rospy.loginfo(f"Changing Control Mode: {mode}")
+        self.get_logger().info(f"Changing Control Mode: {mode}")
         self.wrench_changer(mode)
 
     def _shooter_load_feedback(self, status, result):
         """
         Prints the feedback that is returned by the shooter load action client
         """
-        rospy.loginfo(
+        self.get_logger().info(
             "Shooter Load Status={} Success={} Error={}".format(
                 status,
                 result.success,
@@ -238,13 +238,13 @@ class RemoteControl:
             goal=ShooterDoActionGoal(),
             done_cb=self._shooter_load_feedback,
         )
-        rospy.loginfo("Kip, do not throw away your shot.")
+        self.get_logger().info("Kip, do not throw away your shot.")
 
     def _shooter_fire_feedback(self, status, result) -> None:
         """
         Prints the feedback that is returned by the shooter fire action client
         """
-        rospy.loginfo(
+        self.get_logger().info(
             "Shooter Fire Status={} Success={} Error={}".format(
                 status,
                 result.success,
@@ -262,7 +262,7 @@ class RemoteControl:
             goal=ShooterDoActionGoal(),
             done_cb=self._shooter_fire_feedback,
         )
-        rospy.loginfo(
+        self.get_logger().info(
             "One, two, three, four, five, six, seven, eight, nine. Number... TEN PACES! FIRE!",
         )
 
@@ -272,10 +272,10 @@ class RemoteControl:
         Cancels the process that the shooter action client is currently
         running.
         """
-        rospy.loginfo("Canceling shooter requests")
+        self.get_logger().info("Canceling shooter requests")
         self.shooter_cancel_client(TriggerRequest())
-        rospy.loginfo("I imaging death so much it feels more like a memory.")
-        rospy.loginfo(
+        self.get_logger().info("I imaging death so much it feels more like a memory.")
+        self.get_logger().info(
             "When's it gonna get me? While I'm blocked? Seven clocks ahead of me?",
         )
 
@@ -283,9 +283,9 @@ class RemoteControl:
         """
         Used to actually call the shooter's reset service.
         """
-        rospy.loginfo("Resetting the shooter service")
+        self.get_logger().info("Resetting the shooter service")
         self.shooter_reset_client(TriggerRequest())
-        rospy.loginfo(
+        self.get_logger().info(
             "In New York you can be a new man! In New York you can be a new man!",
         )
 
@@ -296,7 +296,7 @@ class RemoteControl:
         using a ~6s delay before calling the actual reset service.
         """
         self.shooter_linear_retract()
-        rospy.Timer(rospy.Duration(6), self._shooter_reset_helper, oneshot=True)
+        self.create_timer(Duration(seconds=6), self._shooter_reset_helper)
 
     @_timeout_check
     def shooter_linear_extend(self, *args, **kwargs):
@@ -304,7 +304,7 @@ class RemoteControl:
         Extends the shooter's linear actuator by setting it's speed to full
         forward.
         """
-        rospy.loginfo("Extending the shooter's linear actuator")
+        self.get_logger().info("Extending the shooter's linear actuator")
         self.shooter_manual_client(1, 0)
 
     @_timeout_check
@@ -313,7 +313,7 @@ class RemoteControl:
         Retracts the shooter's linear actuator by setting it's speed to full
         reverse.
         """
-        rospy.loginfo("Retracting the shooter's linear actuator")
+        self.get_logger().info("Retracting the shooter's linear actuator")
         self.shooter_manual_client(-1, 0)
 
     @_timeout_check
@@ -326,7 +326,9 @@ class RemoteControl:
         Args:
             speed (int): The speed to set the shooter disc to.
         """
-        rospy.loginfo(f"Setting the shooter's accelerator disc speed to {speed}")
+        self.get_logger().info(
+            f"Setting the shooter's accelerator disc speed to {speed}",
+        )
         self.shooter_manual_client(0, float(speed) / -100)
 
     @_timeout_check
@@ -351,7 +353,7 @@ class RemoteControl:
                 If ``None``, then use the current time.
         """
         if stamp is None:
-            stamp = rospy.Time.now()
+            stamp = self.get_clock().now()
 
         if self.wrench_pub is not None:
             wrench = WrenchStamped()
@@ -371,7 +373,7 @@ class RemoteControl:
         if self.wrench_pub is not None:
             wrench = WrenchStamped()
             wrench.header.frame_id = "/base_link"
-            wrench.header.stamp = rospy.Time.now()
+            wrench.header.stamp = self.get_clock().now()
             wrench.wrench.force.x = 0
             wrench.wrench.force.y = 0
             wrench.wrench.torque.z = 0
