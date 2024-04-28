@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 
-import rospy
 from actionlib import SimpleActionClient, TerminalState
 from mil_missions_core import MissionClient
 from mil_msgs.msg import BagOnlineAction, BagOnlineGoal
@@ -25,17 +24,17 @@ class Kill(HandlerBase):
 
     def _online_bagger_cb(self, status, result):
         if status == 3:
-            rospy.loginfo(f"KILL BAG WRITTEN TO {result.filename}")
+            self.get_logger().info(f"KILL BAG WRITTEN TO {result.filename}")
         else:
-            rospy.logwarn(
+            self.get_logger().warn(
                 f"KILL BAG {TerminalState.to_string(status)}, status: {result.status}",
             )
 
     def _kill_task_cb(self, status, result):
         if status == 3:
-            rospy.loginfo("Killed task success!")
+            self.get_logger().info("Killed task success!")
             return
-        rospy.logwarn(
+        self.get_logger().warn(
             f"Killed task failed ({TerminalState.to_string(status)}): {result.result}",
         )
 
@@ -45,7 +44,9 @@ class Kill(HandlerBase):
             self.first = False
             return
         if "BAG_ALWAYS" not in os.environ or "bag_kill" not in os.environ:
-            rospy.logwarn("BAG_ALWAYS or BAG_KILL not set. Not making kill bag.")
+            self.get_logger().warn(
+                "BAG_ALWAYS or BAG_KILL not set. Not making kill bag.",
+            )
         else:
             goal = BagOnlineGoal(bag_name="kill.bag")
             goal.topics = os.environ["BAG_ALWAYS"] + " " + os.environ["BAG_KILL"]
@@ -72,7 +73,7 @@ class Kill(HandlerBase):
             return Alarm(
                 "kill",
                 True,
-                node_name=rospy.get_name(),
+                node_name=self.get_name(),
                 problem_description="Killed by meta alarm(s) " + ", ".join(raised),
                 parameters={"Raised": raised},
             )

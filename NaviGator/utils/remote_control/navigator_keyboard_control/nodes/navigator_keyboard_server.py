@@ -10,25 +10,27 @@ executed.
 
 
 import curses
+import sys
 import uuid
 
-import rospy
+import rclpy
 from navigator_msgs.srv import KeyboardControl, KeyboardControlRequest
 from remote_control_lib import RemoteControl
 
 __author__ = "Anthony Olive"
 
 
-rospy.init_node("keyboard_server")
+rclpy.init(args=sys.argv)
+node = rclpy.create_node("keyboard_server")
 
 
 class KeyboardServer:
     def __init__(self):
-        self.force_scale = rospy.get_param("/joystick_wrench/force_scale", 600)
-        self.torque_scale = rospy.get_param("/joystick_wrench/torque_scale", 500)
+        self.force_scale = self.declare_parameter("/joystick_wrench/force_scale", 600)
+        self.torque_scale = self.declare_parameter("/joystick_wrench/torque_scale", 500)
 
         self.remote = RemoteControl("keyboard", "/wrench/keyboard")
-        rospy.Service("/keyboard_control", KeyboardControl, self.key_recieved)
+        self.create_service(KeyboardControl, "/keyboard_control", self.key_recieved)
 
         # Initialize this to a random UUID so that a client without a UUID cannot authenticate
         self.locked_uuid = uuid.uuid4().hex
@@ -115,4 +117,4 @@ class KeyboardServer:
 
 if __name__ == "__main__":
     keyboard = KeyboardServer()
-    rospy.spin()
+    rclpy.spin(node)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import rospy
 from actionlib import TerminalState
 from mil_missions_core import MissionClient
 from ros_alarms import AlarmBroadcaster, HandlerBase
@@ -14,18 +13,18 @@ class StationHold(HandlerBase):
 
     def _client_cb(self, terminal_state, result):
         if terminal_state != 3:
-            rospy.logwarn(
+            self.get_logger().warn(
                 "Station hold goal failed (Status={}, Result={})".format(
                     TerminalState.to_string(terminal_state),
                     result.result,
                 ),
             )
             return
-        rospy.loginfo("Station holding!")
+        self.get_logger().info("Station holding!")
         self.broadcaster.clear_alarm()
 
     def raised(self, alarm):
-        rospy.loginfo("Attempting to station hold")
+        self.get_logger().info("Attempting to station hold")
         self.task_client.run_mission("StationHold", done_cb=self._client_cb)
 
     def cleared(self, alarm):

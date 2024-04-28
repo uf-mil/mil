@@ -10,4 +10,7 @@
   <build_depend>mil_usb_to_can</build_depend>
   <build_export_depend>mil_usb_to_can</build_export_depend>
   <exec_depend>mil_usb_to_can</exec_depend>
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
 </package>

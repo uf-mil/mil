@@ -1,4 +1,3 @@
-import rospy
 from roboteq_msgs.msg import Status
 from ros_alarms import AlarmBroadcaster, HandlerBase
 
@@ -29,7 +28,12 @@ class ThrusterFault(HandlerBase):
 
         # Subscribe to the status message for all thruster topics
         [
-            rospy.Subscriber(topic + "/status", Status, self._check_faults, topic)
+            self.create_subscription(
+                Status,
+                topic + "/status",
+                self._check_faults,
+                topic,
+            )
             for topic in motor_topics
         ]
 
