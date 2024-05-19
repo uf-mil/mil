@@ -31,6 +31,8 @@
   <run_depend>mil_passive_sonar</run_depend>
   <run_depend>mil_pneumatic_actuator</run_depend>
   <run_depend>mil_blueview_driver</run_depend>
+  <run_depend>nav_tube_driver</run_depend>
+  <run_depend>vectornav</run_depend>
   <run_depend>subjugator_perception</run_depend>
   <run_depend>yolov7_ros</run_depend>
   <buildtool_depend>catkin</buildtool_depend>

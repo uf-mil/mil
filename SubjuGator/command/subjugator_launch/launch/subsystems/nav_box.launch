@@ -17,37 +17,35 @@
 
   <!-- Depth Sensor -->
   <group if="$(eval depth and environment == 'real')">
-    <node pkg="subjugator_launch" type="depth_conn" name="depth_conn" respawn="true" respawn_delay = "10"/>
-    <node pkg="nodelet" type="nodelet" name="depth_driver" args="standalone depth_driver/nodelet">
-      <param name="port" type="string" value="/tmp/depth"/>
-      <param name="frame_id" type="string" value="/depth"/>
+    <node pkg="nav_tube_driver" type="nav_tube_driver_node" name="nav_tube_driver_node" respawn="true">
+      <param name="ip" type="string" value="192.168.37.61" />
+      <param name="port" type="int" value="33056" />
+      <param name="frame_id" type="string" value="/depth" />
+      <param name="hz" type="int" value="20" />
     </node>
   </group>
 
   <!-- IMU -->
   <group if="$(arg imu)" >
-    <node if="$(eval environment == 'real')" pkg="subjugator_launch" type="imu_conn" name="imu_conn" respawn="true" respawn_delay = "10"/>
-    <node if="$(eval environment == 'real')" pkg="nodelet" type="nodelet" name="imu_driver"
-          args="standalone adis16400_imu/nodelet">
-      <param name="port" type="string" value="/tmp/imu"/>
-      <param name="frame_id" type="string" value="/imu"/>
-    </node>
-
-    <node if="$(eval environment == 'real')"
-          pkg="nodelet" type="nodelet" name="magnetic_dynamic_compensation" args="standalone magnetic_dynamic_compensation/nodelet">
-      <remap from="/imu/mag" to="/imu/mag_lessraw"/>
-    </node>
-    <node if="$(eval environment == 'real')" pkg="nodelet" type="nodelet" name="magnetic_hardsoft_compensation" args="standalone magnetic_hardsoft_compensation/nodelet">
-      <remap from="/imu/mag_raw" to="/imu/mag_lessraw"/>
-      <param name="frame_id" type="string" value="/imu"/>
-      <rosparam>
-        scale:
-        - [0.9991765357958566, 0.006242798579443988, -0.008472478269327878]
-        - [0.006242798579443957, 1.0016179705091928, 0.0059841151097914345]
-        - [-0.008472478269327836, 0.0059841151097913, 0.999354597532967]
-        shift: [7.889247409445414e-06, 4.879179471165382e-06, 7.46017199298374e-06]
-      </rosparam>
-    </node>
+      <group if="$(eval environment == 'real')">
+          <include file="$(find vectornav)/launch/vn100_imu.launch">
+              <arg name="serial_port" value="/dev/serial/by-id/usb-FTDI_USB-RS232_Cable_AV0K7MTC-if00-port0" />
+          </include>
+        <node pkg="nodelet" type="nodelet" name="magnetic_dynamic_compensation" args="standalone magnetic_dynamic_compensation/nodelet">
+          <remap from="/imu/mag" to="/imu/mag_lessraw"/>
+        </node>
+        <node pkg="nodelet" type="nodelet" name="magnetic_hardsoft_compensation" args="standalone magnetic_hardsoft_compensation/nodelet">
+          <remap from="/imu/mag_raw" to="/imu/mag_lessraw"/>
+          <param name="frame_id" type="string" value="/imu"/>
+          <rosparam>
+            scale:
+            - [0.9991765357958566, 0.006242798579443988, -0.008472478269327878]
+            - [0.006242798579443957, 1.0016179705091928, 0.0059841151097914345]
+            - [-0.008472478269327836, 0.0059841151097913, 0.999354597532967]
+            shift: [7.889247409445414e-06, 4.879179471165382e-06, 7.46017199298374e-06]
+          </rosparam>
+          </node>
+      </group>
 
     <node pkg="mil_tools" type="mag_to_marker.py" name="magnetometer_vis"
           args="/imu/mag /imu/marker -l3" />

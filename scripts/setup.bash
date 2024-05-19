@@ -47,6 +47,7 @@ source "$MIL_WS/src/mil/NaviGator/scripts/bash_aliases.sh"
 alias mil='cd $MIL_REPO'
 alias cm='catkin_make -DCATKIN_WHITELIST_PACKAGES="" -C $MIL_WS'
 alias vrx='cd $MIL_REPO/NaviGator/simulation/VRX/vrx'
+alias cputemp='watch sensors'
 
 # General ROS aliases
 ros_env() {
@@ -114,4 +115,4 @@ cmonly() {
 alias xbox=startxbox
 
 # PYTHONPATH modifications
-export PYTHONPATH="${HOME}/catkin_ws/src/mil/mil_common/axros/axros/src:${PYTHONPATH}"
+export PYTHONPATH="${HOME}/catkin_ws/src/mil/mil_common/perception/vision_stack/src:${HOME}/catkin_ws/src/mil/mil_common/axros/axros/src:${PYTHONPATH}"
