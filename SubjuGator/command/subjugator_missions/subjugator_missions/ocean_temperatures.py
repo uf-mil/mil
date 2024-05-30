@@ -11,6 +11,7 @@ fprint = text_effects.FprintFactory(title="OCEAN TEMPERATURES", msg_color="blue"
 
 class OceanTemperatures(SubjuGatorMission):
     async def run(self, args):
+
         fprint("Enabling cam_ray publisher")
 
         await self.nh.sleep(1)
