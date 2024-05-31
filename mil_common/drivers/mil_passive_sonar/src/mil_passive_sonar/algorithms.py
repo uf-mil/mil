@@ -68,7 +68,7 @@ def run(
     if template_pos is None:
         errors.append("Failed to find template")
     elif numpy.max(delta_errors) > 1e-3:
-        errors.append("High template match error (%s)" % str(delta_errors))
+        errors.append(f"High template match error ({delta_errors!s})")
 
     return {
         "errors": errors,
