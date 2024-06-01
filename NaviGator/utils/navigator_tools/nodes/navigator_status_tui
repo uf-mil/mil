@@ -154,16 +154,16 @@ class nav_tui:
             Variable value -> string literal formatting statements
             """
 
-            wrench_mode = "%s" % self.wrench
+            wrench_mode = str(self.wrench)
 
-            kill_name = "Alarm name: %s" % self.Alarm_name
-            kill_raised = "Raised: %s" % self.raised
+            kill_name = f"Alarm name: {self.Alarm_name}"
+            kill_raised = f"Raised: {self.raised}"
 
-            battery_voltage = "Voltage: %s" % self.voltage
+            battery_voltage = f"Voltage: {self.voltage}"
 
-            LLA_Lat = "Latitude: %s" % self.LAT
-            LLA_Lon = "Longitude: %s" % self.LON
-            LLA_Alt = "Altitude: %s" % self.ALT
+            LLA_Lat = f"Latitude: {self.LAT}"
+            LLA_Lon = f"Longitude: {self.LON}"
+            LLA_Alt = f"Altitude: {self.ALT}"
 
             """
             Print(Statements for diagnostics)
@@ -218,7 +218,7 @@ class nav_tui:
                     self.window.addstr(
                         5 + n,
                         self.x / 2 - 7,
-                        "%s" % fault,
+                        str(fault),
                         curses.color_pair(1),
                     )
 
@@ -236,7 +236,7 @@ class nav_tui:
                     self.window.addstr(
                         15 + n,
                         self.x / 2 - 7,
-                        "%s" % fault,
+                        str(fault),
                         curses.color_pair(1),
                     )
                     n += 1
@@ -255,7 +255,7 @@ class nav_tui:
                     self.window.addstr(
                         5 + n,
                         self.x / 2 + 16,
-                        "%s" % fault,
+                        str(fault),
                         curses.color_pair(1),
                     )
                     n += 1
@@ -274,7 +274,7 @@ class nav_tui:
                     self.window.addstr(
                         15 + n,
                         self.x / 2 + 16,
-                        "%s" % fault,
+                        str(fault),
                         curses.color_pair(1),
                     )
                     n += 1

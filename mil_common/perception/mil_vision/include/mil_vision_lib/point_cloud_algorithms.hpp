@@ -19,8 +19,8 @@ class PcdSubPubAlgorithm
   typedef sensor_msgs::PointCloud2 PCD;
 
 public:
-  PcdSubPubAlgorithm(){};
-  ~PcdSubPubAlgorithm(){};
+  PcdSubPubAlgorithm() {};
+  ~PcdSubPubAlgorithm() {};
 
 protected:
   virtual void cloud_cb(const PCD &cloud_msg) = 0;  // runs algorithm pipeline when a msg is received

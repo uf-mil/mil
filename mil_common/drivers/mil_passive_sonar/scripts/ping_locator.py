@@ -100,7 +100,7 @@ class PingLocator:
             vec = util.calculate_dir_pinger(deltas, self.dist_h, self.v_sound)
         except Exception as e:
             rospy.logwarn(
-                "/hydrophones/ping_locator could not calculate pinger direction %s" % e,
+                f"/hydrophones/ping_locator could not calculate pinger direction {e}",
             )
             return
 
