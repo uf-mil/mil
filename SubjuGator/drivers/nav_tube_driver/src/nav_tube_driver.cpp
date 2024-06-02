@@ -11,6 +11,9 @@
 #include <mutex>
 #include <thread>
 
+#include "sensor_msgs/Imu.h"
+#include "sensor_msgs/MagneticField.h"
+
 // modeled after mil_passive_sonar/sylphase_ros_bridge
 
 using tcp = boost::asio::ip::tcp;
@@ -53,6 +56,8 @@ private:
 
   double calculate_pressure(uint16_t analog_input);
 
+  double yaw, pitch, roll, mag_x, mag_y, mag_z, accel_x, accel_y, accel_z, ang_rate_x, ang_rate_y, ang_rate_z;
+
 public:
   NavTubeDriver(ros::NodeHandle nh, ros::NodeHandle private_nh);
 
@@ -67,6 +72,8 @@ NavTubeDriver::NavTubeDriver(ros::NodeHandle nh, ros::NodeHandle private_nh) : n
   ip_ = private_nh.param<std::string>("ip", std::string("192.168.37.61"));
   port_ = private_nh.param<int>("port", 33056);
   frame_id_ = private_nh.param<std::string>("frame_id", "/depth");
+  imu_frame_id_ = private_nh.param<std::string>("imu_frame_id", "/imu");
+  mag_frame_id_ = private_nh.param<std::string>("mag_frame_id", "/mag");
 
   int hz__ = private_nh.param<int>("hz", 20);
 
@@ -164,6 +171,12 @@ void NavTubeDriver::read_messages(boost::shared_ptr<tcp::socket> socket)
   msg.header.frame_id = frame_id_;
   msg.header.seq = 0;
 
+  sensor_msgs::Imu msgIMU msgIMU.header.frame_id = imu_frame_id_;
+  msgIMU.header.seq = 0;
+
+  sensor_msgs::MagneticField msgMag msgMag.header.frame_id = imu_frame_id_;
+  msgMag.header.seq = 0;
+
   uint8_t backing[10];
 
   auto buffer = boost::asio::buffer(backing, sizeof(backing));
@@ -189,14 +202,67 @@ void NavTubeDriver::read_messages(boost::shared_ptr<tcp::socket> socket)
       }
       else
       {
-        ++msg.header.seq;
-        msg.header.stamp = ros::Time::now();
+        uint64_t bits = be64toh(*reinterpret_cast<uint64_t*>(&backing[3]));
+        double value = *reinterpret_cast<double*>(&bits);
 
-        uint64_t bits = be64toh(*reinterpret_cast<uint64_t*>(&backing[2]));
-        double pressure = *reinterpret_cast<double*>(&bits);
-        msg.depth = pressure;
+        if (&backing[2] == 0x00)
+        {
+          ++msg.header.seq;
+          msg.header.stamp = ros::Time::now();
+          msg.depth = value;
+          pub_.publish(msg);
+        }
+        else
+        {
+          // Map the byte data to the value
+          switch (&backing[2])
+          {
+            case 0x01:
+              yaw = value break;
 
-        pub_.publish(msg);
+            case 0x02:
+              pitch = value break;
+
+            case 0x03:
+              roll = value break;
+
+            case 0x04:
+              mag_x = value break;
+
+            case 0x05:
+              mag_y = value break;
+
+            case 0x06:
+              mag_z = value break;
+
+            case 0x07:
+              accel_x = value break;
+
+            case 0x08:
+              accel_y = value break;
+
+            case 0x09:
+              accel_z = value break;
+
+            case 0x0a:
+              ang_rate_x = value break;
+
+            case 0x0b:
+              ang_rate_y = value break;
+
+            case 0x0c:
+              ang_rate_z = value break;
+
+            default:
+              ROS_WARN_STREAM("Unexpected data hex id...");
+              break;
+          }
+
+          // Publish IMU message
+
+          // Publish magnetometer message
+        }
+
         buffer = boost::asio::buffer(backing, sizeof(backing));
       }
     }
