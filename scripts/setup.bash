@@ -45,7 +45,6 @@ source "$MIL_WS/src/mil/NaviGator/scripts/bash_aliases.sh"
 
 # Repo aliases
 alias mil='cd $MIL_REPO'
-alias cm='catkin_make -DCATKIN_WHITELIST_PACKAGES="" -C $MIL_WS'
 alias vrx='cd $MIL_REPO/NaviGator/simulation/VRX/vrx'
 alias cputemp='watch sensors'
 
@@ -105,11 +104,33 @@ startxbox() {
 
 # catkin_make for one specific package only
 RED='\033[0;31m'
-cmonly() {
-	cd ~/catkin_ws || exit
-	catkin_make --only-pkg-with-deps $1
-	cd - >/dev/null || exit
-	echo "${RED}!! Warning: Future calls to catkin_make will just build the '$1' package. To revert this, ensure you run 'cm' or 'cd ~/catkin_ws && catkin_make -DCATKIN_WHITELIST_PACKAGES=\"\"' when you want to recompile the entire repository."
+# cm --> catkin_make
+# cm --test --> catkin_make run_tests
+# cm <package> --> catkin_make --only-pkg-with-deps <package>
+# cm <package> --test --> catkin_make --only-pkg-with-deps <package> run_tests
+cm() {
+    if [ $# -eq 0 ]; then
+        catkin_make -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCATKIN_WHITELIST_PACKAGES="" -C "$MIL_WS"
+        mv "$MIL_WS/build/compile_commands.json" "$MIL_WS"
+    else
+        if [[ "$1" == "--test" ]]; then
+            catkin_make -DCMAKE_EXPORT_COMPILE_COMMANDS=1 run_tests -C "$MIL_WS"
+            mv "$MIL_WS/build/compile_commands.json" "$MIL_WS"
+        elif [[ "$2" == "--test" ]]; then
+            # Build specific package then run tests
+            cd "$MIL_WS" || return
+            catkin_make --only-pkg-with-deps "$1"
+            catkin_make run_tests --only-pkg-with-deps "$1" -C "$MIL_WS"
+            cd - > /dev/null || exit
+            echo -e "${RED}!! Warning: Future calls to catkin_make will just build the '$1' package. To revert this, ensure you run 'cm' or 'cd $MIL_WS && catkin_make -DCATKIN_WHITELIST_PACKAGES=\"\"' when you want to recompile the entire repository.\e[0m"
+        else
+            # Build specific package
+            cd "$MIL_WS" || return
+            catkin_make --only-pkg-with-deps "$1"
+            cd - > /dev/null || exit
+            echo -e "${RED}!! Warning: Future calls to catkin_make will just build the '$1' package. To revert this, ensure you run 'cm' or 'cd $MIL_WS && catkin_make -DCATKIN_WHITELIST_PACKAGES=\"\"' when you want to recompile the entire repository.\e[0m"
+        fi
+    fi
 }
 
 alias xbox=startxbox
