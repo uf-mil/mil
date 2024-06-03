@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-import rospy
+import rclpy
+from rclpy.node import Node
 from mil_misc_tools.serial_tools import SimulatedSerial
 
 from .constants import Constants
 
 
-class SimulatedPnuematicActuatorBoard(SimulatedSerial):
+class SimulatedPnuematicActuatorBoard(SimulatedSerial, Node):
     """
     A simulation of the pneumatic actuator board's serial protocol
     """
 
     def __init__(self, *args, **kwargs):
-        super().__init__()
+        Node.__init__(self, 'simulated_pneumatic_actuator_board')
+        SimulatedSerial.__init__(self)
 
     def write(self, data: bytes):
         """
@@ -20,16 +22,16 @@ class SimulatedPnuematicActuatorBoard(SimulatedSerial):
         request = Constants.deserialize_packet(data)
         request = request[0]
         if request == Constants.PING_REQUEST:
-            # rospy.loginfo("Ping received")
+            # self.get_logger().info("Ping received")
             byte = Constants.PING_RESPONSE
-        elif request > 0x20 and request < 0x30:
-            rospy.loginfo(f"Open port {request - 0x20}")
+        elif 0x20 < request < 0x30:
+            self.get_logger().info(f"Open port {request - 0x20}")
             byte = Constants.OPEN_RESPONSE
-        elif request > 0x30 and request < 0x40:
-            rospy.loginfo(f"Close port {request - 0x30}")
+        elif 0x30 < request < 0x40:
+            self.get_logger().info(f"Close port {request - 0x30}")
             byte = Constants.CLOSE_RESPONSE
         else:
-            rospy.loginfo("Default")
+            self.get_logger().info("Default")
             byte = 0x00
         self.buffer += Constants.serialize_packet(byte)
         return len(data)
