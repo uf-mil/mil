@@ -19,7 +19,7 @@ repos:
     hooks:
       - id: black
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v18.1.4
+    rev: v18.1.5
     hooks:
       - id: clang-format
   - repo: https://github.com/PyCQA/autoflake
@@ -40,12 +40,12 @@ repos:
         exclude: ^docker|deprecated|NaviGator/simulation/VRX
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: 'v0.4.3'
+    rev: 'v0.4.7'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
       - id: codespell
         args:
