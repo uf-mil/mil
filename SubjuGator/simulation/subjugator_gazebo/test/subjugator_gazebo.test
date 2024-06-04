@@ -1,0 +1,7 @@
+<launch>
+  <include file="$(find subjugator_gazebo)/launch/duck.launch">
+    <arg name="gui" value="false" />
+  </include>
+  <include file="$(find subjugator_launch)/launch/tf.launch"></include>
+  <test test-name="subjugator_gazebo_spawn_test" pkg="subjugator_gazebo" type="subjugator_gazebo_spawn_test" />
+</launch>

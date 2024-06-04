@@ -10,6 +10,7 @@
   <depend>geometry_msgs</depend>
   <depend>message_generation</depend>
   <depend>mil_gazebo</depend>
+  <depend>mil_tools</depend>
   <depend>roscpp</depend>
   <depend>rospy</depend>
   <depend>std_msgs</depend>
