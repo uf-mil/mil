@@ -13,7 +13,8 @@ using namespace mil_tools;
 TEST(SpawnTest, spawnTest)
 {
   ros::NodeHandle nh;
-  EXPECT_TRUE(mil_tools::gazeboModelExists(nh, "sub8") || mil_tools::gazeboModelExists(nh, "sub8_no_cams") || mil_tools::gazeboModelExists(nh, "sub9"));
+  EXPECT_TRUE(mil_tools::gazeboModelExists(nh, "sub8") || mil_tools::gazeboModelExists(nh, "sub8_no_cams") ||
+              mil_tools::gazeboModelExists(nh, "sub9"));
 }
 
 int main(int argc, char **argv)
