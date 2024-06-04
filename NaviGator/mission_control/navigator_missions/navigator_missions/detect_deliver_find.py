@@ -87,7 +87,7 @@ class DetectDeliverFind(NaviGatorMission):
         override_scale = args.overridescale
         pre_circle = args.circle
         scan_dist = args.scandist
-        look_in = args.lookin
+        look_in = args.lookin  # codespell:ignore
         end_dist = args.enddist
 
         # Turn on ML classifier for docks
