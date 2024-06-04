@@ -14,6 +14,7 @@ find_package(catkin
     rospy
     gazebo_ros
     roscpp
+    mil_tools
     message_generation xacro)
 
 catkin_python_setup()
@@ -107,7 +108,7 @@ target_link_libraries(
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES subjugator_buoyancy subjugator_thrusters subjugator_state_set subjugator_liftdrag
-    CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs message_runtime
+    CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs message_runtime mil_tools
     DEPENDS
 )
 
@@ -119,3 +120,11 @@ xacro_add_files(
   INSTALL DESTINATION urdf
   TARGET xacro_urdf
 )
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest_gtest(subjugator_gazebo_spawn_test
+                    test/subjugator_gazebo.test
+                    test/spawn_test.cpp)
+  target_link_libraries(subjugator_gazebo_spawn_test ${catkin_LIBRARIES})
+endif()
