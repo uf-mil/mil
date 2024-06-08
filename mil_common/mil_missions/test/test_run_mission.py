@@ -49,5 +49,5 @@ class RunMissionTest(unittest.TestCase):
 if __name__ == "__main__":
     import rostest
 
-    rospy.init_node("run_mission_test")
-    rostest.rosrun("mil_missions", "run_mission", RunMissionTest)
+    rospy.init_node("run_mission_test_py")
+    rostest.rosrun("mil_missions", "run_missions_py", RunMissionTest)
