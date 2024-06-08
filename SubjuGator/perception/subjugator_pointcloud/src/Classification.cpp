@@ -63,7 +63,7 @@ cv::Point2d Classification::get_first_hit(cv::Mat &mat_ogrid, cv::Point2d start,
           break;
         mat_ogrid.at<float>(cp_on_ray.y, cp_on_ray.x) = .5;
       }
-      // degrade things infront of the object as unoccupied
+      // degrade things in front of the object as unoccupied
       for (int j = 0; j < i; ++j)
       {
         cv::Point2d cp_on_ray = vec_d_theta * j + start;
