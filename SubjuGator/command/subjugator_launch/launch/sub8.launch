@@ -30,6 +30,10 @@
       <rosparam file="$(find subjugator_launch)/config/course_geometry.yaml" />
   </group>
 
+<!-- Parameters for competition strategy -->
+  <group ns="strategy">
+      <rosparam file="$(find subjugator_missions)/config/strategy.yaml" />
+  </group>
   <include if="$(eval environment != 'dynsim')" file="$(find subjugator_launch)/launch/subsystems/cameras.launch">
     <arg name="environment" value="$(arg environment)" />
     <arg name="simulate_cams" value="$(arg simulate_cams)" />
