@@ -10,11 +10,44 @@ from .sub_singleton import SubjuGatorMission
 # This mission will direct the sub towards a red buoy, and circumnavigate it on a given orientation
 
 fprint = text_effects.FprintFactory(title="HYDROTHERMAL VENT", msg_color="green").fprint
-CW = True
 
 
 # Computer vision aspect still required to detect the red buoy. For now, random position used
 class HydrothermalVent(SubjuGatorMission):
+
+    async def center_bouy(self, buoy_pos_c):
+        """This function is supposed to center the buoy based on position given in terms of xy position of the center of the
+        red buoy, with respect to the center of the camera, as well as the distance from the buoy
+
+        Args:
+            buoy_pos_c (float array): buoy position with respect to the center of the sub camera
+        """
+
+        fprint("Enabling cam_ray publisher")
+
+        await self.nh.sleep(1)
+
+        fprint("Connecting camera")
+
+        cam_info_sub_r = self.nh.subscribe(
+            "/camera/front/right/camera_info",
+            CameraInfo,
+        )
+        await cam_info_sub_r.setup()
+
+        fprint("Obtaining cam info message")
+        cam_info_r = await cam_info_sub_r.get_next_message()
+        cam_center = np.array([cam_info_r.width / 2, cam_info_r.height / 2])
+        # fprint(f"Cam center: {cam_center}")
+        while ((abs(buoy_pos_c[0] - cam_center[0])) > 0.01) and (
+            (abs(buoy_pos_c[1]) - cam_center[1]) > 0.01
+        ):
+            await self.go(self.move().depth(buoy_pos_c[1]))
+            yaw_angle = np.arctan(buoy_pos_c[0] / buoy_pos_c[2])
+            await self.go(self.move().set_roll_pitch_yaw(0, 0, yaw_angle))
+
+            buoy_pos_c = buoy_pos_c  # this will be replaced with the computer vision call to check the position of the buoy
+
     async def run(self, args):
 
         self.buoy_pos = np.array([3, 4, -2])  # Convert buoy position to numpy array
@@ -41,20 +74,9 @@ class HydrothermalVent(SubjuGatorMission):
 
         yaw_angle2 = np.deg2rad(90)
 
-        if CW:
-            self.send_feedback("Circumnaviganting the buoy on a CW orientation")
+        CCW = await self.nh.get_param("/strategy/orientation/CCW")
 
-            rotate = self.move().yaw_left(yaw_angle2)
-            await self.go(rotate)
-            await self.go(self.move().forward(0.7))
-            for i in range(0, 3):
-                rotate = self.move().yaw_right(yaw_angle2)
-                await self.go(rotate)
-                await self.go(self.move().forward(1.4))
-            rotate = self.move().yaw_right(yaw_angle2)
-            await self.go(rotate)
-            await self.go(self.move().forward(0.7))
-        else:
+        if CCW:
             self.send_feedback("Circumnaviganting the buoy on a CCW orientation")
 
             rotate = self.move().yaw_right(yaw_angle2)
@@ -68,6 +90,20 @@ class HydrothermalVent(SubjuGatorMission):
             await self.go(rotate)
             await self.go(self.move().forward(0.7))
 
+        else:
+            self.send_feedback("Circumnaviganting the buoy on a CW orientation")
+
+            rotate = self.move().yaw_left(yaw_angle2)
+            await self.go(rotate)
+            await self.go(self.move().forward(0.7))
+            for i in range(0, 3):
+                rotate = self.move().yaw_right(yaw_angle2)
+                await self.go(rotate)
+                await self.go(self.move().forward(1.4))
+            rotate = self.move().yaw_right(yaw_angle2)
+            await self.go(rotate)
+            await self.go(self.move().forward(0.7))
+
     # async def run(self, args):
 
     # buoy_rad_and_center = [20, 2, 3] # arbitrary numbers to test functionality
@@ -76,33 +112,3 @@ class HydrothermalVent(SubjuGatorMission):
     # # go forward until desired distance is reached
     # while (buoy_rad_and_center[0] < 40):
     #     await self.go(self.move().forward)
-
-    # This function is supposed to center the buoy based on position given in terms of xy position of the center of the red buoy, with
-    # respect to the center of the camera, as well as the distance from the buoy
-
-    @classmethod
-    async def center_bouy(self, buoy_pos_c):
-        fprint("Enabling cam_ray publisher")
-
-        await self.nh.sleep(1)
-
-        fprint("Connecting camera")
-
-        cam_info_sub_r = self.nh.subscribe(
-            "/camera/front/right/camera_info",
-            CameraInfo,
-        )
-        await cam_info_sub_r.setup()
-
-        fprint("Obtaining cam info message")
-        cam_info_r = await cam_info_sub_r.get_next_message()
-        cam_center = np.array([cam_info_r.width / 2, cam_info_r.height / 2])
-        # fprint(f"Cam center: {cam_center}")
-        while ((abs(buoy_pos_c[0] - cam_center[0])) > 0.01) and (
-            (abs(buoy_pos_c[1]) - cam_center[1]) > 0.01
-        ):
-            await self.go(self.move().depth(buoy_pos_c[1]))
-            yaw_angle = np.arctan(buoy_pos_c[0] / buoy_pos_c[2])
-            await self.go(self.move().set_roll_pitch_yaw(0, 0, yaw_angle))
-
-            buoy_pos_c = buoy_pos_c  # this will be replaced with the computer vision call to check the position of the buoy
