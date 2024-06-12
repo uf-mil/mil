@@ -26,35 +26,35 @@ actuatorsList = [
     ###  )
     (
         "FLH Thruster Test",
-        ("/thrusters/thrust", [ThrusterCmd(name="FLH", thrust=10.0)]),
+        ("/thrusters/thrust", [ThrusterCmd(name="FLH", thrust=5.0)]),
     ),
     (
         "FRH Thruster Test",
-        ("/thrusters/thrust", [ThrusterCmd(name="FRH", thrust=10.0)]),
+        ("/thrusters/thrust", [ThrusterCmd(name="FRH", thrust=5.0)]),
     ),
     (
         "BLH Thruster Test",
-        ("/thrusters/thrust", [ThrusterCmd(name="BLH", thrust=10.0)]),
+        ("/thrusters/thrust", [ThrusterCmd(name="BLH", thrust=5.0)]),
     ),
     (
         "BRH Thruster Test",
-        ("/thrusters/thrust", [ThrusterCmd(name="BRH", thrust=10.0)]),
+        ("/thrusters/thrust", [ThrusterCmd(name="BRH", thrust=5.0)]),
     ),
     (
         "FLV Thruster Test",
-        ("/thrusters/thrust", [ThrusterCmd(name="FLV", thrust=10.0)]),
+        ("/thrusters/thrust", [ThrusterCmd(name="FLV", thrust=5.0)]),
     ),
     (
         "FRV Thruster Test",
-        ("/thrusters/thrust", [ThrusterCmd(name="FRV", thrust=10.0)]),
+        ("/thrusters/thrust", [ThrusterCmd(name="FRV", thrust=5.0)]),
     ),
     (
         "BLV Thruster Test",
-        ("/thrusters/thrust", [ThrusterCmd(name="BLV", thrust=10.0)]),
+        ("/thrusters/thrust", [ThrusterCmd(name="BLV", thrust=5.0)]),
     ),
     (
         "BRV Thruster Test",
-        ("/thrusters/thrust", [ThrusterCmd(name="BRV", thrust=10.0)]),
+        ("/thrusters/thrust", [ThrusterCmd(name="BRV", thrust=5.0)]),
     ),
 ]
 
@@ -64,6 +64,7 @@ actuatorsList = [
 setup = [
     "Grease O-rings with Molykote 55 every time a pressure vessel is closed.",
     "Deploy sub. (Check for bubbles coming out of every pressure vessel, make sure buoyancy is correct)",
+    "Check that the kill wand is in position",
 ]
 
 
@@ -80,6 +81,7 @@ nodes = [
     "/adaptive_controller",
     "/thruster_mapper",
     "/mission_runner",
+    "/usb_to_can_driver",
 ]
 
 # -----    Topics   -----#
@@ -91,4 +93,5 @@ topics = [
     "/depth",
     "/imu/data_raw",
     "/imu/mag",
+    "/thrusters/thrust",
 ]

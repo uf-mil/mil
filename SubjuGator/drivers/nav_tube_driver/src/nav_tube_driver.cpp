@@ -66,7 +66,7 @@ NavTubeDriver::NavTubeDriver(ros::NodeHandle nh, ros::NodeHandle private_nh) : n
   pub_ = nh.advertise<mil_msgs::DepthStamped>("depth", 10);
   ip_ = private_nh.param<std::string>("ip", std::string("192.168.37.61"));
   port_ = private_nh.param<int>("port", 33056);
-  frame_id_ = private_nh.param<std::string>("frame_id", "/depth");
+  frame_id_ = private_nh.param<std::string>("frame_id", "depth");
 
   int hz__ = private_nh.param<int>("hz", 20);
 
