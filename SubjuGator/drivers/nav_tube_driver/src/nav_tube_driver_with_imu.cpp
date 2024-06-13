@@ -1,25 +1,25 @@
 #include <bits/stdint-uintn.h>
 #include <endian.h>
+#include <math.h>
 #include <mil_msgs/DepthStamped.h>
 #include <ros/ros.h>
+#include <stdint.h>
 
 #include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include <boost/smart_ptr/make_shared_array.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <chrono>
 #include <limits>
 #include <mutex>
 #include <thread>
-#include <math.h>
-#include <stdint.h>
-#include <boost/bind.hpp>
 
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/MagneticField.h"
 #include "std_msgs/Float64.h"
 
 // modeled after mil_passive_sonar/sylphase_ros_bridge
-//#define M_PI 3.14159265358979323846  /* M_PI */
+// #define M_PI 3.14159265358979323846  /* M_PI */
 
 using tcp = boost::asio::ip::tcp;
 
@@ -64,11 +64,13 @@ private:
 
   double calculate_pressure(uint16_t analog_input);
 
-  double yaw = -999, pitch = -999, roll = -999, mag_x = -999, mag_y = -999, mag_z = -999, accel_x = -999, accel_y = -999, accel_z = -999, ang_rate_x = -999, ang_rate_y = -999, ang_rate_z = -999;
+  double yaw = -999, pitch = -999, roll = -999, mag_x = -999, mag_y = -999, mag_z = -999, accel_x = -999,
+         accel_y = -999, accel_z = -999, ang_rate_x = -999, ang_rate_y = -999, ang_rate_z = -999;
 
   // Reset Cooldown after sudden spike
   int sequence_pen = 5;
-  int yaw_pen = 0, pitch_pen = 0, roll_pen = 0, mag_x_pen = 0, mag_y_pen = 0, mag_z_pen = 0, accel_x_pen = 0, accel_y_pen = 0, accel_z_pen = 0, ang_rate_x_pen = 0, ang_rate_y_pen = 0, ang_rate_z_pen = 0;
+  int yaw_pen = 0, pitch_pen = 0, roll_pen = 0, mag_x_pen = 0, mag_y_pen = 0, mag_z_pen = 0, accel_x_pen = 0,
+      accel_y_pen = 0, accel_z_pen = 0, ang_rate_x_pen = 0, ang_rate_y_pen = 0, ang_rate_z_pen = 0;
 
   double x_orientation, y_orientation, z_orientation, w_orientation;
 
@@ -102,7 +104,7 @@ NavTubeDriver::NavTubeDriver(ros::NodeHandle nh, ros::NodeHandle private_nh) : n
   ip_ = private_nh.param<std::string>("ip", std::string("192.168.37.61"));
   port_ = private_nh.param<int>("port", 33056);
   frame_id_ = private_nh.param<std::string>("frame_id", "/depth");
-  imu_frame_id_ = private_nh.param<std::string>("imu_frame_id","/imu");
+  imu_frame_id_ = private_nh.param<std::string>("imu_frame_id", "/imu");
 
   int hz__ = private_nh.param<int>("hz", 20);
 
@@ -146,28 +148,28 @@ boost::shared_ptr<tcp::socket> NavTubeDriver::connect()
 
 void NavTubeDriver::vel_cb(const std_msgs::Float64::ConstPtr& msg)
 {
-    float x_vel = msg->data;
+  float x_vel = msg->data;
 }
 
 void NavTubeDriver::set_orientation(double yaw, double pitch, double roll)
 {
-    // Convert degrees to radians
-    double yaw_rad = yaw * M_PI / 180.0;
-    double pitch_rad = pitch * M_PI / 180.0;
-    double roll_rad = roll * M_PI / 180.0;
+  // Convert degrees to radians
+  double yaw_rad = yaw * M_PI / 180.0;
+  double pitch_rad = pitch * M_PI / 180.0;
+  double roll_rad = roll * M_PI / 180.0;
 
-    // Calculate trigonometric values
-    double cy = cos(yaw_rad * 0.5);
-    double sy = sin(yaw_rad * 0.5);
-    double cp = cos(pitch_rad * 0.5);
-    double sp = sin(pitch_rad * 0.5);
-    double cr = cos(roll_rad * 0.5);
-    double sr = sin(roll_rad * 0.5);
+  // Calculate trigonometric values
+  double cy = cos(yaw_rad * 0.5);
+  double sy = sin(yaw_rad * 0.5);
+  double cp = cos(pitch_rad * 0.5);
+  double sp = sin(pitch_rad * 0.5);
+  double cr = cos(roll_rad * 0.5);
+  double sr = sin(roll_rad * 0.5);
 
-    w_orientation = cr * cp * cy + sr * sp * sy;
-    x_orientation = sr * cp * cy - cr * sp * sy;
-    y_orientation = cr * sp * cy + sr * cp * sy;
-    z_orientation = cr * cp * sy - sr * sp * cy;
+  w_orientation = cr * cp * cy + sr * sp * sy;
+  x_orientation = sr * cp * cy - cr * sp * sy;
+  y_orientation = cr * sp * cy + sr * cp * sy;
+  z_orientation = cr * cp * sy - sr * sp * cy;
 }
 
 void NavTubeDriver::run()
@@ -227,7 +229,7 @@ void NavTubeDriver::read_messages(boost::shared_ptr<tcp::socket> socket)
   msg.header.frame_id = frame_id_;
   msg.header.seq = 0;
 
-  sensor_msgs::Imu msgIMU; 
+  sensor_msgs::Imu msgIMU;
   msgIMU.header.frame_id = imu_frame_id_;
   msgIMU.header.seq = 0;
 
@@ -263,20 +265,19 @@ void NavTubeDriver::read_messages(boost::shared_ptr<tcp::socket> socket)
         uint64_t bits = be64toh(*reinterpret_cast<uint64_t*>(&backing[3]));
         double value = *reinterpret_cast<double*>(&bits);
 
-	//uint8_t typeBits = be64toh(*reinterpret_cast<uint8_t*>(&backing[2]));
-	int type = backing[2];
-	//int type = doubType;
+        // uint8_t typeBits = be64toh(*reinterpret_cast<uint8_t*>(&backing[2]));
+        int type = backing[2];
+        // int type = doubType;
 
         if (type == 0)
         {
           ++msg.header.seq;
           msg.header.stamp = ros::Time::now();
-          
-	  // Adjust depth accordingly
-	  double depth = ((value - 14.7) * 6894.76 + 0.5 * 1000 * x_vel * abs(x_vel))/(1000 * 9.79286) ;
 
-	  msg.depth = depth;
-	  
+          // Adjust depth accordingly
+          double depth = ((value - 14.7) * 6894.76 + 0.5 * 1000 * x_vel * abs(x_vel)) / (1000 * 9.79286);
+
+          msg.depth = depth;
 
           pub_.publish(msg);
         }
@@ -287,218 +288,221 @@ void NavTubeDriver::read_messages(boost::shared_ptr<tcp::socket> socket)
           {
             case 1:
               yaw = value;
-	      break;
+              break;
 
             case 2:
               pitch = value;
-	      break;
+              break;
 
             case 3:
               roll = value;
-	      break;
+              break;
 
             case 4:
-	      if(mag_x_pen > 1)
-	      {
-		 mag_x_pen--;
-		 break;
-	      }
-	     if(abs(value-mag_x) < mag_threshold || mag_x == -999 || mag_x_pen == 1) // Check if change is not above threshold, check initial state, check penalty cooldown
-	     {
-		mag_x = value;
-		mag_x_pen == 0;
-	     }
-	     else
-	     {
-	       mag_x_pen = sequence_pen;
-	     }
-	      break;
+              if (mag_x_pen > 1)
+              {
+                mag_x_pen--;
+                break;
+              }
+              if (abs(value - mag_x) < mag_threshold || mag_x == -999 ||
+                  mag_x_pen == 1)  // Check if change is not above threshold, check initial state, check penalty
+                                   // cooldown
+              {
+                mag_x = value;
+                mag_x_pen == 0;
+              }
+              else
+              {
+                mag_x_pen = sequence_pen;
+              }
+              break;
 
             case 5:
-	      if(mag_y_pen > 1)
-	      {
-		 mag_y_pen--;
-		 break;
-	      }
-	      if(abs(value-mag_y) < mag_threshold || mag_y == -999 || mag_y_pen == 1)
-	      {
-		  mag_y = value;
-		  mag_y_pen = 0;
-	      }
-	      else
-	      {
-		  mag_y_pen = sequence_pen;
-	      }
-	      break;
+              if (mag_y_pen > 1)
+              {
+                mag_y_pen--;
+                break;
+              }
+              if (abs(value - mag_y) < mag_threshold || mag_y == -999 || mag_y_pen == 1)
+              {
+                mag_y = value;
+                mag_y_pen = 0;
+              }
+              else
+              {
+                mag_y_pen = sequence_pen;
+              }
+              break;
 
             case 6:
-	      if(mag_z_pen > 1)
-	      {
-		 mag_z_pen--;
-		 break;
-	      }
-	      if(abs(value-mag_z) < mag_threshold || mag_z == -999 || mag_z_pen == 1)
-	      {
-		 mag_z = value;
-		 mag_z_pen = 0;
-	      }
-	      else
-	      {
-	         mag_z_pen = sequence_pen;
-	      }
-	      break;
+              if (mag_z_pen > 1)
+              {
+                mag_z_pen--;
+                break;
+              }
+              if (abs(value - mag_z) < mag_threshold || mag_z == -999 || mag_z_pen == 1)
+              {
+                mag_z = value;
+                mag_z_pen = 0;
+              }
+              else
+              {
+                mag_z_pen = sequence_pen;
+              }
+              break;
 
-            case 7: // put accel x readings from IMU into accel z
-              if(accel_z_pen > 1)
-	      {
-	        accel_z_pen--;
-		break;
-	      }
-	      if(abs(value-accel_z) < accel_threshold || accel_z == -999 || accel_z_pen == 1)
-	      {
-	        accel_z = value;
-		accel_z_pen = 0;
-	      }
-	      else
-	      {
-	        accel_z_pen = sequence_pen;
-	      }
-	      break;
+            case 7:  // put accel x readings from IMU into accel z
+              if (accel_z_pen > 1)
+              {
+                accel_z_pen--;
+                break;
+              }
+              if (abs(value - accel_z) < accel_threshold || accel_z == -999 || accel_z_pen == 1)
+              {
+                accel_z = value;
+                accel_z_pen = 0;
+              }
+              else
+              {
+                accel_z_pen = sequence_pen;
+              }
+              break;
 
-            case 8: // accel y
-	      if(accel_y_pen > 1)
-	      {
-	        accel_y_pen--;
-		break;
-	      }
-	      if(abs(value-accel_y) < accel_threshold || accel_y == -999 || accel_y_pen == 1)
-	      {
-		accel_y = -value;
-		accel_y_pen = 0;
-	      }
-	      else
-	      {
-	        accel_y_pen = sequence_pen;
-	      }
-	      break;
+            case 8:  // accel y
+              if (accel_y_pen > 1)
+              {
+                accel_y_pen--;
+                break;
+              }
+              if (abs(value - accel_y) < accel_threshold || accel_y == -999 || accel_y_pen == 1)
+              {
+                accel_y = -value;
+                accel_y_pen = 0;
+              }
+              else
+              {
+                accel_y_pen = sequence_pen;
+              }
+              break;
 
-            case 9: // put accel z readings from IMU into accel x
-	      if(accel_x_pen > 1)
-	      {
-		accel_x_pen--;
-	        break;	
-	      }
-	      if(abs(value-accel_x) < accel_threshold || accel_x == -999 || accel_x_pen == 1)
-	      {
-		accel_x = value;
-		accel_x_pen = 0;
-		break;
-	      }
-	      else
-	      {
-		accel_x_pen = sequence_pen;
-	      }
-	      break;
+            case 9:  // put accel z readings from IMU into accel x
+              if (accel_x_pen > 1)
+              {
+                accel_x_pen--;
+                break;
+              }
+              if (abs(value - accel_x) < accel_threshold || accel_x == -999 || accel_x_pen == 1)
+              {
+                accel_x = value;
+                accel_x_pen = 0;
+                break;
+              }
+              else
+              {
+                accel_x_pen = sequence_pen;
+              }
+              break;
 
             case 10:
-	      if(ang_rate_x_pen > 1)
-	      {
-	        ang_rate_x_pen--;
-		break;
-	      }
-	      if(abs(value-ang_rate_x) < ang_rate_threshold || ang_rate_x == -999 || ang_rate_x_pen == 1)
-	      {
-		ang_rate_x = value;
+              if (ang_rate_x_pen > 1)
+              {
+                ang_rate_x_pen--;
+                break;
+              }
+              if (abs(value - ang_rate_x) < ang_rate_threshold || ang_rate_x == -999 || ang_rate_x_pen == 1)
+              {
+                ang_rate_x = value;
                 ang_rate_x_pen = 0;
-	      }
-	      else
-	      {
-	        ang_rate_x_pen = sequence_pen;
-	      }
-	      break;
+              }
+              else
+              {
+                ang_rate_x_pen = sequence_pen;
+              }
+              break;
 
             case 11:
-	      if(ang_rate_y_pen > 1)
-	      {
-	        ang_rate_y_pen--;
-		break;
-	      }
-	      if(abs(value-ang_rate_y) < ang_rate_threshold || ang_rate_y == -999 || ang_rate_y_pen == 1)
-	      {
-		ang_rate_y = value;
-		ang_rate_y_pen = 0;
-	      }
-	      else
-	      {
-	        ang_rate_y_pen = sequence_pen;
-	      }
-	      break;
+              if (ang_rate_y_pen > 1)
+              {
+                ang_rate_y_pen--;
+                break;
+              }
+              if (abs(value - ang_rate_y) < ang_rate_threshold || ang_rate_y == -999 || ang_rate_y_pen == 1)
+              {
+                ang_rate_y = value;
+                ang_rate_y_pen = 0;
+              }
+              else
+              {
+                ang_rate_y_pen = sequence_pen;
+              }
+              break;
 
             case 12:
-	      if(ang_rate_z_pen > 1)
-	      {
-	        ang_rate_z_pen--;
-		break;
-	      }
-	      if(abs(value-ang_rate_z) < ang_rate_threshold || ang_rate_z == -999 || ang_rate_z_pen == 1)
-	      {
-		ang_rate_z = value;
-		ang_rate_z_pen = 0;
-	      }
-	      else
-	      {
-	        ang_rate_z_pen = sequence_pen;
-	      }
-	      break;
+              if (ang_rate_z_pen > 1)
+              {
+                ang_rate_z_pen--;
+                break;
+              }
+              if (abs(value - ang_rate_z) < ang_rate_threshold || ang_rate_z == -999 || ang_rate_z_pen == 1)
+              {
+                ang_rate_z = value;
+                ang_rate_z_pen = 0;
+              }
+              else
+              {
+                ang_rate_z_pen = sequence_pen;
+              }
+              break;
 
             default:
-              ROS_WARN_STREAM("Unexpected data hex id:"+std::to_string(type));
+              ROS_WARN_STREAM("Unexpected data hex id:" + std::to_string(type));
               break;
           }
-	  if (yaw == -999 || pitch == -999 || roll == -999 || mag_x == -999 || mag_y == -999 || mag_z == -999 || accel_x == -999 || accel_y == -999 || accel_z == -999 || ang_rate_x == -999 || ang_rate_y == -999 || ang_rate_z == -999)
-	  {
-	       ROS_INFO_STREAM("Awaiting all IMU data...");
-	  }
-	  else
-	  {
-	       set_orientation(yaw, pitch, roll);
-	       ++msgIMU.header.seq;
-	       ++msgMag.header.seq;
-	       
-               msgIMU.header.stamp = ros::Time::now();
-	       msgMag.header.stamp = ros::Time::now();
+          if (yaw == -999 || pitch == -999 || roll == -999 || mag_x == -999 || mag_y == -999 || mag_z == -999 ||
+              accel_x == -999 || accel_y == -999 || accel_z == -999 || ang_rate_x == -999 || ang_rate_y == -999 ||
+              ang_rate_z == -999)
+          {
+            ROS_INFO_STREAM("Awaiting all IMU data...");
+          }
+          else
+          {
+            set_orientation(yaw, pitch, roll);
+            ++msgIMU.header.seq;
+            ++msgMag.header.seq;
 
-	       // Publish Raw IMU message
-	       msgIMU.orientation.w = w_orientation;
-	       msgIMU.orientation.x = x_orientation;
-	       msgIMU.orientation.y = y_orientation;
-	       msgIMU.orientation.z = z_orientation;
-	       msgIMU.orientation_covariance[0] = x_orientation * x_orientation;
-	       msgIMU.orientation_covariance[4] = y_orientation * y_orientation;
-	       msgIMU.orientation_covariance[8] = z_orientation * z_orientation;
-	       msgIMU.linear_acceleration.x = accel_x;
-	       msgIMU.linear_acceleration.y = accel_y;
-	       msgIMU.linear_acceleration.z = accel_z;
-	       msgIMU.linear_acceleration_covariance[0] = accel_x * accel_x;
-	       msgIMU.linear_acceleration_covariance[4] = accel_y * accel_y;
-	       msgIMU.linear_acceleration_covariance[8] = accel_z * accel_z;
-	       msgIMU.angular_velocity.x = ang_rate_x;
-	       msgIMU.angular_velocity.y = ang_rate_y;
-	       msgIMU.angular_velocity.z = ang_rate_z;
-	       msgIMU.angular_velocity_covariance[0] = ang_rate_x * ang_rate_x;
-	       msgIMU.angular_velocity_covariance[4] = ang_rate_y * ang_rate_y;
-	       msgIMU.angular_velocity_covariance[8] = ang_rate_z * ang_rate_z; 
+            msgIMU.header.stamp = ros::Time::now();
+            msgMag.header.stamp = ros::Time::now();
 
-	       pubIMU.publish(msgIMU);
+            // Publish Raw IMU message
+            msgIMU.orientation.w = w_orientation;
+            msgIMU.orientation.x = x_orientation;
+            msgIMU.orientation.y = y_orientation;
+            msgIMU.orientation.z = z_orientation;
+            msgIMU.orientation_covariance[0] = 0.01;
+            msgIMU.orientation_covariance[4] = 0.01;
+            msgIMU.orientation_covariance[8] = 0.01;
+            msgIMU.linear_acceleration.x = accel_x;
+            msgIMU.linear_acceleration.y = accel_y;
+            msgIMU.linear_acceleration.z = accel_z;
+            msgIMU.linear_acceleration_covariance[0] = 0.01;
+            msgIMU.linear_acceleration_covariance[4] = 0.01;
+            msgIMU.linear_acceleration_covariance[8] = 0.01;
+            msgIMU.angular_velocity.x = ang_rate_x;
+            msgIMU.angular_velocity.y = ang_rate_y;
+            msgIMU.angular_velocity.z = ang_rate_z;
+            msgIMU.angular_velocity_covariance[0] = 0.01;
+            msgIMU.angular_velocity_covariance[4] = 0.01;
+            msgIMU.angular_velocity_covariance[8] = 0.01;
 
-	       // Publish Raw Mag Data
-	       msgMag.magnetic_field.x = mag_x;
-	       msgMag.magnetic_field.y = mag_y;
-	       msgMag.magnetic_field.z = mag_z;
+            pubIMU.publish(msgIMU);
 
-	       pubMag.publish(msgMag);
-	  }
-          
+            // Publish Raw Mag Data
+            msgMag.magnetic_field.x = mag_x;
+            msgMag.magnetic_field.y = mag_y;
+            msgMag.magnetic_field.z = mag_z;
+
+            pubMag.publish(msgMag);
+          }
         }
 
         buffer = boost::asio::buffer(backing, sizeof(backing));
