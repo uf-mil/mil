@@ -40,7 +40,7 @@
     name="imu"
     parent="base_link"
     imu_topic='/imu/data_raw'
-    xyz="0.172 0.004 -0.28"
+    xyz="-0.17 0.05 0.01905"
     rpy="3.14159 0 3.14159"
     rate="210"
     ax="0.015707963"
