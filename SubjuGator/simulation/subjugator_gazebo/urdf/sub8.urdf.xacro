@@ -41,7 +41,7 @@
     parent="base_link"
     imu_topic='/imu/data_raw'
     xyz="0.172 0.004 -0.28"
-    rpy="0 -3.14159 0"
+    rpy="3.14159 0 3.14159"
     rate="210"
     ax="0.015707963"
     ay="0.015707963"
