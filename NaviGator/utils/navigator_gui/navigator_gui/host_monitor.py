@@ -6,8 +6,9 @@ core hosts on the platform's network.
 
 import socket
 import subprocess
+import sys
 
-import rospy
+import rclpy
 from navigator_msgs.msg import Host, Hosts
 
 __author__ = "Anthony Olive"
@@ -17,15 +18,16 @@ __copyright__ = "Copyright 2016, MIL"
 __license__ = "MIT"
 
 
-rospy.init_node("host_monitor")
+rclpy.init(args=sys.argv)
+node = rclpy.create_node("host_monitor")
 
 
 class HostMonitor:
     def __init__(self):
-        self.pub_hosts = rospy.Publisher(
-            "/host_monitor",
+        self.pub_hosts = self.create_publisher(
             Hosts,
-            queue_size=1,
+            "/host_monitor",
+            1,
             latch=True,
         )
         self.hosts = Hosts()
@@ -61,7 +63,7 @@ class HostMonitor:
 
             self.hosts.hosts.append(host)
 
-    def publish(self, _: rospy.timer.TimerEvent) -> None:
+    def publish(self, _: rclpy.timer.TimerEvent) -> None:
         """
         Publishes the list of hosts and the information gathered about them.
         """
@@ -71,5 +73,5 @@ class HostMonitor:
 
 if __name__ == "__main__":
     monitor = HostMonitor()
-    rospy.Timer(rospy.Duration(10), monitor.publish, oneshot=False)
-    rospy.spin()
+    rclpy.Timer(rclpy.Duration(10), monitor.publish, oneshot=False)
+    rclpy.spin()

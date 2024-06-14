@@ -23,8 +23,8 @@ import os
 import xml.etree.ElementTree
 
 import cv2
+import rclpy
 import rosbag
-import rospy
 import yaml
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
@@ -174,11 +174,11 @@ class BagToLabelMe:
         # Load start, stop, and frequency from config or defaults
         _, _, first_time = next(bag.read_messages())
         start = (
-            first_time + rospy.Duration(config.start) if config.start else first_time
+            first_time + rclpy.Duration(config.start) if config.start else first_time
         )
-        stop = first_time + rospy.Duration(config.stop) if config.stop else None
+        stop = first_time + rclpy.Duration(config.stop) if config.stop else None
         interval = (
-            rospy.Duration(1.0 / config.freq) if config.freq else rospy.Duration(0)
+            rclpy.Duration(1.0 / config.freq) if config.freq else rclpy.Duration(0)
         )
 
         # Crawl through bag in configured time and frequency, writing images into labelme

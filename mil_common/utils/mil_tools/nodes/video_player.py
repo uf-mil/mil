@@ -25,7 +25,7 @@ import os
 import sys
 
 import cv2
-import rospy
+import rclpy
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 
@@ -33,27 +33,27 @@ from sensor_msgs.msg import Image
 class RosVideoPlayer:
     def __init__(self):
         self.bridge = CvBridge()
-        self.filename = rospy.get_param("~filename", sys.argv[1])
+        self.filename = self.declare_parameter("~filename", sys.argv[1])
         image_topic = (
             "video_player/"
             + os.path.splitext(os.path.basename(self.filename))[0]
             + "/image_raw",
         )
-        self.image_pub = rospy.Publisher(image_topic, Image, queue_size=10)
-        self.slider = rospy.get_param("~slider", True)
-        self.start_frame = rospy.get_param("~start_frames", 0)
+        self.image_pub = self.create_publisher(Image, image_topic, 10)
+        self.slider = self.declare_parameter("~slider", True)
+        self.start_frame = self.declare_parameter("~start_frames", 0)
         self.cap = cv2.VideoCapture(self.filename)
 
         self.width = self.cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
         self.height = self.cap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)
 
-        self.roi_y_offset = rospy.get_param("~y_offset", 0)
-        self.roi_x_offset = rospy.get_param("~x_offset", 0)
-        self.roi_height = rospy.get_param("~height", self.height)
-        self.roi_width = rospy.get_param("~width", self.width)
+        self.roi_y_offset = self.declare_parameter("~y_offset", 0)
+        self.roi_x_offset = self.declare_parameter("~x_offset", 0)
+        self.roi_height = self.declare_parameter("~height", self.height)
+        self.roi_width = self.declare_parameter("~width", self.width)
 
         self.num_frames = self.cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT)
-        self.fps = rospy.get_param("~fps", self.cap.get(cv2.cv.CV_CAP_PROP_FPS))
+        self.fps = self.declare_parameter("~fps", self.cap.get(cv2.cv.CV_CAP_PROP_FPS))
         self.cap.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, self.start_frame)
         self.num_frames = self.cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT)
         if self.num_frames < 1:
@@ -100,7 +100,7 @@ class RosVideoPlayer:
                 int(self.width),
                 self.roi_width_cb,
             )
-        rospy.loginfo(
+        self.get_logger().info(
             "Playing {} at {}fps starting at frame {} ({} Total Frames)".format(
                 self.filename,
                 self.fps,
@@ -110,8 +110,8 @@ class RosVideoPlayer:
         )
 
     def run(self):
-        r = rospy.Rate(self.fps)  # 10hz
-        while not rospy.is_shutdown() and self.cap.isOpened() and not self.ended:
+        r = rclpy.Rate(self.fps)  # 10hz
+        while not rclpy.is_shutdown() and self.cap.isOpened() and not self.ended:
             if self.slider:
                 k = cv2.waitKey(1) & 0xFF
                 if k != self.last_key:
@@ -140,7 +140,7 @@ class RosVideoPlayer:
             print(f"Exception: {e}")
         if not ret:
             if not self.ended:
-                rospy.loginfo(f"File {self.filename} ended")
+                self.get_logger().info(f"File {self.filename} ended")
             self.ended = True
             return
         else:
@@ -175,7 +175,8 @@ class RosVideoPlayer:
 
 
 def main():
-    rospy.init_node("video_player", anonymous=True)
+    rclpy.init(args=sys.argv)
+
     player = RosVideoPlayer()
     player.run()
 

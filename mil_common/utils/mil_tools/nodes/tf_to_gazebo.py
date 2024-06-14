@@ -1,24 +1,28 @@
 #!/usr/bin/env python3
-import rospy
+import sys
+
+import rclpy
 import tf
 
 
 def main():
-    rospy.init_node("tf_to_gazebo")
-    do_cam_fix = rospy.get_param("~cam_fix", False)
-    tf_parent = rospy.get_param("~tf_parent", "/measurement")
+    rclpy.init(args=sys.argv)
+    node = rclpy.create_node("tf_to_gazebo")
+
+    do_cam_fix = node.declare_parameter("~cam_fix", False)
+    tf_parent = node.declare_parameter("~tf_parent", "/measurement")
     listener = tf.TransformListener()
-    rate = rospy.Rate(10.0)
+    rate = rclpy.Rate(10.0)
     cam_fix_quat = (-0.5, 0.5, -0.5, -0.5)
 
-    while not rospy.is_shutdown():
+    while not rclpy.is_shutdown():
         try:
             print("============= TRANSFORMS ================")
             for frame_id in listener.getFrameStrings():
                 (trans, rot) = listener.lookupTransform(
                     tf_parent,
                     frame_id,
-                    rospy.Time(0),
+                    rclpy.Time(0),
                 )
                 print("--")
                 print(f"Transform {tf_parent} {frame_id}")

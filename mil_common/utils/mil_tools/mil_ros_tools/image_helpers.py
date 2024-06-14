@@ -9,9 +9,10 @@ from typing import Callable, List, Optional, Tuple
 
 import message_filters
 import numpy as np
-import rospy
+import rclpy
 from cv_bridge import CvBridge, CvBridgeError
 from image_geometry import PinholeCameraModel
+from rclpy.node import Node
 from sensor_msgs.msg import CameraInfo, Image
 
 from .init_helpers import wait_for_param
@@ -23,14 +24,16 @@ def get_parameter_range(parameter_root: str):
     """
     low_param, high_param = parameter_root + "/hsv_low", parameter_root + "/hsv_high"
 
-    rospy.logwarn(f"Blocking -- waiting for parameters {low_param} and {high_param}")
+    Node.get_logger().warn(
+        f"Blocking -- waiting for parameters {low_param} and {high_param}",
+    )
 
     wait_for_param(low_param)
     wait_for_param(high_param)
-    low = rospy.get_param(low_param)
-    high = rospy.get_param(high_param)
+    low = Node.declare_parameter(low_param)
+    high = Node.declare_parameter(high_param)
 
-    rospy.loginfo(f"Got {low_param} and {high_param}")
+    Node.get_logger().info()(f"Got {low_param} and {high_param}")
     return np.array([low, high]).transpose()
 
 
@@ -69,7 +72,7 @@ class Image_Publisher:
     def __init__(self, topic: str, encoding: str = "bgr8", queue_size: int = 1):
         self.bridge = CvBridge()
         self.encoding = encoding
-        self.im_pub = rospy.Publisher(topic, Image, queue_size=queue_size)
+        self.im_pub = self.create_publisher(Image, topic, queue_size)
 
     def publish(self, cv_image: np.ndarray):
         """
@@ -81,7 +84,7 @@ class Image_Publisher:
             self.im_pub.publish(image_message)
         except CvBridgeError as e:
             # Intentionally absorb CvBridge Errors
-            rospy.logerr(str(e))
+            self.get_logger().warn(str(e))
 
 
 class Image_Subscriber:
@@ -117,19 +120,14 @@ class Image_Subscriber:
         self.last_image_header = None
         self.last_image_time = None
         self.last_image = None
-        self.im_sub = rospy.Subscriber(
-            topic,
-            Image,
-            self.convert,
-            queue_size=queue_size,
-        )
+        self.im_sub = self.create_subscription(Image, topic, self.convert, queue_size)
 
-        root_topic, image_subtopic = path.split(rospy.remap_name(topic))
-        self.info_sub = rospy.Subscriber(
-            root_topic + "/camera_info",
+        root_topic, image_subtopic = path.split(rclpy.remap_name(topic))
+        self.info_sub = self.create_subscription(
             CameraInfo,
+            root_topic + "/camera_info",
             self.info_cb,
-            queue_size=queue_size,
+            queue_size,
         )
 
         self.bridge = CvBridge()
@@ -146,21 +144,21 @@ class Image_Subscriber:
         Raises:
             Exception: No camera info was found after the timeout had finished.
         """
-        rospy.logwarn(
+        self.get_logger().warn(
             "Blocking -- waiting at most %d seconds for camera info." % timeout,
         )
 
-        timeout = rospy.Duration(timeout)
-        rospy.sleep(0.1)  # Make sure we don't have negative time
-        start_time = rospy.Time.now()
+        timeout = rclpy.Duration(timeout)
+        rclpy.sleep(0.1)  # Make sure we don't have negative time
+        start_time = rclpy.Time.now()
 
-        while (rospy.Time.now() - start_time < timeout) and (not rospy.is_shutdown()):
+        while (rclpy.Time.now() - start_time < timeout) and (not rclpy.is_shutdown()):
             if self.camera_info is not None:
-                rospy.loginfo("Camera info found!")
+                self.get_logger().info("Camera info found!")
                 return self.camera_info
-            rospy.sleep(0.2)
+            rclpy.sleep(0.2)
 
-        rospy.logerr("Camera info not found.")
+        self.get_logger().warn("Camera info not found.")
         raise Exception("Camera info not found.")
 
     def wait_for_camera_model(self, **kwargs):
@@ -208,7 +206,7 @@ class Image_Subscriber:
             self.callback(image)
         except CvBridgeError as e:
             # Intentionally absorb CvBridge Errors
-            rospy.logerr(e)
+            self.get_logger().warn(e)
 
 
 class StereoImageSubscriber:
@@ -292,19 +290,19 @@ class StereoImageSubscriber:
 
         # Subscribe to image and camera info topics for both cameras
         root_topic_left, image_subtopic_left = path.split(left_image_topic)
-        self._info_sub_left = rospy.Subscriber(
-            root_topic_left + "/camera_info",
+        self._info_sub_left = self.create_subscription(
             CameraInfo,
+            root_topic_left + "/camera_info",
             lambda info: setattr(self, "camera_info_left", info),
-            queue_size=queue_size,
+            queue_size,
         )
         image_sub_left = message_filters.Subscriber(left_image_topic, Image)
         root_topic_right, image_subtopic_right = path.split(right_image_topic)
-        self._info_sub_right = rospy.Subscriber(
-            root_topic_right + "/camera_info",
+        self._info_sub_right = self.create_subscription(
             CameraInfo,
+            root_topic_right + "/camera_info",
             lambda info: setattr(self, "camera_info_right", info),
-            queue_size=queue_size,
+            queue_size,
         )
         image_sub_right = message_filters.Subscriber(right_image_topic, Image)
 
@@ -342,14 +340,14 @@ class StereoImageSubscriber:
         Raises:
             Exception: if camera info for both cameras is not received within timeout
         """
-        timeout = rospy.Time.now() + rospy.Duration(timeout)
-        while (rospy.Time.now() < timeout) and (not rospy.is_shutdown()):
+        timeout = rclpy.Time.now() + rclpy.Duration(timeout)
+        while (rclpy.Time.now() < timeout) and (not rclpy.is_shutdown()):
             if self.camera_info_left is not None and self.camera_info_right is not None:
                 if unregister:
                     self._info_sub_left.unregister()
                     self._info_sub_right.unregister()
                 return self.camera_info_left, self.camera_info_right
-            rospy.sleep(0.05)
+            rclpy.sleep(0.05)
         if self.camera_info_left is not None and self.camera_info_right is not None:
             if unregister:
                 self._info_sub_left.unregister()
@@ -381,4 +379,4 @@ class StereoImageSubscriber:
             self.callback(img_left, img_right)
         except CvBridgeError as e:
             # Intentionally absorb CvBridge Errors
-            rospy.logerr(e)
+            self.get_logger().warn(e)

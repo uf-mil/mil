@@ -1,7 +1,6 @@
 import os
 
 import rospkg
-import rospy
 from navigator_msgs.msg import ScanTheCode
 from python_qt_binding import QtWidgets, loadUi
 from python_qt_binding.QtWidgets import QWidget
@@ -63,7 +62,11 @@ class StcDisplay(Plugin):
         # Add widget to the user interface
         context.add_widget(self._widget)
         self.connect_ui()
-        self.stc_sub = rospy.Subscriber(self.STC_TOPIC, ScanTheCode, self.update_gui)
+        self.stc_sub = self.create_subscription(
+            ScanTheCode,
+            self.STC_TOPIC,
+            self.update_gui,
+        )
 
     def connect_ui(self) -> None:
         self.color1_rect = self._widget.findChild(QtWidgets.QColumnView, "color1_rect")

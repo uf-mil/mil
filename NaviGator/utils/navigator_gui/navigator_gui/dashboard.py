@@ -8,8 +8,8 @@ import threading
 from copy import copy
 from typing import Any
 
+import rclpy
 import rospkg
-import rospy
 from mil_tools import thread_lock
 from navigator_msgs.msg import Host, Hosts
 from python_qt_binding import QtCore, QtWidgets, loadUi
@@ -79,7 +79,7 @@ class Dashboard(Plugin):
 
     @thread_lock(lock)
     def update_gui(self):
-        self.system_time["current"] = rospy.Time.now()
+        self.system_time["current"] = rclpy.Time.now()
         if self.system_time["current"] != self.system_time["displayed"]:
             self.update_system_time_status()
         if self.kill_status["current"] != self.kill_status["displayed"]:
@@ -204,18 +204,22 @@ class Dashboard(Plugin):
         within this class.
         """
         # Attempts to read the battery voltage parameters (sets them to defaults if they have not been set)
-        self.battery_low_voltage = rospy.get_param(
+        self.battery_low_voltage = self.declare_parameter(
             "/battery_monitor/battery_low_voltage",
             24,
         )
-        self.battery_critical_voltage = rospy.get_param(
+        self.battery_critical_voltage = self.get_parameter(
             "/battery_monitor/battery_critical_voltage",
             20,
         )
 
-        rospy.Subscriber("/wrench/selected", String, self.cache_operating_mode)
-        rospy.Subscriber("/battery_monitor", Float32, self.cache_battery_voltage)
-        rospy.Subscriber("/host_monitor", Hosts, self.cache_hosts)
+        self.create_subscription(String, "/wrench/selected", self.cache_operating_mode)
+        self.create_subscription(
+            Float32,
+            "/battery_monitor",
+            self.cache_battery_voltage,
+        )
+        self.create_subscription(Hosts, "/host_monitor", self.cache_hosts)
 
         self.kill_listener = AlarmListener(
             "kill",
@@ -241,7 +245,7 @@ class Dashboard(Plugin):
         in the hosts receiving variable.
         """
         self.hosts["current"] = msg
-        self.hosts["stamp"] = rospy.Time.now()
+        self.hosts["stamp"] = rclpy.Time.now()
 
     def update_kill_status(self) -> None:
         if self.kill_status["current"] is False:
@@ -291,7 +295,7 @@ class Dashboard(Plugin):
 
         # Sets the battery voltage to 'Unknown' if no message has been current in 15s
         if (
-            (rospy.Time.now() - self.battery_voltage["stamp"]) > rospy.Duration(15)
+            (rclpy.Time.now() - self.battery_voltage["stamp"]) > rclpy.Duration(15)
         ) or (self.battery_voltage["current"] is None):
             self.battery_voltage["current"] = "Unknown"
 

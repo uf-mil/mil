@@ -18,8 +18,8 @@ import os
 from typing import Optional
 
 import cv2
+import rclpy
 import rosbag
-import rospy
 import yaml
 from cv_bridge.boost.cv_bridge_boost import cvtColor2
 from genpy import Time
@@ -221,9 +221,9 @@ class BagImageExtractorSource:
         else:
             self.camera_model = None
         _, _, first_time = next(b.read_messages())
-        start = first_time + rospy.Duration(self.start) if self.start else first_time
-        stop = first_time + rospy.Duration(self.stop) if self.stop else None
-        interval = rospy.Duration(1.0 / self.freq) if self.freq else rospy.Duration(0)
+        start = first_time + rclpy.Duration(self.start) if self.start else first_time
+        stop = first_time + rclpy.Duration(self.stop) if self.stop else None
+        interval = rclpy.Duration(1.0 / self.freq) if self.freq else rclpy.Duration(0)
         next_time = start
         prefix = slugify(str(self.filename)) + "_" + slugify(str(self.topic))
         for _, msg, time in b.read_messages(

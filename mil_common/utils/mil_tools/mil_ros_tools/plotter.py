@@ -4,7 +4,6 @@ import threading
 
 import matplotlib
 import numpy as np
-import rospy
 from cv_bridge import CvBridge
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
@@ -66,14 +65,14 @@ class Plotter:
         dpi: int = 150,
     ):
         matplotlib.rcParams.update({"font.size": 22})
-        self.pub = rospy.Publisher(topic_name, Image, queue_size=1)
+        self.pub = self.create_publisher(Image, topic_name, 1)
         self.bridge = CvBridge()
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.canvas = FigureCanvasAgg(self.fig)
         self.enabled = True
         self.thread = None
 
-        rospy.Service(f"{topic_name}_enable", SetBool, self.enable_disable)
+        self.create_service(SetBool, f"{topic_name}_enable", self.enable_disable)
 
     def enable_disable(self, req: SetBoolRequest) -> SetBoolResponse:
         """

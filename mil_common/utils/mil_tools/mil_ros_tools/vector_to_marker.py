@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import argparse
+import sys
 from typing import List, Optional
 
 import numpy as np
-import rospy
+import rclpy
 from geometry_msgs.msg import Vector3Stamped
 from mil_tools import numpy_to_colorRGBA, numpy_to_point, rosmsg_to_numpy
 from visualization_msgs.msg import Marker
@@ -40,12 +41,12 @@ class VectorToMarker:
         color: List[float] = [0, 0, 1, 1],
     ):
         self.length = length
-        self.pub = rospy.Publisher(marker_topic, Marker, queue_size=1)
+        self.pub = self.create_publisher(Marker, marker_topic, 1)
         self.color = numpy_to_colorRGBA(color)
-        rospy.Subscriber(vector_topic, Vector3Stamped, self.publish)
+        self.create_subscription(Vector3Stamped, vector_topic, self.publish)
 
     def publish(self, vec):
-        rospy.logdebug("vector received")
+        rclpy.logdebug("vector received")
         marker = Marker()
         marker.header = vec.header
         marker.type = 0
@@ -62,7 +63,7 @@ class VectorToMarker:
         if self.length is not None:
             norm = np.linalg.norm(vec)
             if norm == 0:
-                rospy.logwarn("Zero vector received, skipping")
+                self.get_logger().warn("Zero vector received, skipping")
                 return
             vec = (self.length / norm) * vec
         marker.points.append(numpy_to_point(vec))
@@ -98,13 +99,15 @@ if __name__ == "__main__":
         metavar=("R", "G", "B", "A"),
         help="Color of vector to publish as floats RGBA 0 to 1",
     )
-    args = rospy.myargv()
+    args = rclpy.myargv()
     args = parser.parse_args(args[1:])
-    rospy.init_node("vector_to_marker")
+    rclpy.init(args=sys.argv)
+    node = rclpy.create_node("vector_to_marker")
+
     VectorToMarker(
         args.vector_topic,
         args.marker_topic,
         length=args.length,
         color=args.color,
     )
-    rospy.spin()
+    rclpy.spin()

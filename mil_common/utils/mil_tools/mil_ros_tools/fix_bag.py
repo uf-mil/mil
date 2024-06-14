@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import argparse
 
+import rclpy
 import rosbag
-import rospy
 from tqdm import tqdm
 
 
@@ -46,9 +46,9 @@ class BagFixer:
         assert first_time is not None
         start, stop = None, None
         if self.start is not None:
-            start = first_time + rospy.Duration(self.start)
+            start = first_time + rclpy.Duration(self.start)
         if self.stop is not None:
-            stop = first_time + rospy.Duration(self.stop)
+            stop = first_time + rclpy.Duration(self.stop)
         total_messages = bag.get_message_count()
         # This could be made significantly faster by using ag.get_type_and_topic_info
         # to do some preprocessing on what topics will be used / remapped /

@@ -4,7 +4,9 @@ Publishes a Header message with the current time stamp
 at a fixed interval. Useful for monitoring network loss
 or for a safety network heartbeat.
 """
-import rospy
+import sys
+
+import rclpy
 from std_msgs.msg import Header
 
 
@@ -22,30 +24,34 @@ class NetworkBroadcaster:
     """
 
     def __init__(self):
-        hz = rospy.get_param("~hz", 20)
-        topic = rospy.get_param("~topic", "network")
+        hz = self.declare_parameter("~hz", 20)
+        topic = self.declare_parameter("~topic", "network")
 
-        rospy.loginfo(f"NETWORK BROADCASTER: publishing to {topic} at {hz}hz")
+        self.get_logger().info(f"NETWORK BROADCASTER: publishing to {topic} at {hz}hz")
         self.msg = Header()
         self.msg.seq = 0
         self.num_connections = -1
-        self.pub = rospy.Publisher(topic, Header, queue_size=1, tcp_nodelay=True)
-        rospy.Timer(rospy.Duration(1 / hz), self._publish)
+        self.pub = self.create_publisher(Header, topic, 1, tcp_nodelay=True)
+        rclpy.Timer(rclpy.Duration(1 / hz), self._publish)
 
     def _publish(self, *args):
         connections = self.pub.get_num_connections()
         if connections != self.num_connections:
             if connections == 0:
-                rospy.loginfo("NETWORK BROADCASTER: no connections")
+                node.get_logger().info("NETWORK BROADCASTER: no connections")
             else:
-                rospy.loginfo(f"NETWORK BROADCASTER: connected to {connections} nodes")
+                node.get_logger().info(
+                    f"NETWORK BROADCASTER: connected to {connections} nodes",
+                )
             self.num_connections = connections
-        self.msg.stamp = rospy.Time.now()
+        self.msg.stamp = rclpy.Time.now()
         self.pub.publish(self.msg)
         self.msg.seq += 1
 
 
 if __name__ == "__main__":
-    rospy.init_node("network_broadcaster", anonymous=True)
+    rclpy.init(args=sys.argv)
+    node = rclpy.create_node("network_broadcaster")
+
     NetworkBroadcaster()
-    rospy.spin()
+    rclpy.spin()
