@@ -1,6 +1,8 @@
 #include <bits/stdint-uintn.h>
 #include <endian.h>
 #include <mil_msgs/DepthStamped.h>
+#include <nav_msgs/Odometry.h>
+#include <ros/callback_queue.h>
 #include <ros/ros.h>
 
 #include <boost/asio.hpp>
@@ -22,6 +24,8 @@ private:
   ros::NodeHandle private_nh_;
 
   ros::Publisher pub_;
+  ros::Subscriber odom_sub_;
+  nav_msgs::Odometry recent_odom_msg_;
 
   std::string ip_;
   int port_;
@@ -59,11 +63,13 @@ public:
   ~NavTubeDriver();
 
   void run();
+  void odom_callback(const nav_msgs::OdometryConstPtr& msg);
 };
 
 NavTubeDriver::NavTubeDriver(ros::NodeHandle nh, ros::NodeHandle private_nh) : nh_(nh), private_nh_(private_nh)
 {
   pub_ = nh.advertise<mil_msgs::DepthStamped>("depth", 10);
+  odom_sub_ = nh.subscribe<nav_msgs::Odometry>("odom", 10, &NavTubeDriver::odom_callback, this);
   ip_ = private_nh.param<std::string>("ip", std::string("192.168.37.61"));
   port_ = private_nh.param<int>("port", 33056);
   frame_id_ = private_nh.param<std::string>("frame_id", "/depth");
@@ -83,6 +89,11 @@ NavTubeDriver::NavTubeDriver(ros::NodeHandle nh, ros::NodeHandle private_nh) : n
   heartbeat_packet[1] = sync2;
   uint16_t nw_ordering = htons(hz_);
   reinterpret_cast<uint16_t*>(&heartbeat_packet[2])[0] = nw_ordering;
+}
+
+void NavTubeDriver::odom_callback(const nav_msgs::OdometryConstPtr& ptr)
+{
+  recent_odom_msg_ = *ptr;
 }
 
 NavTubeDriver::~NavTubeDriver()
@@ -194,7 +205,18 @@ void NavTubeDriver::read_messages(boost::shared_ptr<tcp::socket> socket)
 
         uint64_t bits = be64toh(*reinterpret_cast<uint64_t*>(&backing[2]));
         double pressure = *reinterpret_cast<double*>(&bits);
-        msg.depth = pressure;
+        if (recent_odom_msg_.header.seq)
+        {
+          // Accounts for the dynamic pressure applied to the pressure sensor
+          // when the sub is moving forwards or backwards
+          double velocity = recent_odom_msg_.twist.twist.linear.x;
+          double vel_effect = (abs(velocity) * velocity) / (1000 * 9.81);
+          msg.depth = pressure + vel_effect;
+        }
+        else
+        {
+          msg.depth = pressure;
+        }
 
         pub_.publish(msg);
         buffer = boost::asio::buffer(backing, sizeof(backing));
@@ -205,6 +227,8 @@ void NavTubeDriver::read_messages(boost::shared_ptr<tcp::socket> socket)
 
     buffer = boost::asio::buffer(buffer + bytes_read);
     prev = ros::Time::now();
+
+    ros::spinOnce();
   }
 }
 
