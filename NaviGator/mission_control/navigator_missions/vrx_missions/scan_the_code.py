@@ -182,7 +182,7 @@ class ScanTheCode(Vrx):
 
         try:
             await self.sequence_report(color_sequence)
-        except Exception as e:  # catch error in case vrx scroing isn't running
+        except Exception as e:  # catch error in case vrx scoring isn't running
             print(e)
 
     async def find_stc2(self):
