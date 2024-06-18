@@ -15,7 +15,7 @@
         <pose>0 0 0 0 -0 0</pose>
       </inertial>
       <pose>0 0 0 0 -0 0</pose>
-      <gravity>1</gravity>
+      <gravity>0</gravity>
       <self_collide>0</self_collide>
       <kinematic>0</kinematic>
       <enable_wind>0</enable_wind>
@@ -99,7 +99,7 @@
         </surface>
       </collision>
     </link>
-    <static>0</static>
+    <static>1</static>
     <allow_auto_disable>1</allow_auto_disable>
   </model>
 </sdf>
