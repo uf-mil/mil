@@ -21,7 +21,8 @@ try : image_transport(nh), rviz("/torpedo_board/visualization/detection")
 
   // Set image processing scale
   image_proc_scale = ros::param::param<float>("img_proc_scale", image_proc_scale_default);
-  log_msg << std::setw(1 * tab_sz) << "" << "Image Processing Scale: \x1b[37m" << image_proc_scale << "\x1b[0m\n";
+  log_msg << std::setw(1 * tab_sz) << ""
+          << "Image Processing Scale: \x1b[37m" << image_proc_scale << "\x1b[0m\n";
 
   // Configure debug image generation
   generate_dbg_img = ros::param::param<bool>("generate_dbg_imgs", generate_dbg_img_default);
@@ -31,15 +32,20 @@ try : image_transport(nh), rviz("/torpedo_board/visualization/detection")
   std::string right = ros::param::param<std::string>("input_right", img_topic_right_default);
   left_image_sub = image_transport.subscribeCamera(left, 1000, &SubjuGatorObjectFinder::left_image_callback, this);
   right_image_sub = image_transport.subscribeCamera(right, 1000, &SubjuGatorObjectFinder::right_image_callback, this);
-  log_msg << std::setw(1 * tab_sz) << "" << "Camera Subscriptions:\x1b[37m\n"
-          << std::setw(2 * tab_sz) << "" << "left  = " << left << std::endl
-          << std::setw(2 * tab_sz) << "" << "right = " << right << "\x1b[0m\n";
+  log_msg << std::setw(1 * tab_sz) << ""
+          << "Camera Subscriptions:\x1b[37m\n"
+          << std::setw(2 * tab_sz) << ""
+          << "left  = " << left << std::endl
+          << std::setw(2 * tab_sz) << ""
+          << "right = " << right << "\x1b[0m\n";
 
   // Advertise debug image topic
   std::string dbg_topic = ros::param::param<std::string>("dbg_imgs", dbg_topic_default);
   debug_image_pub = image_transport.advertise(dbg_topic, 1, true);
-  log_msg << std::setw(1 * tab_sz) << "" << "Advertised debug image topic:\n"
-          << std::setw(2 * tab_sz) << "" << "\x1b[37m" << dbg_topic << "\x1b[0m\n";
+  log_msg << std::setw(1 * tab_sz) << ""
+          << "Advertised debug image topic:\n"
+          << std::setw(2 * tab_sz) << ""
+          << "\x1b[37m" << dbg_topic << "\x1b[0m\n";
 
   // Setup debug image quadrants
   cv::Size input_frame_size(644, 482);  // This needs to be changed if we ever change
@@ -57,14 +63,17 @@ try : image_transport(nh), rviz("/torpedo_board/visualization/detection")
   active = false;
   std::string activation = ros::param::param<std::string>("activation", activation_default);
   detection_switch = nh.advertiseService(activation, &SubjuGatorObjectFinder::detection_activation_switch, this);
-  log_msg << std::setw(1 * tab_sz) << "" << "Advertised torpedo board detection switch:\n"
-          << std::setw(2 * tab_sz) << "" << "\x1b[37m" << activation << "\x1b[0m\n";
+  log_msg << std::setw(1 * tab_sz) << ""
+          << "Advertised torpedo board detection switch:\n"
+          << std::setw(2 * tab_sz) << ""
+          << "\x1b[37m" << activation << "\x1b[0m\n";
 
   // Start main detector loop
   run_id = 0;
   boost::thread main_loop_thread(boost::bind(&SubjuGatorObjectFinder::run, this));
   main_loop_thread.detach();
-  log_msg << std::setw(1 * tab_sz) << "" << "Running main detector loop in a background thread\n";
+  log_msg << std::setw(1 * tab_sz) << ""
+          << "Running main detector loop in a background thread\n";
 
   log_msg << "SubjuGatorObjectFinder Initialized\n";
   ROS_INFO(log_msg.str().c_str());

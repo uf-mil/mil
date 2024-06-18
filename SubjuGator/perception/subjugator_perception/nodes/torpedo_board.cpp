@@ -33,19 +33,24 @@ try : image_transport(nh), rviz("/torpedo_board/visualization/detection")
 
   // Set image processing scale
   image_proc_scale = param<float>("/torpedo_vision/img_proc_scale", image_proc_scale_default);
-  log_msg << setw(1 * tab_sz) << "" << "Image Processing Scale: \x1b[37m" << image_proc_scale << "\x1b[0m\n";
+  log_msg << setw(1 * tab_sz) << ""
+          << "Image Processing Scale: \x1b[37m" << image_proc_scale << "\x1b[0m\n";
 
   // Set diffusion duration in pseudotime
   diffusion_time = param<int>("/torpedo_vision/diffusion_time", diffusion_time_default);
-  log_msg << setw(1 * tab_sz) << "" << "Anisotropic Diffusion Duration: \x1b[37m" << diffusion_time << "\x1b[0m\n";
+  log_msg << setw(1 * tab_sz) << ""
+          << "Anisotropic Diffusion Duration: \x1b[37m" << diffusion_time << "\x1b[0m\n";
 
   // Set feature extraction parameters
   max_features = param<int>("/torpedo_vision/max_features", max_features_default);
-  log_msg << setw(1 * tab_sz) << "" << "Maximum features: \x1b[37m" << max_features << "\x1b[0m\n";
+  log_msg << setw(1 * tab_sz) << ""
+          << "Maximum features: \x1b[37m" << max_features << "\x1b[0m\n";
   feature_block_size = param<int>("/torpedo_vision/feature_block_size", feature_block_size_default);
-  log_msg << setw(1 * tab_sz) << "" << "Feature Block Size: \x1b[37m" << feature_block_size << "\x1b[0m\n";
+  log_msg << setw(1 * tab_sz) << ""
+          << "Feature Block Size: \x1b[37m" << feature_block_size << "\x1b[0m\n";
   feature_min_distance = param<float>("/torpedo_vision/feature_min_distance", feature_min_distance_default);
-  log_msg << setw(1 * tab_sz) << "" << "Feature Minimum Distance: \x1b[37m" << feature_min_distance << "\x1b[0m\n";
+  log_msg << setw(1 * tab_sz) << ""
+          << "Feature Minimum Distance: \x1b[37m" << feature_min_distance << "\x1b[0m\n";
 
   // Configure debug image generation
   generate_dbg_img = param<bool>("/torpedo_vision/generate_dbg_imgs", generate_dbg_img_default);
@@ -57,21 +62,28 @@ try : image_transport(nh), rviz("/torpedo_board/visualization/detection")
       image_transport.subscribeCamera(left, 10, &SubjuGatorTorpedoBoardDetector::left_image_callback, this);
   right_image_sub =
       image_transport.subscribeCamera(right, 10, &SubjuGatorTorpedoBoardDetector::right_image_callback, this);
-  log_msg << setw(1 * tab_sz) << "" << "Camera Subscriptions:\x1b[37m\n"
-          << setw(2 * tab_sz) << "" << "left  = " << left << endl
-          << setw(2 * tab_sz) << "" << "right = " << right << "\x1b[0m\n";
+  log_msg << setw(1 * tab_sz) << ""
+          << "Camera Subscriptions:\x1b[37m\n"
+          << setw(2 * tab_sz) << ""
+          << "left  = " << left << endl
+          << setw(2 * tab_sz) << ""
+          << "right = " << right << "\x1b[0m\n";
 
   // Register Pose Estimation Service Client
   string pose_est_srv = param<string>("/torpedo_vision/pose_est_srv", pose_est_srv_default);
   pose_client = nh.serviceClient<subjugator_msgs::TorpBoardPoseRequest>(pose_est_srv);
-  log_msg << setw(1 * tab_sz) << "" << "Registered as client of the service:\n"
-          << setw(2 * tab_sz) << "" << "\x1b[37m" << pose_est_srv << "\x1b[0m\n";
+  log_msg << setw(1 * tab_sz) << ""
+          << "Registered as client of the service:\n"
+          << setw(2 * tab_sz) << ""
+          << "\x1b[37m" << pose_est_srv << "\x1b[0m\n";
 
   // Advertise debug image topic
   string dbg_topic = param<string>("/torpedo_vision/dbg_imgs", dbg_topic_default);
   debug_image_pub = image_transport.advertise(dbg_topic, 1, true);
-  log_msg << setw(1 * tab_sz) << "" << "Advertised debug image topic:\n"
-          << setw(2 * tab_sz) << "" << "\x1b[37m" << dbg_topic << "\x1b[0m\n";
+  log_msg << setw(1 * tab_sz) << ""
+          << "Advertised debug image topic:\n"
+          << setw(2 * tab_sz) << ""
+          << "\x1b[37m" << dbg_topic << "\x1b[0m\n";
 
   // Setup debug image quadrants
   int frame_height = param<int>("/torpedo_vision/frame_height", frame_height_default);
@@ -92,14 +104,17 @@ try : image_transport(nh), rviz("/torpedo_board/visualization/detection")
   string activation = param<string>("/torpedo_vision/activation", activation_default);
   detection_switch =
       nh.advertiseService(activation, &SubjuGatorTorpedoBoardDetector::detection_activation_switch, this);
-  log_msg << setw(1 * tab_sz) << "" << "Advertised torpedo board detection switch:\n"
-          << setw(2 * tab_sz) << "" << "\x1b[37m" << activation << "\x1b[0m\n";
+  log_msg << setw(1 * tab_sz) << ""
+          << "Advertised torpedo board detection switch:\n"
+          << setw(2 * tab_sz) << ""
+          << "\x1b[37m" << activation << "\x1b[0m\n";
 
   // Start main detector loop
   run_id = 0;
   boost::thread main_loop_thread(boost::bind(&SubjuGatorTorpedoBoardDetector::run, this));
   main_loop_thread.detach();
-  log_msg << setw(1 * tab_sz) << "" << "Running main detector loop in a background thread\n";
+  log_msg << setw(1 * tab_sz) << ""
+          << "Running main detector loop in a background thread\n";
 
   log_msg << "SubjuGatorTorpedoBoardDetector Initialized\n";
   ROS_INFO(log_msg.str().c_str());
@@ -222,7 +237,8 @@ void SubjuGatorTorpedoBoardDetector::determine_torpedo_board_position()
   right_stamp = right_most_recent.image_msg_ptr->header.stamp.toSec();
   double sync_error = fabs(left_stamp - right_stamp);
   stringstream sync_msg;
-  sync_msg << "Left and right images were not sufficiently synchronized" << "\nsync error: " << sync_error << "s";
+  sync_msg << "Left and right images were not sufficiently synchronized"
+           << "\nsync error: " << sync_error << "s";
   if (sync_error > sync_thresh)
   {
     ROS_WARN(sync_msg.str().c_str());
