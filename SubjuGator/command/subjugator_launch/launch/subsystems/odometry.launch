@@ -5,15 +5,15 @@
         have_gps: false
         local_frame: map
         # Handly tool for making these https://www.oc.nps.edu/oc2902w/coord/llhxyz.htm?source=post_page
-        start_name:   Gainesville
-        start_x_ecef:      738543
-        start_y_ecef:    -5498316
-        start_z_ecef:     3136465
+        start_name:                  Gainesville
+        start_x_ecef:                     738543
+        start_y_ecef:                   -5498316
+        start_z_ecef:                    3136465
         # Sandiego (Transdec) (Used in Gazebo) Lat Long: 32.703412, -117.250474 Height: 50m (ish)
-        # start_name: San Diego (Transdec)
-        # start_x_ecef: -2459903
-        # start_y_ecef: -4776100
-        # start_z_ecef: 3426354
+        # start_name:       San Diego (Transdec)
+        # start_x_ecef:                 -2459903
+        # start_y_ecef:                 -4776100
+        # start_z_ecef:                  3426354
       </rosparam>
       <remap from="odom" to="imu_odom" />
    </node>
