@@ -36,13 +36,24 @@
   <xacro:mil_camera name="front_left_cam" parent="front_stereo" namespace="/camera/front/left" xyz="0 0.0445 0" rpy="0 0 0"/>
   <xacro:mil_camera name="front_right_cam" parent="front_stereo" namespace="/camera/front/right" xyz="0 -0.0445 0" rpy="0 0 0"/>
   <xacro:mil_camera name="down_left_cam" parent="base_link" namespace="/camera/down" xyz="0.054 0.105 -0.256" rpy="0 1.57 0"/>
+          <!-- xyz="-0.21236 0.00254 -0.10233" -->
+          <!-- rpy="0 -1.571 0" -->
+          <!--
+  xyz="-0.17 0.05 0.01905"
+                  rpy="3.14 0 3.14"
+
+
+    sunday, jun 16
+    xyz="-0.21236 0.00254 -0.10233"
+    rpy="3.14 0 3.14"
+          --> 
   <xacro:mil_imu_magnetometer
     name="imu"
     parent="base_link"
-    imu_topic='/imu/data_raw'
-    xyz="0.21236 0.00254 -0.10233"
-    rpy="0 -1.571 0"
+  imu_topic='/imu/data_raw'
     rate="210"
+    xyz="0.1778 -0.00635 -0.27305"
+    rpy="0 0 3.14"
     ax="0.015707963"
     ay="0.015707963"
     az="0.015707963"
@@ -51,7 +62,8 @@
     lz="0.08825985"
   />
 
-  <xacro:mil_dvl name="dvl" xyz="0.0908 0 -0.2459" rpy="0 0 0.785" gazebo_offset="0 0 -1" rate="6.5"/>
+  <!-- <xacro:mil_dvl name="dvl" xyz="0.0908 0 -0.2459" rpy="0 0 0.785" gazebo_offset="0 0 -1" rate="6.5"/> -->
+  <xacro:mil_dvl name="dvl" xyz="0.0 0 -0.43385" rpy="0 0 0" gazebo_offset="0 0 -1" rate="6.5"/>
 
   <!-- STIM300 Rate Options (Hz): 125, 250, 500, 1000, 2000; Velocity Random Walk (vrw) and Correlation Time (ctime) taken from datasheet;
   Given same xyz/rpy as imu_magnetometer -->

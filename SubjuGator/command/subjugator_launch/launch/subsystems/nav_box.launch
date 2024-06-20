@@ -27,16 +27,19 @@
 
   <!-- IMU -->
   <group if="$(arg imu)" >
+  <!-- 
       <group if="$(eval environment == 'real')">
           <include file="$(find vectornav)/launch/vn100_imu.launch">
               <arg name="serial_port" value="missing for now" />
           </include>
-        <node pkg="nodelet" type="nodelet" name="magnetic_dynamic_compensation" args="standalone magnetic_dynamic_compensation/nodelet">
-          <remap from="/imu/mag" to="/imu/mag_lessraw"/>
-        </node>
+          </group>
+        -->
+
+    <!--
+    <node pkg="mil_tools" type="mag_to_marker.py" name="magnetometer_vis"
+          args="/imu/mag /imu/marker -l3" />
         <node pkg="nodelet" type="nodelet" name="magnetic_hardsoft_compensation" args="standalone magnetic_hardsoft_compensation/nodelet">
-          <remap from="/imu/mag_raw" to="/imu/mag_lessraw"/>
-          <param name="frame_id" type="string" value="/imu"/>
+          <param name="frame_id" type="string" value="imu"/>
           <rosparam>
             scale:
             - [0.9991765357958566, 0.006242798579443988, -0.008472478269327878]
@@ -44,11 +47,8 @@
             - [-0.008472478269327836, 0.0059841151097913, 0.999354597532967]
             shift: [7.889247409445414e-06, 4.879179471165382e-06, 7.46017199298374e-06]
           </rosparam>
-          </node>
-      </group>
-
-    <node pkg="mil_tools" type="mag_to_marker.py" name="magnetometer_vis"
-          args="/imu/mag /imu/marker -l3" />
+            </node>
+    -->
   </group>
 
 </launch>
