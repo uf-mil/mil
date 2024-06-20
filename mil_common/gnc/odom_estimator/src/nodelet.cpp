@@ -87,6 +87,10 @@ public:
     private_nh.getParam("start_z_ecef", start_z_ecef);
     private_nh.getParam("local_frame", local_frame);
 
+    std::string start_name;
+    private_nh.getParam("start_name", start_name);
+    ROS_INFO_STREAM("odom_estimator: Using start coordinates at " << start_name);
+
     imu_sub = nh.subscribe<sensor_msgs::Imu>("imu/data_raw", 10, boost::bind(&NodeImpl::got_imu, this, _1));
     mag_filter.registerCallback(boost::bind(&NodeImpl::got_mag, this, _1));
     dvl_filter.registerCallback(boost::bind(&NodeImpl::got_dvl, this, _1));
