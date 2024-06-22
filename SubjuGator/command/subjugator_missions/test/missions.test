@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find subjugator_launch)/launch/gazebo.launch">
+    <arg name="gui" value="false" />
+  </include>
+  <test pkg="subjugator_missions" type="start_gate_test" test-name="start_gate_test" />
+</launch>

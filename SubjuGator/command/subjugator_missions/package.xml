@@ -6,9 +6,15 @@
   <maintainer email="jpanikulam@ufl.edu">jacob</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>mil_missions</build_depend>
+  <build_depend>mil_tools</build_depend>
+  <build_depend>ros_alarms</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>subjugator_msgs</build_depend>
   <run_depend>rospy</run_depend>
   <run_depend>subjugator_msgs</run_depend>
+  <run_depend>mil_missions</run_depend>
+  <run_depend>mil_tools</run_depend>
+  <run_depend>ros_alarms</run_depend>
   <export/>
 </package>
