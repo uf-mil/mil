@@ -84,7 +84,7 @@ NavTubeDriver::NavTubeDriver(ros::NodeHandle nh, ros::NodeHandle private_nh) : n
 {
   depth_pub_ = nh.advertise<mil_msgs::DepthStamped>("depth", 10);
   imu_pub_ = nh.advertise<sensor_msgs::Imu>("imu/data_raw", 10);
-  mag_pub_ = nh.advertise<sensor_msgs::MagneticField>("imu/mag", 10);
+  mag_pub_ = nh.advertise<sensor_msgs::MagneticField>("imu/mag_raw", 10);
   odom_sub_ = nh.subscribe<nav_msgs::Odometry>("odom", 10, &NavTubeDriver::odom_callback, this);
   ip_ = private_nh.param<std::string>("ip", std::string("192.168.37.61"));
   depth_port_ = private_nh.param<int>("depth_port", 33056);
@@ -164,9 +164,9 @@ void NavTubeDriver::run()
       boost::shared_ptr<tcp::socket> imu_socket;
 
       depth_socket = connect_to_depth();
-      imu_socket = connect_to_imu();
+        // imu_socket = connect_to_imu();
       timer_thread = std::thread(&NavTubeDriver::send_heartbeat, this, depth_socket);
-      imu_thread = std::thread(&NavTubeDriver::process_imu, this, imu_socket);
+        // imu_thread = std::thread(&NavTubeDriver::process_imu, this, imu_socket);
       initialized = true;
       read_messages(depth_socket);
     }
@@ -275,7 +275,7 @@ void NavTubeDriver::process_imu(boost::shared_ptr<tcp::socket> socket)
 
         mag_msg.magnetic_field_covariance[0] =
                 msg.linear_acceleration_covariance[4] = 
-                msg.linear_acceleration_covariance[8] = 0.1;
+                msg.linear_acceleration_covariance[8] = 0.001;
 
         mag_pub_.publish(mag_msg);
 

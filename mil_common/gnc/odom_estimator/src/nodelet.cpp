@@ -136,7 +136,7 @@ private:
       }
       else
       {
-        std::cout << "dvl missing" << std::endl;
+        ROS_WARN_THROTTLE(1, "DVL is producing missing/no/invalid data");
         return;
       }
     }

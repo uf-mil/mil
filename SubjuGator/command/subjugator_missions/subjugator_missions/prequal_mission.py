@@ -9,40 +9,65 @@ from sensor_msgs.msg import Image
 
 from .sub_singleton import SubjuGatorMission
 
-SPEED_LIMIT = 0.5  # m/s
+SPEED_LIMIT = 0.3  # m/s
 
 
 class PrequalMission(SubjuGatorMission):
     async def run(self, args):
         # obtain camera data
 
-        self.bridge = CvBridge()
-        self.front_left_camera_sub = self.nh.subscribe(
-            "/camera/front/left/image_color",
-            Image,
-        )
-        self.image_debug_pub = self.nh.advertise("/prequal_image_debug", Image)
-        await self.image_debug_pub.setup()
+        # self.bridge = CvBridge()
+        # self.front_left_camera_sub = self.nh.subscribe(
+        #     "/camera/front/left/image_color",
+        #     Image,
+        # )
+        # self.image_debug_pub = self.nh.advertise("/prequal_image_debug", Image)
+        # await self.image_debug_pub.setup()
 
         # submerge submarine
-        await self.go(self.move().down(2).zero_roll_and_pitch(), speed=SPEED_LIMIT)
-
-        # look for start gate
-        await self.find_start_gate()
-
-        # look for pole
-        await self.find_marker()
+        SLEEP_TIME = 2
+        await self.go(self.move().down(1.5).zero_roll_and_pitch(), speed=SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().forward(5).zero_roll_and_pitch(), speed = SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().up(0.25).zero_roll_and_pitch(), speed = SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().forward(7).zero_roll_and_pitch(), speed = SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().yaw_right_deg(90).zero_roll_and_pitch(), speed = SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().forward(0.5).zero_roll_and_pitch(), speed = SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().yaw_left_deg(90).zero_roll_and_pitch(), speed = SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().forward(1).zero_roll_and_pitch(), speed = SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().yaw_left_deg(90).zero_roll_and_pitch(), speed = SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().forward(1).zero_roll_and_pitch(), speed = SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().yaw_left_deg(90).zero_roll_and_pitch(), speed = SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().forward(1).zero_roll_and_pitch(), speed = SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().yaw_left_deg(90).zero_roll_and_pitch(), speed = SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().forward(0.5).zero_roll_and_pitch(), speed = SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().yaw_right_deg(90).zero_roll_and_pitch(), speed = SPEED_LIMIT)
+        await self.nh.sleep(SLEEP_TIME)
+        await self.go(self.move().forward(3).zero_roll_and_pitch(), speed = SPEED_LIMIT)
 
         # turn around
-        await self.nh.sleep(5)
-        await self.go(
-            self.move().yaw_right(1.57).zero_roll_and_pitch(),
-            speed=SPEED_LIMIT,
-        )
+        # await self.nh.sleep(5)
+        # await self.go(
+        #     self.move().yaw_right(1.57).zero_roll_and_pitch(),
+        #     speed=SPEED_LIMIT,
+        # )
 
-        # go through start gate again
-        await self.nh.sleep(5)
-        await self.find_start_gate()
+        # # go through start gate again
+        # await self.nh.sleep(5)
+        # await self.find_start_gate()
 
         print("Done!")
 
