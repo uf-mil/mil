@@ -267,7 +267,12 @@ void NavTubeDriver::read_messages(boost::shared_ptr<tcp::socket> socket)
 
         // uint8_t typeBits = be64toh(*reinterpret_cast<uint8_t*>(&backing[2]));
         int type = backing[2];
+	double b2 = backing[2];
+	double b0 = backing[0];
+	double b1 = backing[1];
         // int type = doubType;
+	
+	// ROS_INFO_STREAM("Data received from PI:" + std::to_string(b0) + ", " + std::to_string(b1) + ", "+ std::to_string(b2) + ", " + std::to_string(value));
 
         if (type == 0)
         {
@@ -352,19 +357,19 @@ void NavTubeDriver::read_messages(boost::shared_ptr<tcp::socket> socket)
               break;
 
             case 7:  // put accel x readings from IMU into accel z
-              if (accel_z_pen > 1)
+              if (accel_x_pen > 1)
               {
-                accel_z_pen--;
+                accel_x_pen--;
                 break;
               }
-              if (abs(value - accel_z) < accel_threshold || accel_z == -999 || accel_z_pen == 1)
+              if (abs(value - accel_x) < accel_threshold || accel_x == -999 || accel_x_pen == 1)
               {
-                accel_z = value;
-                accel_z_pen = 0;
+                accel_x = value;
+                accel_x_pen = 0;
               }
               else
               {
-                accel_z_pen = sequence_pen;
+                accel_x_pen = sequence_pen;
               }
               break;
 
@@ -386,20 +391,20 @@ void NavTubeDriver::read_messages(boost::shared_ptr<tcp::socket> socket)
               break;
 
             case 9:  // put accel z readings from IMU into accel x
-              if (accel_x_pen > 1)
+              if (accel_z_pen > 1)
               {
-                accel_x_pen--;
+                accel_z_pen--;
                 break;
               }
-              if (abs(value - accel_x) < accel_threshold || accel_x == -999 || accel_x_pen == 1)
+              if (abs(value - accel_z) < accel_threshold || accel_z == -999 || accel_z_pen == 1)
               {
-                accel_x = value;
-                accel_x_pen = 0;
+                accel_z = value;
+                accel_z_pen = 0;
                 break;
               }
               else
               {
-                accel_x_pen = sequence_pen;
+                accel_z_pen = sequence_pen;
               }
               break;
 
