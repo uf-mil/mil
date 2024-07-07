@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import cv2
 import numpy as np
+import math
 import rospy
+from std_msgs.msg import Float32
 from mil_ros_tools import (
     Image_Subscriber,
 )
@@ -12,60 +14,26 @@ from vision_stack import (
     HoughTransformLayer,
     ResizeLayer,
     VisionStack,
+    GrayscaleLayer,
+    ColorMagnificationLayer
 )
 
 __author__ = "Daniel Parra"
 
 
 class PathMarkerDetection:
+    ERROR = 0.05
+
     def __init__(self):
         camera = rospy.get_param("~image_topic", "/camera/down/image_color")
-
-        def color_magnification(img, color_tuple):
-            if len(img.shape) == 2:  # Grayscale image (height, width)
-                img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-
-            height, width, channels = img.shape
-
-            color_image = np.ones((height, width, channels), dtype=np.uint8) * np.array(
-                color_tuple,
-                dtype=np.uint8,
-            )
-
-            absolute_error = cv2.subtract(img, color_image)
-
-            all_white_image = np.ones((height, width, 3), dtype=np.uint8) * 255
-
-            all_white_image = all_white_image[:height, :width, :]
-
-            similarity_image = np.square(
-                all_white_image.astype(np.float32) - absolute_error,
-            )
-
-            similarity_image = (
-                (similarity_image - np.min(similarity_image))
-                / (np.max(similarity_image) - np.min(similarity_image))
-                * 255
-            )
-
-            similarity_image = similarity_image.astype(np.uint8)
-
-            return (similarity_image, None)
-
-        def turn_to_grayscale(img, *args):
-            if len(img.shape) == 2:  # Grayscale image (height, width)
-                img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-            img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-            return (cv2.cvtColor(img_gray, cv2.COLOR_GRAY2BGR), None)
+        self.angle_pub = rospy.Publisher("angle_offset", Float32, queue_size=10)
 
         self.vs = VisionStack(
             layers=[
                 ResizeLayer(960, 608),
                 GaussianLayer((21, 21), 50),
-                CustomLayer("orange_magnification", color_magnification, (52, 60, 71)),
-                # RGBMagnificationLayer('R'),
-                CustomLayer("custom_grayscale", turn_to_grayscale),
-                # GrayscaleLayer(),
+                ColorMagnificationLayer((52, 60, 71)),
+                GrayscaleLayer(),
                 BinThresholdingLayer(220, 255),
                 HoughTransformLayer(
                     threshold=100,
@@ -81,9 +49,62 @@ class PathMarkerDetection:
     def detection_callback(self, msg):
         # Create Image from array
         self.vs.run(msg, True)
+        lines = self.vs.analysis_dict["houghTransform_5"]
+        self.publish_angle_in_deg_from_list_of_lines(lines)
+    
+    def publish_angle_in_deg_from_list_of_lines(self, lines):
+        # Create array of angles and lengths
+        degrees = {}
+        for i in range(len(lines)):
+            line = lines[i]
+            x1, y1, x2, y2 = line[0]
+            angle = np.degrees(np.arctan2((y2 - y1), (x2 - x1)))
+            key = round(angle, 2)
+
+            valid_key = (
+                key
+                if key in degrees
+                else key + self.ERROR
+                if key + self.ERROR in degrees
+                else key - self.ERROR
+                if key - self.ERROR in degrees
+                else -999999
+            )
+
+            if valid_key != -999999:
+                degrees_frequency_array = degrees[valid_key]
+                degrees_frequency_array.append(angle)
+                del degrees[valid_key]
+                new_key = sum(degrees_frequency_array) / len(degrees_frequency_array)
+                new_key = round(new_key, 2)
+                degrees[new_key] = degrees_frequency_array
+            else:
+                degrees[key] = [angle]
+        
+        sorted_dict = dict(sorted(degrees.items(), key=lambda item: -len(item[1])))
+
+        if not sorted_dict:
+            print("-999")
+            msg = Float32()
+            msg.data = -999
+            self.angle_pub.publish(msg)
+        else:
+            for key, value in sorted_dict.items():
+                major_angle = sum(value) / len(value)
+                major_angle = (
+                    major_angle + 90
+                    if major_angle <= 0
+                    else major_angle - 90
+                )
+                msg = Float32()
+                print(major_angle)
+                msg.data = major_angle
+                self.angle_pub.publish(msg)
+                break
+
 
 
 if __name__ == "__main__":
-    rospy.init_node("vision_pipeline_test")
+    rospy.init_node("path_marker_detection")
     PathMarkerDetection()
     rospy.spin()
