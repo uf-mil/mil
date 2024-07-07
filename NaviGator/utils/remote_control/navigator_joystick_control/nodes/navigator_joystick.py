@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-import rospy
+import sys
+
+import rclpy
+from rclpy.duration import Duration
 from remote_control_lib import RemoteControl
 from sensor_msgs.msg import Joy
 
@@ -11,12 +14,12 @@ __license__ = "MIT"
 
 class Joystick:
     def __init__(self):
-        self.force_scale = rospy.get_param("~force_scale", 600)
-        self.torque_scale = rospy.get_param("~torque_scale", 500)
+        self.force_scale = self.declare_parameter("~force_scale", 600)
+        self.torque_scale = self.declare_parameter("~torque_scale", 500)
 
         self.remote = RemoteControl("joystick", "/wrench/rc")
         self.reset()
-        rospy.Subscriber("joy", Joy, self.joy_recieved)
+        self.create_subscription(Joy, "joy", self.joy_recieved)
 
     def reset(self):
         """
@@ -49,15 +52,16 @@ class Joystick:
         if (
             joy.axes == self.last_joy.axes
             and joy.buttons == self.last_joy.buttons
-            and rospy.Time.now() - self.last_joy.header.stamp > rospy.Duration(15 * 60)
+            and self.get_clock().now() - self.last_joy.header.stamp
+            > Duration(seconds=(15 * 60))
             and self.active
         ):
-            rospy.logwarn("Controller Timed out. Hold start to resume.")
+            self.get_logger().warn("Controller Timed out. Hold start to resume.")
             self.reset()
 
         else:
             joy.header.stamp = (
-                rospy.Time.now()
+                self.get_clock().now()
             )  # In the sim, stamps weren't working right
             self.last_joy = joy
 
@@ -78,14 +82,14 @@ class Joystick:
         thruster_deploy = bool(joy.buttons[5])  # RB
 
         if back and not self.last_back:
-            rospy.loginfo("Back pressed. Going inactive")
+            self.get_logger().info("Back pressed. Going inactive")
             self.reset()
             return
 
         # Reset controller state if only start is pressed down about 1 second
         self.start_count += start
         if self.start_count > 5:
-            rospy.loginfo("Resetting controller state")
+            self.get_logger().info("Resetting controller state")
             self.reset()
             self.active = True
 
@@ -143,11 +147,13 @@ class Joystick:
         x = joy.axes[1] * self.force_scale
         y = joy.axes[0] * self.force_scale
         rotation = joy.axes[3] * self.torque_scale
-        self.remote.publish_wrench(x, y, rotation, rospy.Time.now())
+        self.remote.publish_wrench(x, y, rotation, self.get_clock().now())
 
 
 if __name__ == "__main__":
-    rospy.init_node("joystick")
+    rclpy.init(args=sys.argv)
+    node = rclpy.create_node("joystick")
 
     joystick = Joystick()
-    rospy.spin()
+
+    rclpy.spin(node)

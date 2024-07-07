@@ -7,18 +7,20 @@ keyboard service to itself by obtaining a UUID that identifies it's service
 calls. Curses is used to display a basic UI in the terminal that gives the user
 useful feedback and captures key presses to be sent to the server.
 """
-
 import contextlib
 import curses
+import sys
 from typing import Optional
 
-import rospy
+import rclpy
 from navigator_msgs.srv import KeyboardControl
+from rclpy.duration import Duration
 
 __author__ = "Anthony Olive"
 
 
-rospy.init_node("keyboard_client", anonymous=True)
+rclpy.init(args=sys.argv)
+node = rclpy.create_node("keyboard_client", anonymous=True)
 
 
 class KeyboardClient:
@@ -31,7 +33,7 @@ class KeyboardClient:
         self.uuid = ""
         self.is_locked = False
 
-        self.keyboard_server = rospy.ServiceProxy("/keyboard_control", KeyboardControl)
+        self.keyboard_server = self.create_client(KeyboardControl, "/keyboard_control")
 
         self.help_menu = [
             "Lock:                 L          ",
@@ -64,19 +66,19 @@ class KeyboardClient:
         new_keycode = self.screen.getch()
 
         # This eliminates building a buffer of keys that takes forever to process
-        while (new_keycode != -1) and (not rospy.is_shutdown()):
+        while (new_keycode != -1) and (not self.is_shutdown()):
             keycode = new_keycode
             new_keycode = self.screen.getch()
 
         # The 'q' key can be used to quit the program
         if keycode == ord("q"):
-            rospy.signal_shutdown("The user has closed the keyboard client")
+            rclpy.shutdown("The user has closed the keyboard client")
         elif keycode == ord("H"):
             raise NotImplementedError("Kevin, you just threw away your shot!")
 
         return keycode if keycode != -1 else None
 
-    def send_key(self, _: rospy.timer.TimerEvent) -> None:
+    def send_key(self, _: rclpy.timer.TimerEvent) -> None:
         """
         Sends the key to the keyboard server and stores the returned locked
         status and generated UUID (if one was received).
@@ -138,12 +140,16 @@ class KeyboardClient:
 
 
 def main(stdscr):
-    rospy.wait_for_service("/keyboard_control")
+    while not rclpy.wait_for_service(node, "/keyboard_control", timeout_sec=1.0):
+        node.get_logger().info("service not available, waiting again...")
     tele = KeyboardClient(stdscr)
-    rospy.Timer(rospy.Duration(0.05), tele.send_key, oneshot=False)
-    rospy.spin()
+    node.create_timer(Duration(seconds=0.05), tele.send_key)
+    rclpy.spin(node)
 
 
 if __name__ == "__main__":
-    with contextlib.suppress(rospy.ROSInterruptException):
+    # with contextlib.suppress(rospy.ROSInterruptException):
+    #   curses.wrapper(main)
+    with contextlib.suppress(rclpy.ROSInterruptException):
         curses.wrapper(main)
+    # not sure about this change, could not find any migration solution
