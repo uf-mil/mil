@@ -10,35 +10,37 @@ __author__ = "Daniel Parra"
 
 class YoloVision:
     def __init__(self):
-        path_to_weights = '/home/sub8/ml_weights/rsub24_v2_1.pt'
+        path_to_weights = '/home/sub8/ml_weights/rsub24_v3.pt'
         class_names = [
                 'Bin',
                 'Bin blue',
                 'Bin red',
-                'Blue spiral',
+                'Red spiral',
                 'Coral',
                 'Nautilus',
+                'Path Marker',
                 'Red buoy',
-                'Red spiral',
+                'Blue spiral',
                 'Tube Worm'
                 ]
         class_colors = [
                 (100,50,70),
                 (200,50,60),
                 (70,180,20),
-                (255,0,0), 
+                (0,0,255), 
                 (255,255,0), 
+                (150,255,150),
                 (150,255,0), 
                 (255,0,255), 
-                (0,0,255), 
+                (255,0,0), 
                 (150,0,0)
                 ]
         camera = rospy.get_param("~image_topic", "/camera/front/right/image_color")
         self.vs = VisionStack(
                 layers=[
                     ResizeLayer(960,608),
-                    #UnderWaterImageEnhancementLayer(),
-                    ObjectDetectionLayer(path_to_weights, 0.5, 0.5, class_names, class_colors, True)
+                    UnderWaterImageEnhancementLayer(),
+                    ObjectDetectionLayer(path_to_weights, 0.7, 0.5, class_names, class_colors, True)
                     ]
                 )
         self.image_sub = Image_Subscriber(camera, self.detection_callback)
