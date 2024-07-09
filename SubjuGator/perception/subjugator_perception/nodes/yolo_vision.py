@@ -15,7 +15,7 @@ from vision_stack import (
 __author__ = "Daniel Parra"
 
 
-def add_blue_tint(image, intensity=0.5):
+def add_blue_tint(image, intensity=0.2):
     blue = np.full(image.shape, (255, 0, 0), dtype=np.uint8)
     return cv2.addWeighted(image, 1 - intensity, blue, intensity, 0)
 
@@ -38,9 +38,10 @@ def add_ripples(image, ripple_strength=5, frequency=20):
 
 
 def make_underwater_effect(image, *args):
+    if len(image.shape) == 2: # Grayscale image (height, width)
+                    image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
     image = add_blue_tint(image)
     image = blur_image(image)
-    image = add_ripples(image)
     return (image, None)
 
 
@@ -71,12 +72,12 @@ class YoloVision:
             (255, 0, 0),
             (150, 0, 0),
         ]
-        camera = rospy.get_param("~image_topic", "/camera/front/right/image_color")
+        camera = rospy.get_param("~image_topic", "/camera/down/image_color")
         self.vs = VisionStack(
             layers=[
                 ResizeLayer(960, 608),
                 # UnderWaterImageEnhancementLayer(),
-                CustomLayer("pool_effect", make_underwater_effect),
+                # CustomLayer("pool_effect", make_underwater_effect),
                 ObjectDetectionLayer(
                     path_to_weights,
                     0.7,
