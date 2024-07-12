@@ -74,7 +74,7 @@ public:
     , ignoreMagnetometer(false)
     , mag_sub(nh, "imu/mag", 1)
     , mag_filter(mag_sub, tf_listener, "", 10)
-    , dvl_sub(nh, "dvl", 1)
+    , dvl_sub(nh, "/dvl", 1)
     , dvl_filter(dvl_sub, tf_listener, "", 10)
     , depth_sub(nh, "depth", 1)
     , depth_filter(depth_sub, tf_listener, "", 10)
@@ -266,6 +266,8 @@ private:
   {
     mil_msgs::VelocityMeasurements const &msg = *msgp;
 
+    std::cout << "Msg data: " << local_frame_id << ", " << msg.header.frame_id << "\n";
+
     tf::StampedTransform transform;
     try
     {
@@ -278,6 +280,7 @@ private:
     }
     Vec<3> local_dvl_pos;
     tf::vectorTFToEigen(transform.getOrigin(), local_dvl_pos);
+
     Quaternion local_dvl_orientation;
     tf::quaternionTFToEigen(transform.getRotation(), local_dvl_orientation);
 
@@ -303,6 +306,12 @@ private:
     else
     {
       std::cout << "bad dvl" << std::endl;
+    }
+
+    // Print out the dvl position
+    for (int i = 0; i < 3; i++)
+    {
+      std::cout << i + 1 << ": " << local_dvl_pos[i] << "\n";
     }
 
     if (!state)

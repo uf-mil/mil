@@ -85,7 +85,8 @@ class Sub8AdapativeController:
         self.desired_twist_world = None
         self.body_to_world = None
         self.world_to_body = None
-        self.position = None
+        
+self.position = None
         self.orientation = None
         self.twist_world = None
         self.pose = None
@@ -173,7 +174,6 @@ class Sub8AdapativeController:
             return
 
         # Calculate error in position, orientation, and twist
-        print("Current position: ", self.position)
         position_error_world = self.desired_position - self.position
         orientation_error_world = quat_to_rotvec(
             quaternion_multiply(

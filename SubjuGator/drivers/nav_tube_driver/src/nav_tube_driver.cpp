@@ -72,7 +72,7 @@ NavTubeDriver::NavTubeDriver(ros::NodeHandle nh, ros::NodeHandle private_nh) : n
   odom_sub_ = nh.subscribe<nav_msgs::Odometry>("odom", 10, &NavTubeDriver::odom_callback, this);
   ip_ = private_nh.param<std::string>("ip", std::string("192.168.37.61"));
   port_ = private_nh.param<int>("port", 33056);
-  frame_id_ = private_nh.param<std::string>("frame_id", "/depth");
+  frame_id_ = private_nh.param<std::string>("frame_id", "depth");
 
   int hz__ = private_nh.param<int>("hz", 20);
 
