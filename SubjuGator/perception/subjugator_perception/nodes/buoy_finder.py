@@ -417,10 +417,7 @@ class BuoyFinder:
             return False
 
         linear_velocity = rosmsg_to_numpy(self.last_odom.twist.twist.linear)
-        if np.linalg.norm(linear_velocity) > self.max_velocity:
-            return False
-
-        return True
+        return np.linalg.norm(linear_velocity) > self.max_velocity
 
 
 if __name__ == "__main__":
