@@ -9,6 +9,7 @@ from .move import Move
 from .pinger import Pinger
 from .pose_editor import PoseEditor
 from .prequal_mission import PrequalMission
+from .red_buoy import RedBuoyCirculation
 from .square import Square
 from .start_gate import StartGate
 from .start_gate_2022 import StartGate2022
