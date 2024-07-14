@@ -217,8 +217,8 @@ class ProjectionParticleFilter:
         expected_obs = expected_obs_h[:2, :] / expected_obs_h[2, :]
 
         # Check how many particles are in the field of view, if we have a problem, don't try
-        infront = np.sum(self.in_fov(particles))
-        if infront < 5:
+        in_front = np.sum(self.in_fov(particles))
+        if in_front < 5:
             # TODO: Do a partial ray-reset
             return
 

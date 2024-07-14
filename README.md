@@ -21,7 +21,7 @@ We heavily use the robotic middleware ROS for the past few years. We have around
 60 ROS packages currently in use on our robots, most of which can be found here.
 
 Furthermore, we attempt to provide extensive testing, documentation, and continuous
-integration for our software. We self-host our [documentation](https://noetic.cbrxyz.com)
+integration for our software. We self-host our [documentation](https://mil.ufl.edu/docs/)
 and use GitHub Actions as our CI provider.
 
 If you're interested in some of the software we've written, we'd love to talk to

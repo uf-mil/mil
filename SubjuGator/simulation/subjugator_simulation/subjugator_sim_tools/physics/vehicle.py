@@ -6,7 +6,8 @@ import rospy
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 from std_msgs.msg import String
-from subjugator_msgs.msg import Thrust, VelocityMeasurement, VelocityMeasurements
+from mil_msgs.msg import VelocityMeasurement, VelocityMeasurements
+from subjugator_msgs.msg import Thrust
 from subjugator_sim_tools.physics.physics import Entity
 from subjugator_simulation.srv import SimSetPose, SimSetPoseResponse
 

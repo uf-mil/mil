@@ -184,7 +184,7 @@ def calculate_dir_pinger(deltas, h_dist, v_sound):
     """
     if numpy.max(deltas) > h_dist / float(v_sound):
         raise Exception(
-            "an impossible time delay was detected ( > %f)" % float(h_dist / v_sound),
+            f"an impossible time delay was detected ( > {float(h_dist / v_sound)})",
         )
     x = numpy.zeros((3,))
 

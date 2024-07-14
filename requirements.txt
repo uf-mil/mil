@@ -1,6 +1,6 @@
 # Graphing
 matplotlib==3.1.2
-tqdm==4.62.3
+tqdm==4.66.3
 
 # Algorithms
 tsp-solver2==0.4.1
@@ -8,7 +8,7 @@ uvloop==0.16.0
 
 # Data Science
 pandas==1.4.1
-numpy==1.22.3
+numpy==1.24.4
 
 # Machine Learning
 scipy==1.10.0
@@ -22,7 +22,7 @@ PyYAML==6.0
 urdf-parser-py==0.0.4
 
 # Internet
-aiohttp==3.9.2
+aiohttp==3.9.4
 aiohttp-xmlrpc==1.5.0
 
 # Documentation
@@ -53,4 +53,5 @@ torchvision>=0.13.1
 opencv-python==4.6.0.66
 seaborn==0.11.2
 thop==0.1.1.post2207130030
-requests==2.31.0
+requests==2.32.2
+tensorflow==2.13.1

@@ -179,7 +179,7 @@ while not rospy.is_shutdown():
         tf_line_to_add = tf_line.format(child=args.tf_child, p=p, q=np.round(q, 5), parent=args.tf_parent, prd="{prd}")
         for i,line in enumerate(lines):
             if args.tf_child in line and args.tf_parent in line:
-                tab_level = line[:line.find("<")]  # The labs infront of the tf line
+                tab_level = line[:line.find("<")]  # The labs in front of the tf line
                 prd = int([x for x in line.split('"')[-2].split(" ") if x != ''][-1])  # Get the period from the tf line
                 lines[i] = tab_level + tf_line_to_add.format(prd=prd)
 
@@ -191,7 +191,7 @@ while not rospy.is_shutdown():
             elif 'pkg="tf"' in line:
                 # In case we don't find the tf line of interest to change, we want to insert the new tf line after
                 # the last tf line
-                tab_level = line[:line.find("<")]  # The labs infront of the tf line
+                tab_level = line[:line.find("<")]  # The labs in front of the tf line
                 last_static_pub = i
 
         else:

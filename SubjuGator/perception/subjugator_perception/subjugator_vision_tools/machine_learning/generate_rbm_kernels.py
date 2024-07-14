@@ -100,14 +100,12 @@ logistic_classifier.fit(X_train, Y_train)
 # Evaluation
 
 print()
-print(
-    "Logistic regression using RBM features:\n%s\n"
-    % (metrics.classification_report(Y_test, classifier.predict(X_test))),
-)
+rep = metrics.classification_report(Y_test, logistic_classifier.predict(X_test))
+print(f"Logistic regression using RBM features:\n{rep}\n")
 
+rep = metrics.classification_report(Y_test, logistic_classifier.predict(X_test))
 print(
-    "Logistic regression using raw pixel features:\n%s\n"
-    % (metrics.classification_report(Y_test, logistic_classifier.predict(X_test))),
+    f"Logistic regression using raw pixel features:\n{rep}\n",
 )
 
 #

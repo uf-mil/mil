@@ -80,7 +80,8 @@ void BuoyancyPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
       if (this->volPropsMap.count(id) != 0)
       {
-        gzwarn << "Properties for link [" << name << "] already set, skipping " << "second property block" << std::endl;
+        gzwarn << "Properties for link [" << name << "] already set, skipping "
+               << "second property block" << std::endl;
       }
 
       if (linkElem->HasElement("center_of_volume"))
