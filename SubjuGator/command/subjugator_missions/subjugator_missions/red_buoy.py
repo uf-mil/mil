@@ -178,7 +178,7 @@ class RedBuoyCirculation(SubjuGatorMission):
                         self.move().forward(0.1).zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
                     )
-            
+
                 detections = await self.detections_sub.get_next_message()
                 detections = detections.detections
 
@@ -188,18 +188,28 @@ class RedBuoyCirculation(SubjuGatorMission):
                     for detection in detections:
                         if detection.class_name == "Red buoy":
                             self.found_area = detection.width * detection.height
-                            percent_area = ((detection.width * detection.height) / FRAME_AREA) *100
+                            percent_area = (
+                                (detection.width * detection.height) / FRAME_AREA
+                            ) * 100
                             break
 
     async def circle_buoy(self):
         print("Circling the Buoy")
         distance_per_side = 0.2
-        yaw_angle =180 - 180 * (SIDES-1) / SIDES
+        yaw_angle = 180 - 180 * (SIDES - 1) / SIDES
         print(yaw_angle)
-        for _ in range(SIDES):
-            
+        for i in range(SIDES):
+
             await self.go(
-                self.move().left(distance_per_side).zero_roll_and_pitch(),
+                self.move()
+                .left(
+                    (
+                        distance_per_side
+                        if i != 0 and i != SIDES - 1
+                        else distance_per_side / 2
+                    ),
+                )
+                .zero_roll_and_pitch(),
                 speed=SPEED_LIMIT,
             )
 
