@@ -152,7 +152,6 @@ class RedBuoyCirculation(SubjuGatorMission):
                             center_y = detection.center_y
                             area = detection.width * detection.height
                             break
-                print("here 2")
 
         print("Finished aligning self")
 

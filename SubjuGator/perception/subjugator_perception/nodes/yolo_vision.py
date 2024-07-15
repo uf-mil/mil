@@ -15,7 +15,7 @@ __author__ = "Daniel Parra"
 
 class YoloVision:
     def __init__(self):
-        path_to_weights = "/home/daniel/ml_weights/last.pt"
+        path_to_weights = "/home/zobelisk/mil_weights/last.pt"
         class_names = [
             "Bin",
             "Bin blue",
