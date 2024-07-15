@@ -13,7 +13,7 @@ IDEAL_CENTER_Y = 304
 CENTER_ERROR_RADIUS = 20
 
 IDEAL_PERCENT_AREA = 20  # percent
-PERCENT_ERROR = 10
+PERCENT_ERROR = 5
 
 SIDES = 8  # defines the shape that is drawn as the sub circles around the buoy
 
@@ -100,6 +100,9 @@ class RedBuoyCirculation(SubjuGatorMission):
         center_y = self.found_center_y
         area = self.found_area
 
+        x_move = 0.1
+        y_move = 0.1
+
         while True:
             if (
                 center_x < IDEAL_CENTER_X + CENTER_ERROR_RADIUS
@@ -115,25 +118,24 @@ class RedBuoyCirculation(SubjuGatorMission):
                     center_x < IDEAL_CENTER_X + CENTER_ERROR_RADIUS
                     and center_x > IDEAL_CENTER_X - CENTER_ERROR_RADIUS
                 ):
+                    print("X: ", center_x, IDEAL_CENTER_X)
                     await self.go(
-                        self.move()
-                        .right(0.1 if center_x > IDEAL_CENTER_X else -0.1)
-                        .zero_roll_and_pitch(),
+                        self.move().right(x_move).zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
                     )
+                    print("Move right in meters: ", x_move)
                 else:
                     print("x is lined up")
                 if not (
                     center_y < IDEAL_CENTER_Y + CENTER_ERROR_RADIUS
                     and center_y > IDEAL_CENTER_Y - CENTER_ERROR_RADIUS
                 ):
-                    print(center_y, IDEAL_CENTER_Y)
+                    print("Y: ", center_y, IDEAL_CENTER_Y)
                     await self.go(
-                        self.move()
-                        .up(-0.1 if center_y > IDEAL_CENTER_Y else 0.1)
-                        .zero_roll_and_pitch(),
+                        self.move().down(y_move).zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
                     )
+                    print("Move down in meters: ", y_move)
                 else:
                     print("y is lined up")
 
@@ -148,6 +150,17 @@ class RedBuoyCirculation(SubjuGatorMission):
                             self.found_center_x = detection.center_x
                             self.found_center_y = detection.center_y
                             self.found_area = detection.width * detection.height
+                            x_move = (
+                                abs(x_move)
+                                / abs(detection.center_x - center_x)
+                                * (detection.center_x - IDEAL_CENTER_X)
+                            )
+                            y_move = (
+                                abs(y_move)
+                                / abs(detection.center_y - center_y)
+                                * (detection.center_y - IDEAL_CENTER_Y)
+                            )
+                            print("Calculated step size: x,y", x_move, y_move)
                             center_x = detection.center_x
                             center_y = detection.center_y
                             area = detection.width * detection.height
@@ -194,23 +207,26 @@ class RedBuoyCirculation(SubjuGatorMission):
 
     async def circle_buoy(self):
         print("Circling the Buoy")
-        distance_per_side = 0.2
-        yaw_angle = 180 - 180 * (SIDES - 1) / SIDES
+        distance_per_side = 0.5
+        yaw_angle = 180 * (SIDES - 2) / SIDES - 90
         print(yaw_angle)
-        for i in range(SIDES):
+        for i in range(SIDES + 1):
 
             await self.go(
                 self.move()
                 .left(
                     (
                         distance_per_side
-                        if i != 0 and i != SIDES - 1
+                        if i != 0 and i != SIDES
                         else distance_per_side / 2
                     ),
                 )
                 .zero_roll_and_pitch(),
                 speed=SPEED_LIMIT,
             )
+
+            if i == SIDES:
+                break
 
             await self.go(
                 self.move().yaw_right_deg(yaw_angle).zero_roll_and_pitch(),

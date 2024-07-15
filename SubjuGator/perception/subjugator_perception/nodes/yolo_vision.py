@@ -47,7 +47,7 @@ class YoloVision:
                 RGBtoBGRLayer(),
                 ObjectDetectionLayer(
                     path_to_weights,
-                    0.5,
+                    0.6,
                     0.5,
                     class_names,
                     class_colors,

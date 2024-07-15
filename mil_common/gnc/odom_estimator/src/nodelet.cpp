@@ -266,8 +266,6 @@ private:
   {
     mil_msgs::VelocityMeasurements const &msg = *msgp;
 
-    std::cout << "Msg data: " << local_frame_id << ", " << msg.header.frame_id << "\n";
-
     tf::StampedTransform transform;
     try
     {
@@ -306,12 +304,6 @@ private:
     else
     {
       std::cout << "bad dvl" << std::endl;
-    }
-
-    // Print out the dvl position
-    for (int i = 0; i < 3; i++)
-    {
-      std::cout << i + 1 << ": " << local_dvl_pos[i] << "\n";
     }
 
     if (!state)
