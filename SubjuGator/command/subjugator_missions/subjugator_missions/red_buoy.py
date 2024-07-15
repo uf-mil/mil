@@ -10,10 +10,10 @@ FRAME_AREA = FRAME_HEIGHT * FRAME_WIDTH
 
 IDEAL_CENTER_X = 480
 IDEAL_CENTER_Y = 304
-CENTER_ERROR_RADIUS = 5
+CENTER_ERROR_RADIUS = 20
 
-IDEAL_PERCENT_AREA = 40  # percent
-PERCENT_ERROR = 5
+IDEAL_PERCENT_AREA = 20  # percent
+PERCENT_ERROR = 10
 
 SIDES = 8  # defines the shape that is drawn as the sub circles around the buoy
 
@@ -28,6 +28,7 @@ class RedBuoyCirculation(SubjuGatorMission):
             "/yolo_detections/1/objectDetection_last_2/analysis",
             ObjectDetections,
         )
+        await self.detections_sub.setup()
 
         # Await till we get a detection of the red buoy / search for buoy by yawing left and right
         await self.find_buoy()
@@ -44,15 +45,17 @@ class RedBuoyCirculation(SubjuGatorMission):
         print("Done!")
 
     async def find_buoy(self):
+        print("Finding Buoy")
         reassurance_score = 0
         scan_angle = 0  # degrees
         scan_angle_increment = 15
         while True and reassurance_score < 5:
-            detections = self.detections_sub.get_next_message().result().detections
+            detections = await self.detections_sub.get_next_message()
+            detections = detections.detections
 
             # Check for buoy
             found_buoy = False
-            if detections.count() > 0:
+            if detections and len(detections) > 0:
 
                 # Check if buoy was one of the detections
                 for detection in detections:
@@ -92,6 +95,7 @@ class RedBuoyCirculation(SubjuGatorMission):
                 )
 
     async def align_self_with_buoy(self):
+        print("Aligning to Buoy")
         center_x = self.found_center_x
         center_y = self.found_center_y
         area = self.found_area
@@ -103,7 +107,8 @@ class RedBuoyCirculation(SubjuGatorMission):
                 and center_y < IDEAL_CENTER_Y + CENTER_ERROR_RADIUS
                 and center_y > IDEAL_CENTER_Y - CENTER_ERROR_RADIUS
             ):
-                self.percent_area = area
+                self.found_area = area
+                print("here 1")
                 break
             else:
                 if not (
@@ -112,25 +117,31 @@ class RedBuoyCirculation(SubjuGatorMission):
                 ):
                     await self.go(
                         self.move()
-                        .right(0.1 if center_x < IDEAL_CENTER_X else -0.1)
+                        .right(0.1 if center_x > IDEAL_CENTER_X else -0.1)
                         .zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
                     )
+                else:
+                    print("x is lined up")
                 if not (
                     center_y < IDEAL_CENTER_Y + CENTER_ERROR_RADIUS
                     and center_y > IDEAL_CENTER_Y - CENTER_ERROR_RADIUS
                 ):
+                    print(center_y, IDEAL_CENTER_Y)
                     await self.go(
                         self.move()
-                        .up(0.1 if center_y > IDEAL_CENTER_Y else -0.1)
+                        .up(-0.1 if center_y > IDEAL_CENTER_Y else 0.1)
                         .zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
                     )
+                else:
+                    print("y is lined up")
 
-                detections = self.detections_sub.get_next_message().result().detections
+                detections = await self.detections_sub.get_next_message()
+                detections = detections.detections
 
                 # Check for buoy
-                if detections.count() > 0:
+                if len(detections) > 0:
                     # Check if buoy was one of the detections
                     for detection in detections:
                         if detection.class_name == "Red buoy":
@@ -141,8 +152,12 @@ class RedBuoyCirculation(SubjuGatorMission):
                             center_y = detection.center_y
                             area = detection.width * detection.height
                             break
+                print("here 2")
+
+        print("Finished aligning self")
 
     async def approach_buoy(self):
+        print("Approaching the Buoy")
         percent_area = (self.found_area / FRAME_AREA) * 100
 
         while True:
@@ -152,26 +167,45 @@ class RedBuoyCirculation(SubjuGatorMission):
             ):
                 break
             else:
+                print(percent_area, IDEAL_PERCENT_AREA)
                 if percent_area > IDEAL_PERCENT_AREA + PERCENT_ERROR:
                     await self.go(
-                        self.move().backward(0.05).zero_roll_and_pitch(),
+                        self.move().backward(0.1).zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
                     )
                 elif percent_area < IDEAL_PERCENT_AREA - PERCENT_ERROR:
                     await self.go(
-                        self.move().forward(0.05).zero_roll_and_pitch(),
+                        self.move().forward(0.1).zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
                     )
+            
+                detections = await self.detections_sub.get_next_message()
+                detections = detections.detections
+
+                # Check for buoy
+                if len(detections) > 0:
+                    # Check if buoy was one of the detections
+                    for detection in detections:
+                        if detection.class_name == "Red buoy":
+                            self.found_area = detection.width * detection.height
+                            percent_area = ((detection.width * detection.height) / FRAME_AREA) *100
+                            break
 
     async def circle_buoy(self):
-
-        distance_per_side = 8 / SIDES
-
+        print("Circling the Buoy")
+        distance_per_side = 0.2
+        yaw_angle =180 - 180 * (SIDES-1) / SIDES
+        print(yaw_angle)
         for _ in range(SIDES):
-
+            
             await self.go(
                 self.move().left(distance_per_side).zero_roll_and_pitch(),
                 speed=SPEED_LIMIT,
+            )
+
+            await self.go(
+                self.move().yaw_right_deg(yaw_angle).zero_roll_and_pitch(),
+                speed=SPEED_LIMIT_YAW,
             )
 
             await self.align_self_with_buoy()
