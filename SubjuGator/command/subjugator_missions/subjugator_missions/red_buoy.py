@@ -20,6 +20,11 @@ SIDES = 8  # defines the shape that is drawn as the sub circles around the buoy
 SPEED_LIMIT_YAW = 0.2
 SPEED_LIMIT = 0.2
 
+# Known values of the position of the buoy
+AT_DISTANCE = 1.1  # meters
+KNOWN_WIDTH = 240.7  # pixels
+KNOWN_HEIGHT = 337.0  # pixels
+
 
 class RedBuoyCirculation(SubjuGatorMission):
     async def run(self, args):
@@ -84,7 +89,11 @@ class RedBuoyCirculation(SubjuGatorMission):
                     speed=SPEED_LIMIT_YAW,
                 )
 
-                scan_angle = -(abs(scan_angle + scan_angle_increment))
+                scan_angle = (
+                    (abs(scan_angle) + scan_angle_increment)
+                    if scan_angle < 0
+                    else -(abs(scan_angle) + scan_angle_increment)
+                )
 
                 # TODO: handle if scan angle reaches 180 degrees
 
@@ -159,6 +168,8 @@ class RedBuoyCirculation(SubjuGatorMission):
                                 abs(y_move)
                                 / abs(detection.center_y - center_y)
                                 * (detection.center_y - IDEAL_CENTER_Y)
+                                * (FRAME_HEIGHT / FRAME_WIDTH)
+                                * 0.4
                             )
                             print("Calculated step size: x,y", x_move, y_move)
                             center_x = detection.center_x
@@ -171,6 +182,7 @@ class RedBuoyCirculation(SubjuGatorMission):
     async def approach_buoy(self):
         print("Approaching the Buoy")
         percent_area = (self.found_area / FRAME_AREA) * 100
+        distance_move = 0.1
 
         while True:
             if (
@@ -179,15 +191,15 @@ class RedBuoyCirculation(SubjuGatorMission):
             ):
                 break
             else:
-                print(percent_area, IDEAL_PERCENT_AREA)
+                print(percent_area, IDEAL_PERCENT_AREA, "Moving: ", distance_move)
                 if percent_area > IDEAL_PERCENT_AREA + PERCENT_ERROR:
                     await self.go(
-                        self.move().backward(0.1).zero_roll_and_pitch(),
+                        self.move().backward(abs(distance_move)).zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
                     )
                 elif percent_area < IDEAL_PERCENT_AREA - PERCENT_ERROR:
                     await self.go(
-                        self.move().forward(0.1).zero_roll_and_pitch(),
+                        self.move().forward(abs(distance_move)).zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
                     )
 
@@ -200,9 +212,16 @@ class RedBuoyCirculation(SubjuGatorMission):
                     for detection in detections:
                         if detection.class_name == "Red buoy":
                             self.found_area = detection.width * detection.height
+
+                            distance_move = (
+                                (KNOWN_WIDTH / detection.width) * AT_DISTANCE
+                            ) * 0.5 - 0.5
+
                             percent_area = (
                                 (detection.width * detection.height) / FRAME_AREA
                             ) * 100
+
+                            print(detection.width)
                             break
 
     async def circle_buoy(self):

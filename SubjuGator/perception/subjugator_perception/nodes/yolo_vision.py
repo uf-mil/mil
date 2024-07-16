@@ -32,12 +32,12 @@ class YoloVision:
             (100, 50, 70),
             (200, 50, 60),
             (70, 180, 20),
-            (255, 0, 0),
+            (0, 0, 255),
             (255, 255, 0),
             (150, 255, 0),
             (56, 200, 150),
             (255, 0, 255),
-            (0, 0, 255),
+            (255, 0, 0),
             (150, 0, 0),
         ]
         camera = rospy.get_param("~image_topic", "/camera/front/right/image_color")
@@ -47,7 +47,7 @@ class YoloVision:
                 RGBtoBGRLayer(),
                 ObjectDetectionLayer(
                     path_to_weights,
-                    0.6,
+                    0.65,
                     0.5,
                     class_names,
                     class_colors,
