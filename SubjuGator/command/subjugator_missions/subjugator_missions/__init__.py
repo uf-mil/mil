@@ -6,6 +6,7 @@ from .ball_drop_test import BallDropTest
 from .dracula_grab import DraculaGrabber
 from .gripper_test import GripperTest
 from .move import Move
+from .path_marker import FollowPathMarker
 from .pinger import Pinger
 from .pose_editor import PoseEditor
 from .prequal_mission import PrequalMission

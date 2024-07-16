@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
-import cv2
 import numpy as np
-import math
 import rospy
-from std_msgs.msg import Float32
 from mil_ros_tools import (
     Image_Subscriber,
 )
+from std_msgs.msg import Float32
 from vision_stack import (
     BinThresholdingLayer,
-    CustomLayer,
+    ColorMagnificationLayer,
     GaussianLayer,
+    GrayscaleLayer,
     HoughTransformLayer,
     ResizeLayer,
     VisionStack,
-    GrayscaleLayer,
-    ColorMagnificationLayer
 )
 
 __author__ = "Daniel Parra"
@@ -31,10 +28,10 @@ class PathMarkerDetection:
         self.vs = VisionStack(
             layers=[
                 ResizeLayer(960, 608),
-                GaussianLayer((21, 21), 50),
-                ColorMagnificationLayer((52, 60, 71)),
+                GaussianLayer((51, 51), 100),
+                ColorMagnificationLayer((0, 165, 255)),
                 GrayscaleLayer(),
-                BinThresholdingLayer(220, 255),
+                BinThresholdingLayer(240, 255),
                 HoughTransformLayer(
                     threshold=100,
                     min_line_length=20,
@@ -51,7 +48,7 @@ class PathMarkerDetection:
         self.vs.run(msg, True)
         lines = self.vs.analysis_dict["houghTransform_5"]
         self.publish_angle_in_deg_from_list_of_lines(lines)
-    
+
     def publish_angle_in_deg_from_list_of_lines(self, lines):
         # Create array of angles and lengths
         degrees = {}
@@ -64,11 +61,11 @@ class PathMarkerDetection:
             valid_key = (
                 key
                 if key in degrees
-                else key + self.ERROR
-                if key + self.ERROR in degrees
-                else key - self.ERROR
-                if key - self.ERROR in degrees
-                else -999999
+                else (
+                    key + self.ERROR
+                    if key + self.ERROR in degrees
+                    else key - self.ERROR if key - self.ERROR in degrees else -999999
+                )
             )
 
             if valid_key != -999999:
@@ -80,7 +77,7 @@ class PathMarkerDetection:
                 degrees[new_key] = degrees_frequency_array
             else:
                 degrees[key] = [angle]
-        
+
         sorted_dict = dict(sorted(degrees.items(), key=lambda item: -len(item[1])))
 
         if not sorted_dict:
@@ -91,17 +88,11 @@ class PathMarkerDetection:
         else:
             for key, value in sorted_dict.items():
                 major_angle = sum(value) / len(value)
-                major_angle = (
-                    major_angle + 90
-                    if major_angle <= 0
-                    else major_angle - 90
-                )
+                major_angle = major_angle + 90 if major_angle <= 0 else major_angle - 90
                 msg = Float32()
-                print(major_angle)
                 msg.data = major_angle
                 self.angle_pub.publish(msg)
                 break
-
 
 
 if __name__ == "__main__":
