@@ -44,5 +44,6 @@ endif()
 add_library(mil_missions
   src/client.cpp
 )
+add_dependencies(mil_missions ${catkin_EXPORTED_TARGETS} ${mil_missions_EXPORTED_TARGETS})
 target_include_directories(mil_missions PUBLIC include)
 target_link_libraries(mil_missions ${catkin_LIBRARIES})
