@@ -4,6 +4,7 @@ from .autonomous_2022 import Autonomous2022
 from .ball_drop import BallDrop
 from .ball_drop_test import BallDropTest
 from .dracula_grab import DraculaGrabber
+from .go_to_pinger import FollowPinger
 from .gripper_test import GripperTest
 from .move import Move
 from .path_marker import FollowPathMarker

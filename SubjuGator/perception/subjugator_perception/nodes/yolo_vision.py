@@ -12,6 +12,8 @@ from vision_stack import (
 
 __author__ = "Daniel Parra"
 
+VERBOSE = False
+
 
 class YoloVision:
     def __init__(self):
@@ -59,7 +61,7 @@ class YoloVision:
         self.image_sub = Image_Subscriber(camera, self.detection_callback)
 
     def detection_callback(self, msg):
-        self.vs.run(msg, True)
+        self.vs.run(msg, VERBOSE)
 
 
 if __name__ == "__main__":
