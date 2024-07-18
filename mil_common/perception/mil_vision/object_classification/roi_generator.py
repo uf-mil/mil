@@ -81,11 +81,9 @@ class ROI_Generator:
 
     def out_range(self, bbox):
         h, w, r = self.image.shape
-        if bbox[0] < 0 or bbox[0] + bbox[2] > w:
-            return True
-        if bbox[1] < 0 or bbox[1] + bbox[3] > h:
-            return True
-        return False
+        return (bbox[0] < 0 or bbox[0] + bbox[2] > w) or (
+            bbox[1] < 0 or bbox[1] + bbox[3] > h
+        )
 
     def go(self):
         while self.x is None:
