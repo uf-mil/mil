@@ -27,23 +27,5 @@ body:
         to be typed, etc.?
       value: |
         1.
-        2.
-        3.
     validations:
       required: true
-  - type: checkboxes
-    id: teams
-    attributes:
-      label: Contacts
-      description: When a member takes on this task, who else might they need to contact?
-      options:
-        - label: We need help from the mechanical team.
-          required: false
-        - label: We need help from the electrical team.
-          required: false
-        - label: We need help from Dr. Schwartz or other faculty.
-          required: false
-        - label: We need help from a company or an organization.
-          required: false
-        - label: We need help from another UF staff member or organization (ex, facilities).
-          required: false
