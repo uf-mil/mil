@@ -182,7 +182,14 @@
       </sky>
       <ambient>0.4 0.4 0.4 1</ambient>
       <background>0.7 0.7 0.7 1</background>
-      <shadows>1</shadows>
+      <shadows>0</shadows>
+      <fog>
+        <color>0.25 0.6 0.59 1.0</color>
+        <type>exp</type>
+        <density>0.1</density>
+        <start>5</start>
+        <end>15</end>
+      </fog>
     </scene>
     <gravity>0 0 -9.8</gravity>
     <atmosphere type='adiabatic'/>
