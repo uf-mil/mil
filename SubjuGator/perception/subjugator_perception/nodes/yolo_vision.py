@@ -12,7 +12,7 @@ from vision_stack import (
 
 __author__ = "Daniel Parra"
 
-VERBOSE = False
+VERBOSE = True
 
 
 class YoloVision:

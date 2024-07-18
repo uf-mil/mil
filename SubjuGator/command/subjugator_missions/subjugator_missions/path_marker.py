@@ -21,11 +21,12 @@ class FollowPathMarker(SubjuGatorMission):
         # Follow path marker
         await self.follow_marker()
 
+        # Step forward at the end of the path marker
+        await self.step_forward()
+
         print("Done!")
 
     async def follow_marker(self):
-
-        wait_counter = 0
 
         while True:
 
@@ -33,9 +34,6 @@ class FollowPathMarker(SubjuGatorMission):
             angle_offset = angle_offset.data
 
             if angle_offset == -999:
-                wait_counter += 1
-
-            if wait_counter > 3:
                 break
 
             if angle_offset != 0:
@@ -51,3 +49,7 @@ class FollowPathMarker(SubjuGatorMission):
                 )
 
         print("Finished following marker!")
+
+    async def step_forward(self):
+
+        await self.go(self.move().forward(0.5).zero_roll_and_pitch(), speed=SPEED_LIMIT)

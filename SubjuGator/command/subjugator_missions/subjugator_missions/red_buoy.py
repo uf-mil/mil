@@ -12,7 +12,7 @@ IDEAL_CENTER_X = 480
 IDEAL_CENTER_Y = 304
 CENTER_ERROR_RADIUS = 20
 
-IDEAL_PERCENT_AREA = 20  # percent
+IDEAL_PERCENT_AREA = 30  # percent
 PERCENT_ERROR = 5
 
 SIDES = 8  # defines the shape that is drawn as the sub circles around the buoy
@@ -74,7 +74,7 @@ class RedBuoyCirculation(SubjuGatorMission):
                             # Store center and size of buoy
                             self.found_center_x = detection.center_x
                             self.found_center_y = detection.center_y
-                            self.found_area = detection.width * detection.height
+                            self.found_width = detection.width
                         break
 
             if found_buoy:

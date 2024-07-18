@@ -31,7 +31,7 @@ class PathMarkerDetection:
                 GaussianLayer((51, 51), 100),
                 ColorMagnificationLayer((0, 165, 255)),
                 GrayscaleLayer(),
-                BinThresholdingLayer(240, 255),
+                BinThresholdingLayer(230, 255),
                 HoughTransformLayer(
                     threshold=100,
                     min_line_length=20,
