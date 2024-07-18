@@ -107,7 +107,7 @@ class RedBuoyCirculation(SubjuGatorMission):
         print("Aligning to Buoy")
         center_x = self.found_center_x
         center_y = self.found_center_y
-        area = self.found_area
+        width = self.found_width
 
         x_move = 0.1
         y_move = 0.1
@@ -119,7 +119,7 @@ class RedBuoyCirculation(SubjuGatorMission):
                 and center_y < IDEAL_CENTER_Y + CENTER_ERROR_RADIUS
                 and center_y > IDEAL_CENTER_Y - CENTER_ERROR_RADIUS
             ):
-                self.found_area = area
+                self.found_width = width
                 print("here 1")
                 break
             else:
@@ -158,7 +158,7 @@ class RedBuoyCirculation(SubjuGatorMission):
                         if detection.class_name == "Red buoy":
                             self.found_center_x = detection.center_x
                             self.found_center_y = detection.center_y
-                            self.found_area = detection.width * detection.height
+                            self.found_width = detection.width
                             x_move = (
                                 abs(x_move)
                                 / abs(detection.center_x - center_x)
@@ -174,30 +174,30 @@ class RedBuoyCirculation(SubjuGatorMission):
                             print("Calculated step size: x,y", x_move, y_move)
                             center_x = detection.center_x
                             center_y = detection.center_y
-                            area = detection.width * detection.height
+                            width = detection.width
                             break
 
         print("Finished aligning self")
 
     async def approach_buoy(self):
         print("Approaching the Buoy")
-        percent_area = (self.found_area / FRAME_AREA) * 100
+        percent_width = (self.found_width / FRAME_WIDTH) * 100
         distance_move = 0.1
 
         while True:
             if (
-                percent_area < IDEAL_PERCENT_AREA + PERCENT_ERROR
-                and percent_area > IDEAL_PERCENT_AREA - PERCENT_ERROR
+                percent_width < IDEAL_PERCENT_AREA + PERCENT_ERROR
+                and percent_width > IDEAL_PERCENT_AREA - PERCENT_ERROR
             ):
                 break
             else:
-                print(percent_area, IDEAL_PERCENT_AREA, "Moving: ", distance_move)
-                if percent_area > IDEAL_PERCENT_AREA + PERCENT_ERROR:
+                print(percent_width, IDEAL_PERCENT_AREA, "Moving: ", distance_move)
+                if percent_width > IDEAL_PERCENT_AREA + PERCENT_ERROR:
                     await self.go(
                         self.move().backward(abs(distance_move)).zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
                     )
-                elif percent_area < IDEAL_PERCENT_AREA - PERCENT_ERROR:
+                elif percent_width < IDEAL_PERCENT_AREA - PERCENT_ERROR:
                     await self.go(
                         self.move().forward(abs(distance_move)).zero_roll_and_pitch(),
                         speed=SPEED_LIMIT,
@@ -211,15 +211,13 @@ class RedBuoyCirculation(SubjuGatorMission):
                     # Check if buoy was one of the detections
                     for detection in detections:
                         if detection.class_name == "Red buoy":
-                            self.found_area = detection.width * detection.height
+                            self.found_width = detection.width
 
                             distance_move = (
                                 (KNOWN_WIDTH / detection.width) * AT_DISTANCE
                             ) * 0.5 - 0.5
 
-                            percent_area = (
-                                (detection.width * detection.height) / FRAME_AREA
-                            ) * 100
+                            percent_width = ((detection.width) / FRAME_WIDTH) * 100
 
                             print(detection.width)
                             break
