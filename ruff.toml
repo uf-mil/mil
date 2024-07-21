@@ -20,6 +20,7 @@ extend-exclude = [
     "NaviGator/simulation/VRX/vrx",
     "NaviGator/simulation/VRX/vrx-docker",
     "mil_common/perception/yolov7-ros",
+    "mil_common/perception/vision_stack",
     # sub simulation
     "SubjuGator/simulation",
     # docker contents

@@ -71,7 +71,9 @@ std::vector<float> generate_gaussian_kernel_1D(size_t kernel_size, float sigma)
 std::vector<cv::Point> find_local_maxima(const cv::MatND &histogram, float thresh_multiplier)
 {
   std::stringstream ros_log;
-  ros_log << "\x1b[1;31m" << "find_local_maxima" << "\x1b[0m" << std::endl;
+  ros_log << "\x1b[1;31m"
+          << "find_local_maxima"
+          << "\x1b[0m" << std::endl;
 
   std::vector<cv::Point> local_maxima, threshed_local_maxima;
   float global_maximum = -std::numeric_limits<double>::infinity();
@@ -119,7 +121,9 @@ std::vector<cv::Point> find_local_maxima(const cv::MatND &histogram, float thres
 std::vector<cv::Point> find_local_minima(const cv::MatND &histogram, float thresh_multiplier)
 {
   std::stringstream ros_log;
-  ros_log << "\x1b[1;31m" << "find_local_minima" << "\x1b[0m" << std::endl;
+  ros_log << "\x1b[1;31m"
+          << "find_local_minima"
+          << "\x1b[0m" << std::endl;
 
   std::vector<cv::Point> local_minima, threshed_local_minima;
   float global_minimum = std::numeric_limits<double>::infinity();
@@ -168,7 +172,9 @@ std::vector<cv::Point> find_local_minima(const cv::MatND &histogram, float thres
 unsigned int select_hist_mode(std::vector<cv::Point> &histogram_modes, int target)
 {
   std::stringstream ros_log;
-  ros_log << "\x1b[1;31m" << "select_hist_mode" << "\x1b[0m" << std::endl;
+  ros_log << "\x1b[1;31m"
+          << "select_hist_mode"
+          << "\x1b[0m" << std::endl;
 
   std::vector<int> distances;
   BOOST_FOREACH (cv::Point mode, histogram_modes)
@@ -196,7 +202,9 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, cv::Mat &
                                     const float sigma, const float low_thresh_gain, const float high_thresh_gain)
 {
   std::stringstream ros_log;
-  ros_log << "\x1b[1;31m" << "statistical_image_segmentation" << "\x1b[0m" << std::endl;
+  ros_log << "\x1b[1;31m"
+          << "statistical_image_segmentation"
+          << "\x1b[0m" << std::endl;
 
   // Calculate histogram
   cv::MatND hist, hist_smooth, hist_derivative;
@@ -551,8 +559,10 @@ void FrameHistory::image_callback(const sensor_msgs::ImageConstPtr &image_msg,
   ImageWithCameraInfo current_frame(image_msg, info_msg);
   bool full = _frame_history_ring_buffer.size() >= history_size;
   std::stringstream debug_msg;
-  debug_msg << "Adding frame to ring buffer " << "[frame=" << frame_count << "," << "full=" << (full ? "true" : "false")
-            << ",frames_available=" << _frame_history_ring_buffer.size() << "]" << std::endl;
+  debug_msg << "Adding frame to ring buffer "
+            << "[frame=" << frame_count << ","
+            << "full=" << (full ? "true" : "false") << ",frames_available=" << _frame_history_ring_buffer.size() << "]"
+            << std::endl;
   ROS_DEBUG(debug_msg.str().c_str());
   if (!full)
   {

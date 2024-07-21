@@ -274,7 +274,7 @@ class HydrophoneTrigger:
                 try:
                     freq = util.find_freq(ping_samples, self.rate)
                 except Exception as e:
-                    rospy.logwarn("/hydrophone/triggering in find_freq %s" % e)
+                    rospy.logwarn(f"/hydrophone/triggering in find_freq {e}")
                     freq = self.target
                 rospy.loginfo(f"triggered at {trigger_time:f} on {freq:f} Hz")
 
@@ -306,7 +306,7 @@ class HydrophoneTrigger:
                     plot_data = data[:, 0]
                     titles = [
                         "time vs Gradient of Max convolve",
-                        "time vs max_convolve (Window = %s sec)" % self.window_time,
+                        f"time vs max_convolve (Window = {self.window_time} sec)",
                         "time vs hydrophone0 data",
                     ]
                     vlines = [trigger_time, trigger_time, trigger_time_samples]
@@ -330,8 +330,7 @@ class HydrophoneTrigger:
 
         if spare_time < 0:
             rospy.logwarn(
-                "Spare Time After Callback: %f, Running slower than real time"
-                % spare_time,
+                f"Spare Time After Callback: {spare_time}, Running slower than real time",
             )
 
 

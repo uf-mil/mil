@@ -41,7 +41,7 @@ class USBtoCANBoard:
     def read_packet(self) -> Optional[ReceivePacket]:
         """
         Read a packet from the board, if available. Returns a :class:`ReceivePacket`
-        instance if one was succefully read, or ``None`` if the in buffer is empty.
+        instance if one was successfully read, or ``None`` if the in buffer is empty.
 
         Returns:
             Optional[:class:`ReceivePacket`]: The packet, if found, otherwise ``None``.

@@ -33,7 +33,7 @@ jobs:
           mkdir -p $GITHUB_WORKSPACE/catkin_ws/src
           sudo apt reinstall python3-pip
       - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           path: catkin_ws/src/mil
@@ -106,7 +106,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Make folders
         run: |

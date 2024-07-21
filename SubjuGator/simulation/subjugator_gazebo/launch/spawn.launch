@@ -2,6 +2,10 @@
 <launch>
   <arg name="simulate_cams" default="true"/>
   <arg name="sub" default="sub8"/>
-  <node if="$(arg simulate_cams)" name="spawn_sub" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description       -x 0. -y 0. -z 0 -model $(arg sub) -w water" output="screen"/>
-  <node unless="$(arg simulate_cams)" name="spawn_sub" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description       -x 0. -y 0. -z 0 -model sub8_no_cams -w water" output="screen"/>
+  <arg name="spawn_x" default="0"/>
+  <arg name="spawn_y" default="0"/>
+  <arg name="spawn_z" default="0"/>
+  <arg name="spawn_yaw_rad" default="0"/>
+  <node if="$(arg simulate_cams)" name="spawn_sub" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description       -x $(arg spawn_x) -y $(arg spawn_y) -z $(arg spawn_z) -Y $(arg spawn_yaw_rad) -model $(arg sub) -w water" output="screen"/>
+  <node unless="$(arg simulate_cams)" name="spawn_sub" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description       -x $(arg spawn_x) -y $(arg spawn_y) -z $(arg spawn_z) -Y $(arg spawn_yaw_rad) -model sub8_no_cams -w water" output="screen"/>
 </launch>
