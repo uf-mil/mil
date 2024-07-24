@@ -488,7 +488,7 @@ void NavTubeDriver::read_messages(boost::shared_ptr<tcp::socket> socket)
             msgIMU.orientation_covariance[8] = 0.01;
             msgIMU.linear_acceleration.x = accel_x;
             msgIMU.linear_acceleration.y = accel_y;
-            msgIMU.linear_acceleration.z = accel_z;
+            msgIMU.linear_acceleration.z = -accel_z;
             msgIMU.linear_acceleration_covariance[0] = 0.01;
             msgIMU.linear_acceleration_covariance[4] = 0.01;
             msgIMU.linear_acceleration_covariance[8] = 0.01;
@@ -505,6 +505,9 @@ void NavTubeDriver::read_messages(boost::shared_ptr<tcp::socket> socket)
             msgMag.magnetic_field.x = mag_x;
             msgMag.magnetic_field.y = mag_y;
             msgMag.magnetic_field.z = mag_z;
+	    msgMag.magnetic_field_covariance[0] = 0.001;
+	    msgMag.magnetic_field_covariance[4] = 0.001;
+	    msgMag.magnetic_field_covariance[8] = 0.001;
 
             pubMag.publish(msgMag);
           }
