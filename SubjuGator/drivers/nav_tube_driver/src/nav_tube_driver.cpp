@@ -1,6 +1,7 @@
 #include <bits/stdint-uintn.h>
 #include <endian.h>
 #include <mil_msgs/DepthStamped.h>
+#include <sensor_msgs/MagneticField.h>
 #include <ros/ros.h>
 
 #include <boost/asio.hpp>
@@ -22,6 +23,7 @@ private:
   ros::NodeHandle private_nh_;
 
   ros::Publisher pub_;
+  ros::Publisher mag_pub_;
 
   std::string ip_;
   int port_;
@@ -64,6 +66,7 @@ public:
 NavTubeDriver::NavTubeDriver(ros::NodeHandle nh, ros::NodeHandle private_nh) : nh_(nh), private_nh_(private_nh)
 {
   pub_ = nh.advertise<mil_msgs::DepthStamped>("depth", 10);
+  mag_pub_ = nh.advertise<sensor_msgs::MagneticField>("/imu/mag_raw", 10);
   ip_ = private_nh.param<std::string>("ip", std::string("192.168.37.61"));
   port_ = private_nh.param<int>("port", 33056);
   frame_id_ = private_nh.param<std::string>("frame_id", "depth");
@@ -161,10 +164,13 @@ void NavTubeDriver::send_heartbeat(boost::shared_ptr<tcp::socket> socket)
 void NavTubeDriver::read_messages(boost::shared_ptr<tcp::socket> socket)
 {
   mil_msgs::DepthStamped msg;
+  sensor_msgs::MagneticField mag_msg;
   msg.header.frame_id = frame_id_;
   msg.header.seq = 0;
+  mag_msg.header.frame_id = "imu";
+  mag_msg.header.seq = 0;
 
-  uint8_t backing[10];
+  uint8_t backing[34];
 
   auto buffer = boost::asio::buffer(backing, sizeof(backing));
 
@@ -190,13 +196,25 @@ void NavTubeDriver::read_messages(boost::shared_ptr<tcp::socket> socket)
       else
       {
         ++msg.header.seq;
+        ++mag_msg.header.seq;
         msg.header.stamp = ros::Time::now();
+        mag_msg.header.stamp = ros::Time::now();
 
         uint64_t bits = be64toh(*reinterpret_cast<uint64_t*>(&backing[2]));
         double pressure = *reinterpret_cast<double*>(&bits);
+        bits = be64toh(*reinterpret_cast<uint64_t*>(&backing[10]));
+        double mag_x = *reinterpret_cast<double*>(&bits);
+        bits = be64toh(*reinterpret_cast<uint64_t*>(&backing[18]));
+        double mag_y = *reinterpret_cast<double*>(&bits);
+        bits = be64toh(*reinterpret_cast<uint64_t*>(&backing[26]));
+        double mag_z = *reinterpret_cast<double*>(&bits);
         msg.depth = pressure;
+        mag_msg.magnetic_field.x = mag_x;
+        mag_msg.magnetic_field.y = mag_y;
+        mag_msg.magnetic_field.z = mag_z;
 
         pub_.publish(msg);
+        mag_pub_.publish(mag_msg);
         buffer = boost::asio::buffer(backing, sizeof(backing));
       }
     }

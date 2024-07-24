@@ -206,7 +206,7 @@ class Move(SubjuGatorMission):
 
             elif command in ["zrp", "level_off", "zpr"]:
                 self.send_feedback("Zeroing roll and pitch")
-                res = await self.move.zero_roll_and_pitch().go(**action_kwargs)
+                res = await self.go(self.move().zero_roll_and_pitch(), **action_kwargs)
 
             elif command == "stop":
                 self.send_feedback("Stopping...")

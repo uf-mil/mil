@@ -10,7 +10,7 @@ __author__ = "Daniel Parra"
 
 class YoloVision:
     def __init__(self):
-        path_to_weights = '/home/zobelisk/mil_weights/best.pt'
+        path_to_weights = '/home/sub8/ml_weights/rsub24_v4_1.pt'
         class_names = [
                 'Bin',
                 'Bin blue',
@@ -35,12 +35,12 @@ class YoloVision:
                 (0,0,255), 
                 (150,0,0)
                 ]
-        camera = rospy.get_param("~image_topic", "/camera/down/image_color")
+        camera = rospy.get_param("~image_topic", "/camera/front/right/image_color")
         self.vs = VisionStack(
                 layers=[
-                    ResizeLayer(960,608),
+                    ResizeLayer(480,256),
                     RGBtoBGRLayer(),
-                    ObjectDetectionLayer(path_to_weights, 0.6, 0.5, class_names, class_colors, True),
+                    ObjectDetectionLayer(path_to_weights, 0.5, 0.5, class_names, class_colors, True),
                     RGBtoBGRLayer()
                     ]
                 )

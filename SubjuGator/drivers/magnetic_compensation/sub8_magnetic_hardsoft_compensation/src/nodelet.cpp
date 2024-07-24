@@ -35,6 +35,7 @@ private:
     sensor_msgs::MagneticField result;
     result.header = msg->header;
     tf::vectorEigenToMsg(processed, result.magnetic_field);
+    // result.magnetic_field_covariance = msg->magnetic_field_covariance;
 
     pub.publish(result);
   }
