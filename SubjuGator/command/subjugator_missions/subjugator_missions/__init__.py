@@ -15,6 +15,7 @@ from .red_buoy import RedBuoyCirculation
 from .square import Square
 from .start_gate import StartGate
 from .start_gate_2022 import StartGate2022
+from .start_gate_2024 import StartGate2024
 from .start_gate_guess import StartGateGuess
 from .strip import Strip
 from .sub_singleton import SubjuGatorMission
