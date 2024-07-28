@@ -1,49 +1,61 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
-import psutil
 import rospy
-from std_msgs.msg import Float32
+import psutil  
+from ros_alarms_msgs.msg import Alarm as AlarmMsg
+from ros_alarms_msgs.srv import AlarmSet, AlarmSetRequest
 
+class CPUMonitor:
+    def __init__(self, threshold=75.0):
+        self.threshold = threshold
+        self.alarm_name = "high_cpu_temp"
+        self.node_name = rospy.get_name()
+        self.alarm_set = rospy.ServiceProxy("/alarm/set", AlarmSet)
 
-def get_cpu_temp():
-    # Checks computer sensors
-    temp = psutil.sensors_temperatures()
-    if 'coretemp' in temp:
-        return temp['coretemp'][0].current
-    else:
-        raise ValueError("Core temp not found!")
+    def get_cpu_temp(self):
+        temps = psutil.sensors_temperatures()
+        if 'coretemp' in temps:
+            return temps['coretemp'][0].current
+        return None
 
+    def raise_alarm(self):
+        try:
+            req = AlarmSetRequest()
+            req.alarm.alarm_name = self.alarm_name
+            req.alarm.node_name = self.node_name
+            req.alarm.raised = True
+            req.alarm.problem_description = "CPU temperature is too high!"
+            req.alarm.parameters = json.dumps({"temperature": self.get_cpu_temp()})
+            req.alarm.severity = 5
+            self.alarm_set(req)
+        except rospy.ServiceException as e:
+            rospy.logerr("Service call failed: %s" % e)
 
+    def clear_alarm(self):
+        try:
+            req = AlarmSetRequest()
+            req.alarm.alarm_name = self.alarm_name
+            req.alarm.node_name = self.node_name
+            req.alarm.raised = False
+            req.alarm.problem_description = "CPU temperature back to normal"
+            req.alarm.parameters = json.dumps({"temperature": self.get_cpu_temp()})
+            req.alarm.severity = 0
+            self.alarm_set(req)
+        except:
+            rospy.logerr("Service call failed: %s" % e)
 
-def cpu_temp_ROS():
-  
-  # ROS initializing 
-
-  rospy.init_node('cpu_temp_node', anonymous=True)
-  pub = rospy.Publisher('cpu_temperature', Float32, queue_size=18)
-  rate = rospy.Rate(1)
-
-   # Loops through and actively gets cpu temp
-   
-  while not rospy.is_shutdown():
-    cpu_temp = get_cpu_temp()
-    rospy.loginfo("CPU TEMP: %f", cpu_temp)
-    pub.publish(cpu_temp)
-    rate.sleep()
-
-
-if __name__ == '__main__':
-  try:
-    cpu_temp_ROS()
-  
-  # For interruption failure
-
-  except rospy.ROSInterruptException:
-    pass
-    
-
-  
-
-  
-
-    
+    def monitor(self):
+        rate = rospy.Rate(1)  
+        while not rospy.is_shutdown():
+            temp = self.get_cpu_temp()
+            if temp:
+                if temp >= self.threshold:
+                    self.raise_alarm()
+                else:
+                    self.clear_alarm()
+            rate.sleep()
+#  Examples usage
+# if __name__ == '__main__':
+#     rospy.init_node('cpu_monitor_node')
+#     monitor = CPUMonitor(threshold=75.0)
+#     monitor.monitor()
