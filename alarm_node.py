@@ -20,7 +20,6 @@ class HighTempAlarmHandler(HandlerBase):
         Called whenever the high CPU temperature alarm is raised.
         """
         print(f"ALARM! CPU temperature too high: {alarm.parameters['temperature']}°C")
-        # Add any additional actions to take when the alarm is raised
         return True
 
     def cleared(self, alarm: AlarmMsg):
@@ -28,7 +27,6 @@ class HighTempAlarmHandler(HandlerBase):
         Called whenever the high CPU temperature alarm is cleared.
         """
         print("CPU temperature back to normal.")
-        # Add any additional actions to take when the alarm is cleared
         return True
 
     def meta_predicate(self, meta_alarm: Alarm, alarms) -> Union[bool, Alarm]:
