@@ -62,10 +62,9 @@ def cpu_temp_alarm():
     rospy.spin()
 
 
-
-if __name__ == '__main__':
+# Example usage
+# if __name__ == '__main__':
   
-  try:
-    cpu_temp_alarm()
-  except rospy.InterruptedError:
-    pass
+#   
+#    cpu_temp_alarm()
+#  
