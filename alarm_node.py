@@ -6,6 +6,40 @@ from std_msgs.msg import Float32
 
 global alarm_pub
 
+from typing import Optional, Union
+from ros_alarms_msgs.msg import Alarm as AlarmMsg
+from .alarms import Alarm, HandlerBase
+
+
+class HighTempAlarmHandler(HandlerBase):
+    alarm_name = "high_cpu_temp"
+    severity_required = (0, 5)
+
+    def raised(self, alarm: AlarmMsg):
+        """
+        Called whenever the high CPU temperature alarm is raised.
+        """
+        print(f"ALARM! CPU temperature too high: {alarm.parameters['temperature']}°C")
+        # Add any additional actions to take when the alarm is raised
+        return True
+
+    def cleared(self, alarm: AlarmMsg):
+        """
+        Called whenever the high CPU temperature alarm is cleared.
+        """
+        print("CPU temperature back to normal.")
+        # Add any additional actions to take when the alarm is cleared
+        return True
+
+    def meta_predicate(self, meta_alarm: Alarm, alarms) -> Union[bool, Alarm]:
+        """
+        Called on an update to one of this alarm's meta alarms, if there are any.
+        By default, returns True if any meta alarms are raised.
+        """
+        return any(alarm.raised for name, alarm in alarms.items())
+
+
+
 def cpu_temp_callback(temp):
 
   # Sets of cpu temp alarm
