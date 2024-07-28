@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import argparse
 import curses
+import getpass
 
+import rosgraph
 import rospy
 from ros_alarms import AlarmBroadcaster, AlarmListener
 
@@ -18,17 +20,22 @@ class AlarmMonitor:
     CLEAR_KEYS = [ord("C")]  # Only capital C so it takes two keys to clear
     COLOR_RAISED = 1  # Indexes for color profiles used in curses windows
     COLOR_CLEARED = 2
-    COLOR_UNKNOWN = 3
+    COLOR_DIED = 3
+    COLOR_UNKNOWN = 4
     # String to display on top of panel for usage instructions
     HELP_STR = "ROS Alarms TUI: Press SPACE to raise, C to clear"
 
     def __init__(self, alarm_name, screen=None):
         self.last_alarm = None
+        self.alive = True
         self.screen = screen
         self.alarm_name = alarm_name
-        self.listener = AlarmListener(alarm_name)
+        self.setup()
+
+    def setup(self):
+        self.listener = AlarmListener(self.alarm_name)
         self.listener.add_callback(self._alarm_cb)
-        self.broadcaster = AlarmBroadcaster(alarm_name)
+        self.broadcaster = AlarmBroadcaster(self.alarm_name)
         self.listener.wait_for_server()
         self.broadcaster.wait_for_server()
 
@@ -44,6 +51,7 @@ class AlarmMonitor:
         curses.init_pair(self.COLOR_RAISED, curses.COLOR_WHITE, curses.COLOR_RED)
         curses.init_pair(self.COLOR_CLEARED, curses.COLOR_WHITE, curses.COLOR_GREEN)
         curses.init_pair(self.COLOR_UNKNOWN, curses.COLOR_BLACK, curses.COLOR_WHITE)
+        curses.init_pair(self.COLOR_DIED, curses.COLOR_BLACK, curses.COLOR_WHITE)
         rospy.Timer(rospy.Duration(0.01), self._update_key)
         self._draw()
 
@@ -72,7 +80,10 @@ class AlarmMonitor:
         # Set a text string and background color for window depending on alarm status
         status_str = "UNKNOWN"
         description_str = None
-        if self.last_alarm is not None:
+        if not self.alive:
+            status_window.bkgd(" ", curses.color_pair(self.COLOR_DIED))
+            status_str = "ROSMASTER DIED"
+        elif self.last_alarm is not None:
             if self.last_alarm.raised:
                 status_window.bkgd(" ", curses.color_pair(self.COLOR_RAISED))
                 if self.last_alarm.problem_description != "":
@@ -82,7 +93,7 @@ class AlarmMonitor:
                 status_window.bkgd(" ", curses.color_pair(self.COLOR_CLEARED))
                 status_str = "CLEARED"
         else:
-            status_window.bkgd(" ", curses.color_pair(self.COLOR_UNKOWN))
+            status_window.bkgd(" ", curses.color_pair(self.COLOR_UNKNOWN))
 
         height, width = status_window.getmaxyx()
 
@@ -139,12 +150,14 @@ class AlarmMonitor:
         if key in RAISE_KEYS or CLEAR_KEYS is entered.
         """
         key = self._read_key()
+        if not self.alive:
+            return
         if key is not None:
             if key == 10:  # Draw window in window resize
                 self._draw()
             if key in self.RAISE_KEYS:
                 self.broadcaster.raise_alarm(
-                    problem_description="User raised from amonitor",
+                    problem_description=f'"{getpass.getuser()}" raised from amonitor',
                 )
             elif key in self.CLEAR_KEYS:
                 self.broadcaster.clear_alarm()
@@ -159,9 +172,23 @@ if __name__ == "__main__":
     # Restore cursor on close
     def cleanup():
         curses.curs_set(1)
+        if rosgraph.Master("alarm_monitor").is_online():
+            print("ROS was killed!")
 
-    rospy.init_node("alarm_monitor", anonymous=True)
-    rospy.on_shutdown(cleanup)
     cli = AlarmMonitor(args.alarm)
-    curses.wrapper(cli.attach_screen)
-    rospy.spin()
+    while not rospy.is_shutdown():
+        rospy.init_node("alarm_monitor", anonymous=True)
+        rospy.on_shutdown(cleanup)
+        curses.wrapper(cli.attach_screen)
+        master = rosgraph.Master("alarm_monitor")
+        cli._draw()
+        while cli.alive and not rospy.is_shutdown():
+            cli.alive = master.is_online()
+            rospy.Rate(10).sleep()
+        cli._draw()
+        while not cli.alive and not rospy.is_shutdown():
+            cli.alive = master.is_online()
+            rospy.Rate(10).sleep()
+        # Allow ROS to initialize
+        rospy.sleep(3)
+        cli._draw()
