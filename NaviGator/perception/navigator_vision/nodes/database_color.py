@@ -661,7 +661,7 @@ class Colorama:
 
         px = np.array(self.camera_model.project3dToPixel(object_point))
         resolution = self.camera_model.fullResolution()
-        return not (np.any([0, 0] > px) or np.any(px > resolution))
+        return not (np.any(px < [0, 0]) or np.any(px > resolution))
 
 
 if __name__ == "__main__":

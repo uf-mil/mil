@@ -367,9 +367,7 @@ class OrangeRectangleFinder:
             return False
         self.last2d = self.rect_model.get_pose_2D(corners)
         self.last_found_time_2D = self.image_sub.last_image_time
-        if self.do_3D and not self._get_pose_3D(corners):
-            return False
-        return True
+        return self.do_3D and not self._get_pose_3D(corners)
 
     def _get_edges(self):
         """

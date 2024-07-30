@@ -820,9 +820,7 @@ class MissionParam:
         if not exists:
             return False
         value = await self.nh.get_param(self.param)
-        if not self._valid(value):
-            return False
-        return True
+        return self._valid(value)
 
     async def reset(self):
         if await self.exists():
