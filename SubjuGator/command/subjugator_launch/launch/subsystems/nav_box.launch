@@ -11,13 +11,10 @@
 
   <!-- Depth Sensor -->
   <group if="$(eval depth and environment == 'real')">
-	  <remap from="/py/IMU" to="imu/data_raw" />
-	  <remap from="/py/Mag" to="imu/mag" />
     <node pkg="nav_tube_driver" type="nav_tube_driver_node" name="nav_tube_driver_node" respawn="true">
       <param name="ip" type="string" value="192.168.37.61" />
       <param name="port" type="int" value="33056" />
       <param name="frame_id" type="string" value="/depth" />
-      <param name="imu_frame_id" type="string" value="imu" />
       <param name="hz" type="int" value="20" />
     </node>
   </group>
