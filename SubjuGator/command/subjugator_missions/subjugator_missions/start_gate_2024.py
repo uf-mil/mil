@@ -11,6 +11,17 @@ YAW_LENGTH = 15  # When searching for start gate how many degrees to turn
 SPEED = 0.2
 FRAME_WIDTH = 960  # Pixels
 
+DIST_CONST = 700
+TRANSLATION_CONST = 1 / 700
+ANGLE_CONST = 0.942334
+
+ENTER_RIGHT = True  # Enter the right side of the gate (if false enters the left side)
+DOWN_DIST = 0.7  # meters to submerge to enter the gate
+FORWARD_DIST = 2.5  # how many meters to go through the gate
+SIDE_DIST = 0.7  # how many meters to go under one of the spirals
+
+DEBUG = True
+
 
 class StartGate2024(SubjuGatorMission):
     async def run(self, args):
@@ -40,6 +51,13 @@ class StartGate2024(SubjuGatorMission):
         self.centerY = 0
         self.dist_est = 0
         self.angle_est = 0
+        self.width_ratio = 0
+
+        # Submerge slightly
+        # await self.go(
+        #     self.move().down(DOWN_DIST),
+        #     speed=SPEED,
+        # )
 
     async def update(self):
         """Update is continuously called"""
@@ -49,16 +67,25 @@ class StartGate2024(SubjuGatorMission):
             detections = detections_msg.detections
 
             # Update start gate estimates
-            if not self.getInfo(detections):
-                # If we did not see the start gate look for it
-                await self.lookForGate()
-                continue
+            self.getInfo(detections)
 
-            # Now that we see the gate move towards it
-            await self.approachGate()
+            # if not self.getInfo(detections) :
+            #     # If we did not see the start gate look for it
+            #     await self.lookForGate()
+            #     continue
+
+            # # Now that we see the gate move towards it
+            # await self.approachGate()
+
+            # # Then enter the gate and complete the mission
+            # await self.enterGate()
+
+            # # Complete mission
+            # self.isCompleted = True
 
     async def endMission(self):
         """Called on completion of the mission"""
+        print("Start Gate Mission Completed")
         pass
 
     def getInfo(self, detections):
@@ -75,39 +102,41 @@ class StartGate2024(SubjuGatorMission):
         if len(spiral_detections) == 2:
             # Update center position
             self.centerX = (
-                self.centerX
-                + spiral_detections[0].center_x
-                + spiral_detections[1].center_x
-            ) / 3
+                +spiral_detections[0].center_x + spiral_detections[1].center_x
+            ) / 2
             self.centerY = (
-                self.centerY
-                + spiral_detections[0].center_y
-                + spiral_detections[1].center_y
-            ) / 3
-
-            print(f"Center X: {self.centerX}, Center Y: {self.centerY}")
+                +spiral_detections[0].center_y + spiral_detections[1].center_y
+            ) / 2
 
             centerDistX = abs(self.centerX - spiral_detections[0].center_x)
-            centerDistY = abs(self.centerY - spiral_detections[0].center_y)
+            # centerDistY = abs(self.centerY - spiral_detections[0].center_y)
 
-            print(f"CenterDist X: {centerDistX}, CenterDist Y: {centerDistY}")
+            if spiral_detections[0].class_name == "Red spiral":
+                self.width_ratio = (
+                    spiral_detections[1].width / spiral_detections[0].width
+                )
+            else:
+                self.width_ratio = (
+                    spiral_detections[0].width / spiral_detections[1].width
+                )
 
             # Update angle estimate
-            self.angle_est = math.log(
-                centerDistY + 1,
-                10,
-            )  # This equation was obtained experimentally
-            print(f"angle: {self.angle_est}")
+            self.angle_est = (self.width_ratio - 1) * ANGLE_CONST
 
             # Update dist estimate
             adjusted_centerDistX = centerDistX / math.cos(self.angle_est)
 
-            self.dist_est = abs(
-                700 / adjusted_centerDistX,
-            )  # This equation was obtained experimentally
-            print(f"dist: {self.dist_est}")
+            # These values were obtained experimentally, but the actual equation should be physical dist between two spirals * focal length of camera / centerDistX
+            self.dist_est = abs(DIST_CONST / adjusted_centerDistX)
 
+            if DEBUG:
+                print(f"angle: {self.angle_est}")
+                print(f"dist: {self.dist_est}")
+                print(f"width_r: {self.width_ratio}")
+                print(f"center dist x: {centerDistX}")
+                print(f"center dist FOV: {abs(self.centerX-FRAME_WIDTH/2)}")
             return True
+
         return False
 
     async def lookForGate(self):
@@ -132,11 +161,58 @@ class StartGate2024(SubjuGatorMission):
 
     async def approachGate(self):
         """Called to have the sub move towards the start gate"""
-        await self.go(
-            self.move().forward(self.dist_est - 2),
-            speed=SPEED,
-        )
+
+        # Strafe left or right depending on the angle of the start gate
+        # Approximate dist as parallel distance
+        parallel_dis = self.dist_est * math.sin(self.angle_est)
+
+        # TODO: Check negative angles
+
+        # Yaw left or right to align with the start gate
         await self.go(
             self.move().yaw_left(self.angle_est),
+            speed=SPEED,
+        )
+
+        # Align with center of gate
+        await self.go(
+            self.move().right(parallel_dis),
+            speed=SPEED,
+        )
+
+        # # Align with center of spiral
+        await self.go(
+            self.move().left((FRAME_WIDTH / 2 - self.centerX) * TRANSLATION_CONST),
+            speed=SPEED,
+        )
+
+        # Approach Gate, but dont enter (that is what the minus 2 is for)
+        dist = (
+            self.dist_est * math.cos(self.angle_est) - 2
+            if self.dist_est * math.cos(self.angle_est) > 2
+            else 0
+        )
+        await self.go(
+            self.move().forward(dist),
+            speed=SPEED,
+        )
+
+    async def enterGate(self):
+        # Choose a side
+        side = SIDE_DIST if ENTER_RIGHT else -1 * SIDE_DIST
+        await self.go(
+            self.move().right(side),
+            speed=SPEED,
+        )
+
+        # Enter the gate
+        await self.go(
+            self.move().forward(FORWARD_DIST),
+            speed=SPEED,
+        )
+
+        # Move back to the center
+        await self.go(
+            self.move().right(side * -1),
             speed=SPEED,
         )
