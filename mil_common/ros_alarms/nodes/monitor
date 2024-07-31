@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import argparse
 import curses
+import getpass
 
+import rosgraph
 import rospy
 from ros_alarms import AlarmBroadcaster, AlarmListener
 
@@ -26,9 +28,12 @@ class AlarmMonitor:
         self.last_alarm = None
         self.screen = screen
         self.alarm_name = alarm_name
-        self.listener = AlarmListener(alarm_name)
+        self.setup()
+
+    def setup(self):
+        self.listener = AlarmListener(self.alarm_name)
         self.listener.add_callback(self._alarm_cb)
-        self.broadcaster = AlarmBroadcaster(alarm_name)
+        self.broadcaster = AlarmBroadcaster(self.alarm_name)
         self.listener.wait_for_server()
         self.broadcaster.wait_for_server()
 
@@ -82,7 +87,7 @@ class AlarmMonitor:
                 status_window.bkgd(" ", curses.color_pair(self.COLOR_CLEARED))
                 status_str = "CLEARED"
         else:
-            status_window.bkgd(" ", curses.color_pair(self.COLOR_UNKOWN))
+            status_window.bkgd(" ", curses.color_pair(self.COLOR_UNKNOWN))
 
         height, width = status_window.getmaxyx()
 
@@ -144,7 +149,7 @@ class AlarmMonitor:
                 self._draw()
             if key in self.RAISE_KEYS:
                 self.broadcaster.raise_alarm(
-                    problem_description="User raised from amonitor",
+                    problem_description=f'"{getpass.getuser()}" raised from amonitor',
                 )
             elif key in self.CLEAR_KEYS:
                 self.broadcaster.clear_alarm()
@@ -159,9 +164,13 @@ if __name__ == "__main__":
     # Restore cursor on close
     def cleanup():
         curses.curs_set(1)
+        if rosgraph.Master("alarm_monitor").is_online():
+            print("ROS was killed!")
 
+    cli = AlarmMonitor(args.alarm)
     rospy.init_node("alarm_monitor", anonymous=True)
     rospy.on_shutdown(cleanup)
-    cli = AlarmMonitor(args.alarm)
     curses.wrapper(cli.attach_screen)
-    rospy.spin()
+    master = rosgraph.Master("alarm_monitor")
+    while not rospy.is_shutdown() and master.is_online():
+        rospy.Rate(10).sleep()
