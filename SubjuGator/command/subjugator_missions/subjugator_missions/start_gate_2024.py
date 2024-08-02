@@ -10,16 +10,17 @@ from .sub_singleton import SubjuGatorMission
 # Constants
 PROPER_HEADING = 191.76238  # This is the compass heading that points perpendicular to the dock and towards the course
 # Compass heading for away from the dock
-ENTER_RIGHT_SIDE = True  # Which side to enter, if false enters left side
+# Proper heading for the course is probably 280 degrees just based off google maps
 
+ENTER_RIGHT_SIDE = True  # Which side to enter, if false enters left side
 
 SPEED = 0.2
 STARTING_DOWN_DIST = 0.6
 ENDING_SIDE_DIST = 0.75  # After going through the gate how many meters to move to the side to see the path marker
 
 FRAME_WIDTH = 960  # Pixel width of the camera image
-
-TRANSLATION_STEP = 0.2  # Move increment for trying to center with the red spiral
+SPIRAL_WIDTH = 0.152  # Actual width of spiral in meters
+# In Gazebo width is 0.152 in real life it should be 0.3048
 
 DIST_CONST = 145  # This is used to estimate distance. This value is found experimentally and may need to be changed
 # If new sensors are used. decreasing this decreases the dist est
@@ -128,34 +129,18 @@ class StartGate2024(SubjuGatorMission):
     async def alignWithSide(self):
         """This aligns the sub with one of the sides of the start gate"""
 
-        # Initialize errors (error being how far the spiral is from the center of the screen)
-        prev_error = math.inf
-        current_error = 0
+        # Get the spiral detections
+        spiral = await self.getDetections()
 
-        while True:
-            # Get the spiral detections
-            spiral = await self.getDetections()
+        # Estimate strafe dist
+        pixel_dist = FRAME_WIDTH / 2 - spiral.center_x
 
-            # Calculate the current error
-            current_error = (FRAME_WIDTH / 2) - spiral.center_x
+        strafe_est = SPIRAL_WIDTH * pixel_dist / spiral.width
 
-            if DEBUG:
-                print(f"Current Error: {current_error}, Prev Error: {prev_error}")
+        if DEBUG:
+            print(f"Distance to strafe: {strafe_est}")
 
-            # Check if the error went up since last time. This indicates we were aligned before so stop aligning
-            if abs(current_error) > abs(prev_error):
-                break
-
-            # Move left or right to try and align. Sign is determined from what side of the screen the current spiral is on.
-            await self.go(
-                self.move().left(
-                    TRANSLATION_STEP * (current_error / abs(current_error)),
-                ),
-                speed=SPEED,
-            )
-
-            # Before we loop again set the prev error to the current
-            prev_error = current_error
+        await self.go(self.move().left(strafe_est), speed=SPEED)
 
     async def enterGate(self):
         "This estimate the distance to enter the gate and enters it"
