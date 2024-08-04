@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
+  <arg name="sub" default="sub8"/>
+  
   <!-- To run in simulated mode, set /is_simulation param True -->
-  <node pkg="mil_usb_to_can" type="sub8_driver.py" name="usb_to_can_driver">
+  <node pkg="mil_usb_to_can" type="$(arg sub)_driver.py" name="usb_to_can_driver">
     <rosparam command="delete" />
     <rosparam>
     # Path of serial device

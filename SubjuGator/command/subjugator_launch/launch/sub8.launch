@@ -23,7 +23,9 @@
     <arg name="environment" value="$(arg environment)" />
   </include>
 
-  <include file="$(find subjugator_launch)/launch/can.launch" />
+  <include file="$(find subjugator_launch)/launch/can.launch">
+    <arg name="sub" value="$(arg sub)"/>
+  </include>
 
   <!-- Parameters for course-specific geometry -->
   <group ns="course">
