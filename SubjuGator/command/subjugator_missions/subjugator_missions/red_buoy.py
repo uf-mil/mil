@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+import math
+
 from vision_stack.msg import ObjectDetections
 
 from .sub_singleton import SubjuGatorMission
@@ -25,6 +27,11 @@ AT_DISTANCE = 1.1  # meters
 KNOWN_WIDTH = 240.7  # pixels
 KNOWN_HEIGHT = 337.0  # pixels
 
+FACTOR_OF_YAW = 0.000966284117592
+
+FOV = 1.2  # radians or 50.42 degrees
+V_FOV = 0.57  # radians or 32.7 degrees
+
 
 class RedBuoyCirculation(SubjuGatorMission):
     async def run(self, args):
@@ -33,18 +40,21 @@ class RedBuoyCirculation(SubjuGatorMission):
             "/yolo_detections/1/objectDetection_last_2/analysis",
             ObjectDetections,
         )
+
         await self.detections_sub.setup()
+
+        # await self.analyze_yaw()
 
         # Await till we get a detection of the red buoy / search for buoy by yawing left and right
         await self.find_buoy()
 
         # Align sub with red buoy in the center
-        await self.align_self_with_buoy()
+        await self.align_to_buoy()
 
-        # Approach buoy until area is within the ideal percent area
+        # # Approach buoy until area is within the ideal percent area
         await self.approach_buoy()
 
-        # Begin circling the buoy clockwise
+        # # Begin circling the buoy clockwise
         await self.circle_buoy()
 
         print("Done!")
@@ -102,6 +112,104 @@ class RedBuoyCirculation(SubjuGatorMission):
                     self.move().yaw_right_deg(scan_angle).zero_roll_and_pitch(),
                     speed=SPEED_LIMIT_YAW,
                 )
+
+    async def analyze_yaw(self):
+        did_start = False
+        start_diff = 0
+        start_vertcial_diff = 0
+
+        while True:
+            detections = await self.detections_sub.get_next_message()
+            detections = detections.detections
+
+            # Extract buoy detection
+            if detections and len(detections) > 0:
+
+                # Check if buoy was one of the detections
+                for detection in detections:
+
+                    if detection.class_name == "Red buoy" and not did_start:
+
+                        # Log the starting distance from center of the buoy
+                        start_diff = FRAME_WIDTH / 2 - detection.center_x
+                        start_vertcial_diff = FRAME_HEIGHT / 2 - detection.center_y
+                        did_start = True
+
+                        # Print out the difference
+                        print(start_diff, detection.center_x - FRAME_WIDTH / 2)
+                        print("Predicted yaw offset:", (start_diff / FRAME_WIDTH) * FOV)
+
+                        # Print out the vertical difference
+                        print(
+                            start_vertcial_diff,
+                            detection.center_y - FRAME_HEIGHT / 2,
+                        )
+                        print(
+                            "Predicted vertcial offsert: ",
+                            math.tan((detection.height / FRAME_HEIGHT) * V_FOV)
+                            * (detection.center_y - FRAME_HEIGHT / 2)
+                            * 0.009,
+                        )
+
+    async def align_to_buoy(self):
+        did_start = False
+        start_diff = 0
+        start_vertcial_diff = 0
+
+        while True:
+            detections = await self.detections_sub.get_next_message()
+            detections = detections.detections
+
+            # Extract buoy detection
+            if detections and len(detections) > 0:
+
+                # Check if buoy was one of the detections
+                for detection in detections:
+
+                    if detection.class_name == "Red buoy" and not did_start:
+
+                        # Align to buoy
+                        start_diff = FRAME_WIDTH / 2 - detection.center_x
+                        start_vertcial_diff = FRAME_HEIGHT / 2 - detection.center_y
+                        did_start = True
+
+                        # Move once
+                        await self.go(
+                            self.move()
+                            .yaw_left((start_diff / FRAME_WIDTH) * FOV)
+                            .zero_roll_and_pitch(),
+                            speed=SPEED_LIMIT,
+                        )
+
+                        vertical_shift_down = (
+                            math.tan((1 - detection.height / FRAME_HEIGHT) * V_FOV)
+                            * (detection.center_y - FRAME_HEIGHT / 2)
+                            * 0.004
+                        )
+
+                        await self.go(
+                            self.move().down(vertical_shift_down).zero_roll_and_pitch(),
+                            speed=SPEED_LIMIT,
+                        )
+
+                        # Print out the difference
+                        print(start_diff, detection.center_x - FRAME_WIDTH / 2)
+                        print(
+                            "Predicted yaw offset:",
+                            (start_diff / FRAME_WIDTH) * FOV,
+                        )
+
+                        # Print out the vertical difference
+                        print(
+                            start_vertcial_diff,
+                            detection.center_y - FRAME_HEIGHT / 2,
+                        )
+                        print("Predicted vertcial offsert: ", vertical_shift_down)
+
+            if did_start:
+                break
+            else:
+                await self.find_buoy()
 
     async def align_self_with_buoy(self):
         print("Aligning to Buoy")
@@ -183,8 +291,12 @@ class RedBuoyCirculation(SubjuGatorMission):
         print("Approaching the Buoy")
         percent_width = (self.found_width / FRAME_WIDTH) * 100
         distance_move = 0.1
+        move_time = 0
 
         while True:
+            if move_time == 2:
+                break
+
             if (
                 percent_width < IDEAL_PERCENT_AREA + PERCENT_ERROR
                 and percent_width > IDEAL_PERCENT_AREA - PERCENT_ERROR
@@ -222,6 +334,8 @@ class RedBuoyCirculation(SubjuGatorMission):
                             print(detection.width)
                             break
 
+            move_time += 1
+
     async def circle_buoy(self):
         print("Circling the Buoy")
         distance_per_side = 0.5
@@ -250,6 +364,6 @@ class RedBuoyCirculation(SubjuGatorMission):
                 speed=SPEED_LIMIT_YAW,
             )
 
-            await self.align_self_with_buoy()
+            await self.align_to_buoy()
 
             await self.approach_buoy()

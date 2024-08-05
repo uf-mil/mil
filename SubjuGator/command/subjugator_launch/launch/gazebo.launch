@@ -4,8 +4,8 @@
   <arg name="simulate_cams" default="true" />
   <arg name="sub" default="sub8" />
   <arg name="world_file" default="robosub_2024.world"/>
-  <arg name="spawn_x" default="-6"/>
-  <arg name="spawn_y" default="-10"/>
+  <arg name="spawn_x" default="-9"/>
+  <arg name="spawn_y" default="-2"/>
   <arg name="spawn_z" default="0"/>
   <arg name="spawn_yaw_rad" default="0"/>
 
