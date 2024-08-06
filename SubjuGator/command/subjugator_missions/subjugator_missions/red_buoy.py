@@ -32,6 +32,8 @@ FACTOR_OF_YAW = 0.000966284117592
 FOV = 1.2  # radians or 50.42 degrees
 V_FOV = 0.57  # radians or 32.7 degrees
 
+DISTANCE_FACTOR = 182  # factor for the function c/x that relates width of the bounding box to the distance
+
 
 class RedBuoyCirculation(SubjuGatorMission):
     async def run(self, args):
@@ -51,10 +53,10 @@ class RedBuoyCirculation(SubjuGatorMission):
         # Align sub with red buoy in the center
         await self.align_to_buoy()
 
-        # # Approach buoy until area is within the ideal percent area
+        # Approach buoy until area is within the ideal percent area
         await self.approach_buoy()
 
-        # # Begin circling the buoy clockwise
+        # Begin circling the buoy clockwise
         await self.circle_buoy()
 
         print("Done!")
@@ -151,6 +153,8 @@ class RedBuoyCirculation(SubjuGatorMission):
                             * 0.009,
                         )
 
+                        print("Width of buoy: ", detection.width)
+
     async def align_to_buoy(self):
         did_start = False
         start_diff = 0
@@ -172,6 +176,7 @@ class RedBuoyCirculation(SubjuGatorMission):
                         start_diff = FRAME_WIDTH / 2 - detection.center_x
                         start_vertcial_diff = FRAME_HEIGHT / 2 - detection.center_y
                         did_start = True
+                        self.found_width = detection.width
 
                         # Move once
                         await self.go(
@@ -288,7 +293,7 @@ class RedBuoyCirculation(SubjuGatorMission):
         print("Finished aligning self")
 
     async def approach_buoy(self):
-        print("Approaching the Buoy")
+        print("Approaching the Buoy: ", DISTANCE_FACTOR / self.found_width)
         percent_width = (self.found_width / FRAME_WIDTH) * 100
         distance_move = 0.1
         move_time = 0
@@ -327,9 +332,10 @@ class RedBuoyCirculation(SubjuGatorMission):
 
                             distance_move = (
                                 (KNOWN_WIDTH / detection.width) * AT_DISTANCE
-                            ) * 0.5 - 0.5
+                            ) * 0.5 - 0.2
 
                             percent_width = ((detection.width) / FRAME_WIDTH) * 100
+                            self.found_width = detection.width
 
                             print(detection.width)
                             break
@@ -337,9 +343,17 @@ class RedBuoyCirculation(SubjuGatorMission):
             move_time += 1
 
     async def circle_buoy(self):
-        print("Circling the Buoy")
-        distance_per_side = 0.5
+
+        await self.align_to_buoy()
+
         yaw_angle = 180 * (SIDES - 2) / SIDES - 90
+        distance_from_buoy = DISTANCE_FACTOR / self.found_width
+        distance_per_side = 2 * (
+            math.tan(math.radians(yaw_angle / 2)) * distance_from_buoy
+        )
+
+        print("Circling the Buoy", SIDES, yaw_angle, distance_per_side)
+
         print(yaw_angle)
         for i in range(SIDES + 1):
 
@@ -364,6 +378,6 @@ class RedBuoyCirculation(SubjuGatorMission):
                 speed=SPEED_LIMIT_YAW,
             )
 
-            await self.align_to_buoy()
+            # await self.align_to_buoy()
 
-            await self.approach_buoy()
+            # await self.approach_buoy()
