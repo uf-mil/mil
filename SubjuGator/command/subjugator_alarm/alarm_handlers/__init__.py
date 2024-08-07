@@ -4,4 +4,5 @@ from .hw_kill import HwKill
 from .kill import Kill
 from .network_loss import NetworkLoss
 from .odom_kill import OdomKill
+from .temp import Temperature
 from .thruster_out import ThrusterOut

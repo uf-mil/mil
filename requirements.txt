@@ -39,6 +39,9 @@ pygments==2.17.2
 # External Devices
 pyserial==3.5
 
+# Drivers
+psutil==5.5.1
+
 # Linting
 black==24.3.0
 modernize==0.8.0 # This can be removed after Noetic Migration is complete.
