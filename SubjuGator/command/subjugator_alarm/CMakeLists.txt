@@ -20,3 +20,8 @@ catkin_package(
   # INCLUDE_DIRS include
   # LIBRARIES ${PROJECT_NAME}
 )
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest(test/temp.test)
+endif()

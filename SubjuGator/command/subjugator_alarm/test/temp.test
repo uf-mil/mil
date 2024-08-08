@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <param name="/is_simulation" value="True" />
+    <param name="/subjugator_alarm_temp_test_flag" value="True" />
+    <include file="$(find subjugator_alarm)/launch/alarms.launch" />
+    <test test-name="temp_alarm_test" pkg="subjugator_alarm" type="temp_test.py" />
+</launch>
