@@ -113,12 +113,16 @@ class ThrusterAndKillBoard(CANDeviceHandle):
                 )
                 continue
             # Map commanded thrust (in newetons) to effort value (-1 to 1)
+            print('thrust -->', cmd.thrust)
             effort = self.thrusters[cmd.name].effort_from_thrust(cmd.thrust)
+            print('effort from thrust', effort)
             # Send packet to command specified thruster the specified force
             packet = ThrustPacket.create_thrust_packet(
                 self.name_to_id[cmd.name],
                 effort,
             )
+            if b"\xC1\xC0" in bytes(packet)[1:-1]:
+                continue
             self.send_data(bytes(packet), can_id=THRUST_SEND_ID)
 
     def update_hw_kill(self, status: StatusMessage) -> None:

@@ -30,7 +30,7 @@ class RedBuoyCirculation(SubjuGatorMission):
     async def run(self, args):
         # Subscribe to object detection message from detections
         self.detections_sub = self.nh.subscribe(
-            "/yolo_detections/1/objectDetection_last_2/analysis",
+            "/yolo_detections/1/objectDetection_rsub24_v4_1_2/analysis",
             ObjectDetections,
         )
         await self.detections_sub.setup()
@@ -109,8 +109,8 @@ class RedBuoyCirculation(SubjuGatorMission):
         center_y = self.found_center_y
         width = self.found_width
 
-        x_move = 0.1
-        y_move = 0.1
+        x_move = 0.5
+        y_move = 0.5
 
         while True:
             if (

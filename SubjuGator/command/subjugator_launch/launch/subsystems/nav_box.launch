@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <arg name="environment" default="real" />
-  <arg name="dvl" default="True" />
-  <arg name="imu" default="True" />
+  <arg name="environment" default="real" /> <arg name="dvl" default="True" /> <arg name="imu" default="True" />
   <arg name="depth" default="True" />
 <!-- DVL -->
   <group if="$(eval dvl and environment == 'real')">
@@ -38,19 +36,19 @@
           <param name="frame_id" type="string" value="imu"/>
           <rosparam>
                 scale:
-                - - 1.0455639145162294
-                  - 0.024134728657724536
-                  - 0.04220178676688619
-                - - 0.024134728657724612
-                  - 0.9807891159941323
-                  - 0.03248681988136831
-                - - 0.04220178676688623
-                  - 0.03248681988136816
-                  - 0.9784259487038494
+                - - 1.1062758626220242
+                  - -0.028009777141301265
+                  - -0.02149047334986777
+                - - -0.02800977714130123
+                  - 0.9586858114380179
+                  - 0.004778755230769804
+                - - -0.02149047334986775
+                  - 0.004778755230769747
+                  - 0.9440225372567164
                 shift:
-                - -0.12110903007785213
-                - 0.19930485675652404
-                - -0.04209190920512937
+                - -0.21447364299513154
+                - 0.3817478172486945
+                - -0.9233526533964265
           </rosparam>
     </node>
 

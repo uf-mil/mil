@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from threading import Lock
 
-# from mil_tools import hexify
+from mil_tools import hexify
 from typing import Optional
 
 import serial

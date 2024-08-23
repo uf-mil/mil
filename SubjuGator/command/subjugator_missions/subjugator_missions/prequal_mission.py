@@ -12,6 +12,7 @@ from .sub_singleton import SubjuGatorMission
 SPEED_LIMIT = 0.25  # m/s
 VERTICAL_SPEED_LIMIT = 0.1 #m/s
 YAW_SPEED_LIMIT = 0.3
+SLEEP_TIME = 2
 
 
 class PrequalMission(SubjuGatorMission):
@@ -27,10 +28,9 @@ class PrequalMission(SubjuGatorMission):
         # await self.image_debug_pub.setup()
 
         # submerge submarine
-        SLEEP_TIME = 6
         # await self.nh.sleep(SLEEP_TIME)
-        down = self.move().down(0.7).zero_roll_and_pitch()
-        forward = down.forward(9.5).zero_roll_and_pitch()
+        down = self.move().down(0.7)
+        forward = down.forward(9.5)
         await self.go(down, speed=VERTICAL_SPEED_LIMIT)
         await self.nh.sleep(SLEEP_TIME * 2)
 

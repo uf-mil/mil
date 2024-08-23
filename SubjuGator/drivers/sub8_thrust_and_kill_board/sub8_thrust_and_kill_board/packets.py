@@ -259,7 +259,8 @@ class ThrustPacket(ApplicationPacket):
             thruster_id (int): The ID of the thruster to create a packet for.
             command (float): The command to associate with the packet.
         """
-        payload = struct.pack("=Bf", thruster_id, command)
+        print('packing', command)
+        payload = struct.pack("<Bf", thruster_id, command)
         return cls(cls.IDENTIFIER, payload)
 
     @property

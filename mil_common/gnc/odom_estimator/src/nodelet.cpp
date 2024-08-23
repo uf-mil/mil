@@ -42,8 +42,8 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg, Vec<3> last_
   Vec<3> accel_body = xyz2vec(msg.linear_acceleration);
   Quaternion orient_eci = triad(predicted_accelerometer_eci, mag_eci, accel_body, last_mag);
 
-  Vec<State::RowsAtCompileTime> stdev = (Vec<State::RowsAtCompileTime>(18) << 100, 100, 100, 100, 100, 100, .05, .05,
-                                         .05, 10, 10, 10, 1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2)
+  Vec<State::RowsAtCompileTime> stdev = (Vec<State::RowsAtCompileTime>(18) << 100, 100, 100, 200, 200, 200, .06, .06,
+                                         .06, 10, 10, 10, 1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2)
                                             .finished();
   SqMat<State::RowsAtCompileTime> tmp = stdev.asDiagonal();
 

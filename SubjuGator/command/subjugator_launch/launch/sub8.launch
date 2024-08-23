@@ -16,7 +16,9 @@
     <arg name="sub" value="$(arg sub)"/>
   </include>
 
-  <include if="$(eval environment != 'dynsim')" file="$(find subjugator_launch)/launch/subsystems/nav_box.launch" > <!--USE nav_box.launch for Cameron's USB-TCP driver OR nav_box_alt.launch for Daniel's ASCII parsing Driver -->
+  <!--USE nav_box.launch for Cameron's USB-TCP driver OR nav_box_alt.launch for Daniel's ASCII parsing Driver -->
+
+  <include if="$(eval environment != 'dynsim')" file="$(find subjugator_launch)/launch/subsystems/nav_box.launch" >
     <arg name="imu" value="true" />
     <arg name="dvl" value="true" />
     <arg name="depth" value="true" />
