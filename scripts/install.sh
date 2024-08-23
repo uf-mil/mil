@@ -251,7 +251,8 @@ mil_user_install_dependencies() {
 		ripgrep \
 		fzf \
 		aptitude \
-		lm-sensors
+		lm-sensors \
+		ros-noetic-rosbridge-server
 }
 
 # Add line to user's bashrc which source the repo's setup files
