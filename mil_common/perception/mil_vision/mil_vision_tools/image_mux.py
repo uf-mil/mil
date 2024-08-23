@@ -82,7 +82,7 @@ class ImageMux:
         self.size = np.array(size, dtype=np.uint)
         self.shape = np.array(shape, dtype=np.uint)
         self.keep_ratio = keep_ratio
-        self.pane_size = np.array(self.size / self.shape, dtype=np.int)
+        self.pane_size = np.array(self.size / self.shape, dtype=int)
         self.border_color = border_color
         self.border_thickness = border_thickness
         self.text_color = text_color
