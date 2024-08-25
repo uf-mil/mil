@@ -133,6 +133,10 @@ cm() {
 	fi
 }
 
+autopush() {
+	git push origin +"${1:-HEAD}":refs/heads/cameron-autopush-"$(uuidgen --random | cut -c1-8)"-citmp
+}
+
 alias xbox=startxbox
 
 # PYTHONPATH modifications
