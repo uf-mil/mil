@@ -134,7 +134,7 @@ cm() {
 }
 
 autopush() {
-	git push origin +"${1:-HEAD}":refs/heads/cameron-autopush-"$(uuidgen --random | cut -c1-8)"-citmp
+	git push origin +"${1:-HEAD}":refs/heads/autopush-cameron-"$(uuidgen --random | cut -c1-8)"-citmp
 }
 
 alias xbox=startxbox
