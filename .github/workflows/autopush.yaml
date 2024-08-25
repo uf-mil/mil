@@ -1,0 +1,98 @@
+---
+name: Autopush
+
+# yamllint disable-line rule:truthy
+on: [push]
+  # push:
+  #   branches:
+  #     - autopush-*
+
+# Cancels this run if a new one referring to the same object and same workflow
+# is requested
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The version of caching we are using. This can be upgraded if we
+  # significantly change CI to the point where old caches become irrelevant.
+  CACHE_VERSION: 0
+  # Default Python version. Noetic defaults to 3.8.
+  DEFAULT_PYTHON: 3.8
+  # Location of the pre-commit cache. This is set by pre-commit, not us!
+  PRE_COMMIT_CACHE: ~/.cache/pre-commit
+
+jobs:
+  pre-commit:
+    name: Run pre-commit
+    runs-on: ubuntu-latest
+    if: github.event.sender.login == 'cbrxyz'
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+        with:
+          submodules: recursive
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        uses: actions/setup-python@v4.1.0
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          cache: "pip"
+      - name: Install pre-commit hooks
+        run: |
+          python --version
+          pip install "$(cat requirements.txt | grep pre-commit)"
+      - name: Generate pre-commit cache key
+        id: pre-commit_cache_key
+        run: >
+          echo "::set-output
+          name=key::${{ env.CACHE_VERSION }}-${{ env.DEFAULT_PYTHON }}-${{
+          hashFiles('.pre-commit-config.yaml') }}"
+      - name: Restore base pre-commit environment
+        id: cache-pre-commmit
+        uses: actions/cache@v3.0.4
+        with:
+          path: ${{ env.PRE_COMMIT_CACHE }}
+          key: >
+            ${{ runner.os
+            }}-pre-commit-${{ steps.pre-commit_cache_key.outputs.key }}
+      - name: Install pre-commit dependencies if no cache
+        if: steps.cache-precommit.outputs.cache-hit != 'true'
+        run: |
+          pre-commit install-hooks
+      - name: Run pre-commit
+        run: |
+          pre-commit run --all-files --show-diff-on-failure
+
+  autopush:
+    name: Autopush changes
+    needs: [pre-commit]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for tests to succeed
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'Run tests and build docs'
+          repo-token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
+          wait-interval: 10
+
+      - name: Check out code from GitHub
+        uses: actions/checkout@v3.0.2
+        with:
+          submodules: recursive
+          token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
+          ref: ${{ github.event.ref }}
+          fetch-depth: 0
+
+      - name: Create commit
+        run: |
+          git fetch
+          git config --global user.name \
+            "$(git --no-pager log --format=format:'%an' -n 1)"
+          git config --global user.email \
+            "$(git --no-pager log --format=format:'%ae' -n 1)"
+          git rebase origin/main || cat .github/workflows/autopush.yaml
+          git checkout main
+          git branch
+          git merge --ff-only ${{ github.event.ref }}
+          # git push
