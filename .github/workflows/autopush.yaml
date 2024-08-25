@@ -96,3 +96,4 @@ jobs:
           git branch
           git merge --ff-only ${{ github.event.ref }}
           git push
+          git push -d origin ${{ github.event.ref }}
