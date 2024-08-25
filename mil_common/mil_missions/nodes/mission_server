@@ -10,6 +10,7 @@ import traceback
 import types
 
 import axros
+import rospy
 import uvloop
 from axros import NodeHandle, Service, action, util
 from mil_missions.msg import DoMissionAction, DoMissionFeedback, DoMissionResult
@@ -188,13 +189,23 @@ class MissionRunner:
         print(message)
         self.server.publish_feedback(feedback)
 
-    def do_new_mission(self):
+    async def do_new_mission(self):
         """
         Accept a new goal and start running it
         """
         if not self.server.is_new_goal_available():
             return
         goal = self.server.accept_new_goal()
+        start = self.nh.get_time()
+        wait = rospy.Duration(5)
+        while not self.missions and (self.nh.get_time() - start) < wait:
+            await self.nh.sleep(0.1)
+        if not self.missions:
+            print(f"TASK RUNNER: no missions have been loaded after {wait.secs} secs")
+            self.server.set_aborted(
+                result=DoMissionResult(success=False, result="no missions loaded"),
+            )
+            return
         if not self.has_mission(goal.mission):
             print(f"TASK RUNNER: unrecognized mission '{goal.mission}'")
             self.server.set_aborted(
@@ -237,7 +248,7 @@ class MissionRunner:
         ):
             self.mission_future.cancel()
         # Try to accept a new mission
-        self.do_new_mission()
+        self.new_mission_task = asyncio.create_task(self.do_new_mission())
 
     def mission_finished_cb(self, task: asyncio.Task):
         """
