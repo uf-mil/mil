@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>robot_gui_bridge</name>
   <version>0.0.0</version>
   <description>The robot_gui_bridge package</description>
@@ -44,7 +44,7 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <exec_depend>rosbridge_server</exec_depend>
+  <depend>rosbridge_server</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
