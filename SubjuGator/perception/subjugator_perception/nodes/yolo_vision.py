@@ -17,7 +17,7 @@ VERBOSE = True
 
 class YoloVision:
     def __init__(self):
-        path_to_weights = "/home/zobelisk/mil_weights/last.pt"
+        path_to_weights = "/home/mil/mil_weights/last.pt"
         class_names = [
             "Bin",
             "Bin blue",
