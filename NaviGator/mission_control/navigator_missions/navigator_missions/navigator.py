@@ -21,7 +21,7 @@ from mil_missions_core import BaseMission
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from mil_passive_sonar import TxHydrophonesClient
 from mil_pneumatic_actuator.srv import SetValve, SetValveRequest
-from mil_poi import TxPOIClient
+from mil_poi import AsyncPOIClient
 from nav_msgs.msg import Odometry
 from navigator_path_planner.msg import MoveAction, MoveGoal
 from navigator_tools import MissingPerceptionObject
@@ -192,7 +192,7 @@ class NaviGatorMission(BaseMission):
 
         cls.hydrophones = TxHydrophonesClient(cls.nh)
 
-        cls.poi = TxPOIClient(cls.nh)
+        cls.poi = AsyncPOIClient(cls.nh)
         await cls.poi.setup()
 
         cls._grinch_lower_time = await cls.nh.get_param("~grinch_lower_time")

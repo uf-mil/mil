@@ -36,9 +36,9 @@ POIServer
 .. autoclass:: mil_poi.POIServer
     :members:
 
-TxPOIClient
+AsyncPOIClient
 ^^^^^^^^^^^
-.. attributetable:: mil_poi.TxPOIClient
+.. attributetable:: mil_poi.AsyncPOIClient
 
-.. autoclass:: mil_poi.TxPOIClient
+.. autoclass:: mil_poi.AsyncPOIClient
     :members:
