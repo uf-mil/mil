@@ -10,7 +10,7 @@ from mil_ros_tools.msg_helpers import rosmsg_to_numpy
 from mil_poi.msg import POIArray
 
 
-class TxPOIClient:
+class AsyncPOIClient:
     """
     Client for getting the positions of POIs in a POI server.
     """

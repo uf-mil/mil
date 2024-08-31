@@ -37,5 +37,5 @@ it needs to interact with.
         Markers panel needs to be set to this topic.
 """
 
+from .async_interface import AsyncPOIClient
 from .server import POIServer
-from .tx_interface import TxPOIClient
