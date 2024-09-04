@@ -293,7 +293,7 @@ mil_user_setup_rc() {
 # catkin_init_workspace is superfluous, catkin_make is all you need
 mil_user_setup_init_catkin() {
 	mkdir -p "$CATKIN_SOURCE_DIR"
-	catkin_make -C "$CATKIN_DIR"
+	catkin_make "-j$(nproc)" -C "$CATKIN_DIR"
 }
 
 cat <<EOF

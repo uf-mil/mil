@@ -71,6 +71,9 @@ class Image_Publisher:
         self.encoding = encoding
         self.im_pub = rospy.Publisher(topic, Image, queue_size=queue_size)
 
+    def get_num_connections(self) -> int:
+        return self.im_pub.get_num_connections()
+
     def publish(self, cv_image: np.ndarray):
         """
         Publishes an OpenCV image mat to the ROS topic. :class:`CvBridgeError`
