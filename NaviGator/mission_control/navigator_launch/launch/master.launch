@@ -31,4 +31,7 @@
     <include file="$(find navigator_launch)/launch/poi.launch">
       <arg name="simulation" value="$(arg simulation)" />
     </include>
+
+    <!-- Websocket for GUI -->
+    <include file="$(find robot_gui_bridge)/launch/websocket.launch"></include>
 </launch>
