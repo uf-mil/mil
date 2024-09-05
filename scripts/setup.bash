@@ -133,8 +133,19 @@ cm() {
 	fi
 }
 
+# potentially borrowed from forrest
 autopush() {
 	git push origin +"${1:-HEAD}":refs/heads/autopush-cameron-"$(uuidgen --random | cut -c1-8)"-citmp
+}
+
+# uhhh maybe also borrowed from forrest
+cw() {
+	git add -u
+	git commit -m "work"
+}
+
+dmb() {
+	git diff "$(git merge-base --fork-point "$(git branch -l main master --format '%(refname:short)')" HEAD)"
 }
 
 alias xbox=startxbox
