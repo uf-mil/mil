@@ -50,7 +50,7 @@ from navigator_robotx_comms.navigator_robotx_comms import (
     RobotXUAVSearchReportMessage,
 )
 from ros_alarms import AlarmListener
-from ros_alarms.msg import Alarm
+from ros_alarms_msgs.msg import Alarm
 from std_msgs.msg import String
 
 lock = threading.Lock()
@@ -266,7 +266,8 @@ class RobotXStartServices:
         self.robotx_client.send_message(message)
 
     def handle_entrance_exit_gate_message(
-        self, data: MessageEntranceExitGateRequest
+        self,
+        data: MessageEntranceExitGateRequest,
     ) -> MessageEntranceExitGateResponse:
         """
         Handles requests to make messages to use in the Entrance and Exit Gate
@@ -286,14 +287,19 @@ class RobotXStartServices:
         self.time_last_entrance_exit = rospy.get_time()
         aedt_date_time = self.get_aedt_date_time()
         message = self.robotx_entrance_exit_gate_message.to_string(
-            self.delim, self.team_id, aedt_date_time, data, self.use_test_data
+            self.delim,
+            self.team_id,
+            aedt_date_time,
+            data,
+            self.use_test_data,
         )
 
         self.robotx_client.send_message(message)
         return MessageEntranceExitGateResponse(message)
 
     def handle_follow_path_message(
-        self, data: MessageFollowPathRequest
+        self,
+        data: MessageFollowPathRequest,
     ) -> MessageFollowPathResponse:
         """
         Handles requests to make messages to use in the Follow Path Mission
@@ -312,14 +318,19 @@ class RobotXStartServices:
         self.time_last_follow_path = rospy.get_time()
         aedt_date_time = self.get_aedt_date_time()
         message = self.robotx_follow_path_message.to_string(
-            self.delim, self.team_id, aedt_date_time, data, self.use_test_data
+            self.delim,
+            self.team_id,
+            aedt_date_time,
+            data,
+            self.use_test_data,
         )
 
         self.robotx_client.send_message(message)
         return MessageFollowPathResponse(message)
 
     def handle_react_report_message(
-        self, data: MessageReactReportRequest
+        self,
+        data: MessageReactReportRequest,
     ) -> MessageReactReportResponse:
         """
         Handles requests to make messages to use in the React Report Mission
@@ -338,7 +349,11 @@ class RobotXStartServices:
         self.time_last_react_report = rospy.get_time()
         aedt_date_time = self.get_aedt_date_time()
         message = self.robotx_react_report_message.to_string(
-            self.delim, self.team_id, aedt_date_time, data, self.use_test_data
+            self.delim,
+            self.team_id,
+            aedt_date_time,
+            data,
+            self.use_test_data,
         )
 
         self.robotx_client.send_message(message)
@@ -363,12 +378,17 @@ class RobotXStartServices:
         self.time_last_scan_code = rospy.get_time()
         aedt_date_time = self.get_aedt_date_time()
         message = self.robotx_scan_code_message.to_string(
-            self.delim, self.team_id, aedt_date_time, color_pattern, self.use_test_data
+            self.delim,
+            self.team_id,
+            aedt_date_time,
+            color_pattern,
+            self.use_test_data,
         )
         self.robotx_client.send_message(message)
 
     def handle_detect_dock_message(
-        self, data: MessageDetectDockRequest
+        self,
+        data: MessageDetectDockRequest,
     ) -> MessageDetectDockResponse:
         """
         Handles requests to make messages to use in the Detect Dock Mission
@@ -387,14 +407,19 @@ class RobotXStartServices:
         self.time_last_detect_dock = rospy.get_time()
         aedt_date_time = self.get_aedt_date_time()
         message = self.robotx_detect_dock_message.to_string(
-            self.delim, self.team_id, aedt_date_time, data, self.use_test_data
+            self.delim,
+            self.team_id,
+            aedt_date_time,
+            data,
+            self.use_test_data,
         )
 
         self.robotx_client.send_message(message)
         return MessageDetectDockResponse(message)
 
     def handle_find_fling_message(
-        self, data: MessageFindFlingRequest
+        self,
+        data: MessageFindFlingRequest,
     ) -> MessageFindFlingResponse:
         """
         Handles requests to make messages to use in the Find Fling Mission
@@ -413,14 +438,19 @@ class RobotXStartServices:
         self.time_last_find_fling = rospy.get_time()
         aedt_date_time = self.get_aedt_date_time()
         message = self.robotx_find_fling_message.to_string(
-            self.delim, self.team_id, aedt_date_time, data, self.use_test_data
+            self.delim,
+            self.team_id,
+            aedt_date_time,
+            data,
+            self.use_test_data,
         )
 
         self.robotx_client.send_message(message)
         return MessageFindFlingResponse(message)
 
     def handle_uav_replenishment_message(
-        self, data: MessageUAVReplenishmentRequest
+        self,
+        data: MessageUAVReplenishmentRequest,
     ) -> MessageUAVReplenishmentResponse:
         """
         Handles requests to make messages to use in the UAV Replenishment Mission
@@ -439,14 +469,19 @@ class RobotXStartServices:
         self.time_last_uav_replenishment = rospy.get_time()
         aedt_date_time = self.get_aedt_date_time()
         message = self.robotx_uav_replenishment_message.to_string(
-            self.delim, self.team_id, aedt_date_time, data, self.use_test_data
+            self.delim,
+            self.team_id,
+            aedt_date_time,
+            data,
+            self.use_test_data,
         )
 
         self.robotx_client.send_message(message)
         return MessageUAVReplenishmentResponse(message)
 
     def handle_uav_search_report_message(
-        self, data: MessageUAVSearchReportRequest
+        self,
+        data: MessageUAVSearchReportRequest,
     ) -> MessageUAVSearchReportResponse:
         """
         Handles requests to make messages to use in the UAV Search Report Mission
@@ -465,7 +500,11 @@ class RobotXStartServices:
         self.time_last_uav_search_report = rospy.get_time()
         aedt_date_time = self.get_aedt_date_time()
         message = self.robotx_uav_search_report_message.to_string(
-            self.delim, self.team_id, aedt_date_time, data, self.use_test_data
+            self.delim,
+            self.team_id,
+            aedt_date_time,
+            data,
+            self.use_test_data,
         )
 
         self.robotx_client.send_message(message)
@@ -530,9 +569,7 @@ class RobotXClient:
         """
         if not self.connected:
             rospy.loginfo(
-                "Attempting Connection to TD Server at {}:{}".format(
-                    self.tcp_ip, self.tcp_port
-                )
+                f"Attempting Connection to TD Server at {self.tcp_ip}:{self.tcp_port}",
             )
         while not self.connected and not rospy.is_shutdown():
             # recreate socket

@@ -101,9 +101,7 @@ class RosVideoPlayer:
                 self.roi_width_cb,
             )
         rospy.loginfo(
-            "Playing {} at {}fps starting at frame {} ({} Total Frames)".format(
-                self.filename, self.fps, self.start_frame, self.num_frames
-            )
+            f"Playing {self.filename} at {self.fps}fps starting at frame {self.start_frame} ({self.num_frames} Total Frames)",
         )
 
     def run(self):
@@ -111,7 +109,7 @@ class RosVideoPlayer:
         while not rospy.is_shutdown() and self.cap.isOpened() and not self.ended:
             if self.slider:
                 k = cv2.waitKey(1) & 0xFF
-                if not k == self.last_key:
+                if k != self.last_key:
                     self.last_key = k
                     if k == 27:
                         return
@@ -147,7 +145,8 @@ class RosVideoPlayer:
             y1 = self.roi_y_offset
             y2 = y1 + self.roi_height
             frame_roied = frame[
-                y1 : min(y2, frame.shape[0]), x1 : min(x2, frame.shape[1])
+                y1 : min(y2, frame.shape[0]),
+                x1 : min(x2, frame.shape[1]),
             ]
             self.image_pub.publish(self.bridge.cv2_to_imgmsg(frame_roied, "bgr8"))
 

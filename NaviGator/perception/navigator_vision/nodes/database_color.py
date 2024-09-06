@@ -28,7 +28,6 @@ fprint = FprintFactory(title="COLORAMA", time=None).fprint
 
 
 class ImageHolder:
-
     image: Image | None
     time: rospy.Duration | None
 
@@ -60,7 +59,6 @@ class ImageHolder:
 
 
 class ImageHistory:
-
     _images: list[ImageHolder]
 
     def __init__(self, image_topic, history: int = 30):
@@ -90,7 +88,10 @@ class ImageHistory:
             self._images = self._images[-self._history_length :]
 
     def get_around_time(
-        self, time, margin: float = 0.5, timeout: float = 0.5
+        self,
+        time,
+        margin: float = 0.5,
+        timeout: float = 0.5,
     ) -> ImageHolder:
         """
         Returns the image that is closest to the specified time.
@@ -112,7 +113,11 @@ class ImageHistory:
 
 class DebugImage:
     def __init__(
-        self, topic: str, encoding: str = "bgr8", queue_size: int = 1, prd: float = 1
+        self,
+        topic: str,
+        encoding: str = "bgr8",
+        queue_size: int = 1,
+        prd: float = 1,
     ):
         self.bridge = CvBridge()
         self.encoding = encoding
@@ -131,7 +136,6 @@ class DebugImage:
 
 
 class Observation:
-
     history_length: int = 100  # Default to 100
     hues: deque
     values: deque
@@ -172,8 +176,9 @@ class Observation:
         _str = "hues: {}\nvalues: {}\ndists: {}\nq_errs: {}"
         return _str.format(
             *np.round(
-                map(np.array, [self.hues, self.values, self.dists, self.q_errs]), 3
-            )
+                map(np.array, [self.hues, self.values, self.dists, self.q_errs]),
+                3,
+            ),
         )
 
     def extend(self, params_tuple):
@@ -187,7 +192,10 @@ class Observation:
         self.q_errs.extend(q_diffs)
 
     def compute_confidence(
-        self, value_dist_q: list[float], get_conf: bool = False, **kwargs
+        self,
+        value_dist_q: list[float],
+        get_conf: bool = False,
+        **kwargs,
     ):
         """Don't try to compute weights with bad data (too few samples)"""
         (value_w, dist_w, q_diff_w) = value_dist_q
@@ -223,12 +231,11 @@ class Observation:
     def _guass(self, data, mean, sig):
         return np.exp(
             -np.power(np.array(data).astype(np.float64) - mean, 2)
-            / (2 * np.power(sig, 2))
+            / (2 * np.power(sig, 2)),
         )
 
 
 class Colorama:
-
     odom: np.ndarray | None
 
     def __init__(self):
@@ -237,7 +244,9 @@ class Colorama:
 
         self.tf_listener = tf.TransformListener()
         self.status_pub = rospy.Publisher(
-            "/database_color_status", ColoramaDebug, queue_size=1
+            "/database_color_status",
+            ColoramaDebug,
+            queue_size=1,
         )
 
         self.odom = None
@@ -261,7 +270,9 @@ class Colorama:
         while not rospy.is_shutdown():
             try:
                 camera_info_msg = rospy.wait_for_message(
-                    info_topic, CameraInfo, timeout=3
+                    info_topic,
+                    CameraInfo,
+                    timeout=3,
                 )
             except rospy.exceptions.ROSException:
                 rospy.sleep(1)
@@ -341,7 +352,8 @@ class Colorama:
         Returns an angular difference between q and target_q in radians
         """
         dq = trns.quaternion_multiply(
-            np.array(target_q), trns.quaternion_inverse(np.array(q))
+            np.array(target_q),
+            trns.quaternion_inverse(np.array(q)),
         )
         return 2 * np.arccos(dq[3])
 
@@ -365,9 +377,7 @@ class Colorama:
                 likely_color = color
 
         fprint(
-            "Likely color: {} with an hue error of {} rads.".format(
-                likely_color, np.round(error, 3)
-            )
+            f"Likely color: {likely_color} with an hue error of {np.round(error, 3)} rads.",
         )
         return [likely_color, error]
 
@@ -396,7 +406,9 @@ class Colorama:
         }
 
         w, weights = t_color.compute_confidence(
-            [self.v_factor, self.dist_factor, self.q_factor], True, **kwargs
+            [self.v_factor, self.dist_factor, self.q_factor],
+            True,
+            **kwargs,
         )
         fprint(f"CONF: {w}")
         if np.mean(w) < self.conf_reject:
@@ -453,11 +465,7 @@ class Colorama:
                     return
 
                 fprint(
-                    "No valid image found for t={} ({}) dt: {}".format(
-                        time_of_marker.to_sec(),
-                        t.to_sec(),
-                        (rospy.Time.now() - t).to_sec(),
-                    ),
+                    f"No valid image found for t={time_of_marker.to_sec()} ({t.to_sec()}) dt: {(rospy.Time.now() - t).to_sec()}",
                     msg_color="red",
                 )
                 return
@@ -469,7 +477,10 @@ class Colorama:
             try:
                 fprint(f"Getting transform between /enu and {cam_tf}...")
                 self.tf_listener.waitForTransform(
-                    "/enu", cam_tf, time_of_marker, ros_t(1)
+                    "/enu",
+                    cam_tf,
+                    time_of_marker,
+                    ros_t(1),
                 )
                 t_mat44 = self.tf_listener.asMatrix(cam_tf, header)
             except tf.ExtrapolationException as e:
@@ -503,14 +514,18 @@ class Colorama:
 
                 # Shove ones in there to make homogeneous points to get points in image frame
                 points_np_homo = np.hstack(
-                    (points_np, np.ones((points_np.shape[0], 1)))
+                    (points_np, np.ones((points_np.shape[0], 1))),
                 ).T
                 points_cam = t_mat44.dot(points_np_homo).T
                 points_px = map(self.camera_model.project3dToPixel, points_cam[:, :3])
 
                 [
                     cv2.circle(
-                        self.debug.image, tuple(map(int, p)), 2, (255, 255, 255), -1
+                        self.debug.image,
+                        tuple(map(int, p)),
+                        2,
+                        (255, 255, 255),
+                        -1,
                     )
                     for p in points_px
                 ]
@@ -554,14 +569,20 @@ class Colorama:
 
                     cmd = "{name}={rgb[0]},{rgb[1]},{rgb[2]},{_id}"
                     self.make_request(
-                        cmd=cmd.format(name=obj.name, _id=obj.id, rgb=rgb)
+                        cmd=cmd.format(name=obj.name, _id=obj.id, rgb=rgb),
                     )
 
                 bgr = rgb[::-1]
                 cv2.circle(self.debug.image, tuple(object_px), 10, bgr, -1)
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 cv2.putText(
-                    self.debug.image, str(obj.id), tuple(object_px), font, 1, bgr, 2
+                    self.debug.image,
+                    str(obj.id),
+                    tuple(object_px),
+                    font,
+                    1,
+                    bgr,
+                    2,
                 )
 
     def _get_solar_angle(self):
@@ -640,7 +661,7 @@ class Colorama:
 
         px = np.array(self.camera_model.project3dToPixel(object_point))
         resolution = self.camera_model.fullResolution()
-        return not (np.any([0, 0] > px) or np.any(px > resolution))
+        return not (np.any(px < [0, 0]) or np.any(px > resolution))
 
 
 if __name__ == "__main__":

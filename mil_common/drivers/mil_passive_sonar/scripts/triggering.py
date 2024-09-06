@@ -51,7 +51,6 @@ class HydrophoneTrigger:
     """
 
     def __init__(self):
-
         # Attributes about our general frequency range (all pinger live here)
         #  Frequency range garunteed to be relatively quiet except for the pingers (in Hz)
         self.general_lower = 15000  # lowest frequency pinger - 10 kHz
@@ -73,10 +72,12 @@ class HydrophoneTrigger:
             self.sub = rospy.Subscriber("samples", numpy_msg(Ping), self.hydrophones_cb)
         elif msg_type == "HydrophoneSamplesStamped":
             self.sub = rospy.Subscriber(
-                "samples", numpy_msg(HydrophoneSamplesStamped), self.hydrophones_cb
+                "samples",
+                numpy_msg(HydrophoneSamplesStamped),
+                self.hydrophones_cb,
             )
         else:
-            ROS_FATAL("sample_msg_type not supported")
+            rospy.logfatal("sample_msg_type not supported")
             return
         self.pub = rospy.Publisher("pings", numpy_msg(Triggered), queue_size=1)
         rospy.Service("~filter_debug_trigger", Trigger, self.filter_response)
@@ -95,7 +96,7 @@ class HydrophoneTrigger:
         self.enabled = rospy.get_param("~enable_on_launch")
 
         # Attributes about our target frequency range
-        #  target Frquency in Hz
+        #  target Frequency in Hz
         self.target = rospy.get_param("~target_frequency")
         #  tolerance around that frequerncy in Hz
         tolerance = rospy.get_param("~frequency_tolerance")
@@ -106,7 +107,10 @@ class HydrophoneTrigger:
         filt_order = 6000
         # reset bandpass filter
         self.bandpass_filter = StreamedBandpass(
-            self.target - tolerance, self.target + tolerance, trans_width, filt_order
+            self.target - tolerance,
+            self.target + tolerance,
+            trans_width,
+            filt_order,
         )
 
         # Physical Properties
@@ -117,7 +121,7 @@ class HydrophoneTrigger:
         self.v_sound = rospy.get_param("v_sound")
 
         # Misc attributes
-        #  minimum gradient of the max convolution wrt time to trigger a time of arivals calculation
+        #  minimum gradient of the max convolution wrt time to trigger a time of arrivals calculation
         self.threshold = rospy.get_param("~threshold")
         self.trigger_offset = rospy.get_param("~trigger_offset")
         #  how far after the triggering time to make upper bound of samples at triggering in sec
@@ -171,7 +175,10 @@ class HydrophoneTrigger:
             res.success = False
             return res
         x, y = util.find_freq_response(
-            self.bandpass_filter.h, self.rate, self.general_lower, self.general_upper
+            self.bandpass_filter.h,
+            self.rate,
+            self.general_lower,
+            self.general_upper,
         )
         plots = np.vstack((x, y))
         titles = ["frequency (Hz)  vs Gain (dB)"]
@@ -191,13 +198,11 @@ class HydrophoneTrigger:
         # Record start time of cb to make sure we are running in real time
         start_cb = rospy.get_rostime()
         if isinstance(msg, numpy_msg(Ping)):
-            msg_header = msg.header
             msg_channels = msg.channels
             msg_samples = msg.samples
             msg_sample_rate = msg.sample_rate
             msg_data = msg.data
         elif isinstance(msg, numpy_msg(HydrophoneSamplesStamped)):
-            msg_header = msg.header
             msg_channels = msg.hydrophone_samples.channels
             msg_samples = msg.hydrophone_samples.samples
             msg_sample_rate = msg.hydrophone_samples.sample_rate
@@ -226,13 +231,17 @@ class HydrophoneTrigger:
             data = np.concatenate((self.prev_data, new_data))
         # Time according to the passive sonar interface (assuming no missed messages)
         time = np.linspace(
-            self.time, self.time + data.shape[0] / float(self.rate), data.shape[0]
+            self.time,
+            self.time + data.shape[0] / float(self.rate),
+            data.shape[0],
         )
 
         # only use hydrophone 0 to trigger, more efficient
         # do a max convolution on the data
         max_convolves = np.apply_along_axis(
-            lambda x: maximum_filter1d(x, self.window_size, axis=0), 0, data
+            lambda x: maximum_filter1d(x, self.window_size, axis=0),
+            0,
+            data,
         )
         max_convolve = max_convolves[:, 0]
         #  NOTE: No need to crop because zero padding is used and we are doing a max convolution
@@ -241,14 +250,12 @@ class HydrophoneTrigger:
         gradients = np.gradient(max_convolves, axis=0)
 
         if np.max(gradients[:, 0]) >= self.threshold:
-
             triggered_at_idx = np.min(np.where(gradients[:, 0] >= self.threshold)[0])
             triggered_at_idx += int(self.trigger_offset * self.rate)
             trigger_time = time[triggered_at_idx]
 
             # if we have triggered very recently, do not trigger (echo protection)
             if trigger_time - self.prev_trigger_time > self.min_time_between_pings:
-
                 self.prev_trigger_time = trigger_time
 
                 start = triggered_at_idx - int(self.rate * self.trigger_window_past)
@@ -257,17 +264,17 @@ class HydrophoneTrigger:
                 ping_data = gradients[start:end]
                 triggered_at_sample = triggered_at_idx + (self.window_size - 1) / 2
                 start_sample = triggered_at_sample - int(
-                    50 * self.rate * self.trigger_window_past
+                    50 * self.rate * self.trigger_window_past,
                 )
                 end_sample = triggered_at_sample + int(
-                    50 * self.rate * self.trigger_window_future
+                    50 * self.rate * self.trigger_window_future,
                 )
                 ping_samples = data[start_sample:end_sample]
 
                 try:
                     freq = util.find_freq(ping_samples, self.rate)
                 except Exception as e:
-                    rospy.logwarn("/hydrophone/triggering in find_freq %s" % e)
+                    rospy.logwarn(f"/hydrophone/triggering in find_freq {e}")
                     freq = self.target
                 rospy.loginfo(f"triggered at {trigger_time:f} on {freq:f} Hz")
 
@@ -299,7 +306,7 @@ class HydrophoneTrigger:
                     plot_data = data[:, 0]
                     titles = [
                         "time vs Gradient of Max convolve",
-                        "time vs max_convolve (Window = %s sec)" % self.window_time,
+                        f"time vs max_convolve (Window = {self.window_time} sec)",
                         "time vs hydrophone0 data",
                     ]
                     vlines = [trigger_time, trigger_time, trigger_time_samples]
@@ -323,8 +330,7 @@ class HydrophoneTrigger:
 
         if spare_time < 0:
             rospy.logwarn(
-                "Spare Time After Callback: %f, Running slower than real time"
-                % spare_time
+                f"Spare Time After Callback: {spare_time}, Running slower than real time",
             )
 
 

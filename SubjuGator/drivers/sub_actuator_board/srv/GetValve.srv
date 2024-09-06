@@ -1,0 +1,4 @@
+# Service call to get the status of a pneumatic valve
+uint8 actuator      # ID of valve
+---
+bool opened         # Whether the valve has been opened

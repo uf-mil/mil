@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="gui" default="false" />
+  <arg name="simulate_cams" default="true" />
+  <arg name="sub" default="sub8" />
+  <arg name="world_file" default="robosub_2024.world"/>
+  <arg name="spawn_x" default="0"/>
+  <arg name="spawn_y" default="0"/>
+  <arg name="spawn_z" default="0"/>
+  <arg name="spawn_yaw_rad" default="0"/>
+
+  <include file="$(find subjugator_launch)/launch/sub8.launch">
+    <arg name="environment" value="gazebo" />
+	<arg name="simulate_cams" value="$(arg simulate_cams)" />
+    <arg name="sub" value="$(arg sub)"/>
+  </include>
+
+  <include file="$(find subjugator_gazebo)/launch/duck.launch">
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="simulate_cams" value="$(arg simulate_cams)" />
+    <arg name="sub" value="$(arg sub)"/>
+    <arg name="world_file" value="$(arg world_file)"/>
+    <arg name="spawn_x" value="$(arg spawn_x)"/>
+    <arg name="spawn_y" value="$(arg spawn_y)"/>
+    <arg name="spawn_z" value="$(arg spawn_z)"/>
+    <arg name="spawn_yaw_rad" value="$(arg spawn_yaw_rad)"/>
+  </include>
+</launch>

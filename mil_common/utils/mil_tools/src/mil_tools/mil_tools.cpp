@@ -1,6 +1,7 @@
 #include <mil_tools/mil_tools.hpp>
 #include <mil_tools/msg_helpers.hpp>
 #include <mil_tools/param_helpers.hpp>
+#include <mil_tools/test.hpp>
 
 namespace mil_tools
 {

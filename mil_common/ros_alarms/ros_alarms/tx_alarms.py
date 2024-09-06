@@ -1,17 +1,18 @@
 import asyncio
+import contextlib
 import json
 import traceback
 
-import txros
-from ros_alarms.msg import Alarm
-from ros_alarms.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
+import axros
+from ros_alarms_msgs.msg import Alarm
+from ros_alarms_msgs.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
 
 """
-Alarms implementation for txros (https://github.com/txros/txros)
+Alarms implementation for axros (https://github.com/axros/axros)
 """
 
 
-async def _check_for_alarm(nh: txros.NodeHandle, alarm_name: str, nowarn=False):
+async def _check_for_alarm(nh: axros.NodeHandle, alarm_name: str, nowarn=False):
     if (
         not nowarn
         and (await nh.has_param("/known_alarms"))
@@ -32,7 +33,7 @@ def _check_for_valid_name(alarm_name, nowarn=False):
 
 class TxAlarmBroadcaster:
     @classmethod
-    async def init(cls, nh: txros.NodeHandle, name: str, node_name=None, nowarn=False):
+    async def init(cls, nh: axros.NodeHandle, name: str, node_name=None, nowarn=False):
         _check_for_valid_name(name, nowarn)
         await _check_for_alarm(nh, name, nowarn)
 
@@ -51,7 +52,11 @@ class TxAlarmBroadcaster:
         print(f"Created alarm broadcaster for alarm {name}")
 
     def _generate_request(
-        self, raised, problem_description="", parameters={}, severity=0
+        self,
+        raised,
+        problem_description="",
+        parameters={},
+        severity=0,
     ):
         request = AlarmSetRequest()
         request.alarm.alarm_name = self._alarm_name
@@ -81,7 +86,7 @@ class TxAlarmListener:
 
         alarm_client = nh.get_service_client("/alarm/get", AlarmGet)
         try:
-            await txros.util.wrap_timeout(alarm_client.wait_for_service(), 1)
+            await axros.util.wrap_timeout(alarm_client.wait_for_service(), 1)
         except asyncio.TimeoutError:
             print("No alarm sever found! Alarm behaviours will be unpredictable.")
 
@@ -98,7 +103,9 @@ class TxAlarmListener:
         self._raised_cbs = []  # [(severity_for_cb1, cb1), (severity_for_cb2, cb2), ...]
         self._cleared_cbs = []
         self.update_sub = self._nh.subscribe(
-            "/alarm/updates", Alarm, self._alarm_update
+            "/alarm/updates",
+            Alarm,
+            self._alarm_update,
         )
 
         if callback_funct is not None:
@@ -132,7 +139,7 @@ class TxAlarmListener:
         return resp.alarm
 
     def _severity_cb_check(self, severity):
-        if isinstance(severity, tuple) or isinstance(severity, list):
+        if isinstance(severity, (tuple, list)):
             return severity[0] <= self._last_alarm.severity <= severity[1]
 
         # Not a tuple, just an int. The severities should match
@@ -186,10 +193,8 @@ class TxAlarmListener:
 
                 # Try to run the callback, absorbing any errors
                 try:
-                    try:
+                    with contextlib.suppress(Exception):
                         alarm.parameters = json.loads(alarm.parameters)
-                    except:
-                        pass
 
                     cb(self._nh, alarm)
                 except Exception as e:
@@ -201,7 +206,7 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
     @classmethod
     async def init(
         cls,
-        nh: txros.NodeHandle,
+        nh: axros.NodeHandle,
         alarm_name: str,
         topic_name: str,
         msg_class,
@@ -216,12 +221,12 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
         """
         ab = await TxAlarmBroadcaster.init(nh, alarm_name, **kwargs)
         predicate = predicate if predicate is not None else lambda *args: True
-        prd = txros.util.genpy.Duration(prd)
+        prd = axros.util.genpy.Duration(prd)
         obj = cls(nh, ab, topic_name, msg_class, predicate, prd)
         await obj.sub.setup()
         return obj
 
-    def __init__(self, nh: txros.NodeHandle, ab, topic_name, msg_class, predicate, prd):
+    def __init__(self, nh: axros.NodeHandle, ab, topic_name, msg_class, predicate, prd):
         """Don't invoke this function directly, use the `init` function above"""
         self._nh = nh
         self._predicate = predicate

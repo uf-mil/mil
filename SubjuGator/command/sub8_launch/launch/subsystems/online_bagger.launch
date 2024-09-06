@@ -1,4 +1,0 @@
-<launch>
-    <node pkg="mil_tools" type="online_bagger.py" name="online_bagger" output="screen"/>
-    <rosparam file="$(find sub8_launch)/config/online_bagger.yaml" command="load" ns="onine_bagger"/>
-</launch>

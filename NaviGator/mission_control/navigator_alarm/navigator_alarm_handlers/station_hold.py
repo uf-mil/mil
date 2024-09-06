@@ -15,9 +15,7 @@ class StationHold(HandlerBase):
     def _client_cb(self, terminal_state, result):
         if terminal_state != 3:
             rospy.logwarn(
-                "Station hold goal failed (Status={}, Result={})".format(
-                    TerminalState.to_string(terminal_state), result.result
-                )
+                f"Station hold goal failed (Status={TerminalState.to_string(terminal_state)}, Result={result.result})",
             )
             return
         rospy.loginfo("Station holding!")

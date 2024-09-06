@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import asyncio
 
-import txros
+import axros
 import uvloop
 from sensor_msgs.msg import CompressedImage, Image
 
@@ -33,7 +33,7 @@ def add_camera_feeds(nh, cam_name, image_type="image_raw"):
 
 
 async def main():
-    nh = await txros.NodeHandle.from_argv("self_checker")
+    nh = await axros.NodeHandle.from_argv("self_checker")
     # Add deferreds to this dict to be yieleded on and checked later
     topics = {}
 
@@ -48,19 +48,23 @@ async def main():
 
     # Perception Subs
     topics["right_images"], topics["right_compressed"] = add_camera_feeds(
-        nh, "camera/starboard"
+        nh,
+        "camera/starboard",
     )
     topics["front_right_images"], topics["front_right_compressed"] = add_camera_feeds(
-        nh, "camera/front/right"
+        nh,
+        "camera/front/right",
     )
     topics["front_left_images"], topics["front_left_compressed"] = add_camera_feeds(
-        nh, "camera/front/left"
+        nh,
+        "camera/front/left",
     )
 
     from sensor_msgs.msg import PointCloud2
 
     topics["velodyne"] = nh.subscribe(
-        "/velodyne_points", PointCloud2
+        "/velodyne_points",
+        PointCloud2,
     ).get_next_message()
 
     # Thrusters
@@ -78,7 +82,7 @@ async def main():
             print(f" - - - - Testing for {fancy_name}")
 
             # 2 second timeout should be good
-            result = await txros.util.wrap_timeout(sub, 2)
+            result = await axros.util.wrap_timeout(sub, 2)
             if result is None:
                 FancyPrint.error(f"[ FAIL ] Response was None from {fancy_name}")
             else:

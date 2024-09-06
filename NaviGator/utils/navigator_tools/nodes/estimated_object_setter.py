@@ -3,7 +3,7 @@
 import sys
 from argparse import ArgumentParser, RawTextHelpFormatter
 
-import txros
+import axros
 from coordinate_conversion_server import Converter
 from navigator_msgs.srv import (
     CoordinateConversionRequest,
@@ -13,7 +13,7 @@ from navigator_msgs.srv import (
 
 
 async def main(name, lla):
-    nh = txros.NodeHandle.from_argv("esitmated_object_setter")
+    nh = axros.NodeHandle.from_argv("esitmated_object_setter")
     await nh.setup()
     db = nh.get_service_client("/database/requests", ObjectDBQuery)
 
@@ -21,10 +21,10 @@ async def main(name, lla):
     await convert.init(nh)
 
     # Convert the name to Be_Like_This
-    name = "_".join(map(lambda txt: txt.title(), name.split("_")))
+    name = "_".join(txt.title() for txt in name.split("_"))
 
     point = await convert.request(CoordinateConversionRequest(frame="lla", point=lla))
-    await db(ObjectDBQueryRequest(cmd="{}={p[0]}, {p[1]}".format(name, p=point.enu)))
+    await db(ObjectDBQueryRequest(cmd=f"{name}={point.enu[0]}, {point.enu[1]}"))
 
 
 if __name__ == "__main__":
@@ -34,14 +34,20 @@ if __name__ == "__main__":
     ex. rosrun navigator_tools estimated_object_setter.py Shooter "[82.32, -26.87, 2]"'
 
     parser = ArgumentParser(
-        usage=usage_msg, description=desc_msg, formatter_class=RawTextHelpFormatter
+        usage=usage_msg,
+        description=desc_msg,
+        formatter_class=RawTextHelpFormatter,
     )
     parser.add_argument(dest="name", help="Name of the object.")
     parser.add_argument(
-        dest="lat", type=float, help="Latitude in degrees of the object of interest."
+        dest="lat",
+        type=float,
+        help="Latitude in degrees of the object of interest.",
     )
     parser.add_argument(
-        dest="long", type=float, help="Longitude in degrees of the object of interest."
+        dest="long",
+        type=float,
+        help="Longitude in degrees of the object of interest.",
     )
     parser.add_argument(
         "--alt",
@@ -58,4 +64,4 @@ if __name__ == "__main__":
     lon = args.long  # `long` is python reserved :(
     alt = args.alt
 
-    txros.util.launch_main(lambda: main(name, [lat, lon, alt]))
+    axros.util.launch_main(lambda: main(name, [lat, lon, alt]))

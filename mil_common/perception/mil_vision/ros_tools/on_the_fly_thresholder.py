@@ -6,9 +6,9 @@ import sys
 import cv2
 import numpy as np
 import uvloop
+from axros import NodeHandle, util
 from mil_ros_tools import image_helpers
 from sensor_msgs.msg import Image
-from txros import NodeHandle, util
 
 
 class Trackbars:
@@ -30,7 +30,11 @@ class Trackbars:
         ]
         [
             cv2.createTrackbar(
-                name + "_low", "parameters", 0, 255 if name != "h" else 179, lambda a: a
+                name + "_low",
+                "parameters",
+                0,
+                255 if name != "h" else 179,
+                lambda a: a,
             )
             for name in self.thresh_type
         ]
@@ -42,13 +46,13 @@ class Trackbars:
             [
                 cv2.getTrackbarPos(name + "_high", "parameters")
                 for name in self.thresh_type
-            ]
+            ],
         )
         lower_bounds = np.array(
             [
                 cv2.getTrackbarPos(name + "_low", "parameters")
                 for name in self.thresh_type
-            ]
+            ],
         )
         return lower_bounds, upper_bounds
 
@@ -74,9 +78,11 @@ class Thresholder:
     def update_mask(self):
         self.lower, self.upper = self.trackbars.get_bounds()
         self.mask = cv2.inRange(
-            self.image
-            if self.thresh_type == "bgr"
-            else cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV),
+            (
+                self.image
+                if self.thresh_type == "bgr"
+                else cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
+            ),
             self.lower,
             self.upper,
         )
@@ -128,7 +134,8 @@ def do_parsing():
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument(
-        dest="topic_name", help="The topic name you'd like to listen to."
+        dest="topic_name",
+        help="The topic name you'd like to listen to.",
     )
     parser.add_argument(
         dest="parameter_family",

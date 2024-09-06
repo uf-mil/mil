@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(mil_poi)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -29,3 +29,8 @@ generate_messages(
 )
 
 catkin_package()
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest(test/poi.test)
+endif()

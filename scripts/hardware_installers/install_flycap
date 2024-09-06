@@ -3,15 +3,18 @@
 set -euo pipefail
 
 # Path to encrypted, tared flycapture sdk
-FLYCAP=$(realpath $(dirname $BASH_SOURCE)/../../proprietary/flycapture-latest-amd64.tar.gz.enc)
-# Random tmp directory to unpack to to instlal
+FLYCAP=$(realpath "$(dirname "${BASH_SOURCE[@]}")/../../proprietary/flycapture-latest-amd64.tar.gz.enc")
+# Random tmp directory to unpack to to install
 UNPACK_DIR=$(mktemp -d)
 
 # Prompt user for password and untar
 echo "Ask a MIL leader for the password if you don't know it"
 
 # Tar returns strange positive exit codes when using pipes, so
-openssl enc -aes-256-cbc -salt -pbkdf2 -in $FLYCAP -d | tar -xzpC $UNPACK_DIR
+openssl enc -aes-256-cbc -salt -pbkdf2 -in "$FLYCAP" -d | tar -xzpC "$UNPACK_DIR"
 
 # Install flycap, passing in yes to confirm prompt and no to prompt for udev rules
-(cd $UNPACK_DIR/*; sudo echo "y\nn\n" | ./install_flycapture.sh)
+(
+	cd "$UNPACK_DIR"/*
+	sudo echo "y\nn\n" | ./install_flycapture.sh
+)

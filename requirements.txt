@@ -1,29 +1,29 @@
 # Graphing
 matplotlib==3.1.2
-tqdm==4.62.3
+tqdm==4.66.3
 
 # Algorithms
-tsp-solver2==0.4.1
-uvloop==0.16.0
+tsp-solver2>=0.4.1
+uvloop>=0.16.0
 
 # Data Science
-pandas==1.4.1
-numpy==1.22.3
+pandas>=1.4.1
+numpy>=1.22,<=1.24.3
 
 # Machine Learning
-scipy==1.7.3
+scipy==1.10.0
 scikit-learn==1.1.1
 
 # Computer Vision
-Pillow==9.1.1
+Pillow==10.3.0
 
 # File Handling
 PyYAML==6.0
 urdf-parser-py==0.0.4
 
 # Internet
-aiohttp==3.8.1
-aiohttp-xmlrpc==1.5.0
+aiohttp>=3.9.4
+aiohttp-xmlrpc>=1.5.0
 
 # Documentation
 sphinx==5.0.1
@@ -31,21 +31,31 @@ breathe==4.34.0
 myst-parser==0.18.0
 sphinx-copybutton==0.5.0
 
+# Terminal
+PyInquirer==1.0.3
+rich>=13.7.1
+pygments==2.17.2
+
 # External Devices
-pyserial==3.5
+pyserial>=3.5
+
+# Drivers
+psutil==5.6.6
 
 # Linting
-black==22.1.0
-modernize==0.8.0 # This can be removed after Noetic Migration is complete.
+black>=24.3.0
+modernize>=0.8.0 # This can be removed after Noetic Migration is complete.
 
 # Testing
-pre-commit==2.20.0
-pylint==2.15.5
+pre-commit>=2.20.0
+pylint>=2.15.5
 
 # YOLOv7
 torch>=1.10.0
 torchvision>=0.13.1
-opencv-python==4.6.0.66
+# tensorflow==2.13.1 is the last version with Python 3.8 support
+tensorflow==2.13.1
+opencv-python>=4.6.0.66
 seaborn==0.11.2
 thop==0.1.1.post2207130030
-requests==2.22.0
+requests==2.32.2

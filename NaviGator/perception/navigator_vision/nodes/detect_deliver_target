@@ -20,7 +20,6 @@ __author__ = "Kevin Allen"
 
 
 class DetectDeliverTargetDetector(VisionNode):
-
     BORDER_THICKNESS_METERS = 0.0508
 
     def __init__(self):
@@ -37,7 +36,8 @@ class DetectDeliverTargetDetector(VisionNode):
             width=0.249936 + self.BORDER_THICKNESS_METERS,
         )
         self.image_mux = ImageMux(
-            shape=(2, 2), labels=["Blur", "Threshold", "Edges", "Found"]
+            shape=(2, 2),
+            labels=["Blur", "Threshold", "Edges", "Found"],
         )
         self.debug_pub = Image_Publisher("~debug")
         self.first_object_id = -1
@@ -92,7 +92,9 @@ class DetectDeliverTargetDetector(VisionNode):
             # Track this contour with the previous contours
             centroid = contour_centroid(c)
             obj = self.tracker.add_observation(
-                self._image_sub.last_image_time, np.array(centroid), data=corners
+                self._image_sub.last_image_time,
+                np.array(centroid),
+                data=corners,
             )
 
             # Draw this contour for debugging
@@ -100,12 +102,17 @@ class DetectDeliverTargetDetector(VisionNode):
             cv2.drawContours(img, [corners], -1, (0, 255, 0), 3)
 
             found.append(
-                create_object_msg("target_large", contour=cnts[num - 1], confidence=1.0)
+                create_object_msg(
+                    "target_large",
+                    contour=cnts[num - 1],
+                    confidence=1.0,
+                ),
             )
 
         # Get objects which have persisted over many frames
         persistent = self.tracker.get_persistent_objects(
-            min_observations=8, min_age=rospy.Duration(1.5)
+            min_observations=8,
+            min_age=rospy.Duration(1.5),
         )
 
         if persistent:
@@ -120,7 +127,9 @@ class DetectDeliverTargetDetector(VisionNode):
                 ps.header = self._image_sub.last_image_header
                 # Get 3D pose of target use PnP
                 tvec, rvec = self.small_target_model.get_pose_3D(
-                    obj.data, cam=self.camera_model, rectified=True
+                    obj.data,
+                    cam=self.camera_model,
+                    rectified=True,
                 )
                 # Throw out up/down and convert to quaternion
                 # rvec[1] = 0.

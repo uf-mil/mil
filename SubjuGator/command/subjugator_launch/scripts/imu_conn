@@ -1,0 +1,2 @@
+#!/bin/sh
+exec socat -d -d pipe:/tmp/imu,wronly=1 tcp:192.168.37.61:1382

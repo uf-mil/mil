@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>subjugator_controller</name>
+  <version>0.0.0</version>
+  <description>The subjugator_controller package</description>
+  <maintainer email="kallen@todo.todo">kallen</maintainer>
+  <license>MIT</license>
+  <exec_depend>rospy</exec_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export/>
+</package>

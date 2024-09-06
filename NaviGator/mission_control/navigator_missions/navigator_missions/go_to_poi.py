@@ -5,10 +5,10 @@ import numpy as np
 from geometry_msgs.msg import Point, Pose, Quaternion
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class GoToPOI(Navigator):
+class GoToPOI(NaviGatorMission):
     """
     Moves NaviGator to a point of interest
     """
@@ -28,7 +28,7 @@ class GoToPOI(Navigator):
         euler += np.array([0, 0, math.pi])
         orientation = quaternion_from_euler(*euler)
         self.send_feedback(
-            f"Moving to {poi} at {position[0:2]} with orientation {orientation}"
+            f"Moving to {poi} at {position[0:2]} with orientation {orientation}",
         )
         await self.change_wrench("autonomous")
         await self.move.to_pose(Pose(Point(*position), Quaternion(*orientation))).go()

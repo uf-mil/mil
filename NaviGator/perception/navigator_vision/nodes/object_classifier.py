@@ -2,14 +2,14 @@
 import asyncio
 import os.path
 
+import axros
 import cv2
 import numpy as np
-import txros
 import uvloop
+from axros import NodeHandle
 from mil_tools import CvDebug, fprint
 from navigator_msgs.srv import CameraDBQuery, CameraDBQueryResponse
 from object_classification import Config, LidarToImage, depicklify
-from txros import NodeHandle
 
 
 class ObjectClassifier:
@@ -22,7 +22,9 @@ class ObjectClassifier:
 
     async def init_(self):
         serv = self.nh.advertise_service(
-            "/camera_database/requests", CameraDBQuery, self.database_request
+            "/camera_database/requests",
+            CameraDBQuery,
+            self.database_request,
         )
         await serv.setup()
         self.lidar_to_image = await LidarToImage(self.nh).init_()
@@ -76,7 +78,7 @@ class ObjectClassifier:
 
 
 async def main():
-    async with txros.NodeHandle.from_argv("object_classifier"):
+    async with axros.NodeHandle.from_argv("object_classifier") as nh:
         config = Config()
         class_file = os.path.abspath(__file__)
         class_file = class_file.split("nodes")[0]

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <param name="use_sim_time" value="true" />
+  <param name="simulate" value="true" />
+  <arg name="gui" default="false" />
+  <arg name="simulate_cams" default="true" />
+  <arg name="sub" default="sub8"/>
+
+  <arg name="world_file" default="robosub_2024.world"/>
+  <arg name="spawn_x" default="0"/>
+  <arg name="spawn_y" default="0"/>
+  <arg name="spawn_z" default="0"/>
+  <arg name="spawn_yaw_rad" default="0"/>
+
+  <!-- start gazebo server-->
+  <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false"
+    args="$(find subjugator_gazebo)/worlds/$(arg world_file) --verbose" />
+  <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" if="$(arg gui)" />
+
+  <include file="$(find subjugator_gazebo)/launch/spawn.launch" >
+	<arg name="simulate_cams" value="$(arg simulate_cams)" />
+    <arg name="sub" value="$(arg sub)"/>
+    <arg name="spawn_x" default="$(arg spawn_x)"/>
+    <arg name="spawn_y" default="$(arg spawn_y)"/>
+    <arg name="spawn_z" default="$(arg spawn_z)"/>
+    <arg name="spawn_yaw_rad" default="$(arg spawn_yaw_rad)"/>
+  </include>
+</launch>

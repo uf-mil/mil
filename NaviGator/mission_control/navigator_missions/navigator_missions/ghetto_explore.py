@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import mil_tools as nt
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-async def myfunc(navigator: Navigator, **kwargs):
+async def myfunc(navigator: NaviGatorMission, **kwargs):
     pos = navigator.tx_pose
     pos = pos[0]
 
@@ -19,11 +19,11 @@ async def myfunc(navigator: Navigator, **kwargs):
             await navigator.move.set_position(pos).go()
             nt.fprint(o.name, msg_color="green")
 
-        except:
+        except Exception:
             nt.fprint("Missing Marker", msg_color="red")
 
 
-async def main(navigator: Navigator, **kwargs):
+async def main(navigator: NaviGatorMission, **kwargs):
     await navigator.change_wrench("autonomous")
     await navigator.nh.sleep(0.1)
     good = await myfunc(navigator)

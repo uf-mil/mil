@@ -64,7 +64,7 @@ class PingLocator:
             [
                 correlate(data[:, 0], data[:, i], mode="same")
                 for i in range(0, data.shape[1])
-            ]
+            ],
         ).transpose()
 
         total_time = float(cross_corr.shape[0]) / rate
@@ -73,12 +73,12 @@ class PingLocator:
         deltas = np.zeros((4,))
 
         maxes = np.array(
-            [np.argmax(cross_corr[:, i]) for i in range(cross_corr.shape[1])]
+            [np.argmax(cross_corr[:, i]) for i in range(cross_corr.shape[1])],
         )
 
         if (maxes == cross_corr.shape[0] - 1).any() or (maxes == 0).any():
             rospy.logerr(
-                "/hydrophones/ping_locator lack of features on one of the channels"
+                "/hydrophones/ping_locator lack of features on one of the channels",
             )
             return
 
@@ -92,7 +92,7 @@ class PingLocator:
         plots = interweave(time, data.transpose())
         titles = ["h%d" % i for i in range(data.shape[0])]
         vlines = np.array(
-            [-1 * deltas[i] + msg.trigger_time for i in range(deltas.shape[0])]
+            [-1 * deltas[i] + msg.trigger_time for i in range(deltas.shape[0])],
         )
         self.debug_samples.publish_plots(plots, titles, vlines)
 
@@ -100,7 +100,7 @@ class PingLocator:
             vec = util.calculate_dir_pinger(deltas, self.dist_h, self.v_sound)
         except Exception as e:
             rospy.logwarn(
-                "/hydrophones/ping_locator could not calculate pinger direction %s" % e
+                f"/hydrophones/ping_locator could not calculate pinger direction {e}",
             )
             return
 

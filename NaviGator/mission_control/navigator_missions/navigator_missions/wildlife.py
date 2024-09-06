@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 from std_srvs.srv import SetBoolRequest
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class Wildlife(Navigator):
-    @classmethod
-    def init(cls):
-        pass
-
+class Wildlife(NaviGatorMission):
     async def run(self, parameters):
         # Go to autonomous mode
         await self.set_classifier_enabled.wait_for_service()
@@ -19,7 +15,7 @@ class Wildlife(Navigator):
         try:
             t1 = await self.get_sorted_objects("red_cylinder", n=1)
             t1 = t1[1][0]
-        except Exception as e:
+        except Exception:
             print("could not find stc_platform")
             # get all pcodar objects
             try:
@@ -27,7 +23,7 @@ class Wildlife(Navigator):
                 t1 = await self.get_sorted_objects(name="UNKNOWN", n=-1)
                 t1 = t1[1][0]
             # if no pcodar objects, drive forward
-            except Exception as e:
+            except Exception:
                 print("literally no objects?")
                 await self.move.forward(10).go()
                 # get first pcodar objects
@@ -38,4 +34,4 @@ class Wildlife(Navigator):
 
             print("going to nearest small object")
 
-        points = await self.move.d_spiral_point(t1, 5, 4, 1, "ccw", theta_offset=-1.57)
+        await self.move.d_spiral_point(t1, 5, 4, 1, "ccw", theta_offset=-1.57)

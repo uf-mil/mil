@@ -11,7 +11,7 @@ class VrxStationKeeping(Vrx):
 
     async def run(self, parameters):
         await self.wait_for_task_such_that(
-            lambda task: task.state in ["ready", "running"]
+            lambda task: task.state in ["ready", "running"],
         )
 
         self.send_feedback("Waiting for station keeping goal")
@@ -19,5 +19,5 @@ class VrxStationKeeping(Vrx):
         goal_pose = await self.geo_pose_to_enu_pose(goal_msg.pose)
         self.send_feedback(f"Going to {goal_pose}")
         await self.move.set_position(goal_pose[0]).set_orientation(goal_pose[1]).go(
-            blind=True
+            blind=True,
         )

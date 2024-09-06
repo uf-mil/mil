@@ -1,4 +1,4 @@
-Subjugator Software Reference
+SubjuGator Software Reference
 =============================
 
 Below is the reference documentation for the code on our submarine robot, SubjuGator.
@@ -10,9 +10,9 @@ Messages
 
 Thrust
 ^^^^^^
-.. attributetable:: sub8_msgs.msg.Thrust
+.. attributetable:: subjugator_msgs.msg.Thrust
 
-.. class:: sub8_msgs.msg.Thrust
+.. class:: subjugator_msgs.msg.Thrust
 
     Message type indicating commands for each thruster.
 
@@ -20,13 +20,13 @@ Thrust
 
         The commands for the thrusters.
 
-        :type: List[:class:`~sub8_msgs.msg.ThrusterCmd`]
+        :type: List[:class:`~subjugator_msgs.msg.ThrusterCmd`]
 
 ThrusterCmd
 ^^^^^^^^^^^
-.. attributetable:: sub8_msgs.msg.ThrusterCmd
+.. attributetable:: subjugator_msgs.msg.ThrusterCmd
 
-.. class:: sub8_msgs.msg.ThrusterCmd
+.. class:: subjugator_msgs.msg.ThrusterCmd
 
     A command for a specific thruster.
 
@@ -47,11 +47,11 @@ Services
 
 SetValve
 ^^^^^^^^
-.. attributetable:: sub8_actuator_board.srv.SetValveRequest
+.. attributetable:: sub_actuator_board.srv.SetValveRequest
 
-.. class:: sub8_actuator_board.srv.SetValveRequest
+.. class:: sub_actuator_board.srv.SetValveRequest
 
-    The request class for the ``sub8_actuator_board/SetValve`` service.
+    The request class for the ``sub_actuator_board/SetValve`` service.
 
     .. attribute:: actuator
 
@@ -65,11 +65,11 @@ SetValve
 
         :type: bool
 
-.. attributetable:: sub8_actuator_board.srv.SetValveResponse
+.. attributetable:: sub_actuator_board.srv.SetValveResponse
 
-.. class:: sub8_actuator_board.srv.SetValveResponse
+.. class:: sub_actuator_board.srv.SetValveResponse
 
-    The response class for the ``sub8_actuator_board/SetValve`` service.
+    The response class for the ``sub_actuator_board/SetValve`` service.
 
     .. attribute:: success
 
@@ -83,43 +83,51 @@ SetValve
 
         :type: bool
 
-Exceptions
-----------
-.. autoclass:: sub8_actuator_board.InvalidAddressException
-
 Actuator Board
 --------------
 
 ActuatorBoard
 ^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.ActuatorBoard
+.. attributetable:: sub_actuator_board.ActuatorBoard
 
-.. autoclass:: sub8_actuator_board.ActuatorBoard
+.. autoclass:: sub_actuator_board.ActuatorBoard
     :members:
 
 ActuatorBoardSimulation
 ^^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.ActuatorBoardSimulation
+.. attributetable:: sub_actuator_board.ActuatorBoardSimulation
 
-.. autoclass:: sub8_actuator_board.ActuatorBoardSimulation
+.. autoclass:: sub_actuator_board.ActuatorBoardSimulation
     :members:
 
-CommandMessage
-^^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.CommandMessage
-
-.. autoclass:: sub8_actuator_board.CommandMessage
+ActuatorPacketId
+^^^^^^^^^^^^^^^^
+.. autoclass:: sub_actuator_board.ActuatorPacketId
     :members:
 
-FeedbackMessage
-^^^^^^^^^^^^^^^
-.. attributetable:: sub8_actuator_board.FeedbackMessage
+ActuatorSetPacket
+^^^^^^^^^^^^^^^^^
+.. attributetable:: sub_actuator_board.ActuatorSetPacket
 
-.. autoclass:: sub8_actuator_board.FeedbackMessage
+.. autoclass:: sub_actuator_board.ActuatorSetPacket
     :members:
 
-Thrust and Kill Board
----------------------
+ActuatorPollRequestPacket
+^^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub_actuator_board.ActuatorPollRequestPacket
+
+.. autoclass:: sub_actuator_board.ActuatorPollRequestPacket
+    :members:
+
+ActuatorPollResponsePacket
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub_actuator_board.ActuatorPollResponsePacket
+
+.. autoclass:: sub_actuator_board.ActuatorPollResponsePacket
+    :members:
+
+Sub8 Thrust and Kill Board
+--------------------------
 
 ThrusterAndKillBoard
 ^^^^^^^^^^^^^^^^^^^^
@@ -163,26 +171,78 @@ Thruster
 .. autoclass:: sub8_thrust_and_kill_board.Thruster
     :members:
 
+Sub9 Thrust and Kill Board
+--------------------------
+
+HeartbeatSetPacket
+^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.HeartbeatSetPacket
+
+.. autoclass:: sub9_thrust_and_kill_board.HeartbeatSetPacket
+    :members:
+
+HeartbeatReceivePacket
+^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.HeartbeatReceivePacket
+
+.. autoclass:: sub9_thrust_and_kill_board.HeartbeatReceivePacket
+    :members:
+
+ThrusterId
+^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.ThrusterId
+
+.. autoclass:: sub9_thrust_and_kill_board.ThrusterId
+    :members:
+
+ThrustSetPacket
+^^^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.ThrustSetPacket
+
+.. autoclass:: sub9_thrust_and_kill_board.ThrustSetPacket
+    :members:
+
+KillStatus
+^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.KillStatus
+
+.. autoclass:: sub9_thrust_and_kill_board.KillStatus
+    :members:
+
+KillSetPacket
+^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.KillSetPacket
+
+.. autoclass:: sub9_thrust_and_kill_board.KillSetPacket
+    :members:
+
+KillReceivePacket
+^^^^^^^^^^^^^^^^^
+.. attributetable:: sub9_thrust_and_kill_board.KillReceivePacket
+
+.. autoclass:: sub9_thrust_and_kill_board.KillReceivePacket
+    :members:
+
 Object Detection
 ----------------
 
-Sub8BuoyDetector
-^^^^^^^^^^^^^^^^
-.. cppattributetable:: Sub8BuoyDetector
+SubjuGatorBuoyDetector
+^^^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: SubjuGatorBuoyDetector
 
-.. doxygenclass:: Sub8BuoyDetector
+.. doxygenclass:: SubjuGatorBuoyDetector
 
-Sub8StartGateDetector
-^^^^^^^^^^^^^^^^^^^^^
-.. cppattributetable:: Sub8StartGateDetector
+SubjuGatorStartGateDetector
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: SubjuGatorStartGateDetector
 
-.. doxygenclass:: Sub8StartGateDetector
+.. doxygenclass:: SubjuGatorStartGateDetector
 
-Sub8TorpedoBoardDetector
-^^^^^^^^^^^^^^^^^^^^^^^^
-.. cppattributetable:: Sub8TorpedoBoardDetector
+SubjuGatorTorpedoBoardDetector
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: SubjuGatorTorpedoBoardDetector
 
-.. doxygenclass:: Sub8TorpedoBoardDetector
+.. doxygenclass:: SubjuGatorTorpedoBoardDetector
 
 TorpedoBoardReprojectionCost
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -239,11 +299,11 @@ Type Definitions
 
 .. doxygentypedef:: ColorHandlerT
 
-Sub8ObjectFinder
-^^^^^^^^^^^^^^^^
-.. cppattributetable:: Sub8ObjectFinder
+SubjuGatorObjectFinder
+^^^^^^^^^^^^^^^^^^^^^^
+.. cppattributetable:: SubjuGatorObjectFinder
 
-.. doxygenclass:: Sub8ObjectFinder
+.. doxygenclass:: SubjuGatorObjectFinder
 
 StereoBase
 ^^^^^^^^^^
@@ -259,16 +319,16 @@ RvizVisualizer
 
 OccGridUtils
 ^^^^^^^^^^^^
-.. attributetable:: sub8_vision_tools.OccGridUtils
+.. attributetable:: subjugator_vision_tools.OccGridUtils
 
-.. autoclass:: sub8_vision_tools.OccGridUtils
+.. autoclass:: subjugator_vision_tools.OccGridUtils
     :members:
 
 Searcher
 ^^^^^^^^
-.. attributetable:: sub8_vision_tools.Searcher
+.. attributetable:: subjugator_vision_tools.Searcher
 
-.. autoclass:: sub8_vision_tools.Searcher
+.. autoclass:: subjugator_vision_tools.Searcher
     :members:
 
 Classification
@@ -287,9 +347,9 @@ Simulation
 ----------
 BagManager
 ^^^^^^^^^^
-.. attributetable:: sub8_gazebo_tools.BagManager
+.. attributetable:: subjugator_gazebo_tools.BagManager
 
-.. autoclass:: sub8_gazebo_tools.BagManager
+.. autoclass:: subjugator_gazebo_tools.BagManager
     :members:
 
 6DOF Controller
@@ -305,16 +365,16 @@ Dynamics
 --------
 SubjuGatorDynamics
 ^^^^^^^^^^^^^^^^^^
-.. attributetable:: sub8_system_id.SubjuGatorDynamics
+.. attributetable:: subjugator_system_id.SubjuGatorDynamics
 
-.. autoclass:: sub8_system_id.SubjuGatorDynamics
+.. autoclass:: subjugator_system_id.SubjuGatorDynamics
     :members:
 
 Missions
 --------
 PoseEditor
 ^^^^^^^^^^
-.. attributetable:: sub8_missions.PoseEditor
+.. attributetable:: subjugator_missions.PoseEditor
 
-.. autoclass:: sub8_missions.PoseEditor
+.. autoclass:: subjugator_missions.PoseEditor
     :members:

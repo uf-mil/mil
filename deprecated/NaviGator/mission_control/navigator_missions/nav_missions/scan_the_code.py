@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """Scan The Code Mission Script."""
-import txros
+import axros
 from mil_misc_tools.text_effects import fprint
 from navigator import Navigator
 from navigator_scan_the_code import ScanTheCodeMission
@@ -20,7 +20,7 @@ def _get_color(c):
 
 
 class ScanTheCode(Navigator):
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def run(self, parameters):
         """Main Script of Scan The Code."""
         # attempts = kwargs["attempts"]
@@ -55,8 +55,8 @@ class ScanTheCode(Navigator):
         # TRY WITHOUT CIRCLES
         colors = None
         try:
-            colors = yield txros.util.wrap_timeout(defer, 15)
-        except txros.util.TimeoutError:
+            colors = yield axros.util.wrap_timeout(defer, 15)
+        except axros.util.TimeoutError:
             pass
 
         # TRY WITH CIRCLEs
@@ -64,9 +64,9 @@ class ScanTheCode(Navigator):
         # colors = None
         # for i in circle:
         #     try:
-        #         colors = yield txros.util.wrap_timeout(defer, 15)
+        #         colors = yield axros.util.wrap_timeout(defer, 15)
         #         break
-        #     except txros.util.TimeoutError:
+        #     except axros.util.TimeoutError:
         #         yield i.go()
         #         fprint("go", msg_color="red")
 
@@ -78,7 +78,7 @@ class ScanTheCode(Navigator):
         yield self.mission_params["scan_the_code_color2"].set(_get_color(c2))
         yield self.mission_params["scan_the_code_color3"].set(_get_color(c3))
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def cleanup(self):
         """Safe exit of the Scan The Code mission."""
         yield self.mission_params["scan_the_code_color1"].set("RED")

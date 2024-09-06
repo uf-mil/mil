@@ -71,6 +71,9 @@ class Image_Publisher:
         self.encoding = encoding
         self.im_pub = rospy.Publisher(topic, Image, queue_size=queue_size)
 
+    def get_num_connections(self) -> int:
+        return self.im_pub.get_num_connections()
+
     def publish(self, cv_image: np.ndarray):
         """
         Publishes an OpenCV image mat to the ROS topic. :class:`CvBridgeError`
@@ -98,7 +101,7 @@ class Image_Subscriber:
         last_image_time (genpy.Time): The time of the last image received.
         im_sub (rospy.Subscriber): The subscriber to the image topic. The topic
             name and queue size are received through the constructor.
-        info_sub (rospy.Susbcriber): The subscriber to the camera info topic.
+        info_sub (rospy.Subscriber): The subscriber to the camera info topic.
             The topic name is derived from the root of the supplied topic and the
             queue size is derived from the constructor.
         bridge (CvBridge): The bridge between OpenCV and ROS.
@@ -118,12 +121,18 @@ class Image_Subscriber:
         self.last_image_time = None
         self.last_image = None
         self.im_sub = rospy.Subscriber(
-            topic, Image, self.convert, queue_size=queue_size
+            topic,
+            Image,
+            self.convert,
+            queue_size=queue_size,
         )
 
         root_topic, image_subtopic = path.split(rospy.remap_name(topic))
         self.info_sub = rospy.Subscriber(
-            root_topic + "/camera_info", CameraInfo, self.info_cb, queue_size=queue_size
+            root_topic + "/camera_info",
+            CameraInfo,
+            self.info_cb,
+            queue_size=queue_size,
         )
 
         self.bridge = CvBridge()
@@ -141,7 +150,7 @@ class Image_Subscriber:
             Exception: No camera info was found after the timeout had finished.
         """
         rospy.logwarn(
-            "Blocking -- waiting at most %d seconds for camera info." % timeout
+            "Blocking -- waiting at most %d seconds for camera info." % timeout,
         )
 
         timeout = rospy.Duration(timeout)
@@ -305,16 +314,21 @@ class StereoImageSubscriber:
         # Use message_filters library to set up synchronized subscriber to both image topics
         if slop is None:
             self._image_sub = message_filters.TimeSynchronizer(
-                [image_sub_left, image_sub_right], queue_size
+                [image_sub_left, image_sub_right],
+                queue_size,
             )
         else:
             self._image_sub = message_filters.ApproximateTimeSynchronizer(
-                [image_sub_left, image_sub_right], queue_size, slop
+                [image_sub_left, image_sub_right],
+                queue_size,
+                slop,
             )
         self._image_sub.registerCallback(self._image_callback)
 
     def wait_for_camera_info(
-        self, timeout: int = 10, unregister: bool = True
+        self,
+        timeout: int = 10,
+        unregister: bool = True,
     ) -> Tuple[CameraInfo, CameraInfo]:
         """
         Blocks until camera info has been received.
@@ -360,10 +374,12 @@ class StereoImageSubscriber:
             self.last_image_time_left = left_img.header.stamp
             self.last_image_time_right = right_img.header.stamp
             img_left = self.bridge.imgmsg_to_cv2(
-                left_img, desired_encoding=self.encoding
+                left_img,
+                desired_encoding=self.encoding,
             )
             img_right = self.bridge.imgmsg_to_cv2(
-                right_img, desired_encoding=self.encoding
+                right_img,
+                desired_encoding=self.encoding,
             )
             self.callback(img_left, img_right)
         except CvBridgeError as e:

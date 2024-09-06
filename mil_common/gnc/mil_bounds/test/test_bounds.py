@@ -32,7 +32,8 @@ class BoundsTest(unittest.TestCase):
         c = BoundsClient()
         bounds = c.get_bounds()
         correct = np.array(
-            [[-1, 0, 0], [9, 0, 0], [9, 10, 0], [-1, 10, 0]], dtype=float
+            [[-1, 0, 0], [9, 0, 0], [9, 10, 0], [-1, 10, 0]],
+            dtype=float,
         )
         self.assertTrue(np.all(bounds == correct))
 

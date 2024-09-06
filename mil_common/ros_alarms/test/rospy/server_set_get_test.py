@@ -4,7 +4,7 @@ import random
 
 import numpy as np
 import rospy
-from ros_alarms.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
+from ros_alarms_msgs.srv import AlarmGet, AlarmGetRequest, AlarmSet, AlarmSetRequest
 
 # Dummy params to pass in
 parameters = {"testing": True, "not_real": 3, "a_list": [1, 2, 3]}
@@ -29,8 +29,9 @@ def raise_some(setter, count=20):
         setter(a)
         rospy.loginfo(
             "{} '{}' alarm".format(
-                "Raised" if a.alarm.raised else "Cleared", a.alarm.alarm_name
-            )
+                "Raised" if a.alarm.raised else "Cleared",
+                a.alarm.alarm_name,
+            ),
         )
         if a.alarm.raised:
             raised.append(a.alarm.alarm_name)

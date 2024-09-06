@@ -2,9 +2,9 @@
 import asyncio
 from typing import Callable
 
+from axros import NodeHandle
 from geometry_msgs.msg import PointStamped, Vector3Stamped
 from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
-from txros import NodeHandle
 
 
 class TxHydrophonesClient:
@@ -24,7 +24,9 @@ class TxHydrophonesClient:
             nh (NodeHandle): The TxROS node handler.
         """
         self._direction_sub = nh.subscribe(
-            "/hydrophones/direction", Vector3Stamped, callback=self.heading_cb
+            "/hydrophones/direction",
+            Vector3Stamped,
+            callback=self.heading_cb,
         )
         self._enable_srv = nh.get_service_client("/multilateration/enable", SetBool)
         self._reset_srv = nh.get_service_client("/multilateration/reset", Trigger)

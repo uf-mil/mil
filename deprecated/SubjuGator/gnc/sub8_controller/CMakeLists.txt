@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(sub8_controller)
+cmake_minimum_required(VERSION 3.0.2)
+project(subjugator_controller)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp

@@ -21,16 +21,16 @@ The two nodes within the package can be run through ``rosrun``.
 ## Alarms
 **Clear an alarm:**
 
-    $ roscd ros_alarms && rosrun nodes/clear.py
+    $ roscd ros_alarms && rosrun nodes/clear
 
 **Monitor an alarm:**
 
-    $ roscd ros_alarms && rosrun nodes/monitor.py
+    $ roscd ros_alarms && rosrun nodes/monitor
 
 **Raise an alarm:**
 
-    $ roscd ros_alarms && rosrun nodes/raise.py
+    $ roscd ros_alarms && rosrun nodes/raise
 
 **Reports the status of an alarm:**
 
-    $ roscd ros_alarms && rosrun nodes/report.py
+    $ roscd ros_alarms && rosrun nodes/report

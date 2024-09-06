@@ -45,9 +45,7 @@ x_res = x_range / x_max
 ang_res = ang_range / ang_max
 
 print(
-    "Distance resolution: {} meters\nAngular resolution: {} radians".format(
-        x_res, ang_res
-    )
+    f"Distance resolution: {x_res} meters\nAngular resolution: {ang_res} radians",
 )
 
 cv2.createTrackbar("x", "tf", 0, x_max, lambda x: x)
@@ -93,10 +91,15 @@ p_original = (0, 0, 0)
 rpy_original = (0, 0, 0)
 try:
     listener.waitForTransform(
-        args.tf_parent, args.tf_child, rospy.Time(0), rospy.Duration(1)
+        args.tf_parent,
+        args.tf_child,
+        rospy.Time(0),
+        rospy.Duration(1),
     )
     (trans, rot) = listener.lookupTransform(
-        args.tf_parent, args.tf_child, rospy.Time(0)
+        args.tf_parent,
+        args.tf_child,
+        rospy.Time(0),
     )
     euler = trns.euler_from_quaternion(rot)
     p_original = trans
@@ -138,12 +141,10 @@ while not rospy.is_shutdown():
     )
     q = tf.transformations.quaternion_from_euler(*rpy)
 
-    if (not p == p_last) or (not rpy == rpy_last):
-        rpy_feedback = "xyz: {}, euler: {}".format(
-            [round(e, 5) for e in p], [round(np.degrees(f), 5) for f in rpy]
-        )
-        q_feedback = "xyz: {},     q: {}".format(
-            [round(x, 5) for e in p], [round(f, 5) for f in q]
+    if (p != p_last) or (rpy != rpy_last):
+        rpy_feedback = f"xyz: {[round(e, 5) for e in p]}, euler: {[round(np.degrees(f), 5) for f in rpy]}"
+        q_feedback = (
+            f"xyz: {[round(x, 5) for e in p]},     q: {[round(f, 5) for f in q]}"
         )
         print(q_feedback if q_mode else rpy_feedback)
     p_last = p
@@ -178,7 +179,7 @@ while not rospy.is_shutdown():
         tf_line_to_add = tf_line.format(child=args.tf_child, p=p, q=np.round(q, 5), parent=args.tf_parent, prd="{prd}")
         for i,line in enumerate(lines):
             if args.tf_child in line and args.tf_parent in line:
-                tab_level = line[:line.find("<")]  # The labs infront of the tf line
+                tab_level = line[:line.find("<")]  # The labs in front of the tf line
                 prd = int([x for x in line.split('"')[-2].split(" ") if x != ''][-1])  # Get the period from the tf line
                 lines[i] = tab_level + tf_line_to_add.format(prd=prd)
 
@@ -190,7 +191,7 @@ while not rospy.is_shutdown():
             elif 'pkg="tf"' in line:
                 # In case we don't find the tf line of interest to change, we want to insert the new tf line after
                 # the last tf line
-                tab_level = line[:line.find("<")]  # The labs infront of the tf line
+                tab_level = line[:line.find("<")]  # The labs in front of the tf line
                 last_static_pub = i
 
         else:
@@ -212,6 +213,10 @@ while not rospy.is_shutdown():
 print(
     "\n",
     tf_line.format(
-        child=args.tf_child, p=p, q=np.round(q, 5), parent=args.tf_parent, prd=prd
+        child=args.tf_child,
+        p=p,
+        q=np.round(q, 5),
+        parent=args.tf_parent,
+        prd=prd,
     ),
 )

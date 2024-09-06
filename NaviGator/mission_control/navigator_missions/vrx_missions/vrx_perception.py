@@ -32,7 +32,11 @@ class VrxPerception(Vrx):
         return (ret, positions)
 
     async def announce_object(
-        self, obj_id, classification, position_enu, boat_position_enu
+        self,
+        obj_id,
+        classification,
+        position_enu,
+        boat_position_enu,
     ):
         if classification == "UNKNOWN":
             self.send_feedback(f"Ignoring UNKNOWN object {obj_id}")
@@ -61,22 +65,26 @@ class VrxPerception(Vrx):
         await self.set_vrx_classifier_enabled(SetBoolRequest(data=True))
         objects = {}
         while True:
-            task_info = await self.task_info_sub.get_next_message()
+            await self.task_info_sub.get_next_message()
             new_objects, positions = await self.get_object_map()
             position_enu = (await self.tx_pose)[0]
             for key in new_objects:
                 if key not in objects:
                     self.send_feedback(f"NEW object {key} {new_objects[key]}")
                     await self.announce_object(
-                        key, new_objects[key], positions[key], position_enu
+                        key,
+                        new_objects[key],
+                        positions[key],
+                        position_enu,
                     )
                 elif objects[key] != new_objects[key]:
                     self.send_feedback(
-                        "{} changed from {} to {}".format(
-                            key, objects[key], new_objects[key]
-                        )
+                        f"{key} changed from {objects[key]} to {new_objects[key]}",
                     )
                     await self.announce_object(
-                        key, new_objects[key], positions[key], position_enu
+                        key,
+                        new_objects[key],
+                        positions[key],
+                        position_enu,
                     )
             objects = new_objects

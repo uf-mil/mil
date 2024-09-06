@@ -1,7 +1,7 @@
 import numpy as np
 from mil_misc_tools import text_effects
 from sub8.sub_singleton import PoseSequenceCommander
-from txros import util
+from axros import util
 
 fprint = text_effects.FprintFactory(title="SEQUENCE_TEST").fprint
 

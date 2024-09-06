@@ -1,6 +1,0 @@
-<launch>
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find sub8_gazebo)/worlds/gripper.world" />
-    <!-- more default parameters can be changed here -->
-  </include>
-</launch>

@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 import asyncio
 
+from axros import util
 from navigator_msgs.msg import ScanTheCode
-from txros import util
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class ScanTheCodeJaxon(Navigator):
+class ScanTheCodeJaxon(NaviGatorMission):
     TIMEOUT_SECONDS = 30.0
 
     @classmethod
-    async def init(cls):
+    async def setup(cls):
         cls.stcsub = cls.nh.subscribe("/scan_the_code", ScanTheCode)
         cls.stcpub = cls.nh.advertise("/scan_the_code", ScanTheCode)
         await asyncio.gather(cls.stcsub.setup(), cls.stcpub.setup())
@@ -35,7 +35,9 @@ class ScanTheCodeJaxon(Navigator):
         # Get scan the code stuff
         try:
             result = await util.wrap_time_notice(
-                self.stcsub.get_next_message(), self.TIMEOUT_SECONDS, "test"
+                self.stcsub.get_next_message(),
+                self.TIMEOUT_SECONDS,
+                "test",
             )
             stc_result = result.color_pattern
         except util.TimeoutError:
@@ -53,7 +55,9 @@ class ScanTheCodeJaxon(Navigator):
         elif stc_result[0] == "B":
             await self.move.left(5).go()
             await self.move.circle_point(
-                self.stc, direction="cw", revolutions=1.25
+                self.stc,
+                direction="cw",
+                revolutions=1.25,
             ).go()
             await self.move.forward(10).go()
 

@@ -8,7 +8,7 @@ In one panel, run:
 
 .. code-block:: bash
 
-    $ roslaunch sub8_launch gazebo.launch
+    $ roslaunch subjugator_launch gazebo.launch
 
 This will launch the server side of the gazebo simulator. The gazebo server (a.k.a. ``gzserver``)
 is the half of the simulator that will do all the heavy lifting in terms of simulating physics,
@@ -31,7 +31,7 @@ to run the gazebogui with special parameters:
 
     $ gazebogui
 
-This will show you ground truth of the simulated environment. However, when debuggin robot behavior, it is usually more usful to have an idea of exactly what the robot knows, which is why there is also Rviz.
+This will show you ground truth of the simulated environment. However, when debugging robot behavior, it is usually more usful to have an idea of exactly what the robot knows, which is why there is also Rviz.
 
 Run RVIZ
 ~~~~~~~~

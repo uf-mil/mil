@@ -10,7 +10,7 @@ from python_qt_binding import loadUi
 from python_qt_binding.QtCore import Qt
 from python_qt_binding.QtGui import QWidget
 from qt_gui.plugin import Plugin
-from sub8_msgs.msg import Alarm
+from subjugator_msgs.msg import Alarm
 
 '''TODO:
 - Store everything in a dictionary and write new rows

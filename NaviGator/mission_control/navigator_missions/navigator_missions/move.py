@@ -1,28 +1,31 @@
 #!/usr/bin/env python3
 import numpy as np
+from axros import types, util
 from mil_misc_tools import ThrowingArgumentParser
 from mil_tools import numpy_to_point, rosmsg_to_numpy
 from navigator_path_planner.msg import MoveGoal
-from txros import types, util
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class Move(Navigator):
+class Move(NaviGatorMission):
     @classmethod
     def decode_parameters(cls, parameters):
         argv = parameters.split()
         return cls.parser.parse_args(argv)
 
     @classmethod
-    def init(cls):
+    async def setup(cls):
         parser = ThrowingArgumentParser(
             description="Command Line Mission Runner",
             usage="Pass any pose editor command with an argument. \n\t\
                    forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet)",
         )
         parser.add_argument(
-            "commands", type=str, nargs="*", help="Pose editor command to run"
+            "commands",
+            type=str,
+            nargs="*",
+            help="Pose editor command to run",
         )
         parser.add_argument(
             "-m",
@@ -107,14 +110,17 @@ class Move(Navigator):
                 self.send_feedback(f"Moving with the command: {argument}")
                 res = await eval(
                     "self.move.{}.go(move_type='{move_type}')".format(
-                        argument, **action_kwargs
-                    )
+                        argument,
+                        **action_kwargs,
+                    ),
                 )
 
             elif command == "rviz":
                 self.send_feedback("Select a 2D Nav Goal in RVIZ")
                 target_pose = await util.wrap_time_notice(
-                    self.rviz_goal.get_next_message(), 2, "Rviz goal"
+                    self.rviz_goal.get_next_message(),
+                    2,
+                    "Rviz goal",
                 )
                 self.send_feedback("RVIZ pose received!")
                 res = await self.move.to_pose(target_pose).go(**action_kwargs)
@@ -122,13 +128,16 @@ class Move(Navigator):
             elif command == "circle":
                 self.send_feedback("Select a Publish Point in RVIZ")
                 target_point = await util.wrap_time_notice(
-                    self.rviz_point.get_next_message(), 2, "Rviz point"
+                    self.rviz_point.get_next_message(),
+                    2,
+                    "Rviz point",
                 )
                 self.send_feedback("RVIZ point received!")
                 target_point = rosmsg_to_numpy(target_point.point)
                 direction = "cw" if argument == "-1" else "ccw"
                 res = await self.move.circle_point(
-                    target_point, direction=direction
+                    target_point,
+                    direction=direction,
                 ).go(**action_kwargs)
 
             else:
@@ -140,9 +149,7 @@ class Move(Navigator):
                     "yl": "yaw_left",
                     "yr": "yaw_right",
                 }
-                command = (
-                    command if command not in shorthand.keys() else shorthand[command]
-                )
+                command = shorthand.get(command, command)
                 movement = getattr(self.move, command)
 
                 trans_move = command[:3] != "yaw"

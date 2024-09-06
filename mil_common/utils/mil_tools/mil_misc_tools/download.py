@@ -11,6 +11,7 @@ We're using this because I don't want to track 20MB files in Git.
 [3] Download a file via http
     http://stackoverflow.com/questions/22676
 """
+
 import io as StringIO
 import os
 import urllib.request
@@ -31,7 +32,7 @@ def download_and_unzip(url: str, output_dir: str):
     """
     try:
         html = download(url)
-    except:
+    except Exception:
         raise OSError(f"Could not load file at {url}")
 
     fake_file = StringIO.StringIO(html)

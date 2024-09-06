@@ -2,7 +2,7 @@
 from __future__ import division
 
 import numpy as np
-import txros
+import axros
 from mil_misc_tools import text_effects
 from mil_ros_tools import rosmsg_to_numpy
 from scipy.spatial import distance
@@ -17,7 +17,7 @@ SPEED_CAREFUL = 0.2
 DIST_AFTER_GATE = 2
 
 
-@txros.util.cancellableInlineCallbacks
+@axros.util.cancellableInlineCallbacks
 def run(sub):
     yield sub.move.downward(1).go()
     fprint("Begin search for gates")

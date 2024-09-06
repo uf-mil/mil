@@ -22,7 +22,11 @@ class ExtendedGoalManager(GoalManager):
 
     def init_observe_goal(self, action_goal, transition_cb=None, feedback_cb=None):
         csm = CommStateMachine(
-            action_goal, transition_cb, feedback_cb, self.send_goal_fn, self.cancel_fn
+            action_goal,
+            transition_cb,
+            feedback_cb,
+            self.send_goal_fn,
+            self.cancel_fn,
         )
         with self.list_mutex:
             self.statuses.append(weakref.ref(csm))
@@ -88,10 +92,13 @@ class ObserveActionClient(ActionClient):
         self.observe_goals[msg.goal_id.id] = self.manager.init_observe_goal(
             msg,
             transition_cb=lambda msg, _goal=msg.goal_id: self._observer_transition_cb(
-                _goal, msg
+                _goal,
+                msg,
             ),
             feedback_cb=lambda handler, feedback, _goal=msg.goal_id: self._observer_feedback_cb(
-                _goal, handler, feedback
+                _goal,
+                handler,
+                feedback,
             ),
         )
 
@@ -152,7 +159,9 @@ class Dashboard(Plugin):
 
         # Extend the widget with all attributes and children in the UI file
         ui_file = os.path.join(
-            rospkg.RosPack().get_path("mil_missions"), "resource", "dashboard.ui"
+            rospkg.RosPack().get_path("mil_missions"),
+            "resource",
+            "dashboard.ui",
         )
         loadUi(ui_file, self._widget)
 
@@ -171,7 +180,7 @@ class Dashboard(Plugin):
         # Deals with problem when they're multiple instances of Dashboard plugin
         if context.serial_number() > 1:
             self._widget.setWindowTitle(
-                self._widget.windowTitle() + (" (%d)" % context.serial_number())
+                self._widget.windowTitle() + (" (%d)" % context.serial_number()),
             )
 
         # Add widget to the user interface
@@ -186,9 +195,10 @@ class Dashboard(Plugin):
         """
         self.lock.acquire()
         date_time = datetime.datetime.fromtimestamp(rospy.Time.now().to_time())
-        time_str = "{}:{}:{}".format(
-            date_time.hour, date_time.minute, date_time.second
-        ).ljust(12, " ")
+        time_str = f"{date_time.hour}:{date_time.minute}:{date_time.second}".ljust(
+            12,
+            " ",
+        )
         formatted = time_str + string
         self.feedback_list.addItem(formatted)
         self.lock.release()
@@ -231,9 +241,7 @@ class Dashboard(Plugin):
                 self.current_mission_status = terminal_state
                 self.current_mission_status_label.setText(self.current_mission_status)
                 self.ui_log(
-                    "FINISHED: mission finished ({})".format(
-                        self.current_mission_status
-                    )
+                    f"FINISHED: mission finished ({self.current_mission_status})",
                 )
 
     def reload_available_missions(self, _):
@@ -242,15 +250,15 @@ class Dashboard(Plugin):
         button is hit and once on startup. Also clears the chained pane as it may now be invalid.
         """
         if not rospy.has_param(
-            "/available_missions"
+            "/available_missions",
         ):  # If the param is not there, log this
             self.ui_log(
-                "ERROR: /available_missions param not set. Perhaps mission runner is not running?"
+                "ERROR: /available_missions param not set. Perhaps mission runner is not running?",
             )
             return
         self.missions = rospy.get_param("/available_missions")
         self.missions = sorted(
-            self.missions
+            self.missions,
         )  # Ensure missions appear in lexographic order
         self.available_missions_list.clear()
         for i in reversed(range(self.chained_missions_table.rowCount())):
@@ -286,7 +294,9 @@ class Dashboard(Plugin):
                 selected_index += 1
             for i in range(self.chained_missions_table.columnCount()):
                 self.chained_missions_table.setCellWidget(
-                    idx, i, self.chained_missions_table.cellWidget(selected_index, i)
+                    idx,
+                    i,
+                    self.chained_missions_table.cellWidget(selected_index, i),
                 )
             self.chained_missions_table.removeRow(selected_index)
 
@@ -331,7 +341,7 @@ class Dashboard(Plugin):
                     "timeout": timeout,
                     "required": required,
                     "parameters": parameters,
-                }
+                },
             )
         return missions
 
@@ -432,52 +442,61 @@ class Dashboard(Plugin):
         self.save_button = self._widget.findChild(QtWidgets.QToolButton, "save_button")
         self.load_button = self._widget.findChild(QtWidgets.QToolButton, "load_button")
         self.save_button.setIcon(
-            self._widget.style().standardIcon(QtWidgets.QStyle.SP_DialogSaveButton)
+            self._widget.style().standardIcon(QtWidgets.QStyle.SP_DialogSaveButton),
         )
         self.load_button.setIcon(
-            self._widget.style().standardIcon(QtWidgets.QStyle.SP_DialogOpenButton)
+            self._widget.style().standardIcon(QtWidgets.QStyle.SP_DialogOpenButton),
         )
         self.save_button.clicked.connect(self.save_file)
         self.load_button.clicked.connect(self.load_file)
 
         self.chained_missions_table = self._widget.findChild(
-            QtWidgets.QFrame, "chained_missions_table"
+            QtWidgets.QFrame,
+            "chained_missions_table",
         )
         self.chained_missions_table.setDragDropMode(
-            QtWidgets.QAbstractItemView.DragDrop
+            QtWidgets.QAbstractItemView.DragDrop,
         )
         self.chained_missions_table.dropEvent = self.chained_missions_drop_cb
         self.chained_missions_table.setColumnWidth(
-            1, 55
+            1,
+            55,
         )  # Make required header just big enough for check box
         self.available_missions_list = self._widget.findChild(
-            QtWidgets.QFrame, "available_missions"
+            QtWidgets.QFrame,
+            "available_missions",
         )
         self.available_missions_list.setDragEnabled(True)
         self.available_missions_list.setDragDropMode(
-            QtWidgets.QAbstractItemView.DragDrop
+            QtWidgets.QAbstractItemView.DragDrop,
         )
         self.available_missions_list.dropEvent = self.available_missions_drop_cb
         self.run_chained_button = self._widget.findChild(
-            QtWidgets.QPushButton, "run_chained_button"
+            QtWidgets.QPushButton,
+            "run_chained_button",
         )
         self.run_chained_button.clicked.connect(self.run_chained_cb)
         self.single_mission_button = self._widget.findChild(
-            QtWidgets.QPushButton, "single_mission_button"
+            QtWidgets.QPushButton,
+            "single_mission_button",
         )
         self.single_mission_button.clicked.connect(self.run_single_cb)
         self.cancel_button = self._widget.findChild(
-            QtWidgets.QPushButton, "cancel_mission_button"
+            QtWidgets.QPushButton,
+            "cancel_mission_button",
         )
         self.cancel_button.clicked.connect(self.cancel_mission_cb)
         self.single_mission_parameters = self._widget.findChild(
-            QtWidgets.QLineEdit, "single_mission_parameters"
+            QtWidgets.QLineEdit,
+            "single_mission_parameters",
         )
         self.current_mission_label = self._widget.findChild(
-            QtWidgets.QLabel, "current_mission_label"
+            QtWidgets.QLabel,
+            "current_mission_label",
         )
         self.current_mission_status_label = self._widget.findChild(
-            QtWidgets.QLabel, "current_status_label"
+            QtWidgets.QLabel,
+            "current_status_label",
         )
         self.feedback_list = self._widget.findChild(QtWidgets.QListWidget, "log_list")
         self.feedback_list.setAlternatingRowColors(True)  # easier to read
@@ -485,10 +504,12 @@ class Dashboard(Plugin):
         self.feedback_list_scrollbar = self.feedback_list.verticalScrollBar()
         self.result_label = self._widget.findChild(QtWidgets.QLabel, "result_label")
         self.clear_log_button = self._widget.findChild(
-            QtWidgets.QPushButton, "clear_log_button"
+            QtWidgets.QPushButton,
+            "clear_log_button",
         )
         self.clear_log_button.clicked.connect(self.clear_log)
         self.refresh_missions_button = self._widget.findChild(
-            QtWidgets.QPushButton, "refresh_missions_button"
+            QtWidgets.QPushButton,
+            "refresh_missions_button",
         )
         self.refresh_missions_button.clicked.connect(self.reload_available_missions)

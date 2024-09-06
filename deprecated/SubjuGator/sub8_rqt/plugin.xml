@@ -1,5 +1,5 @@
 <library path="nodes">
-  <class name="sub8_alarm_gui" type="sub8_rqt_gui.AlarmPlugin" base_class_type="rqt_gui_py::Plugin">
+  <class name="subjugator_alarm_gui" type="sub8_rqt_gui.AlarmPlugin" base_class_type="rqt_gui_py::Plugin">
     <description>
       Alarm Management Plugin
     </description>

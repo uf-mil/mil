@@ -1,0 +1,950 @@
+<sdf version='1.7'>
+  <world name='default'>
+    <physics name='default_physics' default='0' type='ode'>
+      <real_time_update_rate>100</real_time_update_rate>
+      <max_step_size>0.01</max_step_size>
+      <real_time_factor>1</real_time_factor>
+    </physics>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>29.6474</latitude_deg>
+      <longitude_deg>277.65</longitude_deg>
+      <elevation>0.4</elevation>
+      <heading_deg>180</heading_deg>
+    </spherical_coordinates>
+    <magnetic_field>5e-06 2.4e-05 3.9e-05</magnetic_field>
+    <light name='illum' type='directional'>
+      <pose>-4 18 9 0 -0.75 0</pose>
+      <diffuse>0.1 0.4 1 1</diffuse>
+      <attenuation>
+        <constant>1</constant>
+        <range>10</range>
+      </attenuation>
+      <specular>0.1 0.1 0.1 1</specular>
+      <direction>0 0 -1</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <light name='sky_illum' type='directional'>
+      <pose>0 0 5 3.14 -0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <attenuation>
+        <constant>1</constant>
+        <range>10</range>
+      </attenuation>
+      <specular>0.1 0.1 0.1 1</specular>
+      <direction>0 0 -1</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <light name='sun' type='directional'>
+      <cast_shadows>1</cast_shadows>
+      <pose>0 0 10 0 -0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <light name='user_point_light_0' type='point'>
+      <pose>0.109933 -0.142384 1 0 -0 0</pose>
+      <diffuse>0.5 0.5 0.5 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>100</range>
+        <constant>0.5</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <cast_shadows>0</cast_shadows>
+      <direction>0 0 -1</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <light name='user_point_light_1' type='point'>
+      <pose>-29.7505 -0.454729 1 0 -0 0</pose>
+      <diffuse>0.5 0.5 0.5 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>100</range>
+        <constant>0.5</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <cast_shadows>0</cast_shadows>
+      <direction>0 0 -1</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <light name='user_point_light_2' type='point'>
+      <pose>31.6112 -2.69613 1 0 -0 0</pose>
+      <diffuse>0.5 0.5 0.5 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>100</range>
+        <constant>0.5</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <cast_shadows>0</cast_shadows>
+      <direction>0 0 -1</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <model name='water'>
+      <static>1</static>
+      <pose>0 0 0 3.14159 9.3e-05 3.14159</pose>
+      <link name='link'>
+        <visual name='visual'>
+          <transparency>0.8</transparency>
+          <cast_shadows>0</cast_shadows>
+          <geometry>
+            <box>
+              <size>92 61 0.02</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.2 0.2 0.9 1</ambient>
+            <diffuse>0.2 0.2 0.9 1</diffuse>
+            <specular>0.1 0.1 0.3 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <model name='transdec'>
+      <pose>0 0 0.5 0 -0 0</pose>
+      <static>1</static>
+      <link name='ground'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>file://transdec/transdec.dae</uri>
+              <scale>0.5 0.5 0.5</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/White</name>
+            </script>
+          </material>
+        </visual>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>file://transdec/transdec.dae</uri>
+              <scale>0.5 0.5 0.5</scale>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <model name='pathmarkers2018'>
+      <static>1</static>
+      <link name='pathmarkers2018'>
+        <inertial>
+          <mass>0.5</mass>
+          <inertia>
+            <ixx>0</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0</iyy>
+            <iyz>0</iyz>
+            <izz>0</izz>
+          </inertia>
+        </inertial>
+        <velocity_decay>
+          <linear>1e-05</linear>
+          <angular>1e-05</angular>
+        </velocity_decay>
+        <collision name='pathmarkers2018col'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>file://markers/PathMarkers2018s.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <sensor name='contact' type='contact'>
+          <contact>
+            <collision>pathmarkers2018col</collision>
+            <topic>__default_topic__</topic>
+          </contact>
+          <update_rate>50</update_rate>
+          <plugin name='gazebo_ros_bumper_controller' filename='libgazebo_ros_bumper.so'>
+            <alwaysOn>1</alwaysOn>
+            <bumperTopicName>contact_bumper</bumperTopicName>
+          </plugin>
+        </sensor>
+        <visual name='pathmarkers2018vis'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>file://markers/PathMarkers2018s.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-0.11 0.1787 -1.49 0 -0 0</pose>
+    </model>
+    <model name='transdec_pinger'>
+      <static>1</static>
+      <pose>15 0 -2 0 -0 0</pose>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <cylinder>
+              <radius>0.5</radius>
+              <length>0.001</length>
+            </cylinder>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <model name='transdec_pinger2'>
+      <static>1</static>
+      <pose>15 15 -2 0 -0 0</pose>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <cylinder>
+              <radius>0.5</radius>
+              <length>0.001</length>
+            </cylinder>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <scene>
+      <sky>
+        <clouds>
+          <speed>12</speed>
+        </clouds>
+      </sky>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>1</shadows>
+    </scene>
+    <gravity>0 0 -9.8</gravity>
+    <atmosphere type='adiabatic'/>
+    <wind/>
+    <model name='posters_2'>
+      <static>1</static>
+      <link name='base_link'>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
+          <mass>8.45052</mass>
+          <inertia>
+            <ixx>0.978466</ixx>
+            <ixy>0.0388385</ixy>
+            <ixz>0.0020155</ixz>
+            <iyy>0.239042</iyy>
+            <iyz>-0.0222223</iyz>
+            <izz>1.21612</izz>
+          </inertia>
+        </inertial>
+        <collision name='base_link_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file://posters/base_link.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='base_link_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file://posters/base_link.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>4.03178 -4.08252 0 0 -0 0</pose>
+    </model>
+    <model name='posters_3'>
+      <static>1</static>
+      <link name='base_link'>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
+          <mass>8.45052</mass>
+          <inertia>
+            <ixx>0.978466</ixx>
+            <ixy>0.0388385</ixy>
+            <ixz>0.0020155</ixz>
+            <iyy>0.239042</iyy>
+            <iyz>-0.0222223</iyz>
+            <izz>1.21612</izz>
+          </inertia>
+        </inertial>
+        <collision name='base_link_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file://posters/base_link.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='base_link_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file://posters/base_link.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>2.92241 -2.77317 0 0 -0 0</pose>
+    </model>
+    <model name='posters_4'>
+      <static>1</static>
+      <link name='base_link'>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
+          <mass>8.45052</mass>
+          <inertia>
+            <ixx>0.978466</ixx>
+            <ixy>0.0388385</ixy>
+            <ixz>0.0020155</ixz>
+            <iyy>0.239042</iyy>
+            <iyz>-0.0222223</iyz>
+            <izz>1.21612</izz>
+          </inertia>
+        </inertial>
+        <collision name='base_link_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file://posters/base_link.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='base_link_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file://posters/base_link.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>4.48097 -4.72555 0 0 -0 0</pose>
+    </model>
+    <model name='octogon'>
+      <static>1</static>
+      <link name='octogon'>
+        <collision name='octogoncol'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>file://octogon/octogon.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='octogonvis'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>file://octogon/octogon.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>6.25993 -4.43932 0 0 -0 0</pose>
+    </model>
+    <state world_name='default'>
+      <sim_time>0</sim_time>
+      <real_time>0</real_time>
+      <wall_time>0</wall_time>
+      <iterations>0</iterations>
+      <model name='bootlegger_buoy'>
+        <pose>7.48885 -3.34226 -1.0014 1.58931 -0.036528 -2.34951</pose>
+        <scale>1 1 1</scale>
+        <model name='Bootlegger_Buoy'>
+          <pose>7.48884 -3.34226 -1.0014 1.58931 -0.036528 -2.34951</pose>
+          <scale>1 1 1</scale>
+          <link name='base_link'>
+            <pose>7.48884 -3.34226 -1.0014 1.58931 -0.036528 -2.34951</pose>
+            <velocity>0 0 0 0 -0 0</velocity>
+            <acceleration>0 0 0 0 -0 0</acceleration>
+            <wrench>0 0 0 0 -0 0</wrench>
+          </link>
+        </model>
+      </model>
+      <model name='octogon'>
+        <pose>22.9712 -1.43185 0 0 -0 1.5708</pose>
+        <scale>1 1 1</scale>
+        <link name='octogon'>
+          <pose>22.9712 -1.43185 -0 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='pathmarkers2018'>
+        <pose>4.49659 0.1787 -2.92663 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='pathmarkers2018'>
+          <pose>4.49659 0.1787 -2.92663 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='pathmarkers2018_0'>
+        <pose>8.80989 -4.68693 -2.97363 0.032661 -0.009562 2.8703</pose>
+        <scale>1 1 1</scale>
+        <link name='pathmarkers2018'>
+          <pose>8.80989 -4.68693 -2.97363 0.032661 -0.009562 2.8703</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='posters'>
+        <pose>10.3637 -4.17768 -1.1472 0 -0 1.57</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>10.3637 -4.17768 -1.1472 0 -0 1.57</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='posters_2'>
+        <pose>14 2 -1.09014 0 0 -0.785</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>14 2 -1.09014 0 0 -0.785</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='posters_3'>
+        <pose>14.433 1.43243 -0.989775 0 0 -0.785</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>14.433 1.43243 -0.989775 0 0 -0.785</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='posters_4'>
+        <pose>10.3678 -4.9986 -1.2595 0 -0 1.57</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>10.3678 -4.9986 -1.2595 0 -0 1.57</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='posters_5'>
+        <pose>6.92302 -3.94022 -1.0415 1.56526 -0.050617 -2.35626</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>6.92302 -3.94022 -1.0415 1.56526 -0.050617 -2.35626</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='start_gate_2022'>
+        <pose>4.55509 -0.018982 -0.205829 0.009062 0.031542 -1.57001</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>4.55509 -0.018982 -0.205829 0.009062 0.031542 -1.57001</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='transdec'>
+        <pose>0 0 0.5 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='ground'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='transdec_pinger'>
+        <pose>14 1 -2 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>14 1 -2 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='transdec_pinger2'>
+        <pose>22 -2 -2 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>22 -2 -2 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='water'>
+        <pose>0.194567 0.198111 0 3.14159 9.3e-05 3.14159</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>0.194567 0.198111 0 3.14159 9.3e-05 3.14159</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <light name='illum'>
+        <pose>-4 18 9 0 -0.75 0</pose>
+      </light>
+      <light name='sky_illum'>
+        <pose>0 0 5 3.14 -0 0</pose>
+      </light>
+      <light name='sun'>
+        <pose>0 0 10 0 -0 0</pose>
+      </light>
+      <light name='user_point_light_0'>
+        <pose>0.109933 -0.142384 1 0 -0 0</pose>
+      </light>
+      <light name='user_point_light_1'>
+        <pose>-29.7505 -0.454729 1 0 -0 0</pose>
+      </light>
+      <light name='user_point_light_2'>
+        <pose>31.6112 -2.69613 1 0 -0 0</pose>
+      </light>
+    </state>
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose>-6.58452 -11.5807 1.70121 -0 0.2418 0.923352</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
+    <model name='pathmarkers2018_0'>
+      <static>1</static>
+      <link name='pathmarkers2018'>
+        <inertial>
+          <mass>0.5</mass>
+          <inertia>
+            <ixx>0</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0</iyy>
+            <iyz>0</iyz>
+            <izz>0</izz>
+          </inertia>
+        </inertial>
+        <velocity_decay>
+          <linear>1e-05</linear>
+          <angular>1e-05</angular>
+        </velocity_decay>
+        <collision name='pathmarkers2018col'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>file://markers/PathMarkers2018s.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <sensor name='contact' type='contact'>
+          <contact>
+            <collision>pathmarkers2018col</collision>
+            <topic>__default_topic__</topic>
+          </contact>
+          <update_rate>50</update_rate>
+          <plugin name='gazebo_ros_bumper_controller' filename='libgazebo_ros_bumper.so'>
+            <alwaysOn>1</alwaysOn>
+            <bumperTopicName>contact_bumper</bumperTopicName>
+          </plugin>
+        </sensor>
+        <visual name='pathmarkers2018vis'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>file://markers/PathMarkers2018s.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>7.79991 -3.31658 0 0 -0 0</pose>
+    </model>
+    <model name='posters'>
+      <static>1</static>
+      <link name='base_link'>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
+          <mass>8.45052</mass>
+          <inertia>
+            <ixx>0.978466</ixx>
+            <ixy>0.0388385</ixy>
+            <ixz>0.0020155</ixz>
+            <iyy>0.239042</iyy>
+            <iyz>-0.0222223</iyz>
+            <izz>1.21612</izz>
+          </inertia>
+        </inertial>
+        <collision name='base_link_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file://posters/base_link.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='base_link_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file://posters/base_link.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>12.3723 -3.83106 0 0 -0 0</pose>
+    </model>
+    <model name='start_gate_2022'>
+      <static>1</static>
+      <link name='base_link'>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>1.30078 1.35363 2.40887 0 -0 0</pose>
+          <mass>13.5315</mass>
+          <inertia>
+            <ixx>5.04877</ixx>
+            <ixy>0.364288</ixy>
+            <ixz>-0.576968</ixz>
+            <iyy>5.5194</iyy>
+            <iyz>-1.05982</iyz>
+            <izz>1.53641</izz>
+          </inertia>
+        </inertial>
+        <collision name='base_link_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>file://start_gate_2022/start_gate.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='base_link_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>file://start_gate_2022/start_gate.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-0.957126 1.98002 0 0 -0 0</pose>
+    </model>
+    <model name='buoys_2'>
+      <model name='Bootlegger_Buoy'>
+        <static>1</static>
+        <link name='base_link'>
+          <pose>0 0 0 0 -0 0</pose>
+          <inertial>
+            <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
+            <mass>8.45052</mass>
+            <inertia>
+              <ixx>0.978466</ixx>
+              <ixy>0.0388385</ixy>
+              <ixz>0.0020155</ixz>
+              <iyy>0.239042</iyy>
+              <iyz>-0.0222223</iyz>
+              <izz>1.21612</izz>
+            </inertia>
+          </inertial>
+          <collision name='base_link_collision'>
+            <pose>0 0 0 0 -0 0</pose>
+            <geometry>
+              <mesh>
+                <scale>1 1 1</scale>
+                <uri>file://Bootlegger_Poster/Bootlegger_Buoy.dae</uri>
+              </mesh>
+            </geometry>
+            <max_contacts>10</max_contacts>
+            <surface>
+              <contact>
+                <ode/>
+              </contact>
+              <bounce/>
+              <friction>
+                <torsional>
+                  <ode/>
+                </torsional>
+                <ode/>
+              </friction>
+            </surface>
+          </collision>
+          <visual name='base_link_visual'>
+            <pose>0 0 0 0 -0 0</pose>
+            <geometry>
+              <mesh>
+                <scale>1 1 1</scale>
+                <uri>file://Bootlegger_Poster/Bootlegger_Buoy.dae</uri>
+              </mesh>
+            </geometry>
+          </visual>
+          <self_collide>0</self_collide>
+          <enable_wind>0</enable_wind>
+          <kinematic>0</kinematic>
+        </link>
+        <pose>2e-06 5e-06 0 0 -0 0</pose>
+      </model>
+      <static>0</static>
+      <allow_auto_disable>1</allow_auto_disable>
+      <pose>-4.24138 -4.56442 0 0 -0 0</pose>
+    </model>
+    <model name='posters_5'>
+      <static>1</static>
+      <link name='base_link'>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0.845799 0.235134 0.009916 0 -0 0</pose>
+          <mass>8.45052</mass>
+          <inertia>
+            <ixx>0.978466</ixx>
+            <ixy>0.0388385</ixy>
+            <ixz>0.0020155</ixz>
+            <iyy>0.239042</iyy>
+            <iyz>-0.0222223</iyz>
+            <izz>1.21612</izz>
+          </inertia>
+        </inertial>
+        <collision name='base_link_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file://Gman_Poster/G-man_Buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='base_link_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file://Gman_Poster/G-man_Buoy.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-2.89545 -5.70392 0 0 -0 0</pose>
+    </model>
+  </world>
+</sdf>

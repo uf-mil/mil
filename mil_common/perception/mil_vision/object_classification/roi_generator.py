@@ -81,11 +81,9 @@ class ROI_Generator:
 
     def out_range(self, bbox):
         h, w, r = self.image.shape
-        if bbox[0] < 0 or bbox[0] + bbox[2] > w:
-            return True
-        if bbox[1] < 0 or bbox[1] + bbox[3] > h:
-            return True
-        return False
+        return (bbox[0] < 0 or bbox[0] + bbox[2] > w) or (
+            bbox[1] < 0 or bbox[1] + bbox[3] > h
+        )
 
     def go(self):
         while self.x is None:
@@ -123,7 +121,7 @@ class ROI_Generator:
                 r = dict(self.rects)
                 self.mycoll.append(r)
             clone = self.image.copy()
-            for key in self.rects.keys():
+            for key in self.rects:
                 r = self.rects[key]
                 color = (255, 0, 0)
                 if key == self.sel_rect:
@@ -153,7 +151,7 @@ class ROI_Generator:
                     r = min(
                         list(self.rects.items()),
                         key=lambda rect: np.linalg.norm(
-                            np.array([rect[1][0], rect[1][1]]) - np.array([x, y])
+                            np.array([rect[1][0], rect[1][1]]) - np.array([x, y]),
                         ),
                     )
                     r = r[0]
@@ -179,7 +177,7 @@ class ROI_Generator:
                         self.sel_rect = min(
                             list(self.rects.items()),
                             key=lambda rect: np.linalg.norm(
-                                np.array([rect[1][0], rect[1][1]]) - np.array([x, y])
+                                np.array([rect[1][0], rect[1][1]]) - np.array([x, y]),
                             ),
                         )
                         self.sel_rect = self.sel_rect[0]
@@ -199,7 +197,9 @@ if __name__ == "__main__":
     parser.add_argument("bag", type=str, help="The bag you would like to use")
     parser.add_argument("name", type=str, help="The name of the output file")
     parser.add_argument(
-        "--load", action="store_true", help="The name of the output file"
+        "--load",
+        action="store_true",
+        help="The name of the output file",
     )
     args = parser.parse_args(sys.argv[1:])
 

@@ -1,5 +1,5 @@
 #!/bin/bash
 MOUNTDIR_BASE=$HOME/.mil/fileserver
 for filename in $MOUNTDIR_BASE/*; do
-  sudo umount $filename
+	sudo umount $filename
 done

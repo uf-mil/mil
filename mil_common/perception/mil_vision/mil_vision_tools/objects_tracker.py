@@ -45,7 +45,10 @@ class TrackedObject:
         self.update(stamp, features, data)
 
     def update(
-        self, stamp: rospy.Time, features: list[Any], data: np.ndarray | None = None
+        self,
+        stamp: rospy.Time,
+        features: list[Any],
+        data: np.ndarray | None = None,
     ) -> None:
         """
         Update an object's metadata.
@@ -72,9 +75,7 @@ class TrackedObject:
         return self.stamp - self.created_at
 
     def __str__(self):
-        return "TrackedObject(id={}, observations={}, age={}s)".format(
-            self.id, self.observations, self.age.to_sec()
-        )
+        return f"TrackedObject(id={self.id}, observations={self.observations}, age={self.age.to_sec()}s)"
 
 
 class ObjectsTracker:
@@ -113,7 +114,10 @@ class ObjectsTracker:
         self.objects = []
 
     def add_observation(
-        self, stamp: rospy.Time, features: list[Any], data: Any | None = None
+        self,
+        stamp: rospy.Time,
+        features: list[Any],
+        data: Any | None = None,
     ) -> TrackedObject:
         """
         Add a new observation to the tracked objects.
@@ -152,11 +156,13 @@ class ObjectsTracker:
         if now is None:
             now = rospy.Time.now()
         self.objects = list(
-            filter(lambda obj: now - obj.stamp < self.expiration_seconds, self.objects)
+            filter(lambda obj: now - obj.stamp < self.expiration_seconds, self.objects),
         )
 
     def get_persistent_objects(
-        self, min_observations: int = 10, min_age: rospy.Duration = rospy.Duration(0)
+        self,
+        min_observations: int = 10,
+        min_age: rospy.Duration = rospy.Duration(0),
     ) -> list[TrackedObject]:
         """
         Get a list of objects which have persisted sufficiently long.
@@ -174,7 +180,7 @@ class ObjectsTracker:
             filter(
                 lambda obj: obj.age >= min_age and obj.observations >= min_observations,
                 self.objects,
-            )
+            ),
         )
 
     @abc.abstractmethod

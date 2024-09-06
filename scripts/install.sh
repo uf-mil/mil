@@ -1,26 +1,27 @@
 #!/bin/bash
 set -euo pipefail
 
-Res='\e[0;0m';
-Red='\e[0;31m';
-Gre='\e[0;32m';
-Yel='\e[0;33m';
-Pur='\e[0;35m';
+Res='\e[0;0m'
+# shellcheck disable=SC2034
+Red='\e[0;31m'
+Gre='\e[0;32m'
+Yel='\e[0;33m'
+Pur='\e[0;35m'
 
 color() {
-    printf "%b" "$1"
+	printf "%b" "$1"
 }
 
 # header display functions
 hash_header() { echo "########################################"; }
 
 # We only want to clear if the user is actually using a GUI terminal
-if [[ -z "${TERM}" ]]; then
-    clear
+if [[ -z ${TERM} ]]; then
+	clear
 fi
 
 # Display header
-cat << EOF
+cat <<EOF
 $(color "$Pur")
          &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
        @@@@@@*,...................................................,/@@@@@@
@@ -58,12 +59,11 @@ EOF
 
 sleep 2
 
-mil_system_install()
-{
-  sudo apt install -y $@
+mil_system_install() {
+	sudo apt install -y "$@"
 }
 
-cat << EOF
+cat <<EOF
 $(color "$Pur")
 $(hash_header)
 Fetching latest apt packages...
@@ -80,7 +80,7 @@ sudo apt-get install software-properties-common -y
 # Installs keyboard config without prompting for input
 sudo DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration -y # Weird bug
 
-cat << EOF
+cat <<EOF
 $(color "$Pur")
 $(hash_header)
 $(color "$Gre")Fetched latest apt packages.
@@ -92,23 +92,23 @@ EOF
 # System dependencies
 mil_system_install apt-utils
 mil_system_install --no-install-recommends \
-  ca-certificates \
-  curl \
-  tzdata \
-  dirmngr \
-  gnupg2 \
-  lsb-release \
-  python3 \
-  python3-pip \
-  python2 \
-  ruby \
-  wget \
-  vim \
-  expect \
-  doxygen \
-  doxygen-doc \
-  doxygen-gui \
-  graphviz
+	ca-certificates \
+	curl \
+	tzdata \
+	dirmngr \
+	gnupg2 \
+	lsb-release \
+	python3 \
+	python3-pip \
+	python2 \
+	ruby \
+	wget \
+	vim \
+	expect \
+	doxygen \
+	doxygen-doc \
+	doxygen-gui \
+	graphviz
 
 # Attempt to install vcstool using apt-get or pip if apt-get does not work
 sudo apt install -y python3-vcstool || sudo pip3 install -U vcstool
@@ -120,7 +120,7 @@ curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
 python2 get-pip.py
 rm get-pip.py
 
-cat << EOF
+cat <<EOF
 $(color "$Pur")
 $(hash_header)
 $(color "$Gre")Installed needed Linux dependencies.
@@ -132,7 +132,7 @@ EOF
 # ROS apt source
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 # Install Gazebo apt source
-sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -sc) main" > /etc/apt/sources.list.d/gazebo-stable.list' \
+sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -sc) main" > /etc/apt/sources.list.d/gazebo-stable.list'
 
 # Pull ROS apt key
 sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
@@ -144,7 +144,7 @@ wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 # Update apt again and install ros
 sudo apt update
 
-cat << EOF
+cat <<EOF
 $(color "$Pur")
 $(hash_header)
 $(color "$Gre")Set up sources for ROS distributions.
@@ -156,26 +156,29 @@ mil_system_install ros-noetic-desktop-full
 # Install additional dependencies not bundled by default with ros
 # Please put each on a new line for readability
 mil_system_install \
-  ros-noetic-serial \
-  ros-noetic-tf2-sensor-msgs \
-  ros-noetic-geographic-msgs \
-  ros-noetic-vision-msgs \
-  ros-noetic-velodyne \
-  ros-noetic-usb-cam \
-  ros-noetic-joy \
-  ros-noetic-spacenav-node \
-  ros-noetic-velodyne-simulator \
-  ros-noetic-hector-gazebo-plugins \
-  ros-noetic-joy-teleop \
-  ros-noetic-key-teleop \
-  ros-noetic-robot-localization \
-  ros-noetic-teleop-tools \
-  ros-noetic-teleop-twist-keyboard \
-  ros-noetic-ros-control \
-  ros-noetic-ros-controllers \
-  ros-noetic-tf2-tools \
+	ros-noetic-serial \
+	ros-noetic-tf2-sensor-msgs \
+	ros-noetic-geographic-msgs \
+	ros-noetic-vision-msgs \
+	ros-noetic-velodyne \
+	ros-noetic-usb-cam \
+	ros-noetic-joy \
+	ros-noetic-spacenav-node \
+	ros-noetic-velodyne-simulator \
+	ros-noetic-hector-gazebo-plugins \
+	ros-noetic-joy-teleop \
+	ros-noetic-key-teleop \
+	ros-noetic-robot-localization \
+	ros-noetic-teleop-tools \
+	ros-noetic-teleop-twist-keyboard \
+	ros-noetic-ros-control \
+	ros-noetic-ros-controllers \
+	ros-noetic-tf2-tools \
+	ros-noetic-rviz-imu-plugin \
+	ros-noetic-imu-filter-madgwick \
+	ros-noetic-imu-transformer
 
-cat << EOF
+cat <<EOF
 $(color "$Pur")
 $(hash_header)
 $(color "$Gre")Downloaded ROS Noetic.
@@ -185,21 +188,26 @@ EOF
 
 # Documentation dependencies
 mil_system_install python3-pip python3-setuptools
+sudo apt reinstall -y python3-pip
+
+# Disable "automatic updates" Ubuntu prompt (thanks to https://askubuntu.com/a/610623!)
+if which update-manager >/dev/null 2>&1; then
+	sudo sed -i 's/Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades
+fi
 
 # Install Python 3 dependencies
 sudo pip3 install -r requirements.txt
 
 # Link a python executable to Python 2 for temporary backwards compatibility
-if which python > /dev/null 2>&1;
-then
-    echo "Python executable already exists."
+if which python >/dev/null 2>&1; then
+	echo "Python executable already exists."
 else
-    echo "Attempting to symlink python2 to python..."
-    sudo ln -s /usr/bin/python2 /usr/bin/python
-    echo "Symlinked Python executable! Nice!"
+	echo "Attempting to symlink python2 to python..."
+	sudo ln -s /usr/bin/python2 /usr/bin/python
+	echo "Symlinked Python executable! Nice!"
 fi
 
-cat << EOF
+cat <<EOF
 $(color "$Pur")
 $(hash_header)
 $(color "$Gre")Downloaded and setup Python dependencies.
@@ -218,73 +226,77 @@ sudo rosdep update
 # It is generally assumed that users will use ~/catkin_ws, but
 # setting CATKIN_WS prior to running this script will change this behavior.
 if [[ -z ${CATKIN_DIR:-""} ]]; then
-    CATKIN_DIR="$HOME/catkin_ws"
-    echo "Using default catkin workspace $CATKIN_DIR"
+	CATKIN_DIR="$HOME/catkin_ws"
+	echo "Using default catkin workspace $CATKIN_DIR"
 else
-    echo "Using custom catkin workspace $CATKIN_DIR"
+	echo "Using custom catkin workspace $CATKIN_DIR"
 fi
 CATKIN_SOURCE_DIR="$CATKIN_DIR/src"
 MIL_REPO_DIR="$CATKIN_SOURCE_DIR/mil"
 
 # Clone repository
-mil_user_install_dependencies()
-{
-  sudo apt update
-  sudo apt install -y \
-    git \
-    tmux \
-    vim \
-    awscli \
-    net-tools \
-    cifs-utils \
-    nmap \
-    tmuxinator
+mil_user_install_dependencies() {
+	sudo apt update
+	sudo apt install -y \
+		git \
+		tmux \
+		vim \
+		htop \
+		tmuxinator \
+		awscli \
+		net-tools \
+		cifs-utils \
+		nmap \
+		fd-find \
+		ripgrep \
+		fzf \
+		aptitude \
+		lm-sensors
 }
 
 # Add line to user's bashrc which source the repo's setup files
 # This allows us to update aliases, environment variables, etc
-mil_user_setup_rc()
-{
-  # Line(s) added to ~/.bashrc or ~/.zshrc
-  # Note that for backwards compatibility this should not be changed
-  # unless you have a very good reason.
-  BASH_RC_LINES=". $MIL_REPO_DIR/scripts/setup.bash"
-  if [[ "$SHELL" == "/usr/bin/zsh" ]]
-  then
-    # User is using zsh
-    if grep -Fq "$BASH_RC_LINES" ~/.zshrc
-    then
-        echo "milrc is already sourced in ~/.zshrc, skipping"
-    else
-        echo "Adding source of milrc to ~/.zshrc"
-        echo "" >> ~/.zshrc
-        echo "# Setup environment for MIL development" >> ~/.zshrc
-        echo "$BASH_RC_LINES" >> ~/.zshrc
-    fi
-  else
-    # User is using zsh
-    if grep -Fq "$BASH_RC_LINES" ~/.bashrc
-    then
-        echo "milrc is already sourced in ~/.bashrc, skipping"
-    else
-        echo "Adding source of milrc to ~/.bashrc"
-        echo "" >> ~/.bashrc
-        echo "# Setup environment for MIL development" >> ~/.bashrc
-        echo "$BASH_RC_LINES" >> ~/.bashrc
-    fi
-  fi
+mil_user_setup_rc() {
+	# Line(s) added to ~/.bashrc or ~/.zshrc
+	# Note that for backwards compatibility this should not be changed
+	# unless you have a very good reason.
+	BASH_RC_LINES=". $MIL_REPO_DIR/scripts/setup.bash"
+	if [[ $SHELL == "/usr/bin/zsh" ]]; then
+		# User is using zsh
+		if grep -Fq "$BASH_RC_LINES" ~/.zshrc; then
+			echo "milrc is already sourced in ~/.zshrc, skipping"
+		else
+			echo "Adding source of milrc to ~/.zshrc"
+			{
+				echo ""
+				echo "# Setup environment for MIL development"
+				echo "$BASH_RC_LINES"
+			} >>~/.zshrc
+		fi
+	else
+		# User is using zsh
+		if grep -Fq "$BASH_RC_LINES" ~/.bashrc; then
+			echo "milrc is already sourced in ~/.bashrc, skipping"
+		else
+			echo "Adding source of milrc to ~/.bashrc"
+			{
+				echo ""
+				echo "# Setup environment for MIL development"
+				echo "$BASH_RC_LINES"
+			} >>~/.bashrc
+		fi
+	fi
 }
 
 # Sets up the catkin workspace so that user can build
 # If the repo is already cloned here, it will build the MIL code
 # catkin_init_workspace is superfluous, catkin_make is all you need
-mil_user_setup_init_catkin()
-{
-  mkdir -p $CATKIN_SOURCE_DIR
-  catkin_make -C $CATKIN_DIR
+mil_user_setup_init_catkin() {
+	mkdir -p "$CATKIN_SOURCE_DIR"
+	catkin_make "-j$(nproc)" -C "$CATKIN_DIR"
 }
 
-cat << EOF
+cat <<EOF
 $(color "$Pur")
 $(hash_header)
 $(color "$Gre")Initialized rosdep.
@@ -298,7 +310,7 @@ set +u
 . /opt/ros/noetic/setup.bash
 set -u
 
-cat << EOF
+cat <<EOF
 $(color "$Pur")
 $(hash_header)
 $(color "$Gre")Setup user tools and shell.
@@ -307,10 +319,10 @@ $(hash_header)$(color "$Res")
 EOF
 
 touch ~/tmux.conf
-if grep  'set -g default-terminal "screen-256color"' ~/tmux.conf; then
-        echo "Tmux already has 256 color support, skip this step"
+if grep 'set -g default-terminal "screen-256color"' ~/tmux.conf; then
+	echo "Tmux already has 256 color support, skip this step"
 else
-        echo "set -g default-terminal \"screen-256color\"" >> ~/.tmux.conf
+	echo 'set -g default-terminal "screen-256color"' >>~/.tmux.conf
 fi
 
 mil_user_setup_init_catkin

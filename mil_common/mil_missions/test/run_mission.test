@@ -1,7 +1,0 @@
-<launch>
-  <node pkg="mil_missions" type="mission_server" name="mission_server">
-    <param name="missions_module" value="mil_missions_examples" />
-    <param name="base_mission" value="ExampleBaseMission" />
-  </node>
-  <test pkg="mil_missions" type="test_run_mission.py" test-name="run_missions" />
-</launch>

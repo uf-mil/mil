@@ -42,11 +42,14 @@ class KillInterface:
 
     def __init__(self):
         self.port = rospy.get_param(
-            "~port", "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A104OWRY-if00-port0"
+            "~port",
+            "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A104OWRY-if00-port0",
         )
         self.connected = False
         self.diagnostics_pub = rospy.Publisher(
-            "/diagnostics", DiagnosticArray, queue_size=3
+            "/diagnostics",
+            DiagnosticArray,
+            queue_size=3,
         )
         while not self.connected and not rospy.is_shutdown():
             try:
@@ -90,7 +93,9 @@ class KillInterface:
         self.motor_pubs = {}
         for thruster in self.thrusters:
             self.motor_pubs = rospy.Publisher(
-                f"/{thruster}_motor/cmd", Command, queue_size=1
+                f"/{thruster}_motor/cmd",
+                Command,
+                queue_size=1,
             )
         self.sticks_temp = 0x0000
         self.buttons = {}
@@ -105,7 +110,8 @@ class KillInterface:
         self.kill_broadcaster = AlarmBroadcaster("kill")
         self.kill_broadcaster.wait_for_server()
         self._network_kill_listener = AlarmListener(
-            "network-loss", self.network_kill_alarm_cb
+            "network-loss",
+            self.network_kill_alarm_cb,
         )
         self._hw_kill_listener.wait_for_server()
         self._kill_listener.wait_for_server()
@@ -115,7 +121,8 @@ class KillInterface:
 
     def connect(self):
         if rospy.get_param(
-            "/is_simulation", False
+            "/is_simulation",
+            False,
         ):  # If in Gazebo, run fake serial class following board's protocol
             from navigator_kill_board import SimulatedKillBoard
 
@@ -164,7 +171,7 @@ class KillInterface:
                 self.ctrl_msg_received = False
                 self.ctrl_msg_count = 0
                 rospy.logwarn(
-                    "Timeout receiving controller message. Please disconnect controller."
+                    "Timeout receiving controller message. Please disconnect controller.",
                 )
             # [HEADER] [BL] [BR] [FL] [FR]
             if self.ctrl_msg_count == 4:

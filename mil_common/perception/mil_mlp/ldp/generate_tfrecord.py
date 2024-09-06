@@ -100,8 +100,8 @@ def create_tf_example(group, path):
                 "image/object/bbox/ymax": float_list_feature(ymaxs),
                 "image/object/class/text": bytes_list_feature(classes_text),
                 "image/object/class/label": int64_list_feature(classes),
-            }
-        )
+            },
+        ),
     )
     return tf_example
 

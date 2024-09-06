@@ -1,0 +1,47 @@
+extend-select = [
+    "UP", # pyupgrade
+    "I", # isort
+    "RUF", # ruff-specific rules
+    "RSE", # flake8-raise (exceptions)
+    "COM", # flake8-comma
+    "C4", # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+
+extend-exclude = [
+    "deprecated",
+    # submodules
+    "mil_common/perception/yolov7-ros",
+    "NaviGator/gnc/navigator_path_planner/lqRRT",
+    "mil_common/drivers/pointgrey_camera_driver",
+    "mil_common/drivers/roboteq",
+    "mil_common/drivers/LMS1xx",
+    "mil_common/axros",
+    "NaviGator/simulation/VRX/vrx",
+    "NaviGator/simulation/VRX/vrx-docker",
+    "mil_common/perception/yolov7-ros",
+    "mil_common/perception/vision_stack",
+    # sub simulation
+    "SubjuGator/simulation",
+    # docker contents
+    "docker",
+]
+
+target-version = "py38"
+
+[lint]
+ignore = [
+    "E501", # Line length
+    "F405", # Unknown import
+    "F403", # Unknown names
+    "D212", # we use second line!
+    "D200", # one line docstrings are not shortened!
+    "SIM115", # too many for now...
+    "RUF012", # too many for now, adds obvious ClassVar statements
+]
+
+[per-file-ignores]
+"__init__.py" = ["F401"]
+
+[pydocstyle]
+convention = "google"

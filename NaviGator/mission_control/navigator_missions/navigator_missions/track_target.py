@@ -5,10 +5,10 @@ import numpy as np
 from geometry_msgs.msg import PoseStamped
 from mil_tools import pose_to_numpy
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class TrackTarget(Navigator):
+class TrackTarget(NaviGatorMission):
     """
     Mission to track the detect deliver target
     """
@@ -21,7 +21,7 @@ class TrackTarget(Navigator):
     DISTANCE_TOLERANCE = 0.1
 
     @classmethod
-    async def init(cls):
+    async def setup(cls):
         # Store pose of shooter for later
         cls.base_link_to_shooter = -(
             await cls.tf_listener.get_transform("base_link", "shooter")
@@ -29,7 +29,8 @@ class TrackTarget(Navigator):
         cls.base_link_to_shooter[2] = 0.0
         # Subscribe to pose
         cls.target_pose_sub = cls.nh.subscribe(
-            "/detect_deliver_target_detector/pose", PoseStamped
+            "/detect_deliver_target_detector/pose",
+            PoseStamped,
         )
         await cls.target_pose_sub.setup()
 
@@ -65,10 +66,12 @@ class TrackTarget(Navigator):
 
                 # Transform pose to ENU
                 transform = await self.tf_listener.get_transform(
-                    "enu", pose.header.frame_id, pose.header.stamp
+                    "enu",
+                    pose.header.frame_id,
+                    pose.header.stamp,
                 )
                 pos, quat = transform.transform_point(
-                    pos
+                    pos,
                 ), transform.transform_quaternion(quat)
                 pos[2] = 0.0
 

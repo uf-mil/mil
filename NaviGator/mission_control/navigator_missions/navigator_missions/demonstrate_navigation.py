@@ -4,10 +4,10 @@ from mil_misc_tools import ThrowingArgumentParser
 from mil_tools import rosmsg_to_numpy
 from std_srvs.srv import SetBoolRequest
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class DemonstrateNavigation(Navigator):
+class DemonstrateNavigation(NaviGatorMission):
     """
     Mission for the "Demonstrate Navigation And Control" challenge.
     May either use the objects in PCODAR or to clicked points.
@@ -18,7 +18,7 @@ class DemonstrateNavigation(Navigator):
     END_MARGIN_METERS = 5.0
 
     @classmethod
-    def init(cls):
+    async def setup(cls):
         parser = ThrowingArgumentParser(description="Navigation Pass Mission")
         parser.add_argument(
             "--use-pcodar",
@@ -49,7 +49,7 @@ class DemonstrateNavigation(Navigator):
         if not parameters.pcodar:
             print(1)
             self.send_feedback(
-                "Please click between the end tower of the navigation pass."
+                "Please click between the end tower of the navigation pass.",
             )
             target_point = await self.rviz_point.get_next_message()
             target_point = rosmsg_to_numpy(target_point.point)
@@ -60,7 +60,7 @@ class DemonstrateNavigation(Navigator):
             for i in range(parameters.num_moves):
                 self.send_feedback(f"Doing move {i + 1}/{parameters.num_moves}")
                 await self.move.look_at(target_point).forward(distance_per_move).go(
-                    blind=True
+                    blind=True,
                 )
             return True
         else:
@@ -68,7 +68,7 @@ class DemonstrateNavigation(Navigator):
             _, closest_reds = await self.get_sorted_objects("red_cylinder", 1)
             _, closest_greens = await self.get_sorted_objects("green_cylinder", 1)
 
-            # Rename the totems for their symantic name
+            # Rename the totems for their semantic name
             green_close = closest_greens[0]
             red_close = closest_reds[0]
 
@@ -77,13 +77,13 @@ class DemonstrateNavigation(Navigator):
 
             # Start a little behind the entrance
             await self.move.set_position(begin_midpoint).backward(
-                self.START_MARGIN_METERS
+                self.START_MARGIN_METERS,
             ).go()
 
             _, closest_reds = await self.get_sorted_objects("red_cylinder", 2)
             _, closest_greens = await self.get_sorted_objects("green_cylinder", 2)
 
-            # Rename the totems for their symantic name
+            # Rename the totems for their semantic name
             green_far = closest_greens[1]
             red_far = closest_reds[1]
 
@@ -92,7 +92,7 @@ class DemonstrateNavigation(Navigator):
 
             # Then move a little passed the exit
             await self.move.look_at(end_midpoint).set_position(end_midpoint).forward(
-                self.END_MARGIN_METERS
+                self.END_MARGIN_METERS,
             ).go()
             print("GO NAVIGATOR")
             return True

@@ -12,66 +12,56 @@ alias vrxviz="rviz -d \$MIL_REPO/NaviGator/vrx.rviz"
 alias rnav='ros_connect -n ${HOSTNAMES[1]}'
 alias sshnav='ssh navigator@${HOSTNAMES[1]} -Y'
 
-nthrust()
-{
-  local topic
-  local publishers
-  topic="/$1_motor/cmd"
-  publishers=$(rostopic info "$topic" | grep Publishers)
-  if [ "$publishers" != "Publishers: None" ]; then
-     echo "Somone is already publishing to $topic. Perhaps you need to kill thrust mapper?"
-     return 1
-  fi
-  rostopic pub "$topic" "roboteq_msgs/Command" "setpoint: $2" -r100
+nthrust() {
+	local topic
+	local publishers
+	topic="/$1_motor/cmd"
+	publishers=$(rostopic info "$topic" | grep Publishers)
+	if [ "$publishers" != "Publishers: None" ]; then
+		echo "Someone is already publishing to $topic. Perhaps you need to kill thrust mapper?"
+		return 1
+	fi
+	rostopic pub "$topic" "roboteq_msgs/Command" "setpoint: $2" -r100
 }
-_nthrust_complete()
-{
-		_list_complete "FL FR BL BR"
+_nthrust_complete() {
+	_list_complete "FL FR BL BR"
 }
 complete -F _nthrust_complete nthrust
-
 
 # Tasks
 alias nmove="mission run Move"
 
 # Wrench
-_nwrench_complete()
-{
-  _list_complete "rc autonomous keyboard emergency"
+_nwrench_complete() {
+	_list_complete "rc autonomous keyboard emergency"
 }
-nwrench()
-{
-    rosservice call /wrench/select "topic: '$1'"
+nwrench() {
+	rosservice call /wrench/select "topic: '$1'"
 }
 complete -F _nwrench_complete nwrench
 
 # Pneumatics
-_nvalve_complete()
-{
+_nvalve_complete() {
 	# Python one-liners are POWERFUL
-  # Get a list of all the actuator names and ids for autocompletion
-  ACTUATORS=$(python -c "import rospy; rospy.init_node('test', anonymous=True); param = rospy.get_param('/actuator_driver/actuators'); print ' '.join([key for key in param]) + ' ' + ' '.join([str(param[key]) for key in param if type(param[key]) == int])")
+	# Get a list of all the actuator names and ids for autocompletion
+	ACTUATORS=$(python -c "import rospy; rospy.init_node('test', anonymous=True); param = rospy.get_param('/actuator_driver/actuators'); print ' '.join([key for key in param]) + ' ' + ' '.join([str(param[key]) for key in param if type(param[key]) == int])")
 
-  _list_complete "$ACTUATORS"
+	_list_complete "$ACTUATORS"
 }
-nvalveopen()
-{
-  rosservice call /actuator_driver/actuate "'$1'" true
+nvalveopen() {
+	rosservice call /actuator_driver/actuate "'$1'" true
 }
 complete -F _nvalve_complete nvalveopen
 
-nvalveclose()
-{
-  rosservice call /actuator_driver/actuate "'$1'" false
+nvalveclose() {
+	rosservice call /actuator_driver/actuate "'$1'" false
 
 }
 complete -F _nvalve_complete nvalveclose
 
-nvalvereset()
-{
-  rosservice call /actuator_driver/reset
+nvalvereset() {
+	rosservice call /actuator_driver/reset
 }
-
 
 # Alarms
 alias nhold="rosrun ros_alarms raise station-hold"

@@ -1,0 +1,23 @@
+# distance from any hydrophone to hydrophone 0
+---
+dist_h: 2.286e-02
+# speed of sound in water
+v_sound: 1482
+#  target Frequency in Hz
+triggering/target_frequency: 30000
+#  tolerance around target frequerncy in Hz
+triggering/frequency_tolerance: 100
+# known min time between pings in sec
+triggering/min_time_between_pings: 1.5
+# threshold for triggering on gradient(max_convolution(bandpass(signal)))
+# NOTE: Tuned for a swimming pool, at Transdec recommended value :4.0
+triggering/threshold: 2.0
+# how many seconds to offset the trigger time
+triggering/trigger_offset: 0.0
+triggering/enable_on_launch: true
+# msg type on samples topic. make "Ping" for old bags
+# yamllint disable-line rule:line-length
+#  NOTE: this will give warnings about not being able to determine the frequency of ping,
+#   safely ignore these when using the "Ping" message type
+# triggering/sample_msg_type: "Ping"
+triggering/sample_msg_type: "HydrophoneSamplesStamped"

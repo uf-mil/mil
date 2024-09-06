@@ -76,7 +76,7 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
                 cv2.cvtColor(rgb_small, cv2.COLOR_BGR2LAB),
             ],
             labels,
-        )
+        ),
     )
 
     # If enabled, show specific color information at current cursor location
@@ -86,14 +86,12 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
         t_y = 0
         for i in range(len(images_and_labels)):
             # Print values in each color space of current cursor location
-            text = (
-                "[{l[0]}, {l[1]}, {l[2]}] = [{r[0]:>3}   {r[1]:>3}   {r[2]:>3}]".format(
-                    l=images_and_labels[i][1],
-                    r=images_and_labels[i][0][mouse_y, mouse_x],
-                )
-            )
+            text = f"[{images_and_labels[i][1][0]}, {images_and_labels[i][1][1]}, {images_and_labels[i][1][2]}] = [{images_and_labels[i][0][mouse_y, mouse_x][0]:>3}   {images_and_labels[i][0][mouse_y, mouse_x][1]:>3}   {images_and_labels[i][0][mouse_y, mouse_x][2]:>3}]"
             (t_w, t_h), _ = cv2.getTextSize(
-                text, cv2.FONT_HERSHEY_PLAIN, 2.3 * viz_scale, 1
+                text,
+                cv2.FONT_HERSHEY_PLAIN,
+                2.3 * viz_scale,
+                1,
             )
             t_y += t_h * 2
             cv2.putText(
@@ -107,11 +105,15 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
             )
 
     # Set 3x3 grid of single channel images from 3 3-channel images
-    make_3deep = lambda x: np.repeat(
-        x[:, :, np.newaxis], 3, axis=2
-    )  # Needed for displaying in color
+    def make_3deep(x):
+        return np.repeat(
+            x[:, :, np.newaxis],
+            3,
+            axis=2,
+        )  # Needed for displaying in color
+
     viz[:, w:] = np.vstack(
-        list(map(make_3deep, map(lambda x: flatten_channels(*x), images_and_labels)))
+        list(map(make_3deep, (flatten_channels(*x) for x in images_and_labels))),
     )
 
     # If enabled, display a color histogram in each panel
@@ -146,7 +148,11 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--use_video", help="Use video", type=str)
     parser.add_argument("-r", "--use_ros_topic", help="Use ROS topic", type=str)
     parser.add_argument(
-        "-s", "--scale", help="Scale for image processing", type=float, default=0.5
+        "-s",
+        "--scale",
+        help="Scale for image processing",
+        type=float,
+        default=0.5,
     )
     args = parser.parse_args()
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class ShootBalls(Navigator):
+class ShootBalls(NaviGatorMission):
     async def run(self, args):
         for i in range(0, 4):
             await self.reload_launcher()

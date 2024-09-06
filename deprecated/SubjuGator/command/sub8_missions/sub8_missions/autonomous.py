@@ -1,7 +1,7 @@
 import genpy
 # Import missions here
 import pinger
-import txros
+import axros
 from mil_misc_tools import text_effects
 from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
 from twisted.internet import defer
@@ -10,7 +10,7 @@ fprint = text_effects.FprintFactory(title="AUTO_MISSION").fprint
 WAIT_SECONDS = 5.0
 
 
-@txros.util.cancellableInlineCallbacks
+@axros.util.cancellableInlineCallbacks
 def run_mission(sub, mission, timeout):
     # timeout in seconds
     m = mission.run(sub).addErrback(lambda x: None)
@@ -26,7 +26,7 @@ def run_mission(sub, mission, timeout):
     defer.returnValue(False)
 
 
-@txros.util.cancellableInlineCallbacks
+@axros.util.cancellableInlineCallbacks
 def do_mission(sub):
     fprint("RUNNING MISSION", msg_color="blue")
 
@@ -54,7 +54,7 @@ def do_mission(sub):
     fprint("MISSION COMPLETE", msg_color="green")
 
 
-@txros.util.cancellableInlineCallbacks
+@axros.util.cancellableInlineCallbacks
 def _check_for_run(sub, nh, alarm):
     ''' Waits for the network loss alarm to trigger before '''
     if (yield nh.has_param("autonomous")) and (yield nh.get_param("autonomous")):
@@ -66,7 +66,7 @@ def _check_for_run(sub, nh, alarm):
         fprint("Network loss deteceted but NOT starting mission.", msg_color='red')
 
 
-@txros.util.cancellableInlineCallbacks
+@axros.util.cancellableInlineCallbacks
 def _auto_param_watchdog(nh):
     ''' Watch the `autonomous` param and notify the user when events happen  '''
     ready = False
@@ -88,7 +88,7 @@ def _auto_param_watchdog(nh):
             fprint("Autonomous mission disarmed.")
 
 
-@txros.util.cancellableInlineCallbacks
+@axros.util.cancellableInlineCallbacks
 def run(sub):
     al = yield TxAlarmListener.init(sub.nh, "network-loss")
     _auto_param_watchdog(sub.nh)

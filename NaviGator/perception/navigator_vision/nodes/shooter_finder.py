@@ -6,11 +6,12 @@ import operator
 import time
 import traceback
 
+import axros
 import cv2
 import numpy
 import sensor_msgs.point_cloud2 as pc2
-import txros
 import uvloop
+from axros import axros_tf, util
 from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion, Vector3
 from mil_tools import msg_helpers
 from nav_msgs.msg import Odometry
@@ -18,7 +19,6 @@ from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import ColorRGBA, Header
 from tf import transformations
-from txros import txros_tf, util
 from visualization_msgs.msg import Marker, MarkerArray
 
 
@@ -46,13 +46,13 @@ def rect_lines(rect):
                 ],
                 [0, 0, 0, 0, d_normal_over_d_angle[0]],
                 [0, 0, 0, 0, d_normal_over_d_angle[1]],
-            ]
+            ],
         )
 
 
 def dist_from_line(p, line, J):
     return (p - line[0]).dot(line[1]), numpy.array(
-        [-line[1][0], -line[1][1], p[0] - line[0][0], p[1] - line[0][1]]
+        [-line[1][0], -line[1][1], p[0] - line[0][0], p[1] - line[0][1]],
     ).dot(J)
 
 
@@ -95,7 +95,7 @@ async def poller(nh):
                     ObjectDBQueryRequest(
                         name="shooter",
                         cmd="",
-                    )
+                    ),
                 )
             except BaseException:
                 traceback.print_exc()
@@ -118,11 +118,11 @@ async def poller(nh):
 async def main():
     try:
         center = None
-        nh = txros.NodeHandle.from_argv("shooter_finder", anonymous=True)
+        nh = axros.NodeHandle.from_argv("shooter_finder", anonymous=True)
         await nh.setup()
 
         pc_sub = nh.subscribe("/velodyne_points", PointCloud2)
-        tf_listener = txros_tf.TransformListener(nh)
+        tf_listener = axros_tf.TransformListener(nh)
         marker_pub = nh.advertise("/shooter_fit", MarkerArray)
         result_pub = nh.advertise("/shooter_pose", PoseStamped)
         odom_sub = nh.subscribe("/odom", Odometry)
@@ -161,15 +161,17 @@ async def main():
             print(cloud.header.stamp)
             try:
                 transform = await tf_listener.get_transform(
-                    "/enu", cloud.header.frame_id, cloud.header.stamp
+                    "/enu",
+                    cloud.header.frame_id,
+                    cloud.header.stamp,
                 )
-            except txros_tf.TooPastError:
+            except axros_tf.TooPastError:
                 print("TooPastError!")
                 continue
             gen = numpy.array(
                 list(
-                    pc2.read_points(cloud, skip_nans=True, field_names=("x", "y", "z"))
-                )
+                    pc2.read_points(cloud, skip_nans=True, field_names=("x", "y", "z")),
+                ),
             ).T
             print(gen.shape)
             print(transform._p)
@@ -183,7 +185,7 @@ async def main():
                     for x in gen
                     if x[2] > Z_MIN
                     and math.hypot(x[0] - center[0], x[1] - center[1]) < RADIUS
-                ]
+                ],
             )
             print("end")
 
@@ -229,15 +231,16 @@ async def main():
                                 position=Point(rect[0][0], rect[0][1], 0.5),
                                 orientation=Quaternion(
                                     *transformations.quaternion_about_axis(
-                                        rect[2], [0, 0, 1]
-                                    )
+                                        rect[2],
+                                        [0, 0, 1],
+                                    ),
                                 ),
                             ),
                             scale=Vector3(rect[1][0], rect[1][1], 2),
                             color=ColorRGBA(1, 1, 1, 0.5),
-                        )
+                        ),
                     ],
-                )
+                ),
             )
 
             possibilities = []
@@ -254,7 +257,7 @@ async def main():
                         p,
                         transformations.quaternion_about_axis(angle, [0, 0, 1]),
                         rect[1][0] if i % 2 == 1 else rect[1][1],
-                    )
+                    ),
                 )
             best = max(
                 possibilities,
@@ -277,7 +280,7 @@ async def main():
                     [
                         [pnt[0] for pnt in front_points],
                         [pnt[1] for pnt in front_points],
-                    ]
+                    ],
                 ).T,
                 numpy.ones(len(front_points)),
             )[0]
@@ -286,14 +289,15 @@ async def main():
                     [
                         [pnt[0] for pnt in front_points],
                         numpy.ones(len(front_points)),
-                    ]
+                    ],
                 ).T,
                 [pnt[1] for pnt in front_points],
             )[0]
             print("a, b", a, b, m, b_)
 
             print(
-                "RES", numpy.std([numpy.array([a, b]).dot(pnt) for pnt in good_points])
+                "RES",
+                numpy.std([numpy.array([a, b]).dot(pnt) for pnt in good_points]),
             )
 
             # x = a, b
@@ -314,7 +318,8 @@ async def main():
             if normal.dot(best[0]) < 0:
                 normal = -normal
             q = transformations.quaternion_about_axis(
-                math.atan2(normal[1], normal[0]), [0, 0, 1]
+                math.atan2(normal[1], normal[0]),
+                [0, 0, 1],
             )
 
             print("XXX", p, best[1])
@@ -331,7 +336,7 @@ async def main():
                         position=Point(p[0], p[1], 0),
                         orientation=Quaternion(*q),
                     ),
-                )
+                ),
             )
 
             ts.append(time.time())

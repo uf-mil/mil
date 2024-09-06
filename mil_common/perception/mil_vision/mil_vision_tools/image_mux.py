@@ -82,7 +82,7 @@ class ImageMux:
         self.size = np.array(size, dtype=np.uint)
         self.shape = np.array(shape, dtype=np.uint)
         self.keep_ratio = keep_ratio
-        self.pane_size = np.array(self.size / self.shape, dtype=np.int)
+        self.pane_size = np.array(self.size / self.shape, dtype=int)
         self.border_color = border_color
         self.border_thickness = border_thickness
         self.text_color = text_color
@@ -137,7 +137,10 @@ class ImageMux:
                 continue
             tup = self._index_to_tuple(i)
             (text_width, text_height), _ = cv2.getTextSize(
-                label, self.text_font, self.text_scale, self.text_thickness
+                label,
+                self.text_font,
+                self.text_scale,
+                self.text_thickness,
             )
             x = int(self.pane_size[1] * tup[1])
             y = int(self.pane_size[0] * tup[0] + text_height)
@@ -233,15 +236,15 @@ if __name__ == "__main__":
     """
     ImageMux is intended to be used as a class, not an executable.
     The following is an example of how to use it in a python program.
-    Creates a 2x2 grid of Racoon images with labels, using some custom parameters.
+    Creates a 2x2 grid of Raccoon images with labels, using some custom parameters.
 
     To run this yourself, download some images, put them in $HOME/Pictures/[1.jpg, 2.jpg, 3.jpg, 4.jpg]
     """
     import os
 
     labels = [
-        "Chubby Racoon",
-        "Kiddo Racoons",
+        "Chubby Raccoon",
+        "Kiddo Raccoons",
         "wide",
         "tall",
         "big wide",

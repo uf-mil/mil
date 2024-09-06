@@ -1,11 +1,5 @@
 import mil_missions_core
 
-from .navigator import Navigator
-
-ChainWithTimeout = mil_missions_core.MakeChainWithTimeout(Navigator)
-Wait = mil_missions_core.MakeWait(Navigator)
-del mil_missions_core
-
 from . import pose_editor
 from .back_and_forth import BackAndForth
 from .circle import Circle
@@ -30,6 +24,7 @@ from .grinch_retract import GrinchRetract
 from .killed import Killed
 from .move import Move
 from .navigation import Navigation
+from .navigator import NaviGatorMission
 from .obstacle_avoid import ObstacleAvoid
 from .pinger import PingerMission
 from .pinger_andy import PingerAndy
@@ -37,7 +32,7 @@ from .pinger_exit import PingerExitMission
 from .reload_launcher import ReloadLauncher
 from .retract_thrusters import RetractThrusters
 from .ring_recovery import RingRecovery
-from .scan_the_code import ScanTheCode
+from .scan_the_code import ScanTheCodeMission
 from .shoot_balls import ShootBalls
 from .station_hold import StationHold
 
@@ -47,3 +42,7 @@ from .wildlife import Wildlife
 
 # Currently breaks mission server, TODO: fix or delete
 # from .track_target import TrackTarget
+
+ChainWithTimeout = mil_missions_core.MakeChainWithTimeout(NaviGatorMission)
+Wait = mil_missions_core.MakeWait(NaviGatorMission)
+del mil_missions_core

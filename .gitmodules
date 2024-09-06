@@ -11,9 +11,9 @@
 [submodule "drivers/LMS1xx"]
 	path = mil_common/drivers/LMS1xx
 	url = https://github.com/uf-mil/LMS1xx.git
-[submodule "mil_common/txros"]
-	path = mil_common/txros
-	url = https://github.com/uf-mil/txros.git
+[submodule "mil_common/axros"]
+	path = mil_common/axros
+	url = https://github.com/uf-mil/axros.git
 [submodule "NaviGator/simulation/VRX/vrx"]
 	path = NaviGator/simulation/VRX/vrx
 	url = https://github.com/uf-mil/vrx.git
@@ -23,3 +23,9 @@
 [submodule "mil_common/perception/yolov7-ros"]
 	path = mil_common/perception/yolov7-ros
 	url = https://github.com/uf-mil/yolov7-ros.git
+[submodule "SubjuGator/drivers/vectornav"]
+	path = SubjuGator/drivers/vectornav
+	url = https://github.com/uf-mil/vectornav
+[submodule "mil_common/perception/vision_stack"]
+	path = mil_common/perception/vision_stack
+	url = https://github.com/uf-mil/vision_stack.git

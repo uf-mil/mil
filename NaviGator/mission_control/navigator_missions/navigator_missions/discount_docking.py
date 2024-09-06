@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from .navigator import Navigator
+from .navigator import NaviGatorMission
 
 
-class DiscountDocking(Navigator):
+class DiscountDocking(NaviGatorMission):
     async def run(self, args):
         await self.move.forward(5).go()
 

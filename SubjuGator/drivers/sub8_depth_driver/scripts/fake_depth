@@ -20,6 +20,6 @@ while not rospy.is_shutdown():
                 frame_id="map",
             ),
             depth=0,
-        )
+        ),
     )
     rospy.sleep(rospy.Duration(0.2))

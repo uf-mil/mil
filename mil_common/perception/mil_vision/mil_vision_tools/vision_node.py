@@ -27,7 +27,7 @@ def create_object_msg(
     is needed/available in your application.
 
     Args:
-        name (str): Name of the identifed object.
+        name (str): Name of the identified object.
         attributes (str): Attributes to attach to message, the purpose and value
             of this attribute will vary by application. Defaults to an empty string.
         confidence (Optional[float]): Float between 0 and 1 describing the confidence
@@ -90,7 +90,9 @@ class VisionNode(metaclass=abc.ABCMeta):
 
     def __init__(self):
         self._objects_pub = rospy.Publisher(
-            "~identified_objects", ObjectsInImage, queue_size=3
+            "~identified_objects",
+            ObjectsInImage,
+            queue_size=3,
         )
         self._camera_info = None
         self.camera_model = None
@@ -131,7 +133,7 @@ class VisionNode(metaclass=abc.ABCMeta):
             len(msg.objects) and not isinstance(msg.objects[0], ObjectInImage)
         ):
             rospy.logwarn(
-                "find_objects did not return a list of mil_msgs/ObjectInImage message. Ignoring."
+                "find_objects did not return a list of mil_msgs/ObjectInImage message. Ignoring.",
             )
         self._objects_pub.publish(msg)
 
@@ -170,7 +172,9 @@ if __name__ == "__main__":
             blurred = cv2.blur(img, (5, 5))
             edges = cv2.Canny(blurred, 100, 200)
             _, contours, _ = cv2.findContours(
-                edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+                edges,
+                cv2.RETR_TREE,
+                cv2.CHAIN_APPROX_SIMPLE,
             )
             contours = np.array(contours)
             objects = []
@@ -186,19 +190,21 @@ if __name__ == "__main__":
                     except ZeroDivisionError:
                         continue
                     objects.append(
-                        create_object_msg("contour", center=center, attributes="green")
+                        create_object_msg("contour", center=center, attributes="green"),
                     )
                 # Demonstration of adding an object where the entire contour outline can be identified
                 if idx % 3 == 1:
                     objects.append(
-                        create_object_msg("contour", contour=contour, confidence=0.5)
+                        create_object_msg("contour", contour=contour, confidence=0.5),
                     )
                 # Demonstration of adding an object where a bounding rectangle can be identified
                 if idx % 3 == 2:
                     objects.append(
                         create_object_msg(
-                            "contour", rect=cv2.boundingRect(contour), confidence=0.8
-                        )
+                            "contour",
+                            rect=cv2.boundingRect(contour),
+                            confidence=0.8,
+                        ),
                     )
 
             # Log that an image has been received for debugging this demo

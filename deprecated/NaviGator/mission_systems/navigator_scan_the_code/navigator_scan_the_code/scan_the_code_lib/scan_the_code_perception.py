@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import numpy.linalg as npl
 import sensor_msgs.point_cloud2 as pc2
-import txros
+import axros
 from color_finder import ColorFinder
 from cv_bridge import CvBridge, CvBridgeError
 from image_geometry import PinholeCameraModel
@@ -42,7 +42,7 @@ class ScanTheCodePerception(object):
         self.count = 0
         self.depths = []
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def _init(self):
         self.vel_sub = yield self.nh.subscribe("/velodyne_points", PointCloud2)
         self.image_sub = yield self.nh.subscribe("/camera/front/right/image_rect_color", Image)
@@ -152,7 +152,7 @@ class ScanTheCodePerception(object):
             ymax = h - 1
         return xmin, ymin, xmax, ymax
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def get_stc_points(self, msg, stc_pos):
         trans = yield self.my_tf.get_transform("/front_right_cam_optical", "/velodyne", msg.header.stamp)
         trans1 = yield self.my_tf.get_transform("/front_right_cam_optical", "/enu", msg.header.stamp)
@@ -194,7 +194,7 @@ class ScanTheCodePerception(object):
 
         defer.returnValue(points_keep)
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def search(self, scan_the_code):
         """Search for the colors in the scan the code object."""
         pntcloud = yield self.vel_sub.get_next_message()
@@ -237,7 +237,7 @@ class ScanTheCodePerception(object):
             defer.returnValue((True, colors))
         defer.returnValue((False, None))
 
-    @txros.util.cancellableInlineCallbacks
+    @axros.util.cancellableInlineCallbacks
     def correct_pose(self, scan_the_code):
         """Check to see if we are looking at the corner of scan the code."""
         self.count += 1
