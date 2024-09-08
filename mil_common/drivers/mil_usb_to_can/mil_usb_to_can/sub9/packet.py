@@ -4,12 +4,15 @@ import struct
 from dataclasses import dataclass
 from enum import Enum
 from functools import lru_cache
-from typing import ClassVar, get_type_hints
+from typing import ClassVar, TypeVar, get_type_hints
 
 SYNC_CHAR_1 = 0x37
 SYNC_CHAR_2 = 0x01
 
 _packet_registry: dict[int, dict[int, type[Packet]]] = {}
+
+
+PacketSelf = TypeVar("PacketSelf", bound="Packet")
 
 
 def hexify(data: bytes) -> str:
@@ -22,12 +25,22 @@ def get_cache_hints(cls):
 
 
 class ChecksumException(OSError):
+    """
+    An invalid checksum appeared.
+    """
+
     def __init__(
         self,
         packet: type[Packet],
         received: tuple[int, int],
         expected: tuple[int, int],
     ):
+        """
+        Attributes:
+            packet (Type[:class:`~.Packet`]): The packet with the invalid checksum.
+            received (Tuple[int, int]): The received Fletcher's checksum.
+            expected (Tuple[int, int]): The expected Fletcher's checksum.
+        """
         super().__init__(
             f"Invalid checksum in packet of type {packet.__qualname__}: received {received}, expected {expected}",
         )
@@ -129,12 +142,18 @@ class Packet:
         return data + struct.pack("<BB", *checksum)
 
     @classmethod
-    def from_bytes(cls, packed: bytes) -> Packet:
+    def from_bytes(cls: type[PacketSelf], packed: bytes) -> PacketSelf:
         """
         Constructs a packet from a packed packet in a :class:`bytes` object.
         If a packet is found with the corresponding message and subclass ID,
-        then an instance of that packet class will be returned, else :class:`Packet`
-        will be returned.
+        then an instance (or subclass) of that packet class will be returned.
+
+        Raises:
+            ChecksumException: The checksum is invalid.
+            LookupError: No packet with the specified class and subclass IDs exist.
+
+        Returns:
+            An instance of the appropriate packet subclass.
         """
         msg_id = packed[2]
         subclass_id = packed[3]
@@ -150,7 +169,12 @@ class Packet:
                     cls._calculate_checksum(packed[2:-2]),
                 )
             unpacked = struct.unpack(subclass.payload_format, payload)
-            return subclass(*unpacked)
+            packet = subclass(*unpacked)
+            if not isinstance(packet, cls):
+                raise RuntimeError(
+                    f"Attempted to resolve packet of type {cls.__qualname__}, but found {packet.__class__.__qualname__} for bytes: {hexify(payload)}",
+                )
+            return packet
         raise LookupError(
             f"Attempted to reconstruct packet with msg_id 0x{msg_id:02x} and subclass_id 0x{subclass_id:02x}, but no packet with IDs was found.",
         )

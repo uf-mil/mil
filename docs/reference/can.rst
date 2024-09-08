@@ -290,6 +290,22 @@ byte length.
 | Status)    |              |                |                                                                         |
 +------------+--------------+----------------+-------------------------------------------------------------------------+
 
+Exceptions
+~~~~~~~~~~
+
+Exception Hierarchy
+"""""""""""""""""""
+.. currentmodule:: mil_usb_to_can.sub9
+
+.. exception_hierarchy::
+
+    - :exc:`ChecksumException`
+
+Exception List
+"""""""""""""""""""
+.. autoclass:: mil_usb_to_can.sub9.ChecksumException
+    :members:
+
 CANDeviceHandle
 ~~~~~~~~~~~~~~~
 .. attributetable:: mil_usb_to_can.sub9.CANDeviceHandle

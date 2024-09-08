@@ -15,6 +15,11 @@ class TestPacket(Packet, msg_id=0x47, subclass_id=0x44, payload_format="?Hd"):
     example_float: float
 
 
+@dataclass
+class TestPacketTwo(Packet, msg_id=0x47, subclass_id=0x45, payload_format=""):
+    pass
+
+
 class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
     """
     Tests basic application packet functionality.
@@ -43,6 +48,12 @@ class BasicApplicationPacketTest(unittest.IsolatedAsyncioTestCase):
             TestPacket.from_bytes(TestPacket.__bytes__(packet)),
             packet,
         )
+        self.assertEqual(
+            Packet.from_bytes(TestPacket.__bytes__(packet)),
+            packet,
+        )
+        with self.assertRaises(RuntimeError):
+            TestPacketTwo.from_bytes(bytes(packet))
 
     def test_comparisons(self):
         packet = TestPacket(False, 42, 3.14)
