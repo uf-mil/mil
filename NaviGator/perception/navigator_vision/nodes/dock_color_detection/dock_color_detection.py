@@ -1,7 +1,21 @@
 import cv2 as cv
 import numpy as np
+import os
 
-image = cv.imread('./test_images/dock_blue1.jpg')
+from image_geometry import PinholeCameraModel
+from subjugator_msgs.srv import (
+    VisionRequest,
+    VisionRequest2D,
+    VisionRequest2DResponse,
+    VisionRequestResponse,
+)
+
+file_path = './test_images/dock_blue1.jpg'
+
+if not os.path.exists(file_path):
+    print(f"Path does not exist: {file_path}")
+
+image = cv.imread(file_path)
 
 gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
