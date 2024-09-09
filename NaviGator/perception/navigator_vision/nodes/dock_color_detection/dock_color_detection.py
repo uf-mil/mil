@@ -4,11 +4,11 @@ import numpy as np
 # Function that gets color inside bounds
 def getColor(r, g, b):
     leniency = 0.9 # smaller value = more lenient
-    if r > confidence*(g+b):
+    if r > leniency*(g+b):
         return "Red"
-    elif g > confidence*(r+b):
+    elif g > leniency*(r+b):
         return "Green"
-    elif b > confidence*(r+g):
+    elif b > leniency*(r+g):
         return "Blue"
     else:
         return "Other"
