@@ -76,7 +76,7 @@ jobs:
           source devel/setup.bash
           catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3 \
                       -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 \
-                      -j6 \
+                      "-j$(($(nproc)-2))" \
                       run_tests
       - name: Get test results
         run: >

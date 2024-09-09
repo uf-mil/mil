@@ -141,3 +141,7 @@ alias xbox=startxbox
 
 # PYTHONPATH modifications
 export PYTHONPATH="${HOME}/catkin_ws/src/mil/mil_common/perception/vision_stack/src:${HOME}/catkin_ws/src/mil/mil_common/axros/axros/src:${PYTHONPATH}"
+
+# Ensure that VRX does _not_ exit on completion, as we're not in a time-limited
+# environment, and exiting too early would not let us debug as much!
+export VRX_EXIT_ON_COMPLETION=0
