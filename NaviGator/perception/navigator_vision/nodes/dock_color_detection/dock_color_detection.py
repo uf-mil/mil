@@ -52,7 +52,7 @@ for contour in contours:
             # Get the RGB values
             b, g, r = avgColor # for some reason colors are in b, g, r
             color = getColor(r, g, b)
-            if color != "other":
+            if color != "Other":
                 cv.drawContours(image, [approx], -1, (0, 255, 0), 2)
                 cv.putText(image, color, (x, y - 10), cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
