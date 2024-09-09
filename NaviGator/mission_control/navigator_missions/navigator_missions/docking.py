@@ -40,6 +40,7 @@ class Docking(NaviGatorMission):
             callback=self.ogrid_cb,
         )
 
+        # Service to save and restore the settings of PCODAR
         self.pcodar_save = self.nh.get_service_client("/pcodar/save", SetBool)
         # self.image_sub = self.nh.subscribe(
         #     "/wamv/sensors/cameras/front_left_camera/image_raw", Image
@@ -86,8 +87,11 @@ class Docking(NaviGatorMission):
 
         self.cam_frame = (await self.image_sub.get_next_message()).header.frame_id
         rospy.logerr("HERE2")
+
+        # Save PCODAR settings
         await self.pcodar_save(SetBoolRequest(True))
 
+        # Change cluster tolerance to make it easier to find dock
         pcodar_cluster_tol = DoubleParameter()
         pcodar_cluster_tol.name = "cluster_tolerance_m"
         pcodar_cluster_tol.value = 10
@@ -95,6 +99,8 @@ class Docking(NaviGatorMission):
         rospy.logerr("HERE3")
         await self.nh.sleep(5)
 
+        # Get the POI (point of interest) from the config file and move to it
+        # This is a predetermined position of the general location for the dock
         pos = await self.poi.get("dock")
         rospy.logerr("HERE4")
         await self.move.look_at(pos).set_position(pos).go()
@@ -107,31 +113,45 @@ class Docking(NaviGatorMission):
         await self.pcodar_set_params(doubles=[pcodar_cluster_tol])
         await self.nh.sleep(5)
 
+        # move to the open side of the dock
         await self.move_to_correct_side()
 
-        # recalculate dock position once on correct side
-        # await self.find_dock()
-
+        # retry calculation to make sure we really found the open side
         await self.move_to_correct_side()
 
+        # get the dock object from the database
         dock, pos = await self.get_sorted_objects(name="dock", n=1)
+
         # dock is PerceptionObject
         position, rotation, dock = self.get_dock_data(dock)
+
+        # get LIDAR points
         points = rosmsg_to_numpy(dock.points)
+
+        # get transform from enu to boat space
         enu_to_boat = await self.tf_listener.get_transform("wamv/base_link", "enu")
         corrected = np.empty(points.shape)
+
+        # convert LIDAR points from enu to boat space
         for i in range(points.shape[0]):
             corrected[i] = enu_to_boat.transform_point(points[i])
 
+        # get the centers and clusters that represent the backside of the dock
         centers, clusters = self.get_cluster_centers(corrected)
+
         centers = centers[centers[:, 1].argsort()][::-1]
+
+        # crop the images to get bbox and find color
         images = await self.crop_images(clusters)
         self.find_color(images, 1)
 
+        # temporary code that just moves boat to center of leftmost cluster
         left = copy.deepcopy(centers[0])
         rospy.logerr(centers[0])
         rospy.logerr(centers[1])
         rospy.logerr(centers[2])
+
+        # calculate center of cluster and move towards it but at an offset distance
         left[0] = 0
         forward = copy.deepcopy(centers[0])
         forward[0] = forward[0] - 5
@@ -161,19 +181,24 @@ class Docking(NaviGatorMission):
         dock, pos = None, None
         while dock is None or pos is None:
             try:
+                # looks the the LIDAR cluster database and finds the object with name "dock"
                 dock, pos = await self.get_sorted_objects(name="dock", n=1)
             except Exception as _:
+                # retries if an exception occurs
                 await self.find_dock()
                 dock, pos = await self.get_sorted_objects(name="dock", n=1)
 
+        # find the open side of the dock
         side, position = self.get_correct_side(dock)
 
-        # TODO, add check to recaluclate position once we get on either side of the dock
+        # move the boat to the middle of the correct side offset by 2 meters back and face the center of the dock
         await self.move.set_position(side).look_at(position).backward(2).go()
 
     def get_correct_side(self, dock):
         # dock is PerceptionObject
         position, rotation, dock = self.get_dock_data(dock)
+
+        # get bounding box of the dock
         bbox_large = rosmsg_to_numpy(dock.scale)
         bbox_copy = copy.deepcopy(bbox_large)
 
@@ -214,7 +239,10 @@ class Docking(NaviGatorMission):
             position,
         )
 
+    # separates the clusters using k means clustering
     def get_cluster_centers(self, data):
+
+        # cut off all points below the mean z value
         mean = np.mean(data, axis=0)[2]
         data = data[data[:, 2] > mean]
         centroids = []
@@ -432,6 +460,12 @@ class Docking(NaviGatorMission):
         )
 
     # returns True if side a is closest, False is side b is closest
+    # This function works by drawing lines on the OGrid image. The OGrid is a 2D top down
+    # image that takes the LIDAR points and colors a pixel in this grid is a point occupies it.
+    # Using the bounding box of the LIDAR object, we create a bounding box around the 2D image of the dock.
+    # Then, the center is calculated and lines are drawn to the middle point of each side of the bounding box.
+    # The number of occupies squares are counted on the line from the object center to line middle. The line
+    # which has the least amount of occupied space points to the open side of the dock.
     def calculate_correct_side(
         self,
         side_a: [float],
@@ -537,15 +571,16 @@ class Docking(NaviGatorMission):
         msg = None
         while msg is None:
             try:
-                # msgs, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
+                # gets the largest object in the clusters database
                 msg = await self.get_largest_object()
             except Exception:
                 await self.move.forward(10).go()
+        # label the largest LIDAR object in the PCODAR database "dock"
         await self.pcodar_label(msg.id, "dock")
         # if no pcodar objects, throw error, exit mission
-        # pose = poses[0]
         pose = pose_to_numpy(msg.pose)
 
+        # return position of dock
         return pose
 
     def ogrid_cb(self, msg):
