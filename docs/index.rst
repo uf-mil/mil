@@ -33,6 +33,7 @@ New Members
     infrastructure/index
 
     culture
+    purchasing
     branding
 
 * **Interested software members**: Please read the :doc:`Software Getting Started Guide <software/getting_started>`.
@@ -43,7 +44,7 @@ Relevant Links
 --------------
 * **Websites:** `MIL Website <https://mil.ufl.edu>`_ / `NaviGator <https://navigator.org>`_ / `SubjuGator <https://subjugatoruf.org>`_
 * **Source:** `GitHub <https://github.com/uf-mil/mil>`_
-* **Branding:** :doc:`Branding <branding>`
+* **Laboratory Resources:** :doc:`Purchasing <purchasing>` / :doc:`Branding <branding>`
 * **Culture:** :doc:`Glossary <glossary>` / :doc:`Culture <culture>` / :doc:`Technical Design <design/design>`
 
 Software Reference
