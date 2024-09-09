@@ -1,7 +1,19 @@
 import cv2 as cv
 import numpy as np
 
-image = cv.imread('./test_images/dock_red_angled1.jpg')
+# Function that gets color inside bounds
+def getColor(r, g, b):
+    leniency = 0.9 # smaller value = more lenient
+    if r > confidence*(g+b):
+        return "Red"
+    elif g > confidence*(r+b):
+        return "Green"
+    elif b > confidence*(r+g):
+        return "Blue"
+    else:
+        return "Other"
+
+image = cv.imread('./test_images/dock_red1.jpg')
 
 gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
@@ -29,7 +41,21 @@ for contour in contours:
 
         # Check if the aspect ratio is close to 1 (square)
         if 0.95 <= aspect_ratio <= 1.05:
-            cv.drawContours(image, [approx], -1, (0, 255, 0), 2)
+            # Get region in bounds of contour
+            dockBox = image[y:y+h, x:x+w]
+
+            # Get average color
+            avgColorRow = np.average(dockBox, axis=0)
+            avgColor = np.average(avgColorRow, axis=0)
+            avgColor = avgColor.astype(int)
+
+            # Get the RGB values
+            b, g, r = avgColor # for some reason colors are in b, g, r
+            color = getColor(r, g, b)
+            if color != "other":
+                cv.drawContours(image, [approx], -1, (0, 255, 0), 2)
+                cv.putText(image, color, (x, y - 10), cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
 
 # Display the result
 cv.imshow("Squares Detected", image)
