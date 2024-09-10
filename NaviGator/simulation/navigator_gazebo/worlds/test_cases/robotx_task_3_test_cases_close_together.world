@@ -3349,10 +3349,10 @@
       <pose>-527 167 0.1 0 -0 1</pose>
     </model>
     <state world_name='template'>
-      <sim_time>239 220000000</sim_time>
-      <real_time>252 494574907</real_time>
-      <wall_time>1725914936 210005788</wall_time>
-      <iterations>239220</iterations>
+      <sim_time>263 9000000</sim_time>
+      <real_time>24 709775267</real_time>
+      <wall_time>1725920350 763022150</wall_time>
+      <iterations>23789</iterations>
       <model name='antenna'>
         <pose>-531.064 147.669 1.59471 -0.068142 0 -0.1</pose>
         <scale>1 1 1</scale>
@@ -3544,181 +3544,196 @@
         </link>
       </model>
       <model name='two_buoy_system'>
-        <pose>-525.465 178.033 0.482903 0 -0 1.15868</pose>
+        <static>1</static>
+        <pose>-525.465 178.033 0.0 0 -0 1.15868</pose>
         <scale>1 1 1</scale>
         <link name='gate_start_green::link'>
-          <pose>-520.884 176.03 0.482903 0 -0 1.15868</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
+          <pose>-520.884 176.03 0.0 0 -0 1.15868</pose>
+          <velocity>0 0 -0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
+          <wrench>0 0 0 0 0 0</wrench>
         </link>
         <link name='gate_start_red::link'>
-          <pose>-530.046 180.036 0.482903 0 -0 1.15868</pose>
+          <pose>-530.046 180.036 0.0 0 -0 1.15868</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
+          <wrench>0 0 0 0 0 0</wrench>
         </link>
       </model>
       <model name='two_buoy_system_clone'>
-        <pose>-520.457 183.452 0.482903 0 -0 0.868014</pose>
+        <static>1</static>
+        <pose>-520.457 183.451 0 0 -0 0.868014</pose>
         <scale>1 1 1</scale>
         <link name='gate_start_green::link'>
-          <pose>-516.641 180.22 0.482903 0 -0 0.868014</pose>
+          <pose>-516.641 180.22 0.0 0 -0 0.868014</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
+          <wrench>0 0 0 0 0 0</wrench>
         </link>
         <link name='gate_start_red::link'>
-          <pose>-524.272 186.683 0.482903 0 -0 0.868014</pose>
+          <pose>-524.272 186.683 0.0 0 -0 0.868014</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
+          <wrench>0 0 0 0 0 0</wrench>
         </link>
       </model>
       <model name='two_buoy_system_clone_0'>
-        <pose>-516.712 191.247 0.482903 0 -0 1.35428</pose>
+        <static>1</static>
+
+        <pose>-516.712 191.247 0.0 0 -0 1.35428</pose>
         <scale>1 1 1</scale>
         <link name='gate_start_green::link'>
-          <pose>-511.829 190.173 0.482903 0 -0 1.35428</pose>
+          <pose>-511.829 190.173 0.0 0 -0 1.35428</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
+          <wrench>0 0 0 0 0 0</wrench>
+
         </link>
         <link name='gate_start_red::link'>
-          <pose>-521.595 192.321 0.482903 0 -0 1.35428</pose>
+          <pose>-521.595 192.321 0.0 0 -0 1.35428</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
+          <wrench>0 0 0 0 0 0</wrench>
+
         </link>
       </model>
       <model name='two_buoy_system_clone_1_clone'>
-        <pose>-519.969 204.216 0.482903 0 -0 1.80268</pose>
+        <static>1</static>
+
+        <pose>-519.969 204.216 0.0 0 -0 1.80268</pose>
         <scale>1 1 1</scale>
         <link name='gate_start_green::link'>
-          <pose>-515.103 205.365 0.482903 0 -0 1.80268</pose>
+          <pose>-515.103 205.365 0.0 0 -0 1.80268</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
+          <wrench>0 0 0 0 0 0</wrench>
+
         </link>
         <link name='gate_start_red::link'>
-          <pose>-524.835 203.067 0.482903 0 -0 1.80268</pose>
+          <pose>-524.835 203.067 0.0 0 -0 1.80268</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
+          <wrench>0 0 0 0 0 0</wrench>
+
         </link>
       </model>
       <model name='two_buoy_system_clone_1_clone_0'>
-        <pose>-523.287 211.231 0.482903 0 -0 1.80268</pose>
+        <static>1</static>
+
+        <pose>-523.287 211.231 0.0 0 -0 1.80268</pose>
         <scale>1 1 1</scale>
         <link name='gate_start_green::link'>
-          <pose>-518.421 212.38 0.482903 0 -0 1.80268</pose>
+          <pose>-518.421 212.38 0.0 0 -0 1.80268</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
+          <wrench>0 0 0 0 0 0</wrench>
+
         </link>
         <link name='gate_start_red::link'>
-          <pose>-528.153 210.082 0.482903 0 -0 1.80268</pose>
+          <pose>-528.153 210.082 0.0 0 -0 1.80268</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
+          <wrench>0 0 0 0 0 0</wrench>
+
         </link>
       </model>
       <model name='two_buoy_system_clone_1_clone_1'>
-        <pose>-527.488 218.269 0.482903 0 -0 1.80268</pose>
+        <static>1</static>
+        <pose>-527.488 218.269 0.0 0 -0 1.80268</pose>
         <scale>1 1 1</scale>
         <link name='gate_start_green::link'>
-          <pose>-522.622 219.418 0.482903 0 -0 1.80268</pose>
+          <pose>-522.622 219.418 0.0 0 -0 1.80268</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
+          <wrench>0 0 0 0 0 0</wrench>
         </link>
         <link name='gate_start_red::link'>
-          <pose>-532.354 217.12 0.482903 0 -0 1.80268</pose>
+          <pose>-532.354 217.12 0.0 0 -0 1.80268</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
+          <wrench>0 0 0 0 0 0</wrench>
         </link>
       </model>
       <model name='wamv'>
-        <pose>-526.704 167.461 -0.099201 -9.6e-05 -0.00285 1.00001</pose>
+        <pose>-526.675 167.507 -0.099201 -9.6e-05 -0.002855 1.00001</pose>
         <scale>1 1 1</scale>
         <link name='BL_engine_link'>
-          <pose>-528.674 166.43 0.213427 -0.002083 -0.001948 1.7854</pose>
-          <velocity>0.00123 0.001916 3e-06 -1e-06 1e-06 0</velocity>
-          <acceleration>2e-06 3e-06 3.2e-05 3.9e-05 8.8e-05 -3e-06</acceleration>
-          <wrench>2.4e-05 3.8e-05 0.000474 0 -0 0</wrench>
+          <pose>-528.644 166.476 0.213417 -0.002087 -0.001951 1.7854</pose>
+          <velocity>0.001236 0.001919 8.1e-05 -2e-05 3.1e-05 0</velocity>
+          <acceleration>4.9e-05 6.9e-05 0.000932 -0.000321 0.000352 -8e-06</acceleration>
+          <wrench>0.000741 0.001037 0.013987 0 -0 0</wrench>
         </link>
         <link name='BL_propeller_link'>
-          <pose>-528.613 166.159 -0.296483 -0.002083 -0.001948 1.7854</pose>
-          <velocity>0.00123 0.001915 3e-06 -1e-06 1e-06 0</velocity>
-          <acceleration>-3e-06 -5e-06 3.5e-05 -1.4e-05 9e-06 0</acceleration>
-          <wrench>-1e-06 -2e-06 1.7e-05 0 -0 0</wrench>
+          <pose>-528.584 166.205 -0.296495 -0.002087 -0.001951 1.7854</pose>
+          <velocity>0.001221 0.001908 8.5e-05 -2e-05 3.1e-05 0</velocity>
+          <acceleration>-8.7e-05 -0.000125 0.00102 -0.000381 0.000264 -5e-06</acceleration>
+          <wrench>-4.3e-05 -6.3e-05 0.00051 0 -0 0</wrench>
         </link>
         <link name='BR_engine_link'>
-          <pose>-526.822 165.241 0.213639 0.001948 -0.002083 0.214616</pose>
-          <velocity>0.00123 0.001916 3e-06 -1e-06 1e-06 0</velocity>
-          <acceleration>2e-06 3e-06 3.2e-05 -6.4e-05 -6.5e-05 3e-06</acceleration>
-          <wrench>2.4e-05 3.8e-05 0.000484 0 -0 0</wrench>
+          <pose>-526.793 165.287 0.213628 0.001951 -0.002087 0.214619</pose>
+          <velocity>0.001236 0.001919 4.8e-05 -2e-05 3.1e-05 0</velocity>
+          <acceleration>5e-05 7e-05 0.000895 -0.000429 0.00019 3e-06</acceleration>
+          <wrench>0.000753 0.001056 0.013431 0 -0 0</wrench>
         </link>
         <link name='BR_propeller_link'>
-          <pose>-527.093 165.183 -0.29631 0.001948 -0.002083 0.214616</pose>
-          <velocity>0.00123 0.001915 3e-06 -1e-06 1e-06 0</velocity>
-          <acceleration>-3e-06 -5e-06 3.5e-05 -1.4e-05 9e-06 0</acceleration>
-          <wrench>-1e-06 -2e-06 1.8e-05 0 -0 0</wrench>
+          <pose>-527.064 165.229 -0.296321 0.001951 -0.002087 0.214619</pose>
+          <velocity>0.001221 0.001909 5.8e-05 -2e-05 3.1e-05 0</velocity>
+          <acceleration>-8.5e-05 -0.000124 0.000989 -0.000381 0.000264 -0</acceleration>
+          <wrench>-4.2e-05 -6.2e-05 0.000495 0 -0 0</wrench>
         </link>
         <link name='FL_engine_link'>
-          <pose>-526.371 168.98 0.401657 0.001948 -0.002083 0.214616</pose>
-          <velocity>0.00123 0.001916 -2e-06 -1e-06 1e-06 0</velocity>
-          <acceleration>3e-06 5e-06 -2.3e-05 -6.4e-05 -6.5e-05 3e-06</acceleration>
-          <wrench>4.7e-05 7.7e-05 -0.000349 0 -0 0</wrench>
+          <pose>-526.341 169.026 0.401664 0.001951 -0.002087 0.214619</pose>
+          <velocity>0.001241 0.001923 -4e-05 -2e-05 3.1e-05 0</velocity>
+          <acceleration>9.8e-05 0.000142 -0.000647 -0.000429 0.000189 2e-06</acceleration>
+          <wrench>0.001464 0.002133 -0.0097 0 -0 0</wrench>
         </link>
         <link name='FL_propeller_link'>
-          <pose>-526.642 168.922 -0.108291 0.001948 -0.002083 0.214616</pose>
-          <velocity>0.00123 0.001915 -2e-06 -1e-06 1e-06 0</velocity>
-          <acceleration>-1e-06 -2e-06 -2e-05 -1.4e-05 9e-06 0</acceleration>
-          <wrench>-1e-06 -1e-06 -1e-05 0 -0 0</wrench>
+          <pose>-526.612 168.968 -0.108285 0.001951 -0.002087 0.214619</pose>
+          <velocity>0.001225 0.001913 -3e-05 -2e-05 3.1e-05 0</velocity>
+          <acceleration>-3.7e-05 -5.2e-05 -0.000553 -0.000381 0.000264 -0</acceleration>
+          <wrench>-1.9e-05 -2.6e-05 -0.000276 0 -0 0</wrench>
         </link>
         <link name='FR_engine_link'>
-          <pose>-525.462 168.396 0.401581 -0.002083 -0.001948 1.7854</pose>
-          <velocity>0.00123 0.001916 -2e-06 -1e-06 1e-06 0</velocity>
-          <acceleration>3e-06 5e-06 -2.3e-05 3.9e-05 8.8e-05 -3e-06</acceleration>
-          <wrench>4.7e-05 7.8e-05 -0.000344 0 -0 0</wrench>
+          <pose>-525.432 168.442 0.401588 -0.002087 -0.001951 1.7854</pose>
+          <velocity>0.001241 0.001923 -5.6e-05 -2e-05 3.1e-05 0</velocity>
+          <acceleration>9.8e-05 0.000143 -0.000665 -0.000321 0.000352 -4e-06</acceleration>
+          <wrench>0.001469 0.002141 -0.009973 0 -0 0</wrench>
         </link>
         <link name='FR_propeller_link'>
-          <pose>-525.402 168.126 -0.10833 -0.002083 -0.001948 1.7854</pose>
-          <velocity>0.00123 0.001915 -2e-06 -1e-06 1e-06 0</velocity>
-          <acceleration>-1e-06 -2e-06 -2e-05 -1.4e-05 9e-06 0</acceleration>
-          <wrench>-1e-06 -1e-06 -1e-05 0 -0 0</wrench>
+          <pose>-525.372 168.172 -0.108324 -0.002087 -0.001951 1.7854</pose>
+          <velocity>0.001226 0.001913 -5.2e-05 -2e-05 3.1e-05 0</velocity>
+          <acceleration>-3.7e-05 -5.1e-05 -0.000578 -0.000381 0.000264 -1e-06</acceleration>
+          <wrench>-1.9e-05 -2.6e-05 -0.000289 0 -0 0</wrench>
         </link>
         <link name='wamv/ball_shooter_base_link'>
-          <pose>-526.667 168.074 1.2023 -0.00038 -0.002826 1.10001</pose>
-          <velocity>0.001231 0.001917 -1e-06 -1e-06 1e-06 -1e-06</velocity>
-          <acceleration>1.1e-05 1.7e-05 -8e-06 -2.2e-05 9e-06 2.1e-05</acceleration>
-          <wrench>5e-06 8e-06 -4e-06 0 -0 0</wrench>
+          <pose>-526.638 168.12 1.20231 -0.000381 -0.002832 1.10001</pose>
+          <velocity>0.001266 0.001939 -1.3e-05 -2e-05 3e-05 3e-06</velocity>
+          <acceleration>0.000391 0.000431 -0.000214 -0.000609 0.000269 0.003836</acceleration>
+          <wrench>0.000196 0.000215 -0.000107 0 -0 0</wrench>
         </link>
         <link name='wamv/ball_shooter_launcher_link'>
-          <pose>-526.677 168.056 1.31012 -0.000547 -0.802826 1.1004</pose>
-          <velocity>0.001231 0.001917 -1e-06 -1e-06 1e-06 -1e-06</velocity>
-          <acceleration>1.1e-05 1.8e-05 -8e-06 4.1e-05 9.3e-05 0.000118</acceleration>
-          <wrench>6e-06 9e-06 -4e-06 0 -0 0</wrench>
+          <pose>-526.647 168.102 1.31013 -0.000548 -0.802832 1.1004</pose>
+          <velocity>0.001269 0.001941 -1.2e-05 -2e-05 3e-05 3e-06</velocity>
+          <acceleration>0.000408 0.000452 -0.000214 0.006263 0.01267 0.018256</acceleration>
+          <wrench>0.000204 0.000226 -0.000107 0 -0 0</wrench>
         </link>
         <link name='wamv/base_link'>
-          <pose>-526.704 167.461 -0.099201 -9.6e-05 -0.00285 1.00001</pose>
-          <velocity>0.00123 0.001915 0 -1e-06 1e-06 0</velocity>
-          <acceleration>-1e-06 -1e-06 0 -0.362998 -0.259054 -0.007291</acceleration>
-          <wrench>-0.000157 -0.000256 6.6e-05 0 -0 0</wrench>
+          <pose>-526.675 167.507 -0.099201 -9.6e-05 -0.002855 1.00001</pose>
+          <velocity>0.001226 0.001913 1e-06 -2e-05 3.1e-05 0</velocity>
+          <acceleration>-2.7e-05 -3.9e-05 1.4e-05 -0.363576 -0.258934 -0.007296</acceleration>
+          <wrench>-0.004927 -0.007062 0.002522 0 -0 0</wrench>
         </link>
         <link name='wamv/imu_wamv_link'>
-          <pose>-526.72 167.751 1.40146 -9.6e-05 -0.00285 1.00001</pose>
-          <velocity>0.001231 0.001917 -0 -1e-06 1e-06 0</velocity>
-          <acceleration>1.2e-05 1.9e-05 -3e-06 -1.4e-05 8e-06 -1e-06</acceleration>
-          <wrench>1e-06 2e-06 -0 0 -0 0</wrench>
+          <pose>-526.691 167.797 1.40146 -9.6e-05 -0.002855 1.00001</pose>
+          <velocity>0.001272 0.001943 -5e-06 -2e-05 3.1e-05 0</velocity>
+          <acceleration>0.000363 0.000522 -8.7e-05 -0.00038 0.000265 1e-06</acceleration>
+          <wrench>3.6e-05 5.2e-05 -9e-06 0 -0 0</wrench>
         </link>
         <link name='wamv/ins_link'>
-          <pose>-526.72 167.751 1.40146 -9.6e-05 -0.00285 1.00001</pose>
-          <velocity>0.001231 0.001917 -0 -1e-06 1e-06 0</velocity>
-          <acceleration>1.2e-05 1.9e-05 -3e-06 -1.4e-05 9e-06 1e-06</acceleration>
-          <wrench>1.2e-05 1.9e-05 -3e-06 0 -0 0</wrench>
+          <pose>-526.691 167.797 1.40146 -9.6e-05 -0.002855 1.00001</pose>
+          <velocity>0.001272 0.001943 -5e-06 -2e-05 3.1e-05 0</velocity>
+          <acceleration>0.000363 0.000522 -8.7e-05 -0.000381 0.000264 1e-06</acceleration>
+          <wrench>0.000363 0.000522 -8.7e-05 0 -0 0</wrench>
         </link>
       </model>
       <light name='sun'>
@@ -4039,6 +4054,7 @@
         </buoyancy>
       </plugin>
       <pose>-525.465 178.033 0.482903 0 -0 1.35428</pose>
+      <enable_wind>0</enable_wind>
     </model>
     <model name='two_buoy_system_clone'>
       <link name='gate_start_red::link'>
