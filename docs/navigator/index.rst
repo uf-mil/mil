@@ -25,6 +25,14 @@ Procedures related to operation of the NaviGator AMS.
    Testing Day Checklist <testing_checklist>
    networking
 
+Software
+--------
+
+.. toctree::
+   :maxdepth: 2
+
+   simulating.md
+
 Lessons Learned + Reflections
 -----------------------------
 Lessons we've learned throughout the process that are helpful for future projects.
