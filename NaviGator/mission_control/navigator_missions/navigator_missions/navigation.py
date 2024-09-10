@@ -296,15 +296,7 @@ class Navigation(NaviGatorMission):
 
                     # Catch case where we invesitegate the shore
                     if obj_vol > 3:
-                        print(
-                            f"Object {i} volume: ",
-                            objects[i].scale.x
-                            * objects[i].scale.y
-                            * objects[i].scale.z,
-                        )
                         continue
-                    else:
-                        print(positions[i])
 
                     if (
                         objects[i].id not in investigated
@@ -330,12 +322,6 @@ class Navigation(NaviGatorMission):
 
                     # Catch case where we invesitegate the shore
                     if obj_vol > 3:
-                        print(
-                            f"Object {i} volume: ",
-                            objects[i].scale.x
-                            * objects[i].scale.y
-                            * objects[i].scale.z,
-                        )
                         continue
 
                     if (
