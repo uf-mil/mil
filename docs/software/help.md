@@ -35,7 +35,7 @@ or finding a docs page in the table of contents. The search bar will also help
 you to find related code to the problem you may be encountering, as it can search
 through the entire software reference.
 
-You may find the [Glossary](/glossary) especially useful.
+You may find the [Culture](/culture) page especially useful.
 
 ## View the docs on related classes/methods
 Although you may be developing a new system/class/method (or not!), finding the
