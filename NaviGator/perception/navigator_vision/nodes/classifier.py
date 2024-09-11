@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import bisect
+import datetime
 import math
 import random
+from collections import OrderedDict
 from threading import Lock
 
 import cv2
@@ -72,6 +75,7 @@ class Classifier:
             )
             self.debug_pub = Image_Publisher("~debug_image")
             self.bbox_pub = Image_Publisher("~bbox_image")
+            self.bbox_image = None
         self.last_objects = None
         self.last_update_time = rospy.Time.now()
         self.objects_sub = rospy.Subscriber(
@@ -89,9 +93,10 @@ class Classifier:
         self.last_image = None
         if self.is_training:
             self.enabled = True
-        self.prev_objects = {}
-        self.prev_images = {}
-        self.seconds_to_keep = 2
+        self.prev_objects = OrderedDict()
+        self.prev_images = OrderedDict()
+        # This will start really high and adjust down as appropriate
+        self.seconds_to_keep = 5
         self.queue = []
 
         if self.is_simulation:
@@ -113,7 +118,7 @@ class Classifier:
 
         self.pcodar_reset = rospy.ServiceProxy("/pcodar/reset", Trigger)
         self.pcodar_reset()
-        self.clean_timer = rospy.Timer(rospy.Rate(1), self.clean_old_data)
+        self.clean_timer = rospy.Timer(rospy.Duration(1), self.clean_old_data)
 
     def clean_old_data(self, event):
         for k, v in self.prev_images.items():
@@ -130,10 +135,24 @@ class Classifier:
         return {"success": True}
 
     def image_cb(self, msg: np.ndarray):
-        self.last_image = msg
         stamp = self.sub.last_image_header.stamp
         if self.sub.last_image_header.seq % 3:
             self.prev_images[stamp] = msg
+
+    def get_prev_data(
+        self,
+        stamp: rospy.Time,
+    ) -> tuple[np.ndarray, rospy.Time, PerceptionObjectArray, rospy.Time]:
+        image_keys = list(self.prev_images.keys())
+        image_index = bisect.bisect_left(image_keys, stamp)
+        image_key = image_keys[image_index]
+        relevant_image = self.prev_images[image_keys[image_index]]
+        object_keys = list(self.prev_objects.keys())
+        object_index = bisect.bisect_left(object_keys, stamp)
+        print(f"object index: {object_index}/{len(object_keys)}")
+        object_key = object_keys[object_index]
+        relevant_object = self.prev_objects[object_key]
+        return relevant_image, image_key, relevant_object, object_key
 
     def taskinfoSubscriber(self, msg):
         self.is_perception_task = msg.name == "perception"
@@ -150,11 +169,11 @@ class Classifier:
 
     # GH-880
     # @thread_lock(lock)
-    def process_objects(self, msg):
-        self.last_objects = msg
-        seq = self.last_objects.header.seq
-        if seq % 3:
-            self.prev_objects[self.last_objects.header.stamp] = msg
+    def process_objects(self, msg: PerceptionObjectArray):
+        time = rospy.Time.now()
+        if len(msg.objects) > 0:
+            time = msg.objects[0].header.stamp
+        self.prev_objects[time] = msg
 
     def in_rect(self, point, bbox):
         return bool(
@@ -180,7 +199,7 @@ class Classifier:
         if self.bbox_image is None:
             return
         color = self._random_color()
-        cv2.circle(self.bbox_image, center, radius=5, color=color, thickness=-1)
+        cv2.circle(self.bbox_image, center, radius=3, color=color, thickness=-1)
         cv2.putText(
             self.bbox_image,
             label,
@@ -188,7 +207,20 @@ class Classifier:
             cv2.FONT_HERSHEY_DUPLEX,
             0.5,
             color,
-            1.5,
+            2,
+        )
+
+    def _draw_corner_text(self, label: str, height_from_bottom: int):
+        x = 10
+        y = self.camera_info.height - 10 - height_from_bottom
+        cv2.putText(
+            self.bbox_image,
+            label,
+            (x, y),
+            cv2.FONT_HERSHEY_DUPLEX,
+            0.9,
+            (0, 0, 0),
+            1,
         )
 
     def _draw_bbox_vis(
@@ -213,14 +245,21 @@ class Classifier:
         )
 
     def process_boxes(self, msg):
+        self.last_image, image_time, self.last_objects, object_time = (
+            self.get_prev_data(msg.detections[0].source_img.header.stamp)
+        )
         if not self.enabled:
+            print(2)
             return
         if self.camera_model is None:
+            print(3)
             return
         if self.last_objects is None or len(self.last_objects.objects) == 0:
+            print(4)
             return
         now = rospy.Time.now()
         if now - self.last_update_time < self.update_period:
+            print(5)
             return
         self.last_update_time = now
         # Get Transform from ENU to optical at the time of this image
@@ -228,6 +267,17 @@ class Classifier:
             return
         if self.last_image is not None:
             self.bbox_image = self.last_image.copy()
+        if self.bbox_image is not None:
+            image_stamp = datetime.datetime.fromtimestamp(image_time.to_sec())
+            object_stamp = datetime.datetime.fromtimestamp(object_time.to_sec())
+            current_stamp = datetime.datetime.fromtimestamp(rospy.Time.now().to_sec())
+            delay = (current_stamp - image_stamp).total_seconds()
+            self._draw_corner_text(
+                f"Current time: {current_stamp} (delay: {delay:.2f}s)",
+                50,
+            )
+            self._draw_corner_text(f"Image time used: {image_stamp}", 10)
+            self._draw_corner_text(f"LIDAR time used: {object_stamp}", 30)
         transform = self.tf_buffer.lookup_transform(
             self.sub.last_image_header.frame_id,
             "enu",
@@ -239,6 +289,7 @@ class Classifier:
         rotation_mat = quaternion_matrix(rotation)[:3, :3]
 
         # Transform the center of each object into optical frame
+        print(1)
         positions_camera = [
             translation + rotation_mat.dot(rosmsg_to_numpy(obj.pose.position))
             for obj in self.last_objects.objects
@@ -262,7 +313,7 @@ class Classifier:
                 and positions_camera[i][2] > 0
             ):
                 met_criteria.append(i)
-                name = self.last_objects.objects[i].name
+                name = self.last_objects.objects[i].classification
                 pixel_x = int(pixel_centers[i][0])
                 pixel_y = int(pixel_centers[i][1])
                 self._draw_point_vis((pixel_x, pixel_y), name)

@@ -60,7 +60,7 @@ void Object::update_msg()
   // Classification field is unused, always set to empty string
   msg_.classification = "";
   msg_.header.frame_id = "enu";
-  msg_.header.stamp = ros::Time();
+  msg_.header.stamp = ros::Time::now();
   msg_.points.clear();
 
   if (points_->empty())
