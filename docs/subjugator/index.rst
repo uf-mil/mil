@@ -12,6 +12,7 @@ SubjuGator 8
     :maxdepth: 1
 
     design
+    testingprocedures.md
     Simulating <simulating>
     Enabling <enabling>
     Cameras <cameras>
