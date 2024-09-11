@@ -3713,7 +3713,7 @@
       <link name='gate_start_red::link'>
         <inertial>
           <pose>0 0 -2 0 -0 0</pose>
-          <mass>0</mass>
+          <mass>1.0</mass>
           <inertia>
             <ixx>0</ixx>
             <ixy>0</ixy>
@@ -3863,7 +3863,7 @@
       <link name='gate_start_green::link'>
         <inertial>
           <pose>0 0 -2 0 -0 0</pose>
-          <mass>0</mass>
+          <mass>1.0</mass>
           <inertia>
             <ixx>0</ixx>
             <ixy>0</ixy>
@@ -4034,7 +4034,7 @@
       <link name='gate_start_red::link'>
         <inertial>
           <pose>0 0 -2 0 -0 0</pose>
-          <mass>0</mass>
+          <mass>1.0</mass>
           <inertia>
             <ixx>0</ixx>
             <ixy>0</ixy>
@@ -4184,7 +4184,7 @@
       <link name='gate_start_green::link'>
         <inertial>
           <pose>0 0 -2 0 -0 0</pose>
-          <mass>0</mass>
+          <mass>1.0</mass>
           <inertia>
             <ixx>0</ixx>
             <ixy>0</ixy>
@@ -4355,7 +4355,7 @@
       <link name='gate_start_red::link'>
         <inertial>
           <pose>0 0 -2 0 -0 0</pose>
-          <mass>0</mass>
+          <mass>1.0</mass>
           <inertia>
             <ixx>0</ixx>
             <ixy>0</ixy>
@@ -4505,7 +4505,7 @@
       <link name='gate_start_green::link'>
         <inertial>
           <pose>0 0 -2 0 -0 0</pose>
-          <mass>0</mass>
+          <mass>1.0</mass>
           <inertia>
             <ixx>0</ixx>
             <ixy>0</ixy>
@@ -4676,7 +4676,7 @@
       <link name='gate_start_red::link'>
         <inertial>
           <pose>0 0 -2 0 -0 0</pose>
-          <mass>0</mass>
+          <mass>1.0</mass>
           <inertia>
             <ixx>0</ixx>
             <ixy>0</ixy>
@@ -4826,7 +4826,7 @@
       <link name='gate_start_green::link'>
         <inertial>
           <pose>0 0 -2 0 -0 0</pose>
-          <mass>0</mass>
+          <mass>1.0</mass>
           <inertia>
             <ixx>0</ixx>
             <ixy>0</ixy>
@@ -4997,7 +4997,7 @@
       <link name='gate_start_red::link'>
         <inertial>
           <pose>0 0 -2 0 -0 0</pose>
-          <mass>0</mass>
+          <mass>1.0</mass>
           <inertia>
             <ixx>0</ixx>
             <ixy>0</ixy>
@@ -5147,7 +5147,7 @@
       <link name='gate_start_green::link'>
         <inertial>
           <pose>0 0 -2 0 -0 0</pose>
-          <mass>0</mass>
+          <mass>1.0</mass>
           <inertia>
             <ixx>0</ixx>
             <ixy>0</ixy>
