@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import math
+import random
 from threading import Lock
 
+import cv2
 import numpy as np
 import rospy
 import tf2_ros
+from cv_bridge import CvBridge
 from image_geometry import PinholeCameraModel
 from mil_msgs.msg import PerceptionObjectArray
 from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from mil_ros_tools import Image_Publisher, Image_Subscriber, rosmsg_to_numpy
 from mil_vision_tools import ImageMux, rect_from_roi, roi_enclosing_points
-from sensor_msgs.msg import Image
 from std_srvs.srv import SetBool, Trigger
 from tf.transformations import quaternion_matrix
 from vision_msgs.msg import Detection2DArray
@@ -56,6 +60,7 @@ class Classifier:
         self.database_client = rospy.ServiceProxy("/database/requests", ObjectDBQuery)
         self.is_perception_task = False
         self.sub = Image_Subscriber(self.image_topic, self.image_cb)
+        self.bridge = CvBridge()
         self.camera_info = self.sub.wait_for_camera_info()
         self.camera_model = PinholeCameraModel()
         self.camera_model.fromCameraInfo(self.camera_info)
@@ -66,6 +71,7 @@ class Classifier:
                 labels=["Result", "Mask"],
             )
             self.debug_pub = Image_Publisher("~debug_image")
+            self.bbox_pub = Image_Publisher("~bbox_image")
         self.last_objects = None
         self.last_update_time = rospy.Time.now()
         self.objects_sub = rospy.Subscriber(
@@ -83,6 +89,9 @@ class Classifier:
         self.last_image = None
         if self.is_training:
             self.enabled = True
+        self.prev_objects = {}
+        self.prev_images = {}
+        self.seconds_to_keep = 2
         self.queue = []
 
         if self.is_simulation:
@@ -104,6 +113,15 @@ class Classifier:
 
         self.pcodar_reset = rospy.ServiceProxy("/pcodar/reset", Trigger)
         self.pcodar_reset()
+        self.clean_timer = rospy.Timer(rospy.Rate(1), self.clean_old_data)
+
+    def clean_old_data(self, event):
+        for k, v in self.prev_images.items():
+            if k < (rospy.Time.now() - rospy.Duration(self.seconds_to_keep)):
+                del v
+        for k, v in self.prev_objects.items():
+            if k < (rospy.Time.now() - rospy.Duration(self.seconds_to_keep)):
+                del v
 
     # GH-880
     # @thread_lock(lock)
@@ -111,13 +129,17 @@ class Classifier:
         self.enabled = req.data
         return {"success": True}
 
-    def image_cb(self, msg: Image):
+    def image_cb(self, msg: np.ndarray):
         self.last_image = msg
+        stamp = self.sub.last_image_header.stamp
+        if self.sub.last_image_header.seq % 3:
+            self.prev_images[stamp] = msg
 
     def taskinfoSubscriber(self, msg):
         self.is_perception_task = msg.name == "perception"
 
     def in_frame(self, pixel):
+        self.seconds_to_keep = 2
         # TODO: < or <= ???
         return (
             pixel[0] > 0
@@ -130,6 +152,9 @@ class Classifier:
     # @thread_lock(lock)
     def process_objects(self, msg):
         self.last_objects = msg
+        seq = self.last_objects.header.seq
+        if seq % 3:
+            self.prev_objects[self.last_objects.header.stamp] = msg
 
     def in_rect(self, point, bbox):
         return bool(
@@ -144,6 +169,49 @@ class Classifier:
         y_diff = second[1] - first[1]
         return math.sqrt(x_diff * x_diff + y_diff * y_diff)
 
+    def _random_color(self) -> tuple[int, int, int]:
+        return (
+            random.randrange(0, 255),
+            random.randrange(0, 255),
+            random.randrange(0, 255),
+        )
+
+    def _draw_point_vis(self, center: tuple[int, int], label) -> None:
+        if self.bbox_image is None:
+            return
+        color = self._random_color()
+        cv2.circle(self.bbox_image, center, radius=5, color=color, thickness=-1)
+        cv2.putText(
+            self.bbox_image,
+            label,
+            center,
+            cv2.FONT_HERSHEY_DUPLEX,
+            0.5,
+            color,
+            1.5,
+        )
+
+    def _draw_bbox_vis(
+        self,
+        top_left: tuple[int, int],
+        bottom_right: tuple[int, int],
+        label: str,
+        successful: bool = True,
+    ):
+        if self.bbox_image is None:
+            return
+        color = (0, 255, 0) if successful else (0, 0, 255)
+        cv2.rectangle(self.bbox_image, top_left, bottom_right, color, 1)
+        cv2.putText(
+            self.bbox_image,
+            label,
+            (top_left[0], top_left[1] - 18),
+            cv2.FONT_HERSHEY_DUPLEX,
+            0.5,
+            color,
+            2,
+        )
+
     def process_boxes(self, msg):
         if not self.enabled:
             return
@@ -156,6 +224,10 @@ class Classifier:
             return
         self.last_update_time = now
         # Get Transform from ENU to optical at the time of this image
+        if not msg.detections:
+            return
+        if self.last_image is not None:
+            self.bbox_image = self.last_image.copy()
         transform = self.tf_buffer.lookup_transform(
             self.sub.last_image_header.frame_id,
             "enu",
@@ -190,17 +262,22 @@ class Classifier:
                 and positions_camera[i][2] > 0
             ):
                 met_criteria.append(i)
+                name = self.last_objects.objects[i].name
+                pixel_x = int(pixel_centers[i][0])
+                pixel_y = int(pixel_centers[i][1])
+                self._draw_point_vis((pixel_x, pixel_y), name)
         # print 'Keeping {} of {}'.format(len(met_criteria), len(self.last_objects.objects))
 
         classified = set()
 
         # for each bounding box,check which buoy is closest to boat within pixel range of bounding box
-
-        for a in msg.detections:
+        print(f"detection count: {len(msg.detections)}")
+        failed_detections = []
+        for detection in msg.detections:
             buoys = []
 
             for i in met_criteria:
-                if self.in_rect(pixel_centers[i], a):
+                if self.in_rect(pixel_centers[i], detection):
                     buoys.append(i)
 
             if len(buoys) > 0:
@@ -212,47 +289,84 @@ class Classifier:
                         closest_to_box = i
                         closest_to_boat = i
 
+                label = self.CLASSES[detection.results[0].id]
                 classified.add(self.last_objects.objects[closest_to_box].id)
+                bbox_left, bbox_right = (
+                    round(detection.bbox.center.x - detection.bbox.size_x / 2),
+                    round(detection.bbox.center.x + detection.bbox.size_x / 2),
+                )
+                bbox_bottom, bbox_top = (
+                    round(detection.bbox.center.y - detection.bbox.size_y / 2),
+                    round(detection.bbox.center.y + detection.bbox.size_y / 2),
+                )
+                print(label, (bbox_left, bbox_top), (bbox_bottom, bbox_right))
+                self._draw_bbox_vis(
+                    (bbox_left, bbox_top),
+                    (bbox_right, bbox_bottom),
+                    label,
+                )
                 # print(
                 #    "Object {} classified as {}".format(
                 #        self.last_objects.objects[closest_to_box].id,
                 #        self.CLASSES[a.results[0].id],
                 #    )
                 # )
-                cmd = f"{self.last_objects.objects[closest_to_box].id}={self.CLASSES[a.results[0].id]}"
+                cmd = f"{self.last_objects.objects[closest_to_box].id}={self.CLASSES[detection.results[0].id]}"
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
+            else:
+                failed_detections.append(detection)
+
+        for detection in failed_detections:
+            bbox_left, bbox_right = (
+                round(detection.bbox.center.x - detection.bbox.size_x / 2),
+                round(detection.bbox.center.x + detection.bbox.size_x / 2),
+            )
+            bbox_bottom, bbox_top = (
+                round(detection.bbox.center.y - detection.bbox.size_y / 2),
+                round(detection.bbox.center.y + detection.bbox.size_y / 2),
+            )
+            self._draw_bbox_vis(
+                (bbox_left, bbox_top),
+                (bbox_right, bbox_bottom),
+                "failed",
+                successful=False,
+            )
+
+        if self.bbox_pub.get_num_connections():
+            print("publishing...")
+            self.bbox_pub.publish(self.bbox_image)
 
         if not self.is_perception_task:
             return
 
-        for a in met_criteria:
-            if self.last_objects.objects[a].id in classified:
+        for detection in met_criteria:
+            if self.last_objects.objects[detection].id in classified:
                 continue
-            height = self.last_objects.objects[a].scale.z
+            height = self.last_objects.objects[detection].scale.z
             # if pixel_centers[i][0] > 1280 or pixel_centers[i][0] > 720:
             #    return
             if height > 0.45:
                 print("Reclassified as white")
                 print(
                     "Object {} classified as {}".format(
-                        self.last_objects.objects[a].id,
+                        self.last_objects.objects[detection].id,
                         "mb_marker_buoy_white",
                     ),
                 )
                 cmd = "{}={}".format(
-                    self.last_objects.objects[a].id,
+                    self.last_objects.objects[detection].id,
                     "mb_marker_buoy_white",
                 )
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
             else:
                 print(
                     "Object {} classified as {}".format(
-                        self.last_objects.objects[a].id,
+                        self.last_objects.objects[detection].id,
                         "mb_round_buoy_black",
                     ),
                 )
                 cmd = "{}={}".format(
-                    self.last_objects.objects[a].id,
+                    self.last_objects.objects[detection].id,
                     "mb_round_buoy_black",
                 )
                 self.database_client(ObjectDBQueryRequest(cmd=cmd))
