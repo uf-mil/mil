@@ -46,7 +46,7 @@ class Docking(NaviGatorMission):
         #     "/wamv/sensors/cameras/front_left_camera/image_raw", Image
         # )
         self.image_sub = self.nh.subscribe(
-            "/wamv/sensors/cameras/front_left_camera/image_raw",
+            "/wamv/sensors/camera/front_left_cam/image_raw",
             Image,
         )
         self.cam_frame = None
@@ -54,7 +54,7 @@ class Docking(NaviGatorMission):
         #     "/wamv/sensors/cameras/front_left_camera/camera_info", CameraInfo
         # )
         self.image_info_sub = self.nh.subscribe(
-            "/wamv/sensors/cameras/front_left_camera/camera_info",
+            "/wamv/sensors/camera/front_left_cam/camera_info",
             CameraInfo,
         )
         self.model = PinholeCameraModel()
@@ -75,10 +75,15 @@ class Docking(NaviGatorMission):
         await cls.image_info_sub.shutdown()
 
     async def run(self, args):
+        rospy.logerr("RUN START")
         await self.ogrid_sub.setup()
+        rospy.logerr("OGRID DONE")
         await self.image_sub.setup()
+        rospy.logerr("IMAGE DONE")
         await self.image_info_sub.setup()
+        rospy.logerr("INFO DONE")
         await self.pcodar_save.wait_for_service()
+        rospy.logerr("PCODAR DONE")
 
         self.bridge = CvBridge()
         msg = await self.image_info_sub.get_next_message()

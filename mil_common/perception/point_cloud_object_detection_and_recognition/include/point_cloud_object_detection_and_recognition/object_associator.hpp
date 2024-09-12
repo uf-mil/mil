@@ -19,6 +19,7 @@ class Associator
 public:
   /// Update the dynamic reconfigure parameters associated with this class
   void update_config(Config const& config);
+  void get_config(Config& config);
   /// Associate old objects with newly identified clusters. @prev_objects is updated + appended in place for new
   /// associations
   void associate(ObjectMap& prev_objects, point_cloud const& pc, clusters_t clusters);
