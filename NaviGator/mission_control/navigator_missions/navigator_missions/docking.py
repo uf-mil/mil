@@ -102,13 +102,13 @@ class Docking(NaviGatorMission):
         pcodar_cluster_tol.value = 10
         await self.pcodar_set_params(doubles=[pcodar_cluster_tol])
         rospy.logerr("HERE3")
-        await self.nh.sleep(5)
 
         # Get the POI (point of interest) from the config file and move to it
         # This is a predetermined position of the general location for the dock
         pos = await self.poi.get("dock")
         rospy.logerr("HERE4")
-        await self.move.look_at(pos).set_position(pos).go()
+        pos = pos[0]
+        await self.move.set_position(pos).look_at(pos).go()
 
         # Decrease cluster tolerance as we approach dock since lidar points are more dense
         # This helps scenario where stc buoy is really close to dock
