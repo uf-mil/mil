@@ -151,8 +151,8 @@ class Docking(NaviGatorMission):
         centers = centers[centers[:, 1].argsort()][::-1]
 
         # crop the images to get bbox and find color
-        # images = await self.crop_images(clusters)
-        # self.find_color(images, 1)
+        images = await self.crop_images(clusters)
+        self.find_color(images, centers)
 
         # temporary code that just moves boat to center of leftmost cluster
         left = copy.deepcopy(centers[0])
@@ -435,7 +435,10 @@ class Docking(NaviGatorMission):
         self.contour_pub.publish(msg)
         return list
 
-    def find_color(self, images, color):
+    def find_color(self, images, centers):
+        print("Centers")
+        print(centers)
+
         for img in images:
             img = img.astype("uint8")
             ret3, th3 = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
