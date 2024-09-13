@@ -118,9 +118,10 @@ class Classifier:
 
         self.pcodar_reset = rospy.ServiceProxy("/pcodar/reset", Trigger)
         self.pcodar_reset()
-        self.clean_timer = rospy.Timer(rospy.Duration(1), self.clean_old_data)
+        self.clean_timer = rospy.Timer(rospy.Duration(10), self.clean_old_data)
 
     def clean_old_data(self, event):
+        rospy.loginfo("Cleaning old LIDAR + image data...")
         for k, v in self.prev_images.items():
             if k < (rospy.Time.now() - rospy.Duration(self.seconds_to_keep)):
                 del v
@@ -136,8 +137,7 @@ class Classifier:
 
     def image_cb(self, msg: np.ndarray):
         stamp = self.sub.last_image_header.stamp
-        if self.sub.last_image_header.seq % 3:
-            self.prev_images[stamp] = msg
+        self.prev_images[stamp] = msg
 
     def get_prev_data(
         self,
@@ -149,7 +149,6 @@ class Classifier:
         relevant_image = self.prev_images[image_keys[image_index]]
         object_keys = list(self.prev_objects.keys())
         object_index = bisect.bisect_left(object_keys, stamp)
-        print(f"object index: {object_index}/{len(object_keys)}")
         object_key = object_keys[object_index]
         relevant_object = self.prev_objects[object_key]
         return relevant_image, image_key, relevant_object, object_key
@@ -176,11 +175,13 @@ class Classifier:
         self.prev_objects[time] = msg
 
     def in_rect(self, point, bbox):
+        x_buf = self.camera_info.width * 0.08
+        y_buf = self.camera_info.height * 0.08
         return bool(
-            point[0] >= bbox.bbox.center.x - bbox.bbox.size_x / 2
-            and point[1] >= bbox.bbox.center.y - bbox.bbox.size_y / 2
-            and point[0] <= bbox.bbox.center.x + bbox.bbox.size_x / 2
-            and point[1] <= bbox.bbox.center.y + bbox.bbox.size_y / 2,
+            point[0] >= (bbox.bbox.center.x - bbox.bbox.size_x / 2) - x_buf
+            and point[1] >= (bbox.bbox.center.y - bbox.bbox.size_y / 2 - y_buf)
+            and point[0] <= (bbox.bbox.center.x + bbox.bbox.size_x / 2 + x_buf)
+            and point[1] <= (bbox.bbox.center.y + bbox.bbox.size_y / 2 + y_buf),
         )
 
     def distance(self, first, second):
@@ -188,17 +189,18 @@ class Classifier:
         y_diff = second[1] - first[1]
         return math.sqrt(x_diff * x_diff + y_diff * y_diff)
 
-    def _random_color(self) -> tuple[int, int, int]:
+    def _random_color(self, label: str) -> tuple[int, int, int]:
+        r = random.Random(hash(label))
         return (
-            random.randrange(0, 255),
-            random.randrange(0, 255),
-            random.randrange(0, 255),
+            r.randrange(180, 255),
+            r.randrange(180, 255),
+            r.randrange(180, 255),
         )
 
     def _draw_point_vis(self, center: tuple[int, int], label) -> None:
         if self.bbox_image is None:
             return
-        color = self._random_color()
+        color = self._random_color(label)
         cv2.circle(self.bbox_image, center, radius=3, color=color, thickness=-1)
         cv2.putText(
             self.bbox_image,
@@ -207,7 +209,7 @@ class Classifier:
             cv2.FONT_HERSHEY_DUPLEX,
             0.5,
             color,
-            2,
+            1,
         )
 
     def _draw_corner_text(self, label: str, height_from_bottom: int):
@@ -249,17 +251,13 @@ class Classifier:
             self.get_prev_data(msg.detections[0].source_img.header.stamp)
         )
         if not self.enabled:
-            print(2)
             return
         if self.camera_model is None:
-            print(3)
             return
         if self.last_objects is None or len(self.last_objects.objects) == 0:
-            print(4)
             return
         now = rospy.Time.now()
         if now - self.last_update_time < self.update_period:
-            print(5)
             return
         self.last_update_time = now
         # Get Transform from ENU to optical at the time of this image
@@ -281,7 +279,7 @@ class Classifier:
         transform = self.tf_buffer.lookup_transform(
             self.sub.last_image_header.frame_id,
             "enu",
-            self.sub.last_image_header.stamp,
+            image_time,
             timeout=rospy.Duration(1),
         )
         translation = rosmsg_to_numpy(transform.transform.translation)
@@ -289,7 +287,6 @@ class Classifier:
         rotation_mat = quaternion_matrix(rotation)[:3, :3]
 
         # Transform the center of each object into optical frame
-        print(1)
         positions_camera = [
             translation + rotation_mat.dot(rosmsg_to_numpy(obj.pose.position))
             for obj in self.last_objects.objects
@@ -313,7 +310,8 @@ class Classifier:
                 and positions_camera[i][2] > 0
             ):
                 met_criteria.append(i)
-                name = self.last_objects.objects[i].classification
+                sel_object = self.last_objects.objects[i]
+                name = f"({sel_object.id})"
                 pixel_x = int(pixel_centers[i][0])
                 pixel_y = int(pixel_centers[i][1])
                 self._draw_point_vis((pixel_x, pixel_y), name)
@@ -322,7 +320,6 @@ class Classifier:
         classified = set()
 
         # for each bounding box,check which buoy is closest to boat within pixel range of bounding box
-        print(f"detection count: {len(msg.detections)}")
         failed_detections = []
         for detection in msg.detections:
             buoys = []
@@ -350,7 +347,6 @@ class Classifier:
                     round(detection.bbox.center.y - detection.bbox.size_y / 2),
                     round(detection.bbox.center.y + detection.bbox.size_y / 2),
                 )
-                print(label, (bbox_left, bbox_top), (bbox_bottom, bbox_right))
                 self._draw_bbox_vis(
                     (bbox_left, bbox_top),
                     (bbox_right, bbox_bottom),
@@ -384,7 +380,6 @@ class Classifier:
             )
 
         if self.bbox_pub.get_num_connections():
-            print("publishing...")
             self.bbox_pub.publish(self.bbox_image)
 
         if not self.is_perception_task:
@@ -397,7 +392,6 @@ class Classifier:
             # if pixel_centers[i][0] > 1280 or pixel_centers[i][0] > 720:
             #    return
             if height > 0.45:
-                print("Reclassified as white")
                 print(
                     "Object {} classified as {}".format(
                         self.last_objects.objects[detection].id,
