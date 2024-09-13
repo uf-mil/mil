@@ -62,10 +62,11 @@ class Docking(NaviGatorMission):
         self.intup = lambda arr: tuple(np.array(arr, dtype=np.int64))
         self.last_image = None
 
+        self.contour_pub = self.nh.advertise("/contour_pub", Image)
+
     @classmethod
     async def init(cls):
-        cls.contour_pub = cls.nh.advertise("/contour_pub", Image)
-        await cls.contour_pub.setup()
+        pass
 
     @classmethod
     async def shutdown(cls):
@@ -75,6 +76,7 @@ class Docking(NaviGatorMission):
         await cls.image_info_sub.shutdown()
 
     async def run(self, args):
+        await self.contour_pub.setup()
         rospy.logerr("RUN START")
         await self.ogrid_sub.setup()
         rospy.logerr("OGRID DONE")
@@ -84,6 +86,8 @@ class Docking(NaviGatorMission):
         rospy.logerr("INFO DONE")
         await self.pcodar_save.wait_for_service()
         rospy.logerr("PCODAR DONE")
+
+        await self.change_wrench("autonomous")
 
         self.bridge = CvBridge()
         msg = await self.image_info_sub.get_next_message()
@@ -147,8 +151,8 @@ class Docking(NaviGatorMission):
         centers = centers[centers[:, 1].argsort()][::-1]
 
         # crop the images to get bbox and find color
-        images = await self.crop_images(clusters)
-        self.find_color(images, 1)
+        # images = await self.crop_images(clusters)
+        # self.find_color(images, 1)
 
         # temporary code that just moves boat to center of leftmost cluster
         left = copy.deepcopy(centers[0])
