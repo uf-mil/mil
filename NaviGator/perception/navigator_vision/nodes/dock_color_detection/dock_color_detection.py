@@ -1,37 +1,42 @@
 import cv2 as cv
 import numpy as np
 
-image = cv.imread('./test_images/dock_blue1.jpg')
 
-gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+def find_center_pixel(image_path):
+    image = cv.imread(image_path)
 
-# Apply Gaussian blur to the image
-blurred = cv.GaussianBlur(gray, (5, 5), 0)
+    gray_image = cv.cvtColor(image, cv.COLOR_RGB2GRAY)
 
-# Use Canny edge detection
-edges = cv.Canny(blurred, 50, 150)
+    median = cv.medianBlur(gray_image, 5)
 
-# Find contours in the edged image
-contours, _ = cv.findContours(edges, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
+    kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
 
-# Loop over the contours
-for contour in contours:
-    # Approximate the contour to a polygon
-    epsilon = 0.02 * cv.arcLength(contour, True)
-    approx = cv.approxPolyDP(contour, epsilon, True)
+    sharpened_image = cv.filter2D(median, -1, kernel)
 
-    # If the approximated contour has 4 vertices, it's a square (or rectangle)
-    if len(approx) == 4:
-        x, y, w, h = cv.boundingRect(approx)
+    _, binary = cv.threshold(sharpened_image, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
 
-        # Calculate the aspect ratio
-        aspect_ratio = float(w) / h
+    kernel = cv.getStructuringElement(cv.MORPH_RECT, (5, 5))
+    morphed = cv.morphologyEx(binary, cv.MORPH_CLOSE, kernel)
+    morphed = cv.morphologyEx(morphed, cv.MORPH_OPEN, kernel)
 
-        # Check if the aspect ratio is close to 1 (square)
-        if 0.95 <= aspect_ratio <= 1.05:
-            cv.drawContours(image, [approx], -1, (0, 255, 0), 2)
+    cv.imshow("Morphed", morphed)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
 
-# Display the result
-cv.imshow("Squares Detected", image)
-cv.waitKey(0)
-cv.destroyAllWindows()
+
+def red_blue_or_green(pixel):
+    red, green, blue = pixel
+
+    max_color = max(red, green, blue)
+
+    if max_color == red:
+        return "red"
+    elif max_color == green:
+        return "green"
+    elif max_color == blue:
+        return "blue"
+    else:
+        return "unknown"
+
+
+find_center_pixel("./test_images/dock_red1.jpg")
