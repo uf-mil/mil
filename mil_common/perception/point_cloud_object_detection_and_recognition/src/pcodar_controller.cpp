@@ -143,6 +143,9 @@ void Node::ConfigCallback(Config const& config, uint32_t level)
 void Node::initialize()
 {
   NodeBase::initialize();
+  // Subscribe to odom 
+  fl_sub = nh_.subscribe("/wamv/thrusters/FL_thrust_cmd", 1, &Node::thrust_fl_cb, this);
+  fr_sub = nh_.subscribe("/wamv/thrusters/FR_thrust_cmd", 1, &Node::thrust_fr_cb, this);
 
   // Subscribe pointcloud
   pc_sub = nh_.subscribe("/velodyne_points", 1, &Node::velodyne_cb, this);
@@ -205,7 +208,7 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
   clusters_t clusters = detector_.get_clusters(filtered_accrued);
 
   // Associate current clusters with old ones
-  ass.associate(*objects_, *filtered_accrued, clusters);
+  ass.associate(*objects_, *filtered_accrued, clusters, thrust_back);
 }
 
 bool Node::bounds_update_cb(const mil_bounds::BoundsConfig& config)
@@ -214,6 +217,18 @@ bool Node::bounds_update_cb(const mil_bounds::BoundsConfig& config)
     return false;
   input_cloud_filter_.set_bounds(bounds_);
   return true;
+}
+
+void Node::thrust_fl_cb(const std_msgs::Float32& thrust)
+{
+  fl_back = thrust.data < 0;
+  thrust_back = fr_back && fl_back;
+}
+
+void Node::thrust_fr_cb(const std_msgs::Float32& thrust)
+{
+  fr_back = thrust.data < 0;
+  thrust_back = fr_back && fl_back;
 }
 
 }  // namespace pcodar

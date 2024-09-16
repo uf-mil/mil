@@ -8,7 +8,7 @@
 
 namespace pcodar
 {
-void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clusters_t clusters)
+void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clusters_t clusters, bool moving_back)
 {
   // Tracks which clusters have been seen
   std::unordered_set<uint> seen;
@@ -40,21 +40,26 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
         matches.push_back(pair);
     }
 
-    if (matches.size() == 0)
+    // If Navigator is moving back, new objects are invalid
+    if (!moving_back)
     {
-      // Add to object
-      auto id = prev_objects.add_object(cluster_pc, cluster_search_tree);
-      seen.insert(id);
-    }
-    else
-    {
-      seen.insert((*matches.at(0)).first);
-      (*matches.at(0)).second.update_points(cluster_pc, cluster_search_tree);
-      for (size_t i = 1; i < matches.size(); ++i)
+      if (matches.size() == 0)
       {
-        prev_objects.erase_object(matches.at(i));
+        // Add to object
+        auto id = prev_objects.add_object(cluster_pc, cluster_search_tree);
+        seen.insert(id);
+      }
+      else
+      {
+        seen.insert((*matches.at(0)).first);
+        (*matches.at(0)).second.update_points(cluster_pc, cluster_search_tree);
+        for (size_t i = 1; i < matches.size(); ++i)
+        {
+          prev_objects.erase_object(matches.at(i));
+        }
       }
     }
+    
   }
 
   // forget any objects that we didn't see, if that functionality is enabled
