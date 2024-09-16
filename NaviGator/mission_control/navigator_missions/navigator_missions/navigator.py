@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+from enum import IntEnum
 from typing import Callable
 
 import genpy
@@ -40,6 +41,16 @@ from topic_tools.srv import MuxSelect, MuxSelectRequest
 from vision_msgs.msg import Detection2DArray
 
 from .pose_editor import PoseEditor2
+
+
+class UAVModes(IntEnum):
+    """
+    Enumerates constants of friendly uav mode names to ints
+    """
+
+    STOWED = 1
+    DEPLOYED = 2
+    FAULTED = 3
 
 
 class MissionResult:
@@ -130,6 +141,7 @@ class NaviGatorMission(BaseMission):
         )
 
         cls.pose = None
+        cls.uav_status = UAVModes.STOWED
 
         def odom_set(odom: Odometry):
             return setattr(cls, "pose", mil_tools.odometry_to_numpy(odom)[0])

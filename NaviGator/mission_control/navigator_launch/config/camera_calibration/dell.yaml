@@ -1,6 +1,6 @@
 ---
-image_width: 1920
-image_height: 1080
+image_width: 640
+image_height: 480
 camera_name: head_camera
 camera_matrix:
   rows: 3
