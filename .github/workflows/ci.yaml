@@ -50,7 +50,7 @@ jobs:
       - name: Install BlueView Sonar SDK
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          ./scripts/hardware_installers/install_bvtsdk --pass ${{ secrets.ZOBELISK_PASSWORD }}
+          ./scripts/hw/install_bvtsdk --pass ${{ secrets.ZOBELISK_PASSWORD }}
           ls mil_common/drivers/mil_blueview_driver
           echo $PWD
       - name: Install system dependencies
