@@ -148,6 +148,51 @@ dmb() {
 	git diff "$(git merge-base --fork-point "$(git branch -l main master --format '%(refname:short)')" HEAD)"
 }
 
+subnet_ip() {
+	ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){2}37\.[0-9]*' | grep -v '127.0.0.1'
+}
+
+rosdisconnect() {
+	unset ROS_IP
+	unset ROS_MASTER_URI
+	echo "Disconnected! New values:"
+	echo "ROS_IP=$ROS_IP"
+	echo "ROS_MASTER_URI=$ROS_MASTER_URI"
+}
+
+rosconnect() {
+	# --no-subnet flag to avoid checking for the subnet
+	# Usage: rosconnect --no-subnet <my_ip> <master_ip>
+	if [[ $1 == "--no-subnet" ]]; then
+		if [[ -z $2 || -z $3 ]]; then
+			echo "Usage: rosconnect --no-subnet <my_ip> <master_ip>"
+			return
+		fi
+		export ROS_IP=${2}
+		export ROS_MASTER_URI="http://${3}:11311"
+		echo "ROS_IP=$ROS_IP"
+		echo "ROS_MASTER_URI=$ROS_MASTER_URI"
+		return
+	fi
+	if [[ -n $(subnet_ip) ]]; then
+		my_ip=$(subnet_ip)
+		export ROS_IP=$my_ip
+		export ROS_MASTER_URI="http://${1}:11311"
+		echo "ROS_IP=$ROS_IP"
+		echo "ROS_MASTER_URI=$ROS_MASTER_URI"
+	else
+		echo "No 37 subnet IP found, not setting ROS_IP or ROS_MASTER_URI"
+	fi
+}
+
+rosnavconnect() {
+	rosconnect "192.168.37.82"
+}
+
+rossubconnect() {
+	rosconnect "192.168.37.60"
+}
+
 alias xbox=startxbox
 
 # PYTHONPATH modifications
