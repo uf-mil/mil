@@ -13,6 +13,10 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
   // Tracks which clusters have been seen
   std::unordered_set<uint> seen;
 
+  // Establish Area of Interest (AOI) that new points are not allowed to be published while Navigator is moving backwards
+  Eigen::Vector3f min_aoi(0.0f, -2.0f, -0.5f); // Min bounds (x, y, z)
+  Eigen::Vector3f max_aoi(500.0f, 2.0f, 0.5f);   // Max bounds (x, y, z)
+
   // Iterate through each new cluster, finding which persistent cluster(s) it matches
   for (cluster_t const& cluster : clusters)
   {
@@ -25,6 +29,15 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
     CorrespondenceEstimation ce;
     ce.setSearchMethodTarget(cluster_search_tree, true);
     ce.setInputTarget(cluster_pc);
+
+    // Compute the centroid of the cluster
+    Eigen::Vector4f centroid;
+    pcl::compute3DCentroid(*cluster_pc, centroid);
+
+    // Check if the centroid is outside the AOI
+    bool outside_aoi = (centroid[0] < min_aoi[0] || centroid[0] > max_aoi[0] ||  // X bounds
+                        centroid[1] < min_aoi[1] || centroid[1] > max_aoi[1] ||  // Y bounds
+                        centroid[2] < min_aoi[2] || centroid[2] > max_aoi[2]);   // Z bounds
 
     using ObjectMapIt = decltype(prev_objects.objects_.begin());
     std::vector<ObjectMapIt> matches;
@@ -40,8 +53,8 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
         matches.push_back(pair);
     }
 
-    // If Navigator is moving back, new objects are invalid
-    if (!moving_back)
+    // If Navigator is moving back, new objects outside of the AOI are invalid
+    if (!moving_back && outside_aoi)
     {
       if (matches.size() == 0)
       {
