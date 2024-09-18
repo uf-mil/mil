@@ -127,10 +127,6 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
         }
       }
     }
-    
-    
-    
-    
   }
 
   // forget any objects that we didn't see, if that functionality is enabled
