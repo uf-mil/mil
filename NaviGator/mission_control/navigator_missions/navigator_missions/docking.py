@@ -151,8 +151,8 @@ class Docking(NaviGatorMission):
         centers = centers[centers[:, 1].argsort()][::-1]
 
         # crop the images to get bbox and find color
-        # images = await self.crop_images(clusters)
-        # self.find_color(images, 1)
+        images = await self.crop_images(clusters)
+        self.find_color(images, centers)
 
         # temporary code that just moves boat to center of leftmost cluster
         left = copy.deepcopy(centers[0])
@@ -440,7 +440,7 @@ class Docking(NaviGatorMission):
 
         return list
 
-    def find_color(self, images, color): 
+    def find_color(self, images, centers): 
         # NOTE: An OpenCV window will open, close it to progress
         # Current iteration of find color works by looking through images, 
         # then cropping images to the gray backboard (crop_images() does not always crop),
@@ -448,6 +448,7 @@ class Docking(NaviGatorMission):
         # non-gray values, returning Red Green Blue or Other.
         # Function does not always work, because the source image is weirdly cropped
         # or missing sometimes.
+
         for img in images:
             # Check if the image is empty before processing
             if img is None or img.size == 0:
