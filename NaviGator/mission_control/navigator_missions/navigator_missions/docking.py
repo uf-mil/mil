@@ -421,6 +421,10 @@ class Docking(NaviGatorMission):
         )
         list = [left, middle, right]
 
+        rospy.logerr(f"Left image shape: {left.shape}")
+        rospy.logerr(f"Middle image shape: {middle.shape}")
+        rospy.logerr(f"Right image shape: {right.shape}")
+
         h_min = min(a.shape[0] for a in list)
         resized = [
             cv2.resize(
@@ -428,30 +432,120 @@ class Docking(NaviGatorMission):
                 (int(im.shape[1] * h_min / im.shape[0]), h_min),
                 interpolation=cv2.INTER_CUBIC,
             )
-            for im in list
+            for im in list if im.size > 0 # Occasionally size is 0, causes errors
         ]
         concat = cv2.hconcat(resized)
         msg = self.bridge.cv2_to_imgmsg(concat, encoding="rgb8")
         self.contour_pub.publish(msg)
+
         return list
 
-    def find_color(self, images, color):
+    def find_color(self, images, color): 
+        # NOTE: An OpenCV window will open, close it to progress
+        # Current iteration of find color works by looking through images, 
+        # then cropping images to the gray backboard (crop_images() does not always crop),
+        # then it looks at a vertical line at the center of the image and averages the 
+        # non-gray values, returning Red Green Blue or Other.
+        # Function does not always work, because the source image is weirdly cropped
+        # or missing sometimes.
         for img in images:
-            img = img.astype("uint8")
-            ret3, th3 = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
-            img = cv2.cvtColor(th3, cv2.COLOR_GRAY2RGB)
-            # edges = cv2.Canny(img, 100, 200)
-            # contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-            # img = cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB)
-            # largestContour = (0, None)
-            # for contour in contours:
-            #     area = cv2.contourArea(contour)
-            #     if area > largestContour[0]:
-            #         largestContour = (area, contour)
-            # cv2.drawContours(img, contours, -1, (0, 255, 0), 3)
-            msg = self.bridge.cv2_to_imgmsg(img, encoding="rgb8")
-            self.contour_pub.publish(msg)
+            # Check if the image is empty before processing
+            if img is None or img.size == 0:
+                rospy.logerr("Error: Find color received image with 0 size, skipping")
+                continue
 
+            # Convert from BGR to RGB
+            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+            # Split RGB channels
+            R, G, B = cv2.split(img_rgb)
+
+            # Thresholds for detecting gray 
+            diff_threshold = 20  # Maximum difference allowed between R, G, and B
+            gray_lower = 80  # Lower bound for gray intensity
+            gray_upper = 200  # Upper bound for gray intensity
+
+            # Create a mask to find the gray board
+            mask = (
+                (abs(R - G) < diff_threshold) &
+                (abs(R - B) < diff_threshold) &
+                (abs(G - B) < diff_threshold) &
+                (R >= gray_lower) & (R <= gray_upper) &  # Apply threshold for gray intensity
+                (G >= gray_lower) & (G <= gray_upper) &
+                (B >= gray_lower) & (B <= gray_upper)
+            ).astype("uint8") * 255  # Convert the mask to a binary format (0 or 255)
+            # cv2.imshow('Gray Detection Mask', mask) # Shows the mask
+
+            dock_color = (0,0,0) # Default value for color of dock
+
+            # Find contours of gray regions (the gray board)
+            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if contours:
+                # Largest contour is gray board
+                largest_contour = max(contours, key=cv2.contourArea)
+                x, y, w, h = cv2.boundingRect(largest_contour)
+
+                # Uncomment to draw a rectangle around the detected gray board, show in openCV
+                # cv2.rectangle(img_rgb, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                # cv2.imshow('Gray Board Detection', img_rgb)
+
+                # Crops Image around Gray Board
+                cropped_img = img_rgb[y:y+h, x:x+w]
+                cv2.imshow('CLOSE WINDOW TO UNBLOCK', cropped_img)
+
+                # Now we find the color of the dock using the vertical centerline
+                # Iterate over the vertical centerline from top to bottom
+                center_x = cropped_img.shape[1] // 2
+                total_red = 0
+                total_green = 0
+                total_blue = 0
+                num_pixels = 0 # Number of nongray pixels at center                    
+                for center_y in range(cropped_img.shape[0]):
+                    current_color = cropped_img[center_y, center_x] # Get RGB value at center                    
+                    current_color = current_color.astype(np.int32) # Turns int8 colors into int32 to prevent overflow
+                    # Check if the color is gray
+                    if not (
+                        abs(current_color[2] - current_color[1]) < diff_threshold and
+                        abs(current_color[2] - current_color[0]) < diff_threshold and
+                        abs(current_color[1] - current_color[0]) < diff_threshold and
+                        gray_lower <= current_color[0] <= gray_upper and
+                        gray_lower <= current_color[1] <= gray_upper and
+                        gray_lower <= current_color[2] <= gray_upper
+                    ):
+                        # If the color is not gray, add it to the total color
+                        total_red += current_color[0]
+                        total_green += current_color[1] 
+                        total_blue += current_color[2] 
+                        num_pixels += 1
+                # Color at center is average of non gray pixels
+                dock_color = (total_red/num_pixels, total_green/num_pixels, total_blue/num_pixels)
+
+            else:
+                # If no gray detected
+                rospy.logerr("Error: No dock detected in find_color()")
+
+            # Max ratio allowed between main color and other 2 values
+            color_ratio = 0.9
+            # Log the color (even after converting to RGB they still need to be BGR for this somehow)
+            if dock_color[0] > color_ratio*(dock_color[1] + dock_color[2]):
+                rospy.logerr("Detected color: Blue")
+            elif dock_color[1] > color_ratio*(dock_color[0] + dock_color[2]):
+                rospy.logerr("Detected color: Green")
+            elif dock_color[2] > color_ratio*(dock_color[0] + dock_color[1]):
+                rospy.logerr("Detected color: Red")
+            else:
+                rospy.logerr(f"Detected color: RGB{dock_color}")
+
+            # Publish the image
+            msg = self.bridge.cv2_to_imgmsg(img_rgb, encoding="rgb8")
+            self.contour_pub.publish(msg)
+            
+            # Loop until the OpenCV window is closed
+            while cv2.getWindowProperty('CLOSE WINDOW TO UNBLOCK', cv2.WND_PROP_VISIBLE) >= 1:
+                if cv2.waitKey(1) != -1:  # Pressing any key will also not close window
+                    break
+            cv2.destroyAllWindows()
+    
     def get_ogrid_coords(self, arr):
         return self.intup(self.ogrid_cpm * (np.asarray(arr) - self.ogrid_origin))[:2]
 
