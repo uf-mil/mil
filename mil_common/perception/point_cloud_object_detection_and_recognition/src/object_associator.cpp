@@ -2,12 +2,11 @@
 #include <pcl/registration/correspondence_estimation.h>
 #include <pcl/registration/correspondence_rejection_trimmed.h>
 #include <pcl/search/octree.h>
+#include <ros/ros.h>
+#include <tf/transform_listener.h>
 
 #include <point_cloud_object_detection_and_recognition/object_associator.hpp>
 #include <unordered_set>
-
-#include <ros/ros.h>
-#include <tf/transform_listener.h>
 
 namespace pcodar
 {
@@ -16,9 +15,10 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
   // Tracks which clusters have been seen
   std::unordered_set<uint> seen;
 
-  // Establish Area of Interest (AOI) that new points are not allowed to be published while Navigator is moving backwards
-  Eigen::Vector3f min_aoi(0.0f, -5.0f, -0.5f); // Min bounds (x, y, z)
-  Eigen::Vector3f max_aoi(10.0f, 5.0f, 0.5f); // Max bounds (x, y, z)
+  // Establish Area of Interest (AOI) that new points are not allowed to be published while Navigator is moving
+  // backwards
+  Eigen::Vector3f min_aoi(0.0f, -5.0f, -0.5f);  // Min bounds (x, y, z)
+  Eigen::Vector3f max_aoi(10.0f, 5.0f, 0.5f);   // Max bounds (x, y, z)
 
   // Iterate through each new cluster, finding which persistent cluster(s) it matches
   for (cluster_t const& cluster : clusters)
@@ -48,7 +48,7 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
     }
 
     // If Navigator is moving back, new objects outside of the AOI are invalid
-    if(moving_back)
+    if (moving_back)
     {
       // Compute the centroid of the cluster
       Eigen::Vector4f centroid;
@@ -76,9 +76,9 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
         // Check if the centroid is outside the AOI
         bool outside_aoi = (centroid[0] < min_aoi[0] || centroid[0] > max_aoi[0] ||  // X bounds
                             centroid[1] < min_aoi[1] || centroid[1] > max_aoi[1] ||  // Y bounds
-                            centroid[2] < min_aoi[2] || centroid[2] > max_aoi[2]);   // Z bounds          
+                            centroid[2] < min_aoi[2] || centroid[2] > max_aoi[2]);   // Z bounds
 
-        if(!outside_aoi) 
+        if (!outside_aoi)
         {
           std::cout << centroid[0] << ", " << centroid[1] << ", " << centroid[2] << "\n";
           continue;
@@ -102,11 +102,11 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
           }
         }
       }
-      catch (tf::TransformException &ex)
+      catch (tf::TransformException& ex)
       {
-          ROS_ERROR("%s", ex.what());
-          ros::Duration(1.0).sleep();
-          continue;  // Skip this iteration if the transform fails
+        ROS_ERROR("%s", ex.what());
+        ros::Duration(1.0).sleep();
+        continue;  // Skip this iteration if the transform fails
       }
     }
     else

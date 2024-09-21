@@ -6,8 +6,8 @@
 #include <mil_msgs/ObjectDBQuery.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
-#include <std_msgs/Float32.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <std_msgs/Float32.h>
 #include <std_srvs/Trigger.h>
 #include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>

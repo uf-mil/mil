@@ -143,7 +143,7 @@ void Node::ConfigCallback(Config const& config, uint32_t level)
 void Node::initialize()
 {
   NodeBase::initialize();
-  // Subscribe to odom 
+  // Subscribe to odom
   fl_sub = nh_.subscribe("/wamv/thrusters/FL_thrust_cmd", 1, &Node::thrust_fl_cb, this);
   fr_sub = nh_.subscribe("/wamv/thrusters/FR_thrust_cmd", 1, &Node::thrust_fr_cb, this);
 
