@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import struct
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from enum import Enum
 from functools import lru_cache
 from typing import ClassVar, TypeVar, get_type_hints
@@ -123,6 +123,31 @@ class Packet:
                 and issubclass(field_type, Enum)
             ):
                 setattr(self, name, field_type(self.__dict__[name]))
+        if self.payload_format and not self.payload_format.startswith(
+            ("<", ">", "=", "!"),
+        ):
+            raise ValueError(
+                "The payload format does not start with a standard size character: ('<', '>', '!', '=').",
+            )
+        available_chars: dict[type, list[str]] = {
+            bool: ["c", "b", "B", "?"],
+            int: ["b", "B", "h", "H", "i", "I", "l", "L", "q", "Q"],
+            float: ["f", "d"],
+        }
+        stripped_format = self.payload_format.lstrip("<>=!@")
+        for i, field in enumerate(fields(self)):
+            if field.type not in available_chars:
+                continue
+            chars = available_chars[field.type]
+            if i >= len(stripped_format):
+                raise ValueError(
+                    f"The payload format for the packet is too short to support all dataclass fields; expected: {len(fields(self))}, found: {len(self.payload_format)}.",
+                )
+            represented_char = stripped_format[i]
+            if represented_char not in chars:
+                raise ValueError(
+                    f"The type of {field.name} in the payload format is '{represented_char}', which does not correspond to its dataclass type of {field.type}.",
+                )
 
     @classmethod
     def _calculate_checksum(cls, data: bytes) -> tuple[int, int]:
@@ -147,11 +172,12 @@ class Packet:
         return data + struct.pack("<BB", *checksum)
 
     def __len__(self) -> int:
-        return struct.calcsize(f"<BBBBH{self.payload_format}BB")
+        return self.__class__._expected_len()
 
     @classmethod
     def _expected_len(cls) -> int:
-        return struct.calcsize(f"<BBBBH{cls.payload_format}BB")
+        # We cannot use one calcsize since payload_format should start with a standard size character
+        return struct.calcsize("<BBBBHBB") + struct.calcsize(cls.payload_format)
 
     @classmethod
     def from_bytes(

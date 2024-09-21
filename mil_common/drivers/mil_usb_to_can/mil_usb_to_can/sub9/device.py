@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from electrical_protocol import Packet
+
 if TYPE_CHECKING:
-    from .packet import Packet
     from .sub9_driver import SimulatedUSBtoCANStream, USBtoCANDriver
 
 
