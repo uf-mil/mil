@@ -1,2 +1,2 @@
 from .device import CANDeviceHandle, SimulatedCANDeviceHandle
-from .packet import AckPacket, NackPacket, Packet
+from .packet import AckPacket, ChecksumException, NackPacket, Packet
