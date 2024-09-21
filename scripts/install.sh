@@ -288,6 +288,14 @@ mil_user_setup_rc() {
 	fi
 }
 
+add_hosts_entry() {
+	sudo grep -qxF "$1" /etc/hosts || echo "$1" | sudo tee -a /etc/hosts >/dev/null
+}
+
+# Add /etc/hosts entry for vehicles
+add_hosts_entry "192.168.37.60 sub8"
+add_hosts_entry "192.168.37.82 navigator-two"
+
 # Sets up the catkin workspace so that user can build
 # If the repo is already cloned here, it will build the MIL code
 # catkin_init_workspace is superfluous, catkin_make is all you need
