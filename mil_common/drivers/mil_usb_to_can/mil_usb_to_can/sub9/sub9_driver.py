@@ -39,7 +39,7 @@ class SimulatedUSBtoCANStream(SimulatedSerial):
     ):
         """
         Args:
-            devices (List[Tuple[Type[SimulatedCANDeviceHandle], List[Type[Packet]]]]): List of
+            devices (List[Tuple[Type[SimulatedCANDeviceHandle], List[Type[electrical_protocol.Packet]]]]): List of
                 the simulated device handles, along with the list of packets each handle
                 is listening for.
         """

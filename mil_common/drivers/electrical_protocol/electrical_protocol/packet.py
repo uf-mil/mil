@@ -151,6 +151,11 @@ class Packet:
 
     @classmethod
     def _calculate_checksum(cls, data: bytes) -> tuple[int, int]:
+        """
+        Used to calculate the Fletcher's checksum for a series of bytes. When
+        calculating the checksum for a new packet, the start bytes/sync characters
+        should not be included.
+        """
         sum1, sum2 = 0, 0
         for byte in data:
             sum1 = (sum1 + byte) % 255

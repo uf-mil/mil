@@ -17,7 +17,15 @@ RecvPackets = TypeVar("RecvPackets", bound=Packet)
 class ROSSerialDevice(Generic[SendPackets, RecvPackets]):
     """
     Represents a generic serial device, which is expected to be the main component
-    of an individual ROS node."""
+    of an individual ROS node.
+
+    Attributes:
+        port (Optional[str]): The port used for the serial connection, if provided.
+        baudrate (Optional[int]): The baudrate to use with the device, if provided.
+        device (Optional[serial.Serial]): The serial class used to communicate with
+            the device.
+        rate (float): The reading rate of the device, in Hertz. Set to `20` by default.
+    """
 
     device: serial.Serial | None
     _recv_T: Any
@@ -30,6 +38,14 @@ class ROSSerialDevice(Generic[SendPackets, RecvPackets]):
         return bool(self.device) and self.device.is_open
 
     def __init__(self, port: str | None, baudrate: int | None) -> None:
+        """
+        Arguments:
+            port (Optional[str]): The serial port to connect to. If ``None``, connection
+                will not be established on initialization; rather, the user can use
+                :meth:`~.connect` to connect later.
+            baudrate (Optional[int]): The baudrate to connect with. If ``None`` and
+                a port is specified, then 115200 is assumed.
+        """
         self.port = port
         self.baudrate = baudrate
         if port:
@@ -51,6 +67,14 @@ class ROSSerialDevice(Generic[SendPackets, RecvPackets]):
         cls._recv_T = get_args(cls.__orig_bases__[0])[1]  # type: ignore
 
     def connect(self, port: str, baudrate: int) -> None:
+        """
+        Connects to the port with the given baudrate. If the device is already
+        connected, the input and output buffers will be flushed.
+
+        Arguments:
+            port (str): The serial port to connect to.
+            baudrate (int): The baudrate to connect with.
+        """
         self.port = port
         self.baudrate = baudrate
         self.device = serial.Serial(port, baudrate, timeout=0.1)
@@ -60,7 +84,10 @@ class ROSSerialDevice(Generic[SendPackets, RecvPackets]):
         self.device.reset_output_buffer()
 
     def close(self) -> None:
-        rospy.loginfo("Closing device...")
+        """
+        Closes the serial device.
+        """
+        rospy.loginfo("Closing serial device...")
         if not self.device:
             raise RuntimeError("Device is not connected.")
         else:
@@ -72,12 +99,26 @@ class ROSSerialDevice(Generic[SendPackets, RecvPackets]):
                     )
         self.device.close()
 
-    def write(self, bytes: bytes) -> None:
+    def write(self, data: bytes) -> None:
+        """
+        Writes a series of raw bytes to the device. This method should rarely be
+        used; using :meth:`~.send_packet` is preferred because of the guarantees
+        it provides through the packet class.
+
+        Arguments:
+            data (bytes): The data to send.
+        """
         if not self.device:
             raise RuntimeError("Device is not connected.")
-        self.device.write(bytes)
+        self.device.write(data)
 
     def send_packet(self, packet: SendPackets) -> None:
+        """
+        Sends a given packet to the device.
+
+        Arguments:
+            packet (:class:`~.Packet`): The packet to send.
+        """
         with self.lock:
             self.write(bytes(packet))
 
@@ -118,12 +159,24 @@ class ROSSerialDevice(Generic[SendPackets, RecvPackets]):
             return isinstance(provided, self._recv_T)
 
     def adjust_read_rate(self, rate: float) -> None:
+        """
+        Sets the reading rate to a specified amount.
+
+        Arguments:
+            rate (float): The reading speed to use, in hz.
+        """
         self.timer.shutdown()
         self.rate = min(rate, 1_000)
         rospy.logerr(f"Setting rate to {rate}")
         self.timer = rospy.Timer(rospy.Duration(1.0 / rate), self._process_buffer)  # type: ignore
 
     def scale_read_rate(self, scale: float) -> None:
+        """
+        Scales the reading rate of the device handle by some factor.
+
+        Arguments:
+            scale (float): The amount to scale the reading rate by.
+        """
         self.adjust_read_rate(self.rate * scale)
 
     def _read_packet(self) -> bool:
@@ -170,4 +223,11 @@ class ROSSerialDevice(Generic[SendPackets, RecvPackets]):
 
     @abc.abstractmethod
     def on_packet_received(self, packet: RecvPackets) -> None:
+        """
+        Abstract method to be implemented by subclasses for handling packets
+        sent by the physical electrical board.
+
+        Arguments:
+            packet (:class:`~.Packet`): The packet that is received.
+        """
         pass
