@@ -181,19 +181,18 @@
       </ambient>
     </scene>
     <include>
-      <name>crocodile_buoy</name>
+      <uri>model://python_buoy</uri>
       <pose>-510 215 0 0 0 0</pose>
-      <uri>model://crocodile_buoy</uri>
     </include>
     <include>
-      <name>platypus_buoy</name>
+      <name>iguana_buoy</name>
       <pose>-490 215 0 0 0 0</pose>
-      <uri>model://platypus_buoy</uri>
+      <uri>model://iguana_buoy</uri>
     </include>
     <include>
-      <name>turtle_buoy</name>
+      <name>manatee_buoy</name>
       <pose>-500 233 0 0 0 0</pose>
-      <uri>model://turtle_buoy</uri>
+      <uri>model://manatee_buoy</uri>
     </include>
     <!-- The scoring plugin -->
     <plugin filename="libwildlife_scoring_plugin.so" name="wildlife_scoring_plugin">
@@ -215,17 +214,17 @@
       <!-- wildlife specific parameters -->
       <buoys>
         <buoy>
-          <model_name>crocodile_buoy</model_name>
+          <model_name>python_buoy</model_name>
           <link_name>link</link_name>
           <goal>avoid</goal>
         </buoy>
         <buoy>
-          <model_name>platypus_buoy</model_name>
+          <model_name>iguana_buoy</model_name>
           <link_name>link</link_name>
           <goal>circumnavigate_clockwise</goal>
         </buoy>
         <buoy>
-          <model_name>turtle_buoy</model_name>
+          <model_name>manatee_buoy</model_name>
           <link_name>link</link_name>
           <goal>circumnavigate_counterclockwise</goal>
         </buoy>
