@@ -2064,7 +2064,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/sensor_post/mesh/sensor_post_arm.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/sensor_post/mesh/sensor_post_arm.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2073,7 +2073,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/mono_camera/mesh/mono_camera.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/mono_camera/mesh/mono_camera.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2097,7 +2097,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/sensor_post/mesh/sensor_post_arm.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/sensor_post/mesh/sensor_post_arm.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2106,7 +2106,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/mono_camera/mesh/mono_camera.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/mono_camera/mesh/mono_camera.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2130,7 +2130,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/sensor_post/mesh/sensor_post_arm.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/sensor_post/mesh/sensor_post_arm.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2139,7 +2139,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/3d_lidar/mesh/3d_lidar.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/3d_lidar/mesh/3d_lidar.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2148,7 +2148,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/WAM-V-Base/mesh/WAM-V-Base.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/WAM-V-Base/mesh/WAM-V-Base.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2350,7 +2350,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/engine/mesh/engine.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/engine/mesh/engine.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2419,7 +2419,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/propeller/mesh/propeller.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/propeller/mesh/propeller.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2506,7 +2506,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/engine/mesh/engine.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/engine/mesh/engine.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2575,7 +2575,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/propeller/mesh/propeller.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/propeller/mesh/propeller.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2662,7 +2662,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/engine/mesh/engine.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/engine/mesh/engine.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2731,7 +2731,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/propeller/mesh/propeller.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/propeller/mesh/propeller.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2818,7 +2818,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/engine/mesh/engine.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/engine/mesh/engine.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2887,7 +2887,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/propeller/mesh/propeller.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_description/models/propeller/mesh/propeller.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2932,7 +2932,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/ball_shooter/meshes/ball_shooter_base.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/ball_shooter/meshes/ball_shooter_base.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2998,7 +2998,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/ball_shooter/meshes/ball_shooter_launcher.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/vrx_gazebo/models/ball_shooter/meshes/ball_shooter_launcher.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -3131,7 +3131,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/tanu/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_gazebo/models/gps/mesh/gps.dae</uri>
+              <uri>/home/user/catkin_ws/src/mil/NaviGator/simulation/VRX/vrx/wamv_gazebo/models/gps/mesh/gps.dae</uri>
             </mesh>
           </geometry>
         </visual>
