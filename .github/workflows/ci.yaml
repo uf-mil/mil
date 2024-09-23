@@ -24,8 +24,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  avoid-duplicate-ci:
+    name: Check if CI has already be ran
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.check_skip.outputs.should_skip }}
+    steps:
+      - id: check_skip
+        uses: fkirc/skip-duplicate-actions@v5
+
   super-ci:
     name: Run tests and build docs
+    needs: avoid-duplicate-ci
+    if: needs.avoid-duplicate-ci.outputs.should_skip != 'true'
     runs-on: self-hosted
     steps:
       - name: Configure catkin workspace folder structure
