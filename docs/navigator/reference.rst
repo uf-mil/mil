@@ -391,3 +391,23 @@ RobotXClient
 
 .. autoclass:: navigator_robotx_comms.nodes.robotx_comms_client.RobotXClient
     :members:
+
+:mod:`navigator_ball_launcher` - Ball launcher
+----------------------------------------------
+
+.. automodule:: navigator_ball_launcher
+    :members:
+
+ReleaseBallPacket
+^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_ball_launcher.ReleaseBallPacket
+
+.. autoclass:: navigator_ball_launcher.ReleaseBallPacket
+    :members:
+
+SetSpinPacket
+^^^^^^^^^^^^^
+.. attributetable:: navigator_ball_launcher.SetSpinPacket
+
+.. autoclass:: navigator_ball_launcher.SetSpinPacket
+    :members:

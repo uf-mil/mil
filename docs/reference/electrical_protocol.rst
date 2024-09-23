@@ -102,10 +102,16 @@ byte length.
 | (System    |              |                |                                                                         |
 | Status)    |              |                |                                                                         |
 +------------+--------------+----------------+-------------------------------------------------------------------------+
-| 0x10       | 0x00         | ``?B``         | :class:`navigator_pico_kill_board.KillSetPacket`                        |
+| 0x10       | 0x00         | ``?B``         | :class:`navigator_kill_light_board.KillSetPacket`                       |
 | (NaviGator +--------------+----------------+-------------------------------------------------------------------------+
-| Temporary  | 0x01         | ``?B``         | :class:`navigator_pico_kill_board.KillReceivePacket`                    |
-| Pico Kill  |              |                |                                                                         |
+| Temporary  | 0x01         | ``?B``         | :class:`navigator_kill_light_board.KillReceivePacket`                   |
+| Pico Kill  +--------------+----------------+-------------------------------------------------------------------------+
+| Board)     | 0x02         |                | :class:`navigator_kill_light_board.SetMovementModePacket`               |
++------------+--------------+----------------+-------------------------------------------------------------------------+
+| 0x11       | 0x00         | Empty          | :class:`navigator_ball_launcher.ReleaseBallPacket`                      |
+| (NaviGator +--------------+----------------+-------------------------------------------------------------------------+
+| Ball       | 0x01         | ``B``          | :class:`navigator_ball_launcher.SetSpinPacket`                          |
+| Launcher   |              |                |                                                                         |
 | Board)     |              |                |                                                                         |
 +------------+--------------+----------------+-------------------------------------------------------------------------+
 
