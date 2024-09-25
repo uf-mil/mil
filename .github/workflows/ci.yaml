@@ -29,9 +29,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should_skip: ${{ steps.check_skip.outputs.should_skip }}
-      run_id: ${{ fromJSON(steps.skip_check.outputs.skipped_by).id }}
+      skipped_by: ${{ steps.check_skip.outputs.skipped_by }}
     steps:
       - id: check_skip
+        name: Check if workflow has already been ran
         uses: fkirc/skip-duplicate-actions@v5
 
   super-ci:
@@ -131,7 +132,12 @@ jobs:
         with:
           name: docs-ci-html-${{ github.sha }}
           path: ${{ github.workspace }}/build/docs
-          run-id: ${{ needs.avoid-duplicate-ci.outputs.run_id }}
+          run-id: >
+            ${{
+            needs.avoid-duplicate-ci.outputs.skipped_by == '{}' &&
+            github.run_id ||
+            fromJSON(needs.avoid-duplicate-ci.outputs.skipped_by).id
+            }}
 
       # Publish the artifact to the GitHub Pages branch
       - name: Push docs to mil.ufl.edu
