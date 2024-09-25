@@ -128,46 +128,69 @@ class Docking(NaviGatorMission):
         # retry calculation to make sure we really found the open side
         await self.move_to_correct_side()
 
-        # get the dock object from the database
-        dock, pos = await self.get_sorted_objects(name="dock", n=1)
+        # The LIDAR to camera mapping is very unreliable, so we loop until it is correct
+        while True:
+            # get the dock object from the database
+            dock, pos = await self.get_sorted_objects(name="dock", n=1)
 
-        # dock is PerceptionObject
-        position, rotation, dock = self.get_dock_data(dock)
+            # dock is PerceptionObject
+            position, rotation, dock = self.get_dock_data(dock)
 
-        # get LIDAR points
-        points = rosmsg_to_numpy(dock.points)
+            # get LIDAR points
+            points = rosmsg_to_numpy(dock.points)
 
-        # get transform from enu to boat space
-        enu_to_boat = await self.tf_listener.get_transform("wamv/base_link", "enu")
-        corrected = np.empty(points.shape)
+            # get transform from enu to boat space
+            enu_to_boat = await self.tf_listener.get_transform("wamv/base_link", "enu")
+            corrected = np.empty(points.shape)
 
-        # convert LIDAR points from enu to boat space
-        for i in range(points.shape[0]):
-            corrected[i] = enu_to_boat.transform_point(points[i])
+            # convert LIDAR points from enu to boat space
+            for i in range(points.shape[0]):
+                corrected[i] = enu_to_boat.transform_point(points[i])
 
-        # get the centers and clusters that represent the backside of the dock
-        centers, clusters = self.get_cluster_centers(corrected)
+            # get the centers and clusters that represent the backside of the dock
+            centers, clusters = self.get_cluster_centers(corrected)
 
-        centers = centers[centers[:, 1].argsort()][::-1]
+            # Sort both the centers and the clusters by y coordinate
+            sorted_indices = centers[:, 1].argsort()[::-1]
+            centers = centers[sorted_indices]
+            clusters = [clusters[i] for i in sorted_indices]
 
-        # crop the images to get bbox and find color
-        images = await self.crop_images(clusters, centers)
+            # crop the images to get bbox and find color
+            images = await self.crop_images(clusters, centers)
+            
+            # preferred height (x) for cropped image: 170-180
+            # preferred width (y) for cropped image: 130-150
+
+            # When 'e' key is pressed, the current set of images will be chosen and move forward
+            # When another key is pressed, we try again
+            if images[0].size > 0:
+                cv2.imshow('Image 0 (press e if all images are correct) ', cv2.cvtColor(images[0], cv2.COLOR_BGR2RGB))
+            if images[1].size > 0:
+                cv2.imshow('Image 1 (press e if all images are correct) ', cv2.cvtColor(images[1], cv2.COLOR_BGR2RGB))
+            if images[2].size > 0:
+                cv2.imshow('Image 2 (press e if all images are correct) ', cv2.cvtColor(images[2], cv2.COLOR_BGR2RGB))
+            key = cv2.waitKey(0) & 0xFF
+            if key == ord('e'):
+                cv2.destroyAllWindows()
+                break
+            cv2.destroyAllWindows()  # Close the image window before re-looping
 
         # Temp goal color until we can get the actual color that we want to dock to
         goal_color = "Red"
         correct_dock_number = self.find_color(images, goal_color)
+        rospy.logerr(f"Here is the correct dock number: {correct_dock_number}")
 
-        # temporary code that just moves boat to center of leftmost cluster
+        # temporary code that just moves boat to center of cluster with whatever color was specified
         left = copy.deepcopy(centers[correct_dock_number])
 
         # calculate center of cluster and move towards it but at an offset distance
         left[0] = 0
-        forward = copy.deepcopy(centers[0])
+        forward = copy.deepcopy(centers[correct_dock_number])
         forward[0] = forward[0] - 5
         boat_to_enu = await self.tf_listener.get_transform("enu", "wamv/base_link")
-        centers[0] = boat_to_enu.transform_point(left)
+        centers[correct_dock_number] = boat_to_enu.transform_point(left)
         nextPt = boat_to_enu.transform_point(forward)
-        await self.move.set_position(centers[0]).go(blind=True, move_type="skid")
+        await self.move.set_position(centers[correct_dock_number]).go(blind=True, move_type="skid")
         await self.move.set_position(nextPt).go(blind=True, move_type="skid")
         await self.pcodar_save(SetBoolRequest(False))
 
@@ -370,10 +393,11 @@ class Docking(NaviGatorMission):
         return np.asarray(means), cluster_members
 
     def crop_image(self, pts, transform, img):
+        rospy.logerr("The points for cropping before are", pts)
         pts = [self.model.project3dToPixel(transform.transform_point(a)) for a in pts]
         pts = np.array([[int(a[0]), int(a[1])] for a in pts], dtype=np.int32)
         pts = np.int32([pts])
-        rospy.logerr(pts)
+        rospy.logerr("The points for cropping are", pts)
         mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
         cv2.fillPoly(mask, pts, (255))
         res = cv2.bitwise_and(img, img, mask=mask)
@@ -398,15 +422,16 @@ class Docking(NaviGatorMission):
 
     async def crop_images(self, clusters, centers):
         image = await self.image_sub.get_next_message()
-        image = self.bridge.imgmsg_to_cv2(image)
-        cv2.imshow("Initial image", image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        image = self.bridge.imgmsg_to_cv2(image)            
+        # cv2.imshow("Initial image", image) Not needed
         boat_to_cam = await self.tf_listener.get_transform(
             self.cam_frame,
             "wamv/base_link",
         )
-
+        rospy.logerr('Cluster 0: ', clusters[0])
+        rospy.logerr('Cluster 1: ', clusters[1])
+        rospy.logerr('Cluster 2: ', clusters[2])
+        
         left = self.crop_image(
             self.get_cluster_corners(clusters[0]),
             boat_to_cam,
@@ -429,18 +454,24 @@ class Docking(NaviGatorMission):
         rospy.logerr(f"Right image shape: {right.shape}")
 
         h_min = min(a.shape[0] for a in list)
-        resized = [
-            cv2.resize(
-                im,
-                (int(im.shape[1] * h_min / im.shape[0]), h_min),
-                interpolation=cv2.INTER_CUBIC,
-            )
-            for im in list
-            if im.size > 0  # Occasionally size is 0, causes errors
-        ]
-        concat = cv2.hconcat(resized)
-        msg = self.bridge.cv2_to_imgmsg(concat, encoding="rgb8")
-        self.contour_pub.publish(msg)
+        counter = 0
+        # Skip resize, its broken
+        # resized = []
+        # for im in list:
+        #     if im.size > 0:  # Occasionally size is 0, causes errors
+        #         resized = [
+        #             cv2.resize(
+        #                 im,
+        #                 (int(im.shape[1] * h_min / im.shape[0]), h_min),
+        #                 interpolation=cv2.INTER_CUBIC,
+        #             )            
+        #         ]
+        #     else:
+        #         print(f"Error: Image {counter} has size 0")
+        #     counter += 1
+        # concat = cv2.hconcat(resized)
+        # msg = self.bridge.cv2_to_imgmsg(concat, encoding="rgb8")
+        # self.contour_pub.publish(msg)
 
         return list
 
@@ -462,92 +493,91 @@ class Docking(NaviGatorMission):
                 continue
 
             # Convert from BGR to RGB
-            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            # Split RGB channels
-            R, G, B = cv2.split(img_rgb)
+            
 
-            # Thresholds for detecting gray
-            diff_threshold = 20  # Maximum difference allowed between R, G, and B
-            gray_lower = 80  # Lower bound for gray intensity
-            gray_upper = 200  # Upper bound for gray intensity
+        # This code was used to detect the gray dock board and mask everything else out 
+        # But it is not very useful, because there is a gray building in the background
+            # # Split RGB channels
+            # R, G, B = cv2.split(img_rgb)
+            # # Thresholds for detecting gray
+            # diff_threshold = 20  # Maximum difference allowed between R, G, and B
+            # gray_lower = 80  # Lower bound for gray intensity
+            # gray_upper = 200  # Upper bound for gray intensity
 
-            # Create a mask to find the gray board
-            mask = (
-                (abs(R - G) < diff_threshold)
-                & (abs(R - B) < diff_threshold)
-                & (abs(G - B) < diff_threshold)
-                & (gray_lower <= R)
-                & (gray_upper >= R)  # Apply threshold for gray intensity
-                & (gray_lower <= G)
-                & (gray_upper >= G)
-                & (gray_lower <= B)
-                & (gray_upper >= B)
-            ).astype(
-                "uint8",
-            ) * 255  # Convert the mask to a binary format (0 or 255)
-            # cv2.imshow('Gray Detection Mask', mask) # Shows the mask
+            # # Create a mask to find the gray board
+            # mask = (
+            #     (abs(R - G) < diff_threshold)
+            #     & (abs(R - B) < diff_threshold)
+            #     & (abs(G - B) < diff_threshold)
+            #     & (gray_lower <= R)
+            #     & (gray_upper >= R)  # Apply threshold for gray intensity
+            #     & (gray_lower <= G)
+            #     & (gray_upper >= G)
+            #     & (gray_lower <= B)
+            #     & (gray_upper >= B)
+            # ).astype(
+            #     "uint8",
+            # ) * 255  # Convert the mask to a binary format (0 or 255)
 
-            dock_color = (0, 0, 0)  # Default value for color of dock
+            # dock_color = (0, 0, 0)  # Default value for color of dock
 
-            # Find contours of gray regions (the gray board)
-            contours, _ = cv2.findContours(
-                mask,
-                cv2.RETR_EXTERNAL,
-                cv2.CHAIN_APPROX_SIMPLE,
-            )
-            if contours:
-                # Largest contour is gray board
-                largest_contour = max(contours, key=cv2.contourArea)
-                x, y, w, h = cv2.boundingRect(largest_contour)
+            # # Find contours of gray regions (the gray board)
+            # contours, _ = cv2.findContours(
+            #     mask,
+            #     cv2.RETR_EXTERNAL,
+            #     cv2.CHAIN_APPROX_SIMPLE,
+            # )
+            # if contours:
+            #     # Largest contour is gray board
+            #     largest_contour = max(contours, key=cv2.contourArea)
+            #     x, y, w, h = cv2.boundingRect(largest_contour)
 
-                # Uncomment to draw a rectangle around the detected gray board, show in openCV
-                # cv2.rectangle(img_rgb, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                # cv2.imshow('Gray Board Detection', img_rgb)
+            #     # Uncomment to draw a rectangle around the detected gray board, show in openCV
+            #     # cv2.rectangle(img_rgb, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            #     # cv2.imshow('Gray Board Detection', img_rgb)
 
-                # Crops Image around Gray Board
-                cropped_img = img_rgb[y : y + h, x : x + w]
-                cv2.imshow("CLOSE WINDOW TO UNBLOCK", cropped_img)
+            #     # Crops Image around Gray Board
+            #     cropped_img = img_rgb[y : y + h, x : x + w]
+            #     cv2.imshow(f"{count}", cropped_img)
 
-                # Now we find the color of the dock using the vertical centerline
-                # Iterate over the vertical centerline from top to bottom
-                center_x = cropped_img.shape[1] // 2
-                total_red = 0
-                total_green = 0
-                total_blue = 0
-                num_pixels = 0  # Number of nongray pixels at center
-                for center_y in range(cropped_img.shape[0]):
-                    current_color = cropped_img[
-                        center_y,
-                        center_x,
-                    ]  # Get RGB value at center
-                    current_color = current_color.astype(
-                        np.int32,
-                    )  # Turns int8 colors into int32 to prevent overflow
-                    # Check if the color is gray
-                    if not (
-                        abs(current_color[2] - current_color[1]) < diff_threshold
-                        and abs(current_color[2] - current_color[0]) < diff_threshold
-                        and abs(current_color[1] - current_color[0]) < diff_threshold
-                        and gray_lower <= current_color[0] <= gray_upper
-                        and gray_lower <= current_color[1] <= gray_upper
-                        and gray_lower <= current_color[2] <= gray_upper
-                    ):
-                        # If the color is not gray, add it to the total color
-                        total_red += current_color[0]
-                        total_green += current_color[1]
-                        total_blue += current_color[2]
-                        num_pixels += 1
-                # Color at center is average of non gray pixels
+            # Now we find the color of the dock using the vertical centerline
+            # Iterate over the vertical centerline from top to bottom
+            cropped_img = img
+            center_x = cropped_img.shape[1] // 2
+            total_red = 0
+            total_green = 0
+            total_blue = 0
+            num_pixels = 0  # Number of nongray pixels at center
+            for center_y in range(cropped_img.shape[0]):
+                current_color = cropped_img[
+                    center_y,
+                    center_x,
+                ]  # Get RGB value at center
+                current_color = current_color.astype(
+                    np.int32,
+                )  # Turns int8 colors into int32 to prevent overflow
+                # Check if the color is weighted towards R G or B
+                if (
+                    current_color[2] > current_color[0] + current_color[1]
+                    or current_color[1] > current_color[0] + current_color[2]
+                    or current_color[0] > current_color[1] + current_color[2]
+                ):
+                    # If the color is not gray, add it to the total color
+                    total_red += current_color[0]
+                    total_green += current_color[1]
+                    total_blue += current_color[2]
+                    num_pixels += 1
+            # Color at center is average of non gray pixels
+            if num_pixels == 0: # Check if any colors found
+                dock_color = (0,0,0)
+            else:
                 dock_color = (
                     total_red / num_pixels,
                     total_green / num_pixels,
                     total_blue / num_pixels,
                 )
-
-            else:
-                # If no gray detected
-                rospy.logerr("Error: No dock detected in find_color()")
 
             # Max ratio allowed between main color and other 2 values
             color_ratio = 0.9
@@ -556,6 +586,9 @@ class Docking(NaviGatorMission):
                 dock_color[0] > color_ratio * (dock_color[1] + dock_color[2])
                 and goal_color == "Blue"
             ):
+                cv2.imshow('Blue Dock Detected', cropped_img)
+                cv2.waitKey(0)
+                cv2.destroyAllWindows()
                 rospy.logerr("Detected color: Blue")
                 return count
             elif (
@@ -568,23 +601,21 @@ class Docking(NaviGatorMission):
                 dock_color[2] > color_ratio * (dock_color[0] + dock_color[1])
                 and goal_color == "Red"
             ):
+                cv2.imshow('Red Dock Detected', cropped_img)
+                cv2.waitKey(0)
+                cv2.destroyAllWindows()
                 rospy.logerr("Detected color: Red")
                 return count
             else:
                 rospy.logerr(f"Detected color: RGB{dock_color}")
 
             # Publish the image
-            msg = self.bridge.cv2_to_imgmsg(img_rgb, encoding="rgb8")
+            msg = self.bridge.cv2_to_imgmsg(img, encoding="rgb8")
             self.contour_pub.publish(msg)
 
-            # Loop until the OpenCV window is closed
-            while (
-                cv2.getWindowProperty("CLOSE WINDOW TO UNBLOCK", cv2.WND_PROP_VISIBLE)
-                >= 1
-            ):
-                if cv2.waitKey(1) != -1:  # Pressing any key will also not close window
-                    break
-            cv2.destroyAllWindows()
+            # Press key to destroy OpenCV window
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
 
             count += 1
 
