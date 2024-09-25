@@ -128,6 +128,10 @@ class Docking(NaviGatorMission):
         # retry calculation to make sure we really found the open side
         await self.move_to_correct_side()
 
+        # Temp goal color until we can get the actual color that we want to dock to
+        goal_color = "Red"
+        correct_dock_number = -1
+
         # The LIDAR to camera mapping is very unreliable, so we loop until it is correct
         while True:
             # get the dock object from the database
@@ -175,9 +179,12 @@ class Docking(NaviGatorMission):
                 break
             cv2.destroyAllWindows()  # Close the image window before re-looping
 
-        # Temp goal color until we can get the actual color that we want to dock to
-        goal_color = "Red"
-        correct_dock_number = self.find_color(images, goal_color)
+            # If the images are correct, then break. We need to check if the height ranges from 170-180 and width ranges from 130-150
+            if images[0].shape[0] in range(170, 181) and images[0].shape[1] in range(130, 151) and images[1].shape[0] in range(170, 181) and images[1].shape[1] in range(130, 151) and images[2].shape[0] in range(170, 181) and images[2].shape[1] in range(130, 151):
+                correct_dock_number = self.find_color(images, goal_color)
+                if correct_dock_number != -1:
+                    break
+
         rospy.logerr(f"Here is the correct dock number: {correct_dock_number}")
 
         # temporary code that just moves boat to center of cluster with whatever color was specified
@@ -486,6 +493,9 @@ class Docking(NaviGatorMission):
 
         count = 0
 
+        # set a tolerance value for if we find two colors in the same image
+        color_tolerance = 0.1
+
         for img in images:
             # Check if the image is empty before processing
             if img is None or img.size == 0:
@@ -550,6 +560,12 @@ class Docking(NaviGatorMission):
             total_green = 0
             total_blue = 0
             num_pixels = 0  # Number of nongray pixels at center
+
+            # Also get the number of pixels for each color
+            green_pixels = 0
+            red_pixels = 0
+            blue_pixels = 0
+
             for center_y in range(cropped_img.shape[0]):
                 current_color = cropped_img[
                     center_y,
@@ -569,6 +585,15 @@ class Docking(NaviGatorMission):
                     total_green += current_color[1]
                     total_blue += current_color[2]
                     num_pixels += 1
+
+                    # Count the number of pixels that are weighted towards R G or B
+                    if current_color[0] > current_color[1] + current_color[2]:
+                        red_pixels += 1
+                    elif current_color[1] > current_color[0] + current_color[2]:
+                        green_pixels += 1
+                    elif current_color[2] > current_color[0] + current_color[1]:
+                        blue_pixels += 1
+
             # Color at center is average of non gray pixels
             if num_pixels == 0: # Check if any colors found
                 dock_color = (0,0,0)
@@ -578,6 +603,22 @@ class Docking(NaviGatorMission):
                     total_green / num_pixels,
                     total_blue / num_pixels,
                 )
+
+            # Get the ratios of each color
+            red_ratio = red_pixels / num_pixels if num_pixels > 0 else 0
+            green_ratio = green_pixels / num_pixels if num_pixels > 0 else 0
+            blue_ratio = blue_pixels / num_pixels if num_pixels > 0 else 0
+
+            # Now check if we find two colors outside of the tolerance by checking if there is an outright majority of one color
+            if (
+                abs(red_ratio - green_ratio) > color_tolerance
+                or abs(red_ratio - blue_ratio) > color_tolerance
+                or abs(green_ratio - blue_ratio) > color_tolerance
+            ):
+                rospy.logerr(
+                    f"Error: Found two colors in image {count} with ratios: R: {red_ratio}, G: {green_ratio}, B: {blue_ratio}")
+                # We return -1 signaling that this failed
+                return -1
 
             # Max ratio allowed between main color and other 2 values
             color_ratio = 0.9
