@@ -29,6 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should_skip: ${{ steps.check_skip.outputs.should_skip }}
+      run_id: ${{ fromJSON(steps.skip_check.outputs.skipped_by).id }}
     steps:
       - id: check_skip
         uses: fkirc/skip-duplicate-actions@v5
@@ -104,7 +105,7 @@ jobs:
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
           ./scripts/build_docs -s -d
       - name: Publish docs artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docs-ci-html-${{ github.sha }}
           path: ${{ github.workspace }}/.mil/docs/html
@@ -116,8 +117,7 @@ jobs:
     # https://github.com/actions/runner/issues/491#issuecomment-850884422
     if: |
       always() &&
-      (needs.super-ci.result == 'skipped' || needs.super-ci.result == 'success') &&
-      github.ref == 'refs/heads/master'
+      (needs.super-ci.result == 'skipped' || needs.super-ci.result == 'success')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -127,10 +127,11 @@ jobs:
           mkdir -p $GITHUB_WORKSPACE/build/docs
 
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: docs-ci-html-${{ github.sha }}
           path: ${{ github.workspace }}/build/docs
+          run-id: ${{ needs.avoid-duplicate-ci.outputs.run_id }}
 
       # Publish the artifact to the GitHub Pages branch
       - name: Push docs to mil.ufl.edu
