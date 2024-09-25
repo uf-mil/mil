@@ -112,9 +112,12 @@ jobs:
   deploy-docs:
     name: Deploy docs from master
     runs-on: self-hosted
-    needs:
-      - super-ci
-    if: github.ref == 'refs/heads/master'
+    needs: super-ci
+    # https://github.com/actions/runner/issues/491#issuecomment-850884422
+    if: |
+      always() &&
+      (needs.super-ci.result == 'skipped' || needs.super-ci.result == 'success') &&
+      github.ref == 'refs/heads/master'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
