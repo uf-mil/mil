@@ -165,22 +165,23 @@ class Docking(NaviGatorMission):
             # preferred height (x) for cropped image: 170-180
             # preferred width (y) for cropped image: 130-150
 
+            # OLD USER BASED METHOD OF FINDING DOCK COLOR
             # When 'e' key is pressed, the current set of images will be chosen and move forward
             # When another key is pressed, we try again
-            if images[0].size > 0:
-                cv2.imshow('Image 0 (press e if all images are correct) ', cv2.cvtColor(images[0], cv2.COLOR_BGR2RGB))
-            if images[1].size > 0:
-                cv2.imshow('Image 1 (press e if all images are correct) ', cv2.cvtColor(images[1], cv2.COLOR_BGR2RGB))
-            if images[2].size > 0:
-                cv2.imshow('Image 2 (press e if all images are correct) ', cv2.cvtColor(images[2], cv2.COLOR_BGR2RGB))
-            key = cv2.waitKey(0) & 0xFF
-            if key == ord('e'):
-                cv2.destroyAllWindows()
-                break
-            cv2.destroyAllWindows()  # Close the image window before re-looping
+            # if images[0].size > 0:
+            #     cv2.imshow('Image 0 (press e if all images are correct) ', cv2.cvtColor(images[0], cv2.COLOR_BGR2RGB))
+            # if images[1].size > 0:
+            #     cv2.imshow('Image 1 (press e if all images are correct) ', cv2.cvtColor(images[1], cv2.COLOR_BGR2RGB))
+            # if images[2].size > 0:
+            #     cv2.imshow('Image 2 (press e if all images are correct) ', cv2.cvtColor(images[2], cv2.COLOR_BGR2RGB))
+            # key = cv2.waitKey(0) & 0xFF
+            # if key == ord('e'):
+            #     cv2.destroyAllWindows()
+            #     break
+            # cv2.destroyAllWindows()  # Close the image window before re-looping
 
             # If the images are correct, then break. We need to check if the height ranges from 170-180 and width ranges from 130-150
-            if images[0].shape[0] in range(170, 181) and images[0].shape[1] in range(130, 151) and images[1].shape[0] in range(170, 181) and images[1].shape[1] in range(130, 151) and images[2].shape[0] in range(170, 181) and images[2].shape[1] in range(130, 151):
+            if images[0].shape[0] in range(90, 191) and images[0].shape[1] in range(101, 180) and images[1].shape[0] in range(90, 191) and images[1].shape[1] in range(101, 180) and images[2].shape[0] in range(90, 191) and images[2].shape[1] in range(101, 180):
                 correct_dock_number = self.find_color(images, goal_color)
                 if correct_dock_number != -1:
                     break
@@ -610,16 +611,23 @@ class Docking(NaviGatorMission):
             blue_ratio = blue_pixels / num_pixels if num_pixels > 0 else 0
 
             # Now check if we find two colors outside of the tolerance by checking if there is an outright majority of one color
-            if (
-                abs(red_ratio - green_ratio) > color_tolerance
-                or abs(red_ratio - blue_ratio) > color_tolerance
-                or abs(green_ratio - blue_ratio) > color_tolerance
-            ):
-                rospy.logerr(
-                    f"Error: Found two colors in image {count} with ratios: R: {red_ratio}, G: {green_ratio}, B: {blue_ratio}")
-                # We return -1 signaling that this failed
-                return -1
-
+            if(count != 0): # PLEASE REMOVE THIS OUTER IF DURING ACTUAL TESTING, THIS IS TO SKIP THE YELLOW DOCK
+                if (not (
+                    (red_ratio - green_ratio > color_tolerance
+                    and red_ratio - blue_ratio > color_tolerance)
+                    or
+                    (green_ratio - blue_ratio > color_tolerance
+                    and green_ratio - red_ratio > color_tolerance)
+                    or
+                    (blue_ratio - green_ratio > color_tolerance
+                    and blue_ratio - red_ratio > color_tolerance)
+                    )
+                ):
+                    rospy.logerr(
+                        f"Error: Found two colors in image {count} with ratios: R: {red_ratio}, G: {green_ratio}, B: {blue_ratio}")
+                    # We return -1 signaling that this failed
+                    return -1
+            
             # Max ratio allowed between main color and other 2 values
             color_ratio = 0.9
             # Log the color (even after converting to RGB they still need to be BGR for this somehow)
@@ -627,9 +635,9 @@ class Docking(NaviGatorMission):
                 dock_color[0] > color_ratio * (dock_color[1] + dock_color[2])
                 and goal_color == "Blue"
             ):
-                cv2.imshow('Blue Dock Detected', cropped_img)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
+                # cv2.imshow('Blue Dock Detected', cropped_img)
+                # cv2.waitKey(0)
+                # cv2.destroyAllWindows()
                 rospy.logerr("Detected color: Blue")
                 return count
             elif (
@@ -642,9 +650,9 @@ class Docking(NaviGatorMission):
                 dock_color[2] > color_ratio * (dock_color[0] + dock_color[1])
                 and goal_color == "Red"
             ):
-                cv2.imshow('Red Dock Detected', cropped_img)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
+                # cv2.imshow('Red Dock Detected', cropped_img)
+                # cv2.waitKey(0)
+                # cv2.destroyAllWindows()
                 rospy.logerr("Detected color: Red")
                 return count
             else:
