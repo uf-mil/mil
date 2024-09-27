@@ -153,8 +153,8 @@ class ROSSerialDevice(Generic[SendPackets, RecvPackets]):
         # either:
         #   1. RecvPackets is a Packet --> check isinstance on the type var
         #   2. RecvPackets is a Union of Packets --> check isinstance on all
-        if get_origin(RecvPackets) is Union:
-            return isinstance(provided, get_args(RecvPackets))
+        if get_origin(self._recv_T) is Union:
+            return isinstance(provided, get_args(self._recv_T))
         else:
             return isinstance(provided, self._recv_T)
 

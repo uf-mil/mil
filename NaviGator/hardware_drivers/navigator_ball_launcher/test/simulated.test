@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <param name="/is_simulation" value="True" />
+    <test pkg="navigator_ball_launcher" test-name="test_simulated_shooter" type="test_simulated_shooter.py" />
+</launch>
