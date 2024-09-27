@@ -573,7 +573,7 @@ class RobotXClient:
                 rospy.sleep(2)
 
     @thread_lock(lock)
-    def send_message(self, message: bytes) -> None:
+    def send_message(self, message: str) -> None:
         """
         Sends a message over the established socket connection. This method is thread-locked.
 
