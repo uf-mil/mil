@@ -13,19 +13,19 @@ from std_srvs.srv import Empty, EmptyRequest, EmptyResponse
 
 
 @dataclass
-class RequestAddPacket(Packet, class_id=0x37, subclass_id=0x00, payload_format="ff"):
+class RequestAddPacket(Packet, class_id=0x37, subclass_id=0x00, payload_format="<ff"):
     number_one: float
     number_two: float
 
 
 @dataclass
-class RequestSubPacket(Packet, class_id=0x37, subclass_id=0x01, payload_format="ff"):
+class RequestSubPacket(Packet, class_id=0x37, subclass_id=0x01, payload_format="<ff"):
     start: float
     minus: float
 
 
 @dataclass
-class AnswerPacket(Packet, class_id=0x37, subclass_id=0x02, payload_format="f"):
+class AnswerPacket(Packet, class_id=0x37, subclass_id=0x02, payload_format="<f"):
     result: float
 
 

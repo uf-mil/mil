@@ -9,7 +9,5 @@ catkin_package()
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  # add_rostest(test/adder_device_sub9.test)
-  # add_rostest(test/echo_device_sub9.test)
-  # add_rostest(test/basic.test)
+  add_rostest(test/simulated.test)
 endif()

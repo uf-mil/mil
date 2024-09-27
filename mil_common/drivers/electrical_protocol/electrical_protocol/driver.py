@@ -167,7 +167,6 @@ class ROSSerialDevice(Generic[SendPackets, RecvPackets]):
         """
         self.timer.shutdown()
         self.rate = min(rate, 1_000)
-        rospy.logerr(f"Setting rate to {rate}")
         self.timer = rospy.Timer(rospy.Duration(1.0 / rate), self._process_buffer)  # type: ignore
 
     def scale_read_rate(self, scale: float) -> None:
