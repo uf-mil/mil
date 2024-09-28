@@ -68,6 +68,11 @@ class Wildlife2024(NaviGatorMission):
                 return i
         return -1
     
+    def movement_finished(self, task):
+        if not task.cancelled():
+            print("THE MOVEMENT HAS FINISHED")
+            self.current_move_task_state = MoveState.FINISHED
+    
     # Explore until we find one of the animals we have not seen before
     async def explore_closest_until(self, is_done, filter_and_sort)->dict:
         """
@@ -133,7 +138,6 @@ class Wildlife2024(NaviGatorMission):
                 [rosmsg_to_numpy(obj.pose.position) for obj in objects],
             )
             indices = [] if len(objects) == 0 else filter_and_sort(objects, positions)
-            print(f"\n\nINDICES: {indices}\n\n")
             if indices is None or len(indices) == 0:
                 self.send_feedback("No objects")
                 continue
@@ -141,8 +145,8 @@ class Wildlife2024(NaviGatorMission):
             positions = positions[indices]
 
             # Exit if done
-            self.send_feedback(f"Analyzing objects: {objects}")
             ret = is_done(objects, positions)
+            self.send_feedback(f"Analyzing objects: {ret}")
             if ret is not None:
                 if move_id_tuple is not None:
                     self.send_feedback("Condition met. Canceling investigation")
@@ -192,7 +196,7 @@ class Wildlife2024(NaviGatorMission):
             label = object.labeled_classification
             
             # Go to point and Circle animal
-            await self.move.d_spiral_point(position, 5, 4, 1, 
+            await self.move.d_spiral_point(position, 10, 4, 1, 
                                            "cw"
                                            if label == "green_iguana_buoy" or label == "red_python_buoy"
                                            else
@@ -207,13 +211,13 @@ class Wildlife2024(NaviGatorMission):
         """Pass in sorted list of objects by distance from boat and extract the first instance of classifications"""
         animals_dict = {classif:-1 for classif in classifications}
         for i, obj in enumerate(objects):
-            print(obj)
             if obj.labeled_classification in classifications and animals_dict[obj.labeled_classification] == -1:
                 animals_dict[obj.labeled_classification] = i
         return animals_dict
     
     async def find_wildlife(self):
         robot_position = (await self.tx_pose())[0]
+        self.send_feedback("FINDING WILDLIFE")
 
         def filter_and_sort(objects, positions):
             distances = np.linalg.norm(positions - robot_position, axis=1)
@@ -264,7 +268,7 @@ class Wildlife2024(NaviGatorMission):
         self.objects_passed = set()
         await self.change_wrench("autonomous")
         # Wait a bit for PCDAR to get setup
-        await self.set_classifier_enabled.wait_for_service()
-        await self.set_classifier_enabled(SetBoolRequest(data=True))
+        # await self.set_classifier_enabled.wait_for_service()
+        # await self.set_classifier_enabled(SetBoolRequest(data=True))
         await self.nh.sleep(3.0)
         await self.find_wildlife()
