@@ -24,8 +24,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  avoid-duplicate-ci:
+    name: Check if CI has already be ran
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.check_skip.outputs.should_skip }}
+    steps:
+      - id: check_skip
+        uses: fkirc/skip-duplicate-actions@v5
+
   super-ci:
     name: Run tests and build docs
+    needs: avoid-duplicate-ci
+    if: needs.avoid-duplicate-ci.outputs.should_skip != 'true'
     runs-on: self-hosted
     steps:
       - name: Configure catkin workspace folder structure
@@ -50,7 +61,7 @@ jobs:
       - name: Install BlueView Sonar SDK
         run: |
           cd $GITHUB_WORKSPACE/catkin_ws/src/mil
-          ./scripts/hardware_installers/install_bvtsdk --pass ${{ secrets.ZOBELISK_PASSWORD }}
+          ./scripts/hw/install_bvtsdk --pass ${{ secrets.ZOBELISK_PASSWORD }}
           ls mil_common/drivers/mil_blueview_driver
           echo $PWD
       - name: Install system dependencies
@@ -101,9 +112,12 @@ jobs:
   deploy-docs:
     name: Deploy docs from master
     runs-on: self-hosted
-    needs:
-      - super-ci
-    if: github.ref == 'refs/heads/master'
+    needs: super-ci
+    # https://github.com/actions/runner/issues/491#issuecomment-850884422
+    if: |
+      always() &&
+      (needs.super-ci.result == 'skipped' || needs.super-ci.result == 'success') &&
+      github.ref == 'refs/heads/master'
     steps:
       - name: Checkout
         uses: actions/checkout@v4

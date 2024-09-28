@@ -34,6 +34,7 @@ class MissionClientCli:
             )
             return
         print("Available Missions:")
+        missions.sort()
         for mission in missions:
             print("- ", mission)
 

@@ -61,6 +61,8 @@ add_service_files(
   MessageUAVReplenishment.srv
   MessageUAVSearchReport.srv
   TwoClosestCones.srv
+  # 2024 RobotX service files
+  BallLauncherDrops.srv
 )
 
 add_action_files(

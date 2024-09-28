@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import struct
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from enum import Enum
 from functools import lru_cache
 from typing import ClassVar, TypeVar, get_type_hints
@@ -49,8 +49,8 @@ class ChecksumException(OSError):
 @dataclass
 class Packet:
     """
-    Represents one packet sent or received by a device handle communicating to/from
-    the USB to CAN board. This class is able to handle packaging unique data
+    Represents one packet that can be sent or received by a serial device.
+    This class is able to handle packaging unique data
     values into a :class:`bytes` object for sending over a data stream.
 
     This class should be overridden to implement unique packet payloads. Note
@@ -67,7 +67,7 @@ class Packet:
         from dataclasses import dataclass
 
         @dataclass
-        class ExamplePacket(Packet, msg_id = 0x02, subclass_id = 0x01, payload_format = "BHHf"):
+        class ExamplePacket(Packet, class_id = 0x02, subclass_id = 0x01, payload_format = "BHHf"):
             example_char: int
             example_short: int
             example_short_two: int
@@ -81,7 +81,7 @@ class Packet:
             in the specified packet format.
 
     Arguments:
-        msg_id (int): The message ID. Can be between 0 and 255.
+        class_id (int): The message ID. Can be between 0 and 255.
         subclass_id (int): The message subclass ID. Can be between 0 and 255.
         payload_format (str): The format for the payload. This determines how
             the individual payload is assembled. Each character in the format
@@ -89,28 +89,33 @@ class Packet:
             are assembled in the order they are defined in.
     """
 
-    msg_id: ClassVar[int]
+    class_id: ClassVar[int]
     subclass_id: ClassVar[int]
-    payload_format: ClassVar[str]
+    payload_format: ClassVar[str] = ""
 
-    def __init_subclass__(cls, msg_id: int, subclass_id: int, payload_format: str = ""):
-        cls.msg_id = msg_id
+    def __init_subclass__(
+        cls,
+        class_id: int,
+        subclass_id: int,
+        payload_format: str = "",
+    ):
+        cls.class_id = class_id
         cls.subclass_id = subclass_id
         cls.payload_format = payload_format
         packets = [p for mid in _packet_registry.values() for p in mid.values()]
         for packet in packets:
-            if packet.msg_id == msg_id and packet.subclass_id == subclass_id:
+            if packet.class_id == class_id and packet.subclass_id == subclass_id:
                 raise ValueError(
-                    f"Cannot reuse msg_id 0x{msg_id:0x} and subclass_id 0x{subclass_id}, already used by {packet.__qualname__}",
+                    f"Cannot reuse class_id 0x{class_id:0x} and subclass_id 0x{subclass_id}, already used by {packet.__qualname__}",
                 )
-        _packet_registry.setdefault(msg_id, {})[subclass_id] = cls
+        _packet_registry.setdefault(class_id, {})[subclass_id] = cls
 
     def __post_init__(self):
         for name, field_type in get_cache_hints(self.__class__).items():
             if (
                 name
                 not in [
-                    "msg_id",
+                    "class_id",
                     "subclass_id",
                     "payload_format",
                 ]
@@ -118,9 +123,39 @@ class Packet:
                 and issubclass(field_type, Enum)
             ):
                 setattr(self, name, field_type(self.__dict__[name]))
+        if self.payload_format and not self.payload_format.startswith(
+            ("<", ">", "=", "!"),
+        ):
+            raise ValueError(
+                "The payload format does not start with a standard size character: ('<', '>', '!', '=').",
+            )
+        available_chars: dict[type, list[str]] = {
+            bool: ["c", "b", "B", "?"],
+            int: ["b", "B", "h", "H", "i", "I", "l", "L", "q", "Q"],
+            float: ["f", "d"],
+        }
+        stripped_format = self.payload_format.lstrip("<>=!@")
+        for i, field in enumerate(fields(self)):
+            if field.type not in available_chars:
+                continue
+            chars = available_chars[field.type]
+            if i >= len(stripped_format):
+                raise ValueError(
+                    f"The payload format for the packet is too short to support all dataclass fields; expected: {len(fields(self))}, found: {len(self.payload_format)}.",
+                )
+            represented_char = stripped_format[i]
+            if represented_char not in chars:
+                raise ValueError(
+                    f"The type of {field.name} in the payload format is '{represented_char}', which does not correspond to its dataclass type of {field.type}.",
+                )
 
     @classmethod
     def _calculate_checksum(cls, data: bytes) -> tuple[int, int]:
+        """
+        Used to calculate the Fletcher's checksum for a series of bytes. When
+        calculating the checksum for a new packet, the start bytes/sync characters
+        should not be included.
+        """
         sum1, sum2 = 0, 0
         for byte in data:
             sum1 = (sum1 + byte) % 255
@@ -133,7 +168,7 @@ class Packet:
             f"<BBBBH{len(payload)}s",
             SYNC_CHAR_1,
             SYNC_CHAR_2,
-            self.msg_id,
+            self.class_id,
             self.subclass_id,
             len(payload),
             payload,
@@ -141,12 +176,30 @@ class Packet:
         checksum = self._calculate_checksum(data[2:])
         return data + struct.pack("<BB", *checksum)
 
+    def __len__(self) -> int:
+        return self.__class__._expected_len()
+
     @classmethod
-    def from_bytes(cls: type[PacketSelf], packed: bytes) -> PacketSelf:
+    def _expected_len(cls) -> int:
+        # We cannot use one calcsize since payload_format should start with a standard size character
+        return struct.calcsize("<BBBBHBB") + struct.calcsize(cls.payload_format)
+
+    @classmethod
+    def from_bytes(
+        cls: type[PacketSelf],
+        packed: bytes,
+        trim: bool = True,
+    ) -> PacketSelf:
         """
         Constructs a packet from a packed packet in a :class:`bytes` object.
         If a packet is found with the corresponding message and subclass ID,
         then an instance (or subclass) of that packet class will be returned.
+
+        Arguments:
+            packed (bytes): The packed packet to unpack.
+            trim (bool): If True, only the required number of bytes will be used
+                to construct the packet. Otherwise, the entire packet will be used.
+                Default: `True`.
 
         Raises:
             ChecksumException: The checksum is invalid.
@@ -155,10 +208,16 @@ class Packet:
         Returns:
             An instance of the appropriate packet subclass.
         """
-        msg_id = packed[2]
+        class_id = packed[2]
         subclass_id = packed[3]
-        if msg_id in _packet_registry and subclass_id in _packet_registry[msg_id]:
-            subclass = _packet_registry[msg_id][subclass_id]
+        if class_id in _packet_registry and subclass_id in _packet_registry[class_id]:
+            subclass = _packet_registry[class_id][subclass_id]
+            if trim:
+                packed = packed[: subclass._expected_len()]
+            if len(packed) < subclass._expected_len():
+                raise ValueError(
+                    f"Packet is too short to be a valid packet. (provided len: {len(packed)}, expected len: {cls._expected_len()})",
+                )
             payload = packed[6:-2]
             if struct.unpack("<BB", packed[-2:]) != cls._calculate_checksum(
                 packed[2:-2],
@@ -172,23 +231,23 @@ class Packet:
             packet = subclass(*unpacked)
             if not isinstance(packet, cls):
                 raise RuntimeError(
-                    f"Attempted to resolve packet of type {cls.__qualname__}, but found {packet.__class__.__qualname__} for bytes: {hexify(payload)}",
+                    f"Attempted to resolve packet of type {cls.__qualname__}, but found {packet.__class__.__qualname__} for bytes: {hexify(packed)}",
                 )
             return packet
         raise LookupError(
-            f"Attempted to reconstruct packet with msg_id 0x{msg_id:02x} and subclass_id 0x{subclass_id:02x}, but no packet with IDs was found.",
+            f"Attempted to reconstruct packet with class_id 0x{class_id:02x} and subclass_id 0x{subclass_id:02x}, but no packet with IDs was found.",
         )
 
 
 @dataclass
-class AckPacket(Packet, msg_id=0x00, subclass_id=0x01, payload_format=""):
+class AckPacket(Packet, class_id=0x00, subclass_id=0x01, payload_format=""):
     """
-    Common acknowledgment packet. Should only be found in response operations.
+    Common acknowledgment packet.
     """
 
 
 @dataclass
-class NackPacket(Packet, msg_id=0x00, subclass_id=0x00, payload_format=""):
+class NackPacket(Packet, class_id=0x00, subclass_id=0x00, payload_format=""):
     """
-    Common not-acknowledged packet. Should only be found in response operations.
+    Common not-acknowledged packet.
     """

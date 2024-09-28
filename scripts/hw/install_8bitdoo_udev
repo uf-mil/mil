@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# 8bitdoo Ultimate Wireless Controller installation script, by Robert Michael Smith
+# Original source: https://gist.github.com/loopyd/a7ccbf37e27580ccbed859c26aa0a167
+
+# Block script from running as non-root user
+if [ "$EUID" -ne 0 ]; then
+	echo "Please run as root"
+	exit 1
+fi
+# Blacklist Nintendo Switch Pro Controller Driver
+echo blacklist hid_nintendo | tee /etc/modprobe.d/notendo.conf
+
+# Install xboxdrv
+apt-get update
+if ! dpkg -s 'xboxdrv' &>/dev/null; then
+	apt-get install -y xboxdrv
+fi
+
+# Create udev rules
+if [ ! -f '/etc/udev/rules.d' ]; then
+	mkdir -p '/etc/udev/rules.d'
+fi
+udev_rules='/etc/udev/rules.d/99-8bitdo-ultimate.rules'
+if [ -f $udev_rules ]; then
+	sudo rm $udev_rules
+fi
+echo 'SUBSYSTEM=="usb", ACTION=="add", ATTR{idVendor}=="2dc8", ATTR{idProduct}=="3106", ATTR{manufacturer}=="8BitDo", RUN+="/bin/systemctl start 8bitdo-ultimate-xinput@2dc8:3106"' | tee $udev_rules
+echo 'SUBSYSTEM=="usb", ACTION=="add", ATTR{idVendor}=="2dc8", ATTR{idProduct}=="3109", ATTR{manufacturer}=="8BitDo", RUN+="/bin/systemctl stop 8bitdo-ultimate-xinput@2dc8:3106"' | tee -a $udev_rules
+
+# Reload udev rules
+udevadm control --reload-rules
+udevadm trigger
+
+# Create systemd service
+service_file='/etc/systemd/system/8bitdo-ultimate-xinput@.service'
+if [ -f $service_file ]; then
+	rm $service_file
+fi
+echo '[Unit]' | tee $service_file
+echo 'Description=8BitDo Ultimate Controller XInput mode xboxdrv daemon' | tee -a $service_file
+echo '' | tee -a $service_file
+echo '[Service]' | tee -a $service_file
+echo 'Type=simple' | tee -a $service_file
+echo 'ExecStart=/usr/bin/xboxdrv --mimic-xpad --silent --type xbox360 --device-by-id %i --force-feedback --detach-kernel-driver' | tee -a $service_file
+
+systemctl daemon-reload
+
+# Now install jstest-gtk to test the controller, which also installs all the joystick dependencies
+# This fixes:
+# - /dev/input/js0 not found
+if ! dpkg -s 'jstest-gtk' &>/dev/null; then
+	apt-get install -y jstest-gtk
+fi
+
+# Now open jstest-gtk and test the controller, remap the axis / buttons, then exit
+# Save the configuration using the command:
+# sudo jscal-store /dev/input/js0

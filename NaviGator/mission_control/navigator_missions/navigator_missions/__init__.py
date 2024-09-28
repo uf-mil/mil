@@ -1,7 +1,7 @@
 import mil_missions_core
 
 # RobotX 2024 Missions
-from .2024_wildlife_mission import Wildlife2024
+from .wildlife_2024 import Wildlife2024
 
 from . import pose_editor
 from .back_and_forth import BackAndForth

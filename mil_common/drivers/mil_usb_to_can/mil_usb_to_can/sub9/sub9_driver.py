@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+
 from __future__ import annotations
 
 import importlib
@@ -8,11 +9,12 @@ from typing import TYPE_CHECKING, Literal, overload
 
 import rospy
 import serial
+from electrical_protocol import Packet
+from electrical_protocol.packet import SYNC_CHAR_1
 from mil_misc_tools.serial_tools import SimulatedSerial
 from serial import SerialException
 
 from mil_usb_to_can.sub9.device import CANDeviceHandle, SimulatedCANDeviceHandle
-from mil_usb_to_can.sub9.packet import SYNC_CHAR_1, Packet
 
 if TYPE_CHECKING:
     HandlePacketListing = tuple[
@@ -37,7 +39,7 @@ class SimulatedUSBtoCANStream(SimulatedSerial):
     ):
         """
         Args:
-            devices (List[Tuple[Type[SimulatedCANDeviceHandle], List[Type[Packet]]]]): List of
+            devices (List[Tuple[Type[SimulatedCANDeviceHandle], List[Type[electrical_protocol.Packet]]]]): List of
                 the simulated device handles, along with the list of packets each handle
                 is listening for.
         """

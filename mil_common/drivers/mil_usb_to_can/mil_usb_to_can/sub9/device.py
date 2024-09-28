@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .packet import Packet
+    import electrical_protocol
+
     from .sub9_driver import SimulatedUSBtoCANStream, USBtoCANDriver
 
 
@@ -15,15 +16,13 @@ class SimulatedCANDeviceHandle:
     Child classes can inherit from this class to implement a simulated CAN device.
 
     Attributes:
-        inbound_packets (type[Packet]): The types of packets listened to by this device.
-            Packets of this type will be routed to the :meth:`~.on_data` method of
-            the device handle.
+        inbound_packets (type[electrical_protocol.Packet]): The types of packets listened to by this device. Packets of this type will be routed to the :meth:`~.on_data` method of the device handle.
     """
 
     def __init__(
         self,
         sim_board: SimulatedUSBtoCANStream,
-        inbound_packets: list[type[Packet]],
+        inbound_packets: list[type[electrical_protocol.Packet]],
     ):
         self._sim_board = sim_board
         self.inbound_packets = inbound_packets
@@ -34,7 +33,7 @@ class SimulatedCANDeviceHandle:
         """
         self._sim_board.send_to_bus(data)
 
-    def on_data(self, packet: Packet):
+    def on_data(self, packet: electrical_protocol.Packet):
         """
         Called when an relevant incoming packet is received over the serial
         connection. Relevant packets are those listed in :attr:`~.inbound_packets`.
@@ -42,7 +41,7 @@ class SimulatedCANDeviceHandle:
         Partial data (ie, incomplete packets) are not sent through this event.
 
         Args:
-            packet (Packet): The incoming packet.
+            packet (electrical_protocol.Packet): The incoming packet.
         """
         del packet
 
@@ -62,7 +61,7 @@ class CANDeviceHandle:
         """
         self._driver = driver
 
-    def on_data(self, data: Packet):
+    def on_data(self, data: electrical_protocol.Packet):
         """
         Called when a return packet is sent over the serial connection. In the
         USB to CAN protocol, it is assumed that packets will be returned to the
@@ -73,15 +72,15 @@ class CANDeviceHandle:
         Partial data (ie, incomplete packets) are not sent through this event.
 
         Args:
-            packet (Packet): The incoming packet.
+            packet (electrical_protocol.Packet): The incoming packet.
         """
         del data
 
-    def send_data(self, data: Packet):
+    def send_data(self, data: electrical_protocol.Packet):
         """
         Sends a packet over the serial connection.
 
         Args:
-            data (Packet): The packet to send.
+            data (electrical_protocol.Packet): The packet to send.
         """
         return self._driver.send_data(self, data)
