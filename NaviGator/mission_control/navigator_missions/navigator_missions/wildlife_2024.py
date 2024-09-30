@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-import numpy as np
 import asyncio
 from enum import Enum
-from geometry_msgs.msg import Point
+
+import numpy as np
 from mil_msgs.msg import ObjectsInImage
-from mil_msgs.srv import CameraToLidarTransform, CameraToLidarTransformRequest
+from mil_msgs.srv import CameraToLidarTransform
 from mil_tools import rosmsg_to_numpy
 
-from std_srvs.srv import SetBoolRequest
-
 from .navigator import NaviGatorMission
+
 
 class MoveState(Enum):
     NOT_STARTED = 1
@@ -17,11 +16,12 @@ class MoveState(Enum):
     CANCELLED = 3
     FINISHED = 4
 
+
 class Wildlife2024(NaviGatorMission):
     animals_observed = {
-        "blue_manatee_buoy" : False,    # Manatee => Counter clockwise
-        "green_iguana_buoy" : False,    # Iguana => Clockwise (by choice)
-        "red_python_buoy" : False     # Python => Clockwise
+        "blue_manatee_buoy": False,  # Manatee => Counter clockwise
+        "green_iguana_buoy": False,  # Iguana => Clockwise (by choice)
+        "red_python_buoy": False,  # Python => Clockwise
     }
 
     @classmethod
@@ -33,7 +33,7 @@ class Wildlife2024(NaviGatorMission):
             "/wamv/sensors/camera/front_right_cam/image_raw",
             CameraToLidarTransform,
         )
-    
+
     @classmethod
     async def shutdown(cls):
         await cls.camsub.shutdown()
@@ -47,7 +47,7 @@ class Wildlife2024(NaviGatorMission):
             if o.labeled_classification in classifications
             and o.id not in self.objects_passed
         ]
-    
+
     async def inspect_object(self, position):
         # Go in front of the object, looking directly at it
         try:
@@ -55,7 +55,7 @@ class Wildlife2024(NaviGatorMission):
             await self.nh.sleep(5.0)
         except asyncio.CancelledError:
             print("Cancelled Inspection")
-    
+
     @staticmethod
     def object_classified(objects, obj_id):
         """
@@ -67,22 +67,19 @@ class Wildlife2024(NaviGatorMission):
             if obj.id == obj_id and obj.labeled_classification != "UNKNOWN":
                 return i
         return -1
-    
+
     def movement_finished(self, task):
         if not task.cancelled():
             print("THE MOVEMENT HAS FINISHED")
             self.current_move_task_state = MoveState.FINISHED
-    
+
     # Explore until we find one of the animals we have not seen before
-    async def explore_closest_until(self, is_done, filter_and_sort)->dict:
+    async def explore_closest_until(self, is_done, filter_and_sort) -> dict:
         """
         @condition func taking in sorted objects, positions
         @object_filter func filters and sorts
         """
-        print("HERE")
         move_id_tuple = None
-        init_boat_pos = self.pose[0]
-        cone_buoys_investigated = 0  # max will be 2
         service_req = None
         investigated = set()
         move_task = None
@@ -146,7 +143,8 @@ class Wildlife2024(NaviGatorMission):
 
             # Exit if done
             ret = is_done(objects, positions)
-            self.send_feedback(f"Analyzing objects: {ret}")
+            labels = [obj[0].labeled_classification for obj in ret]
+            self.send_feedback(f"Analyzing objects: {labels}")
             if ret is not None:
                 if move_id_tuple is not None:
                     self.send_feedback("Condition met. Canceling investigation")
@@ -166,9 +164,7 @@ class Wildlife2024(NaviGatorMission):
             shortest_distance = 1000
 
             for i in range(len(objects)):
-                if (
-                    objects[i].id not in investigated
-                ):
+                if objects[i].id not in investigated:
                     distance = np.linalg.norm(positions[i] - self.pose[0])
                     if distance < shortest_distance:
                         shortest_distance = distance
@@ -180,7 +176,7 @@ class Wildlife2024(NaviGatorMission):
                         )
                         potential_candidate = i
                         print(positions[i])
-            
+
             if potential_candidate is not None:
                 # if there exists a closest buoy, go to it
                 self.send_feedback(f"Investigating {objects[potential_candidate].id}")
@@ -194,27 +190,43 @@ class Wildlife2024(NaviGatorMission):
             object = animal[0]
             position = animal[1]
             label = object.labeled_classification
-            
+
             # Go to point and Circle animal
-            await self.move.d_spiral_point(position, 10, 4, 1, 
-                                           "cw"
-                                           if label == "green_iguana_buoy" or label == "red_python_buoy"
-                                           else
-                                           "ccw", 
-                                           theta_offset=-1
-                                           )
+            await self.move.d_spiral_point(
+                position,
+                6,
+                4,
+                1,
+                (
+                    "cw"
+                    if label == "green_iguana_buoy" or label == "red_python_buoy"
+                    else "ccw"
+                ),
+                theta_offset=(
+                    1.57
+                    if label == "green_iguana_buoy" or label == "red_python_buoy"
+                    else -1.57
+                ),
+            )
 
             # Update explore dict
             self.animals_observed[label] = True
 
-    def get_indices_of_most_confident_animals(self, objects, classifications=["red_python_buoy","blue_manatee_buoy", "green_iguana_buoy"])->dict:
+    def get_indices_of_most_confident_animals(
+        self,
+        objects,
+        classifications=["red_python_buoy", "blue_manatee_buoy", "green_iguana_buoy"],
+    ) -> dict:
         """Pass in sorted list of objects by distance from boat and extract the first instance of classifications"""
-        animals_dict = {classif:-1 for classif in classifications}
+        animals_dict = {classif: -1 for classif in classifications}
         for i, obj in enumerate(objects):
-            if obj.labeled_classification in classifications and animals_dict[obj.labeled_classification] == -1:
+            if (
+                obj.labeled_classification in classifications
+                and animals_dict[obj.labeled_classification] == -1
+            ):
                 animals_dict[obj.labeled_classification] = i
         return animals_dict
-    
+
     async def find_wildlife(self):
         robot_position = (await self.tx_pose())[0]
         self.send_feedback("FINDING WILDLIFE")
@@ -228,7 +240,7 @@ class Wildlife2024(NaviGatorMission):
             res = self.get_indices_of_most_confident_animals(objects)
             # It is only done exploring if we detect an animal we have not circled or no objects were found
             found_new_animals = []
-            for key in res.keys():
+            for key in res:
                 if self.animals_observed[key] or res[key] == -1:
                     continue
                 else:
@@ -256,12 +268,11 @@ class Wildlife2024(NaviGatorMission):
             if not found:
                 break
             count += 1
-        
+
         if count < 3:
             await self.find_wildlife()
         else:
             print("ALL WILDLIFE OBSERVED!")
-
 
     async def run(self, args):
         # Check nearest objects
