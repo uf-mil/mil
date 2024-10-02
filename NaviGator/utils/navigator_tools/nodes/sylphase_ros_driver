@@ -64,8 +64,8 @@ def go():
                     )
                     continue
 
-                if force_z_to_zero:
-                    d["relative_position_enu"][2] = 0
+                if True or force_z_to_zero:
+                    d["relative_position_enu"][2] = 1.47
 
                 ecef_cov = numpy.array(
                     d["X_position_relative_position_orientation_ecef_covariance"],

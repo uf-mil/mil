@@ -57,7 +57,7 @@ class KillInterface:
             except serial.SerialException as e:
                 rospy.logerr(f"Cannot connect to kill board. {e}")
                 self.publish_diagnostics(e)
-                rospy.sleep(1)
+                rospy.sleep(60)
         rospy.loginfo("Board connected!")
         self.board_status = {}
         for kill in constants["KILLS"]:

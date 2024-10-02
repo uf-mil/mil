@@ -68,7 +68,7 @@ class Joystick:
         start = joy.buttons[7]
         back = joy.buttons[6]
         raise_kill = bool(joy.buttons[1])  # B
-        clear_kill = bool(joy.buttons[2])  # X
+        clear_kill = bool(joy.buttons[3])  # X
         station_hold = bool(joy.buttons[0])  # A
         rc_control = bool(joy.axes[6] > 0.9)  # d-pad left
         emergency_control = False
@@ -84,6 +84,7 @@ class Joystick:
 
         # Reset controller state if only start is pressed down about 1 second
         self.start_count += start
+        print(self.start_count)
         if self.start_count > 5:
             rospy.loginfo("Resetting controller state")
             self.reset()

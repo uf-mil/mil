@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mil_msgs/PerceptionObject.h>
+#include <ros/ros.h>
 
 #include <limits>
 
@@ -21,7 +22,7 @@ public:
   void update_config(Config const& config);
   /// Associate old objects with newly identified clusters. @prev_objects is updated + appended in place for new
   /// associations
-  void associate(ObjectMap& prev_objects, point_cloud const& pc, clusters_t clusters);
+  void associate(ObjectMap& prev_objects, point_cloud const& pc, clusters_t clusters, ros::Time moving_back_at);
 
 private:
   double max_distance_;

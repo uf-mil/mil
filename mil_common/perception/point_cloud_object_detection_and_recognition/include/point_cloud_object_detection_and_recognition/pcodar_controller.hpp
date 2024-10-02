@@ -5,8 +5,10 @@
 #include <mil_bounds/BoundsConfig.h>
 #include <mil_msgs/ObjectDBQuery.h>
 #include <nav_msgs/Odometry.h>
+#include <roboteq_msgs/Command.h>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <std_msgs/Float32.h>
 #include <std_srvs/Trigger.h>
 #include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
@@ -88,6 +90,9 @@ public:
 
   void velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud);
 
+  void thrust_fr_cb(const roboteq_msgs::Command& thrust);
+  void thrust_fl_cb(const roboteq_msgs::Command& thrust);
+
   void initialize() override;
 
 private:
@@ -97,6 +102,11 @@ private:
   bool Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) override;
 
 private:
+  // Switch that tells pcodar that Navigator is moving backwards
+  bool fr_back = false;
+  bool fl_back = false;
+  ros::Time thrust_back = ros::Time::now();
+
   ros::Publisher pub_pcl_;
 
   // Subscriber

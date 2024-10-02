@@ -22,4 +22,4 @@ ogrid_resolution_meters_per_cell: 0.3
 ogrid_inflation_meters: 0.8
 
 # yamllint disable-line rule:line-length
-classifications: ["white_cylinder", "black_cylinder", "red_cylinder", "green_cylinder", "UNKNOWN"]
+classifications: ["white_cylinder", "black_cylinder", "red_cylinder", "green_cylinder","blue_manatee_buoy", "green_iguana_buoy", "red_python_buoy", "UNKNOWN"]

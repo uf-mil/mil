@@ -143,6 +143,9 @@ void Node::ConfigCallback(Config const& config, uint32_t level)
 void Node::initialize()
 {
   NodeBase::initialize();
+  // Subscribe to odom
+  fr_sub = nh_.subscribe("/FR_motor/cmd", 1, &Node::thrust_fr_cb, this);
+  fl_sub = nh_.subscribe("/FL_motor/cmd", 1, &Node::thrust_fl_cb, this);
 
   // Subscribe pointcloud
   pc_sub = nh_.subscribe("/velodyne_points", 1, &Node::velodyne_cb, this);
@@ -214,6 +217,24 @@ bool Node::bounds_update_cb(const mil_bounds::BoundsConfig& config)
     return false;
   input_cloud_filter_.set_bounds(bounds_);
   return true;
+}
+
+void Node::thrust_fl_cb(const roboteq_msgs::Command& thrust)
+{
+  fl_back = thrust.setpoint < 0;
+  if (fr_back && fl_back)
+  {
+    thrust_back = ros::Time::now();
+  }
+}
+
+void Node::thrust_fr_cb(const roboteq_msgs::Command& thrust)
+{
+  fr_back = thrust.setpoint < 0;
+  if (fr_back && fl_back)
+  {
+    thrust_back = ros::Time::now();
+  }
 }
 
 }  // namespace pcodar

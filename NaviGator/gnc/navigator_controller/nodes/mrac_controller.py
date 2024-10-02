@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import traceback
+import rich
 
 import numpy as np
 import numpy.linalg as npl
