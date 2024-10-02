@@ -143,7 +143,7 @@ class Wildlife2024(NaviGatorMission):
 
             # Exit if done
             ret = is_done(objects, positions)
-            labels = [obj[0].labeled_classification for obj in ret]
+            labels = [obj[0].labeled_classification for obj in ret] if ret is not None else []
             self.send_feedback(f"Analyzing objects: {labels}")
             if ret is not None:
                 if move_id_tuple is not None:
