@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
   <!-- COORDINATE: {'constant': 0, 'environment': 0} -->
-  <world name="template">
+  <world name="default_scan_dock_fling_2024">
     <!-- Estimated latitude/longitude of sydneyregatta
 	 from satellite imagery -->
     <spherical_coordinates>
