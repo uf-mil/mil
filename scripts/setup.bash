@@ -193,6 +193,19 @@ rossubconnect() {
 	rosconnect "192.168.37.60"
 }
 
+prettycp() {
+    rsync --recursive --times --modify-window=2 --progress --verbose --itemize-changes --stats --human-readable "$1" "$2"
+}
+
+mount_ssd() {
+    sudo mkdir -p /mnt/ssd
+    sudo mount -t exfat /dev/sda1 /mnt/ssd
+}
+
+unmount_ssd() {
+    sudo umount /mnt/ssd
+}
+
 alias xbox=startxbox
 
 # PYTHONPATH modifications
