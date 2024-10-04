@@ -317,13 +317,13 @@ class NaviGatorMission(BaseMission):
     async def init_front_left_camera(cls):
         if cls.front_left_camera_sub is None:
             cls.front_left_camera_sub = cls.nh.subscribe(
-                "/wamv/sensors/camera/front_left_cam/image_raw",
+                "/camera/front_left_cam/image_raw",
                 Image,
             )
 
         if cls.front_left_camera_info_sub is None:
             cls.front_left_camera_info_sub = cls.nh.subscribe(
-                "/wamv/sensors/camera/front_left_cam/camera_info",
+                "/camera/front_left_cam/camera_info",
                 CameraInfo,
             )
 
@@ -336,13 +336,13 @@ class NaviGatorMission(BaseMission):
     async def init_front_right_camera(cls):
         if cls.front_right_camera_sub is None:
             cls.front_right_camera_sub = cls.nh.subscribe(
-                "/wamv/sensors/camera/front_right_cam/image_raw",
+                "/camera/front_right_cam/image_raw",
                 Image,
             )
 
         if cls.front_right_camera_info_sub is None:
             cls.front_right_camera_info_sub = cls.nh.subscribe(
-                "/wamv/sensors/camera/front_right_cam/camera_info",
+                "/camera/front_right_cam/camera_info",
                 CameraInfo,
             )
 
