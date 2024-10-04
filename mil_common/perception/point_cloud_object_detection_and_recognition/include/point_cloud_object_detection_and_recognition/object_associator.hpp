@@ -21,7 +21,7 @@ public:
   void update_config(Config const& config);
   /// Associate old objects with newly identified clusters. @prev_objects is updated + appended in place for new
   /// associations
-  void associate(ObjectMap& prev_objects, point_cloud const& pc, clusters_t clusters);
+  void associate(ObjectMap& prev_objects, point_cloud const& pc, clusters_t clusters, bool moving_back);
 
 private:
   double max_distance_;
