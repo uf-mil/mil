@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import IntEnum
 
-from mil_usb_to_can.sub9 import Packet
+from electrical_protocol import Packet
 
 
 class ActuatorPacketId(IntEnum):
@@ -18,7 +18,7 @@ class ActuatorPacketId(IntEnum):
 
 
 @dataclass
-class ActuatorSetPacket(Packet, msg_id=0x03, subclass_id=0x00, payload_format="<BB"):
+class ActuatorSetPacket(Packet, class_id=0x03, subclass_id=0x00, payload_format="<BB"):
     """
     Packet used by the actuator board to set a specific valve.
 
@@ -35,7 +35,7 @@ class ActuatorSetPacket(Packet, msg_id=0x03, subclass_id=0x00, payload_format="<
 @dataclass
 class ActuatorPollRequestPacket(
     Packet,
-    msg_id=0x03,
+    class_id=0x03,
     subclass_id=0x01,
     payload_format="",
 ):
@@ -47,9 +47,9 @@ class ActuatorPollRequestPacket(
 @dataclass
 class ActuatorPollResponsePacket(
     Packet,
-    msg_id=0x03,
+    class_id=0x03,
     subclass_id=0x02,
-    payload_format="B",
+    payload_format="<B",
 ):
     """
     Packet used by the actuator board to return the status of all valves.

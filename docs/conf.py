@@ -16,6 +16,8 @@ import os
 import os.path
 import sys
 
+import pytz
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -89,7 +91,7 @@ autodoc_mock_imports = ["mayavi"]  # Package is very hard to install sometimes
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
-now = datetime.datetime.now().astimezone()
+now = datetime.datetime.now().astimezone(pytz.timezone("US/Eastern"))
 # Sun, Jan 30th, 2024 11:59 PM (EST)
 html_last_updated_fmt = now.strftime("%a, %b %d, %Y %I:%M %p (%Z)")
 

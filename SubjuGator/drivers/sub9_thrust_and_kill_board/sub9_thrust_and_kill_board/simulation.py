@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import rospy
-from mil_usb_to_can.sub9 import AckPacket, NackPacket, SimulatedCANDeviceHandle
+from electrical_protocol import AckPacket, NackPacket
+from mil_usb_to_can.sub9 import SimulatedCANDeviceHandle
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 
 from .packets import (

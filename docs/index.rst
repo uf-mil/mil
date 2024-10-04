@@ -2,7 +2,6 @@
 
 Machine Intelligence Lab
 ===============================
-
 Welcome to the documentation site for the Machine Intelligence Lab at the University of Florida, a robotics lab in Gainesville, Florida. Our lab has built `several robotic systems <https://mil.ufl.edu/projects/>`_ since its inception several decades ago. Our current projects include:
 
 * **SubjuGator:** An autonomous, underwater submarine-like vehicle. Three-time champion of the AUVSI/ONR underwater competition. (`Website <https://subjugator.org>`_)
@@ -33,7 +32,9 @@ New Members
     infrastructure/index
 
     culture
+    purchasing
     branding
+    deprecated
 
 * **Interested software members**: Please read the :doc:`Software Getting Started Guide <software/getting_started>`.
 * **Interested electrical members**: Please read the :doc:`Electrical Onboarding Guide <electrical/onboarding>`
@@ -43,8 +44,8 @@ Relevant Links
 --------------
 * **Websites:** `MIL Website <https://mil.ufl.edu>`_ / `NaviGator <https://navigator.org>`_ / `SubjuGator <https://subjugatoruf.org>`_
 * **Source:** `GitHub <https://github.com/uf-mil/mil>`_
-* **Branding:** :doc:`Branding <branding>`
-* **Culture:** :doc:`Glossary <glossary>` / :doc:`Culture <culture>` / :doc:`Technical Design <design/design>`
+* **Laboratory Resources:** :doc:`Purchasing <purchasing>` / :doc:`Branding <branding>`
+* **Culture:** :doc:`Culture <culture>` / :doc:`Technical Design <design/design>`
 
 Software Reference
 ------------------
@@ -52,12 +53,3 @@ Software Reference
 * **Practices:** :doc:`Our Development Practices <software/index>` / :doc:`Scripts <software/scripts>` / :doc:`Extensions <software/extension_support>`
 * **Project Procedures:** :doc:`SubjuGator <subjugator/index>` / :doc:`VRX <navigator/vrx>`
 * **Getting Help:** :doc:`Development Help <software/help>`
-
-Meta
-----
-.. toctree::
-    :maxdepth: 1
-
-    glossary
-    testingprocedures.md
-    deprecated
