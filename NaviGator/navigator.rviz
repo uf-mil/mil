@@ -344,7 +344,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /wamv/sensors/camera/front_left_cam/image_raw
+      Image Topic: /camera/front/left/image_raw
       Max Value: 1
       Median window: 5
       Min Value: 0
