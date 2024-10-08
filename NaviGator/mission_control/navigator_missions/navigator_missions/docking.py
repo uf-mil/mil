@@ -202,6 +202,10 @@ class Docking(NaviGatorMission):
         await self.move.set_position(nextPt).go(blind=True, move_type="skid")
         await self.pcodar_save(SetBoolRequest(False))
 
+        # Shoot rackquet ball projectile
+        if correct_dock_number != -1 and correct_dock_number is not None:
+            await self.shoot_projectile(images[correct_dock_number])
+
         await self.contour_pub.shutdown()
         await self.ogrid_sub.shutdown()
         await self.image_sub.shutdown()
@@ -482,6 +486,51 @@ class Docking(NaviGatorMission):
         # self.contour_pub.publish(msg)
 
         return list
+    
+    async def shoot_projectile(self, img):
+        gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+
+        # Apply Gaussian blur to the image
+        blurred = cv.GaussianBlur(gray, (5, 5), 0)
+
+        # Use Canny edge detection
+        edges = cv.Canny(blurred, 50, 150)
+
+        # Find contours in the edged image
+        contours, _ = cv.findContours(edges, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
+
+        # Count to keep track of number of squares
+        square_count = 0
+
+        # Loop over the contours
+        for contour in contours:
+            # Approximate the contour to a polygon
+            epsilon = 0.02 * cv.arcLength(contour, True)
+            approx = cv.approxPolyDP(contour, epsilon, True)
+
+            # If the approximated contour has 4 vertices, it's a square (or rectangle)
+            if len(approx) == 4:
+                x, y, w, h = cv.boundingRect(approx)
+
+                # Calculate the aspect ratio
+                aspect_ratio = float(w) / h
+
+                # Check if the aspect ratio is close to 1 (square)
+                if 0.95 <= aspect_ratio <= 1.05:
+                    cv.drawContours(image, [approx], -1, (0, 255, 0), 2)
+                    square_count += 1
+        
+        # If three squares are not found (color and two holes) then bad
+        if square_count != 3:
+            rospy.logerr("Error: Incorrect number of squares detected")
+            return
+
+        # Display the result
+        cv.imshow("Squares Detected", image)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
+
+        # ADD SHOOTING MECHANICS HERE
 
     def find_color(self, images, goal_color):
         # NOTE: An OpenCV window will open, close it to progress
