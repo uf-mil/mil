@@ -200,11 +200,11 @@ class Docking(NaviGatorMission):
         nextPt = boat_to_enu.transform_point(forward)
         await self.move.set_position(centers[correct_dock_number]).go(blind=True, move_type="skid")
         await self.move.set_position(nextPt).go(blind=True, move_type="skid")
-        await self.pcodar_save(SetBoolRequest(False))
-
-        # Shoot rackquet ball projectile
+        # Shoot racquet ball projectile
+        rospy.logerr("- BEFORE SHOOT PROJ -")
         if correct_dock_number != -1 and correct_dock_number is not None:
             await self.shoot_projectile(images[correct_dock_number])
+        await self.pcodar_save(SetBoolRequest(False))
 
         await self.contour_pub.shutdown()
         await self.ogrid_sub.shutdown()
@@ -488,16 +488,17 @@ class Docking(NaviGatorMission):
         return list
     
     async def shoot_projectile(self, img):
-        gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+        rospy.logerr("- SHOOT PROJ REACHED -")
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # Apply Gaussian blur to the image
-        blurred = cv.GaussianBlur(gray, (5, 5), 0)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
         # Use Canny edge detection
-        edges = cv.Canny(blurred, 50, 150)
+        edges = cv2.Canny(blurred, 50, 150)
 
         # Find contours in the edged image
-        contours, _ = cv.findContours(edges, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
         # Count to keep track of number of squares
         square_count = 0
@@ -505,19 +506,19 @@ class Docking(NaviGatorMission):
         # Loop over the contours
         for contour in contours:
             # Approximate the contour to a polygon
-            epsilon = 0.02 * cv.arcLength(contour, True)
-            approx = cv.approxPolyDP(contour, epsilon, True)
+            epsilon = 0.02 * cv2.arcLength(contour, True)
+            approx = cv2.approxPolyDP(contour, epsilon, True)
 
             # If the approximated contour has 4 vertices, it's a square (or rectangle)
             if len(approx) == 4:
-                x, y, w, h = cv.boundingRect(approx)
+                x, y, w, h = cv2.boundingRect(approx)
 
                 # Calculate the aspect ratio
                 aspect_ratio = float(w) / h
 
                 # Check if the aspect ratio is close to 1 (square)
                 if 0.95 <= aspect_ratio <= 1.05:
-                    cv.drawContours(image, [approx], -1, (0, 255, 0), 2)
+                    cv2.drawContours(img, [approx], -1, (0, 255, 0), 2)
                     square_count += 1
         
         # If three squares are not found (color and two holes) then bad
@@ -526,9 +527,9 @@ class Docking(NaviGatorMission):
             return
 
         # Display the result
-        cv.imshow("Squares Detected", image)
-        cv.waitKey(0)
-        cv.destroyAllWindows()
+        cv2.imshow("Squares Detected", img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
         # ADD SHOOTING MECHANICS HERE
 
