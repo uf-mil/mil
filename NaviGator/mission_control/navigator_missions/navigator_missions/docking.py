@@ -17,6 +17,7 @@ from std_srvs.srv import SetBool, SetBoolRequest
 from tf.transformations import quaternion_matrix
 
 from .navigator import NaviGatorMission
+from navigator_vision import GripPipeline
 
 PANNEL_MAX = 0
 PANNEL_MIN = 2
@@ -86,7 +87,8 @@ class Docking(NaviGatorMission):
         rospy.logerr("INFO DONE")
         await self.pcodar_save.wait_for_service()
         rospy.logerr("PCODAR DONE")
-
+        
+        self.grip = GripPipeline()
         await self.change_wrench("autonomous")
 
         self.bridge = CvBridge()
@@ -200,6 +202,13 @@ class Docking(NaviGatorMission):
         nextPt = boat_to_enu.transform_point(forward)
         await self.move.set_position(centers[correct_dock_number]).go(blind=True, move_type="skid")
         await self.move.set_position(nextPt).go(blind=True, move_type="skid")
+
+        # Align with hole -> work in progress, see navigator_vision/dockdeliver_pipeline.py in navigator vision
+        #image = await self.image_sub.get_next_message()
+        #image = self.bridge.imgmsg_to_cv2(image)   
+        #self.grip.process(image)
+
+        
         # Shoot racquet ball projectile
         rospy.logerr("- BEFORE SHOOT PROJ -")
         if correct_dock_number != -1 and correct_dock_number is not None:
