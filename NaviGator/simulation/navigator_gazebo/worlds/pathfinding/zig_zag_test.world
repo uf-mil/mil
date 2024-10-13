@@ -1,0 +1,3595 @@
+<sdf version='1.7'>
+  <world name='template'>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>-33.7242</latitude_deg>
+      <longitude_deg>150.68</longitude_deg>
+      <elevation>0</elevation>
+      <heading_deg>0</heading_deg>
+    </spherical_coordinates>
+    <light name='sun' type='directional'>
+      <cast_shadows>1</cast_shadows>
+      <pose>0 0 10 0 -0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose>-459.05 191.475 120.479 0 1.22863 2.7725</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
+    <model name='sydneyregatta'>
+      <pose>0 0 0.2 0 -0 0</pose>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual_terrain'>
+          <geometry>
+            <mesh>
+              <uri>file://sydney_regatta/meshes/sydney_regatta.dae</uri>
+              <submesh>
+                <name>Terrain</name>
+              </submesh>
+            </mesh>
+          </geometry>
+        </visual>
+        <visual name='visual_concrete'>
+          <geometry>
+            <mesh>
+              <uri>file://sydney_regatta/meshes/sydney_regatta.dae</uri>
+              <submesh>
+                <name>ConcreteDark</name>
+              </submesh>
+            </mesh>
+          </geometry>
+        </visual>
+        <visual name='visual_dock_dark'>
+          <geometry>
+            <mesh>
+              <uri>file://sydney_regatta/meshes/sydney_regatta.dae</uri>
+              <submesh>
+                <name>DockDark</name>
+              </submesh>
+            </mesh>
+          </geometry>
+        </visual>
+        <visual name='visual_metal_galvanized'>
+          <geometry>
+            <mesh>
+              <uri>file://sydney_regatta/meshes/sydney_regatta.dae</uri>
+              <submesh>
+                <name>MetalGalvanized</name>
+              </submesh>
+            </mesh>
+          </geometry>
+        </visual>
+        <visual name='visual_dock'>
+          <geometry>
+            <mesh>
+              <uri>file://sydney_regatta/meshes/sydney_regatta.dae</uri>
+              <submesh>
+                <name>Dock</name>
+              </submesh>
+            </mesh>
+          </geometry>
+        </visual>
+        <visual name='visual_windows_dark'>
+          <geometry>
+            <mesh>
+              <uri>file://sydney_regatta/meshes/sydney_regatta.dae</uri>
+              <submesh>
+                <name>Windows_Dark</name>
+              </submesh>
+            </mesh>
+          </geometry>
+        </visual>
+        <visual name='visual_roof'>
+          <geometry>
+            <mesh>
+              <uri>file://sydney_regatta/meshes/sydney_regatta.dae</uri>
+              <submesh>
+                <name>RoofCorrugated</name>
+              </submesh>
+            </mesh>
+          </geometry>
+        </visual>
+        <visual name='visual_wall'>
+          <geometry>
+            <mesh>
+              <uri>file://sydney_regatta/meshes/sydney_regatta.dae</uri>
+              <submesh>
+                <name>Wall</name>
+              </submesh>
+            </mesh>
+          </geometry>
+        </visual>
+        <visual name='visual_branches'>
+          <geometry>
+            <mesh>
+              <uri>model://sydney_regatta/meshes/sydney_regatta.dae</uri>
+              <submesh>
+                <name>TreeDiffuse</name>
+              </submesh>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://sydney_regatta/materials/scripts/</uri>
+              <uri>model://sydney_regatta/materials/textures/</uri>
+              <name>SydneyTree/Branch</name>
+            </script>
+          </material>
+        </visual>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>file://sydney_regatta/meshes/sydney_regatta_shore.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <model name='post_0'>
+      <static>1</static>
+      <pose>-535.917 154.363 0.675884 -0.17182 0.030464 -0.005286</pose>
+      <link name='base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>file://post/meshes/post.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.3</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <model name='post_1'>
+      <static>1</static>
+      <pose>-527.49 153.855 0.425844 -0.1365 0 0</pose>
+      <link name='base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>file://post/meshes/post.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.3</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <model name='post_2'>
+      <static>1</static>
+      <pose>-544.833 156.672 0.499025 -0.162625 0 0</pose>
+      <link name='base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>file://post/meshes/post.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.3</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <model name='antenna'>
+      <static>1</static>
+      <link name='base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>file://antenna/meshes/antenna.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0 0.95 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.35</radius>
+              <length>1.9</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-531.064 147.669 1.59471 -0.068142 0 -0.1</pose>
+    </model>
+    <model name='ground_station_0'>
+      <static>1</static>
+      <frame name='tent::__model__' attached_to='tent::base_link'>
+        <pose relative_to='__model__'>0 0 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='tent::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://tent/mesh/tent.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0 1.5 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>3 3 3</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='tent::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='table_a::__model__' attached_to='table_a::base_link'>
+        <pose relative_to='__model__'>0.5 0.9 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='table_a::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://foldable_table/mesh/foldable_table.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0 0.35 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>1.82 0.74 0.67</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='table_a::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='table_b::__model__' attached_to='table_b::base_link'>
+        <pose relative_to='__model__'>1 -0.5 0 0 -0 1.57</pose>
+      </frame>
+      <static>1</static>
+      <link name='table_b::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://foldable_table/mesh/foldable_table.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0 0.35 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>1.82 0.74 0.67</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='table_b::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='chair_a::__model__' attached_to='chair_a::base_link'>
+        <pose relative_to='__model__'>0.2 0 0 0 -0 1.57</pose>
+      </frame>
+      <static>1</static>
+      <link name='chair_a::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>model://foldable_chair/mesh/foldable_chair.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0.05 0.4 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.8</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='chair_a::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='chair_b::__model__' attached_to='chair_b::base_link'>
+        <pose relative_to='__model__'>0.2 -0.8 0 0 -0 1.57</pose>
+      </frame>
+      <static>1</static>
+      <link name='chair_b::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>model://foldable_chair/mesh/foldable_chair.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0.05 0.4 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.8</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='chair_b::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='chair_c::__model__' attached_to='chair_c::base_link'>
+        <pose relative_to='__model__'>-0.6 0.8 0 0 -0 1.57</pose>
+      </frame>
+      <static>1</static>
+      <link name='chair_c::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>model://foldable_chair/mesh/foldable_chair.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0.05 0.4 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.8</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='chair_c::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-540.796 146.494 1.67142 -0.00834 0.01824 1.30173</pose>
+    </model>
+    <model name='ground_station_1'>
+      <static>1</static>
+      <frame name='tent::__model__' attached_to='tent::base_link'>
+        <pose relative_to='__model__'>0 0 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='tent::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://tent/mesh/tent.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0 1.5 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>3 3 3</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='tent::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='table_a::__model__' attached_to='table_a::base_link'>
+        <pose relative_to='__model__'>0.5 0.9 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='table_a::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://foldable_table/mesh/foldable_table.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0 0.35 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>1.82 0.74 0.67</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='table_a::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='table_b::__model__' attached_to='table_b::base_link'>
+        <pose relative_to='__model__'>1 -0.5 0 0 -0 1.57</pose>
+      </frame>
+      <static>1</static>
+      <link name='table_b::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://foldable_table/mesh/foldable_table.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0 0.35 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>1.82 0.74 0.67</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='table_b::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='chair_a::__model__' attached_to='chair_a::base_link'>
+        <pose relative_to='__model__'>0.2 0 0 0 -0 1.57</pose>
+      </frame>
+      <static>1</static>
+      <link name='chair_a::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>model://foldable_chair/mesh/foldable_chair.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0.05 0.4 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.8</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='chair_a::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='chair_b::__model__' attached_to='chair_b::base_link'>
+        <pose relative_to='__model__'>0.2 -0.8 0 0 -0 1.57</pose>
+      </frame>
+      <static>1</static>
+      <link name='chair_b::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>model://foldable_chair/mesh/foldable_chair.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0.05 0.4 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.8</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='chair_b::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='chair_c::__model__' attached_to='chair_c::base_link'>
+        <pose relative_to='__model__'>-0.6 0.8 0 0 -0 1.57</pose>
+      </frame>
+      <static>1</static>
+      <link name='chair_c::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>model://foldable_chair/mesh/foldable_chair.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0.05 0.4 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.8</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='chair_c::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-537.623 145.828 1.68193 -0.00603 0.018667 1.30157</pose>
+    </model>
+    <model name='ground_station_2'>
+      <static>1</static>
+      <frame name='tent::__model__' attached_to='tent::base_link'>
+        <pose relative_to='__model__'>0 0 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='tent::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://tent/mesh/tent.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0 1.5 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>3 3 3</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='tent::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='table_a::__model__' attached_to='table_a::base_link'>
+        <pose relative_to='__model__'>0.5 0.9 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='table_a::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://foldable_table/mesh/foldable_table.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0 0.35 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>1.82 0.74 0.67</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='table_a::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='table_b::__model__' attached_to='table_b::base_link'>
+        <pose relative_to='__model__'>1 -0.5 0 0 -0 1.57</pose>
+      </frame>
+      <static>1</static>
+      <link name='table_b::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://foldable_table/mesh/foldable_table.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0 0.35 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>1.82 0.74 0.67</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='table_b::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='chair_a::__model__' attached_to='chair_a::base_link'>
+        <pose relative_to='__model__'>0.2 0 0 0 -0 1.57</pose>
+      </frame>
+      <static>1</static>
+      <link name='chair_a::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>model://foldable_chair/mesh/foldable_chair.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0.05 0.4 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.8</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='chair_a::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='chair_b::__model__' attached_to='chair_b::base_link'>
+        <pose relative_to='__model__'>0.2 -0.8 0 0 -0 1.57</pose>
+      </frame>
+      <static>1</static>
+      <link name='chair_b::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>model://foldable_chair/mesh/foldable_chair.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0.05 0.4 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.8</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='chair_b::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='chair_c::__model__' attached_to='chair_c::base_link'>
+        <pose relative_to='__model__'>-0.6 0.8 0 0 -0 1.57</pose>
+      </frame>
+      <static>1</static>
+      <link name='chair_c::base_link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>model://foldable_chair/mesh/foldable_chair.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <pose>0 0.05 0.4 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.8</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <pose relative_to='chair_c::__model__'>0 0 0 0 -0 0</pose>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-534.551 144.91 1.72047 -0.004994 0.020798 1.30149</pose>
+    </model>
+    <model name='blue_projectile'>
+      <link name='link'>
+        <inertial>
+          <mass>0.04</mass>
+          <inertia>
+            <ixx>2.166e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>2166</iyy>
+            <iyz>0</iyz>
+            <izz>2166</izz>
+          </inertia>
+          <pose>0 0 0 0 -0 0</pose>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <sphere>
+              <radius>0.0285</radius>
+            </sphere>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <sphere>
+              <radius>0.0285</radius>
+            </sphere>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://blue_projectile/materials/scripts/blue_projectile.material</uri>
+              <name>blue_projectile/Blue</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.02 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.0285</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-545 60 0.03 0 -0 0</pose>
+    </model>
+    <plugin name='stationkeeping_scoring_plugin' filename='libstationkeeping_scoring_plugin.so'>
+      <vehicle>wamv</vehicle>
+      <task_name>station_keeping</task_name>
+      <rms_error_topic>/vrx/station_keeping/rms_error</rms_error_topic>
+      <pose_error_topic>/vrx/station_keeping/pose_error</pose_error_topic>
+      <goal_topic>/vrx/station_keeping/goal</goal_topic>
+      <task_info_topic>/vrx/task/info</task_info_topic>
+      <contact_debug_topic>/vrx/debug/contact</contact_debug_topic>
+      <per_plugin_exit_on_completion>1</per_plugin_exit_on_completion>
+      <goal_pose>-33.722718 150.674031 0.0</goal_pose>
+      <initial_state_duration>10</initial_state_duration>
+      <ready_state_duration>10</ready_state_duration>
+      <running_state_duration>300</running_state_duration>
+      <release_joints>
+        <joint>
+          <name>wamv_external_pivot_joint</name>
+        </joint>
+        <joint>
+          <name>wamv_external_riser</name>
+        </joint>
+      </release_joints>
+      <markers>
+        <scaling>0.2 0.2 2.0</scaling>
+        <height>0.5</height>
+      </markers>
+    </plugin>
+    <model name='ocean_waves'>
+      <static>1</static>
+      <plugin name='ocean_waves::wavefield_entity' filename='libWavefieldModelPlugin.so'>
+        <static>0</static>
+        <update_rate>30</update_rate>
+        <size>1000 1000</size>
+        <cell_count>50 50</cell_count>
+        <wave>
+          <model>PMS</model>
+          <period>5.0</period>
+          <number>3</number>
+          <scale>2.5</scale>
+          <gain>0.0</gain>
+          <direction>1.0 0.0</direction>
+          <angle>0.4</angle>
+          <tau>2.0</tau>
+          <amplitude>0.0</amplitude>
+          <steepness>0.0</steepness>
+        </wave>
+      </plugin>
+      <link name='ocean_waves_link'>
+        <visual name='ocean_waves_visual'>
+          <plugin name='ocean_waves_visual_plugin' filename='libWavefieldVisualPlugin.so'>
+            <enableRtt>1</enableRtt>
+            <rttNoise>0.1</rttNoise>
+            <refractOpacity>0.2</refractOpacity>
+            <reflectOpacity>0.2</reflectOpacity>
+            <wave>
+              <model>PMS</model>
+              <period>5.0</period>
+              <number>3</number>
+              <scale>2.5</scale>
+              <gain>0.0</gain>
+              <direction>1.0 0.0</direction>
+              <angle>0.4</angle>
+              <tau>2.0</tau>
+              <amplitude>0.0</amplitude>
+              <steepness>0.0</steepness>
+            </wave>
+          </plugin>
+          <geometry>
+            <mesh>
+              <scale>2.5 2.5 1</scale>
+              <uri>model://ocean_waves/meshes/mesh.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://ocean_waves/materials/scripts/waves.material</uri>
+              <name>WaveSim/GerstnerWaves</name>
+            </script>
+          </material>
+          <laser_retro>-1</laser_retro>
+        </visual>
+        <visual name='ocean_waves_below_visual'>
+          <pose>0 0 -0.05 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>2.5 2.5 1</scale>
+              <uri>model://ocean_waves/meshes/mesh_below.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://ocean_waves/materials/scripts/waves.material</uri>
+              <name>WaveSim/GerstnerWaves</name>
+            </script>
+          </material>
+          <laser_retro>-1</laser_retro>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <plugin name='wind' filename='libusv_gazebo_wind_plugin.so'>
+      <wind_obj>
+        <name>wamv</name>
+        <link_name>wamv/base_link</link_name>
+        <coeff_vector>.5 .5 .33</coeff_vector>
+      </wind_obj>
+      <wind_direction>240</wind_direction>
+      <wind_mean_velocity>0.0</wind_mean_velocity>
+      <var_wind_gain_constants>0</var_wind_gain_constants>
+      <var_wind_time_constants>2</var_wind_time_constants>
+      <random_seed>10</random_seed>
+      <update_rate>10</update_rate>
+      <topic_wind_speed>/vrx/debug/wind/speed</topic_wind_speed>
+      <topic_wind_direction>/vrx/debug/wind/direction</topic_wind_direction>
+    </plugin>
+    <scene>
+      <sky>
+        <clouds>
+          <speed>12</speed>
+        </clouds>
+      </sky>
+      <grid>0</grid>
+      <origin_visual>0</origin_visual>
+      <ambient>1 1 1 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>1</shadows>
+    </scene>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type='adiabatic'/>
+    <physics type='ode'>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+    <wind/>
+    <model name='mb_marker_buoy_white'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>20</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision_inner'>
+          <pose>0 -0.02 0.02 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>1.15</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='collision_outer'>
+          <pose>0 0 -0.3 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.325</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 1.57079 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://mb_marker_buoy_red/meshes/mb_marker_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/White</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.12 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.325</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-529.678 178.924 0 0 -0 0</pose>
+    </model>
+    <model name='mb_marker_buoy_white_0'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>20</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision_inner'>
+          <pose>0 -0.02 0.02 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>1.15</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='collision_outer'>
+          <pose>0 0 -0.3 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.325</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 1.57079 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://mb_marker_buoy_red/meshes/mb_marker_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/White</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.12 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.325</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-513.004 172.458 0 0 -0 0</pose>
+    </model>
+    <model name='mb_marker_buoy_red'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>20</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision_inner'>
+          <pose>0 -0.02 0.02 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>1.15</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='collision_outer'>
+          <pose>0 0 -0.3 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.325</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 1.57079 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://mb_marker_buoy_red/meshes/mb_marker_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://mb_marker_buoy_red/materials/scripts/mb_marker_buoy.material</uri>
+              <name>mb_marker_buoy/Red</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.12 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.325</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-522.762 189.762 0 0 -0 0</pose>
+    </model>
+    <model name='mb_marker_buoy_green'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>20</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision_inner'>
+          <pose>0 -0.02 0.02 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>1.15</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='collision_outer'>
+          <pose>0 0 -0.3 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.325</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 1.57079 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://mb_marker_buoy_red/meshes/mb_marker_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://mb_marker_buoy_green/materials/scripts/mb_marker_buoy.material</uri>
+              <name>mb_marker_buoy/Green</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.12 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.325</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-506.571 181.788 0 0 -0 0</pose>
+    </model>
+    <model name='mb_round_buoy_black'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>3.5</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <sphere>
+              <radius>0.25</radius>
+            </sphere>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://mb_round_buoy_orange/meshes/mb_round_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Black</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 0.02 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.235</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-514.941 179.078 0 0 -0 0</pose>
+    </model>
+    <state world_name='template'>
+      <sim_time>175 887000000</sim_time>
+      <real_time>7 69807986</real_time>
+      <wall_time>1726974143 328291009</wall_time>
+      <iterations>6838</iterations>
+      <model name='antenna'>
+        <pose>-531.064 147.669 1.59471 -0.068142 0 -0.1</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-531.064 147.669 1.59471 -0.068142 0 -0.1</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='blue_projectile'>
+        <pose>-545 60 0.02334 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-545 60 0.02334 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='ground_station_0'>
+        <pose>-540.796 146.494 1.67142 -0.00834 0.01824 1.30173</pose>
+        <scale>1 1 1</scale>
+        <link name='chair_a::base_link'>
+          <pose>-540.743 146.687 1.66777 0.018234 0.008353 2.87188</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='chair_b::base_link'>
+          <pose>-539.972 146.474 1.67444 0.018234 0.008353 2.87188</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='chair_c::base_link'>
+          <pose>-541.727 146.128 1.67569 0.018234 0.008353 2.87188</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='table_a::base_link'>
+          <pose>-541.531 147.215 1.6548 -0.00834 0.01824 1.30173</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='table_b::base_link'>
+          <pose>-540.049 147.325 1.65735 0.018234 0.008353 2.87188</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='tent::base_link'>
+          <pose>-540.796 146.494 1.67142 -0.00834 0.01824 1.30173</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='ground_station_1'>
+        <pose>-537.623 145.828 1.68193 -0.00603 0.018667 1.30157</pose>
+        <scale>1 1 1</scale>
+        <link name='chair_a::base_link'>
+          <pose>-537.569 146.021 1.6782 0.018663 0.006044 2.87168</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='chair_b::base_link'>
+          <pose>-536.798 145.808 1.68302 0.018663 0.006044 2.87168</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='chair_c::base_link'>
+          <pose>-538.553 145.462 1.68831 0.018663 0.006044 2.87168</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='table_a::base_link'>
+          <pose>-538.357 146.549 1.66717 -0.00603 0.018667 1.30157</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='table_b::base_link'>
+          <pose>-536.875 146.659 1.66628 0.018663 0.006044 2.87168</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='tent::base_link'>
+          <pose>-537.623 145.828 1.68193 -0.00603 0.018667 1.30157</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='ground_station_2'>
+        <pose>-534.551 144.91 1.72047 -0.004994 0.020798 1.30149</pose>
+        <scale>1 1 1</scale>
+        <link name='chair_a::base_link'>
+          <pose>-534.497 145.103 1.71632 0.020794 0.005009 2.8716</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='chair_b::base_link'>
+          <pose>-533.726 144.89 1.72031 0.020794 0.005009 2.8716</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='chair_c::base_link'>
+          <pose>-535.481 144.545 1.72896 0.020794 0.005009 2.8716</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='table_a::base_link'>
+          <pose>-535.285 145.632 1.70558 -0.004994 0.020798 1.30149</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='table_b::base_link'>
+          <pose>-533.803 145.741 1.70217 0.020794 0.005009 2.8716</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='tent::base_link'>
+          <pose>-534.551 144.91 1.72047 -0.004994 0.020798 1.30149</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_marker_buoy_green'>
+        <pose>-506.571 181.788 0.29263 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-506.571 181.788 0.29263 0 -0 0</pose>
+          <velocity>0 0 -0 0 -0 0</velocity>
+          <acceleration>0 0 -0 0 -0 0</acceleration>
+          <wrench>0 0 -0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_marker_buoy_green_clone'>
+        <pose>-510.64 194.915 0.29263 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-510.64 194.915 0.29263 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 -1e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.8e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_marker_buoy_green_clone_0'>
+        <pose>-501.638 202.327 0.29263 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-501.638 202.327 0.29263 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 -1e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.8e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_marker_buoy_green_clone_1'>
+        <pose>-504.421 214.898 0.29263 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-504.421 214.898 0.29263 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 -1e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.8e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_marker_buoy_green_clone_2'>
+        <pose>-495.667 224.021 0.29263 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-495.667 224.021 0.29263 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 -1e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.8e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_marker_buoy_red'>
+        <pose>-522.762 187.766 0.29263 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-522.762 187.766 0.29263 0 -0 0</pose>
+          <velocity>0 0 -0 0 -0 0</velocity>
+          <acceleration>0 0 -0 0 -0 0</acceleration>
+          <wrench>0 0 -0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_marker_buoy_red_clone'>
+        <pose>-526.019 198.035 0.29263 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-526.019 198.035 0.29263 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 -1e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.8e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_marker_buoy_red_clone_0'>
+        <pose>-517.634 209.013 0.29263 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-517.634 209.013 0.29263 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 -1e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.8e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_marker_buoy_red_clone_1'>
+        <pose>-522.54 219.714 0.29263 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-522.54 219.714 0.29263 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 -1e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.8e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_marker_buoy_red_clone_2'>
+        <pose>-511.689 229.065 0.29263 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-511.689 229.065 0.29263 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 -1e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.8e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_marker_buoy_white'>
+        <pose>-529.678 178.924 0.29263 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-529.678 178.924 0.29263 0 -0 0</pose>
+          <velocity>0 0 -0 0 -0 0</velocity>
+          <acceleration>0 0 -0 0 -0 0</acceleration>
+          <wrench>0 0 -0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_marker_buoy_white_0'>
+        <pose>-513.004 172.458 0.29263 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-513.004 172.458 0.29263 0 -0 0</pose>
+          <velocity>0 0 -0 0 -0 0</velocity>
+          <acceleration>0 0 -0 0 -0 0</acceleration>
+          <wrench>0 0 -0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_marker_buoy_white_0_clone'>
+        <pose>-497.832 237.001 0.29263 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-497.832 237.001 0.29263 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 -1e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.8e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_marker_buoy_white_clone'>
+        <pose>-513.555 240.958 0.29263 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-513.555 240.958 0.29263 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 -1e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.8e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_round_buoy_black'>
+        <pose>-514.941 179.078 0.142296 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-514.941 179.078 0.142296 0 -0 0</pose>
+          <velocity>0 0 -0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_round_buoy_black_clone'>
+        <pose>-511.014 187.529 0.142296 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-511.014 187.529 0.142296 0 -0 0</pose>
+          <velocity>0 0 -1e-06 0 -0 0</velocity>
+          <acceleration>0 0 -6e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.3e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_round_buoy_black_clone_0'>
+        <pose>-514.25 200.165 0.142296 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-514.25 200.165 0.142296 0 -0 0</pose>
+          <velocity>0 0 -1e-06 0 -0 0</velocity>
+          <acceleration>0 0 -6e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.3e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_round_buoy_black_clone_1'>
+        <pose>-508.025 209.686 0.142296 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-508.025 209.686 0.142296 0 -0 0</pose>
+          <velocity>0 0 -1e-06 0 -0 0</velocity>
+          <acceleration>0 0 -6e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.3e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_round_buoy_black_clone_2'>
+        <pose>-513.838 220.548 0.142296 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-513.838 220.548 0.142296 0 -0 0</pose>
+          <velocity>0 0 -1e-06 0 -0 0</velocity>
+          <acceleration>0 0 -6e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.3e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_round_buoy_black_clone_3'>
+        <pose>-503.573 221.697 0.142296 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-503.573 221.697 0.142296 0 -0 0</pose>
+          <velocity>0 0 -1e-06 0 -0 0</velocity>
+          <acceleration>0 0 -6e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.3e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_round_buoy_black_clone_4'>
+        <pose>-507 231 0.142296 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-507 231 0.142296 0 -0 0</pose>
+          <velocity>0 0 -1e-06 0 -0 0</velocity>
+          <acceleration>0 0 -6e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.3e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mb_round_buoy_black_clone_5'>
+        <pose>-501 227 0.142296 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-501 227 0.142296 0 -0 0</pose>
+          <velocity>0 0 -1e-06 0 -0 0</velocity>
+          <acceleration>0 0 -6e-06 0 -0 0</acceleration>
+          <wrench>0 0 -2.3e-05 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='ocean_waves'>
+        <pose>0.968469 -0.657935 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='ocean_waves_link'>
+          <pose>0.968469 -0.657935 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='post_0'>
+        <pose>-535.917 154.363 0.675884 -0.17182 0.030464 -0.005286</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-535.917 154.363 0.675884 -0.17182 0.030464 -0.005286</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='post_1'>
+        <pose>-527.49 153.855 0.425844 -0.1365 0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-527.49 153.855 0.425844 -0.1365 0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='post_2'>
+        <pose>-544.833 156.672 0.499025 -0.162625 0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-544.833 156.672 0.499025 -0.162625 0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='sydneyregatta'>
+        <pose>0 0 0.2 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>0 0 0.2 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='wamv'>
+        <pose>2.88378 0.021373 -0.099173 -0.000167 -0.001344 0.019141</pose>
+        <scale>1 1 1</scale>
+        <link name='BL_engine_link'>
+          <pose>0.932249 1.08427 0.216286 -0.001068 -0.000832 0.804539</pose>
+          <velocity>0.129789 -0.000465 0.019482 0.002087 0.008682 0.000112</velocity>
+          <acceleration>-0.054329 -0.004284 -0.227625 0.019119 -0.129226 -0.000699</acceleration>
+          <wrench>-0.814929 -0.064259 -3.41438 0 -0 0</wrench>
+        </link>
+        <link name='BL_propeller_link'>
+          <pose>0.740049 0.883782 -0.293316 0.093482 -0.000832 0.804539</pose>
+          <velocity>0.125387 0.000577 0.020732 0.002087 0.008682 0.000112</velocity>
+          <acceleration>0.01079 0.006412 -0.256349 0.020666 -0.127591 -0.004148</acceleration>
+          <wrench>0.005395 0.003206 -0.128174 0 -0 0</wrench>
+        </link>
+        <link name='BR_engine_link'>
+          <pose>0.974356 -1.11533 0.216654 0.000832 -0.001068 -0.766252</pose>
+          <velocity>0.130228 -0.000458 0.014526 0.002087 0.008682 0.000265</velocity>
+          <acceleration>-0.054335 -0.00428 -0.268261 0.02221 -0.1296 -0.001417</acceleration>
+          <wrench>-0.815024 -0.064197 -4.02392 0 -0 0</wrench>
+        </link>
+        <link name='BR_propeller_link'>
+          <pose>0.774627 -0.922516 -0.293014 -0.005573 -0.001068 -0.766252</pose>
+          <velocity>0.125752 0.000553 0.016662 0.002087 0.008682 0.000265</velocity>
+          <acceleration>0.011022 0.006566 -0.289719 0.020923 -0.127837 -0.000724</acceleration>
+          <wrench>0.005511 0.003283 -0.144859 0 -0 0</wrench>
+        </link>
+        <link name='FL_engine_link'>
+          <pose>4.3325 0.589288 0.399448 0.000832 -0.001068 -0.766257</pose>
+          <velocity>0.131477 -0.000173 -0.011072 0.002087 0.008682 0.000207</velocity>
+          <acceleration>-0.077998 -0.007921 0.196697 0.022249 -0.129605 -0.000741</acceleration>
+          <wrench>-1.16997 -0.118821 2.95045 0 -0 0</wrench>
+        </link>
+        <link name='FL_propeller_link'>
+          <pose>4.13277 0.782102 -0.110219 0.001584 -0.001068 -0.766257</pose>
+          <velocity>0.127012 0.000849 -0.008936 0.002087 0.008682 0.000207</velocity>
+          <acceleration>-0.012771 0.002789 0.175239 0.020919 -0.127841 -0.000272</acceleration>
+          <wrench>-0.006386 0.001395 0.08762 0 -0 0</wrench>
+        </link>
+        <link name='FR_engine_link'>
+          <pose>4.35317 -0.490514 0.399449 -0.001068 -0.000832 0.804541</pose>
+          <velocity>0.131691 -0.000169 -0.013505 0.002087 0.008682 0.000181</velocity>
+          <acceleration>-0.077978 -0.007916 0.176748 0.019089 -0.129223 -0.000647</acceleration>
+          <wrench>-1.16967 -0.118734 2.65123 0 -0 0</wrench>
+        </link>
+        <link name='FR_propeller_link'>
+          <pose>4.16097 -0.691001 -0.110153 0.011225 -0.000832 0.804541</pose>
+          <velocity>0.127303 0.000859 -0.012255 0.002087 0.008682 0.000181</velocity>
+          <acceleration>-0.012849 0.002771 0.148025 0.020916 -0.127837 -0.000649</acceleration>
+          <wrench>-0.006425 0.001385 0.074012 0 -0 0</wrench>
+        </link>
+        <link name='wamv/ball_shooter_base_link'>
+          <pose>3.41618 0.331837 1.2015 -0.0003 -0.00132 0.119141</pose>
+          <velocity>0.138491 -0.002029 -0.003654 0.002087 0.008682 0.000198</velocity>
+          <acceleration>-0.186847 -0.02577 0.071501 0.026718 -0.128634 -0.001275</acceleration>
+          <wrench>-0.093423 -0.012885 0.03575 0 -0 0</wrench>
+        </link>
+        <link name='wamv/ball_shooter_launcher_link'>
+          <pose>3.39578 0.329428 1.30935 -0.000432 -0.80132 0.119451</pose>
+          <velocity>0.139428 -0.002258 -0.003482 0.002087 0.008682 0.000198</velocity>
+          <acceleration>-0.194246 -0.02698 0.071434 -0.043101 -0.133353 -0.048707</acceleration>
+          <wrench>-0.097123 -0.01349 0.035717 0 -0 0</wrench>
+        </link>
+        <link name='wamv/base_link'>
+          <pose>2.88378 0.021373 -0.099173 -0.000167 -0.001344 0.019141</pose>
+          <velocity>0.12726 0.00058 0.00032 0.002087 0.008682 0.000198</velocity>
+          <acceleration>-0.017479 0.001882 0.001273 0.008537 -0.128607 -0.000182</acceleration>
+          <wrench>-3.19532 0.344118 0.232796 0 -0 0</wrench>
+        </link>
+        <link name='wamv/imu_wamv_link'>
+          <pose>3.11846 0.196147 1.40112 -0.000167 -0.001344 0.019141</pose>
+          <velocity>0.140251 -0.002504 -0.001352 0.002087 0.008682 0.000198</velocity>
+          <acceleration>-0.20595 -0.028941 0.033185 0.020672 -0.12778 8.4e-05</acceleration>
+          <wrench>-0.020595 -0.002894 0.003318 0 -0 0</wrench>
+        </link>
+        <link name='wamv/ins_link'>
+          <pose>3.11846 0.196147 1.40112 -0.000167 -0.001344 0.019141</pose>
+          <velocity>0.140251 -0.002504 -0.001352 0.002087 0.008682 0.000198</velocity>
+          <acceleration>-0.20595 -0.028941 0.033185 0.020919 -0.127841 5.8e-05</acceleration>
+          <wrench>-0.20595 -0.028941 0.033185 0 -0 0</wrench>
+        </link>
+      </model>
+      <light name='sun'>
+        <pose>0 0 10 0 -0 0</pose>
+      </light>
+    </state>
+    <model name='mb_marker_buoy_red_clone'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>20</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision_inner'>
+          <pose>0 -0.02 0.02 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>1.15</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='collision_outer'>
+          <pose>0 0 -0.3 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.325</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 1.57079 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://mb_marker_buoy_red/meshes/mb_marker_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://mb_marker_buoy_red/materials/scripts/mb_marker_buoy.material</uri>
+              <name>mb_marker_buoy/Red</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.12 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.325</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-526.019 198.035 0.29263 0 -0 0</pose>
+    </model>
+    <model name='mb_marker_buoy_green_clone'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>20</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision_inner'>
+          <pose>0 -0.02 0.02 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>1.15</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='collision_outer'>
+          <pose>0 0 -0.3 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.325</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 1.57079 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://mb_marker_buoy_red/meshes/mb_marker_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://mb_marker_buoy_green/materials/scripts/mb_marker_buoy.material</uri>
+              <name>mb_marker_buoy/Green</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.12 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.325</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-510.64 194.915 0.29263 0 -0 0</pose>
+    </model>
+    <model name='mb_marker_buoy_red_clone_0'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>20</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision_inner'>
+          <pose>0 -0.02 0.02 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>1.15</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='collision_outer'>
+          <pose>0 0 -0.3 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.325</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 1.57079 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://mb_marker_buoy_red/meshes/mb_marker_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://mb_marker_buoy_red/materials/scripts/mb_marker_buoy.material</uri>
+              <name>mb_marker_buoy/Red</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.12 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.325</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-517.634 209.013 0.29263 0 -0 0</pose>
+    </model>
+    <model name='mb_marker_buoy_green_clone_0'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>20</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision_inner'>
+          <pose>0 -0.02 0.02 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>1.15</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='collision_outer'>
+          <pose>0 0 -0.3 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.325</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 1.57079 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://mb_marker_buoy_red/meshes/mb_marker_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://mb_marker_buoy_green/materials/scripts/mb_marker_buoy.material</uri>
+              <name>mb_marker_buoy/Green</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.12 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.325</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-501.638 202.327 0.29263 0 -0 0</pose>
+    </model>
+    <model name='mb_marker_buoy_red_clone_1'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>20</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision_inner'>
+          <pose>0 -0.02 0.02 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>1.15</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='collision_outer'>
+          <pose>0 0 -0.3 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.325</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 1.57079 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://mb_marker_buoy_red/meshes/mb_marker_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://mb_marker_buoy_red/materials/scripts/mb_marker_buoy.material</uri>
+              <name>mb_marker_buoy/Red</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.12 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.325</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-522.54 219.714 0.29263 0 -0 0</pose>
+    </model>
+    <model name='mb_marker_buoy_green_clone_1'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>20</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision_inner'>
+          <pose>0 -0.02 0.02 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>1.15</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='collision_outer'>
+          <pose>0 0 -0.3 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.325</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 1.57079 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://mb_marker_buoy_red/meshes/mb_marker_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://mb_marker_buoy_green/materials/scripts/mb_marker_buoy.material</uri>
+              <name>mb_marker_buoy/Green</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.12 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.325</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-504.421 214.898 0.29263 0 -0 0</pose>
+    </model>
+    <model name='mb_marker_buoy_red_clone_2'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>20</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision_inner'>
+          <pose>0 -0.02 0.02 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>1.15</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='collision_outer'>
+          <pose>0 0 -0.3 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.325</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 1.57079 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://mb_marker_buoy_red/meshes/mb_marker_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://mb_marker_buoy_red/materials/scripts/mb_marker_buoy.material</uri>
+              <name>mb_marker_buoy/Red</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.12 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.325</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-511.689 229.065 0.29263 0 -0 0</pose>
+    </model>
+    <model name='mb_marker_buoy_green_clone_2'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>20</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision_inner'>
+          <pose>0 -0.02 0.02 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>1.15</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='collision_outer'>
+          <pose>0 0 -0.3 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.325</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 1.57079 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://mb_marker_buoy_red/meshes/mb_marker_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://mb_marker_buoy_green/materials/scripts/mb_marker_buoy.material</uri>
+              <name>mb_marker_buoy/Green</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.12 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.325</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-495.667 224.021 0.29263 0 -0 0</pose>
+    </model>
+    <model name='mb_marker_buoy_white_clone'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>20</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision_inner'>
+          <pose>0 -0.02 0.02 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>1.15</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='collision_outer'>
+          <pose>0 0 -0.3 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.325</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 1.57079 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://mb_marker_buoy_red/meshes/mb_marker_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/White</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.12 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.325</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-513.555 240.958 0.29263 0 -0 0</pose>
+    </model>
+    <model name='mb_marker_buoy_white_0_clone'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>20</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision_inner'>
+          <pose>0 -0.02 0.02 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>1.15</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='collision_outer'>
+          <pose>0 0 -0.3 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.325</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 1.57079 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://mb_marker_buoy_red/meshes/mb_marker_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/White</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 -0.12 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.325</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-497.832 237.001 0.29263 0 -0 0</pose>
+    </model>
+    <model name='mb_round_buoy_black_clone'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>3.5</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <sphere>
+              <radius>0.25</radius>
+            </sphere>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://mb_round_buoy_orange/meshes/mb_round_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Black</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 0.02 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.235</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-511.014 187.529 0.142296 0 -0 0</pose>
+    </model>
+    <model name='mb_round_buoy_black_clone_0'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>3.5</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <sphere>
+              <radius>0.25</radius>
+            </sphere>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://mb_round_buoy_orange/meshes/mb_round_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Black</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 0.02 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.235</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-514.25 200.165 0.142296 0 -0 0</pose>
+    </model>
+    <model name='mb_round_buoy_black_clone_1'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>3.5</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <sphere>
+              <radius>0.25</radius>
+            </sphere>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://mb_round_buoy_orange/meshes/mb_round_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Black</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 0.02 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.235</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-508.025 209.686 0.142296 0 -0 0</pose>
+    </model>
+    <model name='mb_round_buoy_black_clone_2'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>3.5</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <sphere>
+              <radius>0.25</radius>
+            </sphere>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://mb_round_buoy_orange/meshes/mb_round_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Black</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 0.02 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.235</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-513.838 220.548 0.142296 0 -0 0</pose>
+    </model>
+    <model name='mb_round_buoy_black_clone_3'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>3.5</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <sphere>
+              <radius>0.25</radius>
+            </sphere>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://mb_round_buoy_orange/meshes/mb_round_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Black</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 0.02 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.235</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-503.573 221.697 0.142296 0 -0 0</pose>
+    </model>
+    <model name='mb_round_buoy_black_clone_4'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>3.5</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <sphere>
+              <radius>0.25</radius>
+            </sphere>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://mb_round_buoy_orange/meshes/mb_round_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Black</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 0.02 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.235</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-507 231 0.142296 0 -0 0</pose>
+    </model>
+    <model name='mb_round_buoy_black_clone_5'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 -2 0 -0 0</pose>
+          <mass>3.5</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <sphere>
+              <radius>0.25</radius>
+            </sphere>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://mb_round_buoy_orange/meshes/mb_round_buoy.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Black</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='BuoyancyPlugin' filename='libbuoyancy_gazebo_plugin.so'>
+        <wave_model>ocean_waves</wave_model>
+        <fluid_density>1000</fluid_density>
+        <fluid_level>0.0</fluid_level>
+        <linear_drag>25.0</linear_drag>
+        <angular_drag>2.0</angular_drag>
+        <buoyancy name='buoyancy_sphere'>
+          <link_name>link</link_name>
+          <pose>0 0 0.02 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.235</radius>
+            </sphere>
+          </geometry>
+        </buoyancy>
+      </plugin>
+      <pose>-501 227 0.142296 0 -0 0</pose>
+    </model>
+  </world>
+</sdf>
