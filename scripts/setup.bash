@@ -201,3 +201,6 @@ export PYTHONPATH="${HOME}/catkin_ws/src/mil/mil_common/perception/vision_stack/
 # Ensure that VRX does _not_ exit on completion, as we're not in a time-limited
 # environment, and exiting too early would not let us debug as much!
 export VRX_EXIT_ON_COMPLETION=0
+
+export ROS1_INSTALL_PATH=/opt/ros/noetic
+export ROS2_INSTALL_PATH=/opt/ros/foxy
