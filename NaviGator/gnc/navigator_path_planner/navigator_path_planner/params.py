@@ -12,7 +12,7 @@ ncontrols = 3
 
 # BEHAVIOR CONTROL
 
-real_tol = [0.5, 0.5, np.deg2rad(10), np.inf, np.inf, np.inf]
+real_tol = [1, 1, np.deg2rad(10), np.inf, np.inf, np.inf]
 pointshoot_tol = np.deg2rad(20)  # rad
 free_radius = 6  # m
 basic_duration = 1  # s

@@ -592,6 +592,7 @@ class MRAC_Controller:
         self.a_ref = (wrench_saturated[:2] - drag_ref[:2]) / self.mass_ref
         self.aa_ref = (wrench_saturated[5] - drag_ref[2]) / self.inertia_ref
         self.p_ref = self.p_ref + (self.v_ref * self.timestep)
+        # print(f"p_ref: {self.p_ref}")
         self.q_ref = trns.quaternion_from_euler(
             0,
             0,

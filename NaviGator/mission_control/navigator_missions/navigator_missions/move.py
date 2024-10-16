@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import asyncio
 import numpy as np
 from axros import types, util
 from mil_misc_tools import ThrowingArgumentParser
@@ -170,7 +171,7 @@ class Move(NaviGatorMission):
 
                 msg = f"Moving {command} " if trans_move else f"Yawing {command[4:]} "
                 self.send_feedback(msg + f"{amount}{unit}")
-                res = await movement(float(amount), unit).go(**action_kwargs)
+                res = await asyncio.wait_for(movement(float(amount), unit).go(**action_kwargs), timeout=25.0)
             if not isinstance(res, types.ActionResult) and res.failure_reason != "":
                 raise Exception(f"Move failed. Reason: {res.failure_reason}")
         return "Move completed successfully!"

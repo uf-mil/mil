@@ -18,8 +18,8 @@ class EntranceGate2(NaviGatorMission):
         yaw_offset = 1.57
         self.traversal_distance = 3
 
-        await self.set_classifier_enabled.wait_for_service()
-        await self.set_classifier_enabled(SetBoolRequest(data=True))
+        #await self.set_classifier_enabled.wait_for_service()
+        #await self.set_classifier_enabled(SetBoolRequest(data=True))
 
         # Inspect Gates
         await self.change_wrench("/wrench/autonomous")

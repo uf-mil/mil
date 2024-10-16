@@ -31,5 +31,5 @@ class GoToPOI(NaviGatorMission):
             f"Moving to {poi} at {position[0:2]} with orientation {orientation}",
         )
         await self.change_wrench("autonomous")
-        await self.move.to_pose(Pose(Point(*position), Quaternion(*orientation))).go()
+        await self.move.to_pose(Pose(Point(*position), Quaternion(*orientation))).go(blind=True)
         return "Success"

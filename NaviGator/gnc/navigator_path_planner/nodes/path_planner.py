@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import time
+import threading
 from types import ModuleType
 from typing import List, Optional
 
@@ -148,8 +150,22 @@ class LQRRT_Node:
         rospy.sleep(1)
 
         # Timers
-        rospy.Timer(rospy.Duration(self.revisit_period), self.publish_ref)
+        # rospy.Timer(rospy.Duration(self.revisit_period), self.publish_ref)
         rospy.Timer(rospy.Duration(self.revisit_period), self.action_check)
+        self.custom_task = threading.Thread(target=self.simple_timer)
+        self.custom_task.start()
+
+    def simple_timer(self):
+        while not rospy.is_shutdown():
+            start = time.perf_counter()
+            # print("start! ", start)
+            self.publish_ref()
+            end = time.perf_counter()
+            # print(f"taken {end - start}s")
+            time_to_sleep = max(0.03 - (end - start), 0)
+            target = time.perf_counter() + time_to_sleep
+            while time.perf_counter() < target:
+                pass
 
     def reset(self) -> None:
         """
@@ -1381,6 +1397,8 @@ class LQRRT_Node:
         publisher. Also publishes the reference effort as a WrenchStamped
         message to the effort publisher.
         """
+        import datetime
+        start = time.time()
         # Make sure a plan exists
         last_update_time = self.last_update_time
         if self.get_ref is None or last_update_time is None:
@@ -1398,6 +1416,7 @@ class LQRRT_Node:
             self.eff_pub.publish(
                 self.pack_wrenchstamped(self.get_eff(time_since), stamp),
             )
+        print(f"{time.time() - start:.2f}s in publish_ref")
 
     def publish_path(self) -> None:
         """

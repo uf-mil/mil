@@ -5,6 +5,7 @@
 #include <mil_bounds/BoundsConfig.h>
 #include <mil_msgs/ObjectDBQuery.h>
 #include <nav_msgs/Odometry.h>
+#include <pcl/filters/passthrough.h>
 #include <roboteq_msgs/Command.h>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -53,7 +54,7 @@ protected:
   bool transform_to_global(std::string const& frame, ros::Time const& time, Eigen::Affine3d& out,
                            ros::Duration timeout = ros::Duration(1, 0));
   /// Transform a pointcloud ROS message into a PCL pointcloud in the global frame
-  bool transform_point_cloud(const sensor_msgs::PointCloud2& pcloud2, point_cloud& out);
+  bool transform_point_cloud(const sensor_msgs::PointCloud2& pcloud2, point_cloud_i& out);
   virtual bool bounds_update_cb(const mil_bounds::BoundsConfig& config);
   virtual void ConfigCallback(Config const& config, uint32_t level);
 
@@ -111,6 +112,8 @@ private:
 
   // Subscriber
   ros::Subscriber pc_sub;
+  ros::Subscriber fr_sub;
+  ros::Subscriber fl_sub;
 
   // Model (It eventually will be object tracker, but for now just detections)
   InputCloudFilter input_cloud_filter_;

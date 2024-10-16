@@ -93,17 +93,21 @@ bool NodeBase::Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Respons
   return true;
 }
 
-bool NodeBase::transform_point_cloud(const sensor_msgs::PointCloud2& pc_msg, point_cloud& out)
+bool NodeBase::transform_point_cloud(const sensor_msgs::PointCloud2& pc_msg, point_cloud_i& out)
 {
   Eigen::Affine3d transform;
   if (!transform_to_global(pc_msg.header.frame_id, pc_msg.header.stamp, transform))
     return false;
 
   // Transform from PCL2
-  pcl::PCLPointCloud2 pcl_pc2;
-  pcl_conversions::toPCL(pc_msg, pcl_pc2);
-  point_cloud pcloud;
-  pcl::fromPCLPointCloud2(pcl_pc2, pcloud);
+  // pcl::PCLPointCloud2 pcl_pc2;
+  // pcl_conversions::toPCL(pc_msg, pcl_pc2);
+  // point_cloud_i pcloud;
+  // pcl::fromPCLPointCloud2(pcl_pc2, pcloud);
+
+  // Change pc_msg to a new point cloud
+  point_cloud_i pcloud;
+  pcl::fromROSMsg(pc_msg, pcloud);
 
   out.clear();
   pcl::transformPointCloud(pcloud, out, transform);
@@ -171,10 +175,28 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
   }
   BOOST_SCOPE_EXIT_END
 
-  point_cloud_ptr pc = boost::make_shared<point_cloud>();
+  point_cloud_i_ptr pc = boost::make_shared<point_cloud_i>();
   // Transform new pointcloud to ENU
   if (!transform_point_cloud(*pcloud, *pc))
     return;
+
+  // our new filter vvv
+  pcl::PassThrough<pointi_t> _temp_intensity_filter;
+  _temp_intensity_filter.setInputCloud(pc);
+  _temp_intensity_filter.setFilterFieldName("intensity");
+  _temp_intensity_filter.setFilterLimits(10, 100);
+  point_cloud_ptr pc_without_i(boost::make_shared<point_cloud>());
+  point_cloud_i_ptr pc_i_filtered = boost::make_shared<point_cloud_i>();
+  _temp_intensity_filter.filter(*pc_i_filtered);
+
+  pc_without_i->points.resize(pc_i_filtered->size());
+  for (size_t i = 0; i < pc_i_filtered->points.size(); i++)
+  {
+    pc_without_i->points[i].x = pc_i_filtered->points[i].x;
+    pc_without_i->points[i].y = pc_i_filtered->points[i].y;
+    pc_without_i->points[i].z = pc_i_filtered->points[i].z;
+  }
+  std::cout << pc_without_i->points.size() << "/" << pc->points.size() << " remain" << std::endl;
 
   // Get current pose of robot to filter neaby points
   Eigen::Affine3d robot_transform;
@@ -184,7 +206,7 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
 
   // Filter out bounds / robot
   point_cloud_ptr filtered_pc = boost::make_shared<point_cloud>();
-  input_cloud_filter_.filter(pc, *filtered_pc);
+  input_cloud_filter_.filter(pc_without_i, *filtered_pc);
 
   // Add pointcloud to persistent cloud
   persistent_cloud_builder_.add_point_cloud(filtered_pc);
@@ -208,7 +230,7 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
   clusters_t clusters = detector_.get_clusters(filtered_accrued);
 
   // Associate current clusters with old ones
-  ass.associate(*objects_, *filtered_accrued, clusters);
+  ass.associate(*objects_, *filtered_accrued, clusters, thrust_back);
 }
 
 bool Node::bounds_update_cb(const mil_bounds::BoundsConfig& config)

@@ -15,7 +15,7 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
 {
   // Tracks which clusters have been seen
   std::unordered_set<uint> seen;
-  std::cout << "Associator called:\n";
+  std::cout << "Associator called, cluster count: " << clusters.size() << std::endl;
 
   // Establish Area of Interest (AOI) that new points are not allowed to be published while Navigator is moving
   // backwards
@@ -35,9 +35,6 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
     ce.setSearchMethodTarget(cluster_search_tree, true);
     ce.setInputTarget(cluster_pc);
 
-    std::cout << "Cluster found:\n";
-    std::cout << cluster_pc << "\n";
-
     using ObjectMapIt = decltype(prev_objects.objects_.begin());
     std::vector<ObjectMapIt> matches;
     for (auto pair = prev_objects.objects_.begin(); pair != prev_objects.objects_.end(); ++pair)
@@ -53,12 +50,8 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
     }
 
     // If Navigator is moving back, new objects outside of the AOI are invalid
-    std::cout << "moving_back diff " << (ros::Time::now() - moving_back_at).toSec() << std::endl;
-    if ((ros::Time::now() - moving_back_at) < ros::Duration(10.0))
+    if ((ros::Time::now() - moving_back_at) < ros::Duration(1000))
     {
-      std::cout << "moving back"
-                << "\n";
-
       // Compute the centroid of the cluster
       Eigen::Vector4f centroid;
       pcl::compute3DCentroid(*cluster_pc, centroid);
@@ -85,6 +78,7 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
         // Check if the centroid is outside the AOI
         bool outside_aoi = (centroid[0] < min_aoi[0] || centroid[0] > max_aoi[0] ||  // X bounds
                             centroid[1] < min_aoi[1] || centroid[1] > max_aoi[1]);   // Y bounds
+        outside_aoi = true;
 
         if (!outside_aoi)
         {
@@ -99,8 +93,9 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
             std::cout << "New object found outside of AOI" << std::endl;
             auto id = prev_objects.add_object(cluster_pc, cluster_search_tree);
             seen.insert(id);
-            std::cout << "object " << id << " centroid: " << centroid[0] << ", " << centroid[1] << ", " << centroid[2]
-                      << "|OUTSIDE AOI: " << outside_aoi << "|" << std::endl;
+            // std::cout << "object " << id << " centroid: " << centroid[0] << ", " << centroid[1] << ", " <<
+            // centroid[2]
+            //           << "|OUTSIDE AOI: " << outside_aoi << "|" << std::endl;
           }
           else
           {
