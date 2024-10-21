@@ -2,12 +2,14 @@
 <launch>
 
     <arg name="weights" default="$(find yolov7_ros)/src/mil_weights/best.pt" />
-    <arg name="image_topic" default="/cameras/front/left/image_raw" />
+    <arg name="image_topic" default="/wamv/sensors/cameras/front_left_camera/image_raw" />
     <arg name="out_topic" default="detections" />
     <arg name="conf_thresh" default="0.75" />
     <arg name="image_size" default="640" />
     <arg name="device" default="cpu" />
     <arg name="use_yolo" default="False"/>
+
+    <remap from="/wamv/sensors/cameras/front_left_camera/image_raw" to="camera/front/left/image_raw"/>
 
     <!-- Use YOLOv7 -->
     <include if="$(arg use_yolo)" file="$(find yolov7_ros)/launch/yolov7.launch">
