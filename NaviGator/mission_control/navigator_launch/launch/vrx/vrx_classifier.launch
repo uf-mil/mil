@@ -9,7 +9,7 @@
     <arg name="device" default="cpu" />
     <arg name="use_yolo" default="False"/>
 
-    <remap from="/wamv/sensors/cameras/front_left_camera/image_raw" to="camera/front/left/image_raw"/>
+    <remap from="/wamv/sensors/cameras/front_left_camera/image_raw" to="/camera/front/left/image_raw"/>
 
     <!-- Use YOLOv7 -->
     <include if="$(arg use_yolo)" file="$(find yolov7_ros)/launch/yolov7.launch">
