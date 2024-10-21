@@ -33,6 +33,7 @@
         <arg name="use_yolo_model2" value="False"/>
         <arg name="weights_model1" value="$(find yolov7_ros)/src/mil_weights/best.pt" />
 
+        <!-- Remaps old simulation-specific camera topic name to real-life camera topic name -->
         <remap from="/wamv/sensors/camera/front_left_cam/image_raw" to="/camera/front/left/image_raw"/>
     </include>
     <include file="$(find navigator_launch)/launch/vrx/vrx_tf.launch" />
