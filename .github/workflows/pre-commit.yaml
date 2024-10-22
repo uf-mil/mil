@@ -26,11 +26,11 @@ jobs:
       group: mala-lab-pre-commit
     steps:
       - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4.1.0
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
           cache: "pip"
@@ -46,7 +46,7 @@ jobs:
           hashFiles('.pre-commit-config.yaml') }}"
       - name: Restore base pre-commit environment
         id: cache-pre-commmit
-        uses: actions/cache@v3.0.4
+        uses: actions/cache@v4
         with:
           path: ${{ env.PRE_COMMIT_CACHE }}
           key: >
