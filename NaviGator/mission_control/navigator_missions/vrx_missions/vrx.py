@@ -134,13 +134,13 @@ class Vrx(NaviGatorMission):
     async def init_front_left_camera(cls):
         if cls.front_left_camera_sub is None:
             cls.front_left_camera_sub = cls.nh.subscribe(
-                "/wamv/sensors/cameras/front_left_camera/image_raw",
+                "/camera/front/left/image_raw",
                 Image,
             )
 
         if cls.front_left_camera_info_sub is None:
             cls.front_left_camera_info_sub = cls.nh.subscribe(
-                "/wamv/sensors/cameras/front_left_camera/camera_info",
+                "/camera/front/left/camera_info",
                 CameraInfo,
             )
 
@@ -153,13 +153,13 @@ class Vrx(NaviGatorMission):
     async def init_front_right_camera(cls):
         if cls.front_right_camera_sub is None:
             cls.front_right_camera_sub = cls.nh.subscribe(
-                "/wamv/sensors/cameras/front_right_camera/image_raw",
+                "/camera/front/right/image_raw",
                 Image,
             )
 
         if cls.front_right_camera_info_sub is None:
             cls.front_right_camera_info_sub = cls.nh.subscribe(
-                "/wamv/sensors/cameras/front_right_camera/camera_info",
+                "/camera/front/right/camera_info",
                 CameraInfo,
             )
 
