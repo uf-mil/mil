@@ -33,7 +33,7 @@ class BallLauncherDevice(
         self.heard_nack = False
         self.drops = 0
         self.temp_timer = None
-        print("done init")
+        rospy.loginfo("Ball launcher device initialized")
 
     def get_drop_count(self) -> int:
         return self.drops
@@ -51,10 +51,10 @@ class BallLauncherDevice(
         elif not self.heard_ack:
             rospy.logerr(f"Failed to {event} (no response from board)")
 
-    def _check_for_dropped_ball(self):
+    def _check_for_dropped_ball(self, _):
         self._check_for_valid_response("drop ball")
 
-    def _check_for_spun(self):
+    def _check_for_spun(self, _):
         self._check_for_valid_response("set spin")
 
     def drop_ball(self, _: EmptyRequest):
@@ -84,7 +84,6 @@ class BallLauncherDevice(
         return {}
 
     def on_packet_received(self, packet: AckPacket | NackPacket) -> None:
-        print("inc packet", packet)
         if isinstance(packet, AckPacket):
             self.heard_ack = True
         elif isinstance(packet, NackPacket):
