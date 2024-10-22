@@ -1,11 +1,8 @@
 ---
-name: Autopush
+name: Run pre-commit
 
 # yamllint disable-line rule:truthy
-on:
-  push:
-    branches:
-      - autopush-*
+on: [push, workflow_dispatch]
 
 # Cancels this run if a new one referring to the same object and same workflow
 # is requested
@@ -27,7 +24,6 @@ jobs:
     name: Run pre-commit
     runs-on:
       group: mala-lab-pre-commit
-    if: github.event.sender.login == 'cbrxyz'
     steps:
       - name: Check out code from GitHub
         uses: actions/checkout@v3.0.2
@@ -63,38 +59,3 @@ jobs:
       - name: Run pre-commit
         run: |
           pre-commit run --all-files --show-diff-on-failure
-
-  autopush:
-    name: Autopush changes
-    needs: [pre-commit]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Wait for tests to succeed
-        uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.ref }}
-          check-name: 'Run tests and build docs'
-          repo-token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
-          wait-interval: 10
-
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.0.2
-        with:
-          submodules: recursive
-          token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
-          ref: ${{ github.event.ref }}
-          fetch-depth: 0
-
-      - name: Create commit
-        run: |
-          git fetch
-          git config --global user.name \
-            "$(git --no-pager log --format=format:'%an' -n 1)"
-          git config --global user.email \
-            "$(git --no-pager log --format=format:'%ae' -n 1)"
-          git rebase origin/master
-          git checkout master
-          git branch
-          git merge --ff-only ${{ github.event.ref }}
-          git push
-          git push -d origin ${{ github.event.ref }}
