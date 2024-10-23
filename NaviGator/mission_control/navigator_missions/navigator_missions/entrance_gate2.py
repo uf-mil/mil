@@ -13,7 +13,7 @@ class EntranceGate2(NaviGatorMission):
         # Parameters:
         scan_code = False
         return_to_start = True
-        circle_radius = 5
+        circle_radius = 10
         circle_direction = "cw"
         yaw_offset = 1.57
         self.traversal_distance = 3

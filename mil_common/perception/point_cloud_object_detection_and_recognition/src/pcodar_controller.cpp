@@ -223,14 +223,16 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
   pub_pcl_.publish(filtered_accrued);
 
   // Skip object detection if all points where filtered out
+  // Get object clusters from persistent pointcloud
   if ((*filtered_accrued).empty())
     ROS_WARN_ONCE("Filtered pointcloud had no points. Consider changing filter parameters.");
 
-  // Get object clusters from persistent pointcloud
   clusters_t clusters = detector_.get_clusters(filtered_accrued);
+  std::cout << "clusters were gotten" << std::endl;
 
   // Associate current clusters with old ones
   ass.associate(*objects_, *filtered_accrued, clusters, thrust_back);
+  std::cout << "associator associated" << std::endl;
 }
 
 bool Node::bounds_update_cb(const mil_bounds::BoundsConfig& config)

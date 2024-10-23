@@ -108,8 +108,11 @@ class ThrusterMapperNode:
             if len(thrusts) != len(self.publishers):
                 rospy.logfatal("Number of thrusts does not equal number of publishers")
                 return
-            for i in range(len(self.publishers)):
-                commands[i].setpoint = thrusts[i]
+            for i, pub in enumerate(self.publishers):
+                if pub.name == "/BL_motor/cmd":
+                    commands[i].setpoint = thrusts[i] * 0.85
+                else:
+                    commands[i].setpoint = thrusts[i]
         if not self.is_vrx and not self.is_sim:
             for i in range(len(self.publishers)):
                 self.joint_state_msg.effort[i] = commands[i].setpoint
