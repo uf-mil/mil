@@ -196,7 +196,8 @@ class Docking(NaviGatorMission):
         # calculate center of cluster and move towards it but at an offset distance
         left[0] = 0
         forward = copy.deepcopy(centers[correct_dock_number])
-        forward[0] = forward[0] - 5
+        # This is what calculates how far from the dock the boat docks
+        forward[0] = forward[0] - 8
         boat_to_enu = await self.tf_listener.get_transform("enu", "wamv/base_link")
         centers[correct_dock_number] = boat_to_enu.transform_point(left)
         nextPt = boat_to_enu.transform_point(forward)
@@ -212,7 +213,7 @@ class Docking(NaviGatorMission):
         # Shoot racquet ball projectile
         rospy.logerr("- BEFORE SHOOT PROJ -")
         if correct_dock_number != -1 and correct_dock_number is not None:
-            await self.shoot_projectile(images[correct_dock_number])
+            await self.shoot_projectile()
         await self.pcodar_save(SetBoolRequest(False))
 
         await self.contour_pub.shutdown()
@@ -496,7 +497,11 @@ class Docking(NaviGatorMission):
 
         return list
     
-    async def shoot_projectile(self, img):
+    async def shoot_projectile(self):
+        # Gets the image from the boat camera at this point in time
+        img = await self.image_sub.get_next_message()
+        img = self.bridge.imgmsg_to_cv2(img)    
+    
         rospy.logerr("- SHOOT PROJ REACHED -")
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
