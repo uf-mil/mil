@@ -13,7 +13,7 @@
   <arg name="out_topic_model1" default="detections_model1" />
   <arg name="out_topic_model2" default="detections_model2" />
   <arg name="out_topic_model3" default="stc_detections_model" />
-  <arg name="conf_thresh" default="0.50" />
+  <arg name="conf_thresh" default="0.70" />
   <arg name="image_size" default="640" />
   <arg name="device" default="cpu" />
   <arg name="use_yolo_model1" default="True" />

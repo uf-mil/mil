@@ -164,8 +164,9 @@ class LQRRT_Node:
             # print(f"taken {end - start}s")
             time_to_sleep = max(0.03 - (end - start), 0)
             target = time.perf_counter() + time_to_sleep
-            while time.perf_counter() < target:
-                pass
+            time.sleep(0.03)
+            # while time.perf_counter() < target:
+            #     pass
 
     def reset(self) -> None:
         """
@@ -1416,7 +1417,6 @@ class LQRRT_Node:
             self.eff_pub.publish(
                 self.pack_wrenchstamped(self.get_eff(time_since), stamp),
             )
-        print(f"{time.time() - start:.2f}s in publish_ref")
 
     def publish_path(self) -> None:
         """

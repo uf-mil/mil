@@ -447,7 +447,7 @@ class Classifier:
         self.debug = rospy.get_param("~debug", True)
         self.image_topic = rospy.get_param(
             "~image_topic",
-            "/camera/front/left/image_color",
+            "/camera/front/right/image_color",
         )
         self.model_loc = rospy.get_param("~model_location", "config/model")
         self.update_period = rospy.Duration(1.0 / rospy.get_param("~update_hz", 5))

@@ -15,7 +15,6 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
 {
   // Tracks which clusters have been seen
   std::unordered_set<uint> seen;
-  std::cout << "Associator called, cluster count: " << clusters.size() << std::endl;
 
   // Establish Area of Interest (AOI) that new points are not allowed to be published while Navigator is moving
   // backwards
@@ -82,7 +81,6 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
 
         if (!outside_aoi)
         {
-          std::cout << "\n_____________" << centroid[0] << ", " << centroid[1] << ", " << centroid[2] << "\n";
           continue;
         }
         else
@@ -90,7 +88,6 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
           if (matches.size() == 0)
           {
             // Add to object
-            std::cout << "New object found outside of AOI" << std::endl;
             auto id = prev_objects.add_object(cluster_pc, cluster_search_tree);
             seen.insert(id);
             // std::cout << "object " << id << " centroid: " << centroid[0] << ", " << centroid[1] << ", " <<

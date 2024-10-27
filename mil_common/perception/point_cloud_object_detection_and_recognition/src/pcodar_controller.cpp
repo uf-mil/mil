@@ -185,7 +185,7 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
   _temp_intensity_filter.setInputCloud(pc);
   _temp_intensity_filter.setFilterFieldName("intensity");
   _temp_intensity_filter.setFilterLimits(10, 100);
-  point_cloud_ptr pc_without_i(boost::make_shared<point_cloud>());
+  point_cloud_ptr pc_without_i = boost::make_shared<point_cloud>();
   point_cloud_i_ptr pc_i_filtered = boost::make_shared<point_cloud_i>();
   _temp_intensity_filter.filter(*pc_i_filtered);
 
@@ -196,7 +196,6 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
     pc_without_i->points[i].y = pc_i_filtered->points[i].y;
     pc_without_i->points[i].z = pc_i_filtered->points[i].z;
   }
-  std::cout << pc_without_i->points.size() << "/" << pc->points.size() << " remain" << std::endl;
 
   // Get current pose of robot to filter neaby points
   Eigen::Affine3d robot_transform;
@@ -219,7 +218,7 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
   persistent_cloud_filter_.filter(accrued, *filtered_accrued);
 
   // Publish accrued cloud
-  (*filtered_accrued).header.frame_id = "enu";
+  (*filtered_accrued).header.frame_id = "enu";  //
   pub_pcl_.publish(filtered_accrued);
 
   // Skip object detection if all points where filtered out
@@ -228,11 +227,9 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
     ROS_WARN_ONCE("Filtered pointcloud had no points. Consider changing filter parameters.");
 
   clusters_t clusters = detector_.get_clusters(filtered_accrued);
-  std::cout << "clusters were gotten" << std::endl;
 
   // Associate current clusters with old ones
   ass.associate(*objects_, *filtered_accrued, clusters, thrust_back);
-  std::cout << "associator associated" << std::endl;
 }
 
 bool Node::bounds_update_cb(const mil_bounds::BoundsConfig& config)

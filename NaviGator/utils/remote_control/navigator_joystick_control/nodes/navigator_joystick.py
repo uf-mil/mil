@@ -84,7 +84,6 @@ class Joystick:
 
         # Reset controller state if only start is pressed down about 1 second
         self.start_count += start
-        print(f"Continue holding to start... {self.start_count}")
         if self.start_count > 5:
             rospy.loginfo("Resetting controller state")
             self.reset()

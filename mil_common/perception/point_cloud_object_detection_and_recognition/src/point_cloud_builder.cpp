@@ -16,6 +16,8 @@ void PointCloudCircularBuffer::add_point_cloud(const point_cloud_ptr& pc)
     return;
 
   //  Assemble cloud as union of buffered clouds
+  if (!mega_cloud_)
+    std::cout << "mega_cloud add_point_cloud not set" << std::endl;
   mega_cloud_->clear();
   for (const auto& cloud : prev_clouds_)
   {
@@ -25,6 +27,8 @@ void PointCloudCircularBuffer::add_point_cloud(const point_cloud_ptr& pc)
 
 void PointCloudCircularBuffer::clear()
 {
+  if (!mega_cloud_)
+    std::cout << "mega_cloud clear not set" << std::endl;
   mega_cloud_->clear();
   prev_clouds_.clear();
 }

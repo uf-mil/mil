@@ -8,6 +8,8 @@ PersistentCloudFilter::PersistentCloudFilter() : outlier_filter_(false)
 
 void PersistentCloudFilter::filter(point_cloud_const_ptr in, point_cloud& pc)
 {
+  if (!in)
+    std::cout << "in not set" << std::endl;
   if (in->empty())
   {
     pc.clear();
