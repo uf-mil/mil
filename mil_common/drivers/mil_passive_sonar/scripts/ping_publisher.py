@@ -20,7 +20,7 @@ def main():
         pub = rospy.Publisher("hydrophones/solved", ProcessedPing, queue_size=10)
         s.connect((HOST, PORT))
         rospy.loginfo(
-            f"\nConnected to {HOST}:{PORT}\nPublishing to /hydrophones/solved",
+            f"\nping_publisher connected to {HOST}:{PORT}, forwarding TCP messages to {pub.resolved_name}...",
         )
 
         # Need to ignore the first 2 JSON Parse Errors (nothing wrong)
