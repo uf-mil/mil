@@ -15,6 +15,8 @@ from nav_msgs.msg import OccupancyGrid
 from sensor_msgs.msg import CameraInfo, Image
 from std_srvs.srv import SetBool, SetBoolRequest
 from tf.transformations import quaternion_matrix
+import matplotlib.pyplot as plt, numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 
 from .navigator import NaviGatorMission
 from navigator_vision import GripPipeline
@@ -114,6 +116,7 @@ class Docking(NaviGatorMission):
         pos = await self.poi.get("dock")
         rospy.logerr("HERE4")
         pos = pos[0]
+        await self.move.look_at(pos).go() # Face the dock
         await self.move.set_position(pos).look_at(pos).go()
 
         # Decrease cluster tolerance as we approach dock since lidar points are more dense
@@ -295,11 +298,32 @@ class Docking(NaviGatorMission):
 
     # separates the clusters using k means clustering
     def get_cluster_centers(self, data):
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot(data[:,0],data[:,1],data[:,2])
+        plt.draw()
+        plt.pause(0.1)
+        input("<Hit Enter To Close>")
+        plt.close(fig)
+
 
         # cut off all points below the mean z value
         mean = np.mean(data, axis=0)[2]
         data = data[data[:, 2] > mean]
+
+        # Additionally, cut of points below lower quartile x value
+        xq1 = np.quantile(data[:, 0], 0.25)
+        data = data[data[:, 0] > xq1]
         centroids = []
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot(data[:,0],data[:,1],data[:,2])
+        plt.draw()
+        plt.pause(0.1)
+        input("<Hit Enter To Close>")
+        plt.close(fig)
+
 
         # Sample initial centroids
         random_indices = random.sample(range(data.shape[0]), 3)
