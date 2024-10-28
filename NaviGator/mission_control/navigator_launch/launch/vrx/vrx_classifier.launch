@@ -2,7 +2,7 @@
 <launch>
 
     <arg name="weights" default="$(find yolov7_ros)/src/mil_weights/best.pt" />
-    <arg name="image_topic" default="/wamv/sensors/cameras/front_left_camera/image_raw" />
+    <arg name="image_topic" default="/wamv/sensors/camera/front_left_cam/image_raw" />
     <arg name="out_topic" default="detections" />
     <arg name="conf_thresh" default="0.75" />
     <arg name="image_size" default="640" />

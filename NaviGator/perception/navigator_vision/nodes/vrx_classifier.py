@@ -42,6 +42,9 @@ class VrxClassifier:
     BLACK_OBJECT_AREA = [0.0, 0.5, 0.0, 0.0]
     TOTEM_MIN_HEIGHT = 0.9
 
+    BASE_TO_ROD_MSE_CUTOFF_RATIO = 10
+    FOUND_STC = False
+
     CLASSES = [
         "mb_marker_buoy_red",
         "mb_marker_buoy_green",
@@ -129,86 +132,95 @@ class VrxClassifier:
     def process_objects(self, msg):
         self.last_objects = msg
 
-        # ONLY PROCEED IF RUNNING STC MISSION
-        def light_tower_confidence(points, num_segments=5):
-            """
-            Calculate confidence that 3D points represent the light tower structure.
+        if not self.FOUND_STC:    
+            # ONLY PROCEED IF RUNNING STC MISSION
+            def light_tower_confidence(points, num_segments=5):
+                """
+                Calculate confidence that 3D points represent the light tower structure.
 
-            Parameters:
-            - points: List of dictionaries with keys 'x', 'y', 'z'.
+                Parameters:
+                - points: List of dictionaries with keys 'x', 'y', 'z'.
 
-            Returns:
-            - confidence: A float between 0 and 1 representing confidence in light tower structure.
-            """
-            # Convert list of dicts to a numpy array for easier processing
-            points_np = np.array([[p.x, p.y, p.z] for p in points])
+                Returns:
+                - confidence: A float between 0 and 1 representing confidence in light tower structure.
+                """
+                # Convert list of dicts to a numpy array for easier processing
+                points_np = np.array([[p.x, p.y, p.z] for p in points])
 
-            # Define expected model dimensions and tolerances
-            base_cutoff_z = 1  # platform thickness
-            # Separate points into base and tower sections based on z-coordinate cutoff
-            tower_points = points_np[points_np[:, 2] >= base_cutoff_z]
-            base_points = points_np[points_np[:, 2] < base_cutoff_z]
+                # Define expected model dimensions and tolerances
+                base_cutoff_z = 1  # platform thickness
+                # Separate points into base and tower sections based on z-coordinate cutoff
+                tower_points = points_np[points_np[:, 2] >= base_cutoff_z]
+                base_points = points_np[points_np[:, 2] < base_cutoff_z]
 
-            if len(tower_points) == 0 or len(base_points) == 0:
-                # If no points in either the tower or base, confidence is zero
-                return 0
+                if len(tower_points) == 0 or len(base_points) == 0:
+                    # If no points in either the tower or base, confidence is zero
+                    return 0
 
-            # Step 1: Calculate the center of the tower in the x-y plane
-            tower_center_x = np.mean(tower_points[:, 0])
-            tower_center_y = np.mean(tower_points[:, 1])
-            tower_center = np.array([tower_center_x, tower_center_y])
+                # Step 1: Calculate the center of the tower in the x-y plane
+                tower_center_x = np.mean(tower_points[:, 0])
+                tower_center_y = np.mean(tower_points[:, 1])
+                tower_center = np.array([tower_center_x, tower_center_y])
 
-            # Step 2: Calculate MSE for tower points relative to the tower center
-            tower_mse = np.mean((tower_points[:, :2] - tower_center) ** 2)
+                # Step 2: Calculate MSE for tower points relative to the tower center
+                tower_mse = np.mean((tower_points[:, :2] - tower_center) ** 2)
 
-            # Step 3: Calculate MSE for base points relative to the tower center
-            base_mse = np.mean((base_points[:, :2] - tower_center) ** 2)
+                # Step 3: Calculate MSE for base points relative to the tower center
+                base_mse = np.mean((base_points[:, :2] - tower_center) ** 2)
 
-            # Step 4: Calculate confidence based on the MSE ratio
-            mse_ratio = base_mse / (
-                tower_mse + 1e-8
-            )  # add small epsilon to avoid division by zero
+                # Step 4: Calculate confidence based on the MSE ratio
+                mse_ratio = base_mse / (
+                    tower_mse + 1e-8
+                )  # add small epsilon to avoid division by zero
 
-            return mse_ratio
+                return mse_ratio
 
-        now = rospy.Time.now()
-        self.last_update_time = now
-        # Get Transform from ENU to optical at the time of this image
-        transform = self.tf_buffer.lookup_transform(
-            self.sub.last_image_header.frame_id,
-            "enu",
-            self.sub.last_image_header.stamp,
-            timeout=rospy.Duration(1),
-        )
-        translation = rosmsg_to_numpy(transform.transform.translation)
-        rotation = rosmsg_to_numpy(transform.transform.rotation)
-        rotation_mat = quaternion_matrix(rotation)[:3, :3]
+            now = rospy.Time.now()
+            self.last_update_time = now
+            # Get Transform from ENU to optical at the time of this image
+            transform = self.tf_buffer.lookup_transform(
+                self.sub.last_image_header.frame_id,
+                "enu",
+                self.sub.last_image_header.stamp,
+                timeout=rospy.Duration(1),
+            )
+            translation = rosmsg_to_numpy(transform.transform.translation)
+            rotation = rosmsg_to_numpy(transform.transform.rotation)
+            rotation_mat = quaternion_matrix(rotation)[:3, :3]
 
-        # Transform the center of each object into optical frame
-        positions_camera = [
-            translation + rotation_mat.dot(rosmsg_to_numpy(obj.pose.position))
-            for obj in self.last_objects.objects
-        ]
-        pixel_centers = [
-            self.camera_model.project3dToPixel(point) for point in positions_camera
-        ]
-        distances = np.linalg.norm(positions_camera, axis=1)
-        CUTOFF_METERS = 30
+            # Transform the center of each object into optical frame
+            positions_camera = [
+                translation + rotation_mat.dot(rosmsg_to_numpy(obj.pose.position))
+                for obj in self.last_objects.objects
+            ]
+            pixel_centers = [
+                self.camera_model.project3dToPixel(point) for point in positions_camera
+            ]
+            distances = np.linalg.norm(positions_camera, axis=1)
+            CUTOFF_METERS = 30
 
-        met_criteria = []
-        for i in range(len(self.last_objects.objects)):
-            distance = distances[i]
-            if (
-                self.in_frame(pixel_centers[i])
-                and distance < CUTOFF_METERS
-                and positions_camera[i][2] > 0
-            ):
-                met_criteria.append(i)
+            met_criteria = []
+            for i in range(len(self.last_objects.objects)):
+                distance = distances[i]
+                if (
+                    self.in_frame(pixel_centers[i])
+                    and distance < CUTOFF_METERS
+                    and positions_camera[i][2] > 0
+                ):
+                    met_criteria.append(i)
 
-        # TODO: exclude this part to only be triggered when doing scan the code
-        for i in met_criteria:
-            i_object = self.last_objects.objects[i]
-            rospy.loginfo(f"{light_tower_confidence(i_object.points)}, {i_object.id}")
+            # TODO: exclude this part to only be triggered when doing scan the code
+            for i in met_criteria:
+                i_object = self.last_objects.objects[i]
+                mse_ratio = light_tower_confidence(i_object.points)
+                if mse_ratio >= self.BASE_TO_ROD_MSE_CUTOFF_RATIO:
+                    cmd = "{}={}".format(
+                        self.last_objects.objects[i].id,
+                        "stc_platform",
+                    )
+                    self.database_client(ObjectDBQueryRequest(cmd=cmd))
+                    self.FOUND_STC = True
+                
 
     def in_rect(self, point, bbox):
         return bool(
