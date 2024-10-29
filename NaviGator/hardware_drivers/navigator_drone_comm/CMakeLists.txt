@@ -5,12 +5,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
 )
 
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES navigator_drone_comm
-#  CATKIN_DEPENDS rospy
-#  DEPENDS system_lib
-)
+catkin_python_setup()
+catkin_package()
 
 include_directories(
 # include

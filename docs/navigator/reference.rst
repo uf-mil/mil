@@ -411,3 +411,65 @@ SetSpinPacket
 
 .. autoclass:: navigator_ball_launcher.SetSpinPacket
     :members:
+
+:mod:`navigator_drone_comm` - Boat-drone communication standard
+---------------------------------------------------------------
+
+.. automodule:: navigator_drone_comm
+    :members:
+
+HeartbeatReceivePacket
+^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_drone_comm.HeartbeatReceivePacket
+
+.. autoclass:: navigator_drone_comm.HeartbeatReceivePacket
+    :members:
+
+HeartbeatSetPacket
+^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_drone_comm.HeartbeatSetPacket
+
+.. autoclass:: navigator_drone_comm.HeartbeatSetPacket
+    :members:
+
+GPSDronePacket
+^^^^^^^^^^^^^^
+.. attributetable:: navigator_drone_comm.GPSDronePacket
+
+.. autoclass:: navigator_drone_comm.GPSDronePacket
+    :members:
+
+EStopPacket
+^^^^^^^^^^^
+.. attributetable:: navigator_drone_comm.EStopPacket
+
+.. autoclass:: navigator_drone_comm.EStopPacket
+    :members:
+
+StopPacket
+^^^^^^^^^^
+.. attributetable:: navigator_drone_comm.StopPacket
+
+.. autoclass:: navigator_drone_comm.StopPacket
+    :members:
+
+StartPacket
+^^^^^^^^^^^
+.. attributetable:: navigator_drone_comm.StartPacket
+
+.. autoclass:: navigator_drone_comm.StartPacket
+    :members:
+
+Color
+^^^^^
+.. attributetable:: navigator_drone_comm.Color
+
+.. autoclass:: navigator_drone_comm.Color
+    :members:
+
+TargetPacket
+^^^^^^^^^^^^
+.. attributetable:: navigator_drone_comm.TargetPacket
+
+.. autoclass:: navigator_drone_comm.TargetPacket
+    :members:
