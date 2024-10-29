@@ -30,3 +30,21 @@ class SetMovementModePacket(
     payload_format="<?",
 ):
     autonomous: bool
+
+
+@dataclass
+class SuspendHeartbeatPacket(
+    Packet,
+    class_id=0x10,
+    subclass_id=0x03,
+    payload_format="<?",
+):
+    """
+    Tells the RF Kill board to suspend listening for heartbeats and killing the boat
+    if none are received.
+
+    Attributes:
+        ignore (bool): Whether to ignore missing heartbeat messages.
+    """
+
+    ignore: bool

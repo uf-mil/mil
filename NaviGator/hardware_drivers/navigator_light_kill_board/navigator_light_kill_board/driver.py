@@ -6,14 +6,21 @@ import rospy
 from electrical_protocol import AckPacket, NackPacket, ROSSerialDevice
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from std_msgs.msg import String
+from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 
-from .packets import KillReceivePacket, KillSetPacket, KillStatus, SetMovementModePacket
+from .packets import (
+    KillReceivePacket,
+    KillSetPacket,
+    KillStatus,
+    SetMovementModePacket,
+    SuspendHeartbeatPacket,
+)
 
-SendPackets = Union[KillSetPacket, SetMovementModePacket]
+SendPackets = Union[KillSetPacket, SetMovementModePacket, SuspendHeartbeatPacket]
 RecvPackets = Union[KillReceivePacket, AckPacket, NackPacket]
 
 
-class LightKillBoardDevice(
+class KillLightBoardDevice(
     ROSSerialDevice[
         SendPackets,
         RecvPackets,
@@ -60,6 +67,13 @@ class LightKillBoardDevice(
         self._wrench_sub = rospy.Subscriber("/wrench/selected", String, self._wrench_cb)
         self._prev_wrench = None
 
+        # Ignore missing heartbeat messages service
+        self._ignore_heartbeat_srv = rospy.Service(
+            "ignore_heartbeat",
+            SetBool,
+            self._ignore_heartbeat,
+        )
+
     def _wrench_cb(self, wrench: String):
         if self._prev_wrench != wrench.data:
             if wrench.data in self.REMOTE_CONTROL_WRENCH_STATES:
@@ -67,6 +81,17 @@ class LightKillBoardDevice(
             elif wrench.data in self.AUTONOMOUS_WRENCH_STATES:
                 self.send_packet(SetMovementModePacket(True))
         self._prev_wrench = wrench.data
+
+    def _ignore_heartbeat(self, data: SetBoolRequest):
+        response = None
+        if data.data:
+            response = "Instructing RF Kill system to ignore missing heartbeat packets."
+            rospy.logwarn(response)
+        else:
+            response = "RF Kill system monitoring missing heartbeat packets once again."
+            rospy.loginfo(response)
+        self.send_packet(SuspendHeartbeatPacket(data.data))
+        return SetBoolResponse(True, response)
 
     def _network_kill_alarm_cb(self, alarm):
         """
