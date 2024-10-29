@@ -116,8 +116,8 @@ class Docking(NaviGatorMission):
         pos = await self.poi.get("dock")
         rospy.logerr("HERE4")
         pos = pos[0]
-        await self.move.look_at(pos).go() # Face the dock
-        await self.move.set_position(pos).look_at(pos).go()
+        # await self.move.look_at(pos).yaw_right(20, unit="deg").go() # Face the dock
+        # await self.move.set_position(pos).look_at(pos).go()
 
         # Decrease cluster tolerance as we approach dock since lidar points are more dense
         # This helps scenario where stc buoy is really close to dock
@@ -186,7 +186,7 @@ class Docking(NaviGatorMission):
             # cv2.destroyAllWindows()  # Close the image window before re-looping
 
             # If the images are correct, then break. We need to check if the height ranges from 170-180 and width ranges from 130-150
-            if images[0].shape[0] in range(90, 191) and images[0].shape[1] in range(101, 180) and images[1].shape[0] in range(90, 191) and images[1].shape[1] in range(101, 180) and images[2].shape[0] in range(90, 191) and images[2].shape[1] in range(101, 180):
+            if images[0].shape[0] in range(70, 171) and images[0].shape[1] in range(101, 180) and images[1].shape[0] in range(70, 171) and images[1].shape[1] in range(101, 180) and images[2].shape[0] in range(70, 171) and images[2].shape[1] in range(101, 180):
                 correct_dock_number = self.find_color(images, goal_color)
                 if correct_dock_number != -1:
                     break
@@ -208,9 +208,9 @@ class Docking(NaviGatorMission):
         await self.move.set_position(nextPt).go(blind=True, move_type="skid")
 
         # Align with hole -> work in progress, see navigator_vision/dockdeliver_pipeline.py in navigator vision
-        #image = await self.image_sub.get_next_message()
-        #image = self.bridge.imgmsg_to_cv2(image)   
-        #self.grip.process(image)
+        image = await self.image_sub.get_next_message()
+        image = self.bridge.imgmsg_to_cv2(image)   
+        self.grip.process(image)
 
         
         # Shoot racquet ball projectile
@@ -298,13 +298,13 @@ class Docking(NaviGatorMission):
 
     # separates the clusters using k means clustering
     def get_cluster_centers(self, data):
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.plot(data[:,0],data[:,1],data[:,2])
-        plt.draw()
-        plt.pause(0.1)
-        input("<Hit Enter To Close>")
-        plt.close(fig)
+        # fig = plt.figure()
+        # ax = fig.add_subplot(111, projection='3d')
+        # ax.plot(data[:,0],data[:,1],data[:,2])
+        # plt.draw()
+        # plt.pause(0.1)
+        # input("<Hit Enter To Close>")
+        # plt.close(fig)
 
 
         # cut off all points below the mean z value
@@ -316,13 +316,13 @@ class Docking(NaviGatorMission):
         data = data[data[:, 0] > xq1]
         centroids = []
 
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.plot(data[:,0],data[:,1],data[:,2])
-        plt.draw()
-        plt.pause(0.1)
-        input("<Hit Enter To Close>")
-        plt.close(fig)
+        # fig = plt.figure()
+        # ax = fig.add_subplot(111, projection='3d')
+        # ax.plot(data[:,0],data[:,1],data[:,2])
+        # plt.draw()
+        # plt.pause(0.1)
+        # input("<Hit Enter To Close>")
+        # plt.close(fig)
 
 
         # Sample initial centroids
@@ -534,6 +534,8 @@ class Docking(NaviGatorMission):
 
         # Use Canny edge detection
         edges = cv2.Canny(blurred, 50, 150)
+    
+        rospy.logerr("- SHOOT PROJ 1 -")
 
         # Find contours in the edged image
         contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -541,14 +543,21 @@ class Docking(NaviGatorMission):
         # Count to keep track of number of squares
         square_count = 0
 
+        cv2.imshow("Squares Detected", img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
         # Loop over the contours
-        for contour in contours:
+        for contour in contours:    
+            rospy.logerr("- SHOOT PROJ LOOP -")
+
             # Approximate the contour to a polygon
             epsilon = 0.02 * cv2.arcLength(contour, True)
             approx = cv2.approxPolyDP(contour, epsilon, True)
 
             # If the approximated contour has 4 vertices, it's a square (or rectangle)
             if len(approx) == 4:
+                rospy.logerr("- SHOOT PROJ HAS 4 VERTICES -")
                 x, y, w, h = cv2.boundingRect(approx)
 
                 # Calculate the aspect ratio
@@ -556,18 +565,24 @@ class Docking(NaviGatorMission):
 
                 # Check if the aspect ratio is close to 1 (square)
                 if 0.95 <= aspect_ratio <= 1.05:
-                    cv2.drawContours(img, [approx], -1, (0, 255, 0), 2)
+                    rospy.logerr("- SHOOT PROJ IS A SQUARE -")
+                    # cv2.drawContours(img, [approx], -1, (0, 255, 0), 2)
                     square_count += 1
-        
+
+        rospy.logerr(f"- SHOOT PROJ LOOP FINISHED -")
+
+        rospy.logerr("- SHOOT PROJ CV2.IMSHOW BEFORE REACHED -")
+        # Display the result
+        cv2.imshow("Squares Detected", img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
         # If three squares are not found (color and two holes) then bad
         if square_count != 3:
             rospy.logerr("Error: Incorrect number of squares detected")
             return
 
-        # Display the result
-        cv2.imshow("Squares Detected", img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        rospy.logerr("- SHOOT PROJ WINDOWS DESTROYED -")
 
         # ADD SHOOTING MECHANICS HERE
 
