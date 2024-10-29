@@ -5,16 +5,14 @@ from electrical_protocol import Packet
 
 
 @dataclass
-class HBT(Packet, class_id=0x20, subclass_id=0x00, payload_format=""):
+class HeartbeatPacket(Packet, class_id=0x20, subclass_id=0x00, payload_format=""):
     """
     Heartbeat packet.
     """
 
-    pass
-
 
 @dataclass
-class GPS_DRONE(Packet, class_id=0x20, subclass_id=0x01, payload_format="<fff"):
+class GPSDronePacket(Packet, class_id=0x20, subclass_id=0x01, payload_format="<fff"):
     """
     GPS location of drone packet.
 
@@ -30,16 +28,14 @@ class GPS_DRONE(Packet, class_id=0x20, subclass_id=0x01, payload_format="<fff"):
 
 
 @dataclass
-class ESTOP(Packet, class_id=0x20, subclass_id=0x02, payload_format=""):
+class EStopPacket(Packet, class_id=0x20, subclass_id=0x02, payload_format=""):
     """
     Emergency stop drone packet.
     """
 
-    pass
-
 
 @dataclass
-class START(Packet, class_id=0x20, subclass_id=0x03, payload_format="<20s"):
+class StartPacket(Packet, class_id=0x20, subclass_id=0x03, payload_format="<20s"):
     """
     Start drone mission packet.
 
@@ -51,12 +47,10 @@ class START(Packet, class_id=0x20, subclass_id=0x03, payload_format="<20s"):
 
 
 @dataclass
-class STOP(Packet, class_id=0x20, subclass_id=0x04, payload_format=""):
+class StopPacket(Packet, class_id=0x20, subclass_id=0x04, payload_format=""):
     """
     Stop drone and return packet.
     """
-
-    pass
 
 
 class Color(Enum):
@@ -70,7 +64,7 @@ class Color(Enum):
 
 
 @dataclass
-class TARGET(Packet, class_id=0x20, subclass_id=0x05, payload_format="<ffc"):
+class TargetPacket(Packet, class_id=0x20, subclass_id=0x05, payload_format="<ffc"):
     """
     GPS of drone-identified target packet.
 
