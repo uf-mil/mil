@@ -137,4 +137,4 @@ class KillLightBoardDevice(
                 self.lower_hw_alarm()
         # ACK packet --> Valid response to a command we sent
         elif isinstance(packet, (AckPacket, NackPacket)):
-            pass
+            print(f"received {packet}!")
