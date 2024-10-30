@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <param name="/is_simulation" value="True" />
+    <test pkg="navigator_drone_comm" test-name="test_simulated_drone" type="test_simulated_drone.py" />
+</launch>
