@@ -152,11 +152,12 @@ class ScanTheCodeMission(NaviGatorMission):
         while len(sequence) < 3:
             img_msg = await self.front_left_camera_sub.get_next_message()
             img = self.bridge.imgmsg_to_cv2(img_msg)
+            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             mask = contour_mask(contour, img_shape=img.shape)
-            masked_img = bitwise_and(img, img, mask=mask)
+            masked_img = bitwise_and(img_rgb, img_rgb, mask=mask)
 
             # Debug: Save/display masked image to tune the contour masking
-            cv2.imshow("Image", img)
+            cv2.imshow("Image", img_rgb)
             cv2.imshow("Masked Image", masked_img)
             cv2.waitKey(1)
 
