@@ -63,6 +63,7 @@ add_service_files(
   TwoClosestCones.srv
   # 2024 RobotX service files
   BallLauncherDrops.srv
+  DroneMission.srv
 )
 
 add_action_files(
