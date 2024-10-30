@@ -3,6 +3,7 @@ import asyncio
 from operator import attrgetter
 
 import axros
+import cv2
 import numpy as np
 from cv2 import bitwise_and
 from cv_bridge import CvBridge
@@ -107,41 +108,64 @@ class ScanTheCodeMission(NaviGatorMission):
         self.send_feedback("Done!")
         return sequence
 
+    def detect_color(self, img):
+        # Convert image to RGB color space if not already
+        if img.shape[2] == 1:  # if single channel, assume it's grayscale
+            img_rgb = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        else:
+            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        # Define range for red, green, blue colors in RGB
+        color_thresholds = {
+            "red": (
+                np.array([100, 0, 0], dtype="uint8"),
+                np.array([255, 50, 50], dtype="uint8"),
+            ),
+            "green": (
+                np.array([0, 100, 0], dtype="uint8"),
+                np.array([50, 255, 50], dtype="uint8"),
+            ),
+            "blue": (
+                np.array([0, 0, 100], dtype="uint8"),
+                np.array([50, 50, 255], dtype="uint8"),
+            ),
+        }
+
+        colored_areas = {}
+        largest_color = None
+        max_area = -1
+
+        # Applying each color mask and finding the most dominant one
+        for color, (lower, upper) in color_thresholds.items():
+            mask = cv2.inRange(img_rgb, lower, upper)
+            # Calculate the area capturing this color
+            area = np.sum(mask) / 255
+            colored_areas[color] = area
+            if area > max_area:
+                max_area = area
+                largest_color = color
+
+        return largest_color, colored_areas
+
     async def get_sequence(self, contour):
         sequence = []
-        print("GETTING SEQUENCE")
         while len(sequence) < 3:
-            img = await self.front_left_camera_sub.get_next_message()
-            img = self.bridge.imgmsg_to_cv2(img)
-
+            img_msg = await self.front_left_camera_sub.get_next_message()
+            img = self.bridge.imgmsg_to_cv2(img_msg)
             mask = contour_mask(contour, img_shape=img.shape)
+            masked_img = bitwise_and(img, img, mask=mask)
 
-            img = img[:, :, [2, 1, 0]]
-            mask_msg = self.bridge.cv2_to_imgmsg(
-                bitwise_and(img, img, mask=mask),
-                "bgr8",
-            )
+            # Debug: Save/display masked image to tune the contour masking
+            cv2.imshow("Image", img)
+            cv2.imshow("Masked Image", masked_img)
+            cv2.waitKey(1)
 
-            print("PUBLISHING MASK")
-            self.image_debug_pub.publish(mask_msg)
-
-            print("WAITING FOR STC BOUNDING BOX")
-            bounding_box_msg = await self.stc_objects.get_next_message()
-            if len(bounding_box_msg.detections) == 0:
-                print("Nothing Detected")
-                continue
-            print("STC BOUNDING BOX FOUND")
-
-            ##############
-
-            most_likely_name = COLORS[bounding_box_msg.detections[0].results[0].id]
-
-            if most_likely_name == "black":
-                sequence = []
-            elif sequence == [] or most_likely_name != sequence[-1]:
-                sequence.append(most_likely_name)
-
-            print(sequence)
+            most_likely_color, _ = self.detect_color(masked_img)
+            if most_likely_color and (
+                not sequence or most_likely_color != sequence[-1]
+            ):
+                sequence.append(most_likely_color)
+                await self.nh.sleep(1)  # Pause to account for LED blinking
 
         return sequence
 
