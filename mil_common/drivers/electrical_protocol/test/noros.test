@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <param name="/is_simulation" value="True" />
+    <node pkg="electrical_protocol" type="calculator_device_noros.py" name="calculator_device" output="screen" />
+    <test pkg="electrical_protocol" test-name="test_simulated_basic" type="test_simulated_basic.py" />
+</launch>
