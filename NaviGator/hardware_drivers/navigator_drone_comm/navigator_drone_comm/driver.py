@@ -6,7 +6,7 @@ from electrical_protocol import ROSSerialDevice
 from navigator_msgs.srv import DroneMission, DroneMissionRequest
 from std_srvs.srv import Empty, EmptyRequest
 
-from navigator_drone_comm import (
+from .packets import (
     EStopPacket,
     GPSDronePacket,
     HeartbeatReceivePacket,
