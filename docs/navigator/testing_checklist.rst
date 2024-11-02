@@ -30,9 +30,14 @@ Boat and Trailers
 |uc| Boat prep
     - |uc| Attach lidar
     - |uc| Attach camera covers
-    - |uc| Stow wifi antenna, light post, rf antenna
+    - |uc| Stow wifi antenna, light post
     - |uc| Strap computer box closed
     - |uc| Stow batteries in main trailer
+    - |uc| Detach the large RF kill antenna
+    - |uc| Detach ball launcher tube
+    - |uc| Make sure hydrophone mount it horizontal
+    - |uc| Landing pad is detached
+    - |uc| check for no loose fasteners
 |uc| Boat trailer prep
     - |uc| Strap pontoons down on both sides
     - |uc| Check boat trailer lights
@@ -46,6 +51,15 @@ Boat and Trailers
 Mechanical
 ^^^^^^^^^^
 |uc| Challenge elements
+|uc| Tape Measure
+|uc| 7/16 wrench
+|uc| 5/32 Allen Key
+|uc| Duct tape and scissor
+|uc| Pliers
+|uc| Flat-head screwdriver
+|uc| O'ring grease (Molykote 55)
+|uc| Cable grease (Molykote 44)
+|uc| Large and small zip ties
 
 Electrical
 ^^^^^^^^^^
