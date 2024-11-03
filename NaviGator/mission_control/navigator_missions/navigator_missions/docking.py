@@ -195,6 +195,7 @@ class Docking(NaviGatorMission):
         await self.move.set_position(nextPt).go(blind=True, move_type="skid")
 
         # Align with hole -> work in progress, see navigator_vision/dockdeliver_pipeline.py in navigator vision
+        # This part finds the holes in the docks for a future aligning algorithm that has not been implemented yet
         image = await self.image_sub.get_next_message()
         image = self.bridge.imgmsg_to_cv2(image)   
         self.grip.process(image)
@@ -221,7 +222,12 @@ class Docking(NaviGatorMission):
         # Shoot racquet ball projectile
         rospy.logerr("- BEFORE SHOOT PROJ -")
         if correct_dock_number != -1 and correct_dock_number is not None:    
-            # a call to shoot_projectile() used to be here (shoot projectile did not actually shoot any projectiles before it was deleted)        
+            # TODO: Aim the raqcetball launcher into the holes. The racquetball launcher is fixed, so the boat is what needs to be aimed.
+            # When you get to the practice course, this can theoretically be done with, for example, 
+            # await self.move.forward(1.3).go()
+            # await self.move.left(0.3).go()
+            # Since the boat should be in the same place in the dock whenever it docks
+
             for i in range(0, 4):
                 await self.reload_launcher()
                 await self.nh.sleep(2)
