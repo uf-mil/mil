@@ -28,6 +28,7 @@ add_message_files(
   Hosts.msg
   ColoramaDebug.msg
   ScanTheCode.msg
+  DroneTarget.msg
 )
 
 add_service_files(

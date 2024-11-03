@@ -3,7 +3,10 @@ from typing import Union
 
 import rospy
 from electrical_protocol import ROSSerialDevice
+from geometry_msgs.msg import Point
+from navigator_msgs.msg import DroneTarget
 from navigator_msgs.srv import DroneMission, DroneMissionRequest
+from std_msgs.msg import Header
 from std_srvs.srv import Empty, EmptyRequest
 
 from .packets import (
@@ -25,6 +28,14 @@ class DroneCommDevice(
 ):
     def __init__(self, port: str):
         super().__init__(port, 57600)
+        self.gps_pub = rospy.Publisher("~gps", Point, queue_size=5)
+        self.target_pub = rospy.Publisher("~target", DroneTarget, queue_size=5)
+        self.drone_heartbeat_pub = rospy.Publisher(
+            "~drone_heartbeat",
+            Header,
+            queue_size=10,
+        )
+        self.received_seq_num = 0
         self.estop_service = rospy.Service("~estop", Empty, self.estop)
         self.start_service = rospy.Service("~start", DroneMission, self.start)
         self.stop_service = rospy.Service("~stop", Empty, self.stop)
@@ -51,6 +62,7 @@ class DroneCommDevice(
     def heartbeat_send(self, _):
         # rospy.loginfo("sending heartbeat")
         self.send_packet(HeartbeatSetPacket())
+        pass
 
     def heartbeat_check(self, _):
         passed_check = self.drone_heartbeat_event.wait(1)
@@ -59,6 +71,7 @@ class DroneCommDevice(
         else:
             # self.stop_send() # Uncomment to stop drone if no heartbeat is received
             rospy.logerr("No heartbeat received from drone")
+            pass
 
     def estop_send(self):
         # rospy.loginfo("sending EStop")
@@ -78,10 +91,15 @@ class DroneCommDevice(
     ):
         if isinstance(packet, HeartbeatReceivePacket):
             self.drone_heartbeat_event.set()
+            hbt_msg = Header(self.received_seq_num, rospy.Time.now(), "drone_heartbeat")
+            self.drone_heartbeat_pub.publish(hbt_msg)
+            self.received_seq_num += 1
         elif isinstance(packet, GPSDronePacket):
-            rospy.loginfo("Received GPS packet: %s", packet)
+            point_msg = Point(packet.lat, packet.lon, packet.alt)
+            self.gps_pub.publish(point_msg)
         elif isinstance(packet, TargetPacket):
-            rospy.loginfo("Received Target packet: %s", packet)
+            target_msg = DroneTarget(packet.lat, packet.lon, packet.color.name)
+            self.target_pub.publish(target_msg)
         else:
-            rospy.logerr("Received unexpected packet type")
+            rospy.logerr("Received unexpected packet type from drone")
         return

@@ -3,6 +3,8 @@ project(navigator_drone_comm)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
+  geometry_msgs
+  std_msgs
 )
 
 catkin_python_setup()
