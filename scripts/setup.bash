@@ -91,6 +91,7 @@ alias gazebogui="rosrun gazebo_ros gzclient __name:=gzclient"
 
 # Preflight aliases
 alias preflight='python3 $MIL_REPO/mil_common/utils/mil_tools/scripts/mil-preflight/main.py'
+alias ntmux='$MIL_REPO/NaviGator/scripts/tmux_start.sh'
 
 # Process killing aliases
 alias killgazebo="killall -9 gzserver && killall -9 gzclient"
