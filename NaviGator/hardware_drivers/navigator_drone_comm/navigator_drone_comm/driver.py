@@ -74,15 +74,12 @@ class DroneCommDevice(
             pass
 
     def estop_send(self):
-        # rospy.loginfo("sending EStop")
         self.send_packet(EStopPacket())
 
     def start_send(self, mission_name: str):
-        # rospy.loginfo(f"sending Start for mission: %s", mission_name)
         self.send_packet(StartPacket(name=mission_name))
 
     def stop_send(self):
-        # rospy.loginfo("sending Stop")
         self.send_packet(StopPacket())
 
     def on_packet_received(
@@ -94,6 +91,7 @@ class DroneCommDevice(
             hbt_msg = Header(self.received_seq_num, rospy.Time.now(), "drone_heartbeat")
             self.drone_heartbeat_pub.publish(hbt_msg)
             self.received_seq_num += 1
+            self.drone_heartbeat_pub.publish(hbt_msg)
         elif isinstance(packet, GPSDronePacket):
             point_msg = Point(packet.lat, packet.lon, packet.alt)
             self.gps_pub.publish(point_msg)

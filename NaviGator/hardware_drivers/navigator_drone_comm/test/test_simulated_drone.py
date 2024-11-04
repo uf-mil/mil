@@ -7,6 +7,7 @@ import unittest
 
 import rospy
 import rostest
+from geometry_msgs.msg import Point
 from navigator_drone_comm.driver import DroneCommDevice
 from navigator_drone_comm.packets import (
     Color,
@@ -18,13 +19,27 @@ from navigator_drone_comm.packets import (
     StopPacket,
     TargetPacket,
 )
+from navigator_msgs.msg import DroneTarget
 from navigator_msgs.srv import DroneMission, DroneMissionRequest
+from std_msgs.msg import Header
 from std_srvs.srv import Empty, EmptyRequest
 
 
 class SimulatedBasicTest(unittest.TestCase):
     def __init__(self, *args):
         super().__init__(*args)
+
+    @classmethod
+    def gps_callback(cls, data):
+        cls.drone_gps = data
+
+    @classmethod
+    def target_callback(cls, data):
+        cls.target = data
+
+    @classmethod
+    def heartbeat_drone_callback(cls, data):
+        cls.last_drone_heartbeat = data
 
     @classmethod
     def setUpClass(cls):
@@ -46,6 +61,12 @@ class SimulatedBasicTest(unittest.TestCase):
             DroneMission,
         )
         cls.start_proxy.wait_for_service()
+        cls.drone_gps = None
+        cls.target = None
+        cls.last_drone_heartbeat = None
+        rospy.Subscriber("~gps", Point, cls.gps_callback)
+        rospy.Subscriber("~target", DroneTarget, cls.target_callback)
+        rospy.Subscriber("~drone_heartbeat", Header, cls.heartbeat_drone_callback)
 
     def test_device_initialization(self):
         self.assertIsNotNone(self.device)
@@ -83,20 +104,21 @@ class SimulatedBasicTest(unittest.TestCase):
                 break
             except RuntimeError:
                 # ignore heartbeat packets here
-                rospy.logerr()
                 pass
         self.assertIsInstance(packet, StartPacket)
 
-    # TODO add asserts
     def test_gps_drone_receive(self):
-        gps_packet = GPSDronePacket(lat=37.7749, lon=-122.4194, alt=30.0)
+        self.assertEqual(self.drone_gps, None)
+        gps_packet = GPSDronePacket(lat=37.77, lon=-122.4194, alt=30.0)
         os.write(self.master, bytes(gps_packet))
         rospy.sleep(0.5)
+        self.assertAlmostEqual(round(self.drone_gps.x, 3), 37.77)
 
     def test_target_receive(self):
         target_packet = TargetPacket(lat=-67.7745, lon=12.654, color=Color.BLUE)
         os.write(self.master, bytes(target_packet))
         rospy.sleep(0.5)
+        self.assertEqual(self.target.color, "BLUE")
 
     # tests that a heartbeat is sent from the boat every second
     def test_z_sending_heartbeats(self):
@@ -106,14 +128,14 @@ class SimulatedBasicTest(unittest.TestCase):
             self.assertIsInstance(packet, HeartbeatSetPacket)
             self.assertLess(time.time() - start_time, 1 * i + 0.1)
 
-    # TODO
-    # test that if a heartbeat is received every second, no error sounds
+    # test that the boat can receive drone heartbeats
     def test_z_heartbeat_receive(self):
-        rospy.loginfo("Testing receiving 2 heartbeats...")
         for i in range(3):
             heartbeat_packet = HeartbeatReceivePacket()
             self.device.on_packet_received(heartbeat_packet)
             time.sleep(1)
+            self.assertEqual(self.last_drone_heartbeat.frame_id, "drone_heartbeat")
+            self.assertEqual(self.last_drone_heartbeat.seq, i)
 
     @classmethod
     def tearDownClass(cls):
