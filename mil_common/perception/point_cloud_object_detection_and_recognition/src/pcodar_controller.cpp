@@ -15,6 +15,8 @@ NodeBase::NodeBase(ros::NodeHandle _nh)
   , tf_listener(tf_buffer_, nh_)
   , global_frame_("enu")
   , config_server_(_nh)
+  , intensity_filter_min_intensity(10)
+  , intensity_filter_max_intensity(100)
   , objects_(std::make_shared<ObjectMap>())
 {
   config_server_.setCallback(std::bind(&NodeBase::ConfigCallback, this, std::placeholders::_1, std::placeholders::_2));
@@ -125,6 +127,12 @@ Node::Node(ros::NodeHandle _nh) : NodeBase(_nh)
   input_cloud_filter_.set_robot_footprint(min, max);
 }
 
+void Node::update_config(Config const& config)
+{
+  this->intensity_filter_min_intensity = config.intensity_filter_min_intensity;
+  this->intensity_filter_max_intensity = config.intensity_filter_max_intensity;
+}
+
 void Node::ConfigCallback(Config const& config, uint32_t level)
 {
   NodeBase::ConfigCallback(config, level);
@@ -136,6 +144,8 @@ void Node::ConfigCallback(Config const& config, uint32_t level)
     detector_.update_config(config);
   if (!level || level & 8)
     ass.update_config(config);
+  if (!level || level & 32)
+    this->update_config(config);
 }
 
 void Node::initialize()
@@ -171,14 +181,14 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
   if (!transform_point_cloud(*pcloud, *pc))
     return;
 
-  // our new filter vvv
-  pcl::PassThrough<pointi_t> _temp_intensity_filter;
-  _temp_intensity_filter.setInputCloud(pc);
-  _temp_intensity_filter.setFilterFieldName("intensity");
-  _temp_intensity_filter.setFilterLimits(10, 100);
+  // Intensity filter
+  pcl::PassThrough<pointi_t> _intensity_filter;
+  _intensity_filter.setInputCloud(pc);
+  _intensity_filter.setFilterFieldName("intensity");
+  _intensity_filter.setFilterLimits(this->intensity_filter_min_intensity, this->intensity_filter_max_intensity);
   point_cloud_ptr pc_without_i = boost::make_shared<point_cloud>();
   point_cloud_i_ptr pc_i_filtered = boost::make_shared<point_cloud_i>();
-  _temp_intensity_filter.filter(*pc_i_filtered);
+  _intensity_filter.filter(*pc_i_filtered);
 
   pc_without_i->points.resize(pc_i_filtered->size());
   for (size_t i = 0; i < pc_i_filtered->points.size(); i++)
