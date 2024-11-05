@@ -1,3 +1,5 @@
-string[] buoy_array # list of buoys (R,G,B), up to three buoys
+string circling_wildlife # which animal to circle ('P' for example (python))
+bool clockwise # whether to circle clockwise or counter-clockwise
+int8 number_of_circles # how many circles to do
 ---
 string message

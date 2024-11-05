@@ -1,4 +1,5 @@
-string color  # color of docking bay R, G, B
+string color  # color of docking bay to park in ('R' for example)
 int8 ams_status  # 1=docking, 2=complete
+int8 status_of_delivery # S = 'scanning', D = 'delivering'
 ---
 string message
