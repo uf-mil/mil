@@ -100,7 +100,7 @@ alias killprocess='$MIL_REPO/scripts/kill_process.sh'
 
 xbox() {
 	rosservice call /wrench/select "topic: '/wrench/rc'"
-	roslaunch navigator_launch shore.launch wireless_device:="$1"
+	roslaunch navigator_launch shore.launch device_input:="$1"
 }
 
 # catkin_make for one specific package only
