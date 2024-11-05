@@ -1,9 +1,14 @@
 <launch>
-    <!-- Run Joystick -->
-    <include file="$(find navigator_launch)/launch/shore/xbox_controller.launch" />
+  <arg name="wireless" default="False" />
+  <arg name="device_input" default="/dev/input/js0" unless="$(arg wireless)"/>
 
-    <node name="network_heartbeat" pkg="mil_tools" type="network_broadcaster.py" output="screen" />
+  <!-- Run Joystick -->
+  <include file="$(find navigator_launch)/launch/shore/xbox_controller.launch">
+      <arg name="device_input" value="$(arg device_input)"/>
+  </include>
 
-    <!-- Host Monitoring -->
-    <node name="host_monitor" pkg="navigator_gui" type="host_monitor.py"/>
+  <node name="network_heartbeat" pkg="mil_tools" type="network_broadcaster.py" output="screen" />
+
+  <!-- Host Monitoring -->
+  <node name="host_monitor" pkg="navigator_gui" type="host_monitor.py"/>
 </launch>
