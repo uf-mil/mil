@@ -7,6 +7,9 @@
     <arg name="world" default="example_course" />
     <arg name="extra_gazebo_args" default=""/>
     <arg name="simulation" default="True"/>
+    <!-- Adding an option to disable the classifier/YOLO model which often runs
+    very slow on laptops -->
+    <arg name="classifier" default="True"/>
     <param name="/use_sim_time" type="bool" value="true" />
     <param name="/is_simulation" type="bool" value="True" />
     <arg name="online-bagger" default="True" />
@@ -27,7 +30,7 @@
     </include>
 
     <!-- Simulation Relevant Code -->
-    <include file="$(find navigator_launch)/launch/perception/classifier.launch" >
+    <include if="$(arg classifier)" file="$(find navigator_launch)/launch/perception/classifier.launch" >
         <arg name="main_image_topic" value="/wamv/sensors/camera/front_left_cam/image_raw"/>
         <arg name="use_yolo_model1" value="True"/>
         <arg name="use_yolo_model2" value="False"/>

@@ -1,6 +1,7 @@
 import mil_missions_core
 
 from . import pose_editor
+from .autonomous_2024 import Autonomous2024
 from .back_and_forth import BackAndForth
 from .circle import Circle
 from .circle_tower import CircleTower

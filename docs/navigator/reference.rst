@@ -127,25 +127,25 @@ MessageFollowPath
 
         :type: str
 
-MessageReactReport
-^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv.MessageReactReportRequest
+MessageWildlifeEncounter
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv.MessageWildlifeEncounterRequest
 
-.. class:: navigator_msgs.srv.MessageReactReportRequest
+.. class:: navigator_msgs.srv.MessageWildlifeEncounterRequest
 
-   The request class for the ``navigator_msgs/MessageReactReport`` service.
+   The request class for the ``navigator_msgs/MessageWildlifeEncounter`` service.
 
-   .. attribute:: animal_array
+   .. attribute:: buoy_array
 
-        List of animals (P,C,T), up to three animals (Platypus, Turtle, Croc)
+        List of buoys (R, G, B) representing the order of the wildlife traversal
 
         :type: string[]
 
-.. attributetable:: navigator_msgs.srv.MessageReactReportResponse
+.. attributetable:: navigator_msgs.srv.MessageWildlifeEncounterResponse
 
-.. class:: navigator_msgs.srv.MessageReactReportResponse
+.. class:: navigator_msgs.srv.MessageWildlifeEncounterResponse
 
-   The response class for the ``navigator_msgs/MessageReactReport`` service.
+   The response class for the ``navigator_msgs/MessageWildlifeEncounter`` service.
 
    .. attribute:: message
 
@@ -350,11 +350,11 @@ RobotXHeartbeatMessage
 .. autoclass:: navigator_robotx_comms.RobotXHeartbeatMessage
     :members:
 
-RobotXReactReportMessage
-^^^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_robotx_comms.RobotXReactReportMessage
+RobotXWildlifeEncounterMessage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_robotx_comms.RobotXWildlifeEncounterMessage
 
-.. autoclass:: navigator_robotx_comms.RobotXReactReportMessage
+.. autoclass:: navigator_robotx_comms.RobotXWildlifeEncounterMessage
     :members:
 
 RobotXScanCodeMessage
