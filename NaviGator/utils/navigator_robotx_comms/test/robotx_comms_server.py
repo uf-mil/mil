@@ -11,6 +11,7 @@ import unittest
 
 import rospy
 import rostest
+from geographic_msgs.msg import GeoPoint
 from mil_tools import thread_lock
 from navigator_msgs.msg import ScanTheCode
 from navigator_msgs.srv import (
@@ -301,6 +302,7 @@ class TestRobotXComms(unittest.TestCase):
         # data to test message with
         dock_color = "R"
         ams_status = 1
+        status_of_delivery = "S"
 
         rospy.wait_for_service("detect_dock_message")
         send_robot_x_detect_dock_message = rospy.ServiceProxy(
@@ -313,7 +315,11 @@ class TestRobotXComms(unittest.TestCase):
         try:
             while not rospy.is_shutdown() and times_ran < self.number_of_iterations:
                 rx_data = None
-                send_robot_x_detect_dock_message(dock_color, ams_status)
+                send_robot_x_detect_dock_message(
+                    dock_color,
+                    ams_status,
+                    status_of_delivery,
+                )
                 while rx_data is None:
                     rx_data = self.server.receive_message()
                 split_rx_data = rx_data.splitlines(True)
@@ -394,6 +400,7 @@ class TestRobotXComms(unittest.TestCase):
         times_ran = 0
         self.server.connect()
         # data to test message with
+        finished_color = "R"
         finished = 1
 
         rospy.wait_for_service("follow_path_message")
@@ -407,7 +414,7 @@ class TestRobotXComms(unittest.TestCase):
         try:
             while not rospy.is_shutdown() and times_ran < self.number_of_iterations:
                 rx_data = None
-                send_robot_x_follow_path_message(finished)
+                send_robot_x_follow_path_message(finished_color, finished)
                 while rx_data is None:
                     rx_data = self.server.receive_message()
                 split_rx_data = rx_data.splitlines(True)
@@ -478,7 +485,9 @@ class TestRobotXComms(unittest.TestCase):
         times_ran = 0
         self.server.connect()
         # data to test message with
-        buoy_array = ["R", "B", "G"]
+        circling_wildlife = "R"
+        clockwise = False
+        number_of_circles = 1
 
         rospy.wait_for_service("wildlife_encounter_message")
         send_robot_x_wildlife_encounter_message = rospy.ServiceProxy(
@@ -491,7 +500,11 @@ class TestRobotXComms(unittest.TestCase):
         try:
             while not rospy.is_shutdown() and times_ran < self.number_of_iterations:
                 rx_data = None
-                send_robot_x_wildlife_encounter_message(buoy_array)
+                send_robot_x_wildlife_encounter_message(
+                    circling_wildlife,
+                    clockwise,
+                    number_of_circles,
+                )
                 while rx_data is None:
                     rx_data = self.server.receive_message()
                 split_rx_data = rx_data.splitlines(True)
@@ -512,7 +525,7 @@ class TestRobotXComms(unittest.TestCase):
                         final_checksum_string = hex_checksum + "\r\n"
                         self.assertEqual(
                             len(data_list),
-                            8,
+                            7,
                             "wildlife encounter message formatting incorrect",
                         )
                         if self.use_test_data is True:
@@ -563,26 +576,6 @@ class TestRobotXComms(unittest.TestCase):
                                 final_checksum_string,
                                 "wildlife encounter message checksum incorrect",
                             )
-                            self.assertEqual(
-                                int(data_list[4]),
-                                len(buoy_array),
-                                "buoy array length incorrect",
-                            )
-
-                            for i, buoy in enumerate(buoy_array):
-                                if i != len(buoy_array) - 1:
-                                    self.assertEqual(
-                                        data_list[5 + i],
-                                        buoy,
-                                        "buoy incorrect",
-                                    )
-                                else:
-                                    buoy_ = data_list[5 + i].split("*")[0]
-                                    self.assertEqual(
-                                        buoy,
-                                        buoy_,
-                                        "buoy incorrect",
-                                    )
                         times_ran += 1
 
         finally:
@@ -685,6 +678,7 @@ class TestRobotXComms(unittest.TestCase):
         # data to test message with
         uav_status = 1
         item_status = 0
+        item_color = "R"
 
         rospy.wait_for_service("uav_replenishment_message")
         send_robot_x_uav_replenishment_message = rospy.ServiceProxy(
@@ -697,7 +691,11 @@ class TestRobotXComms(unittest.TestCase):
         try:
             while not rospy.is_shutdown() and times_ran < self.number_of_iterations:
                 rx_data = None
-                send_robot_x_uav_replenishment_message(uav_status, item_status)
+                send_robot_x_uav_replenishment_message(
+                    uav_status,
+                    item_status,
+                    item_color,
+                )
                 while rx_data is None:
                     rx_data = self.server.receive_message()
                 split_rx_data = rx_data.splitlines(True)
@@ -779,7 +777,13 @@ class TestRobotXComms(unittest.TestCase):
         self.server.connect()
         # data to test message with
         object1 = "R"
+        object1_location = GeoPoint()
+        object1_location.latitude = 11
+        object1_location.longitude = 12
         object2 = "S"
+        object2_location = GeoPoint()
+        object2_location.latitude = 11
+        object2_location.longitude = 12
         uav_status = 2
 
         rospy.wait_for_service("uav_search_report_message")
@@ -795,15 +799,9 @@ class TestRobotXComms(unittest.TestCase):
                 rx_data = None
                 send_robot_x_uav_search_report_message(
                     object1,
-                    0,
-                    "",
-                    0,
-                    "",
+                    object1_location,
                     object2,
-                    0,
-                    "",
-                    0,
-                    "",
+                    object2_location,
                     uav_status,
                 )
                 while rx_data is None:

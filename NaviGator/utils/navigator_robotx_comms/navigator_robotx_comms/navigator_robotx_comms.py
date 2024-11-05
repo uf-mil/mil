@@ -4,10 +4,13 @@ RobotX Communications Library: A library that handles serialization and deserial
 of messages for the RobotX Communication Protocol
 """
 
+from __future__ import annotations
+
 import math
-from typing import Any, List, Optional, Tuple
+from typing import Any
 
 import tf.transformations as trans
+from geographic_msgs.msg import GeoPoint
 from mil_tools import rosmsg_to_numpy
 from nav_msgs.msg import Odometry
 from navigator_msgs.srv import (
@@ -50,7 +53,7 @@ class RobotXHeartbeatMessage:
         self.message_id = "RXHRB"
         self.timestamp_last = None
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         From a message representing a message as a string, return the data and checksum
         lists encoded in the string.
@@ -73,10 +76,10 @@ class RobotXHeartbeatMessage:
         delim: str,
         team_id: str,
         edt_date_time: Any,
-        gps_array: Optional[Any],
-        odom: Optional[Odometry],
-        uav_status: Optional[int],
-        system_mode: Optional[int],
+        gps_array: Any,
+        odom: Odometry | None,
+        uav_status: int | None,
+        system_mode: int | None,
         use_test_data: bool,
     ) -> str:
         """
@@ -176,7 +179,7 @@ class RobotXEntranceExitGateMessage:
     def __init__(self):
         self.message_id = "RXGAT"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Constructs a list of data values and a checksum list from a provided message.
 
@@ -254,7 +257,7 @@ class RobotXFollowPathMessage:
     def __init__(self):
         self.message_id = "RXPTH"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Constructs a list of data values and a checksum list from a provided message.
 
@@ -331,7 +334,7 @@ class RobotXWildlifeEncounterMessage:
     def __init__(self):
         self.message_id = "RXENC"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Constructs a list of data values and a checksum list from a provided message.
 
@@ -374,10 +377,7 @@ class RobotXWildlifeEncounterMessage:
             str: The encoded message.
         """
 
-        data_ = f"{self.message_id}{delim}{edt_date_time}{delim}{team_id}{delim}{len(data.buoy_array)!s}"
-
-        for animal in data.buoy_array:
-            data_ += delim + animal
+        data_ = f"{self.message_id}{delim}{edt_date_time}{delim}{team_id}{delim}{data.circling_wildlife}{delim}{'CW' if data.clockwise else 'CCW'}{delim}{data.number_of_circles}"
 
         # test data
         if use_test_data:
@@ -411,7 +411,7 @@ class RobotXScanCodeMessage:
     def __init__(self):
         self.message_id = "RXCOD"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Returns the information encoded in a message.
 
@@ -484,7 +484,7 @@ class RobotXDetectDockMessage:
     def __init__(self):
         self.message_id = "RXDOK"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Constructs a list of data values and a checksum list from a provided message.
 
@@ -561,7 +561,7 @@ class RobotXFindFlingMessage:
     def __init__(self):
         self.message_id = "RXFLG"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Constructs a list of data values and a checksum list from a provided message.
 
@@ -638,7 +638,7 @@ class RobotXUAVReplenishmentMessage:
     def __init__(self):
         self.message_id = "RXUAV"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Constructs a list of data values and a checksum list from a provided message.
 
@@ -715,7 +715,7 @@ class RobotXUAVSearchReportMessage:
     def __init__(self):
         self.message_id = "RXSAR"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Constructs a list of data values and a checksum list from a provided message.
 
@@ -731,6 +731,14 @@ class RobotXUAVSearchReportMessage:
         data_list = string.split(delim)
         checksum_list = string.split(b"*")
         return data_list, checksum_list
+
+    def lat_lon_ns(self, point: GeoPoint) -> tuple[float, str, float, str]:
+        return (
+            abs(point.latitude),
+            "N" if point.latitude >= 0 else "S",
+            abs(point.longitude),
+            "E" if point.longitude >= 0 else "W",
+        )
 
     def to_string(
         self,
@@ -758,7 +766,10 @@ class RobotXUAVSearchReportMessage:
             str: The encoded message.
         """
 
-        data = f"{self.message_id}{delim}{edt_date_time}{delim}{data.object1!s}{delim}{data.object1_latitude!s}{delim}{data.object1_n_s!s}{delim}{data.object1_longitude!s}{delim}{data.object1_e_w!s}{delim}{data.object2!s}{delim}{data.object2_latitude!s}{delim}{data.object2_n_s!s}{delim}{data.object2_longitude!s}{delim}{data.object2_e_w!s}{delim}{team_id}{delim}{data.uav_status!s}"
+        o1_lat, o1_ns, o1_lon, o1_ew = self.lat_lon_ns(data.object1_location)
+        o2_lat, o2_ns, o2_lon, o2_ew = self.lat_lon_ns(data.object2_location)
+
+        data = f"{self.message_id}{delim}{edt_date_time}{delim}{data.object1!s}{delim}{o1_lat!s}{delim}{o1_ns!s}{delim}{o1_lon!s}{delim}{o1_ew!s}{delim}{data.object2!s}{delim}{o2_lat!s}{delim}{o2_ns!s}{delim}{o2_lon!s}{delim}{o2_ew!s}{delim}{team_id}{delim}{data.uav_status!s}"
 
         # test data
         if use_test_data:
