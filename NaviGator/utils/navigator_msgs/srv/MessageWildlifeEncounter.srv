@@ -1,0 +1,3 @@
+string[] buoy_array # list of buoys (R,G,B), up to three buoys
+---
+string message

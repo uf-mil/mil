@@ -57,7 +57,7 @@ add_service_files(
   MessageEntranceExitGate.srv
   MessageFindFling.srv
   MessageFollowPath.srv
-  MessageReactReport.srv
+  MessageWildlifeEncounter.srv
   MessageUAVReplenishment.srv
   MessageUAVSearchReport.srv
   TwoClosestCones.srv

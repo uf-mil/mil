@@ -18,9 +18,9 @@ from navigator_msgs.srv import (
     MessageEntranceExitGate,
     MessageFindFling,
     MessageFollowPath,
-    MessageReactReport,
     MessageUAVReplenishment,
     MessageUAVSearchReport,
+    MessageWildlifeEncounter,
 )
 from navigator_robotx_comms.navigator_robotx_comms import (
     BitwiseXORChecksum,
@@ -29,10 +29,10 @@ from navigator_robotx_comms.navigator_robotx_comms import (
     RobotXFindFlingMessage,
     RobotXFollowPathMessage,
     RobotXHeartbeatMessage,
-    RobotXReactReportMessage,
     RobotXScanCodeMessage,
     RobotXUAVReplenishmentMessage,
     RobotXUAVSearchReportMessage,
+    RobotXWildlifeEncounterMessage,
 )
 
 lock = threading.Lock()
@@ -474,29 +474,29 @@ class TestRobotXComms(unittest.TestCase):
         finally:
             self.server.disconnect()
 
-    def test_react_report_message(self):
+    def test_wildlife_encounter_message(self):
         times_ran = 0
         self.server.connect()
         # data to test message with
-        animal_array = ["P", "C", "T"]
+        buoy_array = ["R", "B", "G"]
 
-        rospy.wait_for_service("react_report_message")
-        send_robot_x_react_report_message = rospy.ServiceProxy(
-            "react_report_message",
-            MessageReactReport,
+        rospy.wait_for_service("wildlife_encounter_message")
+        send_robot_x_wildlife_encounter_message = rospy.ServiceProxy(
+            "wildlife_encounter_message",
+            MessageWildlifeEncounter,
         )
 
-        robot_x_react_report_message = RobotXReactReportMessage()
+        robot_x_wildlife_encounter_message = RobotXWildlifeEncounterMessage()
 
         try:
             while not rospy.is_shutdown() and times_ran < self.number_of_iterations:
                 rx_data = None
-                send_robot_x_react_report_message(animal_array)
+                send_robot_x_wildlife_encounter_message(buoy_array)
                 while rx_data is None:
                     rx_data = self.server.receive_message()
                 split_rx_data = rx_data.splitlines(True)
                 for message in split_rx_data:
-                    deserialized_msg = robot_x_react_report_message.from_string(
+                    deserialized_msg = robot_x_wildlife_encounter_message.from_string(
                         self.delim,
                         message,
                     )
@@ -513,7 +513,7 @@ class TestRobotXComms(unittest.TestCase):
                         self.assertEqual(
                             len(data_list),
                             8,
-                            "react report message formatting incorrect",
+                            "wildlife encounter message formatting incorrect",
                         )
                         if self.use_test_data is True:
                             test_data = "$RXENC,111221,161229,ROBOT,3,P,C,T*51\r\n"
@@ -527,13 +527,13 @@ class TestRobotXComms(unittest.TestCase):
                             self.assertEqual(
                                 checksum_list[1],
                                 checksum_list_test_data[1],
-                                "react report message checksum incorrect",
+                                "wildlife encounter message checksum incorrect",
                             )
 
                             self.assertEqual(
                                 data_list[4],
                                 list_test_data[4],
-                                "animal array length incorrect",
+                                "buoy array length incorrect",
                             )
 
                             for i in range(int(data_list[4])):
@@ -541,15 +541,15 @@ class TestRobotXComms(unittest.TestCase):
                                     self.assertEqual(
                                         data_list[5 + i],
                                         list_test_data[5 + i],
-                                        "animal incorrect",
+                                        "buoy incorrect",
                                     )
                                 else:
-                                    msg_animal = data_list[5 + i].split("*")[0]
-                                    animal_ = list_test_data[5 + i].split("*")[0]
+                                    msg_buoy = data_list[5 + i].split("*")[0]
+                                    buoy_ = list_test_data[5 + i].split("*")[0]
                                     self.assertEqual(
-                                        msg_animal,
-                                        animal_,
-                                        "animal incorrect",
+                                        msg_buoy,
+                                        buoy_,
+                                        "buoy incorrect",
                                     )
 
                         else:
@@ -561,27 +561,27 @@ class TestRobotXComms(unittest.TestCase):
                             self.assertEqual(
                                 checksum_list[1],
                                 final_checksum_string,
-                                "react report message checksum incorrect",
+                                "wildlife encounter message checksum incorrect",
                             )
                             self.assertEqual(
                                 int(data_list[4]),
-                                len(animal_array),
-                                "animal array length incorrect",
+                                len(buoy_array),
+                                "buoy array length incorrect",
                             )
 
-                            for i, animal in enumerate(animal_array):
-                                if i != len(animal_array) - 1:
+                            for i, buoy in enumerate(buoy_array):
+                                if i != len(buoy_array) - 1:
                                     self.assertEqual(
                                         data_list[5 + i],
-                                        animal,
-                                        "animal incorrect",
+                                        buoy,
+                                        "buoy incorrect",
                                     )
                                 else:
-                                    animal_ = data_list[5 + i].split("*")[0]
+                                    buoy_ = data_list[5 + i].split("*")[0]
                                     self.assertEqual(
-                                        animal,
-                                        animal_,
-                                        "animal incorrect",
+                                        buoy,
+                                        buoy_,
+                                        "buoy incorrect",
                                     )
                         times_ran += 1
 
