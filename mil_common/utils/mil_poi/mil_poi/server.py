@@ -74,11 +74,19 @@ class POIServer:
             for key, value in pois.items():
                 assert isinstance(key, str)
                 assert isinstance(value, list)
-                assert len(value) == 3
+                assert len(value) == 3 or 7
                 name = key
                 pose = Pose()
-                pose.position = numpy_to_point(value)
-                pose.orientation = Quaternion(0.0, 0.0, 0.0, 0.0)
+                pose.position = numpy_to_point(value[:3])
+                if len(value) == 3:
+                    pose.orientation = Quaternion(0.0, 0.0, 0.0, 0.0)
+                elif len(value) == 7:
+                    pose.orientation = Quaternion(
+                        value[3],
+                        value[4],
+                        value[5],
+                        value[6],
+                    )
                 self._add_poi(name, pose)
 
         # Update clients / markers of changes from param
