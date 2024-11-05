@@ -24,6 +24,7 @@ from .grinch_retract import GrinchRetract
 from .killed import Killed
 from .move import Move
 from .navigation import Navigation
+from .navigation_gatefinder import NavigationGatefinder
 from .navigator import NaviGatorMission
 from .obstacle_avoid import ObstacleAvoid
 from .pinger import PingerMission
