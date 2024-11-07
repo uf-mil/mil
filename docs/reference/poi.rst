@@ -27,8 +27,10 @@ The default format of the POI configuration file is the following format:
     ---
     global_frame: enu # Name of the frame to derive POI locations from
     initial_pois: # List of POIs that are spawned by default
-      start_gate: [0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0] # Name (key) and location
-      (position & orientation) (value) of specific POIs
+      # Name (key) and location  (position & orientation) (value) of specific POIs
+      start_gate: [0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0]
+      # ... or just position only (quaternion of [0, 0, 0, 0] assumed)
+      position_only: [0, 0, 0]
 
 POIServer
 ^^^^^^^^^
