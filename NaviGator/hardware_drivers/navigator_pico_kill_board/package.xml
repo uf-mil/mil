@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>navigator_pico_kill_board</name>
+  <version>0.0.0</version>
+  <description>The navigator_pico_kill_board package</description>
+  <maintainer email="cameron@brown.email">Cameron Brown</maintainer>
+  <license>MIT</license>
+  <author>Cameron Brown</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>mil_usb_to_can</build_depend>
+  <build_export_depend>mil_usb_to_can</build_export_depend>
+  <exec_depend>mil_usb_to_can</exec_depend>
+</package>
