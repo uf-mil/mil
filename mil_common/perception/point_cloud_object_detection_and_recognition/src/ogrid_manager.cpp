@@ -50,6 +50,11 @@ void OgridManager::update_ogrid(ObjectMap const& objects)
   // Clear ogrid
   ogrid_mat_ = cv::Scalar(0);
 
+  if (!bounds_)
+  {
+    return;
+  }
+
   // Draw border on ogrid
   draw_boundary();
 

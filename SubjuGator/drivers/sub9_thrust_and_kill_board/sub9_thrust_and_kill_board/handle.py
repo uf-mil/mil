@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 import rospy
+from electrical_protocol import AckPacket, NackPacket
 from mil_misc_tools import rospy_to_datetime
-from mil_usb_to_can.sub9 import AckPacket, CANDeviceHandle, NackPacket
+from mil_usb_to_can.sub9 import CANDeviceHandle
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from ros_alarms_msgs.msg import Alarm
 from rospy.timer import TimerEvent

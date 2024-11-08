@@ -127,25 +127,25 @@ MessageFollowPath
 
         :type: str
 
-MessageReactReport
-^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_msgs.srv.MessageReactReportRequest
+MessageWildlifeEncounter
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_msgs.srv.MessageWildlifeEncounterRequest
 
-.. class:: navigator_msgs.srv.MessageReactReportRequest
+.. class:: navigator_msgs.srv.MessageWildlifeEncounterRequest
 
-   The request class for the ``navigator_msgs/MessageReactReport`` service.
+   The request class for the ``navigator_msgs/MessageWildlifeEncounter`` service.
 
-   .. attribute:: animal_array
+   .. attribute:: buoy_array
 
-        List of animals (P,C,T), up to three animals (Platypus, Turtle, Croc)
+        List of buoys (R, G, B) representing the order of the wildlife traversal
 
         :type: string[]
 
-.. attributetable:: navigator_msgs.srv.MessageReactReportResponse
+.. attributetable:: navigator_msgs.srv.MessageWildlifeEncounterResponse
 
-.. class:: navigator_msgs.srv.MessageReactReportResponse
+.. class:: navigator_msgs.srv.MessageWildlifeEncounterResponse
 
-   The response class for the ``navigator_msgs/MessageReactReport`` service.
+   The response class for the ``navigator_msgs/MessageWildlifeEncounter`` service.
 
    .. attribute:: message
 
@@ -350,11 +350,11 @@ RobotXHeartbeatMessage
 .. autoclass:: navigator_robotx_comms.RobotXHeartbeatMessage
     :members:
 
-RobotXReactReportMessage
-^^^^^^^^^^^^^^^^^^^^^^^^
-.. attributetable:: navigator_robotx_comms.RobotXReactReportMessage
+RobotXWildlifeEncounterMessage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_robotx_comms.RobotXWildlifeEncounterMessage
 
-.. autoclass:: navigator_robotx_comms.RobotXReactReportMessage
+.. autoclass:: navigator_robotx_comms.RobotXWildlifeEncounterMessage
     :members:
 
 RobotXScanCodeMessage
@@ -390,4 +390,86 @@ RobotXClient
 .. attributetable:: navigator_robotx_comms.nodes.robotx_comms_client.RobotXClient
 
 .. autoclass:: navigator_robotx_comms.nodes.robotx_comms_client.RobotXClient
+    :members:
+
+:mod:`navigator_ball_launcher` - Ball launcher
+----------------------------------------------
+
+.. automodule:: navigator_ball_launcher
+    :members:
+
+ReleaseBallPacket
+^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_ball_launcher.ReleaseBallPacket
+
+.. autoclass:: navigator_ball_launcher.ReleaseBallPacket
+    :members:
+
+SetSpinPacket
+^^^^^^^^^^^^^
+.. attributetable:: navigator_ball_launcher.SetSpinPacket
+
+.. autoclass:: navigator_ball_launcher.SetSpinPacket
+    :members:
+
+:mod:`navigator_drone_comm` - Boat-drone communication standard
+---------------------------------------------------------------
+
+.. automodule:: navigator_drone_comm
+    :members:
+
+HeartbeatReceivePacket
+^^^^^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_drone_comm.HeartbeatReceivePacket
+
+.. autoclass:: navigator_drone_comm.HeartbeatReceivePacket
+    :members:
+
+HeartbeatSetPacket
+^^^^^^^^^^^^^^^^^^
+.. attributetable:: navigator_drone_comm.HeartbeatSetPacket
+
+.. autoclass:: navigator_drone_comm.HeartbeatSetPacket
+    :members:
+
+GPSDronePacket
+^^^^^^^^^^^^^^
+.. attributetable:: navigator_drone_comm.GPSDronePacket
+
+.. autoclass:: navigator_drone_comm.GPSDronePacket
+    :members:
+
+EStopPacket
+^^^^^^^^^^^
+.. attributetable:: navigator_drone_comm.EStopPacket
+
+.. autoclass:: navigator_drone_comm.EStopPacket
+    :members:
+
+StopPacket
+^^^^^^^^^^
+.. attributetable:: navigator_drone_comm.StopPacket
+
+.. autoclass:: navigator_drone_comm.StopPacket
+    :members:
+
+StartPacket
+^^^^^^^^^^^
+.. attributetable:: navigator_drone_comm.StartPacket
+
+.. autoclass:: navigator_drone_comm.StartPacket
+    :members:
+
+Color
+^^^^^
+.. attributetable:: navigator_drone_comm.Color
+
+.. autoclass:: navigator_drone_comm.Color
+    :members:
+
+TargetPacket
+^^^^^^^^^^^^
+.. attributetable:: navigator_drone_comm.TargetPacket
+
+.. autoclass:: navigator_drone_comm.TargetPacket
     :members:

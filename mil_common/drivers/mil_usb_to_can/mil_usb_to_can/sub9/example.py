@@ -3,19 +3,19 @@ import string
 from dataclasses import dataclass
 
 import rospy
+from electrical_protocol import Packet
 from rospy_tutorials.srv import AddTwoInts
 from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
 
 from .device import CANDeviceHandle, SimulatedCANDeviceHandle
-from .packet import Packet
 
 
 @dataclass
 class ExampleEchoRequestPacket(
     Packet,
-    msg_id=0x99,
+    class_id=0x99,
     subclass_id=0x00,
-    payload_format="10s",
+    payload_format="<10s",
 ):
     my_special_string: bytes
 
@@ -23,9 +23,9 @@ class ExampleEchoRequestPacket(
 @dataclass
 class ExampleEchoResponsePacket(
     Packet,
-    msg_id=0x99,
+    class_id=0x99,
     subclass_id=0x01,
-    payload_format="10s",
+    payload_format="<10s",
 ):
     my_special_string: bytes
 
@@ -33,9 +33,9 @@ class ExampleEchoResponsePacket(
 @dataclass
 class ExampleAdderRequestPacket(
     Packet,
-    msg_id=0x99,
+    class_id=0x99,
     subclass_id=0x02,
-    payload_format="BB",
+    payload_format="<BB",
 ):
     num_one: int
     num_two: int
@@ -44,9 +44,9 @@ class ExampleAdderRequestPacket(
 @dataclass
 class ExampleAdderResponsePacket(
     Packet,
-    msg_id=0x99,
+    class_id=0x99,
     subclass_id=0x03,
-    payload_format="B",
+    payload_format="<B",
 ):
     response: int
 

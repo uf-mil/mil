@@ -6,7 +6,7 @@
     <!-- The port to connect to for the tournament director server. -->
     <arg name="td_port" default="1337" />
     <!-- The team ID given to us by the tournament director. -->
-    <arg name="team_id" default="GATR" />
+    <arg name="team_id" default="FLOR" />
     <arg name="simulation" default="False"/>
 
     <!-- start robotx_comms node -->

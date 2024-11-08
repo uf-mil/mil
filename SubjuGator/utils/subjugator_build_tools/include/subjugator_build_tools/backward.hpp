@@ -1691,7 +1691,7 @@ public:
     for (line_idx = 1; line_idx < line_start; ++line_idx)
     {
       getline(*_file, line);
-      if (not *_file)
+      if (not*_file)
       {
         return lines;
       }
@@ -1712,7 +1712,7 @@ public:
     for (; line_idx < line_start + line_count; ++line_idx)
     {
       getline(*_file, line);
-      if (not *_file)
+      if (not*_file)
       {
         return lines;
       }

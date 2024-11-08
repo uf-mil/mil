@@ -64,7 +64,7 @@ methods.
 | Architecture | URL |
 | ------------ | --- |
 | AMD64 (most Windows computers, Intel-based Mac computers) | [focal-desktop-amd64.iso](https://releases.ubuntu.com/focal/ubuntu-20.04.6-desktop-amd64.iso) |
-| ARM64 (Apple Silicon Mac computers) | Unfortunately, Ubuntu 20.04 no longer has an ARM-compatible ISO. While we are working on finding/building a new iso image, you may not be able to install. |
+| ARM64 (Apple Silicon Mac computers) | 1. [ubuntu-20.04.5-live-server.arm64.iso](https://mil.ufl.edu/software/ubuntu-20.04.5-live-server-arm64.iso)<br>2. After setting up the server, run:<br>`sudo apt update && sudo apt install ubuntu-desktop && sudo reboot now` |
 
 The following subsections cover various installation methods. Please choose the
 installation option that best meets your use case. If you're not sure what the

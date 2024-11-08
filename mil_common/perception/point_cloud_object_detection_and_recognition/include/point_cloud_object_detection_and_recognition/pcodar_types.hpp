@@ -16,10 +16,13 @@ using Config = point_cloud_object_detection_and_recognition::PCODARConfig;
 
 /// Alias for type of pointcloud used internally
 using point_t = pcl::PointXYZ;
+using pointi_t = pcl::PointXYZI;
 /// Pointcloud of point_t
 using point_cloud = pcl::PointCloud<point_t>;
+using point_cloud_i = pcl::PointCloud<pointi_t>;
 /// Pointer to PCODAR's pointclouds
 using point_cloud_ptr = point_cloud::Ptr;
+using point_cloud_i_ptr = point_cloud_i::Ptr;
 /// Constant pointer to PCODAR's pointclouds
 using point_cloud_const_ptr = point_cloud::ConstPtr;
 using KdTree = pcl::search::KdTree<point_t>;

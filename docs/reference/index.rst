@@ -20,13 +20,14 @@ by MIL. These subsystems relate to a variety of processes.
     mission/index
     rviz
     pcodar
+    electrical_protocol
+    can
     resources
     rc
     alarms
     pathplanning
     battery
     passivesonar
-    can
     vision
     poi
     pneumatic

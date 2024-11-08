@@ -91,15 +91,16 @@ alias gazebogui="rosrun gazebo_ros gzclient __name:=gzclient"
 
 # Preflight aliases
 alias preflight='python3 $MIL_REPO/mil_common/utils/mil_tools/scripts/mil-preflight/main.py'
+alias ntmux='$MIL_REPO/NaviGator/scripts/tmux_start.sh'
 
 # Process killing aliases
 alias killgazebo="killall -9 gzserver && killall -9 gzclient"
 alias killros='$MIL_REPO/scripts/kill_ros.sh'
 alias killprocess='$MIL_REPO/scripts/kill_process.sh'
 
-startxbox() {
+xbox() {
 	rosservice call /wrench/select "topic: '/wrench/rc'"
-	roslaunch navigator_launch shore.launch
+	roslaunch navigator_launch shore.launch device_input:="$1"
 }
 
 # catkin_make for one specific package only
@@ -133,11 +134,78 @@ cm() {
 	fi
 }
 
+# potentially borrowed from forrest
 autopush() {
 	git push origin +"${1:-HEAD}":refs/heads/autopush-cameron-"$(uuidgen --random | cut -c1-8)"-citmp
 }
 
-alias xbox=startxbox
+# uhhh maybe also borrowed from forrest
+cw() {
+	git add -u
+	git commit -m "work"
+}
+
+dmb() {
+	git diff "$(git merge-base --fork-point "$(git branch -l main master --format '%(refname:short)')" HEAD)"
+}
+
+subnet_ip() {
+	ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){2}37\.[0-9]*' | grep -v '127.0.0.1'
+}
+
+rosdisconnect() {
+	unset ROS_IP
+	unset ROS_MASTER_URI
+	echo "Disconnected! New values:"
+	echo "ROS_IP=$ROS_IP"
+	echo "ROS_MASTER_URI=$ROS_MASTER_URI"
+}
+
+rosconnect() {
+	# --no-subnet flag to avoid checking for the subnet
+	# Usage: rosconnect --no-subnet <my_ip> <master_ip>
+	if [[ $1 == "--no-subnet" ]]; then
+		if [[ -z $2 || -z $3 ]]; then
+			echo "Usage: rosconnect --no-subnet <my_ip> <master_ip>"
+			return
+		fi
+		export ROS_IP=${2}
+		export ROS_MASTER_URI="http://${3}:11311"
+		echo "ROS_IP=$ROS_IP"
+		echo "ROS_MASTER_URI=$ROS_MASTER_URI"
+		return
+	fi
+	if [[ -n $(subnet_ip) ]]; then
+		my_ip=$(subnet_ip)
+		export ROS_IP=$my_ip
+		export ROS_MASTER_URI="http://${1}:11311"
+		echo "ROS_IP=$ROS_IP"
+		echo "ROS_MASTER_URI=$ROS_MASTER_URI"
+	else
+		echo "No 37 subnet IP found, not setting ROS_IP or ROS_MASTER_URI"
+	fi
+}
+
+rosnavconnect() {
+	rosconnect "192.168.37.82"
+}
+
+rossubconnect() {
+	rosconnect "192.168.37.60"
+}
+
+prettycp() {
+	rsync --recursive --times --modify-window=2 --progress --verbose --itemize-changes --stats --human-readable "$1" "$2"
+}
+
+mount_ssd() {
+	sudo mkdir -p /mnt/ssd
+	sudo mount -t exfat /dev/sda1 /mnt/ssd
+}
+
+unmount_ssd() {
+	sudo umount /mnt/ssd
+}
 
 # PYTHONPATH modifications
 export PYTHONPATH="${HOME}/catkin_ws/src/mil/mil_common/perception/vision_stack/src:${HOME}/catkin_ws/src/mil/mil_common/axros/axros/src:${PYTHONPATH}"
