@@ -51,7 +51,7 @@ from navigator_robotx_comms.navigator_robotx_comms import (
 )
 from ros_alarms import AlarmListener
 from ros_alarms_msgs.msg import Alarm
-from std_msgs.msg import String
+from std_msgs.msg import Int8, String
 
 lock = threading.Lock()
 
@@ -126,6 +126,11 @@ class RobotXStartServices:
         rospy.Subscriber("odom", Odometry, self.gps_odom_callback)
         rospy.Subscriber("/wrench/selected", String, self.wrench_callback)
         rospy.Subscriber("/scan_the_code", ScanTheCode, self.scan_the_code_callback)
+        rospy.Subscriber(
+            "/navigator_drone_comm/drone_heartbeat",
+            Int8,
+            self.uav_status_callback,
+        )
 
         # TODO: setup subscriber for uav status callback update
 
@@ -211,11 +216,11 @@ class RobotXStartServices:
         """
         self.odom = odom
 
-    def uav_status_callback(self, uav_status: int):
+    def uav_status_callback(self, uav_status: Int8):
         """
         Stores the most recent AUV status experienced by the boat.
         """
-        self.uav_status = uav_status
+        self.uav_status = uav_status.data
 
     def system_mode_callback(self, system_mode: int):
         """

@@ -3,9 +3,17 @@ from typing import Union
 
 import rospy
 from electrical_protocol import ROSSerialDevice
+from geographic_msgs.msg import GeoPoint
 from geometry_msgs.msg import Point
 from navigator_msgs.msg import DroneTarget, DroneTin
-from navigator_msgs.srv import DroneMission, DroneMissionRequest
+from navigator_msgs.srv import (
+    DroneMission,
+    DroneMissionRequest,
+    MessageUAVReplenishment,
+    MessageUAVReplenishmentRequest,
+    MessageUAVSearchReport,
+    MessageUAVSearchReportRequest,
+)
 from std_msgs.msg import Int8
 from std_srvs.srv import Empty, EmptyRequest
 
@@ -42,6 +50,7 @@ class DroneCommDevice(
             queue_size=10,
         )
         self.received_seq_num = 0
+        self.num_logos = 0
         self.estop_service = rospy.Service("~estop", Empty, self.estop)
         self.start_service = rospy.Service("~start", DroneMission, self.start)
         self.stop_service = rospy.Service("~stop", Empty, self.stop)
@@ -107,12 +116,58 @@ class DroneCommDevice(
             self.gps_pub.publish(point_msg)
         elif isinstance(packet, TargetPacket):
             rospy.loginfo(packet)
-            target_msg = DroneTarget(packet.lat, packet.lon, packet.logo.value)
-            rospy.loginfo(target_msg)
-            self.target_pub.publish(target_msg)
+            self.target_msg[self.num_logos] = [
+                packet.lat,
+                packet.lon,
+                packet.logo.value,
+            ]
+            self.num_logos += 1
+            rospy.loginfo(self.target_msg)
+            # self.target_pub.publish(target_msg)
+            if self.num_logos > 1:
+                rospy.wait_for_service("uav_search_report_message")
+                try:
+                    drone_msg = MessageUAVSearchReportRequest()
+                    drone_msg.object1 = self.target_msg[0][2]
+                    drone_msg.object2 = self.target_msg[1][2]
+                    drone_msg.uav_status = 2
+                    point1 = GeoPoint()
+                    point1.latitude = self.target_msg[0][0]
+                    point1.longitude = self.target_msg[0][1]
+                    point1.altitude = 0.0
+                    point2 = GeoPoint()
+                    point2.latitude = self.target_msg[1][0]
+                    point2.longitude = self.target_msg[1][1]
+                    point2.altitude = 0.0
+                    drone_msg.object1_location = point1
+                    drone_msg.object2_location = point2
+
+                    rospy.loginfo(drone_msg)
+                    drone_target_proxy = rospy.ServiceProxy(
+                        "uav_search_report_message",
+                        MessageUAVSearchReport,
+                    )
+                    response = drone_target_proxy(drone_msg)
+                    rospy.loginfo(response)
+                except Exception:
+                    pass
         elif isinstance(packet, TinPacket):
-            tin_msg = DroneTin(packet.status, packet.color.name)
-            self.tin_pub.publish(tin_msg)
+            rospy.wait_for_service("uav_replenishment_message")
+            try:
+                uav_replenish_msg = MessageUAVReplenishmentRequest()
+                uav_replenish_msg.uav_status = 2
+                uav_replenish_msg.item_status = packet.status
+                uav_replenish_msg.item_color = packet.color.name[0]
+
+                rospy.loginfo(uav_replenish_msg)
+                drone_tin_proxy = rospy.ServiceProxy(
+                    "uav_replenishment_message",
+                    MessageUAVReplenishment,
+                )
+                response = drone_tin_proxy(uav_replenish_msg)
+                rospy.loginfo(response)
+            except Exception:
+                pass
         else:
             rospy.logerr("Received unexpected packet type from drone")
         return
