@@ -1,13 +1,7 @@
-string object1
-float64 object1_latitude
-string object1_n_s
-float64 object1_longitude
-string object1_e_w
+string object1 # 'R' for the R pad, 'N' for the N pad
+geographic_msgs/GeoPoint object1_location
 string object2
-float64 object2_latitude
-string object2_n_s
-float64 object2_longitude
-string object2_e_w
+geographic_msgs/GeoPoint object2_location
 int8 uav_status # 1=manual, 2=autonomous, 3=faulted
 ---
 string message

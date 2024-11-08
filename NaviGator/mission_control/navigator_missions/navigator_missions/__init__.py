@@ -1,9 +1,7 @@
 import mil_missions_core
 
-# RobotX 2024 Missions
-from .wildlife_2024 import Wildlife2024
-
 from . import pose_editor
+from .autonomous_2024 import Autonomous2024
 from .back_and_forth import BackAndForth
 from .circle import Circle
 from .circle_tower import CircleTower
@@ -27,6 +25,7 @@ from .grinch_retract import GrinchRetract
 from .killed import Killed
 from .move import Move
 from .navigation import Navigation
+from .navigation_gatefinder import NavigationGatefinder
 from .navigator import NaviGatorMission
 from .obstacle_avoid import ObstacleAvoid
 from .pinger import PingerMission
@@ -42,6 +41,9 @@ from .station_hold import StationHold
 # from .stc_jaxon import ScanTheCodeJaxon
 from .teleop import Teleop
 from .wildlife import Wildlife
+
+# RobotX 2024 Missions
+from .wildlife_2024 import Wildlife2024
 
 # Currently breaks mission server, TODO: fix or delete
 # from .track_target import TrackTarget

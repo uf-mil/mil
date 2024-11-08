@@ -25,7 +25,8 @@ env:
 jobs:
   pre-commit:
     name: Run pre-commit
-    runs-on: ubuntu-latest
+    runs-on:
+      group: mala-lab-pre-commit
     if: github.event.sender.login == 'cbrxyz'
     steps:
       - name: Check out code from GitHub
