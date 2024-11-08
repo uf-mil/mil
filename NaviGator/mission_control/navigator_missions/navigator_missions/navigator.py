@@ -28,8 +28,10 @@ from navigator_tools import MissingPerceptionObject
 from roboteq_msgs.msg import Command
 from ros_alarms import TxAlarmListener
 from sensor_msgs.msg import CameraInfo, Image
-from std_msgs.msg import Bool, Empty
+from std_msgs.msg import Bool
+from std_srvs.srv import Empty as Emptysrv
 from std_srvs.srv import (
+    EmptyRequest,
     SetBool,
     SetBoolRequest,
     SetBoolResponse,
@@ -211,6 +213,16 @@ class NaviGatorMission(BaseMission):
             cls._grind_motor_pub.setup(),
         )
 
+        cls._ball_spin_srv = cls.nh.get_service_client("/ball_launcher/spin", SetBool)
+        cls._ball_launch_srv = cls.nh.get_service_client(
+            "/ball_launcher/drop_ball",
+            Emptysrv,
+        )
+        await asyncio.gather(
+            cls._ball_spin_srv.setup(),
+            cls._ball_launch_srv.setup(),
+        )
+
         try:
             cls._actuator_client = cls.nh.get_service_client(
                 "/actuator_driver/actuate",
@@ -267,12 +279,6 @@ class NaviGatorMission(BaseMission):
             "Odom listener",
         )
 
-        cls._ball_launcher_pub = cls.nh.advertise(
-            "/wamv/shooters/ball_shooter/fire",
-            Empty,
-        )
-        await cls._ball_launcher_pub.setup()
-
         if not cls.sim:
             await util.wrap_time_notice(
                 cls._ecef_odom_sub.get_next_message(),
@@ -317,6 +323,8 @@ class NaviGatorMission(BaseMission):
             cls.front_right_camera_info_sub.shutdown(),
             cls.yolo_objects.shutdown(),
             cls.stc_objects.shutdown(),
+            cls._ball_spin_srv.shutdown(),
+            cls._ball_launch_srv.shutdown(),
         )
 
     @classmethod
@@ -541,17 +549,16 @@ class NaviGatorMission(BaseMission):
         self.launcher_state = "inactive"
 
     async def start_launcher(self):
-        await self.nh.sleep(0.5)
+        await self._ball_spin_srv(SetBoolRequest(data=True))
+
+    async def stop_launcher(self):
+        await self._ball_spin_srv(SetBoolRequest(data=False))
 
     async def fire_launcher(self):
         if self.launcher_state != "inactive":
             raise Exception(f"Launcher is {self.launcher_state}")
         self.launcher_state = "firing"
-        if self.sim:
-            pass
-            # await self._ball_launcher_pub.publish(Empty())
-        else:
-            await self.set_valve("LAUNCHER_FIRE", True)
+        await self._ball_launch_srv(EmptyRequest())
         await self.nh.sleep(0.5)
         self.launcher_state = "inactive"
 

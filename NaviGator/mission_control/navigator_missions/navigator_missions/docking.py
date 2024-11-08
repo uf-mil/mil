@@ -260,6 +260,8 @@ class Docking(NaviGatorMission):
                 await self.fire_launcher()
                 await self.nh.sleep(2)
 
+            await self.stop_launcher()
+
         await self.move.backward(10).go(blind=True)
         await self.pcodar_save(SetBoolRequest(False))
 
