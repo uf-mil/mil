@@ -15,4 +15,5 @@ from .packets import (
     StartPacket,
     StopPacket,
     TargetPacket,
+    TinPacket,
 )

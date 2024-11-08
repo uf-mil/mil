@@ -1,0 +1,2 @@
+int status
+string color

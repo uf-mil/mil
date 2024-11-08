@@ -4,9 +4,9 @@ from typing import Union
 import rospy
 from electrical_protocol import ROSSerialDevice
 from geometry_msgs.msg import Point
-from navigator_msgs.msg import DroneTarget
+from navigator_msgs.msg import DroneTarget, DroneTin
 from navigator_msgs.srv import DroneMission, DroneMissionRequest
-from std_msgs.msg import Header
+from std_msgs.msg import Int8
 from std_srvs.srv import Empty, EmptyRequest
 
 from .packets import (
@@ -17,29 +17,38 @@ from .packets import (
     StartPacket,
     StopPacket,
     TargetPacket,
+    TinPacket,
 )
 
 
 class DroneCommDevice(
     ROSSerialDevice[
         Union[HeartbeatSetPacket, EStopPacket, StartPacket, StopPacket],
-        Union[HeartbeatReceivePacket, GPSDronePacket, TargetPacket],
+        Union[HeartbeatReceivePacket, GPSDronePacket, TargetPacket, TinPacket],
     ],
 ):
     def __init__(self, port: str):
         super().__init__(port, 57600)
         self.gps_pub = rospy.Publisher("~gps", Point, queue_size=5)
-        self.target_pub = rospy.Publisher("~target", DroneTarget, queue_size=5)
+        self.target_pub = rospy.Publisher(
+            "~target",
+            DroneTarget,
+            queue_size=5,
+        )  # TODO replace with service call
+        self.tin_pub = rospy.Publisher("~tin", DroneTin, queue_size=5)
         self.drone_heartbeat_pub = rospy.Publisher(
             "~drone_heartbeat",
-            Header,
+            Int8,
             queue_size=10,
         )
         self.received_seq_num = 0
         self.estop_service = rospy.Service("~estop", Empty, self.estop)
         self.start_service = rospy.Service("~start", DroneMission, self.start)
         self.stop_service = rospy.Service("~stop", Empty, self.stop)
-        self.boat_heartbeat_timer = rospy.Timer(rospy.Duration(1), self.heartbeat_send)
+        # self.boat_heartbeat_timer = rospy.Timer(rospy.Duration(1), self.heartbeat_send)
+        # self.heartbeat_service = self.nh.get_service_client(
+        #     ""
+        # )
         self.drone_heartbeat_event = threading.Event()
         self.drone_heartbeat_timer = rospy.Timer(
             rospy.Duration(1),
@@ -84,20 +93,24 @@ class DroneCommDevice(
 
     def on_packet_received(
         self,
-        packet: Union[HeartbeatReceivePacket, GPSDronePacket, TargetPacket],
+        packet: Union[HeartbeatReceivePacket, GPSDronePacket, TargetPacket, TinPacket],
     ):
         if isinstance(packet, HeartbeatReceivePacket):
+            rospy.loginfo(packet.status)
             self.drone_heartbeat_event.set()
-            hbt_msg = Header(self.received_seq_num, rospy.Time.now(), "drone_heartbeat")
-            self.drone_heartbeat_pub.publish(hbt_msg)
-            self.received_seq_num += 1
+            hbt_msg = Int8(packet.status)
+            # hbt_msg = Header(self.received_seq_num, rospy.Time.now(), "drone_heartbeat") # TODO: publish int
+            # self.received_seq_num += 1
             self.drone_heartbeat_pub.publish(hbt_msg)
         elif isinstance(packet, GPSDronePacket):
             point_msg = Point(packet.lat, packet.lon, packet.alt)
             self.gps_pub.publish(point_msg)
         elif isinstance(packet, TargetPacket):
-            target_msg = DroneTarget(packet.lat, packet.lon, packet.color.name)
+            target_msg = DroneTarget(packet.lat, packet.lon, packet.logo.name)
             self.target_pub.publish(target_msg)
+        elif isinstance(packet, TinPacket):
+            tin_msg = DroneTin(packet.status, packet.color)
+            self.tin_pub.publish(tin_msg)
         else:
             rospy.logerr("Received unexpected packet type from drone")
         return

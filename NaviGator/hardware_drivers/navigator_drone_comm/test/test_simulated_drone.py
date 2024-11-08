@@ -10,7 +10,6 @@ import rostest
 from geometry_msgs.msg import Point
 from navigator_drone_comm.driver import DroneCommDevice
 from navigator_drone_comm.packets import (
-    Color,
     EStopPacket,
     GPSDronePacket,
     HeartbeatReceivePacket,
@@ -115,9 +114,10 @@ class SimulatedBasicTest(unittest.TestCase):
         self.assertAlmostEqual(round(self.drone_gps.x, 3), 37.77)
 
     def test_target_receive(self):
-        target_packet = TargetPacket(lat=-67.7745, lon=12.654, color=Color.BLUE)
+        target_packet = TargetPacket(lat=-67.7745, lon=12.654, color="b")
         os.write(self.master, bytes(target_packet))
         rospy.sleep(0.5)
+        rospy.loginfo(self.target.color)
         self.assertEqual(self.target.color, "BLUE")
 
     # tests that a heartbeat is sent from the boat every second
