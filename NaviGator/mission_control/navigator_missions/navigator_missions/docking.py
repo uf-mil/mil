@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import copy
+import math
 import random
 from typing import Optional
 
-import math
 import cv2
 import numpy as np
 import rospy
@@ -13,14 +13,12 @@ from geometry_msgs.msg import Pose
 from image_geometry import PinholeCameraModel
 from mil_tools import pose_to_numpy, rosmsg_to_numpy
 from nav_msgs.msg import OccupancyGrid
+from navigator_vision import GripPipeline
 from sensor_msgs.msg import CameraInfo, Image
 from std_srvs.srv import SetBool, SetBoolRequest
 from tf.transformations import quaternion_matrix
-import matplotlib.pyplot as plt, numpy as np
-from mpl_toolkits.mplot3d import Axes3D
 
 from .navigator import NaviGatorMission
-from navigator_vision import GripPipeline
 
 PANNEL_MAX = 0
 PANNEL_MIN = 2
@@ -44,21 +42,27 @@ class Docking(NaviGatorMission):
             callback=self.ogrid_cb,
         )
 
+        self.camera_topic = rospy.get_param(
+            "/classifier/image_topic",
+            "/camera/front/left/image_color",
+        )
+        split = self.camera_topic.split("/")
+        self.camera_info_topic = ""
+        for i in range(1, len(split) - 1):
+            self.camera_info_topic += "/" + split[i]
+            rospy.logerr(self.camera_info_topic)
+
+        self.camera_info_topic += "/camera_info"
+
         # Service to save and restore the settings of PCODAR
         self.pcodar_save = self.nh.get_service_client("/pcodar/save", SetBool)
-        # self.image_sub = self.nh.subscribe(
-        #     "/wamv/sensors/cameras/front_left_camera/image_raw", Image
-        # )
         self.image_sub = self.nh.subscribe(
-            "/wamv/sensors/camera/front_left_cam/image_raw",
+            self.camera_topic,
             Image,
         )
         self.cam_frame = None
-        # self.image_info_sub = self.nh.subscribe(
-        #     "/wamv/sensors/cameras/front_left_camera/camera_info", CameraInfo
-        # )
         self.image_info_sub = self.nh.subscribe(
-            "/wamv/sensors/camera/front_left_cam/camera_info",
+            self.camera_info_topic,
             CameraInfo,
         )
         self.model = PinholeCameraModel()
@@ -78,6 +82,7 @@ class Docking(NaviGatorMission):
         await cls.ogrid_sub.shutdown()
         await cls.image_sub.shutdown()
         await cls.image_info_sub.shutdown()
+        await cls.pcodar_save.shutdown()
 
     async def run(self, args):
         await self.contour_pub.setup()
@@ -90,9 +95,10 @@ class Docking(NaviGatorMission):
         rospy.logerr("INFO DONE")
         await self.pcodar_save.wait_for_service()
         rospy.logerr("PCODAR DONE")
-        
+
         self.grip = GripPipeline()
         await self.change_wrench("autonomous")
+        rospy.logerr("WRENCH SET")
 
         self.bridge = CvBridge()
         msg = await self.image_info_sub.get_next_message()
@@ -117,7 +123,7 @@ class Docking(NaviGatorMission):
         pos = await self.poi.get("dock")
         rospy.logerr("HERE4")
         pos = pos[0]
-        await self.move.look_at(pos).go() # Face the dock
+        await self.move.look_at(pos).go()  # Face the dock
         await self.move.set_position(pos).look_at(pos).go()
 
         # Decrease cluster tolerance as we approach dock since lidar points are more dense
@@ -135,11 +141,13 @@ class Docking(NaviGatorMission):
         await self.move_to_correct_side()
 
         # TODO: IMPORTANT MESSAGE FROM WILLIAM - Change color to correct one when announced on each day. Correct strings are {"Blue", "Red", "Green"}
-        goal_color = "Green"
-        correct_dock_number = -1 # Correct dock number will be set to 0 1 or 2 after the CV code runs
+        goal_color = "Blue"
+        correct_dock_number = (
+            0  # Correct dock number will be set to 0 1 or 2 after the CV code runs
+        )
 
         # The LIDAR to camera mapping is very unreliable, so we loop until it is correct
-        while True:
+        for _ in range(0, 10):
             # get the dock object from the database
             dock, pos = await self.get_sorted_objects(name="dock", n=1)
 
@@ -167,19 +175,26 @@ class Docking(NaviGatorMission):
 
             # crop the images to get bbox and find color
             images = await self.crop_images(clusters, centers)
-            
+
             # TODO: IMPORTANT MESSAGE FROM WILL - These are the preferred sizes in the sim, but the docks will be farther apart in real life, so adjust tolerances during practice
             # preferred height (x) for cropped image: 170-180
             # preferred width (y) for cropped image: 130-150
 
             # If the images are correct, then break. Check that the height and width are in reasonable ranges
-            if images[0].shape[0] in range(70, 171) and images[0].shape[1] in range(101, 180) and images[1].shape[0] in range(70, 171) and images[1].shape[1] in range(101, 180) and images[2].shape[0] in range(70, 171) and images[2].shape[1] in range(101, 180):
+            if (
+                images[0].shape[0] in range(70, 171)
+                and images[0].shape[1] in range(101, 180)
+                and images[1].shape[0] in range(70, 171)
+                and images[1].shape[1] in range(101, 180)
+                and images[2].shape[0] in range(70, 171)
+                and images[2].shape[1] in range(101, 180)
+            ):
                 correct_dock_number = self.find_color(images, goal_color)
                 if correct_dock_number != -1:
                     break
 
         rospy.logerr(f"Here is the correct dock number: {correct_dock_number}")
-        
+
         # temporary code that just moves boat to center of cluster with whatever color was specified
         correct_dock = copy.deepcopy(centers[correct_dock_number])
 
@@ -187,59 +202,66 @@ class Docking(NaviGatorMission):
         correct_dock[0] = 0
         forward = copy.deepcopy(centers[correct_dock_number])
         # This is what calculates how far from the dock the boat docks
-        forward[0] = forward[0] - 8
+        forward[0] = forward[0] - 3.25
         boat_to_enu = await self.tf_listener.get_transform("enu", "wamv/base_link")
-        centers[correct_dock_number] = boat_to_enu.transform_point(correct_dock)
+        correct_center = boat_to_enu.transform_point(correct_dock)
         nextPt = boat_to_enu.transform_point(forward)
-        await self.move.set_position(centers[correct_dock_number]).go(blind=True, move_type="skid")
-        await self.move.set_position(nextPt).go(blind=True, move_type="skid")
+        await self.move.set_position(correct_center).go(blind=True, move_type="skid")
+        await self.move.set_position(nextPt).go(
+            blind=True,
+            move_type="skid",
+            speed_factor=[0.25, 0.25, 0.25],
+        )
 
         # Align with hole -> work in progress, see navigator_vision/dockdeliver_pipeline.py in navigator vision
         # This part finds the holes in the docks for a future aligning algorithm that has not been implemented yet
         image = await self.image_sub.get_next_message()
-        image = self.bridge.imgmsg_to_cv2(image)   
+        image = self.bridge.imgmsg_to_cv2(image)
         self.grip.process(image)
 
         img = self.grip.hsv_threshold_output
         img2 = self.grip.blur_output
         contours = self.grip.filter_contours_output
 
-        #print_image_values(img)
+        # print_image_values(img)
         print(contours[0])
         centroid = np.mean(contours[0], axis=0)
         print(centroid[0])
-        print((centroid[0][0],centroid[0][1]))
+        print((centroid[0][0], centroid[0][1]))
 
         cv2.imshow("blur", img2)
         cv2.imshow("threshold", img)
-        img3 = cv2.drawContours(img2, contours, -1, (0,255,0), 3)
-        img3 = cv2.circle(img3, ((math.ceil(centroid[0][0]),math.ceil(centroid[0][1]))), radius=2, color=(0, 0, 255), thickness=1)
+        img3 = cv2.drawContours(img2, contours, -1, (0, 255, 0), 3)
+        img3 = cv2.circle(
+            img3,
+            ((math.ceil(centroid[0][0]), math.ceil(centroid[0][1]))),
+            radius=2,
+            color=(0, 0, 255),
+            thickness=1,
+        )
         cv2.imshow("contours", img3)
 
-        cv2.waitKey(0)
+        # cv2.waitKey(0)
         cv2.destroyAllWindows()
-        
+
         # Shoot racquet ball projectile
         rospy.logerr("- BEFORE SHOOT PROJ -")
-        if correct_dock_number != -1 and correct_dock_number is not None:    
+        if correct_dock_number != -1 and correct_dock_number is not None:
             # TODO: Aim the raqcetball launcher into the holes. The racquetball launcher is fixed, so the boat is what needs to be aimed.
-            # When you get to the practice course, this can theoretically be done with, for example, 
+            # When you get to the practice course, this can theoretically be done with, for example,
             # await self.move.forward(1.3).go()
             # await self.move.left(0.3).go()
             # Since the boat should be in the same place in the dock whenever it docks
 
+            await self.start_launcher()
+            await self.nh.sleep(2)
+
             for i in range(0, 4):
-                await self.reload_launcher()
-                await self.nh.sleep(2)
                 await self.fire_launcher()
                 await self.nh.sleep(2)
-        await self.pcodar_save(SetBoolRequest(False))
 
-        await self.contour_pub.shutdown()
-        await self.ogrid_sub.shutdown()
-        await self.image_sub.shutdown()
-        await self.image_info_sub.shutdown()
-        await self.pcodar_save.shutdown()
+        await self.move.backward(10).go(blind=True)
+        await self.pcodar_save(SetBoolRequest(False))
 
     def get_dock_data(self, dock):
         dock = dock[0]
@@ -259,7 +281,10 @@ class Docking(NaviGatorMission):
             except Exception as _:
                 # retries if an exception occurs (cannot find dock)
                 await self.find_dock()
-                await self.move.yaw_right(20, unit="deg").go() # Likely the boat is not facing the right direction and cant see the dock, this line fixes that
+                await self.move.yaw_right(
+                    20,
+                    unit="deg",
+                ).go()  # Likely the boat is not facing the right direction and can't see the dock, this line fixes that
                 dock, pos = await self.get_sorted_objects(name="dock", n=1)
 
         # find the open side of the dock
@@ -323,7 +348,6 @@ class Docking(NaviGatorMission):
         # input("<Hit Enter To Close>")
         # plt.close(fig)
 
-
         # cut off all points below the mean z value
         mean = np.mean(data, axis=0)[2]
         data = data[data[:, 2] > mean]
@@ -340,7 +364,6 @@ class Docking(NaviGatorMission):
         # plt.pause(0.1)
         # input("<Hit Enter To Close>")
         # plt.close(fig)
-
 
         # Sample initial centroids
         random_indices = random.sample(range(data.shape[0]), 3)
@@ -456,7 +479,7 @@ class Docking(NaviGatorMission):
         return np.asarray(means), cluster_members
 
     def crop_image(self, pts, transform, img):
-        rospy.logerr("The points for cropping before are", pts)
+        # rospy.logerr("The points for cropping before are", pts)
         pts = [self.model.project3dToPixel(transform.transform_point(a)) for a in pts]
         pts = np.array([[int(a[0]), int(a[1])] for a in pts], dtype=np.int32)
         pts = np.int32([pts])
@@ -485,16 +508,16 @@ class Docking(NaviGatorMission):
 
     async def crop_images(self, clusters, centers):
         image = await self.image_sub.get_next_message()
-        image = self.bridge.imgmsg_to_cv2(image)            
+        image = self.bridge.imgmsg_to_cv2(image)
         # cv2.imshow("Initial image", image) Not needed
         boat_to_cam = await self.tf_listener.get_transform(
             self.cam_frame,
             "wamv/base_link",
         )
-        rospy.logerr('Cluster 0: ', clusters[0])
-        rospy.logerr('Cluster 1: ', clusters[1])
-        rospy.logerr('Cluster 2: ', clusters[2])
-        
+        rospy.logerr("Cluster 0: ", clusters[0])
+        rospy.logerr("Cluster 1: ", clusters[1])
+        rospy.logerr("Cluster 2: ", clusters[2])
+
         left = self.crop_image(
             self.get_cluster_corners(clusters[0]),
             boat_to_cam,
@@ -516,8 +539,6 @@ class Docking(NaviGatorMission):
         rospy.logerr(f"Middle image shape: {middle.shape}")
         rospy.logerr(f"Right image shape: {right.shape}")
 
-        h_min = min(a.shape[0] for a in list)
-        counter = 0
         # Skip resize, its broken
         # resized = []
         # for im in list:
@@ -527,7 +548,7 @@ class Docking(NaviGatorMission):
         #                 im,
         #                 (int(im.shape[1] * h_min / im.shape[0]), h_min),
         #                 interpolation=cv2.INTER_CUBIC,
-        #             )            
+        #             )
         #         ]
         #     else:
         #         print(f"Error: Image {counter} has size 0")
@@ -537,12 +558,12 @@ class Docking(NaviGatorMission):
         # self.contour_pub.publish(msg)
 
         return list
-    
+
     # I don't think this function is needed anymore because anthony put his CV box detection code in main
     async def shoot_projectile(self):
         # Gets the image from the boat camera at this point in time
         img = await self.image_sub.get_next_message()
-        img = self.bridge.imgmsg_to_cv2(img)    
+        img = self.bridge.imgmsg_to_cv2(img)
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -551,7 +572,7 @@ class Docking(NaviGatorMission):
 
         # Use Canny edge detection
         edges = cv2.Canny(blurred, 50, 150)
-        
+
         # Find contours in the edged image
         contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -563,7 +584,7 @@ class Docking(NaviGatorMission):
         cv2.destroyAllWindows()
 
         # Loop over the contours
-        for contour in contours:    
+        for contour in contours:
 
             # Approximate the contour to a polygon
             epsilon = 0.02 * cv2.arcLength(contour, True)
@@ -597,7 +618,7 @@ class Docking(NaviGatorMission):
 
     def find_color(self, images, goal_color):
         # NOTE: An OpenCV window will open, close it to progress
-        # Current iteration of find color works by looking 
+        # Current iteration of find color works by looking
         # at a vertical line at the center of the image and averaging
         # non-gray values, returning Red Green Blue or Other.
 
@@ -658,8 +679,8 @@ class Docking(NaviGatorMission):
                         blue_pixels += 1
 
             # Color at center is average of non gray pixels
-            if num_pixels == 0: # Check if any colors found
-                dock_color = (0,0,0)
+            if num_pixels == 0:  # Check if any colors found
+                dock_color = (0, 0, 0)
             else:
                 dock_color = (
                     total_red / num_pixels,
@@ -673,22 +694,26 @@ class Docking(NaviGatorMission):
             blue_ratio = blue_pixels / num_pixels if num_pixels > 0 else 0
 
             # Now check if we find two colors outside of the tolerance by checking if there is an outright majority of one color
-            if (not (
-                (red_ratio - green_ratio > color_tolerance
-                and red_ratio - blue_ratio > color_tolerance)
-                or
-                (green_ratio - blue_ratio > color_tolerance
-                and green_ratio - red_ratio > color_tolerance)
-                or
-                (blue_ratio - green_ratio > color_tolerance
-                and blue_ratio - red_ratio > color_tolerance)
+            if not (
+                (
+                    red_ratio - green_ratio > color_tolerance
+                    and red_ratio - blue_ratio > color_tolerance
+                )
+                or (
+                    green_ratio - blue_ratio > color_tolerance
+                    and green_ratio - red_ratio > color_tolerance
+                )
+                or (
+                    blue_ratio - green_ratio > color_tolerance
+                    and blue_ratio - red_ratio > color_tolerance
                 )
             ):
                 rospy.logerr(
-                    f"Error: Found two colors in image {count} with ratios: R: {red_ratio}, G: {green_ratio}, B: {blue_ratio}")
+                    f"Error: Found two colors in image {count} with ratios: R: {red_ratio}, G: {green_ratio}, B: {blue_ratio}",
+                )
                 # We return -1 signaling that this failed
                 return -1
-            
+
             # Max ratio allowed between main color and other 2 values
             color_ratio = 0.9
             # Log the color (even after converting to RGB they still need to be BGR for this somehow)
@@ -728,6 +753,8 @@ class Docking(NaviGatorMission):
             # cv2.destroyAllWindows()
 
             count += 1
+
+            return -1
 
     def get_ogrid_coords(self, arr):
         return self.intup(self.ogrid_cpm * (np.asarray(arr) - self.ogrid_origin))[:2]

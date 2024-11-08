@@ -28,7 +28,7 @@ from navigator_tools import MissingPerceptionObject
 from roboteq_msgs.msg import Command
 from ros_alarms import TxAlarmListener
 from sensor_msgs.msg import CameraInfo, Image
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Empty
 from std_srvs.srv import (
     SetBool,
     SetBoolRequest,
@@ -266,6 +266,12 @@ class NaviGatorMission(BaseMission):
             2,
             "Odom listener",
         )
+
+        cls._ball_launcher_pub = cls.nh.advertise(
+            "/wamv/shooters/ball_shooter/fire",
+            Empty,
+        )
+        await cls._ball_launcher_pub.setup()
 
         if not cls.sim:
             await util.wrap_time_notice(
@@ -534,11 +540,18 @@ class NaviGatorMission(BaseMission):
         await self.set_valve("LAUNCHER_RELOAD_RETRACT", False)
         self.launcher_state = "inactive"
 
+    async def start_launcher(self):
+        await self.nh.sleep(0.5)
+
     async def fire_launcher(self):
         if self.launcher_state != "inactive":
             raise Exception(f"Launcher is {self.launcher_state}")
         self.launcher_state = "firing"
-        await self.set_valve("LAUNCHER_FIRE", True)
+        if self.sim:
+            pass
+            # await self._ball_launcher_pub.publish(Empty())
+        else:
+            await self.set_valve("LAUNCHER_FIRE", True)
         await self.nh.sleep(0.5)
         self.launcher_state = "inactive"
 
