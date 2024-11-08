@@ -9,6 +9,8 @@ from mil_tools import rosmsg_to_numpy
 
 from .navigator import NaviGatorMission
 
+CIRCLE_ANIMAL = "red_python_buoy"
+
 
 class MoveState(Enum):
     NOT_STARTED = 1
@@ -189,32 +191,31 @@ class Wildlife2024(NaviGatorMission):
                 move_id_tuple = (move, objects[potential_candidate].id)
                 print("USING POTENTIAL CANDIDATE")
 
-    async def circle_animals(self, animals):
-        for animal in animals:
-            object = animal[0]
-            position = animal[1]
-            label = object.labeled_classification
+    async def circle_animal(self, animal):
+        object = animal[0]
+        position = animal[1]
+        label = object.labeled_classification
 
-            # Go to point and Circle animal
-            await self.move.d_spiral_point(
-                position,
-                6,
-                4,
-                1,
-                (
-                    "cw"
-                    if label == "green_iguana_buoy" or label == "red_python_buoy"
-                    else "ccw"
-                ),
-                theta_offset=(
-                    1.57
-                    if label == "green_iguana_buoy" or label == "red_python_buoy"
-                    else -1.57
-                ),
-            )
+        # Go to point and Circle animal
+        await self.move.d_spiral_point(
+            position,
+            6,
+            4,
+            1,
+            (
+                "ccw"
+                if label == "green_iguana_buoy" or label == "red_python_buoy"
+                else "cw"
+            ),
+            theta_offset=(
+                -1.57
+                if label == "green_iguana_buoy" or label == "red_python_buoy"
+                else 1.57
+            ),
+        )
 
-            # Update explore dict
-            self.animals_observed[label] = True
+        # Update explore dict
+        self.animals_observed[label] = True
 
     def get_indices_of_most_confident_animals(
         self,
@@ -263,7 +264,16 @@ class Wildlife2024(NaviGatorMission):
         )
 
         # Go to each object and circle them accordingly
-        await self.circle_animals(animals)
+        for animal in animals:
+            object = animal[0]
+            # position = animal[1]
+            label = object.labeled_classification
+            if label == CIRCLE_ANIMAL:
+                print(f"CIRCLING ANIMAL {CIRCLE_ANIMAL}")
+                await self.circle_animal(animal)
+                if label == "red_python_buoy":
+                    await self.circle_animal(animal)
+            self.animals_observed[label] = True
 
         # # Check if all wildlife has been circled
         # IF not all wildlife has been found call this function again
