@@ -96,7 +96,7 @@ class DroneCommDevice(
         packet: Union[HeartbeatReceivePacket, GPSDronePacket, TargetPacket, TinPacket],
     ):
         if isinstance(packet, HeartbeatReceivePacket):
-            rospy.loginfo(packet.status)
+            rospy.loginfo("status %s", packet.status)
             self.drone_heartbeat_event.set()
             hbt_msg = Int8(packet.status)
             # hbt_msg = Header(self.received_seq_num, rospy.Time.now(), "drone_heartbeat") # TODO: publish int
@@ -106,10 +106,12 @@ class DroneCommDevice(
             point_msg = Point(packet.lat, packet.lon, packet.alt)
             self.gps_pub.publish(point_msg)
         elif isinstance(packet, TargetPacket):
-            target_msg = DroneTarget(packet.lat, packet.lon, packet.logo.name)
+            rospy.loginfo(packet)
+            target_msg = DroneTarget(packet.lat, packet.lon, packet.logo.value)
+            rospy.loginfo(target_msg)
             self.target_pub.publish(target_msg)
         elif isinstance(packet, TinPacket):
-            tin_msg = DroneTin(packet.status, packet.color)
+            tin_msg = DroneTin(packet.status, packet.color.name)
             self.tin_pub.publish(tin_msg)
         else:
             rospy.logerr("Received unexpected packet type from drone")

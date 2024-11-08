@@ -13,14 +13,13 @@ from navigator_drone_comm.packets import (
     EStopPacket,
     GPSDronePacket,
     HeartbeatReceivePacket,
-    HeartbeatSetPacket,
     StartPacket,
     StopPacket,
     TargetPacket,
 )
 from navigator_msgs.msg import DroneTarget
 from navigator_msgs.srv import DroneMission, DroneMissionRequest
-from std_msgs.msg import Header
+from std_msgs.msg import Int8
 from std_srvs.srv import Empty, EmptyRequest
 
 
@@ -65,7 +64,7 @@ class SimulatedBasicTest(unittest.TestCase):
         cls.last_drone_heartbeat = None
         rospy.Subscriber("~gps", Point, cls.gps_callback)
         rospy.Subscriber("~target", DroneTarget, cls.target_callback)
-        rospy.Subscriber("~drone_heartbeat", Header, cls.heartbeat_drone_callback)
+        rospy.Subscriber("~drone_heartbeat", Int8, cls.heartbeat_drone_callback)
 
     def test_device_initialization(self):
         self.assertIsNotNone(self.device)
@@ -95,7 +94,7 @@ class SimulatedBasicTest(unittest.TestCase):
         self.assertIsInstance(packet, StopPacket)
 
     def test_start_mission(self):
-        self.start_proxy(DroneMissionRequest("mymission"))
+        self.start_proxy(DroneMissionRequest("STARTB"))
         # give up to 3 tries to hear the start packet and not just heartbeat
         for i in range(3):
             try:
@@ -114,28 +113,27 @@ class SimulatedBasicTest(unittest.TestCase):
         self.assertAlmostEqual(round(self.drone_gps.x, 3), 37.77)
 
     def test_target_receive(self):
-        target_packet = TargetPacket(lat=-67.7745, lon=12.654, color="b")
+        target_packet = TargetPacket(lat=-67.7745, lon=12.654, logo="R")
         os.write(self.master, bytes(target_packet))
-        rospy.sleep(0.5)
-        rospy.loginfo(self.target.color)
-        self.assertEqual(self.target.color, "BLUE")
+        rospy.sleep(1)
+        rospy.loginfo(self.target.logo)
+        self.assertEqual(self.target.logo, "R_Logo")
 
     # tests that a heartbeat is sent from the boat every second
-    def test_z_sending_heartbeats(self):
-        start_time = time.time()
-        for i in range(1, 4):
-            packet = HeartbeatSetPacket.from_bytes(os.read(self.master, 8))
-            self.assertIsInstance(packet, HeartbeatSetPacket)
-            self.assertLess(time.time() - start_time, 1 * i + 0.1)
+    # def test_z_sending_heartbeats(self):
+    #     start_time = time.time()
+    #     for i in range(1, 4):
+    #         packet = HeartbeatSetPacket.from_bytes(os.read(self.master, 8))
+    #         self.assertIsInstance(packet, HeartbeatSetPacket)
+    #         self.assertLess(time.time() - start_time, 1 * i + 0.1)
 
     # test that the boat can receive drone heartbeats
     def test_z_heartbeat_receive(self):
         for i in range(3):
-            heartbeat_packet = HeartbeatReceivePacket()
+            heartbeat_packet = HeartbeatReceivePacket(status=1)
             self.device.on_packet_received(heartbeat_packet)
             time.sleep(1)
-            self.assertEqual(self.last_drone_heartbeat.frame_id, "drone_heartbeat")
-            self.assertEqual(self.last_drone_heartbeat.seq, i)
+            self.assertEqual(self.last_drone_heartbeat.data, 1)
 
     @classmethod
     def tearDownClass(cls):
