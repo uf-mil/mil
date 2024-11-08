@@ -329,8 +329,6 @@ class NaviGatorMission(BaseMission):
             cls.front_right_camera_info_sub.shutdown(),
             cls.yolo_objects.shutdown(),
             cls.stc_objects.shutdown(),
-            cls._ball_spin_srv.shutdown(),
-            cls._ball_launch_srv.shutdown(),
         )
 
     @classmethod
