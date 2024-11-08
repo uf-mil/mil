@@ -213,15 +213,21 @@ class NaviGatorMission(BaseMission):
             cls._grind_motor_pub.setup(),
         )
 
-        cls._ball_spin_srv = cls.nh.get_service_client("/ball_launcher/spin", SetBool)
-        cls._ball_launch_srv = cls.nh.get_service_client(
-            "/ball_launcher/drop_ball",
-            Emptysrv,
-        )
-        await asyncio.gather(
-            cls._ball_spin_srv.setup(),
-            cls._ball_launch_srv.setup(),
-        )
+        try:
+            cls._ball_spin_srv = cls.nh.get_service_client(
+                "/ball_launcher/spin",
+                SetBool,
+            )
+            cls._ball_launch_srv = cls.nh.get_service_client(
+                "/ball_launcher/drop_ball",
+                Emptysrv,
+            )
+        except AttributeError as err:
+            fprint(
+                f"Error getting ball launcher service clients: {err}",
+                title="NAVIGATOR",
+                msg_color="red",
+            )
 
         try:
             cls._actuator_client = cls.nh.get_service_client(

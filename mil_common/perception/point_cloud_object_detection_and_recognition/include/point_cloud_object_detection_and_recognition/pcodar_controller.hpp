@@ -88,6 +88,9 @@ protected:
   OgridManager ogrid_manager_;
 
   Config saved_config_;
+  // Intensity filter
+  double intensity_filter_min_intensity;
+  double intensity_filter_max_intensity;
 };
 
 class Node : public NodeBase
@@ -104,6 +107,7 @@ private:
   void restore_config() override;
   bool bounds_update_cb(const mil_bounds::BoundsConfig& config) override;
   void ConfigCallback(Config const& config, uint32_t level) override;
+  void update_config(Config const& config);
   /// Reset PCODAR
   bool Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) override;
   bool StoreParameters(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res);
