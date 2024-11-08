@@ -1,2 +1,2 @@
-int status
+int8 status
 string color
