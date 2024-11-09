@@ -100,7 +100,7 @@ alias killprocess='$MIL_REPO/scripts/kill_process.sh'
 
 xbox() {
 	rosservice call /wrench/select "topic: '/wrench/rc'"
-	roslaunch navigator_launch shore.launch wireless_device:="$1"
+	roslaunch navigator_launch shore.launch device_input:="$1"
 }
 
 # catkin_make for one specific package only
@@ -196,6 +196,19 @@ rossubconnect() {
 
 prettycp() {
 	rsync --recursive --times --modify-window=2 --progress --verbose --itemize-changes --stats --human-readable "$1" "$2"
+}
+
+# Disambiguation function for ROS_MASTER_URI/GAZEBO_MASTER_URI
+# sets the values to calculated expr 11340+$1 and 11350+$1 respectively
+disambig() {
+	if [ "$#" -ne 1 ]; then
+		printf "Usage: disambig <plus_factor>\n\tSets the ROS_MASTER_URI and GAZEBO_MASTER_URI to 11340+<plus_factor> and 11350+<plus_factor> respectively to allow for parallel simulations"
+		return
+	fi
+	export ROS_MASTER_URI="http://localhost:$((11340 + $1))"
+	export GAZEBO_MASTER_URI="http://localhost:$((11350 + $1))"
+	echo "ROS_MASTER_URI=$ROS_MASTER_URI"
+	echo "GAZEBO_MASTER_URI=$GAZEBO_MASTER_URI"
 }
 
 mount_ssd() {

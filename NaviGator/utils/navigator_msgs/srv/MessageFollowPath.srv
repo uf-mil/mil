@@ -1,3 +1,4 @@
+string entry_color # color of the entry buoy ('R' for example)
 int8 finished # 1=in progress 2=completed
 ---
 string message

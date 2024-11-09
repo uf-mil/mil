@@ -4,8 +4,8 @@ from .navigator_robotx_comms import (
     RobotXFindFlingMessage,
     RobotXFollowPathMessage,
     RobotXHeartbeatMessage,
-    RobotXReactReportMessage,
     RobotXScanCodeMessage,
     RobotXUAVReplenishmentMessage,
     RobotXUAVSearchReportMessage,
+    RobotXWildlifeEncounterMessage,
 )

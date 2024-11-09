@@ -158,7 +158,7 @@
       <!-- Wind -->
       <wind_direction>180</wind_direction>
       <!-- in degrees -->
-      <wind_mean_velocity>8.0</wind_mean_velocity>
+      <wind_mean_velocity>4.0</wind_mean_velocity>
       <var_wind_gain_constants>8.0</var_wind_gain_constants>
       <var_wind_time_constants>20</var_wind_time_constants>
       <random_seed>10</random_seed>
@@ -194,44 +194,5 @@
       <pose>-500 233 0 0 0 0</pose>
       <uri>model://manatee_buoy</uri>
     </include>
-    <!-- The scoring plugin -->
-    <plugin filename="libwildlife_scoring_plugin.so" name="wildlife_scoring_plugin">
-      <!-- Common parameters -->
-      <vehicle>wamv</vehicle>
-      <task_name>wildlife</task_name>
-      <initial_state_duration>10.0</initial_state_duration>
-      <ready_state_duration>10.0</ready_state_duration>
-      <running_state_duration>300</running_state_duration>
-      <collision_buffer>10</collision_buffer>
-      <release_joints>
-        <joint>
-          <name>wamv_external_pivot_joint</name>
-        </joint>
-        <joint>
-          <name>wamv_external_riser</name>
-        </joint>
-      </release_joints>
-      <!-- wildlife specific parameters -->
-      <buoys>
-        <buoy>
-          <model_name>python_buoy</model_name>
-          <link_name>link</link_name>
-          <goal>avoid</goal>
-        </buoy>
-        <buoy>
-          <model_name>iguana_buoy</model_name>
-          <link_name>link</link_name>
-          <goal>circumnavigate_clockwise</goal>
-        </buoy>
-        <buoy>
-          <model_name>manatee_buoy</model_name>
-          <link_name>link</link_name>
-          <goal>circumnavigate_counterclockwise</goal>
-        </buoy>
-      </buoys>
-      <engagement_distance>10.0</engagement_distance>
-      <time_bonus>30.0</time_bonus>
-      <animals_topic>/vrx/wildlife/animals/poses</animals_topic>
-    </plugin>
   </world>
 </sdf>

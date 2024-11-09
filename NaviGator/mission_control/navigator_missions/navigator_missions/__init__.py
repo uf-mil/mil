@@ -41,6 +41,9 @@ from .station_hold import StationHold
 from .teleop import Teleop
 from .wildlife import Wildlife
 
+# RobotX 2024 Missions
+from .wildlife_2024 import Wildlife2024
+
 # Currently breaks mission server, TODO: fix or delete
 # from .track_target import TrackTarget
 

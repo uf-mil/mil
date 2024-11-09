@@ -1,3 +1,0 @@
-string[] animal_array # list of animals (P,C,T), up to three animals (Platypus, Turtle, Croc)
----
-string message
