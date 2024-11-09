@@ -70,6 +70,9 @@ Fetching latest apt packages...
 $(hash_header)
 EOF
 
+# Install neovim (to prevent cameron from going mad)
+sudo apt-add-repository ppa:neovim-ppa/stable -y
+
 # Update apt
 sudo apt update
 
@@ -104,6 +107,7 @@ mil_system_install --no-install-recommends \
 	ruby \
 	wget \
 	vim \
+	neovim \
 	expect \
 	doxygen \
 	doxygen-doc \

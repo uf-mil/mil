@@ -4,10 +4,13 @@ RobotX Communications Library: A library that handles serialization and deserial
 of messages for the RobotX Communication Protocol
 """
 
+from __future__ import annotations
+
 import math
-from typing import Any, List, Optional, Tuple
+from typing import Any
 
 import tf.transformations as trans
+from geographic_msgs.msg import GeoPoint
 from mil_tools import rosmsg_to_numpy
 from nav_msgs.msg import Odometry
 from navigator_msgs.srv import (
@@ -15,8 +18,8 @@ from navigator_msgs.srv import (
     MessageEntranceExitGateRequest,
     MessageFindFlingRequest,
     MessageFollowPathRequest,
-    MessageReactReportRequest,
     MessageUAVReplenishmentRequest,
+    MessageWildlifeEncounterRequest,
 )
 
 
@@ -36,8 +39,8 @@ class RobotXHeartbeatMessage:
 
     .. warning::
 
-        The following code pertains to the **2022 edition** of the AUVSI RobotX
-        competition, held in Australia. Updates to the specifications may have changed
+        The following code pertains to the **2024 edition** of the AUVSI RobotX
+        competition, held in Sarasota. Updates to the specifications may have changed
         since this competition, and therefore, the code may not accurately represent
         the specifications MIL must produce for the competition.
 
@@ -50,7 +53,7 @@ class RobotXHeartbeatMessage:
         self.message_id = "RXHRB"
         self.timestamp_last = None
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         From a message representing a message as a string, return the data and checksum
         lists encoded in the string.
@@ -72,11 +75,11 @@ class RobotXHeartbeatMessage:
         self,
         delim: str,
         team_id: str,
-        aedt_date_time: Any,
-        gps_array: Optional[Any],
-        odom: Optional[Odometry],
-        uav_status: Optional[int],
-        system_mode: Optional[int],
+        edt_date_time: Any,
+        gps_array: Any,
+        odom: Odometry | None,
+        uav_status: int | None,
+        system_mode: int | None,
         use_test_data: bool,
     ) -> str:
         """
@@ -87,7 +90,7 @@ class RobotXHeartbeatMessage:
         Args:
             delim (str): The delimiter to use when separating the data.
             team_id (str): The team ID used by MIL when sending messages.
-            aedt_date_time (Any): Presumably (??) a datetime object representing the
+            edt_date_time (Any): Presumably (??) a datetime object representing the
                 current time in AEDT.
             gps_array (Optional[Any]): A specific message type containing at least a point. (??)
             odom (Optional[Odometry]): An optional odometry message to encode in the message.
@@ -138,7 +141,7 @@ class RobotXHeartbeatMessage:
         if system_mode is None:
             system_mode = 0
 
-        first_half_data = f"{self.message_id}{delim}{aedt_date_time}{delim}{latitude}{delim}{north_south}"
+        first_half_data = f"{self.message_id}{delim}{edt_date_time}{delim}{latitude}{delim}{north_south}"
 
         second_half_data = f"{longitude}{delim}{east_west}{delim}{team_id}{delim}{system_mode}{delim}{uav_status!s}"
 
@@ -163,8 +166,8 @@ class RobotXEntranceExitGateMessage:
 
     .. warning::
 
-        The following code pertains to the **2022 edition** of the AUVSI RobotX
-        competition, held in Australia. Updates to the specifications may have changed
+        The following code pertains to the **2024 edition** of the AUVSI RobotX
+        competition, held in Sarasota. Updates to the specifications may have changed
         since this competition, and therefore, the code may not accurately represent
         the specifications MIL must produce for the competition.
 
@@ -176,7 +179,7 @@ class RobotXEntranceExitGateMessage:
     def __init__(self):
         self.message_id = "RXGAT"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Constructs a list of data values and a checksum list from a provided message.
 
@@ -197,7 +200,7 @@ class RobotXEntranceExitGateMessage:
         self,
         delim: str,
         team_id: Any,
-        aedt_date_time: Any,
+        edt_date_time: Any,
         data: MessageEntranceExitGateRequest,
         use_test_data: bool,
     ) -> str:
@@ -209,7 +212,7 @@ class RobotXEntranceExitGateMessage:
             delim (str): The delimiter to use in between data values.
             team_id (Any): A value (??) that can be converted to a string to represent
                 the MIL team ID.
-            aedt_date_time (Any): A value (??) used to represent the current date + time
+            edt_date_time (Any): A value (??) used to represent the current date + time
                 in AEDT.
             data (MessageEntranceExitGateRequest): The data about the entrance/exit
                 gate mission.
@@ -220,7 +223,7 @@ class RobotXEntranceExitGateMessage:
             str: The encoded message.
         """
 
-        data = f"{self.message_id}{delim}{aedt_date_time}{delim}{team_id}{delim}{data.entrance_gate!s}{delim}{data.exit_gate!s}"
+        data = f"{self.message_id}{delim}{edt_date_time}{delim}{team_id}{delim}{data.entrance_gate!s}{delim}{data.exit_gate!s}"
 
         # test data
         if use_test_data:
@@ -241,8 +244,8 @@ class RobotXFollowPathMessage:
 
     .. warning::
 
-        The following code pertains to the **2022 edition** of the AUVSI RobotX
-        competition, held in Australia. Updates to the specifications may have changed
+        The following code pertains to the **2024 edition** of the AUVSI RobotX
+        competition, held in Sarasota. Updates to the specifications may have changed
         since this competition, and therefore, the code may not accurately represent
         the specifications MIL must produce for the competition.
 
@@ -254,7 +257,7 @@ class RobotXFollowPathMessage:
     def __init__(self):
         self.message_id = "RXPTH"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Constructs a list of data values and a checksum list from a provided message.
 
@@ -275,7 +278,7 @@ class RobotXFollowPathMessage:
         self,
         delim: str,
         team_id: Any,
-        aedt_date_time: Any,
+        edt_date_time: Any,
         data: MessageFollowPathRequest,
         use_test_data: bool,
     ) -> str:
@@ -287,7 +290,7 @@ class RobotXFollowPathMessage:
             delim (str): The delimiter to use in between data values.
             team_id (Any): A value (??) that can be converted to a string to represent
                 the MIL team ID.
-            aedt_date_time (Any): A value (??) used to represent the current date + time
+            edt_date_time (Any): A value (??) used to represent the current date + time
                 in AEDT.
             data (MessageFollowPathRequest): The data about the follow path mission.
             use_test_data (bool): Whether to use test data in the message. If ``True``,
@@ -297,7 +300,7 @@ class RobotXFollowPathMessage:
             str: The encoded message.
         """
 
-        data = f"{self.message_id}{delim}{aedt_date_time}{delim}{team_id}{delim}{data.finished!s}"
+        data = f"{self.message_id}{delim}{edt_date_time}{delim}{team_id}{delim}{data.finished!s}"
 
         # test data
         if use_test_data:
@@ -312,14 +315,14 @@ class RobotXFollowPathMessage:
         return msg_return
 
 
-class RobotXReactReportMessage:
+class RobotXWildlifeEncounterMessage:
     """
-    Handles formation of react report message.
+    Handles formation of the wildlife encounter message.
 
     .. warning::
 
-        The following code pertains to the **2022 edition** of the AUVSI RobotX
-        competition, held in Australia. Updates to the specifications may have changed
+        The following code pertains to the **2024 edition** of the AUVSI RobotX
+        competition, held in Sarsota. Updates to the specifications may have changed
         since this competition, and therefore, the code may not accurately represent
         the specifications MIL must produce for the competition.
 
@@ -331,7 +334,7 @@ class RobotXReactReportMessage:
     def __init__(self):
         self.message_id = "RXENC"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Constructs a list of data values and a checksum list from a provided message.
 
@@ -352,8 +355,8 @@ class RobotXReactReportMessage:
         self,
         delim: str,
         team_id: Any,
-        aedt_date_time: Any,
-        data: MessageReactReportRequest,
+        edt_date_time: Any,
+        data: MessageWildlifeEncounterRequest,
         use_test_data: bool,
     ) -> str:
         """
@@ -364,9 +367,9 @@ class RobotXReactReportMessage:
             delim (str): The delimiter to use in between data values.
             team_id (Any): A value (??) that can be converted to a string to represent
                 the MIL team ID.
-            aedt_date_time (Any): A value (??) used to represent the current date + time
+            edt_date_time (Any): A value (??) used to represent the current date + time
                 in AEDT.
-            data (MessageReactReportRequest): The data about the react report mission.
+            data (MessageWildlifeEncounterRequest): The data about the wildlife encounter mission.
             use_test_data (bool): Whether to use test data in the message. If ``True``,
                 then most of the other parameters are ignored.
 
@@ -374,10 +377,7 @@ class RobotXReactReportMessage:
             str: The encoded message.
         """
 
-        data_ = f"{self.message_id}{delim}{aedt_date_time}{delim}{team_id}{delim}{len(data.animal_array)!s}"
-
-        for animal in data.animal_array:
-            data_ += delim + animal
+        data_ = f"{self.message_id}{delim}{edt_date_time}{delim}{team_id}{delim}{data.circling_wildlife}{delim}{'CW' if data.clockwise else 'CCW'}{delim}{data.number_of_circles}"
 
         # test data
         if use_test_data:
@@ -398,8 +398,8 @@ class RobotXScanCodeMessage:
 
     .. warning::
 
-        The following code pertains to the **2022 edition** of the AUVSI RobotX
-        competition, held in Australia. Updates to the specifications may have changed
+        The following code pertains to the **2024 edition** of the AUVSI RobotX
+        competition, held in Sarasota. Updates to the specifications may have changed
         since this competition, and therefore, the code may not accurately represent
         the specifications MIL must produce for the competition.
 
@@ -411,7 +411,7 @@ class RobotXScanCodeMessage:
     def __init__(self):
         self.message_id = "RXCOD"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Returns the information encoded in a message.
 
@@ -432,7 +432,7 @@ class RobotXScanCodeMessage:
         self,
         delim: str,
         team_id: Any,
-        aedt_date_time: Any,
+        edt_date_time: Any,
         color_pattern: str,
         use_test_data: bool,
     ) -> str:
@@ -443,14 +443,14 @@ class RobotXScanCodeMessage:
             delim (str): The string delimiter used to separate distinct data
                 points in the message.
             team_id (Any): The team ID used by MIL in the competition.
-            aedt_date_time (Any): The datetime to send in AEDT.
+            edt_date_time (Any): The datetime to send in AEDT.
             color_pattern (str): The color pattern to send in the message.
             use_test_data (bool): Whether to use test data when sending the message.
 
         Returns:
             str: The constructed message.
         """
-        data = f"{self.message_id}{delim}{aedt_date_time}{delim}{team_id}{delim}{color_pattern}"
+        data = f"{self.message_id}{delim}{edt_date_time}{delim}{team_id}{delim}{color_pattern}"
 
         # test data
         if use_test_data:
@@ -471,8 +471,8 @@ class RobotXDetectDockMessage:
 
     .. warning::
 
-        The following code pertains to the **2022 edition** of the AUVSI RobotX
-        competition, held in Australia. Updates to the specifications may have changed
+        The following code pertains to the **2024 edition** of the AUVSI RobotX
+        competition, held in Sarasota. Updates to the specifications may have changed
         since this competition, and therefore, the code may not accurately represent
         the specifications MIL must produce for the competition.
 
@@ -484,7 +484,7 @@ class RobotXDetectDockMessage:
     def __init__(self):
         self.message_id = "RXDOK"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Constructs a list of data values and a checksum list from a provided message.
 
@@ -505,7 +505,7 @@ class RobotXDetectDockMessage:
         self,
         delim: str,
         team_id: Any,
-        aedt_date_time: Any,
+        edt_date_time: Any,
         data: MessageDetectDockRequest,
         use_test_data: bool,
     ) -> str:
@@ -517,7 +517,7 @@ class RobotXDetectDockMessage:
             delim (str): The delimiter to use in between data values.
             team_id (Any): A value (??) that can be converted to a string to represent
                 the MIL team ID.
-            aedt_date_time (Any): A value (??) used to represent the current date + time
+            edt_date_time (Any): A value (??) used to represent the current date + time
                 in AEDT.
             data (MessageDetectDockRequest): The data about the detect dock mission.
             use_test_data (bool): Whether to use test data in the message. If ``True``,
@@ -527,7 +527,7 @@ class RobotXDetectDockMessage:
             str: The encoded message.
         """
 
-        data = f"{self.message_id}{delim}{aedt_date_time}{delim}{team_id}{delim}{data.color!s}{delim}{data.ams_status!s}"
+        data = f"{self.message_id}{delim}{edt_date_time}{delim}{team_id}{delim}{data.color!s}{delim}{data.ams_status!s}"
 
         # test data
         if use_test_data:
@@ -548,8 +548,8 @@ class RobotXFindFlingMessage:
 
     .. warning::
 
-        The following code pertains to the **2022 edition** of the AUVSI RobotX
-        competition, held in Australia. Updates to the specifications may have changed
+        The following code pertains to the **2024 edition** of the AUVSI RobotX
+        competition, held in Sarasota. Updates to the specifications may have changed
         since this competition, and therefore, the code may not accurately represent
         the specifications MIL must produce for the competition.
 
@@ -561,7 +561,7 @@ class RobotXFindFlingMessage:
     def __init__(self):
         self.message_id = "RXFLG"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Constructs a list of data values and a checksum list from a provided message.
 
@@ -582,7 +582,7 @@ class RobotXFindFlingMessage:
         self,
         delim: str,
         team_id: Any,
-        aedt_date_time: Any,
+        edt_date_time: Any,
         data: MessageFindFlingRequest,
         use_test_data: bool,
     ) -> str:
@@ -594,7 +594,7 @@ class RobotXFindFlingMessage:
             delim (str): The delimiter to use in between data values.
             team_id (Any): A value (??) that can be converted to a string to represent
                 the MIL team ID.
-            aedt_date_time (Any): A value (??) used to represent the current date + time
+            edt_date_time (Any): A value (??) used to represent the current date + time
                 in AEDT.
             data (MessageFindFlingRequest): The data about the find fling mission.
             use_test_data (bool): Whether to use test data in the message. If ``True``,
@@ -604,7 +604,7 @@ class RobotXFindFlingMessage:
             str: The encoded message.
         """
 
-        data = f"{self.message_id}{delim}{aedt_date_time}{delim}{team_id}{delim}{data.color!s}{delim}{data.ams_status!s}"
+        data = f"{self.message_id}{delim}{edt_date_time}{delim}{team_id}{delim}{data.color!s}{delim}{data.ams_status!s}"
 
         # test data
         if use_test_data:
@@ -625,8 +625,8 @@ class RobotXUAVReplenishmentMessage:
 
     .. warning::
 
-        The following code pertains to the **2022 edition** of the AUVSI RobotX
-        competition, held in Australia. Updates to the specifications may have changed
+        The following code pertains to the **2024 edition** of the AUVSI RobotX
+        competition, held in Sarasota. Updates to the specifications may have changed
         since this competition, and therefore, the code may not accurately represent
         the specifications MIL must produce for the competition.
 
@@ -638,7 +638,7 @@ class RobotXUAVReplenishmentMessage:
     def __init__(self):
         self.message_id = "RXUAV"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Constructs a list of data values and a checksum list from a provided message.
 
@@ -659,7 +659,7 @@ class RobotXUAVReplenishmentMessage:
         self,
         delim: str,
         team_id: Any,
-        aedt_date_time: Any,
+        edt_date_time: Any,
         data: MessageUAVReplenishmentRequest,
         use_test_data: bool,
     ) -> str:
@@ -671,7 +671,7 @@ class RobotXUAVReplenishmentMessage:
             delim (str): The delimiter to use in between data values.
             team_id (Any): A value (??) that can be converted to a string to represent
                 the MIL team ID.
-            aedt_date_time (Any): A value (??) used to represent the current date + time
+            edt_date_time (Any): A value (??) used to represent the current date + time
                 in AEDT.
             data (MessageUAVReplenishmentRequest): The data about the WAV replenishment mission.
             use_test_data (bool): Whether to use test data in the message. If ``True``,
@@ -681,7 +681,7 @@ class RobotXUAVReplenishmentMessage:
             str: The encoded message.
         """
 
-        data = f"{self.message_id}{delim}{aedt_date_time}{delim}{team_id}{delim}{data.uav_status!s}{delim}{data.item_status!s}"
+        data = f"{self.message_id}{delim}{edt_date_time}{delim}{team_id}{delim}{data.uav_status!s}{delim}{data.item_status!s}"
 
         # test data
         if use_test_data:
@@ -702,8 +702,8 @@ class RobotXUAVSearchReportMessage:
 
     .. warning::
 
-        The following code pertains to the **2022 edition** of the AUVSI RobotX
-        competition, held in Australia. Updates to the specifications may have changed
+        The following code pertains to the **2024 edition** of the AUVSI RobotX
+        competition, held in Sarasota. Updates to the specifications may have changed
         since this competition, and therefore, the code may not accurately represent
         the specifications MIL must produce for the competition.
 
@@ -715,7 +715,7 @@ class RobotXUAVSearchReportMessage:
     def __init__(self):
         self.message_id = "RXSAR"
 
-    def from_string(self, delim: bytes, string: str) -> Tuple[List[str], List[str]]:
+    def from_string(self, delim: bytes, string: str) -> tuple[list[str], list[str]]:
         """
         Constructs a list of data values and a checksum list from a provided message.
 
@@ -732,11 +732,19 @@ class RobotXUAVSearchReportMessage:
         checksum_list = string.split(b"*")
         return data_list, checksum_list
 
+    def lat_lon_ns(self, point: GeoPoint) -> tuple[float, str, float, str]:
+        return (
+            abs(point.latitude),
+            "N" if point.latitude >= 0 else "S",
+            abs(point.longitude),
+            "E" if point.longitude >= 0 else "W",
+        )
+
     def to_string(
         self,
         delim: str,
         team_id: Any,
-        aedt_date_time: Any,
+        edt_date_time: Any,
         data: MessageUAVReplenishmentRequest,
         use_test_data: bool,
     ) -> str:
@@ -748,7 +756,7 @@ class RobotXUAVSearchReportMessage:
             delim (str): The delimiter to use in between data values.
             team_id (Any): A value (??) that can be converted to a string to represent
                 the MIL team ID.
-            aedt_date_time (Any): A value (??) used to represent the current date + time
+            edt_date_time (Any): A value (??) used to represent the current date + time
                 in AEDT.
             data (MessageUAVReplenishmentRequest): The data about the WAV replenishment mission.
             use_test_data (bool): Whether to use test data in the message. If ``True``,
@@ -758,7 +766,10 @@ class RobotXUAVSearchReportMessage:
             str: The encoded message.
         """
 
-        data = f"{self.message_id}{delim}{aedt_date_time}{delim}{data.object1!s}{delim}{data.object1_latitude!s}{delim}{data.object1_n_s!s}{delim}{data.object1_longitude!s}{delim}{data.object1_e_w!s}{delim}{data.object2!s}{delim}{data.object2_latitude!s}{delim}{data.object2_n_s!s}{delim}{data.object2_longitude!s}{delim}{data.object2_e_w!s}{delim}{team_id}{delim}{data.uav_status!s}"
+        o1_lat, o1_ns, o1_lon, o1_ew = self.lat_lon_ns(data.object1_location)
+        o2_lat, o2_ns, o2_lon, o2_ew = self.lat_lon_ns(data.object2_location)
+
+        data = f"{self.message_id}{delim}{edt_date_time}{delim}{data.object1!s}{delim}{o1_lat!s}{delim}{o1_ns!s}{delim}{o1_lon!s}{delim}{o1_ew!s}{delim}{data.object2!s}{delim}{o2_lat!s}{delim}{o2_ns!s}{delim}{o2_lon!s}{delim}{o2_ew!s}{delim}{team_id}{delim}{data.uav_status!s}"
 
         # test data
         if use_test_data:

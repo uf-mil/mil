@@ -1,0 +1,30 @@
+# This connection requires the MAC address being uploaded to:
+# https://deviceregistration.dhnet.ufl.edu
+
+[connection]
+id=ufdevice
+uuid=418cfbde-76c1-4208-9fac-6f0dbbd0f565
+type=wifi
+interface-name=wlo1
+permissions=
+
+[wifi]
+mac-address-blacklist=
+mode=infrastructure
+ssid=ufdevice
+
+[wifi-security]
+auth-alg=open
+key-mgmt=wpa-psk
+psk=gogators
+
+[ipv4]
+dns-search=
+method=auto
+
+[ipv6]
+addr-gen-mode=stable-privacy
+dns-search=
+method=auto
+
+[proxy]

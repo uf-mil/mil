@@ -5,8 +5,11 @@
 #include <mil_bounds/BoundsConfig.h>
 #include <mil_msgs/ObjectDBQuery.h>
 #include <nav_msgs/Odometry.h>
+#include <pcl/filters/passthrough.h>
+#include <roboteq_msgs/Command.h>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <std_msgs/Float32.h>
 #include <std_srvs/Trigger.h>
 #include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
@@ -51,7 +54,7 @@ protected:
   bool transform_to_global(std::string const& frame, ros::Time const& time, Eigen::Affine3d& out,
                            ros::Duration timeout = ros::Duration(1, 0));
   /// Transform a pointcloud ROS message into a PCL pointcloud in the global frame
-  bool transform_point_cloud(const sensor_msgs::PointCloud2& pcloud2, point_cloud& out);
+  bool transform_point_cloud(const sensor_msgs::PointCloud2& pcloud2, point_cloud_i& out);
   virtual bool bounds_update_cb(const mil_bounds::BoundsConfig& config);
   virtual void ConfigCallback(Config const& config, uint32_t level);
 
@@ -79,6 +82,10 @@ protected:
   // Visualization
   MarkerManager marker_manager_;
   OgridManager ogrid_manager_;
+
+  // Intensity filter
+  double intensity_filter_min_intensity;
+  double intensity_filter_max_intensity;
 };
 
 class Node : public NodeBase
@@ -93,6 +100,7 @@ public:
 private:
   bool bounds_update_cb(const mil_bounds::BoundsConfig& config) override;
   void ConfigCallback(Config const& config, uint32_t level) override;
+  void update_config(Config const& config);
   /// Reset PCODAR
   bool Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) override;
 

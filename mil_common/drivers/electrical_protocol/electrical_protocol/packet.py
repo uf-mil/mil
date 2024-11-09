@@ -112,17 +112,15 @@ class Packet:
 
     def __post_init__(self):
         for name, field_type in get_cache_hints(self.__class__).items():
-            if (
-                name
-                not in [
-                    "class_id",
-                    "subclass_id",
-                    "payload_format",
-                ]
-                and not isinstance(self.__dict__[name], field_type)
-                and issubclass(field_type, Enum)
-            ):
-                setattr(self, name, field_type(self.__dict__[name]))
+            if name not in [
+                "class_id",
+                "subclass_id",
+                "payload_format",
+            ] and not isinstance(self.__dict__[name], field_type):
+                if issubclass(field_type, Enum):
+                    setattr(self, name, field_type(self.__dict__[name]))
+                elif issubclass(field_type, str):
+                    setattr(self, name, self.__dict__[name].rstrip(b"\x00").decode())
         if self.payload_format and not self.payload_format.startswith(
             ("<", ">", "=", "!"),
         ):
@@ -163,7 +161,21 @@ class Packet:
         return sum1, sum2
 
     def __bytes__(self):
-        payload = struct.pack(self.payload_format, *self.__dict__.values())
+        ready_values = []
+        for value in self.__dict__.values():
+            if isinstance(value, Enum):
+                ready_values.append(
+                    (
+                        value.value
+                        if not isinstance(value.value, str)
+                        else value.value.encode()
+                    ),
+                )
+            elif isinstance(value, str):
+                ready_values.append(value.encode())
+            else:
+                ready_values.append(value)
+        payload = struct.pack(self.payload_format, *ready_values)
         data = struct.pack(
             f"<BBBBH{len(payload)}s",
             SYNC_CHAR_1,

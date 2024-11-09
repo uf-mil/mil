@@ -91,15 +91,16 @@ alias gazebogui="rosrun gazebo_ros gzclient __name:=gzclient"
 
 # Preflight aliases
 alias preflight='python3 $MIL_REPO/mil_common/utils/mil_tools/scripts/mil-preflight/main.py'
+alias ntmux='$MIL_REPO/NaviGator/scripts/tmux_start.sh'
 
 # Process killing aliases
 alias killgazebo="killall -9 gzserver && killall -9 gzclient"
 alias killros='$MIL_REPO/scripts/kill_ros.sh'
 alias killprocess='$MIL_REPO/scripts/kill_process.sh'
 
-startxbox() {
+xbox() {
 	rosservice call /wrench/select "topic: '/wrench/rc'"
-	roslaunch navigator_launch shore.launch
+	roslaunch navigator_launch shore.launch device_input:="$1"
 }
 
 # catkin_make for one specific package only
@@ -193,7 +194,18 @@ rossubconnect() {
 	rosconnect "192.168.37.60"
 }
 
-alias xbox=startxbox
+prettycp() {
+	rsync --recursive --times --modify-window=2 --progress --verbose --itemize-changes --stats --human-readable "$1" "$2"
+}
+
+mount_ssd() {
+	sudo mkdir -p /mnt/ssd
+	sudo mount -t exfat /dev/sda1 /mnt/ssd
+}
+
+unmount_ssd() {
+	sudo umount /mnt/ssd
+}
 
 # PYTHONPATH modifications
 export PYTHONPATH="${HOME}/catkin_ws/src/mil/mil_common/perception/vision_stack/src:${HOME}/catkin_ws/src/mil/mil_common/axros/axros/src:${PYTHONPATH}"

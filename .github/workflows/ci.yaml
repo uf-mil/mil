@@ -37,7 +37,8 @@ jobs:
     name: Run tests and build docs
     needs: avoid-duplicate-ci
     if: needs.avoid-duplicate-ci.outputs.should_skip != 'true'
-    runs-on: self-hosted
+    runs-on:
+      group: mala-lab-main
     steps:
       - name: Configure catkin workspace folder structure
         run: |
@@ -111,7 +112,8 @@ jobs:
 
   deploy-docs:
     name: Deploy docs from master
-    runs-on: self-hosted
+    runs-on:
+      group: mala-lab-main
     needs: super-ci
     # https://github.com/actions/runner/issues/491#issuecomment-850884422
     if: |
