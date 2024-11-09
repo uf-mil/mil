@@ -3,23 +3,21 @@ import math
 
 import numpy as np
 from mil_tools import quaternion_matrix
-from std_srvs.srv import SetBoolRequest
 
 from .navigator import NaviGatorMission
 
 
 class EntranceGate2(NaviGatorMission):
-    async def run(self, args):
+    async def run(self, args, *, scan_code=False):
         # Parameters:
-        scan_code = False
         return_to_start = True
         circle_radius = 10
         circle_direction = "cw"
         yaw_offset = 1.57
         self.traversal_distance = 3
 
-        #await self.set_classifier_enabled.wait_for_service()
-        #await self.set_classifier_enabled(SetBoolRequest(data=True))
+        # await self.set_classifier_enabled.wait_for_service()
+        # await self.set_classifier_enabled(SetBoolRequest(data=True))
 
         # Inspect Gates
         await self.change_wrench("/wrench/autonomous")

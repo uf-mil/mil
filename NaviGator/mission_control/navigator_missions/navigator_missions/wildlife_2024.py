@@ -150,7 +150,7 @@ class Wildlife2024(NaviGatorMission):
                 if ret is not None
                 else []
             )
-            self.send_feedback(f"Analyzing objects: {labels}")
+            # self.send_feedback(f"Analyzing objects: {labels}")
             if ret is not None:
                 if move_id_tuple is not None:
                     self.send_feedback("Condition met. Canceling investigation")
