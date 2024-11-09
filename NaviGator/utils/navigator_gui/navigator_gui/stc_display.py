@@ -10,7 +10,7 @@ from qt_gui.plugin import Plugin
 
 class StcDisplay(Plugin):
     UPDATE_MILLISECONDS = 1000
-    STC_TOPIC = "/stc_sequence"
+    STC_TOPIC = "/stc_display"
     colors = {
         "red": "QWidget {background-color:#FF432E;}",
         "green": "QWidget {background-color:#B1EB00;}",
