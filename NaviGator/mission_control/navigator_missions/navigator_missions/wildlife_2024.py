@@ -4,9 +4,11 @@ from enum import Enum
 
 import numpy as np
 import rospy
+from geometry_msgs.msg import Point
 from mil_msgs.msg import ObjectsInImage
 from mil_msgs.srv import CameraToLidarTransform
 from mil_tools import rosmsg_to_numpy
+from navigator_msgs.msg import Wildlife
 
 from .navigator import NaviGatorMission
 
@@ -20,9 +22,9 @@ class MoveState(Enum):
 
 class Wildlife2024(NaviGatorMission):
     animals_observed = {
-        "blue_manatee_buoy": False,  # Manatee => Counter clockwise
-        "green_iguana_buoy": False,  # Iguana => Clockwise (by choice)
-        "red_python_buoy": False,  # Python => Clockwise
+        "blue_manatee_buoy": None,  # Manatee => Counter clockwise
+        "green_iguana_buoy": None,  # Iguana => Clockwise (by choice)
+        "red_python_buoy": None,  # Python => Clockwise
     }
 
     @classmethod
@@ -38,6 +40,7 @@ class Wildlife2024(NaviGatorMission):
     @classmethod
     async def shutdown(cls):
         await cls.camsub.shutdown()
+        await cls.report_findings.shutdown()
 
     def get_indices_of_type(self, objects, classifications):
         if isinstance(classifications, str):
@@ -256,12 +259,19 @@ class Wildlife2024(NaviGatorMission):
             filter_and_sort,
         )
 
+        for animal in animals:
+            position = animal[1]
+            object = animal[0]
+            label = object.labeled_classification
+            # Update explore dict
+            self.animals_observed[label] = position
+
+        await self.report_findings()
+
         # Go to each object and circle them accordingly
         for animal in animals:
             object = animal[0]
             label = object.labeled_classification
-            # Update explore dict
-            self.animals_observed[label] = True
             if label == self.chosen_animal:
                 await self.circle_animal(animal)
                 if self.chosen_animal == "red_python_buoy":
@@ -280,10 +290,36 @@ class Wildlife2024(NaviGatorMission):
         else:
             print("ALL WILDLIFE OBSERVED!")
 
+    async def report_findings(self):
+        self.send_feedback("Sending message to display...")
+        self.send_feedback(self.animals_observed["blue_manatee_buoy"])
+        msg = Wildlife()
+        msg.has_blue_manatee = self.animals_observed["blue_manatee_buoy"] is not None
+        if isinstance(self.animals_observed["blue_manatee_buoy"], list):
+            msg.blue_manatee = Point()
+            msg.blue_manatee.x = self.animals_observed["blue_manatee_buoy"][0]
+            msg.blue_manatee.y = self.animals_observed["blue_manatee_buoy"][1]
+
+        msg.has_green_iguana = self.animals_observed["green_iguana_buoy"] is not None
+        if isinstance(self.animals_observed["green_iguana_buoy"], list):
+            msg.green_iguana = Point()
+            msg.green_iguana.x = self.animals_observed["green_iguana_buoy"][0]
+            msg.green_iguana.y = self.animals_observed["green_iguana_buoy"][1]
+
+        msg.has_red_python = self.animals_observed["red_python_buoy"] is not None
+        if isinstance(self.animals_observed["red_python_buoy"], list):
+            msg.red_python = Point()
+            msg.red_python.x = self.animals_observed["red_python_buoy"][0]
+            msg.red_python.y = self.animals_observed["red_python_buoy"][1]
+
+        await self.exploration_report.publish(msg)
+
     async def run(self, args):
         # Check nearest objects
         self.objects_passed = set()
         self.chosen_animal = rospy.get_param("chosen_animal", "red_python_buoy")
+        self.exploration_report = self.nh.advertise("/wildlife_report", Wildlife)
+        await self.exploration_report.setup()
         await self.change_wrench("autonomous")
         # Wait a bit for PCDAR to get setup
         # await self.set_classifier_enabled.wait_for_service()

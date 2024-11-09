@@ -42,4 +42,18 @@
       <statustip>It's STC time bitchess</statustip>
     </qtgui>
   </class>
+  <class name="WildlifeDisplay" type="navigator_gui.WildlifeDisplay" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      Shows the location of found wildlife
+    </description>
+    <qtgui>
+      <group>
+        <icon type="file">resource/mil_logo.png</icon>
+        <label>MIL</label>
+      </group>
+      <icon type="file">resource/shooter.png</icon>
+      <label>WIldlife Display</label>
+      <statustip>It's Wildlife time respectable members of this community</statustip>
+    </qtgui>
+  </class>
 </library>

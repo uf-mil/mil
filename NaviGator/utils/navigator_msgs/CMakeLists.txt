@@ -29,6 +29,7 @@ add_message_files(
   Hosts.msg
   ColoramaDebug.msg
   ScanTheCode.msg
+  Wildlife.msg
 )
 
 add_service_files(
