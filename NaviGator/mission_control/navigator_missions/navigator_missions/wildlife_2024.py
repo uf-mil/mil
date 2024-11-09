@@ -3,10 +3,10 @@ import asyncio
 from enum import Enum
 
 import numpy as np
-import rospy
 from mil_msgs.msg import ObjectsInImage
 from mil_msgs.srv import CameraToLidarTransform
 from mil_tools import rosmsg_to_numpy
+from navigator_msgs.srv import MessageWildlifeEncounter, MessageWildlifeEncounterRequest
 
 from .navigator import NaviGatorMission
 
@@ -227,7 +227,7 @@ class Wildlife2024(NaviGatorMission):
 
     async def find_wildlife(self):
         robot_position = (await self.tx_pose())[0]
-        self.send_feedback("FINDING WILDLIFE")
+        self.send_feedback("[wildlife] FINDING WILDLIFE")
 
         def filter_and_sort(objects, positions):
             distances = np.linalg.norm(positions - robot_position, axis=1)
@@ -263,8 +263,26 @@ class Wildlife2024(NaviGatorMission):
             # Update explore dict
             self.animals_observed[label] = True
             if label == self.chosen_animal:
+                self.send_feedback(
+                    f"[wildlife] starting circle of {self.chosen_animal}",
+                )
+                td_animal_labels = {
+                    "red_python_buoy": "P",
+                    "green_iguana_buoy": "I",
+                    "blue_manatee_buoy": "M",
+                }
+                self.send_feedback("[wildlife] sending feedback")
+                await self.td_feedback(
+                    MessageWildlifeEncounterRequest(
+                        circling_wildlife=td_animal_labels.get(label, "P"),
+                        clockwise=label == "blue_manatee_buoy",
+                        number_of_circles=2 if label == "red_python_buoy" else 1,
+                    ),
+                )
+                self.send_feedback("[wildlife] sent feedback!")
                 await self.circle_animal(animal)
                 if self.chosen_animal == "red_python_buoy":
+                    self.send_feedback("[wildlife] starting double circle of red")
                     await self.circle_animal(animal)
 
         # # Check if all wildlife has been circled
@@ -283,7 +301,25 @@ class Wildlife2024(NaviGatorMission):
     async def run(self, args):
         # Check nearest objects
         self.objects_passed = set()
-        self.chosen_animal = rospy.get_param("chosen_animal", "red_python_buoy")
+        try:
+            self.color_sequence = await self.nh.get_param("color_sequence", str)
+        except TypeError:
+            print("invalid color sequence type")
+            self.color_sequence = None
+        if not self.color_sequence:
+            self.color_sequence = "RGB"
+            self.send_feedback("Invalid color sequence, defaulting to RGB")
+        animals = {
+            "R": "red_python_buoy",
+            "G": "green_iguana_buoy",
+            "B": "blue_manatee_buoy",
+        }
+        self.chosen_animal = animals.get(self.color_sequence[0], "red_python_buoy")
+        self.send_feedback(f"[wildlife] circling {self.chosen_animal}")
+        self.td_feedback = self.nh.get_service_client(
+            "/wildlife_encounter_message",
+            MessageWildlifeEncounter,
+        )
         await self.change_wrench("autonomous")
         # Wait a bit for PCDAR to get setup
         # await self.set_classifier_enabled.wait_for_service()

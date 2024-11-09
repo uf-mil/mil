@@ -158,7 +158,7 @@
       <!-- Wind -->
       <wind_direction>180</wind_direction>
       <!-- in degrees -->
-      <wind_mean_velocity>8.0</wind_mean_velocity>
+      <wind_mean_velocity>4.0</wind_mean_velocity>
       <var_wind_gain_constants>8.0</var_wind_gain_constants>
       <var_wind_time_constants>20</var_wind_time_constants>
       <random_seed>10</random_seed>
