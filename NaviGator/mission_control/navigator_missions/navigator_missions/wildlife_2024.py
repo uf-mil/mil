@@ -3,6 +3,7 @@ import asyncio
 from enum import Enum
 
 import numpy as np
+import rospy
 from mil_msgs.msg import ObjectsInImage
 from mil_msgs.srv import CameraToLidarTransform
 from mil_tools import rosmsg_to_numpy
@@ -185,32 +186,29 @@ class Wildlife2024(NaviGatorMission):
                 move_id_tuple = (move, objects[potential_candidate].id)
                 print("USING POTENTIAL CANDIDATE")
 
-    async def circle_animals(self, animals):
-        for animal in animals:
-            object = animal[0]
-            position = animal[1]
-            label = object.labeled_classification
+    async def circle_animal(self, animal):
+        object = animal[0]
+        position = animal[1]
+        label = object.labeled_classification
+        self.send_feedback(f"Circling {label}...")
 
-            # Go to point and Circle animal
-            await self.move.d_spiral_point(
-                position,
-                6,
-                4,
-                1,
-                (
-                    "cw"
-                    if label == "green_iguana_buoy" or label == "red_python_buoy"
-                    else "ccw"
-                ),
-                theta_offset=(
-                    1.57
-                    if label == "green_iguana_buoy" or label == "red_python_buoy"
-                    else -1.57
-                ),
-            )
-
-            # Update explore dict
-            self.animals_observed[label] = True
+        # Go to point and Circle animal
+        await self.move.d_spiral_point(
+            position,
+            6,
+            4,
+            1,
+            (
+                "ccw"
+                if label == "green_iguana_buoy" or label == "red_python_buoy"
+                else "cw"
+            ),
+            theta_offset=(
+                -1.57
+                if label == "green_iguana_buoy" or label == "red_python_buoy"
+                else 1.57
+            ),
+        )
 
     def get_indices_of_most_confident_animals(
         self,
@@ -259,7 +257,15 @@ class Wildlife2024(NaviGatorMission):
         )
 
         # Go to each object and circle them accordingly
-        await self.circle_animals(animals)
+        for animal in animals:
+            object = animal[0]
+            label = object.labeled_classification
+            # Update explore dict
+            self.animals_observed[label] = True
+            if label == self.chosen_animal:
+                await self.circle_animal(animal)
+                if self.chosen_animal == "red_python_buoy":
+                    await self.circle_animal(animal)
 
         # # Check if all wildlife has been circled
         # IF not all wildlife has been found call this function again
@@ -277,6 +283,7 @@ class Wildlife2024(NaviGatorMission):
     async def run(self, args):
         # Check nearest objects
         self.objects_passed = set()
+        self.chosen_animal = rospy.get_param("chosen_animal", "red_python_buoy")
         await self.change_wrench("autonomous")
         # Wait a bit for PCDAR to get setup
         # await self.set_classifier_enabled.wait_for_service()
