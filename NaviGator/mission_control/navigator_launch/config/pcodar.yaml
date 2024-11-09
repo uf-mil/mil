@@ -26,4 +26,4 @@ intensity_filter_min_intensity: 10
 intensity_filter_max_intensity: 100
 
 # yamllint disable-line rule:line-length
-classifications: ["white_cylinder", "black_cylinder", "red_cylinder", "green_cylinder", "UNKNOWN"]
+classifications: ["white_cylinder", "black_cylinder", "red_cylinder", "green_cylinder", "red_python_buoy", "blue_manatee_buoy", "green_iguana_buoy", "UNKNOWN"]
