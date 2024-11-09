@@ -23,6 +23,7 @@ public:
   void update_ogrid(ObjectMap const& objects);
   void draw_boundary();
   void update_config(Config const& config);
+  void get_config(Config& config);
   void set_bounds(point_cloud_ptr pc);
 
 private:

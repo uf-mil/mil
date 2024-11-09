@@ -80,4 +80,10 @@ void Associator::update_config(Config const& config)
   forget_unseen_ = config.associator_forget_unseen;
 }
 
+void Associator::get_config(Config& config)
+{
+  config.associator_max_distance = max_distance_;
+  config.associator_forget_unseen = forget_unseen_;
+}
+
 }  // namespace pcodar

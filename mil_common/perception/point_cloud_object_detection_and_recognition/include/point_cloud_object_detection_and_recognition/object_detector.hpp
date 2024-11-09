@@ -18,6 +18,7 @@ public:
   clusters_t get_clusters(point_cloud_const_ptr pc);
   /// Update the dynamic reconfigure parameters associated with this class
   void update_config(Config const& config);
+  void get_config(Config& config);
 
 private:
   pcl::EuclideanClusterExtraction<point_t> cluster_extractor_;

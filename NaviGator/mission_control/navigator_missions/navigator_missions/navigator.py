@@ -29,7 +29,9 @@ from roboteq_msgs.msg import Command
 from ros_alarms import TxAlarmListener
 from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import Bool
+from std_srvs.srv import Empty as Emptysrv
 from std_srvs.srv import (
+    EmptyRequest,
     SetBool,
     SetBoolRequest,
     SetBoolResponse,
@@ -210,6 +212,22 @@ class NaviGatorMission(BaseMission):
             cls._winch_motor_pub.setup(),
             cls._grind_motor_pub.setup(),
         )
+
+        try:
+            cls._ball_spin_srv = cls.nh.get_service_client(
+                "/ball_launcher/spin",
+                SetBool,
+            )
+            cls._ball_launch_srv = cls.nh.get_service_client(
+                "/ball_launcher/drop_ball",
+                Emptysrv,
+            )
+        except AttributeError as err:
+            fprint(
+                f"Error getting ball launcher service clients: {err}",
+                title="NAVIGATOR",
+                msg_color="red",
+            )
 
         try:
             cls._actuator_client = cls.nh.get_service_client(
@@ -534,17 +552,28 @@ class NaviGatorMission(BaseMission):
         await self.set_valve("LAUNCHER_RELOAD_RETRACT", False)
         self.launcher_state = "inactive"
 
+    async def start_launcher(self):
+        await self._ball_spin_srv(SetBoolRequest(data=True))
+
+    async def stop_launcher(self):
+        await self._ball_spin_srv(SetBoolRequest(data=False))
+
     async def fire_launcher(self):
         if self.launcher_state != "inactive":
             raise Exception(f"Launcher is {self.launcher_state}")
         self.launcher_state = "firing"
-        await self.set_valve("LAUNCHER_FIRE", True)
+        await self._ball_launch_srv(EmptyRequest())
         await self.nh.sleep(0.5)
         self.launcher_state = "inactive"
 
     def set_valve(self, name, state):
         req = SetValveRequest(actuator=name, opened=state)
         return self._actuator_client(req)
+
+    async def get_largest_object(self, name: str = "UNKNOWN", **kwargs):
+        objects = (await self.database_query(object_name=name, **kwargs)).objects
+        largest_object = max(objects, key=lambda x: x.scale.x * x.scale.y)
+        return largest_object
 
     async def get_sorted_objects(
         self,

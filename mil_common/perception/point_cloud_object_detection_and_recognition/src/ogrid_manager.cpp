@@ -16,21 +16,21 @@ void OgridManager::initialize(ros::NodeHandle& nh)
 
 void OgridManager::draw_boundary()
 {
-  std::vector<cv::Point> bounds(bounds_->size());
-  for (int i = 0; i < bounds.size(); ++i)
-  {
-    bounds[i] = point_in_ogrid(bounds_->points[i]);
-  }
+  /*
+    std::vector<cv::Point>bounds(pcodar::boundary.size());
+    for(int i = 0; i < bounds.size(); ++i) {
+      bounds[i] = point_in_ogrid(bounds[i]);
+    }
 
-  for (int i = 0; i < bounds.size(); ++i)
-  {
-    // std::cout << bounds[i] << std::endl;
-    cv::circle(ogrid_mat_, bounds[i], 15, cv::Scalar(99), -1);
-  }
-  const cv::Point* pts = (const cv::Point*)cv::Mat(bounds).data;
-  int npts = cv::Mat(bounds).rows;
+    for(int i = 0; i < bounds.size(); ++i) {
+      // std::cout << bounds[i] << std::endl;
+      cv::circle(ogrid_mat_, bounds[i], 15, cv::Scalar(99), -1);
+    }
+    const cv::Point *pts = (const cv::Point*) cv::Mat(bounds).data;
+    int npts = cv::Mat(bounds).rows;
 
-  cv::polylines(ogrid_mat_, &pts, &npts, 1, true, cv::Scalar(99), 5);
+    cv::polylines(ogrid_mat_, &pts, &npts, 1, true, cv::Scalar(99), 5);
+  */
 }
 
 void OgridManager::set_bounds(point_cloud_ptr pc)
@@ -113,6 +113,14 @@ void OgridManager::update_config(Config const& config)
   ogrid_.info.origin.orientation.w = 1;
   ogrid_.data.resize(ogrid_.info.width * ogrid_.info.height);
   ogrid_mat_ = cv::Mat(cv::Size(ogrid_.info.width, ogrid_.info.height), CV_8UC1, ogrid_.data.data());
+}
+
+void OgridManager::get_config(Config& config)
+{
+  config.ogrid_width_meters = width_meters_;
+  config.ogrid_height_meters = height_meters_;
+  config.ogrid_resolution_meters_per_cell = resolution_meters_per_cell_;
+  config.ogrid_inflation_meters = inflation_cells_ * resolution_meters_per_cell_;
 }
 
 }  // namespace pcodar

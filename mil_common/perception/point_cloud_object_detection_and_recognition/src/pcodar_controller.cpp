@@ -95,6 +95,16 @@ bool NodeBase::Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Respons
   return true;
 }
 
+void NodeBase::save_config()
+{
+  ogrid_manager_.get_config(saved_config_);
+}
+
+void NodeBase::restore_config()
+{
+  ogrid_manager_.update_config(saved_config_);
+}
+
 bool NodeBase::transform_point_cloud(const sensor_msgs::PointCloud2& pc_msg, point_cloud_i& out)
 {
   Eigen::Affine3d transform;
@@ -127,6 +137,37 @@ Node::Node(ros::NodeHandle _nh) : NodeBase(_nh)
   input_cloud_filter_.set_robot_footprint(min, max);
 }
 
+void Node::save_config()
+{
+  NodeBase::save_config();
+  persistent_cloud_builder_.get_config(saved_config_);
+  persistent_cloud_filter_.get_config(saved_config_);
+  detector_.get_config(saved_config_);
+  ass.get_config(saved_config_);
+}
+
+void Node::restore_config()
+{
+  NodeBase::restore_config();
+  persistent_cloud_builder_.update_config(saved_config_);
+  persistent_cloud_filter_.update_config(saved_config_);
+  detector_.update_config(saved_config_);
+  ass.update_config(saved_config_);
+}
+
+bool Node::StoreParameters(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res)
+{
+  if (req.data)
+  {
+    save_config();
+  }
+  else
+  {
+    restore_config();
+  }
+  return true;
+}
+
 void Node::update_config(Config const& config)
 {
   this->intensity_filter_min_intensity = config.intensity_filter_min_intensity;
@@ -157,6 +198,7 @@ void Node::initialize()
 
   // Publish occupancy grid and visualization markers
   pub_pcl_ = nh_.advertise<point_cloud>("persist_pcl", 1);
+  store_parameters_service_ = nh_.advertiseService("save", &Node::StoreParameters, this);
 }
 
 bool Node::Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res)

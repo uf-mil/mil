@@ -23,4 +23,10 @@ void PersistentCloudFilter::update_config(Config const& config)
   outlier_filter_.setMinNeighborsInRadius(config.persistant_cloud_filter_min_neighbors);
 }
 
+void PersistentCloudFilter::get_config(Config& config)
+{
+  config.persistant_cloud_filter_radius = outlier_filter_.getRadiusSearch();
+  config.persistant_cloud_filter_min_neighbors = outlier_filter_.getMinNeighborsInRadius();
+}
+
 }  // namespace pcodar
