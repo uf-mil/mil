@@ -4,5 +4,6 @@ initial_pois:
   wildlife: [-1.7053, 44.9246, 0.0]
   docking: [-3.24, 58.64265, 0.0]
   entrance_gate: [22.87, 8.66, 0.0]
+  exit_gate: [22.87, 17.29, 0.0]
   navigation: [46.6878, 23.3085, 0.0]
   scan_the_code: [29.868, 44.1452, 0.0]

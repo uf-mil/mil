@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+import asyncio
 import math
 
+import axros
 import numpy as np
 from mil_tools import quaternion_matrix
+from navigator_msgs.srv import MessageEntranceExitGate, MessageEntranceExitGateRequest
 from std_srvs.srv import SetBoolRequest
 
 from .navigator import NaviGatorMission
@@ -53,6 +56,18 @@ class EntranceGate2(NaviGatorMission):
             traversal_points[1],
         ).go()
         await self.move.set_position(traversal_points[1]).go()
+
+        td_feedback = self.nh.get_service_client(
+            "/entrance_exit_gate_message",
+            MessageEntranceExitGate,
+        )
+        try:
+            await axros.wrap_timeout(td_feedback.wait_for_service(), duration=5)
+            await td_feedback(
+                MessageEntranceExitGateRequest(entrance_gate=3, exit_gate=3),
+            )
+        except asyncio.TimeoutError:
+            self.send_feedback("!!! timed out on td feedback")
 
         if scan_code:
             pass
