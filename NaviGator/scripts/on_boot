@@ -37,6 +37,7 @@ $TMUX send-keys -t $SESSION:0 "$ROSCORE" C-m
 # Start GPS driver in second window
 $TMUX new-window -t $SESSION:1 -n "sdgps"
 $TMUX send-keys -t $SESSION:1 "$GPS_CMD" C-m
+$TMUX send-keys './start_gps.sh' Enter
 
 # Start passive sonar driver in third window
 $TMUX new-window -t $SESSION:2 -n "sonar"
