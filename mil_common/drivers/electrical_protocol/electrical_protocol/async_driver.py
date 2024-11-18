@@ -1,3 +1,4 @@
+'''
 from __future__ import annotations
 
 import abc
@@ -6,7 +7,8 @@ import contextlib
 from typing import Any, Generic, TypeVar, Union, cast, get_args, get_origin
 
 import axros
-import rospy
+
+# import rospy
 import serial
 import serial_asyncio
 
@@ -23,13 +25,17 @@ class DeviceProtocol(asyncio.Protocol):
         self.byte_count = 0
         self.buffer = b""
         self.expected_count = None
+        print("in init?")
 
     def connection_made(self, transport: asyncio.BaseTransport) -> None:
         self.transport = transport
+
+        print("port opened", transport)
         self.transport.serial.reset_input_buffer()  # type: ignore
         self.transport.serial.reset_output_buffer()  # type: ignore
 
     def data_received(self, data: bytes) -> None:
+        print("data received?")
         # Either wait to hear the next start byte, or keep accumulating bytes
         # for the next packet
         if self.expected_count is None:
@@ -114,7 +120,7 @@ class AsyncSerialDevice(Generic[SendPackets, RecvPackets]):
         cls._send_T = get_args(cls.__orig_bases__[0])[0]  # type: ignore
         cls._recv_T = get_args(cls.__orig_bases__[0])[1]  # type: ignore
 
-    async def connect(self, port: str, baudrate: int) -> None:
+    async def connect(self, port: str, baudrate: int, loop) -> None:
         """
         Connects to the port with the given baudrate. If the device is already
         connected, the input and output buffers will be flushed.
@@ -123,34 +129,40 @@ class AsyncSerialDevice(Generic[SendPackets, RecvPackets]):
             port (str): The serial port to connect to.
             baudrate (int): The baudrate to connect with.
         """
+        print("3")
         self.port = port
         self.baudrate = baudrate
-        if self.transport:
-            raise RuntimeError("Device is already connected.")
+
+        # if self.transport:
+        #    raise RuntimeError("Device is already connected.")
+        print("the serial connection runs after this?")
         self.transport, self.protocol = await serial_asyncio.create_serial_connection(
-            asyncio.get_event_loop(),
+            loop,
             DeviceProtocol,
             port,
             baudrate=baudrate,
         )
 
-    def close(self) -> None:
+        print("the serial connection creator finished?")
+
+    async def close(self) -> None:
         """
         Closes the serial device.
         """
-        rospy.loginfo("Closing serial device...")
+        print("Closing serial device...")
         if not self.transport:
             raise RuntimeError("Device is not connected.")
         else:
             with contextlib.suppress(OSError):
                 if self.transport.serial.in_waiting:  # type: ignore
-                    rospy.logwarn(
+                    print(
                         "Shutting down device, but packets were left in buffer...",
                     )
             self.transport.close()
+
             self.transport = None
 
-    def write(self, data: bytes) -> None:
+    async def write(self, data: bytes) -> None:
         """
         Writes a series of raw bytes to the device. This method should rarely be
         used; using :meth:`~.send_packet` is preferred because of the guarantees
@@ -164,21 +176,22 @@ class AsyncSerialDevice(Generic[SendPackets, RecvPackets]):
         self.transport.write(data)
 
     def send_packet(self, packet: SendPackets) -> None:
+        print("4")
         """
         Sends a given packet to the device.
 
         Arguments:
             packet (:class:`~.Packet`): The packet to send.
         """
-        self.write(bytes(packet))
+        asyncio.create_task(self.write(bytes(packet)))
 
-    def _read_from_stream(self) -> bytes:
+    async def _read_from_stream(self) -> bytes:
         # Read until SOF is encourntered in case buffer contains the end of a previous packet
-        if not self.device:
+        if not self.transport:
             raise RuntimeError("Device is not connected.")
         sof = None
         for _ in range(10):
-            sof = self.device.read(1)
+            sof = self.transport.serial.read(1)
             if not len(sof):
                 continue
             sof_int = int.from_bytes(sof, byteorder="big")
@@ -188,13 +201,13 @@ class AsyncSerialDevice(Generic[SendPackets, RecvPackets]):
             raise TimeoutError("No SOF received in one second.")
         sof_int = int.from_bytes(sof, byteorder="big")
         if sof_int != SYNC_CHAR_1:
-            rospy.logerr("Where da start char at?")
+            print("Where da start char at?")
         data = sof
         # Read sync char 2, msg ID, subclass ID
-        data += self.device.read(3)
-        length = self.device.read(2)  # read payload length
+        data += self.transport.serial.read(3)
+        length = self.transport.serial.read(2)  # read payload length
         data += length
-        data += self.device.read(
+        data += self.transport.serial.read(
             int.from_bytes(length, byteorder="little") + 2,
         )  # read data and checksum
         return data
@@ -208,14 +221,14 @@ class AsyncSerialDevice(Generic[SendPackets, RecvPackets]):
         else:
             return isinstance(provided, self._recv_T)
 
-    def _read_packet(self) -> bool:
+    async def _read_packet(self) -> bool:
         if not self.device:
             raise RuntimeError("Device is not connected.")
         try:
             if not self.is_open() or self.device.in_waiting == 0:
                 return False
             if self.device.in_waiting > 200:
-                rospy.logwarn_throttle(
+                print(
                     0.5,
                     "Packets are coming in much quicker than expected, upping rate...",
                 )
@@ -224,33 +237,33 @@ class AsyncSerialDevice(Generic[SendPackets, RecvPackets]):
             assert isinstance(packed_packet, bytes)
             packet = Packet.from_bytes(packed_packet)
         except serial.SerialException as e:
-            rospy.logerr(f"Error reading packet: {e}")
+            print(f"Error reading packet: {e}")
             return False
         except OSError:
-            rospy.logerr_throttle(1, "Cannot read from serial device.")
+            print(1, "Cannot read from serial device.")
             return False
         if not self._correct_type(packet):
-            rospy.logerr(
+            print(
                 f"Received unexpected packet: {packet} (expected: {self._recv_T})",
             )
             return False
         packet = cast(RecvPackets, packet)
-        self.on_packet_received(packet)
+        await self.on_packet_received(packet)
         return True
 
-    def _process_buffer(self, _: rospy.timer.TimerEvent) -> None:
+    async def _process_buffer(self, _: rospy.timer.TimerEvent) -> None:
         if not self.is_open():
             return
         try:
-            self._read_packet()
+            await self._read_packet()
         except Exception as e:
-            rospy.logerr(f"Error reading recent packet: {e}")
+            print(f"Error reading recent packet: {e}")
             import traceback
 
             traceback.print_exc()
 
     @abc.abstractmethod
-    def on_packet_received(self, packet: RecvPackets) -> None:
+    async def on_packet_received(self, packet: RecvPackets) -> None:
         """
         Abstract method to be implemented by subclasses for handling packets
         sent by the physical electrical board.
@@ -259,3 +272,4 @@ class AsyncSerialDevice(Generic[SendPackets, RecvPackets]):
             packet (:class:`~.Packet`): The packet that is received.
         """
         pass
+'''

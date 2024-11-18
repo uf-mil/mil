@@ -3,7 +3,9 @@ project(electrical_protocol)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   serial
+  axros
 )
+
 catkin_python_setup()
 catkin_package()
 

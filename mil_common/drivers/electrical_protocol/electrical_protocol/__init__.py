@@ -11,5 +11,6 @@ If a CAN standard is desired, the :class:`mil_usb_to_can.sub9.CANDeviceHandle`
 class can be used, which supports packets built through this library.
 """
 
+from .async_driver import AsyncSerialDevice
 from .driver import ROSSerialDevice
 from .packet import AckPacket, ChecksumException, NackPacket, Packet

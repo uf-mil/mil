@@ -75,6 +75,7 @@ class ROSSerialDevice(Generic[SendPackets, RecvPackets]):
             port (str): The serial port to connect to.
             baudrate (int): The baudrate to connect with.
         """
+        rospy.loginfo("3")
         self.port = port
         self.baudrate = baudrate
         self.device = serial.Serial(port, baudrate, timeout=0.1)
@@ -113,6 +114,7 @@ class ROSSerialDevice(Generic[SendPackets, RecvPackets]):
         self.device.write(data)
 
     def send_packet(self, packet: SendPackets) -> None:
+        rospy.loginfo("4")
         """
         Sends a given packet to the device.
 

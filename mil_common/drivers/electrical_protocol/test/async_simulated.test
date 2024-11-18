@@ -1,0 +1,7 @@
+
+<!-- <?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <param name="/is_simulation" value="True" />
+    <node pkg="electrical_protocol" type="async_calculator_device.py" name="async_calculator_device" output="screen" />
+    <test pkg="electrical_protocol" test-name="async_test_simulated_basic" type="async_test_simulated_basic.py" />
+</launch> -->

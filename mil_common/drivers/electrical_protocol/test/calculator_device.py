@@ -13,25 +13,27 @@ from std_srvs.srv import Empty, EmptyRequest, EmptyResponse
 
 
 @dataclass
-class RequestAddPacket(Packet, class_id=0x37, subclass_id=0x00, payload_format="ff"):
+class RequestAddPacket(Packet, class_id=0x37, subclass_id=0x00, payload_format="<ff"):
     number_one: float
     number_two: float
 
 
 @dataclass
-class RequestSubPacket(Packet, class_id=0x37, subclass_id=0x01, payload_format="ff"):
+class RequestSubPacket(Packet, class_id=0x37, subclass_id=0x01, payload_format="<ff"):
     start: float
     minus: float
 
 
 @dataclass
-class AnswerPacket(Packet, class_id=0x37, subclass_id=0x02, payload_format="f"):
+class AnswerPacket(Packet, class_id=0x37, subclass_id=0x02, payload_format="<f"):
     result: float
 
 
 class CalculatorDevice(
     ROSSerialDevice[Union[RequestAddPacket, RequestSubPacket], AnswerPacket],
 ):
+    rospy.loginfo("1")
+
     def __init__(self):
         self.port_topic = rospy.Subscriber("~port", String, self.port_callback)
         self.start_service = rospy.Service("~trigger", Empty, self.trigger)
@@ -41,9 +43,11 @@ class CalculatorDevice(
         super().__init__(None, 115200)
 
     def port_callback(self, msg: String):
+        rospy.loginfo("2")
         self.connect(msg.data, 115200)
 
     def trigger(self, _: EmptyRequest):
+        rospy.loginfo("4")
         self.num_one, self.num_two = self.i, 1000 - self.i
         self.i += 1
         self.send_packet(

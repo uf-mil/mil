@@ -6,6 +6,7 @@
   <maintainer email="cameron.brown@todo.todo">cameron.brown</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>axros</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>serial</exec_depend>
 </package>

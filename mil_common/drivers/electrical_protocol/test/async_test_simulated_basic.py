@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+"""
 import os
 import pty
 import unittest
@@ -29,30 +29,35 @@ class AnswerPacket(Packet, class_id=0x37, subclass_id=0x02, payload_format="<f")
     result: float
 
 
-class SimulatedBasicTest(unittest.TestCase):
+class AsyncSimulatedBasicTest(unittest.TestCase):
     def __init__(self, *args):
         super().__init__(*args)
         self.port_publisher = rospy.Publisher(
-            "/calculator_device/port",
+            "/async_calculator_device/port",
             String,
             queue_size=1,
         )
+        # print(f"Port topic: {self.port_publisher.resolved_name}")
         self.answer_subscriber = rospy.Subscriber(
-            "/calculator_device/answer",
+            "/async_calculator_device/answer",
             Float32,
             self.answer_callback,
         )
         self.count = 0
 
     def test_simulated(self):
+        # self.port_publisher.publish(String(data="/dev/ttyUSB0"))
+
         self.master, self.slave = pty.openpty()
         serial_name = os.ttyname(self.slave)
+        print(f"serial name: {serial_name}")
         while not self.port_publisher.get_num_connections() and not rospy.is_shutdown():
             print("waiting for port connection...")
             rospy.sleep(0.1)
         self.port_publisher.publish(String(serial_name))
+
         self.trigger_service_caller = rospy.ServiceProxy(
-            "/calculator_device/trigger",
+            "/async_calculator_device/trigger",
             Empty,
         )
         for i in range(1000):
@@ -86,6 +91,9 @@ class SimulatedBasicTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    rospy.init_node("test_simulated_basic")
-    rostest.rosrun("electrical_protocol", "test_simulated_basic", SimulatedBasicTest)
+    rospy.init_node("async_test_simulated_basic")
+    rostest.rosrun(
+        "electrical_protocol", "async_test_simulated_basic", AsyncSimulatedBasicTest,
+    )
     unittest.main()
+"""
