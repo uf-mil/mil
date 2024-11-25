@@ -29,6 +29,8 @@ add_message_files(
   Hosts.msg
   ColoramaDebug.msg
   ScanTheCode.msg
+  DroneTarget.msg
+  DroneTin.msg
 )
 
 add_service_files(
@@ -64,6 +66,7 @@ add_service_files(
   TwoClosestCones.srv
   # 2024 RobotX service files
   BallLauncherDrops.srv
+  DroneMission.srv
 )
 
 add_action_files(

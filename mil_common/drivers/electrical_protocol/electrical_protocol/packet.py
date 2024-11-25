@@ -111,6 +111,7 @@ class Packet:
         _packet_registry.setdefault(class_id, {})[subclass_id] = cls
 
     def __post_init__(self):
+
         for name, field_type in get_cache_hints(self.__class__).items():
             if name not in [
                 "class_id",
@@ -118,7 +119,12 @@ class Packet:
                 "payload_format",
             ] and not isinstance(self.__dict__[name], field_type):
                 if issubclass(field_type, Enum):
-                    setattr(self, name, field_type(self.__dict__[name]))
+                    value = (
+                        self.__dict__[name]
+                        if not isinstance(self.__dict__[name], bytes)
+                        else self.__dict__[name].decode()
+                    )
+                    setattr(self, name, field_type(value))
                 elif issubclass(field_type, str):
                     setattr(self, name, self.__dict__[name].rstrip(b"\x00").decode())
         if self.payload_format and not self.payload_format.startswith(

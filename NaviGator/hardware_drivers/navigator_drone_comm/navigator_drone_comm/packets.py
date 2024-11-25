@@ -9,11 +9,16 @@ class HeartbeatReceivePacket(
     Packet,
     class_id=0x20,
     subclass_id=0x00,
-    payload_format="",
+    payload_format="<i",
 ):
     """
     Heartbeat packet sent from the drone.
+
+    Attributes:
+        status (int): The status of the drone (1=stowed, 2=deloyed, 3=faulted)
     """
+
+    status: int
 
 
 @dataclass
@@ -75,6 +80,29 @@ class Color(Enum):
     RED = "r"
 
 
+class Logo(Enum):
+    """
+    R or N pad enum
+    """
+
+    R_Logo = "R"
+    N_Logo = "N"
+
+
+@dataclass
+class TinPacket(Packet, class_id=0x20, subclass_id=0x07, payload_format="<ic"):
+    """
+    Tin packet and status of tin
+
+    Attributes:
+        status(int): status of drone for the tin
+        color(Enum): color of tin
+    """
+
+    status: int
+    color: Color
+
+
 @dataclass
 class TargetPacket(Packet, class_id=0x20, subclass_id=0x06, payload_format="<ffc"):
     """
@@ -88,4 +116,4 @@ class TargetPacket(Packet, class_id=0x20, subclass_id=0x06, payload_format="<ffc
 
     lat: float
     lon: float
-    color: Color
+    logo: Logo
