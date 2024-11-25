@@ -95,6 +95,9 @@ public:
 
   void velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud);
 
+  void thrust_fl_cb(const std_msgs::Float32& thrust);
+  void thrust_fr_cb(const std_msgs::Float32& thrust);
+
   void initialize() override;
 
 private:
@@ -105,10 +108,17 @@ private:
   bool Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) override;
 
 private:
+  // Switch that tells pcodar that Navigator is moving backwards
+  bool fr_back = false;
+  bool fl_back = false;
+  bool thrust_back = false;
+
   ros::Publisher pub_pcl_;
 
-  // Subscriber
+  // Subscribers
   ros::Subscriber pc_sub;
+  ros::Subscriber fl_sub;
+  ros::Subscriber fr_sub;
 
   // Model (It eventually will be object tracker, but for now just detections)
   InputCloudFilter input_cloud_filter_;
