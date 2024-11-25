@@ -290,10 +290,18 @@ class Navigation(NaviGatorMission):
             # and find closest one within 25 meters (max width of a gate).
             if cone_buoys_investigated > 0 and potential_candidate is None:
                 for i in range(len(objects)):
-                    print(positions[i])
+                    obj_vol = (
+                        objects[i].scale.x * objects[i].scale.y * objects[i].scale.z
+                    )
+
+                    # Catch case where we invesitegate the shore
+                    if obj_vol > 3:
+                        continue
+
                     if (
                         objects[i].id not in investigated
                         and "round" not in objects[i].labeled_classification
+                        and obj_vol < 3
                     ):
                         distance = np.linalg.norm(positions[i] - self.pose[0])
                         if distance < shortest_distance and distance <= 25:
@@ -308,9 +316,18 @@ class Navigation(NaviGatorMission):
             # if that doesn't produce any results, literally just go to closest buoy
             if potential_candidate is None:
                 for i in range(len(objects)):
+                    obj_vol = (
+                        objects[i].scale.x * objects[i].scale.y * objects[i].scale.z
+                    )
+
+                    # Catch case where we invesitegate the shore
+                    if obj_vol > 3:
+                        continue
+
                     if (
                         objects[i].id not in investigated
                         and "round" not in objects[i].labeled_classification
+                        and obj_vol < 3
                     ):
                         distance = np.linalg.norm(positions[i] - self.pose[0])
                         if distance < shortest_distance:
