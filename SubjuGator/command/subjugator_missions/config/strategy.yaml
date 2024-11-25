@@ -1,0 +1,28 @@
+---
+####################################
+# Overall variables
+####################################
+
+# Which team the sub is playing for.
+#   - Two possible values: red, blue.
+team: red
+
+####################################
+# Start Gate task
+####################################
+start_gate:
+  with_style: true
+
+####################################
+# Hydrothermal Vent (red buoy) task
+####################################
+
+####################################
+# Ocean Temperatures (bins) task
+####################################
+
+####################################
+# Mapping (torpedoes) task
+####################################
+torpedoes:
+  color: red
