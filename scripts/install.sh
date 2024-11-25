@@ -214,7 +214,35 @@ fi
 cat <<EOF
 $(color "$Pur")
 $(hash_header)
-$(color "$Gre")Downloaded and setup Python dependencies.
+$(color "$Gre")Downloaded and setup python dependencies.
+$(color "$Pur")Installing ROS2 Foxy and dependencies...
+$(hash_header)$(color "$Res")
+EOF
+
+mil_system_install software-properties-common
+sudo add-apt-repository universe
+
+sudo apt update && mil_system_install curl
+sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list >/dev/null
+
+sudo apt update
+sudo apt upgrade
+
+mil_system_install ros-foxy-desktop python3-argcomplete
+
+mil_system_install ros-dev-tools
+
+mil_system_install ros-foxy-ros1-bridge
+
+# Restore path
+cd ~/catkin_ws/src/mil/
+
+cat <<EOF
+$(color "$Pur")
+$(hash_header)
+$(color "$Gre")Downloaded and setup ROS2 Foxy.
 $(color "$Pur")Initializing rosdep...
 $(hash_header)$(color "$Res")
 EOF
@@ -278,7 +306,7 @@ mil_user_setup_rc() {
 			} >>~/.zshrc
 		fi
 	else
-		# User is using zsh
+		# User is using bash
 		if grep -Fq "$BASH_RC_LINES" ~/.bashrc; then
 			echo "milrc is already sourced in ~/.bashrc, skipping"
 		else
