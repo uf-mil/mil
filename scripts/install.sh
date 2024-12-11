@@ -20,6 +20,22 @@ if [[ -z ${TERM} ]]; then
 	clear
 fi
 
+# Before even starting, check if using Ubuntu 20.04
+NAME=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
+VERSION=$(awk -F= '/^VERSION/{print $2}' /etc/os-release)
+if [[ $NAME != *"Ubuntu"* ]]; then
+	printf "${Red}This script is only supported on Ubuntu (you're using: ${NAME}). Please install Ubuntu 20.04.${Res}\n"
+	exit 1
+fi
+if [[ $VERSION != *"20.04"* ]]; then
+	printf "${Red}This script is only supported on Ubuntu 20.04 (you're using: ${VERSION}). Please install Ubuntu 20.04.${Res}\n"
+	exit 1
+fi
+if [[ $(grep -i Microsoft /proc/version) ]]; then
+	printf "${Red}Using WSL is not supported, due to graphical issues with our simulation environment. Please dual-boot your computer, or use a virtual machine.${Res}\n"
+	exit 1
+fi
+
 # Display header
 cat <<EOF
 $(color "$Pur")
