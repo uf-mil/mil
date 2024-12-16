@@ -9,10 +9,14 @@ from .navigator import NaviGatorMission
 
 
 class EntranceGate2(NaviGatorMission):
-    async def run(self, args):
-        # Parameters:
-        scan_code = False
-        return_to_start = True
+    async def run(
+        self,
+        args,
+        *,
+        scan_code: bool = False,
+        return_to_start: bool = True,
+        circle: bool = True,
+    ):
         circle_radius = 5
         circle_direction = "cw"
         yaw_offset = 1.57
@@ -52,7 +56,7 @@ class EntranceGate2(NaviGatorMission):
 
         if scan_code:
             pass
-        elif return_to_start:
+        elif return_to_start and circle:
             # Approach buoy we will rotate around
             buoy = await self.get_sorted_objects("black_cylinder", n=1)
             buoy = buoy[1][0]
@@ -78,8 +82,9 @@ class EntranceGate2(NaviGatorMission):
                 yaw_offset,
             )
 
+        if return_to_start:
             # Go back through start gate
-            self.send_feedback("Navigating through gate")
+            self.send_feedback("Navigating through original gate")
             await self.move.set_position(traversal_points[1]).look_at(
                 traversal_points[0],
             ).go()

@@ -7,12 +7,13 @@ from threading import Lock
 
 import rospy
 import tf2_ros
-from geometry_msgs.msg import Point, PointStamped, Pose, Quaternion
+from geometry_msgs.msg import Point, Pose, Quaternion
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 from mil_ros_tools.msg_helpers import numpy_to_point
 from mil_tools import thread_lock
 from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
 from tf.transformations import euler_from_quaternion
+from tf2_geometry_msgs import PointStamped
 from visualization_msgs.msg import (
     InteractiveMarker,
     InteractiveMarkerControl,
