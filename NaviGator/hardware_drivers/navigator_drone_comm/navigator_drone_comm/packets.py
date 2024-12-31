@@ -82,11 +82,11 @@ class Color(Enum):
 
 class Logo(Enum):
     """
-    R or N pad enum
+    Whether the drone detected the "R" logo pad, or the "N" logo pad.
     """
 
-    R_Logo = "R"
-    N_Logo = "N"
+    R_LOGO = "R"
+    N_LOGO = "N"
 
 
 @dataclass

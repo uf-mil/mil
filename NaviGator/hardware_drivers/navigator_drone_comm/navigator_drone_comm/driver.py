@@ -28,12 +28,12 @@ from .packets import (
     TinPacket,
 )
 
+SendPackets = Union[HeartbeatSetPacket, EStopPacket, StartPacket, StopPacket]
+RecvPackets = Union[HeartbeatReceivePacket, GPSDronePacket, TargetPacket, TinPacket]
+
 
 class DroneCommDevice(
-    ROSSerialDevice[
-        Union[HeartbeatSetPacket, EStopPacket, StartPacket, StopPacket],
-        Union[HeartbeatReceivePacket, GPSDronePacket, TargetPacket, TinPacket],
-    ],
+    ROSSerialDevice[SendPackets, RecvPackets],
 ):
     def __init__(self, port: str):
         super().__init__(port, 57600)
@@ -43,6 +43,7 @@ class DroneCommDevice(
             DroneTarget,
             queue_size=5,
         )  # TODO replace with service call
+        self.target_msg = {}
         self.tin_pub = rospy.Publisher("~tin", DroneTin, queue_size=5)
         self.drone_heartbeat_pub = rospy.Publisher(
             "~drone_heartbeat",
@@ -102,7 +103,7 @@ class DroneCommDevice(
 
     def on_packet_received(
         self,
-        packet: Union[HeartbeatReceivePacket, GPSDronePacket, TargetPacket, TinPacket],
+        packet: RecvPackets,
     ):
         if isinstance(packet, HeartbeatReceivePacket):
             rospy.loginfo("status %s", packet.status)
@@ -115,17 +116,21 @@ class DroneCommDevice(
             point_msg = Point(packet.lat, packet.lon, packet.alt)
             self.gps_pub.publish(point_msg)
         elif isinstance(packet, TargetPacket):
-            rospy.loginfo(packet)
+            rospy.loginfo(str(packet))
             self.target_msg[self.num_logos] = [
                 packet.lat,
                 packet.lon,
                 packet.logo.value,
             ]
             self.num_logos += 1
-            rospy.loginfo(self.target_msg)
+            rospy.loginfo(str(self.target_msg))
             # self.target_pub.publish(target_msg)
             if self.num_logos > 1:
-                rospy.wait_for_service("uav_search_report_message")
+                drone_target_proxy = rospy.ServiceProxy(
+                    "uav_search_report_message",
+                    MessageUAVSearchReport,
+                )
+                drone_target_proxy.wait_for_service()
                 try:
                     drone_msg = MessageUAVSearchReportRequest()
                     drone_msg.object1 = self.target_msg[0][2]
@@ -141,12 +146,7 @@ class DroneCommDevice(
                     point2.altitude = 0.0
                     drone_msg.object1_location = point1
                     drone_msg.object2_location = point2
-
-                    rospy.loginfo(drone_msg)
-                    drone_target_proxy = rospy.ServiceProxy(
-                        "uav_search_report_message",
-                        MessageUAVSearchReport,
-                    )
+                    rospy.loginfo(str(drone_msg))
                     response = drone_target_proxy(drone_msg)
                     rospy.loginfo(response)
                 except Exception:
@@ -159,7 +159,7 @@ class DroneCommDevice(
                 uav_replenish_msg.item_status = packet.status
                 uav_replenish_msg.item_color = packet.color.name[0]
 
-                rospy.loginfo(uav_replenish_msg)
+                rospy.loginfo(str(uav_replenish_msg))
                 drone_tin_proxy = rospy.ServiceProxy(
                     "uav_replenishment_message",
                     MessageUAVReplenishment,
