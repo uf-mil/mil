@@ -33,6 +33,32 @@ jobs:
       - id: check_skip
         uses: fkirc/skip-duplicate-actions@v5
 
+  ubuntu-22-test:
+    name: Ensure Ubuntu 22 is prohibited
+    runs-on: ubuntu-22.04
+    needs: avoid-duplicate-ci
+    if: needs.avoid-duplicate-ci.outputs.should_skip != 'true'
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v4
+      - name: Ensure install script fails
+        run: |
+          cd $GITHUB_WORKSPACE
+          ./scripts/install.sh && exit 1 || exit 0
+
+  ubuntu-24-test:
+    name: Ensure Ubuntu 24 is prohibited
+    runs-on: ubuntu-24.04
+    needs: avoid-duplicate-ci
+    if: needs.avoid-duplicate-ci.outputs.should_skip != 'true'
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v4
+      - name: Ensure install script fails
+        run: |
+          cd $GITHUB_WORKSPACE
+          ./scripts/install.sh && exit 1 || exit 0
+
   super-ci:
     name: Run tests and build docs
     needs: avoid-duplicate-ci

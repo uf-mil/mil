@@ -82,6 +82,10 @@ protected:
   // Visualization
   MarkerManager marker_manager_;
   OgridManager ogrid_manager_;
+
+  // Intensity filter
+  double intensity_filter_min_intensity;
+  double intensity_filter_max_intensity;
 };
 
 class Node : public NodeBase
@@ -96,6 +100,7 @@ public:
 private:
   bool bounds_update_cb(const mil_bounds::BoundsConfig& config) override;
   void ConfigCallback(Config const& config, uint32_t level) override;
+  void update_config(Config const& config);
   /// Reset PCODAR
   bool Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) override;
 

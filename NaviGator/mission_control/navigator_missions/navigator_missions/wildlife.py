@@ -34,4 +34,5 @@ class Wildlife(NaviGatorMission):
 
             print("going to nearest small object")
 
+        print(f"Spiraling the point: {t1}")
         await self.move.d_spiral_point(t1, 5, 4, 1, "ccw", theta_offset=-1.57)

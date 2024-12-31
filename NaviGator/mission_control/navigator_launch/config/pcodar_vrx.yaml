@@ -21,7 +21,11 @@ ogrid_width_meters: 500
 ogrid_resolution_meters_per_cell: 0.3
 ogrid_inflation_meters: 0.8
 
+# Intensity filter
+intensity_filter_min_intensity: 0
+intensity_filter_max_intensity: 1
+
 # yamllint disable-line rule:line-length
 # classifications: ["buoy", "dock", "stc_platform", "red_totem", "green_totem", "blue_totem", "yellow_totem", "black_totem", "surmark46104", "surmark950400", "surmark950410", "UNKNOWN"]
 # yamllint disable-line rule:line-length
-classifications: ["mb_marker_buoy_red", "mb_marker_buoy_green", "mb_marker_buoy_black", "mb_marker_buoy_white", "mb_round_buoy_black", "mb_round_buoy_orange", "stc_platform", "UNKNOWN"]
+classifications: ["mb_marker_buoy_red", "mb_marker_buoy_green", "mb_marker_buoy_black", "mb_marker_buoy_white", "mb_round_buoy_black", "mb_round_buoy_orange", "stc_platform", "red_python_buoy", "blue_manatee_buoy", "green_iguana_buoy", "black_cylinder", "white_cylinder", "red_cylinder", "green_cylinder", "UNKNOWN"]

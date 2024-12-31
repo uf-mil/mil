@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
+import math
 from threading import Lock
-from typing import Optional
 
 import rospy
 import tf2_ros
-from geometry_msgs.msg import Point, PointStamped, Pose, Quaternion
+from geometry_msgs.msg import Point, Pose, Quaternion
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 from mil_ros_tools.msg_helpers import numpy_to_point
 from mil_tools import thread_lock
 from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
+from tf.transformations import euler_from_quaternion
+from tf2_geometry_msgs import PointStamped
 from visualization_msgs.msg import (
     InteractiveMarker,
     InteractiveMarkerControl,
@@ -74,11 +78,19 @@ class POIServer:
             for key, value in pois.items():
                 assert isinstance(key, str)
                 assert isinstance(value, list)
-                assert len(value) == 3
+                assert len(value) == 3 or len(value) == 7
                 name = key
                 pose = Pose()
-                pose.position = numpy_to_point(value)
-                pose.orientation = Quaternion(0.0, 0.0, 0.0, 0.0)
+                pose.position = numpy_to_point(value[:3])
+                if len(value) == 3:
+                    pose.orientation = Quaternion(0.0, 0.0, 0.0, 0.0)
+                elif len(value) == 7:
+                    pose.orientation = Quaternion(
+                        value[3],
+                        value[4],
+                        value[5],
+                        value[6],
+                    )
                 self._add_poi(name, pose)
 
         # Update clients / markers of changes from param
@@ -94,7 +106,7 @@ class POIServer:
             self.save_to_param_cb,
         )
 
-    def transform_position(self, ps: PointStamped) -> Optional[Point]:
+    def transform_position(self, ps: PointStamped) -> Point | None:
         """
         Attempt to transform a PointStamped message into the global frame, returning
         the position of the transformed point or None if transform failed.
@@ -326,11 +338,29 @@ class POIServer:
                 return True
         return False
 
+    def _valid_orientation(self, orientation: Quaternion) -> tuple[bool, float]:
+        """
+        Ensures that POIs have no rotation in the z axis.
+        """
+        z_component = (
+            euler_from_quaternion(
+                [orientation.x, orientation.y, orientation.z, orientation.w],
+            )[2]
+            * 360
+            / math.pi
+        )
+        return -0.1 < z_component < 0.1, z_component
+
     def _add_poi(self, name: str, position: Pose) -> bool:
         """
         Internal implementation of add_poi, which is NOT thread safe and does
         NOT update clients of change.
         """
+        res, z = self._valid_orientation(position.orientation)
+        if not res:
+            raise ValueError(
+                f"Orientation should have no rotation in the z (found rotation of: {z} degrees)",
+            )
         if self.interactive_marker_server.get(name) is not None:
             return False
         poi = POI()

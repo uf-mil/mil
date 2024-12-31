@@ -1,6 +1,6 @@
 <launch>
   <arg name="wireless" default="False" />
-  <arg name="device_input" default="/dev/input/js0" unless="$(arg wireless)"/>
+  <arg name="device_input" default="/dev/input/js1" unless="$(arg wireless)"/>
   <arg name="device_input" default="/dev/input/by-id/usb-045e_0291-joystick" if="$(arg wireless)"/>
   <!-- Connect to MIL's Xbox Game controller to publish /joy messages -->
   <node pkg="joy" type="joy_node" name="joy_node">

@@ -91,15 +91,16 @@ alias gazebogui="rosrun gazebo_ros gzclient __name:=gzclient"
 
 # Preflight aliases
 alias preflight='python3 $MIL_REPO/mil_common/utils/mil_tools/scripts/mil-preflight/main.py'
+alias ntmux='$MIL_REPO/NaviGator/scripts/tmux_start.sh'
 
 # Process killing aliases
 alias killgazebo="killall -9 gzserver && killall -9 gzclient"
 alias killros='$MIL_REPO/scripts/kill_ros.sh'
 alias killprocess='$MIL_REPO/scripts/kill_process.sh'
 
-startxbox() {
+xbox() {
 	rosservice call /wrench/select "topic: '/wrench/rc'"
-	roslaunch navigator_launch shore.launch
+	roslaunch navigator_launch shore.launch device_input:="$1"
 }
 
 # catkin_make for one specific package only
@@ -197,6 +198,19 @@ prettycp() {
 	rsync --recursive --times --modify-window=2 --progress --verbose --itemize-changes --stats --human-readable "$1" "$2"
 }
 
+# Disambiguation function for ROS_MASTER_URI/GAZEBO_MASTER_URI
+# sets the values to calculated expr 11340+$1 and 11350+$1 respectively
+disambig() {
+	if [ "$#" -ne 1 ]; then
+		printf "Usage: disambig <plus_factor>\n\tSets the ROS_MASTER_URI and GAZEBO_MASTER_URI to 11340+<plus_factor> and 11350+<plus_factor> respectively to allow for parallel simulations"
+		return
+	fi
+	export ROS_MASTER_URI="http://localhost:$((11340 + $1))"
+	export GAZEBO_MASTER_URI="http://localhost:$((11350 + $1))"
+	echo "ROS_MASTER_URI=$ROS_MASTER_URI"
+	echo "GAZEBO_MASTER_URI=$GAZEBO_MASTER_URI"
+}
+
 mount_ssd() {
 	sudo mkdir -p /mnt/ssd
 	sudo mount -t exfat /dev/sda1 /mnt/ssd
@@ -205,8 +219,6 @@ mount_ssd() {
 unmount_ssd() {
 	sudo umount /mnt/ssd
 }
-
-alias xbox=startxbox
 
 # PYTHONPATH modifications
 export PYTHONPATH="${HOME}/catkin_ws/src/mil/mil_common/perception/vision_stack/src:${HOME}/catkin_ws/src/mil/mil_common/axros/axros/src:${PYTHONPATH}"
