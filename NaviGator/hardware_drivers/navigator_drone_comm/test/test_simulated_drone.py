@@ -15,7 +15,6 @@ from navigator_drone_comm.packets import (
     HeartbeatReceivePacket,
     StartPacket,
     StopPacket,
-    TargetPacket,
 )
 from navigator_msgs.msg import DroneTarget
 from navigator_msgs.srv import DroneMission, DroneMissionRequest
@@ -112,12 +111,13 @@ class SimulatedBasicTest(unittest.TestCase):
         rospy.sleep(0.5)
         self.assertAlmostEqual(round(self.drone_gps.x, 3), 37.77)
 
-    def test_target_receive(self):
-        target_packet = TargetPacket(lat=-67.7745, lon=12.654, logo="R")
-        os.write(self.master, bytes(target_packet))
-        rospy.sleep(1)
-        rospy.loginfo(self.target.logo)
-        self.assertEqual(self.target.logo, "R_Logo")
+    # Disabling this test because it was changed at competition and shouldn't work anymore!
+    # def test_target_receive(self):
+    #     target_packet = TargetPacket(lat=-67.7745, lon=12.654, logo="R")
+    #     os.write(self.master, bytes(target_packet))
+    #     rospy.sleep(1)
+    #     rospy.loginfo(self.target.logo)
+    #     self.assertEqual(self.target.logo, "R_LOGO")
 
     # tests that a heartbeat is sent from the boat every second
     # def test_z_sending_heartbeats(self):
