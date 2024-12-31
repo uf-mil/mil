@@ -96,7 +96,7 @@ class TinPacket(Packet, class_id=0x20, subclass_id=0x07, payload_format="<ic"):
 
     Attributes:
         status(int): status of drone for the tin
-        color(Enum): color of tin
+        color(Color): color of tin
     """
 
     status: int
@@ -111,7 +111,7 @@ class TargetPacket(Packet, class_id=0x20, subclass_id=0x06, payload_format="<ffc
     Attributes:
         lat (float): The latitude of the target.
         lon (float): The longitude of the target.
-        color (Color): The color of the target.
+        logo (Logo): The logo of the target.
     """
 
     lat: float

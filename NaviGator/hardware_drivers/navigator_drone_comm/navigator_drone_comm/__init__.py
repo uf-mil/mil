@@ -8,10 +8,12 @@ Can send packets to the drone by calling the services /navigator_drone_comm/esto
 
 from .driver import DroneCommDevice
 from .packets import (
+    Color,
     EStopPacket,
     GPSDronePacket,
     HeartbeatReceivePacket,
     HeartbeatSetPacket,
+    Logo,
     StartPacket,
     StopPacket,
     TargetPacket,
