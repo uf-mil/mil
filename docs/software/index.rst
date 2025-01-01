@@ -10,6 +10,7 @@ Welcome to the software team, take a look at the following to get started!
    :maxdepth: 1
 
    Getting Started <getting_started>
+   ROS 2 Migration <ros2>
    devtools
    Contributing Changes <contributing>
    help
