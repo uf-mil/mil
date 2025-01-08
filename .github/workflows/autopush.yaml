@@ -23,11 +23,32 @@ env:
   PRE_COMMIT_CACHE: ~/.cache/pre-commit
 
 jobs:
+  ensure_autopusher:
+    name: Ensure user has autopush access
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check autopushers team membership
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.INVESTIGATOR_BOT_TOKEN }}
+          script: |
+            const team = 'autopushers';
+            const teamResponse = await github.rest.teams.listMembersInOrg({
+              org: context.repo.owner,
+              team_slug: team,
+            });
+            const members = teamResponse.data.map((member) => member.login);
+            // Check if the user is a member of the team
+            if (!members.includes(context.actor)) {
+              core.setFailed(`User ${context.actor} is not a member of the ` +
+              `${team} team. Found: ${members.join(', ')}`);
+            }
+
   pre-commit:
     name: Run pre-commit
     runs-on:
       group: mala-lab-pre-commit
-    if: github.event.sender.login == 'cbrxyz'
+    needs: [ensure_autopusher]
     steps:
       - name: Check out code from GitHub
         uses: actions/checkout@v3.0.2
