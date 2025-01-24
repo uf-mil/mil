@@ -209,16 +209,6 @@
     </scene>
     <!-- The navigation course -->
     <include>
-      <name>buoy_start_r</name>
-      <uri>model://mb_marker_buoy_white</uri>
-      <pose>-520.338 168.871 0 0 0 -1.44</pose>
-    </include>
-    <include>
-      <name>buoy_start_l</name>
-      <uri>model://mb_marker_buoy_white</uri>
-      <pose>-531.2 176.364 0 0 0 -1.44</pose>
-    </include>
-    <include>
       <name>green1</name>
       <uri>model://mb_marker_buoy_green</uri>
       <pose>-516.374756 177.306625 0 0 0 -1.44</pose>
@@ -277,16 +267,6 @@
       <name>red6</name>
       <uri>model://mb_marker_buoy_red</uri>
       <pose>-509.021057 211.978912 0 0 0 -1.44</pose>
-    </include>
-    <include>
-      <name>buoy_end_r</name>
-      <uri>model://mb_marker_buoy_white</uri>
-      <pose>-501.999146 201.727905 0 0 0 -1.44</pose>
-    </include>
-    <include>
-      <name>buoy_end_l</name>
-      <uri>model://mb_marker_buoy_white</uri>
-      <pose>-499.310181 210.086487 0 0 0 -1.44</pose>
     </include>
   </world>
 </sdf>

@@ -85,7 +85,6 @@
       <goal_pose>-33.722718 150.674031 0.0</goal_pose>
       <initial_state_duration>10</initial_state_duration>
       <ready_state_duration>10</ready_state_duration>
-      <running_state_duration>300</running_state_duration>
       <release_joints>
         <joint>
           <name>wamv_external_pivot_joint</name>
@@ -209,16 +208,6 @@
     </scene>
     <!-- The navigation course -->
     <include>
-      <name>buoy_start_r</name>
-      <uri>model://mb_marker_buoy_white</uri>
-      <pose>-520.338 168.871 0 0 0 -1.44</pose>
-    </include>
-    <include>
-      <name>buoy_start_l</name>
-      <uri>model://mb_marker_buoy_white</uri>
-      <pose>-531.2 176.364 0 0 0 -1.44</pose>
-    </include>
-    <include>
       <name>buoy_green1</name>
       <uri>model://mb_marker_buoy_green</uri>
       <pose>-516.550720 176.016571 0 0 0 -1.44</pose>
@@ -277,16 +266,6 @@
       <name>buoy_red6</name>
       <uri>model://mb_marker_buoy_red</uri>
       <pose>-500.408539 209.651611 0 0 0 -1.44</pose>
-    </include>
-    <include>
-      <name>buoy_end_r</name>
-      <uri>model://mb_marker_buoy_white</uri>
-      <pose>-490.633240 200.413437 0 0 0 -1.44</pose>
-    </include>
-    <include>
-      <name>buoy_end_l</name>
-      <uri>model://mb_marker_buoy_white</uri>
-      <pose>-492.262939 209.520996 0 0 0 -1.44</pose>
     </include>
   </world>
 </sdf>
