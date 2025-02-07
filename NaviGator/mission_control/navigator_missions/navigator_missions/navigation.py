@@ -4,6 +4,7 @@ from enum import Enum
 
 import numpy as np
 from mil_tools import quaternion_matrix, rosmsg_to_numpy
+from navigator_msgs.srv import MessageFollowPath, MessageFollowPathRequest
 from std_srvs.srv import SetBoolRequest
 
 from .navigator import NaviGatorMission
@@ -23,6 +24,11 @@ class Navigation(NaviGatorMission):
         super().__init__(*args, **kwargs)
         self.current_move_task_state = MoveState.NOT_STARTED
         self.last_move_task_state = MoveState.NOT_STARTED
+
+        self.net_service_call = self.nh.get_service_client(
+            "/follow_path_message",
+            MessageFollowPath,
+        )
 
     async def inspect_object(self, position):
         # Go in front of the object, looking directly at it
@@ -404,10 +410,16 @@ class Navigation(NaviGatorMission):
         # Wait a bit for PCDAR to get setup
         await self.set_classifier_enabled.wait_for_service()
         await self.set_classifier_enabled(SetBoolRequest(data=True))
+        msg = MessageFollowPathRequest()
+        msg.entry_color = "R"  # TODO: get entry buoy
+
         await self.nh.sleep(3.0)
         await self.prepare_to_enter()
         await self.move.forward(7.0).go()
         while not (await self.do_next_gate()):
+            msg.finished = 1  # In progress
             pass
+        msg.finished = 2  # Finished
+        self.net_service_call(msg)
         self.send_feedback("Exiting last gate!! Go NaviGator")
         await self.set_classifier_enabled(SetBoolRequest(data=False))

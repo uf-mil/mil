@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>WildlifeEncounterUI</class>
+ <widget class="QWidget" name="WildlifeEncounterUI">
+  <property name="windowTitle">
+   <string>Wildlife Encounter</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="titleLabel">
+     <property name="text">
+      <string>Wildlife Encounter</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>16</pointsize>
+       <bold>true</bold>
+       <weight>75</weight>
+      </font>
+     </property>
+    </widget>
+   </item>
+
+   <!-- Wildlife Box 1 Container -->
+   <item>
+    <widget class="QWidget" name="box1Container">
+     <layout class="QHBoxLayout" name="layoutBox1">
+      <item>
+       <widget class="QWidget" name="color1_rect">
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>100</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QWidget { background-color: lightgray; }</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="labelContainer1">
+        <layout class="QVBoxLayout" name="layoutLabels1">
+         <item>
+          <widget class="QLabel" name="label1">
+           <property name="text">
+            <string>Color 1</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="coord_label1">
+           <property name="text">
+            <string>Lat, Lon</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Wildlife Box 2 Container -->
+   <item>
+    <widget class="QWidget" name="box2Container">
+     <layout class="QHBoxLayout" name="layoutBox2">
+      <item>
+       <widget class="QWidget" name="color2_rect">
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>100</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QWidget { background-color: lightgray; }</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="labelContainer2">
+        <layout class="QVBoxLayout" name="layoutLabels2">
+         <item>
+          <widget class="QLabel" name="label2">
+           <property name="text">
+            <string>Color 2</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="coord_label2">
+           <property name="text">
+            <string>Lat, Lon</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Wildlife Box 3 Container -->
+   <item>
+    <widget class="QWidget" name="box3Container">
+     <layout class="QHBoxLayout" name="layoutBox3">
+      <item>
+       <widget class="QWidget" name="color3_rect">
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>100</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QWidget { background-color: lightgray; }</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="labelContainer3">
+        <layout class="QVBoxLayout" name="layoutLabels3">
+         <item>
+          <widget class="QLabel" name="label3">
+           <property name="text">
+            <string>Color 3</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="coord_label3">
+           <property name="text">
+            <string>Lat, Lon</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

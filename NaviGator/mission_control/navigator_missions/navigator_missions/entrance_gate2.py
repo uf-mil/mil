@@ -3,23 +3,27 @@ import math
 
 import numpy as np
 from mil_tools import quaternion_matrix
-from std_srvs.srv import SetBoolRequest
+from navigator_msgs.srv import MessageEntranceExitGate, MessageEntranceExitGateRequest
 
 from .navigator import NaviGatorMission
 
 
 class EntranceGate2(NaviGatorMission):
-    async def run(self, args):
+    async def run(self, args, scan_code=False):
         # Parameters:
-        scan_code = False
         return_to_start = True
-        circle_radius = 5
+        circle_radius = 10
         circle_direction = "cw"
         yaw_offset = 1.57
         self.traversal_distance = 3
 
-        await self.set_classifier_enabled.wait_for_service()
-        await self.set_classifier_enabled(SetBoolRequest(data=True))
+        self.net_service_call = self.nh.get_service_client(
+            "/entrance_exit_gate",
+            MessageEntranceExitGate,
+        )
+
+        # await self.set_classifier_enabled.wait_for_service()
+        # await self.set_classifier_enabled(SetBoolRequest(data=True))
 
         # Inspect Gates
         await self.change_wrench("/wrench/autonomous")
@@ -45,9 +49,12 @@ class EntranceGate2(NaviGatorMission):
 
         # Go through the gate
         self.send_feedback("Navigating through gate")
+        msg = MessageEntranceExitGateRequest()
         await self.move.set_position(traversal_points[0]).look_at(
             traversal_points[1],
         ).go()
+        msg.entrance_gate = 1  # TODO: remove placeholder
+        await self.net_service_call(msg)
         await self.move.set_position(traversal_points[1]).go()
 
         if scan_code:
@@ -84,9 +91,11 @@ class EntranceGate2(NaviGatorMission):
                 traversal_points[0],
             ).go()
             await self.move.set_position(traversal_points[0]).go()
-
             # Then move a little passed the exit
+
             await self.move.forward(5).go()
+            msg.exit_gate = 1  # TODO: remove placeholder
+            await self.net_service_call(msg)
             print("GO NAVIGATOR")
 
         self.send_feedback("Done with start gate!")

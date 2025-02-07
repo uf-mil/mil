@@ -599,16 +599,6 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='sub8'>
-        <pose>20 -11 -0.260368 0 -0 3.14</pose>
-        <scale>1 1 1</scale>
-        <link name='base_link'>
-          <pose>20 -11 -0.260368 0 -0 3.14</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
       <model name='transdec_pinger'>
         <pose>23 3 -1.719 0 -0 0</pose>
         <scale>1 1 1</scale>

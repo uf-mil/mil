@@ -25,6 +25,8 @@ STC_WIDTH = 2  # meters
 
 CAMERA_LINK_OPTICAL = "wamv/front_left_cam_link_optical"
 
+FWD_NO_OBJ_DIST = 50
+
 TIMEOUT_SECONDS = 120  # seconds
 
 COLORS = ["red", "green", "black", "blue"]
@@ -46,6 +48,10 @@ class ScanTheCodeMission(NaviGatorMission):
         self.bridge = CvBridge()
         self.image_debug_pub = self.nh.advertise("/stc_mask_debug", Image)
         self.sequence_report = self.nh.advertise("/stc_sequence", ScanTheCode)
+        # self.td_feedback = self.nh.get_service_client(
+        # "/wildlife_encounter_message",
+        # MessageWildlifeEncounter,
+        # )
 
         await asyncio.gather(
             self.debug_points_pub.setup(),
@@ -54,7 +60,7 @@ class ScanTheCodeMission(NaviGatorMission):
 
         await self.change_wrench("/wrench/autonomous")
         await self.set_classifier_enabled(SetBoolRequest(data=False))
-        info = await self.front_left_camera_info_sub.get_next_message()
+        info = await self.front_right_camera_info_sub.get_next_message()
         self.camera_model.fromCameraInfo(info)
 
         pcodar_cluster_tol = DoubleParameter()
@@ -72,8 +78,10 @@ class ScanTheCodeMission(NaviGatorMission):
             return sequence
 
         # Go to the stc light
-        await self.move.look_at(pose).set_position(pose).backward(5).go()
-        await self.nh.sleep(5)
+        self.send_feedback("positioning to scan")
+        # seems liks the right distance to see the dock close is 6 m away
+        await self.move.look_at(pose).set_position(pose).backward(6).go()
+        await self.nh.sleep(3)
         # get updated points and tf now that we a closer
         stc_query = await self.get_sorted_objects(name="stc_platform", n=1)
         stc = stc_query[0][0]
@@ -146,6 +154,15 @@ class ScanTheCodeMission(NaviGatorMission):
         return sequence
 
     async def report_sequence(self, sequence):
+        # report to heartbeat
+        # await self.td_feedback(
+        # MessageScanCodeRequest(
+        # first_color = sequence[0][0],
+        # second_color = sequence[1][0],
+        # third_color = sequence[2][0],
+        # ),
+        # )
+
         colors = ScanTheCode()
         colors.color_pattern = sequence[0][0] + sequence[1][0] + sequence[2][0]
         await self.sequence_report(colors)
@@ -156,6 +173,7 @@ class ScanTheCodeMission(NaviGatorMission):
         try:
             _, poses = await self.get_sorted_objects(name="stc_platform", n=1)
             pose = poses[0]
+            self.send_feedback("Found light tower in objects identified")
         # in case stc platform not already identified
         except Exception:
             # get all pcodar objects
@@ -163,13 +181,17 @@ class ScanTheCodeMission(NaviGatorMission):
                 _, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
             # if no pcodar objects, drive forward
             except Exception:
-                await self.move.forward(50).go()
+                self.send_feedback(
+                    "No pcodar objects. Going forward {FWD_NO_OBJ_DIST} m to try again",
+                )
+                await self.move.forward(FWD_NO_OBJ_DIST).go()
                 # get all pcodar objects
                 _, poses = await self.get_sorted_objects(name="UNKNOWN", n=-1)
                 # if still no pcodar objects, guess RGB and exit mission
+            self.send_feedback("Going to nearest object to explore")
             # go to nearest obj to get better data on that obj
-            print("going to nearest object")
             await self.move.set_position(poses[0]).go()
+            await self.move.look_at(poses[0]).backward(3).go()
             # get data on closest obj
             msgs, poses = await self.get_sorted_objects(name="UNKNOWN", n=1)
             if np.linalg.norm(rosmsg_to_numpy(msgs[0].scale)) > 6.64:
