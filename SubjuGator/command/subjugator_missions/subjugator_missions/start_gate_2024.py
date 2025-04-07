@@ -5,7 +5,6 @@ import math
 from axros import Subscriber
 from mil_misc_tools import text_effects
 from sensor_msgs.msg import MagneticField
-from std_msgs.msg import Bool
 from tf.transformations import *
 
 from .sub_singleton import SubjuGatorMission
@@ -21,7 +20,7 @@ DIST_AFTER_GATE = 1
 WAIT_SECONDS = 1
 
 
-class StartGate2022(SubjuGatorMission):
+class StartGate2024(SubjuGatorMission):
     async def current_angle(self):
         imu_sub: Subscriber[MagneticField] = self.nh.subscribe(
             name="/imu/mag",
@@ -38,22 +37,34 @@ class StartGate2022(SubjuGatorMission):
             + declination
         )
 
-    async def is_left(self):
-        side_sub: Subscriber[Bool] = self.nh.subscribe(
-            name="/getside",
-            message_type=Bool,
-        )
-        async with side_sub:
-            result = await side_sub.get_next_message()
-        return result.data
+    async def is_left(self, team) -> bool:
+        assert isinstance(team, str)
+        return await self.identify_side(team) == "left"
+
+    async def identify_side(self, team: str) -> str:
+        """
+        Identifies which side the side the desired team is on using computer
+        vision.
+
+        Args:
+            team (str): Identifies the team to look for. Will either be 'red'
+                or 'blue'.
+
+        Returns:
+            str: Either 'left' or 'right', depending on which side the team is.
+        """
+        # TODO: This needs to be implemented using CV or a similar algo.
+        return "left"
 
     async def run(self, args):
+        ### Start of mission
         fprint("Waiting for odom")
         await self.tx_pose()
 
         fprint(f"Waiting {WAIT_SECONDS} seconds...")
         await self.nh.sleep(WAIT_SECONDS)
 
+        ### Rotate to the start gate
         orientation = await self.nh.get_param("/course/start_gate/orientation")
         fprint(f"Rotating to start gate orientation (of {orientation} degrees)...")
         cur_degree = await self.current_angle()
@@ -67,24 +78,47 @@ class StartGate2022(SubjuGatorMission):
             await self.go(self.move().yaw_right_deg(orientation - cur_degree))
         await self.nh.sleep(2)  # Give sub time to turn before moving straight
 
-        fprint("Found odom")
+        ### Move down into the water
         down = self.move().down(1)
         await self.go(down, speed=SPEED)
 
-        fprint("Waiting for side")
-        IS_LEFT = await self.is_left()
+        ### Choose a side and move to it
+        team = await self.nh.get_param("/strategy/team")
+        fprint(f"Identifying the side of our team ({team})")
+        is_left = await self.is_left(team)
 
-        side = "left" if IS_LEFT else "right"
-
-        msg = "Found side: " + side
-        fprint(msg)
-
-        if IS_LEFT:
+        ### Move to the side of the start gate
+        fprint(f"Team was identified. Moving to the {team} side of the gate.")
+        if is_left:
             left = self.move().left(1)
             await self.go(left, speed=SPEED)
         else:
             right = self.move().right(1)
             await self.go(right, speed=SPEED)
 
-        forward = self.move().forward(5)
+        ### Move through the start gate
+        forward = self.move().forward(7)
         await self.go(forward, speed=SPEED)
+
+        ### Complete style if requested
+        style = await self.nh.get_param("/strategy/start_gate/with_style")
+        assert isinstance(style, bool)
+        if style:
+            fprint("Completing style...")
+            #### Rotate left
+            rotations = [90] * 4
+            for rotation in rotations:
+                await self.go(self.move().yaw_left_deg(rotation), speed=SPEED)
+                await self.nh.sleep(0.5)
+            await self.nh.sleep(1)  # Give sub some time to catch up
+
+            #### Rotate right
+            rotations = [90] * 4
+            for rotation in rotations:
+                await self.go(self.move().yaw_right_deg(rotation), speed=SPEED)
+                await self.nh.sleep(0.5)
+
+        else:
+            fprint("Not completing style (not requested).")
+
+        ### End of mission
